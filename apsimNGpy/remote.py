@@ -1,7 +1,7 @@
 import os, sys, time
-from apsimx import apsimx2py
+import apsimx2py
 import apsimx.apsimx2py
-from apsimx.soil2apsimx import ApsimSoil
+from soil2apsimx import ApsimSoil
 import numpy as np
 import glob
 from multiprocessing import Queue

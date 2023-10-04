@@ -1,11 +1,7 @@
-import sys
-import Cython
-from distutils.extension import Extension
-from setuptools import setup
-from Cython.Distutils import build_ext
-from Cython.Build import cythonize
-import numpy as np
 from setuptools import setup, find_packages
+VERSION = '0.0.1dev'
+DESCRIPTION = 'apsimx next generation package interface'
+LONG_DESCRIPTION = 'run, edit, download soils and weather and interact with the apsimx file'
 
 setup(
     name='apsimNGpy',
@@ -14,7 +10,16 @@ setup(
     license='MIT',
     author='Richard Magala',
     author_email='magalarich20@gmail.com',
-    description='Package for reading apsimx files and processing data or runing optimisation of required paramters',
+    description=DESCRIPTION,
+    long_description=LONG_DESCRIPTION,
     packages=find_packages(),
     include_package_data=True,
+
+     keywords=['python', 'apsim'],
+     classifiers= [
+            "Development Status :: trial",
+            "Intended Audience :: Education",
+            "Programming Language :: Python :: 3",
+            "Operating System :: Microsoft :: Windows",
+        ]
 )

@@ -1,6 +1,5 @@
 import os, sys, time
 import apsimx2py
-import apsimx.apsimx2py
 from soil2apsimx import ApsimSoil
 import numpy as np
 import glob
@@ -16,8 +15,6 @@ EXPERIMENT_NT = os.path.join(fil, 'EXPERIMENT_NT.apsimx')
 import multiprocessing
 lonlat = [-93.620369, 42.034534], [-93.76944799,42.39200539], [-93.63052528,	42.39736169], [-93.68445637,	42.39704733]
 #_______________________________________________________________________
-
-
 
 path_files  = r'D:\wd\nf\Weather_APSIM_Files'
 os.chdir(path_files)

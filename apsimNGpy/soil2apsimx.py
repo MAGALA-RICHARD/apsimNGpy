@@ -1,4 +1,4 @@
-from apsimx.apsimx2py import APSIMNG
+from apsimx2py import APSIMNG
 from typing import Union
 import Models
 import System.IO

@@ -12,10 +12,8 @@ import os, sys, datetime, shutil, warnings
 import numpy as np
 import pandas as pd
 import sqlite3
-from apsimx.utils import delete_simulation_files
-from apsimx.utils import Cache
-2
-
+from utils import delete_simulation_files
+from utils import Cache
 # Prefer dotnet
 try:
     if pythonnet.get_runtime_info() is None:

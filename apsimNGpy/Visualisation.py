@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
-from apsimx.apsimx2py import ApsimSoil
-from apsimx.remote import apsimx_prototype
+from apsimx2py import ApsimSoil
+from remote import apsimx_prototype
 class ApsimxVisuals(ApsimSoil):
     def __init__(self, model: Union[str, Simulations], copy=True, out_path=None, read_from_string=True, lonlat=None):
         super().__init__(model, copy, out_path)

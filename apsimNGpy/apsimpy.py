@@ -13,6 +13,7 @@ import numpy as np
 import pandas as pd
 import sqlite3
 import json
+sys.path.insert(0, './manager')
 import weathermanager as weather
 from soilmanager import DownloadsurgoSoiltables, OrganizeAPSIMsoil_profile
 

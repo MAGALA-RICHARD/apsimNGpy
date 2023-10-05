@@ -12,10 +12,6 @@ import os, sys, datetime, shutil, warnings
 import numpy as np
 import pandas as pd
 import sqlite3
-from utils import delete_simulation_files
-from utils import Cache
-import threading
-from queue import Queue
 import json
 # Prefer dotnet
 try:
@@ -40,10 +36,6 @@ log_paths = opj(log_messages,logfile_name)
 #f"log_messages{datetime.now().strftime('%m_%d')}.log"
 logging.basicConfig(filename=log_paths, level=logging.ERROR, format='%(asctime)s %(levelname)s %(message)s')
 logger = logging.getLogger(__name__)
-from soilmanager import DownloadsurgoSoiltables
-from soilmanager import OrganizeAPSIMsoil_profile
-from utils import make_apsimx_clones
-import weather
 def detect_apsim_installation():
   for rr, dd, ff in os.walk("C:/"):
     for d  in ff:

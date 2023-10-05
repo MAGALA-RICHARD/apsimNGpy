@@ -4,6 +4,7 @@ import os
 from os.path import join as opj
 import shutil
 import random
+from pymoo.decomposition.asf import ASF
 import string
 import geopandas as gpd
 import rasterio
@@ -428,5 +429,3 @@ def optimize_exponetial_data( x_data, y_data, initial_guess=[0.5, 0.5],
     a_fit, b_fit = best_fit_params
     predicted = decreasing_exponential_function(x_data, a_fit, b_fit)
     return predicted
-
-

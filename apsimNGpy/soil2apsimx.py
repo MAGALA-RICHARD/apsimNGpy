@@ -1,8 +1,43 @@
 from apsimx2py import APSIMNG
 from typing import Union
-import Models
+import os
+import sys
+import pythonnet
+import numpy as np
 import System.IO
 import System.Linq
+
+# Prefer dotnet
+try:
+    if pythonnet.get_runtime_info() is None:
+        pythonnet.load("coreclr")
+except:
+    print("dotnet not found ,trying alternate runtime")
+    pythonnet.load()
+
+import clr
+
+def detect_apsim_installation():
+  for rr, dd, ff in os.walk("C:/"):
+    for d  in ff:
+      if d.startswith('Model')  and d.endswith(".exe"):
+        f =os.path.join(rr, d)
+        if f is not None:
+          return f
+sys.path.append(os.path.dirname(detect_apsim_installation()))
+
+# Try to load from pythonpath and only then look for Model.exe
+try:
+    clr.AddReference("Models")
+except:
+    print("Looking for APSIM")
+    apsim_path = shutil.which("Models")
+    if apsim_path is not None:
+        apsim_path = os.path.split(os.path.realpath(apsim_path))[0]
+        sys.path.append(apsim_path)
+    clr.AddReference("Models")
+
+import Models
 from Models.Core import Simulations
 import json
 class ApsimSoil(APSIMNG):
@@ -345,13 +380,3 @@ def load_apsimx(pathstring):
     return model
 
 
-fp = 'D:\\apsimx2py\\apsimx2py\\Testing\\corn_base.apsimx'
-
-# if reload:  # a relaod wont work while dealing with multiple files in memory, just removed it f
-#     self.save_edited_file()
-#     if self.out_path:
-#         self._load_apsimx(self.out_path)
-#     else:
-#         self._load_apsimx(self.path)
-
-# mod =  load_apsimx(fp)

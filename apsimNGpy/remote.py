@@ -1,5 +1,4 @@
-import os, sys, time
-import apsimx2py
+import os
 from soil2apsimx import ApsimSoil
 import numpy as np
 import glob

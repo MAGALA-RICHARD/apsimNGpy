@@ -1,20 +1,12 @@
 """
 Interface to APSIM simulation models using Python.NET build on top of Matti Pastell farmingpy framework.
 """
-import matplotlib.pyplot as plt
-import random, logging, pathlib
-import string
-import concurrent
-# import soil
-from typing import Union
+import pathlib
 import pythonnet
-import os, sys, datetime, shutil, warnings
-import numpy as np
+import os, sys, shutil
 import pandas as pd
 import sqlite3
-from utils import delete_simulation_files
-from utils import Cache
-# Prefer dotnet
+
 try:
     if pythonnet.get_runtime_info() is None:
         pythonnet.load("coreclr")
@@ -24,7 +16,6 @@ except:
 
 import clr
 
-from os.path import join as opj
 
 def detect_apsim_installation():
     for rr, dd, ff in os.walk("C:/"):
@@ -52,21 +43,9 @@ clr.AddReference("System")
 from System.Collections.Generic import *
 # C# imports
 import Models
-import System.IO
-import System.Linq
-from Models.Core import Simulations
 from System import *
-from Models.PMF import Cultivar
-from Models import Options
-from Models.Core.ApsimFile import FileFormat
-from Models.Climate import Weather
-from Models.Soils import Solute, Water, Chemical
-from Models.Soils import Soil, Physical, SoilCrop, Organic
 from collections import namedtuple
 import json
-import time
-
-from apsimx.remote import test
 def load_apsimx_from_string(path):
         Model_data = namedtuple('model_data', ['model', 'path', 'datastore', "DataStore"])
         try:

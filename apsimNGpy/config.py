@@ -1,33 +1,26 @@
 from os.path import dirname, realpath
-
-from pymoo.version import __version__
-
-
+import sys
 class Config:
     """
-    The configuration of this package in general providing the place
     for declaring global variables.
     """
 
-    # the root directory where the package is located at
+    # the root directory where the apimNGpy package is located at
     root = dirname(realpath(__file__))
 
     warnings = {
-        "not_compiled": True
+        "no_compilation": True
     }
 
     # whether a warning should be printed if compiled modules are not available
-    show_compile_hint = True
-
-    # whether when import a file the doc should be parsed - only activate when creating doc files
-    parse_custom_docs = False
-
-    # a method defining the endpoint to load data remotely - default from github repo
-    @classmethod
-    def data(cls):
-        return f"https://raw.githubusercontent.com/anyoptimization/pymoo-data/main/"
-
+    compilation = True
 
 # returns the directory to be used for imports
-def get_pymoo():
+def get_apsimngpy():
     return dirname(Config.root)
+# add to path
+def add_apsimngpy_topath():
+    path = get_apsimngpy()
+    print(path)
+    sys.path.extend([path])
+

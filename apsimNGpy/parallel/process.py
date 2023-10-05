@@ -9,7 +9,6 @@ root  = dirname(path)
 path = opj(root, 'utililies')
 sys.path.append(path)
 from run_utils import run_model
-import utils
 
 
 #_______________________________________________________________

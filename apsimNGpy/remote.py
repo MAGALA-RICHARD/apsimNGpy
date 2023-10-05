@@ -2,7 +2,7 @@ from os.path import join, realpath, dirname, exists
 base = realpath(dirname(__file__))
 fil = join(base, 'basefiles')
 apsimx_prototype = join(fil, 'corn_base.apsimx')
-met_example = join(fil, 'NewMetrrr')
+met_example = join(fil, 'NewMetrrr.met')
 SWIM3 = join(fil, 'SWIM2.apsimx')
 test =join(fil, 'testx.apsimx')
 EXPERIMENT = join(fil, 'EXPERIMENT.apsimx')

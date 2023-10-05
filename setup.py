@@ -21,5 +21,9 @@ setup(
             "Intended Audience :: Education",
             "Programming Language :: Python :: 3",
             "Operating System :: Microsoft :: Windows",
-        ]
+        ],
+     install_requires=[
+        'numpy>=1.20.0',
+        'scipy>=1.7'
+    ]
 )

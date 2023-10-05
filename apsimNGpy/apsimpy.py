@@ -11,9 +11,13 @@ import pythonnet
 import os, sys, datetime, shutil, warnings
 import numpy as np
 import pandas as pd
+from os.path import join as opj
 import sqlite3
-import json
-sys.path.insert(0, './manager')
+root = os.path.dirname(os.path.realpath(__file__))
+path = opj(root, 'manager')
+print(os.path.exists(path))
+sys.path.append(path)
+import utils
 import weathermanager as weather
 from soilmanager import DownloadsurgoSoiltables, OrganizeAPSIMsoil_profile
 

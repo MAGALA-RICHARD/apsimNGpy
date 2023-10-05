@@ -399,6 +399,7 @@ def collect_runfiles(path2files, pattern  = "*_2py.db"):
         _type_: _description_
     """
     os.chdir(path2files)
+    print(f"Working directory has changed to: {path2files}")
     lp = glob.glob1(path2files, pattern) 
     assert len(lp) != [], "No files found please try another path of file pattern"
     return lp

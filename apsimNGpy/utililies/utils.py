@@ -388,20 +388,25 @@ def threaded_weather_download(self, iter_arable):
 # some ideas
 #__________________________________________________________________________
 # we can constrain the sample size of each management practice every time we sample
-def collect_runfiles(path2files, pattern  = "*_2py.db"):  
+def collect_runfiles(path2files, pattern  = "*.apsimx"):
     """_summary_
 
     Args:
         path2files (_type_): path to the apsimx or database file_
-        pattern (str, optional): file pattern. Defaults to "*_2py.db".
+        pattern (str, optional) or lists of strings: file pattern. Defaults to "*.apsimx".
 
     Returns:
         _type_: _description_
     """
-    os.chdir(path2files)
-    lp = glob.glob1(path2files, pattern) 
-    assert len(lp) != [], "No files found please try another path of file pattern"
-    return lp
+    lp = []
+    if not isinstance(pattern, list):
+        pattern  = [pattern]
+    for i in pattern:
+      list_files = glob.glob1(path2files, i)
+      lp += list_files
+    files = [os.path.join(path2files, i) for i in lp]
+    assert len(lp) != [], "No files found please try another path or file pattern"
+    return files
 
 def decreasing_exponential_function(x, a, b):  # has potential to cythonize
     """

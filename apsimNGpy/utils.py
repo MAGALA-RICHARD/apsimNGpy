@@ -4,10 +4,8 @@ import os
 from os.path import join as opj
 import shutil
 import random
-from pymoo.decomposition.asf import ASF
 import string
 import geopandas as gpd
-import rasterio
 from shapely.geometry import Polygon
 from shapely.ops import unary_union
 from shapely.geometry import Point

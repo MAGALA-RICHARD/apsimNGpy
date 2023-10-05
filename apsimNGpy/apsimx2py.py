@@ -13,6 +13,9 @@ import numpy as np
 import pandas as pd
 import sqlite3
 import json
+from manager.soilmanager import DownloadsurgoSoiltables, OrganizeAPSIMsoil_profile
+from manager import weathermanager as weather
+
 # Prefer dotnet
 try:
     if pythonnet.get_runtime_info() is None:

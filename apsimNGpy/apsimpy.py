@@ -15,7 +15,7 @@ from os.path import join as opj
 import sqlite3
 root = os.path.dirname(os.path.realpath(__file__))
 path = opj(root, 'manager')
-print(os.path.exists(path))
+
 sys.path.append(path)
 import utils
 import weathermanager as weather

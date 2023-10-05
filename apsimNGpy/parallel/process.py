@@ -1,14 +1,16 @@
 from concurrent.futures import ProcessPoolExecutor, as_completed,  ThreadPoolExecutor
 import glob, os, sys
 from time import perf_counter
-from apsimNGpy.utililies.run_utils import run_model
-from apsimNGpy.utililies import utils
-#collect_runfiles
-#_______________________________________________________________
+from os.path import dirname
+from os.path import join as opj
+path = dirname(os.path.realpath(__file__))
+root  = dirname(path)
+path = opj(root, 'utililies')
+sys.path.append(path)
+from run_utils import run_model
+import utils
 
-path2 = r'D:\wd\nf\EXPERIMENT\T\CW\Weather_APSIM_Files'
-path  = utils.collect_runfiles(path2, pattern = "*_2py.apsimx")
-print(os.getcwd())
+#_______________________________________________________________
 def  run_apsimxfiles_in_parallel(files, ncores, use_threads=False):
     """
     files: lists of apsimx simulation files

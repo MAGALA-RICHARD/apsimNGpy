@@ -1,3 +1,4 @@
-from __future__ import absolute_import
-import config
-config.add_apsimngpy_topath()
+from os.path import dirname, realpath
+import sys
+root = dirname(realpath(__file__))
+sys.path.extend([root])

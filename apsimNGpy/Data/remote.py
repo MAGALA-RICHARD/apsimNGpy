@@ -32,5 +32,5 @@ class apsimx_examples:
             for i in copied_files:
                 name, ext = basename(i).split(".")
                 setattr(self, name, i)
-apsimx_examples = apsimx_examples()
+apsimx_example_data = apsimx_examples()
 print(ap.Soybean)

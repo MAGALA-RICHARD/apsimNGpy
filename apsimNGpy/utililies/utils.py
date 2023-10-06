@@ -432,3 +432,10 @@ def optimize_exponetial_data( x_data, y_data, initial_guess=[0.5, 0.5],
     a_fit, b_fit = best_fit_params
     predicted = decreasing_exponential_function(x_data, a_fit, b_fit)
     return predicted
+def area_of_circle(r):
+    pi = 3.141592653589793
+    return pi * r * r
+def number_of_cells(r, cell_size):
+    circle_area = area_of_circle(r)
+    cell_area = cell_size * cell_size
+    return int(circle_area / cell_area)

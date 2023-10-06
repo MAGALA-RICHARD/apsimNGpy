@@ -19,7 +19,6 @@ examples_files = {}
 for i in dr:
     if i.endswith(".apsimx"):
         name, ext = i.split(".")
-        print(examples_files)
         examples_files[name] = join(examples, i)
 copy_path = join(getcwd(),'apsim_default_model_examples')
 

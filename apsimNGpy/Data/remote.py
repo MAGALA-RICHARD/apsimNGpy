@@ -33,4 +33,3 @@ class apsimx_examples:
                 name, ext = basename(i).split(".")
                 setattr(self, name, i)
 apsimx_example_data = apsimx_examples()
-print(ap.Soybean)

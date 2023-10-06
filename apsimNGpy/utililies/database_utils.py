@@ -3,7 +3,6 @@ Interface to APSIM simulation models using Python.NET build on top of Matti Past
 """
 from collections import namedtuple
 from os.path import exists
-from apsimx.remote import test
 from sqlite3 import connect
 from pandas import read_sql
 import numpy as np
@@ -112,7 +111,6 @@ def excute_query_data(fileinput, N, R =None):
         return data
     except Exception as e:
         print(repr(e))
-
 
 def excute_querry_in_pool(data):
     """

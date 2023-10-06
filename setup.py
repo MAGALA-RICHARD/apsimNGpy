@@ -15,7 +15,8 @@ setup(
     long_description=LONG_DESCRIPTION,
     packages=find_packages(),
     include_package_data=True,
-
+    package_data={
+        'apsimNGpy': ['Data/*.apsimx'],},
      keywords=['python', 'apsim'],
      classifiers= [
             "Development Status :: trial",

@@ -16,7 +16,7 @@ except:
 
 import clr
 
-
+FAILED_RUNS = []
 def detect_apsim_installation():
     for rr, dd, ff in os.walk("C:/"):
         for d in ff:
@@ -138,11 +138,13 @@ def run_model(path):
     :param path: path to apsimx file
     :return: none
     """
-    nt =load_apsimx_from_string(path)
-    ap = run(nt)
+    try:
+        model =load_apsimx_from_string(path)
+        ap = run(model)
+    except Exception as e:
+        print(f"apsimNGpy had issues running file {path} : because of {repr(e)}")
+        pass
 
-def replace_soils():
-    pass
 
 
 

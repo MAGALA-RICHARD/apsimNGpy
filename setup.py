@@ -15,8 +15,7 @@ setup(
     long_description=LONG_DESCRIPTION,
     packages=find_packages(),
     include_package_data=True,
-    package_data={
-        'apsimNGpy': ['Data/*.apsimx'],},
+    package_dir={"": "apsimNGpy"},
      keywords=['python', 'apsim'],
      classifiers= [
             "Development Status :: trial",
@@ -26,7 +25,12 @@ setup(
         ],
      install_requires=[
         'numpy>=1.20.0',
-        'scipy>=1.7'
+        'scipy>=1.7',
+         'tqdm',
+         'shapely',
+         'xmltodict',
+         'geopandas',
+         'pandas',
     ]
 )
 

@@ -1,4 +1,4 @@
-from concurrent.futures import ProcessPoolExecutor, as_completed,  ThreadPoolExecutor
+ktrfrom concurrent.futures import ProcessPoolExecutor, as_completed,  ThreadPoolExecutor
 import glob, os, sys
 from time import perf_counter
 from tqdm import tqdm
@@ -12,12 +12,14 @@ from run_utils import run_model
 
 
 #_______________________________________________________________
-def  run_apsimxfiles_in_parallel(files, ncores, use_threads=False):
+def  run_apsimxfiles_in_parallel(iterable_files, ncores, use_threads=False):
     """
     files: lists of apsimx simulation files
     ncores  =no of cores or threads to use (integer)
     use_thread: if true thread pool executor will be used if false processpool excutor will be called (boolean)
     """
+    # remove duplicates. because duplicates will be susceptible to race conditioning in paralell computing
+    files = set(iterable_files)
     if not use_threads:
         a = perf_counter()
         with ProcessPoolExecutor(ncores) as pool:

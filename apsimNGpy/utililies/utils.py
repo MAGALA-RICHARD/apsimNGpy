@@ -96,6 +96,7 @@ def load_from_numpy(file):
     with open(file, 'rb') as f:
       ar = np.load(f, allow_pickle=True)
     return ar
+
 def get_data_element(data, column_names, indexid):
         """_summary_
 

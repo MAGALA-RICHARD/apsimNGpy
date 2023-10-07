@@ -239,7 +239,7 @@ def daymet_bylocation(lonlat, start, end, cleanup = True, filename =None):
         for i in ab:
             if (all(i.year % 400 ==0)) and (all(i.year % 100 ==0)) or (all(i.year % 4 ==0)) and (all(i.year % 100 !=0)):
               x= i[['year','radn','maxt','mint','rain','vp','swe',]].mean()
-              year = round(x[0], 0)
+              year = round(x.iloc[0], 0)
               day = round(366, 0)
               new_row = pd.DataFrame({'year':[year], 'day':[day], 'radn':[0], 'maxt':[0], 'mint':[0], 'rain':[0], 'vp':[0], 'swe':[0]})
               df_bag.append(pd.concat([i, new_row], ignore_index=True))

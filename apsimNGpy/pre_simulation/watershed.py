@@ -49,7 +49,7 @@ def completed_time():
 # delete_simulation_files(opj(os.getcwd(),'weatherdata'))
 class PreProcessor():
 
-    def __init__(self, path2apsimx, pol_object=pol_object, resoln=500, field="GenLU",
+    def __init__(self, path2apsimx, pol_object=None, resoln=500, field="GenLU",
                   wp='D:\wd\weather_files0305\weatherdata', layer_file = None, thickness_values =None):
         """
 

@@ -1,7 +1,7 @@
 import os
 from importlib.resources import files
 wp = 'NewMetrrr.met'
-def weather(path):
+def _weather(path):
     resource_directory = files('apsimNGpy')
     data_file_path = resource_directory / 'basefiles' / wp
     nameout = os.path.join(path, wp)
@@ -10,7 +10,7 @@ def weather(path):
         openfile.write(contents)
     return nameout
 
-def get_maize_example(file_path):
+def _get_maize_example(file_path):
     resource_directory = files('apsimNGpy')
     json_file_path = resource_directory / 'basefiles' / 'corn_base.apsimx'
     contents = json_file_path.read_text()
@@ -19,7 +19,7 @@ def get_maize_example(file_path):
         openfile.write(contents)
     return nameout
 
-def get_maize_NF_experiment(file_path):
+def _get_maize_NF_experiment(file_path):
     resource_directory = files('apsimNGpy')
     json_file_path = resource_directory / 'basefiles' / 'EXPERIMENT.apsimx'
     contents = json_file_path.read_text()
@@ -27,7 +27,7 @@ def get_maize_NF_experiment(file_path):
     with open(nameout, "w+") as openfile:
         openfile.write(contents)
     return nameout
-def get_maize_NF_experiment_NT(file_path):
+def _get_maize_NF_experiment_NT(file_path):
     resource_directory = files('apsimNGpy')
     json_file_path = resource_directory / 'basefiles' / 'EXPERIMENT_NT.apsimx'
     contents = json_file_path.read_text()
@@ -35,7 +35,7 @@ def get_maize_NF_experiment_NT(file_path):
     with open(nameout, "w+") as openfile:
         openfile.write(contents)
     return nameout
-def get_SWIM(file_path):
+def _get_SWIM(file_path):
     resource_directory = files('apsimNGpy')
     json_file_path = resource_directory / 'basefiles' / 'SWIM.apsimx'
     contents = json_file_path.read_text()
@@ -49,9 +49,9 @@ class load_example_files():
        """
         path: string pathlike object where to copy the default example to
         """
-       self.weather_example = weather(path)
-       self.maize = get_maize_example(path)
-       self.experiment_nitrogen_residue  = get_maize_NF_experiment_NT(path)
-       self.experiment_nitrogen_residue_nt = get_maize_NF_experiment_NT(path)
-       self.swim = get_SWIM(path)
+       self.weather_example = _weather(path)
+       self.maize = _get_maize_example(path)
+       self.experiment_nitrogen_residue  = _get_maize_NF_experiment_NT(path)
+       self.experiment_nitrogen_residue_nt = _get_maize_NF_experiment_NT(path)
+       self.swim = _get_SWIM(path)
 

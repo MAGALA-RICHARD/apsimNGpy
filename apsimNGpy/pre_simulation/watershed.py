@@ -69,18 +69,20 @@ class PreProcessor():
           self.thickness_values = [150, 150, 200, 200, 200, 250, 300, 300, 400, 500]
         self.weather_path = wp
         self.rotations = organize_crop_rotations(pol_object.record_array['CropRotatn'])
+        self.pol_object  = pol_object
+
         if not layer_file:
           self.layer = 'D:\\ENw_data\\creek.shp'
 
 
     def sample_indices(self, percentage, *args, **kwargs):
-        total_indices = len(pol_object.record_array['Shape'])
+        total_indices = len(self.pol_object.record_array['Shape'])
         num_indices_to_select = int(total_indices * (percentage / 100))
         sampled_indices = np.random.choice(total_indices, size=num_indices_to_select, replace=False)
         return sampled_indices
 
     def sample_OBJECTID(self, percentage, *args, **kwargs):
-        total_indices = len(pol_object.record_array['Shape'])
+        total_indices = len(self.pol_object.record_array['Shape'])
         num_indices_to_select = int(total_indices * (percentage / 100))
         sampled_indices = random.choices(list(self.rotations.keys()), k=num_indices_to_select)
         return sampled_indices
@@ -154,7 +156,7 @@ class PreProcessor():
             print(f"downloading for: {x}", end = '\r')
             data_dic = {}
             fn = "daymet_wf_" + str(x) + '.met'
-            cod = pol_object.record_array["Shape"][x]
+            cod = self.pol_object.record_array["Shape"][x]
 
             filex = weather.daymet_bylocation_nocsv(cod, start=1998, end=2020, cleanup=False, filename=fn)
             return filex
@@ -308,7 +310,7 @@ class PreProcessor():
     def soil_downloader(self, x):
         # print(f"downloading for: {x}")
         data_dic = {}
-        cod = list(get_data_element(pol_object.record_array, "Shape", x))
+        cod = list(get_data_element(self.pol_object.record_array, "Shape", x))
         try:
             data_table = soilmanager.DownloadsurgoSoiltables(cod, select_componentname='domtcp')
             self.soil_profile = soilmanager.OrganizeAPSIMsoil_profile(data_table,
@@ -320,8 +322,8 @@ class PreProcessor():
             return data_dic
         except Exception as e:
             print(repr(e))
-    @staticmethod
-    def download_soil_table_first(iterator = None, cordnates = None, number_threads=16):
+
+    def download_soil_table_first(self, iterator = None, cordnates = None, number_threads=16):
         """
 
         :param iterator: array or list
@@ -341,7 +343,7 @@ class PreProcessor():
             if  cordnates:
                 cod =  cordnates[x]
             else:
-                cod = list(get_data_element(pol_object.record_array, "Shape", x))
+                cod = list(get_data_element(self.pol_object.record_array, "Shape", x))
             data_table = soilmanager.DownloadsurgoSoiltables(cod, select_componentname='domtcp')
             self.soil_profile = soilmanager.OrganizeAPSIMsoil_profile(data_table,
                                                          thickness_values=self.thickness_values,
@@ -450,16 +452,6 @@ class PreProcessor():
 
         self.apsim_directory = self.threaded_soil_replacement(pathfs)
         return self.apsim_directory
-paths = (r'D:\wd\nf\EXPERIMENT\T\CC', r'D:\wd\nf\EXPERIMENT\T\CW')
-if __name__ == "__main__":
-        # test the functions
-        ap = PreProcessor(EXPERIMENT_NT)
-        path = r'D:\wd\New folder\Weather_APSIM_Files' # maize wheat
-        path = r'D:\wd\nf\EXPERIMENT\NT\CW' # continous corn
-        #ap.threaded_soil_replacement(path)
-        th = ap.prepare_simulation(paths[1])
-        print(th)
-
 
 
 

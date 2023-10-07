@@ -51,7 +51,7 @@ class load_example_files():
         """
        self.weather_example = _weather(path)
        self.maize = _get_maize_example(path)
-       self.experiment_nitrogen_residue  = _get_maize_NF_experiment_NT(path)
+       self.experiment_nitrogen_residue  = _get_maize_NF_experiment(path)
        self.experiment_nitrogen_residue_nt = _get_maize_NF_experiment_NT(path)
        self.swim = _get_SWIM(path)
 

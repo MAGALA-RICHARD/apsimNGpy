@@ -25,12 +25,7 @@ setup(
         ],
      install_requires=[
         'numpy>=1.20.0',
-        'scipy>=1.7',
-         'tqdm',
-         'shapely',
-         'xmltodict',
-         'geopandas',
-         'pandas',
+        'scipy>=1.7'
     ]
 )
 

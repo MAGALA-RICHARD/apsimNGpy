@@ -15,7 +15,7 @@ setup(
     long_description=LONG_DESCRIPTION,
     packages=find_packages(),
     include_package_data=True,
-    package_data={'': ['basefiles/*.apsimx']},
+    package_data={'': ['basefiles/*.apsimx', 'basefiles/*.met']},
      keywords=['python', 'apsim'],
      classifiers= [
             "Development Status :: trial",

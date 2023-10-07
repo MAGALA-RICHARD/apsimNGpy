@@ -15,7 +15,7 @@ path_utilities = os.path.join(root, 'utililies')
 main_root = os.path.realpath(os.path.dirname(root))
 sys.path.extend([path, path_utilities, root, main_root])
 from utililies.utils import  organize_crop_rotations, upload_weather, upload_apsimx_file, upload_apsimx_file_by_pattern
-from utililies.utils import load_from_numpy, collect_runfiles
+from utililies.utils import load_from_numpy, collect_runfiles, get_data_element, add_wheat, delete_simulation_files, make_apsimx_clones
 import apsimpy
 import utils
 import threading
@@ -37,7 +37,6 @@ from run_utils import load_apsimx_from_string
 # Get the current time
 def completed_time():
     current_time = datetime.datetime.now()
-
     # Extract hours, minutes, and seconds
     hours = current_time.hour
     minutes = current_time.minute
@@ -385,7 +384,6 @@ class PreProcessor():
             data_dict = self.soil_downloader(x)
             ap.replace_downloaded_soils(data_dict[x], ap.extract_simulation_name)
             ap.save_edited_file()
-
             print(f"{x} succeeded", end = '\r')
             return self
     def threaded_soil_replacement(self, wd, iterable =None):

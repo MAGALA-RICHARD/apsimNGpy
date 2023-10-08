@@ -399,6 +399,9 @@ class PreProcessor():
         os.chdir(wd)
         threads = []
         for idices in listable:
+            print(wd, "===")
+            xp =collect_runfiles(wd, pattern =  f"spatial_{idices}_need_met.apsimx")
+            print(xp, "+************____")
             file  = collect_runfiles(wd, pattern =  f"spatial_{idices}_need_met.apsimx")[0]
             thread = threading.Thread(target=self.replace_downloaded, args=(idices, file))
             threads.append(thread)

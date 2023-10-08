@@ -33,7 +33,7 @@ import datetime
 import weather
 import pythonnet
 from run_utils import load_apsimx_from_string
-
+COUNTER = 1
 # Get the current time
 def completed_time():
     current_time = datetime.datetime.now()
@@ -70,10 +70,16 @@ class PreProcessor():
         self.rotations = organize_crop_rotations(pol_object.record_array['CropRotatn'])
         self.pol_object  = pol_object
         self.number_threads = number_threads
+        self.total = len(pol_object.record_array)
         if not layer_file:
           self.layer = 'D:\\ENw_data\\creek.shp'
 
-
+    def _callback(self, _lock):
+        global COUNTER
+        COUNTER +=1
+        percent = COUNTER / self.total *100
+        with _lock:
+            print(f'{percent} completed ')
     def sample_indices(self, percentage, *args, **kwargs):
         total_indices = len(self.pol_object.record_array['Shape'])
         num_indices_to_select = int(total_indices * (percentage / 100))
@@ -124,6 +130,7 @@ class PreProcessor():
 
     def replace_apsim_file_with_mets(self, path2weather_files, filename = None):
         print(self.weather_path)
+        self._counter  =0
         aps = os.path.join(os.getcwd(), 'Weather_APSIM_Files')
         if not os.path.exists(aps):
             os.mkdir(aps)
@@ -131,6 +138,7 @@ class PreProcessor():
         [shutil.copy (self.named_tuple.path, os.path.join(aps, f"spatial_{i}_need_met.apsimx")) for i in list(self.rotations)]
         leng = len(self.rotations)
         for i in list(self.rotations):
+            self._counter +=1
             if not filename:
               fn = "spatial_ap_" + str(i) + '.apsimx'
             else:
@@ -143,10 +151,10 @@ class PreProcessor():
             apsim_object.replace_met_file(wp, apsim_object.extract_simulation_name)
             apsim_object.out_path = fname
             apsim_object.save_edited_file()
-            print(f"{i}/{leng} completed ", end = "\r")
+            ct =self._counter/leng * 100
+            print(f"{self._counter}/{leng}  ({ct})% completed ", end = "\r")
         print(aps)
         return aps
-        print("weather replacement succeeded")
     def dict_generator(self, my_dict):
         for key, value in my_dict.items():
             yield key, value
@@ -158,7 +166,6 @@ class PreProcessor():
             data_dic = {}
             fn = "daymet_wf_" + str(x) + '.met'
             cod = self.pol_object.record_array["Shape"][x]
-
             filex = weather.daymet_bylocation_nocsv(cod, start=1998, end=2020, cleanup=False, filename=fn)
             return filex
         except Exception as e:
@@ -305,7 +312,7 @@ class PreProcessor():
             mx = (year.max())
             if mx < 2020.0:
                 os.remove(pp)
-                print("remooving: ", pp)
+                print("removing: ", pp)
                 return True
         except:
             pass

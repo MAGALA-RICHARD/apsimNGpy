@@ -143,7 +143,7 @@ class PreProcessor():
             apsim_object.replace_met_file(wp, apsim_object.extract_simulation_name)
             apsim_object.out_path = fname
             apsim_object.save_edited_file()
-            print(f"{i}{leng} completed ", end = "\r")
+            print(f"{i}/{leng} completed ", end = "\r")
         print(aps)
         return aps
         print("weather replacement succeeded")
@@ -384,12 +384,15 @@ class PreProcessor():
             if not thickness_values:
                 self.thickness_values = [150, 150, 200, 200, 200, 250, 300, 300, 400, 500]
     def replace_downloaded(self,x, file_path):
+        try:
             ap = PreProcessor.PreSoilReplacement(file_path)
             data_dict = self.soil_downloader(x)
             ap.replace_downloaded_soils(data_dict[x], ap.extract_simulation_name)
             ap.save_edited_file()
             print(f"{x} succeeded", end = '\r')
             return self
+        except Exception as e:
+            print(repr(e))
     def threaded_soil_replacement(self, wd, iterable =None):
         #pattern = f'spatial_ap_{specific_number}.apsimx'
         assert os.path.exists(wd), "path does not exists"

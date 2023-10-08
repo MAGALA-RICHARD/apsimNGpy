@@ -431,7 +431,7 @@ class PreProcessor():
         wpath = self.threaded_weather_download(wd = wd)
         print(wpath)
         absolute_path = os.path.join(wpath, 'weatherdata')
-        print("First weather dwonlaod completed checking if rerun is needed")
+        print("First weather downlaod completed checking if rerun is needed")
         not_simulated = self.return_missing_weather_index( absolute_path)
         if len(not_simulated) == 0:
             print("weather download complete")

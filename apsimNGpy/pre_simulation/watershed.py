@@ -49,7 +49,7 @@ def completed_time():
 class PreProcessor():
 
     def __init__(self, path2apsimx, pol_object=None, resoln=500, field="GenLU", number_threads =16,
-                  wp='D:\wd\weather_files0305\weatherdata', layer_file = None, thickness_values =None):
+                  wp=None, layer_file = None, thickness_values =None):
         """
 
         :param path2apsimx: path to apsimx file
@@ -429,6 +429,7 @@ class PreProcessor():
         os.chdir(wd)
         print("downloading weather file")
         wpath = self.threaded_weather_download(wd = wd)
+        print(wpath)
         absolute_path = os.path.join(wpath, 'weatherdata')
         print("First weather dwonlaod completed checking if rerun is needed")
         not_simulated = self.return_missing_weather_index( absolute_path)

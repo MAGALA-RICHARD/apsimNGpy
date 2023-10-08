@@ -129,6 +129,7 @@ class PreProcessor():
             os.mkdir(aps)
         print("cloning apsimx file")
         [shutil.copy (self.named_tuple.path, os.path.join(aps, f"spatial_{i}_need_met.apsimx")) for i in list(self.rotations)]
+        leng = len(self.rotations)
         for i in list(self.rotations):
             if not filename:
               fn = "spatial_ap_" + str(i) + '.apsimx'
@@ -142,7 +143,7 @@ class PreProcessor():
             apsim_object.replace_met_file(wp, apsim_object.extract_simulation_name)
             apsim_object.out_path = fname
             apsim_object.save_edited_file()
-            print(f"{i} completed ", end = "\r")
+            print(f"{i}{leng} completed ", end = "\r")
         print(aps)
         return aps
         print("weather replacement succeeded")
@@ -400,10 +401,7 @@ class PreProcessor():
         os.chdir(wd)
         threads = []
         for idices in listable:
-            print(wd, "===")
-            xp =collect_runfiles(wd, pattern =  [f"spatial_{idices}_need_met.apsimx"])
-            print(xp, "+************____")
-            file  = collect_runfiles(wd, pattern =  [f"spatial_{idices}_need_met.apsimx"])[0]
+            file  = collect_runfiles(wd, pattern =   [f"spatial*_{idices}_need_met.apsimx"])[0]
             thread = threading.Thread(target=self.replace_downloaded, args=(idices, file))
             threads.append(thread)
             thread.daemon = False
@@ -423,7 +421,7 @@ class PreProcessor():
             thread.start()
         thread.join()
 
-    def prepare_simulation(self, wd, watershed_name=None, skip_initial=False):
+    def prepare_simulation(self, wd):
         """
 
         #:param watershed_name: name of the watershed or simulation area canceled passs a complete wd of the watershed or areaname
@@ -431,7 +429,7 @@ class PreProcessor():
         :return: path to the pre-simulated apsimx files populated with weather data
         """
         os.chdir(wd)
-        print("downloading weather file")
+        print("downloading weather data")
         wpath = self.threaded_weather_download(wd = wd)
         print(wpath)
         absolute_path = os.path.join(wpath, 'weatherdata')

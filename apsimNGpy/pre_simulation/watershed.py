@@ -399,7 +399,7 @@ class PreProcessor():
         os.chdir(wd)
         threads = []
         for idices in listable:
-            file  = collect_runfiles(wd, pattern =  f"*_ap_{idices}.apsimx")[0]
+            file  = collect_runfiles(wd, pattern =  f"spatial_{idices}_need_met.apsimx")[0]
             thread = threading.Thread(target=self.replace_downloaded, args=(idices, file))
             threads.append(thread)
             thread.daemon = False

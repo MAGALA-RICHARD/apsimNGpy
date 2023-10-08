@@ -48,7 +48,7 @@ def completed_time():
 # delete_simulation_files(opj(os.getcwd(),'weatherdata'))
 class PreProcessor():
 
-    def __init__(self, path2apsimx, pol_object=None, resoln=500, field="GenLU",
+    def __init__(self, path2apsimx, pol_object=None, resoln=500, field="GenLU", number_threads =16,
                   wp='D:\wd\weather_files0305\weatherdata', layer_file = None, thickness_values =None):
         """
 
@@ -69,7 +69,7 @@ class PreProcessor():
         self.weather_path = wp
         self.rotations = organize_crop_rotations(pol_object.record_array['CropRotatn'])
         self.pol_object  = pol_object
-
+        self.number_threads = number_threads
         if not layer_file:
           self.layer = 'D:\\ENw_data\\creek.shp'
 
@@ -190,8 +190,6 @@ class PreProcessor():
         q = queue.Queue()
         for idices in listable:
             q.put_nowait(idices)
-
-            # run .apsim files and start threads to convert
         self._lock = threading.RLock()
         lock = threading.RLock()
         threads = [threading.Thread(target=self.weather_excutor, args=(q, self._lock)) for _ in range(12)]
@@ -200,7 +198,10 @@ class PreProcessor():
             t.start()
         for _ in threads: q.put_nowait(None)  # signal no more files
         for t in threads: t.join()  # wait for com
-        return os.getcwd()
+        if wd:
+            return wd
+        else:
+           return os.getcwd()
 
     def weather_process_point(self, queue, result_queue):
         while True:
@@ -234,7 +235,7 @@ class PreProcessor():
             results.append(simulated_results)
         return results
 
-    def download_weather_first(self, number_threads=16, start=1990, end=2020, watershed="trial"):
+    def download_weather_first(self, start=1990, end=2020, watershed="trial"):
         """
 
         :param number_threads: numbe rof thread according to cpu specifications
@@ -242,6 +243,7 @@ class PreProcessor():
         :param end: end year for weahter download
         :return: a gennerator of value pairs for the weather path. keys are the objectId's
         """
+        number_threads = self.number_threads
         wd = 'weather_files' + watershed
         curdir = os.getcwd()
         wf = os.path.join(os.getcwd(), wd)
@@ -424,8 +426,7 @@ class PreProcessor():
         :param skip_initial: false if cecking whether everything is complete
         :return: path to the pre-simulated apsimx files populated with weather data
         """
-        if os.getcwd() != wd:
-            os.chdir(wd)
+        os.chdir(wd)
         print("downloading weather file")
         wpath = self.threaded_weather_download(wd = wd)
         absolute_path = os.path.join(wpath, 'weatherdata')

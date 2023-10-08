@@ -142,7 +142,8 @@ class PreProcessor():
             apsim_object.replace_met_file(wp, apsim_object.extract_simulation_name)
             apsim_object.out_path = fname
             apsim_object.save_edited_file()
-            print(f"met replacement for {ff} is complete apsimx files are found in: {aps}", end = "\r")
+            print(f"{i} completed ", end = "\r")
+        print(aps)
         return aps
         print("weather replacement succeeded")
     def dict_generator(self, my_dict):
@@ -452,7 +453,6 @@ class PreProcessor():
         pathfs = self.replace_apsim_file_with_mets(absolute_path)
         print("replacing weather complete proceed to simulation")
         print("now replacing soils")
-
         self.apsim_directory = self.threaded_soil_replacement(pathfs)
         return self.apsim_directory
 

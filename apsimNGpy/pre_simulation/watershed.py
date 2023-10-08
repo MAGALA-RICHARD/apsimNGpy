@@ -136,7 +136,7 @@ class PreProcessor():
                 fn  =filename + '.apsimx'
             fname = os.path.join(aps, fn)
             wp = upload_weather(path2weather_files, i)
-            ff = collect_runfiles(aps, pattern=f"*_{i}_need_met.apsimx")[0]
+            ff = collect_runfiles(aps, pattern=[f"*_{i}_need_met.apsimx"])[0]
             apsim_object = ApsimSoil(model=ff, copy=False, lonlat=None, thickness_values=self.thickness_values,\
                                      out_path=None)
             apsim_object.replace_met_file(wp, apsim_object.extract_simulation_name)

@@ -48,7 +48,7 @@ def completed_time():
 # delete_simulation_files(opj(os.getcwd(),'weatherdata'))
 class PreProcessor():
 
-    def __init__(self, path2apsimx, pol_object=None, resoln=500, field="GenLU", number_threads =16,
+    def __init__(self, path2apsimx, pol_object=None, resoln=500, field="GenLU", number_threads =10,
                   wp=None, layer_file = None, thickness_values =None):
         """
 
@@ -71,6 +71,7 @@ class PreProcessor():
         self.pol_object  = pol_object
         self.number_threads = number_threads
         self.total = len(pol_object.record_array)
+        self.use_threads = True
         if not layer_file:
           self.layer = 'D:\\ENw_data\\creek.shp'
 
@@ -222,7 +223,8 @@ class PreProcessor():
             except queue.Empty:
                 break
 
-    def download_weather_in_parallel(self, num_threads=16, rerun=False, rerun_list=None):
+    def download_weather_in_parallel(self, rerun=False, rerun_list=None):
+        num_threads = self.number_threads
         results = []
         if not rerun:
             iter_ids = list(self.rotations.keys())
@@ -390,8 +392,9 @@ class PreProcessor():
             super().__init__(model)
             if not thickness_values:
                 self.thickness_values = [150, 150, 200, 200, 200, 250, 300, 300, 400, 500]
-    def replace_downloaded(self,x, file_path):
+    def replace_downloaded(self,x):
         try:
+            file_path= collect_runfiles(wd, pattern=[f"spatial*_{x}_need_met.apsimx"])[0]
             ap = PreProcessor.PreSoilReplacement(file_path)
             data_dict = self.soil_downloader(x)
             ap.replace_downloaded_soils(data_dict[x], ap.extract_simulation_name)
@@ -408,19 +411,29 @@ class PreProcessor():
             listable = iterable
         else:
             listable = list(self.rotations.keys())
-        os.chdir(wd)
-        threads = []
-        for idices in listable:
-            file  = collect_runfiles(wd, pattern =   [f"spatial*_{idices}_need_met.apsimx"])[0]
-            thread = threading.Thread(target=self.replace_downloaded, args=(idices, file))
-            threads.append(thread)
-            thread.daemon = False
-            thread.start()
-        # Wait for all threads to finish
-        print("waiting for all workers to complete their jobs")
-        for thread in threads:
-            thread.join()
-        print("Threaded soil  download and replacement completed successfully-s-s-s--s-")
+        if not self.use_threads:
+            a = perf_counter()
+            with ProcessPoolExecutor(self.number_threads) as pool:
+                futures = [pool.submit(self.replace_downloaded, i) for i in listable]
+                progress = tqdm(total=len(futures), position=0, leave=True, bar_format='{percentage:3.0f}% completed')
+                # Iterate over the futures as they complete
+                for future in as_completed(futures):
+                    future.result()  # retrieve the result (or use it if needed)
+                    progress.update(1)
+                progress.close()
+            print(perf_counter() - a, 'seconds', f'to replace soils {len(files)} files')
+        else:
+            a = perf_counter()
+            with ThreadPoolExecutor(self.number_threads) as tpool:
+                futures = [tpool.submit(self.replace_downloaded, i) for i in listable]
+                progress = tqdm(total=len(futures), position=0, leave=True, bar_format='{percentage:3.0f}% completed')
+                # Iterate over the futures as they complete
+                for future in as_completed(futures):
+                    future.result()  # retrieve the result (or use it if needed)
+                    progress.update(1)
+                progress.close()
+            print(perf_counter() - a, 'seconds', f'to replace soils {len(files)} files')
+        print("soil  download and replacement completed successfully-s-s-s--s-")
         return wd
 
     def replace_management_threaded(self):

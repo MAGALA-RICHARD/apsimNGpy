@@ -368,7 +368,7 @@ class PreProcessor():
                 self.thickness_values = [150, 150, 200, 200, 200, 250, 300, 300, 400, 500]
     def replace_downloaded(self,x, site, wd):
         try:
-            file_path= collect_runfiles(wd, pattern=[f"{self.data.tag}_{site}_{i}_need_met.apsimx"])[0]
+            file_path= collect_runfiles(wd, pattern=[f"{self.data.tag}_{site}_{x}_need_met.apsimx"])[0]
             ap = PreProcessor.PreSoilReplacement(file_path)
             data_dict = self.soil_downloader(x)
             ap.replace_downloaded_soils(data_dict[x], ap.extract_simulation_name)
@@ -384,6 +384,7 @@ class PreProcessor():
             listable = iterable
         else:
             listable = range(self.total)
+            print(listable)
         if not self.use_threads:
             a = time.perf_counter()
             with ProcessPoolExecutor(self.number_threads) as pool:

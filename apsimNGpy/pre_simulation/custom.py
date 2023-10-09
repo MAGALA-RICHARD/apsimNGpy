@@ -398,7 +398,7 @@ class PreProcessor():
         else:
             a = time.perf_counter()
             with ThreadPoolExecutor(self.number_threads) as tpool:
-                futures = [tpool.submit(self.replace_downloaded, i, wd) for i in listable]
+                futures = [tpool.submit(self.replace_downloaded, i, site, wd) for i in listable for site in self.data.site_ids]
                 progress = tqdm(total=len(futures), position=0, leave=True, bar_format='{percentage:3.0f}% completed')
                 # Iterate over the futures as they complete
                 for future in as_completed(futures):

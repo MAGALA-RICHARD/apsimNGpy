@@ -421,7 +421,7 @@ class PreProcessor():
                     future.result()  # retrieve the result (or use it if needed)
                     progress.update(1)
                 progress.close()
-            print(time.perf_counter() - a, 'seconds', f'to replace soils {len(files)} files')
+            print(time.perf_counter() - a, 'seconds', f'to replace soils ')
         else:
             a = time.perf_counter()
             with ThreadPoolExecutor(self.number_threads) as tpool:
@@ -432,7 +432,7 @@ class PreProcessor():
                     future.result()  # retrieve the result (or use it if needed)
                     progress.update(1)
                 progress.close()
-            print(time.perf_counter() - a, 'seconds', f'to replace soils {len(files)} files')
+            print(time.perf_counter() - a, 'seconds', f'to replace soils')
         print("soil  download and replacement completed successfully-s-s-s--s-")
         return wd
 

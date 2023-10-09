@@ -393,14 +393,13 @@ class PreProcessor():
             super().__init__(model)
             if not thickness_values:
                 self.thickness_values = [150, 150, 200, 200, 200, 250, 300, 300, 400, 500]
-    def replace_downloaded(self,x):
+    def replace_downloaded(self,x, wd):
         try:
             file_path= collect_runfiles(wd, pattern=[f"spatial*_{x}_need_met.apsimx"])[0]
             ap = PreProcessor.PreSoilReplacement(file_path)
             data_dict = self.soil_downloader(x)
             ap.replace_downloaded_soils(data_dict[x], ap.extract_simulation_name)
             ap.save_edited_file()
-            print(f"{x} succeeded", end = '\r')
             return self
         except Exception as e:
             print(repr(e))
@@ -415,7 +414,7 @@ class PreProcessor():
         if not self.use_threads:
             a = time.perf_counter()
             with ProcessPoolExecutor(self.number_threads) as pool:
-                futures = [pool.submit(self.replace_downloaded, i) for i in listable]
+                futures = [pool.submit(self.replace_downloaded, i, wd) for i in listable]
                 progress = tqdm(total=len(futures), position=0, leave=True, bar_format='{percentage:3.0f}% completed')
                 # Iterate over the futures as they complete
                 for future in as_completed(futures):
@@ -426,7 +425,7 @@ class PreProcessor():
         else:
             a = time.perf_counter()
             with ThreadPoolExecutor(self.number_threads) as tpool:
-                futures = [tpool.submit(self.replace_downloaded, i) for i in listable]
+                futures = [tpool.submit(self.replace_downloaded, i, wd) for i in listable]
                 progress = tqdm(total=len(futures), position=0, leave=True, bar_format='{percentage:3.0f}% completed')
                 # Iterate over the futures as they complete
                 for future in as_completed(futures):

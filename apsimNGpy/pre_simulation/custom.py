@@ -45,16 +45,28 @@ def completed_time():
     # Print the time in HH:MM:SS format
     print(f"Cycle completed at: {hours:02}:{minutes:02}:{seconds:02}")
 
+class Data:
+    def __init__(self, lonlats, site_id, tag, **kwargs):
+        """
+        
+        :param lonlats: location of the simulation sites
+        :param site_id: could be names of the sites
+        :param tag: can be like maize to represent a cropping system
+        :param kwargs: 
+        """
+        self.locations = lonlats
+        self.site_ids = site_id
+        self.tag = tag
 
 # delete_simulation_files(opj(os.getcwd(),'weatherdata'))
 class PreProcessor():
 
-    def __init__(self, path2apsimx, pol_object=None, resoln=500, field="GenLU", number_threads =10,
+    def __init__(self, path2apsimx, data=None, number_threads =10,
                   wp=None, layer_file = None, thickness_values =None, use_threads = True):
         """
 
         :param path2apsimx: path to apsimx file
-        :param pol_object: object fom polinationbase class
+        :param data arrays or lists
         :param resoln: cell resolution
         :param field: field name containing the land use classess
         :param wp: path to keep the wather files
@@ -68,10 +80,11 @@ class PreProcessor():
         if  not thickness_values:
           self.thickness_values = [150, 150, 200, 200, 200, 250, 300, 300, 400, 500]
         self.weather_path = wp
-        self.rotations = organize_crop_rotations(pol_object.record_array['CropRotatn'])
-        self.pol_object  = pol_object
+        if not isinstance(data, Data):
+            print("Please initiate Data class and supply the lonlats and the site_id")
+        self.data = data
         self.number_threads = number_threads
-        self.total = len(pol_object.record_array)
+        self.total = len(data.locations)
         self.use_threads = use_threads
         if not layer_file:
           self.layer = 'D:\\ENw_data\\creek.shp'
@@ -83,43 +96,14 @@ class PreProcessor():
         with _lock:
             print(f'{percent} completed ')
     def sample_indices(self, percentage, *args, **kwargs):
-        total_indices = len(self.pol_object.record_array['Shape'])
+        total_indices = len(self.data.locations)
         num_indices_to_select = int(total_indices * (percentage / 100))
         sampled_indices = np.random.choice(total_indices, size=num_indices_to_select, replace=False)
         return sampled_indices
 
-    def sample_OBJECTID(self, percentage, *args, **kwargs):
-        total_indices = len(self.pol_object.record_array['Shape'])
-        num_indices_to_select = int(total_indices * (percentage / 100))
-        sampled_indices = random.choices(list(self.rotations.keys()), k=num_indices_to_select)
-        return sampled_indices
-
-    def add_cover_crop(self, percent):
-        ditx = self.rotations.copy()
-        prop = self.sample_OBJECTID(percent)
-        for i in prop:
-            crops = ditx[i]
-            if isinstance(crops, str):
-                cover = add_wheat(crops)
-                cover = ', '.join(cover)
-                ditx[i] = cover
-        self.rotations = ditx
-        return self
-
-    def populate_cover_crop(self, percent):
-        ditx = self.rotations.copy()
-        prop = self.sample_OBJECTID(percent)
-        for i in prop:
-            crops = ditx[i]
-            if isinstance(crops, str):
-                cover = add_wheat(crops)
-                cover = ', '.join(cover)
-                ditx[i] = cover
-        self.rotations = ditx
-        return self
 
     def check_for_missing_metfile(self, path):
-        for i in list(self.rotations):
+        for i in range(self.total):
             upload_weather(path, i)
 
     def load_apsimx_object(self):
@@ -137,9 +121,8 @@ class PreProcessor():
         if not os.path.exists(aps):
             os.mkdir(aps)
         print("cloning apsimx file")
-        [shutil.copy (self.named_tuple.path, os.path.join(aps, f"spatial_{i}_need_met.apsimx")) for i in list(self.rotations)]
-        leng = len(self.rotations)
-        for i in list(self.rotations):
+        [shutil.copy (self.named_tuple.path, os.path.join(aps, f"{self.tag}_{site}_{i}_need_met.apsimx")) for i in range(self.total) for site in data.site_ids]
+        for i, site in zip(range(self.total), data.site_ids):
             self._counter +=1
             if not filename:
               fn = "spatial_ap_" + str(i) + '.apsimx'
@@ -147,14 +130,14 @@ class PreProcessor():
                 fn  =filename + '.apsimx'
             fname = os.path.join(aps, fn)
             wp = upload_weather(path2weather_files, i)
-            ff = collect_runfiles(aps, pattern=[f"*_{i}_need_met.apsimx"])[0]
+            ff = collect_runfiles(aps, pattern=f"{data.tag}_{site}_{i}_need_met.apsimx")[0]
             apsim_object = ApsimSoil(model=ff, copy=False, lonlat=None, thickness_values=self.thickness_values,\
                                      out_path=None)
             apsim_object.replace_met_file(wp, apsim_object.extract_simulation_name)
             apsim_object.out_path = fname
             apsim_object.save_edited_file()
-            ct =self._counter/leng * 100
-            print(f"{self._counter}/{leng}  ({ct:2f})% completed ", end = "\r")
+            ct =self._counter/self.total * 100
+            print(f"{self._counter}/{self.total}  ({ct:2f} %) completed ", end = "\r")
         print(aps)
         return aps
     def dict_generator(self, my_dict):
@@ -167,7 +150,7 @@ class PreProcessor():
             print(f"downloading for: {x}", end = '\r')
             data_dic = {}
             fn = "daymet_wf_" + str(x) + '.met'
-            cod = self.pol_object.record_array["Shape"][x]
+            cod = self.data.locations[x]
             filex = weather.daymet_bylocation_nocsv(cod, start=1998, end=2020, cleanup=False, filename=fn)
             return filex
         except Exception as e:
@@ -197,7 +180,7 @@ class PreProcessor():
         if iterable:
             listable = iterable
         else:
-            listable =  list(self.rotations.keys())
+            listable =  range(self.total)
         q = queue.Queue()
         for idices in listable:
             q.put_nowait(idices)
@@ -228,7 +211,7 @@ class PreProcessor():
         num_threads = self.number_threads
         results = []
         if not rerun:
-            iter_ids = list(self.rotations.keys())
+            iter_ids = range(self.total)
         else:
             iter_ids = rerun_list
         # iter_ids = random.sample(iter_ids, 1)
@@ -261,7 +244,7 @@ class PreProcessor():
         wf = os.path.join(os.getcwd(), wd)
         if not os.path.exists(wf):
             os.mkdir(wf)
-        indices = list(self.rotations.keys())
+        indices = range(self.total)
         print(f"length of idices  is :{len(indices)}")
         os.chdir(wf)
         with concurrent.futures.ThreadPoolExecutor(max_workers=number_threads) as executor:
@@ -295,7 +278,7 @@ class PreProcessor():
         print(len(os.listdir(path)))
         simulated = [self.split_file_names(i) for i in os.listdir(path)]
         os.chdir(curdir)
-        not_simualted = [nt for nt in list(self.rotations) if nt not in simulated]
+        not_simualted = [nt for nt in range(self.total) if nt not in simulated]
         return not_simualted
         # with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
         #     # Submit download tasks to the executor
@@ -323,7 +306,7 @@ class PreProcessor():
     def soil_downloader(self, x):
         # print(f"downloading for: {x}")
         data_dic = {}
-        cod = list(get_data_element(self.pol_object.record_array, "Shape", x))
+        cod = list(get_data_element(self.data.locations, "Shape", x))
         try:
             data_table = soilmanager.DownloadsurgoSoiltables(cod, select_componentname='domtcp')
             self.soil_profile = soilmanager.OrganizeAPSIMsoil_profile(data_table,
@@ -356,7 +339,7 @@ class PreProcessor():
             if  cordnates:
                 cod =  cordnates[x]
             else:
-                cod = list(get_data_element(self.pol_object.record_array, "Shape", x))
+                cod = list(get_data_element(self.data.locations, x))
             data_table = soilmanager.DownloadsurgoSoiltables(cod, select_componentname='domtcp')
             self.soil_profile = soilmanager.OrganizeAPSIMsoil_profile(data_table,
                                                          thickness_values=self.thickness_values,
@@ -384,9 +367,9 @@ class PreProcessor():
             super().__init__(model)
             if not thickness_values:
                 self.thickness_values = [150, 150, 200, 200, 200, 250, 300, 300, 400, 500]
-    def replace_downloaded(self,x, wd):
+    def replace_downloaded(self,x, site, wd):
         try:
-            file_path= collect_runfiles(wd, pattern=[f"spatial*_{x}_need_met.apsimx"])[0]
+            file_path= collect_runfiles(wd, pattern=[f"{self.tag}_{site}_{i}_need_met.apsimx"])[0]
             ap = PreProcessor.PreSoilReplacement(file_path)
             data_dict = self.soil_downloader(x)
             ap.replace_downloaded_soils(data_dict[x], ap.extract_simulation_name)
@@ -401,11 +384,11 @@ class PreProcessor():
         if iterable:
             listable = iterable
         else:
-            listable = list(self.rotations.keys())
+            listable = range(self.total)
         if not self.use_threads:
             a = time.perf_counter()
             with ProcessPoolExecutor(self.number_threads) as pool:
-                futures = [pool.submit(self.replace_downloaded, i, wd) for i in listable]
+                futures = [pool.submit(self.replace_downloaded, i, site, wd) for i in listable for site in data.site_ids]
                 progress = tqdm(total=len(futures), position=0, leave=True, bar_format='{percentage:3.0f}% completed')
                 # Iterate over the futures as they complete
                 for future in as_completed(futures):
@@ -429,7 +412,7 @@ class PreProcessor():
 
     def replace_management_threaded(self):
         threads = []
-        for idices in list(self.rotations.keys()):
+        for idices in range(self.total):
             thread = threading.Thread(target=self.insert_historical_rotations, args=(idices,))
             threads.append(thread)
             thread.start()

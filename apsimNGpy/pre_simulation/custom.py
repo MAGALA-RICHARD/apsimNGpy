@@ -133,10 +133,10 @@ class PreProcessor():
             apsim_object = ApsimSoil(model=ff, copy=False, lonlat=None, thickness_values=self.thickness_values,\
                                      out_path=None)
             apsim_object.replace_met_file(wp, apsim_object.extract_simulation_name)
-            apsim_object.out_path = fname
+            apsim_object.out_path = ff
             apsim_object.save_edited_file()
             ct =self._counter/self.total * 100
-            print(f"{self._counter}/{self.total}  ({ct:2f} %) completed ", end = "\r")
+            print(f"{self._counter}/{self.total}  ({ct:3.0f} %) completed ", end = "\r")
         print(aps)
         return aps
     def dict_generator(self, my_dict):
@@ -297,10 +297,8 @@ class PreProcessor():
         # print(f"downloading for: {x}")
         data_dic = {}
         cod = self.data.locations[x]
-        print(cod)
         try:
             data_table = soilmanager.DownloadsurgoSoiltables(cod, select_componentname='domtcp')
-            print(data_table)
             self.soil_profile = soilmanager.OrganizeAPSIMsoil_profile(data_table,
                                                                       thickness_values=self.thickness_values,
                                                                       thickness=20)

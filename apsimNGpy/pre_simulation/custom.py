@@ -271,21 +271,12 @@ class PreProcessor():
             return sp3
 
     def return_missing_weather_index(self, path):  # this one evaluates any missing download due to first computation of the paralled procsin
-        import concurrent
         path = path  # r'D:\wd\weather_files0305\weatherdata'
         curdir = os.getcwd()
-        print(len(os.listdir(path)))
         simulated = [self.split_file_names(i) for i in os.listdir(path)]
         os.chdir(curdir)
         not_simualted = [nt for nt in range(self.total) if nt not in simulated]
         return not_simualted
-        # with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
-        #     # Submit download tasks to the executor
-        #     future_to_url = {executor.submit(self.idex_excutor, url): url for url in not_simualted}
-        #     # Wait for all tasks to complete
-        #     concurrent.futures.wait(future_to_url)
-        # #self.download_weather_first(self, number_threads=4, start=1990, end=2020, watershed="0305")
-        # #self.download_weather_in_parallel(num_threads=4, rerun = True, rerun_list = not_simualted)
 
     def check_met(self, path):
         pp = path
@@ -306,27 +297,28 @@ class PreProcessor():
         # print(f"downloading for: {x}")
         data_dic = {}
         cod = self.data.locations[x]
+        print(cod)
         try:
             data_table = soilmanager.DownloadsurgoSoiltables(cod, select_componentname='domtcp')
+            print(data_table)
             self.soil_profile = soilmanager.OrganizeAPSIMsoil_profile(data_table,
                                                                       thickness_values=self.thickness_values,
                                                                       thickness=20)
-            data_dic[
-                x] = self.soil_profile.cal_missingFromSurgo()  # returns a list of physical, organic and cropdf each in a data frame
+            data_dic[x] = self.soil_profile.cal_missingFromSurgo()  # returns a list of physical, organic and cropdf each in a data frame
 
             return data_dic
         except Exception as e:
             print(repr(e))
 
-    def download_soil_table_first(self, iterator = None, cordnates = None, number_threads=16):
+    def download_soil_table_first(self, iterator = None, cordnates = None):
         """
 
         :param iterator: array or list
-        :param number_threads:
         :cordnates CORDNATE FOR DOWNLOADING THE SOILS IF NOT SPECIFYIED THE DEFAULT FROM THE LAYER WILL BE USED
         :return: dictionary of SSURGO SOIL TABLES
         """
         print("Downloading SSURGO soil tables")
+        number_threads = self.number_threads
         a = time.perf_counter()
         if iterator:
             indices = iterator
@@ -338,7 +330,7 @@ class PreProcessor():
             if  cordnates:
                 cod =  cordnates[x]
             else:
-                cod = list(get_data_element(self.data.locations, x))
+                cod = self.data.locations[x]
             data_table = soilmanager.DownloadsurgoSoiltables(cod, select_componentname='domtcp')
             self.soil_profile = soilmanager.OrganizeAPSIMsoil_profile(data_table,
                                                          thickness_values=self.thickness_values,

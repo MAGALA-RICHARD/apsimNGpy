@@ -305,7 +305,7 @@ class PreProcessor():
     def soil_downloader(self, x):
         # print(f"downloading for: {x}")
         data_dic = {}
-        cod = list(get_data_element(self.data.locations, "Shape", x))
+        cod = list(get_data_element(self.data.locations, x))
         try:
             data_table = soilmanager.DownloadsurgoSoiltables(cod, select_componentname='domtcp')
             self.soil_profile = soilmanager.OrganizeAPSIMsoil_profile(data_table,

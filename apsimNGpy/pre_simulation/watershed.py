@@ -30,6 +30,7 @@ import pandas as pd
 import numpy as np
 import soilmanager
 import datetime
+from tqdm import tqdm
 import weather
 import pythonnet
 from run_utils import load_apsimx_from_string

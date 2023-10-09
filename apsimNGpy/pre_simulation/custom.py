@@ -80,11 +80,10 @@ class PreProcessor():
         if  not thickness_values:
           self.thickness_values = [150, 150, 200, 200, 200, 250, 300, 300, 400, 500]
         self.weather_path = wp
-        if not isinstance(data, Data):
-            print("Please initiate Data class and supply the lonlats and the site_id")
+        assert isinstance(data, Data), "Please initiate Data class and supply the lonlats and the site_id"
         self.data = data
         self.number_threads = number_threads
-        self.total = len(data.locations)
+        self.total = len(self.data.locations)
         self.use_threads = use_threads
         if not layer_file:
           self.layer = 'D:\\ENw_data\\creek.shp'
@@ -121,8 +120,8 @@ class PreProcessor():
         if not os.path.exists(aps):
             os.mkdir(aps)
         print("cloning apsimx file")
-        [shutil.copy (self.named_tuple.path, os.path.join(aps, f"{self.tag}_{site}_{i}_need_met.apsimx")) for i in range(self.total) for site in data.site_ids]
-        for i, site in zip(range(self.total), data.site_ids):
+        [shutil.copy (self.named_tuple.path, os.path.join(aps, f"{self.tag}_{site}_{i}_need_met.apsimx")) for i in range(self.total) for site in self.data.site_ids]
+        for i, site in zip(range(self.total), self.data.site_ids):
             self._counter +=1
             if not filename:
               fn = "spatial_ap_" + str(i) + '.apsimx'
@@ -130,7 +129,7 @@ class PreProcessor():
                 fn  =filename + '.apsimx'
             fname = os.path.join(aps, fn)
             wp = upload_weather(path2weather_files, i)
-            ff = collect_runfiles(aps, pattern=f"{data.tag}_{site}_{i}_need_met.apsimx")[0]
+            ff = collect_runfiles(aps, pattern=f"{self.data.tag}_{site}_{i}_need_met.apsimx")[0]
             apsim_object = ApsimSoil(model=ff, copy=False, lonlat=None, thickness_values=self.thickness_values,\
                                      out_path=None)
             apsim_object.replace_met_file(wp, apsim_object.extract_simulation_name)
@@ -186,7 +185,7 @@ class PreProcessor():
             q.put_nowait(idices)
         self._lock = threading.RLock()
         lock = threading.RLock()
-        threads = [threading.Thread(target=self.weather_excutor, args=(q, self._lock)) for _ in range(12)]
+        threads = [threading.Thread(target=self.weather_excutor, args=(q, self._lock)) for _ in range(self.number_threads)]
         for t in threads:
             t.daemon = False  # program quits when threads die
             t.start()
@@ -388,7 +387,7 @@ class PreProcessor():
         if not self.use_threads:
             a = time.perf_counter()
             with ProcessPoolExecutor(self.number_threads) as pool:
-                futures = [pool.submit(self.replace_downloaded, i, site, wd) for i in listable for site in data.site_ids]
+                futures = [pool.submit(self.replace_downloaded, i, site, wd) for i in listable for site in self.data.site_ids]
                 progress = tqdm(total=len(futures), position=0, leave=True, bar_format='{percentage:3.0f}% completed')
                 # Iterate over the futures as they complete
                 for future in as_completed(futures):

@@ -412,7 +412,7 @@ class PreProcessor():
         else:
             listable = list(self.rotations.keys())
         if not self.use_threads:
-            a = perf_counter()
+            a = time.perf_counter()
             with ProcessPoolExecutor(self.number_threads) as pool:
                 futures = [pool.submit(self.replace_downloaded, i) for i in listable]
                 progress = tqdm(total=len(futures), position=0, leave=True, bar_format='{percentage:3.0f}% completed')
@@ -421,9 +421,9 @@ class PreProcessor():
                     future.result()  # retrieve the result (or use it if needed)
                     progress.update(1)
                 progress.close()
-            print(perf_counter() - a, 'seconds', f'to replace soils {len(files)} files')
+            print(time.perf_counter() - a, 'seconds', f'to replace soils {len(files)} files')
         else:
-            a = perf_counter()
+            a = time.perf_counter()
             with ThreadPoolExecutor(self.number_threads) as tpool:
                 futures = [tpool.submit(self.replace_downloaded, i) for i in listable]
                 progress = tqdm(total=len(futures), position=0, leave=True, bar_format='{percentage:3.0f}% completed')
@@ -432,7 +432,7 @@ class PreProcessor():
                     future.result()  # retrieve the result (or use it if needed)
                     progress.update(1)
                 progress.close()
-            print(perf_counter() - a, 'seconds', f'to replace soils {len(files)} files')
+            print(time.perf_counter() - a, 'seconds', f'to replace soils {len(files)} files')
         print("soil  download and replacement completed successfully-s-s-s--s-")
         return wd
 

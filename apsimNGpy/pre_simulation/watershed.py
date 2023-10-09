@@ -50,7 +50,7 @@ def completed_time():
 class PreProcessor():
 
     def __init__(self, path2apsimx, pol_object=None, resoln=500, field="GenLU", number_threads =10,
-                  wp=None, layer_file = None, thickness_values =None):
+                  wp=None, layer_file = None, thickness_values =None, use_threads = True):
         """
 
         :param path2apsimx: path to apsimx file
@@ -72,7 +72,7 @@ class PreProcessor():
         self.pol_object  = pol_object
         self.number_threads = number_threads
         self.total = len(pol_object.record_array)
-        self.use_threads = True
+        self.use_threads = use_threads
         if not layer_file:
           self.layer = 'D:\\ENw_data\\creek.shp'
 
@@ -365,20 +365,11 @@ class PreProcessor():
                 x] = self.soil_profile.cal_missingFromSurgo()  # returns a list of physical, organic and cropdf each in a data frame
 
             return data_dic
-            # physical_calculated = missing_properties[0]
-            # self.organic_calcualted = missing_properties[1]
-            # self.cropdf = missing_properties[2]
-
-        datap = []
         with ThreadPoolExecutor(max_workers=number_threads) as executor:
-            # List to store futures
             futures = []
-
-            # Submit tasks using executor.submit
             for index in indices:
                 future = executor.submit(soil_excutor, index)
                 futures.append(future)
-            # Collect results as they complete
             results = []
             for future in futures:
                 result = future.result()  # This blocks until the result is available

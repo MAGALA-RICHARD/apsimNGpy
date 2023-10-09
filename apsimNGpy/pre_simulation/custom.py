@@ -120,7 +120,7 @@ class PreProcessor():
         if not os.path.exists(aps):
             os.mkdir(aps)
         print("cloning apsimx file")
-        [shutil.copy (self.named_tuple.path, os.path.join(aps, f"{self.tag}_{site}_{i}_need_met.apsimx")) for i in range(self.total) for site in self.data.site_ids]
+        [shutil.copy (self.named_tuple.path, os.path.join(aps, f"{self.data.tag}_{site}_{i}_need_met.apsimx")) for i in range(self.total) for site in self.data.site_ids]
         for i, site in zip(range(self.total), self.data.site_ids):
             self._counter +=1
             if not filename:
@@ -368,7 +368,7 @@ class PreProcessor():
                 self.thickness_values = [150, 150, 200, 200, 200, 250, 300, 300, 400, 500]
     def replace_downloaded(self,x, site, wd):
         try:
-            file_path= collect_runfiles(wd, pattern=[f"{self.tag}_{site}_{i}_need_met.apsimx"])[0]
+            file_path= collect_runfiles(wd, pattern=[f"{self.data.tag}_{site}_{i}_need_met.apsimx"])[0]
             ap = PreProcessor.PreSoilReplacement(file_path)
             data_dict = self.soil_downloader(x)
             ap.replace_downloaded_soils(data_dict[x], ap.extract_simulation_name)

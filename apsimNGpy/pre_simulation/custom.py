@@ -17,6 +17,7 @@ sys.path.extend([path, path_utilities, root, main_root])
 from utililies.utils import  organize_crop_rotations, upload_weather, upload_apsimx_file, upload_apsimx_file_by_pattern
 from utililies.utils import load_from_numpy, collect_runfiles, get_data_element, add_wheat, delete_simulation_files, make_apsimx_clones
 import apsimpy
+from cropmanager import InsertCroppingSystems
 import utils
 import threading
 from apsimx import weather
@@ -46,7 +47,7 @@ def completed_time():
     print(f"Cycle completed at: {hours:02}:{minutes:02}:{seconds:02}")
 
 class Data:
-    def __init__(self, lonlats, site_id, tag, **kwargs):
+    def __init__(self, lonlats, site_id, tag, cropping  =None, **kwargs):
         """
         
         :param lonlats: location of the simulation sites
@@ -57,6 +58,7 @@ class Data:
         self.locations = lonlats
         self.site_ids = site_id
         self.tag = tag
+        self.crops = cropping
 
 # delete_simulation_files(opj(os.getcwd(),'weatherdata'))
 class PreProcessor():
@@ -120,7 +122,12 @@ class PreProcessor():
         if not os.path.exists(aps):
             os.mkdir(aps)
         print("cloning apsimx file")
-        [shutil.copy (self.named_tuple.path, os.path.join(aps, f"{self.data.tag}_{site}_{i}_need_met.apsimx")) for i in range(self.total) for site in self.data.site_ids]
+        if self.data.crops:
+          list_pathes = [InsertCroppingSystems(self.named_tuple.path, crops, file_name=f"{self.data.tag}_{site}_{i}_need_met.apsimx")
+                                  for i in range(self.total) for site in self.data.site_ids for crops in self.data.crops]
+          print(list_pathes[0], "----")
+        else:
+          [shutil.copy (self.named_tuple.path, os.path.join(aps, f"{self.data.tag}_{site}_{i}_need_met.apsimx")) for i in range(self.total) for site in self.data.site_ids]
         for i, site in zip(range(self.total), self.data.site_ids):
             self._counter +=1
             if not filename:

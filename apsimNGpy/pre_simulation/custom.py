@@ -124,7 +124,7 @@ class PreProcessor():
         print("cloning apsimx file")
 
 
-        [shutil.copy (self.named_tuple.path, os.path.join(aps, f"{self.data.tag}_{site}_{i}_need_met.apsimx")) for i in range(self.total) for site in self.data.site_ids]
+        [shutil.copy (self.named_tuple.path, os.path.join(aps, f"{self.data.tag[i]}_{site}_{i}_need_met.apsimx")) for i in range(self.total) for site in self.data.site_ids]
         for i, site in zip(range(self.total), self.data.site_ids):
             self._counter +=1
             if not filename:
@@ -133,7 +133,7 @@ class PreProcessor():
                 fn  =filename + '.apsimx'
             fname = os.path.join(aps, fn)
             wp = upload_weather(path2weather_files, i)
-            ff = collect_runfiles(aps, pattern=f"{self.data.tag}_{site}_{i}_need_met.apsimx")[0]
+            ff = collect_runfiles(aps, pattern=f"{self.data.tag[i]}_{site}_{i}_need_met.apsimx")[0]
             apsim_object = ApsimSoil(model=ff, copy=False, lonlat=None, thickness_values=self.thickness_values,\
                                      out_path=None)
             apsim_object.replace_met_file(wp, apsim_object.extract_simulation_name)
@@ -365,7 +365,7 @@ class PreProcessor():
                 self.thickness_values = [150, 150, 200, 200, 200, 250, 300, 300, 400, 500]
     def replace_downloaded(self,x, site, wd):
         try:
-            file_path= collect_runfiles(wd, pattern=[f"{self.data.tag}_{site}_{x}_need_met.apsimx"])[0]
+            file_path= collect_runfiles(wd, pattern=[f"{self.data.tag[x]}_{site}_{x}_need_met.apsimx"])[0]
             ap = PreProcessor.PreSoilReplacement(file_path)
             data_dict = self.soil_downloader(x)
             ap.replace_downloaded_soils(data_dict[x], ap.extract_simulation_name)
@@ -420,8 +420,7 @@ class PreProcessor():
     def prepare_simulation(self, wd):
         """
 
-        #:param watershed_name: name of the watershed or simulation area canceled passs a complete wd of the watershed or areaname
-        :param skip_initial: false if cecking whether everything is complete
+        wd: desired working directory path
         :return: path to the pre-simulated apsimx files populated with weather data
         """
         os.chdir(wd)
@@ -437,10 +436,9 @@ class PreProcessor():
             print(f'rerunnung missing indices: {not_simulated}')
             not_simulated = self.threaded_weather_download(wpath, iterable = not_simulated)
         if len(not_simulated) == 0:
-            print("Done****8")
+            print("===========================================================")
         else:
-            print(f"print some downloads idices: {not_simulated} __________failed")
-        # enxt we create the apsimx file
+            print(f"print some downloads with idices: {not_simulated} __________failed")
         print('downloading weather done')
         print("creating apsimx files")
         self.weather_path = wd

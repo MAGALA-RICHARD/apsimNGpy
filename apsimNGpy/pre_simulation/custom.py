@@ -125,8 +125,10 @@ class PreProcessor():
         if self.data.crops is not None:
           list_pathes = [InsertCroppingSystems(self.named_tuple.path, crops, file_name=f"{self.data.tag}_{site}_{i}_need_met.apsimx")\
                                   for i in range(self.total) for site in self.data.site_ids for crops in self.data.crops]
-          print(list_pathes[0], "----")
+          print(list_pathes)
+
         else:
+          print("using default crop systems")
           [shutil.copy (self.named_tuple.path, os.path.join(aps, f"{self.data.tag}_{site}_{i}_need_met.apsimx")) for i in range(self.total) for site in self.data.site_ids]
         for i, site in zip(range(self.total), self.data.site_ids):
             self._counter +=1

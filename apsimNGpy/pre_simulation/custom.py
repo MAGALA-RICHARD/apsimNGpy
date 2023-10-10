@@ -122,14 +122,9 @@ class PreProcessor():
         if not os.path.exists(aps):
             os.mkdir(aps)
         print("cloning apsimx file")
-        if self.data.crops is not None:
-          list_pathes = [InsertCroppingSystems(self.named_tuple.path, crops, file_name=f"{self.data.tag}_{site}_{i}_need_met.apsimx")\
-                                  for i in range(self.total) for site in self.data.site_ids for crops in self.data.crops]
-          print(list_pathes)
 
-        else:
-          print("using default crop systems")
-          [shutil.copy (self.named_tuple.path, os.path.join(aps, f"{self.data.tag}_{site}_{i}_need_met.apsimx")) for i in range(self.total) for site in self.data.site_ids]
+
+        [shutil.copy (self.named_tuple.path, os.path.join(aps, f"{self.data.tag}_{site}_{i}_need_met.apsimx")) for i in range(self.total) for site in self.data.site_ids]
         for i, site in zip(range(self.total), self.data.site_ids):
             self._counter +=1
             if not filename:
@@ -142,6 +137,9 @@ class PreProcessor():
             apsim_object = ApsimSoil(model=ff, copy=False, lonlat=None, thickness_values=self.thickness_values,\
                                      out_path=None)
             apsim_object.replace_met_file(wp, apsim_object.extract_simulation_name)
+            if self.data.crops is not None:
+                rotation  = {"Name": "Simple Rotation", "crops": self.data.crops[i]}
+                apsim_object.update_multiple_management_decissions([rotation], simulations=apsim_object.extract_simulation_name, reload=False)
             apsim_object.out_path = ff
             apsim_object.save_edited_file()
             ct =self._counter/self.total * 100

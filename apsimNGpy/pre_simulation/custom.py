@@ -122,8 +122,8 @@ class PreProcessor():
         if not os.path.exists(aps):
             os.mkdir(aps)
         print("cloning apsimx file")
-        if self.data.crops:
-          list_pathes = [InsertCroppingSystems(self.named_tuple.path, crops, file_name=f"{self.data.tag}_{site}_{i}_need_met.apsimx")
+        if self.data.crops is not None:
+          list_pathes = [InsertCroppingSystems(self.named_tuple.path, crops, file_name=f"{self.data.tag}_{site}_{i}_need_met.apsimx")\
                                   for i in range(self.total) for site in self.data.site_ids for crops in self.data.crops]
           print(list_pathes[0], "----")
         else:

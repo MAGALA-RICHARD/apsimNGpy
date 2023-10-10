@@ -303,7 +303,7 @@ class PreProcessor():
                                                                       thickness_values=self.thickness_values,
                                                                       thickness=20)
             data_dic[x] = self.soil_profile.cal_missingFromSurgo()  # returns a list of physical, organic and cropdf each in a data frame
-
+            print(data_dic[x])
             return data_dic
         except Exception as e:
             print(repr(e))

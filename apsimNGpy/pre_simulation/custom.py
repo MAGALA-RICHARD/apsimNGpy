@@ -139,7 +139,8 @@ class PreProcessor():
             apsim_object.replace_met_file(wp, apsim_object.extract_simulation_name)
             if self.data.crops is not None:
                 rotation  = {"Name": "Simple Rotation", "crops": self.data.crops[i]}
-                apsim_object.update_multiple_management_decissions([rotation], simulations=apsim_object.extract_simulation_name, reload=False)
+                apsim_object.out_path = ff
+                apsim_object.update_multiple_management_decissions([rotation], simulations=apsim_object.extract_simulation_name, reload=True)
             apsim_object.out_path = ff
             apsim_object.save_edited_file()
             ct =self._counter/self.total * 100

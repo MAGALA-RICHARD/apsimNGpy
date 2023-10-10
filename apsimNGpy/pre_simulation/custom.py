@@ -141,7 +141,7 @@ class PreProcessor():
             if self.data.crops is not None:
                 print("Yes")
                 apsim_object.out_path = ff
-                apsim_object.update_multiple_management_decissions([rotation], simulations=apsim_object.extract_simulation_name, reload=True)
+                apsim_object.update_management_decissions(rotation, simulations=apsim_object.extract_simulation_name, reload=True)
                 apsim_object.out_path = ff
                 os.startfile(apsim_object.out_path)
             apsim_object.save_edited_file()

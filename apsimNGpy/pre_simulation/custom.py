@@ -360,6 +360,8 @@ class PreProcessor():
             file_path= collect_runfiles(wd, pattern=[f"{self.data.tag}_{site}_{x}_need_met.apsimx"])[0]
             ap = PreProcessor.PreSoilReplacement(file_path)
             data_dict = self.soil_downloader(x)
+            if x == 1:
+                print(data_dict)
             ap.replace_downloaded_soils(data_dict[x], ap.extract_simulation_name)
             ap.save_edited_file()
             return self

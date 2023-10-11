@@ -2,6 +2,7 @@
 
 import random
 from collections import namedtuple
+from pathlib import Path
 from pymoo.decomposition.asf import ASF
 from itertools import combinations
 import apsimx.apsimx2py
@@ -9,8 +10,8 @@ from Cypython import utils
 from typing import Union
 from apsimx.utils import load_from_numpy
 import os, glob, time, random, sys, shutil, queue
-root = os.path.dirname(os.path.realpath(__file__))
-path = os.path.join(root, 'manager')
+root = Path(os.path.dirname(os.path.realpath(__file__)))
+path = Path(os.path.join(root, 'manager'))
 path_utilities = os.path.join(root, 'utililies')
 main_root = os.path.realpath(os.path.dirname(root))
 sys.path.extend([path, path_utilities, root, main_root])

@@ -131,9 +131,9 @@ class PreProcessor():
             rotation  = {"Name": "Simple Rotation", "Crops": self.data.crops[i]}
             N_script = {}
             N_script['Name'] ='MaizeNitrogenManager'
-            N_script['Amount'] = 0
+            N_script['Amount'] = float(0)
             N_script['Crop'] = 'Maize'
-            N_script['Depth2Apply '] = 5
+            N_script['Depth2Apply '] =float(5)
 
             if self.data.crops is not None:
                 apsim_object.out_path = ff

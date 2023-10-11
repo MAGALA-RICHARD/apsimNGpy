@@ -3,17 +3,11 @@
 import random
 from collections import namedtuple
 from pathlib import Path
-from pymoo.decomposition.asf import ASF
-from itertools import combinations
-import apsimx.apsimx2py
-from Cypython import utils
-from typing import Union
-from apsimx.utils import load_from_numpy
 import os, glob, time, random, sys, shutil, queue
 root = Path(os.path.dirname(os.path.realpath(__file__)))
 path = Path(os.path.join(root, 'manager'))
-path_utilities = os.path.join(root, 'utililies')
-main_root = os.path.realpath(os.path.dirname(root))
+path_utilities = Path(os.path.join(root, 'utililies'))
+main_root = Path(os.path.realpath(os.path.dirname(root)))
 sys.path.extend([path, path_utilities, root, main_root])
 from utililies.utils import  organize_crop_rotations, upload_weather, upload_apsimx_file, upload_apsimx_file_by_pattern
 from utililies.utils import load_from_numpy, collect_runfiles, get_data_element, add_wheat, delete_simulation_files, make_apsimx_clones

@@ -11,10 +11,9 @@ path_utilities = os.path.join(main_root, 'utililies')
 sys.path.extend([manager_path, path_utilities, root, main_root])
 import apsimpy
 import utils
-from utils import  organize_crop_rotations, upload_weather, upload_apsimx_file, upload_apsimx_file_by_pattern
+from utils import  upload_weather, upload_apsimx_file, upload_apsimx_file_by_pattern
 from utils import load_from_numpy, collect_runfiles, get_data_element, add_wheat, delete_simulation_files, make_apsimx_clones
 from cropmanager import InsertCroppingSystems
-import utils
 import threading
 from apsimpy import APSIMNG, detect_apsim_installation, ApsimSoil
 from os.path import join, dirname

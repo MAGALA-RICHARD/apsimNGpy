@@ -4,16 +4,22 @@ Interface to APSIM simulation models using Python.NET build on top of Matti Past
 import matplotlib.pyplot as plt
 import random, logging, pathlib
 import string
-import concurrent
-#import soil
 from typing import Union
 import pythonnet
 import os, sys, datetime, shutil, warnings
 import numpy as np
 import pandas as pd
+from os.path import join as opj
 import sqlite3
-import manager.weathermanager as weather
-from manager.soilmanager import DownloadsurgoSoiltables, OrganizeAPSIMsoil_profile
+root = os.path.dirname(os.path.realpath(__file__))
+path = opj(root, 'manager')
+path_utilities = opj(root, 'utililies')
+sys.path.append(path)
+sys.path.append(path_utilities)
+
+import weathermanager as weather
+from soilmanager import DownloadsurgoSoiltables, OrganizeAPSIMsoil_profile
+
 try:
     if pythonnet.get_runtime_info() is None:
         pythonnet.load("coreclr")
@@ -33,6 +39,7 @@ datime_now = datetime.datetime.now()
 timestamp = datime_now.strftime('%a-%m-%y')
 logfile_name = 'log_messages' + str(timestamp)+ ".log"
 log_paths = opj(log_messages,logfile_name)
+#f"log_messages{datetime.now().strftime('%m_%d')}.log"
 logging.basicConfig(filename=log_paths, level=logging.ERROR, format='%(asctime)s %(levelname)s %(message)s')
 logger = logging.getLogger(__name__)
 def detect_apsim_installation():
@@ -56,17 +63,15 @@ except:
 
 clr.AddReference("System")
 from System.Collections.Generic import *
-# # C# imports
-# import Models
-# import System.IO
-# import System.Linq
 from Models.Core import Simulations
 from System import *
 from Models.PMF import Cultivar
+from Models import Options
 from Models.Core.ApsimFile import FileFormat
 from Models.Climate import Weather
 from Models.Soils import Solute, Water, Chemical
 from Models.Soils import Soil, Physical, SoilCrop, Organic
+from concurrent.futures import ThreadPoolExecutor
 import threading
 
 

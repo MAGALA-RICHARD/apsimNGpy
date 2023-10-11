@@ -129,12 +129,7 @@ class PreProcessor():
                                      out_path=None)
             apsim_object.replace_met_file(wp, apsim_object.extract_simulation_name)
             rotation  = {"Name": "Simple Rotation", "Crops": self.data.crops[i]}
-            N_script = {}
-            N_script['Name'] ='MaizeNitrogenManager'
-            N_script['Amount'] = float(0)
-            N_script['Crop'] = 'Maize'
-            N_script['Depth2Apply '] =float(5)
-
+            N_script = {'Name': 'MaizeNitrogenManager', 'Amount': 0.0, 'Crop': 'Maize', 'Depth2Apply': 5.0}
             if self.data.crops is not None:
                 apsim_object.out_path = ff
                 apsim_object.update_management_decissions(rotation, simulations=apsim_object.extract_simulation_name, reload=True)

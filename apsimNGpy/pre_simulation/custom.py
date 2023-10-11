@@ -6,12 +6,8 @@ from pathlib import Path
 import os, glob, time, sys, shutil, queue
 root = os.path.dirname(os.path.realpath(__file__))
 main_root = os.path.realpath(os.path.dirname(root))
-print(main_root)
 manager_path = os.path.join(main_root, 'manager')
-print(manager_path)
 path_utilities = os.path.join(main_root, 'utililies')
-print(path_utilities)
-
 sys.path.extend([manager_path, path_utilities, root, main_root])
 import apsimpy
 from utils import  organize_crop_rotations, upload_weather, upload_apsimx_file, upload_apsimx_file_by_pattern
@@ -43,7 +39,7 @@ def completed_time():
     print(f"Cycle completed at: {hours:02}:{minutes:02}:{seconds:02}")
 
 class Data:
-    def __init__(self, lonlats, site_id, tag, cropping  =None, **kwargs):
+    def __init__(self, lonlats, site_id, tag, cropping  =None, N=None **kwargs):
         """
         
         :param lonlats: location of the simulation sites
@@ -55,6 +51,7 @@ class Data:
         self.site_ids = site_id
         self.tag = tag
         self.crops = cropping
+        self.Nitrogen = N
 
 # delete_simulation_files(opj(os.getcwd(),'weatherdata'))
 class PreProcessor():
@@ -134,8 +131,10 @@ class PreProcessor():
                                      out_path=None)
             apsim_object.replace_met_file(wp, apsim_object.extract_simulation_name)
             rotation  = {"Name": "Simple Rotation", "Crops": self.data.crops[i]}
+
             if self.data.crops is not None:
                 apsim_object.out_path = ff
+                apsim_object.update_management_decissions(rotation, simulations=apsim_object.extract_simulation_name, reload=True)
                 apsim_object.update_management_decissions(rotation, simulations=apsim_object.extract_simulation_name, reload=True)
                 apsim_object.out_path = ff
             apsim_object.save_edited_file()

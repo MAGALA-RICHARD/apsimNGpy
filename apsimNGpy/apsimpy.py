@@ -11,19 +11,9 @@ import pythonnet
 import os, sys, datetime, shutil, warnings
 import numpy as np
 import pandas as pd
-from os.path import join as opj
 import sqlite3
-root = os.path.dirname(os.path.realpath(__file__))
-path = opj(root, 'manager')
-path_utilities = opj(root, 'utililies')
-sys.path.append(path)
-sys.path.append(path_utilities)
-import utils
-import weathermanager as weather
-from soilmanager import DownloadsurgoSoiltables, OrganizeAPSIMsoil_profile
-
-
-# Prefer dotnet
+import manager.weathermanager as weather
+from manager.soilmanager import DownloadsurgoSoiltables, OrganizeAPSIMsoil_profile
 try:
     if pythonnet.get_runtime_info() is None:
         pythonnet.load("coreclr")
@@ -43,7 +33,6 @@ datime_now = datetime.datetime.now()
 timestamp = datime_now.strftime('%a-%m-%y')
 logfile_name = 'log_messages' + str(timestamp)+ ".log"
 log_paths = opj(log_messages,logfile_name)
-#f"log_messages{datetime.now().strftime('%m_%d')}.log"
 logging.basicConfig(filename=log_paths, level=logging.ERROR, format='%(asctime)s %(levelname)s %(message)s')
 logger = logging.getLogger(__name__)
 def detect_apsim_installation():
@@ -55,7 +44,6 @@ def detect_apsim_installation():
           return f
 sys.path.append(os.path.dirname(detect_apsim_installation()))
 
-# Try to load from pythonpath and only then look for Model.exe
 try:
     clr.AddReference("Models")
 except:
@@ -68,19 +56,17 @@ except:
 
 clr.AddReference("System")
 from System.Collections.Generic import *
-# C# imports
-import Models
-import System.IO
-import System.Linq
+# # C# imports
+# import Models
+# import System.IO
+# import System.Linq
 from Models.Core import Simulations
 from System import *
 from Models.PMF import Cultivar
-from Models import Options
 from Models.Core.ApsimFile import FileFormat
 from Models.Climate import Weather
 from Models.Soils import Solute, Water, Chemical
 from Models.Soils import Soil, Physical, SoilCrop, Organic
-from concurrent.futures import ThreadPoolExecutor
 import threading
 
 
@@ -676,7 +662,7 @@ class APSIMNG():
 
     # Convert CS KeyValuePair to dictionary
     def update_multiple_management_decissions(self, management_list, simulations=None, reload=False):
-        """Update management, handles one manager at a time
+        """Update management, handles multiple managers in a loop
 
         Parameters
         ----------

@@ -93,10 +93,9 @@ class APSIMNG():
         """
 
         assert os.path.exists(model), "The file does not exists in the specified directory"
-        self.results = None #: Simulation results as dataframe
-        self.Model = None #TopLevel Simulations object
+        self.results = None
+        self.Model = None
         self.datastore = None
-        self.harvest_date = None
         self.out_path = out_path
         self.management_data = {'Nitrogen': [0,  140, 180, 220], \
                                 'Depth': [0, 100, 250, 100],\

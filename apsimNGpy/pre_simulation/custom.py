@@ -134,7 +134,7 @@ class PreProcessor():
                 apsim_object.out_path = ff
                 apsim_object.update_management_decissions(rotation, simulations=apsim_object.extract_simulation_name, reload=True)
                 apsim_object.out_path = ff
-                apsim_object.update_management_decissions(N_script, simulations=apsim_object.extract_simulation_name, reload=True)
+                #apsim_object.update_management_decissions(N_script, simulations=apsim_object.extract_simulation_name, reload=True)
                 apsim_object.out_path = ff
             apsim_object.save_edited_file()
             ct =self._counter/self.total * 100

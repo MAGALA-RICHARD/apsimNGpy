@@ -135,7 +135,7 @@ class PreProcessor():
                 apsim_object.update_management_decissions(rotation, simulations=apsim_object.extract_simulation_name, reload=False)
                 apsim_object.update_management_decissions(N_script, simulations=apsim_object.extract_simulation_name, reload=True)
                 apsim_object.out_path = ff
-            apsim_object.save_edited_file()
+            #apsim_object.save_edited_file()
             ct =self._counter/self.total * 100
             print(f"{self._counter}/{self.total}  ({ct:3.0f} %) completed ", end = "\r")
         print(aps)

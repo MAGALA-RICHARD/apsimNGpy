@@ -5,10 +5,10 @@ from collections import namedtuple
 from pathlib import Path
 import os, glob, time, sys, shutil, queue
 root = os.path.dirname(os.path.realpath(__file__))
+path = os.path.join(root, 'manager')
+path_utilities = os.path.join(root, 'utililies')
 main_root = os.path.realpath(os.path.dirname(root))
-manager_path = os.path.join(main_root, 'manager')
-path_utilities = os.path.join(main_root, 'utililies')
-sys.path.extend([manager_path, path_utilities, root, main_root])
+sys.path.extend([path, path_utilities, root, main_root])
 import apsimpy
 import utils
 import utils. upload_weather as  upload_weather

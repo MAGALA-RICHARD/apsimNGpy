@@ -3,25 +3,26 @@
 import random
 from collections import namedtuple
 from pathlib import Path
-import os, glob, time, random, sys, shutil, queue
-root = Path(os.path.dirname(os.path.realpath(__file__)))
-path = Path(os.path.join(root, 'manager'))
-path_utilities = Path(os.path.join(root, 'utililies'))
-main_root = Path(os.path.realpath(os.path.dirname(root)))
-sys.path.extend([path, path_utilities, root, main_root])
-from utililies.utils import  organize_crop_rotations, upload_weather, upload_apsimx_file, upload_apsimx_file_by_pattern
-from utililies.utils import load_from_numpy, collect_runfiles, get_data_element, add_wheat, delete_simulation_files, make_apsimx_clones
+import os, glob, time, sys, shutil, queue
+root = os.path.dirname(os.path.realpath(__file__))
+main_root = os.path.realpath(os.path.dirname(root))
+print(main_root)
+manager_path = os.path.join(main_root, 'manager')
+print(manager_path)
+path_utilities = os.path.join(main_root, 'utililies')
+print(path_utilities)
+
+sys.path.extend([manager_path, path_utilities, root, main_root])
 import apsimpy
+from utils import  organize_crop_rotations, upload_weather, upload_apsimx_file, upload_apsimx_file_by_pattern
+from utils import load_from_numpy, collect_runfiles, get_data_element, add_wheat, delete_simulation_files, make_apsimx_clones
 from cropmanager import InsertCroppingSystems
 import utils
 import threading
-from apsimx import weather
 from apsimpy import APSIMNG, detect_apsim_installation, ApsimSoil
 from os.path import join, dirname
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, as_completed
 import queue
-import matplotlib.pyplot as plt
-from os.path import join as opj
 import pandas as pd
 import numpy as np
 import soilmanager

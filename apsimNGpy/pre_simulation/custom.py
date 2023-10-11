@@ -9,10 +9,13 @@ path = os.path.join(root, 'manager')
 path_utilities = os.path.join(root, 'utililies')
 main_root = os.path.realpath(os.path.dirname(root))
 sys.path.extend([path, path_utilities, root, main_root])
-import apsimpy
-import utils
-from utils import  upload_weather, upload_apsimx_file, upload_apsimx_file_by_pattern
-from utils import load_from_numpy, collect_runfiles, get_data_element, add_wheat, delete_simulation_files, make_apsimx_clones
+root = os.path.dirname(os.path.realpath(__file__))
+path = os.path.join(root, 'manager')
+path_utilities = os.path.join(root, 'utililies')
+main_root = os.path.realpath(os.path.dirname(root))
+sys.path.extend([path, path_utilities, root, main_root])
+from utililies.utils import  organize_crop_rotations, upload_weather, upload_apsimx_file, upload_apsimx_file_by_pattern
+from utililies.utils import load_from_numpy, collect_runfiles, get_data_element, add_wheat, delete_simulation_files, make_apsimx_clones
 from cropmanager import InsertCroppingSystems
 import threading
 from apsimpy import APSIMNG, detect_apsim_installation, ApsimSoil

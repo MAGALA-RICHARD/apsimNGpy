@@ -9,11 +9,6 @@ path = os.path.join(root, 'manager')
 path_utilities = os.path.join(root, 'utililies')
 main_root = os.path.realpath(os.path.dirname(root))
 sys.path.extend([path, path_utilities, root, main_root])
-root = os.path.dirname(os.path.realpath(__file__))
-path = os.path.join(root, 'manager')
-path_utilities = os.path.join(root, 'utililies')
-main_root = os.path.realpath(os.path.dirname(root))
-sys.path.extend([path, path_utilities, root, main_root])
 from utililies.utils import  organize_crop_rotations, upload_weather, upload_apsimx_file, upload_apsimx_file_by_pattern
 from utililies.utils import load_from_numpy, collect_runfiles, get_data_element, add_wheat, delete_simulation_files, make_apsimx_clones
 from cropmanager import InsertCroppingSystems
@@ -42,7 +37,7 @@ def completed_time():
     print(f"Cycle completed at: {hours:02}:{minutes:02}:{seconds:02}")
 
 class Data:
-    def __init__(self, lonlats, site_id, tag, cropping  =None, N=None **kwargs):
+    def __init__(self, lonlats, site_id, tag, cropping  =None, N=None, **kwargs):
         """
         
         :param lonlats: location of the simulation sites
@@ -134,11 +129,11 @@ class PreProcessor():
                                      out_path=None)
             apsim_object.replace_met_file(wp, apsim_object.extract_simulation_name)
             rotation  = {"Name": "Simple Rotation", "Crops": self.data.crops[i]}
-
+            N_script = {'MaizeNitrogenManager' :self.data.Nitrogen[i], Crop : self.data.crops[i],  'FertiliserType' : 'NO3N', 'Depth2Apply' : 2}
             if self.data.crops is not None:
                 apsim_object.out_path = ff
                 apsim_object.update_management_decissions(rotation, simulations=apsim_object.extract_simulation_name, reload=True)
-                apsim_object.update_management_decissions(rotation, simulations=apsim_object.extract_simulation_name, reload=True)
+                apsim_object.update_management_decissions( N_script, simulations=apsim_object.extract_simulation_name, reload=True)
                 apsim_object.out_path = ff
             apsim_object.save_edited_file()
             ct =self._counter/self.total * 100

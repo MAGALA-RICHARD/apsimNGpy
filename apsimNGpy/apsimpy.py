@@ -1210,7 +1210,7 @@ from Models.Core import Simulations
 import json
 class ApsimSoil(APSIMNG):
     try:
-        def __init__(self, model: Union[str, Simulations], read_from_string=True, lonlat=None,
+        def __init__(self, model: Union[str, Simulations], out_path = None, read_from_string=True, lonlat=None,
                      soil_series='domtcp', thickness=20, bottomdepth=200, thickness_values=None, run_all_soils=False):
             super().__init__(model)
             """get suurgo soil tables and organise it to apsim soil profiles
@@ -1227,6 +1227,7 @@ class ApsimSoil(APSIMNG):
             self.simulation_names = self.path
             self.soil_series = soil_series
             self.thickness = thickness
+            self.out_path  = out_path
             self.run_all_soils = run_all_soils
             if not isinstance(thickness_values, np.ndarray):
                 self.thickness_values = np.array(thickness_values, dtype=np.float64)  # apsim uses floating digit number

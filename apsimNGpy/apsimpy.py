@@ -108,8 +108,6 @@ class APSIMNG():
         if type(model) == str:
             apsimx_file = model
             name, ext = os.path.splitext(apsimx_file)
-            copy_2p = name + "clone" + '.apsimx'
-            shutil.copy(apsimx_file, copy_2p)
             if copy:
                 if out_path is None:
                     copy_path = f"{name}_copy{ext}"
@@ -1212,9 +1210,9 @@ from Models.Core import Simulations
 import json
 class ApsimSoil(APSIMNG):
     try:
-        def __init__(self, model: Union[str, Simulations], copy=True, out_path=None, read_from_string=True, lonlat=None,
+        def __init__(self, model: Union[str, Simulations], read_from_string=True, lonlat=None,
                      soil_series='domtcp', thickness=20, bottomdepth=200, thickness_values=None, run_all_soils=False):
-            super().__init__(model, copy, out_path)
+            super().__init__(model)
             """get suurgo soil tables and organise it to apsim soil profiles
             --------------------
             parameters

@@ -112,7 +112,7 @@ class APSIMNG():
             shutil.copy(apsimx_file, copy_2p)
             if copy:
                 if out_path is None:
-                    copy_path = f"{name}_2py{ext}"
+                    copy_path = f"{name}_copy{ext}"
                 else:
                     copy_path = out_path
                 try: 
@@ -684,6 +684,7 @@ class APSIMNG():
             zone = sim.FindChild[Models.Core.Zone]()
 
             for action in zone.FindAllChildren[Models.Manager]():
+                action.Children.Remove()
                 for management in management_list:
                     if action.Name == management["Name"]:
                         values = management
@@ -693,10 +694,11 @@ class APSIMNG():
                             if param in values:
                                 fvalue = f"{values[param]}"
                                 action.Parameters[i] = KeyValuePair[String, String](param, fvalue)
+
                                 #action.Parameters[i]= {param:f"{values[param]}"}
                                #action.GetParametersFromScriptModel()
-                #action.RebuildScriptModel() # Need for recompiling problem solved
-            if reload:  # a relaod wont work while dealing with multiple files in memory, just removed it f
+
+            if reload:
                self.save_edited_file()
             if self.out_path:
                 self._load_apsimx(self.out_path)
@@ -737,7 +739,8 @@ class APSIMNG():
         if self.out_path:
             self._load_apsimx(self.out_path)
         else:
-            self._load_apsimx(self.path)    
+            self._load_apsimx(self.path)
+        return self
 
     def _kvtodict(self, kv):
         return {kv[i].Key : kv[i].Value for i in range(kv.Count)}

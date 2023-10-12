@@ -1152,7 +1152,15 @@ class APSIMNG():
         sim = self._find_simulation(simulation)
         solutes = sim.FindAllDescendants[Models.Soils.Solute]()
         return [s for s in solutes if s.Name == solute][0]
-    
+
+    def clear(self):
+        self.path = None
+        self.out_path = None
+        self.Model = None
+        self._DataStore = None
+        self.datastore = None
+        self.results = None
+        return self
     def replace_soil_organic(self, organic_name, simulation_name =None):
         """replace the organic module comprising Carbon , FBIOm, FInert/ C/N
 
@@ -1240,6 +1248,7 @@ class ApsimSoil(APSIMNG):
             sim = self._find_simulation(simulation)
             solutes = sim.FindAllDescendants[Models.Soils.Solute]()
             return [s for s in solutes if s.Name == solute][0]
+
 
         def _get_initial_chemical_values(self, name, simulation):
             s = self._find_soil_solute(name, simulation)

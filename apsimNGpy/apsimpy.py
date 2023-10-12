@@ -682,7 +682,8 @@ class APSIMNG():
             zone = sim.FindChild[Models.Core.Zone]()
 
             for action in zone.FindAllChildren[Models.Manager]():
-                action.Children.Remove()
+
+                #action.Children.Remove("Post")
                 for management in management_list:
                     if action.Name == management["Name"]:
                         values = management

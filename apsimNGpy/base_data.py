@@ -1,3 +1,4 @@
+import os.path
 from importlib.resources import files
 from os.path import join, realpath, dirname, exists, split, basename
 from os import listdir, walk, getcwd, mkdir
@@ -18,6 +19,22 @@ def _get_maize_example(file_path):
     json_file_path = resource_directory / 'basefiles' / 'corn_base.apsimx'
     contents = json_file_path.read_text()
     nameout = join(file_path, 'corn_base.apsimx')
+    with open(nameout, "w+") as openfile:
+        openfile.write(contents)
+    return nameout
+def _get_maize(file_path):
+    resource_directory = files('apsimNGpy')
+    json_file_path = resource_directory / 'basefiles' / 'maize.apsimx'
+    contents = json_file_path.read_text()
+    nameout = join(file_path, 'maize.apsimx')
+    with open(nameout, "w+") as openfile:
+        openfile.write(contents)
+    return nameout
+def _get_maize_no_till(file_path):
+    resource_directory = files('apsimNGpy')
+    json_file_path = resource_directory / 'basefiles' / 'maize_nt.apsimx'
+    contents = json_file_path.read_text()
+    nameout = join(file_path, 'maize_nt.apsimx')
     with open(nameout, "w+") as openfile:
         openfile.write(contents)
     return nameout
@@ -52,13 +69,33 @@ class load_example_files():
        """
         path: string pathlike object where to copy the default example to
         """
+       assert exists(path), "entered path does not exists please try again, \n ============================"
+       self.path = path
        self.weather_example = _weather(path)
-       self.maize = _get_maize_example(path)
-       self.experiment_nitrogen_residue  = _get_maize_NF_experiment(path)
-       self.experiment_nitrogen_residue_nt = _get_maize_NF_experiment_NT(path)
-       self.swim = _get_SWIM(path)
+
+    @property
+    def get_maize_with_cover_crop(self):
+      return _get_maize_example(self.path)
+
+    @property
+    def get_experiment_nitrogen_residue(self):
+       return _get_maize_NF_experiment(self.path)
+    @property
+    def get_get_experiment_nitrogen_residue_NT(self):
+       return _get_maize_NF_experiment_NT(self.path)
+
+    @property
+    def get_swim(self):
+       return _get_SWIM(self.path)
+    @property
+    def get_maize(self):
+        return _get_maize(self.path)
+    @property
+    def get_maize_no_till(self):
+        return _get_maize_no_till(self.path)
+
 # APSIM defaults
-#TODO: incoporate other plafforms and also make it detection faster
+#TODO: incoporate other plafforms and also make itS detection faster
 # avoid hard codying
 def detect_apsim_installation():
   for rr, dd, ff in walk("C:/"):
@@ -68,7 +105,7 @@ def detect_apsim_installation():
         if f is not None:
           return f
         else:
-         f= input("APSIM automatic apth detectio failed, Please write the path to apsim installation: ")
+         f= input("APSIM automatic APSIM detection failed, Please write the path to apsim installation: ")
          return f
 
 pat = detect_apsim_installation()

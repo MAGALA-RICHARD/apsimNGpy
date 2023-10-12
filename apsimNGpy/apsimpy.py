@@ -1160,6 +1160,7 @@ class APSIMNG():
         self._DataStore = None
         self.datastore = None
         self.results = None
+        self.file_name =None
         return self
     def replace_soil_organic(self, organic_name, simulation_name =None):
         """replace the organic module comprising Carbon , FBIOm, FInert/ C/N

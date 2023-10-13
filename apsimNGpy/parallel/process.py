@@ -24,7 +24,7 @@ def  run_apsimxfiles_in_parallel(iterable_files, ncores, use_threads=False):
         a = perf_counter()
         with ProcessPoolExecutor(ncores) as pool:
            futures  =  [pool.submit(run_model, i) for i in files]
-           progress = tqdm(total=len(futures), position=0, leave=True, bar_format='{percentage:3.0f}% completed')
+           progress = tqdm(total=len(futures), position=0, leave=True, bar_format='Running apsimx files {percentage:3.0f}% completed')
            # Iterate over the futures as they complete
            for future in as_completed(futures):
                future.result()  # retrieve the result (or use it if needed)
@@ -35,7 +35,7 @@ def  run_apsimxfiles_in_parallel(iterable_files, ncores, use_threads=False):
         a = perf_counter()
         with ThreadPoolExecutor(ncores) as tpool:
             futures = [tpool.submit(run_model, i) for i in files]
-            progress = tqdm(total=len(futures), position=0, leave=True, bar_format='{percentage:3.0f}% completed')
+            progress = tqdm(total=len(futures), position=0, leave=True, bar_format='Running apsimx files {percentage:3.0f}% completed')
             # Iterate over the futures as they complete
             for future in as_completed(futures):
                 future.result()  # retrieve the result (or use it if needed)
@@ -57,7 +57,7 @@ def read_result_in_parallel(iterable_files, ncores, use_threads=False):
         a = perf_counter()
         with ProcessPoolExecutor(ncores) as pool:
             futures = [pool.submit(read_simulation, i) for i in files]
-            progress = tqdm(total=len(futures), position=0, leave=True, bar_format='{percentage:3.0f}% completed')
+            progress = tqdm(total=len(futures), position=0, leave=True, bar_format='reading file databases {percentage:3.0f}% completed')
             # Iterate over the futures as they complete
             for future in as_completed(futures):
                 res.append(future.result()) # retrieve the result (or use it if needed)
@@ -68,7 +68,7 @@ def read_result_in_parallel(iterable_files, ncores, use_threads=False):
         a = perf_counter()
         with ThreadPoolExecutor(ncores) as tpool:
             futures = [tpool.submit(read_simulation, i) for i in files]
-            progress = tqdm(total=len(futures), position=0, leave=True, bar_format='{percentage:3.0f}% completed')
+            progress = tqdm(total=len(futures), position=0, leave=True, bar_format='reading file databases {percentage:3.0f}% completed')
             # Iterate over the futures as they complete
             for future in as_completed(futures):
                 res.append(future.result())  # retrieve the result (or use it if needed)

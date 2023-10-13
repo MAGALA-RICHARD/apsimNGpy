@@ -786,8 +786,8 @@ class APSIMNG():
                 clock.Start = self.start
                                
             if end_date is not None:
-                dateString2 = f'{end_date}T00:00:00'
-                self.end = end_date#DateTime.Parse(dateString2)
+                dateString2 = end_date#f'{end_date}T00:00:00'
+                self.end = DateTime.Parse(dateString2)
                 clock.End = self.end
          
     @property

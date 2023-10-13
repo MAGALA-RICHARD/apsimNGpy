@@ -62,7 +62,7 @@ def read_result_in_parallel(iterable_files, ncores, use_threads=False):
                 res.append(future.result()) # retrieve the result (or use it if needed)
                 progress.update(1)
             progress.close()
-        print(perf_counter() - a, 'seconds', f'to run {len(files)} files')
+        print(perf_counter() - a, 'seconds', f'to read {len(files)} apsimx files databases')
     else:
         a = perf_counter()
         with ThreadPoolExecutor(ncores) as tpool:
@@ -73,5 +73,5 @@ def read_result_in_parallel(iterable_files, ncores, use_threads=False):
                 res.append(future.result())  # retrieve the result (or use it if needed)
                 progress.update(1)
             progress.close()
-        print(perf_counter() - a, 'seconds', f'to read {len(files)} database files')
+        print(perf_counter() - a, 'seconds', f'to read {len(files)} apsimx database files')
     return res

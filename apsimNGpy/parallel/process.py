@@ -74,5 +74,5 @@ def read_result_in_parallel(iterable_files, ncores, use_threads=False):
                 res.append(future.result())  # retrieve the result (or use it if needed)
                 progress.update(1)
             progress.close()
-        print(perf_counter() - a, 'seconds', f'to run {len(files)} files')
+        print(perf_counter() - a, 'seconds', f'to read {len(files)} database files')
     return res

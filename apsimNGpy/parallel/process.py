@@ -52,6 +52,7 @@ def read_result_in_parallel(iterable_files, ncores, use_threads=False):
     """
     # remove duplicates. because duplicates will be susceptible to race conditioning in paralell computing
     files = set(iterable_files)
+    res = []
     if not use_threads:
         a = perf_counter()
         with ProcessPoolExecutor(ncores) as pool:
@@ -59,7 +60,7 @@ def read_result_in_parallel(iterable_files, ncores, use_threads=False):
             progress = tqdm(total=len(futures), position=0, leave=True, bar_format='{percentage:3.0f}% completed')
             # Iterate over the futures as they complete
             for future in as_completed(futures):
-                future.result()  # retrieve the result (or use it if needed)
+                res.append(future.result()) # retrieve the result (or use it if needed)
                 progress.update(1)
             progress.close()
         print(perf_counter() - a, 'seconds', f'to run {len(files)} files')
@@ -70,7 +71,8 @@ def read_result_in_parallel(iterable_files, ncores, use_threads=False):
             progress = tqdm(total=len(futures), position=0, leave=True, bar_format='{percentage:3.0f}% completed')
             # Iterate over the futures as they complete
             for future in as_completed(futures):
-                future.result()  # retrieve the result (or use it if needed)
+                res.append(future.result())  # retrieve the result (or use it if needed)
                 progress.update(1)
             progress.close()
         print(perf_counter() - a, 'seconds', f'to run {len(files)} files')
+    return res

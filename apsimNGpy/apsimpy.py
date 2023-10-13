@@ -781,14 +781,14 @@ class APSIMNG():
             clock = sim.FindChild[Models.Clock]()
             
             if start_date is not None:
-                dateString1 = start_date +"T00:00:00"
+                dateString1 = f'{start_date} +"T00:00:00"'
                 self.start = DateTime.Parse(dateString1) 
-                clock.Start = self.start
+                clock.Start = dateString1
                                
             if end_date is not None:
-                dateString2 = end_date + "T00:00:00"
+                dateString2 = f'{end_date} + "T00:00:00"'
                 self.end = DateTime.Parse(dateString2)  
-                clock.End = self.end
+                clock.End = dateString2
          
     @property
     def extract_dates(self, simulations = None):

@@ -3,6 +3,7 @@ from importlib.resources import files
 from os.path import join, realpath, dirname, exists, split, basename
 from os import listdir, walk, getcwd, mkdir
 import shutil
+from pathlib import Path
 import glob
 wp = 'NewMetrrr.met'
 def _weather(path):
@@ -71,28 +72,31 @@ class load_example_files():
         """
        assert exists(path), "entered path does not exists please try again, \n ============================"
        self.path = path
-       self.weather_example = _weather(path)
-
+       self.weather_example = _weather(self.path)
+    def _clean_up(self, path):
+        Path(f"{path}.db").unlink(missing_ok=True)
+        Path(f"{path}.db-shm").unlink(missing_ok=True)
+        Path(f"{path}.db-wal").unlink(missing_ok=True)
     @property
     def get_maize_with_cover_crop(self):
       return _get_maize_example(self.path)
 
     @property
     def get_experiment_nitrogen_residue(self):
-       return _get_maize_NF_experiment(self.path)
+       return self._clean_up(_get_maize_NF_experiment(self.path))
     @property
     def get_get_experiment_nitrogen_residue_NT(self):
-       return _get_maize_NF_experiment_NT(self.path)
+       return self._clean_up(_get_maize_NF_experiment_NT(self.path))
 
     @property
     def get_swim(self):
-       return _get_SWIM(self.path)
+       return self._clean_up(_get_SWIM(self.path))
     @property
     def get_maize(self):
         return _get_maize(self.path)
     @property
     def get_maize_no_till(self):
-        return _get_maize_no_till(self.path)
+        return self._clean_up(_get_maize_no_till(self.path))
 
 # APSIM defaults
 #TODO: incoporate other plafforms and also make itS detection faster

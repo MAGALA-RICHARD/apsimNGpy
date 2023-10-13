@@ -178,8 +178,11 @@ def read_simulation(datastore, report_name= 'MaizeR'):
         # print(f"{dfl} data frames has been returned")
 
     if report_name:
-        return dataframe_dict[report_name]
+        df = dataframe_dict[report_name]
+        df['source'] = os.path.basename(datastore)
+        return df
     else:
+        dataframe_dict['source'] = os.path.basename(datastore)
         return dataframe_dict
 
 

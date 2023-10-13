@@ -77,8 +77,10 @@ class load_example_files():
         Path(f"{path}.db").unlink(missing_ok=True)
         Path(f"{path}.db-shm").unlink(missing_ok=True)
         Path(f"{path}.db-wal").unlink(missing_ok=True)
+        return path
     @property
     def get_maize_with_cover_crop(self):
+
       return self._clean_up(_get_maize_example(self.path))
 
     @property

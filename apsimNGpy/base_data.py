@@ -79,7 +79,7 @@ class load_example_files():
         Path(f"{path}.db-wal").unlink(missing_ok=True)
     @property
     def get_maize_with_cover_crop(self):
-      return _get_maize_example(self.path)
+      return self._clean_up(_get_maize_example(self.path))
 
     @property
     def get_experiment_nitrogen_residue(self):
@@ -93,7 +93,7 @@ class load_example_files():
        return self._clean_up(_get_SWIM(self.path))
     @property
     def get_maize(self):
-        return _get_maize(self.path)
+        return self._clean_up(_get_maize(self.path))
     @property
     def get_maize_no_till(self):
         return self._clean_up(_get_maize_no_till(self.path))

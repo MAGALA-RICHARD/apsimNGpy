@@ -456,7 +456,7 @@ class APSIMNG():
             return dataframe_dict[report_name]
         else:
             return dataframe_dict
-    @property
+
     def _cultivar_params(self, cultivar):
         cmd = cultivar.Command
         params = {}

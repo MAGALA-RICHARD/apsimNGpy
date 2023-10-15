@@ -11,6 +11,7 @@ import numpy as np
 import pandas as pd
 from os.path import join as opj
 import sqlite3
+import json
 root = os.path.dirname(os.path.realpath(__file__))
 path = opj(root, 'manager')
 path_utilities = opj(root, 'utililies')
@@ -71,7 +72,8 @@ from Models.Core.ApsimFile import FileFormat
 from Models.Climate import Weather
 from Models.Soils import Solute, Water, Chemical
 from Models.Soils import Soil, Physical, SoilCrop, Organic
-from concurrent.futures import ThreadPoolExecutor
+import Models
+from Models.PMF import Cultivar
 import threading
 
 
@@ -463,7 +465,64 @@ class APSIMNG():
                 p, v = c.split("=")
                 params[p.strip()] = v.strip()
         return params
-    
+    def _find_replacement(self):
+        rep= self.Model.FindChild[Models.Core.Folder]()
+        return rep
+
+    def _find_cultvar(self, CultvarName):
+
+        rep = self._find_replacement().FindAllDescendants[Models.PMF.Cultivar]()
+        xp = [i for i in rep]
+        for cult in xp:
+            if cult.Name == CultvarName:
+                return cult
+                break
+        return rep
+    def get_crop_replacement(self, Crop):
+        """
+        :param Crop: crop to get the replacement
+        :return: System.Collections.Generic.IEnumerable APSIM plant object
+        """
+        replace_attrib = Crop + '_Replacement'
+        rep = self._find_replacement()
+        crop_rep = rep.FindAllDescendants[Models.PMF.Plant](Crop)
+        for i in crop_rep:
+            print(i.Name)
+            if i.Name == Crop:
+              return i
+        return self
+    def edit_cultivar(self, RUE, CultvarName= None):
+        """
+
+        :param CultvarName: name of the cultvar e.g laila
+
+        :param command: python list of a strings.
+                  example: ['[Grain].MaximumGrainsPerCob.FixedValue =  721', "[Phenology].GrainFilling.Target.FixedValue = 551"]
+        :return:
+        """
+        # if not CultvarName:
+        #     CultvarName  = self.get_current_cultvar_name('SowMaize')
+        command_rue = f'[Leaf].Photosynthesis.RUE.FixedValue = {RUE}'
+        cultvar = self._find_cultvar(CultvarName)
+        params = self._cultivar_params(cultvar)
+        params["[Leaf].Photosynthesis.RUE.FixedValue"] = RUE
+        commands = [f"{k}={v}" for k, v in params.items()]
+        cultvar.set_Command(commands)
+    def get_current_cultvar_name(self, ManagerName):
+        #if ParameterName != CultivarName:
+        try:
+            ap = self.extract_user_input(ManagerName)['CultivarName']
+            return ap
+        except  KeyError:
+          parameterName = 'CultivarName'
+          print(f"default parameter name is: {parameterName} please change in it your manager script and try again")
+
+
+    @staticmethod
+    def examine_attributes(object):
+        at = dir(object)
+        for i in at:
+            print(i, "\n")
     @staticmethod
     def get_result_stat(df, column, statistic):
        
@@ -557,6 +616,7 @@ class APSIMNG():
                 params = self._cultivar_params(cultivar)
                 params.update(parameters)
             cultivar.Command = [f"{k}={v}" for k,v in params.items()]
+
             self.cultivar_command = params
     
     def examine_management_info(self, simulations=None):
@@ -781,12 +841,12 @@ class APSIMNG():
             clock = sim.FindChild[Models.Clock]()
             
             if start_date is not None:
-                dateString1 = start_date#f'{start_date}T00:00:00'
+                dateString1 = start_date
                 self.start = DateTime.Parse(dateString1) 
                 clock.Start = self.start
                                
             if end_date is not None:
-                dateString2 = end_date#f'{end_date}T00:00:00'
+                dateString2 = end_date
                 self.end = DateTime.Parse(dateString2)
                 clock.End = self.end
          
@@ -1215,9 +1275,7 @@ class APSIMNG():
         """
         self._set_initial_values("Urea", values, simulations)
         # inherit properties from the ancestors apsimng object
-import Models
-from Models.Core import Simulations
-import json
+
 class ApsimSoil(APSIMNG):
     try:
         def __init__(self, model: Union[str, Simulations], copy =False, out_path = None, read_from_string=True, lonlat=None,

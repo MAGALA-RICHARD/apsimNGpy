@@ -2,7 +2,7 @@
 This script evaluates the predicted and observed data, based on both statistical and mathematical index. for complete decription of the
 metrics see Archountoulis et al., (2015) and
 """
-__all__ = ['evaluator', 'mets', 'Metrics']
+__all__ = ['validate', 'mets', 'Metrics']
 import numpy as np
 import pandas as pd
 from scipy.stats import norm
@@ -149,6 +149,7 @@ class validate(Metrics):
         assert isinstance(metric, str), "target metric should be a string"
         metric_index = getattr(self, metric)(self.actual, self.predicted)
         return metric_index
+
 x_data = [1.2, 2.4, 3.6, 4.8, 5.0]
 y_data = [2.0, 3.5, 4.2, 5.7, 6.0]
 

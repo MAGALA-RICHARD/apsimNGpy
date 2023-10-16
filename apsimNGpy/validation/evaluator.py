@@ -4,6 +4,8 @@ metrics see Archountoulis et al., (2015) and
 """
 __all__ = ['evaluator', 'mets', 'Metrics']
 import numpy as np
+import pandas as pd
+from scipy.stats import norm
 class Metrics:
     def __init__(self):
         # define the existing methods
@@ -11,6 +13,7 @@ class Metrics:
         self.RMSE = 'RMSE'
         self.RRMSe = 'RRMSE'
         self.WIA = 'WIA'
+        self.CCC  = 'CCC'
     def RMSE(self, actual, predicted):
         """
         Calculate the root mean square error (RMSE) between actual and predicted values.
@@ -69,6 +72,52 @@ class Metrics:
         squared_errors = (np.array(actual) - np.array(predicted)) ** 2
         mse = np.mean(squared_errors)
         return mse
+
+    def rho_ci(self, x, y, ci="z-transform", conf_level=0.95, na_rm=False):
+        dat = pd.DataFrame({'x': x, 'y': y})
+        if na_rm:
+            dat = dat.dropna()
+        N_ = 1 - ((1 - conf_level) / 2)
+        zv = norm.ppf(N_, loc=0, scale=1)
+        lower = "lwr.ci"
+        upper = "upr.ci"
+        k = len(dat['y'])
+        yb = dat['y'].mean()
+        sy2 = dat['y'].var() * (k - 1) / k
+        sd1 = dat['y'].std()
+        xb = dat['x'].mean()
+        sx2 = dat['x'].var() * (k - 1) / k
+        sd2 = dat['x'].std()
+        r = dat['x'].corr(dat['y'])
+        sl = r * sd1 / sd2
+        sxy = r * np.sqrt(sx2 * sy2)
+        p = 2 * sxy / (sx2 + sy2 + (yb - xb) ** 2)
+        delta = (dat['x'] - dat['y'])
+        rmean = dat.apply(lambda row: row.mean(), axis=1)
+        blalt = pd.DataFrame({'mean': rmean, 'delta': delta})
+        v = sd1 / sd2
+        u = (yb - xb) / ((sx2 * sy2) ** 0.25)
+        C_b = p / r
+        sep = np.sqrt(((1 - ((r) ** 2)) * (p) ** 2 * (1 - ((p) ** 2)) / (r) ** 2 +
+                       (2 * (p) ** 3 * (1 - p) * (u) ** 2 / r) - 0.5 * (p) ** 4 * (u) ** 4 / (r) ** 2) / (k - 2))
+        ll = p - zv * sep
+        ul = p + zv * sep
+        t = np.log((1 + p) / (1 - p)) / 2
+        set_ = sep / (1 - ((p) ** 2))
+        llt = t - zv * set_
+        ult = t + zv * set_
+        llt = (np.exp(2 * llt) - 1) / (np.exp(2 * llt) + 1)
+        ult = (np.exp(2 * ult) - 1) / (np.exp(2 * ult) + 1)
+        if ci == "asymptotic":
+            rho_c = pd.DataFrame({'est': p, lower: ll, upper: ul}, index=[0])
+            rval = {'rho_c': rho_c, 's_shift': v, 'l_shift': u, 'C_b': C_b, 'blalt': blalt}
+        elif ci == "z-transform":
+            rho_c = pd.DataFrame({'est': p, lower: llt, upper: ult}, index=[0])
+            rval = {'rho_c': rho_c, 's_shift': v, 'l_shift': u, 'C_b': C_b, 'blalt': blalt}
+        return rval
+    def CCC(self, actual, predicted):
+        ccc = self.rho_ci(actual, predicted)
+        return ccc['rho_c']['est'][0]
     def RMSE(self, actual, predicted):
         mse = self.MSE(actual, predicted)
         return np.sqrt(mse)

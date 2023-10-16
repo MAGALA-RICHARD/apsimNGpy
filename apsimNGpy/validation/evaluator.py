@@ -110,12 +110,13 @@ class Metrics:
             rho_c = pd.DataFrame({'est': p, lower: llt, upper: ult}, index=[0])
             rval = {'rho_c': rho_c, 's_shift': v, 'l_shift': u, 'C_b': C_b, 'blalt': blalt}
         return rval
-    def CCC(self, actual, predicted):
-        ccc = self.rho_ci(actual, predicted)
-        return ccc['rho_c']['est'][0]
+
     def RMSE(self, actual, predicted):
         mse = self.MSE(actual, predicted)
         return np.sqrt(mse)
+    def CCC(self, actual, predicted):
+        ccc = self.rho_ci(actual, predicted)
+        return ccc['rho_c']['est'][0]
 class metrics_description:
     def __init__(self):
         self.MSE = 'MSE'
@@ -124,7 +125,8 @@ class metrics_description:
         self.WIA = 'WIA'
         self.CCC = 'CCC'
 mets = metrics_description()
-class evaluator(Metrics):
+
+class evaluate(Metrics):
     """
     this evaluated supplied predicted and observed values for evaluating on the go please see co-current evaluator class
     """

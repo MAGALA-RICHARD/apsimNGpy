@@ -153,3 +153,4 @@ class validate(Metrics):
 x_data = [1.2, 2.4, 3.6, 4.8, 5.0]
 y_data = [2.0, 3.5, 4.2, 5.7, 6.0]
 
+data = validate(x_data, y_data)

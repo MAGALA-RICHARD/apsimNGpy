@@ -126,7 +126,7 @@ class metrics_description:
         self.CCC = 'CCC'
 mets = metrics_description()
 
-class evaluate(Metrics):
+class validate(Metrics):
     """
     this evaluated supplied predicted and observed values for evaluating on the go please see co-current evaluator class
     """

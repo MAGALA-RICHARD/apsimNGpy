@@ -9,11 +9,11 @@ from scipy.stats import norm
 class Metrics:
     def __init__(self):
         # define the existing methods
-        self.MSE = 'MSE'
-        self.RMSE = 'RMSE'
-        self.RRMSe = 'RRMSE'
-        self.WIA = 'WIA'
-        self.CCC  = 'CCC'
+        self.mse = 'MSE'
+        self.rmse = 'RMSE'
+        self.rrmse = 'RRMSE'
+        self.wia = 'WIA'
+        self.ccc  = 'CCC'
     def RMSE(self, actual, predicted):
         """
         Calculate the root mean square error (RMSE) between actual and predicted values.

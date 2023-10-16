@@ -8,12 +8,7 @@ import pandas as pd
 from scipy.stats import norm
 class Metrics:
     def __init__(self):
-        # define the existing methods
-        self.mse = 'MSE'
-        self.rmse = 'RMSE'
-        self.rrmse = 'RRMSE'
-        self.wia = 'WIA'
-        self.ccc  = 'CCC'
+        pass
     def RMSE(self, actual, predicted):
         """
         Calculate the root mean square error (RMSE) between actual and predicted values.
@@ -127,6 +122,7 @@ class metrics_description:
         self.RMSE = 'RMSE'
         self.RRMSe = 'RRMSE'
         self.WIA = 'WIA'
+        self.CCC = 'CCC'
 mets = metrics_description()
 class evaluator(Metrics):
     """
@@ -138,7 +134,7 @@ class evaluator(Metrics):
         :param actual (Array): observed values
         :param predicted (Array): predicted values
         :param metric (str): metric to use default is RMSE
-         tip: for metrics use the intellisence on mets class e.g metric = mets.RMSE or call the evaluator class has this attributes
+         tip: for metrics use the intellisence on mets class e.g metric = mets.RMSE
         """
         assert len(actual) == len(predicted), "Target values are of different length please try again===="
         self.actual = actual
@@ -151,3 +147,7 @@ class evaluator(Metrics):
         assert isinstance(metric, str), "target metric should be a string"
         metric_index = getattr(self, metric)(self.actual, self.predicted)
         return metric_index
+x_data = [1.2, 2.4, 3.6, 4.8, 5.0]
+y_data = [2.0, 3.5, 4.2, 5.7, 6.0]
+
+data = evaluator(x_data, y_data)

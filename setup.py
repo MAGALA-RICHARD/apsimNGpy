@@ -6,7 +6,7 @@ DESCRIPTION = 'apsimx next generation package interface'
 LONG_DESCRIPTION = 'run, edit, download soils and weather and interact with the apsimx file'
 setup(
     name='apsimNGpy',
-    version='1.0.0',
+    version='0.0.2',
     url='https://github.com/MAGALA-RICHARD/apsimNGpy.git',
     license='MIT',
     author='Richard Magala',

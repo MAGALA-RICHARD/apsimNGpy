@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 import sys
 import os
-VERSION = '0.0.1dev'
+VERSION = '0.0.2beta'
 DESCRIPTION = 'apsimx next generation package interface'
 LONG_DESCRIPTION = 'run, edit, download soils and weather and interact with the apsimx file'
 setup(

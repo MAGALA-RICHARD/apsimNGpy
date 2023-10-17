@@ -491,23 +491,31 @@ class APSIMNG():
             if i.Name == Crop:
               return i
         return self
-    def edit_cultivar(self, RUE, CultvarName= None):
+    def edit_cultivar(self,CultvarName, commands: tuple, values: tuple):
         """
 
         :param CultvarName: name of the cultvar e.g laila
 
-        :param command: python list of a strings.
-                  example: ['[Grain].MaximumGrainsPerCob.FixedValue =  721', "[Phenology].GrainFilling.Target.FixedValue = 551"]
+        :param command: python tuple of strings.
+                  example: ('[Grain].MaximumGrainsPerCob.FixedValue', "[Phenology].GrainFilling.Target.FixedValue ")
+        values: corresponding values for each command e.g ( 721, 760)
         :return:
         """
-        # if not CultvarName:
-        #     CultvarName  = self.get_current_cultvar_name('SowMaize')
-        command_rue = f'[Leaf].Photosynthesis.RUE.FixedValue = {RUE}'
+        if not isinstance(CultvarName, str):
+            raise ValueError("cultiva name must be a string")
+        if len(commands) != len(values):
+            raise ValueError("Both values and commands must be equal")
+        if commands is None or not isinstance(commands, tuple):
+            raise ValueError("commands must be a list")
+        if commands is None or not isinstance(commands, tuple):
+            raise ValueError("values must be presented as a list")
         cultvar = self._find_cultvar(CultvarName)
         params = self._cultivar_params(cultvar)
-        params["[Leaf].Photosynthesis.RUE.FixedValue"] = RUE
+        for com, val in zip(commands, values): # when a command exists it is replaced, this avoids duplicates as dictioanry names do not repeat
+            params[com] = val
         commands = [f"{k}={v}" for k, v in params.items()]
         cultvar.set_Command(commands)
+        return self
     def get_current_cultvar_name(self, ManagerName):
         #if ParameterName != CultivarName:
         try:

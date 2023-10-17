@@ -2,7 +2,7 @@ from os.path import join, realpath, dirname, exists, split, basename
 from os import listdir, walk, getcwd, mkdir
 import shutil
 import glob
-base = realpath(dirname(__file__))
+
 def detect_apsim_installation():
   for rr, dd, ff in walk("C:/"):
     for d  in ff:
@@ -10,6 +10,10 @@ def detect_apsim_installation():
         f = join(rr, d)
         if f is not None:
           return f
+        else:
+         f= input("APSIM automatic apsim detectio failed, Please write the path to apsim installation: ")
+         return f
+
 pat = detect_apsim_installation()
 if pat:
    apsim= split(split(pat)[0])[0]
@@ -32,3 +36,5 @@ class apsimx_examples:
                 name, ext = basename(i).split(".")
                 setattr(self, name, i)
 apsimx_example_data = apsimx_examples()
+
+

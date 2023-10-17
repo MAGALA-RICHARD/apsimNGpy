@@ -3,12 +3,16 @@ This script evaluates the predicted and observed data, based on both statistical
 metrics see Archountoulis et al., (2015) and
 """
 __all__ = ['validate', 'mets', 'Metrics']
+
 import numpy as np
 import pandas as pd
 from scipy.stats import norm
+
+
 class Metrics:
     def __init__(self):
         pass
+
     def RMSE(self, actual, predicted):
         """
         Calculate the root mean square error (RMSE) between actual and predicted values.
@@ -36,7 +40,7 @@ class Metrics:
         - float: root mean square error value
         """
         rmse = np.sqrt(np.mean(np.square(np.subtract(actual, predicted))))
-        rrmse = rmse/np.mean(actual)
+        rrmse = rmse / np.mean(actual)
         return rrmse
 
     def WIA(self, observed, predicted):
@@ -45,10 +49,10 @@ class Metrics:
             predicted = np.array(predicted)
         mean_observed = np.mean(observed)
         # Calculate the numerator and denominator for the Wilmot IA formula
-        numerator = np.sum((observed - predicted)**2)
+        numerator = np.sum((observed - predicted) ** 2)
         den1 = np.abs(np.sum(observed - mean_observed))
-        den2 = np.sum(predicted-mean_observed)
-        den = np.sum((den1 + den2)**2)
+        den2 = np.sum(predicted - mean_observed)
+        den = np.sum((den1 + den2) ** 2)
 
         # Calculate the Wilmont Index of Agreement
         return 1 - (numerator / den)
@@ -114,9 +118,12 @@ class Metrics:
     def RMSE(self, actual, predicted):
         mse = self.MSE(actual, predicted)
         return np.sqrt(mse)
+
     def CCC(self, actual, predicted):
         ccc = self.rho_ci(actual, predicted)
         return ccc['rho_c']['est'][0]
+
+
 class metrics_description:
     def __init__(self):
         self.MSE = 'MSE'
@@ -124,12 +131,16 @@ class metrics_description:
         self.RRMSe = 'RRMSE'
         self.WIA = 'WIA'
         self.CCC = 'CCC'
+
+
 mets = metrics_description()
+
 
 class validate(Metrics):
     """
     this evaluated supplied predicted and observed values for evaluating on the go please see co-current evaluator class
     """
+
     def __init__(self, actual, predicted):
         """
 
@@ -141,7 +152,8 @@ class validate(Metrics):
         assert len(actual) == len(predicted), "Target values are of different length please try again===="
         self.actual = actual
         self.predicted = predicted
-    def evaluate(self, metric = 'RMSE'):
+
+    def evaluate(self, metric='RMSE'):
         """
         :param metric (str): metric to use default is RMSE
         :return: returns an index
@@ -150,7 +162,16 @@ class validate(Metrics):
         metric_index = getattr(self, metric)(self.actual, self.predicted)
         return metric_index
 
-x_data = [1.2, 2.4, 3.6, 4.8, 5.0]
-y_data = [2.0, 3.5, 4.2, 5.7, 6.0]
+    def evaluate_all(self):
+        attribs = ['RMSE', 'RRMSE', "CCC", "WIA", "CCC", "MSE"]
+        all = {atbs: getattr(self, atbs)(self.actual, self.predicted) for atbs in attribs}
+        return all
 
-data = validate(x_data, y_data)
+
+# Test
+if __name__ == "__main__":
+    x_data = [1.2, 2.4, 3.6, 4.8, 5.0]
+    y_data = [2.0, 3.5, 4.2, 5.7, 6.0]
+
+    data = validate(x_data, y_data)
+    al = data.evaluate_all()

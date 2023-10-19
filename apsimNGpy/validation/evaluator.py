@@ -7,6 +7,7 @@ __all__ = ['validate', 'mets', 'Metrics']
 import numpy as np
 import pandas as pd
 from scipy.stats import norm
+from sklearn.metrics import r2_score
 
 
 class Metrics:
@@ -123,6 +124,22 @@ class Metrics:
         ccc = self.rho_ci(actual, predicted)
         return ccc['rho_c']['est'][0]
 
+    from sklearn.metrics import r2_score
+    def R2(self, true_values, predicted_values):
+        # Calculate the mean of the true values
+        mean_true = np.mean(true_values)
+
+        # Calculate the total sum of squares (TSS)
+        tss = np.sum((true_values - mean_true) ** 2)
+
+        # Calculate the residual sum of squares (RSS)
+        rss = np.sum((true_values - predicted_values) ** 2)
+
+        # Calculate R-squared
+        r2 = 1 - (rss / tss)
+
+        return r2
+
 
 class metrics_description:
     def __init__(self):
@@ -163,15 +180,16 @@ class validate(Metrics):
         return metric_index
 
     def evaluate_all(self):
-        attribs = ['RMSE', 'RRMSE', "CCC", "WIA", "CCC", "MSE"]
+        attribs = ['RMSE', 'RRMSE', "CCC", "WIA", "CCC", "MSE", 'R2']
         all = {atbs: getattr(self, atbs)(self.actual, self.predicted) for atbs in attribs}
         return all
 
 
 # Test
+
 if __name__ == "__main__":
-    x_data = [1.2, 2.4, 3.6, 4.8, 5.0]
-    y_data = [2.0, 3.5, 4.2, 5.7, 6.0]
+    x_data = np.array([1.2, 2.4, 3.6, 4.8, 5.0])
+    y_data = np.array([2.0, 3.5, 4.2, 5.7, 6.0])
 
     data = validate(x_data, y_data)
     al = data.evaluate_all()

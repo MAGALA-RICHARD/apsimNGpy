@@ -12,6 +12,7 @@ import pandas as pd
 from os.path import join as opj
 import sqlite3
 import json
+
 root = os.path.dirname(os.path.realpath(__file__))
 path = opj(root, 'manager')
 path_utilities = opj(root, 'utililies')
@@ -30,26 +31,31 @@ except:
 
 import clr
 from os.path import join as opj
+
 # logs folder
-Logs  = "Logs"
+Logs = "Logs"
 basedir = os.getcwd()
 log_messages = opj(basedir, Logs)
 if not os.path.exists(log_messages):
-  os.mkdir(log_messages)
+    os.mkdir(log_messages)
 datime_now = datetime.datetime.now()
 timestamp = datime_now.strftime('%a-%m-%y')
-logfile_name = 'log_messages' + str(timestamp)+ ".log"
-log_paths = opj(log_messages,logfile_name)
-#f"log_messages{datetime.now().strftime('%m_%d')}.log"
+logfile_name = 'log_messages' + str(timestamp) + ".log"
+log_paths = opj(log_messages, logfile_name)
+# f"log_messages{datetime.now().strftime('%m_%d')}.log"
 logging.basicConfig(filename=log_paths, level=logging.ERROR, format='%(asctime)s %(levelname)s %(message)s')
 logger = logging.getLogger(__name__)
+
+
 def detect_apsim_installation():
-  for rr, dd, ff in os.walk("C:/"):
-    for d  in ff:
-      if d.startswith('Model')  and d.endswith(".exe"):
-        f =os.path.join(rr, d)
-        if f is not None:
-          return f
+    for rr, dd, ff in os.walk("C:/"):
+        for d in ff:
+            if d.startswith('Model') and d.endswith(".exe"):
+                f = os.path.join(rr, d)
+                if f is not None:
+                    return f
+
+
 sys.path.append(os.path.dirname(detect_apsim_installation()))
 
 try:
@@ -75,12 +81,26 @@ from Models.Soils import Soil, Physical, SoilCrop, Organic
 import Models
 from Models.PMF import Cultivar
 import threading
+import time
+
+
+# decorator to monitor performance
+def timing_decorator(func):
+    def wrapper(*args, **kwargs):
+        start_time = time.perf_counter()
+        result = func(*args, **kwargs)
+        end_time = time.perf_counter()
+        elapsed_time = end_time - start_time
+        print(f"{func.__name__} took {elapsed_time:.4f} seconds to execute.")
+        return result
+
+    return wrapper
 
 
 class APSIMNG():
     """Modify and run Apsim next generation simulation models."""
 
-    def __init__(self, model : Union[str, Simulations], copy=True, out_path=None, read_from_string = True):
+    def __init__(self, model: Union[str, Simulations], copy=True, out_path=None, read_from_string=True):
         """
         Parameters
         ----------
@@ -99,13 +119,12 @@ class APSIMNG():
         self.Model = None
         self.datastore = None
         self.out_path = out_path
-        self.management_data = {'Nitrogen': [0,  140, 180, 220], \
-                                'Depth': [0, 100, 250, 100],\
+        self.management_data = {'Nitrogen': [0, 140, 180, 220], \
+                                'Depth': [0, 100, 250, 100], \
                                 "Rotation": ['CC', 'CB'],
                                 "Tillage type": [1, 0],
                                 'Cover Crop': [1, 0],
-                                 'Prairie Strips': [1, 0]}
-
+                                'Prairie Strips': [1, 0]}
 
         if type(model) == str:
             apsimx_file = model
@@ -115,7 +134,7 @@ class APSIMNG():
                     copy_path = f"{name}_copy{ext}"
                 else:
                     copy_path = out_path
-                try: 
+                try:
                     shutil.copy(apsimx_file, copy_path)
                     pathlib.Path(f"{name}.db").unlink(missing_ok=True)
                     pathlib.Path(f"{name}.db-shm").unlink(missing_ok=True)
@@ -126,10 +145,10 @@ class APSIMNG():
             else:
                 self.path = apsimx_file
 
-            if read_from_string==True:
-               self.load_apsimx_from_string(self.path)
+            if read_from_string == True:
+                self.load_apsimx_from_string(self.path)
             else:
-               self._load_apsimx(self.path)
+                self._load_apsimx(self.path)
 
         elif type(model) == Simulations:
             self.Model = model
@@ -143,75 +162,83 @@ class APSIMNG():
             self.cultivar_command = self._cultivar_params(cultivar)
         except:
             pass
+
     @staticmethod
     def generate_unique_name(base_name, length=6):
         random_suffix = ''.join(random.choices(string.ascii_lowercase, k=length))
         unique_name = base_name + '_' + random_suffix
-        return unique_name 
+        return unique_name
+
     @property
     def filename(self):
         self.file_name = os.path.basename(self.path)
-        return  self.file_name
+        return self.file_name
+
     @property
     def simulations(self):
         try:
-          simus =  list(self.Model.FindAllChildren[Models.Core.Simulation]())
-          if len(simus)!=0:
-            return list(self.Model.FindAllChildren[Models.Core.Simulation]())
-          else:
-            experiment =  self.Model.FindAllChildren[Models.Factorial.Experiment]()
-            
-            for i in experiment:
-                simus = list(i.FindAllChildren[Models.Core.Simulation]())
+            simus = list(self.Model.FindAllChildren[Models.Core.Simulation]())
+            if len(simus) != 0:
+                return list(self.Model.FindAllChildren[Models.Core.Simulation]())
+            else:
+                experiment = self.Model.FindAllChildren[Models.Factorial.Experiment]()
 
-            return(simus)
+                for i in experiment:
+                    simus = list(i.FindAllChildren[Models.Core.Simulation]())
+
+                return (simus)
 
         except Exception as e:
-          logger.exception(repr(e))
-          raise
+            logger.exception(repr(e))
+            raise
+
     def load_apsimx_from_string(self, path):
-      try:
+        try:
             with open(path, "r+") as apsimx:
-                        app_ap = json.load(apsimx) 
+                app_ap = json.load(apsimx)
             string_name = json.dumps(app_ap)
             fn = path
-            self.Model  = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](string_name, None, True, fileName =fn)
-      except Exception as e:
-          logger.exception(repr(e)) # this error will be logged to the folder logs in the current working directory
-          raise
-      self.datastore = self.Model.FindChild[Models.Storage.DataStore]().FileName
-      self._DataStore = self.Model.FindChild[Models.Storage.DataStore]()   
+            self.Model = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](string_name, None,
+                                                                                                  True, fileName=fn)
+        except Exception as e:
+            logger.exception(repr(e))  # this error will be logged to the folder logs in the current working directory
+            raise
+        self.datastore = self.Model.FindChild[Models.Storage.DataStore]().FileName
+        self._DataStore = self.Model.FindChild[Models.Storage.DataStore]()
 
     def _load_apsimx(self, path):
         try:
-         assert path.endswith(".apsimx"), "file path is missing apsim extention. did you forget to include .apsimx extension"
-         self.Model = FileFormat.ReadFromFile[Models.Core.Simulations](path, None, False) 
+            assert path.endswith(
+                ".apsimx"), "file path is missing apsim extention. did you forget to include .apsimx extension"
+            self.Model = FileFormat.ReadFromFile[Models.Core.Simulations](path, None, False)
         except Exception as e:
-          logger.exception(repr(e)) # this error will be logged to the folder logs in the current working directory
-          print('reading from clone\n----ignore error-----')
-          self.Model = self.load_apsimx_from_string(path)
-          raise
+            logger.exception(repr(e))  # this error will be logged to the folder logs in the current working directory
+            print('reading from clone\n----ignore error-----')
+            self.Model = self.load_apsimx_from_string(path)
+            raise
         self.datastore = self.Model.FindChild[Models.Storage.DataStore]().FileName
         self._DataStore = self.Model.FindChild[Models.Storage.DataStore]()
-    
-    def load_external_apsimx(self, path, read_from_string = True):
+
+    def load_external_apsimx(self, path, read_from_string=True):
         # when we load we replace exisiting ones, so fune null it
         self.Model = None
         self.path = path
         try:
-         assert path.endswith(".apsimx"), "file path is missing apsim extention. did you forget to include .apsimx extension"
-         if read_from_string:
-           self.load_apsimx_from_string(path)
-         else:
-           self.Model = FileFormat.ReadFromFile[Models.Core.Simulations](path, None, False) 
+            assert path.endswith(
+                ".apsimx"), "file path is missing apsim extention. did you forget to include .apsimx extension"
+            if read_from_string:
+                self.load_apsimx_from_string(path)
+            else:
+                self.Model = FileFormat.ReadFromFile[Models.Core.Simulations](path, None, False)
         except Exception as e:
-          logger.exception(repr(e)) # this error will be logged to the folder logs in the current working directory
-          raise
+            logger.exception(repr(e))  # this error will be logged to the folder logs in the current working directory
+            raise
         self.datastore = self.Model.FindChild[Models.Storage.DataStore]().FileName
         self._DataStore = self.Model.FindChild[Models.Storage.DataStore]()
+
     def _reload_saved_file(self):
         self.save_edited_file(self.path)
-       
+
     def save_edited_file(self):
         """Save the model
 
@@ -223,11 +250,12 @@ class APSIMNG():
         if self.out_path is None:
             out_path = self.path
         else:
-            out_path  = self.out_path
+            out_path = self.out_path
         json = Models.Core.ApsimFile.FileFormat.WriteToString(self.Model)
         with open(out_path, "w") as f:
             f.write(json)
-    
+
+    @timing_decorator
     def run(self, simulations=None, clean=False, multithread=True):
         """Run apsim model in the simulations
 
@@ -246,31 +274,28 @@ class APSIMNG():
             runtype = Models.Core.Run.Runner.RunTypeEnum.SingleThreaded
 
         # Clear old data before running
-        self.results=None
+        self.results = None
         if clean:
-         
             self._DataStore.Dispose()
             pathlib.Path(self._DataStore.FileName).unlink(missing_ok=True)
             self._DataStore.Open()
 
         if simulations is None:
-          runmodel = Models.Core.Run.Runner(self.Model, True, False, False, None, runtype) 
-          e = runmodel.Run()
+            runmodel = Models.Core.Run.Runner(self.Model, True, False, False, None, runtype)
+            e = runmodel.Run()
         else:
-          sims = self.find_simulations(simulations)
-        # Runner needs C# list
-          cs_sims = List[Models.Core.Simulation]()
-          for s in sims:
-           cs_sims.Add(s)
-           runmodel = Models.Core.Run.Runner(cs_sims, True, False, False, None, runtype)
-           e = runmodel.Run()
+            sims = self.find_simulations(simulations)
+            # Runner needs C# list
+            cs_sims = List[Models.Core.Simulation]()
+            for s in sims:
+                cs_sims.Add(s)
+                runmodel = Models.Core.Run.Runner(cs_sims, True, False, False, None, runtype)
+                e = runmodel.Run()
 
-       
         if (len(e) > 0):
             print(e[0].ToString())
         self.results = self._read_simulation()
-        #print(self.results)
-        
+        # print(self.results)
 
     def clone_simulation(self, target, simulation=None):
         """Clone a simulation and add it to Model
@@ -287,8 +312,8 @@ class APSIMNG():
 
         clone_sim = Models.Core.Apsim.Clone(sim)
         clone_sim.Name = target
-        #clone_zone = clone_sim.FindChild[Models.Core.Zone]()
-        #clone_zone.Name = target
+        # clone_zone = clone_sim.FindChild[Models.Core.Zone]()
+        # clone_zone.Name = target
 
         self.Model.Children.Add(clone_sim)
         self._reload_saved_file()
@@ -306,6 +331,7 @@ class APSIMNG():
         self.Model.Children.Remove(sim)
         self.save_edited_file()
         self._load_apsimx(self.path)
+
     @property
     def extract_simulation_name(self):
         """print or extract a simulation name from the model
@@ -319,6 +345,7 @@ class APSIMNG():
         for simu in self.simulations:
             sim_names.append(simu.Name)
             return sim_names
+
     def clone_zone(self, target, zone, simulation=None):
         """Clone a zone and add it to Model
 
@@ -356,66 +383,69 @@ class APSIMNG():
         sim = self._find_simulation(simulation)
         zones = sim.FindAllDescendants[Models.Core.Zone]()
         return list(zones)
-    @property # 
-    def extract_report_names(self, report_name= None):
+
+    @property  #
+    def extract_report_names(self, report_name=None):
         ''' returns all data frame the available report tables'''
         with sqlite3.connect(self.datastore) as conn:
-        
+
             cursor = conn.cursor()
 
             # reading all table names
-                    
+
             table_names = [a for a in cursor.execute("SELECT name FROM sqlite_master WHERE type = 'table'")]
 
             table_list = []
             for i in table_names:
                 table_list.append(i[0])
-                            # remove these
+                # remove these
             rm = ['_InitialConditions', '_Messages', '_Checkpoints', '_Units']
             for i in rm:
                 if i in table_list:
-                  table_list.remove(i)
+                    table_list.remove(i)
                 # start selecting tables
             return table_list
-    def _read_simulation(self, report_name= None):
+
+    def _read_simulation(self, report_name=None):
         ''' returns all data frame the available report tables'''
         conn = sqlite3.connect(self.datastore)
         cursor = conn.cursor()
 
         # reading all table names
-                  
+
         table_names = [a for a in cursor.execute("SELECT name FROM sqlite_master WHERE type = 'table'")]
 
         table_list = []
         for i in table_names:
             table_list.append(i[0])
-                         # remove these
+            # remove these
         rm = ['_InitialConditions', '_Messages', '_Checkpoints', '_Units']
         for i in rm:
             if i in table_list:
-             table_list.remove(i)
-              # start selecting tables
+                table_list.remove(i)
+                # start selecting tables
         select_template = 'SELECT * FROM {table_list}'
-    
-             #create data fram dictionary to keep all the tables
+
+        # create data fram dictionary to keep all the tables
         dataframe_dict = {}
-                 
+
         for tname in table_list:
-            query = select_template.format(table_list = tname)
+            query = select_template.format(table_list=tname)
             dataframe_dict[tname] = pd.read_sql(query, conn)
-       # close the connection cursor
-        conn.close()         
+        # close the connection cursor
+        conn.close()
         dfl = len(dataframe_dict)
         if len(dataframe_dict) == 0:
             print("the data dictionary is empty. no data has been returned")
-                    #else:
-                        # remove elements 
-                        #print(f"{dfl} data frames has been returned")
-        
+            # else:
+            # remove elements
+            # print(f"{dfl} data frames has been returned")
+
         if report_name:
-            return dataframe_dict[report_name] 
-        else:                            
-           return dataframe_dict
+            return dataframe_dict[report_name]
+        else:
+            return dataframe_dict
+
     @staticmethod
     def _read_external_simulation(datastore, report_name=None):
         ''' returns all data frame the available report tables'''
@@ -465,8 +495,9 @@ class APSIMNG():
                 p, v = c.split("=")
                 params[p.strip()] = v.strip()
         return params
+
     def _find_replacement(self):
-        rep= self.Model.FindChild[Models.Core.Folder]()
+        rep = self.Model.FindChild[Models.Core.Folder]()
         return rep
 
     def _find_cultvar(self, CultvarName):
@@ -478,6 +509,7 @@ class APSIMNG():
                 return cult
                 break
         return rep
+
     def get_crop_replacement(self, Crop):
         """
         :param Crop: crop to get the replacement
@@ -489,9 +521,10 @@ class APSIMNG():
         for i in crop_rep:
             print(i.Name)
             if i.Name == Crop:
-              return i
+                return i
         return self
-    def edit_cultivar(self,CultvarName, commands: tuple, values: tuple):
+
+    def edit_cultivar(self, CultvarName, commands: tuple, values: tuple):
         """
 
         :param CultvarName: name of the cultvar e.g laila
@@ -511,82 +544,90 @@ class APSIMNG():
             raise ValueError("values must be presented as a list")
         cultvar = self._find_cultvar(CultvarName)
         params = self._cultivar_params(cultvar)
-        for com, val in zip(commands, values): # when a command exists it is replaced, this avoids duplicates as dictioanry names do not repeat
+        for com, val in zip(commands,
+                            values):  # when a command exists it is replaced, this avoids duplicates as dictioanry names do not repeat
             params[com] = val
         commands = [f"{k}={v}" for k, v in params.items()]
         cultvar.set_Command(commands)
         return self
+
     def get_current_cultvar_name(self, ManagerName):
-        #if ParameterName != CultivarName:
+        # if ParameterName != CultivarName:
         try:
             ap = self.extract_user_input(ManagerName)['CultivarName']
             return ap
         except  KeyError:
-          parameterName = 'CultivarName'
-          print(f"default parameter name is: {parameterName} please change in it your manager script and try again")
-
+            parameterName = 'CultivarName'
+            print(f"default parameter name is: {parameterName} please change in it your manager script and try again")
 
     @staticmethod
     def examine_attributes(object):
         at = dir(object)
         for i in at:
             print(i, "\n")
+
     @staticmethod
     def get_result_stat(df, column, statistic):
-       
+
         # Define a dictionary mapping statistic names to corresponding functions
         stat_functions = {
             'mean': lambda x: x.mean(),
             'max': lambda x: x.max(),
             'median': lambda x: x.median(),
-             'min': lambda x: x.min(),
+            'min': lambda x: x.min(),
             'std': lambda x: x.std(),
             'first': lambda x: x.iloc[0],
             'last': lambda x: x.iloc[-1],
-            'diff': lambda x: x.iloc[-1]- x.iloc[0]
+            'diff': lambda x: x.iloc[-1] - x.iloc[0]
         }
 
         # Get the desired statistic function from the dictionary
         func = stat_functions.get(statistic)
 
         if func is None:
-            raise ValueError("Invalid statistic. Supported statistics are 'mean', 'max', 'median', 'std', 'first', and 'last'.")
+            raise ValueError(
+                "Invalid statistic. Supported statistics are 'mean', 'max', 'median', 'std', 'first', and 'last'.")
 
         # Calculate the desired statistic for the specified column
         result = func(df[column])
 
         return result
+
     @staticmethod
     def generate_unique_name(base_name, length=6):
         random_suffix = ''.join(random.choices(string.ascii_lowercase, k=length))
         unique_name = base_name + '_' + random_suffix
         return unique_name
+
     def copy_apsim_file(self):
-        path  = os.getcwd()
+        path = os.getcwd()
         file_path = opj(path, self.generate_unique_name("clones")) + ".apsimx"
         shutil.copy(self.path, file_path)
-    def make_apsimx_clones(self, number = 40):
+
+    def make_apsimx_clones(self, number=40):
         self.clones = make_apsimx_clones(self.path, number)
         return self
-    def summarize_output_variable(self, var_name, table_name = 'Report'):
-        data  = self.results[table_name]
-        
+
+    def summarize_output_variable(self, var_name, table_name='Report'):
+        data = self.results[table_name]
+
         dic = {}
         index = ['stat']
         for i in ['mean', 'max', 'min', 'first', 'last', 'std', 'diff']:
-            varname= f"{var_name}_" + i
+            varname = f"{var_name}_" + i
             dic[varname] = APSIMNG.get_result_stat(data, var_name, i)
-        output_variable_statistics = pd.DataFrame(dic, index =index)
-        return output_variable_statistics 
-    def collect_data_for_specific_crop(self,crop, rotation, variable, report_name, statistic):
-      assert isinstance(crop, str), "crop name must be a string"
-      assert isinstance(rotation, str), "Rotation name must tbe a string"
-      if crop in rotation:
-         df= self.results[report_name]
-         result = self.get_result_stat(df, column =variable, statistic =statistic)
-         return result
-      
-    
+        output_variable_statistics = pd.DataFrame(dic, index=index)
+        return output_variable_statistics
+
+    @timing_decorator
+    def collect_data_for_specific_crop(self, crop, rotation, variable, report_name, statistic):
+        assert isinstance(crop, str), "crop name must be a string"
+        assert isinstance(rotation, str), "Rotation name must tbe a string"
+        if crop in rotation:
+            df = self.results[report_name]
+            result = self.get_result_stat(df, column=variable, statistic=statistic)
+            return result
+
     @staticmethod
     def collect_specificreport(results, report_names, var_names, stat):
         """_summary_
@@ -602,7 +643,7 @@ class APSIMNG():
         stat = stat
         data = results[report_names]
         return data
-        
+
     def update_cultivar(self, parameters, simulations=None, clear=False):
         """Update cultivar parameters
 
@@ -623,10 +664,10 @@ class APSIMNG():
             else:
                 params = self._cultivar_params(cultivar)
                 params.update(parameters)
-            cultivar.Command = [f"{k}={v}" for k,v in params.items()]
+            cultivar.Command = [f"{k}={v}" for k, v in params.items()]
 
             self.cultivar_command = params
-    
+
     def examine_management_info(self, simulations=None):
         """this will show the current management scripts in the simulation root
 
@@ -638,16 +679,17 @@ class APSIMNG():
             use the property decorator 'extract_simulation_name'
         """
         try:
-         for sim in self.find_simulations(simulations):
-            zone = sim.FindChild[Models.Core.Zone]()
-            print("Zone:", zone.Name)
-            for action in zone.FindAllChildren[Models.Manager]():
-                print("\t", action.Name, ":")
-                for param in action.Parameters:
-                    print("\t\t", param.Key,":", param.Value)
+            for sim in self.find_simulations(simulations):
+                zone = sim.FindChild[Models.Core.Zone]()
+                print("Zone:", zone.Name)
+                for action in zone.FindAllChildren[Models.Manager]():
+                    print("\t", action.Name, ":")
+                    for param in action.Parameters:
+                        print("\t\t", param.Key, ":", param.Value)
         except Exception as e:
             logger.exception(repr(e))
             raise
+
     def update_management_decissions(self, management, simulations=None, reload=False):
         """Update management, handles one manager at a time
 
@@ -662,13 +704,12 @@ class APSIMNG():
         reload, optional
             _description_ defaults to True
         """
-       
-        
+
         for sim in self.find_simulations(simulations):
 
             zone = sim.FindChild[Models.Core.Zone]()
             zn = zone.FindAllChildren[Models.Manager]()
-            
+
             for action in zone.FindAllChildren[Models.Manager]():
                 if action.Name == management["Name"]:
                     values = management
@@ -676,13 +717,13 @@ class APSIMNG():
                         param = action.Parameters[i].Key
                         if param in values:
                             action.Parameters[i] = KeyValuePair[String, String](param, f"{values[param]}")
-                            #action.RebuildScriptModel() # thoought recompiling problem solved
+                            # action.RebuildScriptModel() # thoought recompiling problem solved
             if reload:
-               self.save_edited_file()
+                self.save_edited_file()
             if self.out_path:
                 self._load_apsimx(self.out_path)
             else:
-                self._load_apsimx(self.path)                  
+                self._load_apsimx(self.path)
         return self
 
     def worker(self, management, simulations, reload):
@@ -690,7 +731,7 @@ class APSIMNG():
             self.update_management_decissions(management, simulations=simulations, reload=reload)
         except Exception as e:
             print(f"Failed to process {management}: {e}")
-            
+
     def Update_management(self, management_list, simulations=None, reload=True):
         import queue
         if simulations is None:
@@ -728,9 +769,9 @@ class APSIMNG():
                 self._load_apsimx(self.path)
 
         return self
-        
 
     # Convert CS KeyValuePair to dictionary
+    @timing_decorator
     def update_multiple_management_decissions(self, management_list, simulations=None, reload=False):
         """Update management, handles multiple managers in a loop
 
@@ -745,13 +786,13 @@ class APSIMNG():
         reload, optional
             _description_ defaults to True
         """
-        #from apsimx.utils import KeyValuePair
+        # from apsimx.utils import KeyValuePair
         for sim in self.find_simulations(simulations):
             zone = sim.FindChild[Models.Core.Zone]()
 
             for action in zone.FindAllChildren[Models.Manager]():
 
-                #action.Children.Remove("Post")
+                # action.Children.Remove("Post")
                 for management in management_list:
                     if action.Name == management["Name"]:
                         values = management
@@ -762,19 +803,17 @@ class APSIMNG():
                                 fvalue = f"{values[param]}"
                                 action.Parameters[i] = KeyValuePair[String, String](param, fvalue)
 
-                                #action.Parameters[i]= {param:f"{values[param]}"}
-                               #action.GetParametersFromScriptModel()
+                                # action.Parameters[i]= {param:f"{values[param]}"}
+                            # action.GetParametersFromScriptModel()
 
             if reload:
-               self.save_edited_file()
+                self.save_edited_file()
             if self.out_path:
                 self._load_apsimx(self.out_path)
             else:
-                self._load_apsimx(self.path)                
+                self._load_apsimx(self.path)
         return self
 
-    
-    
     def wupdate_multiple_management_decisions(self, management_list, simulations=None, reload=False):
         simulations = self.find_simulations(simulations)
         for sim in simulations:
@@ -800,7 +839,8 @@ class APSIMNG():
         return self
 
     def show_file_in_APSIM_GUI(self):
-          os.startfile(self.path)
+        os.startfile(self.path)
+
     def dynamic_path_handler(self):
         self.save_edited_file()
         if self.out_path:
@@ -810,29 +850,30 @@ class APSIMNG():
         return self
 
     def _kvtodict(self, kv):
-        return {kv[i].Key : kv[i].Value for i in range(kv.Count)}
+        return {kv[i].Key: kv[i].Value for i in range(kv.Count)}
 
     def extract_user_input(self, manager_name):
         """Get user_input of a given model manager script
         returns;  a dictionary
         """
-        
+
         for sim in self.simulations:
             actions = sim.FindAllDescendants[Models.Manager]()
             out = {}
             out["simulation"] = sim.Name
             for action in actions:
                 if action.Name == manager_name:
-                  params = self._kvtodict(action.Parameters)
-                  return params
+                    params = self._kvtodict(action.Parameters)
+                    return params
+
     import datetime
     @staticmethod
     def strip_time(date_string):
-      date_object = datetime.datetime.strptime(date_string, "%Y-%m-%d")
-      formatted_date_string = date_object.strftime("%Y-%m-%dT%H:%M:%S")
-      return formatted_date_string  # Output: 2010-01-01T00:00:00
+        date_object = datetime.datetime.strptime(date_string, "%Y-%m-%d")
+        formatted_date_string = date_object.strftime("%Y-%m-%dT%H:%M:%S")
+        return formatted_date_string  # Output: 2010-01-01T00:00:00
 
-    def change_simulation_dates(self, start_date=None, end_date=None, simulations = None):
+    def change_simulation_dates(self, start_date=None, end_date=None, simulations=None):
         """Set simulation dates. this is important to run this method befire run the weather repalcement method as 
         the date needs to be alligned int weather
 
@@ -847,19 +888,19 @@ class APSIMNG():
         """
         for sim in self.find_simulations(simulations):
             clock = sim.FindChild[Models.Clock]()
-            
+
             if start_date is not None:
                 dateString1 = start_date
-                self.start = DateTime.Parse(dateString1) 
+                self.start = DateTime.Parse(dateString1)
                 clock.Start = self.start
-                               
+
             if end_date is not None:
                 dateString2 = end_date
                 self.end = DateTime.Parse(dateString2)
                 clock.End = self.end
-         
+
     @property
-    def extract_dates(self, simulations = None):
+    def extract_dates(self, simulations=None):
         """Get simulation dates in the model
 
         Parameters
@@ -870,7 +911,7 @@ class APSIMNG():
         -------
             Dictionary of simulation names with dates
         """
-        dates =  {}
+        dates = {}
         for sim in self.find_simulations(simulations):
             clock = sim.FindChild[Models.Clock]()
             st = clock.Start
@@ -879,8 +920,8 @@ class APSIMNG():
             dates[sim.Name]["start"] = datetime.date(st.Year, st.Month, st.Day)
             dates[sim.Name]["end"] = datetime.date(et.Year, et.Month, et.Day)
         return dates
-    
-    def extract_start_end_years(self, simulations = None):
+
+    def extract_start_end_years(self, simulations=None):
         """Get simulation dates
 
         Parameters
@@ -891,13 +932,14 @@ class APSIMNG():
         -------
             Dictionary of simulation names with dates
         """
-        dates =  {}
+        dates = {}
         for sim in self.find_simulations(simulations):
             clock = sim.FindChild[Models.Clock]()
             start = clock.Start
             end = clock.End
         return start.Year, end.Year
-    def replace_met_file(self, weather_file, simulations = None):
+
+    def replace_met_file(self, weather_file, simulations=None):
         try:
             """searched the weather node and replaces it with a new one
 
@@ -908,20 +950,22 @@ class APSIMNG():
             simulations, optional
                 List of simulation names to update, if `None` update all simulations
             """
-            assert weather_file.endswith('.met'), "the file entered may not be a met file did you forget to put .met extension?"
+            assert weather_file.endswith(
+                '.met'), "the file entered may not be a met file did you forget to put .met extension?"
             for sim_name in self.find_simulations(simulations):
                 weathers = sim_name.FindAllDescendants[Weather]()
                 for met in weathers:
                     met.FileName = weather_file
         except Exception as e:
-          logger.exception(repr(e)) # this error will be logged to the folder logs in the current working directory
-          raise
+            logger.exception(repr(e))  # this error will be logged to the folder logs in the current working directory
+            raise
+
     def show_met_file_in_simulation(self):
         """Show weather file for all simulations"""
         for weather in self.Model.FindAllDescendants[Weather]():
             return weather.FileName
 
-    def change_report_variables(self, report, simulations = None):
+    def change_report_variables(self, report, simulations=None):
         """Set APSIM report
 
         Parameters
@@ -936,7 +980,7 @@ class APSIMNG():
             r = sim.FindDescendant[Models.Report]()
             r.set_VariableNames(report.strip().splitlines())
 
-    def get_report(self, simulation = None):
+    def get_report(self, simulation=None):
         """Get current report string
 
         Parameters
@@ -951,7 +995,7 @@ class APSIMNG():
         report = list(sim.FindAllDescendants[Models.Report]())[1]
         return list(report.get_VariableNames())
 
-    def extract_soil_physical(self, simulation = None):
+    def extract_soil_physical(self, simulation=None):
         """Find physical soil
 
         Parameters
@@ -966,7 +1010,8 @@ class APSIMNG():
             soil_object = simu.FindDescendant[Soil]()
             physical_soil = soil_object.FindDescendant[Physical]()
             return physical_soil
-    def extract_any_soil_physical(self, parameter, simulation =None):
+
+    def extract_any_soil_physical(self, parameter, simulation=None):
         """extracts soil physical parameters in the simulation
 
         Args:
@@ -975,11 +1020,12 @@ class APSIMNG():
         -------------------------
         returns an array of the parameter values
         """
-        assert isinstance(parameter, str) ==True, "Soil parameter name must be a string"
+        assert isinstance(parameter, str) == True, "Soil parameter name must be a string"
         soil_physical = self.extract_soil_physical(simulation)
         soilp_param = getattr(soil_physical, parameter)
         return list(soilp_param)
-    def replace_any_soil_physical(self, parameter, param_values,simulation =None):
+
+    def replace_any_soil_physical(self, parameter, param_values, simulation=None):
         """relaces specified soil physical parameters in the simulation
 
         Args:
@@ -987,11 +1033,13 @@ class APSIMNG():
             simulation (string, optional): Targeted simulation name. Defaults to None.
             param_values (array, required): arrays or list of values for the specified parameter to replace
         """
-        assert len(param_values) == len(self.extract_any_soil_physical(parameter, simulation)), 'lengths are not equal please try again'
+        assert len(param_values) == len(
+            self.extract_any_soil_physical(parameter, simulation)), 'lengths are not equal please try again'
         soil_physical = self.extract_soil_physical(simulation)
         setattr(soil_physical, parameter, param_values)
+
     # find organic paramters
-    def extract_soil_organic(self, simulation = None):
+    def extract_soil_organic(self, simulation=None):
         """Find physical soil
 
         Parameters
@@ -1006,8 +1054,8 @@ class APSIMNG():
             soil_object = simu.FindDescendant[Soil]()
             organic_soil = soil_object.FindDescendant[Organic]()
             return organic_soil
-        
-    def extract_any_soil_organic(self, parameter, simulation =None ):
+
+    def extract_any_soil_organic(self, parameter, simulation=None):
         """extracts any specified soil  parameters in the simulation
 
         Args:
@@ -1015,11 +1063,12 @@ class APSIMNG():
             simulation (string, optional): Targeted simulation name. Defaults to None.
             param_values (array, required): arrays or list of values for the specified parameter to replace
         """
-        assert isinstance(parameter, str) ==True, "Soil parameter name must be a string"
-        soil_organic= self.extract_soil_organic(simulation)
-        get_organic= getattr(soil_organic, parameter)
+        assert isinstance(parameter, str) == True, "Soil parameter name must be a string"
+        soil_organic = self.extract_soil_organic(simulation)
+        get_organic = getattr(soil_organic, parameter)
         return list(get_organic)
-    def replace_any_soil_organic(self, parameter, param_values,simulation =None):
+
+    def replace_any_soil_organic(self, parameter, param_values, simulation=None):
         """replaces any specified soil  parameters in the simulation
 
         Args:
@@ -1027,11 +1076,13 @@ class APSIMNG():
             simulation (string, optional): Targeted simulation name. Defaults to None.
             param_values (array, required): arrays or list of values for the specified parameter to replace
         """
-        assert len(param_values) == len(self.extract_any_soil_organic(parameter, simulation)), 'lengths are not equal please try again'
+        assert len(param_values) == len(
+            self.extract_any_soil_organic(parameter, simulation)), 'lengths are not equal please try again'
         soil_organic = self.extract_soil_organic(simulation)
         setattr(soil_organic, parameter, param_values)
+
     # Find a list of simulations by name
-    def extract_crop_soil_water(self, parameter, crop ="Maize", simulation =None):
+    def extract_crop_soil_water(self, parameter, crop="Maize", simulation=None):
         """_summary_
 
         Args:
@@ -1046,14 +1097,15 @@ class APSIMNG():
         assert isinstance(crop, str), "Crop name should be a string"
         for simu in self.find_simulations(simulation):
             soil_object = simu.FindDescendant[Soil]()
-            soil_crop = soil_object.FindAllDescendants[SoilCrop]() 
+            soil_crop = soil_object.FindAllDescendants[SoilCrop]()
             # can be use to target specific crop
             for crops in soil_crop:
                 crop_soil = crop + "Soil"
                 if crops.Name == crop_soil:
                     param_values = getattr(crops, parameter)
                     return list(param_values)
-    def replace_crop_soil_water(self, parameter,  param_values, crop ="Maize",simulation =None):
+
+    def replace_crop_soil_water(self, parameter, param_values, crop="Maize", simulation=None):
         """_summary_
 
         Args:
@@ -1070,16 +1122,15 @@ class APSIMNG():
         assert isinstance(crop, str), "Crop name should be a string"
         for simu in self.find_simulations(simulation):
             soil_object = simu.FindDescendant[Soil]()
-            soil_crop = soil_object.FindAllDescendants[SoilCrop]() 
+            soil_crop = soil_object.FindAllDescendants[SoilCrop]()
             # can be use to target specific crop
             for crops in soil_crop:
                 crop_soil = crop + "Soil"
                 if crops.Name == crop_soil:
                     setattr(crops, parameter, param_values)
                     break
-                    
-                    
-    def find_simulations(self, simulations = None):
+
+    def find_simulations(self, simulations=None):
         """Find simulations by name
 
         Parameters
@@ -1098,7 +1149,6 @@ class APSIMNG():
         sims = []
         for s in self.simulations:
             if s.Name in simulations:
-                
                 sims.append(s)
         if len(sims) == 0:
             print("Not found!")
@@ -1106,21 +1156,21 @@ class APSIMNG():
             return sims
 
     # Find a single simulation by name
-    def _find_simulation(self, simulation = None):
+    def _find_simulation(self, simulation=None):
         if simulation is None:
-            return self.simulations # removed [0]
+            return self.simulations  # removed [0]
         sim = None
         for s in self.simulations:
             if s.Name == simulation:
-                
                 sim = s
                 break
         if sim is None:
             print("Not found!")
         else:
             return sim
-    #Make sure that crop ll is below and above LL15 DUL in all layers
-    def _harmonise_soil_water(self, simulation): # REPLACED _fix_crop_ll
+
+    # Make sure that crop ll is below and above LL15 DUL in all layers
+    def _harmonise_soil_water(self, simulation):  # REPLACED _fix_crop_ll
         cropll = self._extract_LL(simulation)
         dul = self._extract_DUL(simulation)
         ll15 = self._extract_LL15(simulation)
@@ -1133,7 +1183,7 @@ class APSIMNG():
                 cropll[j] = ll15[j]
 
         self.replace_crop_LL(cropll, simulation)
-    
+
     def set_swcon(self, swcon, simulations=None):
         """Set soil water conductivity (SWCON) constant for each soil layer.
 
@@ -1164,7 +1214,6 @@ class APSIMNG():
         wb = sim.FindDescendant[Models.WaterModel.WaterBalance]()
         return np.array(wb.SWCON)
 
-    
     def plot_objectives(self, x, *args, **kwargs):
         """
 
@@ -1174,24 +1223,23 @@ class APSIMNG():
         :return: graph
         """
         assert self.results, "Please run the apsim simulation first"
-        assert len(kwargs) ==1, "Please provide atleast one report table"
+        assert len(kwargs) == 1, "Please provide atleast one report table"
         assert isinstance(x, str), 'x variable must be a string'
         report_name = [p for p in kwargs.values()][0]
         report_table = self.results[report_name]
         for y in args:
             assert y in report_table.columns, f"Column '{y}' must be in the data frame."
-        x_variable  = report_table[x]
+        x_variable = report_table[x]
         for obj, y in enumerate(args):
             y_variable = report_table[y]
             print(len(y))
 
             plt.figure(figsize=(7, 5))
-            plt.plot( x_variable,  y_variable)
+            plt.plot(x_variable, y_variable)
             plt.title(f"{x} vs {y} plot")
             plt.xlabel(f"{x}")  # Add x-axis label
             plt.ylabel(f"{y}")
             plt.show()
-    
 
     def extract_soil_profile(self, simulation=None):
         """Get soil definition as dataframe
@@ -1210,11 +1258,11 @@ class APSIMNG():
         cll = self.get_crop_ll(simulation)
         psoil = self.find_physical_soil(simulation)
         depth = psoil.Depth
-        return pd.DataFrame({"Depth" : depth, "LL15" : ll15, "DUL" : dul, "SAT" : sat, "Crop LL" : cll,
-                    "Bulk density": self.get_bd(simulation),
-                    "SWCON" : self.get_swcon(simulation),
-                    "Initial NO3" : self.get_initial_no3(simulation),
-                    "Initial NH4" : self.get_initial_nh4(simulation)})
+        return pd.DataFrame({"Depth": depth, "LL15": ll15, "DUL": dul, "SAT": sat, "Crop LL": cll,
+                             "Bulk density": self.get_bd(simulation),
+                             "SWCON": self.get_swcon(simulation),
+                             "Initial NO3": self.get_initial_no3(simulation),
+                             "Initial NH4": self.get_initial_nh4(simulation)})
 
     def _find_solute(self, solute, simulation=None):
         sim = self._find_simulation(simulation)
@@ -1228,9 +1276,10 @@ class APSIMNG():
         self._DataStore = None
         self.datastore = None
         self.results = None
-        self.file_name =None
+        self.file_name = None
         return self
-    def replace_soil_organic(self, organic_name, simulation_name =None):
+
+    def replace_soil_organic(self, organic_name, simulation_name=None):
         """replace the organic module comprising Carbon , FBIOm, FInert/ C/N
 
         Args:
@@ -1246,13 +1295,11 @@ class APSIMNG():
         s = self._find_solute(name, simulation)
         return np.array(s.InitialValues)
 
-
     def _set_initial_solute_values(self, name, values, simulations):
         sims = self.find_simulations(simulations)
         for sim in sims:
             s = self._find_solute(name, sim.Name)
             s.InitialValues = values
-
 
     def set_initial_nh4(self, values, simulations=None):
         """Set soil initial NH4 content
@@ -1284,9 +1331,11 @@ class APSIMNG():
         self._set_initial_values("Urea", values, simulations)
         # inherit properties from the ancestors apsimng object
 
+
 class ApsimSoil(APSIMNG):
     try:
-        def __init__(self, model: Union[str, Simulations], copy =False, out_path = None, read_from_string=True, lonlat=None,
+        def __init__(self, model: Union[str, Simulations], copy=False, out_path=None, read_from_string=True,
+                     lonlat=None,
                      soil_series='domtcp', thickness=20, bottomdepth=200, thickness_values=None, run_all_soils=False):
             super().__init__(model, copy)
             """get suurgo soil tables and organise it to apsim soil profiles
@@ -1303,8 +1352,8 @@ class ApsimSoil(APSIMNG):
             self.simulation_names = self.path
             self.soil_series = soil_series
             self.thickness = thickness
-            self.out_path  = out_path
-            self.copy =copy
+            self.out_path = out_path
+            self.copy = copy
             self.run_all_soils = run_all_soils
             if not isinstance(thickness_values, np.ndarray):
                 self.thickness_values = np.array(thickness_values, dtype=np.float64)  # apsim uses floating digit number
@@ -1315,7 +1364,6 @@ class ApsimSoil(APSIMNG):
             sim = self._find_simulation(simulation)
             solutes = sim.FindAllDescendants[Models.Soils.Solute]()
             return [s for s in solutes if s.Name == solute][0]
-
 
         def _get_initial_chemical_values(self, name, simulation):
             s = self._find_soil_solute(name, simulation)
@@ -1477,6 +1525,7 @@ class ApsimSoil(APSIMNG):
             return self
             # print(self.results)
 
+        @timing_decorator
         def replace_downloaded_soils(self, soil_tables, simulation_names):  # unique for my project
             self.thickness_replace = self.thickness_values
             physical_calculated = soil_tables[0]
@@ -1617,6 +1666,8 @@ class ApsiMet(APSIMNG):
         else:
             sim_name = self.extract_simulation_name  # because it is a property decorator
         self.replace_met_file(wp, sim_name)
+
+
 def load_apsimx(pathstring):
     with open(pathstring, "r+") as apsimx:
         app_ap = json.load(apsimx)
@@ -1625,5 +1676,3 @@ def load_apsimx(pathstring):
     model = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](string_name, None, False,
                                                                                      fileName=fn)
     return model
-
-

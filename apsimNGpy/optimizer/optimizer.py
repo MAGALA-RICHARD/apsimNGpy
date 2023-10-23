@@ -1,17 +1,13 @@
 
-
-__all__ = ['Optimize', 'methods']
-
 import numpy as np
 from scipy.optimize import minimize, least_squares
-import apsimNGpy
 from apsimNGpy.validation.evaluator import validate
 from apsimNGpy.apsimpy import ApsimSoil
 from pathlib import Path
 from apsimNGpy.base_data import load_example_files
 import pandas as pd
 import time
-
+from ..apsimpy import ApsimSoil
 #=============================================================================================================
 cwd  = Path.cwd()
 data  = load_example_files(cwd)

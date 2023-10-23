@@ -65,6 +65,8 @@ class Problem:
         self.n_obj = nu_obj
         self.n_ieq_constr = nu_ieq_constr
 
+def substract():
+    print("subtract")
 class Optimize:
     def __init__(self, method= 'L-BFGS-B'):
         # tested algarithm:

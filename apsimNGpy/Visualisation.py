@@ -1,6 +1,7 @@
 import os
 from importlib.resources import files
 wp = 'NewMetrrr.met'
+from utililies.utils import collect_runfiles
 def weather(path):
     resource_directory = files('apsimNGpy')
     data_file_path = resource_directory / 'basefiles' / wp

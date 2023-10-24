@@ -4,6 +4,8 @@ import os
 VERSION = '0.0.3beta'
 DESCRIPTION = 'apsimx next generation package interface'
 LONG_DESCRIPTION = 'run, edit, download soils and weather and interact with the apsimx file'
+with open('README.rst') as readme_file:
+    readme = readme_file.read()
 setup(
     name='apsimNGpy',
     version='0.0.3',
@@ -12,7 +14,7 @@ setup(
     author='Richard Magala',
     author_email='magalarich20@gmail.com',
     description=DESCRIPTION,
-    long_description=LONG_DESCRIPTION,
+    long_description=readme,
     packages=find_packages(),
     include_package_data=True,
     package_data={'': ['basefiles/*.apsimx', 'basefiles/*.met']},

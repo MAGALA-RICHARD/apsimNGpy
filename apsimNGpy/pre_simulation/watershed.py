@@ -22,7 +22,7 @@ import numpy as np
 from apsimNGpy.manager import soilmanager
 import datetime
 from tqdm import tqdm
-import weather
+import apsimNGpy.weather as weather
 import pythonnet
 from apsimNGpy.utililies.run_utils import load_apsimx_from_string
 COUNTER = 1

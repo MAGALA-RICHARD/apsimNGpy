@@ -2,14 +2,13 @@
 
 import os, glob, time, random, sys, shutil, queue
 root = os.path.dirname(os.path.realpath(__file__))
-path = os.path.join(root, 'manager')
-path_utilities = os.path.join(root, 'utililies')
-main_root = os.path.realpath(os.path.dirname(root))
+# path = os.path.join(root, 'manager')
+# path_utilities = os.path.join(root, 'utililies')
+# main_root = os.path.realpath(os.path.dirname(root))
 #sys.path.extend([path, path_utilities, root, main_root])
 from apsimNGpy.utililies.utils import  organize_crop_rotations, upload_weather, upload_apsimx_file, upload_apsimx_file_by_pattern
 from apsimNGpy.utililies.utils import load_from_numpy, collect_runfiles, get_data_element, add_wheat, delete_simulation_files, make_apsimx_clones
-import apsimpy
-import utils
+import apsimNGpy.apsimpy as apsimpy
 from apsimNGpy.manager.cropmanager import InsertCroppingSystems
 import threading
 from apsimpy import APSIMNG, detect_apsim_installation, ApsimSoil
@@ -20,12 +19,12 @@ import matplotlib.pyplot as plt
 from os.path import join as opj
 import pandas as pd
 import numpy as np
-import soilmanager
+from apsimNGpy.manager import soilmanager
 import datetime
 from tqdm import tqdm
 import weather
 import pythonnet
-from run_utils import load_apsimx_from_string
+from apsimNGpy.utililies.run_utils import load_apsimx_from_string
 COUNTER = 1
 # Get the current time
 def completed_time():

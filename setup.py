@@ -31,7 +31,9 @@ setup(
          'pythonnet >= 3.0.1',
          'rasterio >=1.3.8',
          'shapely >=2.0.1',
-         'clr >= 1.0.3'
+         'clr >= 1.0.3',
+         'geopandas >=0.13.2',
+         'pandas >=2.0.3'
 
 
     ]

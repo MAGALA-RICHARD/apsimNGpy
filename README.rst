@@ -60,8 +60,15 @@ However, for instance, sample usgae
 
     # Run the file
     apsim.run_edited_file()
+    # print the results
     print(apsim.results)
     # check the manager modules in the apsim simulation file
-|animation|
+    # first th=get the simualtion names
+    sim_name = apsim.extract_simulation_name
+    apsim.examine_management_info(simulations=sim_name)
+    # show current simulation in apsim GUI
+    apsim.show_file_in_APSIM_GUI()
+
+
 
 

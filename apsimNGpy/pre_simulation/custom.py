@@ -1,5 +1,5 @@
 # ______________________________________________________________________________
-
+from manager import soilmanager
 import random
 from collections import namedtuple
 from pathlib import Path
@@ -11,7 +11,7 @@ main_root = os.path.realpath(os.path.dirname(root))
 sys.path.extend([path, path_utilities, root, main_root])
 from utililies.utils import  organize_crop_rotations, upload_weather, upload_apsimx_file, upload_apsimx_file_by_pattern
 from utililies.utils import load_from_numpy, collect_runfiles, get_data_element, add_wheat, delete_simulation_files, make_apsimx_clones
-from cropmanager import InsertCroppingSystems
+from manager.cropmanager import InsertCroppingSystems
 import threading
 from apsimpy import APSIMNG, detect_apsim_installation, ApsimSoil
 from os.path import join, dirname

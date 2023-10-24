@@ -55,7 +55,7 @@ However, for instance, sample usgae
     # Get maize model
     maize = data.get_maize()
 
-    # Initialize the apsimsoil instance
+    # Initialize the simulation methods
     apsim = ApsimSoil(maize, copy=True)
 
     # Run the file

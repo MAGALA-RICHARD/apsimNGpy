@@ -201,10 +201,8 @@ class PreProcessor():
         for args in iter(queue.get, None):
             try:
                 self.idex_excutor(args, lock)
-                #self.results = None # we will collect these later
-            except Exception as e: # catch exceptions to avoid exiting the thread prematurely
-                print ('{0} failed: {1}'.format(args, e))#, file=sys.stderr
-                #os.startfile(self.show_file_in_APSIM_GUI())
+            except Exception as e:
+                print ('{0} failed: {1}'.format(args, e))
 
     def threaded_weather_download(self, wd = None, iterable  = None):
         if wd:

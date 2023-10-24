@@ -19,7 +19,6 @@ from utililies.utils import load_from_numpy, collect_runfiles, get_data_element,
 import apsimpy
 import utils
 import threading
-from apsimx import weather
 from apsimpy import APSIMNG, detect_apsim_installation, ApsimSoil
 from os.path import join, dirname
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, as_completed

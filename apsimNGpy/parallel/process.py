@@ -4,11 +4,12 @@ from time import perf_counter
 from tqdm import tqdm
 from os.path import dirname
 from os.path import join as opj
-path = dirname(os.path.realpath(__file__))
-root  = dirname(path)
-path = opj(root, 'utililies')
-sys.path.append(path)
-from run_utils import run_model, read_simulation
+#path = dirname(os.path.realpath(__file__))
+#root  = dirname(path)
+from ..utililies.run_utils import run_model, read_simulation
+#path = opj(root, 'utililies')
+#sys.path.append(path)
+#from run_utils import run_model, read_simulation
 
 
 #_______________________________________________________________

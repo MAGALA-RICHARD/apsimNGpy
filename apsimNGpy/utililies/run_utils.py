@@ -126,8 +126,6 @@ def run(named_tuple_data, clean=False, multithread=True, read_db =False):
             named_tuple_data.DataStore.Dispose()
             pathlib.Path(named_tuple_data.DataStore.FileName).unlink(missing_ok=True)
             named_tuple_data.DataStore.Open()
-
- 
         runmodel = Models.Core.Run.Runner(named_tuple_data.model, True, False, False, None, runtype)
         e = runmodel.Run()
         if read_db:
@@ -174,10 +172,6 @@ def read_simulation(datastore, report_name= 'MaizeR'):
         dfl = len(dataframe_dict)
         if len(dataframe_dict) == 0:
             print("the data dictionary is empty. no data has been returned")
-            # else:
-            # remove elements
-            # print(f"{dfl} data frames has been returned")
-
         if report_name:
             df = dataframe_dict[report_name]
             df['source'] = os.path.basename(datastore)

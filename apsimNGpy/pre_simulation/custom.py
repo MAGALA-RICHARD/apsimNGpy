@@ -3,6 +3,8 @@ from manager import soilmanager
 import random
 from collections import namedtuple
 from pathlib import Path
+print(Path.cwd())
+from utililies.utils import organize_crop_rotations, upload_weather, upload_apsimx_file, upload_apsimx_file_by_pattern
 import os, glob, time, sys, shutil, queue
 root = os.path.dirname(os.path.realpath(__file__))
 path = os.path.join(root, 'manager')

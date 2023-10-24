@@ -25,7 +25,14 @@ setup(
         ],
      install_requires=[
         'numpy>=1.20.0',
-        'scipy>=1.7'
+        'scipy>=1.7',
+         'xmltodict >=0.13.0',
+         'requests >=2.31.0',
+         'pythonnet >= 3.0.1'
+         'rasterio >=1.3.8'
+         'shapely >=2.0.1'
+
+
     ]
 )
 

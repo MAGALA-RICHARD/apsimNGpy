@@ -5,7 +5,7 @@ root = os.path.dirname(os.path.realpath(__file__))
 path = os.path.join(root, 'manager')
 path_utilities = os.path.join(root, 'utililies')
 main_root = os.path.realpath(os.path.dirname(root))
-sys.path.extend([path, path_utilities, root, main_root])
+#sys.path.extend([path, path_utilities, root, main_root])
 from apsimNGpy.utililies.utils import  organize_crop_rotations, upload_weather, upload_apsimx_file, upload_apsimx_file_by_pattern
 from apsimNGpy.utililies.utils import load_from_numpy, collect_runfiles, get_data_element, add_wheat, delete_simulation_files, make_apsimx_clones
 import apsimpy

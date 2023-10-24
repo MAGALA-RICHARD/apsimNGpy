@@ -32,26 +32,27 @@ b. Build APSIM from its source code. This is soon
 we are working on fixing this
 
 ```
-
 ## Usage:
-.. code:: python
 import apsimNGpy
 from apsimNGpy.base_data import load_example_files
 from apsimNGpy.apsimpy import ApsimSoil
 from pathlib import Path
+
 cwd = Path.cwd()
-# create the data
+
+# Create the data
 data = load_example_files(cwd)
-# get maize model
-maize = data.get_maize
-print(maize)
-## initialise the apsimsoil instac eobject
-apsim = ApsimSoil(maize, copy = True)
-# run the file
+
+# Get maize model
+maize = data.get_maize()
+
+# Initialize the apsimsoil instance
+apsim = ApsimSoil(maize, copy=True)
+
+# Run the file
 apsim.run_edited_file()
 print(apsim.results)
 
 ```
-
 
 

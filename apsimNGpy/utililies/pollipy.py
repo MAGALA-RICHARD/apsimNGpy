@@ -1,47 +1,32 @@
-import os,sys
+import os
+import sys
 import numpy as np
 from os.path import join as opj
 from multiprocessing import Pool
 import pandas as pd
-from Cypython import utils as utilsx
-from Cypython.utils import calculate_in_chunk as ch
-import cProfile
-import pstats
 import time
 import geopandas as gpd
-
 import math
-
 root = os.path.dirname(os.path.realpath(__file__))
 path = opj(root, 'manager')
 path_utilities = opj(root, 'utililies')
-
+import utils
+sys.path.append(path_utilities)
 import threading
-from concurrent.futures import ThreadPoolExecutor
-from concurrent.futures import ProcessPoolExecutor
-path  = os.path.dirname(__file__)
-sys.path.append(path)
-#from py_tools import create_fishnet
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 import copy
-from numba import jit
 from scipy.spatial.distance import cdist
 import pyproj
-from apsimx.utils import get_centroid
+from utils import get_centroid
 from shapely.geometry import Polygon
 from shapely.ops import unary_union
 from shapely.geometry import Point
-#from py_tools import rasterize2
-
 from tqdm import tqdm
-#from apsimx.utils import convert_geopoint_to_array, create_fishnet1, split_arr, pt
-
-path  = os.path.dirname(__file__)
-
 lock = threading.Lock()
-  
+
 class PollinationBase:
       np.set_printoptions(precision=4)
-      def __init__(self, in_landuseclass,  field, method = 'euclidean', resoln  = 50, 
+      def __init__(self, in_landuseclass,  field, method = 'euclidean', resoln  = 100,
                         SR= None, foraging_distance =700):
         """
             Initialize the RasterManagement object.
@@ -126,7 +111,7 @@ class PollinationBase:
       def get_fishnets(self):
           self.FishNets = self.create_fishnet1(self.layer, self.resolution, self.resolution)
           land_gdf = self.find_unique_classes()
-          print("joining fishnet with the main land coer class")
+          print("joining fishnet with the main land cover class")
           self.joined = gpd.sjoin(self.FishNets, land_gdf.gdf, how='right', predicate='within')
           self.Centroids = self.joined.centroid
           self.lonlat = PollinationBase.convert_centroid_lonlat(self.joined)
@@ -188,7 +173,7 @@ class PollinationBase:
 
       def calculate_in_chunk(self):
           self.Array = self.Array.astype('double')
-          self.num_cells = Cypython.utils.number_of_cells(self.foraging_distance, self.resolution)
+          self.num_cells = utils.number_of_cells(self.foraging_distance, self.resolution)
           foraging_aray = self.split_single(self.foraging_suitability, self.num_cells)
           arr = self.split_mult_D_array(self.Array, self.num_cells)
           #self.p = [cdist(i, i)*-1 for i in arr]
@@ -230,7 +215,7 @@ class PollinationBase:
         import random
         random.seed(10000)
         self.Array = self.Array.astype('double')
-        self.num_cells = Cypython.utils.number_of_cells(self.foraging_distance, self.resolution)
+        self.num_cells = utils.number_of_cells(self.foraging_distance, self.resolution)
         foraging_aray = self.split_single(self.foraging_suitability, self.num_cells)
         arr = self.split_mult_D_array(self.Array, self.num_cells)
         # Create a global lock
@@ -349,7 +334,8 @@ if __name__ == "__main__":
     os.chdir('D:\wd\GIS')
     np.set_printoptions(precision=2)
     a =time.perf_counter()
-    ptt = r'D:\ENw_data\creek.shp'    
+    ptt = r'D:\ENw_data\creek.shp'
+    print(os.path.exists(ptt))
     path = r'C:\Users\rmagala\OneDrive\Pollination mapping\Pollination analysis\Scripts\forage.csv'
     back_dir = os.path.join(os.path.dirname(path), 'Sample data')
     test_results  =  os.path.join(os.path.dirname(os.path.dirname(__file__)), 'Testing data')
@@ -363,37 +349,33 @@ if __name__ == "__main__":
 
     #initialize the pollination object
     pp = PollinationBase(in_landuseclass = ptt, resoln= 500, field = "GenLU")
-    pp.foraging_distance = 1100
-    pt = utilsx.number_of_cells(1500, 100)
-    print("number of cells is : ",pt)
-    pp.organise_suitability("classes.csv", "classes.csv")
-    ws = r'D:\ACPd\Base_files\acpf_huc070801050305'
-    pp.find_unique_classes()
-    #pp.calculate_in_chunk()
-    #profiler = cProfile.Profile()
-   # profiler.enable()
-    a = time.perf_counter()
-    #pp.calculate_in_chunk()
-    pp.calculalate()
-    print(pp.normalised_poll)
-    #profiler.disable()
-   # stats = pstats.Stats(profiler).sort_stats('cumulative')
-    #stats.print_stats()
-
-    b =time.perf_counter()
-    print(" single took: ", a - b, 'seconds')
-    a= time.perf_counter()
-    pp.calculate_in_chunk_ps()
-    b =time.perf_counter()
-    #print(pp.Normalised_pollination)
-    print("pool_processor took: ", a-b, 'seconds')
-    os.chdir(r'D:\wd\GIS')
-    np.save(f'FB070801050305_resoln_{pp.resolution}.npy', pp.record_array)
-    pat = os.path.join(os.getcwd(), f'FB070801050305_resoln_{pp.resolution}.csv')
-    print(pat)
-    pm= np.load(f'FB070801050305_resoln_{pp.resolution}.npy', allow_pickle =True)
-    pp.get_fishnets()
-    import numpy.lib.recfunctions as rfn
+    for _ in range(2):
+        pp.foraging_distance = 1100
+        pm =pp.get_fishnets()
+        print(pm.record_array)
+        break
+        pp.organise_suitability("classes.csv", "classes.csv")
+        ws = r'D:\ACPd\Base_files\acpf_huc070801050305'
+        pp.find_unique_classes()
+        #pp.calculate_in_chunk()
+        #profiler = cProfile.Profile()
+       # profiler.enable()
+        a = time.perf_counter()
+        #pp.calculate_in_chunk()
+        pp.calculalate()
+        print(pp.normalised_poll)
+        print(" single took: ", a - b, 'seconds')
+        a= time.perf_counter()
+        pp.calculate_in_chunk_ps()
+        b =time.perf_counter()
+        #print(pp.Normalised_pollination)
+        print("pool_processor took: ", a-b, 'seconds')
+        os.chdir(r'D:\wd\GIS')
+        np.save(f'FB070801050305_resoln_{pp.resolution}.npy', pp.record_array)
+        pat = os.path.join(os.getcwd(), f'FB070801050305_resoln_{pp.resolution}.csv')
+        print(pat)
+        pm= np.load(f'FB070801050305_resoln_{pp.resolution}.npy', allow_pickle =True)
+        pp.get_fishnets()
 
 
 

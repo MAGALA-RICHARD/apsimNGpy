@@ -46,7 +46,7 @@ log_paths = opj(log_messages, logfile_name)
 logging.basicConfig(filename=log_paths, level=logging.ERROR, format='%(asctime)s %(levelname)s %(message)s')
 logger = logging.getLogger(__name__)
 
-
+## TODO Need to optimize this for all platforms
 def detect_apsim_installation():
     for rr, dd, ff in os.walk("C:/"):
         for d in ff:
@@ -1333,11 +1333,10 @@ class APSIMNG():
 
 
 class ApsimSoil(APSIMNG):
-    try:
         def __init__(self, model: Union[str, Simulations], copy=False, out_path=None, read_from_string=True,
                      lonlat=None,
                      soil_series='domtcp', thickness=20, bottomdepth=200, thickness_values=None, run_all_soils=False):
-            super().__init__(model, copy)
+            super().__init__(model)
             """get suurgo soil tables and organise it to apsim soil profiles
             --------------------
             parameters
@@ -1647,8 +1646,7 @@ class ApsimSoil(APSIMNG):
                 print(data_run[0].ToString())
             self.results = self._read_simulation()  # still wondering if this should be a static method
             return self.results
-    except Exception as e:
-        raise
+
 
 
 class ApsiMet(APSIMNG):

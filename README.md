@@ -1,6 +1,6 @@
 # apsimNGpy
 
-advanced open source python library for agroecosystem modeling, optimisation, model prediction, evaluation and apsimx file editing, weather download, soil profile development. 
+An advanced open-source Python library that for agroecosystem modeling encompassing optimization, fast batch file simulation,  model prediction, evaluation, apsimx file editing, weather data retrieval, and soil profile development.
 
 ## Installation
 

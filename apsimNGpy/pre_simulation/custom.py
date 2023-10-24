@@ -1,19 +1,17 @@
 # ______________________________________________________________________________
 from apsimNGpy.manager import soilmanager
 import os, glob, time, sys, shutil, queue
-from utililies.utils import  organize_crop_rotations, upload_weather, upload_apsimx_file, upload_apsimx_file_by_pattern
-from utililies.utils import load_from_numpy, collect_runfiles, get_data_element, add_wheat, delete_simulation_files, make_apsimx_clones
-from manager.cropmanager import InsertCroppingSystems
+from apsimNGpy.utililies.utils import  organize_crop_rotations, upload_weather, upload_apsimx_file, upload_apsimx_file_by_pattern
+from apsimNGpy.utililies.utils import load_from_numpy, collect_runfiles, get_data_element, add_wheat, delete_simulation_files, make_apsimx_clones
 import threading
-from apsimpy import APSIMNG, detect_apsim_installation, ApsimSoil
-from os.path import join, dirname
+from apsimNGpy.apsimpy import ApsimSoil
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, as_completed
 import queue
 import pandas as pd
 import numpy as np
 import datetime
 from tqdm import tqdm
-import weather
+import apsimNGpy.weather as weather
 import pythonnet
 from apsimNGpy.utililies.run_utils import load_apsimx_from_string
 COUNTER = 1

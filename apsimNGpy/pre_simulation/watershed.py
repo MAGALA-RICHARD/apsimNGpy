@@ -11,7 +11,7 @@ from apsimNGpy.utililies.utils import load_from_numpy, collect_runfiles, get_dat
 import apsimNGpy.apsimpy as apsimpy
 from apsimNGpy.manager.cropmanager import InsertCroppingSystems
 import threading
-from apsimpy import APSIMNG, detect_apsim_installation, ApsimSoil
+from apsimNGpy.apsimpy import APSIMNG, detect_apsim_installation, ApsimSoil
 from os.path import join, dirname
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, as_completed
 import queue

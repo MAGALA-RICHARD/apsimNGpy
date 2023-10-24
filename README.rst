@@ -62,6 +62,6 @@ However, for instance, sample usgae
     apsim.run_edited_file()
     print(apsim.results)
     # check the manager modules in the apsim simulation file
-
+|animation|
 
 

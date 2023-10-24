@@ -41,7 +41,7 @@ Usage
 Please check our documentation for all the details.
 However, for instance, sample usgae
 
-.. code:: python
+
     import apsimNGpy
     from apsimNGpy.base_data import load_example_files
     from apsimNGpy.apsimpy import ApsimSoil
@@ -62,6 +62,6 @@ However, for instance, sample usgae
     apsim.run_edited_file()
     print(apsim.results)
     # check the manager modules in the apsim simulation file
-|animation|
+
 
 

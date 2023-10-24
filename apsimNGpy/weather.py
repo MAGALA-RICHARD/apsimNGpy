@@ -298,7 +298,7 @@ def daymet_bylocation(lonlat, start, end, cleanup = True, filename =None):
           return fname #fname
 
 
-def daymet_bylocation_nocsv(lonlat, start, end, cleanup=True, filename=None):
+def daymet_bylocation_nocsv(lonlat, start, end, cleanup=True, filename='daymet'):
     '''collect weather from daymet solar radiation is replaced with that of nasapower
     ------------
     parameters

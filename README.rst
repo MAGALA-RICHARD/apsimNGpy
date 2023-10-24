@@ -11,12 +11,13 @@ apsimx file editing, seamless weather data retrieval, and efficient soil profile
 
 Installation
 ********************************************************************************
+you may need a dotnet installation if not installed run the code https://dotnet.microsoft.com/en-us/download/dotnet/6.0
 
 First, make sure you have a Python 3 environment installed. Install APSIM and ensure that the directory containing the Models executable is added to the system's PATH or the Python path (to locate the required .dll files). This can be achieved in either of the following ways:
 
 a. Utilize the APSIM installer provided for this purpose.
 
-b. Build APSIM from its source code. This is soon
+b. Build APSIM from its source code. This is comming soon
 
 
 For the current developer versions:
@@ -41,7 +42,7 @@ Usage
 Please check our documentation for all the details.
 However, see sample below
 
-
+..code:: python
     import apsimNGpy
     from apsimNGpy.base_data import load_example_files
     from apsimNGpy.apsimpy import ApsimSoil

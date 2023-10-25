@@ -20,5 +20,4 @@ def _is_apsimx_installed():
 
 def get_apsimx_model_path():
     if _is_apsimx_installed():
-        path = Path(os.path.realpath(os.environ['APSIM']))
-        return path.joinpath("Models.exe")
+        return Path(os.path.realpath(os.environ['APSIM']))

@@ -13,14 +13,8 @@ from os.path import join as opj
 import sqlite3
 import json
 
-root = os.path.dirname(os.path.realpath(__file__))
-path = opj(root, 'manager')
-path_utilities = opj(root, 'utililies')
-sys.path.append(path)
-sys.path.append(path_utilities)
-
-import weathermanager as weather
-from soilmanager import DownloadsurgoSoiltables, OrganizeAPSIMsoil_profile
+import apsimNGpy.manager.weathermanager as weather
+from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganizeAPSIMsoil_profile
 
 try:
     if pythonnet.get_runtime_info() is None:

@@ -1320,7 +1320,7 @@ class APSIMNG():
         # inherit properties from the ancestors apsimng object
 
 
-class SoilModel(APSIMNG):
+class SoilEditor(APSIMNG):
         def __init__(self, model: Union[str, Simulations], copy=False, out_path=None, read_from_string=True,
                      lonlat=None,
                      soil_series='domtcp', thickness=20, bottomdepth=200, thickness_values=None, run_all_soils=False):

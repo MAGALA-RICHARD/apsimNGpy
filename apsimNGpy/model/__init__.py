@@ -1,3 +1,3 @@
-from apsimpy import APSIMNG
+from apsimpy import APSIMNG, SoilModel
 
 __all__ = [APSIMNG]

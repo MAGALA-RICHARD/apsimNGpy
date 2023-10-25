@@ -4,7 +4,7 @@ from time import perf_counter
 from tqdm import tqdm
 from os.path import dirname
 from os.path import join as opj
-from utililies.run_utils import run_model, read_simulation
+from apsimNGpy.utililies.run_utils import run_model, read_simulation
 
 
 # _______________________________________________________________

@@ -45,7 +45,7 @@ However, see sample below
 ..code:: python
     import apsimNGpy
     from apsimNGpy.base_data import load_example_files
-    from apsimNGpy.apsimpy import ApsimSoil
+    from apsimNGpy.model.soilmodel import SoilModel
     from pathlib import Path
 
     cwd = Path.cwd()
@@ -57,7 +57,7 @@ However, see sample below
     maize = data.get_maize()
 
     # Initialize the simulation methods
-    apsim = ApsimSoil(maize, copy=True)
+    apsim = SoilModel(maize, copy=True)
 
     # Run the file
     apsim.run_edited_file()

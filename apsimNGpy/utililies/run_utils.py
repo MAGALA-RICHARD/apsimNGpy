@@ -6,7 +6,8 @@ import pythonnet
 import os, sys, shutil
 import pandas as pd
 import sqlite3
-
+from apsimNGpy.utililies.pythonet_config import get_apsimx_model_path
+apsim_model = get_apsimx_model_path()
 try:
     if pythonnet.get_runtime_info() is None:
         pythonnet.load("coreclr")
@@ -17,16 +18,9 @@ except:
 import clr
 
 FAILED_RUNS = []
-def detect_apsim_installation():
-    for rr, dd, ff in os.walk("C:/"):
-        for d in ff:
-            if d.startswith('Model') and d.endswith(".exe"):
-                f = os.path.join(rr, d)
-                if f is not None:
-                    return f
 
-
-sys.path.append(os.path.dirname(detect_apsim_installation()))
+# append apsim program installation bin path before running the model
+sys.path.append(os.path.realpath(apsim_model))
 
 # Try to load from pythonpath and only then look for Model.exe
 try:

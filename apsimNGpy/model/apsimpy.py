@@ -41,9 +41,9 @@ logging.basicConfig(filename=log_paths, level=logging.ERROR, format='%(asctime)s
 logger = logging.getLogger(__name__)
 
 from apsimNGpy.utililies.pythonet_config import get_apsimx_model_path
-apsim_model = get_apsimx_model_path()
+apsim_model = os.path.realpath(get_apsimx_model_path())
 
-sys.path.append(os.path.dirname(apsim_model))
+sys.path.append(apsim_model)
 
 try:
     clr.AddReference("Models")
@@ -1319,7 +1319,7 @@ class APSIMNG():
         # inherit properties from the ancestors apsimng object
 
 
-class ApsimSoil(APSIMNG):
+class SoilModel(APSIMNG):
         def __init__(self, model: Union[str, Simulations], copy=False, out_path=None, read_from_string=True,
                      lonlat=None,
                      soil_series='domtcp', thickness=20, bottomdepth=200, thickness_values=None, run_all_soils=False):

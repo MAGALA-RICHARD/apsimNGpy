@@ -69,7 +69,7 @@ import Models
 from Models.PMF import Cultivar
 import threading
 import time
-from apsimpy import APSIMNG
+from apsimNGpy.model.apsimpy import APSIMNG
 
 
 # decorator to monitor performance

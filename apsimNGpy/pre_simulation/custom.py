@@ -4,7 +4,7 @@ import os, glob, time, sys, shutil, queue
 from apsimNGpy.utililies.utils import  organize_crop_rotations, upload_weather, upload_apsimx_file, upload_apsimx_file_by_pattern
 from apsimNGpy.utililies.utils import load_from_numpy, collect_runfiles, get_data_element, add_wheat, delete_simulation_files, make_apsimx_clones
 import threading
-from apsimNGpy.apsimpy import ApsimSoil
+from apsimNGpy.model.soilmodel import SoilModel as ApsimSoil
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, as_completed
 import queue
 import pandas as pd

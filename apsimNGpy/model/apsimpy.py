@@ -40,17 +40,10 @@ log_paths = opj(log_messages, logfile_name)
 logging.basicConfig(filename=log_paths, level=logging.ERROR, format='%(asctime)s %(levelname)s %(message)s')
 logger = logging.getLogger(__name__)
 
-## TODO Need to optimize this for all platforms
-def detect_apsim_installation():
-    for rr, dd, ff in os.walk("C:/"):
-        for d in ff:
-            if d.startswith('Model') and d.endswith(".exe"):
-                f = os.path.join(rr, d)
-                if f is not None:
-                    return f
+from apsimNGpy.utililies.pythonet_config import get_apsimx_model_path
+apsim_model = get_apsimx_model_path()
 
-
-sys.path.append(os.path.dirname(detect_apsim_installation()))
+sys.path.append(os.path.dirname(apsim_model))
 
 try:
     clr.AddReference("Models")

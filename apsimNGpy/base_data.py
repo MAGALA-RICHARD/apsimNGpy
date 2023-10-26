@@ -147,7 +147,7 @@ if pat:
     apsim = split(split(pat)[0])[0]
     examples = join(apsim, 'Examples')
 dr = listdir(examples)
-print(dr)
+
 examples_files = {}
 for i in dr:
     if i.endswith(".apsimx"):

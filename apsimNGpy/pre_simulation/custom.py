@@ -15,6 +15,7 @@ import apsimNGpy.weather as weather
 import pythonnet
 from apsimNGpy.utililies.run_utils import load_apsimx_from_string
 COUNTER = 1
+
 # Get the current time
 def completed_time():
     current_time = datetime.datetime.now()

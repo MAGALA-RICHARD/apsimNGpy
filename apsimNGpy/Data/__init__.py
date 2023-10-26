@@ -1,4 +1,7 @@
 from os.path import dirname, basename, isfile, join
 import glob
-modules = glob.glob(join(dirname(__file__), "*.py"))
-__all__ = [ basename(f)[:-3] for f in modules if isfile(f) and not f.endswith('__init__.py')]
+from weather import daymet_bylocation_nocsv, daymet_bylocation, daterange
+from base_data import load_example_files
+import apsimNGpy.manager.soilmanager as soil_manager
+
+__all__ = [daymet_bylocation_nocsv, daymet_bylocation, daterange, load_example_files, soil_manager]

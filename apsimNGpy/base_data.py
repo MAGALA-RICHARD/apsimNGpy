@@ -4,6 +4,7 @@ from os.path import join, realpath, dirname, exists, split, basename
 from os import listdir, walk, getcwd, mkdir
 from apsimNGpy.model.soilmodel import SoilModel
 import shutil
+
 from pathlib import Path
 from functools import cache
 import glob
@@ -129,7 +130,6 @@ class load_example_files():
 # APSIM defaults
 # TODO: incoporate other plafforms and also make itS detection faster
 # avoid hard codying
-@cache
 def detect_apsim_installation():
     for rr, dd, ff in walk("C:/"):
         for d in ff:

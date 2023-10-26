@@ -398,7 +398,3 @@ class SoilModel(APSIMNG):
             print(data_run[0].ToString())
         self.results = self._read_simulation()  # still wondering if this should be a static method
         return self.results
-
-from apsimNGpy.base_data import load_example_files
-dat = load_example_files(r'C:')
-ap = SoilModel(dat.get_maize)

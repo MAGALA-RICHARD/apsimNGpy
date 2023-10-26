@@ -4,8 +4,10 @@ from os.path import join, realpath, dirname, exists, split, basename
 from os import listdir, walk, getcwd, mkdir
 from apsimNGpy.model.soilmodel import SoilModel
 import shutil
+
 from pathlib import Path
 from functools import cache
+import glob
 
 wp = 'NewMetrrr.met'
 
@@ -128,7 +130,6 @@ class load_example_files():
 # APSIM defaults
 # TODO: incoporate other plafforms and also make itS detection faster
 # avoid hard codying
-@cache
 def detect_apsim_installation():
     for rr, dd, ff in walk("C:/"):
         for d in ff:
@@ -146,7 +147,7 @@ if pat:
     apsim = split(split(pat)[0])[0]
     examples = join(apsim, 'Examples')
 dr = listdir(examples)
-print(dr)
+
 examples_files = {}
 for i in dr:
     if i.endswith(".apsimx"):
@@ -166,9 +167,9 @@ class DetectApsimExamples:
             setattr(self, name, name)
 
     def get_example(self, crop):
-        cp = shutil.copy(examples_files[crop], join(copy_path, crop))
-        path = cp + '.apsimx'
-        apsim = SoilModel(path)
+        path = join(copy_path, crop) + '.apsimx'
+        cp = shutil.copy(examples_files[crop], path)
+        apsim = SoilModel(cp)
         wp = os.path.join(weather_path, os.path.basename(apsim.show_met_file_in_simulation()))
         apsim.replace_met_file(wp)
         return apsim

@@ -167,7 +167,8 @@ class DetectApsimExamples:
             setattr(self, name, name)
 
     def get_example(self, crop):
-        cp = shutil.copy(examples_files[crop], join(copy_path, crop))
+        path = join(copy_path, crop) + '.apsimx'
+        cp = shutil.copy(examples_files[crop], path)
         path = cp + '.apsimx'
         apsim = SoilModel(path)
         wp = os.path.join(weather_path, os.path.basename(apsim.show_met_file_in_simulation()))

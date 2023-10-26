@@ -1,31 +1,25 @@
 # ______________________________________________________________________________
 
-import os, glob, time, random, sys, shutil, queue
+import os, time, random, sys, shutil, queue
+
 root = os.path.dirname(os.path.realpath(__file__))
-# path = os.path.join(root, 'manager')
-# path_utilities = os.path.join(root, 'utililies')
-# main_root = os.path.realpath(os.path.dirname(root))
-#sys.path.extend([path, path_utilities, root, main_root])
-from apsimNGpy.utililies.utils import  organize_crop_rotations, upload_weather, upload_apsimx_file, upload_apsimx_file_by_pattern
-from apsimNGpy.utililies.utils import load_from_numpy, collect_runfiles, get_data_element, add_wheat, delete_simulation_files, make_apsimx_clones
-import apsimNGpy.apsimpy as apsimpy
-from apsimNGpy.manager.cropmanager import InsertCroppingSystems
+from apsimNGpy.utililies.utils import organize_crop_rotations, upload_weather
+from apsimNGpy.utililies.utils import collect_runfiles, get_data_element, add_wheat
 import threading
-from apsimNGpy.apsimpy import APSIMNG, detect_apsim_installation, ApsimSoil
-from os.path import join, dirname
+from apsimNGpy.model.soilmodel import SoilModel as ApsimSoil
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, as_completed
 import queue
-import matplotlib.pyplot as plt
-from os.path import join as opj
 import pandas as pd
 import numpy as np
 from apsimNGpy.manager import soilmanager
 import datetime
 from tqdm import tqdm
 import apsimNGpy.weather as weather
-import pythonnet
 from apsimNGpy.utililies.run_utils import load_apsimx_from_string
+
 COUNTER = 1
+
+
 # Get the current time
 def completed_time():
     current_time = datetime.datetime.now()
@@ -37,11 +31,10 @@ def completed_time():
     print(f"Cycle completed at: {hours:02}:{minutes:02}:{seconds:02}")
 
 
-# delete_simulation_files(opj(os.getcwd(),'weatherdata'))
 class PreProcessor():
 
-    def __init__(self, path2apsimx, pol_object=None, resoln=500, field="GenLU", number_threads =10,
-                  wp=None, layer_file = None, thickness_values =None, use_threads = True):
+    def __init__(self, path2apsimx, pol_object=None, resoln=500, field="GenLU", number_threads=10,
+                 wp=None, layer_file=None, thickness_values=None, use_threads=True):
         """
 
         :param path2apsimx: path to apsimx file
@@ -56,23 +49,24 @@ class PreProcessor():
         assert path2apsimx.endswith(
             ".apsimx"), "file path is missing apsimx extention. did you forget to include .apsimx extension"
         self.named_tuple = load_apsimx_from_string(path2apsimx)
-        if  not thickness_values:
-          self.thickness_values = [150, 150, 200, 200, 200, 250, 300, 300, 400, 500]
+        if not thickness_values:
+            self.thickness_values = [150, 150, 200, 200, 200, 250, 300, 300, 400, 500]
         self.weather_path = wp
         self.rotations = organize_crop_rotations(pol_object.record_array['CropRotatn'])
-        self.pol_object  = pol_object
+        self.pol_object = pol_object
         self.number_threads = number_threads
         self.total = len(pol_object.record_array)
         self.use_threads = use_threads
         if not layer_file:
-          self.layer = 'D:\\ENw_data\\creek.shp'
+            self.layer = 'D:\\ENw_data\\creek.shp'
 
     def _callback(self, _lock):
         global COUNTER
-        COUNTER +=1
-        percent = COUNTER / self.total *100
+        COUNTER += 1
+        percent = COUNTER / self.total * 100
         with _lock:
             print(f'{percent} completed ')
+
     def sample_indices(self, percentage, *args, **kwargs):
         total_indices = len(self.pol_object.record_array['Shape'])
         num_indices_to_select = int(total_indices * (percentage / 100))
@@ -121,33 +115,35 @@ class PreProcessor():
                 f"{e} has occured reading apsimx from the cloned apsimx file and using from from file method\n--------------\nignore eror and proceed")
             return self
 
-    def replace_apsim_file_with_mets(self, path2weather_files, filename = None):
+    def replace_apsim_file_with_mets(self, path2weather_files, filename=None):
         print(self.weather_path)
-        self._counter  =0
+        self._counter = 0
         aps = os.path.join(os.getcwd(), 'Weather_APSIM_Files')
         if not os.path.exists(aps):
             os.mkdir(aps)
         print("cloning apsimx file")
-        [shutil.copy (self.named_tuple.path, os.path.join(aps, f"spatial_{i}_need_met.apsimx")) for i in list(self.rotations)]
+        [shutil.copy(self.named_tuple.path, os.path.join(aps, f"spatial_{i}_need_met.apsimx")) for i in
+         list(self.rotations)]
         leng = len(self.rotations)
         for i in list(self.rotations):
-            self._counter +=1
+            self._counter += 1
             if not filename:
-              fn = "spatial_ap_" + str(i) + '.apsimx'
+                fn = "spatial_ap_" + str(i) + '.apsimx'
             else:
-                fn  =filename + '.apsimx'
+                fn = filename + '.apsimx'
             fname = os.path.join(aps, fn)
             wp = upload_weather(path2weather_files, i)
             ff = collect_runfiles(aps, pattern=[f"*_{i}_need_met.apsimx"])[0]
-            apsim_object = ApsimSoil(model=ff, copy=False, lonlat=None, thickness_values=self.thickness_values,\
+            apsim_object = ApsimSoil(model=ff, copy=False, lonlat=None, thickness_values=self.thickness_values, \
                                      out_path=None)
             apsim_object.replace_met_file(wp, apsim_object.extract_simulation_name)
             apsim_object.out_path = fname
             apsim_object.save_edited_file()
-            ct =self._counter/leng * 100
-            print(f"{self._counter}/{leng}  ({ct:2f})% completed ", end = "\r")
+            ct = self._counter / leng * 100
+            print(f"{self._counter}/{leng}  ({ct:2f})% completed ", end="\r")
         print(aps)
         return aps
+
     def dict_generator(self, my_dict):
         for key, value in my_dict.items():
             yield key, value
@@ -155,7 +151,7 @@ class PreProcessor():
     def idex_excutor(self, x, lock):  # We supply x from the rotations idex which inherits objectid
         try:
             a = time.perf_counter()
-            print(f"downloading for: {x}", end = '\r')
+            print(f"downloading for: {x}", end='\r')
             data_dic = {}
             fn = "daymet_wf_" + str(x) + '.met'
             cod = self.pol_object.record_array["Shape"][x]
@@ -169,26 +165,27 @@ class PreProcessor():
                 filex = weather.daymet_bylocation_nocsv(cod, start=1998, end=2000, cleanup=True, filename=fn)
                 return filex
             except:
-              print("unresolved errors at the momentt try again")
+                print("unresolved errors at the momentt try again")
+
     def weather_excutor(self, queue, lock):
         '''Process files from the queue.'''
         for args in iter(queue.get, None):
             try:
                 self.idex_excutor(args, lock)
-                #self.results = None # we will collect these later
-            except Exception as e: # catch exceptions to avoid exiting the thread prematurely
-                print ('{0} failed: {1}'.format(args, e))#, file=sys.stderr
-                #os.startfile(self.show_file_in_APSIM_GUI())
+                # self.results = None # we will collect these later
+            except Exception as e:  # catch exceptions to avoid exiting the thread prematurely
+                print('{0} failed: {1}'.format(args, e))  # , file=sys.stderr
+                # os.startfile(self.show_file_in_APSIM_GUI())
 
-    def threaded_weather_download(self, wd = None, iterable  = None):
+    def threaded_weather_download(self, wd=None, iterable=None):
         if wd:
             os.chdir(wd)
         threads = []
-        listable  = None
+        listable = None
         if iterable:
             listable = iterable
         else:
-            listable =  list(self.rotations.keys())
+            listable = list(self.rotations.keys())
         q = queue.Queue()
         for idices in listable:
             q.put_nowait(idices)
@@ -203,7 +200,7 @@ class PreProcessor():
         if wd:
             return wd
         else:
-           return os.getcwd()
+            return os.getcwd()
 
     def weather_process_point(self, queue, result_queue):
         while True:
@@ -279,7 +276,8 @@ class PreProcessor():
             sp3 = int(sp2)
             return sp3
 
-    def return_missing_weather_index(self, path):  # this one evaluates any missing download due to first computation of the paralled procsin
+    def return_missing_weather_index(self,
+                                     path):  # this one evaluates any missing download due to first computation of the paralled procsin
         import concurrent
         path = path  # r'D:\wd\weather_files0305\weatherdata'
         curdir = os.getcwd()
@@ -327,7 +325,7 @@ class PreProcessor():
         except Exception as e:
             print(repr(e))
 
-    def download_soil_table_first(self, iterator = None, cordnates = None, number_threads=16):
+    def download_soil_table_first(self, iterator=None, cordnates=None, number_threads=16):
         """
 
         :param iterator: array or list
@@ -344,18 +342,19 @@ class PreProcessor():
 
         def soil_excutor(x):
             data_dic = {}
-            if  cordnates:
-                cod =  cordnates[x]
+            if cordnates:
+                cod = cordnates[x]
             else:
                 cod = list(get_data_element(self.pol_object.record_array, "Shape", x))
             data_table = soilmanager.DownloadsurgoSoiltables(cod, select_componentname='domtcp')
             self.soil_profile = soilmanager.OrganizeAPSIMsoil_profile(data_table,
-                                                         thickness_values=self.thickness_values,
+                                                                      thickness_values=self.thickness_values,
                                                                       thickness=20)
             data_dic[
                 x] = self.soil_profile.cal_missingFromSurgo()  # returns a list of physical, organic and cropdf each in a data frame
 
             return data_dic
+
         with ThreadPoolExecutor(max_workers=number_threads) as executor:
             futures = []
             for index in indices:
@@ -370,14 +369,16 @@ class PreProcessor():
         b = time.perf_counter()
         print(f"downloading SSURGO soil tables took {b - a} seconds")
         return self
+
     class PreSoilReplacement(ApsimSoil):
         def __init__(self, model, thickness_values=None):
             super().__init__(model)
             if not thickness_values:
                 self.thickness_values = [150, 150, 200, 200, 200, 250, 300, 300, 400, 500]
-    def replace_downloaded(self,x, wd):
+
+    def replace_downloaded(self, x, wd):
         try:
-            file_path= collect_runfiles(wd, pattern=[f"spatial*_{x}_need_met.apsimx"])[0]
+            file_path = collect_runfiles(wd, pattern=[f"spatial*_{x}_need_met.apsimx"])[0]
             ap = PreProcessor.PreSoilReplacement(file_path)
             data_dict = self.soil_downloader(x)
             ap.replace_downloaded_soils(data_dict[x], ap.extract_simulation_name)
@@ -385,8 +386,9 @@ class PreProcessor():
             return self
         except Exception as e:
             print(repr(e))
-    def threaded_soil_replacement(self, wd, iterable =None):
-        #pattern = f'spatial_ap_{specific_number}.apsimx'
+
+    def threaded_soil_replacement(self, wd, iterable=None):
+        # pattern = f'spatial_ap_{specific_number}.apsimx'
         assert os.path.exists(wd), "path does not exists"
         listable = None
         if iterable:
@@ -435,16 +437,16 @@ class PreProcessor():
         """
         os.chdir(wd)
         print("downloading weather data")
-        wpath = self.threaded_weather_download(wd = wd)
+        wpath = self.threaded_weather_download(wd=wd)
         print(wpath)
         absolute_path = os.path.join(wpath, 'weatherdata')
         print("First weather downlaod completed checking if rerun is needed")
-        not_simulated = self.return_missing_weather_index( absolute_path)
+        not_simulated = self.return_missing_weather_index(absolute_path)
         if len(not_simulated) == 0:
             print("weather download complete")
         else:
             print(f'rerunnung missing indices: {not_simulated}')
-            not_simulated = self.threaded_weather_download(wpath, iterable = not_simulated)
+            not_simulated = self.threaded_weather_download(wpath, iterable=not_simulated)
         if len(not_simulated) == 0:
             print("Done****8")
         else:
@@ -458,6 +460,3 @@ class PreProcessor():
         print("now replacing soils")
         self.apsim_directory = self.threaded_soil_replacement(pathfs)
         return self.apsim_directory
-
-
-

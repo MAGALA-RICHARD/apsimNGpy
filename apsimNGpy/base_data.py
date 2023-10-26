@@ -96,32 +96,32 @@ class load_example_files():
         Path(f"{path}.db-wal").unlink(missing_ok=True)
         return path
 
-    @property
+
     def get_maize_with_cover_crop(self):
         self.weather_example = _weather(self.path)
         return self._clean_up(_get_maize_example(self.path))
 
-    @property
+
     def get_experiment_nitrogen_residue(self):
         self.weather_example = _weather(self.path)
         return self._clean_up(_get_maize_NF_experiment(self.path))
 
-    @property
+
     def get_get_experiment_nitrogen_residue_NT(self):
         self.weather_example = _weather(self.path)
         return self._clean_up(_get_maize_NF_experiment_NT(self.path))
 
-    @property
+
     def get_swim(self):
         self.weather_example = _weather(self.path)
         return self._clean_up(_get_SWIM(self.path))
 
-    @property
+
     def get_maize(self):
         self.weather_example = _weather(self.path)
         return self._clean_up(_get_maize(self.path))
 
-    @property
+
     def get_maize_no_till(self):
         self.weather_example = _weather(self.path)
         return self._clean_up(_get_maize_no_till(self.path))

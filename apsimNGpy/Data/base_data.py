@@ -6,7 +6,6 @@ from apsimNGpy.model.soilmodel import SoilModel
 import shutil
 from pathlib import Path
 from functools import cache
-import glob
 
 wp = 'NewMetrrr.met'
 

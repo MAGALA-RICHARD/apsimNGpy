@@ -1,7 +1,4 @@
-# ______________________________________________________________________________
-
 import os, time, random, sys, shutil, queue
-
 root = os.path.dirname(os.path.realpath(__file__))
 from apsimNGpy.utililies.utils import organize_crop_rotations, upload_weather
 from apsimNGpy.utililies.utils import collect_runfiles, get_data_element, add_wheat

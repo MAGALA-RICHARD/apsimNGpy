@@ -84,9 +84,9 @@ Usage
     # show current simulation in apsim GUI
     apsim.show_file_in_APSIM_GUI()
 
-congratulations you have successfuly used apsimNGpy package
+Congratulations you have successfuly used apsimNGpy package
 *********************************************************************************
-.. image:: examples/Figure_1.png
+.. image:: ./examples/Figure_1.png
    :alt: /examples/Figure_1.png
 
 

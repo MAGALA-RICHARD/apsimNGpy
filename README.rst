@@ -85,7 +85,8 @@ Usage
     # plot the data
     res = apsim.results['MaizeR']
     plot_data(res.Year, res.Yield, xlabel='Years', ylabel=" Maize Yield (kg/ha)")
-
+A graph should be able to appear like the ones below. Note that plot_data function just wraps matplotlib plot function
+for quick visualisation
 
 Congratulations you have successfuly used apsimNGpy package
 *********************************************************************************

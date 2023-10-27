@@ -85,6 +85,7 @@ Usage
     apsim.show_file_in_APSIM_GUI()
 
 .. image:: /examples/Figure_1.png
+   :alt: Image Description
 
 
 

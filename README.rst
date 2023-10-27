@@ -19,6 +19,17 @@ a. Utilize the APSIM installer provided for this purpose.
 
 b. Build APSIM from its source code. This is comming soon
 
+if you have apsim installed and the program refuses to load run the following code a the top of your python script before importing any apsimNGpy class
+.. code:: python
+    # search for the program binary installation path and add to os.environ as follows
+    import os
+    os.environ['APSIM'] =r'path/toyourapsimbinaryfolder/bin
+    # try importing SoilModel class
+    from apsimNGpy.model.soilmodel import SoilModel
+    # alternatively, you can add the path to the system environmental variables
+    
+
+    
 
 For the current developer versions:
 
@@ -37,21 +48,21 @@ Method 2
 .. _Usage:
 
 Usage
-********************************************************************************
+*********************************************************************************
+.. code:: python
 
-Please check our documentation for all the details.
-However, see sample below
-
-..code:: python
     import apsimNGpy
     from apsimNGpy.base_data import load_example_files
     from apsimNGpy.model.soilmodel import SoilModel
     from pathlib import Path
-
-    cwd = Path.cwd()
-
+    import os
+    from apsimNGpy.validation import plot_data
+    cwd = Path.cwd().home() # sending this to your home folder
+    wd = cwd.joinpath("apsimNGpy_demo")
+    # change directory
+    os.chdir(wd)
     # Create the data
-    data = load_example_files(cwd)
+    data = load_example_files(wd)
 
     # Get maize model
     maize = data.get_maize()
@@ -69,6 +80,7 @@ However, see sample below
     apsim.examine_management_info(simulations=sim_name)
     # show current simulation in apsim GUI
     apsim.show_file_in_APSIM_GUI()
+
 
 
 

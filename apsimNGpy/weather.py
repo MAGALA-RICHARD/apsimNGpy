@@ -4,6 +4,7 @@ from datetime import datetime
 import datetime
 import urllib
 import requests
+import copy
 import random
 import json
 import sys

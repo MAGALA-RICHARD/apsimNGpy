@@ -1,1 +1,2 @@
 recursive-include apsimNGpy/basefiles *
+recursive-include images *.png

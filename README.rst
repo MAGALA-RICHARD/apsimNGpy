@@ -82,7 +82,10 @@ Usage
     sim_name = apsim.extract_simulation_name
     apsim.examine_management_info(simulations=sim_name)
     # show current simulation in apsim GUI
-    apsim.show_file_in_APSIM_GUI()
+    # plot the data
+    res = apsim.results['MaizeR']
+    plot_data(res.Year, res.Yield, xlabel='Years', ylabel=" Maize Yield (kg/ha)")
+
 
 Congratulations you have successfuly used apsimNGpy package
 *********************************************************************************
@@ -90,6 +93,3 @@ Congratulations you have successfuly used apsimNGpy package
    :alt: /examples/Figure_1.png
 
 
-
-
-https://github.com/MAGALA-RICHARD/apsimNGpy/blob/main/apsimNGpy/examples/Figure_1.png

@@ -19,22 +19,6 @@ a. Utilize the APSIM installer provided for this purpose.
 
 b. Build APSIM from its source code. This is comming soon
 
-if you have apsim installed and the program refuses to load run the following code a the top of your python script before importing any apsimNGpy class
-.. _Usage:
-
-Debuging import error due to improper SYSTEM APSIM path configuration
-*********************************************************************************
-.. code:: python
-    
-    # search for the program binary installation path and add to os.environ as follows
-    import os
-    os.environ['APSIM'] =r'path/toyourapsimbinaryfolder/bin
-    # try importing SoilModel class
-    from apsimNGpy.model.soilmodel import SoilModel
-    # alternatively, you can add the path to the system environmental variables
-    
-
-    
 
 For the current developer versions:
 
@@ -49,7 +33,20 @@ Method 2
 .. code:: bash
      pip install git+https://github.com/MAGALA-RICHARD/apsimNGpy.git
 
+if you have apsim installed and the program refuses to load run the following code a the top of your python script before importing any apsimNGpy class
+.. _Usage:
 
+Debuging import error due to improper SYSTEM APSIM path configuration
+*********************************************************************************
+.. code:: python
+
+    # search for the program binary installation path and add to os.environ as follows
+    import os
+    os.environ['APSIM'] =r'path/toyourapsimbinaryfolder/bin
+    # try importing SoilModel class
+    from apsimNGpy.model.soilmodel import SoilModel
+    # alternatively, you can add the path to the system environmental variables
+    
 .. _Usage:
 
 Usage
@@ -64,6 +61,8 @@ Usage
     from apsimNGpy.validation import plot_data
     cwd = Path.cwd().home() # sending this to your home folder
     wd = cwd.joinpath("apsimNGpy_demo")
+    if not wd.exists():
+      os.mkdir(wd)
     # change directory
     os.chdir(wd)
     # Create the data

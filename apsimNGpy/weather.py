@@ -9,17 +9,10 @@ import random
 import json
 import sys
 import pandas as pd
-import time
 import statistics
-from progressbar import ProgressBar
-import progressbar
 import numpy as np
 import string
-
-if sys.version_info[0] < 3:
-    from StringIO import StringIO
-else:
-    from io import StringIO
+from io import StringIO
 import io
 import threading
 

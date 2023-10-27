@@ -86,7 +86,7 @@ Usage
 
 Congratulations you have successfuly used apsimNGpy package
 *********************************************************************************
-.. image:: .apsimNGpy/examples/Figure_1.png
+.. image:: ./apsimNGpy/examples/Figure_1.png
    :alt: /examples/Figure_1.png
 
 

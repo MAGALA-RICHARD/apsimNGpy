@@ -12,7 +12,7 @@ import pandas as pd
 from os.path import join as opj
 import sqlite3
 import json
-
+from pathlib import Path
 import apsimNGpy.manager.weathermanager as weather
 from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganizeAPSIMsoil_profile
 from apsimNGpy.utililies.pythonet_config import get_apsimx_model_path
@@ -106,7 +106,7 @@ class APSIMNG():
         self.results = None
         self.Model = None
         self.datastore = None
-        self.out_path = out_path
+        self.out_path = os.path.realpath(out_path)
         self.management_data = {'Nitrogen': [0, 140, 180, 220], \
                                 'Depth': [0, 100, 250, 100], \
                                 "Rotation": ['CC', 'CB'],
@@ -114,8 +114,8 @@ class APSIMNG():
                                 'Cover Crop': [1, 0],
                                 'Prairie Strips': [1, 0]}
 
-        if type(model) == str:
-            apsimx_file = model
+        if type(model) == str or isinstance(model, Path):
+            apsimx_file = os.path.realpath(model)
             name, ext = os.path.splitext(apsimx_file)
             if copy:
                 if out_path is None:

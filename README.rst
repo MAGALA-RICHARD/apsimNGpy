@@ -46,7 +46,8 @@ Debuging import error due to improper SYSTEM APSIM path configuration
     # try importing SoilModel class
     from apsimNGpy.model.soilmodel import SoilModel
     # alternatively, you can add the path to the system environmental variables
-    
+    lp = [1,12,,3,4,5,6,78]
+    print(lp)
 .. _Usage:
 
 Usage

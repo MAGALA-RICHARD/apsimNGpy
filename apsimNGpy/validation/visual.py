@@ -11,9 +11,9 @@ def plot_data(x, y, plot_type='line', xlabel = 'X-axis', ylabel = "Y-axis"):
     plot_type (str): Type of plot ('line', 'scatter', 'bar', 'hist', 'box', 'pie').
     """
     if plot_type == 'line':
-        plt.plot(x, y, label='Line Plot')
+        plt.plot(x, y, label=ylabel)
     elif plot_type == 'scatter':
-        plt.scatter(x, y, label='Scatter Plot')
+        plt.scatter(x, y, label=ylabel)
     elif plot_type == 'bar':
         plt.bar(x, y, label='Bar Plot')
     elif plot_type == 'hist':
@@ -37,5 +37,5 @@ if __name__ == "__main__":
     # Example usage:
     x_data = [1, 2, 3, 4, 5]
     y_data = [10, 7, 5, 2, 8]
-    plot_type = 'hist'  # Change this to the desired plot type
+    plot_type = 'line'  # Change this to the desired plot type
     plot_data(x_data, y_data, plot_type)

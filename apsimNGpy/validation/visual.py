@@ -31,7 +31,7 @@ def plot_data(x, y, plot_type='line', xlabel = 'X-axis', ylabel = "Y-axis"):
     plt.title(f'{plot_type.capitalize()} Plot')
     plt.legend()
     plt.show()
-    plt.savefig("plotted.png")
+    plt.savefig("plotted.jpeg")
 
 
 if __name__ == "__main__":

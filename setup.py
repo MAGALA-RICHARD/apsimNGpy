@@ -17,7 +17,7 @@ setup(
     long_description=readme,
     packages=find_packages(),
     include_package_data=True,
-    package_data={'': ['basefiles/*.apsimx', 'basefiles/*.met']},
+    package_data={'': ['basefiles/*.apsimx', 'basefiles/*.met', 'examples/*.png']},
      keywords=['python', 'apsim'],
      classifiers= [
             "Development Status :: trial",

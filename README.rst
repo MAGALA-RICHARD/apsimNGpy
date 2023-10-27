@@ -34,7 +34,7 @@ Method 2
      pip install git+https://github.com/MAGALA-RICHARD/apsimNGpy.git
 
 if you have apsim installed and the program refuses to load run the following code a the top of your python script before importing any apsimNGpy class
-.. _Usage:
+
 
 Debuging import error due to improper SYSTEM APSIM path configuration
 *********************************************************************************

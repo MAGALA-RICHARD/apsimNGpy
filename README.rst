@@ -20,6 +20,10 @@ a. Utilize the APSIM installer provided for this purpose.
 b. Build APSIM from its source code. This is comming soon
 
 if you have apsim installed and the program refuses to load run the following code a the top of your python script before importing any apsimNGpy class
+.. _Usage:
+
+Debuging import error due to improper SYSTEM APSIM path configuration
+*********************************************************************************
 .. code:: python
     # search for the program binary installation path and add to os.environ as follows
     import os

@@ -25,6 +25,7 @@ if you have apsim installed and the program refuses to load run the following co
 Debuging import error due to improper SYSTEM APSIM path configuration
 *********************************************************************************
 .. code:: python
+    
     # search for the program binary installation path and add to os.environ as follows
     import os
     os.environ['APSIM'] =r'path/toyourapsimbinaryfolder/bin

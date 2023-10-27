@@ -11,7 +11,7 @@ cwd = Path.cwd().home()
 os.chdir(cwd)
 # download weather from daymet
 # sample lonlat
-lonlat  = -93.01183333, 42.08333333
+lonlat  = -3.01183333, 42.08333333
 weather  = daymet_bylocation_nocsv(lonlat, start  =1990, end =2020, filename="boone.met")
 data =  load_example_files(cwd)
 maize = data.get_maize

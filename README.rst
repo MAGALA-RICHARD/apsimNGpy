@@ -84,8 +84,8 @@ Usage
     # show current simulation in apsim GUI
     apsim.show_file_in_APSIM_GUI()
 
-.. image:: https://github.com/MAGALA-RICHARD/apsimNGpy/blob/main/apsimNGpy/examples/Figure_1.png
-   :alt: Image Description
+.. image:: Figure_1.png
+   :alt: /examples/Figure_1.png
 
 
 

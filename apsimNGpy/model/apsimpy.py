@@ -106,7 +106,9 @@ class APSIMNG():
         self.results = None
         self.Model = None
         self.datastore = None
-        self.out_path = os.path.realpath(out_path)
+        if out_path:
+            out_path = os.path.realpath(out_path)
+        self.out_path = out_path
         self.management_data = {'Nitrogen': [0, 140, 180, 220], \
                                 'Depth': [0, 100, 250, 100], \
                                 "Rotation": ['CC', 'CB'],

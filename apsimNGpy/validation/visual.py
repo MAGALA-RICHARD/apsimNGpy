@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 
 
-def plot_data(x, y, plot_type='line'):
+def plot_data(x, y, plot_type='line', xlabel = 'X-axis', ylabel = "Y-axis"):
     """
     Plot data points.
 
@@ -26,8 +26,8 @@ def plot_data(x, y, plot_type='line'):
         print("Invalid plot type. Available types: 'line', 'scatter', 'bar', 'hist', 'box', 'pie'")
         return
 
-    plt.xlabel('X-axis')
-    plt.ylabel('Y-axis')
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
     plt.title(f'{plot_type.capitalize()} Plot')
     plt.legend()
     plt.show()

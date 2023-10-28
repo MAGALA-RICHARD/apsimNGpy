@@ -152,6 +152,20 @@ Populating the APSIM model with new weather data
     mis = apsim.show_met_file_in_simulation()
     print(mis)
 
+Future work
+*********************************************************************************
+
+Document the optimization algarithm in the package
+Add global weather dowwload
+Add global soil download
+Document the classes and methods in the package
+Document the spatial emulator
+Document the soil download and editing process
+Demonstrate custom function development
+
+
+
+
 
 
 

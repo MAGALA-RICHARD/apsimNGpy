@@ -20,9 +20,9 @@ a. Utilize the APSIM installer provided for this purpose.
 b. Build APSIM from its source code. This is comming soon
 
 
-For the current developer versions:
+All versions are currently in development, phase and they can be installed as follows:
 
-Method 1
+Method 1. clone the repositry
 
 .. code:: bash
 
@@ -30,9 +30,10 @@ Method 1
     cd apsimNGpy
     pip install .
 
-Method 2
+Method 2. Use pip straight away
 
 .. code:: bash
+
      pip install git+https://github.com/MAGALA-RICHARD/apsimNGpy.git
 
 if you have apsim installed and the program refuses to load run the following code a the top of your python script before importing any apsimNGpy class

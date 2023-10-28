@@ -119,9 +119,11 @@ Change simulation dates
     apsim = SoilModel(maize, copy=True)
     apsim.change_simulation_dates(start_date='01/01/1998', end_date='12/31/2010')
 
-Change simulation management 
+Change  management decissions
 *********************************************************************************
 .. code:: python
+
+
     # first, examine the manager scripts in the simulation node
     apsim.examine_management_info()
     # now create disctioanry holding the parameters. the key to this is that the name of the script manage rmust be passed in the disctionary

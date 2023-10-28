@@ -96,7 +96,7 @@ Congratulations you have successfuly used apsimNGpy package
 .. image:: ./apsimNGpy/examples/Figure_1.png
    :alt: /examples/Figure_1.png
 
-Change simulation dates 
+Change APSIM simulation dates 
 *********************************************************************************
 .. code:: python
 
@@ -122,7 +122,7 @@ Change simulation dates
     apsim = SoilModel(maize, copy=True)
     apsim.change_simulation_dates(start_date='01/01/1998', end_date='12/31/2010')
 
-Change  management decissions
+Change  APSIM model management decissions
 *********************************************************************************
 .. code:: python
 

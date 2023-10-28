@@ -198,8 +198,8 @@ class APSIMNG():
 
     def _load_apsimx(self, path):
         try:
-            assert path.endswith(
-                ".apsimx"), "file path is missing apsim extention. did you forget to include .apsimx extension"
+            if not os.path.isfile(path):
+                raise ValueError ("file path is missing apsim extention. did you forget to include .apsimx extension")
             self.Model = FileFormat.ReadFromFile[Models.Core.Simulations](path, None, False)
         except Exception as e:
             logger.exception(repr(e))  # this error will be logged to the folder logs in the current working directory

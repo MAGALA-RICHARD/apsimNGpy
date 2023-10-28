@@ -1,0 +1,577 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="5d471312-8496-4246-98d6-790439318160" name="Changes" comment="no property">
+      <change beforePath="$PROJECT_DIR$/examples/download and replace weather data.py" beforeDir="false" afterPath="$PROJECT_DIR$/examples/download and replace weather data.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/weather.py" beforeDir="false" afterPath="$PROJECT_DIR$/weather.py" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="ProjectId" id="2WiN5b3xFyRgtJ6Dz641K3bmQFe" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "git-widget-placeholder": "main",
+    "last_opened_file_path": "C:/Users/rmagala/Box/apsimNGpy/apsimNGpy/base",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "settings.editor.selected.configurable": "inlay.hints",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\rmagala\Box\apsimNGpy\apsimNGpy\base" />
+      <recent name="C:\Users\rmagala\Box\apsimNGpy\apsimNGpy\utililies" />
+      <recent name="C:\Users\rmagala\Box\apsimNGpy\apsimNGpy" />
+    </key>
+  </component>
+  <component name="RunManager">
+    <configuration default="true" type="PythonConfigurationType" factoryName="Python">
+      <module name="apsimNGpy" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="process" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="apsimNGpy" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/parallel" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/parallel/process.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="watershed" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="apsimNGpy" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/pre_simulation" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/pre_simulation/watershed.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.process" />
+        <item itemvalue="Python.watershed" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="5d471312-8496-4246-98d6-790439318160" name="Changes" comment="" />
+      <created>1697211257252</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1697211257252</updated>
+      <workItem from="1697211258299" duration="15005000" />
+      <workItem from="1697480315837" duration="194000" />
+      <workItem from="1697482862974" duration="45000" />
+      <workItem from="1697516446381" duration="14296000" />
+      <workItem from="1697834357401" duration="16399000" />
+      <workItem from="1698110693977" duration="29377000" />
+      <workItem from="1698333980373" duration="351000" />
+      <workItem from="1698334341493" duration="47000" />
+      <workItem from="1698334396528" duration="269000" />
+      <workItem from="1698334674446" duration="121000" />
+      <workItem from="1698334805835" duration="19019000" />
+    </task>
+    <task id="LOCAL-00027" summary="testing relative import failed">
+      <option name="closed" value="true" />
+      <created>1698110940692</created>
+      <option name="number" value="00027" />
+      <option name="presentableId" value="LOCAL-00027" />
+      <option name="project" value="LOCAL" />
+      <updated>1698110940692</updated>
+    </task>
+    <task id="LOCAL-00028" summary="testing relative import failed">
+      <option name="closed" value="true" />
+      <created>1698111030366</created>
+      <option name="number" value="00028" />
+      <option name="presentableId" value="LOCAL-00028" />
+      <option name="project" value="LOCAL" />
+      <updated>1698111030366</updated>
+    </task>
+    <task id="LOCAL-00029" summary="testing relative import failed">
+      <option name="closed" value="true" />
+      <created>1698111189747</created>
+      <option name="number" value="00029" />
+      <option name="presentableId" value="LOCAL-00029" />
+      <option name="project" value="LOCAL" />
+      <updated>1698111189747</updated>
+    </task>
+    <task id="LOCAL-00030" summary="testing relative import failed">
+      <option name="closed" value="true" />
+      <created>1698111311497</created>
+      <option name="number" value="00030" />
+      <option name="presentableId" value="LOCAL-00030" />
+      <option name="project" value="LOCAL" />
+      <updated>1698111311497</updated>
+    </task>
+    <task id="LOCAL-00031" summary="testing relative import failed">
+      <option name="closed" value="true" />
+      <created>1698114561865</created>
+      <option name="number" value="00031" />
+      <option name="presentableId" value="LOCAL-00031" />
+      <option name="project" value="LOCAL" />
+      <updated>1698114561865</updated>
+    </task>
+    <task id="LOCAL-00032" summary="testing relative import failed">
+      <option name="closed" value="true" />
+      <created>1698116477709</created>
+      <option name="number" value="00032" />
+      <option name="presentableId" value="LOCAL-00032" />
+      <option name="project" value="LOCAL" />
+      <updated>1698116477709</updated>
+    </task>
+    <task id="LOCAL-00033" summary="testing relative import failed">
+      <option name="closed" value="true" />
+      <created>1698116489490</created>
+      <option name="number" value="00033" />
+      <option name="presentableId" value="LOCAL-00033" />
+      <option name="project" value="LOCAL" />
+      <updated>1698116489490</updated>
+    </task>
+    <task id="LOCAL-00034" summary="weather filename to default to daymet">
+      <option name="closed" value="true" />
+      <created>1698179943790</created>
+      <option name="number" value="00034" />
+      <option name="presentableId" value="LOCAL-00034" />
+      <option name="project" value="LOCAL" />
+      <updated>1698179943790</updated>
+    </task>
+    <task id="LOCAL-00035" summary="change main init file">
+      <option name="closed" value="true" />
+      <created>1698192509357</created>
+      <option name="number" value="00035" />
+      <option name="presentableId" value="LOCAL-00035" />
+      <option name="project" value="LOCAL" />
+      <updated>1698192509357</updated>
+    </task>
+    <task id="LOCAL-00036" summary="change main init file">
+      <option name="closed" value="true" />
+      <created>1698192890855</created>
+      <option name="number" value="00036" />
+      <option name="presentableId" value="LOCAL-00036" />
+      <option name="project" value="LOCAL" />
+      <updated>1698192890855</updated>
+    </task>
+    <task id="LOCAL-00037" summary="change main init file">
+      <option name="closed" value="true" />
+      <created>1698193167518</created>
+      <option name="number" value="00037" />
+      <option name="presentableId" value="LOCAL-00037" />
+      <option name="project" value="LOCAL" />
+      <updated>1698193167518</updated>
+    </task>
+    <task id="LOCAL-00038" summary="change main init file">
+      <option name="closed" value="true" />
+      <created>1698193334559</created>
+      <option name="number" value="00038" />
+      <option name="presentableId" value="LOCAL-00038" />
+      <option name="project" value="LOCAL" />
+      <updated>1698193334559</updated>
+    </task>
+    <task id="LOCAL-00039" summary="change main init file">
+      <option name="closed" value="true" />
+      <created>1698252806526</created>
+      <option name="number" value="00039" />
+      <option name="presentableId" value="LOCAL-00039" />
+      <option name="project" value="LOCAL" />
+      <updated>1698252806526</updated>
+    </task>
+    <task id="LOCAL-00040" summary="added a config file apsimx program path and pythonent">
+      <option name="closed" value="true" />
+      <created>1698252845157</created>
+      <option name="number" value="00040" />
+      <option name="presentableId" value="LOCAL-00040" />
+      <option name="project" value="LOCAL" />
+      <updated>1698252845157</updated>
+    </task>
+    <task id="LOCAL-00041" summary="added a config file apsimx program path and pythonent">
+      <option name="closed" value="true" />
+      <created>1698253204894</created>
+      <option name="number" value="00041" />
+      <option name="presentableId" value="LOCAL-00041" />
+      <option name="project" value="LOCAL" />
+      <updated>1698253204894</updated>
+    </task>
+    <task id="LOCAL-00042" summary="changes apsimsoil class to soilModel">
+      <option name="closed" value="true" />
+      <created>1698253710348</created>
+      <option name="number" value="00042" />
+      <option name="presentableId" value="LOCAL-00042" />
+      <option name="project" value="LOCAL" />
+      <updated>1698253710348</updated>
+    </task>
+    <task id="LOCAL-00043" summary="changes apsimsoil class to soilModel">
+      <option name="closed" value="true" />
+      <created>1698253959982</created>
+      <option name="number" value="00043" />
+      <option name="presentableId" value="LOCAL-00043" />
+      <option name="project" value="LOCAL" />
+      <updated>1698253959982</updated>
+    </task>
+    <task id="LOCAL-00044" summary="changes apsimsoil class to soilModel">
+      <option name="closed" value="true" />
+      <created>1698254143201</created>
+      <option name="number" value="00044" />
+      <option name="presentableId" value="LOCAL-00044" />
+      <option name="project" value="LOCAL" />
+      <updated>1698254143201</updated>
+    </task>
+    <task id="LOCAL-00045" summary="separate soil edit module">
+      <option name="closed" value="true" />
+      <created>1698254960352</created>
+      <option name="number" value="00045" />
+      <option name="presentableId" value="LOCAL-00045" />
+      <option name="project" value="LOCAL" />
+      <updated>1698254960352</updated>
+    </task>
+    <task id="LOCAL-00046" summary="separate soil edit module">
+      <option name="closed" value="true" />
+      <created>1698255018156</created>
+      <option name="number" value="00046" />
+      <option name="presentableId" value="LOCAL-00046" />
+      <option name="project" value="LOCAL" />
+      <updated>1698255018156</updated>
+    </task>
+    <task id="LOCAL-00047" summary="separate soil edit module">
+      <option name="closed" value="true" />
+      <created>1698255043897</created>
+      <option name="number" value="00047" />
+      <option name="presentableId" value="LOCAL-00047" />
+      <option name="project" value="LOCAL" />
+      <updated>1698255043897</updated>
+    </task>
+    <task id="LOCAL-00048" summary="separate soil edit module">
+      <option name="closed" value="true" />
+      <created>1698255542118</created>
+      <option name="number" value="00048" />
+      <option name="presentableId" value="LOCAL-00048" />
+      <option name="project" value="LOCAL" />
+      <updated>1698255542118</updated>
+    </task>
+    <task id="LOCAL-00049" summary="separate soil edit module">
+      <option name="closed" value="true" />
+      <created>1698255561801</created>
+      <option name="number" value="00049" />
+      <option name="presentableId" value="LOCAL-00049" />
+      <option name="project" value="LOCAL" />
+      <updated>1698255561801</updated>
+    </task>
+    <task id="LOCAL-00050" summary="separate soil edit module">
+      <option name="closed" value="true" />
+      <created>1698255832205</created>
+      <option name="number" value="00050" />
+      <option name="presentableId" value="LOCAL-00050" />
+      <option name="project" value="LOCAL" />
+      <updated>1698255832206</updated>
+    </task>
+    <task id="LOCAL-00051" summary="separate soil edit module">
+      <option name="closed" value="true" />
+      <created>1698255914290</created>
+      <option name="number" value="00051" />
+      <option name="presentableId" value="LOCAL-00051" />
+      <option name="project" value="LOCAL" />
+      <updated>1698255914291</updated>
+    </task>
+    <task id="LOCAL-00052" summary="separate soil edit module">
+      <option name="closed" value="true" />
+      <created>1698256437865</created>
+      <option name="number" value="00052" />
+      <option name="presentableId" value="LOCAL-00052" />
+      <option name="project" value="LOCAL" />
+      <updated>1698256437865</updated>
+    </task>
+    <task id="LOCAL-00053" summary="separate soil edit module">
+      <option name="closed" value="true" />
+      <created>1698256485445</created>
+      <option name="number" value="00053" />
+      <option name="presentableId" value="LOCAL-00053" />
+      <option name="project" value="LOCAL" />
+      <updated>1698256485445</updated>
+    </task>
+    <task id="LOCAL-00054" summary="separate soil edit module">
+      <option name="closed" value="true" />
+      <created>1698263203977</created>
+      <option name="number" value="00054" />
+      <option name="presentableId" value="LOCAL-00054" />
+      <option name="project" value="LOCAL" />
+      <updated>1698263203977</updated>
+    </task>
+    <task id="LOCAL-00055" summary="separate soil edit module">
+      <option name="closed" value="true" />
+      <created>1698263291294</created>
+      <option name="number" value="00055" />
+      <option name="presentableId" value="LOCAL-00055" />
+      <option name="project" value="LOCAL" />
+      <updated>1698263291294</updated>
+    </task>
+    <task id="LOCAL-00056" summary="separate soil edit module">
+      <option name="closed" value="true" />
+      <created>1698268844729</created>
+      <option name="number" value="00056" />
+      <option name="presentableId" value="LOCAL-00056" />
+      <option name="project" value="LOCAL" />
+      <updated>1698268844729</updated>
+    </task>
+    <task id="LOCAL-00057" summary="added generator to bulky file simulation in the process pool data based reading">
+      <option name="closed" value="true" />
+      <created>1698269489539</created>
+      <option name="number" value="00057" />
+      <option name="presentableId" value="LOCAL-00057" />
+      <option name="project" value="LOCAL" />
+      <updated>1698269489540</updated>
+    </task>
+    <task id="LOCAL-00058" summary="added generator to bulky file simulation in the process pool data based reading">
+      <option name="closed" value="true" />
+      <created>1698270340104</created>
+      <option name="number" value="00058" />
+      <option name="presentableId" value="LOCAL-00058" />
+      <option name="project" value="LOCAL" />
+      <updated>1698270340104</updated>
+    </task>
+    <task id="LOCAL-00059" summary="added generator to bulky file simulation in the process pool data based reading">
+      <option name="closed" value="true" />
+      <created>1698282692410</created>
+      <option name="number" value="00059" />
+      <option name="presentableId" value="LOCAL-00059" />
+      <option name="project" value="LOCAL" />
+      <updated>1698282692410</updated>
+    </task>
+    <task id="LOCAL-00060" summary="added generator to bulky file simulation in the process pool data based reading">
+      <option name="closed" value="true" />
+      <created>1698282824490</created>
+      <option name="number" value="00060" />
+      <option name="presentableId" value="LOCAL-00060" />
+      <option name="project" value="LOCAL" />
+      <updated>1698282824490</updated>
+    </task>
+    <task id="LOCAL-00061" summary="changed">
+      <option name="closed" value="true" />
+      <created>1698283132393</created>
+      <option name="number" value="00061" />
+      <option name="presentableId" value="LOCAL-00061" />
+      <option name="project" value="LOCAL" />
+      <updated>1698283132393</updated>
+    </task>
+    <task id="LOCAL-00062" summary="basic example">
+      <option name="closed" value="true" />
+      <created>1698292347877</created>
+      <option name="number" value="00062" />
+      <option name="presentableId" value="LOCAL-00062" />
+      <option name="project" value="LOCAL" />
+      <updated>1698292347877</updated>
+    </task>
+    <task id="LOCAL-00063" summary="basic example">
+      <option name="closed" value="true" />
+      <created>1698292447584</created>
+      <option name="number" value="00063" />
+      <option name="presentableId" value="LOCAL-00063" />
+      <option name="project" value="LOCAL" />
+      <updated>1698292447585</updated>
+    </task>
+    <task id="LOCAL-00064" summary="cache">
+      <option name="closed" value="true" />
+      <created>1698335952228</created>
+      <option name="number" value="00064" />
+      <option name="presentableId" value="LOCAL-00064" />
+      <option name="project" value="LOCAL" />
+      <updated>1698335952228</updated>
+    </task>
+    <task id="LOCAL-00065" summary="download weather data">
+      <option name="closed" value="true" />
+      <created>1698336806318</created>
+      <option name="number" value="00065" />
+      <option name="presentableId" value="LOCAL-00065" />
+      <option name="project" value="LOCAL" />
+      <updated>1698336806318</updated>
+    </task>
+    <task id="LOCAL-00066" summary="get the example on the fly">
+      <option name="closed" value="true" />
+      <created>1698342288170</created>
+      <option name="number" value="00066" />
+      <option name="presentableId" value="LOCAL-00066" />
+      <option name="project" value="LOCAL" />
+      <updated>1698342288170</updated>
+    </task>
+    <task id="LOCAL-00067" summary="get the example on the fly">
+      <option name="closed" value="true" />
+      <created>1698342763899</created>
+      <option name="number" value="00067" />
+      <option name="presentableId" value="LOCAL-00067" />
+      <option name="project" value="LOCAL" />
+      <updated>1698342763899</updated>
+    </task>
+    <task id="LOCAL-00068" summary="new data">
+      <option name="closed" value="true" />
+      <created>1698345910608</created>
+      <option name="number" value="00068" />
+      <option name="presentableId" value="LOCAL-00068" />
+      <option name="project" value="LOCAL" />
+      <updated>1698345910608</updated>
+    </task>
+    <task id="LOCAL-00069" summary="new data">
+      <option name="closed" value="true" />
+      <created>1698346909296</created>
+      <option name="number" value="00069" />
+      <option name="presentableId" value="LOCAL-00069" />
+      <option name="project" value="LOCAL" />
+      <updated>1698346909297</updated>
+    </task>
+    <task id="LOCAL-00070" summary="removed cache">
+      <option name="closed" value="true" />
+      <created>1698347256382</created>
+      <option name="number" value="00070" />
+      <option name="presentableId" value="LOCAL-00070" />
+      <option name="project" value="LOCAL" />
+      <updated>1698347256382</updated>
+    </task>
+    <task id="LOCAL-00071" summary="removed cache">
+      <option name="closed" value="true" />
+      <created>1698347944987</created>
+      <option name="number" value="00071" />
+      <option name="presentableId" value="LOCAL-00071" />
+      <option name="project" value="LOCAL" />
+      <updated>1698347944987</updated>
+    </task>
+    <task id="LOCAL-00072" summary="removed cache">
+      <option name="closed" value="true" />
+      <created>1698348089862</created>
+      <option name="number" value="00072" />
+      <option name="presentableId" value="LOCAL-00072" />
+      <option name="project" value="LOCAL" />
+      <updated>1698348089862</updated>
+    </task>
+    <task id="LOCAL-00073" summary="removed cache">
+      <option name="closed" value="true" />
+      <created>1698348253555</created>
+      <option name="number" value="00073" />
+      <option name="presentableId" value="LOCAL-00073" />
+      <option name="project" value="LOCAL" />
+      <updated>1698348253555</updated>
+    </task>
+    <task id="LOCAL-00074" summary="no property">
+      <option name="closed" value="true" />
+      <created>1698348707753</created>
+      <option name="number" value="00074" />
+      <option name="presentableId" value="LOCAL-00074" />
+      <option name="project" value="LOCAL" />
+      <updated>1698348707753</updated>
+    </task>
+    <task id="LOCAL-00075" summary="no property">
+      <option name="closed" value="true" />
+      <created>1698348892361</created>
+      <option name="number" value="00075" />
+      <option name="presentableId" value="LOCAL-00075" />
+      <option name="project" value="LOCAL" />
+      <updated>1698348892361</updated>
+    </task>
+    <option name="localTasksCounter" value="76" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Added clean_up function to delete .db, db-shm, and db-wal" />
+    <MESSAGE value="added edit cultvar capabilities" />
+    <MESSAGE value="made cultvar dynamic" />
+    <MESSAGE value="all metric calculation" />
+    <MESSAGE value="added timing decorator" />
+    <MESSAGE value="add module for testing" />
+    <MESSAGE value="testing relative import" />
+    <MESSAGE value="testing relative import failed" />
+    <MESSAGE value="weather filename to default to daymet" />
+    <MESSAGE value="change main init file" />
+    <MESSAGE value="added a config file apsimx program path and pythonent" />
+    <MESSAGE value="changes apsimsoil class to soilModel" />
+    <MESSAGE value="separate soil edit module" />
+    <MESSAGE value="added generator to bulky file simulation in the process pool data based reading" />
+    <MESSAGE value="changed" />
+    <MESSAGE value="basic example" />
+    <MESSAGE value="cache" />
+    <MESSAGE value="download weather data" />
+    <MESSAGE value="get the example on the fly" />
+    <MESSAGE value="new data" />
+    <MESSAGE value="removed cache" />
+    <MESSAGE value="no property" />
+    <option name="LAST_COMMIT_MESSAGE" value="no property" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/model/__init__.py</url>
+          <line>3</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+</project>

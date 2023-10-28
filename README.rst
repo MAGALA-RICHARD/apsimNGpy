@@ -93,4 +93,32 @@ Congratulations you have successfuly used apsimNGpy package
 .. image:: ./apsimNGpy/examples/Figure_1.png
    :alt: /examples/Figure_1.png
 
+Change simulation dates and management 
+*********************************************************************************
+.. code:: python
+
+    import apsimNGpy
+    from apsimNGpy.base_data import load_example_files
+    from apsimNGpy.model.soilmodel import SoilModel
+    from pathlib import Path
+    import os
+    from apsimNGpy.validation import plot_data
+    cwd = Path.cwd().home() # sending this to your home folder
+    wd = cwd.joinpath("apsimNGpy_demo")
+    if not wd.exists():
+      os.mkdir(wd)
+    # change directory
+    os.chdir(wd)
+    # Create the data
+    data = load_example_files(wd)
+
+    # Get maize model
+    maize = data.get_maize()
+
+    # Initialize the simulation methods
+    apsim = SoilModel(maize, copy=True)
+    apsim.change_simulation_dates(start_date='01/01/1998', end_date='12/31/2010')
+    
+
+
 

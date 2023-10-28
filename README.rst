@@ -135,5 +135,23 @@ Change  APSIM model management decissions
     apsim.update_multiple_management_decissions([rotation], simulations=apsim.extract_simulation_name, reload=True)
     # now you cans see we passed rotation as a list. That means you can add other scripts as much as you all  to be changed at the same time
 
+Populating the APSIM model with new weather data
+*********************************************************************************
+.. code:: python
+
+from apsimNGpy.weather import daymet_bylocation_nocsv
+lonlat = -93.08, 42.014
+startyear, endyear =2000, 2002
+wf = daymet_bylocation_nocsv(lonlat, startyear, endyear, filename="mymet.met")
+# you may need to first see what file currently exists in the model
+mis = apsim.show_met_file_in_simulation()
+print(mis)
+# change
+apsim.replace_met_file(wf)
+# check again if you want to
+mis = apsim.show_met_file_in_simulation()
+print(mis)
+
+
 
 

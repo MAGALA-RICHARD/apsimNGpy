@@ -168,6 +168,10 @@ Document the soil download and editing process
 
 Demonstrate custom function development
 
+document parallel processing
+
+Add runnung batch files on apsinNG  server
+
 
 
 

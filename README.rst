@@ -23,6 +23,7 @@ b. Build APSIM from its source code. This is comming soon
 For the current developer versions:
 
 Method 1
+
 .. code:: bash
 
     git clone https://github.com/MAGALA-RICHARD/apsimNGpy.git
@@ -30,6 +31,7 @@ Method 1
     pip install .
 
 Method 2
+
 .. code:: bash
      pip install git+https://github.com/MAGALA-RICHARD/apsimNGpy.git
 

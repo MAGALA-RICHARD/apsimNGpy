@@ -468,10 +468,6 @@ class APSIMNG():
         dfl = len(dataframe_dict)
         if len(dataframe_dict) == 0:
             print("the data dictionary is empty. no data has been returned")
-            # else:
-            # remove elements 
-            # print(f"{dfl} data frames has been returned")
-
         if report_name:
             return dataframe_dict[report_name]
         else:
@@ -864,8 +860,8 @@ class APSIMNG():
         return formatted_date_string  # Output: 2010-01-01T00:00:00
 
     def change_simulation_dates(self, start_date=None, end_date=None, simulations=None):
-        """Set simulation dates. this is important to run this method befire run the weather repalcement method as 
-        the date needs to be alligned int weather
+        """Set simulation dates. this is important to run this method before run the weather replacement method as
+        the date needs to be alligned into weather
 
         Parameters
         -----------------------------------

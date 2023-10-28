@@ -2,19 +2,17 @@ import os
 from os.path import join as opj
 from datetime import datetime
 import datetime
-import urllib
 import requests
 import copy
 import random
 import json
-import sys
 import pandas as pd
 import statistics
 import numpy as np
 import string
 from io import StringIO
 import io
-import threading
+
 
 
 def generate_unique_name(base_name, length=6):

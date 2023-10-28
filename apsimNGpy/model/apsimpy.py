@@ -117,7 +117,7 @@ class APSIMNG():
                                 'Prairie Strips': [1, 0]}
 
         if type(model) == str or isinstance(model, Path):
-            apsimx_file = os.path.realpath(model)
+            apsimx_file = model
             name, ext = os.path.splitext(apsimx_file)
             if copy:
                 if out_path is None:
@@ -761,7 +761,7 @@ class APSIMNG():
         return self
 
     # Convert CS KeyValuePair to dictionary
-   # @timing_decorator
+    @timing_decorator
     def update_multiple_management_decissions(self, management_list, simulations=None, reload=False):
         """Update management, handles multiple managers in a loop
 
@@ -795,8 +795,7 @@ class APSIMNG():
 
                                 # action.Parameters[i]= {param:f"{values[param]}"}
                             # action.GetParametersFromScriptModel()
-            print(self.path)
-            print(self.out_path)
+
             if reload:
                 self.save_edited_file()
             if self.out_path:

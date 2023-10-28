@@ -795,7 +795,8 @@ class APSIMNG():
 
                                 # action.Parameters[i]= {param:f"{values[param]}"}
                             # action.GetParametersFromScriptModel()
-
+            print(self.path)
+            print(self.out_path)
             if reload:
                 self.save_edited_file()
             if self.out_path:

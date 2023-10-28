@@ -127,10 +127,10 @@ Change  management decissions
     # first, examine the manager scripts in the simulation node
     apsim.examine_management_info()
     # now create disctioanry holding the parameters. the key to this is that the name of the script manage rmust be passed in the disctionary
-    # in this node we have a script named the Simple Rotation,we want to change the rotation to may Maize, Wheat or something else
+    # in this node we have a script named the Simple Rotation,we want to change the rotation to maybe Maize, Wheat or something else
     rotation  = {'Name': "Simple Rotation", "Crops": 'Maize, Wheat, Soybean' # the crops must be seperated my commas
     apsim.update_multiple_management_decissions([rotation], simulations=apsim.extract_simulation_name, reload=True)
-    # now you cans see we passed rotation as a list. That means you can add other scripts as uch as you can to be changed at thesame time
+    # now you cans see we passed rotation as a list. That means you can add other scripts as much as you all  to be changed at the same time
 
 
 

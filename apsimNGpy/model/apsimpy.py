@@ -761,7 +761,7 @@ class APSIMNG():
         return self
 
     # Convert CS KeyValuePair to dictionary
-    @timing_decorator
+   # @timing_decorator
     def update_multiple_management_decissions(self, management_list, simulations=None, reload=False):
         """Update management, handles multiple managers in a loop
 

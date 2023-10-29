@@ -6,12 +6,14 @@ import os
 from pathlib import Path
 from functools import cache
 
+
 def _is_runtime(self):
     rt = pythonnet.get_runtime_info()
     return rt is not None
 
 
 import shutil
+
 
 @cache
 def is_executable_on_path(name):
@@ -27,27 +29,69 @@ def is_executable_on_path(name):
     executable_path = shutil.which(name)
     return executable_path is not None
 
+
 pm = is_executable_on_path("Models")
+
+
 @cache
 def _is_apsimx_installed():
     try:
-       return os.environ['APSIM'] is not None
+        return os.environ['APSIM'] is not None
     except KeyError:
         return None
+
 
 def get_apsimx_model_path():
     if _is_apsimx_installed():
         return Path(os.path.realpath(os.environ['APSIM']))
-class Method1:
-  def __init__(self):
-      pass
-  def find_apsim_path(self):
-      self.path = get_apsimx_model_path()
-      return self.path
-class Method2:
-  def __init__(self):
-      pass
-  def find_apsim_path(self):
-      path = shutil.which("Models")
-      if path is not None:
-          return os.path.dirname(path)
+    try:
+        pat = os.environ['APSIM']
+    except KeyError:
+        return False
+
+
+def get_pasimx_path_from_shutil():
+    if is_executable_on_path("Models"):
+        return os.path.dirname(shutil.which('Models'))
+
+
+class OsMethod:
+    def __init__(self):
+        pass
+
+    def find_apsim_path(self):
+        path = get_apsimx_model_path()
+        return path
+
+
+class ShutilMethod:
+    def __init__(self):
+        pass
+
+    def find_apsim_path(self):
+        return shutil.which("Models")
+
+
+class NotFound:
+    def __init__(self):
+        pass
+
+    def find_apsim_path(self):
+        print("APSIM not found in the system environment variable, please add apsim path")
+        pat = input(f"Browse your computer and add the path for APSIM installation: ")
+        print(pat)
+        if os.path.exists(pat):
+            print('congratulations you have successfully added apsim binary folder path to your environ')
+            return pat
+        else:
+            raise ValueError("entered path not found")
+
+
+m1 = ShutilMethod()
+m2 = OsMethod()
+m3 = NotFound()
+_find = [m1, m2, m3]
+for cla in _find:
+    get_binary_file_path = cla.find_apsim_path()
+    if get_binary_file_path:
+        break

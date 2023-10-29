@@ -15,7 +15,7 @@ import json
 from pathlib import Path
 import apsimNGpy.manager.weathermanager as weather
 from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganizeAPSIMsoil_profile
-from apsimNGpy.utililies.pythonet_config import get_apsimx_model_path
+from apsimNGpy.utililies.pythonet_config import get_apsimx_model_path, get_apsim_path
 
 try:
     if pythonnet.get_runtime_info() is None:
@@ -41,8 +41,10 @@ log_paths = opj(log_messages, logfile_name)
 logging.basicConfig(filename=log_paths, level=logging.ERROR, format='%(asctime)s %(levelname)s %(message)s')
 logger = logging.getLogger(__name__)
 
-
-apsim_model = os.path.realpath(get_apsimx_model_path())
+try:
+   apsim_model = os.path.realpath(get_apsimx_model_path())
+except:
+    apsim_model = get_apsim_path()
 
 sys.path.append(apsim_model)
 

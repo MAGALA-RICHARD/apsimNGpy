@@ -71,7 +71,7 @@ class ShutilMethod:
 
     @cache
     def _find_apsim_path(self):
-        return shutil.which("Models")
+        return os.path.dirname(shutil.which("Models"))
 
 
 class NotFound:
@@ -94,7 +94,12 @@ m1 = ShutilMethod()
 m2 = OsMethod()
 m3 = NotFound()
 _find = [m1, m2, m3]
-for cla in _find:
-    get_binary_file_path = cla._find_apsim_path()
-    if get_binary_file_path:
-        break
+
+from apsimNGpy.model.apsimpy import timing_decorator
+@timing_decorator
+def get_apsim_path():
+    for cla in _find:
+        path = cla._find_apsim_path()
+        if path:
+            break
+        return path

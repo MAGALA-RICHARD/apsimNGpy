@@ -95,8 +95,7 @@ m2 = OsMethod()
 m3 = NotFound()
 _find = [m1, m2, m3]
 
-from apsimNGpy.model.apsimpy import timing_decorator
-@timing_decorator
+
 def get_apsim_path():
     for cla in _find:
         path = cla._find_apsim_path()

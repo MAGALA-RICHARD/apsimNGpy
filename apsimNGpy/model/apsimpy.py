@@ -42,7 +42,7 @@ logging.basicConfig(filename=log_paths, level=logging.ERROR, format='%(asctime)s
 logger = logging.getLogger(__name__)
 
 try:
-   apsim_model = os.path.realpath(get_apsimx_model_path())
+    apsim_model = os.path.realpath(get_apsimx_model_path())
 except:
     apsim_model = get_apsim_path()
 
@@ -201,7 +201,7 @@ class APSIMNG():
     def _load_apsimx(self, path):
         try:
             if not os.path.isfile(path):
-                raise ValueError ("file path is missing apsim extention. did you forget to include .apsimx extension")
+                raise ValueError("file path is missing apsim extention. did you forget to include .apsimx extension")
             self.Model = FileFormat.ReadFromFile[Models.Core.Simulations](path, None, False)
         except Exception as e:
             logger.exception(repr(e))  # this error will be logged to the folder logs in the current working directory
@@ -1318,6 +1318,7 @@ class APSIMNG():
         """
         self._set_initial_values("Urea", values, simulations)
         # inherit properties from the ancestors apsimng object
+
 
 class ApsiMet(APSIMNG):
     def __init__(self, model: Union[str, Simulations], copy=True, out_path=None, lonlat=None, simulation_names=None):

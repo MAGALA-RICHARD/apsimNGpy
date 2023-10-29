@@ -60,7 +60,7 @@ class OsMethod:
         pass
 
     @cache
-    def find_apsim_path(self):
+    def _find_apsim_path(self):
         path = get_apsimx_model_path()
         return path
 
@@ -70,7 +70,7 @@ class ShutilMethod:
         pass
 
     @cache
-    def find_apsim_path(self):
+    def _find_apsim_path(self):
         return shutil.which("Models")
 
 
@@ -79,7 +79,7 @@ class NotFound:
         pass
 
     @cache
-    def find_apsim_path(self):
+    def _find_apsim_path(self):
         print("APSIM not found in the system environment variable, please add apsim path")
         pat = input(f"Browse your computer and add the path for APSIM installation: ")
         print(pat)
@@ -95,6 +95,6 @@ m2 = OsMethod()
 m3 = NotFound()
 _find = [m1, m2, m3]
 for cla in _find:
-    get_binary_file_path = cla.find_apsim_path()
+    get_binary_file_path = cla._find_apsim_path()
     if get_binary_file_path:
         break

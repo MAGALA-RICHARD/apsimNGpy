@@ -42,8 +42,8 @@ Method 2. Use pip straight away
 
      pip install git+https://github.com/MAGALA-RICHARD/apsimNGpy.git
 
-if you have apsim installed and the program refuses to load run the following code a the top of your python script
-before importing any apsimNGpy class
+If you have apsim installed and the program refuses to load run the following code a the top of your python script
+before importing any apsimNGpy class. The classes are  CamelCased.
 
 
 Debugging import error due to improper SYSTEM APSIM path configuration
@@ -77,7 +77,6 @@ Usage
     os.chdir(wd)
     # Create the data
     data = load_example_files(wd)
-
     # Get maize model
     maize = data.get_maize()
 

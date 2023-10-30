@@ -57,8 +57,8 @@ def read_result_in_parallel(iterable_files, ncores, use_threads=False):
                             bar_format='reading file databases: {percentage:3.0f}% completed')
             # Iterate over the futures as they complete
             for future in as_completed(futures):
-                print(future.result())
-                yield future.result()  # retrieve and store it in a generator
+                data = future.result()
+                yield data  # retrieve and store it in a generator
                 progress.update(1)
             progress.close()
         print(perf_counter() - a, 'seconds', f'to read {len(files)} apsimx files databases')

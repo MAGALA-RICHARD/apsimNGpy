@@ -4,6 +4,7 @@ from os.path import join, realpath, dirname, exists, split, basename
 from os import listdir, walk, getcwd, mkdir
 from apsimNGpy.model.soilmodel import SoilModel
 import shutil
+from apsimNGpy.utililies.pythonet_config import get_apsim_path
 
 from pathlib import Path
 from functools import cache
@@ -87,8 +88,10 @@ class load_example_files():
         """
         path: string pathlike object where to copy the default example to
         """
-        assert exists(path), "entered path does not exists please try again, \n ============================"
-        self.path = path
+        if not exists(path):
+            raise NameError ("entered path does not exists please try again, \n ============================")
+        else:
+          self.path = path
 
     def _clean_up(self, path):
         Path(f"{path}.db").unlink(missing_ok=True)
@@ -127,31 +130,11 @@ class load_example_files():
         return self._clean_up(_get_maize_no_till(self.path))
 
 
-# APSIM defaults
-# TODO: incoporate other plafforms and also make itS detection faster
-# avoid hard codying
-def detect_apsim_installation():
-    for rr, dd, ff in walk("C:/"):
-        for d in ff:
-            if d.startswith('Model') and d.endswith(".exe"):
-                f = join(rr, d)
-                if f is not None:
-                    return f
-                else:
-                    f = input("APSIM automatic APSIM detection failed, Please write the path to apsim installation: ")
-                    return f
-
 
 try:
    pat = os.environ['APSIM']
 except KeyError:
-    print("APSIM key not found in the system environment variable, please add apsim path")
-    pat = input(f"Browse your computer and add the path for APSIM installation binary folder: " )
-    if not os.path.exists(pat):
-        raise ValueError("Path does not exist. Try again or permanently add to the system environmental variable by "
-                         "editing the path variables:\n use key 'APSIM' as the variable name")
-    else:
-        print(pat)
+    pat = get_apsim_path()
 
 
 if pat:

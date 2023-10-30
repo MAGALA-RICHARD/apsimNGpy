@@ -80,6 +80,7 @@ class ShutilMethod:
 
 
 class NotFound:
+
     def __init__(self):
         pass
 

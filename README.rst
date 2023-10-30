@@ -3,22 +3,28 @@
 apsimNGpy: The next generation agroecosytem simulation library
 ====================================================================
 
-Our cutting-edge open-source framework, apsimNGpy, empowers advanced agroecosystem modeling through the utilization of object-oriented principles. It features fast batch file simulation, model prediction, evaluation, 
+Our cutting-edge open-source framework, apsimNGpy, empowers advanced agroecosystem modeling through the utilization
+of object-oriented principles. It features fast batch file simulation, model prediction, evaluation,
 apsimx file editing, seamless weather data retrieval, and efficient soil profile development
+
+
+.. _Requirements
+
+Requirements
+***********************************************************************************
+1. Dotnet, install from https://learn.microsoft.com/en-us/dotnet/core/install/
+2. Python3
+3. APSIM: Add the directory containing the models executable to the system's PATH or python path
+(to locate the required .dll files). This can be achieved in either of the following ways:
+    a. Utilize the APSIM installer provided for this purpose.
+    b. Build APSIM from its source code. This is comming soon
+4. Minimum; 8GM RAM, CPU Core i7
 
 
 .. _Installation:
 
 Installation
 ********************************************************************************
-you may need a dotnet installation if not installed run the code https://dotnet.microsoft.com/en-us/download/dotnet/6.0
-
-First, make sure you have a Python 3 environment installed. Install APSIM and ensure that the directory containing the Models executable is added to the system's PATH or the Python path (to locate the required .dll files). This can be achieved in either of the following ways:
-
-a. Utilize the APSIM installer provided for this purpose.
-
-b. Build APSIM from its source code. This is comming soon
-
 
 All versions are currently in development, phase and they can be installed as follows:
 
@@ -36,10 +42,11 @@ Method 2. Use pip straight away
 
      pip install git+https://github.com/MAGALA-RICHARD/apsimNGpy.git
 
-if you have apsim installed and the program refuses to load run the following code a the top of your python script before importing any apsimNGpy class
+if you have apsim installed and the program refuses to load run the following code a the top of your python script
+before importing any apsimNGpy class
 
 
-Debuging import error due to improper SYSTEM APSIM path configuration
+Debugging import error due to improper SYSTEM APSIM path configuration
 *********************************************************************************
 .. code:: python
 
@@ -49,6 +56,7 @@ Debuging import error due to improper SYSTEM APSIM path configuration
     # try importing SoilModel class
     from apsimNGpy.model.soilmodel import SoilModel
     # alternatively, you can add the path to the system environmental variables
+
 .. _Usage:
 
 Usage
@@ -122,18 +130,22 @@ Change APSIM simulation dates
     apsim = SoilModel(maize, copy=True)
     apsim.change_simulation_dates(start_date='01/01/1998', end_date='12/31/2010')
 
-Change  APSIM model management decissions
+Change  APSIM model management decisions
 *********************************************************************************
 .. code:: python
 
 
-    # first, examine the manager scripts in the simulation node
+    # First, examine the manager scripts in the simulation node
     apsim.examine_management_info()
-    # now create disctioanry holding the parameters. the key to this is that the name of the script manage rmust be passed in the disctionary
-    # in this node we have a script named the Simple Rotation,we want to change the rotation to maybe Maize, Wheat or something else
+    # now create dictionary holding the parameters. the key to this is that the name of the script manage must be
+    passed in the dictionary.
+
+    # in this node we have a script named the Simple Rotation,we want to change the rotation to maybe Maize, Wheat or
+    something else
     rotation  = {'Name': "Simple Rotation", "Crops": 'Maize, Wheat, Soybean' # the crops must be seperated my commas
-    apsim.update_multiple_management_decissions([rotation], simulations=apsim.extract_simulation_name, reload=True)
-    # now you cans see we passed rotation as a list. That means you can add other scripts as much as you all  to be changed at the same time
+    apsim.update_multiple_management_decisions([rotation], simulations=apsim.extract_simulation_name, reload=True)
+    # now you cans see we passed rotation as a list. That means you can add other scripts as much as you all  to be
+    changed at the same time
 
 Populating the APSIM model with new weather data
 *********************************************************************************
@@ -141,7 +153,7 @@ Populating the APSIM model with new weather data
 
     from apsimNGpy.weather import daymet_bylocation_nocsv
     lonlat = -93.08, 42.014
-    startyear, endyear =2000, 2002
+    start_year, end_year = 2000, 2002
     wf = daymet_bylocation_nocsv(lonlat, startyear, endyear, filename="mymet.met")
     # you may need to first see what file currently exists in the model
     mis = apsim.show_met_file_in_simulation()
@@ -170,7 +182,7 @@ Demonstrate custom function development
 
 document parallel processing
 
-Add runnung batch files on apsinNG  server
+Add running batch files on apsinNG  server
 
 
 

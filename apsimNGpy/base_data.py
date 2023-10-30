@@ -3,6 +3,7 @@ from importlib.resources import files
 from os.path import join, realpath, dirname, exists, split, basename
 from os import listdir, walk, getcwd, mkdir
 from apsimNGpy.model.soilmodel import SoilModel
+from apsimNGpy.utililies.pythonet_config import get_apsim_path
 import shutil
 
 from pathlib import Path
@@ -96,31 +97,25 @@ class load_example_files():
         Path(f"{path}.db-wal").unlink(missing_ok=True)
         return path
 
-
     def get_maize_with_cover_crop(self):
         self.weather_example = _weather(self.path)
         return self._clean_up(_get_maize_example(self.path))
-
 
     def get_experiment_nitrogen_residue(self):
         self.weather_example = _weather(self.path)
         return self._clean_up(_get_maize_NF_experiment(self.path))
 
-
     def get_get_experiment_nitrogen_residue_NT(self):
         self.weather_example = _weather(self.path)
         return self._clean_up(_get_maize_NF_experiment_NT(self.path))
-
 
     def get_swim(self):
         self.weather_example = _weather(self.path)
         return self._clean_up(_get_SWIM(self.path))
 
-
     def get_maize(self):
         self.weather_example = _weather(self.path)
         return self._clean_up(_get_maize(self.path))
-
 
     def get_maize_no_till(self):
         self.weather_example = _weather(self.path)
@@ -141,15 +136,14 @@ def detect_apsim_installation():
                     f = input("APSIM automatic APSIM detection failed, Please write the path to apsim installation: ")
                     return f
 
+
 try:
-   pat = os.environ['APSIM']
-except KeyError:
-    print("APSIM key not found in the system environment variable, please add apsim path")
-    pat = input(f"Browse your computer and add the path for APSIM installation: " )
-    print(pat)
+    pat = os.environ['APSIM']
+except Exception as e:
+    pat = get_apsim_path()
 
 if pat:
-    apsim =os.path.dirname(pat)
+    apsim = os.path.dirname(pat)
     examples = join(apsim, 'Examples')
 dr = listdir(examples)
 

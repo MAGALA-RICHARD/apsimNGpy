@@ -1,6 +1,6 @@
 
 
-apsimNGpy: The next generation agroecosytem simulation library
+apsimNGpy: The Next Generation Agroecosytem Simulation Library
 ====================================================================
 
 Our cutting-edge open-source framework, apsimNGpy, empowers advanced agroecosystem modeling through the utilization of object-oriented principles. It features fast batch file simulation, model prediction, evaluation, 

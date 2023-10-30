@@ -41,11 +41,12 @@ def _is_apsimx_installed():
         return None
 
 
+@cache
 def get_apsimx_model_path():
-    if _is_apsimx_installed():
-        return Path(os.path.realpath(os.environ['APSIM']))
     try:
         pat = os.environ['APSIM']
+        if pat:
+            return Path(os.path.realpath(pat))
     except KeyError:
         return False
 
@@ -71,7 +72,11 @@ class ShutilMethod:
 
     @cache
     def _find_apsim_path(self):
-        return os.path.dirname(shutil.which("Models"))
+        path = shutil.which("Models")
+        if path:
+            return os.path.dirname(path)
+        else:
+            return False
 
 
 class NotFound:
@@ -87,7 +92,7 @@ class NotFound:
             print('Congratulations you have successfully added APSIM binary folder path to your environ')
             return pat
         else:
-            raise ValueError(f"entered path: {pat} not found")
+            raise ValueError(f"entered path: '{pat}' not found")
 
 
 m1 = ShutilMethod()
@@ -100,5 +105,6 @@ def get_apsim_path():
     for cla in _find:
         path = cla._find_apsim_path()
         if path:
-            break
-        return path
+            return path
+
+

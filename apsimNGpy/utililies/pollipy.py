@@ -24,7 +24,9 @@ from shapely.geometry import Point
 from tqdm import tqdm
 lock = threading.Lock()
 
+
 class PollinationBase:
+
       np.set_printoptions(precision=4)
       def __init__(self, in_landuseclass,  field, method = 'euclidean', resoln  = 100,
                         SR= None, foraging_distance =700):
@@ -170,7 +172,6 @@ class PollinationBase:
           
           return self
 
-
       def calculate_in_chunk(self):
           self.Array = self.Array.astype('double')
           self.num_cells = utils.number_of_cells(self.foraging_distance, self.resolution)
@@ -241,16 +242,19 @@ class PollinationBase:
         def calcculate_ps_in_parallel(idex):
           with lock:
             forage, distances, pa = foraging_aray[idex], arr[idex], pa_split[idex]
-        #for i, pa, F in zip(distances, pa_split, forage):
+            #for i, pa, F in zip(distances, pa_split, forage):
             cod_distance = np.exp(cdist(distances, distances)*-1/self.foraging_distance)
             ps_num = pa * cod_distance
             psp = np.sum(ps_num, axis =1) / np.sum(cod_distance, axis = 1)
             return psp
+
         with ThreadPoolExecutor(max_workers=2) as executor:
             ans = list(executor.map(calcculate_ps_in_parallel, ideces))
+
         self.pollinator_supply = np.hstack(ans)
         self.Normalised_pollination = self.pollinator_supply/self.FQ
         return self
+
       def calculate_aggregate(self):
           # self.p = [cdist(i, i)*-1 for i in arr]
           fr = self.split_single(self.foraging_suitability, self.num_cells)

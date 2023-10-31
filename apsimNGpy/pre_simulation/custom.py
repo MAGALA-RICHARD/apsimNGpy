@@ -283,10 +283,17 @@ class PreProcessor():
         except:
             pass
 
-    def soil_downloader(self, x):
+    def soil_downloader(self, x, iterables = None):
+        """
+        iterables: a list of corrdnates
+        """
         # print(f"downloading for: {x}")
         data_dic = {}
-        cod = self.data.locations[x]
+        if iterables:
+            cod = iterables[x]
+        else:
+
+            cod = self.data.locations[x]
         try:
             data_table = soilmanager.DownloadsurgoSoiltables(cod, select_componentname='domtcp')
             self.soil_profile = soilmanager.OrganizeAPSIMsoil_profile(data_table,

@@ -169,21 +169,47 @@ class PreProcessor():
                 print('{0} failed: {1}'.format(args, e))  # , file=sys.stderr
                 # os.startfile(self.show_file_in_APSIM_GUI())
 
-    def threaded_weather_download(self, wd=None, iterable=None):
+    def threaded_weather_download(self, wd=None, cordnates=None):
+        def idex_excutor(x, lock):  #
+            try:
+                a = time.perf_counter()
+                print(f"downloading for: {x}", end='\r')
+                data_dic = {}
+                fn = "daymet_wf_" + str(x) + '.met'
+                cod = cordnates[x]
+                filex = weather.daymet_bylocation_nocsv(cod, start=1998, end=2020, cleanup=False, filename=fn)
+                return filex
+            except Exception as e:
+                # raise
+                print(e, "has occured")
+                try:
+                    print("trying again")
+                    filex = weather.daymet_bylocation_nocsv(cod, start=1998, end=2000, cleanup=True, filename=fn)
+                    return filex
+                except:
+                    print("unresolved errors at the momentt try again")
+
+        def weather_excutor(queue, lock):
+            '''Process files from the queue.'''
+            for args in iter(queue.get, None):
+                try:
+                    idex_excutor(args, lock)
+                    # self.results = None # we will collect these later
+                except Exception as e:  # catch exceptions to avoid exiting the thread prematurely
+                    print('{0} failed: {1}'.format(args, e))  # , file=sys.stderr
+                    # os.startfile(self.show_file_in_APSIM_GUI())
         if wd:
             os.chdir(wd)
         threads = []
         listable = None
-        if iterable:
-            listable = iterable
-        else:
-            listable = range(self.total)
+
+        listable = range(cordnates)
         q = queue.Queue()
         for idices in listable:
             q.put_nowait(idices)
         self._lock = threading.RLock()
         lock = threading.RLock()
-        threads = [threading.Thread(target=self.weather_excutor, args=(q, self._lock)) for _ in
+        threads = [threading.Thread(target=weather_excutor, args=(q, self._lock)) for _ in
                    range(self.number_threads)]
         for t in threads:
             t.daemon = False  # program quits when threads die
@@ -195,6 +221,24 @@ class PreProcessor():
         else:
             return os.getcwd()
 
+    def Downloader(self, x, lock):  #
+        try:
+            a = time.perf_counter()
+            print(f"downloading for: {x}", end='\r')
+            data_dic = {}
+            fn = "daymet_wf_" + str(x) + '.met'
+            cod = self.data.locations[x]
+            filex = weather.daymet_bylocation_nocsv(cod, start=1998, end=2020, cleanup=False, filename=fn)
+            return filex
+        except Exception as e:
+            # raise
+            print(e, "has occured")
+            try:
+                print("trying again")
+                filex = weather.daymet_bylocation_nocsv(cod, start=1998, end=2000, cleanup=True, filename=fn)
+                return filex
+            except:
+                print("unresolved errors at the momentt try again")
     def weather_process_point(self, queue, result_queue):
         while True:
             try:
@@ -225,8 +269,8 @@ class PreProcessor():
         queue_points.join()
         while not result_queue.empty():
             simulated_results = result_queue.get()
-            results.append(simulated_results)
-        return results
+            yield simulated_results
+
 
     def download_weather_first(self, start=1990, end=2020, watershed="trial"):
         """

@@ -67,8 +67,8 @@ class PreProcessor():
         if not thickness_values:
             self.thickness_values = [150, 150, 200, 200, 200, 250, 300, 300, 400, 500]
         self.weather_path = wp
-        assert isinstance(data, Data), "Please initiate Data class and supply the lonlats and the site_id"
-        self.data = data
+        if isinstance(data, Data):
+          self.data = data
         self.number_threads = number_threads
         self.total = len(self.data.locations)
         self.use_threads = use_threads

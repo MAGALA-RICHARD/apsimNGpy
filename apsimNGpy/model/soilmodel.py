@@ -236,6 +236,7 @@ class SoilModel(APSIMNG):
                 soil_crop.LL = physical_calculated.AirDry
                 pysoil.DUL = physical_calculated.DUL
                 pysoil.SAT = physical_calculated.SAT
+                print(list(pysoil.SAT))
                 pysoil.BD = physical_calculated.BD
                 pysoil.KS = physical_calculated.KS
                 pysoil.LL15 = physical_calculated.LL15

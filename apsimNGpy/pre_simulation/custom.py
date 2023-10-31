@@ -315,7 +315,7 @@ class PreProcessor():
         except Exception as e:
             print(repr(e))
 
-    def download_soil_table_first(self, iterator=None, cordnates=None):
+    def download_soil_table_first(self,  cordnates=None):
         """
 
         :param iterator: array or list
@@ -324,37 +324,38 @@ class PreProcessor():
         """
         print("Downloading SSURGO soil tables")
         number_threads = self.number_threads
-        a = time.perf_counter()
-        if iterator:
-            indices = iterator
+        try:
+            def soil_excutor(x):
+                data_dic = {}
+                if cordnates:
+                   locs = cordnates
+                else:
+                    locs = self.data.locations
+                cod = locs[x]
+                data_table = soilmanager.DownloadsurgoSoiltables(cod, select_componentname='domtcp')
+                self.soil_profile = soilmanager.OrganizeAPSIMsoil_profile(data_table,
+                                                                          thickness_values=self.thickness_values,
+                                                                          thickness=20)
+                data_dic[
+                    x] = self.soil_profile.cal_missingFromSurgo()  # returns a list of physical, organic and cropdf each in a data frame
+
+                return data_dic
+
+        except Exception as e:
+            print(repr(e))
+        if cordnates:
+            locs = cordnates
         else:
-            print("iterable missing")
-
-        def soil_excutor(x):
-            data_dic = {}
-            if cordnates:
-                cod = cordnates[x]
-            else:
-                cod = self.data.locations[x]
-            data_table = soilmanager.DownloadsurgoSoiltables(cod, select_componentname='domtcp')
-            self.soil_profile = soilmanager.OrganizeAPSIMsoil_profile(data_table,
-                                                                      thickness_values=self.thickness_values,
-                                                                      thickness=20)
-            data_dic[
-                x] = self.soil_profile.cal_missingFromSurgo()  # returns a list of physical, organic and cropdf each in a data frame
-
-            return data_dic
-
+            locs = self.data.locations
         with ThreadPoolExecutor(max_workers=number_threads) as executor:
             futures = []
-            for index in indices:
-                future = executor.submit(soil_excutor, index)
-                futures.append(future)
+            futures = [executor.submit(soil_excutor, index) for index in range(locs)]
             results = []
             for future in futures:
                 result = future.result()  # This blocks until the result is available
                 yield result
-        print(f"downloading SSURGO soil tables took {b - a} seconds")
+
+
 
 
     class PreSoilReplacement(ApsimSoil):

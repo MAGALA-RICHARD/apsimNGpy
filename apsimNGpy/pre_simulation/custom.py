@@ -68,10 +68,11 @@ class PreProcessor():
             self.thickness_values = [150, 150, 200, 200, 200, 250, 300, 300, 400, 500]
         self.weather_path = wp
         if isinstance(data, Data):
-          self.data = data
-        self.number_threads = number_threads
-        self.total = len(self.data.locations)
+           self.data = data
+           self.total = len(self.data.locations)
         self.use_threads = use_threads
+        self.number_threads = number_threads
+
         if not layer_file:
             self.layer = 'D:\\ENw_data\\creek.shp'
 

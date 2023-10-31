@@ -123,7 +123,7 @@ class Metrics:
         ccc = self.rho_ci(actual, predicted)
         return ccc['rho_c']['est'][0]
 
-    from sklearn.metrics import r2_score
+
     def R2(self, true_values, predicted_values):
         # Calculate the mean of the true values
         mean_true = np.mean(true_values)

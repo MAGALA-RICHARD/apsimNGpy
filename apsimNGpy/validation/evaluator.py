@@ -123,6 +123,9 @@ class Metrics:
         ccc = self.rho_ci(actual, predicted)
         return ccc['rho_c']['est'][0]
 
+    def bias(self, actual, predicted):
+        return np.mean(predicted - actual)
+
 
     def R2(self, true_values, predicted_values):
         # Calculate the mean of the true values
@@ -179,7 +182,7 @@ class validate(Metrics):
         return metric_index
 
     def evaluate_all(self):
-        attribs = ['RMSE', 'RRMSE', "CCC", "WIA", "CCC", "MSE", 'R2']
+        attribs = ['RMSE', 'RRMSE', "CCC", "WIA",  "bias", 'R2', "CCC",]
         all = {atbs: getattr(self, atbs)(self.actual, self.predicted) for atbs in attribs}
         return all
 

@@ -117,6 +117,8 @@ class Metrics:
     def CCC(self, actual, predicted):
         ccc = self.rho_ci(actual, predicted)
         return ccc['rho_c']['est'][0]
+    def bias(self, actual, predicted):
+        return np.mean(predicted - actual)
 class metrics_description:
     def __init__(self):
         self.MSE = 'MSE'
@@ -124,6 +126,7 @@ class metrics_description:
         self.RRMSe = 'RRMSE'
         self.WIA = 'WIA'
         self.CCC = 'CCC'
+        self.bias = 'bias'
 mets = metrics_description()
 
 class validate(Metrics):

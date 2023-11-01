@@ -124,7 +124,7 @@ class Metrics:
         return ccc['rho_c']['est'][0]
 
     def bias(self, actual, predicted):
-        return np.mean(predicted - actual)
+        return np.mean(actual-predicted)
 
     import numpy as np
 

@@ -2,6 +2,7 @@ from concurrent.futures import ProcessPoolExecutor, as_completed, ThreadPoolExec
 import glob, os, sys
 from time import perf_counter
 from tqdm import tqdm
+from multiprocessing import cpu_count
 from os.path import dirname
 from os.path import join as opj
 from apsimNGpy.utililies.run_utils import run_model, read_simulation
@@ -78,7 +79,11 @@ def read_result_in_parallel(iterable_files, ncores, use_threads=False):
         print(perf_counter() - a, 'seconds', f'to read {len(files)} apsimx database files')
 
 
-def download_soil_tables(iterable, use_threads=False):
+def download_soil_tables(iterable, use_threads=False, ncores =None):
+    """
+    iterable: an iterable with lonlat coordnates as tuples or lists
+    return: calculated soil profiles with the corresponding index positions as a dictionary
+    """
     def _concat(x):
         try:
             cod = iterable[x]
@@ -89,9 +94,13 @@ def download_soil_tables(iterable, use_threads=False):
         except Exception as e:
             print("Exception Type:", type(e), "has occured")
             print(repr(e))
-
+    if not ncores:
+        ncores_2use = int(cpu_count()*0.4)
+        print(f"using: {ncores_2use} cpu cores")
+    else:
+        ncores_2use = ncores
     if not use_threads:
-        with ThreadPoolExecutor(max_workers=10) as tpool:
+        with ThreadPoolExecutor(max_workers=ncores_2use) as tpool:
             futures = [tpool.submit(_concat, n) for n in range(len(iterable))]
             progress = tqdm(total=len(futures), position=0, leave=True,
                             bar_format='downloading soil_tables...: {percentage:3.0f}% completed')
@@ -100,7 +109,7 @@ def download_soil_tables(iterable, use_threads=False):
                 yield future.result()
             progress.close()
     else:
-        with ProcessPoolExecutor(max_workers=3) as ppool:
+        with ProcessPoolExecutor(max_workers=ncores_2use) as ppool:
             futures = [ppool.submit(_concat, n) for n in range(len(iterable))]
             progress = tqdm(total=len(futures), position=0, leave=True,
                             bar_format='downloading soil_tables..: {percentage:3.0f}% completed')

@@ -126,6 +126,34 @@ class Metrics:
     def bias(self, actual, predicted):
         return np.mean(predicted - actual)
 
+    import numpy as np
+
+    def ME(self, actual, predicted):
+        """
+        Calculate Modeling Efficiency (MEF) between observed and predicted values.
+
+        Parameters:
+        observed (array-like): Array or list of observed values.
+        predicted (array-like): Array or list of predicted values.
+
+        Returns:
+        float: The Modeling Efficiency (MEF) between observed and predicted values.
+        """
+        # Convert input data to NumPy arrays for consistent handling
+        observed = np.array(actual)
+        predicted = np.array(predicted)
+
+        # Calculate the mean squared error of the predictions
+        mse_pred = np.mean((predicted - actual) ** 2)
+
+        # Calculate the mean squared error of the observed values
+        mse_obs = np.mean((observed - np.mean(actual)) ** 2)
+
+        # Calculate the Modeling Efficiency (MEF)
+        mef = 1 - (mse_pred / mse_obs)
+
+        return mef
+
 
     def R2(self, true_values, predicted_values):
         # Calculate the mean of the true values
@@ -150,6 +178,8 @@ class metrics_description:
         self.RRMSe = 'RRMSE'
         self.WIA = 'WIA'
         self.CCC = 'CCC'
+        self.ME = "ME"
+        self.bias = "bias"
 
 
 mets = metrics_description()
@@ -182,7 +212,7 @@ class validate(Metrics):
         return metric_index
 
     def evaluate_all(self):
-        attribs = ['RMSE', 'RRMSE', "CCC", "WIA",  "bias", 'R2', "CCC",]
+        attribs = ['RMSE', 'RRMSE', "ME", "WIA",  "bias", 'R2', "CCC",]
         all = {atbs: getattr(self, atbs)(self.actual, self.predicted) for atbs in attribs}
         return all
 

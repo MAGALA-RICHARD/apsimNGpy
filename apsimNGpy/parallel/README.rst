@@ -146,7 +146,7 @@ Usage Examples
 
 .. code:: python
 
-    
+
     # Example usage of run_apsimxfiles_in_parallel function
     from apsimNGpy.parallel.process import run_apsimxfiles_in_parallel
 
@@ -167,3 +167,5 @@ Notes
 - The function provides progress information while running APSIMX files, including the percentage completion.
 - Execution time and the number of files processed are displayed at the end.
 - Feel free to integrate this function into your APSIM simulation workflow to execute multiple simulation files concurrently and save valuable time.
+- read_result_in_parallel takes the same argument and returns an iterators of the results from each sitmulation database see quick implimentation above. It also takes in file with .db extension as the iterable
+

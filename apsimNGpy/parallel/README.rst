@@ -51,8 +51,7 @@ Usage
     files = collect_runfiles(path2files=hd, pattern=["*.apsimx"])
     if __name__ == "__main__": # need to guard the script with this statement, especially since we are dealing with 
            #reading and writing files spawning processes can lead file permission errors
-        # copy all examples to our workig directory
-        #ex = apsim_example.get_all_examples()
+        # run all simulation files collected
         run_apsimxfiles_in_parallel(files, ncores=10,use_threads=False)
         # files is an iterable or a generator
         # ncores is the numbe rof process or threads to use and use_threads will determine wthere we use threads or not

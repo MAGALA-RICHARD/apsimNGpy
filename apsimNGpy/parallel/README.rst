@@ -25,8 +25,9 @@ Main methods
  This reads the simulated output data 
 
 - download_soil_tables
-  Apparently, this methods downloads soil table from SSURGO and convert them to apsim soil provide. it requires apsing an iterbale of lonlat
 
+  Evidently, this method downloads soil data from SSURGO and transforms it into the necessary APSIM soil profiles. It necessitates passing an iterable of lonlat coordinates and returns an iterator indexed by their lonlat positions.
+  
 ************************
 
 .. _Usage:

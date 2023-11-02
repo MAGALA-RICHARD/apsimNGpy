@@ -17,8 +17,7 @@ Main methods
 
 - run_apsimxfiles_in_parallel
 
-  runs the .apsim files. the files can be supplied as a list or use the utils module method called collect_runfiles, 
-  which returns an iterator of file apths supplied to the paraleld simulation methods.
+  runs the .apsim files. The files can be provided either as a list or by utilizing the collect_runfiles method from the utils module, which returns an iterator of file paths that can be passed to the parallel simulation functions.
 
 - read_result_in_parallel.
 

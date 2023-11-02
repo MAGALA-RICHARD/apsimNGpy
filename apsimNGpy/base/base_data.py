@@ -169,6 +169,6 @@ class DetectApsimExamples:
         return apsim
     def get_all_examples(self):
         fn =[i for i in dir(apsim_example) if "__" not in i and 'get' not in i]
-        return [getattr(self, i) for i in fn]
+        return [self.get_example(i) for i in fn]
 
 apsim_example = DetectApsimExamples()

@@ -28,7 +28,7 @@ Installation
 
 All versions are currently in development, phase and they can be installed as follows:
 
-Method 1. clone the repositry
+- Method 1. clone the repositry
 
 .. code:: bash
 
@@ -36,7 +36,7 @@ Method 1. clone the repositry
     cd apsimNGpy
     pip install .
 
-Method 2. Use pip straight away
+- Method 2. Use pip straight away
 
 .. code:: bash
 

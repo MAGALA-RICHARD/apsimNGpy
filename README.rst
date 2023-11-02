@@ -42,20 +42,25 @@ Method 2. Use pip straight away
 
      pip install git+https://github.com/MAGALA-RICHARD/apsimNGpy.git
 
-If you have apsim installed and the program refuses to load run the following code a the top of your python script
+If you have apsim installed and the program refuses to load run the following code at the top of your python script
 before importing any apsimNGpy class. The classes are  CamelCased.
 
 Required Dependencies:
 *****************************
 
  numpy
+
  pandas
+
  pythonnet
+
  xmltodict
+
+ requests
+
  tqdm
 
- Note that apsimNGpy is tested on python3. We are not aware of its performance in python2 becuase it utilizes one of the new libraries like pathlib and f string.
-
+ Please note that apsimNGpy is tested on Python 3. We are not aware of its performance in Python 2 because it utilizes some of the new libraries like pathlib and f-strings.
 
 
 Debugging import error due to improper SYSTEM APSIM path configuration

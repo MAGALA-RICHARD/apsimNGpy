@@ -47,18 +47,12 @@ before importing any apsimNGpy class. The classes are  CamelCased.
 
 Required Dependencies:
 *****************************
-
- numpy
-
- pandas
-
- pythonnet
-
- xmltodict
-
- requests
-
- tqdm
+- numpy
+- pandas
+- pythonnet
+- xmltodict
+- tqdm
+- requests
 
  Please note that apsimNGpy is tested on Python 3. We are not aware of its performance in Python 2 because it utilizes some of the new libraries like pathlib and f-strings.
 

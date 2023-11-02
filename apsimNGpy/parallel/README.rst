@@ -111,3 +111,57 @@ Notes
 - When not specifying the number of cores (ncores=None), the function uses 40% of available CPU cores.
 - The function provides progress information while downloading soil tables.
 - It's recommended to handle any exceptions that may occur during execution.
+
+run_apsimxfiles_in_parallel Function
+************************************
+
+Description
+****************************************
+The `run_apsimxfiles_in_parallel` function is designed for executing APSIMX simulation files in parallel. It accepts a list of APSIMX simulation files, the number of cores or threads to use for parallel processing, and an optional flag to specify whether to use threads or processes for parallel execution. It efficiently handles the execution of APSIMX files in parallel, making it suitable for running multiple simulations simultaneously.
+
+Function Signature
+**********************
+
+
+.. code:: python
+
+
+    run_apsimxfiles_in_parallel(iterable_files, ncores, use_threads=False)
+
+Parameters
+**************************************
+
+- iterable_files (list): A list of APSIMX simulation files to be executed in parallel.
+- ncores (int): The number of CPU cores or threads to use for parallel processing.
+- use_threads (bool, optional): If set to True, the function uses thread pool execution. If set to False, it utilizes process poo 
+
+Removing Duplicates
+*********************************
+The function automatically removes duplicate files from the input list to prevent race conditions in parallel computing.
+
+Usage Examples
+*********************************************
+Usage Examples
+*********************************************
+
+.. code:: python
+    # Example usage of run_apsimxfiles_in_parallel function
+    from apsimNGpy.parallel.process import run_apsimxfiles_in_parallel
+
+    simulation_files = ["file1.apsimx", "file2.apsimx", ...]  # Replace with actual file names
+    # alternatively use colect_runfile function from util modules
+    
+    # Using processes for parallel execution
+    run_apsimxfiles_in_parallel(simulation_files, ncores=4, use_threads=False)
+
+    # Using threads for parallel execution
+    run_apsimxfiles_in_parallel(simulation_files, ncores=4, use_threads=True)
+
+
+Notes
+************************
+- When using threads (use_threads=True), the function employs ThreadPoolExecutor for parallel processing.
+- When not specifying the number of cores (ncores), the function will run simulations using the available CPU cores or threads.
+- The function provides progress information while running APSIMX files, including the percentage completion.
+- Execution time and the number of files processed are displayed at the end.
+- Feel free to integrate this function into your APSIM simulation workflow to execute multiple simulation files concurrently and save valuable time.

@@ -89,9 +89,9 @@ class load_example_files():
         path: string pathlike object where to copy the default example to
         """
         if not exists(path):
-            raise NameError ("entered path does not exists please try again, \n ============================")
+            raise NameError("entered path does not exists please try again, \n ============================")
         else:
-          self.path = path
+            self.path = path
 
     def _clean_up(self, path):
         Path(f"{path}.db").unlink(missing_ok=True)
@@ -129,16 +129,20 @@ class load_example_files():
         self.weather_example = _weather(self.path)
         return self._clean_up(_get_maize_no_till(self.path))
 
+    def get_maize_model(self):
+        return SoilModel(self.get_maize)
+
+    def get_maize_model_no_till(self):
+        return SoilModel(self.get_maize_no_till)
 
 
 try:
-   pat = os.environ['APSIM']
+    pat = os.environ['APSIM']
 except KeyError:
     pat = get_apsim_path()
 
-
 if pat:
-    apsim =os.path.dirname(pat)
+    apsim = os.path.dirname(pat)
     examples = join(apsim, 'Examples')
 dr = listdir(examples)
 
@@ -154,6 +158,9 @@ if not exists(copy_path):
 
 weather_path = os.path.join(examples, "WeatherFiles")
 
+pp = Path.home()
+os.chdir(pp)
+
 
 class DetectApsimExamples:
     def __init__(self):
@@ -167,8 +174,10 @@ class DetectApsimExamples:
         wp = os.path.join(weather_path, os.path.basename(apsim.show_met_file_in_simulation()))
         apsim.replace_met_file(wp)
         return apsim
+
     def get_all_examples(self):
-        fn =[i for i in dir(apsim_example) if "__" not in i and 'get' not in i]
+        fn = [i for i in dir(apsim_example) if "__" not in i and 'get' not in i]
         return [self.get_example(i) for i in fn]
+
 
 apsim_example = DetectApsimExamples()

@@ -139,8 +139,14 @@ def detect_apsim_installation():
 
 try:
     pat = os.environ['APSIM']
+
 except Exception as e:
     pat = get_apsim_path()
+
+except KeyError:
+    print("APSIM key not found in the system environment variable, please add apsim path")
+    pat = input(f"Browse your computer and add the path for APSIM installation: ")
+    print(pat)
 
 if pat:
     apsim = os.path.dirname(pat)

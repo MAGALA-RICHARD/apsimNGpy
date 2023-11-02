@@ -73,15 +73,9 @@ Main classes and methods
 - APSIMNG.
 
   This is the main API class which is used to communicate to APSIM next generation model. the public methods in this class includes
-    - run
-
-      excutes the model
-    - save_edited
-
-      saves the edited file
-    - update_management
-
-      updates the models with new user inputs
+    - run: excutes the model
+    - save_edited: saves the edited file
+    - update_management:updates the models with new user inputs
 - SoilModel 
 
  It inherits all the methods from the APSIMNG class and is utilized to build soil profiles, serving as a replacement within the APSIM model.

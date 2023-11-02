@@ -79,7 +79,7 @@ def read_result_in_parallel(iterable_files, ncores, use_threads=False):
         print(perf_counter() - a, 'seconds', f'to read {len(files)} apsimx database files')
 
 
-def download_soil_tables(iterable, use_threads=False, ncores =None):
+def download_soil_tables(iterable, use_threads=False, ncores =None, soil_series=None):
     """
     iterable: an iterable with lonlat coordnates as tuples or lists
     return: calculated soil profiles with the corresponding index positions as a dictionary

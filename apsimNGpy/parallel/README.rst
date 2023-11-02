@@ -69,10 +69,14 @@ Usage
 download_soil_tables Function Documentation
 ***************************************************************************************************
 
-## Description
+Description
+***********
+
 The `download_soil_tables` function is used to download soil data from SSURGO and convert it into the required APSIM soil profiles. It takes an iterable of lonlat coordinates and returns a dictionary containing calculated soil profiles with corresponding index positions.
 
-## Parameters
+Parameters
+**********************
+
 - `iterable` (Iterable): An iterable containing lonlat coordinates as tuples or lists.
 - `use_threads` (bool, optional): If `True`, the function uses threads for parallel processing; otherwise, it uses processes. Default is `False`.
 - `ncores` (int, optional): The number of CPU cores to use for parallel processing. If not provided, it uses 40% of available CPU cores. Default is `None`.
@@ -81,7 +85,7 @@ The `download_soil_tables` function is used to download soil data from SSURGO an
 ## Returns
 - A genratr object with dictionary where the keys are index positions from the lonlat coordinates and the values are the corresponding calculated soil profiles.
 
-## Example Usage
+
 
 # Example usage of download_soil_tables function
 ***********************************************************

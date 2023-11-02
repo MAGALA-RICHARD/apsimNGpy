@@ -167,6 +167,8 @@ class DetectApsimExamples:
         wp = os.path.join(weather_path, os.path.basename(apsim.show_met_file_in_simulation()))
         apsim.replace_met_file(wp)
         return apsim
-
+    def get_all_examples(self):
+        fn =[i for i in dir(apsim_example) if "__" not in i and 'get' not in i]
+        return [getattr(self, i) for i in fn]
 
 apsim_example = DetectApsimExamples()

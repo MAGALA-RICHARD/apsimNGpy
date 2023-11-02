@@ -45,7 +45,7 @@ Method 2. Use pip straight away
 If you have apsim installed and the program refuses to load run the following code a the top of your python script
 before importing any apsimNGpy class. The classes are  CamelCased.
 
-Required depependencies:
+Required Dependencies:
 *****************************
 
  numpy
@@ -53,7 +53,7 @@ Required depependencies:
  pythonnet
  xmltodict
  tqdm
- 
+
  Note that apsimNGpy is tested on python3. We are not aware of its performance in python2 becuase it utilizes one of the new libraries like pathlib and f string.
 
 

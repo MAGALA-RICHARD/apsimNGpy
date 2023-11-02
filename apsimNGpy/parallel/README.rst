@@ -37,7 +37,7 @@ Usage
 
 .. code:: python
 
-    
+
     from apsimNGpy.parallel.process import run_apsimxfiles_in_parallel, read_result_in_parallel
     from apsimNGpy.utililies.utils import collect_runfiles
     from pathlib import Path
@@ -50,12 +50,11 @@ Usage
     nt_maize = data.get_maize_no_till
     # that is it all these files are now in the directory
     files = collect_runfiles(path2files=hd, pattern=["*.apsimx"])
-    if __name__ == "__main__": # need to guard the script with this statement, especially since we are dealing with 
-           #reading and writing files spawning processes can lead file permission errors
+    if __name__ == "__main__": # It's important to protect the script with this statement, especially given that we are working with file operations, as spawning processes can potentially result in file permission errors.
         # run all simulation files collected
         run_apsimxfiles_in_parallel(files, ncores=10,use_threads=False)
         # files is an iterable or a generator
-        # ncores is the numbe rof process or threads to use and use_threads will determine wthere we use threads or not
+        # ncores is the number of processes or threads to use and use_threads will determine whether we use threads or not
         # returns nothing
         rpath = os.path.realpath(hd)
         # we can now read the results using the .db path as follow

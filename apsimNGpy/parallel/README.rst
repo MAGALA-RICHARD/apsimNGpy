@@ -79,20 +79,26 @@ The `download_soil_tables` function is used to download soil data from SSURGO an
 - `soil_series` (None, optional): [Insert description if applicable.]
 
 ## Returns
-- A dictionary where the keys are index positions from the lonlat coordinates and the values are the corresponding calculated soil profiles.
+- A genratr object with dictionary where the keys are index positions from the lonlat coordinates and the values are the corresponding calculated soil profiles.
 
 ## Example Usage
-```python
+
 # Example usage of download_soil_tables function
-from your_module import download_soil_tables
+***********************************************************
 
-lonlat_coords = [(x1, y1), (x2, y2), ...]  # Replace with actual lonlat coordinates
+.. code:: python
 
-# Using threads for parallel processing
-soil_profiles = download_soil_tables(lonlat_coords, use_threads=True, ncores=4)
 
-# Iterate through the results
-for index, profile in soil_profiles.items():
-    print(f"Lonlat Index: {index}, Soil Profile: {profile}")
+    from apsimNGpy.parallel.process import download_soil_tables
+
+    lonlat_coords = [(x1, y1), (x2, y2), ...]  # Replace with actual lonlat coordinates
+
+    # Using threads for parallel processing
+    soil_profiles = download_soil_tables(lonlat_coords, use_threads=True, ncores=4)
+
+    # Iterate through the results
+    for sp in soil_profiles:
+        for index, profile in sp.items():
+            print(f"Lonlat Index: {index}, Soil Profile: {profile}")
 
 

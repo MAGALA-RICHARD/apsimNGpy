@@ -92,13 +92,18 @@ The `download_soil_tables` function is used to download soil data from SSURGO an
     from apsimNGpy.parallel.process import download_soil_tables
 
     lonlat_coords = [(x1, y1), (x2, y2), ...]  # Replace with actual lonlat coordinates
+    if __name__ == "__main__":
+        # Using threads for parallel processing
+        soil_profiles = download_soil_tables(lonlat_coords, use_threads=True, ncores=4)
 
-    # Using threads for parallel processing
-    soil_profiles = download_soil_tables(lonlat_coords, use_threads=True, ncores=4)
+        # Iterate through the results
+        for sp in soil_profiles:
+            for index, profile in sp.items():
+                print(f"Lonlat Index: {index}, Soil Profile: {profile}")
 
-    # Iterate through the results
-    for sp in soil_profiles:
-        for index, profile in sp.items():
-            print(f"Lonlat Index: {index}, Soil Profile: {profile}")
-
-
+Notes
+*****************
+- When using threads (use_threads=True), the function utilizes ThreadPoolExecutor for parallel processing.
+- When not specifying the number of cores (ncores=None), the function uses 40% of available CPU cores.
+- The function provides progress information while downloading soil tables.
+- It's recommended to handle any exceptions that may occur during execution.

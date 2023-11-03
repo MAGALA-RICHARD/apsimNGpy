@@ -31,11 +31,6 @@ def run_apsimxfiles_in_parallel(iterable_files, ncores=None, use_threads=False):
 
     # Using processes for parallel execution
     result_generator = run_apsimxfiles_in_parallel(simulation_files, ncores=4, use_threads=False)
-
-    # Iterate through the generator to process results
-    for data in result_generator:
-        print(data)
-    it depends on the type of data but pd.concat could be a good option on the returned generator
     ```
 
     Notes:

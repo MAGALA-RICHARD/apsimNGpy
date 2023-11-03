@@ -225,6 +225,22 @@ class DetectApsimExamples:
             self.all.append(name)
 
     def get_example(self, crop):
+        """
+        Get an APSIM example file path for a specific crop model.
+
+        This function copies the APSIM example file for the specified crop model to the target path,
+        creates a SoilModel instance from the copied file, replaces its weather file with the
+        corresponding weather file, and returns the SoilModel instance.
+
+        Args:
+        crop (str): The name of the crop model for which to retrieve the APSIM example.
+
+        Returns: SoilModel: An instance of the SoilModel class representing the APSIM example for the specified crop
+        model. the path of this model will be your current working directory
+
+        Raises:
+        OSError: If there are issues with copying or replacing files.
+        """
         path = join(copy_path, crop) + '.apsimx'
         cp = shutil.copy(examples_files[crop], path)
         apsim = SoilModel(cp)

@@ -180,4 +180,4 @@ class DetectApsimExamples:
         return [self.get_example(i) for i in fn]
 
 
-apsim_example = DetectApsimExamples()
+ApsimExample = DetectApsimExamples()

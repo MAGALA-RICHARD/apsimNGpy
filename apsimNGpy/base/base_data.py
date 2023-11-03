@@ -112,7 +112,7 @@ class LoadExampleFiles():
         Get the example data for maize with a cover crop.
 
         Returns:
-        str: The example data for maize with a cover crop.
+        path (str): The example data for maize with a cover crop.
                 """
         self.weather_example = _weather(self.path)
         return _clean_up(_get_maize_example(self.path))
@@ -123,7 +123,7 @@ class LoadExampleFiles():
         Get the example data for an experiment involving nitrogen residue.
 
         Returns:
-        str: The example data for the nitrogen residue experiment.
+        path (str): The example data for the nitrogen residue experiment.
         """
         self.weather_example = _weather(self.path)
         return _clean_up(_get_maize_NF_experiment(self.path))
@@ -134,7 +134,7 @@ class LoadExampleFiles():
         Get the example data for an experiment involving nitrogen residue with no-till.
 
         Returns:
-        str: The example data for the nitrogen residue experiment with no-till.
+        path (str): The example data for the nitrogen residue experiment with no-till.
         """
         self.weather_example = _weather(self.path)
         return _clean_up(_get_maize_NF_experiment_NT(self.path))
@@ -145,7 +145,7 @@ class LoadExampleFiles():
         Get the example data for the SWIM model.
 
         Returns:
-        str: The example data for the SWIM model.
+        path (str): The example data for the SWIM model.
         """
         self.weather_example = _weather(self.path)
         return _clean_up(_get_SWIM(self.path))
@@ -156,7 +156,7 @@ class LoadExampleFiles():
         Get the example data for the maize model.
 
         Returns:
-        str: The example data for the maize model.
+        path (str): The example data for the maize model.
         """
         self.weather_example = _weather(self.path)
         return _clean_up(_get_maize(self.path))
@@ -167,7 +167,7 @@ class LoadExampleFiles():
         Get the example data for the maize model with no-till.
 
         Returns:
-        str: The example data for the maize model with no-till.
+        path (str): The example data for the maize model with no-till.
         """
         self.weather_example = _weather(self.path)
         return _clean_up(_get_maize_no_till(self.path))

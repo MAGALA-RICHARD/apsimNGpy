@@ -83,7 +83,7 @@ def _get_SWIM(file_path):
     return nameout
 
 
-class load_example_files():
+class LoadExampleFiles():
     def __init__(self, path):
         """
         path: string pathlike object where to copy the default example to

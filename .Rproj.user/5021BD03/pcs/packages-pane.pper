@@ -1,0 +1,7 @@
+{
+    "installOptions": {
+        "installFromRepository": true,
+        "libraryPath": "C:/Users/rmagala/AppData/Local/R/win-library/4.3",
+        "installDependencies": true
+    }
+}

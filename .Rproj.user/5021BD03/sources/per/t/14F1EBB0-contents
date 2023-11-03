@@ -1,0 +1,458 @@
+---
+title: "comparing_simulated_GHG"
+author: "Richard magala"
+date: "`r Sys.Date()`"
+output:
+  word_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(apsimx)
+library(hydroGOF)
+```
+
+```{r}
+path = rstudioapi::getActiveDocumentContext()$path
+dirpath = dirname(path)
+# load additional functions
+source(file.path(dirpath, 'Additional functions.R'))
+```
+```{r}
+willmott_index = function(model_data, observed_data){
+   willmott_index <- 1 - (sum((observed_data - model_data)^2) / sum((abs(model_data - mean(observed_data)) + abs(observed_data - mean(observed_data)))^2))
+   return(willmott_index)
+}
+# simple round up fucntion
+round_up  = function(x){
+     return(round(x, digits = 2))
+ }
+```
+
+#2.  Soybean
+```{r}
+apsSoybean <- function(x) {
+  sim = apsimx::read_apsimx(x, value = "report", simplify =FALSE)
+  nam1 <- names(sim)
+  # select only data frame with harvest data ending with letter _H
+  xm <- nam1[grep("_H", nam1)]
+  simx = sim[xm]
+  sim2 = bind_rows(simx)
+  sim3 =sim2%>%tidyr::separate(Plotid, into = c("p", "plotid", "tillage"), sep = "_", convert =TRUE)
+  sim4 = sim3%>%dplyr::select(plotid, date, FolderName, Year,tillage, SoybeanYield)
+  sim4$Crop = "Soybean"
+  sim5 = sim4%>%dplyr::filter(Year >=2011)
+  sim6 = sim5%>%dplyr::filter(SoybeanYield != 0)
+  return(sim6)
+}
+```
+#3. Wheat
+```{r}
+apsWheat <- function(x) {
+  sim = apsimx::read_apsimx(x, value = "report", simplify =FALSE)
+  nam1 <- names(sim)
+  # select only data frame with harvest data ending with letter _H
+  xm <- nam1[grep("_H", nam1)]
+  simx = sim[xm]
+  sim2 = bind_rows(simx)
+  sim3 =sim2%>%tidyr::separate(Plotid, into = c("p", "plotid", "tillage"), sep = "_", convert =TRUE)
+  sim4 = sim3%>%dplyr::select(plotid, date, FolderName, Year,tillage, WheatYield)
+  sim4$Crop = "Wheat"
+  sim5 = sim4%>%dplyr::filter(Year >=2011 & WheatYield >0)
+  return(sim5)
+}
+```
+# Corn
+```{r}
+## This function will run the harvest data
+apsMaize <- function(x) {
+  sim = apsimx::read_apsimx(x, value = "report", simplify =FALSE)
+  nam1 <- names(sim)
+  # select only data frame with harvest data ending with letter _H
+  xm <- nam1[grep("_H", nam1)]
+  simx = sim[xm]
+  sim2 = bind_rows(simx)
+  sim3 =sim2%>%tidyr::separate(Plotid, into = c("p", "plotid", "tillage"), sep = "_", convert =TRUE)
+  sim4 = sim3%>%dplyr::select(plotid, date, FolderName, Year,tillage, MaizeYield)
+  sim4$Crop = "Corn"
+  sim5 = sim4%>%dplyr::filter(Year >2010)
+  sim6 = sim5%>%dplyr::filter(MaizeYield != 0)
+  return(sim6)
+}
+```
+## Import the yield data from APSIMX
+#1. CORN
+```{r}
+CN = c( "CSWCS3_specific_dates.db", "CSCS_specific_dates.db", "CCCC1_specific_dates.db")
+
+CYield = list()
+for (i in 1:length(CN)){
+CYield[[i]] <- apsMaize(CN[i])
+names(CYield)[i] <- CN[i]
+}
+CornYield <- dplyr::bind_rows(CYield)
+```
+#2. Soybean
+```{r}
+SN = c("CSWCS3_specific_dates.db", "CSCS_specific_dates.db", "SSSS_specific_dates.db")
+SYield = list()
+for ( i in 1:length(SN)){
+SYield[[i]] <- apsSoybean(SN[i])
+names(SYield)[i] <- SN[i]
+}
+SoybeanYield <- dplyr::bind_rows(SYield)
+```
+
+#3. Wheat
+
+```{r}
+wheatYield <- apsWheat("CSWCS3_specific_dates.db")
+```
+## compile all apsim simulated yield
+```{r}
+lapply(list(wheatYield, SoybeanYield, CornYield), names)
+colnames(CornYield)[6] <- 'Yield'
+colnames(SoybeanYield ) = colnames(CornYield)
+colnames(wheatYield) = colnames(CornYield)
+SimYield <- dplyr::bind_rows(list(wheatYield, SoybeanYield, CornYield))
+```
+
+# import concatenated yield data
+```{r}
+Nwrec_capYieldData  = read.csv("Nwrec_capYieldData.csv")
+colnames(Nwrec_capYieldData)[1] <- "plotid"
+oy <- Nwrec_capYieldData%>%tidyr::gather(key = "year", value = "yield", -plotid, -Crop, -Mean, -Tillage)
+oy$year = substr(oy$year, 2,5)
+
+GetCrop = function(datf, crop){
+  cc= dplyr::filter(datf, Crop == crop)
+  return(dplyr::filter(cc, yield != "NA"))
+}
+# get corn
+cc= dplyr::filter(oy, Crop == "Corn")
+cc1 = dplyr::filter(cc, yield != "NA")
+# get soybean
+cc <- GetCrop(oy, "Corn")
+ss <- GetCrop(oy, "Soybean")
+ww <- GetCrop(oy, "Wheat")
+oby <- dplyr::bind_rows(list(cc, ss, ww))
+# make the simulated data frame similar in dimension by filtering them with the observed data frame plotid available
+simvar = function(sim, observedat) {
+  sim%>%dplyr::filter(plotid%in%observedat$plotid)
+}
+simc <- simvar(CornYield, cc)
+simss <- simvar(SoybeanYield, ss)
+# change the arrangement of the argument because predicted wheat yield is less than the observed 
+observedWheat <- simvar(ww, wheatYield)
+# wo <- observedWheat%>%dplyr::group_by()
+# wo$yield <- as.numeric(wo$yield)Z
+# observed soybean
+obsoy <- simvar(ss, simss)
+
+#obsoy = dplyr::filter(obsoy, year >2011)
+# remove excess year in the observed data
+# Function to check number of plots
+pn <- function(x){
+  p = length(unique(x$plotid))
+  p
+}
+# remove non matching years in the simulated data
+# 4101:2012
+# obsoy1 <- filter(obsoy, year != 2012 | plotid !=4101 )
+# obsoy2 <- filter(obsoy, year != 2012 | plotid !=4102 )
+
+```
+# Evluate APSIM model prediction
+## Soybean 
+```{r echo=TRUE}
+soypredicted = simss%>%dplyr::group_by(plotid )%>%dplyr::summarise(y = mean(Yield))
+
+soyobserved = obsoy%>%dplyr::group_by(plotid)%>%dplyr::summarise(y = mean(yield))
+summary(soypredicted$y)
+summary(soyobserved$y)
+# linear model
+reg_param(lm(soypredicted$y ~ soyobserved$y))
+```
+Corn
+```{r}
+ccob <- dplyr::filter(cc, plotid != 2011)
+ccredicted = simc%>%dplyr::group_by(plotid )%>%dplyr::summarise(y = mean(Yield))
+
+ccobserved = ccob%>%dplyr::group_by(plotid)%>%dplyr::summarise(y = mean(yield))
+summary(ccredicted$y)
+summary(ccobserved$y)
+# linear model
+reg_param(lm(ccredicted$y ~ ccobserved$y))
+```
+## Wheat
+```{r}
+# simwheat = wheatYield%>%dplyr::group_by(plotid)%>%summarise(WheatYield = mean(WheatYield))
+# reg_param(lm(simwheat$WheatYield ~ wo$yield))
+
+```
+
+
+## Import the the excel file with the observed data =======================
+
+```{r cars ImportObservedData, echo=TRUE}
+dr = ("C:/Users/rmagala/OneDrive/simulations/objective_2/illnois/DATA")
+library(readxl)
+ghgx <- readxl::read_excel(paste(dr, "cscap_20220616040532.xlsx", sep = "/"), 5)
+# remove the first two descriptive rows
+ghg <- ghgx[-c(1,2),]
+# rename the new data frame
+colnames(ghg) <- c("uniqueid","plotid","date","year", "method",                                      "subsample","position","CO2","GHG02","N20",    
+                   "GHG04", "CH4","GHG08") 
+# remove the last three descriptive columns too
+ghg <- ghg[-c(11,13,9)]
+# convert the greenhoouse columns to numeric
+ghg$N20 <- as.numeric(ghg$N20)
+ghg$CO2 <- abs(as.numeric(ghg$CO2))
+ghg$CH4 <- as.numeric(ghg$CH4)
+
+```
+
+#3 Run the apsim files =========================================
+```{r}
+dr2  = ("C:/Users/rmagala/OneDrive/simulations/objective_2/illnois/DATA/APSIM_WORKSPACE_FILES/halaf_way_Calibrated")
+if (getwd()!= dr2){
+  setwd(dr2)
+  print(paste("Directory has been changed to access this chunk neccesary files", dr2))
+}else{
+  print(paste("This chunk is running in the exisisting directory ", dr2))
+}
+ApsimFile <- c("CCCC1_specific_dates.db", "SSSS_specific_dates.db", "CSWCS3_specific_dates.db", "CSCS_specific_dates.db")
+SimData <- list()
+for ( i in 1:length(ApsimFile)){
+  SimData[[i]] <- aps(ApsimFile[i])
+  names(SimData)[i] = ApsimFile[i]
+}
+# bind the four cropping systems in the simulations together
+sim <- do.call(rbind, SimData)
+``` 
+
+## Filter by the simulated plotid =====================================
+```{r}
+# select only the plots simulated by APSIM
+simplotid <- sim$plotid
+observed <- ghg%>%dplyr::filter(plotid%in%simplotid)
+```
+
+# Cleaning the observed data for comparison ============================
+```{r}
+# remove the duplicates dates by getting their average
+xx = observed%>%dplyr::group_by(plotid, date, year)%>%transmute(n2= mean(N20))%>%dplyr::arrange(plotid)
+# Get the average emissions between sampling events
+# we will get the number of days between the sampling interval
+# we will use the lag function in dplyr
+ud <- xx%>%dplyr::group_by(plotid, year)%>%dplyr::arrange(plotid)%>%dplyr::mutate(Date  = as.Date(date), 
+SampInterv = Date - dplyr::lag(Date), pr = (n2 + lag(n2))*0.5, 
+Avn2=(pr*as.numeric(SampInterv)), cumn20 = sum(Avn2, na.rm = TRUE))
+ max(ud$cumn20)
+```
+## Cleaning the simulated data for comparison ==============================
+```{r}
+# compile simulated greenhouse gases
+ sim1 = sim%>%dplyr::group_by(plotid, date, Year)%>%dplyr::transmute(n2= TopN2O, T= tillage, FolderName)%>%dplyr::arrange(plotid)
+ # Get the average emissions between sampling events
+ sim2 <- sim1%>%group_by(plotid, Year)%>%dplyr::arrange(plotid)%>%dplyr::mutate(Date  = as.Date(date), SampInterv = Date - dplyr::lag(Date), pr = (n2 + lag(n2))*0.5, Avn2=(pr*as.numeric(SampInterv)), cumn20 = sum(Avn2, na.rm = TRUE))
+max(sim2$cumn20)
+```
+
+## Remove duplicates and group by plotid and year ====================
+```{r}
+# prepare to compare the greenhouse gases
+ # OBSERVED DATA
+o = ud%>%group_by(plotid, year)%>%distinct(year, .keep_all = TRUE)
+#### Simulated data
+s = sim2%>%group_by(plotid,Year)%>%distinct(Year, .keep_all = TRUE)
+
+```
+# Select a few data frame for analysis =================================
+```{r}
+ob  = o%>%dplyr::select(plotid, year, cumn20)%>%dplyr::transmute(year, obn20 = round(cumn20/1000, digits = 3))
+si <- s%>%dplyr::select(cumn20, T, FolderName)%>%dplyr::transmute(tillage =T, FolderName, simn20 = round(cumn20/1000, digits =3))
+# drop plotid column to avoid duplication of the concatenated data frame
+obx <- ob[,3]
+# bind the data frame
+os <- cbind(si, obx)
+```
+ ## calculate emissions by tillage ========================================
+ 
+```{r}
+# tillage
+os%>%dplyr::group_by(tillage)%>%dplyr::summarise(simn20  = mean(simn20), obn20 = round(mean(obn20), digits = 3))
+```
+# Calculate emmissions by rotations ==============================
+```{r}
+#rotation
+rotate= os%>%dplyr::group_by(FolderName)%>%dplyr::summarise(simn20  = round(mean(simn20),digits =3), obn20 = round(mean(obn20), digits = 3) )
+# r model on rotation data
+rot.model = reg_param(lm(cumsum(simn20) ~ cumsum(obn20), data = rotate))
+library(DescTools)
+CB = DescTools::CCC(rotate$simn20, rotate$obn20)$C.b
+ccc = DescTools::CCC(rotate$simn20, rotate$obn20)$rho.c[1]
+wia = willmott_index(rotate$simn20, rotate$obn20)
+rot.model$WIOA  = wia
+rot.model$CCC  = ccc
+rot.model$CB =  CB
+cat("Wilmont index of agreement is:", wia)
+```
+#3 calculate emission by rotation with interaction by Tillage
+The Concordance Correlation Coefficient for APSIM prediction of Nitrous oxide (N2O)  oxide by rotation was 0.80 with CB = 0.988.
+
+```{r}
+# extract for the observed
+obT_R.int <- os%>%dplyr::group_by(FolderName)%>%tidyr::spread(tillage, obn20)%>%dplyr::summarise(NT.n20 = mean(NT, na.rm = TRUE), T.n20 = mean(T, na.rm = TRUE)) 
+# extract for the simulated data
+simT_R.int <- os%>%dplyr::group_by(FolderName)%>%tidyr::spread(tillage, simn20) %>%dplyr::summarise(NT.n20 = mean(NT, na.rm = TRUE), T.n20 = mean(T, na.rm = TRUE))
+simT_R.int$Source <- "simulatedn20"
+obT_R.int$Source <- "simulatedn20"
+rotA_tillage <- rbind(obT_R.int, simT_R.int)
+
+```
+
+
+Summary result tillage rotation interactions
+```{r}
+simT_R.int$Source <- "simulatedn20"
+obT_R.int$Source <- "observedn20"
+# gather the data frame
+dfsim  <- simT_R.int%>%tidyr::gather(key = "Tillage", value = "N20", - FolderName, -Source)
+dfobs <- obT_R.int%>%tidyr::gather(key = "Tillage", value = "N20", - FolderName, -Source)
+rot_tillage <- rbind(obT_R.int, simT_R.int)
+reg_param(lm(NT.n20 ~ T.n20, data = rot_tillage))
+reg_param(lm(cumsum(NT.n20) ~ cumsum(T.n20), data = rot_tillage))
+DescTools::CCC(rot_tillage$NT.n20, rot_tillage$T.n20)
+
+```
+
+# Evaluate by year versus rotation ===============================
+```{r}
+dat  =NULL
+dat = os%>%dplyr::group_by(FolderName)%>%dplyr::summarise(simn2 = mean(simn20), obn2 = mean(obn20))
+reg_param((lm(simn2 ~ obn2, data = dat)))
+year_rotatio.model= reg_param((lm(cumsum(simn2) ~ cumsum(obn2), data = dat)))
+# Concordance Correlation coefficient
+DescTools::CCC(dat$simn2, dat$obn2)
+wia = md(dat$simn2, dat$obn2)
+cat("Wilmont index of agreement is:", wia)
+CB = DescTools::CCC(dat$simn2, dat$obn2)$C.b
+ccc = DescTools::CCC(dat$simn2, dat$obn2)$rho.c[1]
+wia = md(cumsum(dat$simn2), cumsum(dat$obn2))
+year_rotatio.model$WIOA  = wia
+year_rotatio.model$CCC  = ccc
+year_rotatio.model$CB =  CB
+```
+# Evaluate by year versus tillage ================================
+```{r}
+dat  =NULL
+dat = os%>%dplyr::group_by(Year,  tillage)%>%dplyr::summarise(simn2 = mean(simn20), obn2 = mean(obn20))
+reg_param((lm(simn2 ~ obn2, data = dat)))
+# cumulative model
+year_tillage = reg_param((lm(cumsum(simn2) ~ cumsum(obn2), data = dat)))
+## Concordance Correlation Coefficient
+DescTools::CCC(dat$simn2, dat$obn2)
+wia = willmott_index(dat$simn2, dat$obn2)
+cat("Wilmont index of agreement is:", wia)
+CB = DescTools::CCC(dat$simn2, dat$obn2)$C.b
+ccc = DescTools::CCC(dat$simn2, dat$obn2)$rho.c[1]
+wia = md(cumsum(dat$simn2), cumsum(dat$obn2))
+year_tillage$WIOA  = wia
+year_tillage$CCC  = ccc
+year_tillage$CB =  CB
+eval.model = rbind(YearXRotation = year_rotatio.model, YearXTillage = year_tillage)
+```
+# Evaluate by plotid =============================================
+```{r}
+dat = os%>%dplyr::group_by(plotid)%>%dplyr::summarise(simn2 = mean(simn20), obn2 = mean(obn20))
+reg_param((lm(simn2 ~ obn2, data = dat)))
+
+# cumulative model
+location.model = reg_param((lm(cumsum(simn2) ~ cumsum(obn2), data = dat)))
+## Concordance Correlation Coefficient
+DescTools::CCC(dat$simn2, dat$obn2)
+wia = willmott_index(dat$simn2, dat$obn2)
+cat("Wilmont index of agreement is:", wia)
+CB = DescTools::CCC(dat$simn2, dat$obn2)$C.b
+ccc = DescTools::CCC(dat$simn2, dat$obn2)$rho.c[1]
+wia = md(cumsum(dat$simn2), cumsum(dat$obn2))
+location.model$WIOA  = wia
+location.model$CCC  = ccc
+location.model$CB =  CB
+eval.model = rbind(YearXRotation = year_rotatio.model, YearXTillage = year_tillage, location = location.model)
+```
+
+# Evaluate by tillage and plotid =============================================
+```{r}
+dat = NULL
+dat = os%>%dplyr::group_by(plotid, tillage)%>%dplyr::summarise(simn2 = mean(simn20), obn2 = mean(obn20))
+reg_param((lm(simn2 ~ obn2, data = dat)))
+# cumulative model
+tillage_location = reg_param((lm(cumsum(simn2) ~ cumsum(obn2), data = dat)))
+## Concordance Correlation Coefficient
+DescTools::CCC(dat$simn2, dat$obn2)
+wia =md(cumsum(dat$simn2), cumsum(dat$obn2))
+cat("Wilmont index of agreement is:", wia)
+CB = DescTools::CCC(dat$simn2, dat$obn2)$C.b
+ccc = DescTools::CCC(dat$simn2, dat$obn2)$rho.c[1]
+wia = md(cumsum(dat$simn2), cumsum(dat$obn2))
+tillage_location$WIOA  = wia
+tillage_location$CCC  = ccc
+tillage_location$CB =  CB
+eval.model = rbind(YearXRotation = year_rotatio.model, YearXTillage = year_tillage, location = location.model, tillageXLocation = tillage_location)
+
+```
+
+# Evaluate by plotid and rotation =============================================
+```{r}
+dat = NULL
+dat = os%>%dplyr::group_by(plotid, FolderName)%>%dplyr::summarise(simn2 = mean(simn20), obn2 = mean(obn20))
+reg_param((lm(simn2 ~ obn2, data = dat)))
+# cumulative model
+location_rotation = reg_param((lm(cumsum(simn2) ~ cumsum(obn2), data = dat)))
+## Concordance Correlation Coefficient
+DescTools::CCC(dat$simn2, dat$obn2)
+wia = md(cumsum(dat$simn2), cumsum(dat$obn2))
+cat("Wilmont index of agreement is:", wia)
+CB = DescTools::CCC(dat$simn2, dat$obn2)$C.b
+ccc = DescTools::CCC(dat$simn2, dat$obn2)$rho.c[1]
+wia = md(cumsum(dat$simn2), cumsum(dat$obn2))
+location_rotation$WIOA  = wia
+location_rotation$CCC  = ccc
+location_rotation$CB =  CB
+eval.model = rbind(YearXRotation = year_rotatio.model, YearXTillage = year_tillage, location = location.model, tillageXLocation = tillage_location, RotationXLocation = location_rotation)
+```
+
+# Evaluate by tillage and rotation =============================================
+```{r}
+dat = NULL
+dat = os%>%dplyr::group_by(tillage, FolderName)%>%dplyr::summarise(simn2 = mean(simn20), obn2 = mean(obn20))
+reg_param((lm(simn2 ~ obn2, data = dat)))
+# cumulative model
+tillage_rot = reg_param((lm(cumsum(simn2) ~ cumsum(obn2), data = dat)))
+## Concordance Correlation Coefficient
+DescTools::CCC(dat$simn2, dat$obn2)
+wia = willmott_index(dat$simn2, dat$obn2)
+cat("Wilmont index of agreement is:", wia)
+CB = DescTools::CCC(dat$simn2, dat$obn2)$C.b
+ccc = DescTools::CCC(dat$simn2, dat$obn2)$rho.c[1]
+wia = md(cumsum(dat$simn2), cumsum(dat$obn2))
+tillage_rot$WIOA  = wia
+tillage_rot$CCC  = ccc
+tillage_rot$CB =  CB
+eval.model = rbind(YearXRotation = year_rotatio.model, YearXTillage = year_tillage, location = location.model, tillageXLocation = tillage_location, RotationXLocation = location_rotation, 
+                   TillageXRotation = tillage_rot)
+```
+```{r}
+eval_df  = data.frame(eval.model)
+evm = apply(eval_df, 2, round_up)
+evm
+write.csv(evm, "evaluated_model.csv")
+file.show("evaluated_model.csv")
+# Save the data to the computer system ==============================================================
+save.image("NREC_nitorous oxide_data.RData")
+```
+

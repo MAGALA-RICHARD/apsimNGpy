@@ -249,6 +249,9 @@ class DetectApsimExamples:
         return apsim
 
     def get_all(self):
+        """
+            This return all files from APSIM default examples in the example folder. But for what?
+        """
         return [self.get_example(i) for i in self.all]
 
 

@@ -83,51 +83,70 @@ def _get_SWIM(file_path):
     return nameout
 
 
+def _clean_up(path):
+    Path(f"{path}.db").unlink(missing_ok=True)
+    Path(f"{path}.db-shm").unlink(missing_ok=True)
+    Path(f"{path}.db-wal").unlink(missing_ok=True)
+    return path
+
+
 class LoadExampleFiles():
     def __init__(self, path):
         """
-        path: string pathlike object where to copy the default example to
+        LoadExampleFiles constructor.
+
+        Args:
+        path (str): The path where default example files will be copied to.
+
+        Raises:
+        NameError: If the specified path does not exist.
         """
         if not exists(path):
             raise NameError("entered path does not exists please try again, \n ============================")
         else:
             self.path = path
 
-    def _clean_up(self, path):
-        Path(f"{path}.db").unlink(missing_ok=True)
-        Path(f"{path}.db-shm").unlink(missing_ok=True)
-        Path(f"{path}.db-wal").unlink(missing_ok=True)
-        return path
-
     @property
     def get_maize_with_cover_crop(self):
+        """
+        Get the example data for maize with a cover crop.
+
+        Returns:
+        str: The example data for maize with a cover crop.
+                """
         self.weather_example = _weather(self.path)
-        return self._clean_up(_get_maize_example(self.path))
+        return _clean_up(_get_maize_example(self.path))
 
     @property
     def get_experiment_nitrogen_residue(self):
+        """
+        Get the example data for an experiment involving nitrogen residue.
+
+        Returns:
+        str: The example data for the nitrogen residue experiment.
+        """
         self.weather_example = _weather(self.path)
-        return self._clean_up(_get_maize_NF_experiment(self.path))
+        return _clean_up(_get_maize_NF_experiment(self.path))
 
     @property
     def get_get_experiment_nitrogen_residue_NT(self):
         self.weather_example = _weather(self.path)
-        return self._clean_up(_get_maize_NF_experiment_NT(self.path))
+        return _clean_up(_get_maize_NF_experiment_NT(self.path))
 
     @property
     def get_swim(self):
         self.weather_example = _weather(self.path)
-        return self._clean_up(_get_SWIM(self.path))
+        return _clean_up(_get_SWIM(self.path))
 
     @property
     def get_maize(self):
         self.weather_example = _weather(self.path)
-        return self._clean_up(_get_maize(self.path))
+        return _clean_up(_get_maize(self.path))
 
     @property
     def get_maize_no_till(self):
         self.weather_example = _weather(self.path)
-        return self._clean_up(_get_maize_no_till(self.path))
+        return _clean_up(_get_maize_no_till(self.path))
 
     def get_maize_model(self):
         return SoilModel(self.get_maize)

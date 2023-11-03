@@ -130,28 +130,64 @@ class LoadExampleFiles():
 
     @property
     def get_get_experiment_nitrogen_residue_NT(self):
+        """
+        Get the example data for an experiment involving nitrogen residue with no-till.
+
+        Returns:
+        str: The example data for the nitrogen residue experiment with no-till.
+        """
         self.weather_example = _weather(self.path)
         return _clean_up(_get_maize_NF_experiment_NT(self.path))
 
     @property
     def get_swim(self):
+        """
+        Get the example data for the SWIM model.
+
+        Returns:
+        str: The example data for the SWIM model.
+        """
         self.weather_example = _weather(self.path)
         return _clean_up(_get_SWIM(self.path))
 
     @property
     def get_maize(self):
+        """
+        Get the example data for the maize model.
+
+        Returns:
+        str: The example data for the maize model.
+        """
         self.weather_example = _weather(self.path)
         return _clean_up(_get_maize(self.path))
 
     @property
     def get_maize_no_till(self):
+        """
+        Get the example data for the maize model with no-till.
+
+        Returns:
+        str: The example data for the maize model with no-till.
+        """
         self.weather_example = _weather(self.path)
         return _clean_up(_get_maize_no_till(self.path))
 
     def get_maize_model(self):
+        """
+        Get a SoilModel instance for the maize model.
+
+        Returns:
+        SoilModel: An instance of the SoilModel class for the maize model. Great for optimisation, where you wat a model always in memory to reducing laoding overload
+        """
         return SoilModel(self.get_maize)
 
     def get_maize_model_no_till(self):
+        """
+        Get a SoilModel instance for the maize model with no-till.
+
+        Returns:
+        SoilModel: An instance of the SoilModel class for the maize model with no-till. Great for optimisation, where you wat a model always in memory to reducing laoding overload
+        """
         return SoilModel(self.get_maize_no_till)
 
 

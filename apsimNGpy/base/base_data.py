@@ -164,8 +164,10 @@ os.chdir(pp)
 
 class DetectApsimExamples:
     def __init__(self):
+        self.all = []
         for name, file in examples_files.items():
             setattr(self, name, name)
+            self.all.append(name)
 
     def get_example(self, crop):
         path = join(copy_path, crop) + '.apsimx'
@@ -175,6 +177,8 @@ class DetectApsimExamples:
         apsim.replace_met_file(wp)
         return apsim
 
+    def get_all(self):
+        return [self.get_example(i) for i in self.all]
 
 
 ApsimExample = DetectApsimExamples()

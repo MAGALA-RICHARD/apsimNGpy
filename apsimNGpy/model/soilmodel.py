@@ -236,7 +236,6 @@ class SoilModel(APSIMNG):
                 soil_crop.LL = physical_calculated.AirDry
                 pysoil.DUL = physical_calculated.DUL
                 pysoil.SAT = physical_calculated.SAT
-                print(list(pysoil.SAT))
                 pysoil.BD = physical_calculated.BD
                 pysoil.KS = physical_calculated.KS
                 pysoil.LL15 = physical_calculated.LL15
@@ -244,7 +243,7 @@ class SoilModel(APSIMNG):
                 pysoil.ParticleSizeSand = physical_calculated.ParticleSizeSand
                 pysoil.ParticleSizeSilt = physical_calculated.ParticleSizeSilt
                 water.InitialValues = physical_calculated.DUL
-                water.Thickness = None
+
                 water.Thickness = self.thickness_replace
                 pysoil.AirDry = soil_crop.LL
                 pysoil.Thickness = self.thickness_replace

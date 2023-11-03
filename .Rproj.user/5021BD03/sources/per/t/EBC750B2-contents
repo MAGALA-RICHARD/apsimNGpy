@@ -1,0 +1,259 @@
+##################nITROUS OXIDE
+list.files()
+library(apsimx)
+run.dir <- "C:/Users/rmagala/Box/simulations/objective_2/illnois/DATA/APSIM_WORKSPACE_FILES/halaf_way_Calibrated"
+list.files(run.dir, pattern  = "db$")
+
+# load the files
+
+ap.db <- c("CCC.db", "CSWCS3.db", "CSCS.db", "SSSS.db")
+
+# function to read the database
+apsim.db <- function(x){
+  y <- read_apsimx(x, value = "report", simplify = FALSE, src.dir = run.dir)
+}
+nitrous_select <- function(x){
+  ap <- x%>%dplyr::filter(Year >= 2011 & Year <=2015)
+  apx <- ap%>%dplyr::select(Plotid, Year, FolderName, TopN2O, N2O)
+  
+  apy <- apx%>%tidyr::separate(Plotid, into = c('p', 'plotid', 'Tillage', sep ='_'))
+  apy$mean.n20 = mean(apy$TopN2O)
+  apyd <- apy%>%dplyr::distinct(plotid, .keep_all = TRUE)
+  apyd
+}
+
+
+
+a <- as.list(ap.db)
+db <- list()
+for (i in 1:4){
+  db[[i]] <- apsim.db(ap.db[i])
+  names(db)[i] <- ap.db[i]
+}
+
+# continuous corn
+cdb <- db$CCC.db
+cdf <- lapply(cdb, nitrous_select)
+
+cdf <- bind.reports(cdf)
+# Corn soybean
+csdb <- db$CSCS.db
+csdf <- lapply(csdb, nitrous_select)
+csdf <- bind.reports(csdf)
+# continuous soybean
+ssdb <- db$SSSS.db
+ssdf <- lapply(ssdb, nitrous_select)
+ssdf <- bind.reports(ssdf)
+# Corn soybean wheat rotations
+cswdb <- db$CSWCS3.db
+cswdf <- lapply(cswdb, nitrous_select)
+cswdf <- bind.reports(cswdf)
+wdf <- rbind(cdf, csdf, ssdf, cswdf)
+
+tillage_effect <- distinct(wdf%>%group_by(Tillage)%>%transmute(N20= mean(mean.n20)), .keep_all = TRUE)
+rotation_effect <- distinct(wdf%>%group_by(FolderName)%>%transmute(N20 = mean(mean.n20)), .keep_all = TRUE)
+tillage_effect
+rotation_effect
+wdf.apsim <- wdf%>%tidyr::spread(key =Tillage, value =mean.n20)
+apsim.NT <- distinct(wdf.apsim%>%group_by(FolderName)%>%transmute(NT.n20 = mean(NT, na.rm = TRUE)),
+                     .keep_all = TRUE)
+apsim.T <- distinct(wdf.apsim%>%group_by(FolderName)%>%transmute(Till.N20 = mean(T, na.rm = TRUE)),
+                     .keep_all = TRUE)
+apsim.NT
+apsim.T
+apsim.NT$T.N20 <- apsim.T$Till.N20
+rotation.tillageeffect <- cbind()
+write.csv(apsim.NT, "rotation.tillage effect.csv")
+write.csv(tillage_effect, "tillage_effect.csv")
+write.csv(rotation_effect, "rotation_effect.csv")
+
+
+
+
+
+
+# continuous corn
+
+ccnt <- db$CCC.db$P3091_NT
+ccnt$Tillage <- "No till"
+cct <- db$CCC.db$P3092_T
+cct$Tillage <- " Till"
+cc <- rbind(ccnt, cct)
+
+# corn soybean
+
+csnt <- db$CS.db$P1092_NT
+csnt$Tillage <- "No till"
+cst <- db$CS.db$P1091_T
+cst$Tillage <- "Till"
+cs <- rbind(csnt, cst)
+
+ssnt <- db$SS.db$P1082_NT
+ssnt$Tillage <- "No till"
+sst <- db$SS.db$P1081_T
+sst$Tillage <- "Till"
+ss <- rbind(ssnt, sst)
+
+
+wdf <- list(cws  = pd, SS = ss, CC = cc, CS =cs)
+
+plotall <- function(x){
+  ggplot(data = x, aes(x = Year, y = TopN2O, colour = Tillage)) +
+          geom_line() + labs(title = paste(x$FolderName[2]))
+}
+par(mfrow = c(2,2))
+lapply(wdf, plotall)
+
+# function to calculate cumulative nitrous oxide emissions
+mycumulative_add <- function(x){
+cumulative_add <- function(x) Reduce(`+`, x, accumulate = TRUE)
+y <- eval.parent(substitute(cumulative_add(x)))
+return(y)
+}
+
+# Observed nitrous oxide, and carbon dioxide data
+listobserved <- ndf
+ndf <- listobserved
+# bind the the observed data
+observed_nitorus <- do.call(bind_rows, ndf)
+
+# APSIM measured data
+ny <- function(x){
+  y = x%>%select(Plotid, FolderName, Year, soc0_10cm, TopN2O)
+  return(y)
+}
+
+#  continuous corn
+cont_n <- bind.reports(lapply(db$CCCC.db, ny))
+
+# corn soybean wheat rotation
+cwscnitrous <- bind.reports(lapply(db$CSWCS2.db, ny))
+# corn soybean rotation
+cs_n <- bind.reports(lapply(db$CSCS.db, ny))
+
+# continuous soybean
+ss_n <- bind.reports(lapply(db$SSSS.db, ny))
+ss_n
+x <- bind.reports(ss_n)
+APSIMn20 <- rbind(cont_n,cwscnitrous,cs_n,ss_n)
+APSIMn20 <- separate(APSIMn20, Plotid, c('P', "plotid", 'Tillage'), sep = "_")
+# select those that are in the measured data
+apsim_sel <- APSIMn20%>%filter(plotid%in%dplyr::intersect(APSIMn20$plotid,unique(ndf$`2013`$plotid)))
+sel_n20 <- list()
+# drop 2011
+nyear <- 2011:2014
+apsimn20 <- for (i in 1:4){
+  sel_n20[[i]] <- APSIMn20%>%dplyr::filter(
+    Year == nyear[i])
+  names(sel_n20)[i] <- nyear[i]
+}
+# create a list for the same plots in the measured data
+getunique <- function(x){
+  y <- unique(x$plotid)
+  return(y)
+}
+
+pp <- lapply(ndf, getunique)
+# Query by each plot id in the measured data
+api_sel <- function(x){
+    xp <- intersect(APSIMn20$plotid, x)
+  y <-  APSIMn20%>%filter(plotid%in%xp)
+}
+
+# Querry now
+xp <- lapply(pp, api_sel)
+xx <- list()
+for ( i in 1:4){
+  xx[[i]] <- APSIMn20%>%filter(plotid%in%pp[i] | Year == nyear[i])
+  names(xx)[i] <- nyear[i]
+}
+  
+# replace the non matching ones
+xx$`2011` <- xx$`2011`%>%filter(plotid%in%ndf$`2011`$plotid)
+xx$`2012` <- xx$`2012`%>%filter(plotid%in%ndf$`2012`$plotid)
+xx$`2013` <- xx$`2013`%>%filter(plotid%in%ndf$`2013`$plotid)
+xx$`2014` <- xx$`2014`%>%filter(plotid%in%ndf$`2014`$plotid)
+sel_n20 <- xx%>%lapply(ar)%>%lapply(DS)
+# final 
+apsimn20_final <- bind_rows(sel_n20)
+
+ndf$`2011` <- ndf$`2011`%>%filter(plotid%in%sel_n20$`2011`$plotid)
+ndf$`2012` <- ndf$`2012`%>%filter(plotid%in%sel_n20$`2012`$plotid)
+ndf$`2013` <- ndf$`2012`%>%filter(plotid%in%sel_n20$`2013`$plotid)
+# arrange
+ndf <- ndf%>%lapply(ar)
+# function to arrange
+ar <- function(x){
+  y <- x%>%arrange(plotid)
+  return(y)
+}
+#re-arrange
+sel_n20 <- lapply(xx, ar)
+
+# function to make all of them distinct
+DS <- function(x){
+  y <- x%>%distinct(plotid, .keep_all = TRUE)
+  return(y)
+}
+
+
+nd <- ndf
+nd$`2011`$apsim <- sel_n20$`2011`$TopN2O
+nd$`2012`$apsim <- sel_n20$`2012`$TopN2O
+nd$`2013`$apsim <- sel_n20$`2013`$TopN2O
+nd$`2014`$apsim <- sel_n20$`2014`$TopN2O
+
+
+reg_function <- function(x){
+    y <- lm(apsim ~ annual_n20, data = x)
+  return(y)
+}
+reg <- lapply(nd, reg_function)
+# sample dataset: explorations
+
+a$Tillage <- apsimn20_final$Tillage
+a$Rot <- apsimn20_final$FolderName
+a$Rott <- ifelse(a$Rot == 'contnous_soybean', "SSSS", ifelse(a$Rot == 'contnous_corn', 'CCCCC', 
+              ifelse(a$Rot =="rotations_CORN_SOY", "CSCSC",
+              ifelse( a$Rot =="contnous_soybean", 'SSSSS', ifelse(a$Rot =="rotation_Corn_Soy_Wheat", "CSWCS", a$Rot)))))
+atillage <- list()
+rt <- unique(a$Rott)       
+for ( i in 1:4){
+  atillage[[i]] <- a%>%filter(Rott == rt[i])
+  names(atillage)[i] <- rt[i]
+}      
+
+at <- lapply(atillage, reg_function)
+ lapply(at, summary)      
+      
+ mns <- function(x){
+   y <- mean(x$apsim)
+   s <- sd(x$apsim)
+   return(c(y,s))
+ }    
+ 
+ tillage_only <- lapply(atillage, mns)
+
+ A <- apsimn20_final%>%group_by(FolderName, Tillage)%>%spread(Tillage, TopN2O, 
+                                                              fill = NA, drop = TRUE)
+ tillage_effect <- print(A%>%group_by(FolderName)%>%mutate(meanN_t = mean(NT, na.rm = TRUE),
+                                         Mt = mean(T, na.rm = TRUE)), n = 53)
+ rot <- distinct(tillage_effect, FolderName, .keep_all = T)
+ rn <- c("csw", 'ss', 'cs', 'cc')
+ r2 <- rot[c(3, 9)]; r2$FolderName <- rn
+ r2$Till_rot <- paste(r2$FolderName, "T", sep = "-")
+ names(r2) <- c('rotation', 'n20', 'rotation-till')
+ r2$Tillage_rotation <- paste(r2$FolderName)
+ r1 <- rot[c(3,8)]; r1$FolderName <- rn
+ r1$Till_rot <- paste(r1$FolderName, "NT", sep = "-")
+ names(r1) <- names(r2)
+till_effect <- rbind(r1, r2)     
+till_effect$observed <- c(0.97, 0.85, 2.06, 4.69,3.17, 1.10, 2.06, 7.68)      
+       
+       
+       
+       
+       
+       
+       
+       

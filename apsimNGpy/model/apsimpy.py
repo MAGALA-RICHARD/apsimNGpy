@@ -144,6 +144,7 @@ class APSIMNG():
 
         elif type(model) == Simulations:
             self.Model = model
+
             self.datastore = self.Model.FindChild[Models.Storage.DataStore]().FileName
             self._DataStore = self.Model.FindChild[Models.Storage.DataStore]()
 
@@ -192,6 +193,7 @@ class APSIMNG():
             fn = path
             self.Model = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](string_name, None,
                                                                                                   True, fileName=fn)
+
         except Exception as e:
             logger.exception(repr(e))  # this error will be logged to the folder logs in the current working directory
             raise
@@ -714,11 +716,6 @@ class APSIMNG():
                 self._load_apsimx(self.path)
         return self
 
-    def worker(self, management, simulations, reload):
-        try:
-            self.update_management_decissions(management, simulations=simulations, reload=reload)
-        except Exception as e:
-            print(f"Failed to process {management}: {e}")
 
     def Update_management(self, management_list, simulations=None, reload=True):
         import queue

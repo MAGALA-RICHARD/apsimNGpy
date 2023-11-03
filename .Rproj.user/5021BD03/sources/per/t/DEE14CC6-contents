@@ -1,0 +1,284 @@
+---
+title: "Morrow plots"
+author: "richard Magala"
+date: "1/3/2022"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r}
+library(apsimx)
+library(stringr)
+library(dplyr)
+```
+## Downloading weather data
+The weather data was downloaded from Iowa environmental mesonet between 1893-2020
+
+```{r mp.iem}
+mp.iem <- get_iem_apsim_met(station = "IL8740", state = "IL", dates = c("1893-01-01", "2020-12-31"))
+```
+
+## replicating and removing negative numbers: avoid loops here
+
+
+```{r pressure, echo=FALSE}
+met_replication <- function(z, t, rm =1, tag){
+  m <- filter(z, radn != -99 & day != 366)
+  iemmet3 <- m[rep(seq_len(nrow(m)), times = t), ]
+  x <- length(unique(m$year)) * (t)
+  yr <- seq((2021-x):2020)+(2021-x)
+  yrs <- rep(yr, 365)
+  year <- yrs[order(yrs)]
+  iemmet3$year <- year
+  y.met <- napad_apsim_met(iemmet3)
+  iemr <- impute_apsim_met(y.met, method = "mean")
+  iemr$rain <- iemr$rain*rm
+  ext <- ".met"
+  n <- "_"
+   weather <- "weather"
+  Ynew <- length(unique(iemr$year))
+    nam <- str_c(weather, Sys.Date(), n, Ynew, tag, ext,  collapse = ".")
+   write_apsim_met(iemr, wrt.dir = getwd(), filename = nam)
+  return(iemr)
+   total <- length(unique(iemr$year))
+   print(total, "Total year")
+}
+```
+
+```{r}
+mp <- filter(mp.iem, radn != -99)
+mp_radn <- filter(mp.iem, radn == -99)
+mp
+```
+## Dowload the radn data and replace in the missing years 
+The coordinates are converted from 40.06.15 at this website https://www.fcc.gov/media/radio/dms-decimal
+
+```{r}
+mp.pwr <- get_power_apsim_met(lonlat = c(-88.226111, 40.104167), dates = c("1981-01-01", "2020-12-31"))
+length(unique(mp.pwr$year))
+```
+# replicate the radiations
+note that they are 127 years from 
+```{r}
+met_replication(mp, t = 1, tag = "Power_met_morrowplots")
+```
+```{r weatherdata_greenhouse}
+
+Serf_IA8688 <- get_iem_apsim_met(station  = "IA8688", state = "IA", date = c("2000-01-01", '2017-12-31'))
+ISUAG_IA0200 <- get_iem_apsim_met(station  = "IA0200", state = "IA", date = c("2000-01-01", '2017-12-31'))
+ISUAG.USB_IA0200 <- get_iem_apsim_met(station  = "IA0200", state = "IA", date = c("2000-01-01", '2017-12-31'))
+ORR_IL3717 <- get_iem_apsim_met(station  = "IL3717", state = "IL", date = c("2000-01-01", '2017-12-31'))
+NWREC_IL5768 <- get_iem_apsim_met(station  = "IL5768", state = "IL", date = c("2000-01-01", '2017-12-31'))
+```
+```{R}
+write_apsim_met(Serf_IA8688, wrt.dir = getwd(), filename = "Serf_IA8688.met")
+write_apsim_met(ISUAG_IA0200, wrt.dir = getwd(), filename = "ISUAG_IA0200.met")
+write_apsim_met(ISUAG.USB_IA0200, wrt.dir = getwd(), filename = "ISUAG.USB_IA0200.met")
+write_apsim_met(ORR_IL3717, wrt.dir = getwd(), filename = "ORR_IL3717.met")
+write_apsim_met(NWREC_IL5768, wrt.dir = getwd(), filename = "NWREC_IL5768.met")
+```
+
+
+
+```{R}
+serf.iem <- get_iem_apsim_met(lonlat = c(-91.4857, 41.1951), date  =c("2011-01-01", '2015-12-31'))
+
+ISUAG.USB.iem <- get_iem_apsim_met(lonlat = c(-93.75867, 42.02093), date =c("2011-01-01", '2015-12-31'))
+
+ISUAG.USB.nas <- get_power_apsim_met(lonlat = c(-93.75867, 42.02093), date =c("2011-01-01", '2015-12-31'))
+ISUAG.USB.iem$radn <- ISUAG.USB.nas$radn
+
+GILMORE.iem <- get_iem_apsim_met(lonlat = c(-94.4952, 42.7477), date =c("2011-01-01", '2015-12-31'))
+SUAG.iem <- get_iem_apsim_met(lonlat = c(-93.7806, 42.0094), date =c("2000-01-01", '2015-12-31'))
+GILMORE.nasa <- get_power_apsim_met(lonlat = c(-94.4952, 42.7477), date =c("2000-01-01", '2015-12-31'))
+GILMORE.iem$radn <- GILMORE.nasa$radn
+SUAG.nasa <- get_power_apsim_met(lonlat = c(-93.7806, 42.0094), date =c("2011-01-01", '2015-12-31'))
+SUAG.iem$radn <- SUAG.nasa$radn
+
+##Illnois weather data
+#weather by stattion name
+ORR.i <- get_iem_apsim_met(station  = "IL5768", state = "IL", date = c("2000-01-01", '2015-12-31'))
+NWREC.i <- get_iem_apsim_met(station  = "IL3717", state = "IL", date = c("2000-01-01", '2015-12-31'))
+
+NWREC.iem <- get_iem_apsim_met( lonlat  = c(-90.7281,40.9317 ), date =c("2000-01-01", '2015-12-31'))
+ORR.iem <- get_iem_apsim_met( lonlat  = c(-90.8226, 39.8018), date =c("2000-01-01", '2015-12-31'))
+#POWER WEATHER DATA
+NWREC.power <- get_power_apsim_met( lonlat  = c(-90.7281,40.9317 ), date =c("2000-01-01", '2015-12-31'))
+ORR.power <- get_power_apsim_met( lonlat  = c(-90.8226, 39.8018), date =c("2000-01-01", '2015-12-31'))
+## replace radiation with power
+NWREC.iem$radn <- NWREC.power$radn
+ORR.iem$radn <- ORR.power$radn
+write_apsim_met(ORR.iem, wrt.dir = getwd(), filename = "ORR.met")
+write_apsim_met(NWREC.iem, wrt.dir = getwd(), filename = "NWREC.met")
+
+```
+```{r}
+SUAG_soil <- get_ssurgo_soil_profile(lonlat =c(-93.7806, 42.0094))
+GILMORE_soil <- get_ssurgo_soil_profile(lonlat =c(-94.4952, 42.7477), nsoil = 2, shift  = 300)
+gilmore.nicollet <- GILMORE_soil[[2]]
+SERF_soil <- get_ssurgo_soil_profile(lonlat =c(-91.4857, 41.1951), nsoil =4, shift  = 300)
+############# Illnois weather data
+NWREC.muskatine <- get_ssurgo_soil_profile( lonlat  = c(-90.7281,40.9317 ))
+
+ORR <- get_ssurgo_soil_profile( lonlat  = c(-90.8226, 39.8018), nsoil = 1, shift =300)
+```
+```{r}
+# Download soil data from the morrow plots
+lon = "88 13 34"
+lat  = "40 06 15"
+decimals_location <- c(88.226111, 40.104167)
+morrowPlot_soil <- get_ssurgo_soil_profile(lonlat = c(-88.226111, 40.104167), soil.bottom = 180)
+
+```
+soil_mean <- function(x){
+y <- select(x,  "PH",  "BD", "Soil_nitrate", "SOC",        "sandP", "siltP", "clayP", "TN")
+opt <- lapply(y, mean)
+a <- data.frame(opt)
+  return(a)     
+}
+
+# first specify the number of columns we want to modify
+i <- c9
+#Specify own function within apply
+b[ , i] <- apply(b[ , i], 2,    
+                    function(x) as.numeric(as.character(x)))
+```{r}
+nme <- c("uniqueid","plotid","depth","subsample","year","sampledate","BD","SOIL02","SOIL03","SOIL06","SOIL07","PH","SOIL12","SOC","TN","NO3","SOIL19.1","SOIL19.10","SOIL19.11","SOIL19.12", "SOIL19.1","SOIL19.2","SOIL19.5","SOIL19.6","SOIL19.7", "SOIL19.8","SOIL22","SAND","SILT","CLAY", "SOIL29","SOIL30","DUP0.33bar","DL15bar","SOIL33","SOIL34","SOIL35","SOIL39","SOIL41","SOIL42")
+# remove rows 1 and 2
+soi <- soil[-c(1,2),]
+colnames(soi) <- nme
+
+soilA <- select(soi, DUP0.33bar,DL15bar, SAND,SILT,CLAY, PH, SOC,TN,NO3, BD)
+des <- select(soi, uniqueid, plotid,depth, year )
+num <- select(soil, year, SOC, BD, PH, DL15bar,DUP0.33bar,NO3)
+# convert to numeric
+num.s <- data.frame(sapply(num, as.numeric))
+newSoil <- cbind(des, num.s)
+Iowa$SoilA <- newSoil
+saveRDS(Iowa, file  = "IowaB")
+
+unique(newSoil$plotid)
+```
+
+```{r}
+setwd("C:/Users/rmagala/Box/simulations/objective_2/Iowa")
+iowa <- readRDS("Iowa")
+newSoil <- iowa$SoilA
+fn <- subset(newSoil, year == "2011", plotid == "101W", depth != "0 to 15", depth != '0 to 30', SOC != "NA")
+```
+
+```{r}
+SOilReplace <- function(x, y){
+  rat <- if (x[4] != "NA") {(x$SOC[4]/y[3])* (y$soil$Carbon[3:10])
+  }
+  else{
+    print("Warning! soil carbon is blank")
+  }
+  carbon <- rat
+  carb <- x$SOC[2:3]
+ Carbon <- rbind(carb, carbon)
+ return(Carbon)
+}
+
+
+```
+
+
+```{r}
+#replacing Soil organic carbon
+spr <- function(df, sp){
+  if (is.na(df$SOC[4]) != FALSE) {
+    print('Warning: Carbon is Blank!')
+} else {
+  carb2 <-  (fn$SOC[4])/10/s$s[3] * sp$soil$Carbon[4:10]
+  
+}
+  c1 <- (fn$SOC[1] + fn$SOC[2])/2
+  c2 <- df$SOC[3:4]
+  ca1 <- data.frame(c1)
+  ca2 <- data.frame(c2)
+  colnames(ca1) <- "Carbon"
+  colnames(ca2) <- "Carbon"
+  carb1 <- rbind(ca1, ca2)
+  carb1$Carbon <- carb1$Carbon/10
+  df2 <- data.frame(carb2)
+ colnames(df2) <- "Carbon"
+ Carbon <- rbind(carb1, df2)
+ sp$soil$Carbon <- Carbon
+ #Replace Bulk density 
+if (is.na(df$BD[4]) != FALSE) {
+  print("Bulk density is blank")
+} else {
+  b2 <-  df$BD[4]/sp$soil$BD[3] * sp$soil$BD[4:10]
+  
+}
+ b20cm <- (df$BD[1] + df$BD[2])/2
+  b0_3 <- df$BD[3:4]
+ b20cm <- data.frame(b20cm)
+  b0_3 <- data.frame( b0_3)
+  colnames(b20cm) <- "BD"
+  colnames(b0_3) <- "BD" 
+  b1 <- rbind(b20cm, b0_3)
+  b2 <- data.frame(b2)
+  colnames(b2) <- "BD"
+  BD <- rbind(b1, b2)
+  sp$soil$BD <- BD
+  
+  #Replace LL15
+  w15bar20cm1 <- (df[1, 8] + df[2, 8])/2
+  w15barall2 <-   w15bar20cm1/sp$soil[1] * sp$soil$BD[2:10]
+  w15bar20cm1 <- data.frame(w15bar20cm1)
+  w152 <- data.frame( w15barall2)
+  colnames(w15bar20cm1) <- "LL15"
+  colnames(w152) <- "LL15" 
+  LL15 <- rbind(w15bar20cm1, w15barall2)
+    sp$soil[8] <- LL15
+    
+  #Replace airdry
+    AD2 <- w15bar20cm1 *0.625
+    
+  return(sp)
+}
+
+
+```
+```{r}
+vi <- spr(df = fn, sp = suag)
+
+```
+```{r}
+setwd("C:/Users/rmagala/Box/simulations/objective_2/Iowa/Corn_soybean_rotation_rye_cover")
+mp <- mp_plot5_soil_replace(df2)
+setwd( "C:/Users/rmagala/Box/simulations/objective_2/Iowa/Corn_soybean_rotation_rye_cover")
+edit_apsimx_replace_soil_profile("bd.apsimx", soil.profile =mp[[1]] , edit.tag = "_buldensity_test" )
+
+```
+
+```{r}
+#check for he colnames
+data.frame(colnames(soil))
+p1101W <- filter(plots, ??..uniqueid =='ISUAG', plotid == "101W")
+```
+
+```{r}
+mp_plot3_soil_replace <- function(df){
+  sp10layers <- get_ssurgo_soil_profile(lonlat = c(-88.226111, 40.104167), soil.bottom = 180, nlayers =9)
+ sp15cm <- get_ssurgo_soil_profile(lonlat = c(-88.226111, 40.104167), soil.bottom = 180, nlayers =12) #scope row 1 and 2
+ sp15cm_select <- sp15morrowPlot_soil[[1]][[1]]
+ sp15cm_select2 <- sp15cm_select[1:2, 1:29]
+ 
+ sp10cm <- get_ssurgo_soil_profile(lonlat = c(-88.226111, 40.104167), soil.bottom = 180, nlayers =18) # pull row 4
+ sp10cmselect1 <- sp10cm[[1]][[1]]
+ sp10select2 <- sp10cmselect1[4, 1:29]
+ 
+ sp20cm <- get_ssurgo_soil_profile(lonlat = c(-88.226111, 40.104167), soil.bottom = 180, nlayers =9) #pull row 4:9
+ sp20cm1 <- sp20cm[[1]][[1]]
+ sp20cm2 <- sp20cm1[4:9, 1:29]
+ sp <- rbind( sp15cm_select2, sp10select2, sp20cm1)
+ sp$BD <- df$BD
+ return(sp)
+}
+```
+

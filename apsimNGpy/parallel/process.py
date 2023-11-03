@@ -12,7 +12,7 @@ from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganizeAPSIM
 # _______________________________________________________________
 def run_apsimxfiles_in_parallel(iterable_files, ncores=None, use_threads=False):
     """
-    Read APSIMX simulation databases results from multiple files in parallel.
+    Run APSIMX simulation from multiple files in parallel.
 
     Args:
     - iterable_files (list): A list of APSIMX  files to be run in parallel.
@@ -30,7 +30,7 @@ def run_apsimxfiles_in_parallel(iterable_files, ncores=None, use_threads=False):
     simulation_files = ["file1.apsimx", "file2.apsimx", ...]  # Replace with actual database file names
 
     # Using processes for parallel execution
-    result_generator = read_result_in_parallel(simulation_files, ncores=4, use_threads=False)
+    result_generator = run_apsimxfiles_in_parallel(simulation_files, ncores=4, use_threads=False)
 
     # Iterate through the generator to process results
     for data in result_generator:

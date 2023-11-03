@@ -176,8 +176,8 @@ class LoadExampleFiles():
         """
         Get a SoilModel instance for the maize model.
 
-        Returns:
-        SoilModel: An instance of the SoilModel class for the maize model. Great for optimisation, where you wat a model always in memory to reducing laoding overload
+        Returns: SoilModel: An instance of the SoilModel class for the maize model. Great for optimisation,
+        where you wat a model always in memory to reducing laoding overload
         """
         return SoilModel(self.get_maize)
 
@@ -185,8 +185,8 @@ class LoadExampleFiles():
         """
         Get a SoilModel instance for the maize model with no-till.
 
-        Returns:
-        SoilModel: An instance of the SoilModel class for the maize model with no-till. Great for optimisation, where you wat a model always in memory to reducing laoding overload
+        Returns: SoilModel: An instance of the SoilModel class for the maize model with no-till. Great for
+        optimisation, where you wat a model always in memory to reducing laoding overload
         """
         return SoilModel(self.get_maize_no_till)
 

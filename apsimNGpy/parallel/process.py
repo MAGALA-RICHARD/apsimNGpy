@@ -12,9 +12,38 @@ from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganizeAPSIM
 # _______________________________________________________________
 def run_apsimxfiles_in_parallel(iterable_files, ncores=None, use_threads=False):
     """
-    files: lists of apsimx simulation files
-    ncores  =no of cores or threads to use (integer)
-    use_thread: if true thread pool executor will be used if false processpool excutor will be called (boolean)
+    Read APSIMX simulation databases results from multiple files in parallel.
+
+    Args:
+    - iterable_files (list): A list of APSIMX  files to be run in parallel.
+    - ncores (int, optional): The number of CPU cores or threads to use for parallel processing. If not provided, it defaults to 50% of available CPU cores.
+    - use_threads (bool, optional): If set to True, the function uses thread pool execution; otherwise, it uses process pool execution. Default is False.
+
+    Returns:
+    - None runs and writes data to db files on the disk
+
+    Example:
+    ```python
+    # Example usage of read_result_in_parallel function
+    from your_module import read_result_in_parallel
+
+    simulation_files = ["file1.apsimx", "file2.apsimx", ...]  # Replace with actual database file names
+
+    # Using processes for parallel execution
+    result_generator = read_result_in_parallel(simulation_files, ncores=4, use_threads=False)
+
+    # Iterate through the generator to process results
+    for data in result_generator:
+        print(data)
+    it depends on the type of data but pd.concat could be a good option on the returned generator
+    ```
+
+    Notes:
+    - This function efficiently reads db file results in parallel.
+    - The choice of thread or process execution can be specified with the `use_threads` parameter.
+    - By default, the function uses 50% of available CPU cores or threads if `ncores` is not provided.
+    - Progress information is displayed during execution.
+    - Handle any exceptions that may occur during execution for robust processing.
     """
     # remove duplicates. because duplicates will be susceptible to race conditioning in paralell computing
     files = set(iterable_files)

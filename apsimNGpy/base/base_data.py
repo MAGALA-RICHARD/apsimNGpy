@@ -175,9 +175,6 @@ class DetectApsimExamples:
         apsim.replace_met_file(wp)
         return apsim
 
-    def get_all_examples(self):
-        fn = [i for i in dir(apsim_example) if "__" not in i and 'get' not in i]
-        return [self.get_example(i) for i in fn]
 
 
 ApsimExample = DetectApsimExamples()

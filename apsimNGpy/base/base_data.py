@@ -171,7 +171,7 @@ class LoadExampleFiles():
         """
         self.weather_example = _weather(self.path)
         return _clean_up(_get_maize_no_till(self.path))
-
+    @property
     def get_maize_model(self):
         """
         Get a SoilModel instance for the maize model.
@@ -180,7 +180,7 @@ class LoadExampleFiles():
         where you wat a model always in memory to reducing laoding overload
         """
         return SoilModel(self.get_maize)
-
+    @property
     def get_maize_model_no_till(self):
         """
         Get a SoilModel instance for the maize model with no-till.

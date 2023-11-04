@@ -24,8 +24,9 @@ class Metrics:
         Returns:
         - float: root mean square error value
         """
-        actual = np.array(actual)
-        predicted = np.array(predicted)
+        if not isinstance(actual, np.ndarray) or not isinstance(predicted, np.ndarray):
+            actual = np.array(actual)
+            predicted = np.array(predicted)
         return np.sqrt(np.mean(np.square(np.subtract(actual, predicted))))
 
     def RRMSE(self, actual, predicted):
@@ -39,11 +40,24 @@ class Metrics:
         Returns:
         - float: root mean square error value
         """
+        if not isinstance(actual, np.ndarray) or not isinstance(predicted, np.ndarray):
+            actual = np.array(actual)
+            predicted = np.array(predicted)
         rmse = np.sqrt(np.mean(np.square(np.subtract(actual, predicted))))
         rrmse = rmse / np.mean(actual)
         return rrmse
 
     def WIA(self, observed, predicted):
+        """
+        Calculate the Wilmont index of agreement between actual and predicted values.
+
+        Args:
+        observed (array-like): Array of actual values.
+        predicted (array-like): Array of predicted values.
+
+        Returns:
+        float: wilmon index of agreement
+        """
         if not isinstance(observed, np.ndarray) or not isinstance(observed, np.ndarray):
             observed = np.array(observed)
             predicted = np.array(predicted)
@@ -124,7 +138,7 @@ class Metrics:
         return ccc['rho_c']['est'][0]
 
     def bias(self, actual, predicted):
-        return np.mean(actual-predicted)
+        return np.mean(actual - predicted)
 
     import numpy as np
 
@@ -154,16 +168,15 @@ class Metrics:
 
         return mef
 
-
-    def R2(self, true_values, predicted_values):
+    def R2(self, observed, predicted_values):
         # Calculate the mean of the true values
-        mean_true = np.mean(true_values)
+        mean_true = np.mean(observed)
 
         # Calculate the total sum of squares (TSS)
-        tss = np.sum((true_values - mean_true) ** 2)
+        tss = np.sum((observed - mean_true) ** 2)
 
         # Calculate the residual sum of squares (RSS)
-        rss = np.sum((true_values - predicted_values) ** 2)
+        rss = np.sum((observed - predicted_values) ** 2)
 
         # Calculate R-squared
         r2 = 1 - (rss / tss)
@@ -187,7 +200,7 @@ mets = metrics_description()
 
 class validate(Metrics):
     """
-    this evaluated supplied predicted and observed values for evaluating on the go please see co-current evaluator class
+    supply predicted and observed values for evaluating on the go please see co-current evaluator class
     """
 
     def __init__(self, actual, predicted):
@@ -212,9 +225,9 @@ class validate(Metrics):
         return metric_index
 
     def evaluate_all(self):
-        attribs = ['RMSE', 'RRMSE', "ME", "WIA",  "bias", 'R2', "CCC",]
-        all = {atbs: getattr(self, atbs)(self.actual, self.predicted) for atbs in attribs}
-        return all
+        attribs = ['RMSE', 'RRMSE', "ME", "WIA", "bias", 'R2', "CCC", ]
+        return {atbs: getattr(self, atbs)(self.actual, self.predicted) for atbs in attribs}
+
 
 
 # Test

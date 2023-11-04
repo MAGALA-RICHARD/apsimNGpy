@@ -33,7 +33,7 @@ def get_iem_bystation(dates, station, path, mettag):
       mettag: your prefered tag to save on filee
       '''
     # access the elements in the metdate class above
-    wdates = metdate(dates)
+    wdates = _MetDate(dates)
     stationx = station[:2]
     state_clim = stationx + "CLIMATE"
     str0 = "http://mesonet.agron.iastate.edu/cgi-bin/request/coop.py?network="
@@ -59,7 +59,10 @@ def get_iem_bystation(dates, station, path, mettag):
         print("Failed to download the data web request returned code: ", rep)
 
 
-class metdate:
+class _MetDate:
+    """
+    This class organises the data for IEM weather download
+    """
     def __init__(self, dates):
         self.startdate = dates[0]
         self.lastdate = dates[1]
@@ -134,8 +137,8 @@ for k, v in states.items():
 
 
 def getabreviation(x):
-    ab = new_dict[x]
-    return (ab)
+    return new_dict[x]
+
 
 
 # function to define the date ranges
@@ -316,7 +319,9 @@ def daymet_bylocation(lonlat, start, end, cleanup=True, filename=None):
 
 
 def daymet_bylocation_nocsv(lonlat, start, end, cleanup=True, filename='daymet'):
-    '''collect weather from daymet solar radiation is replaced with that of nasapower
+    """
+    collect weather from daymet. doesnt store data to csv
+     solar radiation is replaced with that of nasapower
     ------------
     parameters
     ---------------
@@ -330,14 +335,15 @@ def daymet_bylocation_nocsv(lonlat, start, end, cleanup=True, filename='daymet')
 
     ------------
     returns complete path to the new met file but also write the met file to the disk in the working directory
-    '''
+    """
     # import pdb
     # pdb.set_trace()
 
     datecheck = daterange(start, end)
     if start < 1980 or end > 2021:
         print(
-            "requested year preceeds valid data range! \n end years should not exceed 2021 and start year should not be less than 1980")
+            "requested year preceeds valid data range! \n end years should not exceed 2021 and start year should not "
+            "be less than 1980")
     else:
         base_url = 'https://daymet.ornl.gov/single-pixel/api/data?'
         latstr = 'lat=' + str(lonlat[1])
@@ -463,6 +469,7 @@ class EditMet:
         self.weather = weather
 
     def _edit_apsim_met(self):
+
         try:
             with open(self.weather, "r+") as f:
                 string = f.read()

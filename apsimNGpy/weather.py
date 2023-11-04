@@ -462,6 +462,9 @@ def daymet_bylocation_nocsv(lonlat, start, end, cleanup=True, filename='daymet')
 
 
 class EditMet:
+    """
+    This class edits the weather files
+    """
     def __init__(self, weather, skip=5, index_drop=0, separator=' '):
         self.skip = skip
         self.index_drop = index_drop
@@ -469,7 +472,15 @@ class EditMet:
         self.weather = weather
 
     def _edit_apsim_met(self):
+        """
+        converts the weather file into a pandas dataframe by removing specified rows.
+        It is easier to edit  a pandas data frame than a text file
 
+        Returns:
+        - pandas.DataFrame: A DataFrame containing the modified APSIM weather data.
+
+        Example:
+        """
         try:
             with open(self.weather, "r+") as f:
                 string = f.read()

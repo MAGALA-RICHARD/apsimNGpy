@@ -54,6 +54,10 @@ def _get_maize_no_till(file_path):
 
 
 def _get_maize_NF_experiment(file_path):
+    """
+    copies the apsimx data from 'EXPERIMENT.apsimx' file
+    returns the path
+    """
     resource_directory = files('apsimNGpy')
     json_file_path = resource_directory / 'basefiles' / 'EXPERIMENT.apsimx'
     contents = json_file_path.read_text()

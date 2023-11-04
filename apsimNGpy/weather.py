@@ -568,6 +568,9 @@ class EditMet:
                 raise IndexError(f"Line number {line_number} is out of range.")
 
     def met_replace_var(self, parameter, values):
+        """
+        in case we want to change some columns or rows in the APSIM met file
+        """
         df = self._edit_apsim_met()
         if len(df[parameter]) != len(values):
             raise ValueError("number of rows must be equal")
@@ -575,29 +578,7 @@ class EditMet:
             raise ValueError("column name not found")
         df['parameter'] = list(values)
         fname = os.path.join(os.path.dirname(self.weather), "edited_" + os.path.basename(self.weather))
-        AMP = self._read_line_from_file(4)
-        tav = self._read_line_from_file(3)
-        lon = self._read_line_from_file(2)
-        lat = self._read_line_from_file(1)
-        tile = self._read_line_from_file(0)
-        headers = ['year', 'day', 'radn', 'maxt', 'mint', 'rain', 'vp', 'swe']
-        header_string = " ".join(headers) + "\n"
-        with open(fname, "a") as f2app:
-            f2app.writelines(
-                [f'!site: {tile}\n', f'latitude = {lat} \n', f'longitude = {lon}\n', f'tav ={tav}\n',
-                 f'amp ={AMP}\n'])
-            f2app.writelines([header_string])
-            f2app.writelines(['() () (MJ/m2/day) (oC) (oC) (mm) (hPa) (kg/m2)\n'])
-            # append the weather data
-            data_rows = []
-            for index, row in df.iterrows():
-                current_row = []
-                for header in headers:
-                    current_row.append(str(row[header]))
-                current_str = " ".join(current_row) + '\n'
-                data_rows.append(current_str)
-            f2app.writelines(data_rows)
-        return fname
+        return self.write_edited_met(old = self.weather, daf = df, filename=fname)
 
     def check_met(self):
         df = self._edit_apsim_met()

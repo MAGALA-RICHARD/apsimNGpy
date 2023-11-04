@@ -570,6 +570,18 @@ class EditMet:
     def met_replace_var(self, parameter, values):
         """
         in case we want to change some columns or rows in the APSIM met file
+        this function replace specific data in the APSIM weather file with new values.
+
+        This method allows for the replacement of specific columns or rows in the APSIM weather file by providing a
+        'parameter' (column name) and a list of 'values' to replace the existing data.
+
+        Args:
+        - parameter (str): The name of the column (parameter) to be replaced.
+        - values (list, array or pandas series):  values to replace the existing data in the specified column.
+
+        Returns:
+        - str: The path to the newly created APSIM weather file with the replaced data.
+
         """
         df = self._edit_apsim_met()
         if len(df[parameter]) != len(values):

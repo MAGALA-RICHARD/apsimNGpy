@@ -1,18 +1,13 @@
-import shutil
-
 import pythonnet
-import shutil
 import os
 from pathlib import Path
 from functools import cache
-
+import shutil
 
 def _is_runtime(self):
     rt = pythonnet.get_runtime_info()
     return rt is not None
 
-
-import shutil
 
 
 @cache
@@ -28,10 +23,6 @@ def is_executable_on_path(name):
     """
     executable_path = shutil.which(name)
     return executable_path is not None
-
-
-pm = is_executable_on_path("Models")
-
 
 @cache
 def _is_apsimx_installed():
@@ -80,7 +71,29 @@ class ShutilMethod:
 
 
 class NotFound:
+    """
+        Prompt the user to input the APSIM installation path.
 
+        If the provided path is valid and contains the 'bin' folder, it is considered a successful addition
+        to the environment. Otherwise, a ValueError is raised.
+
+        Returns:
+        - str: The APSIM installation path.
+
+        Example:
+        ```python
+        not_found = NotFound()
+        apsim_path = not_found._find_apsim_path()
+        # User interaction:
+        # APSIM not found in the system environment variable, please add apsim path
+        # Browse your computer and add the path for APSIM installation: <user_input>
+        # <printed path>
+        # Congratulations you have successfully added APSIM binary folder path to your environ
+        ```
+
+        Raises:
+        - ValueError: If the entered path is invalid or doesn't contain the 'bin' folder.
+        """
     def __init__(self):
         pass
 

@@ -491,6 +491,74 @@ class EditMet:
         except Exception as e:
             print(repr(e))
 
+    def write_edited_met(self, old, daf, filename="edited_met.met"):
+        """
+        Write an edited APSIM weather file using an existing file as a template.
+
+        This function takes an existing APSIM weather file ('old'), replaces specific data rows with data from a DataFrame ('daf'),
+        and writes the modified data to a new weather file ('filename').
+
+        Args:
+        - old (str): The path to the existing APSIM weather file used as a template.
+        - daf (pandas.DataFrame): A DataFrame containing the edited weather data to be inserted.
+        - filename (str, optional): The name of the new weather file to be created. Default is 'edited_met.met'.
+
+        Returns:
+        - str: The path to the newly created APSIM weather file.
+
+        Example:
+        ```python
+        from your_module import write_edited_met
+
+        # Specify the paths to the existing weather file and the edited data DataFrame
+        existing_weather_file = "original_met.met"
+        edited_data = pd.DataFrame(...)  # Replace with your edited data
+
+        # Call the write_edited_met function to create a new weather file with edited data
+        new_weather_file = write_edited_met(existing_weather_file, edited_data)
+
+        # Use the new_weather_file path for further purposes
+        ```
+
+        Notes:
+        - This function reads the existing APSIM weather file, identifies the location to insert the edited data,
+          and then creates a new weather file containing the combined data.
+        - The edited data is expected to be in the 'daf' DataFrame with specific columns ('year', 'day', 'radn', 'maxt', 'mint', 'rain', 'vp', 'swe').
+        - The 'filename' parameter specifies the name of the new weather file to be created.
+        - The function returns the path to the newly created weather file.
+
+        """
+        if not filename.endswith('.met'):
+            raise NameError("file name should have  .met extension")
+        existing_lines = []
+        with open(old, 'r+') as file:
+            for i, line in enumerate(file):
+                existing_lines.append(line)
+                if 'MJ' in line and 'mm' in line and 'day in line':
+                    print(line)
+                    break
+
+        # Iterate through the edited DataFrame 'daf' and construct new data rows
+        headers = ['year', 'day', 'radn', 'maxt', 'mint', 'rain', 'vp', 'swe']
+        for index, row in daf.iterrows():
+            current_row = []
+            for header in headers:
+                current_row.append(str(row[header]))
+            current_str = " ".join(current_row) + '\n'
+            existing_lines.append(current_str)
+
+        fname = os.path.join(os.path.dirname(old), filename)
+
+        # Remove the file if it already exists
+        if os.path.exists(fname):
+            os.remove(fname)
+
+        # Write the edited data to the new weather file
+        with open(fname, "a") as df_2met:
+            df_2met.writelines(existing_lines)
+
+        return fname
+
     def _read_line_from_file(self, line_number):
         with open(self.weather, 'r') as file:
             lines = file.readlines()

@@ -34,6 +34,9 @@ def _is_apsimx_installed():
 
 @cache
 def get_apsimx_model_path():
+    """
+    Quickly gets the APSIM installation path
+    """
     try:
         pat = os.environ['APSIM']
         if pat:

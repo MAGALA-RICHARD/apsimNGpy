@@ -53,6 +53,14 @@ class OsMethod:
 
     @cache
     def _find_apsim_path(self):
+        """
+        Find the APSIM installation path using the os  module.
+        if APSIM was installed it is possible the path is added to the os.environ
+
+        Returns:
+        - str or False: The APSIM installation path if found, or False if not found.
+
+        """
         path = get_apsimx_model_path()
         return path
 
@@ -63,6 +71,23 @@ class ShutilMethod:
 
     @cache
     def _find_apsim_path(self):
+        """
+        Find the APSIM installation path using the shutil module.
+
+        Returns:
+        - path: str or False: The APSIM installation path if found, or False if not found.
+
+        Example:
+        ```python
+        apsim_finder = ShutilMethod()
+        apsim_path = apsim_finder._find_apsim_path()
+
+        if apsim_path:
+            print(f"Found APSIM installation at: {apsim_path}")
+        else:
+            print("APSIM installation not found.")
+
+                """
         path = shutil.which("Models")
         if path:
             return os.path.dirname(path)

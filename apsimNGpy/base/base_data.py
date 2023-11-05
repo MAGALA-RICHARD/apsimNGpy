@@ -218,7 +218,7 @@ if not exists(copy_path):
 weather_path = os.path.join(examples, "WeatherFiles")
 
 pp = Path.home()
-os.chdir(pp)
+
 
 
 class DetectApsimExamples:

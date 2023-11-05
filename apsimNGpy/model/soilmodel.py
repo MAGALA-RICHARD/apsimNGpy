@@ -360,7 +360,8 @@ class SoilModel(APSIMNG):
         return self
 
     def run_edited_file(self, simulations=None, clean=False, multithread=True):
-        """Run simulations in this subclass if we want to clean the database, we need to spawn the path with one process to avoid os access permission eros
+        """Run simulations in this subclass if we want to clean the database, we need to
+         spawn the path with one process to avoid os access permission eros
 
 
         Parameters

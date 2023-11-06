@@ -276,7 +276,7 @@ class SoilModel(APSIMNG):
         return self
         # print(self.results)
 
-    @timing_decorator
+
     def replace_downloaded_soils(self, soil_tables, simulation_names):  # unique for my project
         self.thickness_replace = self.thickness_values
         physical_calculated = soil_tables[0]

@@ -20,7 +20,7 @@ def run_apsimxfiles_in_parallel(iterable_files, ncores=None, use_threads=False):
     - use_threads (bool, optional): If set to True, the function uses thread pool execution; otherwise, it uses process pool execution. Default is False.
 
     Returns:
-    - None runs and writes data to db files on the disk
+    - returns a generator object containing the path to the datastore or sql databases
 
     Example:
     ```python

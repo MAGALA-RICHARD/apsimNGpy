@@ -53,7 +53,7 @@ def run_apsimxfiles_in_parallel(iterable_files, ncores=None, use_threads=False):
             progress = tqdm(total=len(futures), position=0, leave=True,
                             bar_format='Running apsimx files: {percentage:3.0f}% completed')
             for future in as_completed(futures):
-                future.result()  # retrieve the result (or use it if needed)
+                yield future.result()
                 progress.update(1)
             progress.close()
         print(perf_counter() - a, 'seconds', f'to run {len(files)} files')
@@ -65,13 +65,13 @@ def run_apsimxfiles_in_parallel(iterable_files, ncores=None, use_threads=False):
                             bar_format='Running apsimx files: {percentage:3.0f}% completed')
             # Iterate over the futures as they complete
             for future in as_completed(futures):
-                future.result()  # retrieve the result (or use it if needed)
+                yield future.result()  # use the generated object in the fucntion below
                 progress.update(1)
             progress.close()
         print(perf_counter() - a, 'seconds', f'to run {len(files)} files')
 
 
-def read_result_in_parallel(iterable_files, ncores=None, use_threads=False):
+def read_result_in_parallel(iterable_files, ncores=None, use_threads=False,  report_name ="Report"):
     """
 
     Read APSIMX simulation databases results from multiple files in parallel.
@@ -80,6 +80,7 @@ def read_result_in_parallel(iterable_files, ncores=None, use_threads=False):
     - iterable_files (list): A list of APSIMX db  files to be read in parallel.
     - ncores (int, optional): The number of CPU cores or threads to use for parallel processing. If not provided, it defaults to 50% of available CPU cores.
     - use_threads (bool, optional): If set to True, the function uses thread pool execution; otherwise, it uses process pool execution. Default is False.
+    -  report_name the name of the  report table defaults to "Report" you can use None to return all
 
     Returns:
     - generator: A generator yielding the simulation data read from each file.
@@ -117,7 +118,7 @@ def read_result_in_parallel(iterable_files, ncores=None, use_threads=False):
     if not use_threads:
         a = perf_counter()
         with ProcessPoolExecutor(ncore2use) as pool:
-            futures = [pool.submit(read_simulation, i) for i in files]
+            futures = [pool.submit(read_simulation, i,  report_name) for i in files]
             progress = tqdm(total=len(futures), position=0, leave=True,
                             bar_format='reading file databases: {percentage:3.0f}% completed')
             # Iterate over the futures as they complete
@@ -131,7 +132,7 @@ def read_result_in_parallel(iterable_files, ncores=None, use_threads=False):
     else:
         a = perf_counter()
         with ThreadPoolExecutor(ncore2use) as tpool:
-            futures = [tpool.submit(read_simulation, i) for i in files]
+            futures = [tpool.submit(read_simulation, i,  report_name) for i in files]
             progress = tqdm(total=len(futures), position=0, leave=True,
                             bar_format='reading file databases: {percentage:3.0f}% completed')
             # Iterate over the futures as they complete

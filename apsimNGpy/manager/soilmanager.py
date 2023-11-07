@@ -16,6 +16,7 @@ import copy
 from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
 
+THICKNESS  =  [150, 150, 200, 200, 200, 250, 300, 300, 400, 500]
 def DownloadsurgoSoiltables(lonlat, select_componentname =None, summarytable=False):
     '''
     Downloads SSURGO soil tables

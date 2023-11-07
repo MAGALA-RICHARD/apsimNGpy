@@ -6,6 +6,7 @@ import pythonnet
 import os, sys, shutil
 import pandas as pd
 import sqlite3
+import  warnings
 from apsimNGpy.utililies.pythonet_config import get_apsimx_model_path
 apsim_model = get_apsimx_model_path()
 try:
@@ -167,7 +168,7 @@ def read_simulation(datastore, report_name= 'MaizeR'):
         conn.close()
         dfl = len(dataframe_dict)
         if len(dataframe_dict) == 0:
-            print("the data dictionary is empty. no data has been returned")
+            warnings.warn(f"{datastore}: is empty. No data has been returned")
         if report_name:
             df = dataframe_dict[report_name]
             df['source'] = os.path.basename(datastore)

@@ -133,12 +133,14 @@ def run_model(path):
     try:
         model =load_apsimx_from_string(path)
         ap = run(model)
+        return model.datastore
     except Exception as e:
+        print(f"{type(e)} has occured::::")
         print(f"apsimNGpy had issues running file {path} : because of {repr(e)}")
-        pass
+
 
 def read_simulation(datastore, report_name= 'MaizeR'):
-    ''' returns all data frame the available report tables'''
+    ''' returns all data frame from the available report tables'''
     try:
         conn = sqlite3.connect(datastore)
         cursor = conn.cursor()

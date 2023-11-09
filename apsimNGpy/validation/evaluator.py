@@ -6,7 +6,7 @@ __all__ = ['validate', 'mets', 'Metrics']
 
 import numpy as np
 import pandas as pd
-from scipy.stats import norm
+from scipy.stats import norm, linregress
 
 
 class Metrics:
@@ -168,20 +168,13 @@ class Metrics:
 
         return mef
 
-    def R2(self, observed, predicted_values):
-        # Calculate the mean of the true values
-        mean_true = np.mean(observed)
+    def slope(self, observed, predicted):
+        slope, intercept, r_value, p_value, std_err = linregress(observed, predicted)
+        return slope
 
-        # Calculate the total sum of squares (TSS)
-        tss = np.sum((observed - mean_true) ** 2)
-
-        # Calculate the residual sum of squares (RSS)
-        rss = np.sum((observed - predicted_values) ** 2)
-
-        # Calculate R-squared
-        r2 = 1 - (rss / tss)
-
-        return r2
+    def R2(self, observed, predicted):
+        slope, intercept, r_value, p_value, std_err = linregress(observed, predicted)
+        return r_value
 
 
 class metrics_description:
@@ -193,6 +186,7 @@ class metrics_description:
         self.CCC = 'CCC'
         self.ME = "ME"
         self.bias = "bias"
+        self.slope = 'slope'
 
 
 mets = metrics_description()
@@ -225,9 +219,8 @@ class validate(Metrics):
         return metric_index
 
     def evaluate_all(self):
-        attribs = ['RMSE', 'RRMSE', "ME", "WIA", "bias", 'R2', "CCC", ]
+        attribs = ['RMSE', 'RRMSE', "ME", "WIA", "bias", 'R2', "CCC", 'slope' ]
         return {atbs: getattr(self, atbs)(self.actual, self.predicted) for atbs in attribs}
-
 
 
 # Test

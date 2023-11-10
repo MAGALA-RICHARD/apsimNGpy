@@ -14,8 +14,8 @@ from io import StringIO
 import io
 
 
-
 def generate_unique_name(base_name, length=6):
+    # TODO this function is duplicated everywhere.
     random_suffix = ''.join(random.choices(string.ascii_lowercase, k=length))
     unique_name = base_name + '_' + random_suffix
     return unique_name

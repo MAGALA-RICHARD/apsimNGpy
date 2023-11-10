@@ -25,8 +25,8 @@ def run_apsimxfiles_in_parallel(iterable_files, ncores=None, use_threads=False):
     Example:
     ```python
     # Example usage of read_result_in_parallel function
-    from apsimNgpy.parallel.process import run_apsimxfiles_in_parallel
 
+    from apsimNgpy.parallel.process import run_apsimxfiles_in_parallel
     simulation_files = ["file1.apsimx", "file2.apsimx", ...]  # Replace with actual database file names
 
     # Using processes for parallel execution

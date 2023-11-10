@@ -17,45 +17,6 @@ import apsimNGpy.manager.weathermanager as weather
 from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganizeAPSIMsoil_profile
 from apsimNGpy.utililies.pythonet_config import get_apsimx_model_path
 
-try:
-    if pythonnet.get_runtime_info() is None:
-        pythonnet.load("coreclr")
-except:
-    print("dotnet not found ,trying alternate runtime")
-    pythonnet.load()
-
-import clr
-from os.path import join as opj
-
-# logs folder
-Logs = "Logs"
-basedir = os.getcwd()
-log_messages = opj(basedir, Logs)
-if not os.path.exists(log_messages):
-    os.mkdir(log_messages)
-datime_now = datetime.datetime.now()
-timestamp = datime_now.strftime('%a-%m-%y')
-logfile_name = 'log_messages' + str(timestamp) + ".log"
-log_paths = opj(log_messages, logfile_name)
-# f"log_messages{datetime.now().strftime('%m_%d')}.log"
-logging.basicConfig(filename=log_paths, level=logging.ERROR, format='%(asctime)s %(levelname)s %(message)s')
-logger = logging.getLogger(__name__)
-
-apsim_model = os.path.realpath(get_apsimx_model_path())
-
-sys.path.append(apsim_model)
-
-try:
-    clr.AddReference("Models")
-except:
-    print("Looking for APSIM")
-    apsim_path = shutil.which("Models")
-    if apsim_path is not None:
-        apsim_path = os.path.split(os.path.realpath(apsim_path))[0]
-        sys.path.append(apsim_path)
-    clr.AddReference("Models")
-
-clr.AddReference("System")
 from System.Collections.Generic import *
 from Models.Core import Simulations
 from System import *
@@ -70,6 +31,7 @@ from Models.PMF import Cultivar
 import threading
 import time
 from apsimNGpy.model.apsimpy import APSIMNG
+from settings import *
 
 
 # decorator to monitor performance

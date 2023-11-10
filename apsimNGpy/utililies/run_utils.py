@@ -1,65 +1,52 @@
 """
 Interface to APSIM simulation models using Python.NET build on top of Matti Pastell farmingpy framework.
 """
+import os
+import pandas as pd
 import pathlib
 import pythonnet
-import os, sys, shutil
-import pandas as pd
+import shutil
 import sqlite3
-import  warnings
-from apsimNGpy.utililies.pythonet_config import get_apsimx_model_path
-apsim_model = get_apsimx_model_path()
-try:
-    if pythonnet.get_runtime_info() is None:
-        pythonnet.load("coreclr")
-except:
-    print("dotnet not found ,trying alternate runtime")
-    pythonnet.load()
+import sys
+import warnings
+import Models
+from System import *
+from collections import namedtuple
+import json
+from System.Collections.Generic import *
 
-import clr
+from settings import *
 
 FAILED_RUNS = []
 
 # append apsim program installation bin path before running the model
 sys.path.append(os.path.realpath(apsim_model))
 
+
 # Try to load from pythonpath and only then look for Model.exe
-try:
-    clr.AddReference("Models")
-except:
-    print("Looking for APSIM")
-    apsim_path = shutil.which("Models")
-    if apsim_path is not None:
-        apsim_path = os.path.split(os.path.realpath(apsim_path))[0]
-        sys.path.append(apsim_path)
-    clr.AddReference("Models")
-
-clr.AddReference("System")
-from System.Collections.Generic import *
 # C# imports
-import Models
-from System import *
-from collections import namedtuple
-import json
+
+
 def load_apsimx_from_string(path):
-        Model_data = namedtuple('model_data', ['model', 'path', 'datastore', "DataStore"])
-        try:
-            with open(path, "r+") as apsimx:
-                app_ap = json.load(apsimx)
-            string_name = json.dumps(app_ap)
-            fn = path
-            Model = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](string_name, None,
-                                                                                                  True, fileName=fn)
-            datastore = Model.FindChild[Models.Storage.DataStore]().FileName
-            DataStore = Model.FindChild[Models.Storage.DataStore]()
-            named_tuple = Model_data(model = Model, path = path, datastore=datastore, DataStore =DataStore)
-            return named_tuple
-        except Exception as e:
-            print(repr(e))
-            raise
+    # TODO duplicated in runner/run_utils
+    Model_data = namedtuple('model_data', ['model', 'path', 'datastore', "DataStore"])
+    try:
+        with open(path, "r+") as apsimx:
+            app_ap = json.load(apsimx)
+        string_name = json.dumps(app_ap)
+        fn = path
+        Model = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](string_name, None,
+                                                                                         True, fileName=fn)
+        datastore = Model.FindChild[Models.Storage.DataStore]().FileName
+        DataStore = Model.FindChild[Models.Storage.DataStore]()
+        named_tuple = Model_data(model=Model, path=path, datastore=datastore, DataStore=DataStore)
+        return named_tuple
+    except Exception as e:
+        print(repr(e))
+        raise
 
 
-def _read_simulation(datastore, report_name= None):
+def _read_simulation(datastore, report_name=None):
     ''' returns all data frame the available report tables'''
     conn = sqlite3.connect(datastore)
     cursor = conn.cursor()
@@ -98,8 +85,10 @@ def _read_simulation(datastore, report_name= None):
         return dataframe_dict[report_name]
     else:
         return dataframe_dict
-def run(named_tuple_data, clean=False, multithread=True, read_db =False):
-        """Run apsimx model in the simulations
+
+
+def run(named_tuple_data, clean=False, multithread=True, read_db=False):
+    """Run apsimx model in the simulations
 
         Parameters
         ----------
@@ -110,29 +99,31 @@ def run(named_tuple_data, clean=False, multithread=True, read_db =False):
         multithread, optional
             If `True` APSIM uses multiple threads, by default `True`
         """
-        if multithread:
-            runtype = Models.Core.Run.Runner.RunTypeEnum.MultiThreaded
-        else:
-            runtype = Models.Core.Run.Runner.RunTypeEnum.SingleThreaded
+    if multithread:
+        runtype = Models.Core.Run.Runner.RunTypeEnum.MultiThreaded
+    else:
+        runtype = Models.Core.Run.Runner.RunTypeEnum.SingleThreaded
 
-        # Clear old data before running
-        results = None
-        if clean:
-            named_tuple_data.DataStore.Dispose()
-            pathlib.Path(named_tuple_data.DataStore.FileName).unlink(missing_ok=True)
-            named_tuple_data.DataStore.Open()
-        runmodel = Models.Core.Run.Runner(named_tuple_data.model, True, False, False, None, runtype)
-        e = runmodel.Run()
-        if read_db:
-            data= _read_simulation(named_tuple_data.datastore)
-            return data
+    # Clear old data before running
+    results = None
+    if clean:
+        named_tuple_data.DataStore.Dispose()
+        pathlib.Path(named_tuple_data.DataStore.FileName).unlink(missing_ok=True)
+        named_tuple_data.DataStore.Open()
+    runmodel = Models.Core.Run.Runner(named_tuple_data.model, True, False, False, None, runtype)
+    e = runmodel.Run()
+    if read_db:
+        data = _read_simulation(named_tuple_data.datastore)
+        return data
+
+
 def run_model(path):
     """
     :param path: path to apsimx file
     :return: none
     """
     try:
-        model =load_apsimx_from_string(path)
+        model = load_apsimx_from_string(path)
         ap = run(model)
         return model.datastore
     except Exception as e:
@@ -140,7 +131,7 @@ def run_model(path):
         print(f"apsimNGpy had issues running file {path} : because of {repr(e)}")
 
 
-def read_simulation(datastore, report_name= 'MaizeR'):
+def read_simulation(datastore, report_name='MaizeR'):
     ''' returns all data frame from the available report tables'''
     try:
         conn = sqlite3.connect(datastore)
@@ -178,5 +169,3 @@ def read_simulation(datastore, report_name= 'MaizeR'):
             return dataframe_dict
     except Exception as e:
         print(repr(e))
-
-

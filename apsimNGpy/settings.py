@@ -8,6 +8,7 @@ Then that function must not be called here.
 """
 import os
 import logging
+import env
 import clr
 from os.path import join as opj
 
@@ -52,3 +53,4 @@ except:
 clr.AddReference("System")
 
 DEFAULT_NUM_CORES = 6  # a default number of cores to use in simulations. Use this instead of 10.
+DEFAULT_PATH = env.get('DEFAULT_PATH', r'C:\Users\rmagala\Box\p\my_PEWI\RESEARCH_PROJECT_20210622\chapter 2\YieldEvaluation')

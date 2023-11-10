@@ -220,7 +220,6 @@ weather_path = os.path.join(examples, "WeatherFiles")
 pp = Path.home()
 
 
-
 class DetectApsimExamples:
     def __init__(self):
         self.all = []

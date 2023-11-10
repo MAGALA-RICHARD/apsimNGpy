@@ -1,6 +1,8 @@
 
 import numpy as np
 from scipy.spatial.distance import  cdist
+
+
 def area_of_circle(r):
     pi = 3.141592653589793
     return pi * r * r
@@ -59,6 +61,7 @@ def calculate_in_chunk(Array, foraging_suitability,  foraging_distance, resoluti
 
 def mean_filter(raster_data, window_size=3):
     """
+    TODO this function is a duplicate.
     Apply a mean filter to a 2D numpy array (raster data).
     """
     padding = window_size // 2

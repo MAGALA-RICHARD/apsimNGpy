@@ -10,11 +10,16 @@ from scipy.stats import norm, linregress
 
 
 class Metrics:
+    """
+    This class is redundant.
+    These functions can be implemented without the class.
+    """
     def __init__(self):
         pass
 
     def RMSE(self, actual, predicted):
         """
+        TODO WHERE IS THIS FUNCTION USED. IT IS DUPLICATED DOWN.
         Calculate the root mean square error (RMSE) between actual and predicted values.
 
         Parameters:
@@ -23,6 +28,7 @@ class Metrics:
 
         Returns:
         - float: root mean square error value
+
         """
         if not isinstance(actual, np.ndarray) or not isinstance(predicted, np.ndarray):
             actual = np.array(actual)
@@ -31,6 +37,7 @@ class Metrics:
 
     def RRMSE(self, actual, predicted):
         """
+        TODO, this documentation is off, see above says the same thing.
         Calculate the root mean square error (RMSE) between actual and predicted values.
 
         Parameters:
@@ -130,6 +137,7 @@ class Metrics:
         return rval
 
     def RMSE(self, actual, predicted):
+        # TODO is this the same function as the other RMSE.
         mse = self.MSE(actual, predicted)
         return np.sqrt(mse)
 
@@ -139,8 +147,6 @@ class Metrics:
 
     def bias(self, actual, predicted):
         return np.mean(actual - predicted)
-
-    import numpy as np
 
     def ME(self, actual, predicted):
         """
@@ -223,8 +229,11 @@ class validate(Metrics):
         return {atbs: getattr(self, atbs)(self.actual, self.predicted) for atbs in attribs}
 
 
+<<<<<<< Updated upstream
 # Test
 
+=======
+>>>>>>> Stashed changes
 if __name__ == "__main__":
     x_data = np.array([1.2, 2.4, 3.6, 4.8, 5.0])
     y_data = np.array([2.0, 3.5, 4.2, 5.7, 6.0])

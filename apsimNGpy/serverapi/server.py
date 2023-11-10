@@ -33,6 +33,7 @@ basedir = os.getcwd()
 log_messages = opj(basedir, Logs)
 if not os.path.exists(log_messages):
     os.mkdir(log_messages)
+
 datime_now = datetime.datetime.now()
 timestamp = datime_now.strftime('%a-%m-%y')
 logfile_name = 'log_messages' + str(timestamp) + ".log"

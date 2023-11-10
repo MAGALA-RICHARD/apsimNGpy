@@ -5,6 +5,7 @@ import os
 import shutil
 from pathlib import Path
 
+
 def _is_runtime(self):
     rt = pythonnet.get_runtime_info()
     return rt is not None
@@ -24,6 +25,7 @@ def _is_apsimx_installed():
 def get_apsimx_model_path():
     if _is_apsimx_installed():
         return Path(os.path.realpath(os.environ['APSIM']))
+
 def detect_apsim_installation():
     for rr, dd, ff in os.walk(r"C:\Program Files\APSIM2022.12.7130.0\bin"):
         for d in ff:

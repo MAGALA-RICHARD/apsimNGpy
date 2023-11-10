@@ -9,6 +9,7 @@ def jojn_user_profile():
 
     # Print the complete path
     print(apsimx_path)
+
 jojn_user_profile()
 # Define the command with expanded environment variables
 command = [

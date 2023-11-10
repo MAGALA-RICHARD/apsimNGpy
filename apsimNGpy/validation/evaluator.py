@@ -218,9 +218,16 @@ class validate(Metrics):
         metric_index = getattr(self, metric)(self.actual, self.predicted)
         return metric_index
 
-    def evaluate_all(self):
+    def evaluate_all(self, verbose =False):
+        """
+        verbose (bool) will print all the metrics
+        """
         attribs = ['RMSE', 'RRMSE', "ME", "WIA", "bias", 'R2', "CCC", 'slope' ]
-        return {atbs: getattr(self, atbs)(self.actual, self.predicted) for atbs in attribs}
+        all=  {atbs: getattr(self, atbs)(self.actual, self.predicted) for atbs in attribs}
+        if verbose:
+            for k, v in all.items():
+                print(k, ":", v)
+        return all
 
 
 # Test
@@ -231,3 +238,5 @@ if __name__ == "__main__":
 
     data = validate(x_data, y_data)
     al = data.evaluate_all()
+    for k, v in al.items():
+        print(k, ":", v)

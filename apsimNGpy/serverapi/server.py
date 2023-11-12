@@ -27,20 +27,6 @@ except:
 import clr
 from os.path import join as opj
 
-# logs folder
-Logs = "Logs"
-basedir = os.getcwd()
-log_messages = opj(basedir, Logs)
-if not os.path.exists(log_messages):
-    os.mkdir(log_messages)
-datime_now = datetime.datetime.now()
-timestamp = datime_now.strftime('%a-%m-%y')
-logfile_name = 'log_messages' + str(timestamp) + ".log"
-log_paths = opj(log_messages, logfile_name)
-# f"log_messages{datetime.now().strftime('%m_%d')}.log"
-logging.basicConfig(filename=log_paths, level=logging.ERROR, format='%(asctime)s %(levelname)s %(message)s')
-logger = logging.getLogger(__name__)
-
 try:
     apsim_model = os.path.realpath(get_apsimx_model_path())
 except:
@@ -72,21 +58,86 @@ import Models
 from Models.PMF import Cultivar
 import threading
 import time
+
+# related to server
 clr.AddReference(r'C:\Program Files\APSIM2022.12.7130.0\bin\apsim-server.dll')
+from Models.Core.Run import Runner
+import APSIM.Server.IO
+import socket
+
 from APSIM.Server import Commands
 import APSIM
+import dataclasses
+APSIM.Server.ApsimServer  # start again from here
+from abc import ABC, abstractmethod
 
-APSIM.Server.ApsimServer # statrt again from here
-# decorator to monitor performance
-def timing_decorator(func):
-    def wrapper(*args, **kwargs):
-        start_time = time.perf_counter()
-        result = func(*args, **kwargs)
-        end_time = time.perf_counter()
-        elapsed_time = end_time - start_time
-        print(f"{func.__name__} took {elapsed_time:.4f} seconds to execute.")
-        return result
 
-    return wrapper
+# context manager for the connection
+class ConnectionManager:
+    def __init__(self, port, ip_address):
+        # todo Initialize  connection here
+        self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.port = port
+        self.ip_address = ip_address
+
+    def __enter__(self):
+        #todo  Start the connection or acquire resources
+        try:
+            self.client.connect(self.ip_address, self.port)
+        except:
+            pass
+
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        if exc_type is not None:
+            # An exception occurred within the 'with' block
+            print(f"Exception Type: {exc_type}")
+            print(f"Exception Value: {exc_value}")
+        else:
+            self.client.close()
+
+    def close(self):
+        pass
+        # todo Implement connection closure here
+
+
+class IConnectionManager(ABC):
+    @abstractmethod
+    def create_connection(self):
+        pass
+
+
+class LocalSocketConnection(IConnectionManager):
+    def __init__(self, socket_name, verbose, protocol):
+        self.socket_name = socket_name
+        self.verbose = verbose
+        self.protocol = protocol
+
+    def create_connection(self):
+        # todo Implement the connection creation for local mode here
+        pass
+
+
+class NetworkSocketConnection(IConnectionManager):
+    def __init__(self, verbose, ip_address, port, backlog, protocol):
+        self.verbose = verbose
+        self.ip_address = ip_address
+        self.port = port
+        self.backlog = backlog
+        self.protocol = protocol
+
+    def create_connection(self):
+        # todo Implement the connection creation for remote mode here
+        pass
+
+
+def create_connection(options):
+    protocol = get_protocol()
+    if options.local_mode:
+        return LocalSocketConnection(options.socket_name, options.verbose, protocol)
+    if options.remote_mode:
+        return NetworkSocketConnection(options.verbose, options.ip_address, options.port, options.backlog, protocol)
+    raise NotImplementedError("Unknown connection type. Use either local or remote mode.")
 
 

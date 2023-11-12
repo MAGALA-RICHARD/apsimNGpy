@@ -12,7 +12,7 @@ from shapely.geometry import Point
 from concurrent.futures import ThreadPoolExecutor
 from threading import Thread
 from scipy.optimize import curve_fit
-
+from time import perf_counter
 
 class KeyValuePair:
     def __init__(self, Key, Value):
@@ -455,7 +455,6 @@ def collect_runfiles(path2files, pattern="*.apsimx"):
         yield i
 
 
-
 def decreasing_exponential_function(x, a, b):  # has potential to cythonize
     """
     Compute the decreasing exponential function y = a * e^(-b * x).
@@ -491,3 +490,15 @@ def number_of_cells(r, cell_size):
     circle_area = area_of_circle(r)
     cell_area = cell_size * cell_size
     return int(circle_area / cell_area)
+
+
+def timer(func):
+    def wrapper(*args, **kwargs):
+        start_time = perf_counter()
+        result = func(*args, **kwargs)
+        end_time = perf_counter()
+        elapsed_time = end_time - start_time
+        print(f"{func.__name__} took {elapsed_time:.4f} seconds to execute.")
+        return result
+
+    return wrapper

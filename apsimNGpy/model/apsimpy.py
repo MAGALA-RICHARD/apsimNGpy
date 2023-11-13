@@ -199,6 +199,7 @@ class APSIMNG():
             raise
         self.datastore = self.Model.FindChild[Models.Storage.DataStore]().FileName
         self._DataStore = self.Model.FindChild[Models.Storage.DataStore]()
+        self.version = self.Model.get_ApsimVersion()
 
     def _load_apsimx(self, path):
         try:
@@ -212,6 +213,7 @@ class APSIMNG():
             raise
         self.datastore = self.Model.FindChild[Models.Storage.DataStore]().FileName
         self._DataStore = self.Model.FindChild[Models.Storage.DataStore]()
+        self.version = self.Model.get_ApsimVersion()
 
     def load_external_apsimx(self, path, read_from_string=True):
         # when we load we replace exisiting ones, so fune null it
@@ -756,7 +758,7 @@ class APSIMNG():
         return self
 
     # Convert CS KeyValuePair to dictionary
-    @timing_decorator
+
     def update_multiple_management_decissions(self, management_list, simulations=None, reload=False):
         """Update management, handles multiple managers in a loop
 

@@ -1,17 +1,10 @@
 """
 Interface to APSIM simulation models using Python.NET build on top of Matti Pastell farmingpy framework.
 """
-import matplotlib.pyplot as plt
-import random, logging, pathlib
-import string
-from typing import Union
+from pathlib import Path
 import pythonnet
 import os, sys, datetime, shutil, warnings
-import numpy as np
-import pandas as pd
-from os.path import join as opj
-import sqlite3
-import json
+import socket
 from pathlib import Path
 import apsimNGpy.manager.weathermanager as weather
 from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganizeAPSIMsoil_profile
@@ -58,86 +51,91 @@ import Models
 from Models.PMF import Cultivar
 import threading
 import time
+from apsimNGpy.base.base_data import LoadExampleFiles
 
+data = LoadExampleFiles(Path.home())
+maize = data.get_maize
 # related to server
 clr.AddReference(r'C:\Program Files\APSIM2022.12.7130.0\bin\apsim-server.dll')
 from Models.Core.Run import Runner
+import APSIM
 import APSIM.Server.IO
 import socket
 
 from APSIM.Server import Commands
 import APSIM
 import dataclasses
-APSIM.Server.ApsimServer  # start again from here
-from abc import ABC, abstractmethod
+
+sims = Simulations()
+run = Runner(sims)
+JOBSERVERRUNNER = APSIM.Server.ServerJobRunner()
+RUN = APSIM.Server.ServerJobRunner.Run
+APSIM.Server.ServerJobRunner.Dispose
+
+com = APSIM.Server.Cli.GlobalServerOptions()
+com.File = data.get_maize
+com.Verbose = True
+com.NativeMode = True
+com.LocalMode = True
+com.RemoteMode = False
+com.IPAddress = '10.24.22.192'
 
 
-# context manager for the connection
-class ConnectionManager:
-    def __init__(self, port, ip_address):
-        # todo Initialize  connection here
-        self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.port = port
-        self.ip_address = ip_address
-
-    def __enter__(self):
-        #todo  Start the connection or acquire resources
-        try:
-            self.client.connect(self.ip_address, self.port)
-        except:
-            pass
-
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        if exc_type is not None:
-            # An exception occurred within the 'with' block
-            print(f"Exception Type: {exc_type}")
-            print(f"Exception Value: {exc_value}")
-        else:
-            self.client.close()
-
-    def close(self):
-        pass
-        # todo Implement connection closure here
+def _apsim_server(file):
+    sims = FileFormat.ReadFromFile[Models.Core.Simulations](file, None, False)
+    sims.FindChild[Models.Storage.DataStore]().UseInMemoryDB = True;
+    print(sims.FindChild[Models.Storage.DataStore]().UseInMemoryDB)
+    runner = Runner(sims)
+    runner.Use(JOBSERVERRUNNER)
+    return runner
 
 
-class IConnectionManager(ABC):
-    @abstractmethod
-    def create_connection(self):
-        pass
+def _connect_to_server(name):
+    # The path to the Unix domain socket.
+    pipe_prefix = "/tmp/CoreFxPipe_"
+    pipe = pipe_prefix + name
+
+    sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    address = pipe
+
+    try:
+        sock.connect(address)
+    except Exception as e:
+        print(f"Error connecting to the server: {str(e)}")
+        return None
+
+    return sock
 
 
-class LocalSocketConnection(IConnectionManager):
-    def __init__(self, socket_name, verbose, protocol):
-        self.socket_name = socket_name
-        self.verbose = verbose
-        self.protocol = protocol
+def _connect_to_remote_server(ip_addr, port):
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    address = (ip_addr, port)
 
-    def create_connection(self):
-        # todo Implement the connection creation for local mode here
-        pass
+    try:
+        sock.connect(address)
+    except Exception as e:
+        print(f"Error connecting to the server: {str(e)}")
+        return None
 
+    return sock
 
-class NetworkSocketConnection(IConnectionManager):
-    def __init__(self, verbose, ip_address, port, backlog, protocol):
-        self.verbose = verbose
-        self.ip_address = ip_address
-        self.port = port
-        self.backlog = backlog
-        self.protocol = protocol
+from pathlib import Path
+import os
 
-    def create_connection(self):
-        # todo Implement the connection creation for remote mode here
-        pass
+# Get the path to the temporary directory
+temp_dir = Path(os.environ.get('TEMP', os.environ.get('TMP')))
 
+# Now you can work with the temp_dir as a Path object
+print(temp_dir)
 
-def create_connection(options):
-    protocol = get_protocol()
-    if options.local_mode:
-        return LocalSocketConnection(options.socket_name, options.verbose, protocol)
-    if options.remote_mode:
-        return NetworkSocketConnection(options.verbose, options.ip_address, options.port, options.backlog, protocol)
-    raise NotImplementedError("Unknown connection type. Use either local or remote mode.")
+# You can list files in the temporary directory, for example:
+for file in temp_dir.iterdir():
+    print(file)
 
-
+fip =r'C:\Users\rmagala\AppData\Local\Temp'
+lp = os.listdir(fip)
+for  i in lp:
+    if 'bin' in i:
+        print(i)
+pm = os.path.join(fip, 'APSIMff535863-dc94-4abe-8dd6-02ceb31d52fd.xml')
+os.startfile(pm)

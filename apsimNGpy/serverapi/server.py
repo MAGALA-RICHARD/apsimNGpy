@@ -1,10 +1,17 @@
 """
 Interface to APSIM simulation models using Python.NET build on top of Matti Pastell farmingpy framework.
 """
-from pathlib import Path
+import matplotlib.pyplot as plt
+import random, logging, pathlib
+import string
+from typing import Union
 import pythonnet
 import os, sys, datetime, shutil, warnings
-import socket
+import numpy as np
+import pandas as pd
+from os.path import join as opj
+import sqlite3
+import json
 from pathlib import Path
 import apsimNGpy.manager.weathermanager as weather
 from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganizeAPSIMsoil_profile
@@ -19,6 +26,20 @@ except:
 
 import clr
 from os.path import join as opj
+
+# logs folder
+Logs = "Logs"
+basedir = os.getcwd()
+log_messages = opj(basedir, Logs)
+if not os.path.exists(log_messages):
+    os.mkdir(log_messages)
+datime_now = datetime.datetime.now()
+timestamp = datime_now.strftime('%a-%m-%y')
+logfile_name = 'log_messages' + str(timestamp) + ".log"
+log_paths = opj(log_messages, logfile_name)
+# f"log_messages{datetime.now().strftime('%m_%d')}.log"
+logging.basicConfig(filename=log_paths, level=logging.ERROR, format='%(asctime)s %(levelname)s %(message)s')
+logger = logging.getLogger(__name__)
 
 try:
     apsim_model = os.path.realpath(get_apsimx_model_path())
@@ -51,91 +72,21 @@ import Models
 from Models.PMF import Cultivar
 import threading
 import time
-from apsimNGpy.base.base_data import LoadExampleFiles
-
-data = LoadExampleFiles(Path.home())
-maize = data.get_maize
-# related to server
 clr.AddReference(r'C:\Program Files\APSIM2022.12.7130.0\bin\apsim-server.dll')
-from Models.Core.Run import Runner
-import APSIM
-import APSIM.Server.IO
-import socket
-
 from APSIM.Server import Commands
 import APSIM
-import dataclasses
 
-sims = Simulations()
-run = Runner(sims)
-JOBSERVERRUNNER = APSIM.Server.ServerJobRunner()
-RUN = APSIM.Server.ServerJobRunner.Run
-APSIM.Server.ServerJobRunner.Dispose
+APSIM.Server.ApsimServer # statrt again from here
+# decorator to monitor performance
+def timing_decorator(func):
+    def wrapper(*args, **kwargs):
+        start_time = time.perf_counter()
+        result = func(*args, **kwargs)
+        end_time = time.perf_counter()
+        elapsed_time = end_time - start_time
+        print(f"{func.__name__} took {elapsed_time:.4f} seconds to execute.")
+        return result
 
-com = APSIM.Server.Cli.GlobalServerOptions()
-com.File = data.get_maize
-com.Verbose = True
-com.NativeMode = True
-com.LocalMode = True
-com.RemoteMode = False
-com.IPAddress = '10.24.22.192'
+    return wrapper
 
 
-def _apsim_server(file):
-    sims = FileFormat.ReadFromFile[Models.Core.Simulations](file, None, False)
-    sims.FindChild[Models.Storage.DataStore]().UseInMemoryDB = True;
-    print(sims.FindChild[Models.Storage.DataStore]().UseInMemoryDB)
-    runner = Runner(sims)
-    runner.Use(JOBSERVERRUNNER)
-    return runner
-
-
-def _connect_to_server(name):
-    # The path to the Unix domain socket.
-    pipe_prefix = "/tmp/CoreFxPipe_"
-    pipe = pipe_prefix + name
-
-    sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    address = pipe
-
-    try:
-        sock.connect(address)
-    except Exception as e:
-        print(f"Error connecting to the server: {str(e)}")
-        return None
-
-    return sock
-
-
-def _connect_to_remote_server(ip_addr, port):
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    address = (ip_addr, port)
-
-    try:
-        sock.connect(address)
-    except Exception as e:
-        print(f"Error connecting to the server: {str(e)}")
-        return None
-
-    return sock
-
-from pathlib import Path
-import os
-
-# Get the path to the temporary directory
-temp_dir = Path(os.environ.get('TEMP', os.environ.get('TMP')))
-
-# Now you can work with the temp_dir as a Path object
-print(temp_dir)
-
-# You can list files in the temporary directory, for example:
-for file in temp_dir.iterdir():
-    print(file)
-
-fip =r'C:\Users\rmagala\AppData\Local\Temp'
-lp = os.listdir(fip)
-for  i in lp:
-    if 'bin' in i:
-        print(i)
-pm = os.path.join(fip, 'APSIMff535863-dc94-4abe-8dd6-02ceb31d52fd.xml')
-os.startfile(pm)

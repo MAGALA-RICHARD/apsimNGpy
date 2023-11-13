@@ -1,5 +1,7 @@
 from apsimNGpy.model import APSIMNG
 from typing import Union
+
+
 class ApsimSoil(APSIMNG):
     try:
         def __init__(self, model: Union[str, Simulations], copy=True, out_path=None, read_from_string=True, lonlat=None,

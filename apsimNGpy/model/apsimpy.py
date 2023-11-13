@@ -789,6 +789,7 @@ class APSIMNG():
                             if param in values:
                                 fvalue = f"{values[param]}"
                                 action.Parameters[i] = KeyValuePair[String, String](param, fvalue)
+                                action.OnCreated()
 
                                 # action.Parameters[i]= {param:f"{values[param]}"}
                             # action.GetParametersFromScriptModel()

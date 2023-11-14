@@ -54,7 +54,7 @@ import Models
 from Models.PMF import Cultivar
 import threading
 import time
-
+#from settings import * This file is not ready and i wanted to do some test
 
 
 # decorator to monitor performance
@@ -403,6 +403,7 @@ class APSIMNG():
             if i in table_list:
                 table_list.remove(i)
                 # start selecting tables
+        print(table_list)
         select_template = 'SELECT * FROM {table_list}'
 
         # create data fram dictionary to keep all the tables

@@ -403,7 +403,7 @@ class APSIMNG():
             if i in table_list:
                 table_list.remove(i)
                 # start selecting tables
-        print(table_list)
+
         select_template = 'SELECT * FROM {table_list}'
 
         # create data fram dictionary to keep all the tables

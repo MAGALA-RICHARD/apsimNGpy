@@ -33,6 +33,7 @@ try:
     print(apsim_path)
     if apsim_path is not None:
         sys.path.append(apsim_path)
+        clr.AddReference("Models")
 except:
     print("Looking for APSIM")
     apsim_path = shutil.which("Models")

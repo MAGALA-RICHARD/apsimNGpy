@@ -54,7 +54,7 @@ import Models
 from Models.PMF import Cultivar
 import threading
 import time
-from settings import *
+
 
 
 # decorator to monitor performance

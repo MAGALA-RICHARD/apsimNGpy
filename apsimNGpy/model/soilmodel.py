@@ -47,7 +47,7 @@ from Models.PMF import Cultivar
 import threading
 import time
 from apsimNGpy.model.apsimpy import APSIMNG
-from settings import *
+#from settings import * This file is not ready and i wanted to do some test
 
 
 # decorator to monitor performance

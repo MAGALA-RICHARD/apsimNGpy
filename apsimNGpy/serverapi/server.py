@@ -16,7 +16,7 @@ from pathlib import Path
 import apsimNGpy.manager.weathermanager as weather
 from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganizeAPSIMsoil_profile
 from apsimNGpy.utililies.pythonet_config import get_apsimx_model_path, get_apsim_path
-
+import pythonnet
 try:
     if pythonnet.get_runtime_info() is None:
         pythonnet.load("coreclr")

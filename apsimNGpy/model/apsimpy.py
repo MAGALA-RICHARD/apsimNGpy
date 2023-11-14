@@ -13,9 +13,12 @@ from os.path import join as opj
 import sqlite3
 import json
 from pathlib import Path
+from os.path import realpath
 import apsimNGpy.manager.weathermanager as weather
 from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganizeAPSIMsoil_profile
 from apsimNGpy.utililies.pythonet_config import get_apsimx_model_path, get_apsim_path
+
+# To do not remove this code importing pythonnet atleast for now until a solution is found
 import pythonnet
 try:
     if pythonnet.get_runtime_info() is None:
@@ -26,17 +29,17 @@ except:
 
 import clr
 try:
-    clr.AddReference("Models")
+    apsim_path = realpath(get_apsimx_model_path())
+    print(apsim_path)
+    if apsim_path is not None:
+        sys.path.append(apsim_path)
 except:
     print("Looking for APSIM")
     apsim_path = shutil.which("Models")
-    if apsim_path is not None:
-        apsim_path = os.path.split(os.path.realpath(apsim_path))[0]
-        sys.path.append(apsim_path)
+
     clr.AddReference("Models")
 
 clr.AddReference("System")
-
 from System.Collections.Generic import *
 from Models.Core import Simulations
 from System import *

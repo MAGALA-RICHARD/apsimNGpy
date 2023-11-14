@@ -27,7 +27,7 @@ except:
 
 import clr
 from os.path import realpath
-sys.exit(0)
+
 apsim_path = realpath(get_apsimx_model_path())
 if apsim_path is not None:
         sys.path.append(apsim_path)

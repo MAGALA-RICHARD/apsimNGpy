@@ -1,5 +1,5 @@
 """
-Interface to APSIM simulation models using Python.NET build on top of Matti Pastell farmingpy framework.
+ttt
 """
 import matplotlib.pyplot as plt
 import random, logging, pathlib

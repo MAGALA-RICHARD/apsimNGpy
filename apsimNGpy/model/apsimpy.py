@@ -1,39 +1,38 @@
 """
-Interface to APSIM simulation models using Python.NET build on top of Matti Pastell farmingpy framework.
+Interface to APSIM simulation models using Python.NET
+author: Richard Magala
+email: magalarich20@gmail.com
+
 """
 import matplotlib.pyplot as plt
 import random, logging, pathlib
 import string
 from typing import Union
-import pythonnet
-import os, sys, datetime, shutil, warnings
+import os, sys, datetime, shutil
 import numpy as np
 import pandas as pd
 from os.path import join as opj
 import sqlite3
 import json
 from pathlib import Path
-from os.path import realpath
+import threading
+import time
 import apsimNGpy.manager.weathermanager as weather
-from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganizeAPSIMsoil_profile
-from apsimNGpy.utililies.pythonet_config import get_apsimx_model_path, LoadPythonnet
+from apsimNGpy.utililies.pythonet_config import LoadPythonnet
+
 py_config = LoadPythonnet()
 py_config.start_pythonnet()
 mod = py_config.load_apsim_model()
-
+# now we can safely import C# libraries
 from System.Collections.Generic import *
 from Models.Core import Simulations
 from System import *
-from Models.PMF import Cultivar
-from Models import Options
 from Models.Core.ApsimFile import FileFormat
 from Models.Climate import Weather
-from Models.Soils import Solute, Water, Chemical
 from Models.Soils import Soil, Physical, SoilCrop, Organic
 import Models
 from Models.PMF import Cultivar
-import threading
-import time
+
 
 
 # from settings import * This file is not ready and i wanted to do some test
@@ -160,7 +159,7 @@ class APSIMNG():
                                                                                                   True, fileName=fn)
 
         except Exception as e:
-            logger.exception(repr(e))  # this error will be logged to the folder logs in the current working directory
+            print(repr(e))  # this error will be logged to the folder logs in the current working directory
             raise
         self.datastore = self.Model.FindChild[Models.Storage.DataStore]().FileName
         self._DataStore = self.Model.FindChild[Models.Storage.DataStore]()
@@ -172,7 +171,7 @@ class APSIMNG():
                 raise ValueError("file path is missing apsim extention. did you forget to include .apsimx extension")
             self.Model = FileFormat.ReadFromFile[Models.Core.Simulations](path, None, False)
         except Exception as e:
-            logger.exception(repr(e))  # this error will be logged to the folder logs in the current working directory
+            print(repr(e))  # this error will be logged to the folder logs in the current working directory
             print('reading from clone\n----ignore error-----')
             self.Model = self.load_apsimx_from_string(path)
             raise
@@ -192,7 +191,7 @@ class APSIMNG():
             else:
                 self.Model = FileFormat.ReadFromFile[Models.Core.Simulations](path, None, False)
         except Exception as e:
-            logger.exception(repr(e))  # this error will be logged to the folder logs in the current working directory
+            print(repr(e))  # this error will be logged to the folder logs in the current working directory
             raise
         self.datastore = self.Model.FindChild[Models.Storage.DataStore]().FileName
         self._DataStore = self.Model.FindChild[Models.Storage.DataStore]()
@@ -346,7 +345,7 @@ class APSIMNG():
         return list(zones)
 
     @property  #
-    def extract_report_names(self, report_name=None):
+    def extract_report_names(self):
         ''' returns all data frame the available report tables'''
         with sqlite3.connect(self.datastore) as conn:
 
@@ -767,29 +766,6 @@ class APSIMNG():
                 self._load_apsimx(self.path)
         return self
 
-    def wupdate_multiple_management_decisions(self, management_list, simulations=None, reload=False):
-        simulations = self.find_simulations(simulations)
-        for sim in simulations:
-            zone = sim.FindChild[Models.Core.Zone]()
-            managers = zone.FindAllChildren[Models.Manager]()
-
-            for action in managers:
-                matching_management = next((m for m in management_list if m["Name"] == action.Name), None)
-                if matching_management:
-                    for i, param in enumerate(list(action.Parameters)):
-                        if param.Key in matching_management:
-                            fvalue = str(matching_management[param.Key])
-                            action.Parameters[i] = KeyValuePair[String, String](param.Key, fvalue)
-
-            if reload:
-                self.save_edited_file()
-
-            if self.out_path:
-                self._load_apsimx(self.out_path)
-            else:
-                self._load_apsimx(self.path)
-
-        return self
 
     def show_file_in_APSIM_GUI(self):
         os.startfile(self.path)
@@ -1337,3 +1313,5 @@ def load_apsimx(pathstring):
     model = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](string_name, None, False,
                                                                                      fileName=fn)
     return model
+if __name__ == '__main__':
+    ap =APSIMNG(r'C:/base.apsimx') # for me only

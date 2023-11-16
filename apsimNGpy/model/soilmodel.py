@@ -1,56 +1,27 @@
 """
-Interface to APSIM simulation models using Python.NET build on top of Matti Pastell farmingpy framework.
+Interface to APSIM simulation models using Python.NET
 """
-import matplotlib.pyplot as plt
-import random, logging, pathlib
-import string
+import logging, pathlib
 from typing import Union
-import pythonnet
-import os, sys, datetime, shutil, warnings
+import os
 import numpy as np
-import pandas as pd
-from os.path import join as opj
-import sqlite3
-import json
-
 import apsimNGpy.manager.weathermanager as weather
 from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganizeAPSIMsoil_profile
-from apsimNGpy.utililies.pythonet_config import get_apsimx_model_path
-# please do not remove this code until a solution is found
-import pythonnet
-
-try:
-    if pythonnet.get_runtime_info() is None:
-        pythonnet.load("coreclr")
-except:
-    print("dotnet not found ,trying alternate runtime")
-    pythonnet.load()
-
-import clr
-from os.path import realpath
-
-apsim_path = realpath(get_apsimx_model_path())
-if apsim_path is not None:
-    sys.path.append(apsim_path)
-    clr.AddReference("Models")
-clr.AddReference("System")
+from apsimNGpy.utililies.pythonet_config import get_apsimx_model_path, LoadPythonnet
+py_config = LoadPythonnet()
+py_config.start_pythonnet()
+mod = py_config.load_apsim_model()
+# now we can safely import any c# related libraries
 from System.Collections.Generic import *
 from Models.Core import Simulations
 from System import *
-from Models.PMF import Cultivar
-from Models import Options
-from Models.Core.ApsimFile import FileFormat
-from Models.Climate import Weather
 from Models.Soils import Solute, Water, Chemical
 from Models.Soils import Soil, Physical, SoilCrop, Organic
 import Models
-from Models.PMF import Cultivar
-import threading
 import time
 from apsimNGpy.model.apsimpy import APSIMNG
 
-# from settings import * This file is not ready and i wanted to do some test
-
+# constants
 REPORT_PATH = {'Carbon': '[Soil].Nutrient.TotalC/1000 as dyn', 'DUL': '[Soil].SoilWater.PAW as paw', 'N03':
     '[Soil].Nutrient.NO3.ppm as N03'}
 
@@ -69,10 +40,10 @@ def timing_decorator(func):
 
 
 class SoilModel(APSIMNG):
-    def __init__(self, model: Union[str, Simulations], copy=False, out_path=None, read_from_string=True,
+    def __init__(self, model: Union[str, Simulations], copy:bool=False, out_path: str=None, read_from_string=True,
                  lonlat=None,
-                 soil_series='domtcp', thickness=20, bottomdepth=200, thickness_values=None, run_all_soils=False):
-        super().__init__(model)
+                 soil_series: str='domtcp', thickness: int=20, bottomdepth:int=200, thickness_values: list=None, run_all_soils: bool =False):
+        super().__init__(model, read_from_string)
         """get suurgo soil tables and organise it to apsim soil profiles
         --------------------
         parameters

@@ -17,7 +17,7 @@ class ApsimModel():
         self.model.Model.FileName = None
         self.model.Model.datastore = None
         self.model.clear()
-
+#todo add flexibility to excute many other soilmodel methordor add other methods
 
 @contextmanager
 def apsim_model_context(model, copy=True):

@@ -940,23 +940,7 @@ class APSIMNG():
         for weather in self.Model.FindAllDescendants[Weather]():
             return weather.FileName
 
-    def change_report_variables(self, report, simulations=None):
-        """
-        Set APSIM report
-
-        Parameters
-        ----------
-        report
-            New report string.
-        simulations, optional
-            List of simulation names to update, if `None` update all simulations
-        """
-        simulations = self.find_simulations(simulations)
-        for sim in simulations:
-            r = sim.FindDescendant[Models.Report]()
-            r.set_VariableNames(report.strip().splitlines())
-
-    def change_report(self, command: str, report_name = 'Report', simulations=None):
+    def change_report(self, command: str, report_name='Report', simulations=None):
         """
             Set APSIM report variables for specified simulations.
 
@@ -1278,7 +1262,7 @@ class APSIMNG():
         self.Model = None
         self._DataStore = None
         self.datastore = None
-        #self.results = None
+        # self.results = None
         self.file_name = None
         return self
 

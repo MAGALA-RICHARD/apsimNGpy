@@ -1042,6 +1042,21 @@ class APSIMNG():
             organic_soil = soil_object.FindDescendant[Organic]()
             return organic_soil
 
+    def _extract_solute(self, simulation=None):
+        sim = self._find_simulation(simulation)
+        solutes = sim.FindAllDescendants[Models.Soils.Solute]()
+        return solutes
+
+    def extract_any_solute(self, parameter: str, simulation=None):
+        solutes = self._extract_solute(simulation)
+        sol = getattr(solutes, parameter)
+        return list(sol)
+
+    def replace_any_solute(self, parameter: str, values: list, simulation=None):
+        solutes = self._extract_solute(simulation)
+        setattr(solutes, parameter, values)
+
+
     def extract_any_soil_organic(self, parameter, simulation=None):
         """extracts any specified soil  parameters in the simulation
 

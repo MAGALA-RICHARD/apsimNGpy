@@ -2,14 +2,16 @@ import os.path
 from importlib.resources import files
 from os.path import join, realpath, dirname, exists, split, basename
 from os import listdir, walk, getcwd, mkdir
-from apsimNGpy.model.soilmodel import SoilModel
 import shutil
-from apsimNGpy.utililies.pythonet_config import get_apsim_path
-
+from apsimNGpy.utililies.pythonet_config import get_apsim_path, LoadPythonnet
+conf = LoadPythonnet()
+conf.start_pythonnet()
+conf.load_apsim_model()
+from apsimNGpy.model.soilmodel import SoilModel
 from pathlib import Path
 from functools import cache
 import glob
-
+print('me')
 wp = 'NewMetrrr.met'
 
 

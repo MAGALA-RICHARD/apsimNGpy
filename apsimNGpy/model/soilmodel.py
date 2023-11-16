@@ -427,5 +427,5 @@ class SoilModel(APSIMNG):
             dul = ll + df_sel
             dul = list(np.array(dul).flatten())
             self.replace_any_soil_physical(spin_var, dul)
-            self.run()
+
             return self

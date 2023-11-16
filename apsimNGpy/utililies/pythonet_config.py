@@ -3,11 +3,13 @@ import os
 from pathlib import Path
 from functools import cache
 import shutil
+import json
+from os.path import realpath
+
 
 def _is_runtime(self):
     rt = pythonnet.get_runtime_info()
     return rt is not None
-
 
 
 @cache
@@ -23,6 +25,7 @@ def is_executable_on_path(name):
     """
     executable_path = shutil.which(name)
     return executable_path is not None
+
 
 @cache
 def _is_apsimx_installed():
@@ -122,6 +125,7 @@ class NotFound:
         Raises:
         - ValueError: If the entered path is invalid or doesn't contain the 'bin' folder.
         """
+
     def __init__(self):
         pass
 
@@ -149,4 +153,22 @@ def get_apsim_path():
         if path:
             return path
 
+
+apsim_config = {}
+
+
+def _dumper(obj):
+    try:
+        return obj.toJSON()
+    except:
+        return obj.__dict__
+
+
+apsim_config['APSIM'] = realpath(get_apsim_path())
+
+# this creates a json file with the path
+apsim_json = realpath(Path.home().joinpath('apsimNGpy.json'))
+obj = json.dumps(apsim_config, default=_dumper, indent=2)
+with open(apsim_json, 'w+') as f:
+    f.writelines(obj)
 

@@ -379,7 +379,7 @@ class SoilModel(APSIMNG):
         self.results = self._read_simulation()  # still wondering if this should be a static method
         return self.results
 
-    def spin_up(self, report_name='Report', start=None, end=None, spin_var="Carbon"):
+    def spin_up(self, report_name: str = 'Report', start=None, end=None, spin_var="Carbon"):
         insert_var = REPORT_PATH.get(spin_var)
         if start and end:
             self.change_simulation_dates(start, end)

@@ -9,13 +9,44 @@ import shutil
 import sqlite3
 import sys
 import warnings
+import pythonnet
+from apsimNGpy.utililies.pythonet_config import get_apsimx_model_path
+apsim_model = get_apsimx_model_path()
+try:
+    if pythonnet.get_runtime_info() is None:
+        pythonnet.load("coreclr")
+except:
+    print("dotnet not found ,trying alternate runtime")
+    pythonnet.load()
+
+import clr
+from os.path import realpath
+
+apsim_path = realpath(get_apsimx_model_path())
+if apsim_path is not None:
+    sys.path.append(apsim_path)
+    clr.AddReference("Models")
+clr.AddReference("System")
+from System.Collections.Generic import *
+from Models.Core import Simulations
+from System import *
+from Models.PMF import Cultivar
+from Models import Options
+from Models.Core.ApsimFile import FileFormat
+from Models.Climate import Weather
+from Models.Soils import Solute, Water, Chemical
+from Models.Soils import Soil, Physical, SoilCrop, Organic
+import Models
+from Models.PMF import Cultivar
+import threading
+import time
 import Models
 from System import *
 from collections import namedtuple
 import json
 from System.Collections.Generic import *
 
-from settings import *
+#from settings import * not needed in this module
 
 FAILED_RUNS = []
 

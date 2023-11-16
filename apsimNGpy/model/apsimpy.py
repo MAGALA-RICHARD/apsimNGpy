@@ -20,6 +20,7 @@ from apsimNGpy.utililies.pythonet_config import get_apsimx_model_path, get_apsim
 
 # To do not remove this code importing pythonnet atleast for now until a solution is found
 import pythonnet
+
 try:
     if pythonnet.get_runtime_info() is None:
         pythonnet.load("coreclr")
@@ -28,6 +29,7 @@ except:
     pythonnet.load()
 
 import clr
+
 try:
     apsim_path = realpath(get_apsimx_model_path())
     print(apsim_path)
@@ -54,7 +56,9 @@ import Models
 from Models.PMF import Cultivar
 import threading
 import time
-#from settings import * This file is not ready and i wanted to do some test
+
+
+# from settings import * This file is not ready and i wanted to do some test
 
 
 # decorator to monitor performance
@@ -928,7 +932,7 @@ class APSIMNG():
                 for met in weathers:
                     met.FileName = weather_file
         except Exception as e:
-            logger.exception(repr(e))  # this error will be logged to the folder logs in the current working directory
+            print(repr(e))  # this error will be logged to the folder logs in the current working directory
             raise
 
     def show_met_file_in_simulation(self):
@@ -937,7 +941,8 @@ class APSIMNG():
             return weather.FileName
 
     def change_report_variables(self, report, simulations=None):
-        """Set APSIM report
+        """
+        Set APSIM report
 
         Parameters
         ----------
@@ -950,6 +955,33 @@ class APSIMNG():
         for sim in simulations:
             r = sim.FindDescendant[Models.Report]()
             r.set_VariableNames(report.strip().splitlines())
+
+    def change_report(self, command: str, report_name = 'Report', simulations=None):
+        """
+            Set APSIM report variables for specified simulations.
+
+        This function allows you to set the variable names for an APSIM report
+        in one or more simulations.
+
+        Parameters
+        ----------
+        command : str
+            The new report string that contains variable names.
+        report_name : str
+            The name of the APSIM report to update defaults to Report.
+        simulations : list of str, optional
+            A list of simulation names to update. If `None`, the function will
+            update the report for all simulations.
+
+        Returns
+        -------
+        None
+        """
+        simulations = self.find_simulations(simulations)
+        for sim in simulations:
+            i_enum = sim.FindAllDescendants[Models.Report](report_name)
+            for rep in i_enum:
+                rep.set_VariableNames(command.strip().splitlines())
 
     def get_report(self, simulation=None):
         """Get current report string

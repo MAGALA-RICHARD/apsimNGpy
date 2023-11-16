@@ -1278,7 +1278,7 @@ class APSIMNG():
         self.Model = None
         self._DataStore = None
         self.datastore = None
-        self.results = None
+        #self.results = None
         self.file_name = None
         return self
 

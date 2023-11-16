@@ -199,7 +199,6 @@ try:
     pat = os.environ['APSIM']
 except KeyError:
     pat = get_apsim_path()
-
 if pat:
     apsim = os.path.dirname(pat)
     examples = join(apsim, 'Examples')

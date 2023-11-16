@@ -6,7 +6,7 @@ import shutil
 import json
 from os.path import realpath
 from dataclasses import dataclass
-
+import sys
 def _is_runtime(self):
     rt = pythonnet.get_runtime_info()
     return rt is not None
@@ -171,7 +171,7 @@ apsim_json = realpath(Path.home().joinpath('apsimNGpy.json'))
 obj = json.dumps(apsim_config, default=_dumper, indent=2)
 with open(apsim_json, 'w+') as f:
     f.writelines(obj)
-
+import pythonnet
 @dataclass()
 class LoadPythonnet:
     import pythonnet
@@ -185,9 +185,20 @@ class LoadPythonnet:
     def load_apsim_model(self):
         self.start_pythonnet()
         apsim_path = os.environ.get("APSIM")
+        if 'bin' not in apsim_path:
+            apsim_path = os.path.join(apsim_path, 'bin')
+            if not os.path.exists(apsim_path):
+                raise ValueError("Please a full path to the binary folder is required or path is invalid")
         print(apsim_path)
         sys.path.append(apsim_path)
         import clr
         sy = clr.AddReference("System")
-        lm= clr.AddReference("Models")
-        print(lm)
+        lm= clr.AddReference("Models.dll")
+
+
+py = LoadPythonnet()
+py.start_pythonnet()
+apsim_path = os.environ.get("APSIM")
+tm = os.path.join(apsim_path, 'Models.dll')
+
+py.load_apsim_model()

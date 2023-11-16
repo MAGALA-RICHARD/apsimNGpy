@@ -3,13 +3,13 @@ from scipy.optimize import minimize, least_squares
 from apsimNGpy.validation.evaluator import validate
 from apsimNGpy.model.soilmodel import SoilModel as ApsimSoil
 from pathlib import Path
-from apsimNGpy.base_data import load_example_files
+from apsimNGpy.base.base_data import LoadExampleFiles
 import pandas as pd
 import time
 
 # =============================================================================================================
 cwd = Path.cwd()
-data = load_example_files(cwd)
+data = LoadExampleFiles(cwd)
 file = data.get_maize
 observed_yield = pd.read_csv("observed_yield_prototype.csv")
 observed_yield = observed_yield.Yield

@@ -18,6 +18,7 @@ from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganizeAPSIM
 from apsimNGpy.utililies.pythonet_config import get_apsimx_model_path
 # please do not remove this code until a solution is found
 import pythonnet
+
 try:
     if pythonnet.get_runtime_info() is None:
         pythonnet.load("coreclr")
@@ -30,8 +31,8 @@ from os.path import realpath
 
 apsim_path = realpath(get_apsimx_model_path())
 if apsim_path is not None:
-        sys.path.append(apsim_path)
-        clr.AddReference("Models")
+    sys.path.append(apsim_path)
+    clr.AddReference("Models")
 clr.AddReference("System")
 from System.Collections.Generic import *
 from Models.Core import Simulations
@@ -47,10 +48,13 @@ from Models.PMF import Cultivar
 import threading
 import time
 from apsimNGpy.model.apsimpy import APSIMNG
-#from settings import * This file is not ready and i wanted to do some test
+
+# from settings import * This file is not ready and i wanted to do some test
 
 REPORT_PATH = {'Carbon': '[Soil].Nutrient.TotalC/1000 as dyn', 'DUL': '[Soil].SoilWater.PAW as paw', 'N03':
-               '[Soil].Nutrient.NO3.ppm as N03'}
+    '[Soil].Nutrient.NO3.ppm as N03'}
+
+
 # decorator to monitor performance
 def timing_decorator(func):
     def wrapper(*args, **kwargs):
@@ -62,6 +66,7 @@ def timing_decorator(func):
         return result
 
     return wrapper
+
 
 class SoilModel(APSIMNG):
     def __init__(self, model: Union[str, Simulations], copy=False, out_path=None, read_from_string=True,
@@ -255,7 +260,6 @@ class SoilModel(APSIMNG):
         return self
         # print(self.results)
 
-
     def replace_downloaded_soils(self, soil_tables, simulation_names):  # unique for my project
         self.thickness_replace = self.thickness_values
         physical_calculated = soil_tables[0]
@@ -421,7 +425,7 @@ class SoilModel(APSIMNG):
             new_carbon = [i for i in np.array(per).flatten()]
             self.replace_any_soil_organic(spin_var, new_carbon)
         if spin_var == 'DUL':
-            assert 'PAW' in insert_var, "wrong report variable path: '{0}' supplied according to requested spin up var"\
+            assert 'PAW' in insert_var, "wrong report variable path: '{0}' supplied according to requested spin up var" \
                 .format(insert_var)
             ll = np.array(self.extract_any_soil_physical("LL15"))
             dul = ll + df_sel

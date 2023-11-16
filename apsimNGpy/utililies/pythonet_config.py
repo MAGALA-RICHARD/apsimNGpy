@@ -5,7 +5,7 @@ from functools import cache
 import shutil
 import json
 from os.path import realpath
-
+from dataclasses import dataclass
 
 def _is_runtime(self):
     rt = pythonnet.get_runtime_info()
@@ -172,3 +172,22 @@ obj = json.dumps(apsim_config, default=_dumper, indent=2)
 with open(apsim_json, 'w+') as f:
     f.writelines(obj)
 
+@dataclass()
+class LoadPythonnet:
+    import pythonnet
+    def start_pythonnet(self):
+        try:
+            if pythonnet.get_runtime_info() is None:
+               return pythonnet.load("coreclr")
+        except:
+            print("dotnet not found ,trying alternate runtime")
+            return pythonnet.load()
+    def load_apsim_model(self):
+        self.start_pythonnet()
+        apsim_path = os.environ.get("APSIM")
+        print(apsim_path)
+        sys.path.append(apsim_path)
+        import clr
+        sy = clr.AddReference("System")
+        lm= clr.AddReference("Models")
+        print(lm)

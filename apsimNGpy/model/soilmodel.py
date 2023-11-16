@@ -49,7 +49,8 @@ import time
 from apsimNGpy.model.apsimpy import APSIMNG
 #from settings import * This file is not ready and i wanted to do some test
 
-
+REPORT_PATH = {'Carbon': '[Soil].Nutrient.TotalC/1000 as dyn', 'DUL': '[Soil].SoilWater.PAW as paw', 'N03':
+               '[Soil].Nutrient.NO3.ppm as N03'}
 # decorator to monitor performance
 def timing_decorator(func):
     def wrapper(*args, **kwargs):
@@ -377,3 +378,32 @@ class SoilModel(APSIMNG):
             print(data_run[0].ToString())
         self.results = self._read_simulation()  # still wondering if this should be a static method
         return self.results
+
+    def spin_up(self, report_name='Report', start=None, end=None, spin_var="Carbon"):
+        insert_var = REPORT_PATH.get(spin_var)
+        if start and end:
+            self.change_simulation_dates(start, end)
+        THICKNESS = self.extract_any_soil_physical("Thickness")
+        th = np.array(THICKNESS)
+        self.change_report(insert_var, report_name=report_name)
+        rpn = insert_var.split(" ")[-1]
+        self.run()
+        DF = self.results[report_name]
+        df_sel = DF.filter(regex=r'^{0}'.format(rpn), axis=1)
+        if spin_var == 'Carbon':
+            assert 'TotalC' in insert_var, "wrong report variable path: '{0}' supplied according to requested spin up " \
+                                           "var".format(insert_var)
+            bd = np.array(self.extract_any_soil_physical("BD"))
+            cf = bd * th / 10  # this convert to percentage
+            per = df_sel / cf
+            new_carbon = [i for i in np.array(per).flatten()]
+            self.replace_any_soil_organic(spin_var, new_carbon)
+        if spin_var == 'DUL':
+            assert 'PAW' in insert_var, "wrong report variable path: '{0}' supplied according to requested spin up var"\
+                .format(insert_var)
+            ll = np.array(self.extract_any_soil_physical("LL15"))
+            dul = ll + df_sel
+            dul = list(np.array(dul).flatten())
+            self.replace_any_soil_physical(spin_var, dul)
+            self.run()
+            return self

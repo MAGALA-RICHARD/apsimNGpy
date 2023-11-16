@@ -236,11 +236,7 @@ class validate(Metrics):
         return all
 
 
-<<<<<<< Updated upstream
-# Test
 
-=======
->>>>>>> Stashed changes
 if __name__ == "__main__":
     x_data = np.array([1.2, 2.4, 3.6, 4.8, 5.0])
     y_data = np.array([2.0, 3.5, 4.2, 5.7, 6.0])

@@ -1,5 +1,7 @@
 """
 Interface to APSIM simulation models using Python.NET
+author: Richard Magala
+email: magalarich20@gmail.com
 """
 import logging, pathlib
 from typing import Union

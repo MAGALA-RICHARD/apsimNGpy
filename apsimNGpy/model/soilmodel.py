@@ -380,6 +380,28 @@ class SoilModel(APSIMNG):
         return self.results
 
     def spin_up(self, report_name: str = 'Report', start=None, end=None, spin_var="Carbon"):
+        """
+        Perform a spin-up operation on the APSIM model.
+
+        This method is used to simulate a spin-up operation in an APSIM model. During a spin-up, various soil properties or
+        variables may be adjusted based on the simulation results.
+
+        Parameters:
+        ----------
+        report_name : str, optional (default: 'Report')
+            The name of the APSIM report to be used for simulation results.
+        start : str, optional
+            The start date for the simulation (e.g., '01-01-2023'). If provided, it will change the simulation start date.
+        end : str, optional
+            The end date for the simulation (e.g., '3-12-2023'). If provided, it will change the simulation end date.
+        spin_var : str, optional (default: 'Carbon'). the difference between the start and end date will determine the spin-up period
+            The variable representing the type of spin-up operation. Supported values are 'Carbon' or 'DUL'.
+
+        Returns:
+        -------
+        self : ApsimModel
+            The modified ApsimModel object after the spin-up operation.
+        """
         insert_var = REPORT_PATH.get(spin_var)
         if start and end:
             self.change_simulation_dates(start, end)

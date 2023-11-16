@@ -18,11 +18,13 @@ from pathlib import Path
 import threading
 import time
 import apsimNGpy.manager.weathermanager as weather
-from apsimNGpy.utililies.pythonet_config import LoadPythonnet
 
+# prepare for the C# import
+from apsimNGpy.utililies.pythonet_config import LoadPythonnet
 py_config = LoadPythonnet()
 py_config.start_pythonnet()
 mod = py_config.load_apsim_model()
+
 # now we can safely import C# libraries
 from System.Collections.Generic import *
 from Models.Core import Simulations

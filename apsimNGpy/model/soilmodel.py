@@ -7,12 +7,16 @@ import logging, pathlib
 from typing import Union
 import os
 import numpy as np
+import time
 import apsimNGpy.manager.weathermanager as weather
 from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganizeAPSIMsoil_profile
+
+# prepare for the C# import
 from apsimNGpy.utililies.pythonet_config import get_apsimx_model_path, LoadPythonnet
 py_config = LoadPythonnet()
 py_config.start_pythonnet()
 mod = py_config.load_apsim_model()
+
 # now we can safely import any c# related libraries
 from System.Collections.Generic import *
 from Models.Core import Simulations
@@ -20,7 +24,7 @@ from System import *
 from Models.Soils import Solute, Water, Chemical
 from Models.Soils import Soil, Physical, SoilCrop, Organic
 import Models
-import time
+
 from apsimNGpy.model.apsimpy import APSIMNG
 
 # constants

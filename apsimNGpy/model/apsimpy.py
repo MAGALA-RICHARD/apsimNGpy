@@ -16,33 +16,11 @@ from pathlib import Path
 from os.path import realpath
 import apsimNGpy.manager.weathermanager as weather
 from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganizeAPSIMsoil_profile
-from apsimNGpy.utililies.pythonet_config import get_apsimx_model_path, get_apsim_path
+from apsimNGpy.utililies.pythonet_config import get_apsimx_model_path, LoadPythonnet
+py_config = LoadPythonnet()
+py_config.start_pythonnet()
+mod = py_config.load_apsim_model()
 
-# To do not remove this code importing pythonnet atleast for now until a solution is found
-import pythonnet
-
-try:
-    if pythonnet.get_runtime_info() is None:
-        pythonnet.load("coreclr")
-except:
-    print("dotnet not found ,trying alternate runtime")
-    pythonnet.load()
-
-import clr
-
-try:
-    apsim_path = realpath(get_apsimx_model_path())
-    print(apsim_path)
-    if apsim_path is not None:
-        sys.path.append(apsim_path)
-        clr.AddReference("Models")
-except:
-    print("Looking for APSIM")
-    apsim_path = shutil.which("Models")
-
-    clr.AddReference("Models")
-
-clr.AddReference("System")
 from System.Collections.Generic import *
 from Models.Core import Simulations
 from System import *

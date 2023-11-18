@@ -960,7 +960,7 @@ class APSIMNG():
             organic_soil = soil_object.FindDescendant[Organic]()
             return organic_soil
 
-   ## find the solute node in the simulation
+    ## find the solute node in the simulation
     def _extract_solute(self, simulation=None):
         sim = self._find_simulation(simulation)
         solutes = sim.FindAllDescendants[Models.Soils.Solute]()
@@ -1269,9 +1269,11 @@ class APSIMNG():
         """
         self._set_initial_values("Urea", values, simulations)
         # inherit properties from the ancestors apsimng object
+
     @property
     def wd(self):
         return os.getcwd()
+
 
 class ApsiMet(APSIMNG):
     def __init__(self, model: Union[str, Simulations], copy=True, out_path=None, lonlat=None, simulation_names=None):
@@ -1290,14 +1292,13 @@ class ApsiMet(APSIMNG):
         self.replace_met_file(wp, sim_name)
 
 
-
-
-
 if __name__ == '__main__':
-    #test
+    # test
     from pathlib import Path
+
     os.chdir(Path.home())
     from apsimNGpy.base.base_data import LoadExampleFiles
+
     al = LoadExampleFiles(Path.cwd())
     model = al.get_maize
     model = APSIMNG(model)

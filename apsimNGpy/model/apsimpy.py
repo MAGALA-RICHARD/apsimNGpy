@@ -21,6 +21,7 @@ import apsimNGpy.manager.weathermanager as weather
 
 # prepare for the C# import
 from apsimNGpy.utililies.pythonet_config import LoadPythonnet
+
 py_config = LoadPythonnet()
 py_config.start_pythonnet()
 mod = py_config.load_apsim_model()
@@ -34,7 +35,6 @@ from Models.Climate import Weather
 from Models.Soils import Soil, Physical, SoilCrop, Organic
 import Models
 from Models.PMF import Cultivar
-
 
 
 # from settings import * This file is not ready and i wanted to do some test
@@ -132,7 +132,7 @@ class APSIMNG():
     def filename(self):
         self.file_name = os.path.basename(self.path)
         return self.file_name
-
+    # searches the simulations from aspsim models.core object
     @property
     def simulations(self):
         try:
@@ -148,9 +148,10 @@ class APSIMNG():
                 return (simus)
 
         except Exception as e:
-            logger.exception(repr(e))
-            raise
+            print(type(e), "occured")
+            raise Exception(type(e))
 
+    # loads the apsimx file into memory but from string
     def load_apsimx_from_string(self, path):
         try:
             with open(path, "r+") as apsimx:
@@ -167,6 +168,7 @@ class APSIMNG():
         self._DataStore = self.Model.FindChild[Models.Storage.DataStore]()
         self.version = self.Model.get_ApsimVersion()
 
+    # loads apsimx file from the computer into memory using its path
     def _load_apsimx(self, path):
         try:
             if not os.path.isfile(path):
@@ -768,7 +770,6 @@ class APSIMNG():
                 self._load_apsimx(self.path)
         return self
 
-
     def show_file_in_APSIM_GUI(self):
         os.startfile(self.path)
 
@@ -1011,7 +1012,6 @@ class APSIMNG():
     def replace_any_solute(self, parameter: str, values: list, simulation=None):
         solutes = self._extract_solute(simulation)
         setattr(solutes, parameter, values)
-
 
     def extract_any_soil_organic(self, parameter, simulation=None):
         """extracts any specified soil  parameters in the simulation
@@ -1315,5 +1315,7 @@ def load_apsimx(pathstring):
     model = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](string_name, None, False,
                                                                                      fileName=fn)
     return model
+
+
 if __name__ == '__main__':
-    ap =APSIMNG(r'C:/base.apsimx') # for me only
+    ap = APSIMNG(r'C:/base.apsimx')  # for me only

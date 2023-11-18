@@ -132,6 +132,7 @@ class APSIMNG():
     def filename(self):
         self.file_name = os.path.basename(self.path)
         return self.file_name
+
     # searches the simulations from aspsim models.core object
     @property
     def simulations(self):
@@ -203,7 +204,7 @@ class APSIMNG():
     def _reload_saved_file(self):
         self.save_edited_file(self.path)
 
-    def save_edited_file(self):
+    def save_edited_file(self, outpath=None):
         """Save the model
 
         Parameters
@@ -211,6 +212,8 @@ class APSIMNG():
         out_path, optional
             Path of output .apsimx file, by default `None`
         """
+        if outpath:
+            self.out_path = outpath
         if self.out_path is None:
             out_path = self.path
         else:
@@ -449,6 +452,10 @@ class APSIMNG():
             return dataframe_dict
 
     def _cultivar_params(self, cultivar):
+        """
+         returns all params in a cultivar
+        """
+
         cmd = cultivar.Command
         params = {}
         for c in cmd:
@@ -521,12 +528,7 @@ class APSIMNG():
             parameterName = 'CultivarName'
             print(f"default parameter name is: {parameterName} please change in it your manager script and try again")
 
-    @staticmethod
-    def examine_attributes(object):
-        at = dir(object)
-        for i in at:
-            print(i, "\n")
-
+    # summarise results by any statistical element
     @staticmethod
     def get_result_stat(df, column, statistic):
 
@@ -560,14 +562,11 @@ class APSIMNG():
         unique_name = base_name + '_' + random_suffix
         return unique_name
 
+    # clone apsimx file by generating unquie name
     def copy_apsim_file(self):
         path = os.getcwd()
         file_path = opj(path, self.generate_unique_name("clones")) + ".apsimx"
         shutil.copy(self.path, file_path)
-
-    def make_apsimx_clones(self, number=40):
-        self.clones = make_apsimx_clones(self.path, number)
-        return self
 
     def summarize_output_variable(self, var_name, table_name='Report'):
         data = self.results[table_name]
@@ -648,8 +647,8 @@ class APSIMNG():
                     for param in action.Parameters:
                         print("\t\t", param.Key, ":", param.Value)
         except Exception as e:
-            logger.exception(repr(e))
-            raise
+            print(repr(e))
+            raise Exception(repr(e))
 
     def update_management_decissions(self, management, simulations=None, reload=False):
         """Update management, handles one manager at a time
@@ -686,46 +685,6 @@ class APSIMNG():
             else:
                 self._load_apsimx(self.path)
         return self
-
-    def Update_management(self, management_list, simulations=None, reload=True):
-        import queue
-        if simulations is None:
-            simulations = self.extract_simulation_name
-
-        # Create a queue for managing items to be processed
-        manager_queue = queue.Queue()
-
-        # Put management items into the queue
-        for management in management_list:
-            manager_queue.put(management)
-
-        # Create and start worker threads
-        num_threads = len(management_list)
-        threads = []
-
-        for _ in range(num_threads):
-            thread = threading.Thread(
-                target=self.worker,
-                args=(manager_queue.get(), simulations, reload)
-            )
-            threads.append(thread)
-            thread.start()
-
-        # Wait for all worker threads to finish
-        for thread in threads:
-            thread.join()
-
-        if reload:
-            # Perform reload operations here
-            self.save_edited_file()
-            if self.out_path:
-                self._load_apsimx(self.out_path)
-            else:
-                self._load_apsimx(self.path)
-
-        return self
-
-    # Convert CS KeyValuePair to dictionary
 
     def update_multiple_management_decissions(self, management_list, simulations=None, reload=False):
         """Update management, handles multiple managers in a loop
@@ -770,9 +729,11 @@ class APSIMNG():
                 self._load_apsimx(self.path)
         return self
 
+    # immediately open the file in GUI
     def show_file_in_APSIM_GUI(self):
         os.startfile(self.path)
 
+    # dynamically saves the file and relaod into the system. in otherwords it compiles the scripts
     def dynamic_path_handler(self):
         self.save_edited_file()
         if self.out_path:
@@ -1005,11 +966,30 @@ class APSIMNG():
         return solutes
 
     def extract_any_solute(self, parameter: str, simulation=None):
+        """
+        Parameters
+        ____________________________________
+        parameter: parameter name e.g NO3
+        simulation, optional
+            Simulation name, if `None` use the first simulation.
+        returns
+        ___________________
+        the solute array or list
+        """
         solutes = self._extract_solute(simulation)
         sol = getattr(solutes, parameter)
         return list(sol)
 
     def replace_any_solute(self, parameter: str, values: list, simulation=None):
+        """# replaces with new solute
+
+        Parameters
+        ____________________________________
+        parameter: paramter name e.g NO3
+        values: new values as a list to replace the old ones
+        simulation, optional
+            Simulation name, if `None` use the first simulation.
+        """
         solutes = self._extract_solute(simulation)
         setattr(solutes, parameter, values)
 

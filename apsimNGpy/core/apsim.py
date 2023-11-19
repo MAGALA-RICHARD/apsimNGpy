@@ -44,7 +44,7 @@ def timing_decorator(func):
     return wrapper
 
 
-class SoilModel(APSIMNG):
+class ApsimModel(APSIMNG):
     def __init__(self, model: Union[str, Simulations], copy:bool=False, out_path: str=None, read_from_string=True,
                  lonlat=None,
                  soil_series: str='domtcp', thickness: int=20, bottomdepth:int=200, thickness_values: list=None, run_all_soils: bool =False):
@@ -419,4 +419,4 @@ if __name__ == '__main__':
 
     al = LoadExampleFiles(Path.cwd())
     model = al.get_maize
-    model = SoilModel(model, read_from_string = False)
+    model = ApsimModel(model, read_from_string = True)

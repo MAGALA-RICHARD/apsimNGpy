@@ -5,7 +5,7 @@ from os import listdir, walk, getcwd, mkdir
 import shutil
 from apsimNGpy.utililies.pythonet_config import get_apsim_path, LoadPythonnet
 conf = LoadPythonnet()()
-from apsimNGpy.core.apsim import SoilModel
+from apsimNGpy.core.apsim import ApsimModel
 from pathlib import Path
 from functools import cache
 

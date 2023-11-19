@@ -10,7 +10,8 @@ apsimx file editing, seamless weather data retrieval, and efficient soil profile
 Note
 ******************************************************************************************
 
-Due to changes to model structure, this library apparently is compatible wth APSIM VERSION '2022.12.7130.0' and below
+Because of alterations to the model structure, this library is currently compatible with APSIM VERSION '2022.12.7130.0' and earlier. We are actively 
+working to address this issue as quickly as possible.
 
 
 .. _Requirements

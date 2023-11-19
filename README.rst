@@ -5,7 +5,7 @@ apsimNGpy: The Next Generation Agroecosytem Simulation Library
 
 Our cutting-edge open-source framework, apsimNGpy, empowers advanced agroecosystem modeling through the utilization
 of object-oriented principles. It features fast batch file simulation, model prediction, evaluation,
-apsimx file editing, seamless weather data retrieval, and efficient soil profile development
+apsimx file editing, seamless weather data retrieval, and efficient soil profile development. Due to changes to model structure, this library apparently is compatible wth APSIM VERSION '2022.12.7130.0' and below
 
 
 .. _Requirements
@@ -44,6 +44,20 @@ All versions are currently in development, phase and they can be installed as fo
 
 If you have apsim installed and the program refuses to load run the following code at the top of your python script
 before importing any apsimNGpy class. The classes are  CamelCased.
+
+Add binary installation path
+1. windows
+- Open the Start Menu: Click the Start button and search for "Environment Variables."
+
+-Edit Environment Variables: Click on "Edit the system environment variables." This will open the "System Properties" window.
+
+-Open Environment Variables: In the "System Properties" window, click the "Environment Variables" button.
+
+-dit Path Variable: Under the "System variables" section, find the Path variable and select it. Click the "Edit" button.
+
+- Add New Path: In the "Edit Environment Variable" window, click the "New" under variable Name write APSIM, variable path insert the path to APSIM binary files installation path this path should look like this: pathonyourcompute/bin.
+
+- Save Changes: Click "OK" to close each window and save your changes.
 
 Required Dependencies:
 *****************************

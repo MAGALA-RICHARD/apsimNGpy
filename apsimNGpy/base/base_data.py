@@ -4,9 +4,7 @@ from os.path import join, realpath, dirname, exists, split, basename
 from os import listdir, walk, getcwd, mkdir
 import shutil
 from apsimNGpy.utililies.pythonet_config import get_apsim_path, LoadPythonnet
-conf = LoadPythonnet()
-conf.start_pythonnet()
-conf.load_apsim_model()
+conf = LoadPythonnet()()
 from apsimNGpy.model.soilmodel import SoilModel
 from pathlib import Path
 from functools import cache

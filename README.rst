@@ -48,10 +48,10 @@ All versions are currently in development, phase and they can be installed as fo
 
      pip install git+https://github.com/MAGALA-RICHARD/apsimNGpy.git
 
-If you have apsim installed and the program refuses to load run the following code at the top of your python script
-before importing any apsimNGpy class. The classes are  CamelCased.
 
-Add binary installation path
+Add APSIM binary installation path to system environmnetal variables 
+***********************************************************************************
+
 1. windows
 - Open the Start Menu: Click the Start button and search for "Environment Variables."
 

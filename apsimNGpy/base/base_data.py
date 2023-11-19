@@ -8,8 +8,8 @@ conf = LoadPythonnet()()
 from apsimNGpy.model.soilmodel import SoilModel
 from pathlib import Path
 from functools import cache
-import glob
-print('me')
+
+
 wp = 'NewMetrrr.met'
 
 
@@ -95,7 +95,7 @@ def _clean_up(path):
 
 
 class LoadExampleFiles():
-    def __init__(self, path):
+    def __init__(self, path = None):
         """
         LoadExampleFiles constructor.
 
@@ -105,7 +105,9 @@ class LoadExampleFiles():
         Raises:
         NameError: If the specified path does not exist.
         """
-        if not exists(path):
+        if path is None:
+            path = os.getcwd()
+        if path and not exists(path):
             raise NameError("entered path does not exists please try again, \n ============================")
         else:
             self.path = path
@@ -258,3 +260,4 @@ class DetectApsimExamples:
 
 
 ApsimExample = DetectApsimExamples()
+lm = LoadExampleFiles()

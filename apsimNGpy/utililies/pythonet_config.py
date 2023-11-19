@@ -8,6 +8,8 @@ from os.path import realpath
 from dataclasses import dataclass
 import pythonnet
 
+from apsimNGpy.utililies.utils import timer
+
 
 def _is_runtime(self):
     rt = pythonnet.get_runtime_info()
@@ -171,13 +173,34 @@ def _dumper(obj):
 
 apsim_config['APSIM'] = realpath(get_apsim_path())
 
+path = '../base/apsimNGpy.json'
+
+
 # this creates a json file with the path
-apsim_json = realpath(Path.home().joinpath('apsimNGpy.json'))
-obj = json.dumps(apsim_config, default=_dumper, indent=2)
-with open(apsim_json, 'w+') as f:
-    f.writelines(obj)
+def write_pathto_file(path):
+    path = '../base/apsimNGpy.json'
+    apsim_json = os.path.realpath(path)
+    obj = json.dumps(apsim_config, default=_dumper, indent=2)
+    with open(apsim_json, 'w+') as f:
+        f.writelines(obj)
+    return apsim_json
 
+@timer
+@cache
+def load_path_from_file(json_file_path):
+    try:
+        with open(json_file_path, 'r') as json_file:
+            data = json.load(json_file)
+        # Now 'data' contains the JSON data as a Python dictionary or list
+        print(data)
+    except FileNotFoundError:
+        print(f"File '{json_file_path}' not found.")
+    except json.JSONDecodeError as e:
+        print(f"Error decoding JSON: {str(e)}")
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
 
+load_path_from_file(path)
 @dataclass
 class LoadPythonnet:
     """
@@ -190,7 +213,7 @@ class LoadPythonnet:
     None
     """
 
-    def start_pythonnnet(self):
+    def start_pythonnet(self):
         try:
             if pythonnet.get_runtime_info() is None:
                 return pythonnet.load("coreclr")
@@ -223,7 +246,7 @@ class LoadPythonnet:
         # except:
         #     print("dotnet not found, trying alternate runtime")
         #     pythonnet.load()
-        self.start_pythonnnet()
+        self.start_pythonnet()
         # use get becuase it does not raise key error. it returns none if not found
         apsim_path = os.environ.get("APSIM")
         if not apsim_path:
@@ -249,7 +272,9 @@ def add_path(new_path):
         sys.path += [new_path]
         print(f"{new_path} successfully added to the system")
     else:
-       print("path is already added to the system")
+        print("path is already added to the system")
+
+
 # Example usage:
 if __name__ == '__main__':
     loader = LoadPythonnet()
@@ -257,4 +282,5 @@ if __name__ == '__main__':
     loaded_models = loader()
     import Models
     import System
+
     ap = get_apsim_path()

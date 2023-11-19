@@ -108,7 +108,7 @@ class LoadExampleFiles():
         if path is None:
             path = os.getcwd()
         if path and not exists(path):
-            raise NameError("entered path does not exists please try again, \n ============================")
+            raise Exception("entered path does not exists please try again, \n ============================")
         else:
             self.path = path
 
@@ -260,4 +260,3 @@ class DetectApsimExamples:
 
 
 ApsimExample = DetectApsimExamples()
-lm = LoadExampleFiles()

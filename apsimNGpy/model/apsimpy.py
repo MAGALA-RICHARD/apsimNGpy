@@ -912,7 +912,7 @@ class APSIMNG():
         Args:
             parameter (_string_): string e.g DUL, SAT
             simulation (string, optional): Targeted simulation name. Defaults to None.
-        -------------------------
+        ---------------------------------------------------------------------------
         returns an array of the parameter values
         """
         assert isinstance(parameter, str) == True, "Soil parameter name must be a string"
@@ -923,6 +923,7 @@ class APSIMNG():
     def replace_any_soil_physical(self, parameter, param_values, simulation=None):
         """relaces specified soil physical parameters in the simulation
 
+        ______________________________________________________
         Args:
             parameter (_string_, required): string e.g DUL, SAT. open APSIMX file in the GUI and examne the phyicals node for clues on the parameter names
             simulation (string, optional): Targeted simulation name. Defaults to None.

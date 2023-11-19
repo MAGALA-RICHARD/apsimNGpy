@@ -247,8 +247,9 @@ def add_path(new_path):
     import sys
     if not new_path in sys.path:
         sys.path += [new_path]
-
-
+        print(f"{new_path} successfully added to the system")
+    else:
+       print("path is already added to the system")
 # Example usage:
 if __name__ == '__main__':
     loader = LoadPythonnet()
@@ -256,3 +257,4 @@ if __name__ == '__main__':
     loaded_models = loader()
     import Models
     import System
+    ap = get_apsim_path()

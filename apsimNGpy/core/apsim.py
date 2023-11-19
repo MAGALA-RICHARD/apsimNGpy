@@ -24,7 +24,7 @@ from Models.Soils import Solute, Water, Chemical
 from Models.Soils import Soil, Physical, SoilCrop, Organic
 import Models
 
-from apsimNGpy.model.apsimpy import APSIMNG
+from apsimNGpy.core.core import APSIMNG
 
 # constants
 REPORT_PATH = {'Carbon': '[Soil].Nutrient.TotalC/1000 as dyn', 'DUL': '[Soil].SoilWater.PAW as paw', 'N03':
@@ -419,4 +419,4 @@ if __name__ == '__main__':
 
     al = LoadExampleFiles(Path.cwd())
     model = al.get_maize
-    model = APSIMNG(model, read_from_string = False)
+    model = SoilModel(model, read_from_string = False)

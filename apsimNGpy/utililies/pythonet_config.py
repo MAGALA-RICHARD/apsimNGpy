@@ -9,7 +9,6 @@ from dataclasses import dataclass
 import pythonnet
 
 
-
 def _is_runtime(self):
     rt = pythonnet.get_runtime_info()
     return rt is not None
@@ -143,18 +142,19 @@ class NotFound:
         else:
             raise ValueError(f"entered path: '{pat}' not found")
 
-@cache
-def find():
-    m1 = ShutilMethod()
-    m2 = OsMethod()
-    m3 = NotFound()
-    return [m1, m2, m3]
 
+@cache
+def _find_apsim_path():
+    """
+    # returns a list of classes above, one uses shutil, and one os.environ and notfound allows the user to enter the
+    # path directly
+    """
+    return [ShutilMethod(), OsMethod(), NotFound()]
 
 
 def get_apsim_path():
-    for cla in find():
-        path = cla._find_apsim_path()
+    for cla in _find_apsim_path():
+        path = cla._find_apsim_path()  # the method _find_apsim_path is polymorphic that mean it allows us to run it on every class once
         if path:
             return path
 
@@ -241,6 +241,12 @@ class LoadPythonnet:
         lm = clr.AddReference("Models")
 
         # return lm, sys, pythonnet.get_runtime_info()
+
+
+def add_path(new_path):
+    import sys
+    if not new_path in sys.path:
+        sys.path += [new_path]
 
 
 # Example usage:

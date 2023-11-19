@@ -200,7 +200,7 @@ def load_path_from_file(json_file_path):
     except Exception as e:
         print(f"An error occurred: {str(e)}")
 
-load_path_from_file(path)
+
 @dataclass
 class LoadPythonnet:
     """

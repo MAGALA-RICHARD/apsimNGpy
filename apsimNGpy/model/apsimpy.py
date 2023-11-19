@@ -22,8 +22,7 @@ import apsimNGpy.manager.weathermanager as weather
 # prepare for the C# import
 from apsimNGpy.utililies.pythonet_config import LoadPythonnet
 
-py_config = LoadPythonnet()()
-
+py_config = LoadPythonnet()()  # double brackets avoids calling it twice
 
 # now we can safely import C# libraries
 from System.Collections.Generic import *
@@ -112,14 +111,6 @@ class APSIMNG():
 
             self.datastore = self.Model.FindChild[Models.Storage.DataStore]().FileName
             self._DataStore = self.Model.FindChild[Models.Storage.DataStore]()
-
-        plant = self.Model.FindDescendant[Models.Core.Zone]().Plants[0]
-        cultivar = plant.FindChild[Cultivar]()
-
-        try:
-            self.cultivar_command = self._cultivar_params(cultivar)
-        except:  # TODO review this code, This bad. Worse than not catching an exception at all.
-            pass
 
     @staticmethod
     def generate_unique_name(base_name, length=6):

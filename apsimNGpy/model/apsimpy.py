@@ -22,9 +22,8 @@ import apsimNGpy.manager.weathermanager as weather
 # prepare for the C# import
 from apsimNGpy.utililies.pythonet_config import LoadPythonnet
 
-py_config = LoadPythonnet()
-loader = py_config.start_pythonnet()
-mod = py_config.load_apsim_model()
+py_config = LoadPythonnet()()
+
 
 # now we can safely import C# libraries
 from System.Collections.Generic import *

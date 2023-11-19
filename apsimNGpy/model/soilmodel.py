@@ -13,9 +13,8 @@ from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganizeAPSIM
 
 # prepare for the C# import
 from apsimNGpy.utililies.pythonet_config import get_apsimx_model_path, LoadPythonnet
-py_config = LoadPythonnet()
-py_config.start_pythonnet()
-mod = py_config.load_apsim_model()
+py_config = LoadPythonnet()()
+
 
 # now we can safely import any c# related libraries
 from System.Collections.Generic import *

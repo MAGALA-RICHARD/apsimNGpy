@@ -658,10 +658,8 @@ class APSIMNG():
 
         Parameters
         ----------
-        management
-
-            Parameter = a list of dictionaries of management paramaters or a dictionary with keyvarlue pairs of paramters and associated values respectivelyto update. examine_management_info` to see current values.
-            make a dictionary with 'Name' as the for the of  management script
+        management: a list of dictionaries of management paramaters or a dictionary with keyvarlue pairs of parameters and associated values, respectivelyto update. examine_management_info` to see current values.
+        make a dictionary with 'Name' as the for the of  management script
         simulations, optional
             List of simulation names to update, if `None` update all simulations not recommended.
         reload, optional
@@ -674,8 +672,7 @@ class APSIMNG():
             zone = sim.FindChild[Models.Core.Zone]()
 
             for action in zone.FindAllChildren[Models.Manager]():
-                action.RebuildScriptModel()
-                # action.Children.Remove("Post")
+                action.RebuildScriptModel()  # rebuilds the scripts back again. Still wondering how this is working
                 for managementt in management:
                     if action.Name == managementt["Name"]:
                         values = managementt
@@ -685,10 +682,6 @@ class APSIMNG():
                             if param in values:
                                 fvalue = f"{values[param]}"
                                 action.Parameters[i] = KeyValuePair[String, String](param, fvalue)
-
-
-
-
 
                                 # action.Parameters[i]= {param:f"{values[param]}"}
                             # action.GetParametersFromScriptModel()
@@ -1275,10 +1268,9 @@ if __name__ == '__main__':
     al = LoadExampleFiles(Path.cwd())
     model = al.get_maize
     model = APSIMNG(model, read_from_string=False)
-    pl = {"Name": "AddfertlizerRotationWheat", "Crop":'Soybean'}
-    pm = {'Name':'PostharvestillageMaize', "Fraction": 0.8}
-    pt = {'Name': 'PostharvestillageSoybean', 'Fraction': 0.95, 'Depth' : 1870}
+    pl = {"Name": "AddfertlizerRotationWheat", "Crop": 'Soybean'}
+    pm = {'Name': 'PostharvestillageMaize', "Fraction": 0.8}
+    pt = {'Name': 'PostharvestillageSoybean', 'Fraction': 0.95, 'Depth': 1870}
     mm = model.update_management_decissions(
-        pm, simulations = model.extract_simulation_name, reload=False)
+        pm, simulations=model.extract_simulation_name, reload=False)
     mm.examine_management_info()
-

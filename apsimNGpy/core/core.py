@@ -162,9 +162,9 @@ class APSIMNG():
             print(repr(e))  # this error will be logged to the folder logs in the current working directory
             raise
 
-        self.datastore  = self.Model.FindChild[Models.Storage.DataStore]().FileName
+        self.datastore = self.Model.FindChild[Models.Storage.DataStore]().FileName
         self._DataStore = self.Model.FindChild[Models.Storage.DataStore]()
-        #self.version = self.Model.get_ApsimVersion()
+        # self.version = self.Model.get_ApsimVersion()
 
     # loads apsimx file from the computer into memory using its path
     def _load_apsimx(self, path):
@@ -182,7 +182,7 @@ class APSIMNG():
             raise
         self.datastore = self.Model.FindChild[Models.Storage.DataStore]().FileName
         self._DataStore = self.Model.FindChild[Models.Storage.DataStore]()
-        #self.version = self.Model.get_ApsimVersion()
+        # self.version = self.Model.get_ApsimVersion()
 
     def load_external_apsimx(self, path, read_from_string=True):
         # when we load we replace exisiting ones, so fune null it
@@ -652,83 +652,49 @@ class APSIMNG():
             print(repr(e))
             raise Exception(repr(e))
 
-    def update_management_decissions(self, management, simulations=None, reload=False):
-        """Update management, handles one manager at a time
+    @timing_decorator
+    def update_management_decissions(self, management, simulations=None, reload=True):
+        """Update management, handles multiple managers in a loop
 
         Parameters
         ----------
         management
 
-            Parameter = value dictionary of management paramaters to update. examine_management_info` to see current values.
+            Parameter = a list of dictionaries of management paramaters or a dictionary with keyvarlue pairs of paramters and associated values respectivelyto update. examine_management_info` to see current values.
             make a dictionary with 'Name' as the for the of  management script
         simulations, optional
             List of simulation names to update, if `None` update all simulations not recommended.
         reload, optional
             _description_ defaults to True
         """
-
-        for sim in self.find_simulations(simulations):
-
-            zone = sim.FindChild[Models.Core.Zone]()
-            zn = zone.FindAllChildren[Models.Manager]()
-
-            for action in zone.FindAllChildren[Models.Manager]():
-                if action.Name == management["Name"]:
-                    values = management
-                    for i in range(len(action.Parameters)):
-                        param = action.Parameters[i].Key
-                        if param in values:
-                            action.Parameters[i] = KeyValuePair[String, String](param, f"{values[param]}")
-                            # action.RebuildScriptModel() # thoought recompiling problem solved
-            if reload:
-                self.save_edited_file()
-            if self.out_path:
-                self._load_apsimx(self.out_path)
-            else:
-                self._load_apsimx(self.path)
-        return self
-
-    def update_multiple_management_decissions(self, management_list, simulations=None, reload=False):
-        """Update management, handles multiple managers in a loop
-
-        Parameters
-        ----------
-        management_lists
-
-            Parameter = a list of dictionaries of management paramaters to update. examine_management_info` to see current values.
-            make a dictionary with 'Name' as the for the of  management script
-        simulations, optional
-            List of simulation names to update, if `None` update all simulations not recommended.
-        reload, optional
-            _description_ defaults to True
-        """
+        if not isinstance(management, list):
+            management = [management]
         # from apsimx.utils import KeyValuePair
         for sim in self.find_simulations(simulations):
             zone = sim.FindChild[Models.Core.Zone]()
 
             for action in zone.FindAllChildren[Models.Manager]():
-
+                action.RebuildScriptModel()
                 # action.Children.Remove("Post")
-                for management in management_list:
-                    if action.Name == management["Name"]:
-                        values = management
+                for managementt in management:
+                    if action.Name == managementt["Name"]:
+                        values = managementt
                         for i in range(len(action.Parameters)):
                             param = action.Parameters[i].Key
 
                             if param in values:
                                 fvalue = f"{values[param]}"
                                 action.Parameters[i] = KeyValuePair[String, String](param, fvalue)
-                                #action.OnCreated()
+
+
+
+
 
                                 # action.Parameters[i]= {param:f"{values[param]}"}
                             # action.GetParametersFromScriptModel()
 
-            if reload:
-                self.save_edited_file()
-            if self.out_path:
-                self._load_apsimx(self.out_path)
-            else:
-                self._load_apsimx(self.path)
+        self.examine_management_info()
+
         return self
 
     # immediately open the file in GUI
@@ -860,7 +826,7 @@ class APSIMNG():
         for weather in self.Model.FindAllDescendants[Weather]():
             return weather.FileName
 
-    def change_report(self, command: str, report_name='Report', simulations=None):
+    def change_report(self, command: str, report_name='Report', simulations=None, set_DayAfterLastOutput=None):
         """
             Set APSIM report variables for specified simulations.
 
@@ -886,6 +852,9 @@ class APSIMNG():
             i_enum = sim.FindAllDescendants[Models.Report](report_name)
             for rep in i_enum:
                 rep.set_VariableNames(command.strip().splitlines())
+                if set_DayAfterLastOutput:
+                    rep.set_DayAfterLastOutput = set_DayAfterLastOutput
+        return rep
 
     def get_report(self, simulation=None):
         """Get current report string
@@ -900,7 +869,7 @@ class APSIMNG():
         """
         sim = self._find_simulation(simulation)
         report = list(sim.FindAllDescendants[Models.Report]())[1]
-        return list(report.get_VariableNames())
+        return report, list(report.get_VariableNames())
 
     def extract_soil_physical(self, simulation=None):
         """Find physical soil
@@ -932,7 +901,7 @@ class APSIMNG():
         soilp_param = getattr(soil_physical, parameter)
         return list(soilp_param)
 
-    def replace_any_soil_physical(self, parameter, param_values, simulation=None):
+    def replace_any_soil_physical(self, parameter: str, param_values, simulation: str = None):
         """relaces specified soil physical parameters in the simulation
 
         ______________________________________________________
@@ -1299,10 +1268,17 @@ if __name__ == '__main__':
     # test
     from pathlib import Path
 
-    #Model = FileFormat.ReadFromFile[Models.Core.Simulations](model, None, False)
+    # Model = FileFormat.ReadFromFile[Models.Core.Simulations](model, None, False)
     os.chdir(Path.home())
     from apsimNGpy.base.base_data import LoadExampleFiles
 
     al = LoadExampleFiles(Path.cwd())
     model = al.get_maize
-    model = APSIMNG(model, read_from_string = False)
+    model = APSIMNG(model, read_from_string=False)
+    pl = {"Name": "AddfertlizerRotationWheat", "Crop":'Soybean'}
+    pm = {'Name':'PostharvestillageMaize', "Fraction": 0.8}
+    pt = {'Name': 'PostharvestillageSoybean', 'Fraction': 0.95, 'Depth' : 1870}
+    mm = model.update_management_decissions(
+        pm, simulations = model.extract_simulation_name, reload=False)
+    mm.examine_management_info()
+

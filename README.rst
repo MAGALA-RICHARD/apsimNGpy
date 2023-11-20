@@ -84,7 +84,7 @@ Debugging import error due to improper SYSTEM APSIM path configuration
     import os
     os.environ['APSIM'] =r'path/toyourapsimbinaryfolder/bin
     # try importing SoilModel class
-    from apsimNGpy.model.soilmodel import SoilModel
+    from apsimNGpy.core.apsim import ApsimModel
     # alternatively, you can add the path to the system environmental variables
 
 Main classes and methods

@@ -96,11 +96,11 @@ Quick usage
 .. code:: python
 
     import apsimNGpy
-    from apsimNGpy.base_data import LoadExampleFiles
+    from apsimNGpy.base.base_data import LoadExampleFiles
     from apsimNGpy.core.apsim import ApsimModel
     from pathlib import Path
     import os
-    from apsimNGpy.validation import plot_data
+    from apsimNGpy.validation.visual import plot_data
     cwd = Path.cwd().home() # sending this to your home folder
     wd = cwd.joinpath("apsimNGpy_demo")
     if not wd.exists():

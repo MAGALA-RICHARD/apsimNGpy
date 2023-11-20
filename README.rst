@@ -10,9 +10,8 @@ apsimx file editing, seamless weather data retrieval, and efficient soil profile
 Note
 ******************************************************************************************
 
-Because of alterations to the model structure, this library is currently compatible with APSIM VERSION '2022.12.7130.0' and earlier. We are actively 
-working to address this issue as quickly as possible.
-
+The API is currently designed to work seamlessly with the latest APSIM model, but it has undergone more extensive testing on the 2022 versions compared to the more recent ones. As a result, there may be performance challenges in the newer versions that we are not yet aware of. We kindly request that any such challenges be reported as issues on the GitHub tab for further investigation and resolution.
+ Your feedback is highly valued in ensuring the continued improvement and compatibility of the API.
 
 .. _Requirements
 
@@ -106,13 +105,13 @@ Main classes and methods
 .. _Usage:
 
 
-Usage
+Quick usage
 *********************************************************************************
 .. code:: python
 
     import apsimNGpy
-    from apsimNGpy.base_data import load_example_files
-    from apsimNGpy.model.soilmodel import SoilModel
+    from apsimNGpy.base_data import LoadExampleFiles
+    from apsimNGpy.core.apsim import ApsimModel
     from pathlib import Path
     import os
     from apsimNGpy.validation import plot_data
@@ -123,17 +122,18 @@ Usage
     # change directory
     os.chdir(wd)
     # Create the data
-    data = load_example_files(wd)
-    # Get maize model
-    maize = data.get_maize()
+    data = LoadExampleFiles(wd)
+    maize = data.get_maize
 
     # Initialize the simulation methods
-    apsim = SoilModel(maize, copy=True)
+    apsim = ApsimModel(maize, copy=True)
 
     # Run the file
     apsim.run_edited_file()
     # print the results
     print(apsim.results)
+    # USE RUN
+    apsim.run()
     # check the manager modules in the apsim simulation file
     # first get the simualtion names
     sim_name = apsim.extract_simulation_name
@@ -156,7 +156,7 @@ Change APSIM simulation dates
 
     import apsimNGpy
     from apsimNGpy.base_data import load_example_files
-    from apsimNGpy.model.soilmodel import SoilModel
+    from apsimNGpy.core.apsim import ApsimModel
     from pathlib import Path
     import os
     from apsimNGpy.validation import plot_data
@@ -167,13 +167,13 @@ Change APSIM simulation dates
     # change directory
     os.chdir(wd)
     # Create the data
-    data = load_example_files(wd)
+    data = LoadExampleFiles(wd)
 
     # Get maize model
-    maize = data.get_maize()
+    maize = data.get_maize # this is not callable because it is a property 
 
     # Initialize the simulation methods
-    apsim = SoilModel(maize, copy=True)
+    apsim = ApsimModel(maize, copy=True)
     apsim.change_simulation_dates(start_date='01/01/1998', end_date='12/31/2010')
 
 Change  APSIM model management decisions
@@ -197,7 +197,7 @@ Populating the APSIM model with new weather data
 *********************************************************************************
 .. code:: python
 
-    from apsimNGpy.weather import daymet_bylocation_nocsv
+    from apsimNGpy.core.weather import daymet_bylocation_nocsv
     lonlat = -93.08, 42.014
     start_year, end_year = 2000, 2002
     wf = daymet_bylocation_nocsv(lonlat, startyear, endyear, filename="mymet.met")

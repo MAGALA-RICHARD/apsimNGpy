@@ -1239,6 +1239,26 @@ class APSIMNG():
     def wd(self):
         return os.getcwd()
 
+    @staticmethod
+    @timing_decorator
+    # this method will attempt to bring evrythign to memory. where we copy from one file and simulate multiple files without rizig permission errors
+    def from_string(path, fn):
+        path = os.path.realpath(path)
+        try:
+            with open(path, "r+") as apsimx:
+                app_ap = json.load(apsimx)
+            string_name = json.dumps(app_ap)
+            # fn = path
+            Model = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](string_name, None,
+                                                                                                  True, fileName=fn)
+
+            if 'NewModel' in dir(Model):
+                Model = Model.get_NewModel()
+            Model.FindChild[Models.Storage.DataStore]().UseInMemoryDB = True
+            return Model
+        except Exception as e:
+            raise Exception(f'{type(e)}: occured')
+
 
 class ApsiMet(APSIMNG):
     def __init__(self, model: Union[str, Simulations], copy=True, out_path=None, lonlat=None, simulation_names=None):
@@ -1273,4 +1293,4 @@ if __name__ == '__main__':
     pt = {'Name': 'PostharvestillageSoybean', 'Fraction': 0.95, 'Depth': 1870}
     mm = model.update_management_decissions(
         pm, simulations=model.extract_simulation_name, reload=False)
-    mm.examine_management_info()
+    pm = model.from_string(path = al.get_maize, fn ='apsimtrie.apsimx')

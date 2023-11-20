@@ -17,35 +17,17 @@ class Metrics:
     def __init__(self):
         pass
 
-    def RMSE(self, actual, predicted):
-        """
-        TODO WHERE IS THIS FUNCTION USED. IT IS DUPLICATED DOWN.
-        Calculate the root mean square error (RMSE) between actual and predicted values.
-
-        Parameters:
-        - actual: list or numpy array of actual values
-        - predicted: list or numpy array of predicted values
-
-        Returns:
-        - float: root mean square error value
-
-        """
-        if not isinstance(actual, np.ndarray) or not isinstance(predicted, np.ndarray):
-            actual = np.array(actual)
-            predicted = np.array(predicted)
-        return np.sqrt(np.mean(np.square(np.subtract(actual, predicted))))
-
     def RRMSE(self, actual, predicted):
         """
-        TODO, this documentation is off, see above says the same thing.
-        Calculate the root mean square error (RMSE) between actual and predicted values.
+
+        Calculate the root mean square error (RRMSE) between actual and predicted values.
 
         Parameters:
         - actual: list or numpy array of actual values
         - predicted: list or numpy array of predicted values
 
         Returns:
-        - float: root mean square error value
+        - float: relative root mean square error value
         """
         if not isinstance(actual, np.ndarray) or not isinstance(predicted, np.ndarray):
             actual = np.array(actual)
@@ -137,7 +119,6 @@ class Metrics:
         return rval
 
     def RMSE(self, actual, predicted):
-        # TODO is this the same function as the other RMSE.
         mse = self.MSE(actual, predicted)
         return np.sqrt(mse)
 

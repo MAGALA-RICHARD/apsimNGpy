@@ -29,7 +29,7 @@ def _read_simulation(datastore, report_name=None):
     '''
     returns all data frame the available report tables
 
-    TODO this file is duplicated in runner/database_utils.py
+    TODO this file is duplicated in runner/database_utils.py i did want to reimport it there
     '''
     conn = connect(datastore)
     cursor = conn.cursor()

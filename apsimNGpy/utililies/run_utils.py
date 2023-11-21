@@ -68,6 +68,8 @@ def load_apsimx_from_string(path):
         fn = path
         Model = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](string_name, None,
                                                                                          True, fileName=fn)
+        if 'NewModel' in dir(Model):
+            Model = Model.get_NewModel()
         datastore = Model.FindChild[Models.Storage.DataStore]().FileName
         DataStore = Model.FindChild[Models.Storage.DataStore]()
         named_tuple = Model_data(model=Model, path=path, datastore=datastore, DataStore=DataStore)

@@ -686,6 +686,7 @@ class APSIMNG():
     Returns:
         self: The current instance of the class.
         """
+        som = None
         for sim in self.find_simulations(simulations):
             zone = sim.FindChild[Models.Core.Zone]()
             som1 = zone.FindChild('SurfaceOrganicMatter')
@@ -699,7 +700,7 @@ class APSIMNG():
                 som.Value.InitialResidueMass = inrm
                 som.Value.InitialCNR = icnr
             else:
-                raise Exception("File node structure is not supported at a moment")
+                raise Exception("File node structure is not supported at a moment. please rename your SOM module to SurfaceOrganicMatter")
             # mp.Value.InitialResidueMass
 
             return self

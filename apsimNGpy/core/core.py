@@ -18,6 +18,7 @@ from pathlib import Path
 import threading
 import time
 import apsimNGpy.manager.weathermanager as weather
+from functools import cache
 
 # prepare for the C# import
 from apsimNGpy.utililies.pythonet_config import LoadPythonnet
@@ -260,7 +261,6 @@ class APSIMNG():
                 cs_sims.Add(s)
                 runmodel = Models.Core.Run.Runner(cs_sims, True, False, False, None, runtype)
                 e = runmodel.Run()
-
 
         if (len(e) > 0):
             print(e[0].ToString())
@@ -653,6 +653,42 @@ class APSIMNG():
             print(repr(e))
             raise Exception(repr(e))
 
+    @cache
+    def return_zone(self, simulations=None):
+        self.find_simulations(simulations)
+
+    def check_som(self, simulations=None):
+        for sim in self.find_simulations(simulations):
+            zone = sim.FindChild[Models.Core.Zone]()
+            som1 = zone.FindChild('SurfaceOrganicMatter')
+            field = zone.Name
+            sname = sim.Name
+            som = zone.FindByPath(f'.Simulations.{sname}.{field}.SurfaceOrganicMatter')
+            # mp.Value.InitialResidueMass
+            return som.Value.InitialResidueMass, som.Value.InitialCNR
+
+    def change_som(self, simulations = None, inrm: int = 1250, icnr: int = 27):
+        """
+         Change Surface Organic Matter (SOM) properties in specified simulations.
+
+    Parameters:
+        simulations (str ort list): List of simulation names to target (default: None).
+        inrm (int): New value for Initial Residue Mass (default: 1250).
+        icnr (int): New value for Initial Carbon to Nitrogen Ratio (default: 27).
+
+    Returns:
+        self: The current instance of the class.
+        """
+        for sim in self.find_simulations(simulations):
+            zone = sim.FindChild[Models.Core.Zone]()
+            som1 = zone.FindChild('SurfaceOrganicMatter')
+            field = zone.Name
+            sname = sim.Name
+            som = zone.FindByPath(f'.Simulations.{sname}.{field}.SurfaceOrganicMatter')
+            # mp.Value.InitialResidueMass
+            som.Value.InitialResidueMass = inrm
+            som.Value.InitialCNR = icnr
+            return self
 
     def update_management_decissions(self, management, simulations=None, reload=False):
         """Update management, handles multiple managers in a loop
@@ -673,7 +709,7 @@ class APSIMNG():
             zone = sim.FindChild[Models.Core.Zone]()
 
             for action in zone.FindAllChildren[Models.Manager]():
-                #if not action.RebuildScriptModel:
+                # if not action.RebuildScriptModel:
                 if not reload:
                     action.RebuildScriptModel()  # rebuilds the scripts back again. Still wondering how this is working
                 for managementt in management:
@@ -686,10 +722,8 @@ class APSIMNG():
                                 fvalue = f"{values[param]}"
                                 action.Parameters[i] = KeyValuePair[String, String](param, fvalue)
 
-
-
                                 # action.Parameters[i]= {param:f"{values[param]}"}
-        #self.examine_management_info()                # action.GetParametersFromScriptModel()
+        # self.examine_management_info()                # action.GetParametersFromScriptModel()
         if reload:
             self.save_edited_file()
         if self.out_path:
@@ -1260,11 +1294,11 @@ class APSIMNG():
             string_name = json.dumps(app_ap)
             # fn = path
             Model = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](string_name, None,
-                                                                                                  True, fileName=fn)
+                                                                                             True, fileName=fn)
 
             if 'NewModel' in dir(Model):
                 Model = Model.get_NewModel()
-            Model.FindChild[Models.Storage.DataStore]().UseInMemoryDB =True
+            Model.FindChild[Models.Storage.DataStore]().UseInMemoryDB = True
             id = Model.FindChild[Models.Storage.DataStore]()
             dt = Model.FindChild[Models.Storage.DataStoreReader]()
             print(dt)
@@ -1277,13 +1311,14 @@ class APSIMNG():
             runmodel = Models.Core.Run.Runner(Model, True, False, False, None, runtype)
             e = runmodel.Run()
             Model.FindChild[Models.Storage.IDataStore]().Open()
-            lp =Models.Core.Run.Runner(Model)
+            lp = Models.Core.Run.Runner(Model)
             data = _read_simulation(id.FileName)
-            return  Model.FindChild[Models.Storage.IDataStore]().get_Reader()
+            return Model.FindChild[Models.Storage.IDataStore]().get_Reader()
         except Exception as e:
             raise Exception(f'{type(e)}: occured')
 
-#ap = dat.GetDataUsingSql("SELECT * FROM [MaizeR]")
+
+# ap = dat.GetDataUsingSql("SELECT * FROM [MaizeR]")
 class ApsiMet(APSIMNG):
     def __init__(self, model: Union[str, Simulations], copy=True, out_path=None, lonlat=None, simulation_names=None):
         super().__init__(model, copy, out_path)
@@ -1316,17 +1351,18 @@ if __name__ == '__main__':
     pm = {'Name': 'PostharvestillageMaize', "Fraction": 0.8}
     pt = {'Name': 'PostharvestillageSoybean', 'Fraction': 0.95, 'Depth': 290}
 
-    #pm = model.from_string(path = al.get_maize, fn ='apsimtrie.apsimx')
+    # pm = model.from_string(path = al.get_maize, fn ='apsimtrie.apsimx')
 
-    for i  in [0, 0.5, 1, 0.555]:
-        #model = APSIMNG(al.get_maize, read_from_string=False)
+    for i in [0.5, 1]:
+        # model = APSIMNG(al.get_maize, read_from_string=False)
         pm = {'Name': 'PostharvestillageMaize', "Fraction": i}
         model.update_management_decissions(
-          [pm, pt, pl], simulations=model.extract_simulation_name, reload=False)
+            [pm, pt, pl], simulations=model.extract_simulation_name, reload=False)
         lm = model
-        #model.examine_management_info()
+        # model.examine_management_info()
 
         model.run()
         xp = model.get_result_stat(model.results['Annual'], 'TopN2O', 'mean')
-        #model.clear()
+        # model.clear()
         print(xp)
+    pm = model.change_som()

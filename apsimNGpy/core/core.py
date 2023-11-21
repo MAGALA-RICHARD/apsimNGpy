@@ -665,11 +665,10 @@ class APSIMNG():
 
             field = zone.Name
             sname = sim.Name
-            if 'Experiment' in zone.FullPath:
-                som_path = f'.Simulations.Experiment.{sname}.{field}.SurfaceOrganicMatter'
-            else:
-                som_path = f'.Simulations.{sname}.{field}.SurfaceOrganicMatter'
-            som = som1.FindByPath(som_path)
+
+            som_path = f'{zone.FullPath}.SurfaceOrganicMatter'
+            if som_path:
+               som = zone.FindByPath(som_path)
             if som:
                 return som.Value.InitialResidueMass, som.Value.InitialCNR
             else:
@@ -690,15 +689,12 @@ class APSIMNG():
         for sim in self.find_simulations(simulations):
             zone = sim.FindChild[Models.Core.Zone]()
             som1 = zone.FindChild('SurfaceOrganicMatter')
-            print(som1)
             field = zone.Name
             sname = sim.Name
-            print(sname)
-            if 'Experiment' in zone.FullPath:
-                som_path = f'.Simulations.Experiment.{sname}.{field}.SurfaceOrganicMatter'
-            else:
-                som_path = f'.Simulations.{sname}.{field}.SurfaceOrganicMatter'
-            som = som1.FindByPath(som_path)
+
+            som_path = f'{zone.FullPath}.SurfaceOrganicMatter'
+            if som_path:
+                 som = zone.FindByPath(som_path)
             if som:
                 som.Value.InitialResidueMass = inrm
                 som.Value.InitialCNR = icnr

@@ -673,7 +673,8 @@ class APSIMNG():
             zone = sim.FindChild[Models.Core.Zone]()
 
             for action in zone.FindAllChildren[Models.Manager]():
-                action.RebuildScriptModel()  # rebuilds the scripts back again. Still wondering how this is working
+                #if not action.RebuildScriptModel:
+                #action.RebuildScriptModel(action.Name)  # rebuilds the scripts back again. Still wondering how this is working
                 for managementt in management:
                     if action.Name == managementt["Name"]:
                         values = managementt
@@ -1301,11 +1302,26 @@ if __name__ == '__main__':
     from apsimNGpy.base.base_data import LoadExampleFiles
 
     al = LoadExampleFiles(Path.cwd())
-    model = al.get_maize_no_till
+    model = al.get_maize
     model = APSIMNG(model, read_from_string=False)
     pl = {"Name": "AddfertlizerRotationWheat", "Crop": 'Soybean'}
     pm = {'Name': 'PostharvestillageMaize', "Fraction": 0.8}
     pt = {'Name': 'PostharvestillageSoybean', 'Fraction': 0.95, 'Depth': 1870}
-    mm = model.update_management_decissions(
+    model.update_management_decissions(
         [pm,pt,pl], simulations=model.extract_simulation_name, reload=False)
-    pm = model.from_string(path = al.get_maize, fn ='apsimtrie.apsimx')
+    model.examine_management_info()
+    model.run()
+    model.update_management_decissions(
+        [pm, pt, pl], simulations=model.extract_simulation_name, reload=False)
+    model.run()
+    model.update_management_decissions(
+        [pm, pt, pl], simulations=model.extract_simulation_name, reload=False)
+    model.run()
+    #pm = model.from_string(path = al.get_maize, fn ='apsimtrie.apsimx')
+
+    for _  in range(5):
+        model.update_management_decissions(
+          [pm, pt, pl], simulations=model.extract_simulation_name, reload=False)
+        lm = model
+        model.examine_management_info()
+        print(model.results['MaizeR'])

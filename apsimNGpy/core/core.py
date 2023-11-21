@@ -654,7 +654,7 @@ class APSIMNG():
             raise Exception(repr(e))
 
     @timing_decorator
-    def update_management_decissions(self, management, simulations=None, reload=True):
+    def update_management_decissions(self, management, simulations=None, reload=False):
         """Update management, handles multiple managers in a loop
 
         Parameters
@@ -674,7 +674,8 @@ class APSIMNG():
 
             for action in zone.FindAllChildren[Models.Manager]():
                 #if not action.RebuildScriptModel:
-                #action.RebuildScriptModel(action.Name)  # rebuilds the scripts back again. Still wondering how this is working
+                if not reload:
+                    action.RebuildScriptModel()  # rebuilds the scripts back again. Still wondering how this is working
                 for managementt in management:
                     if action.Name == managementt["Name"]:
                         values = managementt
@@ -685,9 +686,16 @@ class APSIMNG():
                                 fvalue = f"{values[param]}"
                                 action.Parameters[i] = KeyValuePair[String, String](param, fvalue)
 
-                                # action.Parameters[i]= {param:f"{values[param]}"}
-                            # action.GetParametersFromScriptModel()
 
+
+                                # action.Parameters[i]= {param:f"{values[param]}"}
+        #self.examine_management_info()                # action.GetParametersFromScriptModel()
+        if reload:
+            self.save_edited_file()
+        if self.out_path:
+            self._load_apsimx(self.out_path)
+        else:
+            self._load_apsimx(self.path)
 
         return self
 
@@ -1306,22 +1314,19 @@ if __name__ == '__main__':
     model = APSIMNG(model, read_from_string=False)
     pl = {"Name": "AddfertlizerRotationWheat", "Crop": 'Soybean'}
     pm = {'Name': 'PostharvestillageMaize', "Fraction": 0.8}
-    pt = {'Name': 'PostharvestillageSoybean', 'Fraction': 0.95, 'Depth': 1870}
-    model.update_management_decissions(
-        [pm,pt,pl], simulations=model.extract_simulation_name, reload=False)
-    model.examine_management_info()
-    model.run()
-    model.update_management_decissions(
-        [pm, pt, pl], simulations=model.extract_simulation_name, reload=False)
-    model.run()
-    model.update_management_decissions(
-        [pm, pt, pl], simulations=model.extract_simulation_name, reload=False)
-    model.run()
+    pt = {'Name': 'PostharvestillageSoybean', 'Fraction': 0.95, 'Depth': 290}
+
     #pm = model.from_string(path = al.get_maize, fn ='apsimtrie.apsimx')
 
-    for _  in range(5):
+    for i  in [0, 0.5, 1, 0.555]:
+        #model = APSIMNG(al.get_maize, read_from_string=False)
+        pm = {'Name': 'PostharvestillageMaize', "Fraction": i}
         model.update_management_decissions(
-          [pm, pt, pl], simulations=model.extract_simulation_name, reload=False)
+          [pm, pt, pl], simulations=model.extract_simulation_name, reload=True)
         lm = model
-        model.examine_management_info()
-        print(model.results['MaizeR'])
+        #model.examine_management_info()
+
+        model.run()
+        xp = model.get_result_stat(model.results['Annual'], 'TopN2O', 'mean')
+        #model.clear()
+        print(xp)

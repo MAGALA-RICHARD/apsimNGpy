@@ -84,7 +84,7 @@ class APSIMNG():
                                 'Prairie Strips': [1, 0]}
 
         if type(model) == str or isinstance(model, Path):
-            apsimx_file = model
+            apsimx_file = os.path.realpath(model)
             name, ext = os.path.splitext(apsimx_file)
             if copy:
                 if out_path is None:
@@ -660,14 +660,22 @@ class APSIMNG():
     def check_som(self, simulations=None):
         for sim in self.find_simulations(simulations):
             zone = sim.FindChild[Models.Core.Zone]()
+
             som1 = zone.FindChild('SurfaceOrganicMatter')
+
             field = zone.Name
             sname = sim.Name
-            som = zone.FindByPath(f'.Simulations.{sname}.{field}.SurfaceOrganicMatter')
-            # mp.Value.InitialResidueMass
-            return som.Value.InitialResidueMass, som.Value.InitialCNR
+            if 'Experiment' in zone.FullPath:
+                som_path = f'.Simulations.Experiment.{sname}.{field}.SurfaceOrganicMatter'
+            else:
+                som_path = f'.Simulations.{sname}.{field}.SurfaceOrganicMatter'
+            som = som1.FindByPath(som_path)
+            if som:
+                return som.Value.InitialResidueMass, som.Value.InitialCNR
+            else:
+                raise Exception("File node structure is not supported at a moment")
 
-    def change_som(self, simulations = None, inrm: int = 1250, icnr: int = 27):
+    def change_som(self, simulations=None, inrm: int = 1250, icnr: int = 27):
         """
          Change Surface Organic Matter (SOM) properties in specified simulations.
 
@@ -682,12 +690,22 @@ class APSIMNG():
         for sim in self.find_simulations(simulations):
             zone = sim.FindChild[Models.Core.Zone]()
             som1 = zone.FindChild('SurfaceOrganicMatter')
+            print(som1)
             field = zone.Name
             sname = sim.Name
-            som = zone.FindByPath(f'.Simulations.{sname}.{field}.SurfaceOrganicMatter')
+            print(sname)
+            if 'Experiment' in zone.FullPath:
+                som_path = f'.Simulations.Experiment.{sname}.{field}.SurfaceOrganicMatter'
+            else:
+                som_path = f'.Simulations.{sname}.{field}.SurfaceOrganicMatter'
+            som = som1.FindByPath(som_path)
+            if som:
+                som.Value.InitialResidueMass = inrm
+                som.Value.InitialCNR = icnr
+            else:
+                raise Exception("File node structure is not supported at a moment")
             # mp.Value.InitialResidueMass
-            som.Value.InitialResidueMass = inrm
-            som.Value.InitialCNR = icnr
+
             return self
 
     def update_management_decissions(self, management, simulations=None, reload=False):
@@ -1365,4 +1383,7 @@ if __name__ == '__main__':
         xp = model.get_result_stat(model.results['Annual'], 'TopN2O', 'mean')
         # model.clear()
         print(xp)
-    pm = model.change_som()
+    pm = model.check_som()
+    md = APSIMNG(
+        'C:\\Users\\rmagala\\OneDrive\\simulations\\Data-analysis-Morrow-Plots\\APSIMX FILES\\tillage_scenario.apsimx')
+    md.check_som()

@@ -653,7 +653,7 @@ class APSIMNG():
             print(repr(e))
             raise Exception(repr(e))
 
-    @timing_decorator
+
     def update_management_decissions(self, management, simulations=None, reload=False):
         """Update management, handles multiple managers in a loop
 

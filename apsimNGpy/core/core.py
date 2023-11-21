@@ -1322,7 +1322,7 @@ if __name__ == '__main__':
         #model = APSIMNG(al.get_maize, read_from_string=False)
         pm = {'Name': 'PostharvestillageMaize', "Fraction": i}
         model.update_management_decissions(
-          [pm, pt, pl], simulations=model.extract_simulation_name, reload=True)
+          [pm, pt, pl], simulations=model.extract_simulation_name, reload=False)
         lm = model
         #model.examine_management_info()
 

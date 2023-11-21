@@ -89,7 +89,7 @@ def make_apsimx_clones(base_file, number_of_clones):
 
     try:
         for i in range(number_of_clones):
-            file_path = opj(path, generate_unique_name("clones")) + ".apsimx"
+            file_path = opj(path, generate_unique_name(f"clones_{i}")) + ".apsimx"
             files.append(file_path)
             shutil.copy(base_file, file_path)
         # check if there is any file that is not apsim
@@ -97,7 +97,7 @@ def make_apsimx_clones(base_file, number_of_clones):
             if not os.path.isfile(i) or not i.endswith('.apsimx'):
                 files.remove(i)
                 print(i, ": removed")
-        return files
+            yield i
     except Exception as e:
         print(repr(e))
 

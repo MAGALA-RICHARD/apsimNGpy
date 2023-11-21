@@ -261,6 +261,7 @@ class APSIMNG():
                 runmodel = Models.Core.Run.Runner(cs_sims, True, False, False, None, runtype)
                 e = runmodel.Run()
 
+
         if (len(e) > 0):
             print(e[0].ToString())
         self.results = self._read_simulation()
@@ -686,7 +687,6 @@ class APSIMNG():
                                 # action.Parameters[i]= {param:f"{values[param]}"}
                             # action.GetParametersFromScriptModel()
 
-        self.examine_management_info()
 
         return self
 
@@ -1243,6 +1243,7 @@ class APSIMNG():
     @timing_decorator
     # this method will attempt to bring evrythign to memory. where we copy from one file and simulate multiple files without rizig permission errors
     def from_string(path, fn):
+        from apsimNGpy.utililies.run_utils import _read_simulation
         path = os.path.realpath(path)
         try:
             with open(path, "r+") as apsimx:
@@ -1254,12 +1255,26 @@ class APSIMNG():
 
             if 'NewModel' in dir(Model):
                 Model = Model.get_NewModel()
-            Model.FindChild[Models.Storage.DataStore]().UseInMemoryDB = True
-            return Model
+            Model.FindChild[Models.Storage.DataStore]().UseInMemoryDB =True
+            id = Model.FindChild[Models.Storage.DataStore]()
+            dt = Model.FindChild[Models.Storage.DataStoreReader]()
+            print(dt)
+
+            multithread = True
+            if multithread:
+                runtype = Models.Core.Run.Runner.RunTypeEnum.MultiThreaded
+            else:
+                runtype = Models.Core.Run.Runner.RunTypeEnum.SingleThreaded
+            runmodel = Models.Core.Run.Runner(Model, True, False, False, None, runtype)
+            e = runmodel.Run()
+            Model.FindChild[Models.Storage.IDataStore]().Open()
+            lp =Models.Core.Run.Runner(Model)
+            data = _read_simulation(id.FileName)
+            return  Model.FindChild[Models.Storage.IDataStore]().get_Reader()
         except Exception as e:
             raise Exception(f'{type(e)}: occured')
 
-
+#ap = dat.GetDataUsingSql("SELECT * FROM [MaizeR]")
 class ApsiMet(APSIMNG):
     def __init__(self, model: Union[str, Simulations], copy=True, out_path=None, lonlat=None, simulation_names=None):
         super().__init__(model, copy, out_path)
@@ -1286,11 +1301,11 @@ if __name__ == '__main__':
     from apsimNGpy.base.base_data import LoadExampleFiles
 
     al = LoadExampleFiles(Path.cwd())
-    model = al.get_maize
+    model = al.get_maize_no_till
     model = APSIMNG(model, read_from_string=False)
     pl = {"Name": "AddfertlizerRotationWheat", "Crop": 'Soybean'}
     pm = {'Name': 'PostharvestillageMaize', "Fraction": 0.8}
     pt = {'Name': 'PostharvestillageSoybean', 'Fraction': 0.95, 'Depth': 1870}
     mm = model.update_management_decissions(
-        pm, simulations=model.extract_simulation_name, reload=False)
+        [pm,pt,pl], simulations=model.extract_simulation_name, reload=False)
     pm = model.from_string(path = al.get_maize, fn ='apsimtrie.apsimx')

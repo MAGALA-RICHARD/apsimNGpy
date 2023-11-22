@@ -10,36 +10,18 @@ import sqlite3
 import sys
 import warnings
 import pythonnet
-from apsimNGpy.utililies.pythonet_config import get_apsimx_model_path
+from apsimNGpy.utililies.pythonet_config import get_apsimx_model_path, LoadPythonnet
+from pythonet_config import LoadPythonnet, get_apsimx_model_path
 apsim_model = get_apsimx_model_path()
-try:
-    if pythonnet.get_runtime_info() is None:
-        pythonnet.load("coreclr")
-except:
-    print("dotnet not found ,trying alternate runtime")
-    pythonnet.load()
-
-import clr
+loader = LoadPythonnet()()
 from os.path import realpath
 
-apsim_path = realpath(get_apsimx_model_path())
-if apsim_path is not None:
-    sys.path.append(apsim_path)
-    clr.AddReference("Models")
-clr.AddReference("System")
 from System.Collections.Generic import *
 from Models.Core import Simulations
 from System import *
 from Models.PMF import Cultivar
 from Models import Options
-from Models.Core.ApsimFile import FileFormat
-from Models.Climate import Weather
-from Models.Soils import Solute, Water, Chemical
-from Models.Soils import Soil, Physical, SoilCrop, Organic
-import Models
-from Models.PMF import Cultivar
-import threading
-import time
+
 import Models
 from System import *
 from collections import namedtuple
@@ -59,7 +41,7 @@ sys.path.append(os.path.realpath(apsim_model))
 
 
 def load_apsimx_from_string(path):
-    # TODO duplicated in runner/run_utils
+    # ## duplicated in runner/run_utils # ignore the one to be deleted
     Model_data = namedtuple('model_data', ['model', 'path', 'datastore', "DataStore"])
     try:
         with open(path, "r+") as apsimx:
@@ -70,6 +52,7 @@ def load_apsimx_from_string(path):
                                                                                          True, fileName=fn)
         if 'NewModel' in dir(Model):
             Model = Model.get_NewModel()
+
         datastore = Model.FindChild[Models.Storage.DataStore]().FileName
         DataStore = Model.FindChild[Models.Storage.DataStore]()
         named_tuple = Model_data(model=Model, path=path, datastore=datastore, DataStore=DataStore)
@@ -194,7 +177,7 @@ def read_simulation(datastore, report_name='MaizeR'):
         if len(dataframe_dict) == 0:
             warnings.warn(f"{datastore}: is empty. No data has been returned")
         if report_name:
-            df = dataframe_dict[report_name]
+            df = dataframe_dict.get(report_name)
             df['source'] = os.path.basename(datastore)
             return df
         else:

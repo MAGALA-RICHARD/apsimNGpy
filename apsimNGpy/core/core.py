@@ -68,20 +68,16 @@ class APSIMNG():
             Path of modified simulation, if `None` will be set automatically.
         read_from_string (boolean) if True file will be uploaded to memory through json module most preffered, otherwise we can read from file
         """
-
-        assert os.path.exists(model), "The file does not exists in the specified directory"
+        if isinstance(model, str):
+           assert os.path.exists(model), "The file does not exists in the specified directory"
+           if not model.endswith('.apsimx'):
+               raise ValueError("Did you forget the apsimx extention?")
         self.results = None
         self.Model = None
         self.datastore = None
         if out_path:
             out_path = os.path.realpath(out_path)
         self.out_path = out_path
-        self.management_data = {'Nitrogen': [0, 140, 180, 220], \
-                                'Depth': [0, 100, 250, 100], \
-                                "Rotation": ['CC', 'CB'],
-                                "Tillage type": [1, 0],
-                                'Cover Crop': [1, 0],
-                                'Prairie Strips': [1, 0]}
 
         if type(model) == str or isinstance(model, Path):
             apsimx_file = os.path.realpath(model)
@@ -102,7 +98,7 @@ class APSIMNG():
             else:
                 self.path = apsimx_file
 
-            if read_from_string == True:
+            if read_from_string == True: # this is the fastest
                 self.load_apsimx_from_string(self.path)
             else:
                 self._load_apsimx(self.path)
@@ -137,6 +133,7 @@ class APSIMNG():
                 for i in experiment:
                     simus = list(i.FindAllChildren[Models.Core.Simulation]())
 
+
                 return (simus)
 
         except Exception as e:
@@ -156,8 +153,6 @@ class APSIMNG():
 
             if 'NewModel' in dir(self.Model):
                 self.Model = self.Model.get_NewModel()
-
-
 
         except Exception as e:
             print(repr(e))  # this error will be logged to the folder logs in the current working directory
@@ -216,7 +211,7 @@ class APSIMNG():
             Path of output .apsimx file, by default `None`
         """
         if outpath:
-            self.out_path = outpath
+            self.out_path = os.path.realpath(outpath)
         if self.out_path is None:
             out_path = self.path
         else:
@@ -668,7 +663,7 @@ class APSIMNG():
 
             som_path = f'{zone.FullPath}.SurfaceOrganicMatter'
             if som_path:
-               som = zone.FindByPath(som_path)
+                som = zone.FindByPath(som_path)
             if som:
                 return som.Value.InitialResidueMass, som.Value.InitialCNR
             else:
@@ -695,12 +690,13 @@ class APSIMNG():
 
             som_path = f'{zone.FullPath}.SurfaceOrganicMatter'
             if som_path:
-                 som = zone.FindByPath(som_path)
+                som = zone.FindByPath(som_path)
             if som:
                 som.Value.InitialResidueMass = inrm
                 som.Value.InitialCNR = icnr
             else:
-                raise Exception("File node structure is not supported at a moment. please rename your SOM module to SurfaceOrganicMatter")
+                raise Exception(
+                    "File node structure is not supported at a moment. please rename your SOM module to SurfaceOrganicMatter")
             # mp.Value.InitialResidueMass
 
             return self
@@ -745,6 +741,41 @@ class APSIMNG():
             self._load_apsimx(self.out_path)
         else:
             self._load_apsimx(self.path)
+
+        return self
+
+    # experimental
+    @timing_decorator
+    def update_mgt(self, management, simulations=None):
+        """Update management, handles one manager at a time
+
+        Parameters
+        ----------
+        management
+
+            Parameter = value dictionary of management paramaters to update. examine_management_info` to see current values.
+            make a dictionary with 'Name' as the for the of  management script
+        simulations, optional
+            List of simulation names to update, if `None` update all simulations not recommended.
+        """
+        if not isinstance(management, list):
+            management = [management]
+
+        for sim in self.find_simulations(simulations):
+
+            zone = sim.FindChild[Models.Core.Zone]()
+            zn = zone.FindAllChildren[Models.Manager]()
+            zone_path = zone.FullPath
+            for mgt in management:
+                action_path = f'{zone_path}.{mgt.get("Name")}'
+                fp = zone.FindByPath(action_path)
+                values = mgt
+                for i in range(len(fp.Value.Parameters)):
+                    param = fp.Value.Parameters[i].Key
+                    if param in values.keys():
+                        fp.Value.Parameters[i] = KeyValuePair[String, String](param, f"{values[param]}")
+                fp.Value.OnPreLink()
+            self.save_edited_file()
 
         return self
 
@@ -1363,16 +1394,16 @@ if __name__ == '__main__':
     model = al.get_maize
     model = APSIMNG(model, read_from_string=False)
     pl = {"Name": "AddfertlizerRotationWheat", "Crop": 'Soybean'}
-    pm = {'Name': 'PostharvestillageMaize', "Fraction": 0.8}
+    pm = {'Name': 'PostharvestillageMaize', "Fraction": 0.0}
     pt = {'Name': 'PostharvestillageSoybean', 'Fraction': 0.95, 'Depth': 290}
 
     # pm = model.from_string(path = al.get_maize, fn ='apsimtrie.apsimx')
 
-    for i in [0.5, 1]:
+    for i in [0.5, 0.0, 0.1, 1]:
         # model = APSIMNG(al.get_maize, read_from_string=False)
         pm = {'Name': 'PostharvestillageMaize', "Fraction": i}
-        model.update_management_decissions(
-            [pm, pt, pl], simulations=model.extract_simulation_name, reload=False)
+        model.update_mgt(
+            [pm, pt, pl], simulations=model.extract_simulation_name)
         lm = model
         # model.examine_management_info()
 
@@ -1381,6 +1412,28 @@ if __name__ == '__main__':
         # model.clear()
         print(xp)
     pm = model.check_som()
-    md = APSIMNG(
-        'C:\\Users\\rmagala\\OneDrive\\simulations\\Data-analysis-Morrow-Plots\\APSIMX FILES\\tillage_scenario.apsimx')
-    md.check_som()
+    pt = model.update_mgt(pl)
+
+
+    def find_word_in_files(folder_path, target_word):
+        found_files = []
+        for root, dirs, files in os.walk(folder_path):
+            for filename in files:
+                if filename.endswith(".cs"):  # Filter for C# files
+                    file_path = os.path.join(root, filename)
+                    if os.path.isfile(file_path):
+                        try:
+                            with open(file_path, 'r', encoding='utf-8') as file:
+                                content = file.read()
+                                if target_word in content:
+                                    found_files.append(file_path)
+                                    print(file_path)
+                        except Exception as e:
+                            print(f"An error occurred while reading '{file_path}': {str(e)}")
+
+        return found_files
+
+
+    path = r'C:\Users\rmagala\OneDrive\ApsimX'
+
+    ff=find_word_in_files(path, 'get_Location')

@@ -12,7 +12,7 @@ import apsimNGpy.manager.weathermanager as weather
 from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganizeAPSIMsoil_profile
 
 # prepare for the C# import
-from pythonet_config import get_apsimx_model_path, LoadPythonnet
+from apsimNGpy.core.pythonet_config import LoadPythonnet
 py_config = LoadPythonnet()()
 
 
@@ -415,7 +415,7 @@ if __name__ == '__main__':
 
     #Model = FileFormat.ReadFromFile[Models.Core.Simulations](model, None, False)
     os.chdir(Path.home())
-    from apsimNGpy.base.base_data import LoadExampleFiles
+    from apsimNGpy.data.base_data import LoadExampleFiles
 
     al = LoadExampleFiles(Path.cwd())
     model = al.get_maize

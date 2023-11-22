@@ -12,7 +12,7 @@ import apsimNGpy.manager.weathermanager as weather
 from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganizeAPSIMsoil_profile
 
 # prepare for the C# import
-from apsimNGpy.utililies.pythonet_config import get_apsimx_model_path, LoadPythonnet
+from apsimNGpy.pythonet_config import get_apsimx_model_path, LoadPythonnet
 py_config = LoadPythonnet()()
 
 

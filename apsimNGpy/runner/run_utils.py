@@ -1,91 +1,45 @@
 """
 Interface to APSIM simulation models using Python.NET build on top of Matti Pastell farmingpy framework.
 """
-import matplotlib.pyplot as plt
 import random, logging, pathlib
-import string
-import concurrent
-# import soil
-from typing import Union
-import pythonnet
-import os, sys, datetime, shutil, warnings
-import numpy as np
 import pandas as pd
 import sqlite3
-from utils import delete_simulation_files
-from utils import Cache
-# Prefer dotnet
-try:
-    if pythonnet.get_runtime_info() is None:
-        pythonnet.load("coreclr")
-except:
-    print("dotnet not found ,trying alternate runtime")
-    pythonnet.load()
 
-import clr
+from apsimNGpy.utililies.pythonet_config import LoadPythonnet
 
-from os.path import join as opj
-
-def detect_apsim_installation():
-    for rr, dd, ff in os.walk("C:/"):
-        for d in ff:
-            if d.startswith('Model') and d.endswith(".exe"):
-                f = os.path.join(rr, d)
-                if f is not None:
-                    return f
-
-
-sys.path.append(os.path.dirname(detect_apsim_installation()))
-
-# Try to load from pythonpath and only then look for Model.exe
-try:
-    clr.AddReference("Models")
-except:
-    print("Looking for APSIM")
-    apsim_path = shutil.which("Models")
-    if apsim_path is not None:
-        apsim_path = os.path.split(os.path.realpath(apsim_path))[0]
-        sys.path.append(apsim_path)
-    clr.AddReference("Models")
-
-clr.AddReference("System")
-from System.Collections.Generic import *
+loader = LoadPythonnet()()
 # C# imports
+from System.Collections.Generic import *
+
 import Models
-import System.IO
-import System.Linq
-from Models.Core import Simulations
 from System import *
-from Models.PMF import Cultivar
-from Models import Options
-from Models.Core.ApsimFile import FileFormat
-from Models.Climate import Weather
-from Models.Soils import Solute, Water, Chemical
-from Models.Soils import Soil, Physical, SoilCrop, Organic
+
 from collections import namedtuple
 import json
-import time
 
-from apsimx.remote import test
+
 def load_apsimx_from_string(path):
-        Model_data = namedtuple('model_data', ['model', 'path', 'datastore', "DataStore"])
-        try:
-            with open(path, "r+") as apsimx:
-                app_ap = json.load(apsimx)
-            string_name = json.dumps(app_ap)
-            fn = path
-            Model = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](string_name, None,
-                                                                                                  True, fileName=fn)
-            datastore = Model.FindChild[Models.Storage.DataStore]().FileName
-            DataStore = Model.FindChild[Models.Storage.DataStore]()
-            named_tuple = Model_data(model = Model, path = path, datastore=datastore, DataStore =DataStore)
-            return named_tuple
-        except Exception as e:
-            print(repr(e))
-            raise
+    Model_data = namedtuple('model_data', ['model', 'path', 'datastore', "DataStore"])
+    try:
+        with open(path, "r+") as apsimx:
+            app_ap = json.load(apsimx)
+        string_name = json.dumps(app_ap)
+        fn = path
+        Model = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](string_name, None,
+                                                                                         True, fileName=fn)
+        if 'NewModel' in dir(Model):
+            Model = Model.get_NewModel()
+
+        datastore = Model.FindChild[Models.Storage.DataStore]().FileName
+        DataStore = Model.FindChild[Models.Storage.DataStore]()
+        named_tuple = Model_data(model=Model, path=path, datastore=datastore, DataStore=DataStore)
+        return named_tuple
+    except Exception as e:
+        print(repr(e))
+        raise
 
 
-def _read_simulation(datastore, report_name= None):
+def _read_simulation(datastore, report_name=None):
     ''' returns all data frame the available report tables'''
     conn = sqlite3.connect(datastore)
     cursor = conn.cursor()
@@ -124,8 +78,10 @@ def _read_simulation(datastore, report_name= None):
         return dataframe_dict[report_name]
     else:
         return dataframe_dict
-def run(named_tuple_data, clean=False, multithread=True, read_db =False):
-        """Run apsimx model in the simulations
+
+
+def run(named_tuple_data, clean=False, multithread=True, read_db=False):
+    """Run apsimx model in the simulations
 
         Parameters
         ----------
@@ -136,34 +92,38 @@ def run(named_tuple_data, clean=False, multithread=True, read_db =False):
         multithread, optional
             If `True` APSIM uses multiple threads, by default `True`
         """
-        if multithread:
-            runtype = Models.Core.Run.Runner.RunTypeEnum.MultiThreaded
-        else:
-            runtype = Models.Core.Run.Runner.RunTypeEnum.SingleThreaded
+    if multithread:
+        runtype = Models.Core.Run.Runner.RunTypeEnum.MultiThreaded
+    else:
+        runtype = Models.Core.Run.Runner.RunTypeEnum.SingleThreaded
 
-        # Clear old data before running
-        results = None
-        if clean:
-            named_tuple_data.DataStore.Dispose()
-            pathlib.Path(named_tuple_data.DataStore.FileName).unlink(missing_ok=True)
-            named_tuple_data.DataStore.Open()
+    # Clear old data before running
+    results = None
+    if clean:
+        named_tuple_data.DataStore.Dispose()
+        pathlib.Path(named_tuple_data.DataStore.FileName).unlink(missing_ok=True)
+        named_tuple_data.DataStore.Open()
 
- 
-        runmodel = Models.Core.Run.Runner(named_tuple_data.model, True, False, False, None, runtype)
-        e = runmodel.Run()
-        if read_db:
-            data= _read_simulation(named_tuple_data.datastore)
-            return data
+    runmodel = Models.Core.Run.Runner(named_tuple_data.model, True, False, False, None, runtype)
+    e = runmodel.Run()
+    if read_db:
+        data = _read_simulation(named_tuple_data.datastore)
+        return data
+
+
 def run_model(path):
     """
     :param path: path to apsimx file
     :return: none
     """
-    nt =load_apsimx_from_string(path)
+    nt = load_apsimx_from_string(path)
     ap = run(nt)
+
 
 def replace_soils():
     pass
+if __name__ =="__main__":
+    from apsimNGpy.base.base_data import LoadExampleFiles
 
-
+    ex = load_apsimx_from_string(LoadExampleFiles().get_maize)
 

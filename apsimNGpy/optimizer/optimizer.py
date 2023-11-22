@@ -6,6 +6,8 @@ from pathlib import Path
 from apsimNGpy.base.base_data import LoadExampleFiles
 import pandas as pd
 import time
+from abc import abstractmethod
+from dataclasses import dataclass
 
 # =============================================================================================================
 cwd = Path.cwd()
@@ -14,8 +16,27 @@ file = data.get_maize
 observed_yield = pd.read_csv("observed_yield_prototype.csv")
 observed_yield = observed_yield.Yield
 
+@dataclass
+class ApsimProblem:
+    @abstractmethod
+    def _evaluate(self, fx, *args, **kwargs):
+        pass
 
-# Define your process-based model as a function that takes model parameters as inputs and returns predicted yield
+
+# Define the problem
+class set_up_problem:
+    """
+    apsim defined problem returning some values based on the optimization problem
+    """
+
+    def __call__(self, problem, x):
+        """
+               apsim defined problem returning some values based on the optimization problem
+               """
+        class ApsimProblem()
+        fx = dict()
+        self.problem._evaluate(fx, *self.args, **self.kwargs)
+        return fx
 
 
 def process_model(radiation):
@@ -45,7 +66,6 @@ def optimization_function(x, *args):
     print(f"WIA is: {WIA}, CCC is: {ccc} rmse is: {rmse}, rrmse is : {metric.evaluate('RRMSE')}")
     return rmse
 
-
 # Load your observed yield and radiation data here
 observed_yield = np.array(observed_yield)
 x0 = [1.2]
@@ -73,10 +93,6 @@ class Problem:
         self.n_var = nu_var
         self.n_obj = nu_obj
         self.n_ieq_constr = nu_ieq_constr
-
-
-def substract():
-    print("subtract")
 
 
 class Optimize:

@@ -196,16 +196,16 @@ class validate(Metrics):
         self.actual = actual
         self.predicted = predicted
 
-    def evaluate(self, metric='RMSE'):
+    def evaluate(self, metric: str=mets.RMSE):
         """
         :param metric (str): metric to use default is RMSE
         :return: returns an index
         """
         assert isinstance(metric, str), "target metric should be a string"
-        metric_index = getattr(self, metric)(self.actual, self.predicted)
-        return metric_index
+        return getattr(self, metric)(self.actual, self.predicted)
 
-    def evaluate_all(self, verbose =False):
+
+    def evaluate_all(self, verbose: bool =False):
         """
         verbose (bool) will print all the metrics
         """
@@ -215,8 +215,6 @@ class validate(Metrics):
             for k, v in all.items():
                 print(k, ":", v)
         return all
-
-
 
 if __name__ == "__main__":
     x_data = np.array([1.2, 2.4, 3.6, 4.8, 5.0])

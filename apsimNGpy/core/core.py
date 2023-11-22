@@ -776,7 +776,8 @@ class APSIMNG():
                     param = fp.Value.Parameters[i].Key
                     if param in values.keys():
                         fp.Value.Parameters[i] = KeyValuePair[String, String](param, f"{values[param]}")
-        self.__reload()
+        self.save_edited_file()
+        self.load_apsimx_from_string(self.path)
         return self
 
     # immediately open the file in GUI

@@ -10,8 +10,7 @@ import sqlite3
 import sys
 import warnings
 import pythonnet
-from apsimNGpy.utililies.pythonet_config import get_apsimx_model_path, LoadPythonnet
-from pythonet_config import LoadPythonnet, get_apsimx_model_path
+from apsimNGpy.core.pythonet_config import LoadPythonnet, get_apsimx_model_path
 apsim_model = get_apsimx_model_path()
 loader = LoadPythonnet()()
 from os.path import realpath

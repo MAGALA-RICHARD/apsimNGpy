@@ -21,7 +21,7 @@ import apsimNGpy.manager.weathermanager as weather
 from functools import cache
 
 # prepare for the C# import
-from apsimNGpy.pythonet_config import LoadPythonnet
+from pythonet_config import LoadPythonnet
 
 py_config = LoadPythonnet()()  # double brackets avoids calling it twice
 

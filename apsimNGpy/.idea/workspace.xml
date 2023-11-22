@@ -4,85 +4,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5d471312-8496-4246-98d6-790439318160" name="Changes" comment="change som">
-      <change beforePath="$PROJECT_DIR$/../.RData" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../.Rhistory" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../.Rproj.user/5021BD03/pcs/source-pane.pper" beforeDir="false" afterPath="$PROJECT_DIR$/../.Rproj.user/5021BD03/pcs/source-pane.pper" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../.Rproj.user/5021BD03/pcs/windowlayoutstate.pper" beforeDir="false" afterPath="$PROJECT_DIR$/../.Rproj.user/5021BD03/pcs/windowlayoutstate.pper" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../.Rproj.user/5021BD03/pcs/workbench-pane.pper" beforeDir="false" afterPath="$PROJECT_DIR$/../.Rproj.user/5021BD03/pcs/workbench-pane.pper" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../.Rproj.user/5021BD03/sources/prop/INDEX" beforeDir="false" afterPath="$PROJECT_DIR$/../.Rproj.user/5021BD03/sources/prop/INDEX" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/apsimNGpy.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/other.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace (rmagala@iastate.edu 2).xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace (rmagala@iastate.edu).xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Logs/log_messagesWed-10-23.log" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/base/EXPERIMENT.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/base/EXPERIMENT_NT.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/base/NewMetrrr.met" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/base/SWIM.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/base/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/base/apsimNGpy.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/base/base_data.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/base/check.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/base/corn_base.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/base/maize.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/base/maize_copy.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/base/maize_copy.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/base/maize_copy.db-shm" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/base/maize_copy.db-wal" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/base/maize_nt.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/base/maize_nt_copy.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/base/maize_nt_copy.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/base/maize_nt_copy.db-shm" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/base/maize_nt_copy.db-wal" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/cython/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/cython/cy_utils.pyx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/cython/setup.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/polimap/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/polimap/pollipy.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pre_simulation/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pre_simulation/.idea/.name" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pre_simulation/.idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pre_simulation/.idea/modules.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pre_simulation/.idea/pre_simulation.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pre_simulation/.idea/vcs.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pre_simulation/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pre_simulation/custom.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pre_simulation/install_apsimx.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pre_simulation/pollinpy.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pre_simulation/pre_from_array.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pre_simulation/pre_processor.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pre_simulation/watershed.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/runner/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/runner/readmodel.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/runner/run_utils.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/serverapi/Csharp/ClassLibrary1/Class1.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/serverapi/Csharp/ClassLibrary1/ClassLibrary1.csproj" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/serverapi/Csharp/ClassLibrary1/obj/ClassLibrary1.csproj.nuget.dgspec.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/serverapi/Csharp/ClassLibrary1/obj/ClassLibrary1.csproj.nuget.g.props" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/serverapi/Csharp/ClassLibrary1/obj/ClassLibrary1.csproj.nuget.g.targets" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/serverapi/Csharp/ClassLibrary1/obj/Debug/net7.0/.NETCoreApp,Version=v7.0.AssemblyAttributes.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/serverapi/Csharp/ClassLibrary1/obj/Debug/net7.0/ClassLibrary1.AssemblyInfo.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/serverapi/Csharp/ClassLibrary1/obj/Debug/net7.0/ClassLibrary1.AssemblyInfoInputs.cache" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/serverapi/Csharp/ClassLibrary1/obj/Debug/net7.0/ClassLibrary1.GeneratedMSBuildEditorConfig.editorconfig" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/serverapi/Csharp/ClassLibrary1/obj/Debug/net7.0/ClassLibrary1.GlobalUsings.g.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/serverapi/Csharp/ClassLibrary1/obj/Debug/net7.0/ClassLibrary1.assets.cache" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/serverapi/Csharp/ClassLibrary1/obj/Debug/net7.0/ClassLibrary1.csproj.AssemblyReference.cache" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/serverapi/Csharp/ClassLibrary1/obj/project.assets.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/serverapi/Csharp/ClassLibrary1/obj/project.nuget.cache" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/serverapi/Csharp/Csharp.sln" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/serverapi/Csharp/connect" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/serverapi/New Text Document.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/serverapi/server.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/soils/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/soils/soil2apsimx.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/soils/soilmanager.py" beforeDir="false" />
+    <list default="true" id="5d471312-8496-4246-98d6-790439318160" name="Changes" comment="dev version">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/base_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/data/base_data.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/basic code to exisiting model.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/optimizer/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pythonnet_manager.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/settings.py" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -155,6 +84,9 @@
       <module name="apsimNGpy" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/parallel" />
       <option name="IS_MODULE_SDK" value="true" />
@@ -252,23 +184,8 @@
       <workItem from="1700430731248" duration="32000" />
       <workItem from="1700430774513" duration="139000" />
       <workItem from="1700430929651" duration="45949000" />
-      <workItem from="1700588196539" duration="16669000" />
-    </task>
-    <task id="LOCAL-00170" summary="changed the pythonnet behaviors">
-      <option name="closed" value="true" />
-      <created>1700175575703</created>
-      <option name="number" value="00170" />
-      <option name="presentableId" value="LOCAL-00170" />
-      <option name="project" value="LOCAL" />
-      <updated>1700175575703</updated>
-    </task>
-    <task id="LOCAL-00171" summary="changed the pythonnet behaviors">
-      <option name="closed" value="true" />
-      <created>1700175707337</created>
-      <option name="number" value="00171" />
-      <option name="presentableId" value="LOCAL-00171" />
-      <option name="project" value="LOCAL" />
-      <updated>1700175707337</updated>
+      <workItem from="1700588196539" duration="17059000" />
+      <workItem from="1700676914630" duration="843000" />
     </task>
     <task id="LOCAL-00172" summary="changed the pythonnet behaviors">
       <option name="closed" value="true" />
@@ -646,7 +563,23 @@
       <option name="project" value="LOCAL" />
       <updated>1700620895911</updated>
     </task>
-    <option name="localTasksCounter" value="219" />
+    <task id="LOCAL-00219" summary="dev version">
+      <option name="closed" value="true" />
+      <created>1700621592047</created>
+      <option name="number" value="00219" />
+      <option name="presentableId" value="LOCAL-00219" />
+      <option name="project" value="LOCAL" />
+      <updated>1700621592047</updated>
+    </task>
+    <task id="LOCAL-00220" summary="dev version">
+      <option name="closed" value="true" />
+      <created>1700621606167</created>
+      <option name="number" value="00220" />
+      <option name="presentableId" value="LOCAL-00220" />
+      <option name="project" value="LOCAL" />
+      <updated>1700621606167</updated>
+    </task>
+    <option name="localTasksCounter" value="221" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -664,7 +597,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Path class handling" />
     <MESSAGE value="new figure to illustrate successful simualtion" />
     <MESSAGE value="new figure to illustrate successful simulation" />
     <MESSAGE value="raise valueerror" />
@@ -689,7 +621,8 @@
     <MESSAGE value="removed duplicates" />
     <MESSAGE value="keep the simulations in memory" />
     <MESSAGE value="change som" />
-    <option name="LAST_COMMIT_MESSAGE" value="change som" />
+    <MESSAGE value="dev version" />
+    <option name="LAST_COMMIT_MESSAGE" value="dev version" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

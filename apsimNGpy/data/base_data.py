@@ -2,8 +2,8 @@ import os.path
 from importlib.resources import files
 from os.path import join, realpath, dirname, exists, split, basename
 from os import listdir, walk, getcwd, mkdir
+from pythonet_config import LoadPythonnet
 import shutil
-from apsimNGpy.utililies.pythonet_config import get_apsim_path, LoadPythonnet
 conf = LoadPythonnet()()
 from apsimNGpy.core.apsim import ApsimModel as SoilModel
 from pathlib import Path

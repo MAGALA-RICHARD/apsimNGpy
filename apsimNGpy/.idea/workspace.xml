@@ -4,14 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5d471312-8496-4246-98d6-790439318160" name="Changes" comment="dev version">
+    <list default="true" id="5d471312-8496-4246-98d6-790439318160" name="Changes" comment="dev______version">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/base_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/data/base_data.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/basic code to exisiting model.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/optimizer/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/optimizer/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pythonnet_manager.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/settings.py" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -185,23 +179,7 @@
       <workItem from="1700430774513" duration="139000" />
       <workItem from="1700430929651" duration="45949000" />
       <workItem from="1700588196539" duration="17059000" />
-      <workItem from="1700676914630" duration="843000" />
-    </task>
-    <task id="LOCAL-00172" summary="changed the pythonnet behaviors">
-      <option name="closed" value="true" />
-      <created>1700344814387</created>
-      <option name="number" value="00172" />
-      <option name="presentableId" value="LOCAL-00172" />
-      <option name="project" value="LOCAL" />
-      <updated>1700344814387</updated>
-    </task>
-    <task id="LOCAL-00173" summary="changed the pythonnet behaviors">
-      <option name="closed" value="true" />
-      <created>1700346027808</created>
-      <option name="number" value="00173" />
-      <option name="presentableId" value="LOCAL-00173" />
-      <option name="project" value="LOCAL" />
-      <updated>1700346027808</updated>
+      <workItem from="1700676914630" duration="1476000" />
     </task>
     <task id="LOCAL-00174" summary="changed the pythonnet behaviors">
       <option name="closed" value="true" />
@@ -579,7 +557,23 @@
       <option name="project" value="LOCAL" />
       <updated>1700621606167</updated>
     </task>
-    <option name="localTasksCounter" value="221" />
+    <task id="LOCAL-00221" summary="dev______version">
+      <option name="closed" value="true" />
+      <created>1700677883547</created>
+      <option name="number" value="00221" />
+      <option name="presentableId" value="LOCAL-00221" />
+      <option name="project" value="LOCAL" />
+      <updated>1700677883548</updated>
+    </task>
+    <task id="LOCAL-00222" summary="dev______version">
+      <option name="closed" value="true" />
+      <created>1700678090081</created>
+      <option name="number" value="00222" />
+      <option name="presentableId" value="LOCAL-00222" />
+      <option name="project" value="LOCAL" />
+      <updated>1700678090081</updated>
+    </task>
+    <option name="localTasksCounter" value="223" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -597,7 +591,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="new figure to illustrate successful simualtion" />
     <MESSAGE value="new figure to illustrate successful simulation" />
     <MESSAGE value="raise valueerror" />
     <MESSAGE value="search apsim path using classes" />
@@ -622,7 +615,8 @@
     <MESSAGE value="keep the simulations in memory" />
     <MESSAGE value="change som" />
     <MESSAGE value="dev version" />
-    <option name="LAST_COMMIT_MESSAGE" value="dev version" />
+    <MESSAGE value="dev______version" />
+    <option name="LAST_COMMIT_MESSAGE" value="dev______version" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

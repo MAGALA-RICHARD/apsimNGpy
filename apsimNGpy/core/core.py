@@ -69,9 +69,9 @@ class APSIMNG():
         read_from_string (boolean) if True file will be uploaded to memory through json module most preffered, otherwise we can read from file
         """
         if isinstance(model, str):
-           assert os.path.exists(model), "The file does not exists in the specified directory"
-           if not model.endswith('.apsimx'):
-               raise ValueError("Did you forget the apsimx extention?")
+            assert os.path.exists(model), "The file does not exists in the specified directory"
+            if not model.endswith('.apsimx'):
+                raise ValueError("Did you forget the apsimx extention?")
         self.results = None
         self.Model = None
         self.datastore = None
@@ -98,7 +98,7 @@ class APSIMNG():
             else:
                 self.path = apsimx_file
 
-            if read_from_string == True: # this is the fastest
+            if read_from_string == True:  # this is the fastest
                 self.load_apsimx_from_string(self.path)
             else:
                 self._load_apsimx(self.path)
@@ -132,7 +132,6 @@ class APSIMNG():
 
                 for i in experiment:
                     simus = list(i.FindAllChildren[Models.Core.Simulation]())
-
 
                 return (simus)
 
@@ -701,6 +700,15 @@ class APSIMNG():
 
             return self
 
+    def __reload(self):
+        self.save_edited_file()
+        if self.out_path:
+            self._load_apsimx(self.out_path)
+        else:
+            self._load_apsimx(self.path)
+
+        return self
+
     def update_management_decissions(self, management, simulations=None, reload=False):
         """Update management, handles multiple managers in a loop
 
@@ -736,13 +744,7 @@ class APSIMNG():
                                 # action.Parameters[i]= {param:f"{values[param]}"}
         # self.examine_management_info()                # action.GetParametersFromScriptModel()
         if reload:
-            self.save_edited_file()
-        if self.out_path:
-            self._load_apsimx(self.out_path)
-        else:
-            self._load_apsimx(self.path)
-
-        return self
+            self.__reload()
 
     # experimental
     @timing_decorator
@@ -774,9 +776,7 @@ class APSIMNG():
                     param = fp.Value.Parameters[i].Key
                     if param in values.keys():
                         fp.Value.Parameters[i] = KeyValuePair[String, String](param, f"{values[param]}")
-                fp.Value.OnPreLink()
-            self.save_edited_file()
-
+        self.__reload()
         return self
 
     # immediately open the file in GUI
@@ -1388,7 +1388,7 @@ if __name__ == '__main__':
 
     # Model = FileFormat.ReadFromFile[Models.Core.Simulations](model, None, False)
     os.chdir(Path.home())
-    from apsimNGpy.base.base_data import LoadExampleFiles
+    from apsimNGpy.data.base_data import LoadExampleFiles
 
     al = LoadExampleFiles(Path.cwd())
     model = al.get_maize
@@ -1436,4 +1436,4 @@ if __name__ == '__main__':
 
     path = r'C:\Users\rmagala\OneDrive\ApsimX'
 
-    ff=find_word_in_files(path, 'get_Location')
+    ff = find_word_in_files(path, 'get_Location')

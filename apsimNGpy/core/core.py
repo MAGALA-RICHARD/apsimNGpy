@@ -708,8 +708,8 @@ class APSIMNG():
             self._load_apsimx(self.path)
 
         return self
-
-    def update_management_decissions(self, management, simulations=None, reload=False):
+    @timing_decorator
+    def update_management_decissions(self, management, simulations=None, reload=True):
         """Update management, handles multiple managers in a loop
 
         Parameters
@@ -726,11 +726,7 @@ class APSIMNG():
         # from apsimx.utils import KeyValuePair
         for sim in self.find_simulations(simulations):
             zone = sim.FindChild[Models.Core.Zone]()
-
             for action in zone.FindAllChildren[Models.Manager]():
-                # if not action.RebuildScriptModel:
-                if not reload:
-                    action.RebuildScriptModel()  # rebuilds the scripts back again. Still wondering how this is working
                 for managementt in management:
                     if action.Name == managementt["Name"]:
                         values = managementt
@@ -744,7 +740,8 @@ class APSIMNG():
                                 # action.Parameters[i]= {param:f"{values[param]}"}
         # self.examine_management_info()                # action.GetParametersFromScriptModel()
         if reload:
-            self.__reload()
+            self.save_edited_file()
+            self.load_apsimx_from_string(self.path)
 
     # experimental
     @timing_decorator
@@ -764,18 +761,30 @@ class APSIMNG():
             management = [management]
 
         for sim in self.find_simulations(simulations):
-
             zone = sim.FindChild[Models.Core.Zone]()
             zn = zone.FindAllChildren[Models.Manager]()
             zone_path = zone.FullPath
-            for mgt in management:
-                action_path = f'{zone_path}.{mgt.get("Name")}'
-                fp = zone.FindByPath(action_path)
-                values = mgt
-                for i in range(len(fp.Value.Parameters)):
-                    param = fp.Value.Parameters[i].Key
-                    if param in values.keys():
-                        fp.Value.Parameters[i] = KeyValuePair[String, String](param, f"{values[param]}")
+
+        def _chg(mgt):
+            action_path = f'{zone_path}.{mgt.get("Name")}'
+            fp = zone.FindByPath(action_path)
+            values = mgt
+            for i in range(len(fp.Value.Parameters)):
+                param = fp.Value.Parameters[i].Key
+                if param in values.keys():
+                    fp.Value.Parameters[i] = KeyValuePair[String, String](param, f"{values[param]}")
+
+            return zone
+        ap = map(_chg, management)
+        list(ap)
+            # for mgt in management:
+            #     action_path = f'{zone_path}.{mgt.get("Name")}'
+            #     fp = zone.FindByPath(action_path)
+            #     values = mgt
+            #     for i in range(len(fp.Value.Parameters)):
+            #         param = fp.Value.Parameters[i].Key
+            #         if param in values.keys():
+            #             fp.Value.Parameters[i] = KeyValuePair[String, String](param, f"{values[param]}")
         self.save_edited_file()
         self.load_apsimx_from_string(self.path)
         return self
@@ -1403,7 +1412,7 @@ if __name__ == '__main__':
     for i in [0.5, 0.0, 0.1, 1]:
         # model = APSIMNG(al.get_maize, read_from_string=False)
         pm = {'Name': 'PostharvestillageMaize', "Fraction": i}
-        model.update_mgt(
+        model.update_management_decissions(
             [pm, pt, pl], simulations=model.extract_simulation_name)
         lm = model
         # model.examine_management_info()
@@ -1416,25 +1425,7 @@ if __name__ == '__main__':
     pt = model.update_mgt(pl)
 
 
-    def find_word_in_files(folder_path, target_word):
-        found_files = []
-        for root, dirs, files in os.walk(folder_path):
-            for filename in files:
-                if filename.endswith(".cs"):  # Filter for C# files
-                    file_path = os.path.join(root, filename)
-                    if os.path.isfile(file_path):
-                        try:
-                            with open(file_path, 'r', encoding='utf-8') as file:
-                                content = file.read()
-                                if target_word in content:
-                                    found_files.append(file_path)
-                                    print(file_path)
-                        except Exception as e:
-                            print(f"An error occurred while reading '{file_path}': {str(e)}")
 
-        return found_files
 
 
     path = r'C:\Users\rmagala\OneDrive\ApsimX'
-
-    ff = find_word_in_files(path, 'get_Location')

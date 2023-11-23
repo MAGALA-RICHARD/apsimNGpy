@@ -19,11 +19,10 @@ import threading
 import time
 import apsimNGpy.manager.weathermanager as weather
 from functools import cache
-
 # prepare for the C# import
 from apsimNGpy.core.pythonet_config import LoadPythonnet
 
-py_config = LoadPythonnet()()  # double brackets avoids calling it twice
+#py_config = LoadPythonnet()()  # double brackets avoids calling it twice
 
 # now we can safely import C# libraries
 from System.Collections.Generic import *

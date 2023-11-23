@@ -45,7 +45,7 @@ def get_apsimx_model_path():
     Quickly gets the APSIM installation path
     """
     try:
-        pat = os.environ['APSIMx']
+        pat = os.environ['APSIM']
         if pat:
             return Path(os.path.realpath(pat))
     except KeyError:
@@ -274,7 +274,7 @@ def add_path(new_path):
     else:
         print("path is already added to the system")
 
-
+loader = LoadPythonnet()()
 # Example usage:
 if __name__ == '__main__':
     loader = LoadPythonnet()

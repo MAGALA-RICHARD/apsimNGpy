@@ -2,21 +2,26 @@ import os.path
 from importlib.resources import files
 from os.path import join, realpath, dirname, exists, split, basename
 from os import listdir, walk, getcwd, mkdir
-from apsimNGpy.core.pythonet_config import  LoadPythonnet, get_apsim_path
+from apsimNGpy.core.pythonet_config import LoadPythonnet, get_apsim_path
 import shutil
+
 conf = LoadPythonnet()()
 from apsimNGpy.core.apsim import ApsimModel as SoilModel
 from pathlib import Path
 from functools import cache
 import os
-wp = 'NewMetrrr.met'
+
+WEATHER_CON = 'NewMetrrr.met'
 DATA = 'data'
 APSIM_DATA = 'apsim'
+WEATHER = 'weather'
+
+
 def _weather(path):
     resource_directory = files(DATA)
-    data_file_path = resource_directory /'weather' / wp
+    data_file_path = resource_directory / WEATHER / WEATHER_CON
     print(data_file_path.is_file())
-    nameout = join(path, wp)
+    nameout = join(path, WEATHER_CON)
     contents = data_file_path.read_text()
     with open(nameout, "w+") as openfile:
         openfile.write(contents)
@@ -25,7 +30,7 @@ def _weather(path):
 
 def _get_maize_example(file_path):
     resource_directory = files(DATA)
-    json_file_path = resource_directory /APSIM_DATA/ 'corn_base.apsimx'
+    json_file_path = resource_directory / APSIM_DATA / 'corn_base.apsimx'
     contents = json_file_path.read_text()
     nameout = join(file_path, 'corn_base.apsimx')
     with open(nameout, "w+") as openfile:
@@ -79,7 +84,7 @@ def _get_maize_NF_experiment_NT(file_path):
 
 def _get_SWIM(file_path):
     resource_directory = files(DATA)
-    json_file_path = resource_directory / APSIM_DATA/ 'SWIM.apsimx'
+    json_file_path = resource_directory / APSIM_DATA / 'SWIM.apsimx'
     contents = json_file_path.read_text()
     nameout = join(file_path, 'SWIM.apsimx')
     with open(nameout, "w+") as openfile:
@@ -95,7 +100,7 @@ def _clean_up(path):
 
 
 class LoadExampleFiles():
-    def __init__(self, path = None):
+    def __init__(self, path=None):
         """
         LoadExampleFiles constructor.
 
@@ -176,6 +181,7 @@ class LoadExampleFiles():
         """
         self.weather_example = _weather(self.path)
         return _clean_up(_get_maize_no_till(self.path))
+
     @property
     def get_maize_model(self):
         """
@@ -185,6 +191,7 @@ class LoadExampleFiles():
         where you wat a model always in memory to reducing laoding overload
         """
         return SoilModel(self.get_maize)
+
     @property
     def get_maize_model_no_till(self):
         """
@@ -214,12 +221,10 @@ for i in dr:
 weather_path = os.path.join(examples, "WeatherFiles")
 
 
-
-
 class DetectApsimExamples:
-    def __init__(self, copy_path:str = None):
+    def __init__(self, copy_path: str = None):
         self.all = []
-        self.copy_path =copy_path
+        self.copy_path = copy_path
         for name, file in examples_files.items():
             setattr(self, name, name)
             self.all.append(name)
@@ -241,8 +246,8 @@ class DetectApsimExamples:
         Raises:
         OSError: If there are issues with copying or replacing files.
         """
-        if  not self.copy_path:
-            self.copy_path= os.getcwd()
+        if not self.copy_path:
+            self.copy_path = os.getcwd()
         path = join(self.copy_path, crop) + '.apsimx'
         cp = shutil.copy(examples_files[crop], path)
         apsim = SoilModel(cp)
@@ -259,6 +264,6 @@ class DetectApsimExamples:
 
 ApsimExample = DetectApsimExamples()
 
-if __name__== '__main__':
+if __name__ == '__main__':
     pp = Path.home()
     os.chdir(pp)

@@ -762,7 +762,6 @@ class APSIMNG():
 
         for sim in self.find_simulations(simulations):
             zone = sim.FindChild[Models.Core.Zone]()
-            zn = zone.FindAllChildren[Models.Manager]()
             zone_path = zone.FullPath
 
         def _chg(mgt):

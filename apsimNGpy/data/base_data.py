@@ -2,7 +2,7 @@ import os.path
 from importlib.resources import files
 from os.path import join, realpath, dirname, exists, split, basename
 from os import listdir, walk, getcwd, mkdir
-from pythonet_config import LoadPythonnet
+from apsimNGpy.core.pythonet_config import  LoadPythonnet, get_apsim_path
 import shutil
 conf = LoadPythonnet()()
 from apsimNGpy.core.apsim import ApsimModel as SoilModel
@@ -209,11 +209,6 @@ for i in dr:
     if i.endswith(".apsimx"):
         name, ext = i.split(".")
         examples_files[name] = join(examples, i)
-#TODO remove this copy path
-copy_path = join(getcwd(), 'apsim_default_model_examples')
-
-if not exists(copy_path):
-    mkdir(copy_path)
 
 weather_path = os.path.join(examples, "WeatherFiles")
 
@@ -221,8 +216,9 @@ pp = Path.home()
 
 
 class DetectApsimExamples:
-    def __init__(self):
+    def __init__(self, copy_path:str = None):
         self.all = []
+        self.copy_path =copy_path
         for name, file in examples_files.items():
             setattr(self, name, name)
             self.all.append(name)
@@ -244,7 +240,9 @@ class DetectApsimExamples:
         Raises:
         OSError: If there are issues with copying or replacing files.
         """
-        path = join(copy_path, crop) + '.apsimx'
+        if  not self.copy_path:
+            self.copy_path= os.getcwd()
+        path = join(self.copy_path, crop) + '.apsimx'
         cp = shutil.copy(examples_files[crop], path)
         apsim = SoilModel(cp)
         wp = os.path.join(weather_path, os.path.basename(apsim.show_met_file_in_simulation()))

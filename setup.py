@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 import sys
 import os
-VERSION = '0.0.3beta'
+VERSION = '0.0.3'
 DESCRIPTION = 'apsimx next generation package interface'
 LONG_DESCRIPTION = 'run, edit, download soils and weather and interact with the apsimx file'
 with open('README.rst') as readme_file:
@@ -17,10 +17,10 @@ setup(
     long_description=readme,
     packages=find_packages(),
     include_package_data=True,
-    package_data={'': ['basefiles/*.apsimx', 'basefiles/*.met', 'examples/*.png']},
-     keywords=['python', 'apsim'],
+    package_data={'': ['./apsimNGpy/data/*.apsimx', './apsimNGpy/*.met','./apsimNGpy/examples/*.png']},
+     keywords=['python', 'APSIM Next Generation', 'pythonnet', 'crop modeling'],
      classifiers= [
-            "Development Status :: trial",
+            "Development Status :: 3 - Alpha",
             "Intended Audience :: Education",
             "Programming Language :: Python :: 3",
             "Operating System :: Microsoft :: Windows",

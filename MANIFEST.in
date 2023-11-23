@@ -1,2 +1,3 @@
-recursive-include apsimNGpy/basefiles *
+recursive-include apsimNGpy/data *
 recursive-include images *.png
+recursive incldue files *.apsimx, *.met,

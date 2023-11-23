@@ -13,7 +13,7 @@ wp = 'NewMetrrr.met'
 
 def _weather(path):
     resource_directory = files('apsimNGpy')
-    data_file_path = resource_directory / 'basefiles' / wp
+    data_file_path = resource_directory / 'data/weather' / wp
     nameout = join(path, wp)
     contents = data_file_path.read_text()
     with open(nameout, "w+") as openfile:
@@ -23,7 +23,7 @@ def _weather(path):
 
 def _get_maize_example(file_path):
     resource_directory = files('apsimNGpy')
-    json_file_path = resource_directory / 'basefiles' / 'corn_base.apsimx'
+    json_file_path = resource_directory / 'data/apsim' / 'corn_base.apsimx'
     contents = json_file_path.read_text()
     nameout = join(file_path, 'corn_base.apsimx')
     with open(nameout, "w+") as openfile:
@@ -33,7 +33,7 @@ def _get_maize_example(file_path):
 
 def _get_maize(file_path):
     resource_directory = files('apsimNGpy')
-    json_file_path = resource_directory / 'basefiles' / 'maize.apsimx'
+    json_file_path = resource_directory / 'data/apsim' / 'maize.apsimx'
     contents = json_file_path.read_text()
     nameout = join(file_path, 'maize.apsimx')
     with open(nameout, "w+") as openfile:
@@ -43,7 +43,7 @@ def _get_maize(file_path):
 
 def _get_maize_no_till(file_path):
     resource_directory = files('apsimNGpy')
-    json_file_path = resource_directory / 'basefiles' / 'maize_nt.apsimx'
+    json_file_path = resource_directory / 'data/apsim' / 'maize_nt.apsimx'
     contents = json_file_path.read_text()
     nameout = join(file_path, 'maize_nt.apsimx')
     with open(nameout, "w+") as openfile:
@@ -57,7 +57,7 @@ def _get_maize_NF_experiment(file_path):
     returns the path
     """
     resource_directory = files('apsimNGpy')
-    json_file_path = resource_directory / 'basefiles' / 'EXPERIMENT.apsimx'
+    json_file_path = resource_directory / 'data/apsim' / 'EXPERIMENT.apsimx'
     contents = json_file_path.read_text()
     nameout = join(file_path, 'EXPERIMENT.apsimx')
     with open(nameout, "w+") as openfile:
@@ -67,7 +67,7 @@ def _get_maize_NF_experiment(file_path):
 
 def _get_maize_NF_experiment_NT(file_path):
     resource_directory = files('apsimNGpy')
-    json_file_path = resource_directory / 'basefiles' / 'EXPERIMENT_NT.apsimx'
+    json_file_path = resource_directory / 'data/apsim' / 'EXPERIMENT_NT.apsimx'
     contents = json_file_path.read_text()
     nameout = join(file_path, 'EXPERIMENT_NT.apsimx')
     with open(nameout, "w+") as openfile:
@@ -77,7 +77,7 @@ def _get_maize_NF_experiment_NT(file_path):
 
 def _get_SWIM(file_path):
     resource_directory = files('apsimNGpy')
-    json_file_path = resource_directory / 'basefiles' / 'SWIM.apsimx'
+    json_file_path = resource_directory / 'data/apsim'/ 'SWIM.apsimx'
     contents = json_file_path.read_text()
     nameout = join(file_path, 'SWIM.apsimx')
     with open(nameout, "w+") as openfile:
@@ -103,6 +103,7 @@ class LoadExampleFiles():
         Raises:
         NameError: If the specified path does not exist.
         """
+        self.weather_example = None
         if path is None:
             path = os.getcwd()
         if path and not exists(path):

@@ -13,8 +13,8 @@ from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganizeAPSIM
 
 # prepare for the C# import
 from apsimNGpy.core.pythonet_config import LoadPythonnet
-py_config = LoadPythonnet()()
 
+py_config = LoadPythonnet()()
 
 # now we can safely import any c# related libraries
 from System.Collections.Generic import *
@@ -45,9 +45,10 @@ def timing_decorator(func):
 
 
 class ApsimModel(APSIMNG):
-    def __init__(self, model: Union[str, Simulations], copy:bool=False, out_path: str=None, read_from_string=True,
+    def __init__(self, model: Union[str, Simulations], copy: bool = False, out_path: str = None, read_from_string=True,
                  lonlat=None,
-                 soil_series: str='domtcp', thickness: int=20, bottomdepth:int=200, thickness_values: list=None, run_all_soils: bool =False):
+                 soil_series: str = 'domtcp', thickness: int = 20, bottomdepth: int = 200,
+                 thickness_values: list = None, run_all_soils: bool = False):
         super().__init__(model, read_from_string)
         """get suurgo soil tables and organise it to apsim soil profiles
         --------------------
@@ -318,7 +319,7 @@ class ApsimModel(APSIMNG):
         self.replace_met_file(wpath, sim_name)
         return self
 
-    def run_edited_file(self, simulations=None, clean=False, multithread=True):
+    def run_edited_file(self, simulations=None, clean=True, multithread=True):
         """Run simulations in this subclass if we want to clean the database, we need to
          spawn the path with one process to avoid os access permission eros
 
@@ -357,6 +358,7 @@ class ApsimModel(APSIMNG):
         if (len(data_run) > 0):
             print(data_run[0].ToString())
         self.results = self._read_simulation()  # still wondering if this should be a static method
+        self._DataStore.Close()
         return self.results
 
     def spin_up(self, report_name: str = 'Report', start=None, end=None, spin_var="Carbon"):
@@ -409,14 +411,17 @@ class ApsimModel(APSIMNG):
             self.replace_any_soil_physical(spin_var, dul)
 
             return self
+
+
 if __name__ == '__main__':
     # test
     from pathlib import Path
 
-    #Model = FileFormat.ReadFromFile[Models.Core.Simulations](model, None, False)
+    # Model = FileFormat.ReadFromFile[Models.Core.Simulations](model, None, False)
     os.chdir(Path.home())
     from apsimNGpy.data.base_data import LoadExampleFiles
 
     al = LoadExampleFiles(Path.cwd())
     model = al.get_maize
-    model = ApsimModel(model, read_from_string = True)
+    print(model)
+    model = ApsimModel(model, read_from_string=True)

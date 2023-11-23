@@ -4,7 +4,27 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5d471312-8496-4246-98d6-790439318160" name="Changes" comment="dev______version" />
+    <list default="true" id="5d471312-8496-4246-98d6-790439318160" name="Changes" comment="dev______version">
+      <change afterPath="$PROJECT_DIR$/core/.idea/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/core/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/core/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/core/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/core/.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/core/.idea/other.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/core/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/.idea/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/.idea/other.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/core.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/core.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/pythonet_config.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/pythonet_config.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/base_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/data/base_data.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -76,9 +96,6 @@
       <module name="apsimNGpy" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/parallel" />
       <option name="IS_MODULE_SDK" value="true" />
@@ -177,31 +194,9 @@
       <workItem from="1700430774513" duration="139000" />
       <workItem from="1700430929651" duration="45949000" />
       <workItem from="1700588196539" duration="17059000" />
-      <workItem from="1700676914630" duration="2699000" />
-    </task>
-    <task id="LOCAL-00177" summary="documented">
-      <option name="closed" value="true" />
-      <created>1700364022553</created>
-      <option name="number" value="00177" />
-      <option name="presentableId" value="LOCAL-00177" />
-      <option name="project" value="LOCAL" />
-      <updated>1700364022553</updated>
-    </task>
-    <task id="LOCAL-00178" summary="documented">
-      <option name="closed" value="true" />
-      <created>1700413618919</created>
-      <option name="number" value="00178" />
-      <option name="presentableId" value="LOCAL-00178" />
-      <option name="project" value="LOCAL" />
-      <updated>1700413618919</updated>
-    </task>
-    <task id="LOCAL-00179" summary="documented">
-      <option name="closed" value="true" />
-      <created>1700413854780</created>
-      <option name="number" value="00179" />
-      <option name="presentableId" value="LOCAL-00179" />
-      <option name="project" value="LOCAL" />
-      <updated>1700413854780</updated>
+      <workItem from="1700676914630" duration="3673000" />
+      <workItem from="1700684599413" duration="23000" />
+      <workItem from="1700686967594" duration="4940000" />
     </task>
     <task id="LOCAL-00180" summary="documented">
       <option name="closed" value="true" />
@@ -571,7 +566,31 @@
       <option name="project" value="LOCAL" />
       <updated>1700679359745</updated>
     </task>
-    <option name="localTasksCounter" value="226" />
+    <task id="LOCAL-00226" summary="dev______version">
+      <option name="closed" value="true" />
+      <created>1700679809617</created>
+      <option name="number" value="00226" />
+      <option name="presentableId" value="LOCAL-00226" />
+      <option name="project" value="LOCAL" />
+      <updated>1700679809617</updated>
+    </task>
+    <task id="LOCAL-00227" summary="dev______version">
+      <option name="closed" value="true" />
+      <created>1700680044048</created>
+      <option name="number" value="00227" />
+      <option name="presentableId" value="LOCAL-00227" />
+      <option name="project" value="LOCAL" />
+      <updated>1700680044048</updated>
+    </task>
+    <task id="LOCAL-00228" summary="dev______version">
+      <option name="closed" value="true" />
+      <created>1700702883127</created>
+      <option name="number" value="00228" />
+      <option name="presentableId" value="LOCAL-00228" />
+      <option name="project" value="LOCAL" />
+      <updated>1700702883127</updated>
+    </task>
+    <option name="localTasksCounter" value="229" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

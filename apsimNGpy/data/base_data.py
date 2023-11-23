@@ -212,7 +212,7 @@ for i in dr:
 
 weather_path = os.path.join(examples, "WeatherFiles")
 
-pp = Path.home()
+
 
 
 class DetectApsimExamples:
@@ -257,3 +257,7 @@ class DetectApsimExamples:
 
 
 ApsimExample = DetectApsimExamples()
+
+if __name__== '__main__':
+    pp = Path.home()
+    os.chdir(pp)

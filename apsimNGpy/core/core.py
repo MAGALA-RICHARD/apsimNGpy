@@ -707,7 +707,7 @@ class APSIMNG():
             self._load_apsimx(self.path)
 
         return self
-    @timing_decorator
+
     def update_management_decissions(self, management, simulations=None, reload=True):
         """Update management, handles multiple managers in a loop
 

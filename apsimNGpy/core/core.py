@@ -1406,7 +1406,7 @@ if __name__ == '__main__':
     for i in [0.5, 0.0, 0.1, 1]:
         # model = APSIMNG(al.get_maize, read_from_string=False)
         pm = {'Name': 'PostharvestillageMaize', "Fraction": i}
-        model.update_mgt(
+        model.update_management_decissions(
             [pm, pt, pl], simulations=model.extract_simulation_name)
         lm = model
         # model.examine_management_info()

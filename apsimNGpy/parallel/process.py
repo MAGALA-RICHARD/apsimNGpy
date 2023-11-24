@@ -71,7 +71,7 @@ def run_apsimxfiles_in_parallel(iterable_files, ncores=None, use_threads=False):
         print(perf_counter() - a, 'seconds', f'to run {len(files)} files')
 
 
-def read_result_in_parallel(iterable_files, ncores=None, use_threads=False,  report_name ="Report"):
+def read_result_in_parallel(iterable_files, ncores=None, use_threads=False, report_name="Report"):
     """
 
     Read APSIMX simulation databases results from multiple files in parallel.
@@ -118,7 +118,7 @@ def read_result_in_parallel(iterable_files, ncores=None, use_threads=False,  rep
     if not use_threads:
         a = perf_counter()
         with ProcessPoolExecutor(ncore2use) as pool:
-            futures = [pool.submit(read_simulation, i,  report_name) for i in files]
+            futures = [pool.submit(read_simulation, i, report_name) for i in files]
             progress = tqdm(total=len(futures), position=0, leave=True,
                             bar_format='reading file databases: {percentage:3.0f}% completed')
             # Iterate over the futures as they complete
@@ -132,7 +132,7 @@ def read_result_in_parallel(iterable_files, ncores=None, use_threads=False,  rep
     else:
         a = perf_counter()
         with ThreadPoolExecutor(ncore2use) as tpool:
-            futures = [tpool.submit(read_simulation, i,  report_name) for i in files]
+            futures = [tpool.submit(read_simulation, i, report_name) for i in files]
             progress = tqdm(total=len(futures), position=0, leave=True,
                             bar_format='reading file databases: {percentage:3.0f}% completed')
             # Iterate over the futures as they complete
@@ -216,3 +216,17 @@ def download_soil_tables(iterable, use_threads=False, ncores=None, soil_series=N
                 progress.update(1)
                 yield future.result()
             progress.close()
+
+
+def custom_parallel(func, iterable, ncores=6, *arg):
+    a = perf_counter()
+    with ProcessPoolExecutor(max_workers=12) as ppool:
+        futures = [ppool.submit(func, ncores) for i in iterable]
+        progress = tqdm(total=len(futures), position=0, leave=True,
+                        bar_format='Running apsimx files: {percentage:3.0f}% completed')
+        # Iterate over the futures as they complete
+        for future in as_completed(futures):
+            yield future.result()
+            progress.update(1)
+        progress.close()
+    print(perf_counter() - a, 'seconds', f'to run {len(files)} files')

@@ -220,8 +220,8 @@ def download_soil_tables(iterable, use_threads=False, ncores=None, soil_series=N
 
 def custom_parallel(func, iterable, ncores=6, *arg):
     a = perf_counter()
-    with ProcessPoolExecutor(max_workers=12) as ppool:
-        futures = [ppool.submit(func, ncores) for i in iterable]
+    with ProcessPoolExecutor(max_workers=ncores) as ppool:
+        futures = [ppool.submit(func, *arg) for i in iterable]
         progress = tqdm(total=len(futures), position=0, leave=True,
                         bar_format='Running apsimx files: {percentage:3.0f}% completed')
         # Iterate over the futures as they complete
@@ -230,3 +230,7 @@ def custom_parallel(func, iterable, ncores=6, *arg):
             progress.update(1)
         progress.close()
     print(perf_counter() - a, 'seconds', f'to run {len(files)} files')
+if __name__=='__main__':
+    def fn(x):
+        return 1*x
+    lm = custom_parallel(fn, range(10000))

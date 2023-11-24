@@ -779,11 +779,9 @@ class APSIMNG():
             #         param = fp.Value.Parameters[i].Key
             #         if param in values.keys():
             #             fp.Value.Parameters[i] = KeyValuePair[String, String](param, f"{values[param]}")
-        self.out_path = 'ma.apsimx'
         self.save_edited_file()
-        print(self.path)
         self.load_apsimx_from_string(self.path)
-        return self
+        return sim
 
     # immediately open the file in GUI
     def show_file_in_APSIM_GUI(self):

@@ -319,7 +319,7 @@ class ApsimModel(APSIMNG):
         self.replace_met_file(wpath, sim_name)
         return self
 
-    def run_edited_file(self, simulations=None, clean=True, multithread=True):
+    def run_edited_file(self, simulations=None, clean=False, multithread=True):
         """Run simulations in this subclass if we want to clean the database, we need to
          spawn the path with one process to avoid os access permission eros
 

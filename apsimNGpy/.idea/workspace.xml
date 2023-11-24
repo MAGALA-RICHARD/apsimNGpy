@@ -5,26 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="5d471312-8496-4246-98d6-790439318160" name="Changes" comment="data">
-      <change afterPath="$PROJECT_DIR$/core/.idea/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/core/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/core/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/core/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/core/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/core/.idea/other.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/core/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/.idea/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/.idea/other.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/.idea/vcs.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../MANIFEST.in" beforeDir="false" afterPath="$PROJECT_DIR$/../MANIFEST.in" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../README.rst" beforeDir="false" afterPath="$PROJECT_DIR$/../README.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/server/.idea/server.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/core.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/core.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/data/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/../setup.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -50,6 +32,7 @@
   "keyToString": {
     "ASKED_ADD_EXTERNAL_FILES": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "WebServerToolWindowFactoryState": "false",
     "git-widget-placeholder": "dev",
     "last_opened_file_path": "C:/Users/rmagala/Box/apsimNGpy/apsimNGpy/core",
@@ -197,15 +180,7 @@
       <workItem from="1700588196539" duration="17059000" />
       <workItem from="1700676914630" duration="3673000" />
       <workItem from="1700684599413" duration="23000" />
-      <workItem from="1700686967594" duration="10638000" />
-    </task>
-    <task id="LOCAL-00182" summary="store default files to current working directory is path is not specified">
-      <option name="closed" value="true" />
-      <created>1700420778012</created>
-      <option name="number" value="00182" />
-      <option name="presentableId" value="LOCAL-00182" />
-      <option name="project" value="LOCAL" />
-      <updated>1700420778012</updated>
+      <workItem from="1700686967594" duration="19725000" />
     </task>
     <task id="LOCAL-00183" summary="store default files to current working directory is path is not specified">
       <option name="closed" value="true" />
@@ -591,7 +566,15 @@
       <option name="project" value="LOCAL" />
       <updated>1700725535299</updated>
     </task>
-    <option name="localTasksCounter" value="231" />
+    <task id="LOCAL-00231" summary="data">
+      <option name="closed" value="true" />
+      <created>1700798046437</created>
+      <option name="number" value="00231" />
+      <option name="presentableId" value="LOCAL-00231" />
+      <option name="project" value="LOCAL" />
+      <updated>1700798046437</updated>
+    </task>
+    <option name="localTasksCounter" value="232" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

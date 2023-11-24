@@ -22,35 +22,8 @@
       <change beforePath="$PROJECT_DIR$/../MANIFEST.in" beforeDir="false" afterPath="$PROJECT_DIR$/../MANIFEST.in" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../README.rst" beforeDir="false" afterPath="$PROJECT_DIR$/../README.rst" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/basefiles/EXPERIMENT.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/basefiles/EXPERIMENT_2py.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/basefiles/EXPERIMENT_NT.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/basefiles/EXPERIMENTclone.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/basefiles/NewMetrrr.met" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/basefiles/SWIM.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/basefiles/SWIM2.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/basefiles/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/basefiles/agpasture.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/basefiles/corn_base.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/basefiles/corn_base.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/basefiles/corn_base_2py.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/basefiles/corn_base_swim.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/basefiles/corn_base_swim3.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/basefiles/corn_baseclone.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/basefiles/corn_baseclone.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/basefiles/covercrp_test.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/basefiles/maize.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/basefiles/maize.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/basefiles/maize_nt.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/basefiles/maize_nt.apsimx.bak" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/basefiles/maize_nt.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/basefiles/swim3.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/basefiles/swim4.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/basefiles/swimx.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/basefiles/switchhgrass_prototype.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/basefiles/switchhgrass_prototype.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/basefiles/test.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/basefiles/testx.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/core.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/core.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/data/__init__.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/../setup.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -73,21 +46,21 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/rmagala/Box/apsimNGpy/apsimNGpy/core&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;inlay.hints&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "git-widget-placeholder": "dev",
+    "last_opened_file_path": "C:/Users/rmagala/Box/apsimNGpy/apsimNGpy/core",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "settings.editor.selected.configurable": "inlay.hints",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\rmagala\Box\apsimNGpy\apsimNGpy\core" />
@@ -224,7 +197,7 @@
       <workItem from="1700588196539" duration="17059000" />
       <workItem from="1700676914630" duration="3673000" />
       <workItem from="1700684599413" duration="23000" />
-      <workItem from="1700686967594" duration="8741000" />
+      <workItem from="1700686967594" duration="9511000" />
     </task>
     <task id="LOCAL-00182" summary="store default files to current working directory is path is not specified">
       <option name="closed" value="true" />

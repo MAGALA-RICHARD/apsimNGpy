@@ -762,19 +762,15 @@ class APSIMNG():
         for sim in self.find_simulations(simulations):
             zone = sim.FindChild[Models.Core.Zone]()
             zone_path = zone.FullPath
+            for mgt in management:
+                action_path = f'{zone_path}.{mgt.get("Name")}'
+                fp = zone.FindByPath(action_path)
+                values = mgt
+                for i in range(len(fp.Value.Parameters)):
+                    param = fp.Value.Parameters[i].Key
+                    if param in values.keys():
+                        fp.Value.Parameters[i] = KeyValuePair[String, String](param, f"{values[param]}")
 
-        def _chg(mgt):
-            action_path = f'{zone_path}.{mgt.get("Name")}'
-            fp = zone.FindByPath(action_path)
-            values = mgt
-            for i in range(len(fp.Value.Parameters)):
-                param = fp.Value.Parameters[i].Key
-                if param in values.keys():
-                    fp.Value.Parameters[i] = KeyValuePair[String, String](param, f"{values[param]}")
-
-            return zone
-        ap = map(_chg, management)
-        list(ap)
             # for mgt in management:
             #     action_path = f'{zone_path}.{mgt.get("Name")}'
             #     fp = zone.FindByPath(action_path)
@@ -783,7 +779,9 @@ class APSIMNG():
             #         param = fp.Value.Parameters[i].Key
             #         if param in values.keys():
             #             fp.Value.Parameters[i] = KeyValuePair[String, String](param, f"{values[param]}")
+        self.out_path = 'ma.apsimx'
         self.save_edited_file()
+        print(self.path)
         self.load_apsimx_from_string(self.path)
         return self
 
@@ -1410,7 +1408,7 @@ if __name__ == '__main__':
     for i in [0.5, 0.0, 0.1, 1]:
         # model = APSIMNG(al.get_maize, read_from_string=False)
         pm = {'Name': 'PostharvestillageMaize', "Fraction": i}
-        model.update_management_decissions(
+        model.update_mgt(
             [pm, pt, pl], simulations=model.extract_simulation_name)
         lm = model
         # model.examine_management_info()

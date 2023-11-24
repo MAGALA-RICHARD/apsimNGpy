@@ -218,19 +218,35 @@ def download_soil_tables(iterable, use_threads=False, ncores=None, soil_series=N
             progress.close()
 
 
-def custom_parallel(func, iterable, ncores=6, *arg):
-    a = perf_counter()
-    with ProcessPoolExecutor(max_workers=ncores) as ppool:
-        futures = [ppool.submit(func, *arg) for i in iterable]
-        progress = tqdm(total=len(futures), position=0, leave=True,
-                        bar_format='Running apsimx files: {percentage:3.0f}% completed')
-        # Iterate over the futures as they complete
-        for future in as_completed(futures):
-            yield future.result()
-            progress.update(1)
-        progress.close()
-    print(perf_counter() - a, 'seconds', f'to run {len(files)} files')
-if __name__=='__main__':
+def custom_parallel(func, iterable, use_thread=False, ncores=6, *arg):
+    if use_thread:
+        a = perf_counter()
+        with ThreadPoolExecutor(max_workers=ncores) as ppool:
+            futures = [ppool.submit(func, i, *arg) for i in iterable]
+            progress = tqdm(total=len(futures), position=0, leave=True,
+                            bar_format='Running apsimx files: {percentage:3.0f}% completed')
+            # Iterate over the futures as they complete
+            for future in as_completed(futures):
+                yield future.result()
+                progress.update(1)
+            progress.close()
+        print(perf_counter() - a, 'seconds', f'to run {len(iterable)} files')
+    else:
+        a = perf_counter()
+        with ProcessPoolExecutor(max_workers=ncores) as ppool:
+            futures = [ppool.submit(func, i, *arg) for i in iterable]
+            progress = tqdm(total=len(futures), position=0, leave=True,
+                            bar_format='Running apsimx files: {percentage:3.0f}% completed')
+            # Iterate over the futures as they complete
+            for future in as_completed(futures):
+                yield future.result()
+                progress.update(1)
+            progress.close()
+        print(perf_counter() - a, 'seconds', f'to run {len(iterable)} files')
+
+
+if __name__ == '__main__':
     def fn(x):
-        return 1*x
+        return 1 * x
     lm = custom_parallel(fn, range(10000))
+    pm = list(lm)

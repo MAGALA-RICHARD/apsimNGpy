@@ -5,6 +5,7 @@ from tqdm import tqdm
 from multiprocessing import cpu_count
 from os.path import dirname
 from os.path import join as opj
+from utililies.utils import timer
 from apsimNGpy.utililies.run_utils import run_model, read_simulation
 from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganizeAPSIMsoil_profile
 
@@ -219,12 +220,27 @@ def download_soil_tables(iterable, use_threads=False, ncores=None, soil_series=N
 
 
 def custom_parallel(func, iterable, use_thread=False, ncores=6, *arg):
+    """
+    Run a function in parallel using threads.
+
+    Args:
+        func (callable): The function to run in parallel.
+        iterable (iterable): An iterable of items that will be processed by the function.
+        use_thread (bool, optional): If True, use threads for parallel execution; if False, use processes. Default is False.
+        ncores (int, optional): The number of threads or processes to use for parallel execution. Default is 6.
+        *args: Additional arguments to pass to the `func` function.
+
+    Yields:
+        Any: The results of the `func` function for each item in the iterable.
+
+    """
+    print(*arg)
     if use_thread:
         a = perf_counter()
         with ThreadPoolExecutor(max_workers=ncores) as ppool:
             futures = [ppool.submit(func, i, *arg) for i in iterable]
             progress = tqdm(total=len(futures), position=0, leave=True,
-                            bar_format='Running apsimx files: {percentage:3.0f}% completed')
+                            bar_format=f'Running {func.__name__}:' '{percentage:3.0f}% completed')
             # Iterate over the futures as they complete
             for future in as_completed(futures):
                 yield future.result()
@@ -236,7 +252,7 @@ def custom_parallel(func, iterable, use_thread=False, ncores=6, *arg):
         with ProcessPoolExecutor(max_workers=ncores) as ppool:
             futures = [ppool.submit(func, i, *arg) for i in iterable]
             progress = tqdm(total=len(futures), position=0, leave=True,
-                            bar_format='Running apsimx files: {percentage:3.0f}% completed')
+                            bar_format=f'Running {func.__name__}:' '{percentage:3.0f}% completed')
             # Iterate over the futures as they complete
             for future in as_completed(futures):
                 yield future.result()
@@ -246,7 +262,8 @@ def custom_parallel(func, iterable, use_thread=False, ncores=6, *arg):
 
 
 if __name__ == '__main__':
-    def fn(x):
-        return 1 * x
-    lm = custom_parallel(fn, range(10000))
+    def fn(x, p):
+        return 1 * x +p
+
+    lm = custom_parallel(fn, range(100000), True, 6, 5)
     pm = list(lm)

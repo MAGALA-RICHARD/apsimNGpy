@@ -13,6 +13,7 @@ from concurrent.futures import ThreadPoolExecutor
 from threading import Thread
 from scipy.optimize import curve_fit
 from time import perf_counter
+import pandas as pd
 
 class KeyValuePair:
     def __init__(self, Key, Value):
@@ -502,3 +503,27 @@ def timer(func):
         return result
 
     return wrapper
+def filter_df(df, **kwargs):
+    """
+    Filter a DataFrame based on values in specified columns.
+
+    Args:
+        df (pd.DataFrame): The DataFrame to be filtered.
+        **kwargs: Keyword arguments where the key is the column name and the value is the value to filter on.
+
+    Returns:
+        pd.DataFrame: The filtered DataFrame.
+
+    Example:
+        filtered_df = filter_dataframe(df, Age=30, City='Los Angeles')
+    """
+    # Initialize a boolean mask with True values
+    mask = pd.Series(True, index=df.index)
+
+    # Iterate through keyword arguments and update the mask for each column and value pair
+    for column, value in kwargs.items():
+        mask &= (df[column] == value)
+
+    # Apply the mask to the DataFrame to filter the rows
+    filtered_df = df[mask]
+    return filtered_df

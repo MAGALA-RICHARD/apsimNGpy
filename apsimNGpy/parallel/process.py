@@ -5,7 +5,7 @@ from tqdm import tqdm
 from multiprocessing import cpu_count
 from os.path import dirname
 from os.path import join as opj
-from utililies.utils import timer
+from apsimNGpy.utililies.utils import timer
 from apsimNGpy.utililies.run_utils import run_model, read_simulation
 from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganizeAPSIMsoil_profile
 

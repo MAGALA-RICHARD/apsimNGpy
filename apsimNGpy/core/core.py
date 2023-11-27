@@ -152,8 +152,9 @@ class APSIMNG():
             if 'NewModel' in dir(self.Model):
                 self.Model = self.Model.get_NewModel()
 
-        except Exception as e:
-            print(repr(e))  # this error will be logged to the folder logs in the current working directory
+        except PermissionError as e:
+              # this error will be logged to the folder logs in the current working directory
+            print('file is being used by another process')
             raise
 
         self.datastore = self.Model.FindChild[Models.Storage.DataStore]().FileName

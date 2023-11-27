@@ -26,7 +26,7 @@ from apsimNGpy.core.pythonet_config import LoadPythonnet
 
 # now we can safely import C# libraries
 from System.Collections.Generic import *
-from Models.Core import Simulations
+from Models.Core import Simulations, ScriptCompiler
 from System import *
 from Models.Core.ApsimFile import FileFormat
 from Models.Climate import Weather
@@ -725,6 +725,7 @@ class APSIMNG():
         # from apsimx.utils import KeyValuePair
         for sim in self.find_simulations(simulations):
             zone = sim.FindChild[Models.Core.Zone]()
+            atn = []
             for action in zone.FindAllChildren[Models.Manager]():
                 for managementt in management:
                     if action.Name == managementt["Name"]:
@@ -735,6 +736,11 @@ class APSIMNG():
                             if param in values:
                                 fvalue = f"{values[param]}"
                                 action.Parameters[i] = KeyValuePair[String, String](param, fvalue)
+
+
+
+
+
 
                                 # action.Parameters[i]= {param:f"{values[param]}"}
         # self.examine_management_info()                # action.GetParametersFromScriptModel()
@@ -771,7 +777,9 @@ class APSIMNG():
                     if param in values.keys():
                         fp.Value.Parameters[i] = KeyValuePair[String, String](param, f"{values[param]}")
 
-            # for mgt in management:
+
+
+        #return zone  # for mgt in management:
             #     action_path = f'{zone_path}.{mgt.get("Name")}'
             #     fp = zone.FindByPath(action_path)
             #     values = mgt

@@ -75,6 +75,17 @@ class Metrics:
         mse = np.mean(squared_errors)
         return mse
 
+    def mva(self, data, window):
+        """Calculate the moving average
+
+        Args:
+            data: list or array-like
+            window: moving window e.g 2
+
+        Returns:
+
+        """
+        return np.convolve(data, np.ones(window), 'valid') / window
     def rho_ci(self, x, y, ci="z-transform", conf_level=0.95, na_rm=False):
         dat = pd.DataFrame({'x': x, 'y': y})
         if na_rm:

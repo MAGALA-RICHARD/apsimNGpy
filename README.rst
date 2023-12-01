@@ -25,7 +25,7 @@ All versions are currently in development, phase and they can be installed as fo
 
 .. code:: bash
 
-    git clone https://github.com/MAGALA-RICHARD/apsimNGpy.git
+    git clone https://github.com/MAGALA-RICHARD/apsimNGpy.git@dev
     cd apsimNGpy
     pip install .
 
@@ -33,7 +33,7 @@ All versions are currently in development, phase and they can be installed as fo
 
 .. code:: bash
 
-     pip install git+https://github.com/MAGALA-RICHARD/apsimNGpy.git
+     pip install git+https://github.com/MAGALA-RICHARD/apsimNGpy.git@dev
 
 
 If you have apsim installed and the program refuses to load run the following code at the top of your python script
@@ -58,7 +58,7 @@ Debugging import error due to improper SYSTEM APSIM path configuration
     import os
     os.environ['APSIM'] =r'path/toyourapsimbinaryfolder/bin
     # try importing SoilModel class
-    from apsimNGpy.model.soilmodel import SoilModel
+    from apsimNGpy.core.apsim import ApsimModel
     # alternatively, you can add the path to the system environmental variables
 
 .. _Usage:
@@ -69,11 +69,11 @@ Usage
 .. code:: python
 
     import apsimNGpy
-    from apsimNGpy.base_data import load_example_files
-    from apsimNGpy.model.soilmodel import SoilModel
+    from apsimNGpy.core.base_data import LoadExampleFiles
+    from apsimNGpy.core.apsim  import ApsimModel as SoilModel
     from pathlib import Path
     import os
-    from apsimNGpy.validation import plot_data
+    from apsimNGpy.validation.visual import plot_data
     cwd = Path.cwd().home() # sending this to your home folder
     wd = cwd.joinpath("apsimNGpy_demo")
     if not wd.exists():
@@ -81,17 +81,17 @@ Usage
     # change directory
     os.chdir(wd)
     # Create the data
-    data = load_example_files(wd)
+    data = LoadExampleFiles(wd)
     # Get maize model
-    maize = data.get_maize()
+    maize = data.get_maize
 
     # Initialize the simulation methods
     apsim = SoilModel(maize, copy=True)
 
     # Run the file
-    apsim.run_edited_file()
+    apsim.run() # use run to print time taken to excute or run the model 
     # print the results
-    print(apsim.results)
+    print(apsim.results) # prints all data frames in the storage domain subset usign report names
     # check the manager modules in the apsim simulation file
     # first get the simualtion names
     sim_name = apsim.extract_simulation_name
@@ -114,11 +114,11 @@ Change APSIM simulation dates
 .. code:: python
 
     import apsimNGpy
-    from apsimNGpy.base_data import load_example_files
-    from apsimNGpy.model.soilmodel import SoilModel
+    from apsimNGpy.core.base_data import LoadExampleFiles
+    from apsimNGpy.core.apsim  import ApsimModel as SoilModel
     from pathlib import Path
     import os
-    from apsimNGpy.validation import plot_data
+    from apsimNGpy.validation.visual import plot_data
     cwd = Path.cwd().home() # sending this to your home folder
     wd = cwd.joinpath("apsimNGpy_demo")
     if not wd.exists():
@@ -126,10 +126,10 @@ Change APSIM simulation dates
     # change directory
     os.chdir(wd)
     # Create the data
-    data = load_example_files(wd)
+    data = LoadExampleFiles(wd)
 
     # Get maize model
-    maize = data.get_maize()
+    maize = data.get_maize
 
     # Initialize the simulation methods
     apsim = SoilModel(maize, copy=True)
@@ -155,7 +155,7 @@ Populating the APSIM model with new weather data
 *********************************************************************************
 .. code:: python
 
-    from apsimNGpy.weather import daymet_bylocation_nocsv
+    from apsimNGpy.core.weather import daymet_bylocation_nocsv
     lonlat = -93.08, 42.014
     start_year, end_year = 2000, 2002
     wf = daymet_bylocation_nocsv(lonlat, startyear, endyear, filename="mymet.met")

@@ -21,7 +21,6 @@ WEATHER = 'weather'
 def _weather(path):
     resource_directory = files(DATA)
     data_file_path = resource_directory / WEATHER / WEATHER_CON
-    print(data_file_path.is_file())
     nameout = join(path, WEATHER_CON)
     contents = data_file_path.read_text()
     with open(nameout, "w+") as openfile:

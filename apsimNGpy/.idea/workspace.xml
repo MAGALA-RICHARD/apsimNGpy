@@ -4,7 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5d471312-8496-4246-98d6-790439318160" name="Changes" comment="un" />
+    <list default="true" id="5d471312-8496-4246-98d6-790439318160" name="Changes" comment="deleted">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/base_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/base_data.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -50,7 +53,7 @@
       <recent name="C:\Users\rmagala\Box\apsimNGpy\apsimNGpy" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.process">
+  <component name="RunManager">
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
       <module name="apsimNGpy" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -182,30 +185,7 @@
       <workItem from="1700684599413" duration="23000" />
       <workItem from="1700686967594" duration="35775000" />
       <workItem from="1701399734418" duration="691000" />
-    </task>
-    <task id="LOCAL-00194" summary="SoilModel class is confusing changed to ApsimModel">
-      <option name="closed" value="true" />
-      <created>1700434935736</created>
-      <option name="number" value="00194" />
-      <option name="presentableId" value="LOCAL-00194" />
-      <option name="project" value="LOCAL" />
-      <updated>1700434935737</updated>
-    </task>
-    <task id="LOCAL-00195" summary="SoilModel class is confusing changed to ApsimModel">
-      <option name="closed" value="true" />
-      <created>1700439535119</created>
-      <option name="number" value="00195" />
-      <option name="presentableId" value="LOCAL-00195" />
-      <option name="project" value="LOCAL" />
-      <updated>1700439535119</updated>
-    </task>
-    <task id="LOCAL-00196" summary="SoilModel class is confusing changed to ApsimModel">
-      <option name="closed" value="true" />
-      <created>1700446078917</created>
-      <option name="number" value="00196" />
-      <option name="presentableId" value="LOCAL-00196" />
-      <option name="project" value="LOCAL" />
-      <updated>1700446078917</updated>
+      <workItem from="1701400473097" duration="1293000" />
     </task>
     <task id="LOCAL-00197" summary="SoilModel class is confusing changed to ApsimModel">
       <option name="closed" value="true" />
@@ -575,7 +555,31 @@
       <option name="project" value="LOCAL" />
       <updated>1701400203839</updated>
     </task>
-    <option name="localTasksCounter" value="243" />
+    <task id="LOCAL-00243" summary="un">
+      <option name="closed" value="true" />
+      <created>1701400712916</created>
+      <option name="number" value="00243" />
+      <option name="presentableId" value="LOCAL-00243" />
+      <option name="project" value="LOCAL" />
+      <updated>1701400712916</updated>
+    </task>
+    <task id="LOCAL-00244" summary="bacjed data changed">
+      <option name="closed" value="true" />
+      <created>1701400951572</created>
+      <option name="number" value="00244" />
+      <option name="presentableId" value="LOCAL-00244" />
+      <option name="project" value="LOCAL" />
+      <updated>1701400951572</updated>
+    </task>
+    <task id="LOCAL-00245" summary="deleted">
+      <option name="closed" value="true" />
+      <created>1701401358674</created>
+      <option name="number" value="00245" />
+      <option name="presentableId" value="LOCAL-00245" />
+      <option name="project" value="LOCAL" />
+      <updated>1701401358674</updated>
+    </task>
+    <option name="localTasksCounter" value="246" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -593,11 +597,9 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="use polymorphism" />
     <MESSAGE value="use no sklearn" />
     <MESSAGE value="ammended" />
     <MESSAGE value="yield" />
-    <MESSAGE value="deleted" />
     <MESSAGE value="changed the return and reporting structure" />
     <MESSAGE value="add empty data warnings" />
     <MESSAGE value="dont remove pyhtonnet code for now until a solution is on table" />
@@ -618,7 +620,9 @@
     <MESSAGE value="data" />
     <MESSAGE value="core_changes" />
     <MESSAGE value="un" />
-    <option name="LAST_COMMIT_MESSAGE" value="un" />
+    <MESSAGE value="bacjed data changed" />
+    <MESSAGE value="deleted" />
+    <option name="LAST_COMMIT_MESSAGE" value="deleted" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

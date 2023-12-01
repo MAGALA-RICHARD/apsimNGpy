@@ -4,9 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5d471312-8496-4246-98d6-790439318160" name="Changes" comment="deleted">
+    <list default="true" id="5d471312-8496-4246-98d6-790439318160" name="Changes" comment="new approach">
+      <change afterPath="$PROJECT_DIR$/core/options.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/base_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/base_data.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -185,15 +185,7 @@
       <workItem from="1700684599413" duration="23000" />
       <workItem from="1700686967594" duration="35775000" />
       <workItem from="1701399734418" duration="691000" />
-      <workItem from="1701400473097" duration="1293000" />
-    </task>
-    <task id="LOCAL-00197" summary="SoilModel class is confusing changed to ApsimModel">
-      <option name="closed" value="true" />
-      <created>1700447604428</created>
-      <option name="number" value="00197" />
-      <option name="presentableId" value="LOCAL-00197" />
-      <option name="project" value="LOCAL" />
-      <updated>1700447604428</updated>
+      <workItem from="1701400473097" duration="2242000" />
     </task>
     <task id="LOCAL-00198" summary="SoilModel class is confusing changed to ApsimModel">
       <option name="closed" value="true" />
@@ -579,7 +571,15 @@
       <option name="project" value="LOCAL" />
       <updated>1701401358674</updated>
     </task>
-    <option name="localTasksCounter" value="246" />
+    <task id="LOCAL-00246" summary="new approach">
+      <option name="closed" value="true" />
+      <created>1701402064904</created>
+      <option name="number" value="00246" />
+      <option name="presentableId" value="LOCAL-00246" />
+      <option name="project" value="LOCAL" />
+      <updated>1701402064904</updated>
+    </task>
+    <option name="localTasksCounter" value="247" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -597,7 +597,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="use no sklearn" />
     <MESSAGE value="ammended" />
     <MESSAGE value="yield" />
     <MESSAGE value="changed the return and reporting structure" />
@@ -622,7 +621,8 @@
     <MESSAGE value="un" />
     <MESSAGE value="bacjed data changed" />
     <MESSAGE value="deleted" />
-    <option name="LAST_COMMIT_MESSAGE" value="deleted" />
+    <MESSAGE value="new approach" />
+    <option name="LAST_COMMIT_MESSAGE" value="new approach" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

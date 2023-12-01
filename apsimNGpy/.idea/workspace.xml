@@ -4,12 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5d471312-8496-4246-98d6-790439318160" name="Changes" comment="core_changes">
-      <change beforePath="$PROJECT_DIR$/../.Rproj.user/5021BD03/pcs/windowlayoutstate.pper" beforeDir="false" afterPath="$PROJECT_DIR$/../.Rproj.user/5021BD03/pcs/windowlayoutstate.pper" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/optimizer/optimizer.py" beforeDir="false" afterPath="$PROJECT_DIR$/optimizer/optimizer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/validation/evaluator.py" beforeDir="false" afterPath="$PROJECT_DIR$/validation/evaluator.py" afterDir="false" />
-    </list>
+    <list default="true" id="5d471312-8496-4246-98d6-790439318160" name="Changes" comment="un" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -186,22 +181,7 @@
       <workItem from="1700676914630" duration="3673000" />
       <workItem from="1700684599413" duration="23000" />
       <workItem from="1700686967594" duration="35775000" />
-    </task>
-    <task id="LOCAL-00191" summary="core will replace models andother folders&#10;soil model and apsimpy to duplicated">
-      <option name="closed" value="true" />
-      <created>1700434372808</created>
-      <option name="number" value="00191" />
-      <option name="presentableId" value="LOCAL-00191" />
-      <option name="project" value="LOCAL" />
-      <updated>1700434372808</updated>
-    </task>
-    <task id="LOCAL-00192" summary="core will replace models andother folders&#10;soil model and apsimpy to duplicated">
-      <option name="closed" value="true" />
-      <created>1700434702672</created>
-      <option name="number" value="00192" />
-      <option name="presentableId" value="LOCAL-00192" />
-      <option name="project" value="LOCAL" />
-      <updated>1700434702672</updated>
+      <workItem from="1701399734418" duration="449000" />
     </task>
     <task id="LOCAL-00193" summary="SoilModel class is confusing changed to ApsimModel">
       <option name="closed" value="true" />
@@ -579,7 +559,23 @@
       <option name="project" value="LOCAL" />
       <updated>1700880393977</updated>
     </task>
-    <option name="localTasksCounter" value="240" />
+    <task id="LOCAL-00240" summary="core_changes">
+      <option name="closed" value="true" />
+      <created>1701399819410</created>
+      <option name="number" value="00240" />
+      <option name="presentableId" value="LOCAL-00240" />
+      <option name="project" value="LOCAL" />
+      <updated>1701399819410</updated>
+    </task>
+    <task id="LOCAL-00241" summary="un">
+      <option name="closed" value="true" />
+      <created>1701399834694</created>
+      <option name="number" value="00241" />
+      <option name="presentableId" value="LOCAL-00241" />
+      <option name="project" value="LOCAL" />
+      <updated>1701399834694</updated>
+    </task>
+    <option name="localTasksCounter" value="242" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -597,7 +593,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="search apsim path using classes" />
     <MESSAGE value="use polymorphism" />
     <MESSAGE value="use no sklearn" />
     <MESSAGE value="ammended" />
@@ -622,7 +617,8 @@
     <MESSAGE value="dev______version" />
     <MESSAGE value="data" />
     <MESSAGE value="core_changes" />
-    <option name="LAST_COMMIT_MESSAGE" value="core_changes" />
+    <MESSAGE value="un" />
+    <option name="LAST_COMMIT_MESSAGE" value="un" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

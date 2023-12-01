@@ -1,164 +1,76 @@
-import numpy as np
-from scipy.optimize import minimize, least_squares
-from apsimNGpy.validation.evaluator import validate
-from apsimNGpy.model.soilmodel import SoilModel as ApsimSoil
-from pathlib import Path
-from apsimNGpy.base.base_data import LoadExampleFiles
+from builtins import function
+
 import pandas as pd
 import time
-from abc import abstractmethod
-from dataclasses import dataclass
+from scipy.optimize import minimize, least_squares
+from apsimNGpy.utililies.utils import delete_simulation_files, timer
 
-# =============================================================================================================
-cwd = Path.cwd()
-data = LoadExampleFiles(cwd)
-file = data.get_maize
-observed_yield = pd.read_csv("observed_yield_prototype.csv")
-observed_yield = observed_yield.Yield
+import numpy as np
+from apsimNGpy.core.apsim import ApsimModel
+from enum import Enum
 
-@dataclass
-class ApsimProblem:
+df = pd.read_csv("simu_rn.csv")
+residue = list(df.residue.unique())
+nitrogen = list(df.nitrogen.unique())
+m = 0
+from abc import ABC, abstractmethod
+
+
+class AbstractExecutor(ABC):
+
+    def __init__(self, func):
+        self.func = func
+
     @abstractmethod
-    def _evaluate(self, fx, *args, **kwargs):
+    def execute(self, *args, **kwargs):
         pass
 
 
-# Define the problem
-class set_up_problem:
-    """
-    apsim defined problem returning some values based on the optimization problem
-    """
+class FunctionExecutor(AbstractExecutor):
 
-    def __call__(self, problem, x):
-        """
-               apsim defined problem returning some values based on the optimization problem
-               """
-        class ApsimProblem()
-        fx = dict()
-        self.problem._evaluate(fx, *self.args, **self.kwargs)
-        return fx
+    def execute(self, *args, **kwargs):
+        result = self.func(*args, **kwargs)
+        return result
 
 
-def process_model(radiation):
-    try:
-        apsim = ApsimSoil(file, copy=False)
-        apsim.edit_cultivar(RUE=radiation, CultvarName='B_110')
-        # apsim.dynamic_path_handler()
-        apsim.run_edited_file()
-        # Return the predicted yield
-        return apsim.results['MaizeR'].Yield
-    except Exception as e:
-        print(f"An error occurred: {type(e).__name__} - {repr(e)}===*")
+# Define a sample function
+def sample_function(x, y):
+    return x + y
 
 
-# Define an objective function to minimize, which quantifies the difference between observed and predicted yield
-def optimization_function(x, *args):
-    observed_yield = args[0]
-    print(x[0])
-    observed_yield = np.array(observed_yield)
-    predicted_yield = process_model(x[0])
-    # Let's use a suitable error metric, like, mean squared error
-    metric = validate(observed_yield, predicted_yield)
-    rmse = metric.evaluate("RMSE")
-    WIA = metric.evaluate('WIA')
-    ccc = metric.evaluate("CCC")
-    rrmse = metric.evaluate("RRMSE")
-    print(f"WIA is: {WIA}, CCC is: {ccc} rmse is: {rmse}, rrmse is : {metric.evaluate('RRMSE')}")
-    return rmse
+# Create an instance of FunctionExecutor with the sample_function
+executor = FunctionExecutor(sample_function)
 
-# Load your observed yield and radiation data here
-observed_yield = np.array(observed_yield)
-x0 = [1.2]
+# Execute the function with arguments
+result = executor.execute(5, 3)
+print(result)  # Output: 8
 
 
-# Optimize the model parameters
-class algarithms:
-    def __init__(self):
-        self.L_BFGS_B = 'L-BFGS-B'
-        self.BFGS = 'BFGS'
-        self.Powell = 'Powell'
-        self.Newton_CG = 'Newton-CG'
-        self.lm = 'lm'
 
 
-methods = algarithms()
+
+class algarithms(Enum):
+    L_BFGS_B = 'L-BFGS-B'
+    BFGS = 'BFGS'
+    Powell = 'Powell'
+    Newton_CG = 'Newton-CG'
+    lm = 'lm'
 
 
-class Problem:
-    def __init__(self,
-                 nu_var=-1,
-                 nu_obj=1,
-                 nu_ieq_constr=0,
-                 **kwargs):
-        self.n_var = nu_var
-        self.n_obj = nu_obj
-        self.n_ieq_constr = nu_ieq_constr
+@timer
+class Optimize():
+    def __init__(self, func: function, init_params: np.ndarray, bounds: list, options: dict = None, method='L-BFGS-B',
+                 *args):
 
-
-class Optimize:
-    def __init__(self, method='L-BFGS-B'):
-        # tested algarithm:
-        # 'BFG'
-        # 'L-BFGS-B'
-        # Powell
         self.method = method
         print(f"Using: {self.method} solver")
-        self.result = minimize(optimization_function, x0=x0, bounds=[(1, 3)], args=(observed_yield,),
-                               method=self.method)
+        if options:
+            self.result = minimize(func, x0=init_params, bounds=bounds,
+                                   options=options, method=self.method)
+        else:
+            self.result = minimize(func, x0=init_params, bounds=bounds,
+                                   method=self.method)
         optimized_parameters = self.result.x
         print("Optimized Parameters:", optimized_parameters)
-        optimized_RUE = optimized_parameters[0]
-        print("Optimized RUE:", optimized_RUE)
 
 
-class optimized:
-    def __init__(self, function, apsim_param, X, bounds=None, method='L-BFGS-B'):
-        # tested algarithm:
-        # 'BFG'
-        # 'L-BFGS-B'
-        # Powell
-        self.method = method
-        self.apsim_param = apsim_param
-        self.optimisation_function = function
-        self.XO = X
-        self.bounds = bounds
-
-    def run_optimization(self):
-        print(f"Using: {self.method} solver")
-        self.result = minimize(self.optimisation_function, x0=self.XO, bounds=self.bounds, args=(self.apsim_param,),
-                               method=self.method)
-        optimized_parameters = self.result.x
-        print("Optimized Parameters:", optimized_parameters)
-        optimized_RUE = optimized_parameters[0]
-        print("Optimized RUE:", optimized_RUE)
-
-
-class Optimize_ls:
-    def __init__(self, method='L-BFGS-B'):
-        # tested algarithm:
-        # 'BFG'
-        ##'Newton-CG' NOT TESTED
-        # 'L-BFGS-B'
-        # Powell
-        self.method = method
-        print(f"Using: {self.method} solver")
-        if self.method == 'lm':
-            self.result = least_squares(optimization_function, x0=x0, args=(observed_yield,), method=self.method)
-        optimized_parameters = self.result.x
-
-        # Print the optimized parameters
-        print("Optimized Parameters:", optimized_parameters)
-
-        # Calculate the optimized RUE value based on the optimized parameters
-        optimized_RUE = optimized_parameters[0]
-
-        # Print the optimized RUE value
-        print("Optimized RUE:", optimized_RUE)
-
-
-if __name__ == '__main__':
-    for i in [methods.Powell, methods.BFGS, methods.L_BFGS_B]:
-        a = time.perf_counter()
-        Optimize(method=i)
-        b = time.perf_counter()
-        print(f"{i} algarithms took:  {b - a} seconds")

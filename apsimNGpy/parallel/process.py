@@ -212,20 +212,21 @@ def custom_parallel(func, iterable, use_thread=False, ncores=6, *arg):
 
     """
     print(*arg)
-    if use_thread:
-        a = perf_counter()
-        with _select_process(use_thread=use_thread,
-                             ncores=ncores) as pool:  # this reduces the repetition perhaps should even be implimented with a decorator at the top of the fucntion
-            print(use_thread)
-            futures = [pool.submit(func, i, *arg) for i in iterable]
-            progress = tqdm(total=len(futures), position=0, leave=True,
-                            bar_format=f'Running {func.__name__}:' '{percentage:3.0f}% completed')
-            # Iterate over the futures as they complete
-            for future in as_completed(futures):
-                yield future.result()
-                progress.update(1)
-            progress.close()
-        print(perf_counter() - a, 'seconds', f'to run {len(iterable)} files')
+
+    a = perf_counter()
+    with _select_process(use_thread=use_thread,
+                         ncores=ncores) as pool:  # this reduces the repetition perhaps should even be implimented
+        # with a decorator at the top of the function
+        print(use_thread)
+        futures = [pool.submit(func, i, *arg) for i in iterable]
+        progress = tqdm(total=len(futures), position=0, leave=True,
+                        bar_format=f'Running {func.__name__}:' '{percentage:3.0f}% completed')
+        # Iterate over the futures as they complete
+        for future in as_completed(futures):
+            yield future.result()
+            progress.update(1)
+        progress.close()
+    print(perf_counter() - a, 'seconds', f'to run {len(iterable)} files')
 
 
 # test
@@ -233,7 +234,6 @@ def custom_parallel(func, iterable, use_thread=False, ncores=6, *arg):
 if __name__ == '__main__':
     def fn(x):
         return 1 * x
-
 
     lm = custom_parallel(fn, range(100000), False, 10)
     pm = list(lm)

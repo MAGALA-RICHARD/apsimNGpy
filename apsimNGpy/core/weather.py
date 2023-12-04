@@ -644,7 +644,7 @@ def merge_columns(df1_main, common_column, df2, fill_column, df2_colummn):
     df2 (pd.DataFrame): The second DataFrame to be merged with 'df_main'.
     fill_column (str): The column in 'edit' to be updated with values from 'df2_column'.
     df2_column (str): The column in 'df2' that provides replacement values for 'fill_column'.
-
+P
     Returns:
     pd.DataFrame: A new DataFrame resulting from the merge and update operations.
     """

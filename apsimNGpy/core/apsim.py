@@ -416,11 +416,9 @@ class ApsimModel(APSIMNG):
 if __name__ == '__main__':
     # test
     from pathlib import Path
-
     # Model = FileFormat.ReadFromFile[Models.Core.Simulations](model, None, False)
     os.chdir(Path.home())
-    from apsimNGpy.data.base_data import LoadExampleFiles
-
+    from apsimNGpy.core.base_data import LoadExampleFiles
     al = LoadExampleFiles(Path.cwd())
     model = al.get_maize
     print(model)

@@ -10,6 +10,18 @@ from apsimNGpy.utililies.run_utils import run_model, read_simulation
 from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganizeAPSIMsoil_profile
 
 
+# create function to select threadpool class of Processpool class
+def _select_process(use_thread, ncores):
+    if not use_thread:
+        pool = ProcessPoolExecutor(ncores)
+    else:
+        pool = ThreadPoolExecutor(ncores)
+    return pool
+
+
+pt = _select_process(True, 3)
+
+
 # _______________________________________________________________
 def run_apsimxfiles_in_parallel(iterable_files, ncores=None, use_threads=False):
     """
@@ -221,7 +233,7 @@ def download_soil_tables(iterable, use_threads=False, ncores=None, soil_series=N
 
 def custom_parallel(func, iterable, use_thread=False, ncores=6, *arg):
     """
-    Run a function in parallel using threads.
+    Run a function in parallel using threads or processes.
 
     Args:
         func (callable): The function to run in parallel.
@@ -237,20 +249,9 @@ def custom_parallel(func, iterable, use_thread=False, ncores=6, *arg):
     print(*arg)
     if use_thread:
         a = perf_counter()
-        with ThreadPoolExecutor(max_workers=ncores) as ppool:
-            futures = [ppool.submit(func, i, *arg) for i in iterable]
-            progress = tqdm(total=len(futures), position=0, leave=True,
-                            bar_format=f'Running {func.__name__}:' '{percentage:3.0f}% completed')
-            # Iterate over the futures as they complete
-            for future in as_completed(futures):
-                yield future.result()
-                progress.update(1)
-            progress.close()
-        print(perf_counter() - a, 'seconds', f'to run {len(iterable)} files')
-    else:
-        a = perf_counter()
-        with ProcessPoolExecutor(max_workers=ncores) as ppool:
-            futures = [ppool.submit(func, i, *arg) for i in iterable]
+        with _select_process(use_thread=use_thread, ncores=ncores) as poolx:
+            print(use_thread)
+            futures = [poolx.submit(func, i, *arg) for i in iterable]
             progress = tqdm(total=len(futures), position=0, leave=True,
                             bar_format=f'Running {func.__name__}:' '{percentage:3.0f}% completed')
             # Iterate over the futures as they complete
@@ -263,7 +264,9 @@ def custom_parallel(func, iterable, use_thread=False, ncores=6, *arg):
 
 if __name__ == '__main__':
     def fn(x, p):
-        return 1 * x +p
+        return 1 * x + p
 
-    lm = custom_parallel(fn, range(100000), True, 6, 5)
+
+    lm = custom_parallel(fn, range(100000), False, 6, 5)
     pm = list(lm)
+    # print(pm)

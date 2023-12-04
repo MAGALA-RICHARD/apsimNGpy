@@ -12,10 +12,10 @@ from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganizeAPSIM
 
 # create function to select threadpool class of Processpool class
 def _select_process(use_thread, ncores):
-    if not use_thread:
-        pool = ProcessPoolExecutor(ncores)
-    else:
+    if use_thread:
         pool = ThreadPoolExecutor(ncores)
+    else:
+        pool = ProcessPoolExecutor(ncores)
     return pool
 
 
@@ -59,9 +59,9 @@ def run_apsimxfiles_in_parallel(iterable_files, ncores=None, use_threads=False):
         ncore2use = ncores
     else:
         ncore2use = int(cpu_count() * 0.50)
-    if not use_threads:
-        a = perf_counter()
-        with ProcessPoolExecutor(ncore2use) as pool:
+
+    a = perf_counter()
+    with _select_process(use_thread=use_threads, ncores=ncore2use) as pool:
             futures = [pool.submit(run_model, i) for i in files]
             progress = tqdm(total=len(futures), position=0, leave=True,
                             bar_format='Running apsimx files: {percentage:3.0f}% completed')
@@ -69,19 +69,7 @@ def run_apsimxfiles_in_parallel(iterable_files, ncores=None, use_threads=False):
                 yield future.result()
                 progress.update(1)
             progress.close()
-        print(perf_counter() - a, 'seconds', f'to run {len(files)} files')
-    else:
-        a = perf_counter()
-        with ThreadPoolExecutor(ncore2use) as tpool:
-            futures = [tpool.submit(run_model, i) for i in files]
-            progress = tqdm(total=len(futures), position=0, leave=True,
-                            bar_format='Running apsimx files: {percentage:3.0f}% completed')
-            # Iterate over the futures as they complete
-            for future in as_completed(futures):
-                yield future.result()  # use the generated object in the fucntion below
-                progress.update(1)
-            progress.close()
-        print(perf_counter() - a, 'seconds', f'to run {len(files)} files')
+    print(perf_counter() - a, 'seconds', f'to run {len(files)} files')
 
 
 def read_result_in_parallel(iterable_files, ncores=None, use_threads=False, report_name="Report"):
@@ -128,9 +116,9 @@ def read_result_in_parallel(iterable_files, ncores=None, use_threads=False, repo
         ncore2use = ncores
     else:
         ncore2use = int(cpu_count() * 0.50)
-    if not use_threads:
-        a = perf_counter()
-        with ProcessPoolExecutor(ncore2use) as pool:
+
+    a = perf_counter()
+    with _select_process(use_thread=use_threads, ncores=ncore2use) as pool:
             futures = [pool.submit(read_simulation, i, report_name) for i in files]
             progress = tqdm(total=len(futures), position=0, leave=True,
                             bar_format='reading file databases: {percentage:3.0f}% completed')
@@ -142,19 +130,7 @@ def read_result_in_parallel(iterable_files, ncores=None, use_threads=False, repo
                 yield data
             progress.close()
         print(perf_counter() - a, 'seconds', f'to read {len(files)} apsimx files databases')
-    else:
-        a = perf_counter()
-        with ThreadPoolExecutor(ncore2use) as tpool:
-            futures = [tpool.submit(read_simulation, i, report_name) for i in files]
-            progress = tqdm(total=len(futures), position=0, leave=True,
-                            bar_format='reading file databases: {percentage:3.0f}% completed')
-            # Iterate over the futures as they complete
-            for future in as_completed(futures):
-                data = future.result()  # retrieve and store it in a generator
-                progress.update(1)
-                yield data
-            progress.close()
-        print(perf_counter() - a, 'seconds', f'to read {len(files)} apsimx database files')
+
 
 
 def download_soil_tables(iterable, use_threads=False, ncores=None, soil_series=None):
@@ -211,24 +187,14 @@ def download_soil_tables(iterable, use_threads=False, ncores=None, soil_series=N
         print(f"using: {ncores_2use} cpu cores")
     else:
         ncores_2use = ncores
-    if not use_threads:
-        with ThreadPoolExecutor(max_workers=ncores_2use) as tpool:
-            futures = [tpool.submit(_concat, n) for n in range(len(iterable))]
-            progress = tqdm(total=len(futures), position=0, leave=True,
-                            bar_format='downloading soil_tables...: {percentage:3.0f}% completed')
-            for future in as_completed(futures):
-                progress.update(1)
-                yield future.result()
-            progress.close()
-    else:
-        with ProcessPoolExecutor(max_workers=ncores_2use) as ppool:
-            futures = [ppool.submit(_concat, n) for n in range(len(iterable))]
-            progress = tqdm(total=len(futures), position=0, leave=True,
-                            bar_format='downloading soil_tables..: {percentage:3.0f}% completed')
-            for future in as_completed(futures):
-                progress.update(1)
-                yield future.result()
-            progress.close()
+    with _select_process(use_thread=use_threads, ncores=ncores_2use) as tpool:
+        futures = [tpool.submit(_concat, n) for n in range(len(iterable))]
+        progress = tqdm(total=len(futures), position=0, leave=True,
+                        bar_format='downloading soil_tables...: {percentage:3.0f}% completed')
+        for future in as_completed(futures):
+            progress.update(1)
+            yield future.result()
+        progress.close()
 
 
 def custom_parallel(func, iterable, use_thread=False, ncores=6, *arg):
@@ -249,9 +215,10 @@ def custom_parallel(func, iterable, use_thread=False, ncores=6, *arg):
     print(*arg)
     if use_thread:
         a = perf_counter()
-        with _select_process(use_thread=use_thread, ncores=ncores) as poolx:
+        with _select_process(use_thread=use_thread,
+                             ncores=ncores) as pool:  # this reduces the repetition perhaps should even be implimented with a decorator at the top of the fucntion
             print(use_thread)
-            futures = [poolx.submit(func, i, *arg) for i in iterable]
+            futures = [pool.submit(func, i, *arg) for i in iterable]
             progress = tqdm(total=len(futures), position=0, leave=True,
                             bar_format=f'Running {func.__name__}:' '{percentage:3.0f}% completed')
             # Iterate over the futures as they complete
@@ -262,11 +229,13 @@ def custom_parallel(func, iterable, use_thread=False, ncores=6, *arg):
         print(perf_counter() - a, 'seconds', f'to run {len(iterable)} files')
 
 
+# test
+
 if __name__ == '__main__':
-    def fn(x, p):
-        return 1 * x + p
+    def fn(x):
+        return 1 * x
 
 
-    lm = custom_parallel(fn, range(100000), False, 6, 5)
+    lm = custom_parallel(fn, range(100000), False, 10)
     pm = list(lm)
     # print(pm)

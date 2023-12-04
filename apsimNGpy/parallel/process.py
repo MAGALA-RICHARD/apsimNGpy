@@ -10,7 +10,7 @@ from apsimNGpy.utililies.run_utils import run_model, read_simulation
 from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganizeAPSIMsoil_profile
 
 
-# create function to select threadpool class of Processpool class
+# create function to select threadpool class or Processpool class
 def _select_process(use_thread, ncores):
     if use_thread:
         pool = ThreadPoolExecutor(ncores)
@@ -62,13 +62,13 @@ def run_apsimxfiles_in_parallel(iterable_files, ncores=None, use_threads=False):
 
     a = perf_counter()
     with _select_process(use_thread=use_threads, ncores=ncore2use) as pool:
-            futures = [pool.submit(run_model, i) for i in files]
-            progress = tqdm(total=len(futures), position=0, leave=True,
-                            bar_format='Running apsimx files: {percentage:3.0f}% completed')
-            for future in as_completed(futures):
-                yield future.result()
-                progress.update(1)
-            progress.close()
+        futures = [pool.submit(run_model, i) for i in files]
+        progress = tqdm(total=len(futures), position=0, leave=True,
+                        bar_format='Running apsimx files: {percentage:3.0f}% completed')
+        for future in as_completed(futures):
+            yield future.result()
+            progress.update(1)
+        progress.close()
     print(perf_counter() - a, 'seconds', f'to run {len(files)} files')
 
 
@@ -119,18 +119,17 @@ def read_result_in_parallel(iterable_files, ncores=None, use_threads=False, repo
 
     a = perf_counter()
     with _select_process(use_thread=use_threads, ncores=ncore2use) as pool:
-            futures = [pool.submit(read_simulation, i, report_name) for i in files]
-            progress = tqdm(total=len(futures), position=0, leave=True,
-                            bar_format='reading file databases: {percentage:3.0f}% completed')
-            # Iterate over the futures as they complete
-            for future in as_completed(futures):
-                data = future.result()
-                # retrieve and store it in a generator
-                progress.update(1)
-                yield data
-            progress.close()
-        print(perf_counter() - a, 'seconds', f'to read {len(files)} apsimx files databases')
-
+        futures = [pool.submit(read_simulation, i, report_name) for i in files]
+        progress = tqdm(total=len(futures), position=0, leave=True,
+                        bar_format='reading file databases: {percentage:3.0f}% completed')
+        # Iterate over the futures as they complete
+        for future in as_completed(futures):
+            data = future.result()
+            # retrieve and store it in a generator
+            progress.update(1)
+            yield data
+        progress.close()
+    print(perf_counter() - a, 'seconds', f'to read {len(files)} apsimx files databases')
 
 
 def download_soil_tables(iterable, use_threads=False, ncores=None, soil_series=None):

@@ -71,8 +71,7 @@ class OsMethod:
         - str or False: The APSIM installation path if found, or False if not found.
 
         """
-        path = get_apsimx_model_path()
-        return path
+        return os.environ.get("APSIM") or os.environ.get("Models")
 
 
 class ShutilMethod:
@@ -144,19 +143,11 @@ class NotFound:
         else:
             raise ValueError(f"entered path: '{pat}' not found")
 
-
+@timer
 @cache
-def _find_apsim_path():
-    """
-    # returns a list of classes above, one uses shutil, and one os.environ and notfound allows the user to enter the
-    # path directly
-    """
-    return [ShutilMethod(), OsMethod(), NotFound()]
-
-
 def get_apsim_path():
-    for cla in _find_apsim_path():
-        path = cla._find_apsim_path()  # the method _find_apsim_path is polymorphic that mean it allows us to run it on every class once
+    for cla in [ShutilMethod(), OsMethod(), NotFound()]:
+        path = cla._find_apsim_path()
         if path:
             return path
 
@@ -171,7 +162,7 @@ def _dumper(obj):
         return obj.__dict__
 
 
-apsim_config['APSIM'] = realpath(get_apsim_path())
+
 
 path = '../base/apsimNGpy.json'
 
@@ -184,6 +175,7 @@ def write_pathto_file(path):
     with open(apsim_json, 'w+') as f:
         f.writelines(obj)
     return apsim_json
+
 
 @timer
 @cache
@@ -247,8 +239,8 @@ class LoadPythonnet:
         #     print("dotnet not found, trying alternate runtime")
         #     pythonnet.load()
         self.start_pythonnet()
-        # use get becuase it does not raise key error. it returns none if not found
-        apsim_path = os.environ.get("APSIM")
+        # use get because it does not raise key error. it returns none if not found
+        apsim_path = get_apsim_path()
         if not apsim_path:
             raise KeyError("APSIM is not loaded in the system environmental variable")
 
@@ -274,6 +266,7 @@ def add_path(new_path):
     else:
         print("path is already added to the system")
 
+
 loader = LoadPythonnet()()
 # Example usage:
 if __name__ == '__main__':
@@ -284,4 +277,3 @@ if __name__ == '__main__':
     import System
 
     ap = get_apsim_path()
-

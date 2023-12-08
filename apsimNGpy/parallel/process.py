@@ -3,8 +3,7 @@ import glob, os, sys
 from time import perf_counter
 from tqdm import tqdm
 from multiprocessing import cpu_count
-from os.path import dirname
-from os.path import join as opj
+from pathlib import Path
 from apsimNGpy.utililies.utils import timer
 from apsimNGpy.utililies.run_utils import run_model, read_simulation
 from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganizeAPSIMsoil_profile
@@ -15,7 +14,7 @@ def _select_process(use_thread, ncores):
     return ThreadPoolExecutor(ncores) if use_thread else ProcessPoolExecutor(ncores)
 
 
-pt = _select_process(True, 3)
+CPU = int(int(cpu_count()) * 0.5)
 
 
 # _______________________________________________________________
@@ -225,6 +224,7 @@ def custom_parallel(func, iterable, use_thread=False, ncores=6, *arg):
     print(perf_counter() - a, 'seconds', f'to run {len(iterable)} objects')
 
 
+
 # test
 
 if __name__ == '__main__':
@@ -232,4 +232,5 @@ if __name__ == '__main__':
 
     lm = custom_parallel(fnn, range(100000), True, 10)
     pm = list(lm)
+
     # print(pm)

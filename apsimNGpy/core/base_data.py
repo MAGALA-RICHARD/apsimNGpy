@@ -2,7 +2,7 @@ import os.path
 from importlib.resources import files
 from os.path import join, realpath, dirname, exists, split, basename
 from os import listdir, walk, getcwd, mkdir
-from apsimNGpy.core.pythonet_config import LoadPythonnet, get_apsim_path
+from apsimNGpy.core.pythonet_config import LoadPythonnet,APSIM_PATH
 import shutil
 
 conf = LoadPythonnet()()
@@ -206,7 +206,7 @@ class LoadExampleFiles():
 try:
     pat = os.environ['APSIM']
 except KeyError:
-    pat = get_apsim_path()
+    pat = APSIM_PATH
 if pat:
     apsim = os.path.dirname(pat)
     examples = join(apsim, 'Examples')
@@ -268,6 +268,5 @@ if __name__ == '__main__':
     pp = Path.home()
     os.chdir(pp)
     from apsimNGpy.core.base_data import LoadExampleFiles
-
     maize = LoadExampleFiles()
     dt = maize.get_maize

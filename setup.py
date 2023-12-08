@@ -8,7 +8,7 @@ with open('README.rst') as readme_file:
     readme = readme_file.read()
 setup(
     name='apsimNGpy',
-    version='0.0.3',
+    version='0.0.1',
     url='https://github.com/MAGALA-RICHARD/apsimNGpy.git',
     license='MIT',
     author='Richard Magala',

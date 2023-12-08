@@ -10,11 +10,11 @@ import sqlite3
 import sys
 import warnings
 import pythonnet
-from apsimNGpy.core.pythonet_config import LoadPythonnet, get_apsimx_model_path
-apsim_model = get_apsimx_model_path()
+from apsimNGpy.core.pythonet_config import LoadPythonnet, APSIM_PATH
+apsim_model =APSIM_PATH
 loader = LoadPythonnet()()
 from os.path import realpath
-
+import warnings
 from System.Collections.Generic import *
 from Models.Core import Simulations
 from System import *
@@ -175,10 +175,15 @@ def read_simulation(datastore, report_name='MaizeR'):
         dfl = len(dataframe_dict)
         if len(dataframe_dict) == 0:
             warnings.warn(f"{datastore}: is empty. No data has been returned")
+        df = None
         if report_name:
             df = dataframe_dict.get(report_name)
-            df['source'] = os.path.basename(datastore)
-            return df
+            if isinstance(df, pd.DataFrame):
+               df['source'] = os.path.basename(datastore)
+               return df
+            else:
+                print("{0}: not found, returned all dataframes".format(report_name))
+                return dataframe_dict
         else:
             dataframe_dict['source'] = os.path.basename(datastore)
             return dataframe_dict

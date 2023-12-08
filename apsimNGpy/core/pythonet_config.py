@@ -1,5 +1,6 @@
 import pythonnet
 import os
+from os.path import dirname
 from pathlib import Path
 from functools import cache
 import shutil
@@ -8,7 +9,7 @@ from os.path import realpath
 from dataclasses import dataclass
 import pythonnet
 
-from apsimNGpy.utililies.utils import timer
+from apsimNGpy.utililies.utils import timer, find_models
 
 
 def _is_runtime(self):
@@ -31,110 +32,23 @@ def is_executable_on_path(name):
     return executable_path is not None
 
 
-@cache
-def _is_apsimx_installed():
-    try:
-        return os.environ['APSIM'] is not None
-    except KeyError:
-        return None
+home = Path.home().joinpath('AppData', 'Local', 'Programs')
 
 
-@cache
-def get_apsimx_model_path():
-    """
-    Quickly gets the APSIM installation path
-    """
-    try:
-        pat = os.environ['APSIM']
-        if pat:
-            return Path(os.path.realpath(pat))
-    except KeyError:
-        return False
+class Internal_Method:
+    """searches for apsimx path"""
 
-
-def get_pasimx_path_from_shutil():
-    if is_executable_on_path("Models"):
-        return os.path.dirname(shutil.which('Models'))
-
-
-class OsMethod:
     def __init__(self):
         pass
 
-    @cache
-    def _find_apsim_path(self):
-        """
-        Find the APSIM installation path using the os  module.
-        if APSIM was installed it is possible the path is added to the os.environ
-
-        Returns:
-        - str or False: The APSIM installation path if found, or False if not found.
-
-        """
-        path = get_apsimx_model_path()
-        return path
-
-
-class ShutilMethod:
-    def __init__(self):
-        pass
-
-    @cache
-    def _find_apsim_path(self):
-        """
-        Find the APSIM installation path using the shutil module.
-
-        Returns:
-        - path: str or False: The APSIM installation path if found, or False if not found.
-
-        Example:
-        ```python
-        apsim_finder = ShutilMethod()
-        apsim_path = apsim_finder._find_apsim_path()
-
-        if apsim_path:
-            print(f"Found APSIM installation at: {apsim_path}")
-        else:
-            print("APSIM installation not found.")
-
-                """
+    def shut(self):
         path = shutil.which("Models")
         if path:
             return os.path.dirname(path)
         else:
-            return False
+            return None
 
-
-class NotFound:
-    """
-        Prompt the user to input the APSIM installation path.
-
-        If the provided path is valid and contains the 'bin' folder, it is considered a successful addition
-        to the environment. Otherwise, a ValueError is raised.
-
-        Returns:
-        - str: The APSIM installation path.
-
-        Example:
-        ```python
-        not_found = NotFound()
-        apsim_path = not_found._find_apsim_path()
-        # User interaction:
-        # APSIM not found in the system environment variable, please add apsim path
-        # Browse your computer and add the path for APSIM installation: <user_input>
-        # <printed path>
-        # Congratulations you have successfully added APSIM binary folder path to your environ
-        ```
-
-        Raises:
-        - ValueError: If the entered path is invalid or doesn't contain the 'bin' folder.
-        """
-
-    def __init__(self):
-        pass
-
-    @cache
-    def _find_apsim_path(self):
+    def _notfound(self):
         print("APSIM not found in the system environment variable, please add apsim path")
         pat = input(f"Browse your computer and add the path for APSIM installation: ")
         print(pat)
@@ -144,22 +58,21 @@ class NotFound:
         else:
             raise ValueError(f"entered path: '{pat}' not found")
 
+    @cache
+    def __call__(self):
+        """
+        Find the APSIM installation path using the os  module.
+        if APSIM was installed it is possible the path is added to the os.environ
 
-@cache
-def _find_apsim_path():
-    """
-    # returns a list of classes above, one uses shutil, and one os.environ and notfound allows the user to enter the
-    # path directly
-    """
-    return [ShutilMethod(), OsMethod(), NotFound()]
+        Returns:
+        - str or False: The APSIM installation path if found, or False if not found.
+
+        """
+        return os.environ.get("APSIM") or os.environ.get("Models") or self.shut() or find_models(home,
+                                                                                                 "Models.exe") or self._notfound()
 
 
-def get_apsim_path():
-    for cla in _find_apsim_path():
-        path = cla._find_apsim_path()  # the method _find_apsim_path is polymorphic that mean it allows us to run it on every class once
-        if path:
-            return path
-
+APSIM_PATH = Internal_Method()()
 
 apsim_config = {}
 
@@ -170,8 +83,6 @@ def _dumper(obj):
     except:
         return obj.__dict__
 
-
-apsim_config['APSIM'] = realpath(get_apsim_path())
 
 path = '../base/apsimNGpy.json'
 
@@ -184,6 +95,7 @@ def write_pathto_file(path):
     with open(apsim_json, 'w+') as f:
         f.writelines(obj)
     return apsim_json
+
 
 @timer
 @cache
@@ -247,8 +159,8 @@ class LoadPythonnet:
         #     print("dotnet not found, trying alternate runtime")
         #     pythonnet.load()
         self.start_pythonnet()
-        # use get becuase it does not raise key error. it returns none if not found
-        apsim_path = os.environ.get("APSIM")
+        # use get because it does not raise key error. it returns none if not found
+        apsim_path = APSIM_PATH
         if not apsim_path:
             raise KeyError("APSIM is not loaded in the system environmental variable")
 
@@ -274,6 +186,7 @@ def add_path(new_path):
     else:
         print("path is already added to the system")
 
+
 loader = LoadPythonnet()()
 # Example usage:
 if __name__ == '__main__':
@@ -283,5 +196,4 @@ if __name__ == '__main__':
     import Models
     import System
 
-    ap = get_apsim_path()
 

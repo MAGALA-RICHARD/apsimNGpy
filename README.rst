@@ -25,7 +25,7 @@ All versions are currently in development, phase and they can be installed as fo
 
 .. code:: bash
 
-    pip install apsimNGpy==0.0.1
+    pip install apsimNGpy
 
 - Method 1. clone the repositry    
 

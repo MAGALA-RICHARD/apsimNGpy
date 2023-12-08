@@ -15,6 +15,7 @@ from scipy.optimize import curve_fit
 from time import perf_counter
 import pandas as pd
 import time
+from functools import cache
 from pathlib import Path
 
 
@@ -532,7 +533,7 @@ def filter_df(df, **kwargs):
     # Apply the mask to the DataFrame to filter the rows
     filtered_df = df[mask]
     return filtered_df
-
+@cache
 @timer
 def find_models(path, filename):
     mod = list(path.rglob(filename) )

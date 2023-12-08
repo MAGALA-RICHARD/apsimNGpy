@@ -4,15 +4,15 @@ from os.path import join, realpath, dirname, exists, split, basename
 from os import listdir, walk, getcwd, mkdir
 from apsimNGpy.core.pythonet_config import LoadPythonnet,APSIM_PATH
 import shutil
-
+from apsimNGpy import data as DATA
 conf = LoadPythonnet()()
 from apsimNGpy.core.apsim import ApsimModel as SoilModel
 from pathlib import Path
 from functools import cache
 import os
-
+print(DATA)
 WEATHER_CON = 'NewMetrrr.met'
-DATA = 'data'
+#DATA = 'data' after tests, this did not work
 
 APSIM_DATA = 'apsim'
 WEATHER = 'weather'

@@ -11,7 +11,7 @@ import pythonnet
 
 from apsimNGpy.utililies.utils import timer, find_models
 HOME_DATA = Path.home().joinpath('AppData', 'Local', 'Programs')
-WINDOWS_PROGRAMFILES = os.environ.get('PROGRAMFILES')
+WINDOWS_PROGRAMFILES = Path(os.environ.get('PROGRAMFILES'))
 
 class Internal_Method:
     """searches for apsimx path"""

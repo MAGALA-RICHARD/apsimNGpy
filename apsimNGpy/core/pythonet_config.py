@@ -10,8 +10,10 @@ from dataclasses import dataclass
 import pythonnet
 
 from apsimNGpy.utililies.utils import timer, find_models
+
 HOME_DATA = Path.home().joinpath('AppData', 'Local', 'Programs')
 WINDOWS_PROGRAMFILES = Path(os.environ.get('PROGRAMFILES'))
+
 
 class Internal_Method:
     """searches for apsimx path"""
@@ -19,12 +21,16 @@ class Internal_Method:
     def __init__(self):
         pass
 
-    def shut(self):
+    @cache
+    def _shut(self):
         path = shutil.which("Models")
         if path:
             return os.path.dirname(path)
         else:
             return None
+    @cache
+    def _search_from_C(self):
+        return find_models(WINDOWS_PROGRAMFILES, "Models.exe") if WINDOWS_PROGRAMFILES else None
 
     def _notfound(self):
         print("APSIM not found in the system environment variable, please add apsim path")
@@ -46,9 +52,9 @@ class Internal_Method:
         - str or False: The APSIM installation path if found, or False if not found.
 
         """
-        return os.environ.get("APSIM") or os.environ.get("Models") or self.shut() or find_models(HOME_DATA,
-                                                                                                 "Models.exe") or find_models(
-            WINDOWS_PROGRAMFILES, "Models.exe") or self._notfound()
+        return os.environ.get("APSIM") or os.environ.get("Models") or self._shut() or find_models(HOME_DATA,
+                                                                                                 "Models.exe") \
+            or self._notfound() or self._search_from_C()
 
 
 APSIM_PATH = Internal_Method()()
@@ -168,10 +174,11 @@ def add_path(new_path):
 
 loader = LoadPythonnet()()
 import Models
+
 # Example usage:
 if __name__ == '__main__':
     loader = LoadPythonnet()
-
+    print(APSIM_PATH)
     loaded_models = loader()
     import Models
     import System

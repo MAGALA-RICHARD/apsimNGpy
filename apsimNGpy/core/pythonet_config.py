@@ -10,30 +10,8 @@ from dataclasses import dataclass
 import pythonnet
 
 from apsimNGpy.utililies.utils import timer, find_models
-
-
-def _is_runtime(self):
-    rt = pythonnet.get_runtime_info()
-    return rt is not None
-
-
-@cache
-def is_executable_on_path(name):
-    """
-    Check whether `name` is on PATH and marked as executable.
-
-    Args:
-        name (str): The name of the executable to check.
-
-    Returns:
-        bool: True if `name` is on PATH and executable, False otherwise.
-    """
-    executable_path = shutil.which(name)
-    return executable_path is not None
-
-
-home = Path.home().joinpath('AppData', 'Local', 'Programs')
-
+HOME_DATA = Path.home().joinpath('AppData', 'Local', 'Programs')
+WINDOWS_PROGRAMFILES = os.environ.get('PROGRAMFILES')
 
 class Internal_Method:
     """searches for apsimx path"""
@@ -68,8 +46,9 @@ class Internal_Method:
         - str or False: The APSIM installation path if found, or False if not found.
 
         """
-        return os.environ.get("APSIM") or os.environ.get("Models") or self.shut() or find_models(home,
-                                                                                                 "Models.exe") or self._notfound()
+        return os.environ.get("APSIM") or os.environ.get("Models") or self.shut() or find_models(HOME_DATA,
+                                                                                                 "Models.exe") or find_models(
+            WINDOWS_PROGRAMFILES, "Models.exe") or self._notfound()
 
 
 APSIM_PATH = Internal_Method()()
@@ -188,6 +167,7 @@ def add_path(new_path):
 
 
 loader = LoadPythonnet()()
+import Models
 # Example usage:
 if __name__ == '__main__':
     loader = LoadPythonnet()
@@ -195,5 +175,3 @@ if __name__ == '__main__':
     loaded_models = loader()
     import Models
     import System
-
-

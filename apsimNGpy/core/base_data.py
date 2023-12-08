@@ -10,7 +10,6 @@ from apsimNGpy.core.apsim import ApsimModel as SoilModel
 from pathlib import Path
 from functools import cache
 import os
-print(DATA)
 WEATHER_CON = 'NewMetrrr.met'
 #DATA = 'data' after tests, this did not work
 

@@ -14,6 +14,9 @@ from threading import Thread
 from scipy.optimize import curve_fit
 from time import perf_counter
 import pandas as pd
+import time
+from pathlib import Path
+
 
 class KeyValuePair:
     def __init__(self, Key, Value):
@@ -503,6 +506,8 @@ def timer(func):
         return result
 
     return wrapper
+
+
 def filter_df(df, **kwargs):
     """
     Filter a DataFrame based on values in specified columns.
@@ -527,3 +532,12 @@ def filter_df(df, **kwargs):
     # Apply the mask to the DataFrame to filter the rows
     filtered_df = df[mask]
     return filtered_df
+
+@timer
+def find_models(path, filename):
+    mod = list(path.rglob(filename) )
+    if mod != []:
+        return os.path.dirname(mod[0])
+    else:
+        return None
+

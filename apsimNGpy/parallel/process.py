@@ -3,8 +3,7 @@ import glob, os, sys
 from time import perf_counter
 from tqdm import tqdm
 from multiprocessing import cpu_count
-from os.path import dirname
-from os.path import join as opj
+from pathlib import Path
 from apsimNGpy.utililies.utils import timer
 from apsimNGpy.utililies.run_utils import run_model, read_simulation
 from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganizeAPSIMsoil_profile
@@ -12,14 +11,10 @@ from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganizeAPSIM
 
 # create function to select threadpool class or Processpool class
 def _select_process(use_thread, ncores):
-    if use_thread:
-        pool = ThreadPoolExecutor(ncores)
-    else:
-        pool = ProcessPoolExecutor(ncores)
-    return pool
+    return ThreadPoolExecutor(ncores) if use_thread else ProcessPoolExecutor(ncores)
 
 
-pt = _select_process(True, 3)
+CPU = int(int(cpu_count()) * 0.5)
 
 
 # _______________________________________________________________
@@ -226,15 +221,16 @@ def custom_parallel(func, iterable, use_thread=False, ncores=6, *arg):
             yield future.result()
             progress.update(1)
         progress.close()
-    print(perf_counter() - a, 'seconds', f'to run {len(iterable)} files')
+    print(perf_counter() - a, 'seconds', f'to run {len(iterable)} objects')
+
 
 
 # test
 
 if __name__ == '__main__':
-    def fn(x):
-        return 1 * x
+    from examples import fnn  # the function should not be on the main for some reasons
 
-    lm = custom_parallel(fn, range(100000), False, 10)
+    lm = custom_parallel(fnn, range(100000), True, 10)
     pm = list(lm)
+
     # print(pm)

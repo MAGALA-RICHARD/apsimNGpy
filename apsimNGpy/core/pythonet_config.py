@@ -12,35 +12,25 @@ import pythonnet
 from apsimNGpy.utililies.utils import timer, find_models
 
 HOME_DATA = Path.home().joinpath('AppData', 'Local', 'Programs')
-WINDOWS_PROGRAMFILES = Path(os.environ.get('PROGRAMFILES'))
+cdrive = os.environ.get('PROGRAMFILES')
+WINDOWS_PROGRAMFILES = Path(cdrive) if cdrive else None
 
 
-class Internal_Method:
+class GetAPSIMPath:
     """searches for apsimx path"""
 
-    def __init__(self):
-        pass
+    def __init__(self, user_path=None):
+        self.user_apsim_model = user_path
 
     @cache
     def _shut(self):
         path = shutil.which("Models")
-        if path:
-            return os.path.dirname(path)
-        else:
-            return None
+        return os.path.dirname(path) if path else None
+
+
     @cache
     def _search_from_C(self):
         return find_models(WINDOWS_PROGRAMFILES, "Models.exe") if WINDOWS_PROGRAMFILES else None
-
-    def _notfound(self):
-        print("APSIM not found in the system environment variable, please add apsim path")
-        pat = input(f"Browse your computer and add the path for APSIM installation: ")
-        print(pat)
-        if os.path.exists(pat) and 'bin' in pat:
-            print('Congratulations you have successfully added APSIM binary folder path to your environ')
-            return pat
-        else:
-            raise ValueError(f"entered path: '{pat}' not found")
 
     @cache
     def __call__(self):
@@ -53,11 +43,11 @@ class Internal_Method:
 
         """
         return os.environ.get("APSIM") or os.environ.get("Models") or self._shut() or find_models(HOME_DATA,
-                                                                                                 "Models.exe") \
-            or self._notfound() or self._search_from_C()
+                                                                                                  "Models.exe") \
+            or self._search_from_C()
 
 
-APSIM_PATH = Internal_Method()()
+APSIM_PATH = GetAPSIMPath()()
 
 apsim_config = {}
 

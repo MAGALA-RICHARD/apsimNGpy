@@ -2,26 +2,20 @@ import os.path as osp
 import os
 import time
 from pathlib import Path
-import shutil
-from concurrent.futures import ProcessPoolExecutor,as_completed
-from tqdm import tqdm
+from dataclasses import dataclass
 
 
-def check_version(apsim_version):
-    path = True if osp.exists(apsim_version) and apsim_version.endswith("bin") and 'APSIM'  in apsim_version else None
-    print(path)
-    if not path:
-        raise ValueError("This is not an apsimx model path")
+def _check_path(apsim_version):
+    path = True if osp.exists(apsim_version) and apsim_version.endswith("bin") and 'APSIM' in apsim_version else None
 
-sh = shutil.which('Models')
-check_version(r"C:\Program Files\APSIM2023.11.7349.0\bin")
-from apsimNGpy.utililies.utils import find_models, timer
 
-from apsimNGpy.core import core
-from apsimNGpy.core.base_data import LoadExampleFiles
-if __name__ == '__main__':
-   lm = LoadExampleFiles()
-   pass
-    #dy = search_apsimx()
+class Options:
+    def __init__(self, path):
+        self.__path2_apsim = path
 
-    # print(pm)
+    @property
+    def APSIMPATH(self):
+        return self.__path2_apsim if _check_path(self.__path2_apsim) else None
+
+
+a = Options("ye")

@@ -27,7 +27,7 @@ All versions are currently in development, phase and they can be installed as fo
 
     pip install apsimNGpy
 
-- Method 1. clone the repositry    
+- Method 1. clone the current development repositry    
 
 .. code:: bash
 
@@ -174,7 +174,36 @@ Populating the APSIM model with new weather data
     mis = apsim.show_met_file_in_simulation()
     print(mis)
 
+Evaluate Predicted valuables
+The apsimNGpy Python package provides a convenient way to validate model simulations against measured data. Below is a step-by-step guide on how to use the validation.evaluator module from apsimNGpy.
 
+*********************************************************************************
+.. code:: python
+    # start by importing the required libraries
+    from apsimNGpy.validation.evaluator import validate
+    import pandas as pd
+    # load the data if external
+    df = pd.read_csv('evaluation.csv')
+    apsim.results
+    #Preparing Data for Validation
+    #Extract the relevant columns from your DataFrame for comparison. In this example, we use
+    # 'Measured' for observed values and compare them with different model outputs:
+    measured = df.Measured
+    predicted = apsim.results['MaizeR'].Yield
+    # now we need to pass both the measured and the observed in the validate class
+    val = validate(measured, predicted)
+    # both variables should be the same length, and here we are assuming that they are sorted in the corresponding order
+    # There are two options:
+    # 1.  evaluate all 
+    metrics = val.evaluate_all(verbose=True)
+    #verbose =True prints all the results on the go else a dictioanry is returned with the value for each metric
+    # 2. select or pass your desired metric
+    RMSE = val.evaluate("RMSE")
+    print(RMSE)
+    #if you want to see the available metrics, use the code below
+    metr = metrics.keys()
+    print(metri).
+    #Then select your choice from the list
 
 
 

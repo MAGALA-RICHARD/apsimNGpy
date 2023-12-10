@@ -534,7 +534,6 @@ def filter_df(df, **kwargs):
     filtered_df = df[mask]
     return filtered_df
 @cache
-@timer
 def find_models(path, filename):
     mod = list(path.rglob(filename) )
     if mod != []:

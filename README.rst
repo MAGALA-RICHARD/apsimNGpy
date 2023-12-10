@@ -42,26 +42,11 @@ All versions are currently in development, phase and they can be installed as fo
      pip install git+https://github.com/MAGALA-RICHARD/apsimNGpy.git@dev
 
 
-If you have apsim installed and the program refuses to load run the following code at the top of your python script
-before importing any apsimNGpy class. The classes are  CamelCased.
-
-Required Dependencies:
-*****************************
-- numpy
-- pandas
-- pythonnet
-- xmltodict
-- tqdm
-- requests
-
- Please note that apsimNGpy is tested on Python 3. We are not aware of its performance in Python 2 because it utilizes some of the new libraries like pathlib and f-strings.
-
 Debugging import error due to improper SYSTEM APSIM path configuration
 *********************************************************************************
 
-It's important to run the code below before importing modules from apsimNGpy.core, as they depend on pythonnet for execution. This procedure is also applicable
-
-for running different versions of APSIM models. Please note that if your APSIM installation hasn't been added to the system path, this script line should always be placed at the beginning of your simulation script.
+If you have apsim installed and the program refuses to load run the following code at the top of your python script
+before importing any apsimNGpy class. The classes are  CamelCased.
 
 .. code:: python
 
@@ -74,6 +59,20 @@ for running different versions of APSIM models. Please note that if your APSIM i
 
 .. _Usage:
 
+If your APSIM model is not added to python path, it's important to run the code above before importing modules from apsimNGpy.core, as they depend on pythonnet for execution. This procedure is also applicable
+for running different versions of APSIM models. Please note that if your APSIM installation hasn't been added to the system path, this script line should always be placed at the beginning of your simulation script.
+
+Required Dependencies:
+*****************************
+
+- numpy
+- pandas
+- pythonnet
+- xmltodict
+- tqdm
+- requests
+
+Please note that apsimNGpy is tested on Python 3. We are not aware of its performance in Python 2 because it utilizes some of the new libraries like pathlib and f-strings.
 
 Usage
 *********************************************************************************

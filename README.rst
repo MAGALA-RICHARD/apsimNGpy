@@ -174,38 +174,46 @@ Populating the APSIM model with new weather data
     mis = apsim.show_met_file_in_simulation()
     print(mis)
 
-Evaluate Predicted valuables
+Evaluate Predicted Valuables
 *********************************************************************************
 The apsimNGpy Python package provides a convenient way to validate model simulations against measured data. Below 
 is a step-by-step guide on how to use the validation.evaluator module from apsimNGpy.
 
 .. code:: python
-    
-    # start by importing the required libraries
+
+    # Start by importing the required libraries
     from apsimNGpy.validation.evaluator import validate
     import pandas as pd
-    # load the data if external
+
+    # Load the data if external. Replace with your own data
     df = pd.read_csv('evaluation.csv')
-    apsim.results
-    #Preparing Data for Validation
-    #Extract the relevant columns from your DataFrame for comparison. In this example, we use
+    apsim_results = apsim.results  # Assuming 'apsim' is a predefined object from aopsimNGpy.core.core.APSIMN class and contains your simualted results
+
+    # Preparing Data for Validation
+    # Extract the relevant columns from your DataFrame for comparison. In this example, we use
     # 'Measured' for observed values and compare them with different model outputs:
-    measured = df.Measured
-    predicted = apsim.results['MaizeR'].Yield
-    # now we need to pass both the measured and the observed in the validate class
+    measured = df['Measured']
+    predicted = apsim_results['MaizeR'].Yield
+
+    # Now we need to pass both the measured and the observed in the validate class
     val = validate(measured, predicted)
-    # both variables should be the same length, and here we are assuming that they are sorted in the corresponding order
+
+    # Both variables should be the same length, and here we are assuming that they are sorted in the corresponding order
+
     # There are two options:
-    # 1.  evaluate all 
+    # 1. Evaluate all
     metrics = val.evaluate_all(verbose=True)
-    #verbose =True prints all the results on the go else a dictioanry is returned with the value for each metric
-    # 2. select or pass your desired metric
+    # Setting verbose=True prints all the results on the go; otherwise, a dictionary is returned with the value for each metric
+
+    # 2. Select or pass your desired metric
     RMSE = val.evaluate("RMSE")
     print(RMSE)
-    #if you want to see the available metrics, use the code below
-    metr = metrics.keys()
-    print(metri).
-    #Then select your choice from the list
+
+    # If you want to see the available metrics, use the code below
+    available_metrics = metrics.keys()
+    print(available_metrics)
+    # Then select your choice from the list
+
 
 
 

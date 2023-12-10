@@ -58,6 +58,10 @@ Required Dependencies:
 
 Debugging import error due to improper SYSTEM APSIM path configuration
 *********************************************************************************
+
+It's important to run the code below before importing modules from apsimNGpy.core, as they depend on pythonnet for execution. This procedure is also applicable
+ for running different versions of APSIM models. Please note that if your APSIM installation hasn't been added to the system path, this script line should always be placed at the beginning of your simulation script.
+
 .. code:: python
 
     # search for the program binary installation path and add to os.environ as follows

@@ -46,7 +46,7 @@ Debugging import error due to improper SYSTEM APSIM path configuration
 *********************************************************************************
 
 If you have apsim installed and the program refuses to load run the following code at the top of your python script
-before importing any apsimNGpy class. The classes are  CamelCased.
+before importing any apsimNGpy class, especially class from ApsimNGpy.core modules The classes are  CamelCased.
 
 .. code:: python
 
@@ -59,8 +59,7 @@ before importing any apsimNGpy class. The classes are  CamelCased.
 
 .. _Usage:
 
-If your APSIM model is not added to python path, it's important to run the code above before importing modules from apsimNGpy.core, as they depend on pythonnet for execution. This procedure is also applicable
-for running different versions of APSIM models. Please note that if your APSIM installation hasn't been added to the system path, this script line should always be placed at the beginning of your simulation script.
+The above code is also applicable for running different versions of APSIM models. Please note that if your APSIM installation hasn't been added to the system path, this script line should always be placed at the beginning of your simulation script.
 
 Required Dependencies:
 *****************************

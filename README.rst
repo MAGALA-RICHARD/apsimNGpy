@@ -177,7 +177,7 @@ Populating the APSIM model with new weather data
     mis = apsim.show_met_file_in_simulation()
     print(mis)
 
-Evaluate Predicted Valuables
+Evaluate Predicted Variables
 *********************************************************************************
 The apsimNGpy Python package provides a convenient way to validate model simulations against measured data. Below 
 is a step-by-step guide on how to use the validation.evaluator module from apsimNGpy.

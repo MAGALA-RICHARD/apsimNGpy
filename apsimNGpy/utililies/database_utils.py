@@ -10,6 +10,81 @@ import time
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from functools import partial
 import pandas as pd
+from pandas import read_sql_query as rsq
+import sqlite3
+
+
+def read_with_querry(db, query):
+    """
+        Executes a SQL query on a specified database and returns the result as a Pandas DataFrame.
+
+        Args:
+        db (str): The database file path or identifier to connect to.
+        query (str): The SQL query string to be executed. The query should be a valid SQL SELECT statement.
+
+        Returns:
+        pandas.DataFrame: A DataFrame containing the results of the SQL query.
+
+        The function opens a connection to the specified SQLite database, executes the given SQL query,
+        fetches the results into a DataFrame, then closes the database connection.
+
+        Example:
+            # Define the database and the query
+            database_path = 'your_database.sqlite'
+            sql_query = 'SELECT * FROM your_table WHERE condition = value'
+
+            # Get the query result as a DataFrame
+            df = read_with_query(database_path, sql_query)
+
+            # Work with the DataFrame
+            print(df)
+
+        Note: Ensure that the database path and the query are correct and that the query is a proper SQL SELECT statement.
+        The function uses 'sqlite3' for connecting to the database; make sure it is appropriate for your database.
+        """
+    # table = kwargs.get("table")
+    conn = sqlite3.connect(db)
+    df = rsq(query, conn)
+    conn.close()
+    return df
+
+
+def read_db_table(db, table):
+    """
+        Connects to a specified database, retrieves the entire contents of a specified table,
+        and returns the results as a Pandas DataFrame.
+
+        Args:
+            db (str): The database file path or identifier to connect to.
+            table (str): The name of the table in the database from which to retrieve data.
+        Returns:
+            pandas.DataFrame: A DataFrame containing all the records from the specified table.
+
+        The function establishes a connection to the specified SQLite database, constructs and executes a SQL query
+        to select all records from the specified table, fetches the results into a DataFrame, then closes the database connection.
+
+        Example:
+            # Define the database and the table name
+            database_path = 'your_database.sqlite'
+            table_name = 'your_table'
+
+            # Get the table data as a DataFrame
+            df = read_db_table(database_path, table_name)
+
+            # Work with the DataFrame
+            print(df)
+
+        Note:
+            - Ensure that the database path and table name are correct.
+            - The function uses 'sqlite3' for connecting to the database; make sure it is appropriate for your database.
+            - This function retrieves all records from the specified table. Use with caution if the table is very large.
+        """
+    # table = kwargs.get("table")
+    conn = sqlite3.connect(db)
+    query = f"SELECT * FROM {table}"
+    df = rsq(query, conn)
+    conn.close()
+    return df
 
 
 def load_database(path):
@@ -32,6 +107,7 @@ def _read_simulation(datastore, report_name=None):
     TODO this file is duplicated in runner/database_utils.py i did want to reimport it there
     '''
     conn = connect(datastore)
+    conn.text_factory = lambda b: b.decode(errors='ignore')
     cursor = conn.cursor()
 
     # reading all table names
@@ -149,3 +225,5 @@ def read_data_in_parallel(aps_list, Nitrogen, Residue=None):
         tp = [i for i in tp if i is not None]
         data = pd.DataFrame(list(tp))
     return data.mean(0, numeric_only=True)
+
+

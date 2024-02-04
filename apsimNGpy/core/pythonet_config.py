@@ -27,7 +27,6 @@ class GetAPSIMPath:
         path = shutil.which("Models")
         return os.path.dirname(path) if path else None
 
-
     @cache
     def _search_from_C(self):
         return find_models(WINDOWS_PROGRAMFILES, "Models.exe") if WINDOWS_PROGRAMFILES else None
@@ -163,12 +162,42 @@ def add_path(new_path):
 
 
 loader = LoadPythonnet()()
-import Models
+
+from apsimNGpy.utililies.utils import timer
+
+
+@timer
+def handle(x):
+    match x:
+        case 200:
+            return 201
+        case 400:
+            return 401
+        case 500:
+            return 501
+# Generating Fibonacci numbers dynamically
+@timer
+def fibonacci_sequence(limit):
+    a, b = 0, 1
+    count = 0
+    while count < limit:
+        yield a
+        a, b = b, a + b
+        count += 1
+
 
 # Example usage:
 if __name__ == '__main__':
     loader = LoadPythonnet()
-    print(APSIM_PATH)
     loaded_models = loader()
+    # try importing the C# models and see if the process is successful
     import Models
     import System
+    fib = fibonacci_sequence(20)
+    lp = []
+    for i in fib:
+        lp.append(i)
+    print(lp)
+    print(handle(500))
+    import numpy as np
+    RP = np.arange(0.5, 3, 0.5)

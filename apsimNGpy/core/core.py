@@ -221,7 +221,7 @@ class APSIMNG():
             f.write(json)
 
     @timing_decorator
-    def run(self, simulations=None, clean=False, multithread=True, **kwargs):
+    def run(self, simulations=None, clean=False, multithread=True, report_name = None):
         """Run apsim model in the simulations
 
         Parameters
@@ -263,8 +263,8 @@ class APSIMNG():
 
         if (len(e) > 0):
             print(e[0].ToString())
-        if  kwargs.get('report_name'):
-            self.results = read_db_table(self.datastore, kwargs.get('report_name'))
+        if report_name:
+            self.results = read_db_table(self.datastore, report_name=report_name)
             print(self.results)
             return self
         # print(self.results)

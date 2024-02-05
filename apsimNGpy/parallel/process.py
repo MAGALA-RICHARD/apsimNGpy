@@ -10,7 +10,7 @@ from apsimNGpy.utililies.run_utils import run_model, read_simulation
 #from apsimNGpy.utililies.database_utils import read_db_table
 from apsimNGpy.utililies.utils  import select_process
 from apsimNGpy.utililies.database_utils import  read_db_table
-
+from apsimNGpy.parallel.safe import download_soil_table
 CPU = int(int(cpu_count()) * 0.5)
 
 
@@ -169,7 +169,7 @@ def download_soil_tables(iterable, use_threads=False, ncores=None, soil_series=N
     else:
         ncores_2use = ncores
     with select_process(use_thread=use_threads, ncores=ncores_2use) as tpool:
-        futures = [tpool.submit(_concat, n) for n in range(len(iterable))]
+        futures = [tpool.submit(download_soil_table, n) for n in range(len(iterable))]
         progress = tqdm(total=len(futures), position=0, leave=True,
                         bar_format='downloading soil_tables...: {percentage:3.0f}% completed')
         for future in as_completed(futures):

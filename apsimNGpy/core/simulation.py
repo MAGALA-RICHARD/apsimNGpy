@@ -14,7 +14,7 @@ maize = LoadExampleFiles(wd).get_maize
 lon = -91.620369, 43.034534
 
 
-def simulate(model: Any, location: Tuple[float, float], report_name, read_from_string=True, start=1990, end=2020,
+def simulate(model: Any, location: Tuple[float, float], report, read_from_string=True, start=1990, end=2020,
              soil_series: str = 'domtcp', **kwargs):
     """
     Run a simulation of a given crop.
@@ -42,24 +42,25 @@ def simulate(model: Any, location: Tuple[float, float], report_name, read_from_s
     simulator_model = ApsimModel(
         model, copy=kwargs.get('copy'), read_from_string=read_from_string, lonlat=location, thickness_values=th)
 
-    report_name = kwargs.get("report_name")
+
     sim_name = simulator_model.extract_simulation_name
     if kwargs.get('replace_weather', False):
         wname = model.strip('.apsimx') + '_w.met'
         wf = daymet_bylocation_nocsv(location, start, end, filename=wname)
         simulator_model.replace_met_file(wf, sim_name)
+
     if kwargs.get("replace_soil", False):
         table = DownloadsurgoSoiltables(location)
         sp = OrganizeAPSIMsoil_profile(table, thickness=20, thickness_values=th)
         sp = sp.cal_missingFromSurgo()
         simulator_model.replace_downloaded_soils(sp, sim_name)
+
     if kwargs.get("mgt_practices"):
         simulator_model.update_mgt(kwargs.get('mgt_practices'), sim_name)
-    simulator_model.run(report_name = report_name)
-    return simulator_model
+    simulator_model.run(report_name = report)
+    return simulator_model.results
 
 
 md = {"Name": 'PostharvestillageMaize', 'Fraction': 0.001
       }
-pp = simulate(maize, lon, replace_weather=True, replace_soil=True, mgt_practices= md, report_name= 'MaizeR')
-mi = pp.examine_management_info()
+pp = simulate(maize, lon, replace_weather=True, replace_soil=True, mgt_practices= md, report= 'MaizeR')

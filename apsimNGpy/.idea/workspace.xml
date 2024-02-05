@@ -4,8 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5d471312-8496-4246-98d6-790439318160" name="Changes" comment="update readme">
+    <list default="true" id="5d471312-8496-4246-98d6-790439318160" name="Changes" comment="updated database functgions">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/parallel/process.py" beforeDir="false" afterPath="$PROJECT_DIR$/parallel/process.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -185,14 +186,7 @@
       <workItem from="1700686967594" duration="35775000" />
       <workItem from="1701399734418" duration="691000" />
       <workItem from="1701400473097" duration="3803000" />
-    </task>
-    <task id="LOCAL-00202" summary="Sno need to rebuild script in order to compile the new model scripts">
-      <option name="closed" value="true" />
-      <created>1700515615958</created>
-      <option name="number" value="00202" />
-      <option name="presentableId" value="LOCAL-00202" />
-      <option name="project" value="LOCAL" />
-      <updated>1700515615958</updated>
+      <workItem from="1707062929299" duration="1659000" />
     </task>
     <task id="LOCAL-00203" summary="Sno need to rebuild script in order to compile the new model scripts">
       <option name="closed" value="true" />
@@ -578,7 +572,15 @@
       <option name="project" value="LOCAL" />
       <updated>1701403234559</updated>
     </task>
-    <option name="localTasksCounter" value="251" />
+    <task id="LOCAL-00251" summary="updated database functgions">
+      <option name="closed" value="true" />
+      <created>1707063246845</created>
+      <option name="number" value="00251" />
+      <option name="presentableId" value="LOCAL-00251" />
+      <option name="project" value="LOCAL" />
+      <updated>1707063246845</updated>
+    </task>
+    <option name="localTasksCounter" value="252" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -596,7 +598,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="yield" />
     <MESSAGE value="changed the return and reporting structure" />
     <MESSAGE value="add empty data warnings" />
     <MESSAGE value="dont remove pyhtonnet code for now until a solution is on table" />
@@ -621,7 +622,8 @@
     <MESSAGE value="deleted" />
     <MESSAGE value="new approach" />
     <MESSAGE value="update readme" />
-    <option name="LAST_COMMIT_MESSAGE" value="update readme" />
+    <MESSAGE value="updated database functgions" />
+    <option name="LAST_COMMIT_MESSAGE" value="updated database functgions" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

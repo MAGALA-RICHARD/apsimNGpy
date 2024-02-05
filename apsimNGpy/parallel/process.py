@@ -7,6 +7,7 @@ from pathlib import Path
 from apsimNGpy.utililies.utils import timer
 from apsimNGpy.utililies.run_utils import run_model, read_simulation
 from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganizeAPSIMsoil_profile
+from apsimNGpy.utililies.database_utils import read_db_table
 
 
 # create function to select threadpool class or Processpool class
@@ -222,7 +223,6 @@ def custom_parallel(func, iterable, use_thread=False, ncores=6, *arg):
             progress.update(1)
         progress.close()
     print(perf_counter() - a, 'seconds', f'to run {len(iterable)} objects')
-
 
 
 # test

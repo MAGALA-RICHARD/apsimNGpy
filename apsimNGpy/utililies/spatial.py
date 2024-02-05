@@ -51,7 +51,17 @@ def create_fishnet1(pt, lon_step=200, lat_step=200, ncores=3, use_thread=True, *
 
 # Function to generate random points within a polygon
 def generate_random_points(pt, resolution,  ncores, num_points):
+    """
 
+    Args:
+        pt: shape file
+        resolution: resolution in meters
+        ncores: number of cores to use
+        num_points: number of points to sample in each grid
+
+    Returns:
+
+    """
     all_points = []
 
     def generate():

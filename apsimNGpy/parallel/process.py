@@ -6,7 +6,7 @@ from multiprocessing import cpu_count
 from pathlib import Path
 from apsimNGpy.utililies.utils import timer
 from apsimNGpy.utililies.run_utils import run_model, read_simulation
-from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganizeAPSIMsoil_profile
+
 #from apsimNGpy.utililies.database_utils import read_db_table
 from apsimNGpy.utililies.utils  import select_process
 from apsimNGpy.utililies.database_utils import  read_db_table
@@ -162,17 +162,6 @@ def download_soil_tables(iterable, use_threads=False, ncores=None, soil_series=N
 
     """
 
-    def _concat(x):
-        try:
-            cod = iterable[x]
-            table = DownloadsurgoSoiltables(cod)
-            thi = [150, 150, 200, 200, 200, 250, 300, 300, 400, 500]
-            th = kwargs.get("thickness", thi)
-            sp = OrganizeAPSIMsoil_profile(table, thickness=20, thickness_values=th).cal_missingFromSurgo()
-            return {x: sp}
-        except Exception as e:
-            print("Exception Type:", type(e), "has occured")
-            print(repr(e))
 
     if not ncores:
         ncores_2use = int(cpu_count() * 0.4)

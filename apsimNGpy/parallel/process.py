@@ -124,7 +124,7 @@ def read_result_in_parallel(iterable_files, ncores=None, use_threads=False, repo
     print(perf_counter() - a, 'seconds', f'to read {len(files)} apsimx files databases')
 
 
-def download_soil_tables(iterable, use_threads=False, ncores=None, soil_series=None):
+def download_soil_tables(iterable, use_threads=False, ncores=None, soil_series=None, **kwargs):
     """
 
     Downloads soil data from SSURGO (Soil Survey Geographic Database) based on lonlat coordinates.
@@ -166,7 +166,8 @@ def download_soil_tables(iterable, use_threads=False, ncores=None, soil_series=N
         try:
             cod = iterable[x]
             table = DownloadsurgoSoiltables(cod)
-            th = [150, 150, 200, 200, 200, 250, 300, 300, 400, 500]
+            thi = [150, 150, 200, 200, 200, 250, 300, 300, 400, 500]
+            th = kwargs.get("thickness", thi)
             sp = OrganizeAPSIMsoil_profile(table, thickness=20, thickness_values=th).cal_missingFromSurgo()
             return {x: sp}
         except Exception as e:
@@ -203,8 +204,6 @@ def custom_parallel(func, iterable, use_thread=False, ncores=6, *arg):
         Any: The results of the `func` function for each item in the iterable.
 
     """
-    print(*arg)
-
     a = perf_counter()
     with select_process(use_thread=use_thread,
                          ncores=ncores) as pool:  # this reduces the repetition perhaps should even be implimented

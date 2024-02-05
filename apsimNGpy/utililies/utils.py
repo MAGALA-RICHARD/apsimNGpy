@@ -9,7 +9,7 @@ import geopandas as gpd
 from shapely.geometry import Polygon
 from shapely.ops import unary_union
 from shapely.geometry import Point
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from threading import Thread
 from scipy.optimize import curve_fit
 from time import perf_counter
@@ -17,6 +17,10 @@ import pandas as pd
 import time
 from functools import cache
 from pathlib import Path
+
+
+def select_process(use_thread, ncores):
+    return ThreadPoolExecutor(ncores) if use_thread else ProcessPoolExecutor(ncores)
 
 
 class KeyValuePair:
@@ -281,7 +285,7 @@ def create_polygon1(args):
     return Polygon([(lon, lat), (lon + lon_step, lat), (lon + lon_step, lat + lat_step), (lon, lat + lat_step)])
 
 
-def create_fishnet1(pt, lon_step=20, lat_step=20):
+def create_fishnet1(pt, lon_step=20, lat_step=20, ncores =2, process=False):
     gdf_shape = gpd.read_file(pt)
     CRS = gdf_shape.crs
     print(crs)
@@ -289,11 +293,13 @@ def create_fishnet1(pt, lon_step=20, lat_step=20):
     lats = np.arange(min_lat, max_lat, lat_step)
     lons = np.arange(min_lon, max_lon, lon_step)
     polygons = []
-    with ThreadPoolExecutor(2) as executor:
+
+    with select_process(process, ncores) as executor:
         args = [(lon, lat, lon_step, lat_step) for lon in lons for lat in lats]
         polygons = list(executor.map(create_polygon1, args))
     gdf = gpd.GeoDataFrame({'geometry': polygons}, crs=CRS)
     gdf_clip = gpd.clip(gdf, gdf_shape)
+
     return gdf_clip
 
 
@@ -309,9 +315,6 @@ def convert_geopoint_to_array(geoseries):
 
     return coords_array
 
-
-from scipy.spatial.distance import cdist
-import math
 import numpy as np
 import math
 
@@ -323,6 +326,7 @@ def split_arr(ar, chunk_size):
 
 
 def moving_average(iterable, n=3):
+    import itertools
     # moving_average([40, 30, 50, 46, 39, 44]) --> 40.0 42.0 45.0 43.0
     # https://en.wikipedia.org/wiki/Moving_average
     it = iter(iterable)
@@ -339,8 +343,7 @@ def Cache(func):
     """
 
     This is a function decorator for class attributes. It just remembers the result of the FIRST function call
-    and returns this from there on. Other cashes like LRU are difficult to use because the input can be unhashable
-    or bigger numpy arrays. Thus the user has to choose how to use this cache.
+    and returns this from there on.
     """
 
     func_name = func.__name__
@@ -376,8 +379,8 @@ def add_wheat(string_object, word_to_insert="Wheat"):
     for i, word in enumerate(words):
         result.append(word)  # Add the current word to the result list
         # Check if the current word is one of the target words
-        if word in target_words and i < len(
-                words) - 1 and i > last_target_index and word_to_insert not in string_object:
+        if word in target_words and len(
+                words) - 1 > i > last_target_index and word_to_insert not in string_object:
             result.append(word_to_insert)  # Add the word to insert after the target word
             last_target_index = i  # Update the last target word index
     return result
@@ -533,11 +536,12 @@ def filter_df(df, **kwargs):
     # Apply the mask to the DataFrame to filter the rows
     filtered_df = df[mask]
     return filtered_df
+
+
 @cache
 def find_models(path, filename):
-    mod = list(path.rglob(filename) )
+    mod = list(path.rglob(filename))
     if mod != []:
         return os.path.dirname(mod[0])
     else:
         return None
-

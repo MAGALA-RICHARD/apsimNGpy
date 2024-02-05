@@ -14,7 +14,7 @@ from pandas import read_sql_query as rsq
 import sqlite3
 
 
-def read_with_querry(db, query):
+def read_with_query(db, query):
     """
         Executes a SQL query on a specified database and returns the result as a Pandas DataFrame.
 

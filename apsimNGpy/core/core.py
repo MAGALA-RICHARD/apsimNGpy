@@ -233,9 +233,9 @@ class APSIMNG():
         multithread, optional
             If `True` APSIM uses multiple threads, by default `True`
         kwargs:
-          read_table:   Set this True to read table
-          report_name: str, for specifying the table name
-          In order to just run the model, all the above kwargs are set to False
+             report_name: A string parameter used to designate the table name. If left unspecified, the simulator will
+            execute the model and save the outcomes in a database file, accessible through alternative retrieval methods.
+
         """
         if multithread:
             runtype = Models.Core.Run.Runner.RunTypeEnum.MultiThreaded
@@ -263,8 +263,9 @@ class APSIMNG():
 
         if (len(e) > 0):
             print(e[0].ToString())
-        if  kwargs.get('report_name', False):
+        if  kwargs.get('report_name'):
             self.results = read_db_table(self.datastore, kwargs.get('report_name'))
+            print(self.results)
             return self
         # print(self.results)
 

@@ -14,7 +14,7 @@ maize = LoadExampleFiles(wd).get_maize
 lon = -91.620369, 43.034534
 
 
-def simulate(model: Any, location: Tuple[float, float], read_from_string=True, start=1990, end=2020,
+def simulate(model: Any, location: Tuple[float, float], report_name, read_from_string=True, start=1990, end=2020,
              soil_series: str = 'domtcp', **kwargs):
     """
     Run a simulation of a given crop.
@@ -55,11 +55,11 @@ def simulate(model: Any, location: Tuple[float, float], read_from_string=True, s
         simulator_model.replace_downloaded_soils(sp, sim_name)
     if kwargs.get("mgt_practices"):
         simulator_model.update_mgt(kwargs.get('mgt_practices'), sim_name)
-    simulator_model.run()
+    simulator_model.run(report_name = report_name)
     return simulator_model
 
 
 md = {"Name": 'PostharvestillageMaize', 'Fraction': 0.001
       }
-pp = simulate(maize, lon, replace_weather=True, replace_soil=True, mgt_practices= md)
+pp = simulate(maize, lon, replace_weather=True, replace_soil=True, mgt_practices= md, report_name= 'MaizeR')
 mi = pp.examine_management_info()

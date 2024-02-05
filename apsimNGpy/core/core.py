@@ -21,8 +21,9 @@ import apsimNGpy.manager.weathermanager as weather
 from functools import cache
 # prepare for the C# import
 from apsimNGpy.core.pythonet_config import LoadPythonnet
+from apsimNGpy.utililies.database_utils import read_db_table
 
-#py_config = LoadPythonnet()()  # double brackets avoids calling it twice
+# py_config = LoadPythonnet()()  # double brackets avoids calling it twice
 
 # now we can safely import C# libraries
 from System.Collections.Generic import *
@@ -153,7 +154,7 @@ class APSIMNG():
                 self.Model = self.Model.get_NewModel()
 
         except PermissionError as e:
-              # this error will be logged to the folder logs in the current working directory
+            # this error will be logged to the folder logs in the current working directory
             print('file is being used by another process')
             raise
 
@@ -220,7 +221,7 @@ class APSIMNG():
             f.write(json)
 
     @timing_decorator
-    def run(self, simulations=None, clean=False, multithread=True):
+    def run(self, simulations=None, clean=False, multithread=True, **kwargs):
         """Run apsim model in the simulations
 
         Parameters
@@ -231,6 +232,10 @@ class APSIMNG():
             If `True` remove existing database for the file before running, deafults to False`
         multithread, optional
             If `True` APSIM uses multiple threads, by default `True`
+        kwargs:
+          read_table:   Set this True to read table
+          report_name: str, for specifying the table name
+          In order to just run the model, all the above kwargs are set to False
         """
         if multithread:
             runtype = Models.Core.Run.Runner.RunTypeEnum.MultiThreaded
@@ -258,9 +263,10 @@ class APSIMNG():
 
         if (len(e) > 0):
             print(e[0].ToString())
-        self.results = self._read_simulation()
+        if  kwargs.get('report_name', False):
+            self.results = read_db_table(self.datastore, kwargs.get('report_name'))
+            return self
         # print(self.results)
-
 
     def clone_simulation(self, target, simulation=None):
         """Clone a simulation and add it to Model
@@ -370,49 +376,14 @@ class APSIMNG():
                     table_list.remove(i)
                 # start selecting tables
             return table_list
+
     @staticmethod
-    def read_apsimx_db(datastore, report_name=None):
-        '''
-        reads an already simualted model data base
-         returns all data frame the available report tables'''
-        conn = sqlite3.connect(datastore)
-        cursor = conn.cursor()
-
-        # reading all table names
-
-        table_names = [a for a in cursor.execute("SELECT name FROM sqlite_master WHERE type = 'table'")]
-
-        table_list = []
-        for i in table_names:
-            table_list.append(i[0])
-            # remove these
-        rm = ['_InitialConditions', '_Messages', '_Checkpoints', '_Units']
-        for i in rm:
-            if i in table_list:
-                table_list.remove(i)
-                # start selecting tables
-
-        select_template = 'SELECT * FROM {table_list}'
-
-        # create data fram dictionary to keep all the tables
-        dataframe_dict = {}
-
-        for tname in table_list:
-            query = select_template.format(table_list=tname)
-            dataframe_dict[tname] = pd.read_sql(query, conn)
-        # close the connection cursor
-        conn.close()
-        dfl = len(dataframe_dict)
-        if len(dataframe_dict) == 0:
-            print("the data dictionary is empty. no data has been returned or try rerunning the files")
-            # else:
-            # remove elements
-            # print(f"{dfl} data frames has been returned")
-
-        if report_name:
-            return dataframe_dict[report_name]
-        else:
-            return dataframe_dict
+    def read_apsimx_db(datastore, report_name):
+        """
+        reads an already simulated model data base
+         returns all data frame the available report tables"""
+        data = read_db_table(datastore, report_name)
+        return data
 
     def _read_simulation(self, report_name=None):
         ''' returns all data frame the available report tables'''
@@ -782,11 +753,6 @@ class APSIMNG():
                                 fvalue = f"{values[param]}"
                                 action.Parameters[i] = KeyValuePair[String, String](param, fvalue)
 
-
-
-
-
-
                                 # action.Parameters[i]= {param:f"{values[param]}"}
         # self.examine_management_info()                # action.GetParametersFromScriptModel()
         if reload:
@@ -822,16 +788,14 @@ class APSIMNG():
                     if param in values.keys():
                         fp.Value.Parameters[i] = KeyValuePair[String, String](param, f"{values[param]}")
 
-
-
-        #return zone  # for mgt in management:
-            #     action_path = f'{zone_path}.{mgt.get("Name")}'
-            #     fp = zone.FindByPath(action_path)
-            #     values = mgt
-            #     for i in range(len(fp.Value.Parameters)):
-            #         param = fp.Value.Parameters[i].Key
-            #         if param in values.keys():
-            #             fp.Value.Parameters[i] = KeyValuePair[String, String](param, f"{values[param]}")
+        # return zone  # for mgt in management:
+        #     action_path = f'{zone_path}.{mgt.get("Name")}'
+        #     fp = zone.FindByPath(action_path)
+        #     values = mgt
+        #     for i in range(len(fp.Value.Parameters)):
+        #         param = fp.Value.Parameters[i].Key
+        #         if param in values.keys():
+        #             fp.Value.Parameters[i] = KeyValuePair[String, String](param, f"{values[param]}")
         self.save_edited_file()
         self.load_apsimx_from_string(self.path)
         return self
@@ -1470,9 +1434,5 @@ if __name__ == '__main__':
         print(xp)
     pm = model.check_som()
     pt = model.update_mgt(pl)
-
-
-
-
 
     path = r'C:\Users\rmagala\OneDrive\ApsimX'

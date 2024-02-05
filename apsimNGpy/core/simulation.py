@@ -34,7 +34,7 @@ def simulate(model: Any, location: Tuple[float, float], read_from_string=True, s
 
         replace_soil: Set this boolean to true to download and replace the soil data using the given location details.
 
-        managegement practices: Provide a list of management decissions
+        mgt_practices: Provide a list of management decissions
 
     """
     thi = [150, 150, 200, 200, 200, 250, 300, 300, 400, 500]
@@ -53,10 +53,13 @@ def simulate(model: Any, location: Tuple[float, float], read_from_string=True, s
         sp = OrganizeAPSIMsoil_profile(table, thickness=20, thickness_values=th)
         sp = sp.cal_missingFromSurgo()
         simulator_model.replace_downloaded_soils(sp, sim_name)
+    if kwargs.get("mgt_practices"):
+        simulator_model.update_mgt(kwargs.get('mgt_practices'), sim_name)
     simulator_model.run()
     return simulator_model
 
 
 md = {"Name": 'PostharvestillageMaize', 'Fraction': 0.001
       }
-pp = simulate(maize, lon, replace_weather=True, replace_soil=True)
+pp = simulate(maize, lon, replace_weather=True, replace_soil=True, mgt_practices= md)
+mi = pp.examine_management_info()

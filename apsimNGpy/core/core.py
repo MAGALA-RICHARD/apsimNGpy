@@ -265,7 +265,6 @@ class APSIMNG():
             print(e[0].ToString())
         if report_name:
             self.results = read_db_table(self.datastore, report_name=report_name)
-            print(self.results)
             return self
         # print(self.results)
 

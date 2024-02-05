@@ -7,13 +7,9 @@ from pathlib import Path
 from apsimNGpy.utililies.utils import timer
 from apsimNGpy.utililies.run_utils import run_model, read_simulation
 from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganizeAPSIMsoil_profile
-from apsimNGpy.utililies.database_utils import read_db_table
-
-
-# create function to select threadpool class or Processpool class
-def _select_process(use_thread, ncores):
-    return ThreadPoolExecutor(ncores) if use_thread else ProcessPoolExecutor(ncores)
-
+#from apsimNGpy.utililies.database_utils import read_db_table
+from apsimNGpy.utililies.utils  import select_process
+from apsimNGpy.utililies.database_utils import  read_db_table
 
 CPU = int(int(cpu_count()) * 0.5)
 
@@ -57,7 +53,7 @@ def run_apsimxfiles_in_parallel(iterable_files, ncores=None, use_threads=False):
         ncore2use = int(cpu_count() * 0.50)
 
     a = perf_counter()
-    with _select_process(use_thread=use_threads, ncores=ncore2use) as pool:
+    with select_process(use_thread=use_threads, ncores=ncore2use) as pool:
         futures = [pool.submit(run_model, i) for i in files]
         progress = tqdm(total=len(futures), position=0, leave=True,
                         bar_format='Running apsimx files: {percentage:3.0f}% completed')
@@ -114,8 +110,8 @@ def read_result_in_parallel(iterable_files, ncores=None, use_threads=False, repo
         ncore2use = int(cpu_count() * 0.50)
 
     a = perf_counter()
-    with _select_process(use_thread=use_threads, ncores=ncore2use) as pool:
-        futures = [pool.submit(read_simulation, i, report_name) for i in files]
+    with select_process(use_thread=use_threads, ncores=ncore2use) as pool:
+        futures = [pool.submit(read_db_table, i, report_name) for i in files]
         progress = tqdm(total=len(futures), position=0, leave=True,
                         bar_format='reading file databases: {percentage:3.0f}% completed')
         # Iterate over the futures as they complete
@@ -182,7 +178,7 @@ def download_soil_tables(iterable, use_threads=False, ncores=None, soil_series=N
         print(f"using: {ncores_2use} cpu cores")
     else:
         ncores_2use = ncores
-    with _select_process(use_thread=use_threads, ncores=ncores_2use) as tpool:
+    with select_process(use_thread=use_threads, ncores=ncores_2use) as tpool:
         futures = [tpool.submit(_concat, n) for n in range(len(iterable))]
         progress = tqdm(total=len(futures), position=0, leave=True,
                         bar_format='downloading soil_tables...: {percentage:3.0f}% completed')
@@ -210,7 +206,7 @@ def custom_parallel(func, iterable, use_thread=False, ncores=6, *arg):
     print(*arg)
 
     a = perf_counter()
-    with _select_process(use_thread=use_thread,
+    with select_process(use_thread=use_thread,
                          ncores=ncores) as pool:  # this reduces the repetition perhaps should even be implimented
         # with a decorator at the top of the function
         print(use_thread)

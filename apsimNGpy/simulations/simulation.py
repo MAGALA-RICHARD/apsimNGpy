@@ -109,6 +109,6 @@ def simulate_from_shape_file(wd, shape_file, model: Any, resolution, report, rea
             yield future.result()
             progress.update(1)
         progress.close()
-    print(f"running: {len(df['ID'])} took {time.perf_counter()-a} seconds")
+    print(f"running: {len(df['ID'])} locations took {time.perf_counter()-a} seconds")
 
 

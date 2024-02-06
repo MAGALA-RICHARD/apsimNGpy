@@ -178,7 +178,7 @@ def download_soil_tables(iterable, use_threads=False, ncores=0, **kwargs):
         progress.close()
 
 
-def custom_parallel(func, iterable, use_thread=False, ncores=6, *arg):
+def custom_parallel(func, iterable, *args, **kwargs):
     """
     Run a function in parallel using threads or processes.
 
@@ -191,13 +191,18 @@ def custom_parallel(func, iterable, use_thread=False, ncores=6, *arg):
 
     Yields:
         Any: The results of the `func` function for each item in the iterable.
+    kwargs
+    use_thread= set too False to use threads,
+    ncores supplied the number if threads or processes to use,
 
     """
+
+    use_thread , ncores= kwargs.get('use_thread', False), kwargs.get('ncores', 4)
     a = perf_counter()
     with select_process(use_thread=use_thread,
                          ncores=ncores) as pool:  # this reduces the repetition perhaps should even be implimented
         # with a decorator at the top of the function
-        futures = [pool.submit(func, i, *arg) for i in iterable]
+        futures = [pool.submit(func, i, *args) for i in iterable]
         progress = tqdm(total=len(futures), position=0, leave=True,
                         bar_format=f'Running {func.__name__}:' '{percentage:3.0f}% completed')
         # Iterate over the futures as they complete
@@ -213,7 +218,7 @@ def custom_parallel(func, iterable, use_thread=False, ncores=6, *arg):
 if __name__ == '__main__':
     from examples import fnn  # the function should not be on the main for some reasons
     lp = [(-92.70166631,  42.26139442), (-92.69581474,  42.26436962), (-92.64634469,  42.33703225)]
-    lm = custom_parallel(fnn, range(100000), True, 10)
+    lm = custom_parallel(fnn, range(100000), use_thread=True, ncores = 10)
 
-    lt = custom_parallel(download_soil_table, lp, True, 10)
-    # print(pm)
+
+    print(list(lm))

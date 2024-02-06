@@ -5,7 +5,7 @@ from typing import Tuple, Any
 from apsimNGpy.core.apsim import ApsimModel
 from apsimNGpy.core.base_data import LoadExampleFiles
 from pathlib import Path
-
+from apsimNGpy.parallel.safe import simulator_worker
 from apsimNGpy.utililies.utils import select_process
 from apsimNGpy.weather import daymet_bylocation_nocsv, daymet_bylocation
 from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganizeAPSIMsoil_profile
@@ -133,7 +133,7 @@ def simulate_from_shape_file(wd, shape_file, model: Any, resolution, report, rea
         return simulator_model.results
 
     with select_process(use_thread, ncores) as tpool:
-        futures = {tpool.submit(worker, df.loc[df['ID'] == i].squeeze()): i for i in df['ID']}
+        futures = {tpool.submit(simulator_worker, df.loc[df['ID'] == i].squeeze(), kwargs): i for i in df['ID']}
         progress = tqdm(total=len(futures), position=0, leave=True,
                         bar_format=f'Running:' '{percentage:3.0f}% completed')
         # Iterate over the futures as they complete

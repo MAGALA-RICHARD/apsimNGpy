@@ -20,14 +20,16 @@ def simulator_worker(row, dictio):
         report = kwargs.get('report_name')
         ID = row['ID']
         model = row['file_name']
+        thi = [150, 150, 200, 200, 200, 250, 300, 300, 400, 500]
+        th = kwargs.get("thickness_values", thi)
         simulator_model = ApsimModel(
-            model, copy=kwargs.get('copy'), read_from_string=read_from_string, lonlat=None, thickness_values=th)
+            model, copy=kwargs.get('copy'), read_from_string=True, lonlat=None, thickness_values=th)
         sim_names = simulator_model.extract_simulation_name
         location = row['location']
 
         if kwargs.get('replace_weather', False):
             wname = model.strip('.apsimx') + '_w.met'
-            wf = daymet_bylocation_nocsv(location, start, end, filename=wname)
+            wf = daymet_bylocation_nocsv(location, start=1990, end= 2020, filename=wname)
             simulator_model.replace_met_file(wf, sim_names)
 
         if kwargs.get("replace_soil", False):

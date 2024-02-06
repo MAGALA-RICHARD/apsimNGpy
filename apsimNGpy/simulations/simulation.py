@@ -1,23 +1,12 @@
 from concurrent.futures import as_completed
-
-import numpy as np
 from typing import Tuple, Any
 from apsimNGpy.core.apsim import ApsimModel
-from apsimNGpy.core.base_data import LoadExampleFiles
-from pathlib import Path
 from apsimNGpy.parallel.safe import simulator_worker
 from apsimNGpy.utililies.utils import select_process
 from apsimNGpy.weather import daymet_bylocation_nocsv, daymet_bylocation
 from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganizeAPSIMsoil_profile
 from apsimNGpy.utililies.spatial import create_fishnet1, create_apsimx_sim_files, generate_random_points
 from tqdm import tqdm
-
-wd = Path.home()
-from os.path import basename
-
-maize = LoadExampleFiles(wd).get_maize
-
-lon = -91.620369, 43.034534
 
 
 def simulate_single_point(model: Any, location: Tuple[float, float], report, read_from_string=True, start=1990,
@@ -121,12 +110,3 @@ def simulate_from_shape_file(wd, shape_file, model: Any, resolution, report, rea
         progress.close()
 
 
-md = {"Name": 'PostharvestillageMaize', 'Fraction': 0.001
-      }
-if __name__ == '__main__':
-    pp = simulate_single_point(maize, lon, replace_weather=True, replace_soil=True, mgt_practices=md, report='MaizeR')
-    shp = r'D:\ACPd\Bear creek simulations\bearcreek_shape\bearcreek.shp'
-    wd = r'C:\Users\rmagala'
-    lp = simulate_from_shape_file(wd, shp, maize, 1200, report='MaizeR', random_grid_points=True, replace_soil=True,
-                                  replace_weather=True)
-    lip = list(lp)

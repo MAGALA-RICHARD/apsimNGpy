@@ -44,6 +44,3 @@ def simulator_worker(row, dictio):
     return simulator_model.results
 
 
-lon = -92.70166631, 42.26139442
-lm = download_soil_table(lon)
-print(lm)

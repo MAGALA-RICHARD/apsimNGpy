@@ -124,7 +124,7 @@ def read_result_in_parallel(iterable_files, ncores=None, use_threads=False, repo
     print(perf_counter() - a, 'seconds', f'to read {len(files)} apsimx files databases')
 
 
-def download_soil_tables(iterable, use_threads=False, ncores=None, soil_series=None, **kwargs):
+def download_soil_tables(iterable, use_threads=False, ncores=0, **kwargs):
     """
 
     Downloads soil data from SSURGO (Soil Survey Geographic Database) based on lonlat coordinates.
@@ -197,7 +197,6 @@ def custom_parallel(func, iterable, use_thread=False, ncores=6, *arg):
     with select_process(use_thread=use_thread,
                          ncores=ncores) as pool:  # this reduces the repetition perhaps should even be implimented
         # with a decorator at the top of the function
-        print(use_thread)
         futures = [pool.submit(func, i, *arg) for i in iterable]
         progress = tqdm(total=len(futures), position=0, leave=True,
                         bar_format=f'Running {func.__name__}:' '{percentage:3.0f}% completed')
@@ -213,8 +212,8 @@ def custom_parallel(func, iterable, use_thread=False, ncores=6, *arg):
 
 if __name__ == '__main__':
     from examples import fnn  # the function should not be on the main for some reasons
-
+    lp = [(-92.70166631,  42.26139442), (-92.69581474,  42.26436962), (-92.64634469,  42.33703225)]
     lm = custom_parallel(fnn, range(100000), True, 10)
-    pm = list(lm)
 
+    lt = custom_parallel(download_soil_table, lp, True, 10)
     # print(pm)

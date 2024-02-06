@@ -390,7 +390,8 @@ class APSIMNG():
         return data
 
     def _read_simulation(self, report_name=None):
-        ''' returns all data frame the available report tables'''
+        """ returns all data frame the available report tables
+        this is slow use read_db_table instead"""
         conn = sqlite3.connect(self.datastore)
         cursor = conn.cursor()
 

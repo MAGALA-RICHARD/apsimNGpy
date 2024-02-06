@@ -67,7 +67,7 @@ def simulate_single_point(model: Any, location: Tuple[float, float], report, rea
     return simulator_model.results
 
 
-def simulate_single_from_shape_file(wd, shape_file, model: Any, resolution, report, read_from_string=True, start=1990,
+def simulate_from_shape_file(wd, shape_file, model: Any, resolution, report, read_from_string=True, start=1990,
                                     end=2020,
                                     soil_series: str = 'domtcp', **kwargs):
     arr = create_fishnet1(shape_file, lon_step=resolution, lat_step=resolution, ncores=3)

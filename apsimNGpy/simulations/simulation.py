@@ -68,8 +68,8 @@ def simulate_single_point(model: Any, location: Tuple[float, float], report, rea
 
 
 def simulate_from_shape_file(wd, shape_file, model: Any, resolution, report, read_from_string=True, start=1990,
-                                    end=2020,
-                                    soil_series: str = 'domtcp', **kwargs):
+                             end=2020,
+                             soil_series: str = 'domtcp', **kwargs):
     arr = create_fishnet1(shape_file, lon_step=resolution, lat_step=resolution, ncores=3)
     """
     Run a simulation of a given crop.
@@ -107,30 +107,8 @@ def simulate_from_shape_file(wd, shape_file, model: Any, resolution, report, rea
     df = create_apsimx_sim_files(wd, model, arr)
     thi = [150, 150, 200, 200, 200, 250, 300, 300, 400, 500]
     th = kwargs.get("thickness_values", thi)  # in case it is not supplied, we take thi
-
-    def worker(row):
-        ID = row['ID']
-        model = row['file_name']
-        simulator_model = ApsimModel(
-            model, copy=kwargs.get('copy'), read_from_string=read_from_string, lonlat=None, thickness_values=th)
-        sim_names = simulator_model.extract_simulation_name
-        location = row['location']
-
-        if kwargs.get('replace_weather', False):
-            wname = model.strip('.apsimx') + '_w.met'
-            wf = daymet_bylocation_nocsv(location, start, end, filename=wname)
-            simulator_model.replace_met_file(wf, sim_names)
-
-        if kwargs.get("replace_soil", False):
-            table = DownloadsurgoSoiltables(location)
-            sp = OrganizeAPSIMsoil_profile(table, thickness=20, thickness_values=th)
-            sp = sp.cal_missingFromSurgo()
-            simulator_model.replace_downloaded_soils(sp, sim_names)
-
-        if kwargs.get("mgt_practices"):
-            simulator_model.update_mgt(kwargs.get('mgt_practices'), sim_names)
-        simulator_model.run(report_name=report)
-        return simulator_model.results
+    kwargs['start'] = start
+    kwargs['end'] = end
 
     with select_process(use_thread, ncores) as tpool:
         futures = {tpool.submit(simulator_worker, df.loc[df['ID'] == i].squeeze(), kwargs): i for i in df['ID']}
@@ -149,5 +127,6 @@ if __name__ == '__main__':
     pp = simulate_single_point(maize, lon, replace_weather=True, replace_soil=True, mgt_practices=md, report='MaizeR')
     shp = r'D:\ACPd\Bear creek simulations\bearcreek_shape\bearcreek.shp'
     wd = r'C:\Users\rmagala'
-    lp = simulate_from_shape_file(wd, shp, maize, 1200, report='MaizeR', random_grid_points=True, replace_soil=True, replace_weather=True)
+    lp = simulate_from_shape_file(wd, shp, maize, 1200, report='MaizeR', random_grid_points=True, replace_soil=True,
+                                  replace_weather=True)
     lip = list(lp)

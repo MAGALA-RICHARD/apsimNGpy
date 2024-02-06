@@ -149,7 +149,7 @@ def separate_date(date_str):
     return year, month, day
 
 
-def getnasa(lonlat, start, end):
+def getnasa_df(lonlat, start, end):
     lon = lonlat[0]
     lat = lonlat[1]
     param = ["T2M_MAX", "T2M_MIN", "ALLSKY_SFC_SW_DWN", "PRECTOTCORR", "RH2M", "WS2M"]
@@ -179,7 +179,7 @@ def getnasa(lonlat, start, end):
 
 
 def met_nasapower(lonlat, start=1990, end=2000, fname='met_nasapower.met'):
-    df = getnasa(lonlat, start, end)
+    df = getnasa_df(lonlat, start, end)
     tav, AMP = calculate_tav_amp(df)
     create_met_header(fname, lonlat, tav, AMP, site = None)
     data_rows = []
@@ -198,6 +198,6 @@ def met_nasapower(lonlat, start=1990, end=2000, fname='met_nasapower.met'):
 if __name__ == '__main__':
     # imputed_df = impute_data(df, method="approx", verbose=True, copy=True)
     kampala = 32.582520, 0.347596
-    df = getnasa(kampala, 2000, 2020)
+    df = getnasa_df(kampala, 2000, 2020)
     imputed_df = impute_data(df, method="approx", verbose=True, copy=True)
     hf = met_nasapower(kampala, end=2020, fname='kampala_new.met')

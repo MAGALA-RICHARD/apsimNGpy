@@ -186,7 +186,7 @@ class APSIMNG():
         self.path = path
         try:
             assert path.endswith(
-                ".apsimx"), "file path is missing apsim extention. did you forget to include .apsimx extension"
+                ".apsimx"), "file path is missing APSIM extension. did you forget to include .apsimx extension"
             if read_from_string:
                 self.load_apsimx_from_string(path)
             else:
@@ -263,6 +263,7 @@ class APSIMNG():
 
         if (len(e) > 0):
             print(e[0].ToString())
+
         if report_name:
             self.results = read_db_table(self.datastore, report_name=report_name)
             return self

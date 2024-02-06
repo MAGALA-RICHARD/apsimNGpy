@@ -1,3 +1,4 @@
+import time
 from concurrent.futures import as_completed
 from typing import Tuple, Any
 from apsimNGpy.core.apsim import ApsimModel
@@ -98,7 +99,7 @@ def simulate_from_shape_file(wd, shape_file, model: Any, resolution, report, rea
     th = kwargs.get("thickness_values", thi)  # in case it is not supplied, we take thi
     kwargs['start'] = start
     kwargs['end'] = end
-
+    a = time.perf_counter()
     with select_process(use_thread, ncores) as tpool:
         futures = {tpool.submit(simulator_worker, df.loc[df['ID'] == i].squeeze(), kwargs): i for i in df['ID']}
         progress = tqdm(total=len(futures), position=0, leave=True,
@@ -108,5 +109,6 @@ def simulate_from_shape_file(wd, shape_file, model: Any, resolution, report, rea
             yield future.result()
             progress.update(1)
         progress.close()
+    print(f"running: {len(df['ID'])} took {time.perf_counter()-a} seconds")
 
 

@@ -220,7 +220,7 @@ class APSIMNG():
         with open(out_path, "w") as f:
             f.write(json)
 
-    @timing_decorator
+
     def run(self, simulations=None, clean=False, multithread=True, report_name = None):
         """Run apsim model in the simulations
 

@@ -101,7 +101,7 @@ def simulate_single_from_shape_file(wd, shape_file, model: Any, resolution, repo
     thi = [150, 150, 200, 200, 200, 250, 300, 300, 400, 500]
     th = kwargs.get("thickness_values", thi)  # in case it is not supplied, we take thi
 
-    use_thread, ncores = kwargs.get('use_thread', False), kwargs.get('ncores', 3)
+    use_thread, ncores = kwargs.get('use_thread', True), kwargs.get('ncores', 3)
 
     def worker(row):
         ID = row['ID']
@@ -113,7 +113,7 @@ def simulate_single_from_shape_file(wd, shape_file, model: Any, resolution, repo
 
         if kwargs.get('replace_weather', False):
             wname = model.strip('.apsimx') + '_w.met'
-            wf = daymet_bylocation_nocsv(arr[location], start, end, filename=wname)
+            wf = daymet_bylocation_nocsv(location, start, end, filename=wname)
             simulator_model.replace_met_file(wf, sim_names)
 
         if kwargs.get("replace_soil", False):
@@ -144,5 +144,5 @@ if __name__ == '__main__':
         pp = simulate_single_point(maize, lon, replace_weather=True, replace_soil=True, mgt_practices=md, report='MaizeR')
         shp = r'D:\ACPd\Bear creek simulations\bearcreek_shape\bearcreek.shp'
         wd = r'C:\Users\rmagala'
-        lp = simulate_single_from_shape_file(wd, shp, maize, 1000, report = 'MaizeR')
+        lp = simulate_single_from_shape_file(wd, shp, maize, 1000, report = 'MaizeR', replace_soil=True, replace_weather=True)
         lip = list(lp)

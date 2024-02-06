@@ -15,8 +15,7 @@ def download_soil_table(x):
         print(repr(e))
 
 
-def simulator_worker(dictio):
-    def worker(row):
+def simulator_worker(row, dictio):
         kwargs = dictio
         report = kwargs.get('report_name')
         ID = row['ID']

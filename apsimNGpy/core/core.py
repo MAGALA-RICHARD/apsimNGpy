@@ -233,7 +233,7 @@ class APSIMNG():
         multithread, optional
             If `True` APSIM uses multiple threads, by default `True`
         kwargs:
-             report_name: A string parameter used to designate the table name. If left unspecified, the simulator will
+             report_name: A string parameter or list of strings used to designate the table name(s) If left unspecified, the simulator will
             execute the model and save the outcomes in a database file, accessible through alternative retrieval methods.
 
         """
@@ -263,10 +263,13 @@ class APSIMNG():
 
         if (len(e) > 0):
             print(e[0].ToString())
-
-        if report_name:
+        
+        if report_name and isinstance(report_name, list):
+            self.results = [read_db_table(self.datastore, report_name=rep) for rep in report_name]
+        if report_name and isinstance(report_name, str):
             self.results = read_db_table(self.datastore, report_name=report_name)
-            return self
+
+        return self
         # print(self.results)
 
     def clone_simulation(self, target, simulation=None):

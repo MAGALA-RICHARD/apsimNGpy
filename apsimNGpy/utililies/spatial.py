@@ -125,7 +125,6 @@ def create_apsimx_sim_files(wd, model, iterable):
 
     mod = model.strip('.apsimx')
     model_suffix = os.path.basename(mod)
-    print(model_suffix)
 
     ids = range(len(iterable))
     files = [{'ID': i, 'location': iterable[i], 'file_name': os.path.join(wd, model_suffix) + f"_{i}.apsimx"} for i in

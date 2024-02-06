@@ -149,5 +149,5 @@ if __name__ == '__main__':
     pp = simulate_single_point(maize, lon, replace_weather=True, replace_soil=True, mgt_practices=md, report='MaizeR')
     shp = r'D:\ACPd\Bear creek simulations\bearcreek_shape\bearcreek.shp'
     wd = r'C:\Users\rmagala'
-    lp = simulate_single_from_shape_file(wd, shp, maize, 1200, report='MaizeR', random_grid_points=True, replace_soil=True, replace_weather=True)
+    lp = simulate_from_shape_file(wd, shp, maize, 1200, report='MaizeR', random_grid_points=True, replace_soil=True, replace_weather=True)
     lip = list(lp)

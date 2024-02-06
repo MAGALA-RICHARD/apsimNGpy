@@ -1,5 +1,5 @@
 from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganizeAPSIMsoil_profile
-
+from apsimNGpy.weather import daymet_bylocation_nocsv
 
 def download_soil_table(x):
     try:
@@ -11,3 +11,9 @@ def download_soil_table(x):
     except Exception as e:
         print("Exception Type:", type(e), "has occured")
         print(repr(e))
+
+
+
+lon = -92.70166631,  42.26139442
+lm = download_soil_table(lon)
+print(lm)

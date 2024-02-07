@@ -19,6 +19,7 @@ import random
 from manager.soilmanager import OrganizeAPSIMsoil_profile, DownloadsurgoSoiltables
 from weather import daymet_bylocation_nocsv
 from apsimNGpy.parallel.process import custom_parallel
+from apsimNGpy.parallel.safe import run_simPle
 
 maize = LoadExampleFiles().get_maize
 
@@ -164,7 +165,7 @@ def download_weather(df, start, end, use_thread=True, ncores=10, replace_soils=T
         wf = daymet_bylocation_nocsv(location, start=start, end=end, filename=wname)
         thi = [150, 150, 200, 200, 200, 250, 300, 300, 400, 500]
         th = kwargs.get("thickness_values", thi)
-        mod = ApsimModel(model, copy=True, thickness_values=th, out_path=out_path_name)
+        mod = ApsimModel(model,  thickness_values=th, out_path=out_path_name)
         sim_name = mod.extract_simulation_name
         mod.replace_met_file(wf, sim_name)
         if kwargs.get("verbose"):
@@ -178,8 +179,8 @@ def download_weather(df, start, end, use_thread=True, ncores=10, replace_soils=T
             mod.run(report_name=kwargs.get('report_names'))
             return mod.results
         else:
-
-            return mod
+            mod.save_edited_file()
+            return mod.path
 
     with select_process(use_thread, ncores) as tpool:
         futures = {tpool.submit(worker, df.loc[df['ID'] == i].squeeze()): i for i in df['ID']}
@@ -191,9 +192,6 @@ def download_weather(df, start, end, use_thread=True, ncores=10, replace_soils=T
             progress.update(1)
         progress.close()
         # for future in as_completed(futures):
-
-
-
 
 
 def create_sim_objects(wd, shp_file, model_file, reports_names, **kwargs):
@@ -225,17 +223,17 @@ def create_sim_objects(wd, shp_file, model_file, reports_names, **kwargs):
     return mop
 
 
-
-
 if __name__ == '__main__':
     wd = r'C:\Users\rmagala'
-
-
 
     df = create_fishnet1(shp, ncores=10, use_thread=True)
     gdf = df
 
     data = create_sim_objects(wd, shp, maize, 'Carbon', test=True)
-    dat = custom_parallel(run_simPle, data, "Carbon", ncores=14, use_thread=False)
-    dd = list(dat)
+    # dat = custom_parallel(run_simPle, data, "Carbon", ncores=14, use_thread=True)
+    # dd = list(dat)
+    from joblib import dump, load
+    dat = load('sims')
+    ap = ApsimModel(dat[0])
+    #dump(data, 'sims')
     # mod = [model.run(report_name='Carbon') for model in mop]

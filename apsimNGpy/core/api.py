@@ -202,23 +202,35 @@ class APSIMNG():
     def _reload_saved_file(self):
         self.save_edited_file(self.path)
 
+    import os
+
     def save_edited_file(self, outpath=None):
         """Save the model
 
         Parameters
         ----------
-        out_path, optional
-            Path of output .apsimx file, by default `None`
+        outpath : str, optional
+            Path of the output .apsimx file, by default None
         """
+        # Determine the output path
         if outpath:
-            self.out_path = os.path.realpath(outpath)
-        if self.out_path is None:
-            out_path = self.path
+            # If an outpath is provided, use it and convert to real path
+            final_out_path = os.path.realpath(outpath)
         else:
-            out_path = self.out_path
-        json = Models.Core.ApsimFile.FileFormat.WriteToString(self.Model)
-        with open(out_path, "w") as f:
-            f.write(json)
+            # If no outpath is provided, check if self.out_path is already set
+            if self.out_path is None:
+                # If self.out_path is not set, default to self.path
+                final_out_path = self.path
+            else:
+                # Use the existing self.out_path
+                final_out_path = self.out_path
+
+        # Serialize the model to JSON string
+        json_string = Models.Core.ApsimFile.FileFormat.WriteToString(self.Model)
+
+        # Save the JSON string to the determined output path
+        with open(final_out_path, "w") as f:
+            f.write(json_string)
 
     def run(self, simulations=None, clean=False, multithread=True, report_name=None):
         """Run apsim model in the simulations

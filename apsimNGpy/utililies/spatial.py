@@ -2,7 +2,6 @@ from concurrent.futures import as_completed
 
 import geopandas as gpd
 import pandas as pd
-import utils
 import numpy as np
 from apsimNGpy.core import ApsimModel
 from apsimNGpy.utililies.utils import select_process
@@ -17,7 +16,7 @@ from apsimNGpy.parallel.process import download_soil_tables
 from tqdm import tqdm
 import random
 from manager.soilmanager import OrganizeAPSIMsoil_profile, DownloadsurgoSoiltables
-from weather import daymet_bylocation_nocsv
+from apsimNGpy.core.weather import daymet_bylocation_nocsv
 from apsimNGpy.parallel.process import custom_parallel
 from apsimNGpy.parallel.safe import run_simPle
 
@@ -219,7 +218,7 @@ def create_sim_objects(wd, shp_file, model_file, reports_names, **kwargs):
     else:
         arr = ap
     ap = create_apsimx_sim_files(wd, model_file, arr)
-    objs = download_weather(ap, 1990, 2021, verbose=False, use_thread=True, replace_soils=True)
+    objs = download_weather(ap, 1990, 2021, report_names = 'Carbon', verbose=False, report=False, use_thread=True, replace_soils=True)
 
     mop = list(objs)
     return mop
@@ -236,6 +235,6 @@ if __name__ == '__main__':
     # dd = list(dat)
     from joblib import dump, load
     dat = load('sims')
-    ap = ApsimModel(dat[8])
+    # ap = ApsimModel(dat[8])
     #dump(data, 'sims')
     # mod = [model.run(report_name='Carbon') for model in mop]

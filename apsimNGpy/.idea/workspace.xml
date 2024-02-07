@@ -5,13 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="5d471312-8496-4246-98d6-790439318160" name="Changes" comment="simulate from a shape file">
-      <change afterPath="$PROJECT_DIR$/parallel/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/parallel/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/parallel/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/parallel/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/parallel/.idea/parallel.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/parallel/safe.py" beforeDir="false" afterPath="$PROJECT_DIR$/parallel/safe.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utililies/spatial.py" beforeDir="false" afterPath="$PROJECT_DIR$/utililies/spatial.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -33,32 +28,32 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_ADD_EXTERNAL_FILES": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "main",
-    "last_opened_file_path": "C:/Users/rmagala/Box/apsimNGpy/apsimNGpy/simulations",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "settings.editor.selected.configurable": "inlay.hints",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/ACPd/Bear creek simulations&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;inlay.hints&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\ACPd\Bear creek simulations" />
+      <recent name="C:\Users\rmagala\Box\apsimNGpy\apsimNGpy\core" />
       <recent name="C:\Users\rmagala\Box\apsimNGpy\apsimNGpy\simulations" />
       <recent name="C:\Users\rmagala\Box\apsimNGpy\apsimNGpy\utililies" />
-      <recent name="C:\Users\rmagala\Box\apsimNGpy\apsimNGpy\core" />
       <recent name="C:\Users\rmagala\Box\apsimNGpy\apsimNGpy\model" />
-      <recent name="C:\Users\rmagala\Box\apsimNGpy\apsimNGpy\base" />
     </key>
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Python.process">
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
       <module name="apsimNGpy" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -85,9 +80,6 @@
       <module name="apsimNGpy" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/parallel" />
       <option name="IS_MODULE_SDK" value="true" />
@@ -191,63 +183,9 @@
       <workItem from="1700686967594" duration="35775000" />
       <workItem from="1701399734418" duration="691000" />
       <workItem from="1701400473097" duration="3803000" />
-      <workItem from="1707062929299" duration="79763000" />
-    </task>
-    <task id="LOCAL-00237" summary="core_changes">
-      <option name="closed" value="true" />
-      <created>1700867360856</created>
-      <option name="number" value="00237" />
-      <option name="presentableId" value="LOCAL-00237" />
-      <option name="project" value="LOCAL" />
-      <updated>1700867360856</updated>
-    </task>
-    <task id="LOCAL-00238" summary="core_changes">
-      <option name="closed" value="true" />
-      <created>1700880324005</created>
-      <option name="number" value="00238" />
-      <option name="presentableId" value="LOCAL-00238" />
-      <option name="project" value="LOCAL" />
-      <updated>1700880324005</updated>
-    </task>
-    <task id="LOCAL-00239" summary="core_changes">
-      <option name="closed" value="true" />
-      <created>1700880393977</created>
-      <option name="number" value="00239" />
-      <option name="presentableId" value="LOCAL-00239" />
-      <option name="project" value="LOCAL" />
-      <updated>1700880393977</updated>
-    </task>
-    <task id="LOCAL-00240" summary="core_changes">
-      <option name="closed" value="true" />
-      <created>1701399819410</created>
-      <option name="number" value="00240" />
-      <option name="presentableId" value="LOCAL-00240" />
-      <option name="project" value="LOCAL" />
-      <updated>1701399819410</updated>
-    </task>
-    <task id="LOCAL-00241" summary="un">
-      <option name="closed" value="true" />
-      <created>1701399834694</created>
-      <option name="number" value="00241" />
-      <option name="presentableId" value="LOCAL-00241" />
-      <option name="project" value="LOCAL" />
-      <updated>1701399834694</updated>
-    </task>
-    <task id="LOCAL-00242" summary="un">
-      <option name="closed" value="true" />
-      <created>1701400203839</created>
-      <option name="number" value="00242" />
-      <option name="presentableId" value="LOCAL-00242" />
-      <option name="project" value="LOCAL" />
-      <updated>1701400203839</updated>
-    </task>
-    <task id="LOCAL-00243" summary="un">
-      <option name="closed" value="true" />
-      <created>1701400712916</created>
-      <option name="number" value="00243" />
-      <option name="presentableId" value="LOCAL-00243" />
-      <option name="project" value="LOCAL" />
-      <updated>1701400712916</updated>
+      <workItem from="1707062929299" duration="101027000" />
+      <workItem from="1707341443179" duration="61000" />
+      <workItem from="1707345282360" duration="1217000" />
     </task>
     <task id="LOCAL-00244" summary="bacjed data changed">
       <option name="closed" value="true" />
@@ -585,7 +523,63 @@
       <option name="project" value="LOCAL" />
       <updated>1707270740458</updated>
     </task>
-    <option name="localTasksCounter" value="286" />
+    <task id="LOCAL-00286" summary="simulate from a shape file">
+      <option name="closed" value="true" />
+      <created>1707270824103</created>
+      <option name="number" value="00286" />
+      <option name="presentableId" value="LOCAL-00286" />
+      <option name="project" value="LOCAL" />
+      <updated>1707270824103</updated>
+    </task>
+    <task id="LOCAL-00287" summary="simulate from a shape file">
+      <option name="closed" value="true" />
+      <created>1707271508722</created>
+      <option name="number" value="00287" />
+      <option name="presentableId" value="LOCAL-00287" />
+      <option name="project" value="LOCAL" />
+      <updated>1707271508722</updated>
+    </task>
+    <task id="LOCAL-00288" summary="simulate from a shape file">
+      <option name="closed" value="true" />
+      <created>1707321613416</created>
+      <option name="number" value="00288" />
+      <option name="presentableId" value="LOCAL-00288" />
+      <option name="project" value="LOCAL" />
+      <updated>1707321613416</updated>
+    </task>
+    <task id="LOCAL-00289" summary="simulate from a shape file">
+      <option name="closed" value="true" />
+      <created>1707321657337</created>
+      <option name="number" value="00289" />
+      <option name="presentableId" value="LOCAL-00289" />
+      <option name="project" value="LOCAL" />
+      <updated>1707321657337</updated>
+    </task>
+    <task id="LOCAL-00290" summary="simulate from a shape file">
+      <option name="closed" value="true" />
+      <created>1707333691885</created>
+      <option name="number" value="00290" />
+      <option name="presentableId" value="LOCAL-00290" />
+      <option name="project" value="LOCAL" />
+      <updated>1707333691885</updated>
+    </task>
+    <task id="LOCAL-00291" summary="simulate from a shape file">
+      <option name="closed" value="true" />
+      <created>1707335242682</created>
+      <option name="number" value="00291" />
+      <option name="presentableId" value="LOCAL-00291" />
+      <option name="project" value="LOCAL" />
+      <updated>1707335242682</updated>
+    </task>
+    <task id="LOCAL-00292" summary="simulate from a shape file">
+      <option name="closed" value="true" />
+      <created>1707336237388</created>
+      <option name="number" value="00292" />
+      <option name="presentableId" value="LOCAL-00292" />
+      <option name="project" value="LOCAL" />
+      <updated>1707336237388</updated>
+    </task>
+    <option name="localTasksCounter" value="293" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -641,6 +635,11 @@
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/simulations/simulation.py</url>
           <option name="timeStamp" value="2" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/core/api.py</url>
+          <line>6</line>
+          <option name="timeStamp" value="3" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

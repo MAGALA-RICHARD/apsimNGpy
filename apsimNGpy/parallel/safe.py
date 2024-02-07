@@ -3,6 +3,10 @@ from apsimNGpy.weather import daymet_bylocation_nocsv
 from apsimNGpy.core.apsim import ApsimModel
 
 
+def run_simPle(obj, reports_names):
+    obj.run(report_name=reports_names)
+    return obj.results
+
 def download_soil_table(x):
     try:
         cod = x

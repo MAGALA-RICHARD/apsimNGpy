@@ -15,9 +15,10 @@ from shapely.ops import unary_union
 from apsimNGpy.core.base_data import LoadExampleFiles
 from apsimNGpy.parallel.process import download_soil_tables
 from tqdm import tqdm
-
+import random
 from manager.soilmanager import OrganizeAPSIMsoil_profile, DownloadsurgoSoiltables
 from weather import daymet_bylocation_nocsv
+from apsimNGpy.parallel.process import custom_parallel
 
 maize = LoadExampleFiles().get_maize
 
@@ -177,6 +178,7 @@ def download_weather(df, start, end, use_thread=True, ncores=10, replace_soils=T
             mod.run(report_name=kwargs.get('report_names'))
             return mod.results
         else:
+
             return mod
 
     with select_process(use_thread, ncores) as tpool:
@@ -191,14 +193,49 @@ def download_weather(df, start, end, use_thread=True, ncores=10, replace_soils=T
         # for future in as_completed(futures):
 
 
+
+
+
+def create_sim_objects(wd, shp_file, model_file, reports_names, **kwargs):
+    """
+
+    Args:
+        wd: working directory
+        shp_file: shape file of the target area
+        model_file: APSIM model string path
+        reports_names: names of the data in the simulation model
+        **kwargs:
+           Test: bool. set to true to try out 10 sample before simulation
+    Returns:
+
+    """
+    ap = generate_random_points(shp_file, 500, 10, 3)
+    if kwargs.get('test'):
+        k = 10
+        random_indices = np.random.choice(ap.shape[0], size=k, replace=False)
+
+        # Use the random indices to select rows from ap
+        arr = ap[random_indices]
+    else:
+        arr = ap
+    ap = create_apsimx_sim_files(wd, model_file, arr)
+    objs = download_weather(ap, 1990, 2021, verbose=False, use_thread=True, replace_soils=True)
+
+    mop = list(objs)
+    return mop
+
+
+
+
 if __name__ == '__main__':
     wd = r'C:\Users\rmagala'
+
+
+
     df = create_fishnet1(shp, ncores=10, use_thread=True)
     gdf = df
-    ap = generate_random_points(shp, 500, 10, 3)
-    lp = ap[:10]
-    ap = create_apsimx_sim_files(wd, maize, lp)
-    mop = download_weather(ap, 1990, 2021, verbose=False, use_thread=True)
-    mop = list(mop)
-    fp = r'C:\Users\rmagala\maize_0.apsimx'
-    mod = [model.run(report_name='Carbon') for model in mop]
+
+    data = create_sim_objects(wd, shp, maize, 'Carbon', test=True)
+    dat = custom_parallel(run_simPle, data, "Carbon", ncores=14, use_thread=False)
+    dd = list(dat)
+    # mod = [model.run(report_name='Carbon') for model in mop]

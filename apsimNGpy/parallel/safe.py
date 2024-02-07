@@ -45,7 +45,7 @@ def simulator_worker(row, dictio):
         return simulator_model.results
     except Exception as e:
         print(type(e))
-        print('+_____________________________________')
+        print('+_____________________________________\n')
         print(e)
 
 

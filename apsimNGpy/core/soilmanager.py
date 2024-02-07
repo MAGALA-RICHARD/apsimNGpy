@@ -269,7 +269,7 @@ class OrganizeAPSIMsoil_profile:
         ret1 = -0.251 * sand + 0.195 * clay + 0.011 * om + (0.006) * sand * om - 0.027 * clay * om + 0.452 * (
                     sand * clay) + 0.299
         dul = ret1 + 1.283 * np.float_power(ret1, 2) - 0.374 * ret1 - 0.015
-        dulc = self.soil.variable_profile(dul)
+        dulc = self.variable_profile(dul)
         return dulc
 
     def cal_l15Fromsand_clay_OM(self):  # has potential to cythonize

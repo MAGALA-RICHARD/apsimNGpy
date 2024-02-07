@@ -164,7 +164,7 @@ def download_weather(df, start, end, use_thread=True, ncores=10, replace_soils=T
         wf = daymet_bylocation_nocsv(location, start=start, end=end, filename=wname)
         thi = [150, 150, 200, 200, 200, 250, 300, 300, 400, 500]
         th = kwargs.get("thickness_values", thi)
-        mod = ApsimModel(model,  thickness_values=th, out_path=out_path_name)
+        mod = ApsimModel(model, thickness_values=th, out_path=out_path_name)
         sim_name = mod.extract_simulation_name
         mod.replace_met_file(wf, sim_name)
         if kwargs.get("verbose"):
@@ -218,10 +218,16 @@ def create_sim_objects(wd, shp_file, model_file, reports_names, **kwargs):
     else:
         arr = ap
     ap = create_apsimx_sim_files(wd, model_file, arr)
-    objs = download_weather(ap, 1990, 2021, report_names = 'Carbon', verbose=False, report=False, use_thread=True, replace_soils=True)
+    objs = download_weather(ap, 1990, 2021, report_names='Carbon', verbose=False, report=False, use_thread=True,
+                            replace_soils=True)
 
     mop = list(objs)
     return mop
+
+
+def run_created_files(files, to_report, cores =9, use_threads =True):
+    sims = custom_parallel(initialise, files, to_report, ncores=cores, use_thread=use_threads)
+    return list(sims)
 
 
 if __name__ == '__main__':
@@ -229,12 +235,14 @@ if __name__ == '__main__':
 
     df = create_fishnet1(shp, ncores=10, use_thread=True)
     gdf = df
-
-    data = create_sim_objects(wd, shp, maize, 'Carbon', test=True)
+    bc_model = r'D:\ACPd\Bear creek simulations\ML_bear_creek 20240206.apsimx'
+    data = create_sim_objects(wd, shp, bc_model, 'Carbon', test=True)
+    sims = run_created_files(data, "Carbon", cores = 15, use_threads = True)
     # dat = custom_parallel(run_simPle, data, "Carbon", ncores=14, use_thread=True)
     # dd = list(dat)
     from joblib import dump, load
+
     dat = load('sims')
-    # ap = ApsimModel(dat[8])
-    #dump(data, 'sims')
+    ap = ApsimModel(data[8])
+    # dump(data, 'sims')
     # mod = [model.run(report_name='Carbon') for model in mop]

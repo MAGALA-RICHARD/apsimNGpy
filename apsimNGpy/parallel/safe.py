@@ -40,7 +40,12 @@ def simulator_worker(row, dictio):
 
     if kwargs.get("mgt_practices"):
         simulator_model.update_mgt(kwargs.get('mgt_practices'), sim_names)
-    simulator_model.run(report_name=report)
-    return simulator_model.results
+    try:
+        simulator_model.run(report_name=report)
+        return simulator_model.results
+    except Exception as e:
+        print(type(e))
+        print('+_____________________________________')
+        print(e)
 
 

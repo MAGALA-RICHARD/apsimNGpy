@@ -179,8 +179,10 @@ def download_weather(df, start, end, use_thread=True, ncores=10, replace_soils=T
             mod.run(report_name=kwargs.get('report_names'))
             return mod.results
         else:
-            mod.save_edited_file()
-            return mod.path
+            mod.save_edited_file(out_path_name)
+            mod.clear()
+            del mod
+            return out_path_name
 
     with select_process(use_thread, ncores) as tpool:
         futures = {tpool.submit(worker, df.loc[df['ID'] == i].squeeze()): i for i in df['ID']}
@@ -234,6 +236,6 @@ if __name__ == '__main__':
     # dd = list(dat)
     from joblib import dump, load
     dat = load('sims')
-    ap = ApsimModel(dat[0])
+    ap = ApsimModel(dat[8])
     #dump(data, 'sims')
     # mod = [model.run(report_name='Carbon') for model in mop]

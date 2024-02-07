@@ -936,6 +936,7 @@ class APSIMNG():
                 weathers = sim_name.FindAllDescendants[Weather]()
                 for met in weathers:
                     met.FileName = weather_file
+            return self
         except Exception as e:
             print(repr(e))  # this error will be logged to the folder logs in the current working directory
             raise

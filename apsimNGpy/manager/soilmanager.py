@@ -77,8 +77,8 @@ def DownloadsurgoSoiltables(lonlat, select_componentname=None, summarytable=Fals
             my_dict['soap:Envelope']['soap:Body']['RunQueryResponse']['RunQueryResult']['diffgr:diffgram'][
                 'NewDataSet'][
                 'Table'])
-    except Exception as e:
-        print(type(e))
+    except ValueError as e:
+        pass
     if isinstance(soil_df, pd.DataFrame):
         if summarytable:
             df = soil_df.drop_duplicates(subset=['componentname'])

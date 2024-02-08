@@ -18,7 +18,7 @@ import random
 from manager.soilmanager import OrganizeAPSIMsoil_profile, DownloadsurgoSoiltables
 from apsimNGpy.core.weather import daymet_bylocation_nocsv
 from apsimNGpy.parallel.process import custom_parallel
-from apsimNGpy.parallel.safe import run_simPle
+from apsimNGpy.parallel.safe import initialise
 
 maize = LoadExampleFiles().get_maize
 
@@ -195,7 +195,7 @@ def download_weather(df, start, end, use_thread=True, ncores=10, replace_soils=T
         # for future in as_completed(futures):
 
 
-def create_sim_objects(wd, shp_file, model_file, reports_names, **kwargs):
+def create_and_run_sim_objects(wd, shp_file, model_file, reports_names, **kwargs):
     """
 
     Args:
@@ -205,6 +205,8 @@ def create_sim_objects(wd, shp_file, model_file, reports_names, **kwargs):
         reports_names: names of the data in the simulation model
         **kwargs:
            Test: bool. set to true to try out 10 sample before simulation
+           run_process: set too false to run in parallel
+           select_process; set too False to use multipl proess
     Returns:
 
     """
@@ -217,16 +219,27 @@ def create_sim_objects(wd, shp_file, model_file, reports_names, **kwargs):
         arr = ap[random_indices]
     else:
         arr = ap
+    print("Downloading weather files")
     ap = create_apsimx_sim_files(wd, model_file, arr)
-    objs = download_weather(ap, 1990, 2021, report_names='Carbon', verbose=False, report=False, use_thread=True,
-                            replace_soils=True)
+    # first we replace soils, then we
+    objs = download_weather(ap, 1990, 2021, report_names='Carbon', verbose=False, report=False, use_thread= kwargs.get('select_process', True),
+                            replace_soils=False)
 
-    mop = list(objs)
-    return mop
+    weathers = list(objs)
+
+    print("\nDownloading soils now please wait")
+    objs = download_weather(ap, 1990, 2021, report_names='Carbon', verbose=False, report=False, use_thread= kwargs.get('select_process', True),
+                            replace_soils=True)
+    soils = list(objs)
+    data = [s for s in soils if s in weathers and s is not None]
+    print(f"\nrunning the {len(dat)} simulations now.....")
+    sims = custom_parallel(initialise, data, reports_names, ncores=cores, use_thread=kwargs.get('run_process', True))
+
+    return sims
 
 
 def run_created_files(files, to_report, cores =9, use_threads =True):
-    sims = custom_parallel(initialise, files, to_report, ncores=cores, use_thread=use_threads)
+
     return list(sims)
 
 
@@ -236,8 +249,8 @@ if __name__ == '__main__':
     df = create_fishnet1(shp, ncores=10, use_thread=True)
     gdf = df
     bc_model = r'D:\ACPd\Bear creek simulations\ML_bear_creek 20240206.apsimx'
-    data = create_sim_objects(wd, shp, bc_model, 'Carbon', test=True)
-    sims = run_created_files(data, "Carbon", cores = 15, use_threads = True)
+    data = create_and_run_sim_objects(wd, shp, maize, 'Carbon', test=True, run_process =True, select_process = False)
+    #sims = run_created_files(data, "Carbon", cores = 15, use_threads = False)
     # dat = custom_parallel(run_simPle, data, "Carbon", ncores=14, use_thread=True)
     # dd = list(dat)
     from joblib import dump, load

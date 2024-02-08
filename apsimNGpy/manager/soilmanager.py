@@ -429,7 +429,7 @@ class OrganizeAPSIMsoil_profile:
                     SAT[i] = 0.381-0.01
                     #print(SAT[i])
         # adjust layer 9 issues associated with SAT and BD
-        SAT, BD = self.adjust_SAT_BD(SAT, BD)
+        SAT, BD, DUL = self.adjust_SAT_BD_DUL(SAT, BD, DUL)
         KS = self.cal_KS()
         PH = self.interpolate_PH()
         ParticleSizeClay = self.interpolate_clay()

@@ -241,9 +241,6 @@ def create_and_run_sim_objects(wd, shp_file, resolution, num_points, model_file,
     return list(sims)
 
 
-def run_created_files(files, to_report, cores =9, use_threads =True):
-
-    return list(sims)
 
 
 if __name__ == '__main__':

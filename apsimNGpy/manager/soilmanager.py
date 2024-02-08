@@ -444,6 +444,8 @@ class OrganizeAPSIMsoil_profile:
                     # print(SAT[i])
         # adjust layer 9 issues associated with SAT and BD
         SAT, BD, DUL = self.adjust_SAT_BD_DUL(SAT, BD, DUL)
+        if any(np.isnan(L15)) and not all(np.isnan(L15)):
+            L15 = self.variable_profile(L15)
         KS = self.cal_KS()
         PH = self.interpolate_PH()
         ParticleSizeClay = self.interpolate_clay()

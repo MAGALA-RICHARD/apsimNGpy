@@ -410,6 +410,10 @@ class OrganizeAPSIMsoil_profile:
             else:
                 SAT[i] = SAT[i]
             BD = (1 - SAT) * 2.65
+            for i in range(len(SAT)):  # added it
+                if SAT[i] > 0.381 and BD[i] >= 1.639:
+                    SAT[i] = 0.381 - 0.01
+                    print(SAT[i])
         else:
             SAT = self.cal_satfromBD()
             BD = self.getBD()

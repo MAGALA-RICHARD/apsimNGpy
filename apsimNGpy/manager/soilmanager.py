@@ -421,6 +421,7 @@ class OrganizeAPSIMsoil_profile:
             for i in range(len(SAT)):  # added it
                 if SAT[i] > 0.381 and BD[i] >= 1.639:
                     SAT[i] = 0.381-0.01
+                    print(SAT[i])
         # adjust layer 9 issues associated with SAT and BD
         SAT, BD = self.adjust_SAT_BD(SAT, BD)
         KS = self.cal_KS()

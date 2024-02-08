@@ -195,22 +195,25 @@ def download_weather(df, start, end, use_thread=True, ncores=10, replace_soils=T
         # for future in as_completed(futures):
 
 
-def create_and_run_sim_objects(wd, shp_file, model_file, reports_names, cores = 10, **kwargs):
+def create_and_run_sim_objects(wd, shp_file, resolution, num_points, model_file, reports_names, cores = 10, **kwargs):
     """
 
     Args:
         wd: working directory
         shp_file: shape file of the target area
         model_file: APSIM model string path
-        reports_names: names of the data in the simulation model
+        reports_names:str or list names of the data in the simulation model
         **kwargs:
            Test: bool. set to true to try out 10 sample before simulation
            run_process: set too false to run in parallel
            select_process; set too False to use multipl proess
-    Returns:
+
+    :param shp_file:
+    :param resolution:int. square qrid resolution
+    :param num_points:int for random sampling
 
     """
-    ap = generate_random_points(shp_file, 500, 10, 3)
+    ap = generate_random_points(shp_file, resolution, 10, num_points)
     if kwargs.get('test'):
         k = 10
         random_indices = np.random.choice(ap.shape[0], size=k, replace=False)
@@ -249,7 +252,7 @@ if __name__ == '__main__':
     df = create_fishnet1(shp, ncores=10, use_thread=True)
     gdf = df
     bc_model = r'D:\ACPd\Bear creek simulations\ML_bear_creek 20240206.apsimx'
-    data = create_and_run_sim_objects(wd, shp, maize, 'Carbon', test=True, run_process =True, select_process = True, cores = 13)
+    data = create_and_run_sim_objects(wd, shp, 500, 2, maize, 'Carbon', test=True, run_process =True, select_process = True, cores = 13)
     #sims = run_created_files(data, "Carbon", cores = 15, use_threads = False)
     # dat = custom_parallel(run_simPle, data, "Carbon", ncores=14, use_thread=True)
     # dd = list(dat)

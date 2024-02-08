@@ -388,7 +388,7 @@ class OrganizeAPSIMsoil_profile:
             BD[9] = target_bulk_density
 
         return SAT, BD
-    my
+
     def create_soilprofile(self):
         n = int(self.Nlayers)
         Depth = []
@@ -406,13 +406,13 @@ class OrganizeAPSIMsoil_profile:
 
             for i in range(len(SAT)):
                 if SAT[i] < DUL[i]:
-                    SAT[i] = DUL[i] + 0.001
+                    SAT[i] = DUL[i] + 0.02
             else:
                 SAT[i] = SAT[i]
             BD = (1 - SAT) * 2.65
             for i in range(len(SAT)):  # added it
                 if SAT[i] > 0.381 and BD[i] >= 1.639:
-                    SAT[i] = 0.381 - 0.01
+                    SAT[i] = 0.381 - 0.001
                     #print(SAT[i])
         else:
             SAT = self.cal_satfromBD()

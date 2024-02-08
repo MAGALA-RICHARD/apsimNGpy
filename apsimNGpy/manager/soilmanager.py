@@ -335,6 +335,7 @@ class OrganizeAPSIMsoil_profile:
     def get_DUL(self):
         if any(np.isnan(self.L15)):
             L15i = self.cal_l15Fromsand_clay_OM()
+            print(L15i)
 
         else:
             l1 = self.L15 * 0.01

@@ -71,38 +71,36 @@ def DownloadsurgoSoiltables(lonlat, select_componentname=None, summarytable=Fals
     my_dict = xmltodict.parse(response.content)
 
     # Convert from dictionary to dataframe format
+    soil_df = None
     try:
         soil_df = pd.DataFrame.from_dict(
             my_dict['soap:Envelope']['soap:Body']['RunQueryResponse']['RunQueryResult']['diffgr:diffgram'][
                 'NewDataSet'][
                 'Table'])
-    except:
-        soil_df = pd.DataFrame.from_dict(
-            my_dict['soap:Envelope']['soap:Body']['RunQueryResponse']['RunQueryResult']['diffgr:diffgram'][
-                'NewDataSet'][
-                'Table'], orient='index')
-        print(soil_df)
-    if summarytable:
-        df = soil_df.drop_duplicates(subset=['componentname'])
-        summarytable = df[["componentname", 'prcent', 'chkey']]
-        print("summary of the returned soil tables \n")
-        print(summarytable)
-    # select the dominat componet
-    dom_component = soil_df[soil_df.prcent == soil_df.prcent.max()]
-    # select by component name
-    if select_componentname in soil_df.componentname.unique():
-        componentdf = soil_df[soil_df.componentname == select_componentname]
-        return componentdf
-    elif select_componentname == 'domtcp':
-        return dom_component
-        # print("the following{0} soil components were found". format(list(soil_df.componentname.unique())))
-    elif select_componentname == None:
-        # print("the following{0} soil components were found". format(list(soil_df.componentname.unique())))
-        return soil_df
-    elif select_componentname != 'domtcp' and select_componentname not in soil_df.componentname.unique() or select_componentname != None:
-        print(
-            f'Ooops! we realised that your component request: {select_componentname} does not exists at the specified location. We have returned the dorminant component name')
-        return dom_component
+    except Exception as e:
+        print(type(e))
+    if isinstance(soil_df, pd.DataFrame):
+        if summarytable:
+            df = soil_df.drop_duplicates(subset=['componentname'])
+            summarytable = df[["componentname", 'prcent', 'chkey']]
+            print("summary of the returned soil tables \n")
+            print(summarytable)
+        # select the dominat componet
+        dom_component = soil_df[soil_df.prcent == soil_df.prcent.max()]
+        # select by component name
+        if select_componentname in soil_df.componentname.unique():
+            componentdf = soil_df[soil_df.componentname == select_componentname]
+            return componentdf
+        elif select_componentname == 'domtcp':
+            return dom_component
+            # print("the following{0} soil components were found". format(list(soil_df.componentname.unique())))
+        elif select_componentname == None:
+            # print("the following{0} soil components were found". format(list(soil_df.componentname.unique())))
+            return soil_df
+        elif select_componentname != 'domtcp' and select_componentname not in soil_df.componentname.unique() or select_componentname != None:
+            print(
+                f'Ooops! we realised that your component request: {select_componentname} does not exists at the specified location. We have returned the dorminant component name')
+            return dom_component
 
 
 # test the function

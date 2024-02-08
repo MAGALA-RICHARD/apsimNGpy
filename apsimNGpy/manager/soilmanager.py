@@ -262,12 +262,14 @@ class OrganizeAPSIMsoil_profile:
         if any(elem is None for elem in self.particledensity):
             pd = 2.65
             bd = self.interpolated_BD()
+            print(bd)
             sat = ((2.65 - bd) / 2.65) - 0.02
             sat = self.variable_profile(sat)
             return sat
         else:
             pd = self.particledensity
-            bd = npar(self.BD)
+            bd =   self.interpolated_BD()
+            print(bd)
             sat = ((2.65 - bd) / pd) - 0.02
             sat = self.variable_profile(sat)
             return sat

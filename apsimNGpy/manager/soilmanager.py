@@ -364,7 +364,7 @@ class OrganizeAPSIMsoil_profile:
         return self.variable_profile(self.BD)
 
     @staticmethod
-    def adjust_SAT_BD(SAT, BD, target_saturation=0.381, target_bulk_density=1.639):
+    def adjust_SAT_BD_DUL(SAT, BD, DUL, target_saturation=0.381, target_bulk_density=1.639):
         """
         Adjusts saturation and bulk density values in a NumPy array to meet specific criteria.
 
@@ -386,8 +386,10 @@ class OrganizeAPSIMsoil_profile:
         # Check and adjust bulk density
         if BD[9] > target_bulk_density:
             BD[9] = target_bulk_density
-
-        return SAT, BD
+        for i in range(len(DUL)):
+            if SAT[i] < DUL[i]:
+                SAT[i] = DUL[i]
+        return SAT, BD, DUL
 
     def create_soilprofile(self):
         n = int(self.Nlayers)
@@ -529,5 +531,9 @@ class OrganizeAPSIMsoil_profile:
                    'soilorganicmatter ': soilorganicmatter}
         # return pd.DataFrame(finalsp)
         return frame
+if __name__== '__main__':
+    lon = -93.097702, 41.8780025
+    dw = DownloadsurgoSoiltables(lon)
+    sop =  OrganizeAPSIMsoil_profile(dw, 20)
 
 

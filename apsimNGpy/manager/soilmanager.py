@@ -336,6 +336,9 @@ class OrganizeAPSIMsoil_profile:
         if any(np.isnan(self.L15)):
             L15i = self.cal_l15Fromsand_clay_OM()
             print(L15i)
+            if any(np.isnan(L15i)) and not np.isnan(L15i[1]):
+                self.variable_profile(L15i)
+
 
         else:
             l1 = self.L15 * 0.01

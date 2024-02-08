@@ -5,6 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="5d471312-8496-4246-98d6-790439318160" name="Changes" comment="simulate from a shape file">
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -52,7 +53,7 @@
       <recent name="C:\Users\rmagala\Box\apsimNGpy\apsimNGpy\model" />
     </key>
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Python.process">
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
       <module name="apsimNGpy" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -185,39 +186,9 @@
       <workItem from="1707062929299" duration="101027000" />
       <workItem from="1707341443179" duration="61000" />
       <workItem from="1707345282360" duration="1217000" />
-      <workItem from="1707348375933" duration="6176000" />
-    </task>
-    <task id="LOCAL-00253" summary="updated database functions">
-      <option name="closed" value="true" />
-      <created>1707093540536</created>
-      <option name="number" value="00253" />
-      <option name="presentableId" value="LOCAL-00253" />
-      <option name="project" value="LOCAL" />
-      <updated>1707093540536</updated>
-    </task>
-    <task id="LOCAL-00254" summary="new">
-      <option name="closed" value="true" />
-      <created>1707140507159</created>
-      <option name="number" value="00254" />
-      <option name="presentableId" value="LOCAL-00254" />
-      <option name="project" value="LOCAL" />
-      <updated>1707140507159</updated>
-    </task>
-    <task id="LOCAL-00255" summary="new">
-      <option name="closed" value="true" />
-      <created>1707141381188</created>
-      <option name="number" value="00255" />
-      <option name="presentableId" value="LOCAL-00255" />
-      <option name="project" value="LOCAL" />
-      <updated>1707141381188</updated>
-    </task>
-    <task id="LOCAL-00256" summary="new">
-      <option name="closed" value="true" />
-      <created>1707151216967</created>
-      <option name="number" value="00256" />
-      <option name="presentableId" value="LOCAL-00256" />
-      <option name="project" value="LOCAL" />
-      <updated>1707151216967</updated>
+      <workItem from="1707348375933" duration="8175000" />
+      <workItem from="1707357689155" duration="38000" />
+      <workItem from="1707359248086" duration="18000" />
     </task>
     <task id="LOCAL-00257" summary="new">
       <option name="closed" value="true" />
@@ -579,7 +550,39 @@
       <option name="project" value="LOCAL" />
       <updated>1707355085679</updated>
     </task>
-    <option name="localTasksCounter" value="302" />
+    <task id="LOCAL-00302" summary="simulate from a shape file">
+      <option name="closed" value="true" />
+      <created>1707355782694</created>
+      <option name="number" value="00302" />
+      <option name="presentableId" value="LOCAL-00302" />
+      <option name="project" value="LOCAL" />
+      <updated>1707355782694</updated>
+    </task>
+    <task id="LOCAL-00303" summary="simulate from a shape file">
+      <option name="closed" value="true" />
+      <created>1707356018743</created>
+      <option name="number" value="00303" />
+      <option name="presentableId" value="LOCAL-00303" />
+      <option name="project" value="LOCAL" />
+      <updated>1707356018743</updated>
+    </task>
+    <task id="LOCAL-00304" summary="simulate from a shape file">
+      <option name="closed" value="true" />
+      <created>1707356717536</created>
+      <option name="number" value="00304" />
+      <option name="presentableId" value="LOCAL-00304" />
+      <option name="project" value="LOCAL" />
+      <updated>1707356717536</updated>
+    </task>
+    <task id="LOCAL-00305" summary="simulate from a shape file">
+      <option name="closed" value="true" />
+      <created>1707356910427</created>
+      <option name="number" value="00305" />
+      <option name="presentableId" value="LOCAL-00305" />
+      <option name="project" value="LOCAL" />
+      <updated>1707356910427</updated>
+    </task>
+    <option name="localTasksCounter" value="306" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

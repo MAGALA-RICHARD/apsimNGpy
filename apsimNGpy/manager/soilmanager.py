@@ -363,6 +363,32 @@ class OrganizeAPSIMsoil_profile:
     def getBD(self):
         return self.variable_profile(self.BD)
 
+    @staticmethod
+    def adjust_SAT_BD(SAT, BD, target_saturation=0.381, target_bulk_density=1.639):
+        """
+        Adjusts saturation and bulk density values in a NumPy array to meet specific criteria.
+
+        Parameters:
+        SAT: 1-D numpy array
+        BD: 1-D numpy array
+        - target_saturation (float): The maximum acceptable saturation value.
+        - target_bulk_density (float): The maximum acceptable bulk density value.
+
+        Returns:
+        - np.array: Adjusted 2D NumPy array with saturation and bulk density values.
+        """
+        # Iterate through each row in the array
+
+        # Check and adjust saturation
+        if SAT[9] > target_saturation:
+            SAT[9] = target_saturation - 0.01
+
+        # Check and adjust bulk density
+        if BD[9] > target_bulk_density:
+            BD[9] = target_bulk_density
+
+        return SAT, BD
+
     def create_soilprofile(self):
         n = int(self.Nlayers)
         Depth = []
@@ -395,7 +421,8 @@ class OrganizeAPSIMsoil_profile:
             for i in range(len(SAT)):  # added it
                 if SAT[i] > 0.381 and BD[i] >= 1.639:
                     SAT[i] = 0.381
-
+        # adjust layer 9 issues associated with SAT and BD
+        SAT, BD = self.adjust_SAT_BD(SAT, BD)
         KS = self.cal_KS()
         PH = self.interpolate_PH()
         ParticleSizeClay = self.interpolate_clay()

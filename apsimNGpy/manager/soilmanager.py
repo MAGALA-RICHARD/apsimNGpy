@@ -71,10 +71,17 @@ def DownloadsurgoSoiltables(lonlat, select_componentname=None, summarytable=Fals
     my_dict = xmltodict.parse(response.content)
 
     # Convert from dictionary to dataframe format
-
-    soil_df = pd.DataFrame.from_dict(
-        my_dict['soap:Envelope']['soap:Body']['RunQueryResponse']['RunQueryResult']['diffgr:diffgram']['NewDataSet'][
-            'Table'])
+    try:
+        soil_df = pd.DataFrame.from_dict(
+            my_dict['soap:Envelope']['soap:Body']['RunQueryResponse']['RunQueryResult']['diffgr:diffgram'][
+                'NewDataSet'][
+                'Table'])
+    except:
+        soil_df = pd.DataFrame.from_dict(
+            my_dict['soap:Envelope']['soap:Body']['RunQueryResponse']['RunQueryResult']['diffgr:diffgram'][
+                'NewDataSet'][
+                'Table'], orient='index')
+        print(soil_df)
     if summarytable:
         df = soil_df.drop_duplicates(subset=['componentname'])
         summarytable = df[["componentname", 'prcent', 'chkey']]
@@ -267,7 +274,7 @@ class OrganizeAPSIMsoil_profile:
         sand = self.sand * 0.01
         om = self.OM * 0.01
         ret1 = -0.251 * sand + 0.195 * clay + 0.011 * om + (0.006) * sand * om - 0.027 * clay * om + 0.452 * (
-                    sand * clay) + 0.299
+                sand * clay) + 0.299
         dul = ret1 + 1.283 * np.float_power(ret1, 2) - 0.374 * ret1 - 0.015
         dulc = self.variable_profile(dul)
         return dulc
@@ -277,7 +284,7 @@ class OrganizeAPSIMsoil_profile:
         sand = self.sand * 0.01
         om = self.OM * 0.01
         ret1 = -0.024 * sand + (
-                    0.487 * clay) + 0.006 * om + 0.005 * sand * om + 0.013 * clay * om + 0.068 * sand * clay + 0.031
+                0.487 * clay) + 0.006 * om + 0.005 * sand * om + 0.013 * clay * om + 0.068 * sand * clay + 0.031
         ret2 = ret1 + 0.14 * ret1 - 0.02
         l151 = self.variable_profile(ret2)
         return l151
@@ -419,7 +426,7 @@ class OrganizeAPSIMsoil_profile:
             for i in range(len(SAT)):  # added it
                 if SAT[i] > 0.381 and BD[i] >= 1.639:
                     SAT[i] = 0.381 - 0.001
-                    #print(SAT[i])
+                    # print(SAT[i])
         else:
             SAT = self.cal_satfromBD()
             BD = self.getBD()
@@ -430,8 +437,8 @@ class OrganizeAPSIMsoil_profile:
                 SAT[i] = SAT[i]
             for i in range(len(SAT)):  # added it
                 if SAT[i] > 0.381 and BD[i] >= 1.639:
-                    SAT[i] = 0.381-0.01
-                    #print(SAT[i])
+                    SAT[i] = 0.381 - 0.01
+                    # print(SAT[i])
         # adjust layer 9 issues associated with SAT and BD
         SAT, BD, DUL = self.adjust_SAT_BD_DUL(SAT, BD, DUL)
         KS = self.cal_KS()
@@ -535,9 +542,9 @@ class OrganizeAPSIMsoil_profile:
                    'soilorganicmatter ': soilorganicmatter}
         # return pd.DataFrame(finalsp)
         return frame
-if __name__== '__main__':
+
+
+if __name__ == '__main__':
     lon = -93.097702, 41.8780025
     dw = DownloadsurgoSoiltables(lon)
-    sop =  OrganizeAPSIMsoil_profile(dw, 20)
-
-
+    sop = OrganizeAPSIMsoil_profile(dw, 20)

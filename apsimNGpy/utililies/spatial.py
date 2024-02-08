@@ -195,7 +195,7 @@ def download_weather(df, start, end, use_thread=True, ncores=10, replace_soils=T
         # for future in as_completed(futures):
 
 
-def create_and_run_sim_objects(wd, shp_file, model_file, reports_names, **kwargs):
+def create_and_run_sim_objects(wd, shp_file, model_file, reports_names, cores = 10, **kwargs):
     """
 
     Args:
@@ -222,20 +222,20 @@ def create_and_run_sim_objects(wd, shp_file, model_file, reports_names, **kwargs
     print("Downloading weather files")
     ap = create_apsimx_sim_files(wd, model_file, arr)
     # first we replace soils, then we
-    objs = download_weather(ap, 1990, 2021, report_names='Carbon', verbose=False, report=False, use_thread= kwargs.get('select_process', True),
+    objs = download_weather(ap, 1990, 2021, report_names='Carbon', ncores=cores, verbose=False, report=False, use_thread= kwargs.get('select_process', True),
                             replace_soils=False)
 
     weathers = list(objs)
 
     print("\nDownloading soils now please wait")
-    objs = download_weather(ap, 1990, 2021, report_names='Carbon', verbose=False, report=False, use_thread= kwargs.get('select_process', True),
+    objs = download_weather(ap, 1990, 2021, report_names='Carbon', verbose=False, ncores=cores, report=False, use_thread= kwargs.get('select_process', True),
                             replace_soils=True)
     soils = list(objs)
     data = [s for s in soils if s in weathers and s is not None]
-    print(f"\nrunning the {len(dat)} simulations now.....")
+    print(f"\nrunning the {len(data)} simulations now.....")
     sims = custom_parallel(initialise, data, reports_names, ncores=cores, use_thread=kwargs.get('run_process', True))
 
-    return sims
+    return list(sims)
 
 
 def run_created_files(files, to_report, cores =9, use_threads =True):
@@ -249,13 +249,13 @@ if __name__ == '__main__':
     df = create_fishnet1(shp, ncores=10, use_thread=True)
     gdf = df
     bc_model = r'D:\ACPd\Bear creek simulations\ML_bear_creek 20240206.apsimx'
-    data = create_and_run_sim_objects(wd, shp, maize, 'Carbon', test=True, run_process =True, select_process = False)
+    data = create_and_run_sim_objects(wd, shp, maize, 'Carbon', test=True, run_process =True, select_process = True, cores = 13)
     #sims = run_created_files(data, "Carbon", cores = 15, use_threads = False)
     # dat = custom_parallel(run_simPle, data, "Carbon", ncores=14, use_thread=True)
     # dd = list(dat)
     from joblib import dump, load
 
-    dat = load('sims')
-    ap = ApsimModel(data[8])
+    #dat = load('sims')
+    #ap = ApsimModel(data[8])
     # dump(data, 'sims')
     # mod = [model.run(report_name='Carbon') for model in mop]

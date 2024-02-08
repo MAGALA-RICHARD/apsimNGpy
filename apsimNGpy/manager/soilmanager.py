@@ -221,7 +221,7 @@ class OrganizeAPSIMsoil_profile:
         xnew = np.arange(x.min(), x.max(), newthickness)
         # create an interpolation function
         yinterpo = interpolate.interp1d(x, y, kind=kind, assume_sorted=False, fill_value='extrapolate')
-        if isinstance(self.thickness_values, str):  # just put a strign to evaluate to false i will fix it later
+        if isinstance(self.thickness_values, str):  # just put a string to evaluate to false i will fix it later
             tv = np.array(self.thickness_values)
             tv = tv.astype('float64')
             xnew, top_dep = OrganizeAPSIMsoil_profile.set_depth(tv)
@@ -252,10 +252,16 @@ class OrganizeAPSIMsoil_profile:
         predicted = self.decreasing_exponential_function(x_data, a_fit, b_fit)
         return predicted
 
+    def interpolated_BD(self):
+        if any(elem is None for elem in self.BD):
+            return self.variable_profile(self.BD)
+        else:
+            return np.array(self.BD)
+
     def cal_satfromBD(self):  # has potential to cythonize
         if any(elem is None for elem in self.particledensity):
             pd = 2.65
-            bd = npar(self.BD)
+            bd = self.interpolated_BD()
             sat = ((2.65 - bd) / 2.65) - 0.02
             sat = self.variable_profile(sat)
             return sat

@@ -236,8 +236,8 @@ def create_and_run_sim_objects(wd, shp_file, resolution, num_points, model_file,
     soils = list(objs)
     data = [s for s in soils if s in weathers and s is not None]
     print(f"\nrunning the {len(data)} simulations now.....")
-    sim = custom_parallel(initialise, data, reports_names, ncores=cores, use_thread=kwargs.get('run_process', True))
-    sims  = list(sim)
+    # sim = custom_parallel(initialise, data, reports_names, ncores=cores, use_thread=kwargs.get('run_process', True))
+    # sims  = list(sim)
     return soils
 
 

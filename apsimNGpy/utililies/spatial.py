@@ -252,7 +252,7 @@ if __name__ == '__main__':
     df = create_fishnet1(shp, ncores=10, use_thread=True)
     gdf = df
     bc_model = r'D:\ACPd\Bear creek simulations\ML_bear_creek 20240206.apsimx'
-    data = create_and_run_sim_objects(wd, shp, 500, 2, maize, 'Carbon', test=True, run_process =True, select_process = True, cores = 13)
+    data = create_and_run_sim_objects(wd, shp, 500, 2, maize, 'Carbon', test=True, run_process =False, select_process = True, cores = 13)
     #sims = run_created_files(data, "Carbon", cores = 15, use_threads = False)
     # dat = custom_parallel(run_simPle, data, "Carbon", ncores=14, use_thread=True)
     # dd = list(dat)

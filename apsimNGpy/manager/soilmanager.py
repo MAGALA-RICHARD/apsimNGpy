@@ -87,7 +87,7 @@ def DownloadsurgoSoiltables(lonlat, select_componentname=None, summarytable=Fals
         summarytable = df[["componentname", 'prcent', 'chkey']]
         print("summary of the returned soil tables \n")
         print(summarytable)
-    # selec the dominat componet
+    # select the dominat componet
     dom_component = soil_df[soil_df.prcent == soil_df.prcent.max()]
     # select by component name
     if select_componentname in soil_df.componentname.unique():

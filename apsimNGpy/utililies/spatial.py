@@ -115,17 +115,25 @@ def samply_by_polygons(shp, k=1, filter_by =None, filter_value= None):
     points = []
 
     gd = gpd.read_file(shp)
-    print(f"The area is {gd.area.sum()/10**6}")
+    total_area = gd.area.sum()/10**6
+    print(f"The area is {total_area}")
     if filter_by:
         gd = gd[gd[f"{filter_by}"] == filter_value]
     CRS = gd.crs
+    import math
+    poi =[]
     for poly in gd['geometry']:
-        pts= random_points_in_polygon(k, poly)
+        area = poly.area/10**6
+        weight = area/total_area
+        new_k = math.ceil(area*k)
+        poi.append(new_k)
+        print(new_k)
+        pts= random_points_in_polygon(new_k, poly)
         points.extend(pts)
         points_gdf = gpd.GeoDataFrame(geometry=points, crs=CRS)
         gdf = points_gdf.to_crs(WGS84)
         #gdf['lonlats'] =np.array([(point.x, point.y) for point in gdf.geometry])
-    print(gd.head)
+    print(np.sum(poi))
     return np.array([(point.x, point.y) for point in gdf.geometry])
 
 
@@ -289,7 +297,7 @@ if __name__ == '__main__':
     gd = df
     bc_model = r'D:\ACPd\Bear creek simulations\ML_bear_creek 20240206.apsimx'
     fb = gpd.read_file(fb401)
-    lp = samply_by_polygons(fb401, k=1, filter_by = 'isAG', filter_value = 1)
+    lp = samply_by_polygons(fb401, k=4, filter_by = 'isAG', filter_value = 1)
     # data = create_and_run_sim_objects(wd, shp, 500, 2, maize, 'Carbon', test=False, run_process=False,
     #                                   select_process=True, cores=13)
     # # sims = run_created_files(data, "Carbon", cores = 15, use_threads = False)

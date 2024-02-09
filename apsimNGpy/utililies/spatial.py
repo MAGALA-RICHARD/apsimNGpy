@@ -98,6 +98,31 @@ def generate_random_points(pt, resolution, ncores, num_points):
     return np.array([(point.x, point.y) for point in GDF.geometry])
 
 
+def random_points_in_polygon(number, polygon):
+    points = []
+    min_x, min_y, max_x, max_y = polygon.bounds
+    i = 0
+    while i < number:
+        point = Point(random.uniform(min_x, max_x), random.uniform(min_y, max_y))
+        if polygon.contains(point):
+            points.append(point)
+            i += 1
+    return points
+
+
+def samply_by_polygons(shp, k=1):
+    points = []
+
+    gd = gpd.read_file(shp)
+    CRS = gd.crs
+    for poly in gd['geometry']:
+        pts= random_points_in_polygon(k, poly)
+        points.extend(pts)
+        points_gdf = gpd.GeoDataFrame(geometry=points, crs=CRS)
+        gdf = points_gdf.to_crs(WGS84)
+    return np.array([(point.x, point.y) for point in gdf.geometry])
+
+
 def create_apsimx_sim_files(wd, model, iterable):
     """
     Creates copies of a specified APSIM model file for each element in the provided iterable,
@@ -176,10 +201,10 @@ def download_weather(df, start, end, use_thread=True, ncores=10, replace_soils=T
             sp = OrganizeAPSIMsoil_profile(table, thickness=20, thickness_values=th)
             sp = sp.cal_missingFromSurgo()
             if sp[0].isna().any().any() or sp[1].isna().any().any() or sp[2].isna().any().any():
-               print(f"soils not replaced at {location}")
-               return None
+                print(f"soils not replaced at {location}")
+                return None
             else:
-               mod.replace_downloaded_soils(sp, sim_name)
+                mod.replace_downloaded_soils(sp, sim_name)
         if kwargs.get("report"):
             mod.run(report_name=kwargs.get('report_names'))
             return mod.results
@@ -201,7 +226,7 @@ def download_weather(df, start, end, use_thread=True, ncores=10, replace_soils=T
         # for future in as_completed(futures):
 
 
-def create_and_run_sim_objects(wd, shp_file, resolution, num_points, model_file, reports_names, cores = 10, **kwargs):
+def create_and_run_sim_objects(wd, shp_file, resolution, num_points, model_file, reports_names, cores=10, **kwargs):
     """
 
     Args:
@@ -231,13 +256,15 @@ def create_and_run_sim_objects(wd, shp_file, resolution, num_points, model_file,
     print("Downloading weather files")
     ap = create_apsimx_sim_files(wd, model_file, arr)
     # first we replace soils, then we
-    objs = download_weather(ap, 1990, 2021, report_names='Carbon', ncores=cores, verbose=False, report=False, use_thread= kwargs.get('select_process', True),
+    objs = download_weather(ap, 1990, 2021, report_names='Carbon', ncores=cores, verbose=False, report=False,
+                            use_thread=kwargs.get('select_process', True),
                             replace_soils=False)
 
     weathers = list(objs)
 
     print("\nDownloading soils now please wait")
-    objs = download_weather(ap, 1990, 2021, report_names='Carbon', verbose=False, ncores=cores, report=False, use_thread= kwargs.get('select_process', True),
+    objs = download_weather(ap, 1990, 2021, report_names='Carbon', verbose=False, ncores=cores, report=False,
+                            use_thread=kwargs.get('select_process', True),
                             replace_soils=True)
     soils = list(objs)
     data = [s for s in soils if s in weathers and s is not None]
@@ -247,21 +274,22 @@ def create_and_run_sim_objects(wd, shp_file, resolution, num_points, model_file,
     return soils
 
 
-
-
 if __name__ == '__main__':
     wd = r'C:\Users\rmagala'
-
+    fb401 = r'D:\ACPd\Long deek401 simulations\FB401.shp'
     df = create_fishnet1(shp, ncores=10, use_thread=True)
-    gdf = df
+    gd = df
     bc_model = r'D:\ACPd\Bear creek simulations\ML_bear_creek 20240206.apsimx'
-    data = create_and_run_sim_objects(wd, shp, 500, 2, maize, 'Carbon', test=False, run_process =False, select_process = True, cores = 13)
-    #sims = run_created_files(data, "Carbon", cores = 15, use_threads = False)
-    # dat = custom_parallel(run_simPle, data, "Carbon", ncores=14, use_thread=True)
-    # dd = list(dat)
-    from joblib import dump, load
-
-    #dat = load('sims')
-    #ap = ApsimModel(data[8])
-    # dump(data, 'sims')
-    # mod = [model.run(report_name='Carbon') for model in mop]
+    fb = gpd.read_file(fb401)
+    lp = samply_by_polygons(fb401, k=2)
+    # data = create_and_run_sim_objects(wd, shp, 500, 2, maize, 'Carbon', test=False, run_process=False,
+    #                                   select_process=True, cores=13)
+    # # sims = run_created_files(data, "Carbon", cores = 15, use_threads = False)
+    # # dat = custom_parallel(run_simPle, data, "Carbon", ncores=14, use_thread=True)
+    # # dd = list(dat)
+    # from joblib import dump, load
+    #
+    # # dat = load('sims')
+    # # ap = ApsimModel(data[8])
+    # # dump(data, 'sims')
+    # # mod = [model.run(report_name='Carbon') for model in mop]

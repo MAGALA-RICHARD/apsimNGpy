@@ -16,3 +16,16 @@ def remove_missing_tables(sp):
     after = len(sp)
     print(before - after, "had empty columns")
     return sp
+
+
+def match_crop(abb):
+    if abb.count('C') >= 2 and abb.count("B") >= 2:
+        return "Maize, Soybean" if abb.startswith('C') else "Soybean, Maize"
+    if abb.count("C") >3:
+        return "Maize"
+    if abb.count("B") > 3:
+        return 'Soybean'
+
+
+al = match_crop('CCBBBC')
+print(al)

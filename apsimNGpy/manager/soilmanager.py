@@ -94,7 +94,7 @@ def DownloadsurgoSoiltables(lonlat, select_componentname=None, summarytable=Fals
         elif select_componentname == 'domtcp':
             return dom_component
             # print("the following{0} soil components were found". format(list(soil_df.componentname.unique())))
-        elif select_componentname == None:
+        elif select_componentname is None:
             # print("the following{0} soil components were found". format(list(soil_df.componentname.unique())))
             return soil_df
         elif select_componentname != 'domtcp' and select_componentname not in soil_df.componentname.unique() or select_componentname != None:
@@ -206,7 +206,7 @@ class OrganizeAPSIMsoil_profile:
         """
         # thickness  = np.tile(thickness, 10
         thickness_array = np.array(depththickness)
-        bottomdepth = np.cumsum(thickness_array)  # bottom depth should nothave zero
+        bottomdepth = np.cumsum(thickness_array)  # bottom depth should not have zero
         top_depth = bottomdepth - thickness_array
         return bottomdepth, top_depth
 
@@ -296,7 +296,7 @@ class OrganizeAPSIMsoil_profile:
         return l151
 
     def calculateSATfromwat_r(self):  # has potential to cythonize
-        if all(elem is None for elem in npar(self.particledensity)) == False:
+        if not all(elem is None for elem in npar(self.particledensity)):
             wat = self.wat_r
             return self.variable_profile(wat)
 
@@ -416,7 +416,7 @@ class OrganizeAPSIMsoil_profile:
         AirDry = self.get_AirDry()
         L15 = self.get_L15()
         DUL = self.get_DUL()
-        if all(elem is None for elem in npar(self.wat_r)) == False:
+        if not all(elem is None for elem in npar(self.wat_r)):
 
             SAT = self.calculateSATfromwat_r() * 0.01
 
@@ -444,8 +444,6 @@ class OrganizeAPSIMsoil_profile:
                     # print(SAT[i])
         # adjust layer 9 issues associated with SAT and BD
         SAT, BD, DUL = self.adjust_SAT_BD_DUL(SAT, BD, DUL)
-        if any(np.isnan(L15)) and not all(np.isnan(L15)):
-            L15 = self.variable_profile(L15)
         KS = self.cal_KS()
         PH = self.interpolate_PH()
         ParticleSizeClay = self.interpolate_clay()

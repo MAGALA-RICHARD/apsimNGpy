@@ -98,7 +98,8 @@ def generate_random_points(pt, resolution, ncores, num_points):
     return np.array([(point.x, point.y) for point in GDF.geometry])
 
 
-def random_points_in_polygon(number, polygon):
+def random_points_in_polygon(number, polygon, seed =1):
+    random.seed(seed)
     points = []
     min_x, min_y, max_x, max_y = polygon.bounds
     i = 0
@@ -110,16 +111,20 @@ def random_points_in_polygon(number, polygon):
     return points
 
 
-def samply_by_polygons(shp, k=1):
+def samply_by_polygons(shp, k=1, filter_by =None, filter_value= None):
     points = []
 
     gd = gpd.read_file(shp)
+    print(f"The area is {gd.area.sum()/1000}")
+    if filter_by:
+        gd = gd[gd[f"{filter_by}"] == filter_value]
     CRS = gd.crs
     for poly in gd['geometry']:
         pts= random_points_in_polygon(k, poly)
         points.extend(pts)
         points_gdf = gpd.GeoDataFrame(geometry=points, crs=CRS)
         gdf = points_gdf.to_crs(WGS84)
+    print(gd.head)
     return np.array([(point.x, point.y) for point in gdf.geometry])
 
 
@@ -281,7 +286,7 @@ if __name__ == '__main__':
     gd = df
     bc_model = r'D:\ACPd\Bear creek simulations\ML_bear_creek 20240206.apsimx'
     fb = gpd.read_file(fb401)
-    lp = samply_by_polygons(fb401, k=2)
+    lp = samply_by_polygons(fb401, k=1, filter_by = 'isAG', filter_value = 1)
     # data = create_and_run_sim_objects(wd, shp, 500, 2, maize, 'Carbon', test=False, run_process=False,
     #                                   select_process=True, cores=13)
     # # sims = run_created_files(data, "Carbon", cores = 15, use_threads = False)

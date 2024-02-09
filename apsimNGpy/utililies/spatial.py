@@ -175,7 +175,11 @@ def download_weather(df, start, end, use_thread=True, ncores=10, replace_soils=T
             table = DownloadsurgoSoiltables(location)
             sp = OrganizeAPSIMsoil_profile(table, thickness=20, thickness_values=th)
             sp = sp.cal_missingFromSurgo()
-            mod.replace_downloaded_soils(sp, sim_name)
+            if sp[0].isna().any().any() or sp[1].isna().any().any() or sp[2].isna().any().any():
+               print(f"soils not replaced at {location}")
+               return None
+            else:
+               mod.replace_downloaded_soils(sp, sim_name)
         if kwargs.get("report"):
             mod.run(report_name=kwargs.get('report_names'))
             return mod.results

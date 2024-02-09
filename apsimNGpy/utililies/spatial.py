@@ -251,7 +251,7 @@ def create_and_run_sim_objects(wd, shp_file, resolution, num_points, model_file,
     :param num_points:int for random sampling
 
     """
-    print(f"Here is your extra arguements: {kwargs}")
+    print(f"Here is your extra arguments: {kwargs}")
     ap = generate_random_points(shp_file, resolution, 10, num_points)
     if kwargs.get('test'):
         k = 10

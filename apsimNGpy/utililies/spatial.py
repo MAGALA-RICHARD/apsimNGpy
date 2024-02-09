@@ -23,6 +23,7 @@ from apsimNGpy.parallel.safe import initialise
 maize = LoadExampleFiles().get_maize
 
 WGS84 = 'epsg:4326'
+
 shp = r'D:\ACPd\Bear creek simulations\bearcreek_shape\bearcreek.shp'
 
 
@@ -43,6 +44,7 @@ def create_fishnet1(pt, lon_step=200, lat_step=200, ncores=3, use_thread=True, *
     """
     gdf_shape = gpd.read_file(pt)
     CRS = gdf_shape.crs
+    print(CRS)
     min_lon, min_lat, max_lon, max_lat = gdf_shape.total_bounds
     lats = np.arange(min_lat, max_lat, lat_step)
     lons = np.arange(min_lon, max_lon, lon_step)
@@ -249,7 +251,7 @@ if __name__ == '__main__':
     df = create_fishnet1(shp, ncores=10, use_thread=True)
     gdf = df
     bc_model = r'D:\ACPd\Bear creek simulations\ML_bear_creek 20240206.apsimx'
-    data = create_and_run_sim_objects(wd, shp, 500, 2, maize, 'Carbon', test=True, run_process =False, select_process = True, cores = 13)
+    data = create_and_run_sim_objects(wd, shp, 500, 2, maize, 'Carbon', test=False, run_process =False, select_process = True, cores = 13)
     #sims = run_created_files(data, "Carbon", cores = 15, use_threads = False)
     # dat = custom_parallel(run_simPle, data, "Carbon", ncores=14, use_thread=True)
     # dd = list(dat)

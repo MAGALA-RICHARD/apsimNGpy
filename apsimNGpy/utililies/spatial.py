@@ -115,7 +115,7 @@ def samply_by_polygons(shp, k=1, filter_by =None, filter_value= None):
     points = []
 
     gd = gpd.read_file(shp)
-    print(f"The area is {gd.area.sum()/1000}")
+    print(f"The area is {gd.area.sum()/10**6}")
     if filter_by:
         gd = gd[gd[f"{filter_by}"] == filter_value]
     CRS = gd.crs
@@ -124,6 +124,7 @@ def samply_by_polygons(shp, k=1, filter_by =None, filter_value= None):
         points.extend(pts)
         points_gdf = gpd.GeoDataFrame(geometry=points, crs=CRS)
         gdf = points_gdf.to_crs(WGS84)
+        #gdf['lonlats'] =np.array([(point.x, point.y) for point in gdf.geometry])
     print(gd.head)
     return np.array([(point.x, point.y) for point in gdf.geometry])
 
@@ -242,13 +243,14 @@ def create_and_run_sim_objects(wd, shp_file, resolution, num_points, model_file,
         **kwargs:
            Test: bool. set to true to try out 10 sample before simulation
            run_process: set too false to run in parallel
-           select_process; set too False to use multipl proess
+           select_process; set too False to use multiple process
 
     :param shp_file:
     :param resolution:int. square qrid resolution
     :param num_points:int for random sampling
 
     """
+    print(f"Here is your extra arguements: {kwargs}")
     ap = generate_random_points(shp_file, resolution, 10, num_points)
     if kwargs.get('test'):
         k = 10
@@ -276,7 +278,7 @@ def create_and_run_sim_objects(wd, shp_file, resolution, num_points, model_file,
     print(f"\nrunning the {len(data)} simulations now.....")
     # sim = custom_parallel(initialise, data, reports_names, ncores=cores, use_thread=kwargs.get('run_process', True))
     # sims  = list(sim)
-    return soils
+    return data
 
 
 if __name__ == '__main__':

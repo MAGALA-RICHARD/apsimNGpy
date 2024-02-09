@@ -99,7 +99,8 @@ def DownloadsurgoSoiltables(lonlat, select_componentname=None, summarytable=Fals
             return soil_df
         elif select_componentname != 'domtcp' and select_componentname not in soil_df.componentname.unique() or select_componentname != None:
             print(
-                f'Ooops! we realised that your component request: {select_componentname} does not exists at the specified location. We have returned the dorminant component name')
+                f'Ooops! we realised that your component request: {select_componentname} does not exists at the '
+                f'specified location. We have returned the dorminant component name')
             return dom_component
 
 

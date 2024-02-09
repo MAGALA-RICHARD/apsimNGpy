@@ -202,12 +202,13 @@ def download_weather(df, start, end, use_thread=True, ncores=10, replace_soils=T
         wname = f"{model}_{ID}.met"
         out_path_name = f"{model}_{ID}.apsimx"
         model = row['file_name']
-        wf = daymet_bylocation_nocsv(location, start=start, end=end, filename=wname)
         thi = [150, 150, 200, 200, 200, 250, 300, 300, 400, 500]
         th = kwargs.get("thickness_values", thi)
         mod = ApsimModel(model, thickness_values=th, out_path=out_path_name)
-        sim_name = mod.extract_simulation_name
-        mod.replace_met_file(wf, sim_name)
+        if kwargs.get('replace_weather', True):
+            wf = daymet_bylocation_nocsv(location, start=start, end=end, filename=wname)
+            sim_name = mod.extract_simulation_name
+            mod.replace_met_file(wf, sim_name)
         if kwargs.get("verbose"):
             print("downloading and replacing soils now")
         if replace_soils:
@@ -253,6 +254,7 @@ def create_and_run_sim_objects(wd, shp_file, resolution, num_points, model_file,
            Test: bool. set to true to try out 10 sample before simulation
            run_process: set too false to run in parallel
            select_process; set too False to use multiple process
+           'replace_weather'
 
     :param shp_file:
     :param resolution:int. square qrid resolution
@@ -274,7 +276,7 @@ def create_and_run_sim_objects(wd, shp_file, resolution, num_points, model_file,
     # first we replace soils, then we
     objs = download_weather(ap, 1990, 2021, report_names='Carbon', ncores=cores, verbose=False, report=False,
                             use_thread=kwargs.get('select_process', True),
-                            replace_soils=False)
+                            replace_soils=False, replace_weather=False)
 
     weathers = list(objs)
 
@@ -284,6 +286,7 @@ def create_and_run_sim_objects(wd, shp_file, resolution, num_points, model_file,
                             replace_soils=True)
     soils = list(objs)
     data = [s for s in soils if s in weathers and s is not None]
+    data = [s for s in soils if s is not None]
     print(f"\nrunning the {len(data)} simulations now.....")
     # sim = custom_parallel(initialise, data, reports_names, ncores=cores, use_thread=kwargs.get('run_process', True))
     # sims  = list(sim)

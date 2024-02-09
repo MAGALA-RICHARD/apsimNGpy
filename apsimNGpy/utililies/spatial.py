@@ -213,7 +213,7 @@ def download_weather(df, start, end, use_thread=True, ncores=10, replace_soils=T
             print("downloading and replacing soils now")
         if replace_soils:
             table = DownloadsurgoSoiltables(location)
-            if table:
+            if isinstance(table, pd.DataFrame):
                 sp = OrganizeAPSIMsoil_profile(table, thickness=20, thickness_values=th)
                 sp = sp.cal_missingFromSurgo()
                 if sp[0].isna().any().any() or sp[1].isna().any().any() or sp[2].isna().any().any():
@@ -276,7 +276,7 @@ def create_and_run_sim_objects(wd, shp_file, resolution, num_points, model_file,
     # first we replace soils, then we
     objs = download_weather(ap, 1990, 2021, report_names='Carbon', ncores=cores, verbose=False, report=False,
                             use_thread=kwargs.get('select_process', True),
-                            replace_soils=False, replace_weather=False)
+                            replace_soils=False, replace_weather=True)
 
     weathers = list(objs)
 
@@ -286,11 +286,10 @@ def create_and_run_sim_objects(wd, shp_file, resolution, num_points, model_file,
                             replace_soils=True)
     soils = list(objs)
     data = [s for s in soils if s in weathers and s is not None]
-    data = [s for s in soils if s is not None]
     print(f"\nrunning the {len(data)} simulations now.....")
-    # sim = custom_parallel(initialise, data, reports_names, ncores=cores, use_thread=kwargs.get('run_process', True))
-    # sims  = list(sim)
-    return data
+    sim = custom_parallel(initialise, data, reports_names, ncores=cores, use_thread=kwargs.get('run_process', True))
+    sims  = list(sim)
+    return sim
 
 
 if __name__ == '__main__':

@@ -99,6 +99,46 @@ def generate_random_points(pt, resolution, ncores, num_points):
 
 
 def random_points_in_polygon(number, polygon, seed=1):
+    """
+    Generates a specified number of random points within a given polygon.
+
+    This function attempts to create a list of points that are guaranteed to be within
+    the boundaries of the specified polygon. It uses a simple rejection sampling method
+    where points are randomly generated within the bounding box of the polygon. Points
+    that fall inside the polygon are kept until the desired number is reached.
+
+    Parameters:
+    - number (int): The number of random points to generate within the polygon.
+    - polygon (shapely.geometry.polygon.Polygon): The polygon within which the random
+      points are to be generated.
+    - seed (int, optional): A seed for the random number generator to ensure reproducibility
+      of the results. Defaults to 1.
+
+    Returns:
+    - list of shapely.geometry.point.Point: A list containing the generated shapely Point
+      objects that fall within the specified polygon.
+
+    Example:
+    ```
+    from shapely.geometry import Polygon, Point
+    import random
+
+    # Define a sample polygon (square in this case)
+    polygon = Polygon([(0, 0), (1, 0), (1, 1), (0, 1)])
+
+    # Generate 5 random points within the polygon
+    points = random_points_in_polygon(5, polygon, seed=42)
+
+    # Print the generated points
+    for point in points:
+        print(point)
+    ```
+
+    Note:
+    - The function's efficiency decreases as the complexity of the polygon increases,
+      due to the nature of the rejection sampling method. For complex polygons or a high
+      number of points, consider optimizing or using more sophisticated sampling methods.
+    """
     random.seed(seed)
     points = []
     min_x, min_y, max_x, max_y = polygon.bounds
@@ -111,29 +151,64 @@ def random_points_in_polygon(number, polygon, seed=1):
     return points
 
 
-def samply_by_polygons(shp, k=1, filter_by=None, filter_value=None):
+def sample_by_polygons(shp, k=1, filter_by=None, filter_value=None):
+    """
+    Generates a specified number of sample points within each polygon of a shapefile,
+    optionally filtering the polygons based on a column value.
+
+    This function reads a polygon shapefile and generates a user-defined number of random
+    points within each polygon. It allows for an optional filtering of polygons based on
+    a specified column and value. The distribution of points is weighted by the area of
+    each polygon, ensuring that larger polygons receive a proportionately higher number
+    of sample points. The function returns the coordinates of the generated points.
+
+    Parameters:
+    - shp (str): Path to the polygon shapefile (.shp).
+    - k (int, optional): Base number of sample points to generate for each polygon.
+      The actual number of points is adjusted based on the polygon's area. Defaults to 1.
+    - filter_by (str, optional): Column name to filter the polygons. Only polygons
+      matching the filter_value will be considered for sampling. Defaults to None.
+    - filter_value (various, optional): Value in the filter_by column that the polygons
+      must match to be included in the sampling. The type depends on the column's content.
+
+    Returns:
+    - numpy.ndarray: An array of tuples containing the (x, y) coordinates of each generated
+      sample point within the polygons, adjusted to the WGS84 coordinate reference system.
+
+    Note:
+    - The function assumes the presence of a function `random_points_in_polygon` to generate
+      points within a polygon, which is not defined within this docstring.
+    - The output coordinates are converted to the WGS84 CRS for geospatial compatibility.
+    """
     points = []
 
+    # Load the shapefile as a GeoDataFrame
     gd = gpd.read_file(shp)
     total_area = gd.area.sum() / 10 ** 6
-    print(f"The area is {total_area}")
-    if filter_by:
-        gd = gd[gd[f"{filter_by}"] == filter_value]
-    CRS = gd.crs
+    print(f"The area is {total_area} square kilometers.")
+
+    # Apply filtering if specified
+    if filter_by and filter_value is not None:
+        gd = gd[gd[filter_by] == filter_value]
+
+    CRS = gd.crs  # Preserve the original CRS
     import math
-    poi = []
+    poi = []  # Placeholder for counting points per polygon
+
+    # Generate points for each polygon
     for poly in gd['geometry']:
         area = poly.area / 10 ** 6
         weight = area / total_area
-        new_k = math.ceil(area * k)
+        new_k = math.ceil(area * k)  # Adjust k based on the area
         poi.append(new_k)
-        print(new_k)
+        print(f"Generating {new_k} points for a polygon.")
         pts = random_points_in_polygon(new_k, poly)
         points.extend(pts)
-        points_gdf = gpd.GeoDataFrame(geometry=points, crs=CRS)
-        gdf = points_gdf.to_crs(WGS84)
-        # gdf['lonlats'] =np.array([(point.x, point.y) for point in gdf.geometry])
-    print(np.sum(poi))
+
+    points_gdf = gpd.GeoDataFrame(geometry=points, crs=CRS)
+    gdf = points_gdf.to_crs("EPSG:4326")  # Convert to WGS84 CRS
+
+    print(f"Total points generated: {np.sum(poi)}")
     return np.array([(point.x, point.y) for point in gdf.geometry])
 
 
@@ -298,7 +373,7 @@ if __name__ == '__main__':
     gd = df
     bc_model = r'D:\ACPd\Bear creek simulations\ML_bear_creek 20240206.apsimx'
     fb = gpd.read_file(fb401)
-    lp = samply_by_polygons(fb401, k=4, filter_by='isAG', filter_value=1)
+    lp = sample_by_polygons(fb401, k=4, filter_by='isAG', filter_value=1)
     # data = create_and_run_sim_objects(wd, shp, 500, 2, maize, 'Carbon', test=False, run_process=False,
     #                                   select_process=True, cores=13)
     # # sims = run_created_files(data, "Carbon", cores = 15, use_threads = False)

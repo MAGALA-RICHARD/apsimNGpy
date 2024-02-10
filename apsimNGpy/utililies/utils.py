@@ -17,6 +17,8 @@ import pandas as pd
 import time
 from functools import cache
 from pathlib import Path
+from shapely import wkt
+
 
 
 def select_process(use_thread, ncores):
@@ -285,7 +287,7 @@ def create_polygon1(args):
     return Polygon([(lon, lat), (lon + lon_step, lat), (lon + lon_step, lat + lat_step), (lon, lat + lat_step)])
 
 
-def create_fishnet1(pt, lon_step=20, lat_step=20, ncores =2, process=False):
+def create_fishnet1(pt, lon_step=20, lat_step=20, ncores=2, process=False):
     gdf_shape = gpd.read_file(pt)
     CRS = gdf_shape.crs
     print(crs)
@@ -314,6 +316,7 @@ def convert_geopoint_to_array(geoseries):
     coords_array = np.column_stack((x_coords, y_coords))
 
     return coords_array
+
 
 import numpy as np
 import math
@@ -545,3 +548,46 @@ def find_models(path, filename):
         return os.path.dirname(mod[0])
     else:
         return None
+
+
+def convert_df_to_gdf(df, CRS):
+    """
+    Converts a pandas DataFrame to a GeoPandas GeoDataFrame with specified CRS.
+
+    This function assumes that the input DataFrame contains a column named 'geometry'
+    with WKT (Well-Known Text) representations of geometric objects. It converts these
+    textual geometry representations into GeoPandas geometry objects and sets the
+    coordinate reference system (CRS) for the resulting GeoDataFrame.
+
+    Parameters:
+    - df (pandas.DataFrame): The input DataFrame to convert. Must include a 'geometry'
+      column with WKT representations of the geometries.
+    - CRS (str or dict): The coordinate reference system to set for the GeoDataFrame.
+      Can be specified as a Proj4 string, a dictionary of Proj parameters, an EPSG
+      code, or a WKT string.
+
+    Returns:
+    - gpd.GeoDataFrame: A GeoDataFrame created from the input DataFrame with geometries
+      converted from WKT format and the specified CRS.
+
+    Example:
+    ```
+    import pandas as pd
+    import geopandas as gpd
+    from shapely import wkt
+
+    # Sample DataFrame with WKT geometries
+    data = {'geometry': ['POINT (12 34)', 'LINESTRING (0 0, 1 1, 2 1, 2 2)'],
+            'value': [1, 2]}
+    df = pd.DataFrame(data)
+
+    # Convert DataFrame to GeoDataFrame with an EPSG code for CRS
+    gdf = convert_df_to_gdf(df, CRS='EPSG:4326')
+    ```
+
+    Note:
+    The 'wkt' module from 'shapely' needs to be imported to convert geometries from WKT.
+    """
+    df['geometry'] = df['geometry'].apply(wkt.loads)
+    gdf = gpd.GeoDataFrame(df, crs=CRS)
+    return gdf

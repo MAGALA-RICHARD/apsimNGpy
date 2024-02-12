@@ -115,6 +115,35 @@ def match_crop(abb, add_wheat=None):
     return crop
 
 
+from functools import singledispatch
+
+
+@singledispatch
+def append(obj, x):
+    print("Unsupported type")
+
+
+@append.register
+def _(obj: list, x: list):
+    return obj + x
+
+
+@append.register
+def _(obj: set, x: set):
+    return obj.union(x)
+
+
+@append.register
+def _(obj: str, x: str):
+    return obj + x
+
+
+print(append([1, 2, 3], [4, 5]))
+print(append({1, 2, 3}, {4, 5}))
+print(append("1 2 3", " 4 5"), "\n")
+
+append(2, 3)
+
 if __name__ == "__main__":
     al = match_crop('CBBBBC')
 
@@ -128,4 +157,29 @@ if __name__ == "__main__":
 
     print(df)
     df.to_csv("fin.csv")
-    os.startfile('fin.csv')
+    # os.startfile('fin.csv')
+    from functools import total_ordering
+
+
+    @total_ordering
+    class Circle:
+        def __init__(self, radius):
+            self.radius = radius
+
+        def __eq__(self, other):
+            return self.radius == other.radius
+
+        def __lt__(self, other):
+            return self.radius < other.radius
+
+
+    studentA = Circle(10)
+    studentB = Circle(12)
+
+    # all compressions are working even if we don't define all four
+    print(studentA == studentB)
+    print(studentA != studentB)
+    print(studentA < studentB)
+    print(studentA <= studentB)
+    print(studentA > studentB)
+    print(studentA >= studentB)

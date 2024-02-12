@@ -20,7 +20,6 @@ from pathlib import Path
 from shapely import wkt
 
 
-
 def select_process(use_thread, ncores):
     return ThreadPoolExecutor(ncores) if use_thread else ProcessPoolExecutor(ncores)
 

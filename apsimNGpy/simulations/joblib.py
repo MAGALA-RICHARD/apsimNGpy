@@ -1,5 +1,5 @@
 from concurrent.futures import as_completed
-
+from functools import singledispatch
 import geopandas as gpd
 import pandas as pd
 import numpy as np
@@ -180,6 +180,7 @@ def sample_by_polygons(shp, k=1, filter_by=None, filter_value=None):
       points within a polygon, which is not defined within this docstring.
     - The output coordinates are converted to the WGS84 CRS for geospatial compatibility.
     """
+    pol = 0
     points = []
 
     # Load the shapefile as a GeoDataFrame
@@ -196,12 +197,14 @@ def sample_by_polygons(shp, k=1, filter_by=None, filter_value=None):
     poi = []  # Placeholder for counting points per polygon
 
     # Generate points for each polygon
+
     for poly in gd['geometry']:
         area = poly.area / 10 ** 6
         weight = area / total_area
         new_k = math.ceil(area * k)  # Adjust k based on the area
         poi.append(new_k)
-        print(f"Generating {new_k} points for a polygon.")
+        pol += 1
+        print(f"Generating {new_k} points for polygon {pol}.")
         pts = random_points_in_polygon(new_k, poly)
         points.extend(pts)
 
@@ -212,6 +215,7 @@ def sample_by_polygons(shp, k=1, filter_by=None, filter_value=None):
     print(f"Total points generated: {np.sum(poi)}")
     ndf['lonlat'] = [(point.x, point.y) for point in ndf.geometry]
     ndf.to_crs(CRS, inplace=True)
+    
     return ndf
 
 

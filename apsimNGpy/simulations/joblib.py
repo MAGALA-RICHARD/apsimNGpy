@@ -450,6 +450,7 @@ if __name__ == '__main__':
     bc_model = r'D:\ACPd\Bear creek simulations\ML_bear_creek 20240206.apsimx'
     fb = gpd.read_file(fb401)
     lp = sample_by_polygons(fb401, k=4, filter_by='isAG', filter_value=1)
+    
     # data = create_and_run_sim_objects(wd, shp, 500, 2, maize, 'Carbon', test=False, run_process=False,
     #                                   select_process=True, cores=13)
     # # sims = run_created_files(data, "Carbon", cores = 15, use_threads = False)

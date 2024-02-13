@@ -540,7 +540,7 @@ class APSIMNG():
             raise ValueError("Both values and commands must be equal")
         if commands is None or not isinstance(commands, tuple) or not isinstance(commands, list):
             raise ValueError("commands must be a list")
-        if commands is None or not isinstance(commands, tuple) or not isinstance(commands, list):
+        if values is None or not isinstance(values, tuple) or not isinstance(values, list):
             raise ValueError("values must be presented as a list")
         cultvar = self._find_cultvar(CultvarName)
         params = self._cultivar_params(cultvar)

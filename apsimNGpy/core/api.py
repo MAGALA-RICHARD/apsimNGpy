@@ -506,6 +506,10 @@ class APSIMNG():
                 break
         return rep
 
+    def read_cultvar_params(self, name):
+        cultvar = self._find_cultvar(name)
+        return self._cultivar_params(cultvar)
+
     def get_crop_replacement(self, Crop):
         """
         :param Crop: crop to get the replacement
@@ -534,9 +538,9 @@ class APSIMNG():
             raise ValueError("cultiva name must be a string")
         if len(commands) != len(values):
             raise ValueError("Both values and commands must be equal")
-        if commands is None or not isinstance(commands, tuple):
+        if commands is None or not isinstance(commands, tuple) or not isinstance(commands, list):
             raise ValueError("commands must be a list")
-        if commands is None or not isinstance(commands, tuple):
+        if commands is None or not isinstance(commands, tuple) or not isinstance(commands, list):
             raise ValueError("values must be presented as a list")
         cultvar = self._find_cultvar(CultvarName)
         params = self._cultivar_params(cultvar)

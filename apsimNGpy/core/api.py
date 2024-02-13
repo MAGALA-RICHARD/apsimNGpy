@@ -524,31 +524,35 @@ class APSIMNG():
                 return i
         return self
 
-    def edit_cultivar(self, CultvarName, commands: tuple, values: tuple):
+    def edit_cultivar(self, CultivarName, commands: tuple, values: tuple):
         """
+        Edits the parameters of a given cultivar.
 
-        :param CultvarName: name of the cultvar e.g laila
-
-        :param command: python tuple of strings.
-                  example: ('[Grain].MaximumGrainsPerCob.FixedValue', "[Phenology].GrainFilling.Target.FixedValue ")
-        values: corresponding values for each command e.g ( 721, 760)
-        :return:
+        :param CultivarName: Name of the cultivar (e.g., 'laila').
+        :param commands: A tuple of strings representing the parameter paths to be edited.
+                         Example: ('[Grain].MaximumGrainsPerCob.FixedValue', '[Phenology].GrainFilling.Target.FixedValue')
+        :param values: A tuple containing the corresponding values for each command (e.g., (721, 760)).
+        :return: None
         """
-        if not isinstance(CultvarName, str):
-            raise ValueError("cultiva name must be a string")
+        if not isinstance(CultivarName, str):
+            raise ValueError("Cultivar name must be a string")
+        if not (isinstance(commands, (tuple, list)) and isinstance(values, (tuple, list))):
+            raise ValueError("Commands and values must be presented as a tuple or a list")
         if len(commands) != len(values):
-            raise ValueError("Both values and commands must be equal")
-        if commands is None or not isinstance(commands, tuple) or not isinstance(commands, list):
-            raise ValueError("commands must be a list")
-        if values is None or not isinstance(values, tuple) or not isinstance(values, list):
-            raise ValueError("values must be presented as a list")
-        cultvar = self._find_cultvar(CultvarName)
+            raise ValueError("The length of values and commands must be equal")
+
+        cultvar = self._find_cultvar(CultivarName)
+        if cultvar is None:
+            raise ValueError(f"Cultivar '{CultivarName}' not found")
+
         params = self._cultivar_params(cultvar)
-        for com, val in zip(commands,
-                            values):  # when a command exists it is replaced, this avoids duplicates as dictioanry names do not repeat
-            params[com] = val
-        commands = [f"{k}={v}" for k, v in params.items()]
-        cultvar.set_Command(commands)
+        for command, value in zip(commands, values):
+            params[command] = value  # Update or add the command with its new value
+
+        # Prepare the command strings for setting the updated parameters
+        updated_commands = [f"{k}={v}" for k, v in params.items()]
+        cultvar.set_Command(updated_commands)
+
         return self
 
     def get_current_cultvar_name(self, ManagerName):

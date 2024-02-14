@@ -237,7 +237,39 @@ class ApsimModel(APSIMNG):
         return self
         # print(self.results)
 
-    def replace_downloaded_soils(self, soil_tables, simulation_names):  # unique for my project
+    def replace_downloaded_soils(self, soil_tables, simulation_names, **kwargs):
+        """
+            Updates soil parameters and configurations for downloaded soil data in simulation models.
+
+            This method adjusts soil physical and organic parameters based on provided soil tables and applies these 
+            adjustments to specified simulation models. Optionally, it can adjust the Radiation Use Efficiency (RUE) 
+            based on a Carbon to Sulfur ratio (CSR) sampled from the provided soil tables.
+
+            Parameters: - soil_tables (list): A list containing soil data tables. Expected to contain: see the naming 
+            convetion in the for APSIM - [0]: DataFrame with physical soil parameters. - [1]: DataFrame with organic 
+            soil parameters. - [2]: DataFrame with crop-specific soil parameters. - [3]: Series/DataFrame with CSR 
+            values for RUE adjustment. - simulation_names (list of str): Names or identifiers for the simulations to 
+            be updated. - **kwargs: - adjust_rue (bool): Flag to indicate whether RUE should be adjusted based on 
+            CSR. - Base_RUE (float): The base RUE value to be adjusted. - CultivarName (str, optional): The name of 
+            the cultivar for which RUE should be adjusted. Defaults to "B_110" if not specified.
+
+            Returns:
+            - self: Returns an instance of the class for chaining methods.
+
+            This method directly modifies the simulation instances found by `find_simulations` method calls, 
+            updating physical and organic soil properties, as well as crop-specific parameters like lower limit (LL), 
+            drain upper limit (DUL), saturation (SAT), bulk density (BD), hydraulic conductivity at saturation (KS), 
+            and more based on the provided soil tables.
+        """
+        adjust_rue = kwargs.get('adjust_rue')
+        if adjust_rue:
+
+            if isinstance(soil_tables[3], pd.Series):
+                csr = int(soil_tables[3].sample(1).iloc[0])
+                rue = kwargs.get("Base_RUE") * csr
+        com = '[Leaf].Photosynthesis.RUE.FixedValu',
+        val = rue,
+        self.edit_cultivar(CultivarName=kwargs.get('CultvarName', "B_110"), commands=com, values=val)
         self.thickness_replace = self.thickness_values
         physical_calculated = soil_tables[0]
         self.organic_calcualted = soil_tables[1]
@@ -416,9 +448,11 @@ class ApsimModel(APSIMNG):
 if __name__ == '__main__':
     # test
     from pathlib import Path
+
     # Model = FileFormat.ReadFromFile[Models.Core.Simulations](model, None, False)
     os.chdir(Path.home())
     from apsimNGpy.core.base_data import LoadExampleFiles
+
     al = LoadExampleFiles(Path.cwd())
     model = al.get_maize
     print(model)

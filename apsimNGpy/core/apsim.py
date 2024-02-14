@@ -11,6 +11,7 @@ import time
 import apsimNGpy.manager.weathermanager as weather
 from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganizeAPSIMsoil_profile
 import apsimNGpy.manager.weathermanager as weather
+import pandas as pd
 
 # prepare for the C# import
 from apsimNGpy.core.pythonet_config import LoadPythonnet
@@ -266,7 +267,7 @@ class ApsimModel(APSIMNG):
         if adjust_rue:
             if isinstance(soil_tables[3], pd.Series):
                 csr = int(soil_tables[3].sample(1).iloc[0])
-                rue = kwargs.get("Base_RUE") * csr
+                rue = kwargs.get("Base_RUE") * csr,
                 com = '[Leaf].Photosynthesis.RUE.FixedValue',
                 self.edit_cultivar(CultivarName=kwargs.get('CultvarName', "B_110"), commands=com, values=rue)
         self.thickness_replace = self.thickness_values

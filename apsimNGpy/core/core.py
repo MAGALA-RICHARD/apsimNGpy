@@ -22,6 +22,10 @@ from functools import cache
 # prepare for the C# import
 from apsimNGpy.core.pythonet_config import LoadPythonnet
 from apsimNGpy.utililies.database_utils import read_db_table
+import warnings
+
+
+warnings.warn("apsimNGpy.core.core will be deprecated use apsimNGpy.core.api instead")
 
 # py_config = LoadPythonnet()()  # double brackets avoids calling it twice
 

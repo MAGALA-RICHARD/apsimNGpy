@@ -6,7 +6,7 @@ from multiprocessing import cpu_count
 from pathlib import Path
 from apsimNGpy.utililies.utils import timer
 from apsimNGpy.utililies.run_utils import run_model, read_simulation
-
+from apsimNGpy.settings import CORES
 #from apsimNGpy.utililies.database_utils import read_db_table
 from apsimNGpy.utililies.utils  import select_process
 from apsimNGpy.utililies.database_utils import  read_db_table
@@ -197,7 +197,7 @@ def custom_parallel(func, iterable, *args, **kwargs):
 
     """
 
-    use_thread , ncores= kwargs.get('use_thread', False), kwargs.get('ncores', 4)
+    use_thread , ncores= kwargs.get('use_thread', False), kwargs.get('ncores', CORES)
     a = perf_counter()
     with select_process(use_thread=use_thread,
                          ncores=ncores) as pool:  # this reduces the repetition perhaps should even be implimented

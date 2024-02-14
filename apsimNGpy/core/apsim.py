@@ -10,6 +10,7 @@ import numpy as np
 import time
 import apsimNGpy.manager.weathermanager as weather
 from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganizeAPSIMsoil_profile
+import apsimNGpy.manager.weathermanager as weather
 
 # prepare for the C# import
 from apsimNGpy.core.pythonet_config import LoadPythonnet
@@ -441,6 +442,11 @@ class ApsimModel(APSIMNG):
             self.replace_any_soil_physical(spin_var, dul)
 
             return self
+
+    def replace_met_from_web(self, lonlat, start=1990, end=2021):
+        wf = weather.daymet_bylocation_nocsv(lonlat, start, end)
+        self.replace_met_file(wf, self.extract_simulation_name)
+        return self
 
 
 if __name__ == '__main__':

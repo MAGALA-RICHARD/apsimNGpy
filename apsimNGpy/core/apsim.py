@@ -264,10 +264,13 @@ class ApsimModel(APSIMNG):
             and more based on the provided soil tables.
         """
         adjust_rue = kwargs.get('adjust_rue')
+        adjust_kl = kwargs.get("adJust_kl")
+        
         self.csr = None
-        if adjust_rue:
+        if adjust_rue or adjust_kl:
             if isinstance(soil_tables[3], pd.Series):
                 self.csr = int(soil_tables[3].sample(1).iloc[0])/100
+        if adjust_rue:        
                 rue = kwargs.get("Base_RUE") * self.csr,
                 com = '[Leaf].Photosynthesis.RUE.FixedValue',
                 self.edit_cultivar(CultivarName=kwargs.get('CultvarName', "B_110"), commands=com, values=rue)
@@ -311,11 +314,13 @@ class ApsimModel(APSIMNG):
 
         for simu in self.find_simulations(simulation_names):
             soil_crop = pysoil.FindAllDescendants[SoilCrop]()
-            # can be use to target specific crop
+            # can be used to target specific crop
             for cropLL in soil_crop:
                 cropLL.LL = pysoil.AirDry
-                kl_coef = self.csr if self.csr is not None else 1
-                cropLL.KL = self.organic_calcualted.cropKL * kl_coef
+                kl = self.organic_calcualted.cropKL
+                print(kl)
+                cropLL.KL = self.csr * kl if self.csr is not None else kl
+
                 cropLL.XF = XF
                 cropLL.Thickness = self.thickness_replace
         return self

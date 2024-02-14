@@ -789,7 +789,7 @@ class APSIMNG():
             self.load_apsimx_from_string(self.path)
 
     # experimental
-    @timing_decorator
+    
     def update_mgt(self, management, simulations=None):  # use this one it is very fast
         """Update management, handles one manager at a time
 

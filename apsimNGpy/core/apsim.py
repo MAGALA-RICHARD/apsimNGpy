@@ -264,8 +264,8 @@ class ApsimModel(APSIMNG):
             and more based on the provided soil tables.
         """
         adjust_rue = kwargs.get('adjust_rue')
+        self.csr = None
         if adjust_rue:
-            self.csr = None
             if isinstance(soil_tables[3], pd.Series):
                 self.csr = int(soil_tables[3].sample(1).iloc[0])/100
                 rue = kwargs.get("Base_RUE") * self.csr,

@@ -265,6 +265,7 @@ class ApsimModel(APSIMNG):
         """
         adjust_rue = kwargs.get('adjust_rue')
         if adjust_rue:
+            self.csr = None
             if isinstance(soil_tables[3], pd.Series):
                 self.csr = int(soil_tables[3].sample(1).iloc[0])/100
                 rue = kwargs.get("Base_RUE") * self.csr,
@@ -313,7 +314,8 @@ class ApsimModel(APSIMNG):
             # can be use to target specific crop
             for cropLL in soil_crop:
                 cropLL.LL = pysoil.AirDry
-                cropLL.KL = self.organic_calcualted.cropKL *self.csr
+                kl_coef = self.csr if self.csr is not None else 1
+                cropLL.KL = self.organic_calcualted.cropKL * kl_coef
                 cropLL.XF = XF
                 cropLL.Thickness = self.thickness_replace
         return self

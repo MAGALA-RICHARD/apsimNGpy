@@ -165,6 +165,9 @@ class OrganizeAPSIMsoil_profile:
          """
         sdf1 = sdf.drop_duplicates(subset=["topdepth"])
         surgodf = sdf1.sort_values('topdepth', ascending=True)
+        csr = surgodf.get("CSR").dropna()
+        if isinstance(csr, pd.Series):
+           self.CSR = csr.astype("float")
         self.clay = npar(surgodf.clay).astype(np.float16)
         self.sand = npar(surgodf.sand).astype(np.float16)
         self.silt = npar(surgodf.silt).astype(np.float16)
@@ -350,7 +353,6 @@ class OrganizeAPSIMsoil_profile:
         if any(np.isnan(self.L15)):
             L15i = self.cal_l15Fromsand_clay_OM()
 
-
         else:
             l1 = self.L15 * 0.01
             L15i = self.variable_profile(l1)
@@ -377,6 +379,10 @@ class OrganizeAPSIMsoil_profile:
 
     def getBD(self):
         return self.variable_profile(self.BD)
+
+    def get_CSR(self):
+        return np.array(self.CSR)
+
 
     @staticmethod
     def adjust_SAT_BD_DUL(SAT, BD, DUL, target_saturation=0.381, target_bulk_density=1.639):
@@ -539,12 +545,13 @@ class OrganizeAPSIMsoil_profile:
         physical = self.create_soilprofile()
 
         # create a alist
-        frame = [physical, organic, cropdf, metadata]
+        frame = [physical, organic, cropdf, metadata, self.CSR]
         # All soil data frames
         resultdf = pd.concat(frame, join='outer', axis=1)
         finalsp = {'soil ': resultdf, 'crops': crops, 'metadata': metadata, 'soilwat': soilwat, 'swim': swim,
-                   'soilorganicmatter ': soilorganicmatter}
+                   'soilorganicmatter ': soilorganicmatter, "CSR":self.CSR}
         # return pd.DataFrame(finalsp)
+        frame.insert(3, self.CSR)
         return frame
 
 
@@ -552,3 +559,4 @@ if __name__ == '__main__':
     lon = -93.097702, 41.8780025
     dw = DownloadsurgoSoiltables(lon)
     sop = OrganizeAPSIMsoil_profile(dw, 20)
+    data  = sop.cal_missingFromSurgo()

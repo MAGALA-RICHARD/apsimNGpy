@@ -444,7 +444,8 @@ class ApsimModel(APSIMNG):
             return self
 
     def replace_met_from_web(self, lonlat, start=1990, end=2021):
-        wf = weather.daymet_bylocation_nocsv(lonlat, start, end)
+        wname = self.path.strip("apsimx") + "_w_.met"
+        wf = weather.daymet_bylocation_nocsv(lonlat, start, end, filename=)
         self.replace_met_file(wf, self.extract_simulation_name)
         return self
 
@@ -456,8 +457,9 @@ if __name__ == '__main__':
     # Model = FileFormat.ReadFromFile[Models.Core.Simulations](model, None, False)
     os.chdir(Path.home())
     from apsimNGpy.core.base_data import LoadExampleFiles
-
+    lonlat = -93.7738, 42.0204
     al = LoadExampleFiles(Path.cwd())
     model = al.get_maize
     print(model)
     model = ApsimModel(model, read_from_string=True)
+    model.replace_met_from_web(lonlat)

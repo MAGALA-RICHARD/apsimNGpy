@@ -267,6 +267,7 @@ class ApsimModel(APSIMNG):
         if adjust_rue:
             if isinstance(soil_tables[3], pd.Series):
                 csr = int(soil_tables[3].sample(1).iloc[0])
+                print(csr)
                 rue = kwargs.get("Base_RUE") * csr,
                 com = '[Leaf].Photosynthesis.RUE.FixedValue',
                 self.edit_cultivar(CultivarName=kwargs.get('CultvarName', "B_110"), commands=com, values=rue)

@@ -397,7 +397,7 @@ def daymet_bylocation_nocsv(lonlat, start, end, cleanup=True, filename=None):
                 if (all(i.year % 400 == 0)) and (all(i.year % 100 == 0)) or (all(i.year % 4 == 0)) and (
                         all(i.year % 100 != 0)):
                     x = i[['year', 'radn', 'maxt', 'mint', 'rain', 'vp', 'swe', ]].mean()
-                    year = round(x[0], 0)
+                    year = round(x.iloc[0], 0)
                     day = round(366, 0)
                     new_row = pd.DataFrame(
                         {'year': [year], 'day': [day], 'radn': [0], 'maxt': [0], 'mint': [0], 'rain': [0], 'vp': [0],

@@ -445,7 +445,7 @@ class ApsimModel(APSIMNG):
 
     def replace_met_from_web(self, lonlat, start=1990, end=2021, file_name=None):
         if not file_name:
-            file_name = self.path.strip("apsimx") + "_w_.met"
+            file_name = self.path.strip(".apsimx") + "_w_.met"
         wf = weather.daymet_bylocation_nocsv(lonlat, start, end, filename=file_name)
         self.replace_met_file(wf, self.extract_simulation_name)
         return self

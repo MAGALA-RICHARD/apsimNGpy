@@ -400,6 +400,10 @@ class APSIMNG():
         data = read_db_table(datastore, report_name)
         return data
 
+    def replicate_file(self, k):
+        file_name = self.path.strip('.apsimx')
+        return [shutil.copy(self.path, f"{self.path.strip('.apsimx')}_{i}_.apsimx") for i in range(k)]
+
     def _read_simulation(self, report_name=None):
         """ returns all data frame the available report tables
         this is slow use read_db_table instead"""
@@ -734,7 +738,8 @@ class APSIMNG():
                 som.Value.InitialCNR = icnr
             else:
                 raise Exception(
-                    "File node structure is not supported at a moment. please rename your SOM module to SurfaceOrganicMatter")
+                    "File node structure is not supported at a moment. please rename your SOM module to "
+                    "SurfaceOrganicMatter")
             # mp.Value.InitialResidueMass
 
             return self
@@ -785,7 +790,7 @@ class APSIMNG():
 
     # experimental
     @timing_decorator
-    def update_mgt(self, management, simulations=None):
+    def update_mgt(self, management, simulations=None):  # use this one it is very fast
         """Update management, handles one manager at a time
 
         Parameters
@@ -847,8 +852,7 @@ class APSIMNG():
 
         for sim in self.simulations:
             actions = sim.FindAllDescendants[Models.Manager]()
-            out = {}
-            out["simulation"] = sim.Name
+            out = {"simulation": sim.Name}
             for action in actions:
                 if action.Name == manager_name:
                     params = self._kvtodict(action.Parameters)
@@ -1455,9 +1459,6 @@ if __name__ == '__main__':
         # model.examine_management_info()
 
         model.run()
-        xp = model.get_result_stat(model.results['Annual'], 'TopN2O', 'mean')
-        # model.clear()
-        print(xp)
     pm = model.check_som()
     pt = model.update_mgt(pl)
 

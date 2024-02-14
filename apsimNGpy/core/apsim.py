@@ -318,7 +318,6 @@ class ApsimModel(APSIMNG):
             for cropLL in soil_crop:
                 cropLL.LL = pysoil.AirDry
                 kl = self.organic_calcualted.cropKL
-                print(kl)
                 cropLL.KL = self.csr * kl if self.csr is not None else kl
 
                 cropLL.XF = XF

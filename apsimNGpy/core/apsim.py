@@ -263,13 +263,11 @@ class ApsimModel(APSIMNG):
         """
         adjust_rue = kwargs.get('adjust_rue')
         if adjust_rue:
-
             if isinstance(soil_tables[3], pd.Series):
                 csr = int(soil_tables[3].sample(1).iloc[0])
                 rue = kwargs.get("Base_RUE") * csr
-        com = '[Leaf].Photosynthesis.RUE.FixedValu',
-        val = rue,
-        self.edit_cultivar(CultivarName=kwargs.get('CultvarName', "B_110"), commands=com, values=val)
+                com = '[Leaf].Photosynthesis.RUE.FixedValue',
+                self.edit_cultivar(CultivarName=kwargs.get('CultvarName', "B_110"), commands=com, values=rue)
         self.thickness_replace = self.thickness_values
         physical_calculated = soil_tables[0]
         self.organic_calcualted = soil_tables[1]

@@ -167,16 +167,6 @@ from apsimNGpy.utililies.utils import timer
 
 
 @timer
-def handle(x):
-    match x:
-        case 200:
-            return 201
-        case 400:
-            return 401
-        case 500:
-            return 501
-# Generating Fibonacci numbers dynamically
-@timer
 def fibonacci_sequence(limit):
     a, b = 0, 1
     count = 0
@@ -198,6 +188,5 @@ if __name__ == '__main__':
     for i in fib:
         lp.append(i)
     print(lp)
-    print(handle(500))
     import numpy as np
     RP = np.arange(0.5, 3, 0.5)

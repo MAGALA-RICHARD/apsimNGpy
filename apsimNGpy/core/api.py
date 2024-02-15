@@ -143,7 +143,7 @@ class APSIMNG():
     def load_apsimx_from_string(self, path):
         path = os.path.realpath(path)
         try:
-            with open(path, "r+") as apsimx:
+            with open(path, "r+", encoding='utf-8') as apsimx:
                 app_ap = json.load(apsimx)
             string_name = json.dumps(app_ap)
             fn = path
@@ -229,7 +229,7 @@ class APSIMNG():
         json_string = Models.Core.ApsimFile.FileFormat.WriteToString(self.Model)
 
         # Save the JSON string to the determined output path
-        with open(final_out_path, "w") as f:
+        with open(final_out_path, "w", encoding='utf-8') as f:
             f.write(json_string)
 
     def run(self, simulations=None, clean=False, multithread=True, report_name=None):
@@ -1386,7 +1386,7 @@ class APSIMNG():
         from apsimNGpy.utililies.run_utils import _read_simulation
         path = os.path.realpath(path)
         try:
-            with open(path, "r+") as apsimx:
+            with open(path, "r+", encoding='utf-8') as apsimx:
                 app_ap = json.load(apsimx)
             string_name = json.dumps(app_ap)
             # fn = path

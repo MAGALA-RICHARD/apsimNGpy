@@ -232,15 +232,20 @@ class APSIMNG():
         with open(final_out_path, "w", encoding='utf-8') as f:
             f.write(json_string)
 
-    def run(self, simulations=None, clean=False, multithread=True, report_name=None):
+    def run(self, report_name=None, simulations=None, clean=False, multithread=True):
         """Run apsim model in the simulations
 
         Parameters
         ----------
+        report_name: str. defaults to None and if not specified, the simulator will
+            execute the model and save the outcomes in a database file, accessible through alternative retrieval methods.
+
         simulations (__str_), optional
             List of simulation names to run, if `None` runs all simulations, by default `None`.
+
         clean (_-boolean_), optional
             If `True` remove existing database for the file before running, deafults to False`
+
         multithread, optional
             If `True` APSIM uses multiple threads, by default `True`
         kwargs:

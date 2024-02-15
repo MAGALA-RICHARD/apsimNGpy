@@ -20,14 +20,14 @@ class Metrics:
     def RRMSE(self, actual, predicted):
         """
 
-        Calculate the root mean square error (RRMSE) between actual and predicted values.
+        Calculate the root-mean-square error (RRMSE) between actual and predicted values.
 
         Parameters:
         - actual: list or numpy array of actual values
         - predicted: list or numpy array of predicted values
 
         Returns:
-        - float: relative root mean square error value
+        - float: relative root-mean-square error value
         """
         if not isinstance(actual, np.ndarray) or not isinstance(predicted, np.ndarray):
             actual = np.array(actual)
@@ -36,29 +36,25 @@ class Metrics:
         rrmse = rmse / np.mean(actual)
         return rrmse
 
-    def WIA(self, observed, predicted):
+    def WIA(self, obs, pred):
         """
-        Calculate the Wilmont index of agreement between actual and predicted values.
+        Calculate the Willmott's index of agreement.
 
-        Args:
-        observed (array-like): Array of actual values.
-        predicted (array-like): Array of predicted values.
+        Parameters:
+        - obs: array-like, observed values.
+        - pred: array-like, predicted values.
 
         Returns:
-        float: wilmon index of agreement
+        - d: Willmott's index of agreement.
         """
-        if not isinstance(observed, np.ndarray) or not isinstance(observed, np.ndarray):
-            observed = np.array(observed)
-            predicted = np.array(predicted)
-        mean_observed = np.mean(observed)
-        # Calculate the numerator and denominator for the Wilmot IA formula
-        numerator = np.sum((observed - predicted) ** 2)
-        den1 = np.abs(np.sum(observed - mean_observed))
-        den2 = np.sum(predicted - mean_observed)
-        den = np.sum((den1 + den2) ** 2)
+        obs_mean = np.mean(obs)
+        pred_mean = np.mean(pred)
+        numerator = np.sum((pred - obs) ** 2)
+        denominator = np.sum((np.abs(pred - obs_mean) + np.abs(obs - obs_mean)) ** 2)
 
-        # Calculate the Wilmont Index of Agreement
-        return 1 - (numerator / den)
+        d = 1 - numerator / denominator
+        return d
+
 
     def MSE(self, actual, predicted):
         """

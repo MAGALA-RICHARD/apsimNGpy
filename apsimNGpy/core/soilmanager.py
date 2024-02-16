@@ -15,19 +15,20 @@ import datetime
 import copy
 from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
+from functools import singledispatch
 
 THICKNESS = [150, 150, 200, 200, 200, 250, 300, 300, 400, 500]
 
 
 def DownloadsurgoSoiltables(lonlat, select_componentname=None, summarytable=False):
     '''
-    TODO this is a duplicate File. Duplicate of soils/soilmanager
+
     Downloads SSURGO soil tables
-    
+
     parameters
     ------------------
-    lon: longitude 
-    lat: latitude
+    lonlat:turple or soil series name not intuitive, but we are planning on changing it
+
     select_componentname: any componet name within the map unit e.g 'Clarion'. the default is None that mean sa ll the soil componets intersecting a given locationw il be returned
       if specified only that soil component table will be returned. in case it is not found the dominant componet will be returned with a caveat meassage.
         use select_componentname = 'domtcp' to return the dorminant component
@@ -35,67 +36,126 @@ def DownloadsurgoSoiltables(lonlat, select_componentname=None, summarytable=Fals
     '''
 
     total_steps = 3
+
     # lat = "37.54189"
     # lon = "-120.96683"
-    lonLat = "{0} {1}".format(lonlat[0], lonlat[1])
-    url = "https://SDMDataAccess.nrcs.usda.gov/Tabular/SDMTabularService.asmx"
-    # headers = {'content-type': 'application/soap+xml'}
-    headers = {'content-type': 'text/xml'}
-    body = """<?xml version="1.0" encoding="utf-8"?>
-              <soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:sdm="http://SDMDataAccess.nrcs.usda.gov/Tabular/SDMTabularService.asmx">
-       <soap:Header/>
-       <soap:Body>
-          <sdm:RunQuery>
-             <sdm:Query>SELECT co.cokey as cokey, ch.chkey as chkey, comppct_r as prcent, compkind as compkind_series, wsatiated_r as wat_r,partdensity as pd, dbthirdbar_h as bb, musym as musymbol, compname as componentname, muname as muname, slope_r, slope_h as slope, hzname, hzdept_r as topdepth, hzdepb_r as bottomdepth, awc_r as PAW, ksat_l as KSAT,
-                        claytotal_r as clay, silttotal_r as silt, sandtotal_r as sand, om_r as OM, iacornsr as CSR, dbthirdbar_r as BD, wfifteenbar_r as L15, wthirdbar_h as DUL, ph1to1h2o_r as pH, ksat_r as sat_hidric_cond,
-                        (dbthirdbar_r-wthirdbar_r)/100 as bd FROM sacatalog sc
-                        FULL OUTER JOIN legend lg  ON sc.areasymbol=lg.areasymbol
-                        FULL OUTER JOIN mapunit mu ON lg.lkey=mu.lkey
-                        FULL OUTER JOIN component co ON mu.mukey=co.mukey
-                        FULL OUTER JOIN chorizon ch ON co.cokey=ch.cokey
-                        FULL OUTER JOIN chtexturegrp ctg ON ch.chkey=ctg.chkey
-                        FULL OUTER JOIN chtexture ct ON ctg.chtgkey=ct.chtgkey
-                        FULL OUTER JOIN copmgrp pmg ON co.cokey=pmg.cokey
-                        FULL OUTER JOIN corestrictions rt ON co.cokey=rt.cokey
-                        WHERE mu.mukey IN (SELECT * from SDA_Get_Mukey_from_intersection_with_WktWgs84('point(""" + lonLat + """)')) 
-                        
-                        AND sc.areasymbol != 'US' 
-                        order by co.cokey, ch.chkey, prcent, topdepth, bottomdepth, muname
-            </sdm:Query>
-          </sdm:RunQuery>
-       </soap:Body>
-    </soap:Envelope>"""
+    @singledispatch
+    def download(lonlat):
+        print("The querry placed is not supported try lonlat as a tuple or a soil series name as a string")
 
-    response = requests.post(url, data=body, headers=headers, timeout=140)
-    # Put query results in dictionary format
-    my_dict = xmltodict.parse(response.content)
+    @download.register
+    def _(lonlat: tuple):
+        lonLat = "{0} {1}".format(lonlat[0], lonlat[1])
+        url = "https://SDMDataAccess.nrcs.usda.gov/Tabular/SDMTabularService.asmx"
+        # headers = {'content-type': 'application/soap+xml'}
+        headers = {'content-type': 'text/xml'}
+        body = """<?xml version="1.0" encoding="utf-8"?>
+                  <soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:sdm="http://SDMDataAccess.nrcs.usda.gov/Tabular/SDMTabularService.asmx">
+           <soap:Header/>
+           <soap:Body>
+              <sdm:RunQuery>
+                 <sdm:Query>SELECT co.cokey as cokey, ch.chkey as chkey, comppct_r as prcent, compkind as compkind_series, wsatiated_r as wat_r,partdensity as pd, dbthirdbar_h as bb, musym as musymbol, compname as componentname, muname as muname, slope_r, slope_h as slope, hzname, hzdept_r as topdepth, hzdepb_r as bottomdepth, awc_r as PAW, ksat_l as KSAT,
+                            claytotal_r as clay, silttotal_r as silt, sandtotal_r as sand, om_r as OM, iacornsr as CSR, dbthirdbar_r as BD, wfifteenbar_r as L15, wthirdbar_h as DUL, ph1to1h2o_r as pH, ksat_r as sat_hidric_cond,
+                            (dbthirdbar_r-wthirdbar_r)/100 as bd FROM sacatalog sc
+                            FULL OUTER JOIN legend lg  ON sc.areasymbol=lg.areasymbol
+                            FULL OUTER JOIN mapunit mu ON lg.lkey=mu.lkey
+                            FULL OUTER JOIN component co ON mu.mukey=co.mukey
+                            FULL OUTER JOIN chorizon ch ON co.cokey=ch.cokey
+                            FULL OUTER JOIN chtexturegrp ctg ON ch.chkey=ctg.chkey
+                            FULL OUTER JOIN chtexture ct ON ctg.chtgkey=ct.chtgkey
+                            FULL OUTER JOIN copmgrp pmg ON co.cokey=pmg.cokey
+                            FULL OUTER JOIN corestrictions rt ON co.cokey=rt.cokey
+                            WHERE mu.mukey IN (SELECT * from SDA_Get_Mukey_from_intersection_with_WktWgs84('point(""" + lonLat + """)')) 
+
+                            AND sc.areasymbol != 'US' 
+                            order by co.cokey, ch.chkey, prcent, topdepth, bottomdepth, muname
+                </sdm:Query>
+              </sdm:RunQuery>
+           </soap:Body>
+        </soap:Envelope>"""
+
+        response = requests.post(url, data=body, headers=headers, timeout=140)
+
+        # Put query results in dictionary format
+        my_dict = xmltodict.parse(response.content)
+        soil_df = None
+        try:
+            soil_df = pd.DataFrame.from_dict(
+                my_dict['soap:Envelope']['soap:Body']['RunQueryResponse']['RunQueryResult']['diffgr:diffgram'][
+                    'NewDataSet'][
+                    'Table'])
+            return soil_df
+        except ValueError as e:
+            pass
+
+    @download.register
+    def _(lonlat: str):
+        url = "https://SDMDataAccess.nrcs.usda.gov/Tabular/SDMTabularService.asmx"
+        headers = {'content-type': 'text/xml'}
+        body = f"""<?xml version="1.0" encoding="utf-8"?>
+                      <soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:sdm="http://SDMDataAccess.nrcs.usda.gov/Tabular/SDMTabularService.asmx">
+               <soap:Header/>
+               <soap:Body>
+                  <sdm:RunQuery>
+                     <sdm:Query>SELECT co.cokey as cokey, ch.chkey as chkey, comppct_r as prcent, compkind as compkind_series, wsatiated_r as wat_r,partdensity as pd, dbthirdbar_h as bb, musym as musymbol, compname as componentname, muname as muname, slope_r, slope_h as slope, hzname, hzdept_r as topdepth, hzdepb_r as bottomdepth, awc_r as PAW, ksat_l as KSAT,
+                                claytotal_r as clay, silttotal_r as silt, sandtotal_r as sand, om_r as OM, iacornsr as CSR, dbthirdbar_r as BD, wfifteenbar_r as L15, wthirdbar_h as DUL, ph1to1h2o_r as pH, ksat_r as sat_hidric_cond,
+                                (dbthirdbar_r-wthirdbar_r)/100 as bd FROM sacatalog sc
+                                FULL OUTER JOIN legend lg  ON sc.areasymbol=lg.areasymbol
+                                FULL OUTER JOIN mapunit mu ON lg.lkey=mu.lkey
+                                FULL OUTER JOIN component co ON mu.mukey=co.mukey
+                                FULL OUTER JOIN chorizon ch ON co.cokey=ch.cokey
+                                FULL OUTER JOIN chtexturegrp ctg ON ch.chkey=ctg.chkey
+                                FULL OUTER JOIN chtexture ct ON ctg.chtgkey=ct.chtgkey
+                                FULL OUTER JOIN copmgrp pmg ON co.cokey=pmg.cokey
+                                FULL OUTER JOIN corestrictions rt ON co.cokey=rt.cokey
+                                WHERE compname = '{lonlat}' 
+
+                                AND sc.areasymbol != 'US' 
+                                order by co.cokey, ch.chkey, prcent, topdepth, bottomdepth, muname
+                    </sdm:Query>
+                  </sdm:RunQuery>
+               </soap:Body>
+            </soap:Envelope>"""
+
+        response = requests.post(url, data=body, headers=headers, timeout=140)
+        # Put query results in dictionary format
+        my_dict = xmltodict.parse(response.content)
+        soil_df = None
+        try:
+            soil_df = pd.DataFrame.from_dict(
+                my_dict['soap:Envelope']['soap:Body']['RunQueryResponse']['RunQueryResult']['diffgr:diffgram'][
+                    'NewDataSet'][
+                    'Table'])
+            return soil_df
+        except ValueError as e:
+            pass
+        return my_dict
 
     # Convert from dictionary to dataframe format
-
-    soil_df = pd.DataFrame.from_dict(
-        my_dict['soap:Envelope']['soap:Body']['RunQueryResponse']['RunQueryResult']['diffgr:diffgram']['NewDataSet'][
-            'Table'])
-    if summarytable:
-        df = soil_df.drop_duplicates(subset=['componentname'])
-        summarytable = df[["componentname", 'prcent', 'chkey']]
-        print("summary of the returned soil tables \n")
-        print(summarytable)
-    # selec the dominat componet
-    dom_component = soil_df[soil_df.prcent == soil_df.prcent.max()]
-    # select by component name
-    if select_componentname in soil_df.componentname.unique():
-        componentdf = soil_df[soil_df.componentname == select_componentname]
-        return componentdf
-    elif select_componentname == 'domtcp':
-        return dom_component
-        # print("the following{0} soil components were found". format(list(soil_df.componentname.unique())))
-    elif select_componentname == None:
-        # print("the following{0} soil components were found". format(list(soil_df.componentname.unique())))
-        return soil_df
-    elif select_componentname != 'domtcp' and select_componentname not in soil_df.componentname.unique() or select_componentname != None:
-        print(
-            f'Ooops! we realised that your component request: {select_componentname} does not exists at the specified location. We have returned the dorminant component name')
-        return dom_component
+    soil_df = download(lonlat)
+    if isinstance(soil_df, pd.DataFrame):
+        if summarytable:
+            df = soil_df.drop_duplicates(subset=['componentname'])
+            summarytable = df[["componentname", 'prcent', 'chkey']]
+            print("summary of the returned soil tables \n")
+            print(summarytable)
+        # select the dominat componet
+        dom_component = soil_df[soil_df.prcent == soil_df.prcent.max()]
+        # select by component name
+        if select_componentname in soil_df.componentname.unique():
+            componentdf = soil_df[soil_df.componentname == select_componentname]
+            return componentdf
+        elif select_componentname == 'domtcp':
+            return dom_component
+            # print("the following{0} soil components were found". format(list(soil_df.componentname.unique())))
+        elif select_componentname is None:
+            # print("the following{0} soil components were found". format(list(soil_df.componentname.unique())))
+            return soil_df
+        elif select_componentname != 'domtcp' and select_componentname not in soil_df.componentname.unique() or select_componentname != None:
+            print(
+                f'Ooops! we realised that your component request: {select_componentname} does not exists at the '
+                f'specified location. We have returned the dorminant component name')
+            return dom_component
 
 
 # test the function
@@ -159,6 +219,9 @@ class OrganizeAPSIMsoil_profile:
          """
         sdf1 = sdf.drop_duplicates(subset=["topdepth"])
         surgodf = sdf1.sort_values('topdepth', ascending=True)
+        csr = surgodf.get("CSR").dropna()
+        if isinstance(csr, pd.Series):
+            self.CSR = csr.astype("float")
         self.clay = npar(surgodf.clay).astype(np.float16)
         self.sand = npar(surgodf.sand).astype(np.float16)
         self.silt = npar(surgodf.silt).astype(np.float16)
@@ -201,7 +264,7 @@ class OrganizeAPSIMsoil_profile:
         """
         # thickness  = np.tile(thickness, 10
         thickness_array = np.array(depththickness)
-        bottomdepth = np.cumsum(thickness_array)  # bottom depth should nothave zero
+        bottomdepth = np.cumsum(thickness_array)  # bottom depth should not have zero
         top_depth = bottomdepth - thickness_array
         return bottomdepth, top_depth
 
@@ -216,7 +279,7 @@ class OrganizeAPSIMsoil_profile:
         xnew = np.arange(x.min(), x.max(), newthickness)
         # create an interpolation function
         yinterpo = interpolate.interp1d(x, y, kind=kind, assume_sorted=False, fill_value='extrapolate')
-        if isinstance(self.thickness_values, str):  # just put a strign to evaluate to false i will fix it later
+        if isinstance(self.thickness_values, str):  # just put a string to evaluate to false i will fix it later
             tv = np.array(self.thickness_values)
             tv = tv.astype('float64')
             xnew, top_dep = OrganizeAPSIMsoil_profile.set_depth(tv)
@@ -247,16 +310,24 @@ class OrganizeAPSIMsoil_profile:
         predicted = self.decreasing_exponential_function(x_data, a_fit, b_fit)
         return predicted
 
+    def interpolated_BD(self):
+        if any(elem is None for elem in self.BD):
+            return self.variable_profile(self.BD)
+        else:
+            return np.array(self.BD)
+
     def cal_satfromBD(self):  # has potential to cythonize
         if any(elem is None for elem in self.particledensity):
             pd = 2.65
-            bd = npar(self.BD)
+            bd = self.interpolated_BD()
+            print(bd)
             sat = ((2.65 - bd) / 2.65) - 0.02
             sat = self.variable_profile(sat)
             return sat
         else:
             pd = self.particledensity
-            bd = npar(self.BD)
+            bd = self.interpolated_BD()
+            print(bd)
             sat = ((2.65 - bd) / pd) - 0.02
             sat = self.variable_profile(sat)
             return sat
@@ -267,9 +338,9 @@ class OrganizeAPSIMsoil_profile:
         sand = self.sand * 0.01
         om = self.OM * 0.01
         ret1 = -0.251 * sand + 0.195 * clay + 0.011 * om + (0.006) * sand * om - 0.027 * clay * om + 0.452 * (
-                    sand * clay) + 0.299
+                sand * clay) + 0.299
         dul = ret1 + 1.283 * np.float_power(ret1, 2) - 0.374 * ret1 - 0.015
-        dulc = self.soil.variable_profile(dul)
+        dulc = self.variable_profile(dul)
         return dulc
 
     def cal_l15Fromsand_clay_OM(self):  # has potential to cythonize
@@ -277,13 +348,13 @@ class OrganizeAPSIMsoil_profile:
         sand = self.sand * 0.01
         om = self.OM * 0.01
         ret1 = -0.024 * sand + (
-                    0.487 * clay) + 0.006 * om + 0.005 * sand * om + 0.013 * clay * om + 0.068 * sand * clay + 0.031
+                0.487 * clay) + 0.006 * om + 0.005 * sand * om + 0.013 * clay * om + 0.068 * sand * clay + 0.031
         ret2 = ret1 + 0.14 * ret1 - 0.02
         l151 = self.variable_profile(ret2)
         return l151
 
     def calculateSATfromwat_r(self):  # has potential to cythonize
-        if all(elem is None for elem in npar(self.particledensity)) == False:
+        if not all(elem is None for elem in npar(self.particledensity)):
             wat = self.wat_r
             return self.variable_profile(wat)
 
@@ -363,6 +434,37 @@ class OrganizeAPSIMsoil_profile:
     def getBD(self):
         return self.variable_profile(self.BD)
 
+    def get_CSR(self):
+        return np.array(self.CSR)
+
+    @staticmethod
+    def adjust_SAT_BD_DUL(SAT, BD, DUL, target_saturation=0.381, target_bulk_density=1.639):
+        """
+        Adjusts saturation and bulk density values in a NumPy array to meet specific criteria.
+
+        Parameters:
+        SAT: 1-D numpy array
+        BD: 1-D numpy array
+        - target_saturation (float): The maximum acceptable saturation value.
+        - target_bulk_density (float): The maximum acceptable bulk density value.
+
+        Returns:
+        - np.array: Adjusted 2D NumPy array with saturation and bulk density values.
+        """
+        # Iterate through each row in the array
+
+        # Check and adjust saturation
+        if SAT[9] > target_saturation:
+            SAT[9] = target_saturation - 0.01
+
+        # Check and adjust bulk density
+        if BD[9] > target_bulk_density:
+            BD[9] = target_bulk_density
+        for i in range(len(DUL)):
+            if SAT[i] < DUL[i]:
+                SAT[i] = DUL[i]
+        return SAT, BD, DUL
+
     def create_soilprofile(self):
         n = int(self.Nlayers)
         Depth = []
@@ -374,16 +476,20 @@ class OrganizeAPSIMsoil_profile:
         AirDry = self.get_AirDry()
         L15 = self.get_L15()
         DUL = self.get_DUL()
-        if all(elem is None for elem in npar(self.wat_r)) == False:
+        if not all(elem is None for elem in npar(self.wat_r)):
 
             SAT = self.calculateSATfromwat_r() * 0.01
 
             for i in range(len(SAT)):
                 if SAT[i] < DUL[i]:
-                    SAT[i] = DUL[i] + 0.001
+                    SAT[i] = DUL[i] + 0.02
             else:
                 SAT[i] = SAT[i]
             BD = (1 - SAT) * 2.65
+            for i in range(len(SAT)):  # added it
+                if SAT[i] > 0.381 and BD[i] >= 1.639:
+                    SAT[i] = 0.381 - 0.001
+                    # print(SAT[i])
         else:
             SAT = self.cal_satfromBD()
             BD = self.getBD()
@@ -394,8 +500,10 @@ class OrganizeAPSIMsoil_profile:
                 SAT[i] = SAT[i]
             for i in range(len(SAT)):  # added it
                 if SAT[i] > 0.381 and BD[i] >= 1.639:
-                    SAT[i] = 0.381
-
+                    SAT[i] = 0.381 - 0.01
+                    # print(SAT[i])
+        # adjust layer 9 issues associated with SAT and BD
+        SAT, BD, DUL = self.adjust_SAT_BD_DUL(SAT, BD, DUL)
         KS = self.cal_KS()
         PH = self.interpolate_PH()
         ParticleSizeClay = self.interpolate_clay()
@@ -490,12 +598,18 @@ class OrganizeAPSIMsoil_profile:
         physical = self.create_soilprofile()
 
         # create a alist
-        frame = [physical, organic, cropdf, metadata]
+        frame = [physical, organic, cropdf, metadata, self.CSR]
         # All soil data frames
         resultdf = pd.concat(frame, join='outer', axis=1)
         finalsp = {'soil ': resultdf, 'crops': crops, 'metadata': metadata, 'soilwat': soilwat, 'swim': swim,
-                   'soilorganicmatter ': soilorganicmatter}
+                   'soilorganicmatter ': soilorganicmatter, "CSR": self.CSR}
         # return pd.DataFrame(finalsp)
+        frame.insert(3, self.CSR)
         return frame
 
 
+if __name__ == '__main__':
+    lon = -93.097702, 41.8780025
+    dw = DownloadsurgoSoiltables(lon)
+    sop = OrganizeAPSIMsoil_profile(dw, 20)
+    data = sop.cal_missingFromSurgo()

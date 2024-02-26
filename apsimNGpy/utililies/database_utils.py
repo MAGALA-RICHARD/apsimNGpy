@@ -11,6 +11,7 @@ from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from functools import partial
 import pandas as pd
 from pandas import read_sql_query as rsq
+from pandas import errors
 
 import sqlite3
 
@@ -81,11 +82,15 @@ def read_db_table(db, report_name):
             - This function retrieves all records from the specified table. Use with caution if the table is very large.
         """
     # table = kwargs.get("table")
-    conn = sqlite3.connect(db)
-    query = f"SELECT * FROM {report_name}"
-    df = rsq(query, conn)
-    conn.close()
-    return df
+    try:
+        conn = sqlite3.connect(db)
+        query = f"SELECT * FROM {report_name}"
+        df = rsq(query, conn)
+        conn.close()
+        return df
+    except errors.DatabaseError as ed:
+        print(repr(ed))
+        print(f" Seems like the specified table name: {report_name} does not exists in {db} data base")
 
 
 def load_database(path):

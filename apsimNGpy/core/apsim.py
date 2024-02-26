@@ -13,9 +13,9 @@ from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganizeAPSIM
 import apsimNGpy.manager.weathermanager as weather
 import pandas as pd
 
-# prepare for the C# import
-from apsimNGpy.core.pythonet_config import LoadPythonnet
 
+# prepare for the C# import
+from apsimNGpy.core.pythonet_config import LoadPythonnet,APSIM_PATH
 py_config = LoadPythonnet()()
 
 # now we can safely import any c# related libraries
@@ -243,37 +243,34 @@ class ApsimModel(APSIMNG):
         """
             Updates soil parameters and configurations for downloaded soil data in simulation models.
 
-            This method adjusts soil physical and organic parameters based on provided soil tables and applies these 
-            adjustments to specified simulation models. Optionally, it can adjust the Radiation Use Efficiency (RUE) 
+            This method adjusts soil physical and organic parameters based on provided soil tables and applies these
+            adjustments to specified simulation models. Optionally, it can adjust the Radiation Use Efficiency (RUE)
             based on a Carbon to Sulfur ratio (CSR) sampled from the provided soil tables.
 
-            Parameters: - soil_tables (list): A list containing soil data tables. Expected to contain: see the naming 
-            convetion in the for APSIM - [0]: DataFrame with physical soil parameters. - [1]: DataFrame with organic 
-            soil parameters. - [2]: DataFrame with crop-specific soil parameters. - [3]: Series/DataFrame with CSR 
-            values for RUE adjustment. - simulation_names (list of str): Names or identifiers for the simulations to 
-            be updated. - **kwargs: - adjust_rue (bool): Flag to indicate whether RUE should be adjusted based on 
-            CSR. - Base_RUE (float): The base RUE value to be adjusted. - CultivarName (str, optional): The name of 
+            Parameters: - soil_tables (list): A list containing soil data tables. Expected to contain: see the naming
+            convetion in the for APSIM - [0]: DataFrame with physical soil parameters. - [1]: DataFrame with organic
+            soil parameters. - [2]: DataFrame with crop-specific soil parameters. - [3]: Series/DataFrame with CSR
+            values for RUE adjustment. - simulation_names (list of str): Names or identifiers for the simulations to
+            be updated. - **kwargs: - adjust_rue (bool): Flag to indicate whether RUE should be adjusted based on
+            CSR. - Base_RUE (float): The base RUE value to be adjusted. - CultivarName (str, optional): The name of
             the cultivar for which RUE should be adjusted. Defaults to "B_110" if not specified.
 
             Returns:
             - self: Returns an instance of the class for chaining methods.
 
-            This method directly modifies the simulation instances found by `find_simulations` method calls, 
-            updating physical and organic soil properties, as well as crop-specific parameters like lower limit (LL), 
-            drain upper limit (DUL), saturation (SAT), bulk density (BD), hydraulic conductivity at saturation (KS), 
+            This method directly modifies the simulation instances found by `find_simulations` method calls,
+            updating physical and organic soil properties, as well as crop-specific parameters like lower limit (LL),
+            drain upper limit (DUL), saturation (SAT), bulk density (BD), hydraulic conductivity at saturation (KS),
             and more based on the provided soil tables.
+
+    ->> key-word argument
+            adjust_rue: Boolean, adjust the radiation use efficiency
+            adJust_kl:: Bollean, adjust, kl based on productivity index
+            'CultvarName': cultivar name which is in the sowing module for adjusting the rue
+            tillage: specify whether you will be carried to adjust some physical parameters
         """
         adjust_rue = kwargs.get('adjust_rue')
         adjust_kl = kwargs.get("adJust_kl")
-        
-        self.csr = None
-        if adjust_rue or adjust_kl:
-            if isinstance(soil_tables[3], pd.Series):
-                self.csr = int(soil_tables[3].sample(1).iloc[0])/100
-        if adjust_rue:        
-                rue = kwargs.get("Base_RUE") * self.csr,
-                com = '[Leaf].Photosynthesis.RUE.FixedValue',
-                self.edit_cultivar(CultivarName=kwargs.get('CultvarName', "B_110"), commands=com, values=rue)
         self.thickness_replace = self.thickness_values
         physical_calculated = soil_tables[0]
         self.organic_calcualted = soil_tables[1]
@@ -303,13 +300,15 @@ class ApsimModel(APSIMNG):
             organic.Thickness = self.thickness_replace
             organic.SoilCNRatio = self.organic_calcualted.SoilCNRatio
             organic.FBiom = self.organic_calcualted.FBiom
+            if kwargs.get('No_till', False):
+                self.organic_calcualted.loc[:1, 'FBiom'] = self.organic_calcualted.loc[:1,
+                                                           'FBiom'] + 0.2 * self.organic_calcualted.loc[:1, 'FBiom']
+                organic.FBiom = self.organic_calcualted.FBiom[:2]
             organic.FOM = self.organic_calcualted.FOM
             organic.FInert = self.organic_calcualted.FInert
             organic.Carbon = self.organic_calcualted.Carbon
             chemical = simu.FindDescendant[Chemical]()
             chemical.Thickness = self.thickness_values
-            # to do fix the crop management may use FindAllDescendants. it worked
-            # XF = np.full(shape=self.Nlayers, fill_value=1,  dtype=np.float64)
             XF = np.tile(float(1), int(self.Nlayers))
 
         for simu in self.find_simulations(simulation_names):
@@ -318,8 +317,9 @@ class ApsimModel(APSIMNG):
             for cropLL in soil_crop:
                 cropLL.LL = pysoil.AirDry
                 kl = self.organic_calcualted.cropKL
-                cropLL.KL = self.csr * kl if self.csr is not None else kl
-
+                cropLL.KL = kl
+                if kwargs.get('No_till', False):
+                    cropLL.KL =  cropLL.KL + np.array([0.2])* cropLL.KL
                 cropLL.XF = XF
                 cropLL.Thickness = self.thickness_replace
         return self
@@ -359,7 +359,7 @@ class ApsimModel(APSIMNG):
 
     def run_edited_file(self, simulations=None, clean=False, multithread=True):
         """Run simulations in this subclass if we want to clean the database, we need to
-         spawn the path with one process to avoid os access permission eros
+         spawn the path with one process to avoid os access permission errors
 
 
         Parameters
@@ -398,6 +398,10 @@ class ApsimModel(APSIMNG):
         self.results = self._read_simulation()  # still wondering if this should be a static method
         self._DataStore.Close()
         return self.results
+
+    @property
+    def read_data_tables(self):
+        return self._read_simulation().keys()
 
     def spin_up(self, report_name: str = 'Report', start=None, end=None, spin_var="Carbon"):
         """
@@ -450,10 +454,11 @@ class ApsimModel(APSIMNG):
 
             return self
 
-    def replace_met_from_web(self, lonlat, start=1990, end=2021, file_name=None):
+    def replace_met_from_web(self, lonlat, start_year, end_year, file_name=None):
         if not file_name:
             file_name = self.path.strip(".apsimx") + "_w_.met"
-        wf = weather.daymet_bylocation_nocsv(lonlat, start, end, filename=file_name)
+        w_f = weather.daymet_bylocation_nocsv(lonlat, start = start_year, end = end_year, filename=file_name)
+        wf = os.path.abspath(w_f)
         self.replace_met_file(wf, self.extract_simulation_name)
         return self
 
@@ -470,5 +475,13 @@ if __name__ == '__main__':
     al = LoadExampleFiles(Path.cwd())
     model = al.get_maize
     print(model)
-    model = ApsimModel(model, read_from_string=True)
-    model.replace_met_from_web(lonlat)
+    from apsimNGpy import settings
+    model = ApsimModel(model, read_from_string=True, thickness_values=settings.SOIL_THICKNESS)
+    model.replace_met_from_web(lonlat, 2000, 2020)
+    from apsimNGpy.manager import soilmanager as sm
+    st = sm.DownloadsurgoSoiltables('Marshall')
+    sp = sm.OrganizeAPSIMsoil_profile(st, 20)
+    sop =sp.cal_missingFromSurgo()
+    model.replace_downloaded_soils(sop, model.extract_simulation_name,  No_till=True)
+
+

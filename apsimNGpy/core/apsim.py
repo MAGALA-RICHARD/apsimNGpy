@@ -465,10 +465,38 @@ class ApsimModel(APSIMNG):
             self.replace_met_file(wf, self.extract_simulation_name)
             return self
         else:
-            print("No lonlat values; either provide them during the APSIM model instantiation or directly passed to "
-                  "to this method as using key word argument")
+            raise ValueError("No lonlat values; either provide them during the APSIM model instantiation or directly "
+                             "passed to this method as using key word argument")
 
-    def replace_soils_from_web(self, thickness=20, **kwargs):
+    def replace_soils_from_web(self, thickness = 20, **kwargs):
+        """
+        Replaces soil information in APSIM simulations with data downloaded from the web, specifically from SURGO.
+
+    This method attempts to download and organize soil profile information based on provided longitude and latitude
+    coordinates. It then integrates this soil data into specified APSIM simulations. The soil profiles are adjusted
+    based on a specified thickness or the default value.
+
+    Parameters:
+    - thickness (int, optional): The thickness of the soil layers to be used in the soil profile.
+      Default is 20 cm.
+    - **kwargs: Arbitrary keyword arguments. Important ones include:
+      - 'sim_names' (list of str): Names of the simulations where the soil data should be replaced.
+        If not provided, it uses the simulation names extracted from the APSIM model instance.
+      - 'lonlat' (tuple of float): The longitude and latitude coordinates for downloading the SURGO soil data.
+        If not provided, it uses the coordinates set during the APSIM model instantiation.
+      - 'thickness_values' (list of int): Custom thickness values for each soil layer. This allows for
+        detailed control over the soil profile configuration beyond the uniform thickness specified by
+        the 'thickness' parameter.
+
+
+    Returns:
+    - self: The instance of the class with updated soil information in the specified simulations.
+
+    Raises:
+    - Prints a value error message if 'lonlat' values are not provided either at instantiation or as a keyword argument.
+
+
+               """
         print(kwargs)
         sim_names = kwargs.get('sim_names', self.extract_simulation_name)
         if kwargs.get("lonlat", self.lonlat):
@@ -480,8 +508,8 @@ class ApsimModel(APSIMNG):
             self.replace_downloaded_soils(soil_profile, simulation_names=sim_names)
             return self
         else:
-            print("No lonlat values; either provide them during the APSIM model instantiation or directly passed to "
-                  "to this method as using key word argument")
+            raise ValueError("No lonlat values; either provide them during the APSIM model instantiation or directly "
+                             "passed to this method as using key word argument")
 
 
 if __name__ == '__main__':

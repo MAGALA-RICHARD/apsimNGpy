@@ -4,9 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5d471312-8496-4246-98d6-790439318160" name="Changes" comment="simulate from a shape file">
+    <list default="true" id="5d471312-8496-4246-98d6-790439318160" name="Changes" comment="download soils from web">
+      <change beforePath="$PROJECT_DIR$/.idea/apsimNGpy.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/apsimNGpy.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/apsim.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/apsim.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -23,6 +25,9 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 3
+}</component>
   <component name="ProjectId" id="2WiN5b3xFyRgtJ6Dz641K3bmQFe" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -31,6 +36,8 @@
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
     &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;Python.process.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
     &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
@@ -40,6 +47,7 @@
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
     &quot;settings.editor.selected.configurable&quot;: &quot;inlay.hints&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
@@ -56,6 +64,7 @@
   <component name="RunManager" selected="Python.process">
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
       <module name="apsimNGpy" />
+      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
@@ -78,8 +87,12 @@
     </configuration>
     <configuration name="process" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="apsimNGpy" />
+      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/parallel" />
       <option name="IS_MODULE_SDK" value="true" />
@@ -97,6 +110,7 @@
     </configuration>
     <configuration name="pythonet_config" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="apsimNGpy" />
+      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
@@ -119,6 +133,7 @@
     </configuration>
     <configuration name="watershed" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="apsimNGpy" />
+      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
@@ -146,6 +161,13 @@
         <item itemvalue="Python.watershed" />
       </list>
     </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-python-sdk-5a2391486177-2887949eec09-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-233.13763.11" />
+      </set>
+    </attachedChunks>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
@@ -189,22 +211,9 @@
       <workItem from="1707348375933" duration="8175000" />
       <workItem from="1707357689155" duration="38000" />
       <workItem from="1707359248086" duration="18000" />
-    </task>
-    <task id="LOCAL-00257" summary="new">
-      <option name="closed" value="true" />
-      <created>1707151262410</created>
-      <option name="number" value="00257" />
-      <option name="presentableId" value="LOCAL-00257" />
-      <option name="project" value="LOCAL" />
-      <updated>1707151262410</updated>
-    </task>
-    <task id="LOCAL-00258" summary="new">
-      <option name="closed" value="true" />
-      <created>1707157015281</created>
-      <option name="number" value="00258" />
-      <option name="presentableId" value="LOCAL-00258" />
-      <option name="project" value="LOCAL" />
-      <updated>1707157015281</updated>
+      <workItem from="1708985272516" duration="2022000" />
+      <workItem from="1708995191538" duration="1290000" />
+      <workItem from="1709007916458" duration="617000" />
     </task>
     <task id="LOCAL-00259" summary="new">
       <option name="closed" value="true" />
@@ -582,7 +591,23 @@
       <option name="project" value="LOCAL" />
       <updated>1707356910427</updated>
     </task>
-    <option name="localTasksCounter" value="306" />
+    <task id="LOCAL-00306" summary="download soils from web">
+      <option name="closed" value="true" />
+      <created>1708986238919</created>
+      <option name="number" value="00306" />
+      <option name="presentableId" value="LOCAL-00306" />
+      <option name="project" value="LOCAL" />
+      <updated>1708986238920</updated>
+    </task>
+    <task id="LOCAL-00307" summary="download soils from web">
+      <option name="closed" value="true" />
+      <created>1708986702343</created>
+      <option name="number" value="00307" />
+      <option name="presentableId" value="LOCAL-00307" />
+      <option name="project" value="LOCAL" />
+      <updated>1708986702343</updated>
+    </task>
+    <option name="localTasksCounter" value="308" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -600,7 +625,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="change named report" />
     <MESSAGE value="added spin_method for carbon and dul" />
     <MESSAGE value="changed the pythonnet behaviors" />
     <MESSAGE value="documented" />
@@ -625,7 +649,8 @@
     <MESSAGE value="new" />
     <MESSAGE value="spatial" />
     <MESSAGE value="simulate from a shape file" />
-    <option name="LAST_COMMIT_MESSAGE" value="simulate from a shape file" />
+    <MESSAGE value="download soils from web" />
+    <option name="LAST_COMMIT_MESSAGE" value="download soils from web" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

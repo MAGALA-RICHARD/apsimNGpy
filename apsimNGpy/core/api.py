@@ -232,12 +232,12 @@ class APSIMNG():
         with open(final_out_path, "w", encoding='utf-8') as f:
             f.write(json_string)
 
-    def run(self, report_name=None, simulations=None, clean=False, multithread=True):
+    def run(self, report_name="Report", simulations=None, clean=False, multithread=True):
         """Run apsim model in the simulations
 
         Parameters
         ----------
-        report_name: str. defaults to None and if not specified, the simulator will
+        report_name: str. defaults to APSIM defaults Report Name and if not specified or Report Name not in the simulation tables, the simulator will
             execute the model and save the outcomes in a database file, accessible through alternative retrieval methods.
 
         simulations (__str_), optional
@@ -246,12 +246,8 @@ class APSIMNG():
         clean (_-boolean_), optional
             If `True` remove existing database for the file before running, deafults to False`
 
-        multithread, optional
+        multithread
             If `True` APSIM uses multiple threads, by default `True`
-        kwargs:
-             report_name: A string parameter or list of strings used to designate the table name(s) If left unspecified, the simulator will
-            execute the model and save the outcomes in a database file, accessible through alternative retrieval methods.
-
         """
         if multithread:
             runtype = Models.Core.Run.Runner.RunTypeEnum.MultiThreaded
@@ -405,9 +401,27 @@ class APSIMNG():
         data = read_db_table(datastore, report_name)
         return data
 
-    def replicate_file(self, k):
-        file_name = self.path.strip('.apsimx')
-        return [shutil.copy(self.path, f"{self.path.strip('.apsimx')}_{i}_.apsimx") for i in range(k)]
+    def replicate_file(self, k, path=None, tag = "replica"):
+        """
+        Replicates a file 'k' times.
+
+        If a path is specified, the copies will be placed in that directory with incremented filenames.
+        If no path is specified, copies are created in the same directory as the original file, also with incremented filenames.
+
+        Parameters:
+        - self: The core.api.APSIMNG object instance containing 'path' attribute pointing to the file to be replicated.
+        - k (int): The number of copies to create.
+        - path (str, optional): The directory where the replicated files will be saved. Defaults to None, meaning the same directory as the source file.
+
+        Returns:
+        - A list of paths to the newly created files.
+        """
+        if path is None:
+            file_name = self.path.rsplit('.apsimx', 1)[0]
+            return [shutil.copy(self.path, f"{file_name}_{tag}_{i}_.apsimx") for i in range(k)]
+        else:
+            b_name = os.path.basename(self.path).rsplit('.apsimx', 1)[0]
+            return [shutil.copy(self.path, os.path.join(path, f"{b_name}_{tag}_{i}.apsimx")) for i in range(k)]
 
     def _read_simulation(self, report_name=None):
         """ returns all data frame the available report tables

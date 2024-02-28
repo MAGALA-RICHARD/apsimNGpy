@@ -45,7 +45,6 @@ def timing_decorator(func):
 
     return wrapper
 
-
 class ApsimModel(APSIMNG):
     def __init__(self, model: Union[str, Simulations], copy: bool = False, out_path: str = None, read_from_string=True,
                  lonlat=None,

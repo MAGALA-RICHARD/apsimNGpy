@@ -47,7 +47,7 @@ def DownloadsurgoSoiltables(lonlat, select_componentname=None, summarytable=Fals
        <soap:Body>
           <sdm:RunQuery>
              <sdm:Query>SELECT co.cokey as cokey, ch.chkey as chkey, comppct_r as prcent, compkind as compkind_series, wsatiated_r as wat_r,partdensity as pd, dbthirdbar_h as bb, musym as musymbol, compname as componentname, muname as muname, slope_r, slope_h as slope, hzname, hzdept_r as topdepth, hzdepb_r as bottomdepth, awc_r as PAW, ksat_l as KSAT,
-                        claytotal_r as clay, silttotal_r as silt, sandtotal_r as sand, om_r as OM, iacornsr as CSR, dbthirdbar_r as BD, wfifteenbar_r as L15, wthirdbar_h as DUL, ph1to1h2o_r as pH, ksat_r as sat_hidric_cond,
+                        claytotal_r as clay, silttotal_r as silt, sandtotal_r as sand, texcl, drainagecl, om_r as OM, iacornsr as CSR, dbthirdbar_r as BD, wfifteenbar_r as L15, wthirdbar_h as DUL, ph1to1h2o_r as pH, ksat_r as sat_hidric_cond,
                         (dbthirdbar_r-wthirdbar_r)/100 as bd FROM sacatalog sc
                         FULL OUTER JOIN legend lg  ON sc.areasymbol=lg.areasymbol
                         FULL OUTER JOIN mapunit mu ON lg.lkey=mu.lkey

@@ -14,7 +14,10 @@ import progressbar
 import numpy as np
 import string
 import io
-import threading
+from scipy import interpolate
+import copy
+import requests
+from datetime import datetime
 
 
 def generate_unique_name(base_name, length=6):
@@ -255,7 +258,7 @@ def daymet_bylocation(lonlat, start, end, cleanup=True, filename=None):
             leapfactor = 4
             for i in ab:
                 if (all(i.year % 400 == 0)) and (all(i.year % 100 == 0)) or (all(i.year % 4 == 0)) and (
-                all(i.year % 100 != 0)):
+                        all(i.year % 100 != 0)):
                     x = i[['year', 'radn', 'maxt', 'mint', 'rain', 'vp', 'swe', ]].mean()
                     year = round(x.iloc[0], 0)
                     day = round(366, 0)
@@ -469,3 +472,172 @@ def getnasa(lonlat, start, end):
     dt = json.loads(data.content)
     df = pd.DataFrame(dt["properties"]['parameter'])
     return df
+
+
+def calculate_tav_amp(df):
+    mean_maxt = df['maxt'].mean(skipna=True, numeric_only=None)
+    mean_mint = df['mint'].mean(skipna=True, numeric_only=None)
+    AMP = round(mean_maxt - mean_mint, 2)
+    tav = round(np.mean([mean_maxt, mean_mint]), 3)
+    return tav, AMP
+
+
+def create_met_header(fname, lonlat, tav, AMP, site=None):
+    if not site:
+        site = 'Not stated'
+    if os.path.isfile(fname):
+        os.remove(fname)
+    headers = ['year', 'day', 'radn', 'maxt', 'mint', 'rain']
+    header_string = " ".join(headers) + "\n"
+    # close and append new lines
+    with open(fname, "a") as f2app:
+        f2app.writelines(
+            [f'!site: {site}\n', f'latitude = {lonlat[1]} \n', f'longitude = {lonlat[0]}\n', f'tav ={tav}\n',
+             f'amp ={AMP}\n'])
+        f2app.writelines([header_string])
+        f2app.writelines(['() () (MJ/m2/day) (oC) (oC) (mm)\n'])
+
+
+import pandas as pd
+import numpy as np
+from scipy import interpolate
+import copy
+
+
+def impute_data(met, method="mean", verbose=False, **kwargs):
+    """
+    Imputes missing data in a pandas DataFrame using specified interpolation or mean value.
+
+    Parameters:
+    - met (pd.DataFrame): DataFrame with missing values.
+    - method (str, optional): Method for imputing missing values ("approx", "spline", "mean"). Default is "mean".
+    - verbose (bool, optional): If True, prints detailed information about the imputation. Default is False.
+    - **kwargs (dict, optional): Additional keyword arguments including 'copy' (bool) to deep copy the DataFrame.
+
+    Returns:
+    - pd.DataFrame: DataFrame with imputed missing values.
+    """
+    # Handle deep copy option
+    if kwargs.get('copy', False):
+        met = copy.deepcopy(met)
+
+    if not isinstance(met, pd.DataFrame):
+        raise ValueError("The 'met' parameter must be a pandas DataFrame.")
+
+    valid_methods = ["approx", "spline", "mean"]
+    if method not in valid_methods:
+        raise ValueError(f"Invalid method '{method}'. Valid options are {valid_methods}.")
+
+    def vprint(*args):
+        """Conditional print based on verbose flag."""
+        if verbose:
+            print(*args)
+
+    # Impute values based on the specified method
+    for col_name in met.columns:
+        if met[col_name].isna().any():
+            vprint(f"Imputing missing values in column '{col_name}' using '{method}' method.")
+            if method in ["approx", "spline"]:
+                # Prepare for interpolation
+                valid = met[~met[col_name].isna()]
+                indices = np.arange(len(met))
+                if method == "approx":
+                    interp_func = interpolate.interp1d(valid.index, valid[col_name], bounds_error=False,
+                                                       fill_value="extrapolate")
+                else:  # spline
+                    interp_func = interpolate.UnivariateSpline(valid.index, valid[col_name], s=0, ext=3)
+                imputed_values = interp_func(indices)
+                met[col_name] = imputed_values
+            else:  # mean
+                mean_value = met[col_name].mean(skipna=True)
+                met[col_name].fillna(mean_value, inplace=True)
+
+    return met
+
+
+def separate_date(date_str):
+    # Ensure the date string is of the correct format
+
+    # Extracting year, month, and day
+    year = date_str[:4]
+    month = date_str[4:6]
+    day = date_str[6:]
+
+    return year, month, day
+
+
+def getnasa_df(lonlat, start, end):
+    lon = lonlat[0]
+    lat = lonlat[1]
+    param = ["T2M_MAX", "T2M_MIN", "ALLSKY_SFC_SW_DWN", "PRECTOTCORR", "RH2M", "WS2M"]
+    # dictionary
+    """
+    "PRECTOTCORR": Corrected Total Precipitation
+    "WS2M" : wind speed at 2 meters
+    RH2M: Relative Humidity at 2 Meters
+    ALLSKY_SFC_SW_DWN: All Sky Surface Shortwave Downward Irradiance
+    """
+    pars = ",".join(param)
+    rm = f'https://power.larc.nasa.gov/api/temporal/daily/point?start={start}0101&end={end}1231&latitude={lat}&longitude={lon}&community=ag&parameters={pars}&format=json&user=richard&header=true&time-standard=lst'
+    data = requests.get(rm)
+    dt = json.loads(data.content)
+    fd = {}
+    headers = ['year', 'day', 'radn', 'maxt', 'mint', 'rain', 'vp', 'swe']
+    df = pd.DataFrame(dt["properties"]['parameter'])
+    fd['year'] = [date_str[:4] for date_str in df.index]
+    date_object = [datetime.strptime(date_str, '%Y%m%d') for date_str in df.index]
+    fd['day'] = [date_obj.timetuple().tm_yday for date_obj in date_object]
+    fd['radn'] = df.ALLSKY_SFC_SW_DWN
+    fd['maxt'] = df.T2M_MAX
+    fd['mint'] = df.T2M_MIN
+    fd['rain'] = df.PRECTOTCORR
+    df = pd.DataFrame(fd)
+    return df
+
+
+def met_nasapower(lonlat, start=1990, end=2000, fname='met_nasapower.met'):
+    df = getnasa_df(lonlat, start, end)
+    tav, AMP = calculate_tav_amp(df)
+    create_met_header(fname, lonlat, tav, AMP, site=None)
+    data_rows = []
+    headers = ['year', 'day', 'radn', 'maxt', 'mint', 'rain']
+    for index, row in df.iterrows():
+        current_row = []
+        for header in headers:
+            current_row.append(str(row[header]))
+        current_str = " ".join(current_row) + '\n'
+        data_rows.append(current_str)
+    with open(fname, "a") as f2app:
+        f2app.writelines(data_rows)
+    return fname
+
+
+def _is_within_USA_mainland(lonlat):
+    lon_min, lon_max = -125.0, -66.9  # Approximate longitudes for the west and east coasts
+    lat_min, lat_max = 24.4, 49.4  # Approximate latitudes for the southern and northern borders
+
+    # Check if given coordinates are within the bounding box
+    if lon_min <= lonlat[0] <= lon_max and lat_min <= lonlat[1] <= lat_max:
+        return True
+    else:
+        return False
+
+
+def get_weather(lonlat, start=1990, end=2000, source='daymet', filename='__met_.met'):
+    if source == 'daymet' and _is_within_USA_mainland(lonlat):
+        file_name = "daymet_" + filename
+        return daymet_bylocation_nocsv(lonlat, start=start, end=end, filename=file_name)
+    elif source == 'nasapower':
+        file_name = "nasapower_" + filename
+        return met_nasapower(lonlat, start, end, fname=file_name)
+    else:
+        raise ValueError(f"Invalid source: {source} according to supplied {lonlat} lon_lat values try nasapower instead")
+
+
+if __name__ == '__main__':
+    # imputed_df = impute_data(df, method="approx", verbose=True, copy=True)
+    kampala = 35.582520, 0.347596
+    df = getnasa_df(kampala, 2000, 2020)
+    imputed_df = impute_data(df, method="mean", verbose=True, copy=True)
+    hf = met_nasapower(kampala, end=2020, fname='kampala_new.met')
+    wf = get_weather(kampala, start=1990, end=2020, source='daymet', filename='kampala_new.met')

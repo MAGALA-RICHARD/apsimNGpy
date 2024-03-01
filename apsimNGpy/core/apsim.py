@@ -13,9 +13,9 @@ from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganizeAPSIM
 import apsimNGpy.manager.weathermanager as weather
 import pandas as pd
 
-
 # prepare for the C# import
-from apsimNGpy.core.pythonet_config import LoadPythonnet,APSIM_PATH
+from apsimNGpy.core.pythonet_config import LoadPythonnet, APSIM_PATH
+
 py_config = LoadPythonnet()()
 
 # now we can safely import any c# related libraries
@@ -320,7 +320,7 @@ class ApsimModel(APSIMNG):
                 kl = self.organic_calcualted.cropKL
                 cropLL.KL = kl
                 if kwargs.get('No_till', False):
-                    cropLL.KL =  cropLL.KL + np.array([0.2])* cropLL.KL
+                    cropLL.KL = cropLL.KL + np.array([0.2]) * cropLL.KL
                 cropLL.XF = XF
                 cropLL.Thickness = self.thickness_replace
         for simu in self.find_simulations(simulation_names):
@@ -329,7 +329,7 @@ class ApsimModel(APSIMNG):
                 swim = pysoil.FindAllDescendants[LayerStructure]()
                 swim.LayerStructure = self.thickness_values
             except Exception as e:
-               pass
+                pass
 
         return self
 
@@ -466,9 +466,19 @@ class ApsimModel(APSIMNG):
     def replace_met_from_web(self, lonlat, start_year, end_year, file_name=None):
         if not file_name:
             file_name = self.path.strip(".apsimx") + "_w_.met"
-        w_f = weather.daymet_bylocation_nocsv(lonlat, start = start_year, end = end_year, filename=file_name)
+        w_f = weather.daymet_bylocation_nocsv(lonlat, start=start_year, end=end_year, filename=file_name)
         wf = os.path.abspath(w_f)
         self.replace_met_file(wf, self.extract_simulation_name)
+        return self
+
+    def replace_soil_profile_from_web(self, **kwargs):
+        lon_lat = kwargs.get('lonlat', self.lonlat)
+        thickness = kwargs.get('thickness', 20)
+        sim_name = kwargs.get('sim_name', self.extract_simulation_name)
+        assert lon_lat, 'Please supply the lonlat'
+        sp = DownloadsurgoSoiltables(lon_lat)
+        sop = OrganizeAPSIMsoil_profile(sp, thickness, thickness_values=self.thickness_values).cal_missingFromSurgo()
+        self.replace_downloaded_soils(sop, simulation_names=sim_name)
         return self
 
 
@@ -485,12 +495,12 @@ if __name__ == '__main__':
     model = al.get_maize
     print(model)
     from apsimNGpy import settings
+
     model = ApsimModel(model, read_from_string=True, thickness_values=settings.SOIL_THICKNESS)
     model.replace_met_from_web(lonlat, 2000, 2020)
     from apsimNGpy.manager import soilmanager as sm
+
     st = sm.DownloadsurgoSoiltables('Marshall')
     sp = sm.OrganizeAPSIMsoil_profile(st, 20)
-    sop =sp.cal_missingFromSurgo()
-    model.replace_downloaded_soils(sop, model.extract_simulation_name,  No_till=True)
-
-
+    sop = sp.cal_missingFromSurgo()
+    model.replace_downloaded_soils(sop, model.extract_simulation_name, No_till=True)

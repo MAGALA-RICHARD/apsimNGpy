@@ -23,7 +23,7 @@ from System.Collections.Generic import *
 from Models.Core import Simulations
 from System import *
 from Models.Soils import Solute, Water, Chemical
-from Models.Soils import Soil, Physical, SoilCrop, Organic
+from Models.Soils import Soil, Physical, SoilCrop, Organic, LayerStructure
 import Models
 
 from apsimNGpy.core.api import APSIMNG
@@ -277,6 +277,7 @@ class ApsimModel(APSIMNG):
         self.cropdf = soil_tables[2]
         for simu in self.find_simulations(simulation_names):
             pysoil = simu.FindDescendant[Physical]()  # meaning physical soil node
+
             soil_crop = pysoil.FindChild[SoilCrop]()
             water = simu.FindDescendant[Water]()  # for the crop water parameters
             soil_crop.LL = physical_calculated.AirDry
@@ -322,6 +323,14 @@ class ApsimModel(APSIMNG):
                     cropLL.KL =  cropLL.KL + np.array([0.2])* cropLL.KL
                 cropLL.XF = XF
                 cropLL.Thickness = self.thickness_replace
+        for simu in self.find_simulations(simulation_names):
+            zone = simu.FindChild[Models.Core.Zone]()
+            try:
+                swim = pysoil.FindAllDescendants[LayerStructure]()
+                swim.LayerStructure = self.thickness_values
+            except Exception as e:
+               pass
+
         return self
 
     # print(self.results)

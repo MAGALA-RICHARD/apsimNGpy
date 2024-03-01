@@ -167,7 +167,7 @@ class OrganizeAPSIMsoil_profile:
         surgodf = sdf1.sort_values('topdepth', ascending=True)
         csr = surgodf.get("CSR").dropna()
         if isinstance(csr, pd.Series):
-           self.CSR = csr.astype("float")
+            self.CSR = csr.astype("float")
         self.clay = npar(surgodf.clay).astype(np.float16)
         self.sand = npar(surgodf.sand).astype(np.float16)
         self.silt = npar(surgodf.silt).astype(np.float16)
@@ -272,7 +272,7 @@ class OrganizeAPSIMsoil_profile:
             return sat
         else:
             pd = self.particledensity
-            bd =   self.interpolated_BD()
+            bd = self.interpolated_BD()
             print(bd)
             sat = ((2.65 - bd) / pd) - 0.02
             sat = self.variable_profile(sat)
@@ -383,16 +383,17 @@ class OrganizeAPSIMsoil_profile:
     def get_CSR(self):
         return np.array(self.CSR)
 
-
     @staticmethod
-    def adjust_SAT_BD_DUL(SAT, BD, DUL, target_saturation=0.381, target_bulk_density=1.639):
+    def adjust_SAT_BD_DUL(SAT, BD, DUL, target_saturation_a =0.381, target_saturation_b= 0.404,
+                          target_bulk_density_a=1.639, target_bulk_density_b=1.578):
         """
         Adjusts saturation and bulk density values in a NumPy array to meet specific criteria.
 
         Parameters:
         SAT: 1-D numpy array
         BD: 1-D numpy array
-        - target_saturation (float): The maximum acceptable saturation value.
+        - target_saturation_a (float): The maximum acceptable saturation value for Soil water Module.
+        - target_saturation_b (float): The maximum acceptable saturation value for SWIM
         - target_bulk_density (float): The maximum acceptable bulk density value.
 
         Returns:
@@ -401,12 +402,15 @@ class OrganizeAPSIMsoil_profile:
         # Iterate through each row in the array
 
         # Check and adjust saturation
-        if SAT[9] > target_saturation:
-            SAT[9] = target_saturation - 0.01
-
+        if SAT[9] > target_saturation_a:
+            SAT[9] = target_saturation_a - 0.01
+        if SAT[6] > target_saturation_b:
+            SAT[6] = target_saturation_b - 0.01
         # Check and adjust bulk density
-        if BD[9] > target_bulk_density:
-            BD[9] = target_bulk_density
+        if BD[9] > target_bulk_density_a:
+            BD[9] = target_bulk_density_a
+        if BD[6] > target_bulk_density_b:
+            BD[6] = target_bulk_density_b
         for i in range(len(DUL)):
             if SAT[i] < DUL[i]:
                 SAT[i] = DUL[i]
@@ -549,7 +553,7 @@ class OrganizeAPSIMsoil_profile:
         # All soil data frames
         resultdf = pd.concat(frame, join='outer', axis=1)
         finalsp = {'soil ': resultdf, 'crops': crops, 'metadata': metadata, 'soilwat': soilwat, 'swim': swim,
-                   'soilorganicmatter ': soilorganicmatter, "CSR":self.CSR}
+                   'soilorganicmatter ': soilorganicmatter, "CSR": self.CSR}
         # return pd.DataFrame(finalsp)
         frame.insert(3, self.CSR)
         return frame
@@ -559,4 +563,4 @@ if __name__ == '__main__':
     lon = -93.097702, 41.8780025
     dw = DownloadsurgoSoiltables(lon)
     sop = OrganizeAPSIMsoil_profile(dw, 20)
-    data  = sop.cal_missingFromSurgo()
+    data = sop.cal_missingFromSurgo()

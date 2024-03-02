@@ -181,6 +181,7 @@ class OrganizeAPSIMsoil_profile:
         self.PAW = npar(surgodf.PAW).astype(np.float16)
         self.saturatedhudraulic_conductivity = npar(surgodf.sat_hidric_cond).astype(np.float16)
         self.KSAT = npar(surgodf.KSAT).astype(np.float16)
+        self.K_SAT_r = npar(surgodf.sat_hidric_cond).astype(np.float16)
         self.particledensity = npar(surgodf.pd).astype(np.float16)
         self.muname = surgodf.muname
         self.musymbol = surgodf.musymbol
@@ -266,15 +267,16 @@ class OrganizeAPSIMsoil_profile:
         if any(elem is None for elem in self.particledensity):
             pd = 2.65
             bd = self.interpolated_BD()
-            print(bd)
+
             sat = ((2.65 - bd) / 2.65) - 0.02
             sat = self.variable_profile(sat)
             return sat
         else:
             pd = self.particledensity
             bd = self.interpolated_BD()
-            print(bd)
+
             sat = ((2.65 - bd) / pd) - 0.02
+
             sat = self.variable_profile(sat)
             return sat
             # Calculate DUL from sand OM and clay
@@ -305,10 +307,7 @@ class OrganizeAPSIMsoil_profile:
             return self.variable_profile(wat)
 
     def cal_KS(self):  # has potential to cythonize
-        ks = self.saturatedhudraulic_conductivity * npar([1e-06]) * (60 * 60 * 24) * 1000
-        n = int(self.Nlayers)
-        KS = np.full(shape=n, fill_value=ks[1], dtype=np.float64)
-        return KS
+        return  self.saturatedhudraulic_conductivity * npar([1e-06]) * (60 * 60 * 24) * 1000
 
     def cal_Carbon(self):  # has potential to cythonize
         ## Brady and Weil (2016)
@@ -564,3 +563,11 @@ if __name__ == '__main__':
     dw = DownloadsurgoSoiltables(lon)
     sop = OrganizeAPSIMsoil_profile(dw, 20)
     data = sop.cal_missingFromSurgo()
+    from apsimNGpy.core.apsim import ApsimModel
+    from apsimNGpy.core.base_data import LoadExampleFiles
+    from pathlib import Path
+    import settings
+    ap_sim = LoadExampleFiles(Path.home()).get_maize
+
+    m = ApsimModel(ap_sim, thickness_values=settings.SOIL_THICKNESS)
+    m.replace_downloaded_soils(data, m.extract_simulation_name)

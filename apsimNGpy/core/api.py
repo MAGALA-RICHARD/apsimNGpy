@@ -63,10 +63,10 @@ class APSIMNG():
         model
             Path to .apsimx file
         copy, optional
-            If `True` a copy of original simulation will be created on init, by default True.
+            If `True` a copy of the original simulation will be created on init, by default True.
         out_path, optional
             Path of modified simulation, if `None` will be set automatically.
-        read_from_string (boolean) if True file will be uploaded to memory through json module most preffered, otherwise we can read from file
+        read_from_string (boolean) if True file is uploaded to memory through json module most preffered, otherwise we can read from file
         """
         if isinstance(model, str):
             assert os.path.exists(model), "The file does not exists in the specified directory"
@@ -98,7 +98,7 @@ class APSIMNG():
             else:
                 self.path = apsimx_file
 
-            if read_from_string == True:  # this is the fastest
+            if read_from_string:  
                 self.load_apsimx_from_string(self.path)
             else:
                 self._load_apsimx(self.path)
@@ -1480,5 +1480,6 @@ if __name__ == '__main__':
         model.run()
     pm = model.check_som()
     pt = model.update_mgt(pl)
+    model.save_edited_file(r'D:/try.apsimx')
 
     path = r'C:\Users\rmagala\OneDrive\ApsimX'

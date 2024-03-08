@@ -4,12 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5d471312-8496-4246-98d6-790439318160" name="Changes" comment="Added layersture for swim node">
+    <list default="true" id="5d471312-8496-4246-98d6-790439318160" name="Changes" comment="adjust swim DUL and SAT values">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/apsim.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/apsim.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/manager/soilmanager.py" beforeDir="false" afterPath="$PROJECT_DIR$/manager/soilmanager.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/manager/weathermanager.py" beforeDir="false" afterPath="$PROJECT_DIR$/manager/weathermanager.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/../setup.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -40,6 +36,7 @@
     "Python.apsim.executor": "Run",
     "Python.met_functions.executor": "Run",
     "Python.process.executor": "Run",
+    "Python.soilmanager.executor": "Run",
     "Python.utils.executor": "Run",
     "Python.weathermanager.executor": "Run",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
@@ -47,7 +44,7 @@
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "WebServerToolWindowFactoryState": "false",
     "git-widget-placeholder": "main",
-    "last_opened_file_path": "D:/ACPd/Bear creek simulations",
+    "last_opened_file_path": "D:/package/apsimNGpy/apsimNGpy/manager",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -59,11 +56,11 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\package\apsimNGpy\apsimNGpy\manager" />
+      <recent name="D:\package\apsimNGpy\apsimNGpy\core" />
       <recent name="D:\ACPd\Bear creek simulations" />
       <recent name="C:\Users\rmagala\Box\apsimNGpy\apsimNGpy\core" />
       <recent name="C:\Users\rmagala\Box\apsimNGpy\apsimNGpy\simulations" />
-      <recent name="C:\Users\rmagala\Box\apsimNGpy\apsimNGpy\utililies" />
-      <recent name="C:\Users\rmagala\Box\apsimNGpy\apsimNGpy\model" />
     </key>
   </component>
   <component name="RunManager">
@@ -216,39 +213,7 @@
       <workItem from="1708985272516" duration="2022000" />
       <workItem from="1708995191538" duration="1290000" />
       <workItem from="1709007916458" duration="617000" />
-      <workItem from="1709264377284" duration="7469000" />
-    </task>
-    <task id="LOCAL-00260" summary="new">
-      <option name="closed" value="true" />
-      <created>1707157158326</created>
-      <option name="number" value="00260" />
-      <option name="presentableId" value="LOCAL-00260" />
-      <option name="project" value="LOCAL" />
-      <updated>1707157158326</updated>
-    </task>
-    <task id="LOCAL-00261" summary="new">
-      <option name="closed" value="true" />
-      <created>1707158773948</created>
-      <option name="number" value="00261" />
-      <option name="presentableId" value="LOCAL-00261" />
-      <option name="project" value="LOCAL" />
-      <updated>1707158773948</updated>
-    </task>
-    <task id="LOCAL-00262" summary="new">
-      <option name="closed" value="true" />
-      <created>1707159450806</created>
-      <option name="number" value="00262" />
-      <option name="presentableId" value="LOCAL-00262" />
-      <option name="project" value="LOCAL" />
-      <updated>1707159450806</updated>
-    </task>
-    <task id="LOCAL-00263" summary="new">
-      <option name="closed" value="true" />
-      <created>1707159540979</created>
-      <option name="number" value="00263" />
-      <option name="presentableId" value="LOCAL-00263" />
-      <option name="project" value="LOCAL" />
-      <updated>1707159540980</updated>
+      <workItem from="1709264377284" duration="15136000" />
     </task>
     <task id="LOCAL-00264" summary="new">
       <option name="closed" value="true" />
@@ -610,7 +575,39 @@
       <option name="project" value="LOCAL" />
       <updated>1709269492859</updated>
     </task>
-    <option name="localTasksCounter" value="309" />
+    <task id="LOCAL-00309" summary="Added layersture for swim node">
+      <option name="closed" value="true" />
+      <created>1709309668756</created>
+      <option name="number" value="00309" />
+      <option name="presentableId" value="LOCAL-00309" />
+      <option name="project" value="LOCAL" />
+      <updated>1709309668756</updated>
+    </task>
+    <task id="LOCAL-00310" summary="added met functions for downloading nasa power met">
+      <option name="closed" value="true" />
+      <created>1709309709610</created>
+      <option name="number" value="00310" />
+      <option name="presentableId" value="LOCAL-00310" />
+      <option name="project" value="LOCAL" />
+      <updated>1709309709611</updated>
+    </task>
+    <task id="LOCAL-00311" summary="adjust swim DUL and SAT values">
+      <option name="closed" value="true" />
+      <created>1709311477376</created>
+      <option name="number" value="00311" />
+      <option name="presentableId" value="LOCAL-00311" />
+      <option name="project" value="LOCAL" />
+      <updated>1709311477376</updated>
+    </task>
+    <task id="LOCAL-00312" summary="adjust swim DUL and SAT values">
+      <option name="closed" value="true" />
+      <created>1709419460985</created>
+      <option name="number" value="00312" />
+      <option name="presentableId" value="LOCAL-00312" />
+      <option name="project" value="LOCAL" />
+      <updated>1709419460985</updated>
+    </task>
+    <option name="localTasksCounter" value="313" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -628,8 +625,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="changed the pythonnet behaviors" />
-    <MESSAGE value="documented" />
     <MESSAGE value="store default files to current working directory is path is not specified" />
     <MESSAGE value="core will replace models andother folders&#10;soil model and apsimpy to duplicated" />
     <MESSAGE value="SoilModel class is confusing changed to ApsimModel" />
@@ -653,7 +648,9 @@
     <MESSAGE value="simulate from a shape file" />
     <MESSAGE value="download soils from web" />
     <MESSAGE value="Added layersture for swim node" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added layersture for swim node" />
+    <MESSAGE value="added met functions for downloading nasa power met" />
+    <MESSAGE value="adjust swim DUL and SAT values" />
+    <option name="LAST_COMMIT_MESSAGE" value="adjust swim DUL and SAT values" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

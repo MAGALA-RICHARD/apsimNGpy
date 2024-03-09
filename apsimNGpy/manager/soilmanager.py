@@ -504,7 +504,7 @@ class OrganizeAPSIMsoil_profile:
         cropLL = self.get_AirDry()
         # Original thought
         # ad * soilvar_perdep_cor(nlayers, a = curveparam_a, b = curveparam_b)
-        cropKL = 0.06 * soilvar_perdep_cor(nlayers, a=curveparam_a, b=curveparam_b)
+        cropKL = 0.08 * soilvar_perdep_cor(nlayers, a=curveparam_a, b=curveparam_b)
         cropXF = 1 * soilvar_perdep_cor(nlayers, a=curveparam_a, b=0)
         # create a data frame for these three variables
         dfs = pd.DataFrame({'kl': cropKL, 'll': cropLL, 'xf': cropXF})

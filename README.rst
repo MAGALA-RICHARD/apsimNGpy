@@ -218,6 +218,80 @@ is a step-by-step guide on how to use the validation.evaluator module from apsim
     # Then select your choice from the list
 
 
+.. _How to Contribute to apsimNGpy:
+
+How to Contribute to apsimNGpy
+==============================
+
+We welcome contributions from the community, whether they are bug fixes, enhancements, documentation updates, or new features. Here's how you can contribute to ``apsimNGpy``:
+
+Reporting Issues
+----------------
+
+If you find a bug or have a suggestion for improving ``apsimNGpy``, please first check the `Issue Tracker <https://github.com/MAGALA-RICHARD/apsimNGpy.git/issues>`_ to see if it has already been reported. If it hasn't, feel free to submit a new issue. Please provide as much detail as possible, including steps to reproduce the issue, the expected outcome, and the actual outcome.
+
+Contributing Code
+-----------------
+
+We accept code contributions via Pull Requests (PRs). Here are the steps to contribute:
+
+Fork the Repository
+  Start by forking the ``apsimNGpy`` repository on GitHub. This creates a copy of the repo under your GitHub account.
+
+Clone Your Fork
+  Clone your fork to your local machine:
+
+  .. code-block:: bash
+
+    git clone https://github.com/MAGALA-RICHARD/apsimNGpy.git
+    cd apsimNGpy
+
+Create a New Branch
+  Create a new branch for your changes:
+
+  .. code-block:: bash
+
+    git checkout -b your-branch-name
+
+Make Your Changes
+  Make the necessary changes or additions to the codebase. Please try to adhere to the coding style already in place.
+
+Test Your Changes
+  Run any existing tests, and add new ones if necessary, to ensure your changes do not break existing functionality.
+
+Commit Your Changes
+  Commit your changes with a clear commit message that explains what you've done:
+
+  .. code-block:: bash
+
+    git commit -m "A brief explanation of your changes"
+
+Push to GitHub
+  Push your changes to your fork on GitHub:
+
+  .. code-block:: bash
+
+    git push origin your-branch-name
+
+Submit a Pull Request
+  Go to the ``apsimNGpy`` repository on GitHub, and you'll see a prompt to submit a pull request based on your branch. Click on "Compare & pull request" and describe the changes you've made. Finally, submit the pull request.
+
+Updating Documentation
+----------------------
+
+Improvements or updates to documentation are greatly appreciated. You can submit changes to documentation with the same process used for code contributions.
+
+Join the Discussion
+-------------------
+
+Feel free to join in discussions on issues or pull requests. Your feedback and insights are valuable to the community!
+
+Code of Conduct
+---------------
+
+Please note that this project is released with a `Contributor Code of Conduct https://github.com/MAGALA-RICHARD/apsimNGpy/blob/main/CODE_OF_CONDUCT.md>`_. By participating in this project, you agree to abide by its terms.
+
+
 
 Acknowledgements
 ================

@@ -508,7 +508,7 @@ class OrganizeAPSIMsoil_profile:
         cropXF = 1 * soilvar_perdep_cor(nlayers, a=curveparam_a, b=0)
         # create a data frame for these three variables
         dfs = pd.DataFrame({'kl': cropKL, 'll': cropLL, 'xf': cropXF})
-        SoilCNRatio = np.full(shape=nlayers, fill_value=12.2, dtype=np.int64)
+        SoilCNRatio = np.full(shape=nlayers, fill_value=12, dtype=np.int64)
         FOM = 160 * soilvar_perdep_cor(nlayers, a=curveparam_a, b=curveparam_b)
         FOMCN = np.full(shape=nlayers, fill_value=40, dtype=np.int64)
         FBiom = 0.045 * soilvar_perdep_cor(nlayers, a=curveparam_a, b=curveparam_b)

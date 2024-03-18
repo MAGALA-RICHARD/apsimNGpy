@@ -52,6 +52,7 @@ class ApsimModel(APSIMNG):
                  soil_series: str = 'domtcp', thickness: int = 20, bottomdepth: int = 200,
                  thickness_values: list = None, run_all_soils: bool = False):
         super().__init__(model, read_from_string)
+        self.SWICON = None
         """get suurgo soil tables and organise it to apsim soil profiles
         --------------------
         parameters
@@ -265,16 +266,19 @@ class ApsimModel(APSIMNG):
 
     ->> key-word argument
             adjust_rue: Boolean, adjust the radiation use efficiency
+            'set_sw_con': Boolean, set the drainage coefficient for each layer
             adJust_kl:: Bollean, adjust, kl based on productivity index
             'CultvarName': cultivar name which is in the sowing module for adjusting the rue
             tillage: specify whether you will be carried to adjust some physical parameters
         """
         adjust_rue = kwargs.get('adjust_rue')
         adjust_kl = kwargs.get("adJust_kl")
+
         self.thickness_replace = self.thickness_values
         physical_calculated = soil_tables[0]
         self.organic_calcualted = soil_tables[1]
         self.cropdf = soil_tables[2]
+        self.SWICON  = soil_tables[6]
         for simu in self.find_simulations(simulation_names):
             pysoil = simu.FindDescendant[Physical]()  # meaning physical soil node
 
@@ -330,6 +334,11 @@ class ApsimModel(APSIMNG):
                 swim.LayerStructure = self.thickness_values
             except Exception as e:
                 pass
+        # repalce drainage coefficient for eahc layer based on DUL and BD
+        for sim in self.find_simulations(simulation_names):
+            wb = sim.FindDescendant[Models.WaterModel.WaterBalance]()
+            wb.SWCON = self.SWICON
+            wb.Thickness = self.thickness_values
 
         return self
 
@@ -489,18 +498,25 @@ if __name__ == '__main__':
     # Model = FileFormat.ReadFromFile[Models.Core.Simulations](model, None, False)
     os.chdir(Path.home())
     from apsimNGpy.core.base_data import LoadExampleFiles
+    try:
+        lonlat = -91.7738, 41.0204
+        al = LoadExampleFiles(Path.cwd())
+        model = al.get_maize
+        print(model)
+        from apsimNGpy import settings
 
-    lonlat = -93.7738, 42.0204
-    al = LoadExampleFiles(Path.cwd())
-    model = al.get_maize
-    print(model)
-    from apsimNGpy import settings
+        model = ApsimModel(model, read_from_string=True, thickness_values=settings.SOIL_THICKNESS)
+        model.replace_met_from_web(lonlat=lonlat, start_year=2001, end_year=2020)
+        from apsimNGpy.manager import soilmanager as sm
 
-    model = ApsimModel(model, read_from_string=True, thickness_values=settings.SOIL_THICKNESS)
-    model.replace_met_from_web(lonlat, 2000, 2020)
-    from apsimNGpy.manager import soilmanager as sm
-
-    st = sm.DownloadsurgoSoiltables('Marshall')
-    sp = sm.OrganizeAPSIMsoil_profile(st, 20)
-    sop = sp.cal_missingFromSurgo()
-    model.replace_downloaded_soils(sop, model.extract_simulation_name, No_till=True)
+        st = sm.DownloadsurgoSoiltables(lonlat)
+        sp = sm.OrganizeAPSIMsoil_profile(st, 20)
+        sop = sp.cal_missingFromSurgo()
+        model.replace_downloaded_soils(sop, model.extract_simulation_name, No_till=True)
+    except Exception as e:
+        print(type(e).__name__, repr(e))
+        exc_type, exc_value, exc_traceback = sys.exc_info()
+        # Extract the line number from the traceback object
+        line_number = exc_traceback.tb_lineno
+        print(f"Error: {type(e).__name__} occurred on line: {line_number} execution value: {exc_value}")
+        print(lon_lat)

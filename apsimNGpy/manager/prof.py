@@ -24,4 +24,9 @@ def cal_dul(dul, bd, KS, ll15, nlayers = 10):
      LL15 =  ll15 * soilvar_perdep_cor(nlayers)
      LL15[0] = ll15
      ks = [KS] * nlayers
-     
+
+
+def cal_x(x, nlayers=10):
+    xc = x * soilvar_perdep_cor(nlayers)
+    xc[0] = x
+   

@@ -1246,7 +1246,7 @@ class APSIMNG():
 
         self.replace_crop_LL(cropll, simulation)
 
-    def set_swcon(self, swcon, simulations=None):
+    def set_swcon(self, swcon, simulations=None,  thickness_values = None):
         """Set soil water conductivity (SWCON) constant for each soil layer.
 
         Parameters
@@ -1255,11 +1255,13 @@ class APSIMNG():
             Collection of values, has to be the same length as existing values.
         simulations, optional
             List of simulation names to update, if `None` update all simulations
+            :param thickness_values: the soil profile thickness values
         """
-
         for sim in self.find_simulations(simulations):
             wb = sim.FindDescendant[Models.WaterModel.WaterBalance]()
+            assert len(wb.Thickness) == len(thickness_values), "trying to set different thickness values to the existing ones"
             wb.SWCON = swcon
+            
 
     def get_swcon(self, simulation=None):
         """Get soil water conductivity (SWCON) constant for each soil layer.

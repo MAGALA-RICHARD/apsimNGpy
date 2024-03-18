@@ -307,7 +307,11 @@ class OrganizeAPSIMsoil_profile:
             return self.variable_profile(wat)
 
     def cal_KS(self):  # has potential to cythonize
-        return  self.saturatedhudraulic_conductivity * npar([1e-06]) * (60 * 60 * 24) * 1000
+        ks= self.variable_profile(self.saturatedhudraulic_conductivity)
+
+        ks =ks*(npar([1e-06]) * (60 * 60 * 24) * 1000)
+
+        return ks
 
     def cal_Carbon(self):  # has potential to cythonize
         ## Brady and Weil (2016)
@@ -368,12 +372,16 @@ class OrganizeAPSIMsoil_profile:
     def get_AirDry(self):
         if any(np.isnan(self.L15)):
             air = self.cal_l15Fromsand_clay_OM()
-            air[:3] = air[:3] * 0.5
+            
+            air[0] = air[0] * 0.5
+            air[1] = air[1] *0.9
             return air
         else:
-            air = self.L15 * 0.01
+            air = self.L15/100 
+            air[0] = air[0]*0.5
+            air[1] = air[1]* 0.9
             airl = self.variable_profile(air)
-            airl[:3] = airl[:3] * 0.5
+            
             return airl
 
     def getBD(self):
@@ -459,12 +467,14 @@ class OrganizeAPSIMsoil_profile:
         ParticleSizeClay = self.interpolate_clay()
         ParticleSizeSilt = self.interpolate_silt()
         ParticleSizeSand = self.interpolate_sand()
+        VA = [SAT, BD, DUL, KS, PH, ParticleSizeClay, ParticleSizeSilt, ParticleSizeSand,   L15, Depth, Carbon, PH]
         df = pd.DataFrame(
             {"Depth": Depth, "Thickness": [self.thickness] * n, "BD": BD, "AirDry": AirDry, "LL15": L15, "DUL": DUL,
              "SAT": SAT, "KS": KS, "Carbon": Carbon,
              "PH": PH, "ParticleSizeClay": ParticleSizeClay, "ParticleSizeSilt": ParticleSizeSilt,
              "ParticleSizeSand": ParticleSizeSand})
-        return (df)
+
+        return df
 
     def exponential_function_inc_yvalue(x, a, b):
         return a * np.exp(-b * x)
@@ -502,6 +512,7 @@ class OrganizeAPSIMsoil_profile:
         nlayers = int(self.Nlayers)
         # ad  = self.get_AirDry()[1]
         cropLL = self.get_AirDry()
+
         # Original thought
         # ad * soilvar_perdep_cor(nlayers, a = curveparam_a, b = curveparam_b)
         cropKL = 0.08 * soilvar_perdep_cor(nlayers, a=curveparam_a, b=curveparam_b)
@@ -530,8 +541,10 @@ class OrganizeAPSIMsoil_profile:
         # from above
         Carbon = self.cal_Carbon()
         PH = self.interpolate_PH()
+
         # vn = npar
         # PH = 6.5 * soilvar_perdep_cor(nlayers, a = curveparam_a, b = 0)
+
         organic = pd.DataFrame(
             {'Carbon': Carbon, 'SoilCNRatio': SoilCNRatio, 'cropLL': cropLL, 'cropKL': cropKL, 'FOM': FOM,
              'FOM.CN': FOMCN, 'FBiom': FBiom, 'FInert': FInert, 'NO3N': NO3N, 'NH4N': NH4N, 'PH': PH})
@@ -547,14 +560,19 @@ class OrganizeAPSIMsoil_profile:
         cropdf = pd.concat(cropframe, join='outer', axis=1)
         physical = self.create_soilprofile()
 
+        po = 1-(physical["BD"]/2.65)
+        swi_con = (po-physical['DUL']) /po
+
         # create a alist
-        frame = [physical, organic, cropdf, metadata, self.CSR]
+        frame = [physical, organic, cropdf, metadata, swi_con, swi_con]
         # All soil data frames
+        CSR  = np.tile(self.CSR.iloc[0], int(self.Nlayers))
         resultdf = pd.concat(frame, join='outer', axis=1)
         finalsp = {'soil ': resultdf, 'crops': crops, 'metadata': metadata, 'soilwat': soilwat, 'swim': swim,
-                   'soilorganicmatter ': soilorganicmatter, "CSR": self.CSR}
+                   'soilorganicmatter ': soilorganicmatter, 'SWCON':swi_con}
         # return pd.DataFrame(finalsp)
-        frame.insert(3, self.CSR)
+        frame.insert(3, CSR, )
+
         return frame
 
 
@@ -566,8 +584,12 @@ if __name__ == '__main__':
     from apsimNGpy.core.apsim import ApsimModel
     from apsimNGpy.core.base_data import LoadExampleFiles
     from pathlib import Path
-    import settings
-    ap_sim = LoadExampleFiles(Path.home()).get_maize
+    from apsimNGpy import settings
+   
+    ap_sim = LoadExampleFiles(os.getcwd()).get_maize
 
     m = ApsimModel(ap_sim, thickness_values=settings.SOIL_THICKNESS)
     m.replace_downloaded_soils(data, m.extract_simulation_name)
+  
+    m.run("MaizeR")
+

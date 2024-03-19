@@ -73,6 +73,7 @@ class metdate:
         self.endmonth = dates[1][:2]
         self.year_start = dates[0].split("-")[2]
         self.year_end = dates[1].split("-")[2]
+        import datetime
         self.startday = datetime.datetime.strptime(dates[0], '%m-%d-%Y').strftime('%j')
         self.endday = datetime.datetime.strptime(dates[1], '%m-%d-%Y').strftime('%j')
 

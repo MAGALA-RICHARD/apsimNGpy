@@ -337,9 +337,14 @@ class ApsimModel(APSIMNG):
                 pass
         # repalce drainage coefficient for eahc layer based on DUL and BD
         for sim in self.find_simulations(simulation_names):
-            wb = sim.FindDescendant[Models.WaterModel.WaterBalance]()
-            wb.SWCON = self.SWICON
-            wb.Thickness = self.thickness_values
+            try:
+                wb = sim.FindDescendant[Models.WaterModel.WaterBalance]()
+                wb.SWCON = self.SWICON
+                wb.Thickness = self.thickness_values
+            except:
+                # in the case of sim model, pass
+
+                pass
 
         return self
 
@@ -460,7 +465,6 @@ class ApsimModel(APSIMNG):
         DF = self.results
 
         df_sel = DF.filter(regex=r'^{0}'.format(rpn), axis=1)
-        print(df_sel.columns)
         df_sel = df_sel.mean(numeric_only = True)
         print(df_sel)
         if spin_var == 'Carbon':
@@ -471,7 +475,7 @@ class ApsimModel(APSIMNG):
             print(bd)
             bd = np.array(bd)
             cf = np.array(bd) * np.array(th)
-            cf  = np.divide(cf, 10)  # this convert to percentage
+            cf  = np.divide(cf, 1)  # this convert to percentage
             per = np.array(df_sel) / cf
             new_carbon = [i for i in np.array(per).flatten()]
             print(new_carbon)

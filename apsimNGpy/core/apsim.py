@@ -278,7 +278,7 @@ class ApsimModel(APSIMNG):
         physical_calculated = soil_tables[0]
         self.organic_calcualted = soil_tables[1]
         self.cropdf = soil_tables[2]
-        self.SWICON  = soil_tables[6]
+        self.SWICON  = soil_tables[6] # TODO To put these tables in the dictionary isn't soilmanager module
         for simu in self.find_simulations(simulation_names):
             pysoil = simu.FindDescendant[Physical]()  # meaning physical soil node
 
@@ -305,6 +305,7 @@ class ApsimModel(APSIMNG):
             organic.Thickness = self.thickness_replace
             organic.SoilCNRatio = self.organic_calcualted.SoilCNRatio
             organic.FBiom = self.organic_calcualted.FBiom
+            # you could adjust practices here, but still looking for a cool way to do it
             if kwargs.get('No_till', False):
                 self.organic_calcualted.loc[:1, 'FBiom'] = self.organic_calcualted.loc[:1,
                                                            'FBiom'] + 0.2 * self.organic_calcualted.loc[:1, 'FBiom']
@@ -320,11 +321,11 @@ class ApsimModel(APSIMNG):
             soil_crop = pysoil.FindAllDescendants[SoilCrop]()
             # can be used to target specific crop
             for cropLL in soil_crop:
-                cropLL.LL = pysoil.AirDry
+                cropLL.LL = pysoil.LL15
                 kl = self.organic_calcualted.cropKL
                 cropLL.KL = kl
-                if kwargs.get('No_till', False):
-                    cropLL.KL = cropLL.KL + np.array([0.2]) * cropLL.KL
+                # if kwargs.get('No_till', False):
+                #     cropLL.KL = cropLL.KL + np.array([0.2]) * cropLL.KL
                 cropLL.XF = XF
                 cropLL.Thickness = self.thickness_replace
         for simu in self.find_simulations(simulation_names):
@@ -419,9 +420,10 @@ class ApsimModel(APSIMNG):
 
     @property
     def read_data_tables(self):
-        return self._read_simulation().keys()
+        read_ =  self._read_simulation()
+        return  read_.keys()
 
-    def spin_up(self, report_name: str = 'Report', start=None, end=None, spin_var="Carbon"):
+    def spin_up(self, report_name: str = 'Report', start=None, end=None, spin_var="Carbon", simulations = None):
         """
         Perform a spin-up operation on the APSIM model.
 
@@ -443,32 +445,47 @@ class ApsimModel(APSIMNG):
         -------
         self : ApsimModel
             The modified ApsimModel object after the spin-up operation.
+            you could call save_edited file and save it to your specified location, but you can also proceed with the simulation
         """
         insert_var = REPORT_PATH.get(spin_var)
         if start and end:
             self.change_simulation_dates(start, end)
+        for simu in self.find_simulations(simulations):
+            pysoil = simu.FindDescendant[Physical]()
         THICKNESS = self.extract_any_soil_physical("Thickness")
         th = np.array(THICKNESS)
         self.change_report(insert_var, report_name=report_name)
         rpn = insert_var.split(" ")[-1]
-        self.run()
-        DF = self.results[report_name]
+        self.run(report_name=report_name)
+        DF = self.results
+
         df_sel = DF.filter(regex=r'^{0}'.format(rpn), axis=1)
+        print(df_sel.columns)
+        df_sel = df_sel.mean(numeric_only = True)
+        print(df_sel)
         if spin_var == 'Carbon':
             assert 'TotalC' in insert_var, "wrong report variable path: '{0}' supplied according to requested spin up " \
                                            "var".format(insert_var)
-            bd = np.array(self.extract_any_soil_physical("BD"))
-            cf = bd * th / 10  # this convert to percentage
-            per = df_sel / cf
+
+            bd =list(pysoil.DUL)
+            print(bd)
+            bd = np.array(bd)
+            cf = np.array(bd) * np.array(th)
+            cf  = np.divide(cf, 10)  # this convert to percentage
+            per = np.array(df_sel) / cf
             new_carbon = [i for i in np.array(per).flatten()]
+            print(new_carbon)
+            print(len(new_carbon))
             self.replace_any_soil_organic(spin_var, new_carbon)
         if spin_var == 'DUL':
             assert 'PAW' in insert_var, "wrong report variable path: '{0}' supplied according to requested spin up var" \
                 .format(insert_var)
-            ll = np.array(self.extract_any_soil_physical("LL15"))
+            l_15 = pysoil.LL15
+            ll = np.array(l_15)
             dul = ll + df_sel
             dul = list(np.array(dul).flatten())
-            self.replace_any_soil_physical(spin_var, dul)
+            print(len(dul))
+            pysoil.DUL = dul
 
             return self
 
@@ -513,6 +530,7 @@ if __name__ == '__main__':
         sp = sm.OrganizeAPSIMsoil_profile(st, 20)
         sop = sp.cal_missingFromSurgo()
         model.replace_downloaded_soils(sop, model.extract_simulation_name, No_till=True)
+        bd = model.extract_any_soil_physical("BD")
     except Exception as e:
         print(type(e).__name__, repr(e))
         exc_type, exc_value, exc_traceback = sys.exc_info()

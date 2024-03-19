@@ -468,6 +468,14 @@ class OrganizeAPSIMsoil_profile:
         ParticleSizeSilt = self.interpolate_silt()
         ParticleSizeSand = self.interpolate_sand()
         VA = [SAT, BD, DUL, KS, PH, ParticleSizeClay, ParticleSizeSilt, ParticleSizeSand,   L15, Depth, Carbon, PH]
+        DUL = np.sort(DUL)[::-1]
+        SAT = np.sort(SAT)[::-1]
+       
+        def calculate_bd(sat):
+            bd = 2.65 - (sat + 0.02) * 2.65
+            return bd
+        BD = calculate_bd(SAT)
+        
         df = pd.DataFrame(
             {"Depth": Depth, "Thickness": [self.thickness] * n, "BD": BD, "AirDry": AirDry, "LL15": L15, "DUL": DUL,
              "SAT": SAT, "KS": KS, "Carbon": Carbon,
@@ -516,11 +524,13 @@ class OrganizeAPSIMsoil_profile:
         # Original thought
         # ad * soilvar_perdep_cor(nlayers, a = curveparam_a, b = curveparam_b)
         cropKL = 0.08 * soilvar_perdep_cor(nlayers, a=curveparam_a, b=curveparam_b)
+        
         cropXF = 1 * soilvar_perdep_cor(nlayers, a=curveparam_a, b=0)
+        
         # create a data frame for these three variables
         dfs = pd.DataFrame({'kl': cropKL, 'll': cropLL, 'xf': cropXF})
         SoilCNRatio = np.full(shape=nlayers, fill_value=12, dtype=np.int64)
-        FOM = 160 * soilvar_perdep_cor(nlayers, a=curveparam_a, b=curveparam_b)
+        FOM = 150 * soilvar_perdep_cor(nlayers, a=curveparam_a, b=curveparam_b)
         FOMCN = np.full(shape=nlayers, fill_value=40, dtype=np.int64)
         FBiom = 0.045 * soilvar_perdep_cor(nlayers, a=curveparam_a, b=curveparam_b)
         Fi = 0.83 * soilvar_perdep_cor(nlayers, a=curveparam_a, b=-0.01)

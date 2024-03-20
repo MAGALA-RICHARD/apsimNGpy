@@ -12,6 +12,7 @@ from functools import partial
 import pandas as pd
 from pandas import read_sql_query as rsq
 from pandas import errors
+from sqlalchemy import create_engine
 
 import sqlite3
 
@@ -152,7 +153,16 @@ def _read_simulation(datastore, report_name=None):
     else:
         return dataframe_dict
 
+def get_db_table_names(d_b):
+    """
 
+    :param d_b: database name or path
+    :return: all names of  sql database
+    """
+    d_b = f'sqlite:///{d_b}'
+    #engine = create_engine(f'mssql+pymssql://sa:saPassword@localhost:52865/{d_b})')
+    engine = create_engine(d_b)
+    return engine.table_names()
 
 
 

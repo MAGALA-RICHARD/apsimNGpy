@@ -56,6 +56,7 @@ class APSIMNG():
     """Modify and run Apsim next generation simulation models."""
 
     def __init__(self, model: Union[str, Simulations], copy=True, out_path=None, read_from_string=True):
+        copy = True # mandatory now to conserve the original file 
         """
         Parameters
         ----------
@@ -68,6 +69,7 @@ class APSIMNG():
             Path of modified simulation, if `None` will be set automatically.
         read_from_string (boolean) if True file is uploaded to memory through json module most preffered, otherwise we can read from file
         """
+        self.copy = copy
         if isinstance(model, str):
             assert os.path.exists(model), "The file does not exists in the specified directory"
             if not model.endswith('.apsimx'):
@@ -1334,16 +1336,26 @@ class APSIMNG():
         return [s for s in solutes if s.Name == solute][0]
 
     def clear(self):
-        self.path = None
-        self.out_path = None
+        """
+        Clears the attributes of the object and optionally deletes associated files.
+
+        If the `copy` attribute is set to True, this method will also attempt to delete
+        files at `self.path` and `self.datastore`. This is a destructive operation and
+        should be used with caution.
+
+        Returns:
+           >>None: This method does not return a value. 
+           >> Please proceed with caution, we assume that if you want to clear the model objects, then you don't need them
+           but by making copy compulsory, then, we are clearing the edited files
+        """
+        Path(self.path.strip('apsimx') +"db-shm").unlink(missing_ok=True)
+        Path(self.path).unlink(missing_ok=True)
+        Path(self.path.strip('apsimx') + "db-wal").unlink(missing_ok=True)
+        Path(self.path.strip('apsimx') + "bak").unlink(missing_ok=True)
+        Path(self.datastore).unlink(missing_ok=True)
         self.Model = None
         self._DataStore = None
-        self.datastore = None
-        # self.results = None
-        self.file_name = None
-        self.Model = None
-        return self
-
+        
     def replace_soil_organic(self, organic_name, simulation_name=None):
         """replace the organic module comprising Carbon , FBIOm, FInert/ C/N
 

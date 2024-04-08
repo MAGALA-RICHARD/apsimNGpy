@@ -1488,6 +1488,7 @@ if __name__ == '__main__':
         pm = {'Name': 'PostharvestillageMaize', "Fraction": i}
         model.update_management_decissions(
             [pm, pt, pl], simulations=model.extract_simulation_name)
+        print(model.extract_user_input('PostharvestillageMaize'))
         lm = model
         # model.examine_management_info()
 

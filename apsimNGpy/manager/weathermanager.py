@@ -372,7 +372,7 @@ def daymet_bylocation_nocsv(lonlat, start, end, cleanup=True, filename=None):
             # Create an in-memory binary stream
             text_stream = io.BytesIO(text_str)
             # Read the data into a DataFrame
-            dmett = pd.read_csv(text_stream, delimiter=',', skiprows=7)
+            dmett = pd.read_csv(text_stream, delimiter=',', skiprows=6)
             # dmett = pd.read_csv(outFname, delimiter=',', skiprows=7)
             vp = dmett['vp (Pa)'] * 0.01
             # calcuate radn

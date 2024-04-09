@@ -33,6 +33,27 @@ def create_permutations(factors:list, factor_names: list):
         
         # attach simulation_id
         return  {i:dict(zip(factor_names, m)) for i, m in enumerate(permutations)}
+class GenerateCombinations:
+    def __init__(self, management_factors):
+          self.mgt = management_factors
+    @property
+    def management_combination(self):
+        return  create_permutations([n.variables for n in self.mgt], [i.parameter for i in self.mgt])
+    @property
+    def organise_scrips(self):
+        return [i.get_script_manager for i in self.mgt ]
+
+def mgt_updater(simId, ap, old_list):
+   upd = ap[simId]
+   upd = list(ap[simId].keys())
+   for new, old in zip(upd, old_list):
+       print(old)
+       if new in old.keys():
+          old[new] = ap[simId][new]
+
+   return old_list
+
+
 if __name__ == "__main__":
        def generateFactors():
           mn =  {'Name': "Simple Rotation", 'Parameters': ["Crops", "Cropb"], 'Variables':['Maize, Soybean', 'Maize, Wheat']}
@@ -40,3 +61,15 @@ if __name__ == "__main__":
           org['Name']= mn.get('Name')
           return org
        print(generateFactors())
+       from variable import  DiscreteVariable, BoundedVariable
+       N = DiscreteVariable(options=[100, 200], place_holder_name='Nitrogen', parameter='Amount', manager='NitrogenManger')
+       Dep = BoundedVariable(bounds = (0, 350), place_holder_name='depth', manager='Tillage', parameter='Depth')
+       comb = GenerateCombinations([N, Dep])
+       ap= comb.management_combination
+
+
+
+
+
+
+

@@ -105,8 +105,8 @@ class DiscreteVariable(Variable):
 
 
 if __name__ == '__main__':
-    DV = DiscreteVariable(options=[1, 2], place_holder_name='tillage', manager='sim')
-    bv= BoundedVariable(bounds=[0, 100], place_holder_name='Nitrogen', manager='tillage')
+    DV = DiscreteVariable(options=[1, 2], place_holder_name='tillage', manager='simple rotation')
+    bv= BoundedVariable(bounds=[0, 100], place_holder_name='Nitrogen', manager='simple rotation')
     DV.parameter = 'Crops'
     xp = [DV, bv]
     print([i.get_script_manager for i in xp])

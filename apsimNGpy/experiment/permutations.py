@@ -66,8 +66,10 @@ if __name__ == "__main__":
        Dep = BoundedVariable(bounds = (0, 350), place_holder_name='depth', manager='Tillage', parameter='Depth')
        comb = GenerateCombinations([N, Dep])
        ap= comb.management_combination
-
-
+       from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables
+       lon  = -119.72330, 36.92204
+       xp = DownloadsurgoSoiltables(lon)
+       print(xp)
 
 
 

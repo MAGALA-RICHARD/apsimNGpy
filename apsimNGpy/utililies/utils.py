@@ -623,3 +623,24 @@ def bounding_box_corners(center_point, radius):
     se = south_west
     nw = north_west
     return ne, se, sw, nw
+
+
+class WDir:
+    def __init__(self, path_dir=None):
+        assert path_dir, "path directory is required"
+        self.ROOT_path = Path(path)
+
+    def path(self, name=None):
+        """
+        :param name: name of the new file
+        :return: realpath for the new file name
+        """
+        assert name, "name is required"
+        return os.path.realpath(self.ROOT_path.joinpath(name))
+
+    def mkdir(self, name) -> None:
+        new_dir = self.ROOT_path.joinpath(name)
+        new_dir.mkdir(parents=True, exist_ok=True)
+
+    def make_this_cwd(self):
+        os.mkdir(self.ROOT_path)

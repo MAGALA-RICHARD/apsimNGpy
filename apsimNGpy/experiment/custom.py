@@ -1,6 +1,7 @@
 from apsimNGpy.core.apsim import ApsimModel
 from apsimNGpy.core.base_data import LoadExampleFiles
 from apsimNGpy.utililies.utils import Path
+from permutations import create_permutations
 hom_dir = Path.home()
 maize  = LoadExampleFiles(hom_dir).get_maize
 class Custom(ApsimModel):

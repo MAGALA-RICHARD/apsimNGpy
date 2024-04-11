@@ -161,25 +161,4 @@ if __name__ == "__main__":
     from functools import total_ordering
 
 
-    @total_ordering
-    class Circle:
-        def __init__(self, radius):
-            self.radius = radius
-
-        def __eq__(self, other):
-            return self.radius == other.radius
-
-        def __lt__(self, other):
-            return self.radius < other.radius
-
-
-    studentA = Circle(10)
-    studentB = Circle(12)
-
-    # all compressions are working even if we don't define all four
-    print(studentA == studentB)
-    print(studentA != studentB)
-    print(studentA < studentB)
-    print(studentA <= studentB)
-    print(studentA > studentB)
-    print(studentA >= studentB)
+   

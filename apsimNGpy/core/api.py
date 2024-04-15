@@ -402,7 +402,12 @@ class APSIMNG():
          returns all data frame the available report tables"""
         data = read_db_table(datastore, report_name)
         return data
-
+    # perhaps a good a example of how to edit cultvar
+    def adjust_rue(self, csr, cultivar_name = 'B_110'):# Iowa only
+        CSR = csr,
+        command = '[Leaf].Photosynthesis.RUE.FixedValue',
+        self.edit_cultivar(cultivar_name, commands=command, values=CSR)
+        return self
     def replicate_file(self, k, path=None, tag = "replica"):
         """
         Replicates a file 'k' times.

@@ -20,6 +20,10 @@ from pathlib import Path
 from shapely import wkt
 from geopy.distance import geodesic
 
+import functools
+import traceback
+import sys
+
 
 def select_process(use_thread, ncores):
     return ThreadPoolExecutor(ncores) if use_thread else ProcessPoolExecutor(ncores)
@@ -638,9 +642,63 @@ class WDir:
         assert name, "name is required"
         return os.path.realpath(self.ROOT_path.joinpath(name))
 
-    def mkdir(self, name) -> None:
+    def mkdir(self, name):
         new_dir = self.ROOT_path.joinpath(name)
         new_dir.mkdir(parents=True, exist_ok=True)
+        return new_dir
 
     def make_this_cwd(self):
         os.mkdir(self.ROOT_path)
+
+
+import functools
+import traceback
+import sys
+
+
+def exception_handler(re_raise=False):
+    """A decorator to handle exceptions with an option to re-raise them.
+
+    Args:
+    re_raise (bool): If True, re-raises the caught exception after logging.
+                     If False, logs the exception and suppresses it.
+    """
+
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            try:
+                return func(*args, **kwargs)
+            except Exception as e:
+                exc_type, exc_value, exc_traceback = sys.exc_info()
+                # Extract unformatted stack traces as a tuple
+                trace_back = traceback.extract_tb(exc_traceback)
+                # Format stacktrace
+                stack_trace = list()
+
+                for trace in trace_back:
+                    stack_trace.append("File : %s , Line : %d, Func.Name : %s, Message : %s" % (
+                    trace[0], trace[1], trace[2], trace[3]))
+
+                print(f"Exception occurred in {func.__name__}: {e}")
+                print("Error details : ")
+                print("\n".join(stack_trace))
+
+                if re_raise:
+                    raise
+
+                return None
+
+        return wrapper
+
+    return decorator
+if __name__ == '__main__':
+
+    # Example usage of the decorator
+    @exception_handler(re_raise=True)
+    def divide(x, y):
+        return x / y
+
+
+    # This will print the exception message along with the line number in the script where it occurred
+    divide(10, 0)

@@ -161,13 +161,17 @@ class WDir:
         """
         assert name, "name is required"
         return os.path.realpath(self.ROOT_path.joinpath(name))
+    
     def mkdir(self, name):
        new_dir = self.ROOT_path.joinpath(name)
        new_dir.mkdir(exist_ok=True)
        return new_dir
 
     def make_this_cwd(self):
-        os.mkdir(self.ROOT_path)
+        wd = os.path.realpath(self.ROOT_path)
+        if os.getcwd() != wd:
+          os.chdir(os.path.realpath(self.ROOT_path))
+        else: print(f"this path: {wd} is already the current working directory")
 
 gis_data = WDir(path)
 
@@ -179,9 +183,21 @@ from apsimNGpy.core.base_data import LoadExampleFiles
 import sys
 MAIZE = LoadExampleFiles(gis_data.ROOT_path).get_maize
 model = ApsimModel(MAIZE, thickness_values=SOIL_THICKNESS)
-#DF = gpd.read_file(os.path.realpath(shp[0]))
+fb_gdf = gpd.read_file(os.path.realpath(shp[0]))
 dfa  = df.drop_duplicates(subset = ['bottomdepth', 'cokey'])
-DF  = gpd.read_file(r'D:\ndata\soils_data_mukey_305.shp')
+gd  = gpd.read_file(r'D:\ndata\soils_data_mukey_305.shp')
+# calculate the area under each polygon
+
+print('map unit keys that intersect with the field boundaries')
+gdf_j = fb_gdf.sjoin(gd, how="inner", predicate='intersects')
+# drop duplicates by MUKEY and Field boundary
+df = gdf_j.drop_duplicates(['FBndID', 'MUKEY'])
+df_u = df.loc[df['isAG'] ==1].copy()
+df_u['area'] = df_u.geometry.area/4000
+df_u.to_file(gis_data.path(name = 'mu_intersect.shp'))
+DF = df_u.drop_duplicates(['MUKEY']).copy()
+print(DF.shape)
+DF.reset_index(inplace=True)
 # get points from the polygons
 def get_polygon_points(row):
     """Extract points from a polygon geometry."""
@@ -202,77 +218,87 @@ def get_polygon_bounds(gdf_):
     gdf.to_crs(4326, inplace=True)
     #print(f"coordinate system changed from: {crs} to: {gdf.crs}")
     return gdf.apply(get_polygon_points, axis=1)
+DF['points'] = get_polygon_bounds(DF)
 def simulate_in_pipeline(id):
     try:
-        DF['points'] = get_polygon_bounds(DF)
         demo =  DF['points'].loc[id]
+
         def convert(row_):
             return int(row_)
         sdf = DownloadsurgoSoilTables(demo)
         sdf['prcent'] = sdf['prcent'].apply(convert)
         # what about this
         max = sdf.prcent.max()
-        cok_ = sdf[sdf['prcent']== max].copy()
-        cok = [cok_[cok_['cokey']==i] for i in cok_.cokey.unique()]
-        dom = [OrganizeAPSIMsoil_profile(stable, 20) for stable in cok]
-        grand = [dm.cal_missingFromSurgo() for dm in dom]
-        aps = gis_data.mkdir('apsim')
-        files = model.replicate_file( path = aps, k= grand.__len__(), tag = 'testt')
-        file_m = files.copy()
-        soils = grand.copy()
+        cok_ = sdf[sdf['prcent']==max].copy()
+        csr = None
+        if cok_.shape[0] >2:
+            csr = cok_['CSR'].iloc[0]
+            cok = cok_
+            dom = OrganizeAPSIMsoil_profile(cok, 20)
+            grand = dom.cal_missingFromSurgo()
+            aps = gis_data.mkdir('apsim')
+            files = model.replicate_file( path = aps, k= 1, tag = 'testt')
+            file_m = files.copy()
+            soils = grand.copy()
 
-        models = []
-        for i in file_m:
-              md = ApsimModel(i, thickness_values=SOIL_THICKNESS)
-              models.append(md)
+            models = []
 
-        # models = [mod.replace_downloaded_soils(sls, model.extract_simulation_name) for sls in grand for mod in models]
-        new_models = []
-        for soi, mode in zip(soils, models):
-            mode.replace_downloaded_soils(soi, mode.extract_simulation_name)
-            new_models.append(mode)
+            md = ApsimModel(files[0], thickness_values=SOIL_THICKNESS)
 
-        ap = [model.run('MaizeR') for model in new_models]
-        res= [i.results.mean(numeric_only =True).to_frame().T for i in ap]
-        RES = pd.concat(res)
-        res_f = RES.mean().to_frame().T
-        res_f.reset_index(inplace=True)
-        row = DF.iloc[id].to_frame().T.copy()
-        row.reset_index(inplace=True)
-        del [ap, new_models, soils, dom, sdf, RES]
-        return pd.concat([row,res_f], axis =1)
+
+            # models = [mod.replace_downloaded_soils(sls, model.extract_simulation_name) for sls in grand for mod in models]
+            mode = md
+            mode.replace_downloaded_soils(grand, mode.extract_simulation_name)
+
+            mode.run('MaizeR')
+            res= mode.results.mean(numeric_only =True).to_frame().T
+            res_f = res
+            res_f['CSR'] = csr
+            print(csr)
+            res_f.reset_index(inplace=True)
+            row = DF.iloc[id].to_frame().T.copy()
+            row.reset_index(inplace=True)
+            del [soils, dom, sdf, csr]
+            return pd.concat([row,res_f], axis =1)
+        print(f"corresponding data for location: {id} is incomplete, skipping it")
     except Exception as e:
         exc_type, exc_value, exc_traceback = sys.exc_info()
         # Extract the line number
         line_number = exc_traceback.tb_lineno
+        print(type(e).__name__, e)
         print(f"An error occurred on line {line_number}: {e}")
+        if type(e).__name__ == 'ValueError':
+            print(cok_)
         raise
 
-# daf = []
-# for i in range(DF.shape[0]):
-#     try:
-#       daf.append(simulate_in_pipeline(i))
-#       print(f"{i} : completed",end = '\r')
-#     except Exception as e:
-#       print(type(e).__name__, e)
-#       exc_type, exc_value, exc_traceback = sys.exc_info()
-#       # Extract the line number
-#       line_number = exc_traceback.tb_lineno
-#       print(f"An error occurred on line {line_number}: {e}")
-#       print("skipping {}".format(i))
-#       continue
-# dfl = pd.concat(daf, axis=0)
-#
-# SD =dfl.drop(['OBJECTID', 'index'], axis =1)
-#
-# gdf = gpd.GeoDataFrame(SD, geometry='geometry', crs='EPSG:4326')
-# p = gis_data.path(name = 'simulate.shp')
-# import numpy as np
-# for col in DF.columns:
-#     if DF[col].dtype == np.int64:
-#        DF[col] = DF[col].astype(int)
-# DF.drop('points', axis = 1, inplace = True)
-# Dfl = dfl[['FBndID', 'Yield', 'TopN2O', 'NO3Total', 'NH4Total', 'SOC10_30cm']].copy()
-# dfm = DF.merge(Dfl, on  = "FBndID", how = 'inner')
-# dfm.to_file(p)
-DF.plot()
+
+
+daf = []
+for i in range(DF.shape[0]):
+    try:
+      sim= simulate_in_pipeline(i)
+      if isinstance(sim, pd.DataFrame):
+          daf.append(sim) 
+      print(f"{i} : completed",end = '\r')
+    except Exception as e:
+      print(type(e).__name__, e)
+      exc_type, exc_value, exc_traceback = sys.exc_info()
+      # Extract the line number
+      line_number = exc_traceback.tb_lineno
+      print(f"An error occurred on line {line_number}: {e}")
+      print("skipping {}".format(i))
+      raise
+dfl = pd.concat(daf, axis=0)
+
+SD =dfl.drop(['OBJECTID', 'index'], axis =1)
+
+gdf = gpd.GeoDataFrame(SD, geometry='geometry', crs='EPSG:4326')
+p = gis_data.path(name = 'simulate.shp')
+import numpy as np
+for col in DF.columns:
+    if DF[col].dtype == np.int64:
+       DF[col] = DF[col].astype(int)
+DF.drop('points', axis = 1, inplace = True)
+Dfl = dfl[['FBndID', 'Yield', 'TopN2O', 'NO3Total', 'NH4Total', 'SOC10_30cm']].copy()
+dfm = DF.merge(Dfl, on  = "FBndID", how = 'inner')
+dfm.to_file(p)

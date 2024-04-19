@@ -181,7 +181,7 @@ from apsimNGpy.settings import SOIL_THICKNESS
 from apsimNGpy.core.apsim import ApsimModel
 from apsimNGpy.core.base_data import LoadExampleFiles
 import sys
-MAIZE = LoadExampleFiles(gis_data.ROOT_path).get_maize
+MAIZE = r'D:\ndata\source\sw.apsimx'
 model = ApsimModel(MAIZE, thickness_values=SOIL_THICKNESS)
 fb_gdf = gpd.read_file(os.path.realpath(shp[0]))
 dfa  = df.drop_duplicates(subset = ['bottomdepth', 'cokey'])
@@ -195,7 +195,7 @@ df = gdf_j.drop_duplicates(['FBndID', 'MUKEY'])
 df_u = df.loc[df['isAG'] ==1].copy()
 df_u['area'] = df_u.geometry.area/4000
 df_u.to_file(gis_data.path(name = 'mu_intersect.shp'))
-DF = df_u.drop_duplicates(['MUKEY']).copy()
+DF = df_u.drop_duplicates(['FBndID']).copy()
 print(DF.shape)
 DF.reset_index(inplace=True)
 # get points from the polygons
@@ -219,6 +219,24 @@ def get_polygon_bounds(gdf_):
     #print(f"coordinate system changed from: {crs} to: {gdf.crs}")
     return gdf.apply(get_polygon_points, axis=1)
 DF['points'] = get_polygon_bounds(DF)
+from apsimNGpy.utililies.utils import exception_handler
+
+def is_soil_profile(row):
+    points= get_polygon_points(row)
+    sdf =  DownloadsurgoSoilTables(demo)
+    def convert(row_):
+        return int(row_)
+
+    sdf['prcent'] = sdf['prcent'].apply(convert)
+    max = sdf.prcent.max()
+    cok_ = sdf[sdf['prcent'] == max].copy()
+    if cok_.shape[0] > 2:
+        csr = int(cok_['CSR'].iloc[0]) / 100
+    return 
+
+
+
+@exception_handler()
 def simulate_in_pipeline(id):
     try:
         demo =  DF['points'].loc[id]
@@ -232,7 +250,7 @@ def simulate_in_pipeline(id):
         cok_ = sdf[sdf['prcent']==max].copy()
         csr = None
         if cok_.shape[0] >2:
-            csr = cok_['CSR'].iloc[0]
+            csr = int(cok_['CSR'].iloc[0])/100
             cok = cok_
             dom = OrganizeAPSIMsoil_profile(cok, 20)
             grand = dom.cal_missingFromSurgo()
@@ -248,13 +266,15 @@ def simulate_in_pipeline(id):
 
             # models = [mod.replace_downloaded_soils(sls, model.extract_simulation_name) for sls in grand for mod in models]
             mode = md
-            mode.replace_downloaded_soils(grand, mode.extract_simulation_name)
 
-            mode.run('MaizeR')
+            mode.replace_downloaded_soils(grand, mode.extract_simulation_name)
+            #mode.adjust_rue(csr)
+            mode.run('Annual')
             res= mode.results.mean(numeric_only =True).to_frame().T
             res_f = res
             res_f['CSR'] = csr
-            print(csr)
+
+
             res_f.reset_index(inplace=True)
             row = DF.iloc[id].to_frame().T.copy()
             row.reset_index(inplace=True)
@@ -273,32 +293,80 @@ def simulate_in_pipeline(id):
 
 
 
-daf = []
-for i in range(DF.shape[0]):
-    try:
-      sim= simulate_in_pipeline(i)
-      if isinstance(sim, pd.DataFrame):
-          daf.append(sim) 
-      print(f"{i} : completed",end = '\r')
-    except Exception as e:
-      print(type(e).__name__, e)
-      exc_type, exc_value, exc_traceback = sys.exc_info()
-      # Extract the line number
-      line_number = exc_traceback.tb_lineno
-      print(f"An error occurred on line {line_number}: {e}")
-      print("skipping {}".format(i))
-      raise
-dfl = pd.concat(daf, axis=0)
+# daf = []
+# for i in range(DF.shape[0]):
+#     try:
+#       sim= simulate_in_pipeline(i)
+#       if isinstance(sim, pd.DataFrame):
+#           daf.append(sim)
+#       print(f"{i} : completed",end = '\r')
+#     except Exception as e:
+#       print(type(e).__name__, e)
+#       exc_type, exc_value, exc_traceback = sys.exc_info()
+#       # Extract the line number
+#       line_number = exc_traceback.tb_lineno
+#       print(f"An error occurred on line {line_number}: {e}")
+#       print("skipping {}".format(i))
+#       raise
+# dfl = pd.concat(daf, axis=0)
+#
+# SD =dfl.drop(['OBJECTID', 'index'], axis =1)
+#
+# gdf = gpd.GeoDataFrame(SD, geometry='geometry', crs='EPSG:4326')
+# p = gis_data.path(name = 'simulate.shp')
+# import numpy as np
+# for col in DF.columns:
+#     if DF[col].dtype == np.int64:
+#        DF[col] = DF[col].astype(int)
+# DF.drop('points', axis = 1, inplace = True)
+# Dfl = dfl[['FBndID', 'Yield', 'TopN2O', 'NO3Total', 'NH4Total', 'SOC10_30cm']].copy()
+# dfm = DF.merge(Dfl, on  = "FBndID", how = 'inner')
+# dfm.to_file(p)
 
-SD =dfl.drop(['OBJECTID', 'index'], axis =1)
 
-gdf = gpd.GeoDataFrame(SD, geometry='geometry', crs='EPSG:4326')
-p = gis_data.path(name = 'simulate.shp')
-import numpy as np
-for col in DF.columns:
-    if DF[col].dtype == np.int64:
-       DF[col] = DF[col].astype(int)
-DF.drop('points', axis = 1, inplace = True)
-Dfl = dfl[['FBndID', 'Yield', 'TopN2O', 'NO3Total', 'NH4Total', 'SOC10_30cm']].copy()
-dfm = DF.merge(Dfl, on  = "FBndID", how = 'inner')
-dfm.to_file(p)
+# import system modules 
+import arcpy
+
+# Set environment settings
+#arcpy.env.workspace = gis_data.mkdir('soil_toolbox')
+#  Set local variables
+import arcpy
+arcpy.env.overwriteOutput = True
+arcpy.env.workspace = r'D:\ACPd\Base_files\acpf_huc070801050305\acpf070801050305.gdb'
+# Setting the input parameters for the SummarizeWithin tool
+polys = os.path.realpath(shp[0])  # This should be a GeoDataFrame or a feature class path
+mu_key_poly = r'D:\ndata\soils_data_mukey_305.shp'  # Input feature class
+outFeatureClass = 'soil_aggregated'  # Output feature class path
+keepAll = 'ONLY_INTERSECTING'  # Option to determine how features are treated
+sumFields = [['Damages', 'SUM'], ['VICTIM_AGE', 'MEAN']]  # Fields to summarize
+addShapeSum = 'ADD_SHAPE_SUM'  # Adds geometry statistics to output
+groupField = 'MUKEY'  # Field used to group features for separate summaries
+addMinMaj = 'ADD_MIN_MAJ'  # Adds statistics for minority and majority case
+addPercents = 'ADD_PERCENT'  # Adds percentage fields to output
+outTable = 'crimes_aggregated_groups'  # Output table name for the summary
+
+# Executing the SummarizeWithin function
+# arcpy.analysis.SummarizeWithin(
+#     in_polygons=polys,
+#     in_sum_features=mu_key_poly,
+#     out_feature_class=outFeatureClass,
+#     keep_all_polygons=keepAll,
+#     sum_fields='',
+#     sum_shape=addShapeSum,
+#     shape_unit='ACRES',
+#     group_field=groupField,
+#     add_min_maj=addMinMaj,
+#     add_group_percent=addPercents,
+#     out_group_table=outTable
+# )
+
+intersections = gpd.overlay(fb_gdf, gd, how='intersection')
+intersections['area'] = intersections.area/4000
+import matplotlib.pyplot as plt
+
+intersections.plot(column='area', legend=True)
+plt.show()
+
+# apparently we do not expect any differences in location except the MUKEY,
+# so we first run the unique mukeys and merge to all the field boundaries, the
+# results are then weighted by the field boundary, but first we need to assess if there is  difference

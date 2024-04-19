@@ -1,4 +1,7 @@
 from itertools import product
+from collections import defaultdict
+grouped = defaultdict(dict)
+
 factors = ['crop_code', 'Nitrogen', "ResidueFractions", "ApplicationType", "Tillage", "Clusters"]
 
 def create_permutations(factors:list, factor_names: list):
@@ -41,17 +44,33 @@ class GenerateCombinations:
         return  create_permutations([n.variables for n in self.mgt], [i.parameter for i in self.mgt])
     @property
     def organise_scrips(self):
-        return [i.get_script_manager for i in self.mgt ]
+        scp = [i.get_script_manager for i in self.mgt if i.get_script_manager['Name']!='NA' ]
 
-def mgt_updater(simId, ap, old_list):
-   upd = ap[simId]
-   upd = list(ap[simId].keys())
+        return scp
+
+def mgt_updater(simId, perms, old_list):
+   """
+    old_list (list) is a list of ALL MANAGEMENT scripts dictionary with key value pairs
+    perms (dict) is the dictionary returned by the permutation methods,
+    simId (int) is the target id of the simulation
+
+    """
+   upd = perms[simId]
+   upd = list(perms[simId].keys())
    for new, old in zip(upd, old_list):
-       print(old)
-       if new in old.keys():
-          old[new] = ap[simId][new]
 
-   return old_list
+       if new in old.keys():
+          old[new] = perms[simId][new]
+   di = old_list.copy()
+   for item in di:
+       # Merge dictionaries with the same 'Name' into grouped
+       if 'Name' in item:
+           name = item['Name']
+           grouped[name].update(item)
+
+   # Convert the grouped dictionary back to a list of dictionaries
+   mg_list = list(grouped.values())
+   return mg_list
 
 
 if __name__ == "__main__":

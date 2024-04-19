@@ -17,7 +17,7 @@ from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
 
 THICKNESS = [150, 150, 200, 200, 200, 250, 300, 300, 400, 500]
-
+hydro = {'A':67, 'B':78, 'C':85, 'D':89}
 
 def DownloadsurgoSoiltables(lonlat, select_componentname=None, summarytable=False):
     '''

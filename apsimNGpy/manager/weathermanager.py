@@ -18,7 +18,19 @@ from scipy import interpolate
 import copy
 import requests
 from datetime import datetime
-
+import string
+from io import StringIO
+import io
+import os
+from scipy import interpolate
+from scipy.interpolate import UnivariateSpline
+from apsimNGpy.core.base_data import LoadExampleFiles, Path
+from datetime import datetime
+import pandas as pd
+import numpy as np
+from scipy import interpolate
+import copy
+import warnings
 
 def generate_unique_name(base_name, length=6):
     # TODO this function has 4 duplicates
@@ -499,10 +511,7 @@ def create_met_header(fname, lonlat, tav, AMP, site=None):
         f2app.writelines(['() () (MJ/m2/day) (oC) (oC) (mm)\n'])
 
 
-import pandas as pd
-import numpy as np
-from scipy import interpolate
-import copy
+
 
 
 def impute_data(met, method="mean", verbose=False, **kwargs):
@@ -633,6 +642,162 @@ def get_weather(lonlat, start=1990, end=2000, source='daymet', filename='__met_.
         return met_nasapower(lonlat, start, end, fname=file_name)
     else:
         raise ValueError(f"Invalid source: {source} according to supplied {lonlat} lon_lat values try nasapower instead")
+
+def read_apsim_met(met_path, skip=5, index_drop=0, separator=' '):
+    try:
+        data = pd.read_csv(met_path, skiprows=skip, delim_whitespace=True)
+        return data.drop(0)
+
+    except Exception as e:
+        print(repr(e))
+
+def write_edited_met(old, daf, filename="edited_met.met"):
+    existing_lines = []
+    with open(old, 'r+') as file:
+        for i, line in enumerate(file):
+            existing_lines.append(line)
+            if 'MJ' in line and 'mm' in line and 'day in line':
+                print(line)
+                break
+    # iterate through the edited data frame met
+    headers = ['year', 'day', 'radn', 'maxt', 'mint', 'rain', 'vp', 'swe']
+    for index, row in daf.iterrows():
+        current_row = []
+        for header in headers:
+            current_row.append(str(row[header]))
+        current_str = " ".join(current_row) + '\n'
+        existing_lines.append(current_str)
+    fname = os.path.join(os.path.dirname(old), filename)
+    if os.path.exists(fname):
+        os.remove(fname)
+    with open(fname, "a") as df_2met:
+        df_2met.writelines(existing_lines)
+    return fname
+
+
+def merge_columns(df1_main, common_column, df2, fill_column, df2_colummn):
+    """
+    Parameters:
+    df_main (pd.DataFrame): The first DataFrame to be merged and updated.
+    common_column (str): The name of the common column used for merging.
+    df2 (pd.DataFrame): The second DataFrame to be merged with 'df_main'.
+    fill_column (str): The column in 'edit' to be updated with values from 'df2_column'.
+    df2_column (str): The column in 'df2' that provides replacement values for 'fill_column'.
+
+    Returns:
+    pd.DataFrame: A new DataFrame resulting from the merge and update operations.
+    """
+    try:
+        df = df1_main.merge(df2, on=common_column, how='left')
+        dm_copy = copy.deepcopy(df)
+        dm_copy[df2_colummn].fillna(dm_copy[fill_column], inplace=True)
+        dm_copy[fill_column] = dm_copy[df2_colummn]
+        # dm_copy.drop(columns=[df2_colummn], inplace=True)
+        dm_copy.reset_index()
+        return dm_copy
+    except Exception as e:
+        print(repr(e))
+
+def validate_met(met):
+    import datetime
+    if not isinstance(met, pd.DataFrame):
+        raise ValueError("object should be of class 'DataFrame'")
+
+    if met.empty:
+        raise ValueError("No rows of data present in this object.")
+
+    expected_colnames = ['year', 'day', 'radn', 'maxt', 'mint', 'rain']  # Add more as per your actual data structure
+    if len(met.columns) != len(expected_colnames) or not all(met.columns == expected_colnames):
+        print("Names in DataFrame:", met.columns)
+        print("Expected column names", expected_colnames)
+        warnings.warn("Number of columns in DataFrame does not match expected column names")
+    for cols in met.columns:
+        if cols == 'year':
+            try:
+              met = met[met['year'] != '!site:']
+              met[cols] = met[cols].astype(int)
+            except:
+              met[cols] = met[cols].astype('float')
+        else:
+         try:
+           met[cols] = met[cols].astype('float')
+         except:
+             pass
+    if met['year'].isna().any():
+        print(met[met['year'].isna()])
+        warnings.warn("Missing values found for year")
+
+    if met['year'].min() < 1900:
+        print(met[met['year'] < 1900])
+        warnings.warn(" minimum year is less than 1500")
+
+    if met['year'].max() > 2024:
+        print(met[met['year'] > 2024])
+        warnings.warn("year is greater than 2024")
+
+    # Add similar checks for other columns like 'day', 'mint', 'maxt', 'radn', 'rain'
+    # Implement any specific checks as in your R function
+    # Example for 'day':
+    if met['day'].isna().any():
+        print(met[met['day'].isna()])
+        warnings.warn("Missing values found for day")
+
+    if met['day'].min() < 1:
+        print(met[met['day'] < 1])
+        warnings.warn(" met starting day is less than 1")
+
+    if met['day'].max() > 366:
+        print(met[met['day'] > 366])
+        warnings.warn("day is greater than 366")
+
+    # Example for date checks
+    if len(met) > 0:
+        first_day = datetime.datetime(int(met.iloc[0]['year']), 1, 1) + pd.to_timedelta(met.iloc[0]['day'] - 1, unit='d')
+        last_day = datetime.datetime(int(met.iloc[-1]['year']), 1, 1) + pd.to_timedelta(met.iloc[-1]['day'] - 1, unit='d')
+        expected_dates = pd.date_range(start=first_day, end=last_day, freq='D')
+        if len(met) < len(expected_dates):
+            warnings.warn(f"{len(expected_dates) - len(met)} date discontinuities found. Consider checking data.")
+    check_rain = met[met['rain'] >95]
+    rad_high = met[met['radn'] >41]
+    if not rad_high.empty:
+        print(rad_high)
+        warnings.warn("radiation is too high")
+    if not check_rain.empty:
+        warnings.warn('probably rain is too high')
+        print(met[met['rain'] >95])
+
+
+    def check_missing(col):
+        if met[col].isna().any():
+           warnings.warn(f"{col}: has missing values_****___")
+           print(met[col].isna())
+
+    check_radn = met[met['radn'] < 0]
+    if not  check_radn.empty:
+        print('probably radiation is too low or missing')
+        print(met[met['radn'] < 0])
+
+    # Temperature checks could be similar, comparing 'maxt' and 'mint'
+    # Radiation, rain, and other checks as per the original function's logic
+    for cols in met.columns:
+        check_missing(cols)
+    min_t =met[met['mint']<-60]
+    if not min_t.empty:
+        warnings.warn("min temp is too low")
+        print(min_t)
+
+    min_t_high = met[met['mint']>40]
+    if not min_t_high.empty:
+        warnings.warn('Minimum temp is too high')
+        print(min_t_high)
+    maxt = met[met['maxt'] < -60]
+    if not maxt.empty:
+        warnings.warn("max temp is too low")
+        print(maxt)
+    maxt_high = met[met['maxt'] > 60]
+    if not maxt_high.empty:
+        print("max temp is too high")
+        print(maxt_high)
 
 
 if __name__ == '__main__':

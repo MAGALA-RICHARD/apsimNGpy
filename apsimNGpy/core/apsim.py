@@ -341,6 +341,8 @@ class ApsimModel(APSIMNG):
                 wb = sim.FindDescendant[Models.WaterModel.WaterBalance]()
                 wb.SWCON = self.SWICON
                 wb.Thickness = self.thickness_values
+                if kwargs.get('CN2Bare', None):
+                   wb.CN2Bare  = kwargs.get('CN2Bare')
             except:
                 # in the case of sim model, pass
 

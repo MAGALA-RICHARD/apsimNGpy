@@ -403,8 +403,8 @@ class APSIMNG():
         data = read_db_table(datastore, report_name)
         return data
     # perhaps a good a example of how to edit cultvar
-    def adjust_rue(self, csr, cultivar_name = 'B_110'):# Iowa only
-        CSR = csr,
+    def adjust_rue(self, csr, cultivar_name = 'B_110', base_csr = 2):# Iowa only
+        CSR = csr **np.log(1/csr) *base_csr,
         command = '[Leaf].Photosynthesis.RUE.FixedValue',
         self.edit_cultivar(cultivar_name, commands=command, values=CSR)
         return self
@@ -586,13 +586,12 @@ class APSIMNG():
         return self
 
     def get_current_cultvar_name(self, ManagerName):
-        # if ParameterName != CultivarName:
         try:
             ap = self.extract_user_input(ManagerName)['CultivarName']
             return ap
         except  KeyError:
             parameterName = 'CultivarName'
-            print(f"default parameter name is: {parameterName} please change in it your manager script and try again")
+            print(f"cultivar name: is not found")
 
     # summarise results by any statistical element
     @staticmethod

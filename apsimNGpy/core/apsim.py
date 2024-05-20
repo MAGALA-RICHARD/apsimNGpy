@@ -343,6 +343,8 @@ class ApsimModel(APSIMNG):
                 wb.Thickness = self.thickness_values
                 if kwargs.get('CN2Bare', None):
                    wb.CN2Bare  = kwargs.get('CN2Bare')
+                if kwargs.get('CNRed', None):
+                    wb.CNRed = kwargs.get('CNRed')
             except:
                 # in the case of sim model, pass
 

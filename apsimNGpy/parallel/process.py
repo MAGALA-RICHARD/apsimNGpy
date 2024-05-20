@@ -12,7 +12,7 @@ from apsimNGpy.utililies.utils  import select_process
 from apsimNGpy.utililies.database_utils import  read_db_table
 from apsimNGpy.parallel.safe import download_soil_table
 CPU = int(int(cpu_count()) * 0.5)
-
+import types
 
 # _______________________________________________________________
 def run_apsimxfiles_in_parallel(iterable_files, ncores=None, use_threads=False):
@@ -110,6 +110,7 @@ def read_result_in_parallel(iterable_files, ncores=None, use_threads=False, repo
         ncore2use = int(cpu_count() * 0.50)
 
     a = perf_counter()
+    counter = 0
     with select_process(use_thread=use_threads, ncores=ncore2use) as pool:
         futures = [pool.submit(read_db_table, i, report_name) for i in files]
         progress = tqdm(total=len(futures), position=0, leave=True,
@@ -117,11 +118,15 @@ def read_result_in_parallel(iterable_files, ncores=None, use_threads=False, repo
         # Iterate over the futures as they complete
         for future in as_completed(futures):
             data = future.result()
+            counter += 1
             # retrieve and store it in a generator
             progress.update(1)
             yield data
         progress.close()
-    print(perf_counter() - a, 'seconds', f'to read {len(files)} apsimx files databases')
+    if not isinstance(future, types.GeneratorType):
+       print(perf_counter() - a, 'seconds', f'to read {len(files)} apsimx files databases')
+    else:
+        print(perf_counter() - a, 'seconds', f'to read {counter} apsimx files databases')
 
 
 def download_soil_tables(iterable, use_threads=False, ncores=0, **kwargs):
@@ -199,6 +204,7 @@ def custom_parallel(func, iterable, *args, **kwargs):
 
     use_thread , ncores= kwargs.get('use_thread', False), kwargs.get('ncores', CORES)
     a = perf_counter()
+    counter = 0
     with select_process(use_thread=use_thread,
                          ncores=ncores) as pool:  # this reduces the repetition perhaps should even be implimented
         # with a decorator at the top of the function
@@ -207,10 +213,11 @@ def custom_parallel(func, iterable, *args, **kwargs):
                         bar_format=f'Running {func.__name__}:' '{percentage:3.0f}% completed')
         # Iterate over the futures as they complete
         for future in as_completed(futures):
+            counter += 1
             yield future.result()
             progress.update(1)
         progress.close()
-    print(perf_counter() - a, 'seconds', f'to run {len(iterable)} objects')
+    print(perf_counter() - a, 'seconds', f'to run {counter} objects')
 
 
 # test
@@ -218,7 +225,9 @@ def custom_parallel(func, iterable, *args, **kwargs):
 if __name__ == '__main__':
     from examples import fnn  # the function should not be on the main for some reasons
     lp = [(-92.70166631,  42.26139442), (-92.69581474,  42.26436962), (-92.64634469,  42.33703225)]
+    gen_d = (i for i in range(100000))
     lm = custom_parallel(fnn, range(100000), use_thread=True, ncores = 10)
+    lm2 = custom_parallel(fnn, gen_d, use_thread=True, ncores=10)
 
 
-    print(list(lm))
+    ap =list(lm)

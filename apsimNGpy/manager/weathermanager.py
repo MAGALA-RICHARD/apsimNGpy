@@ -24,7 +24,7 @@ import io
 import os
 from scipy import interpolate
 from scipy.interpolate import UnivariateSpline
-from apsimNGpy.core.base_data import LoadExampleFiles, Path
+
 from datetime import datetime
 import pandas as pd
 import numpy as np

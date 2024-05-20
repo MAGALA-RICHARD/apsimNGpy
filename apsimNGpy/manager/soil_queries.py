@@ -1,3 +1,6 @@
+import requests
+import pandas as pd
+import xmltodict
 def get_gssurgo_soil_soil_table_at_lonlat(lonlat, select_componentname=None, summarytable=False):
     '''
     TODO this is a duplicate File. Duplicate of soils/soilmanager
@@ -84,6 +87,11 @@ def get_gssurgo_soil_soil_table_at_lonlat(lonlat, select_componentname=None, sum
 
 
 def get_gssurgo_soil_soil_table_at_polygon(_coordinates):
+    """
+        Function to get al soil mapunit keys or components intersection a polygon
+    :param _coordinates: a list returned by get_polygon_bounds function
+    :return: data frame
+    """
     formatted_coordinates = ",".join([f"{lon} {lat}" for lon, lat in _coordinates])
     url = "https://SDMDataAccess.nrcs.usda.gov/Tabular/SDMTabularService.asmx"
     headers = {'content-type': 'application/soap+xml'}
@@ -128,3 +136,23 @@ def get_gssurgo_soil_soil_table_at_polygon(_coordinates):
     except ValueError as e:
         pass
     return soil_df
+
+def get_polygon_points(row):
+    """Extract points from a polygon geometry."""
+    if row.geometry.geom_type == 'Polygon':
+        return list(row.geometry.exterior.coords)
+    elif row.geometry.geom_type == 'MultiPolygon':
+        points = []
+        for polygon in row.geometry.geoms:
+            points.extend(list(polygon.exterior.coords))
+        return points
+    else:
+        return None  # not sure of other polygon types
+
+# Apply the function to each row in the GeoDataFrame
+def get_polygon_bounds(gdf_):
+    gdf = gdf_.copy()
+    crs = gdf.crs
+    gdf.to_crs(4326, inplace=True)
+    #print(f"coordinate system changed from: {crs} to: {gdf.crs}")
+    return gdf.apply(get_polygon_points, axis=1)

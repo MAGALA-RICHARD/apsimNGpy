@@ -408,7 +408,7 @@ class APSIMNG():
         command = '[Leaf].Photosynthesis.RUE.FixedValue',
         self.edit_cultivar(cultivar_name, commands=command, values=CSR)
         return self
-    def replicate_file(self, k, path=None, tag = "replica"):
+    def replicate_file(self, k, path=None, tag = "replica", get_back_list= False):
         """
         Replicates a file 'k' times.
 
@@ -419,16 +419,28 @@ class APSIMNG():
         - self: The core.api.APSIMNG object instance containing 'path' attribute pointing to the file to be replicated.
         - k (int): The number of copies to create.
         - path (str, optional): The directory where the replicated files will be saved. Defaults to None, meaning the same directory as the source file.
+        - tag (str, optional): a tagto attach with the copies. Defaults to "replicate"
+        - get_back_list (bool, optional): if True, the copies will be placed in a list. If False, the copies will be created in the generator object. Defaults to False
 
         Returns:
-        - A list of paths to the newly created files.
+        - A list of paths to the newly created files if get_back_list is True else a generator is returned.
         """
         if path is None:
             file_name = self.path.rsplit('.apsimx', 1)[0]
-            return [shutil.copy(self.path, f"{file_name}_{tag}_{i}_.apsimx") for i in range(k)]
+            if get_back_list:
+                return [shutil.copy(self.path, f"{file_name}_{tag}_{i}_.apsimx") for i in range(k)]
+            else:
+                for range_n in range(k):
+                    yield shutil.copy(self.path, f"{file_name}_{tag}_{range_n}_.apsimx")
+
         else:
             b_name = os.path.basename(self.path).rsplit('.apsimx', 1)[0]
-            return [shutil.copy(self.path, os.path.join(path, f"{b_name}_{tag}_{i}.apsimx")) for i in range(k)]
+            if get_back_list:
+                return [shutil.copy(self.path, os.path.join(path, f"{b_name}_{tag}_{i}.apsimx")) for i in range(k)]
+            else:
+                for range_n in range(k):
+                    yield shutil.copy(self.path, os.path.join(path, f"{b_name}_{tag}_{range_n}.apsimx"))
+
 
     def _read_simulation(self, report_name=None):
         """ returns all data frame the available report tables

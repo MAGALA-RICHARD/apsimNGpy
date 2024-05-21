@@ -17,16 +17,17 @@ from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
 
 THICKNESS = [150, 150, 200, 200, 200, 250, 300, 300, 400, 500]
-hydro = {'A':67, 'B':78, 'C':85, 'D':89}
+hydro = {'A': 67, 'B': 78, 'C': 85, 'D': 89}
+
 
 def DownloadsurgoSoiltables(lonlat, select_componentname=None, summarytable=False):
     '''
     TODO this is a duplicate File. Duplicate of soils/soilmanager
     Downloads SSURGO soil tables
-    
+
     parameters
     ------------------
-    lon: longitude 
+    lon: longitude
     lat: latitude
     select_componentname: any componet name within the map unit e.g 'Clarion'. the default is None that mean sa ll the soil componets intersecting a given locationw il be returned
       if specified only that soil component table will be returned. in case it is not found the dominant componet will be returned with a caveat meassage.
@@ -58,7 +59,7 @@ def DownloadsurgoSoiltables(lonlat, select_componentname=None, summarytable=Fals
                         FULL OUTER JOIN copmgrp pmg ON co.cokey=pmg.cokey
                         FULL OUTER JOIN corestrictions rt ON co.cokey=rt.cokey
                         WHERE mu.mukey IN (SELECT * from SDA_Get_Mukey_from_intersection_with_WktWgs84('point(""" + lonLat + """)')) 
-                        
+
                         AND sc.areasymbol != 'US' 
                         order by co.cokey, ch.chkey, prcent, topdepth, bottomdepth, muname
             </sdm:Query>
@@ -154,7 +155,7 @@ distparms = {'a': 0, 'b': 0.2}
 
 class OrganizeAPSIMsoil_profile:
     # Iinitiate the soil object and covert all into numpy array and change them to floating values
-    def __init__(self, sdf, thickness, thickness_values=None, bottomdepth=200):
+    def __init__(self, sdf, thickness, thickness_values=None, bottomdepth=200, state='Iowa'):
         """_summary_
 
         Args:
@@ -166,8 +167,14 @@ class OrganizeAPSIMsoil_profile:
         sdf1 = sdf.drop_duplicates(subset=["topdepth"])
         surgodf = sdf1.sort_values('topdepth', ascending=True)
         csr = surgodf.get("CSR").dropna()
-        if isinstance(csr, pd.Series):
-            self.CSR = csr.astype("float")
+        if state == 'Iowa':
+            if not csr.empty:
+                self.CSR = csr.astype("float")
+                print(self.CSR)
+            else:
+                self.CSR = None
+        else:
+            self.CSR = None
         self.clay = npar(surgodf.clay).astype(np.float16)
         self.sand = npar(surgodf.sand).astype(np.float16)
         self.silt = npar(surgodf.silt).astype(np.float16)
@@ -307,9 +314,9 @@ class OrganizeAPSIMsoil_profile:
             return self.variable_profile(wat)
 
     def cal_KS(self):  # has potential to cythonize
-        ks= self.variable_profile(self.saturatedhudraulic_conductivity)
+        ks = self.variable_profile(self.saturatedhudraulic_conductivity)
 
-        ks =ks*(npar([1e-06]) * (60 * 60 * 24) * 1000)
+        ks = ks * (npar([1e-06]) * (60 * 60 * 24) * 1000)
 
         return ks
 
@@ -372,26 +379,27 @@ class OrganizeAPSIMsoil_profile:
     def get_AirDry(self):
         if any(np.isnan(self.L15)):
             air = self.cal_l15Fromsand_clay_OM()
-            
+
             air[0] = air[0] * 0.5
-            air[1] = air[1] *0.9
+            air[1] = air[1] * 0.9
             return air
         else:
-            air = self.L15/100 
-            air[0] = air[0]*0.5
-            air[1] = air[1]* 0.9
+            air = self.L15 / 100
+            air[0] = air[0] * 0.5
+            air[1] = air[1] * 0.9
             airl = self.variable_profile(air)
-            
+
             return airl
 
     def getBD(self):
         return self.variable_profile(self.BD)
 
     def get_CSR(self):
-        return np.array(self.CSR)
+        if self.CSR:
+            return np.array(self.CSR)
 
     @staticmethod
-    def adjust_SAT_BD_DUL(SAT, BD, DUL, target_saturation_a =0.381, target_saturation_b= 0.404,
+    def adjust_SAT_BD_DUL(SAT, BD, DUL, target_saturation_a=0.381, target_saturation_b=0.404,
                           target_bulk_density_a=1.639, target_bulk_density_b=1.578):
         """
         Adjusts saturation and bulk density values in a NumPy array to meet specific criteria.
@@ -467,15 +475,16 @@ class OrganizeAPSIMsoil_profile:
         ParticleSizeClay = self.interpolate_clay()
         ParticleSizeSilt = self.interpolate_silt()
         ParticleSizeSand = self.interpolate_sand()
-        VA = [SAT, BD, DUL, KS, PH, ParticleSizeClay, ParticleSizeSilt, ParticleSizeSand,   L15, Depth, Carbon, PH]
+        VA = [SAT, BD, DUL, KS, PH, ParticleSizeClay, ParticleSizeSilt, ParticleSizeSand, L15, Depth, Carbon, PH]
         DUL = np.sort(DUL)[::-1]
         SAT = np.sort(SAT)[::-1]
-       
+
         def calculate_bd(sat):
             bd = 2.65 - (sat + 0.02) * 2.65
             return bd
+
         BD = calculate_bd(SAT)
-        
+
         df = pd.DataFrame(
             {"Depth": Depth, "Thickness": [self.thickness] * n, "BD": BD, "AirDry": AirDry, "LL15": L15, "DUL": DUL,
              "SAT": SAT, "KS": KS, "Carbon": Carbon,
@@ -524,9 +533,9 @@ class OrganizeAPSIMsoil_profile:
         # Original thought
         # ad * soilvar_perdep_cor(nlayers, a = curveparam_a, b = curveparam_b)
         cropKL = 0.08 * soilvar_perdep_cor(nlayers, a=curveparam_a, b=curveparam_b)
-        
+
         cropXF = 1 * soilvar_perdep_cor(nlayers, a=curveparam_a, b=0)
-        
+
         # create a data frame for these three variables
         dfs = pd.DataFrame({'kl': cropKL, 'll': cropLL, 'xf': cropXF})
         SoilCNRatio = np.full(shape=nlayers, fill_value=12, dtype=np.int64)
@@ -570,16 +579,19 @@ class OrganizeAPSIMsoil_profile:
         cropdf = pd.concat(cropframe, join='outer', axis=1)
         physical = self.create_soilprofile()
 
-        po = 1-(physical["BD"]/2.65)
-        swi_con = (po-physical['DUL']) /po
+        po = 1 - (physical["BD"] / 2.65)
+        swi_con = (po - physical['DUL']) / po
 
         # create a alist
         frame = [physical, organic, cropdf, metadata, swi_con, swi_con]
         # All soil data frames
-        CSR  = np.tile(self.CSR.iloc[0], int(self.Nlayers))
+        if isinstance(self.CSR, (list, np.ndarray, pd.Series)):
+            CSR = np.tile(self.CSR.iloc[0], int(self.Nlayers))
+        else:
+            CSR = None
         resultdf = pd.concat(frame, join='outer', axis=1)
         finalsp = {'soil ': resultdf, 'crops': crops, 'metadata': metadata, 'soilwat': soilwat, 'swim': swim,
-                   'soilorganicmatter ': soilorganicmatter, 'SWCON':swi_con}
+                   'soilorganicmatter ': soilorganicmatter, 'SWCON': swi_con}
         # return pd.DataFrame(finalsp)
         frame.insert(3, CSR, )
 
@@ -595,11 +607,11 @@ if __name__ == '__main__':
     from apsimNGpy.core.base_data import LoadExampleFiles
     from pathlib import Path
     from apsimNGpy import settings
-   
+
     ap_sim = LoadExampleFiles(os.getcwd()).get_maize
 
     m = ApsimModel(ap_sim, thickness_values=settings.SOIL_THICKNESS)
     m.replace_downloaded_soils(data, m.extract_simulation_name)
-  
+
     m.run("MaizeR")
 

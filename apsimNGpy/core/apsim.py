@@ -117,7 +117,21 @@ class ApsimModel(APSIMNG):
     def get_initial_no3(self, simulation=None):
         """Get soil initial NO3 content"""
         return self._get_initial_values("NO3", simulation)
-
+    def adjust_dul(self, simulations= None):
+        duL= self.extract_any_soil_physical('DUL', simulations)
+        saT = sel.extract_any_soil_physical('SAT', simulations)
+        for enum, (s, d) in enumerate(zip(saT, duL)):
+            # first check if they are equal
+            if d == s:
+                duL[enum] = d - 0.02
+            # if d is greater than s, then by what value, we need this value to add it to 0.02
+            #  to be certain all the time that dul is less than s we subtract the summed value
+            elif d > s:
+                diff = d - s
+                duL[enum] = d - (diff + 0.02)
+            else:
+                duL[enum] = d
+        self.replace_any_soil_physical('DUL', simulations, duL)
     def _get_SSURGO_soil_profile(self, lonlat, run_all_soils=False):
         self.lonlat = None
         self.lonlat = lonlat

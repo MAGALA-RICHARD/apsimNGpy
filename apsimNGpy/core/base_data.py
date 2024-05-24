@@ -269,3 +269,4 @@ if __name__ == '__main__':
     from apsimNGpy.core.base_data import LoadExampleFiles
     maize = LoadExampleFiles()
     dt = maize.get_maize
+    print(dt)

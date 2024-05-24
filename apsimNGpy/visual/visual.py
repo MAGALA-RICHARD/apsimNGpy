@@ -8,7 +8,7 @@ def quick_plot(**kwargs):
     width = kwargs.get('width', 7)
     height = kwargs.get('height', 5)
     plt.figure(figsize=(width, height))
-    plt.plot(x, y, color='red', label='Line')
+    #plt.plot(x, y, color='red', label='Line')
     plt.scatter(x, y, s=30, facecolors='none', edgecolors='blue')
     xlab = kwargs.get("xlabel", "x")
     ylab = kwargs.get('ylabel', 'y')
@@ -18,8 +18,3 @@ def quick_plot(**kwargs):
     plt.close()
 
 
-def change_rotation(abb):
-    if "B" in abb:
-        return 'Soybean, Maize'
-    else:
-        return 'Maize'

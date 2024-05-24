@@ -4,6 +4,7 @@ author: Richard Magala
 email: magalarich20@gmail.com
 
 """
+from functools import singledispatch
 import matplotlib.pyplot as plt
 import random, logging, pathlib
 import string
@@ -34,7 +35,7 @@ from Models.Climate import Weather
 from Models.Soils import Soil, Physical, SoilCrop, Organic
 import Models
 from Models.PMF import Cultivar
-
+from apsimNGpy.core import load_model
 
 # from settings import * This file is not ready and i wanted to do some test
 
@@ -51,63 +52,82 @@ def timing_decorator(func):
 
     return wrapper
 
-
-class APSIMNG():
+class APSIMNG:
     """Modify and run Apsim next generation simulation models."""
 
-    def __init__(self, model: Union[str, Simulations], copy=True, out_path=None, read_from_string=True):
-        copy = True # mandatory now to conserve the original file 
-        """
-        Parameters
-        ----------
+    def __init__(self, model: Union[str, Simulations], out_path=None, read_from_string=True, **kwargs):
+            if kwargs.get('copy'):
+                warnings.warn('copy argument is deprecated, it is not mandatory to copy the model in order to conserve the original model.')
+            """
+            Parameters
+            ----------
+            model : str or Simulations
+                Path to .apsimx file or a Simulations object.
+            copy : bool, optional
+                If True, a copy of the original simulation will be created on init to conserve the original file, by default True.
+            out_path : str, optional
+                Path of the modified simulation; if None, it will be set automatically.
+            read_from_string : bool, optional
+                If True, file is uploaded to memory through json module (preferred); otherwise, we read from file.
+            """
+            self.copy = True  # Mandatory to conserve the original file
+            self.results = None
+            self.Model = None
+            self.datastore = None
+            self.out_path = os.path.realpath(out_path) if out_path else None
 
-        model
-            Path to .apsimx file
-        copy, optional
-            If `True` a copy of the original simulation will be created on init, by default True.
-        out_path, optional
-            Path of modified simulation, if `None` will be set automatically.
-        read_from_string (boolean) if True file is uploaded to memory through json module most preffered, otherwise we can read from file
-        """
-        self.copy = copy
-        if isinstance(model, str):
-            assert os.path.exists(model), "The file does not exists in the specified directory"
-            if not model.endswith('.apsimx'):
-                raise ValueError("Did you forget the apsimx extention?")
-        self.results = None
-        self.Model = None
-        self.datastore = None
-        if out_path:
-            out_path = os.path.realpath(out_path)
-        self.out_path = out_path
-
-        if type(model) == str or isinstance(model, Path):
-            apsimx_file = os.path.realpath(model)
-            name, ext = os.path.splitext(apsimx_file)
-            if copy:
-                if out_path is None:
-                    copy_path = f"{name}_copy{ext}"
-                else:
-                    copy_path = out_path
-                try:
-                    shutil.copy(apsimx_file, copy_path)
-                    pathlib.Path(f"{name}.db").unlink(missing_ok=True)
-                    pathlib.Path(f"{name}.db-shm").unlink(missing_ok=True)
-                    pathlib.Path(f"{name}.db-wal").unlink(missing_ok=True)
-                    self.path = copy_path
-                except PermissionError as e:
-                    print(repr(e))
+            if isinstance(model, str) and not isinstance(model, dict):
+                self._init_from_file(model, read_from_string)
+            elif isinstance(model, Simulations):
+                self._init_from_simulations(model)
+            elif isinstance(model, dict):
+                self.load_apsimx_from_string(model)
             else:
-                self.path = apsimx_file
+                raise NotImplementedError("Invalid model type. Must be a string path or a Simulations object.")
+    def load_4rm_memory(self):
+        self.load_apsimx_from_string(load_model.l_model)
+        #self.Model = self.load_apsimx_from_string()
+    def _init_from_file(self, model_path: str, read_from_string: bool):
+            """Initialize the object from a file path."""
+            apsimx_file = os.path.realpath(model_path)
+            name, ext = os.path.splitext(apsimx_file)
+            print(name)
+            if not apsimx_file.endswith('.apsimx'):
+                raise ValueError("The file must have an .apsimx extension.")
 
-            if read_from_string:  
+            copy_path = self._copy_file(apsimx_file, name, ext)
+            self.path = copy_path
+
+            if read_from_string:
                 self.load_apsimx_from_string(self.path)
             else:
                 self._load_apsimx(self.path)
 
-        elif type(model) == Simulations:
-            self.Model = model
+    def _copy_file(self, apsimx_file: str, name: str, ext: str) -> str:
+            """Copy the apsimx file and remove related database files."""
+            if self.out_path is None:
+                copy_path = f"{name}_copy{ext}"
+            else:
+                copy_path = self.out_path
 
+            try:
+                shutil.copy(apsimx_file, copy_path)
+                self._remove_related_files(name)
+            except PermissionError as e:
+                print(f"PermissionError: {e}")
+                raise
+
+            return copy_path
+    @staticmethod
+    def _remove_related_files(name: str):
+            """Remove related database files."""
+            for suffix in ["", "-shm", "-wal"]:
+                db_file = pathlib.Path(f"{name}.db{suffix}")
+                db_file.unlink(missing_ok=True)
+
+    def _init_from_simulations(self, model: Simulations):
+            """Initialize the object from a Simulations object."""
+            self.Model = model
             self.datastore = self.Model.FindChild[Models.Storage.DataStore]().FileName
             self._DataStore = self.Model.FindChild[Models.Storage.DataStore]()
 
@@ -142,27 +162,45 @@ class APSIMNG():
             raise Exception(type(e))
 
     # loads the apsimx file into memory but from string
-    def load_apsimx_from_string(self, path):
-        path = os.path.realpath(path)
-        try:
+    def load_apsimx_from_string(self, _data):
+
+        """
+        :param _data: data can be a STRING PATH, A DICTIONARY FOR APSIM SIMULATION OBJECT OR A A STING
+        :return: Model object
+        """
+
+        @singledispatch
+        def process_data(data):
+            raise NotImplementedError("Cannot process data of this type")
+
+        @process_data.register
+        def _(data: str):
+            path = os.path.realpath(data)
             with open(path, "r+", encoding='utf-8') as apsimx:
                 app_ap = json.load(apsimx)
             string_name = json.dumps(app_ap)
             fn = path
-            self.Model = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](string_name, None,
-                                                                                                  True, fileName=fn)
-
+            return Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](string_name, None, True,
+                                                                                             fileName=fn)
+        @process_data.register
+        def _(data: dict):
+            str_ = json.dumps(data)
+            string_nam = os.path.join(Path.home(), APSIMNG.generate_unique_name('frm_string') + '.apsimx')
+            return Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](str_, None, True,
+                                                                                            fileName=string_nam)
+        try:
+            self.Model  = process_data(_data)
             if 'NewModel' in dir(self.Model):
                 self.Model = self.Model.get_NewModel()
 
         except PermissionError as e:
-            # this error will be logged to the folder logs in the current working directory
             print('file is being used by another process')
             raise
 
         self.datastore = self.Model.FindChild[Models.Storage.DataStore]().FileName
         self._DataStore = self.Model.FindChild[Models.Storage.DataStore]()
         # self.version = self.Model.get_ApsimVersion()
+        return self
 
     # loads apsimx file from the computer into memory using its path
     def _load_apsimx(self, path):
@@ -644,6 +682,28 @@ class APSIMNG():
         path = os.getcwd()
         file_path = opj(path, self.generate_unique_name("clones")) + ".apsimx"
         shutil.copy(self.path, file_path)
+
+    def update_manager_parameters(self, **kwargs):
+        """updates  the manager module by passing the parameters as keys and their values as values
+
+        >>>> from apsimNGpy.core.apsim import ApsimModel
+        >>>> from apsimNGpy.core.base_data. import LoadExampleFiles, Path
+        >>>> pp = Path.home()
+        # sending to home directory
+        >>>>  os.chdir(pp)
+        >>>> init = LoadExampleFiles()
+        >>>> model = init.maize.get_maize
+        >>>> print(model)
+        >>>> _model = ApsimModel(file)
+        >>>> _model.update_manager_parameters('Name'= Tillage, Fraction =0.75)
+        Tillage is the name of the manager script which is displayed in the GUI while fraction is the corresponding parameter name and 0.75 is the new value to update
+        """
+        mgt_params = {i:J for i, J in kwargs.items()}
+        try:
+           self.update_mgt(management=mgt_params)
+        except AttributeError:
+            raise AttributeError(f"error updating the manager: {kwargs.get('Name')} does not exists")
+        return self
 
     def summarize_output_variable(self, var_name, table_name='Report'):
         data = self.results[table_name]
@@ -1492,7 +1552,7 @@ if __name__ == '__main__':
 
     al = LoadExampleFiles(Path.cwd())
     model = al.get_maize
-    model = APSIMNG(model, read_from_string=False)
+    model = APSIMNG(model, read_from_string=True)
     pl = {"Name": "AddfertlizerRotationWheat", "Crop": 'Soybean'}
     pm = {'Name': 'PostharvestillageMaize', "Fraction": 0.0}
     pt = {'Name': 'PostharvestillageSoybean', 'Fraction': 0.95, 'Depth': 290}

@@ -83,7 +83,8 @@ class APSIMNG:
             elif isinstance(model, dict):
                 self.load_apsimx_from_string(model)
             else:
-                raise NotImplementedError("Invalid model type. Must be a string path or a Simulations object.")
+                self.load_apsimx_from_string(load_model.l_model)
+                #raise NotImplementedError("Invalid model type. Must be a string path or a Simulations object.")
     def load_4rm_memory(self):
         self.load_apsimx_from_string(load_model.l_model)
         #self.Model = self.load_apsimx_from_string()

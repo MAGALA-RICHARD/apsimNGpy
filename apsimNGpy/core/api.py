@@ -22,8 +22,8 @@ import apsimNGpy.manager.weathermanager as weather
 from functools import cache
 # prepare for the C# import
 from apsimNGpy.core.pythonet_config import LoadPythonnet
-from apsimNGpy.utililies.database_utils import read_db_table
-
+from apsimNGpy.utililies.database_utils import read_db_table, get_db_table_names
+import warnings
 # py_config = LoadPythonnet()()  # double brackets avoids calling it twice
 
 # now we can safely import C# libraries
@@ -57,7 +57,7 @@ class APSIMNG:
 
     def __init__(self, model: Union[str, Simulations], out_path=None, read_from_string=True, **kwargs):
             if kwargs.get('copy'):
-                warnings.warn('copy argument is deprecated, it is not mandatory to copy the model in order to conserve the original model.')
+                warnings.warn('copy argument is deprecated, it is now mandatory to copy the model in order to conserve the original model.')
             """
             Parameters
             ----------
@@ -73,30 +73,34 @@ class APSIMNG:
             self.copy = True  # Mandatory to conserve the original file
             self.results = None
             self.Model = None
-            self.datastore = None
-            self.out_path = os.path.realpath(out_path) if out_path else None
 
-            if isinstance(model, str) and not isinstance(model, dict):
-                self._init_from_file(model, read_from_string)
-            elif isinstance(model, Simulations):
-                self._init_from_simulations(model)
-            elif isinstance(model, dict):
-                self.load_apsimx_from_string(model)
+            self.datastore = None
+           
+            self._model = model
+            if not isinstance(out_path, str):
+                self.out_path = None
+            else:
+                self.out_path = out_path
+
+
+            if isinstance(self._model, str) and not isinstance(self._model, dict):
+                self._init_from_file(read_from_string)
+            elif isinstance(self._model, Simulations):
+                self._init_from_simulations(self._model)
+            elif isinstance(self._model, dict):
+                self.load_apsimx_from_string(self._model)
             else:
                 self.load_apsimx_from_string(load_model.l_model)
                 #raise NotImplementedError("Invalid model type. Must be a string path or a Simulations object.")
     def load_4rm_memory(self):
         self.load_apsimx_from_string(load_model.l_model)
         #self.Model = self.load_apsimx_from_string()
-    def _init_from_file(self, model_path: str, read_from_string: bool):
+    def _init_from_file(self,  read_from_string: bool):
             """Initialize the object from a file path."""
-            apsimx_file = os.path.realpath(model_path)
-            name, ext = os.path.splitext(apsimx_file)
-            print(name)
-            if not apsimx_file.endswith('.apsimx'):
-                raise ValueError("The file must have an .apsimx extension.")
+            apsimx_file = os.path.realpath(self._model)
+            self._name, self._ext = os.path.splitext(self._model)
 
-            copy_path = self._copy_file(apsimx_file, name, ext)
+            copy_path = self._copy_file()
             self.path = copy_path
 
             if read_from_string:
@@ -104,26 +108,26 @@ class APSIMNG:
             else:
                 self._load_apsimx(self.path)
 
-    def _copy_file(self, apsimx_file: str, name: str, ext: str) -> str:
+    def _copy_file(self) -> str:
             """Copy the apsimx file and remove related database files."""
             if self.out_path is None:
-                copy_path = f"{name}_copy{ext}"
+                copy_path = f"{self._name}_copy{self._ext}"
             else:
                 copy_path = self.out_path
 
             try:
-                shutil.copy(apsimx_file, copy_path)
-                self._remove_related_files(name)
+                shutil.copy(self._model, copy_path)
+                self._remove_related_files(self._name)
             except PermissionError as e:
                 print(f"PermissionError: {e}")
                 raise
 
             return copy_path
     @staticmethod
-    def _remove_related_files(name: str):
+    def _remove_related_files(_name):
             """Remove related database files."""
             for suffix in ["", "-shm", "-wal"]:
-                db_file = pathlib.Path(f"{name}.db{suffix}")
+                db_file = pathlib.Path(f"{_name}.db{suffix}")
                 db_file.unlink(missing_ok=True)
 
     def _init_from_simulations(self, model: Simulations):
@@ -273,7 +277,7 @@ class APSIMNG:
         with open(final_out_path, "w", encoding='utf-8') as f:
             f.write(json_string)
 
-    def run(self, report_name="Report", simulations=None, clean=False, multithread=True):
+    def run(self, report_name=None, simulations=None, clean=False, multithread=True):
         """Run apsim model in the simulations
 
         Parameters
@@ -316,10 +320,12 @@ class APSIMNG:
 
         if (len(e) > 0):
             print(e[0].ToString())
-
-        if report_name and isinstance(report_name, list):
+        if report_name is None:
+            report_name = get_db_table_names(self.datastore)
+            warnings.warn('No tables were specified, retrieved tables includes:: {}'.format(report_name))
+        if  isinstance(report_name, (tuple,list)):
             self.results = [read_db_table(self.datastore, report_name=rep) for rep in report_name]
-        if report_name and isinstance(report_name, str):
+        else:
             self.results = read_db_table(self.datastore, report_name=report_name)
 
         return self
@@ -415,24 +421,9 @@ class APSIMNG:
     @property  #
     def extract_report_names(self):
         ''' returns all data frame the available report tables'''
-        with sqlite3.connect(self.datastore) as conn:
-
-            cursor = conn.cursor()
-
-            # reading all table names
-
-            table_names = [a for a in cursor.execute("SELECT name FROM sqlite_master WHERE type = 'table'")]
-
-            table_list = []
-            for i in table_names:
-                table_list.append(i[0])
-                # remove these
-            rm = ['_InitialConditions', '_Messages', '_Checkpoints', '_Units']
-            for i in rm:
-                if i in table_list:
-                    table_list.remove(i)
-                # start selecting tables
-            return table_list
+        table_list  =get_db_table_names(self.datastore)
+        rm = ['_InitialConditions', '_Messages', '_Checkpoints', '_Units']
+        return [im for im in table_list if im not in rm]
 
     @staticmethod
     def read_apsimx_db(datastore, report_name):
@@ -1098,8 +1089,10 @@ class APSIMNG:
             List of report lines.
         """
         sim = self._find_simulation(simulation)
-        report = list(sim.FindAllDescendants[Models.Report]())[1]
-        return report, list(report.get_VariableNames())
+        for si in sim:
+         report = (si.FindAllDescendants[Models.Report]())
+         print(list(report))
+
 
     def extract_soil_physical(self, simulation=None):
         """Find physical soil
@@ -1569,7 +1562,7 @@ if __name__ == '__main__':
         lm = model
         # model.examine_management_info()
 
-        model.run()
+        model.run('Carbon')
     pm = model.check_som()
     pt = model.update_mgt(pl)
     model.save_edited_file(r'D:/try.apsimx')

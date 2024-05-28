@@ -51,7 +51,7 @@ class ApsimModel(APSIMNG):
                  lonlat=None,
                  soil_series: str = 'domtcp', thickness: int = 20, bottomdepth: int = 200,
                  thickness_values: list = None, run_all_soils: bool = False):
-        super().__init__(model, read_from_string)
+        super().__init__(model, read_from_string, out_path)
         self.SWICON = None
         """get suurgo soil tables and organise it to apsim soil profiles
         --------------------
@@ -550,7 +550,7 @@ if __name__ == '__main__':
         print(model)
         from apsimNGpy import settings
 
-        model = ApsimModel(model, read_from_string=True, thickness_values=settings.SOIL_THICKNESS)
+        model = ApsimModel(model, out_path  =None, read_from_string=True, thickness_values=settings.SOIL_THICKNESS)
         model.replace_met_from_web(lonlat=lonlat, start_year=2001, end_year=2020)
         from apsimNGpy.manager import soilmanager as sm
 

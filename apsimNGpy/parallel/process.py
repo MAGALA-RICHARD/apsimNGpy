@@ -248,5 +248,7 @@ if __name__ == '__main__':
     lm = custom_parallel(fnn, range(100000), use_thread=True, ncores = 10)
     lm2 = custom_parallel(fnn, gen_d, use_thread=True, ncores=10)
 
+    #simple example
+
 
     ap =list(lm)

@@ -170,7 +170,7 @@ class OrganizeAPSIMsoil_profile:
         if state == 'Iowa':
             if not csr.empty:
                 self.CSR = csr.astype("float")
-                print(self.CSR)
+                
             else:
                 self.CSR = None
         else:
@@ -399,8 +399,7 @@ class OrganizeAPSIMsoil_profile:
             return np.array(self.CSR)
 
     @staticmethod
-    def adjust_SAT_BD_DUL(SAT, BD, DUL, target_saturation_a=0.381, target_saturation_b=0.404,
-                          target_bulk_density_a=1.639, target_bulk_density_b=1.578):
+    def adjust_SAT_BD_DUL(SAT, BD, DUL):
         """
         Adjusts saturation and bulk density values in a NumPy array to meet specific criteria.
 
@@ -415,20 +414,10 @@ class OrganizeAPSIMsoil_profile:
         - np.array: Adjusted 2D NumPy array with saturation and bulk density values.
         """
         # Iterate through each row in the array
-
-        # Check and adjust saturation
-        if SAT[9] > target_saturation_a:
-            SAT[9] = target_saturation_a - 0.01
-        if SAT[6] > target_saturation_b:
-            SAT[6] = target_saturation_b - 0.01
-        # Check and adjust bulk density
-        if BD[9] > target_bulk_density_a:
-            BD[9] = target_bulk_density_a
-        if BD[6] > target_bulk_density_b:
-            BD[6] = target_bulk_density_b
-        for i in range(len(DUL)):
-            if SAT[i] < DUL[i]:
-                SAT[i] = DUL[i]
+        for counter, (sat, dul) in enumerate(zip(SAT, DUL)):
+            if dul>=sat:
+                diff = dul-sat
+                DUL[counter] = sat + diff +0.02
         return SAT, BD, DUL
 
     def create_soilprofile(self):

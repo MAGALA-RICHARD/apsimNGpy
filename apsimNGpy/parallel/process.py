@@ -11,6 +11,8 @@ from apsimNGpy.settings import CORES
 from apsimNGpy.utililies.utils  import select_process
 from apsimNGpy.utililies.database_utils import  read_db_table
 from apsimNGpy.parallel.safe import download_soil_table
+from sqlalchemy import create_engine
+from itertools import islice
 CPU = int(int(cpu_count()) * 0.5)
 import types
 
@@ -220,7 +222,22 @@ def custom_parallel(func, iterable, *args, **kwargs):
     print(perf_counter() - a, 'seconds', f'to run {counter} objects')
 
 
-# test
+def simulate_in_chunks(iterable_generator, chunk_size, data_base, write_style = 'replace'):
+    """
+    Iterate through a generator by specifying the chunk size. vital if the data to be simulated is so large to fit into the computer memory
+    :param iterable_generator: generator to iterate such as the one returned by custom_parallel function
+    :param chunk_size: size of the chunk to simulate in parts
+    :param data_base: name of the sql where to store the data
+    :param write_style:species whether to append or replace each table incase it exists in the database
+    """
+    ID = 0
+    while True:
+        ID += 1
+        chunk = [i for i in islice(iterable_generator, chunk_size) if i is not None]
+        if len(chunk) == 0:
+            break
+        d_f_ = pd.concat(chunk, ignore_index=True)
+        d_f_.to_sql(f"_{ID}", data_base, if_exists=write_style, index=False)
 
 if __name__ == '__main__':
     from examples import fnn  # the function should not be on the main for some reasons

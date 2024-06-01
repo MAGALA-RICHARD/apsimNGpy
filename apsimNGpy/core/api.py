@@ -1501,7 +1501,7 @@ class APSIMNG:
             Model.FindChild[Models.Storage.DataStore]().UseInMemoryDB = True
             id = Model.FindChild[Models.Storage.DataStore]()
             dt = Model.FindChild[Models.Storage.DataStoreReader]()
-            print(dt)
+            
 
             multithread = True
             if multithread:

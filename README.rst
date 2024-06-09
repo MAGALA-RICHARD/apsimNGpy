@@ -1,4 +1,5 @@
 apsimNGpy: The Next Generation Agroecosytem Simulation Library
+
 ====================================================================
 
 Our cutting-edge open-source framework, apsimNGpy, empowers advanced agroecosystem modeling through the utilization
@@ -17,6 +18,7 @@ Requirements
 .. _Installation:
 
 Installation
+
 ********************************************************************************
 
 All versions are currently in development, phase and they can be installed as follows:
@@ -74,7 +76,9 @@ Required Dependencies:
 Please note that apsimNGpy is tested on Python 3. We are not aware of its performance in Python 2 because it utilizes some of the new libraries like pathlib and f-strings.
 
 Usage
+
 *********************************************************************************
+
 .. code:: python
 
     import apsimNGpy
@@ -86,7 +90,7 @@ Usage
     cwd = Path.cwd().home() # sending this to your home folder
     wd = cwd.joinpath("apsimNGpy_demo")
     if not wd.exists():
-      os.mkdir(wd)
+       os.mkdir(wd)
     # change directory
     os.chdir(wd)
     # Create the data
@@ -113,7 +117,7 @@ Usage
 A graph should be able to appear like the ones below. Note that plot_data function just wraps matplotlib plot function
 for quick visualisation
 
-Congratulations you have successfuly used apsimNGpy package
+Congratulations you have successfully used apsimNGpy package
 *********************************************************************************
 .. image:: ./apsimNGpy/examples/Figure_1.png
    :alt: /examples/Figure_1.png
@@ -217,18 +221,14 @@ is a step-by-step guide on how to use the validation.evaluator module from apsim
     print(available_metrics)
     # Then select your choice from the list
 
-
-.. _How to Contribute to apsimNGpy:
-
 How to Contribute to apsimNGpy
-==============================
-
+*********************************************************************************
 We welcome contributions from the community, whether they are bug fixes, enhancements, documentation updates, or new features. Here's how you can contribute to ``apsimNGpy``:
 
 Reporting Issues
 ----------------
 
-If you find a bug or have a suggestion for improving ``apsimNGpy``, please first check the `Issue Tracker <https://github.com/MAGALA-RICHARD/apsimNGpy.git/issues>`_ to see if it has already been reported. If it hasn't, feel free to submit a new issue. Please provide as much detail as possible, including steps to reproduce the issue, the expected outcome, and the actual outcome.
+If you find a bug or have a suggestion for improving ``apsimNGpy``, please first check the `Issue Tracker <https://github.com/MAGALA-RICHARD/apsimNGpy/issues>`_ to see if it has already been reported. If it hasn't, feel free to submit a new issue. Please provide as much detail as possible, including steps to reproduce the issue, the expected outcome, and the actual outcome.
 
 Contributing Code
 -----------------
@@ -236,10 +236,14 @@ Contributing Code
 We accept code contributions via Pull Requests (PRs). Here are the steps to contribute:
 
 Fork the Repository
-  Start by forking the ``apsimNGpy`` repository on GitHub. This creates a copy of the repo under your GitHub account.
+^^^^^^^^^^^^^^^^^^^
+
+Start by forking the ``apsimNGpy`` repository on GitHub. This creates a copy of the repo under your GitHub account.
 
 Clone Your Fork
-  Clone your fork to your local machine:
+^^^^^^^^^^^^^^^
+
+Clone your fork to your local machine:
 
   .. code-block:: bash
 
@@ -289,13 +293,9 @@ Feel free to join in discussions on issues or pull requests. Your feedback and i
 Code of Conduct
 ---------------
 
-Please note that this project is released with a `Contributor Code of Conduct https://github.com/MAGALA-RICHARD/apsimNGpy/blob/main/CODE_OF_CONDUCT.md>`_. By participating in this project, you agree to abide by its terms.
-
-
 
 Acknowledgements
-================
-
+*********************************************************************************
 This project, *ApsimNGpy*, greatly appreciates the support and contributions from various organizations and initiatives that have made this research possible. We extend our gratitude to Iowa State University's C-CHANGE Presidential Interdisciplinary Research Initiative, which has played a pivotal role in the development of this project. Additionally, our work has been significantly supported by a generous grant from the USDA-NIFA Sustainable Agricultural Systems program (Grant ID: 2020-68012-31824), underscoring the importance of sustainable agricultural practices and innovations.
 
 We would also like to express our sincere thanks to the APSIM Initiative. Their commitment to quality assurance and the structured innovation program for APSIM's modelling software has been invaluable. APSIM's software, which is available for free for research and development use, represents a cornerstone for agricultural modeling and simulation. For further details on APSIM and its capabilities, please visit `www.apsim.info <http://www.apsim.info>`_.

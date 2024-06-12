@@ -246,16 +246,18 @@ class APSIMNG:
 
     def _reload_saved_file(self):
         self.save_edited_file(self.path)
+        return self
 
     import os
 
-    def save_edited_file(self, outpath=None):
+    def save_edited_file(self, outpath=None, reload =False):
         """Save the model
 
         Parameters
         ----------
         outpath : str, optional
             Path of the output .apsimx file, by default None
+            reload: bool to load the file using the outpath
         """
         # Determine the output path
         if outpath:
@@ -276,6 +278,10 @@ class APSIMNG:
         # Save the JSON string to the determined output path
         with open(final_out_path, "w", encoding='utf-8') as f:
             f.write(json_string)
+        if reload:
+            self._model = final_out_path
+            self.load_apsimx_from_string(self._model)
+            return self
 
     def run(self, report_name=None, simulations=None, clean=False, multithread=True):
         """Run apsim model in the simulations
@@ -578,9 +584,13 @@ class APSIMNG:
                 break
         return rep
 
-    def read_cultvar_params(self, name):
+    def read_cultvar_params(self, name, verbose = None):
         cultvar = self._find_cultvar(name)
-        return self._cultivar_params(cultvar)
+        c_param =  self._cultivar_params(cultvar)
+        if verbose:
+            for i in c_param:
+                print(f"{i} : {c_param[i]} \n")
+        return c_param
 
     def get_crop_replacement(self, Crop):
         """
@@ -833,14 +843,10 @@ class APSIMNG:
 
             return self
 
-    def __reload(self):
-        self.save_edited_file()
-        if self.out_path:
-            self._load_apsimx(self.out_path)
-        else:
-            self._load_apsimx(self.path)
-
-        return self
+    def save_and_Load(self, out):
+           self.save_edited_file(outpath=out)
+           self.load_apsimx_from_string(_data= out)
+           return self
 
     def update_management_decissions(self, management, simulations=None, reload=True):
         """Update management, handles multiple managers in a loop

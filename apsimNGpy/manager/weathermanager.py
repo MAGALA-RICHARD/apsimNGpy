@@ -24,6 +24,7 @@ import io
 import os
 from scipy import interpolate
 from scipy.interpolate import UnivariateSpline
+import logging
 
 from datetime import datetime
 import pandas as pd
@@ -660,7 +661,7 @@ def write_edited_met(old, daf, filename="edited_met.met"):
                 print(line)
                 break
     # iterate through the edited data frame met
-    headers = ['year', 'day', 'radn', 'maxt', 'mint', 'rain', 'vp', 'swe']
+    headers = daf.columns.to_list()
     for index, row in daf.iterrows():
         current_row = []
         for header in headers:
@@ -709,7 +710,7 @@ def validate_met(met):
     expected_colnames = ['year', 'day', 'radn', 'maxt', 'mint', 'rain']  # Add more as per your actual data structure
     if len(met.columns) != len(expected_colnames) or not all(met.columns == expected_colnames):
         print("Names in DataFrame:", met.columns)
-        print("Expected column names", expected_colnames)
+        logging.warning("Expected column names", expected_colnames)
         warnings.warn("Number of columns in DataFrame does not match expected column names")
     for cols in met.columns:
         if cols == 'year':
@@ -724,15 +725,15 @@ def validate_met(met):
          except:
              pass
     if met['year'].isna().any():
-        print(met[met['year'].isna()])
+        logging.warning(met[met['year'].isna()])
         warnings.warn("Missing values found for year")
 
     if met['year'].min() < 1900:
-        print(met[met['year'] < 1900])
+        logging.warning(met[met['year'] < 1900])
         warnings.warn(" minimum year is less than 1500")
 
     if met['year'].max() > 2024:
-        print(met[met['year'] > 2024])
+        logging.warning(met[met['year'] > 2024])
         warnings.warn("year is greater than 2024")
 
     # Add similar checks for other columns like 'day', 'mint', 'maxt', 'radn', 'rain'
@@ -774,7 +775,7 @@ def validate_met(met):
 
     check_radn = met[met['radn'] < 0]
     if not  check_radn.empty:
-        print('probably radiation is too low or missing')
+        logging.warning('probably radiation is too low or missing')
         print(met[met['radn'] < 0])
 
     # Temperature checks could be similar, comparing 'maxt' and 'mint'
@@ -798,7 +799,49 @@ def validate_met(met):
     if not maxt_high.empty:
         print("max temp is too high")
         print(maxt_high)
+    if len(daterange(met.year.min(), met.year.max())) != len(met):
+        warnings.warn('daterange is not standard')
+    else: print('daterange matched expected')
 
+from datetime import datetime, timedelta
+def day_of_year_to_date(year, day_of_year):
+    """
+    Convert day of the year to a date.
+
+    Parameters:
+    -----------
+    year : int
+        The year to which the day of the year belongs.
+    day_of_year : int
+        The day of the year (1 to 365 or 366).
+
+    Returns:
+    --------
+    datetime.date
+        The corresponding date.
+    """
+    return datetime(year, 1, 1) + timedelta(days=day_of_year - 1)
+
+def impute_missing_leaps(dmet, fill = 0):
+   dmet['year'] = dmet['year'].astype(int)
+   dmet['day'] = dmet['day'].astype(int)
+   datee = [day_of_year_to_date(_year, day) for _year, day in zip(dmet.year, dmet.day)]
+
+   # Create a copy and set the date as the index
+   dmett = dmet.copy()
+   dmett['datee'] = pd.to_datetime(datee)
+   dmett.set_index('datee', inplace=True)
+   indexDate = pd.date_range(start=dmett.index.min(), end=dmett.index.max(), freq='D')
+   check = daterange(dmett.year.min(), dmett.year.max())
+   # Reindex the DataFrame to include all dates in the range
+   df_daily = dmett.reindex(check)
+   df_fill = df_daily.fillna(fill).copy(deep=True)
+   df_fill['day'] = df_fill.index.day
+   df_fill['year'] = df_fill.index.year
+   # Optionally, fill missing values (for example, with the mean of the column)
+
+
+   return df_fill
 
 if __name__ == '__main__':
     # imputed_df = impute_data(df, method="approx", verbose=True, copy=True)

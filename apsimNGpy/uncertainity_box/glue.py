@@ -5,6 +5,7 @@ import pandas as pd
 from matplotlib import pyplot as plt
 from apsimNGpy.experiment.variable import BoundedVariable, DiscreteVariable
 import logging
+from apsimNGpy.uncertainity_box.tools import CustomComparator
 import numpy
 a_true = 3
 b_true = 6
@@ -77,6 +78,7 @@ class GlueRunner:
         value errors if param lists are not of equal size
         """
 
+        self.results = None
         self._loss = None
         self._observed = observed
         assert isinstance(params, (list, tuple)), 'should be a list or  tuple'
@@ -119,7 +121,7 @@ class GlueRunner:
         denominator_value = np.sum((self.observed - self.observed.mean()) ** 2)
         nse = 1 - (num / denominator_value)
 
-        return nse, sim
+        return {'fitness':nse, 'sim':sim}
     #users can define their own loss function
     @property
     def loss_function(self):
@@ -139,9 +141,9 @@ class GlueRunner:
         if not callable(_loss_function):
             raise TypeError(' objects passed is not callable or a function')
         self._loss = _loss_function
-        print(222)
 
-    def run_glue(self, threshold, parallel =None, **kwargs):
+
+    def run_glue(self, threshold, direction ='gt', parallel =None, **kwargs):
         """
         Run simulations using the default Nash-Sutcliffe Efficiency (NSE) loss function,
         or a user-defined loss function if specified during class instantiation.
@@ -153,6 +155,8 @@ class GlueRunner:
             pd.DataFrame: A DataFrame containing all "behavioral" parameter sets and associated model outputs.
 
         Parameters:
+            threshold (float): specifies the cut-off points
+            direction: str; lt for the behavioral parameter to be less than the specified threshold or gt to be greater than
             ncores (int): Specifies the number of processors to use for parallel processing.
             process (bool): Determines whether to run the processes in threads.
 
@@ -166,6 +170,7 @@ class GlueRunner:
         # we need to store the outputs
         out_params = []
         out_sims = []
+        others =[]
         loss_func = self.loss_function
         cores = kwargs.get('ncores', NCORE)
         process = kwargs.get('process', True)
@@ -174,15 +179,18 @@ class GlueRunner:
             for parameters in generator:
 
                 #Extract the loss function
-                fitness, sim = loss_func(parameters)
+                fitness_sim = loss_func(parameters).copy()
+                fitness, sim = fitness_sim.get('fitness'), fitness_sim.get('sim')
+
                 # keep those that exceed the behavioral threshold
-                if  fitness >= threshold:
+                Compare = CustomComparator(fitness, comparison_direction=direction)
+                if  Compare.compare(threshold):
 
                     prm = dict(zip(self.param_names,parameters))
                     fit = {'eval_index':fitness}
                     nd = {**prm, **fit }
                     out_params.append(nd)
-
+                    others.append(fitness_sim.get('others'))
                     out_sims.append(sim)
 
         else:
@@ -190,20 +198,28 @@ class GlueRunner:
 
             for parameters in futures:
                 #Extract the loss function
-                fitness, sim = loss_func(parameters)
+                fitness_sim = loss_func(parameters).copy()
+                fitness, sim = fitness_sim.get('fitness'), fitness_sim.get('sim')
                 # keep those that exceed the behavioral threshold
-                if  fitness >= threshold:
+                Compare = CustomComparator(fitness, comparison_direction=direction)
+                if Compare.compare(threshold):
 
                     prm = dict(zip(self.param_names,parameters))
                     fit = {'eval_index':fitness}
                     nd = {**prm, **fit }
                     out_params.append(nd)
-
+                    others.append(fitness_sim.get('others'))
                     out_sims.append(sim)
 
         # Build df
         paramDF = pd.DataFrame(data=out_params)
-        print(paramDF.shape)
+        M_others = [i for i in others if i is not None]
+        other = None
+        if len(M_others) > 0:
+            try:
+              other = pd.DataFrame(M_others)
+            except:
+              pass
         if  len(out_params) < 0:
             logging.info('No behavioural parameter sets found.')
             raise ValueError('No behavioural parameter sets were found found.')
@@ -212,8 +228,9 @@ class GlueRunner:
         print(f"Found: {len(paramDF)} behavioural sets out of:: {self.params[0].samples.size} runs")
 
         # DF of behavioral simulations
-        print(np.shape(out_sims))
+
         behaviorDF = pd.DataFrame(out_sims)
+        self.results = {'params': paramDF, 'behaviorDF': behaviorDF, 'others': other}
         return paramDF, behaviorDF
 
     def coverage(self, ci_data):
@@ -323,7 +340,7 @@ if __name__ == '__main__':
     gle.coverage(ci)
     aa, dfc = df
     # test changing the loss function
-    #not below that i sued the same fucntion but only changed the name
+    #not below that for demosntration, I used the same function but only changed the name
     def nls(params, **kwargs):
         """ Nash-Sutcliffe efficiency.
         """
@@ -338,4 +355,4 @@ if __name__ == '__main__':
 
         return nse, sim
     gle.loss_function = nls
-    df = gle.run_glue(threshold=0.5, parallel=True)
+    df = gle.run_glue(threshold=0.5, parallel=True, direction='lt')

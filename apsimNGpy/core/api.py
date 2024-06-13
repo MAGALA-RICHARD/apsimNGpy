@@ -836,7 +836,7 @@ class APSIMNG:
                 som.Value.InitialResidueMass = inrm
                 som.Value.InitialCNR = icnr
             else:
-                raise Exception(
+                raise NotImplementedError(
                     "File node structure is not supported at a moment. please rename your SOM module to "
                     "SurfaceOrganicMatter")
             # mp.Value.InitialResidueMass

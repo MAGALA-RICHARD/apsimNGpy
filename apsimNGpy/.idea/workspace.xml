@@ -5,13 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="5d471312-8496-4246-98d6-790439318160" name="Changes" comment="adjust swim DUL and SAT values">
-      <change afterPath="$PROJECT_DIR$/utililies/logger.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/uncertainity_box/sobol.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/core/api.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/api.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/experiment/variable.py" beforeDir="false" afterPath="$PROJECT_DIR$/experiment/variable.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/manager/weathermanager.py" beforeDir="false" afterPath="$PROJECT_DIR$/manager/weathermanager.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/uncertainity_box/glue.py" beforeDir="false" afterPath="$PROJECT_DIR$/uncertainity_box/glue.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/uncertainity_box/tools.py" beforeDir="false" afterPath="$PROJECT_DIR$/uncertainity_box/tools.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/parallel/process.py" beforeDir="false" afterPath="$PROJECT_DIR$/parallel/process.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/uncertainity_box/senstivity.py" beforeDir="false" afterPath="$PROJECT_DIR$/uncertainity_box/senstivity.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -36,36 +34,37 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
-    &quot;Python.__init__.executor&quot;: &quot;Run&quot;,
-    &quot;Python.apsim.executor&quot;: &quot;Run&quot;,
-    &quot;Python.glue.executor&quot;: &quot;Run&quot;,
-    &quot;Python.logger.executor&quot;: &quot;Run&quot;,
-    &quot;Python.met_functions.executor&quot;: &quot;Run&quot;,
-    &quot;Python.process.executor&quot;: &quot;Run&quot;,
-    &quot;Python.senstivity.executor&quot;: &quot;Run&quot;,
-    &quot;Python.soilmanager.executor&quot;: &quot;Run&quot;,
-    &quot;Python.tools.executor&quot;: &quot;Run&quot;,
-    &quot;Python.utils.executor&quot;: &quot;Run&quot;,
-    &quot;Python.variable.executor&quot;: &quot;Run&quot;,
-    &quot;Python.weathermanager.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;last_opened_file_path&quot;: &quot;D:/package/apsimNGpy/apsimNGpy/uncertainity_box&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;inlay.hints&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "Python.__init__.executor": "Run",
+    "Python.apsim.executor": "Run",
+    "Python.glue.executor": "Run",
+    "Python.logger.executor": "Run",
+    "Python.met_functions.executor": "Run",
+    "Python.process.executor": "Run",
+    "Python.senstivity.executor": "Run",
+    "Python.sobol.executor": "Run",
+    "Python.soilmanager.executor": "Run",
+    "Python.tools.executor": "Run",
+    "Python.utils.executor": "Run",
+    "Python.variable.executor": "Run",
+    "Python.weathermanager.executor": "Run",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "git-widget-placeholder": "main",
+    "last_opened_file_path": "D:/package/apsimNGpy/apsimNGpy/uncertainity_box",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "inlay.hints",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="D:\package\apsimNGpy\apsimNGpy\uncertainity_box" />
@@ -75,7 +74,7 @@
       <recent name="C:\Users\rmagala\Box\apsimNGpy\apsimNGpy\core" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.variable">
+  <component name="RunManager" selected="Python.sobol">
     <configuration name="__init__" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="apsimNGpy" />
       <option name="ENV_FILES" value="" />
@@ -114,29 +113,6 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="true" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="glue" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="apsimNGpy" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/uncertainity_box" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/uncertainity_box/glue.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="true" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -191,11 +167,34 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="sobol" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="apsimNGpy" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/uncertainity_box" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/uncertainity_box/sobol.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="variable" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="apsimNGpy" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/experiment" />
       <option name="IS_MODULE_SDK" value="true" />
@@ -213,11 +212,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.sobol" />
         <item itemvalue="Python.variable" />
         <item itemvalue="Python.__init__" />
         <item itemvalue="Python.senstivity" />
         <item itemvalue="Python.logger" />
-        <item itemvalue="Python.glue" />
       </list>
     </recent_temporary>
   </component>
@@ -277,7 +276,8 @@
       <workItem from="1717802251316" duration="950000" />
       <workItem from="1717863769093" duration="34549000" />
       <workItem from="1718025424842" duration="28927000" />
-      <workItem from="1718216230166" duration="1655000" />
+      <workItem from="1718216230166" duration="2344000" />
+      <workItem from="1718294896067" duration="755000" />
     </task>
     <task id="LOCAL-00264" summary="new">
       <option name="closed" value="true" />

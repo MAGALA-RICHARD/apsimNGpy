@@ -12,7 +12,7 @@ from functools import partial
 import pandas as pd
 from pandas import read_sql_query as rsq
 from pandas import errors
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, inspect
 from os.path import exists
 
 import sqlite3
@@ -60,7 +60,8 @@ def get_db_table_names(d_b):
     d_b = f'sqlite:///{d_b}'
     #engine = create_engine(mssql+pymssql://sa:saPassword@localhost:52865/{d_b})')
     engine = create_engine(d_b)
-    return engine.table_names()
+    insp = inspect(engine)
+    return insp.get_table_names()
 
 
 def read_db_table(db, report_name):
@@ -83,10 +84,10 @@ def read_db_table(db, report_name):
             table_name = 'your_table'
 
             # Get the table data as a DataFrame
-            >>>> df = read_db_table(database_path, table_name)
+            #>>>> ddf = read_db_table(database_path, table_name)
 
             # Work with the DataFrame
-           >>>> print(df)
+           #>>>> print(ddf)
 
         Note:
             - Ensure that the database path and table name are correct.
@@ -102,10 +103,11 @@ def read_db_table(db, report_name):
         conn.close()
         return df
     except errors.DatabaseError as ed:
-        print(repr(ed))
-        print(f" Seems like the specified table name: {report_name} does not exists in {db} data base")
+        #print(repr(ed))
+        #print(f" Seems like the specified table name: {report_name} does not exists in {db} data base")
         if exists(db):
            print(f"report_name(s) should be any of the following:: {get_db_table_names(db)}")
+        raise errors.DatabaseError(f"{str(ed)} occurred")
 
 
 def load_database(path):

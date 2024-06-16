@@ -24,6 +24,7 @@ from functools import cache
 from apsimNGpy.core.pythonet_config import LoadPythonnet
 from apsimNGpy.utililies.database_utils import read_db_table, get_db_table_names
 import warnings
+from apsimNGpy.utililies.utils import timer
 # py_config = LoadPythonnet()()  # double brackets avoids calling it twice
 
 # now we can safely import C# libraries
@@ -55,7 +56,9 @@ def timing_decorator(func):
 class APSIMNG:
     """Modify and run Apsim next generation simulation models."""
 
-    def __init__(self, model: Union[str, Simulations], out_path=None, read_from_string=True, **kwargs):
+    def __init__(self, model, out_path= None, out =None, read_from_string=True,load=True, **kwargs):
+
+            self.path = None
             if kwargs.get('copy'):
                 warnings.warn('copy argument is deprecated, it is now mandatory to copy the model in order to conserve the original model.')
             """
@@ -73,27 +76,27 @@ class APSIMNG:
             self.copy = True  # Mandatory to conserve the original file
             self.results = None
             self.Model = None
-
+            self.load= load
             self.datastore = None
-           
+            self._str_model = None
             self._model = model
-            if not isinstance(out_path, str):
-                self.out_path = None
-            else:
-                self.out_path = out_path
+            self.out_path = out
+
+            if self.load:
+                if isinstance(self._model, str):
+                    self._init_from_file(read_from_string)
+                elif isinstance(self._model, Simulations):
+                    self._init_from_simulations(self._model)
+                elif isinstance(self._model, dict):
+                    self.load_apsimx_from_string(self._model)
 
 
-            if isinstance(self._model, str) and not isinstance(self._model, dict):
-                self._init_from_file(read_from_string)
-            elif isinstance(self._model, Simulations):
-                self._init_from_simulations(self._model)
-            elif isinstance(self._model, dict):
-                self.load_apsimx_from_string(self._model)
-            else:
-                self.load_apsimx_from_string(load_model.l_model)
-                #raise NotImplementedError("Invalid model type. Must be a string path or a Simulations object.")
-    def load_4rm_memory(self):
-        self.load_apsimx_from_string(load_model.l_model)
+    def get_model(self, xdict):
+          self.path = xdict
+          self.load_apsimx_from_string(xdict)
+          return self
+
+
         #self.Model = self.load_apsimx_from_string()
     def _init_from_file(self,  read_from_string: bool):
             """Initialize the object from a file path."""
@@ -107,7 +110,12 @@ class APSIMNG:
                 self.load_apsimx_from_string(self.path)
             else:
                 self._load_apsimx(self.path)
-
+    def clear_links(self):
+        self.Model.ClearLinks()
+        return self
+    def ClearSimulationReferences(self):
+        self.Model.ClearSimulationReferences()
+        return self
     def _copy_file(self) -> str:
             """Copy the apsimx file and remove related database files."""
             if self.out_path is None:
@@ -165,6 +173,24 @@ class APSIMNG:
         except Exception as e:
             print(type(e), "occured")
             raise Exception(type(e))
+    @property
+    def str_model(self):
+        return json.dumps(self._str_model)
+    @str_model.setter
+    def str_model(self, value:dict):
+        self._str_model = json.dumps(value)
+
+    def load_from_memory(self, file_name):
+        str_ = self.str_model
+        self.Model =  Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](str_, None, True,
+                                                                                     fileName=file_name)
+        self.datastore = self.Model.FindChild[Models.Storage.DataStore]().UpdateFileName()
+        self.Model.ClearSimulationReferences()
+
+
+        return self
+
+
 
     # loads the apsimx file into memory but from string
     def load_apsimx_from_string(self, _data):
@@ -190,7 +216,13 @@ class APSIMNG:
         @process_data.register
         def _(data: dict):
             str_ = json.dumps(data)
-            string_nam = os.path.join(Path.home(), APSIMNG.generate_unique_name('frm_string') + '.apsimx')
+            if self.out_path:
+                print(self.out_path)
+
+                string_nam = self.out_path
+                self.path = self.out_path
+            else:
+                string_nam = os.path.join(os.getcwd(), APSIMNG.generate_unique_name('frm_string') + '.apsimx')
             return Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](str_, None, True,
                                                                                             fileName=string_nam)
         try:
@@ -348,15 +380,18 @@ class APSIMNG:
             Simulation name to be cloned, of None clone the first simulation in model
         """
 
-        sim = self._find_simulation(simulation)
+        sims = self._find_simulation(simulation)
+        for sim in sims:
+            clone_sim = Models.Core.Apsim.Clone(sim)
+            clone_sim.Name = target
+            # clone_zone = clone_sim.FindChild[Models.Core.Zone]()
+            # clone_zone.Name = target
 
-        clone_sim = Models.Core.Apsim.Clone(sim)
-        clone_sim.Name = target
-        # clone_zone = clone_sim.FindChild[Models.Core.Zone]()
-        # clone_zone.Name = target
 
-        self.Model.Children.Add(clone_sim)
+            self.Model.Children.Clear(clone_sim.Name)
+            self.Model.Children.Add(clone_sim)
         self._reload_saved_file()
+        self.extr
 
     def remove_simulation(self, simulation):
         """Remove a simulation from the model
@@ -444,7 +479,7 @@ class APSIMNG:
         command = '[Leaf].Photosynthesis.RUE.FixedValue',
         self.edit_cultivar(cultivar_name, commands=command, values=CSR)
         return self
-    def replicate_file(self, k, path=None, tag = "replica", get_back_list= False):
+    def replicate_file(self, k, path=None, tag = "replica"):
         """
         Replicates a file 'k' times.
 
@@ -455,27 +490,20 @@ class APSIMNG:
         - self: The core.api.APSIMNG object instance containing 'path' attribute pointing to the file to be replicated.
         - k (int): The number of copies to create.
         - path (str, optional): The directory where the replicated files will be saved. Defaults to None, meaning the same directory as the source file.
-        - tag (str, optional): a tagto attach with the copies. Defaults to "replicate"
-        - get_back_list (bool, optional): if True, the copies will be placed in a list. If False, the copies will be created in the generator object. Defaults to False
+        - tag (str, optional): a tag to attached with the copies. Defaults to "replicate"
+
 
         Returns:
         - A list of paths to the newly created files if get_back_list is True else a generator is returned.
         """
         if path is None:
             file_name = self.path.rsplit('.apsimx', 1)[0]
-            if get_back_list:
-                return [shutil.copy(self.path, f"{file_name}_{tag}_{i}_.apsimx") for i in range(k)]
-            else:
-                for range_n in range(k):
-                    yield shutil.copy(self.path, f"{file_name}_{tag}_{range_n}_.apsimx")
+            return [shutil.copy(self.path, f"{file_name}_{tag}_{i}_.apsimx") for i in range(k)]
 
         else:
             b_name = os.path.basename(self.path).rsplit('.apsimx', 1)[0]
-            if get_back_list:
-                return [shutil.copy(self.path, os.path.join(path, f"{b_name}_{tag}_{i}.apsimx")) for i in range(k)]
-            else:
-                for range_n in range(k):
-                    yield shutil.copy(self.path, os.path.join(path, f"{b_name}_{tag}_{range_n}.apsimx"))
+            return [shutil.copy(self.path, os.path.join(path, f"{b_name}_{tag}_{i}.apsimx")) for i in range(k)]
+
 
 
     def _read_simulation(self, report_name=None):
@@ -847,7 +875,12 @@ class APSIMNG:
            self.save_edited_file(outpath=out)
            self.load_apsimx_from_string(_data= out)
            return self
-
+    @property
+    def FindAllReferencedFiles(self):
+        return self.Model.FindAllReferencedFiles()
+    def RevertCheckpoint(self):
+        self.Model = self.Model.RevertCheckpoint('new_model')
+        return self
     def update_management_decissions(self, management, simulations=None, reload=True):
         """Update management, handles multiple managers in a loop
 
@@ -1521,7 +1554,7 @@ class APSIMNG:
             data = _read_simulation(id.FileName)
             return Model.FindChild[Models.Storage.IDataStore]().get_Reader()
         except Exception as e:
-            raise Exception(f'{type(e)}: occured')
+            raise Exception(f'{type(e)}: occurred')
 
 
 # ap = dat.GetDataUsingSql("SELECT * FROM [MaizeR]")
@@ -1559,7 +1592,7 @@ if __name__ == '__main__':
 
     # pm = model.from_string(path = al.get_maize, fn ='apsimtrie.apsimx')
 
-    for i in [0.5, 0.0, 0.1, 1]:
+    for i in [0.59]:
         # model = APSIMNG(al.get_maize, read_from_string=False)
         pm = {'Name': 'PostharvestillageMaize', "Fraction": i}
         model.update_management_decissions(

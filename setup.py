@@ -2,14 +2,14 @@ from setuptools import setup, find_packages
 import sys
 import os
 
-VERSION = '0.0.3'
+VERSION = '0.0.27.1'
 DESCRIPTION = 'apsimx next generation package interface'
 LONG_DESCRIPTION = 'run, edit, download soils and weather and interact with the apsimx file'
 with open('README.rst') as readme_file:
     readme = readme_file.read()
 setup(
     name='apsimNGpy',
-    version='0.0.27',
+    version='0.0.27.2',
     url='https://github.com/MAGALA-RICHARD/apsimNGpy.git',
     license='MIT',
     author='Richard Magala',

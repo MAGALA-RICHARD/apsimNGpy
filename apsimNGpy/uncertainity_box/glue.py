@@ -298,8 +298,6 @@ class GlueRunner:
         plt.show()
 
 
-
-
 def _check_params(params):
     """ Evaluate if all params lists are of equal length"""
     lp = [np.shape(para)[0] for para in params]
@@ -308,10 +306,6 @@ def _check_params(params):
         if it !=lpa:
             return False
     return True
-
-
-
-
 
 if __name__ == '__main__':
 

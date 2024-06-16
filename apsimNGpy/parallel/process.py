@@ -238,29 +238,46 @@ def simulate_in_chunks(w_d, iterable_generator, chunk_size, con_data_base =None,
     returns None
     """
 
-    if not isinstance(con_data_base, sqlalchemy.engine.base.Engine):
-        engine = create_engine(f'sqlite:///{con_data_base}')
-    else:
-        engine = con_data_base
+    engine = con_data_base
     if save_to_csv:
         if os.path.exists(w_d):
             wd = os.path.join(w_d, 'Cdata')
             if not os.path.exists(wd):
                 os.makedirs(wd, exist_ok=True)
-        else: raise ValueError("path not found")
+        else:
+            raise ValueError("path not found")
 
     ID = 0
     while True:
         ID += 1
         chunk = [i for i in islice(iterable_generator, chunk_size) if i is not None]
+        df = [df.copy(deep=True) for df in chunk]
         if len(chunk) == 0:
             break
-        d_f_ = pd.concat(chunk, ignore_index=True)
+
+        ard = []
+        for i in df:
+            colum = i.columns
+            if 'index' in colum:
+                i = i.drop('index', axis=1)
+            xf = i.reset_index(drop=True).copy()
+            ard.append(xf)
+        try:
+            d_f_ = pd.concat(ard)
+        except pd.errors.IndexingError as e:
+            for df in ard:
+                df.reset_index(drop=True)
+            try:
+                d_f_ = pd.concat(ard)
+            except:
+                print('failed')
+
+        del ard
         if save_to_csv:
-           FileName = os.path.join(wd, f"{ID}-{table_tag}.csv")
-           d_f_.to_csv(FileName, index=False)
+            FileName = os.path.join(wd, f"{ID}-{table_tag}.csv")
+            d_f_.to_csv(FileName, index=False)
         if con_data_base:
-           d_f_.to_sql(f"{table_tag}_{ID}", con=engine, if_exists='replace', index=False)
+            d_f_.to_sql(f"{table_tag}_{ID}", con=engine, if_exists='replace', index=False)
 
 if __name__ == '__main__':
     from examples import fnn  # the function should not be on the main for some reason

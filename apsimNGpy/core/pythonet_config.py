@@ -98,6 +98,32 @@ class LoadPythonnet:
     ----------
     None
     """
+    def __init__(self):
+
+        self._apsimPath = GetAPSIMPath()()
+    #TODO to be completed
+    @property
+    def load_path(self):
+        """Property getter for APSIM binary path."""
+        if not self._apsimPath:
+            raise KeyError("APSIM is not loaded in the system environmental variable")
+
+        if 'bin' not in self._apsimPath:
+            apsim_path = os.path.join(self._apsimPath, 'bin')
+            self._apsimPath = apsim_path
+
+        if not os.path.exists(self._apsimPath):
+            raise ValueError("A full path to the binary folder is required or the path is invalid")
+
+        return self._apsimPath
+
+    @load_path.setter
+    def load_path(self, path):
+        """Property setter for APSIM binary path."""
+        if not path:
+            raise ValueError("The path cannot be empty")
+
+        self._apsimPath = path
 
     def start_pythonnet(self):
         try:

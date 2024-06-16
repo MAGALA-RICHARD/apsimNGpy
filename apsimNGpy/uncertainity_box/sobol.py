@@ -15,9 +15,10 @@ def  sobol_samples(problem_specifics):
         raise ValueError(f"bounds length not equal to the specified {problem_['num_vars']}")
     k_Samples  =[]
     n_s = sobo.shape[0]
+    sob_sequence = sobo
     for i in range(int(problem_.get('num_vars'))):
         bv = BoundedVariable(bounds=problem_.get('bounds')[i], place_holder_name=problem_.get('names')[i], sample_size=n_s)
-        bv.samples = sobo[:, i]
+        bv.samples = sob_sequence[:, i]
         k_Samples.append(bv)
     return k_Samples
 

@@ -1074,7 +1074,7 @@ class APSIMNG:
     @met.setter
     def met(self, value):
       self._met = value
-    def change_met(self, value):
+    def change_met(self):
         self.replace_met_file(self.met)
         return self
 

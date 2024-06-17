@@ -9,15 +9,16 @@ conf = LoadPythonnet()()
 from apsimNGpy.core.apsim import ApsimModel as SoilModel
 from pathlib import Path
 from functools import cache
+from apsimNGpy.core.apsim_file import XFile as DFile
 import os
-WEATHER_CON = 'NewMetrrr.met'
+WEATHER_CO = 'NewMetrrr.met'
 #DATA = 'data' after tests, this did not work
-
+WEA = 'Iem_IA0200.met'
 APSIM_DATA = 'apsim'
 WEATHER = 'weather'
 
 
-def _weather(path):
+def _weather(path, WEATHER_CON = WEATHER_CO):
     resource_directory = files(DATA)
     data_file_path = resource_directory / WEATHER / WEATHER_CON
     nameout = join(path, WEATHER_CON)
@@ -39,9 +40,9 @@ def _get_maize_example(file_path):
 
 def _get_maize(file_path):
     resource_directory = files(DATA)
-    json_file_path = resource_directory / APSIM_DATA / 'maize.apsimx'
+    json_file_path = resource_directory / APSIM_DATA / 'clone.apsimx'
     contents = json_file_path.read_text()
-    nameout = join(file_path, 'maize.apsimx')
+    nameout = join(file_path, 'clone.apsimx')
     with open(nameout, "w+") as openfile:
         openfile.write(contents)
     return nameout
@@ -97,8 +98,12 @@ def _clean_up(path):
     Path(f"{path}.db-wal").unlink(missing_ok=True)
     return path
 
-
-class LoadExampleFiles():
+def load_in_memory(out):
+        path = os.path.realpath(out)
+        w_out = os.path.dirname(path)
+        _weather(w_out, WEATHER_CON=WEA)
+        return SoilModel(model = None, out_path = out)
+class LoadExampleFiles:
     def __init__(self, path=None):
         """
         LoadExampleFiles constructor.
@@ -114,7 +119,6 @@ class LoadExampleFiles():
             self.path = os.getcwd()
         else:
             self.path = path
-
     @property
     def get_maize_with_cover_crop(self):
         """
@@ -158,6 +162,8 @@ class LoadExampleFiles():
         """
         self.weather_example = _weather(self.path)
         return _clean_up(_get_SWIM(self.path))
+
+
 
     @property
     def get_maize(self):
@@ -268,5 +274,6 @@ if __name__ == '__main__':
     os.chdir(pp)
     from apsimNGpy.core.base_data import LoadExampleFiles
     maize = LoadExampleFiles()
+
     dt = maize.get_maize
     print(dt)

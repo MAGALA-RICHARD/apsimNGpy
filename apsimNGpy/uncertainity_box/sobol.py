@@ -38,15 +38,34 @@ def generate_initial_data(w_d, xdata, file):
         raise FileNotFoundError(f'{w_d} does not exist on your drive')
     number_of_sims = samples[0].shape[0]
     print('Copying:', number_of_sims, "files")
-    files = model.replicate_file(k=number_of_sims, path=w_dr)
+
+    files = [os.path.join(w_dr, f"sim_id_{fi}.apsimx") for fi in range(number_of_sims)]
+    W_files = [os.path.join(w_dr,f"sim_id_{fi}.met") for fi in range(number_of_sims)]
+    model = [ApsimModel(model = None, out_path=out) for out in files]
 
     filePath = tuple(files)
     parameters = np.column_stack(samples)
     pNames = [xdat.name for xdat in xdata]
     del files
     return ((dict(zip(pNames, parameters[ever])), {'file':filePath[ever]}) for ever in range(number_of_sims))
+import shutil
+def replace_samples(xdata, wf, wd):
+    """xdata is sobol sample sequence"""
+    if os.path.exists(wd):
+        w_dr = os.path.join(wd, 'ClonedSamplesFiles')
+        if not os.path.exists(w_dr):
+            os.mkdir(w_dr)
+    else:
+        raise FileNotFoundError(f'{wd} does not exist on your drive')
+    for var_ in xdata:
+        assert isinstance(var_, (
+        DiscreteVariable, BoundedVariable)), f'variables should be of class {DiscreteVariable} or {BoundedVariable}'
 
-
+    samples = [X.samples for X in xdata]
+    num_sims = samples[0].shape[0]
+    wf= [shutil.copyfile(wf, os.path.join(w_dr, f'w{im}.met')) for im in range(num_sims)]
+    apsim_files= [os.path.join(w_dr,f'sim_{fi}.apsimx') for fi in range(num_sims)]
+    return ((samples[idx], wf[idx], apsim_files[idx]) for idx in range(num_sims))
 
 # example;
 if __name__ == '__main__':

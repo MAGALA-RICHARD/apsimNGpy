@@ -60,6 +60,7 @@ class APSIMNG:
 
     def __init__(self, model=None, out_path=None, out=None, read_from_string=True, load=True, **kwargs):
 
+        self._met = None
         self.path = None
         if kwargs.get('copy'):
             warnings.warn(
@@ -1067,6 +1068,15 @@ class APSIMNG:
             start = clock.Start
             end = clock.End
         return start.Year, end.Year
+    @property
+    def met(self):
+        return self._met
+    @met.setter
+    def met(self, value):
+      self._met = value
+    def change_met(self, value):
+        self.replace_met_file(self.met)
+        return self
 
     def replace_met_file(self, weather_file, simulations=None):
         try:

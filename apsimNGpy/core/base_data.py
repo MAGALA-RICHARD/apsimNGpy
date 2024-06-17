@@ -101,8 +101,9 @@ def _clean_up(path):
 def load_in_memory(out):
         path = os.path.realpath(out)
         w_out = os.path.dirname(path)
-        _weather(w_out, WEATHER_CON=WEA)
-        return SoilModel(model = None, out_path = out)
+        mPath = _weather(w_out, WEATHER_CON=WEA)
+        memo= SoilModel(model = None, out_path = out)
+        memo.met = mPath
 class LoadExampleFiles:
     def __init__(self, path=None):
         """

@@ -38,7 +38,7 @@ def generate_initial_data(w_d, xdata, file):
         raise FileNotFoundError(f'{w_d} does not exist on your drive')
     number_of_sims = samples[0].shape[0]
     print('Copying:', number_of_sims, "files")
-    files = model.replicate_file(k=number_of_sims, path=w_dr, get_back_list=False)
+    files = model.replicate_file(k=number_of_sims, path=w_dr)
 
     filePath = tuple(files)
     parameters = np.column_stack(samples)

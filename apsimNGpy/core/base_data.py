@@ -163,6 +163,11 @@ class LoadExampleFiles:
         self.weather_example = _weather(self.path)
         return _clean_up(_get_SWIM(self.path))
 
+    def load_in_memory(self, out):
+        path  = realpath(out)
+        w_out  = dirname(path)
+        self.weather_example = _weather(w_out, WEATHER_CON=WEA)
+        return SoilModel(model = None, out_path=out)
 
 
     @property

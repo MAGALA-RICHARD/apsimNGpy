@@ -1,6 +1,6 @@
 {
   "$type": "Models.Core.Simulations, Models",
-  "ExplorerWidth": 300,
+  "ExplorerWidth": 285,
   "Version": 159,
   "Name": "Simulations",
   "ResourceName": null,
@@ -31035,7 +31035,7 @@
         {
           "$type": "Models.Climate.Weather, Models",
           "ConstantsFile": null,
-          "FileName": "D:\\package\\apsimNGpy\\apsimNGpy\\data\\weather\\Iem_IA0200.met",
+          "FileName": "Iem_IA0200.met",
           "ExcelWorkSheetName": "",
           "Name": "Weather",
           "ResourceName": null,

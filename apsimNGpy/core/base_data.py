@@ -98,12 +98,17 @@ def _clean_up(path):
     Path(f"{path}.db-wal").unlink(missing_ok=True)
     return path
 
-def load_in_memory(out):
+def load_in_memory(out, met_file=None):
+    if met_file is None:
         path = os.path.realpath(out)
         w_out = os.path.dirname(path)
         mPath = _weather(w_out, WEATHER_CON=WEA)
-        memo= SoilModel(model = None, out_path = out)
-        memo.met = mPath
+    else:
+        mPath = met_file
+    memo = SoilModel(model=None, out_path=out)
+    memo.met = mPath
+    memo.change_met()
+    return memo
 class LoadExampleFiles:
     def __init__(self, path=None):
         """
@@ -164,11 +169,18 @@ class LoadExampleFiles:
         self.weather_example = _weather(self.path)
         return _clean_up(_get_SWIM(self.path))
 
-    def load_in_memory(self, out):
-        path  = realpath(out)
-        w_out  = dirname(path)
-        self.weather_example = _weather(w_out, WEATHER_CON=WEA)
-        return SoilModel(model = None, out_path=out)
+    def load_in_memory(self, out, met_file=None, **kwargs):
+
+        if met_file is None:
+           path = realpath(out)
+           w_out = dirname(path)
+           wf = _weather(w_out, WEATHER_CON=WEA)
+        else: wf = met_file
+        memo_model = SoilModel(model=None, out_path=out)
+        memo_model.met = wf
+        memo_model.change_met()
+        self.weather_example = wf
+        return memo_model
 
 
     @property
@@ -280,6 +292,9 @@ if __name__ == '__main__':
     os.chdir(pp)
     from apsimNGpy.core.base_data import LoadExampleFiles
     maize = LoadExampleFiles()
-
+    from apsimNGpy import core
+    model = core.base_data.LoadExampleFiles().load_in_memory('out.apsimx')
+    print(model.met)
+    print(model.path)
     dt = maize.get_maize
     print(dt)

@@ -61,6 +61,7 @@ class APSIMNG:
 
     def __init__(self, model=None, out_path=None, out=None, read_from_string=True, load=True, **kwargs):
 
+        self.file_name = None
         self._DataStore = None
         self._met = None
         self.path = None
@@ -212,6 +213,11 @@ class APSIMNG:
             self.Model = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](string_name, None,
                                                                                                   True,
                                                                                                   fileName=self._model)
+            if self.out_path:
+                self.path = out_path
+                self.Model.Write(self.out_path)
+            else:
+                self.path = self._model
 
         elif isinstance(self._model, dict):
 
@@ -234,7 +240,9 @@ class APSIMNG:
             if 'NewModel' in dir(self.Model):
                 self.Model = self.Model.get_NewModel()
                 # initialize the model just in case
-                self.Model.OnCreated()
+            self.Model.OnCreated()
+
+
 
         except PermissionError as e:
             print('file is being used by another process')

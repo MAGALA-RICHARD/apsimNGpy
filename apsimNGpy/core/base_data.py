@@ -102,17 +102,20 @@ def _clean_up(path):
 
 
 def load_in_memory(out, met_file=None):
+    """useful for spawning many simulation files"""
     if met_file is None:
         path = os.path.realpath(out)
         w_out = os.path.dirname(path)
         mPath = _weather(w_out, WEATHER_CON=WEA)
     else:
         mPath = met_file
+    # create a temporal file
     temporal_path = realpath('temporal.apsimx')
     memo = SoilModel(model=None, out_path=temporal_path)
     memo.met = mPath
     memo.change_met()
-    memo = SoilModel(model= memo.Model.write(out))
+    memo = SoilModel(model= memo.Model.Write(out))
+    # remove the temporal file
     Path(temporal_path).unlink(missing_ok=True)
     return memo
 

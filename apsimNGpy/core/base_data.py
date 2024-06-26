@@ -2,23 +2,25 @@ import os.path
 from importlib.resources import files
 from os.path import join, realpath, dirname, exists, split, basename
 from os import listdir, walk, getcwd, mkdir
-from apsimNGpy.core.pythonet_config import LoadPythonnet,APSIM_PATH
+from apsimNGpy.core.pythonet_config import LoadPythonnet, APSIM_PATH
 import shutil
 from apsimNGpy import data as DATA
+
 conf = LoadPythonnet()()
 from apsimNGpy.core.apsim import ApsimModel as SoilModel
 from pathlib import Path
 from functools import cache
 from apsimNGpy.core.apsim_file import XFile as DFile
 import os
+
 WEATHER_CO = 'NewMetrrr.met'
-#DATA = 'data' after tests, this did not work
+# DATA = 'data' after tests, this did not work
 WEA = 'Iem_IA0200.met'
 APSIM_DATA = 'apsim'
 WEATHER = 'weather'
 
 
-def _weather(path, WEATHER_CON = WEATHER_CO):
+def _weather(path, WEATHER_CON=WEATHER_CO):
     resource_directory = files(DATA)
     data_file_path = resource_directory / WEATHER / WEATHER_CON
     nameout = join(path, WEATHER_CON)
@@ -98,6 +100,7 @@ def _clean_up(path):
     Path(f"{path}.db-wal").unlink(missing_ok=True)
     return path
 
+
 def load_in_memory(out, met_file=None):
     if met_file is None:
         path = os.path.realpath(out)
@@ -105,10 +108,15 @@ def load_in_memory(out, met_file=None):
         mPath = _weather(w_out, WEATHER_CON=WEA)
     else:
         mPath = met_file
-    memo = SoilModel(model=None, out_path=out)
+    temporal_path = realpath('temporal.apsimx')
+    memo = SoilModel(model=None, out_path=temporal_path)
     memo.met = mPath
     memo.change_met()
+    memo = SoilModel(model= memo.Model.write(out))
+    Path(temporal_path).unlink(missing_ok=True)
     return memo
+
+
 class LoadExampleFiles:
     def __init__(self, path=None):
         """
@@ -125,6 +133,7 @@ class LoadExampleFiles:
             self.path = os.getcwd()
         else:
             self.path = path
+
     @property
     def get_maize_with_cover_crop(self):
         """
@@ -172,16 +181,16 @@ class LoadExampleFiles:
     def load_in_memory(self, out, met_file=None, **kwargs):
 
         if met_file is None:
-           path = realpath(out)
-           w_out = dirname(path)
-           wf = _weather(w_out, WEATHER_CON=WEA)
-        else: wf = met_file
+            path = realpath(out)
+            w_out = dirname(path)
+            wf = _weather(w_out, WEATHER_CON=WEA)
+        else:
+            wf = met_file
         memo_model = SoilModel(model=None, out_path=out)
         memo_model.met = wf
         memo_model.change_met()
         self.weather_example = wf
         return memo_model
-
 
     @property
     def get_maize(self):
@@ -291,8 +300,10 @@ if __name__ == '__main__':
     pp = Path.home()
     os.chdir(pp)
     from apsimNGpy.core.base_data import LoadExampleFiles
+
     maize = LoadExampleFiles()
     from apsimNGpy import core
+
     model = core.base_data.LoadExampleFiles().load_in_memory('out.apsimx')
     print(model.met)
     print(model.path)

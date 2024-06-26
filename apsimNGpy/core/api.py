@@ -338,6 +338,7 @@ class APSIMNG:
         multithread
             If `True` APSIM uses multiple threads, by default `True`
         """
+        global e
         if multithread:
             runtype = Models.Core.Run.Runner.RunTypeEnum.MultiThreaded
         else:
@@ -375,7 +376,6 @@ class APSIMNG:
         # close the datastore
         self._DataStore.Close()
         return self
-        # print(self.results)
 
     def clone_simulation(self, target, simulation=None):
         """Clone a simulation and add it to Model

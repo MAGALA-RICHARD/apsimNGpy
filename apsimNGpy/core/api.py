@@ -18,6 +18,7 @@ import json
 from pathlib import Path
 import threading
 import time
+import datetime
 import apsimNGpy.manager.weathermanager as weather
 from functools import cache
 # prepare for the C# import
@@ -60,6 +61,7 @@ class APSIMNG:
 
     def __init__(self, model=None, out_path=None, out=None, read_from_string=True, load=True, **kwargs):
 
+        self._DataStore = None
         self._met = None
         self.path = None
         if kwargs.get('copy'):
@@ -86,13 +88,7 @@ class APSIMNG:
         self._model = model if model is not None else load_model
         self.out_path = out
 
-        if self.load:
-            if isinstance(self._model, str):
-                self._init_from_file(read_from_string)
-            elif isinstance(self._model, Simulations):
-                self._init_from_simulations(self._model)
-            elif isinstance(self._model, dict):
-                self.load_apsimx_from_string(self._model)
+        self.load_apsimx_from_string()
 
     @property
     def set_model(self):
@@ -202,41 +198,43 @@ class APSIMNG:
         return self
 
     # loads the apsimx file into memory but from string
-    def load_apsimx_from_string(self, _data):
+
+    def load_apsimx_from_string(self):
 
         """
         :param _data: data can be a STRING PATH, A DICTIONARY FOR APSIM SIMULATION OBJECT OR A A STING
         :return: Model object
         """
-
-        @singledispatch
-        def process_data(data):
-            raise NotImplementedError("Cannot process data of this type")
-
-        @process_data.register
-        def _(data: str):
-            with open(data, "r+", encoding='utf-8') as apsimx:
+        if isinstance(self._model, str):
+            with open(self._model, "r+", encoding='utf-8') as apsimx:
                 app_ap = json.load(apsimx)
             string_name = json.dumps(app_ap)
-            fn = data
-            return Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](string_name, None, True,
-                                                                                            fileName=fn)
+            self.Model = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](string_name, None,
+                                                                                                  True,
+                                                                                                  fileName=self._model)
 
-        @process_data.register
-        def _(data: dict):
-            str_ = json.dumps(data)
+        elif isinstance(self._model, dict):
+
+            str_ = json.dumps(self._model)
             if self.out_path:
                 string_nam = self.out_path
                 self.path = self.out_path
             else:
+
                 string_nam = os.path.join(os.getcwd(), APSIMNG.generate_unique_name('frm_string') + '.apsimx')
-            return Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](str_, None, True,
-                                                                                            fileName=string_nam)
+            self.Model = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](str_, None, True,
+                                                                                                  fileName=string_nam)
+        # elif _data is None:
+
+        else:
+            raise NotImplementedError("Cannot process data of this type")
 
         try:
-            self.Model = process_data(_data)
+
             if 'NewModel' in dir(self.Model):
                 self.Model = self.Model.get_NewModel()
+                # initialize the model just in case
+                self.Model.OnCreated()
 
         except PermissionError as e:
             print('file is being used by another process')
@@ -248,22 +246,22 @@ class APSIMNG:
         return self
 
     # loads apsimx file from the computer into memory using its path
-    def _load_apsimx(self, path):
-        try:
-            if not os.path.isfile(path):
-                raise ValueError("file path is missing apsim extention. did you forget to include .apsimx extension")
-            self.Model = FileFormat.ReadFromFile[Models.Core.Simulations](path, None, False)
-            if 'NewModel' in dir(self.Model):
-                self.Model = self.Model.get_NewModel()
-
-        except Exception as e:
-            print(repr(e))  # this error will be logged to the folder logs in the current working directory
-            print('reading from clone\n----ignore error-----')
-            self.Model = self.load_apsimx_from_string(path)
-            raise
-        self.datastore = self.Model.FindChild[Models.Storage.DataStore]().FileName
-        self._DataStore = self.Model.FindChild[Models.Storage.DataStore]()
-        # self.version = self.Model.get_ApsimVersion()
+    # def _load_apsimx(self, path):
+    #     try:
+    #         if not os.path.isfile(path):
+    #             raise ValueError("file path is missing apsim extention. did you forget to include .apsimx extension")
+    #         self.Model = FileFormat.ReadFromFile[Models.Core.Simulations](path, None, False)
+    #         if 'NewModel' in dir(self.Model):
+    #             self.Model = self.Model.get_NewModel()
+    #
+    #     except Exception as e:
+    #         print(repr(e))  # this error will be logged to the folder logs in the current working directory
+    #         print('reading from clone\n----ignore error-----')
+    #         self.Model = self.load_apsimx_from_string(path)
+    #         raise
+    #     self.datastore = self.Model.FindChild[Models.Storage.DataStore]().FileName
+    #     self._DataStore = self.Model.FindChild[Models.Storage.DataStore]()
+    #     # self.version = self.Model.get_ApsimVersion()
 
     def load_external_apsimx(self, path, read_from_string=True):
         # when we load we replace exisiting ones, so fune null it
@@ -344,7 +342,8 @@ class APSIMNG:
             runtype = Models.Core.Run.Runner.RunTypeEnum.MultiThreaded
         else:
             runtype = Models.Core.Run.Runner.RunTypeEnum.SingleThreaded
-
+        # open the datassote
+        self._DataStore.Open()
         # Clear old data before running
         self.results = None
         if clean:
@@ -373,7 +372,8 @@ class APSIMNG:
             self.results = [read_db_table(self.datastore, report_name=rep) for rep in report_name]
         else:
             self.results = read_db_table(self.datastore, report_name=report_name)
-
+        # close the datastore
+        self._DataStore.Close()
         return self
         # print(self.results)
 
@@ -383,7 +383,7 @@ class APSIMNG:
         Parameters
         ----------
         target
-            target simulation name
+             simulation name
         simulation, optional
             Simulation name to be cloned, of None clone the first simulation in model
         """
@@ -964,7 +964,8 @@ class APSIMNG:
         #         if param in values.keys():
         #             fp.Value.Parameters[i] = KeyValuePair[String, String](param, f"{values[param]}")
         self.save_edited_file()
-        self.load_apsimx_from_string(self.path)
+        self._model = self.path
+        self.load_apsimx_from_string()
         return self
 
     # immediately open the file in GUI
@@ -996,7 +997,6 @@ class APSIMNG:
                     params = self._kvtodict(action.Parameters)
                     return params
 
-    import datetime
     @staticmethod
     def strip_time(date_string):
         date_object = datetime.datetime.strptime(date_string, "%Y-%m-%d")
@@ -1068,12 +1068,15 @@ class APSIMNG:
             start = clock.Start
             end = clock.End
         return start.Year, end.Year
+
     @property
     def met(self):
         return self._met
+
     @met.setter
     def met(self, value):
-      self._met = value
+        self._met = value
+
     def change_met(self):
         self.replace_met_file(self.met)
         return self
@@ -1360,20 +1363,22 @@ class APSIMNG:
         else:
             return sim
 
-    # Make sure that crop ll is below and above LL15 DUL in all layers
-    def _harmonise_soil_water(self, simulation):  # REPLACED _fix_crop_ll
-        cropll = self._extract_LL(simulation)
-        dul = self._extract_DUL(simulation)
-        ll15 = self._extract_LL15(simulation)
-        for j in range(len(cropll)):
-            if cropll[j] > dul[j]:
-                cropll[j] = dul[j] - 0.015
+    def adjustSatDul(self, sat_, dul_):
+        for enum, (s, d) in enumerate(zip(sat_, dul_)):
+            # first check if they are equal
+            # if d is greater than s, then by what value?, we need this value to add it to 0.02
+            #  to be certain all the time that dul is less than s we subtract the summed value
+            if d >= s:
 
-        for j in range(len(cropll)):
-            if cropll[j] < ll15[j]:
-                cropll[j] = ll15[j]
+                diff = d - s
+                if diff == 0:
+                    dul_[enum] = d - 0.02
+                else:
+                    duL[enum] = d - (diff + 0.02)
 
-        self.replace_crop_LL(cropll, simulation)
+            else:
+                dul_[enum] = d
+        return dul
 
     def set_swcon(self, swcon, simulations=None, thickness_values=None):
         """Set soil water conductivity (SWCON) constant for each soil layer.
@@ -1535,44 +1540,6 @@ class APSIMNG:
         self._set_initial_values("Urea", values, simulations)
         # inherit properties from the ancestors apsimng object
 
-    @property
-    def wd(self):
-        return os.getcwd()
-
-    @staticmethod
-    @timing_decorator
-    # this method will attempt to bring evrythign to memory. where we copy from one file and simulate multiple files without rizig permission errors
-    def from_string(path, fn):
-        from apsimNGpy.utililies.run_utils import _read_simulation
-        path = os.path.realpath(path)
-        try:
-            with open(path, "r+", encoding='utf-8') as apsimx:
-                app_ap = json.load(apsimx)
-            string_name = json.dumps(app_ap)
-            # fn = path
-            Model = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](string_name, None,
-                                                                                             True, fileName=fn)
-
-            if 'NewModel' in dir(Model):
-                Model = Model.get_NewModel()
-            Model.FindChild[Models.Storage.DataStore]().UseInMemoryDB = True
-            id = Model.FindChild[Models.Storage.DataStore]()
-            dt = Model.FindChild[Models.Storage.DataStoreReader]()
-
-            multithread = True
-            if multithread:
-                runtype = Models.Core.Run.Runner.RunTypeEnum.MultiThreaded
-            else:
-                runtype = Models.Core.Run.Runner.RunTypeEnum.SingleThreaded
-            runmodel = Models.Core.Run.Runner(Model, True, False, False, None, runtype)
-            e = runmodel.Run()
-            Model.FindChild[Models.Storage.IDataStore]().Open()
-            lp = Models.Core.Run.Runner(Model)
-            data = _read_simulation(id.FileName)
-            return Model.FindChild[Models.Storage.IDataStore]().get_Reader()
-        except Exception as e:
-            raise Exception(f'{type(e)}: occurred')
-
 
 # ap = dat.GetDataUsingSql("SELECT * FROM [MaizeR]")
 class ApsiMet(APSIMNG):
@@ -1593,34 +1560,22 @@ class ApsiMet(APSIMNG):
 
 
 if __name__ == '__main__':
+
     # test
     from pathlib import Path
+    from time import perf_counter
 
     # Model = FileFormat.ReadFromFile[Models.Core.Simulations](model, None, False)
     os.chdir(Path.home())
     from apsimNGpy.core.base_data import LoadExampleFiles
 
     al = LoadExampleFiles(Path.cwd())
-    model = al.get_maize
-    model = APSIMNG(model, read_from_string=True)
-    pl = {"Name": "AddfertlizerRotationWheat", "Crop": 'Soybean, Maize'}
-    pm = {'Name': 'PostharvestillageMaize', "Fraction": 0.0}
-    pt = {'Name': 'PostharvestillageSoybean', 'Fraction': 0.95, 'Depth': 290}
+    modelm = al.get_maize
 
-    # pm = model.from_string(path = al.get_maize, fn ='apsimtrie.apsimx')
-
-    for i in [0.59]:
-        # model = APSIMNG(al.get_maize, read_from_string=False)
-        pm = {'Name': 'PostharvestillageMaize', "Fraction": i}
-        model.update_management_decissions(
-            [pm, pt, pl], simulations=model.extract_simulation_name)
-        print(model.extract_user_input('PostharvestillageMaize'))
-        lm = model
-        # model.examine_management_info()
-
-        model.run('Carbon')
-    pm = model.check_som()
-
-    model.save_edited_file(r'D:/try.apsimx')
-
-    path = r'C:\Users\rmagala\OneDrive\ApsimX'
+    model = APSIMNG(model=modelm)
+    for _ in range(100):
+        a = perf_counter()
+        # model.RevertCheckpoint()
+        model.run("MaizeR")
+        b = perf_counter()
+        print(b - a, 'seconds')

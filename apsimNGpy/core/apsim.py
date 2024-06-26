@@ -47,9 +47,9 @@ def timing_decorator(func):
 
 
 class ApsimModel(APSIMNG):
-    def __init__(self, model, out_path: str = None, out= None, read_from_string=True,
+    def __init__(self, model, out_path: str = None, out=None, read_from_string=True,
                  lonlat=None, soil_series: str = 'domtcp', thickness: int = 20, bottomdepth: int = 200,
-                 thickness_values: list = None, run_all_soils: bool = False, load = True, **kwargs):
+                 thickness_values: list = None, run_all_soils: bool = False, load=True, **kwargs):
         super().__init__(model, read_from_string, out_path, load)
         self.SWICON = None
         """get suurgo soil tables and organise it to apsim soil profiles
@@ -67,7 +67,7 @@ class ApsimModel(APSIMNG):
         self.soil_series = soil_series
         self.thickness = thickness
         self.out_path = out
-        self.load  = load
+        self.load = load
         self.copy = True
         self.run_all_soils = run_all_soils
         if not isinstance(thickness_values, np.ndarray):
@@ -117,7 +117,8 @@ class ApsimModel(APSIMNG):
     def get_initial_no3(self, simulation=None):
         """Get soil initial NO3 content"""
         return self._get_initial_values("NO3", simulation)
-    def adjust_dul(self, simulations= None):
+
+    def adjust_dul(self, simulations=None):
         """
         - This method checks whether the soil SAT is above or below DUL and decreases DUL  values accordingly
         - Need to cal this method everytime SAT is changed, or DUL is changed accordingly
@@ -125,19 +126,20 @@ class ApsimModel(APSIMNG):
         :return:
         model object
         """
-        duL= self.extract_any_soil_physical('DUL', simulations)
+        duL = self.extract_any_soil_physical('DUL', simulations)
         saT = self.extract_any_soil_physical('SAT', simulations)
         for enum, (s, d) in enumerate(zip(saT, duL)):
             # first check if they are equal
             if d >= s:
-            # if d is greater than s, then by what value, we need this value to add it to 0.02
-            #  to be certain all the time that dul is less than s we subtract the summed value
+                # if d is greater than s, then by what value, we need this value to add it to 0.02
+                #  to be certain all the time that dul is less than s we subtract the summed value
                 diff = d - s
                 duL[enum] = d - (diff + 0.02)
             else:
                 duL[enum] = d
         self.replace_any_soil_physical('DUL', simulations, duL)
         return self
+
     def _get_SSURGO_soil_profile(self, lonlat, run_all_soils=False):
         self.lonlat = None
         self.lonlat = lonlat
@@ -298,7 +300,7 @@ class ApsimModel(APSIMNG):
         physical_calculated = soil_tables[0]
         self.organic_calcualted = soil_tables[1]
         self.cropdf = soil_tables[2]
-        self.SWICON  = soil_tables[6] # TODO To put these tables in the dictionary isn't soilmanager module
+        self.SWICON = soil_tables[6]  # TODO To put these tables in the dictionary isn't soilmanager module
         for simu in self.find_simulations(simulation_names):
             pysoil = simu.FindDescendant[Physical]()  # meaning physical soil node
 
@@ -362,7 +364,7 @@ class ApsimModel(APSIMNG):
                 wb.SWCON = self.SWICON
                 wb.Thickness = self.thickness_values
                 if kwargs.get('CN2Bare', None):
-                   wb.CN2Bare  = kwargs.get('CN2Bare')
+                    wb.CN2Bare = kwargs.get('CN2Bare')
                 if kwargs.get('CNRed', None):
                     wb.CNRed = kwargs.get('CNRed')
             except:
@@ -449,10 +451,10 @@ class ApsimModel(APSIMNG):
 
     @property
     def read_data_tables(self):
-        read_ =  self._read_simulation()
-        return  read_.keys()
+        read_ = self._read_simulation()
+        return read_.keys()
 
-    def spin_up(self, report_name: str = 'Report', start=None, end=None, spin_var="Carbon", simulations = None):
+    def spin_up(self, report_name: str = 'Report', start=None, end=None, spin_var="Carbon", simulations=None):
         """
         Perform a spin-up operation on the APSIM model.
 
@@ -489,17 +491,17 @@ class ApsimModel(APSIMNG):
         DF = self.results
 
         df_sel = DF.filter(regex=r'^{0}'.format(rpn), axis=1)
-        df_sel = df_sel.mean(numeric_only = True)
+        df_sel = df_sel.mean(numeric_only=True)
         print(df_sel)
         if spin_var == 'Carbon':
             assert 'TotalC' in insert_var, "wrong report variable path: '{0}' supplied according to requested spin up " \
                                            "var".format(insert_var)
 
-            bd =list(pysoil.DUL)
+            bd = list(pysoil.DUL)
             print(bd)
             bd = np.array(bd)
             cf = np.array(bd) * np.array(th)
-            cf  = np.divide(cf, 1)  # this convert to percentage
+            cf = np.divide(cf, 1)  # this convert to percentage
             per = np.array(df_sel) / cf
             new_carbon = [i for i in np.array(per).flatten()]
             print(new_carbon)
@@ -543,6 +545,7 @@ if __name__ == '__main__':
     # Model = FileFormat.ReadFromFile[Models.Core.Simulations](model, None, False)
     os.chdir(Path.home())
     from apsimNGpy.core.base_data import LoadExampleFiles
+
     try:
         lonlat = -91.7738, 41.0204
         al = LoadExampleFiles(Path.cwd())
@@ -550,7 +553,7 @@ if __name__ == '__main__':
         print(model)
         from apsimNGpy import settings
 
-        model = ApsimModel(model, out_path  =None, read_from_string=True, thickness_values=settings.SOIL_THICKNESS)
+        model = ApsimModel(model, out_path=None, read_from_string=True, thickness_values=settings.SOIL_THICKNESS)
         model.replace_met_from_web(lonlat=lonlat, start_year=2001, end_year=2020)
         from apsimNGpy.manager import soilmanager as sm
 

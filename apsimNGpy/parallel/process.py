@@ -7,16 +7,18 @@ from pathlib import Path
 from apsimNGpy.utililies.utils import timer
 from apsimNGpy.utililies.run_utils import run_model, read_simulation
 from apsimNGpy.settings import CORES
-#from apsimNGpy.utililies.database_utils import read_db_table
-from apsimNGpy.utililies.utils  import select_process
-from apsimNGpy.utililies.database_utils import  read_db_table
+# from apsimNGpy.utililies.database_utils import read_db_table
+from apsimNGpy.utililies.utils import select_process
+from apsimNGpy.utililies.database_utils import read_db_table
 from apsimNGpy.parallel.safe import download_soil_table
 from sqlalchemy import create_engine
 import sqlalchemy
 from itertools import islice
 import pandas as pd
+import multiprocessing as mp
 CPU = int(int(cpu_count()) * 0.5)
 import types
+
 
 # _______________________________________________________________
 def run_apsimxfiles_in_parallel(iterable_files, ncores=None, use_threads=False):
@@ -128,7 +130,7 @@ def read_result_in_parallel(iterable_files, ncores=None, use_threads=False, repo
             yield data
         progress.close()
     if not isinstance(future, types.GeneratorType):
-       print(perf_counter() - a, 'seconds', f'to read {len(files)} apsimx files databases')
+        print(perf_counter() - a, 'seconds', f'to read {len(files)} apsimx files databases')
     else:
         print(perf_counter() - a, 'seconds', f'to read {counter} apsimx files databases')
 
@@ -171,7 +173,6 @@ def download_soil_tables(iterable, use_threads=False, ncores=0, **kwargs):
 
     """
 
-
     if not ncores:
         ncores_2use = int(cpu_count() * 0.4)
         print(f"using: {ncores_2use} cpu cores")
@@ -185,6 +186,10 @@ def download_soil_tables(iterable, use_threads=False, ncores=0, **kwargs):
             progress.update(1)
             yield future.result()
         progress.close()
+
+
+def select_type(use_thread, n_cores):
+    return ThreadPoolExecutor(n_cores) if use_thread else ProcessPoolExecutor(n_cores)
 
 
 def custom_parallel(func, iterable, *args, **kwargs):
@@ -206,25 +211,25 @@ def custom_parallel(func, iterable, *args, **kwargs):
 
     """
 
-    use_thread , ncores= kwargs.get('use_thread', False), kwargs.get('ncores', CORES)
+    use_thread, ncores = kwargs.get('use_thread', False), kwargs.get('ncores', CORES)
     a = perf_counter()
-    counter = 0
-    with select_process(use_thread=use_thread,
-                         ncores=ncores) as pool:  # this reduces the repetition perhaps should even be implimented
+    selection = select_type(use_thread=use_thread,
+                     n_cores=ncores)
+    print(type(selection))
+    with selection as pool:  # this reduces the repetition perhaps should even be implimented
         # with a decorator at the top of the function
         futures = [pool.submit(func, i, *args) for i in iterable]
         progress = tqdm(total=len(futures), position=0, leave=True,
                         bar_format=f'processing via: {func.__name__} function:' '{percentage:3.0f}% completed')
         # Iterate over the futures as they complete
         for future in as_completed(futures):
-            counter += 1
             yield future.result()
             progress.update(1)
         progress.close()
-    print(perf_counter() - a, 'seconds', f'to run {counter} objects')
+    print(perf_counter() - a, 'seconds', f'to run')
 
 
-def simulate_in_chunks(w_d, iterable_generator, chunk_size, con_data_base =None,table_tag='t', save_to_csv = True):
+def simulate_in_chunks(w_d, iterable_generator, chunk_size, con_data_base=None, table_tag='t', save_to_csv=True):
     """
     Iterate through a generator by specifying the chunk size. vital if the data to be simulated is so large to fit into the computer memory
     :param w_d: working directory for file storage
@@ -279,14 +284,50 @@ def simulate_in_chunks(w_d, iterable_generator, chunk_size, con_data_base =None,
         if con_data_base:
             d_f_.to_sql(f"{table_tag}_{ID}", con=engine, if_exists='replace', index=False)
 
+
+def starmap_executor(func, iterable, *args, **kwargs):
+    """
+    The multiprocessing.Pool.starmap method does not release results on the fly; it waits for all worker processes to complete and collects all results before returning them as a list. If you need results to be processed and available as soon as each worker finishes, you should use multiprocessing.Pool.imap or multiprocessing.Pool.imap_unordered instead. These methods return an iterator that yields results as they become available.
+    """
+    print('starmap_executor processing data')
+    processes = kwargs.get('processes', mp.cpu_count())
+    with mp.Pool(processes=processes) as pool:
+        # Prepare the arguments for starmap
+        arg_list = [(item, *args) for item in iterable]
+        results = pool.starmap(func, arg_list)
+    return results
+
+
+def pool_imap_executor(func, iterable, *args, num_processes=None):
+    if num_processes is None:
+        num_processes = os.cpu_count()
+    print(f"Using {num_processes} cores")
+
+    with mp.Pool(processes=num_processes) as pool:
+        # Prepare the arguments for imap_unordered
+        arg_list = [(item, *args) for item in iterable]
+        print(arg_list)
+
+        # Use imap_unordered to get results as they are ready
+        result_iterator = pool.imap_unordered(func, arg_list)
+
+        # Collect results on the fly
+        results = []
+        for result in result_iterator:
+            results.append(result)
+            print(f"Result received: {result}")
+
+    return results
+
+
 if __name__ == '__main__':
     from examples import fnn  # the function should not be on the main for some reason
-    lp = [(-92.70166631,  42.26139442), (-92.69581474,  42.26436962), (-92.64634469,  42.33703225)]
+
+    lp = [(-92.70166631, 42.26139442), (-92.69581474, 42.26436962), (-92.64634469, 42.33703225)]
     gen_d = (i for i in range(100000))
-    lm = custom_parallel(fnn, range(100000), use_thread=True, ncores = 10)
-    lm2 = custom_parallel(fnn, gen_d, use_thread=True, ncores=10)
+    lm = custom_parallel(fnn, range(100000), use_thread=True, ncores=4)
+    # lm2 = custom_parallel(fnn, gen_d, use_thread=True, ncores=10)
 
-    #simple example
+    # simple example
 
-
-    ap =list(lm)
+    ap =[i for i in lm]

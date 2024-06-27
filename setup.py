@@ -40,7 +40,8 @@ setup(
         'geopy >= 2.4.1',
         'tqdm >= 4.66.2',
         'progressbar >= 2.5',
-        'joblib >= 1.3.2'
+        'joblib >= 1.3.2',
+        'sqlalchemy >=2.0'
 
     ]
 )

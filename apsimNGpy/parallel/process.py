@@ -197,7 +197,7 @@ def custom_parallel(func, iterable, *args, **kwargs):
     """
     Run a function in parallel using threads or processes.
 
-    Args:
+    *Args:
         func (callable): The function to run in parallel.
 
         iterable (iterable): An iterable of items that will be processed by the function.
@@ -207,7 +207,7 @@ def custom_parallel(func, iterable, *args, **kwargs):
     Yields:
         Any: The results of the `func` function for each item in the iterable.
 
-    kwargs
+   **kwargs
     use_thread (bool, optional): If True, use threads for parallel execution; if False, use processes. Default is False.
 
      ncores (int, optional): The number of threads or processes to use for parallel execution. Default is 50% of cpu 
@@ -235,7 +235,6 @@ def custom_parallel(func, iterable, *args, **kwargs):
                 progress.update(1)
             progress.close()
         else:
-            # Iterate over the futures as they complete
             for future in as_completed(futures):
                 yield future.result()
     print('Took', perf_counter() - a, 'seconds', f'to run')

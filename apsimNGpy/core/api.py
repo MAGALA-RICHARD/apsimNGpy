@@ -214,8 +214,8 @@ class APSIMNG:
                                                                                                   True,
                                                                                                   fileName=self._model)
             if self.out_path:
-                self.path = out_path
-                self.Model.Write(self.out_path)
+                self.path = self.out_path
+
             else:
                 self.path = self._model
 

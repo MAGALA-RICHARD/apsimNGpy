@@ -110,13 +110,9 @@ def load_in_memory(out, met_file=None):
     else:
         mPath = met_file
     # create a temporal file
-    temporal_path = realpath('temporal.apsimx')
-    memo = SoilModel(model=None, out_path=temporal_path)
+    memo = SoilModel(model=None, out_path=out)
     memo.met = mPath
     memo.change_met()
-    memo = SoilModel(model= memo.Model.Write(out))
-    # remove the temporal file
-    Path(temporal_path).unlink(missing_ok=True)
     return memo
 
 

@@ -16,6 +16,7 @@ import sqlalchemy
 from itertools import islice
 import pandas as pd
 import multiprocessing as mp
+
 CPU = int(int(cpu_count()) * 0.5)
 import types
 
@@ -198,35 +199,46 @@ def custom_parallel(func, iterable, *args, **kwargs):
 
     Args:
         func (callable): The function to run in parallel.
+
         iterable (iterable): An iterable of items that will be processed by the function.
-        use_thread (bool, optional): If True, use threads for parallel execution; if False, use processes. Default is False.
-        ncores (int, optional): The number of threads or processes to use for parallel execution. Default is 6.
+
         *args: Additional arguments to pass to the `func` function.
 
     Yields:
         Any: The results of the `func` function for each item in the iterable.
+
     kwargs
-    use_thread= set too False to use threads,
-    ncores supplied the number if threads or processes to use,
+    use_thread (bool, optional): If True, use threads for parallel execution; if False, use processes. Default is False.
+
+     ncores (int, optional): The number of threads or processes to use for parallel execution. Default is 50% of cpu 
+       cores on the machine.
+     
+     verbose (bool): if progress should be printed on the screen, default is True
 
     """
 
-    use_thread, ncores = kwargs.get('use_thread', False), kwargs.get('ncores', CORES)
+    use_thread, cpu_cores = kwargs.get('use_thread', False), kwargs.get('ncores', CORES)
     a = perf_counter()
+    verbose = kwargs.get('verbose', True)
     selection = select_type(use_thread=use_thread,
-                     n_cores=ncores)
-    print(type(selection))
+                            n_cores=cpu_cores)
     with selection as pool:  # this reduces the repetition perhaps should even be implimented
         # with a decorator at the top of the function
         futures = [pool.submit(func, i, *args) for i in iterable]
-        progress = tqdm(total=len(futures), position=0, leave=True,
-                        bar_format=f'processing via: {func.__name__} function:' '{percentage:3.0f}% completed')
-        # Iterate over the futures as they complete
-        for future in as_completed(futures):
-            yield future.result()
-            progress.update(1)
-        progress.close()
-    print(perf_counter() - a, 'seconds', f'to run')
+        if verbose:
+        
+            progress = tqdm(total=len(futures), position=0, leave=True,
+                            bar_format=f'processing via: {func.__name__} function:' '{percentage:3.0f}% completed')
+            # Iterate over the futures as they complete
+            for future in as_completed(futures):
+                yield future.result()
+                progress.update(1)
+            progress.close()
+        else:
+            # Iterate over the futures as they complete
+            for future in as_completed(futures):
+                yield future.result()
+    print('Took', perf_counter() - a, 'seconds', f'to run')
 
 
 def simulate_in_chunks(w_d, iterable_generator, chunk_size, con_data_base=None, table_tag='t', save_to_csv=True):
@@ -330,4 +342,4 @@ if __name__ == '__main__':
 
     # simple example
 
-    ap =[i for i in lm]
+    ap = [i for i in lm]

@@ -47,10 +47,10 @@ def timing_decorator(func):
 
 
 class ApsimModel(APSIMNG):
-    def __init__(self, model, out_path: str = None, out=None, read_from_string=True,
+    def __init__(self, model, out_path: str = None, out=None,
                  lonlat=None, soil_series: str = 'domtcp', thickness: int = 20, bottomdepth: int = 200,
                  thickness_values: list = None, run_all_soils: bool = False, load=True, **kwargs):
-        super().__init__(model, read_from_string, out_path, load)
+        super().__init__(model, out_path, load)
         self.SWICON = None
         """get suurgo soil tables and organise it to apsim soil profiles
         --------------------

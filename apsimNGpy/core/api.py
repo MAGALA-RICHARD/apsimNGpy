@@ -88,6 +88,7 @@ class APSIMNG:
         self._str_model = None
         self._model = model if model is not None else load_model
         self.out_path = out_path if out_path is not None else out
+        print(self.out_path)
 
         self.load_apsimx_from_string()
 
@@ -222,9 +223,10 @@ class APSIMNG:
         elif isinstance(self._model, dict):
 
             str_ = json.dumps(self._model)
-            if self.out_path:
-                string_nam = self.out_path
-                self.path = self.out_path
+
+            self.path = self.out_path
+            if self.path:
+                string_nam = self.path
             else:
 
                 string_nam = os.path.join(os.getcwd(), APSIMNG.generate_unique_name('frm_string') + '.apsimx')
@@ -1580,8 +1582,8 @@ if __name__ == '__main__':
     al = LoadExampleFiles(Path.cwd())
     modelm = al.get_maize
 
-    model = APSIMNG(model=modelm)
-    for _ in range(100):
+    model = APSIMNG(model=None, out_path='me.apsimx')
+    for _ in range(1):
         a = perf_counter()
         # model.RevertCheckpoint()
         model.run("MaizeR")

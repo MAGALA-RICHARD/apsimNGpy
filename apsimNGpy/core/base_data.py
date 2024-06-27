@@ -303,7 +303,7 @@ if __name__ == '__main__':
     maize = LoadExampleFiles()
     from apsimNGpy import core
 
-    model = core.base_data.LoadExampleFiles().load_in_memory('out.apsimx')
+    model = core.base_data.LoadExampleFiles().load_in_memory('outpp.apsimx')
     print(model.met)
     print(model.path)
     dt = maize.get_maize

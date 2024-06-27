@@ -87,7 +87,7 @@ class APSIMNG:
         self.datastore = None
         self._str_model = None
         self._model = model if model is not None else load_model
-        self.out_path = out
+        self.out_path = out_path if out_path is not None else out
 
         self.load_apsimx_from_string()
 

@@ -59,7 +59,7 @@ def timing_decorator(func):
 class APSIMNG:
     """Modify and run Apsim next generation simulation models."""
 
-    def __init__(self, model=None, out_path=None, out=None, read_from_string=True, load=True, **kwargs):
+    def __init__(self, model=None, out_path=None, out=None, load=True, **kwargs):
 
         self.file_name = None
         self._DataStore = None
@@ -88,7 +88,7 @@ class APSIMNG:
         self._str_model = None
         self._model = model if model is not None else load_model
         self.out_path = out_path if out_path is not None else out
-        print(self.out_path)
+
 
         self.load_apsimx_from_string()
 
@@ -102,7 +102,7 @@ class APSIMNG:
 
         # self.Model = self.load_apsimx_from_string()
 
-    def _init_from_file(self, read_from_string: bool):
+    def _init_from_file(self, read_from_string):
         """Initialize the object from a file path."""
         apsimx_file = os.path.realpath(self._model)
         self._name, self._ext = os.path.splitext(self._model)

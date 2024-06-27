@@ -66,7 +66,7 @@ class ApsimModel(APSIMNG):
         self.simulation_names = self.path
         self.soil_series = soil_series
         self.thickness = thickness
-        self.out_path = out
+        self.out_path = out_path or out
         self.load = load
         self.copy = True
         self.run_all_soils = run_all_soils

@@ -86,11 +86,9 @@ class APSIMNG:
         self.load = load
         self.datastore = None
         self._str_model = None
-        self._model = model if model is not None else load_model
-        self.out_path = out_path if out_path is not None else out
-
-
-        self.load_apsimx_from_string()
+        self._model = model or load_model
+        self.out_path = out_path or out
+        self.load_apsimx_model()
 
     @property
     def set_model(self):
@@ -100,7 +98,7 @@ class APSIMNG:
     def set_model(self, value):
         self._model = value
 
-        # self.Model = self.load_apsimx_from_string()
+        # self.Model = self.load_apsimx_model()
 
     def _init_from_file(self, read_from_string):
         """Initialize the object from a file path."""
@@ -111,7 +109,7 @@ class APSIMNG:
         self.path = copy_path
 
         if read_from_string:
-            self.load_apsimx_from_string(self.path)
+            self.load_apsimx_model()
         else:
             self._load_apsimx(self.path)
 
@@ -201,19 +199,25 @@ class APSIMNG:
 
     # loads the apsimx file into memory but from string
 
-    def load_apsimx_from_string(self):
+    def load_apsimx_model(self, from_file=False):
 
         """
+        :param from_file: reads directly from file
         :param _data: data can be a STRING PATH, A DICTIONARY FOR APSIM SIMULATION OBJECT OR A A STING
         :return: Model object
         """
         if isinstance(self._model, str):
-            with open(self._model, "r+", encoding='utf-8') as apsimx:
-                app_ap = json.load(apsimx)
-            string_name = json.dumps(app_ap)
-            self.Model = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](string_name, None,
-                                                                                                  True,
-                                                                                                  fileName=self._model)
+
+            if from_file:
+                self.Model = FileFormat.ReadFromFile[Models.Core.Simulations](self._model, None, False)
+            else:
+                with open(self._model, "r+", encoding='utf-8') as apsimx:
+                    app_ap = json.load(apsimx)
+                string_name = json.dumps(app_ap)
+                self.Model = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](string_name, None,
+                                                                                                      True,
+                                                                                                      fileName=self._model)
+
             if self.out_path:
                 self.path = self.out_path
 
@@ -267,7 +271,7 @@ class APSIMNG:
     #     except Exception as e:
     #         print(repr(e))  # this error will be logged to the folder logs in the current working directory
     #         print('reading from clone\n----ignore error-----')
-    #         self.Model = self.load_apsimx_from_string(path)
+    #         self.Model = self.load_apsimx_model(path)
     #         raise
     #     self.datastore = self.Model.FindChild[Models.Storage.DataStore]().FileName
     #     self._DataStore = self.Model.FindChild[Models.Storage.DataStore]()
@@ -281,7 +285,7 @@ class APSIMNG:
             assert path.endswith(
                 ".apsimx"), "file path is missing APSIM extension. did you forget to include .apsimx extension"
             if read_from_string:
-                self.load_apsimx_from_string(path)
+                self.load_apsimx_model(path)
             else:
                 self.Model = FileFormat.ReadFromFile[Models.Core.Simulations](path, None, False)
                 if 'NewModel' in dir(self.Model):
@@ -328,7 +332,7 @@ class APSIMNG:
             f.write(json_string)
         if reload:
             self._model = final_out_path
-            self.load_apsimx_from_string(self._model)
+            self.load_apsimx_model(self._model)
             return self
 
     def run(self, report_name=None, simulations=None, clean=False, multithread=True):
@@ -354,6 +358,7 @@ class APSIMNG:
         else:
             runtype = Models.Core.Run.Runner.RunTypeEnum.SingleThreaded
         # open the datassote
+
         self._DataStore.Open()
         # Clear old data before running
         self.results = None
@@ -374,7 +379,7 @@ class APSIMNG:
                 runmodel = Models.Core.Run.Runner(cs_sims, True, False, False, None, runtype)
                 e = runmodel.Run()
 
-        if (len(e) > 0):
+        if len(e) > 0:
             print(e[0].ToString())
         if report_name is None:
             report_name = get_db_table_names(self.datastore)
@@ -408,7 +413,6 @@ class APSIMNG:
             self.Model.Children.Clear(clone_sim.Name)
             self.Model.Children.Add(clone_sim)
         self._reload_saved_file()
-        self.extr
 
     def remove_simulation(self, simulation):
         """Remove a simulation from the model
@@ -890,7 +894,7 @@ class APSIMNG:
 
     def save_and_Load(self, out):
         self.save_edited_file(outpath=out)
-        self.load_apsimx_from_string(_data=out)
+        self.load_apsimx_model(_data=out)
         return self
 
     @property
@@ -934,7 +938,7 @@ class APSIMNG:
         # self.examine_management_info()                # action.GetParametersFromScriptModel()
         if reload:
             self.save_edited_file()
-            self.load_apsimx_from_string(self.path)
+            self.load_apsimx_model(self.path)
 
     # experimental
 
@@ -975,7 +979,7 @@ class APSIMNG:
         #             fp.Value.Parameters[i] = KeyValuePair[String, String](param, f"{values[param]}")
         self.save_edited_file()
         self._model = self.path
-        self.load_apsimx_from_string()
+        self.load_apsimx_model()
         return self
 
     # immediately open the file in GUI
@@ -1477,6 +1481,28 @@ class APSIMNG:
         solutes = sim.FindAllDescendants[Models.Soils.Solute]()
         return [s for s in solutes if s.Name == solute][0]
 
+    def clear_db(self):
+        """
+        Clears the attributes of the object and optionally deletes associated files.
+
+        If the `copy` attribute is set to True, this method will also attempt to delete
+        files at `self.path` and `self.datastore`. This is a destructive operation and
+        should be used with caution.
+
+        Returns:
+           >>None: This method does not return a value.
+           >> Please proceed with caution, we assume that if you want to clear the model objects, then you don't need them
+           but by making copy compulsory, then, we are clearing the edited files
+        """
+        self._DataStore.Close()
+        Path(self.path).unlink(missing_ok=True)
+        Path(self.path.strip('apsimx') + "db-wal").unlink(missing_ok=True)
+        Path(self.path.strip('apsimx') + "bak").unlink(missing_ok=True)
+        self._DataStore.Dispose()
+        Path(self.datastore).unlink(missing_ok=True)
+
+        return self
+
     def clear(self):
         """
         Clears the attributes of the object and optionally deletes associated files.
@@ -1586,6 +1612,8 @@ if __name__ == '__main__':
     for _ in range(1):
         a = perf_counter()
         # model.RevertCheckpoint()
-        model.run("MaizeR")
+
+        model.run("MaizeR", clean=False)
         b = perf_counter()
         print(b - a, 'seconds')
+        model.clear_links()

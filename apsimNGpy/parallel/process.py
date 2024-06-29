@@ -222,22 +222,23 @@ def custom_parallel(func, iterable, *args, **kwargs):
     verbose = kwargs.get('verbose', True)
     selection = select_type(use_thread=use_thread,
                             n_cores=cpu_cores)
-    with selection as pool:  # this reduces the repetition perhaps should even be implimented
-        # with a decorator at the top of the function
+    with selection as pool:
         futures = [pool.submit(func, i, *args) for i in iterable]
         if verbose:
         
             progress = tqdm(total=len(futures), position=0, leave=True,
                             bar_format=f'processing via: {func.__name__} function:' '{percentage:3.0f}% completed')
             # Iterate over the futures as they complete
+            count = 0
             for future in as_completed(futures):
+                count += 1
                 yield future.result()
                 progress.update(1)
             progress.close()
         else:
             for future in as_completed(futures):
                 yield future.result()
-    print('Took', perf_counter() - a, 'seconds', f'to run')
+    print(f'processing {count} took', perf_counter() - a, f'seconds', f'to run. efficiency per worker was: {count/cpu_cores}')
 
 
 def simulate_in_chunks(w_d, iterable_generator, chunk_size, con_data_base=None, table_tag='t', save_to_csv=True):
@@ -298,7 +299,10 @@ def simulate_in_chunks(w_d, iterable_generator, chunk_size, con_data_base=None, 
 
 def starmap_executor(func, iterable, *args, **kwargs):
     """
-    The multiprocessing.Pool.starmap method does not release results on the fly; it waits for all worker processes to complete and collects all results before returning them as a list. If you need results to be processed and available as soon as each worker finishes, you should use multiprocessing.Pool.imap or multiprocessing.Pool.imap_unordered instead. These methods return an iterator that yields results as they become available.
+    The multiprocessing.Pool.starmap method does not release results on the fly; it waits for all worker processes to complete
+    and collects all results before returning them as a list. If you need results to be processed and available as soon as each
+     worker finishes, you should use multiprocessing.Pool.imap or multiprocessing.Pool.imap_unordered instead.
+     These methods return an iterator that yields results as they become available.
     """
     print('starmap_executor processing data')
     processes = kwargs.get('processes', mp.cpu_count())

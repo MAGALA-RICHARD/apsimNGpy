@@ -30,7 +30,7 @@ from apsimNGpy.utililies.utils import timer
 
 # now we can safely import C# libraries
 from System.Collections.Generic import *
-from Models.Core import Simulations, ScriptCompiler
+from Models.Core import Simulations, ScriptCompiler, Simulation
 from System import *
 from Models.Core.ApsimFile import FileFormat
 from Models.Climate import Weather
@@ -80,6 +80,7 @@ class APSIMNG:
             read_from_string : bool, optional
                 If True, file is uploaded to memory through json module (preferred); otherwise, we read from file.
             """
+        out_path = out_path if isinstance(out_path, str) or isinstance(out_path, Path) else None
         self.copy = True  # Mandatory to conserve the original file
         self.results = None
         self.Model = None
@@ -199,6 +200,18 @@ class APSIMNG:
 
     # loads the apsimx file into memory but from string
 
+    def initialise_model(self):
+        simulationList = self.Model.FindAllDescendants[Simulation]()
+        for models in self.Model.FindAllDescendants():
+            try:
+                models.OnCreated()
+            except Exception as e:
+                print(e)
+            finally:
+                for simulation in simulationList:
+                    simulation.IsInitialising = False
+        return self
+
     def load_apsimx_model(self, from_file=False):
 
         """
@@ -206,23 +219,20 @@ class APSIMNG:
         :param _data: data can be a STRING PATH, A DICTIONARY FOR APSIM SIMULATION OBJECT OR A A STING
         :return: Model object
         """
-        if isinstance(self._model, str):
-
+        if isinstance(self._model, (str, Path)):
+            f_name = os.path.realpath(self._model)
             if from_file:
-                self.Model = FileFormat.ReadFromFile[Models.Core.Simulations](self._model, None, False)
+                self.Model = FileFormat.ReadFromFile[Models.Core.Simulations](f_name, None, False)
             else:
                 with open(self._model, "r+", encoding='utf-8') as apsimx:
                     app_ap = json.load(apsimx)
                 string_name = json.dumps(app_ap)
+
                 self.Model = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](string_name, None,
                                                                                                       True,
-                                                                                                      fileName=self._model)
+                                                                                                      fileName=f_name)
 
-            if self.out_path:
-                self.path = self.out_path
-
-            else:
-                self.path = self._model
+            self.path = self.out_path or f_name
 
         elif isinstance(self._model, dict):
 
@@ -234,6 +244,7 @@ class APSIMNG:
             else:
 
                 string_nam = os.path.join(os.getcwd(), APSIMNG.generate_unique_name('frm_string') + '.apsimx')
+                self.path = string_nam
             self.Model = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](str_, None, True,
                                                                                                   fileName=string_nam)
         # elif _data is None:
@@ -245,10 +256,6 @@ class APSIMNG:
 
             if 'NewModel' in dir(self.Model):
                 self.Model = self.Model.get_NewModel()
-                # initialize the model just in case
-            self.Model.OnCreated()
-
-
 
         except PermissionError as e:
             print('file is being used by another process')
@@ -300,7 +307,7 @@ class APSIMNG:
         self.save_edited_file(self.path)
         return self
 
-    import os
+
 
     def save_edited_file(self, outpath=None, reload=False):
         """Save the model
@@ -310,19 +317,11 @@ class APSIMNG:
         outpath : str, optional
             Path of the output .apsimx file, by default None
             reload: bool to load the file using the outpath
+            :param reload:
         """
         # Determine the output path
-        if outpath:
-            # If an outpath is provided, use it and convert to real path
-            final_out_path = os.path.realpath(outpath)
-        else:
-            # If no outpath is provided, check if self.out_path is already set
-            if self.out_path is None:
-                # If self.out_path is not set, default to self.path
-                final_out_path = self.path
-            else:
-                # Use the existing self.out_path
-                final_out_path = self.out_path
+
+        final_out_path = outpath or self.out_path or self.path
 
         # Serialize the model to JSON string
         json_string = Models.Core.ApsimFile.FileFormat.WriteToString(self.Model)
@@ -332,7 +331,7 @@ class APSIMNG:
             f.write(json_string)
         if reload:
             self._model = final_out_path
-            self.load_apsimx_model(self._model)
+            self.load_apsimx_model()
             return self
 
     def run(self, report_name=None, simulations=None, clean=False, multithread=True):
@@ -347,7 +346,7 @@ class APSIMNG:
             List of simulation names to run, if `None` runs all simulations, by default `None`.
 
         clean (_-boolean_), optional
-            If `True` remove existing database for the file before running, deafults to False`
+            If `True` remove an existing database for the file before running, deafults to False`
 
         multithread
             If `True` APSIM uses multiple threads, by default `True`
@@ -357,7 +356,7 @@ class APSIMNG:
             runtype = Models.Core.Run.Runner.RunTypeEnum.MultiThreaded
         else:
             runtype = Models.Core.Run.Runner.RunTypeEnum.SingleThreaded
-        # open the datassote
+        # open the datastore
 
         self._DataStore.Open()
         # Clear old data before running
@@ -365,7 +364,7 @@ class APSIMNG:
         if clean:
             self._DataStore.Dispose()
             pathlib.Path(self._DataStore.FileName).unlink(missing_ok=True)
-            self._DataStore.Open()
+
 
         if simulations is None:
             runmodel = Models.Core.Run.Runner(self.Model, True, False, False, None, runtype)
@@ -905,7 +904,7 @@ class APSIMNG:
         self.Model = self.Model.RevertCheckpoint('new_model')
         return self
 
-    def update_management_decissions(self, management, simulations=None, reload=True):
+    def update_management_decissions(self, management, simulations=None, out=None):
         """Update management, handles multiple managers in a loop
 
         Parameters
@@ -916,6 +915,7 @@ class APSIMNG:
             List of simulation names to update, if `None` update all simulations not recommended.
         reload, optional
             _description_ defaults to True
+            out: bool, optional specifies the new filename
         """
         if not isinstance(management, list):
             management = [management]
@@ -936,13 +936,13 @@ class APSIMNG:
 
                                 # action.Parameters[i]= {param:f"{values[param]}"}
         # self.examine_management_info()                # action.GetParametersFromScriptModel()
-        if reload:
-            self.save_edited_file()
-            self.load_apsimx_model(self.path)
+        self.path = out or self.out_path
+        self.save_edited_file(outpath=self.path)
+        self.load_apsimx_model()
 
     # experimental
 
-    def update_mgt(self, management, simulations=None, reload=False):  # use this one it is very fast
+    def update_mgt(self, management, simulations=None, reload=True, out=None):
         """Update management, handles one manager at a time
 
         Parameters
@@ -953,6 +953,8 @@ class APSIMNG:
             make a dictionary with 'Name' as the for the of  management script
         simulations, optional
             List of simulation names to update, if `None` update all simulations not recommended.
+            :param out: to save the file after editing
+            :param reload:
         """
         if not isinstance(management, list):
             management = [management]
@@ -968,18 +970,12 @@ class APSIMNG:
                     param = fp.Value.Parameters[i].Key
                     if param in values.keys():
                         fp.Value.Parameters[i] = KeyValuePair[String, String](param, f"{values[param]}")
-
-        # return zone  # for mgt in management:
-        #     action_path = f'{zone_path}.{mgt.get("Name")}'
-        #     fp = zone.FindByPath(action_path)
-        #     values = mgt
-        #     for i in range(len(fp.Value.Parameters)):
-        #         param = fp.Value.Parameters[i].Key
-        #         if param in values.keys():
-        #             fp.Value.Parameters[i] = KeyValuePair[String, String](param, f"{values[param]}")
-        self.save_edited_file()
-        self._model = self.path
-        self.load_apsimx_model()
+        out_mgt_path  =out or self.out_path or self.path
+        if reload:
+            self.save_edited_file(outpath=out_mgt_path, reload=reload)
+            self._model = out_mgt_path
+        else:
+            self.save_edited_file(outpath =out_mgt_path)
         return self
 
     # immediately open the file in GUI
@@ -1613,6 +1609,8 @@ if __name__ == '__main__':
         a = perf_counter()
         # model.RevertCheckpoint()
 
+        
+        model.update_mgt({"Name":"Simple Rotation", 'Crops': 'Maize'}, reload =True)
         model.run("MaizeR", clean=False)
         b = perf_counter()
         print(b - a, 'seconds')

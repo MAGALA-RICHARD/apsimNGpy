@@ -67,7 +67,8 @@ class APSIMNG:
         self.path = None
         if kwargs.get('copy'):
             warnings.warn(
-                'copy argument is deprecated, it is now mandatory to copy the model in order to conserve the original model.')
+                'copy argument is deprecated, it is now mandatory to copy the model in order to conserve the original '
+                'model.')
         """
             Parameters
             ----------
@@ -101,19 +102,6 @@ class APSIMNG:
 
         # self.Model = self.load_apsimx_model()
 
-    def _init_from_file(self, read_from_string):
-        """Initialize the object from a file path."""
-        apsimx_file = os.path.realpath(self._model)
-        self._name, self._ext = os.path.splitext(self._model)
-
-        copy_path = self._copy_file()
-        self.path = copy_path
-
-        if read_from_string:
-            self.load_apsimx_model()
-        else:
-            self._load_apsimx(self.path)
-
     def clear_links(self):
         self.Model.ClearLinks()
         return self
@@ -121,22 +109,6 @@ class APSIMNG:
     def ClearSimulationReferences(self):
         self.Model.ClearSimulationReferences()
         return self
-
-    def _copy_file(self) -> str:
-        """Copy the apsimx file and remove related database files."""
-        if self.out_path is None:
-            copy_path = f"{self._name}_copy{self._ext}"
-        else:
-            copy_path = self.out_path
-
-        try:
-            shutil.copy(self._model, copy_path)
-            self._remove_related_files(self._name)
-        except PermissionError as e:
-            print(f"PermissionError: {e}")
-            raise
-
-        return copy_path
 
     @staticmethod
     def _remove_related_files(_name):
@@ -307,8 +279,6 @@ class APSIMNG:
         self.save_edited_file(self.path)
         return self
 
-
-
     def save_edited_file(self, outpath=None, reload=False):
         """Save the model
 
@@ -364,7 +334,6 @@ class APSIMNG:
         if clean:
             self._DataStore.Dispose()
             pathlib.Path(self._DataStore.FileName).unlink(missing_ok=True)
-
 
         if simulations is None:
             runmodel = Models.Core.Run.Runner(self.Model, True, False, False, None, runtype)
@@ -970,12 +939,12 @@ class APSIMNG:
                     param = fp.Value.Parameters[i].Key
                     if param in values.keys():
                         fp.Value.Parameters[i] = KeyValuePair[String, String](param, f"{values[param]}")
-        out_mgt_path  =out or self.out_path or self.path
+        out_mgt_path = out or self.out_path or self.path
         if reload:
             self.save_edited_file(outpath=out_mgt_path, reload=reload)
             self._model = out_mgt_path
         else:
-            self.save_edited_file(outpath =out_mgt_path)
+            self.save_edited_file(outpath=out_mgt_path)
         return self
 
     # immediately open the file in GUI
@@ -1609,8 +1578,7 @@ if __name__ == '__main__':
         a = perf_counter()
         # model.RevertCheckpoint()
 
-        
-        model.update_mgt({"Name":"Simple Rotation", 'Crops': 'Maize'}, reload =True)
+        model.update_mgt({"Name": "Simple Rotation", 'Crops': 'Maize'}, reload=True)
         model.run("MaizeR", clean=False)
         b = perf_counter()
         print(b - a, 'seconds')

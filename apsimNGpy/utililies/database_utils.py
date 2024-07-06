@@ -51,6 +51,8 @@ def read_with_query(db, query):
     df = rsq(query, conn)
     conn.close()
     return df
+
+
 def get_db_table_names(d_b):
     """
 
@@ -58,7 +60,7 @@ def get_db_table_names(d_b):
     :return: all names sql database table names existing within the database
     """
     d_b = f'sqlite:///{d_b}'
-    #engine = create_engine(mssql+pymssql://sa:saPassword@localhost:52865/{d_b})')
+    # engine = create_engine(mssql+pymssql://sa:saPassword@localhost:52865/{d_b})')
     engine = create_engine(d_b)
     insp = inspect(engine)
     return insp.get_table_names()
@@ -103,10 +105,10 @@ def read_db_table(db, report_name):
         conn.close()
         return df
     except errors.DatabaseError as ed:
-        #print(repr(ed))
-        #print(f" Seems like the specified table name: {report_name} does not exists in {db} data base")
+        # print(repr(ed))
+        # print(f" Seems like the specified table name: {report_name} does not exists in {db} data base")
         if exists(db):
-           print(f"report_name(s) should be any of the following:: {get_db_table_names(db)}")
+            print(f"report_name(s) should be any of the following:: {get_db_table_names(db)}")
         raise errors.DatabaseError(f"{str(ed)} occurred")
 
 
@@ -119,6 +121,38 @@ def load_database(path):
         named_tuple = path_info(path=path)
         return named_tuple
     except Exception as e:
-        print(repr(e))  
+        print(repr(e))
         raise
 
+
+def clear_table(db, table_name):
+    """
+
+    :param db: path to db
+    :param table_name: name of the table to clear
+    :return: None
+    """
+    with sqlite3.connect(db) as conn:
+        cursor = conn.cursor()
+        cursor.execute(f"DELETE FROM {table_name}")
+        conn.commit()
+
+
+def clear_all_tables(db):
+    """
+    
+    :param db: path to database file
+    :return: None
+    """
+    with sqlite3.connect(db) as conn:
+        cursor = conn.cursor()
+
+        # Fetch all table names
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+        tables = cursor.fetchall()
+
+        # Clear all tables
+        for table in tables:
+            cursor.execute(f"DELETE FROM {table[0]}")
+
+        conn.commit()

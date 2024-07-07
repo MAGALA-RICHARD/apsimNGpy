@@ -4,6 +4,7 @@ author: Richard Magala
 email: magalarich20@gmail.com
 
 """
+from functools import singledispatch
 import matplotlib.pyplot as plt
 import random, logging, pathlib
 import string
@@ -17,101 +18,116 @@ import json
 from pathlib import Path
 import threading
 import time
+import datetime
 import apsimNGpy.manager.weathermanager as weather
 from functools import cache
 # prepare for the C# import
 from apsimNGpy.core.pythonet_config import LoadPythonnet
-from apsimNGpy.utililies.database_utils import read_db_table
+from apsimNGpy.utililies.database_utils import read_db_table, get_db_table_names
 import warnings
-
-
-warnings.warn("apsimNGpy.core.core will be deprecated use apsimNGpy.core.api instead")
-
+from apsimNGpy.utililies.utils import timer
 # py_config = LoadPythonnet()()  # double brackets avoids calling it twice
 
 # now we can safely import C# libraries
 from System.Collections.Generic import *
-from Models.Core import Simulations, ScriptCompiler
+from Models.Core import Simulations, ScriptCompiler, Simulation
 from System import *
 from Models.Core.ApsimFile import FileFormat
 from Models.Climate import Weather
 from Models.Soils import Soil, Physical, SoilCrop, Organic
 import Models
 from Models.PMF import Cultivar
+from apsimNGpy.core.apsim_file import XFile as load_model
+from model_loader import (load_apx_model, save_model_to_file)
+from apsimNGpy.utililies.utils import timer
+from runner import run_model
 
 
 # from settings import * This file is not ready and i wanted to do some test
 
 
-# decorator to monitor performance
-def timing_decorator(func):
-    def wrapper(*args, **kwargs):
-        start_time = time.perf_counter()
-        result = func(*args, **kwargs)
-        end_time = time.perf_counter()
-        elapsed_time = end_time - start_time
-        print(f"{func.__name__} took {elapsed_time:.4f} seconds to execute.")
-        return result
-
-    return wrapper
-
-
-class APSIMNG():
+class APSIMNG:
     """Modify and run Apsim next generation simulation models."""
 
-    def __init__(self, model: Union[str, Simulations], copy=True, out_path=None, read_from_string=True):
-        """
-        Parameters
-        ----------
+    def __init__(self, model=None, out_path=None, out=None, load=True, **kwargs):
 
-        model
-            Path to .apsimx file
-        copy, optional
-            If `True` a copy of original simulation will be created on init, by default True.
-        out_path, optional
-            Path of modified simulation, if `None` will be set automatically.
-        read_from_string (boolean) if True file will be uploaded to memory through json module most preffered, otherwise we can read from file
+        self.file_name = None
+        self._DataStore = None
+        self._met = None
+        self.path = None
+        self.others = kwargs.copy()
+        if kwargs.get('copy'):
+            warnings.warn(
+                'copy argument is deprecated, it is now mandatory to copy the model in order to conserve the original '
+                'model.')
         """
-        if isinstance(model, str):
-            assert os.path.exists(model), "The file does not exists in the specified directory"
-            if not model.endswith('.apsimx'):
-                raise ValueError("Did you forget the apsimx extention?")
+            Parameters
+            ----------
+            model : str or Simulations
+                Path to .apsimx file or a Simulations object.
+            copy : bool, optional
+                If True, a copy of the original simulation will be created on init to conserve the original file, by default True.
+            out_path : str, optional
+                Path of the modified simulation; if None, it will be set automatically.
+            read_from_string : bool, optional
+                If True, file is uploaded to memory through json module (preferred); otherwise, we read from file.
+            """
+        out_path = out_path if isinstance(out_path, str) or isinstance(out_path, Path) else None
+        self.copy = kwargs.get('copy')  # Mandatory to conserve the original file
+        # all these can be changed after initialization
         self.results = None
-        self.Model = None
+        self.load = load
         self.datastore = None
-        if out_path:
-            out_path = os.path.realpath(out_path)
-        self.out_path = out_path
+        self._str_model = None
+        self._model = model
+        self.out_path = out_path or out
+        self.model_info = load_apx_model(self._model, out=self.out_path)
+        self.Simulations = self.model_info.IModel
+        self.datastore = self.model_info.datastore
+        self.Datastore = self.model_info.DataStore
+        self._DataStore = self.model_info.DataStore
 
-        if type(model) == str or isinstance(model, Path):
-            apsimx_file = os.path.realpath(model)
-            name, ext = os.path.splitext(apsimx_file)
-            if copy:
-                if out_path is None:
-                    copy_path = f"{name}_copy{ext}"
-                else:
-                    copy_path = out_path
-                try:
-                    shutil.copy(apsimx_file, copy_path)
-                    pathlib.Path(f"{name}.db").unlink(missing_ok=True)
-                    pathlib.Path(f"{name}.db-shm").unlink(missing_ok=True)
-                    pathlib.Path(f"{name}.db-wal").unlink(missing_ok=True)
-                    self.path = copy_path
-                except PermissionError as e:
-                    print(repr(e))
-            else:
-                self.path = apsimx_file
+    def run_simulations(self, results=None, reports=None, clean_up=False):
+        """
+        Run the simulation. here we are using the self.model_info named tuple from model loader
+        :results : bool, optional if True, we return the results of the simulation
+           else we just run, and the user can retrieve he results from the database using the data store path
+        reports: str, array like for returning the reports
+        clean_up : bool deletes the file on disk, by default False
+        returns results if results is True else None
+        """
+        res = run_model(self.model_info, results=results, clean_up=clean_up)
+        if reports:
+            return [res[repo] for repo in reports] if isinstance(reports, (list, tuple, set)) else res[reports]
 
-            if read_from_string == True:  # this is the fastest
-                self.load_apsimx_from_string(self.path)
-            else:
-                self._load_apsimx(self.path)
+    @property
+    def set_model(self):
+        return self._model
 
-        elif type(model) == Simulations:
-            self.Model = model
+    @set_model.setter
+    def set_model(self, value):
+        self._model = value
 
-            self.datastore = self.Model.FindChild[Models.Storage.DataStore]().FileName
-            self._DataStore = self.Model.FindChild[Models.Storage.DataStore]()
+    def clear_links(self):
+        self.Simulations.ClearLinks()
+        return self
+
+    def ClearSimulationReferences(self):
+        self.Simulations.ClearSimulationReferences()
+        return self
+
+    @staticmethod
+    def _remove_related_files(_name):
+        """Remove related database files."""
+        for suffix in ["", "-shm", "-wal"]:
+            db_file = pathlib.Path(f"{_name}.db{suffix}")
+            db_file.unlink(missing_ok=True)
+
+    def _init_from_simulations(self, model: Simulations):
+        """Initialize the object from a Simulations object."""
+        self.Simulations = model
+        self.datastore = self.Simulations.FindChild[Models.Storage.DataStore]().FileName
+        self._DataStore = self.Simulations.FindChild[Models.Storage.DataStore]()
 
     @staticmethod
     def generate_unique_name(base_name, length=6):
@@ -128,11 +144,11 @@ class APSIMNG():
     @property
     def simulations(self):
         try:
-            simus = list(self.Model.FindAllChildren[Models.Core.Simulation]())
+            simus = list(self.Simulations.FindAllChildren[Models.Core.Simulation]())
             if len(simus) != 0:
-                return list(self.Model.FindAllChildren[Models.Core.Simulation]())
+                return list(self.Simulations.FindAllChildren[Models.Core.Simulation]())
             else:
-                experiment = self.Model.FindAllChildren[Models.Factorial.Experiment]()
+                experiment = self.Simulations.FindAllChildren[Models.Factorial.Experiment]()
 
                 for i in experiment:
                     simus = list(i.FindAllChildren[Models.Core.Simulation]())
@@ -143,138 +159,123 @@ class APSIMNG():
             print(type(e), "occured")
             raise Exception(type(e))
 
+    @property
+    def str_model(self):
+        return json.dumps(self._str_model)
+
+    @str_model.setter
+    def str_model(self, value: dict):
+        self._str_model = json.dumps(value)
+
+    def load_from_memory(self, file_name):
+        str_ = self.str_model
+        self.Simulations = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](str_, None, True,
+                                                                                              fileName=file_name)
+        self.datastore = self.Simulations.FindChild[Models.Storage.DataStore]().UpdateFileName()
+        self.Simulations.ClearSimulationReferences()
+
+        return self
+
     # loads the apsimx file into memory but from string
-    def load_apsimx_from_string(self, path):
-        path = os.path.realpath(path)
-        try:
-            with open(path, "r+") as apsimx:
-                app_ap = json.load(apsimx)
-            string_name = json.dumps(app_ap)
-            fn = path
-            self.Model = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](string_name, None,
-                                                                                                  True, fileName=fn)
-
-            if 'NewModel' in dir(self.Model):
-                self.Model = self.Model.get_NewModel()
-
-        except PermissionError as e:
-            # this error will be logged to the folder logs in the current working directory
-            print('file is being used by another process')
-            raise
-
-        self.datastore = self.Model.FindChild[Models.Storage.DataStore]().FileName
-        self._DataStore = self.Model.FindChild[Models.Storage.DataStore]()
-        # self.version = self.Model.get_ApsimVersion()
-
-    # loads apsimx file from the computer into memory using its path
-    def _load_apsimx(self, path):
-        try:
-            if not os.path.isfile(path):
-                raise ValueError("file path is missing apsim extention. did you forget to include .apsimx extension")
-            self.Model = FileFormat.ReadFromFile[Models.Core.Simulations](path, None, False)
-            if 'NewModel' in dir(self.Model):
-                self.Model = self.Model.get_NewModel()
-
-        except Exception as e:
-            print(repr(e))  # this error will be logged to the folder logs in the current working directory
-            print('reading from clone\n----ignore error-----')
-            self.Model = self.load_apsimx_from_string(path)
-            raise
-        self.datastore = self.Model.FindChild[Models.Storage.DataStore]().FileName
-        self._DataStore = self.Model.FindChild[Models.Storage.DataStore]()
-        # self.version = self.Model.get_ApsimVersion()
-
-    def load_external_apsimx(self, path, read_from_string=True):
-        # when we load we replace exisiting ones, so fune null it
-        self.Model = None
-        self.path = path
-        try:
-            assert path.endswith(
-                ".apsimx"), "file path is missing APSIM extension. did you forget to include .apsimx extension"
-            if read_from_string:
-                self.load_apsimx_from_string(path)
-            else:
-                self.Model = FileFormat.ReadFromFile[Models.Core.Simulations](path, None, False)
-                if 'NewModel' in dir(self.Model):
-                    self.Model = self.Model.get_NewModel()
-        except Exception as e:
-            print(repr(e))  # this error will be logged to the folder logs in the current working directory
-            raise
-        self.datastore = self.Model.FindChild[Models.Storage.DataStore]().FileName
-        self._DataStore = self.Model.FindChild[Models.Storage.DataStore]()
+    def initialise_model(self):
+        simulationList = self.Simulations.FindAllDescendants[Simulation]()
+        for models in self.Simulations.FindAllDescendants():
+            try:
+                models.OnCreated()
+            except Exception as e:
+                print(e)
+            finally:
+                for simulation in simulationList:
+                    simulation.IsInitialising = False
+        return self
 
     def _reload_saved_file(self):
         self.save_edited_file(self.path)
+        return self
 
-    def save_edited_file(self, outpath=None):
+    def restart_model(self, model_info=None):
+        if model_info:
+            self.model_info = model_info
+        self.Simulations = self.model_info.IModel
+        self.datastore = self.model_info.datastore
+        self.Datastore = self.model_info.DataStore
+        self._DataStore = self.model_info.DataStore
+        return self
+
+    def save_edited_file(self, out_path=None, reload=False):
         """Save the model
 
         Parameters
         ----------
-        out_path, optional
-            Path of output .apsimx file, by default `None`
+
+            :out_path (str) desired path .apsimx file, by default, None
+            :reload: bool to load the file using the out_path or the model file name
+
         """
-        if outpath:
-            self.out_path = os.path.realpath(outpath)
-        if self.out_path is None:
-            out_path = self.path
-        else:
-            out_path = self.out_path
-        json = Models.Core.ApsimFile.FileFormat.WriteToString(self.Model)
-        with open(out_path, "w") as f:
-            f.write(json)
+        # Determine the output path
+        _out_path = out_path or self.Simulations.FileName
+        save_model_to_file(self.Simulations, out=_out_path)
+        if reload:
+            self.model_info = load_apx_model(_out_path)
+            self.restart_model()
+            return self
 
-
-    def run(self, simulations=None, clean=False, multithread=True, report_name = None):
+    def run(self, report_name=None, simulations=None, clean=False, multithread=True):
         """Run apsim model in the simulations
 
         Parameters
         ----------
-        simulations (__str_), optional
-            List of simulation names to run, if `None` runs all simulations, by default `None`.
-        clean (_-boolean_), optional
-            If `True` remove existing database for the file before running, deafults to False`
-        multithread, optional
-            If `True` APSIM uses multiple threads, by default `True`
-        kwargs:
-             report_name: A string parameter or list of strings used to designate the table name(s) If left unspecified, the simulator will
+        report_name: str. defaults to APSIM defaults Report Name and if not specified or Report Name not in the simulation tables, the simulator will
             execute the model and save the outcomes in a database file, accessible through alternative retrieval methods.
 
+        simulations (__str_), optional
+            List of simulation names to run, if `None` runs all simulations, by default `None`.
+
+        clean (_-boolean_), optional
+            If `True` remove an existing database for the file before running, deafults to False`
+
+        multithread
+            If `True` APSIM uses multiple threads, by default `True`
         """
-        if multithread:
-            runtype = Models.Core.Run.Runner.RunTypeEnum.MultiThreaded
-        else:
-            runtype = Models.Core.Run.Runner.RunTypeEnum.SingleThreaded
+        try:
+            if multithread:
+                runtype = Models.Core.Run.Runner.RunTypeEnum.MultiThreaded
+            else:
+                runtype = Models.Core.Run.Runner.RunTypeEnum.SingleThreaded
+            # open the datastore
 
-        # Clear old data before running
-        self.results = None
-        if clean:
-            self._DataStore.Dispose()
-            pathlib.Path(self._DataStore.FileName).unlink(missing_ok=True)
             self._DataStore.Open()
+            # Clear old data before running
+            self.results = None
+            if clean:
+                self._DataStore.Dispose()
+                pathlib.Path(self._DataStore.FileName).unlink(missing_ok=True)
 
-        if simulations is None:
-            runmodel = Models.Core.Run.Runner(self.Model, True, False, False, None, runtype)
-            e = runmodel.Run()
-        else:
-            sims = self.find_simulations(simulations)
-            # Runner needs C# list
-            cs_sims = List[Models.Core.Simulation]()
-            for s in sims:
-                cs_sims.Add(s)
-                runmodel = Models.Core.Run.Runner(cs_sims, True, False, False, None, runtype)
+            if simulations is None:
+                runmodel = Models.Core.Run.Runner(self.Simulations, True, False, False, None, runtype)
                 e = runmodel.Run()
+            else:
+                sims = self.find_simulations(simulations)
+                # Runner needs C# list
+                cs_sims = List[Models.Core.Simulation]()
+                for s in sims:
+                    cs_sims.Add(s)
+                    runmodel = Models.Core.Run.Runner(cs_sims, True, False, False, None, runtype)
+                    e = runmodel.Run()
 
-        if (len(e) > 0):
-            print(e[0].ToString())
-        
-        if report_name and isinstance(report_name, list):
-            self.results = [read_db_table(self.datastore, report_name=rep) for rep in report_name]
-        if report_name and isinstance(report_name, str):
-            self.results = read_db_table(self.datastore, report_name=report_name)
-
+            if len(e) > 0:
+                print(e[0].ToString())
+            if report_name is None:
+                report_name = get_db_table_names(self.datastore)
+                warnings.warn('No tables were specified, retrieved tables includes:: {}'.format(report_name))
+            if isinstance(report_name, (tuple, list)):
+                self.results = [read_db_table(self.datastore, report_name=rep) for rep in report_name]
+            else:
+                self.results = read_db_table(self.datastore, report_name=report_name)
+        finally:
+            # close the datastore
+            self._DataStore.Close()
         return self
-        # print(self.results)
 
     def clone_simulation(self, target, simulation=None):
         """Clone a simulation and add it to Model
@@ -282,19 +283,20 @@ class APSIMNG():
         Parameters
         ----------
         target
-            target simulation name
+             simulation name
         simulation, optional
             Simulation name to be cloned, of None clone the first simulation in model
         """
 
-        sim = self._find_simulation(simulation)
+        sims = self._find_simulation(simulation)
+        for sim in sims:
+            clone_sim = Models.Core.Apsim.Clone(sim)
+            clone_sim.Name = target
+            # clone_zone = clone_sim.FindChild[Models.Core.Zone]()
+            # clone_zone.Name = target
 
-        clone_sim = Models.Core.Apsim.Clone(sim)
-        clone_sim.Name = target
-        # clone_zone = clone_sim.FindChild[Models.Core.Zone]()
-        # clone_zone.Name = target
-
-        self.Model.Children.Add(clone_sim)
+            self.Simulations.Children.Clear(clone_sim.Name)
+            self.Simulations.Children.Add(clone_sim)
         self._reload_saved_file()
 
     def remove_simulation(self, simulation):
@@ -307,7 +309,7 @@ class APSIMNG():
         """
 
         sim = self._find_simulation(simulation)
-        self.Model.Children.Remove(sim)
+        self.Simulations.Children.Remove(sim)
         self.save_edited_file()
         self._load_apsimx(self.path)
 
@@ -352,7 +354,7 @@ class APSIMNG():
             Parameters
             ----------
             simulation
-                simulation name
+                 name
 
             Returns
             -------
@@ -366,24 +368,9 @@ class APSIMNG():
     @property  #
     def extract_report_names(self):
         ''' returns all data frame the available report tables'''
-        with sqlite3.connect(self.datastore) as conn:
-
-            cursor = conn.cursor()
-
-            # reading all table names
-
-            table_names = [a for a in cursor.execute("SELECT name FROM sqlite_master WHERE type = 'table'")]
-
-            table_list = []
-            for i in table_names:
-                table_list.append(i[0])
-                # remove these
-            rm = ['_InitialConditions', '_Messages', '_Checkpoints', '_Units']
-            for i in rm:
-                if i in table_list:
-                    table_list.remove(i)
-                # start selecting tables
-            return table_list
+        table_list = get_db_table_names(self.datastore)
+        rm = ['_InitialConditions', '_Messages', '_Checkpoints', '_Units']
+        return [im for im in table_list if im not in rm]
 
     @staticmethod
     def read_apsimx_db(datastore, report_name):
@@ -393,84 +380,37 @@ class APSIMNG():
         data = read_db_table(datastore, report_name)
         return data
 
-    def _read_simulation(self, report_name=None):
-        """ returns all data frame the available report tables
-        this is slow use read_db_table instead"""
-        conn = sqlite3.connect(self.datastore)
-        cursor = conn.cursor()
+    # perhaps a good a example of how to edit cultvar
+    def adjust_rue(self, csr, cultivar_name='B_110', base_csr=2):  # Iowa only
+        CSR = csr ** np.log(1 / csr) * base_csr,
+        command = '[Leaf].Photosynthesis.RUE.FixedValue',
+        self.edit_cultivar(cultivar_name, commands=command, values=CSR)
+        return self
 
-        # reading all table names
+    def replicate_file(self, k, path=None, tag="replica"):
+        """
+        Replicates a file 'k' times.
 
-        table_names = [a for a in cursor.execute("SELECT name FROM sqlite_master WHERE type = 'table'")]
+        If a path is specified, the copies will be placed in that directory with incremented filenames.
+        If no path is specified, copies are created in the same directory as the original file, also with incremented filenames.
 
-        table_list = []
-        for i in table_names:
-            table_list.append(i[0])
-            # remove these
-        rm = ['_InitialConditions', '_Messages', '_Checkpoints', '_Units']
-        for i in rm:
-            if i in table_list:
-                table_list.remove(i)
-                # start selecting tables
+        Parameters:
+        - self: The core.api.APSIMNG object instance containing 'path' attribute pointing to the file to be replicated.
+        - k (int): The number of copies to create.
+        - path (str, optional): The directory where the replicated files will be saved. Defaults to None, meaning the same directory as the source file.
+        - tag (str, optional): a tag to attached with the copies. Defaults to "replicate"
 
-        select_template = 'SELECT * FROM {table_list}'
 
-        # create data fram dictionary to keep all the tables
-        dataframe_dict = {}
+        Returns:
+        - A list of paths to the newly created files if get_back_list is True else a generator is returned.
+        """
+        if path is None:
+            file_name = self.path.rsplit('.apsimx', 1)[0]
+            return [shutil.copy(self.path, f"{file_name}_{tag}_{i}_.apsimx") for i in range(k)]
 
-        for tname in table_list:
-            query = select_template.format(table_list=tname)
-            dataframe_dict[tname] = pd.read_sql(query, conn)
-        # close the connection cursor
-        conn.close()
-        dfl = len(dataframe_dict)
-        if len(dataframe_dict) == 0:
-            print("the data dictionary is empty. no data has been returned")
-            # else:
-            # remove elements
-            # print(f"{dfl} data frames has been returned")
-
-        if report_name:
-            return dataframe_dict[report_name]
         else:
-            return dataframe_dict
-
-    @staticmethod
-    def _read_external_simulation(datastore, report_name=None):
-        ''' returns all data frame the available report tables'''
-        conn = sqlite3.connect(datastore)
-        cursor = conn.cursor()
-
-        # reading all table names
-
-        table_names = [a for a in cursor.execute("SELECT name FROM sqlite_master WHERE type = 'table'")]
-
-        table_list = []
-        for i in table_names:
-            table_list.append(i[0])
-            # remove these
-        rm = ['_InitialConditions', '_Messages', '_Checkpoints', '_Units']
-        for i in rm:
-            if i in table_list:
-                table_list.remove(i)
-                # start selecting tables
-        select_template = 'SELECT * FROM {table_list}'
-
-        # create data fram dictionary to keep all the tables
-        dataframe_dict = {}
-
-        for tname in table_list:
-            query = select_template.format(table_list=tname)
-            dataframe_dict[tname] = pd.read_sql(query, conn)
-        # close the connection cursor
-        conn.close()
-        dfl = len(dataframe_dict)
-        if len(dataframe_dict) == 0:
-            print("the data dictionary is empty. no data has been returned")
-        if report_name:
-            return dataframe_dict[report_name]
-        else:
-            return dataframe_dict
+            b_name = os.path.basename(self.path).rsplit('.apsimx', 1)[0]
+            return [shutil.copy(self.path, os.path.join(path, f"{b_name}_{tag}_{i}.apsimx")) for i in range(k)]
 
     def _cultivar_params(self, cultivar):
         """
@@ -486,7 +426,7 @@ class APSIMNG():
         return params
 
     def _find_replacement(self):
-        rep = self.Model.FindChild[Models.Core.Folder]()
+        rep = self.Simulations.FindChild[Models.Core.Folder]()
         return rep
 
     def _find_cultvar(self, CultvarName):
@@ -498,6 +438,14 @@ class APSIMNG():
                 return cult
                 break
         return rep
+
+    def read_cultvar_params(self, name, verbose=None):
+        cultvar = self._find_cultvar(name)
+        c_param = self._cultivar_params(cultvar)
+        if verbose:
+            for i in c_param:
+                print(f"{i} : {c_param[i]} \n")
+        return c_param
 
     def get_crop_replacement(self, Crop):
         """
@@ -513,41 +461,44 @@ class APSIMNG():
                 return i
         return self
 
-    def edit_cultivar(self, CultvarName, commands: tuple, values: tuple):
+    def edit_cultivar(self, CultivarName, commands: tuple, values: tuple):
         """
+        Edits the parameters of a given cultivar.
 
-        :param CultvarName: name of the cultvar e.g laila
-
-        :param command: python tuple of strings.
-                  example: ('[Grain].MaximumGrainsPerCob.FixedValue', "[Phenology].GrainFilling.Target.FixedValue ")
-        values: corresponding values for each command e.g ( 721, 760)
-        :return:
+        :param CultivarName: Name of the cultivar (e.g., 'laila').
+        :param commands: A tuple of strings representing the parameter paths to be edited.
+                         Example: ('[Grain].MaximumGrainsPerCob.FixedValue', '[Phenology].GrainFilling.Target.FixedValue')
+        :param values: A tuple containing the corresponding values for each command (e.g., (721, 760)).
+        :return: None
         """
-        if not isinstance(CultvarName, str):
-            raise ValueError("cultiva name must be a string")
+        if not isinstance(CultivarName, str):
+            raise ValueError("Cultivar name must be a string")
+        if not (isinstance(commands, (tuple, list)) and isinstance(values, (tuple, list))):
+            raise ValueError("Commands and values must be presented as a tuple or a list")
         if len(commands) != len(values):
-            raise ValueError("Both values and commands must be equal")
-        if commands is None or not isinstance(commands, tuple):
-            raise ValueError("commands must be a list")
-        if commands is None or not isinstance(commands, tuple):
-            raise ValueError("values must be presented as a list")
-        cultvar = self._find_cultvar(CultvarName)
+            raise ValueError("The length of values and commands must be equal")
+
+        cultvar = self._find_cultvar(CultivarName)
+        if cultvar is None:
+            raise ValueError(f"Cultivar '{CultivarName}' not found")
+
         params = self._cultivar_params(cultvar)
-        for com, val in zip(commands,
-                            values):  # when a command exists it is replaced, this avoids duplicates as dictioanry names do not repeat
-            params[com] = val
-        commands = [f"{k}={v}" for k, v in params.items()]
-        cultvar.set_Command(commands)
+        for command, value in zip(commands, values):
+            params[command] = value  # Update or add the command with its new value
+
+        # Prepare the command strings for setting the updated parameters
+        updated_commands = [f"{k}={v}" for k, v in params.items()]
+        cultvar.set_Command(updated_commands)
+
         return self
 
     def get_current_cultvar_name(self, ManagerName):
-        # if ParameterName != CultivarName:
         try:
             ap = self.extract_user_input(ManagerName)['CultivarName']
             return ap
         except  KeyError:
             parameterName = 'CultivarName'
-            print(f"default parameter name is: {parameterName} please change in it your manager script and try again")
+            print(f"cultivar name: is not found")
 
     # summarise results by any statistical element
     @staticmethod
@@ -600,7 +551,7 @@ class APSIMNG():
         output_variable_statistics = pd.DataFrame(dic, index=index)
         return output_variable_statistics
 
-    @timing_decorator
+    @timer
     def collect_data_for_specific_crop(self, crop, rotation, variable, report_name, statistic):
         assert isinstance(crop, str), "crop name must be a string"
         assert isinstance(rotation, str), "Rotation name must tbe a string"
@@ -610,7 +561,7 @@ class APSIMNG():
             return result
 
     @staticmethod
-    def collect_specificreport(results, report_names, var_names, stat):
+    def collect_specific_report(results, report_names, var_names, stat):
         """_summary_
 
         Args:
@@ -718,22 +669,22 @@ class APSIMNG():
                 som.Value.InitialResidueMass = inrm
                 som.Value.InitialCNR = icnr
             else:
-                raise Exception(
-                    "File node structure is not supported at a moment. please rename your SOM module to SurfaceOrganicMatter")
+                raise NotImplementedError(
+                    "File node structure is not supported at a moment. please rename your SOM module to "
+                    "SurfaceOrganicMatter")
             # mp.Value.InitialResidueMass
 
             return self
 
-    def __reload(self):
-        self.save_edited_file()
-        if self.out_path:
-            self._load_apsimx(self.out_path)
-        else:
-            self._load_apsimx(self.path)
+    @property
+    def FindAllReferencedFiles(self):
+        return self.Simulations.FindAllReferencedFiles()
 
+    def RevertCheckpoint(self):
+        self.Simulations = self.Simulations.RevertCheckpoint('new_model')
         return self
 
-    def update_management_decissions(self, management, simulations=None, reload=True):
+    def update_management_decissions(self, management, simulations=None, out=None):
         """Update management, handles multiple managers in a loop
 
         Parameters
@@ -744,6 +695,7 @@ class APSIMNG():
             List of simulation names to update, if `None` update all simulations not recommended.
         reload, optional
             _description_ defaults to True
+            out: bool, optional specifies the new filename
         """
         if not isinstance(management, list):
             management = [management]
@@ -764,13 +716,13 @@ class APSIMNG():
 
                                 # action.Parameters[i]= {param:f"{values[param]}"}
         # self.examine_management_info()                # action.GetParametersFromScriptModel()
-        if reload:
-            self.save_edited_file()
-            self.load_apsimx_from_string(self.path)
+        self.path = out or self.out_path
+        self.save_edited_file(outpath=self.path)
+        self.load_apsimx_model()
 
     # experimental
-    @timing_decorator
-    def update_mgt(self, management, simulations=None):
+
+    def update_mgt(self, management, simulations=None, reload=True, out=None):
         """Update management, handles one manager at a time
 
         Parameters
@@ -781,6 +733,8 @@ class APSIMNG():
             make a dictionary with 'Name' as the for the of  management script
         simulations, optional
             List of simulation names to update, if `None` update all simulations not recommended.
+            :param out: to save the file after editing
+            :param reload:
         """
         if not isinstance(management, list):
             management = [management]
@@ -796,18 +750,11 @@ class APSIMNG():
                     param = fp.Value.Parameters[i].Key
                     if param in values.keys():
                         fp.Value.Parameters[i] = KeyValuePair[String, String](param, f"{values[param]}")
+        out_mgt_path = out or self.out_path or self.Simulations.FileName
 
-        # return zone  # for mgt in management:
-        #     action_path = f'{zone_path}.{mgt.get("Name")}'
-        #     fp = zone.FindByPath(action_path)
-        #     values = mgt
-        #     for i in range(len(fp.Value.Parameters)):
-        #         param = fp.Value.Parameters[i].Key
-        #         if param in values.keys():
-        #             fp.Value.Parameters[i] = KeyValuePair[String, String](param, f"{values[param]}")
-        self.save_edited_file()
-        self.load_apsimx_from_string(self.path)
-        return self
+        save_model_to_file(self.Simulations, out_mgt_path)
+        if reload:
+            self.model_info = load_apx_model(out_mgt_path)
 
     # immediately open the file in GUI
     def show_file_in_APSIM_GUI(self):
@@ -832,14 +779,12 @@ class APSIMNG():
 
         for sim in self.simulations:
             actions = sim.FindAllDescendants[Models.Manager]()
-            out = {}
-            out["simulation"] = sim.Name
+            out = {"simulation": sim.Name}
             for action in actions:
                 if action.Name == manager_name:
                     params = self._kvtodict(action.Parameters)
                     return params
 
-    import datetime
     @staticmethod
     def strip_time(date_string):
         date_object = datetime.datetime.strptime(date_string, "%Y-%m-%d")
@@ -912,6 +857,18 @@ class APSIMNG():
             end = clock.End
         return start.Year, end.Year
 
+    @property
+    def met(self):
+        return self._met
+
+    @met.setter
+    def met(self, value):
+        self._met = value
+
+    def change_met(self):
+        self.replace_met_file(self.met)
+        return self
+
     def replace_met_file(self, weather_file, simulations=None):
         try:
             """searched the weather node and replaces it with a new one
@@ -929,13 +886,14 @@ class APSIMNG():
                 weathers = sim_name.FindAllDescendants[Weather]()
                 for met in weathers:
                     met.FileName = weather_file
+            return self
         except Exception as e:
             print(repr(e))  # this error will be logged to the folder logs in the current working directory
             raise
 
     def show_met_file_in_simulation(self):
         """Show weather file for all simulations"""
-        for weather in self.Model.FindAllDescendants[Weather]():
+        for weather in self.Simulations.FindAllDescendants[Weather]():
             return weather.FileName
 
     def change_report(self, command: str, report_name='Report', simulations=None, set_DayAfterLastOutput=None):
@@ -980,8 +938,9 @@ class APSIMNG():
             List of report lines.
         """
         sim = self._find_simulation(simulation)
-        report = list(sim.FindAllDescendants[Models.Report]())[1]
-        return report, list(report.get_VariableNames())
+        for si in sim:
+            report = (si.FindAllDescendants[Models.Report]())
+            print(list(report))
 
     def extract_soil_physical(self, simulation=None):
         """Find physical soil
@@ -1044,8 +1003,8 @@ class APSIMNG():
             organic_soil = soil_object.FindDescendant[Organic]()
             return organic_soil
 
-    ## find the solute node in the simulation
     def _extract_solute(self, simulation=None):
+        # find the solute node in the simulation
         sim = self._find_simulation(simulation)
         solutes = sim.FindAllDescendants[Models.Soils.Solute]()
         return solutes
@@ -1192,22 +1151,25 @@ class APSIMNG():
         else:
             return sim
 
-    # Make sure that crop ll is below and above LL15 DUL in all layers
-    def _harmonise_soil_water(self, simulation):  # REPLACED _fix_crop_ll
-        cropll = self._extract_LL(simulation)
-        dul = self._extract_DUL(simulation)
-        ll15 = self._extract_LL15(simulation)
-        for j in range(len(cropll)):
-            if cropll[j] > dul[j]:
-                cropll[j] = dul[j] - 0.015
+    @staticmethod
+    def adjustSatDul(sat_, dul_):
+        for enum, (s, d) in enumerate(zip(sat_, dul_)):
+            # first check if they are equal
+            # if d is greater than s, then by what value?, we need this value to add it to 0.02
+            #  to be certain all the time that dul is less than s we subtract the summed value
+            if d >= s:
 
-        for j in range(len(cropll)):
-            if cropll[j] < ll15[j]:
-                cropll[j] = ll15[j]
+                diff = d - s
+                if diff == 0:
+                    dul_[enum] = d - 0.02
+                else:
+                    dul_[enum] = d - (diff + 0.02)
 
-        self.replace_crop_LL(cropll, simulation)
+            else:
+                dul_[enum] = d
+        return dul_
 
-    def set_swcon(self, swcon, simulations=None):
+    def set_swcon(self, swcon, simulations=None, thickness_values=None):
         """Set soil water conductivity (SWCON) constant for each soil layer.
 
         Parameters
@@ -1216,10 +1178,12 @@ class APSIMNG():
             Collection of values, has to be the same length as existing values.
         simulations, optional
             List of simulation names to update, if `None` update all simulations
+            :param thickness_values: the soil profile thickness values
         """
-
         for sim in self.find_simulations(simulations):
             wb = sim.FindDescendant[Models.WaterModel.WaterBalance]()
+            assert len(wb.Thickness) == len(
+                thickness_values), "trying to set different thickness values to the existing ones"
             wb.SWCON = swcon
 
     def get_swcon(self, simulation=None):
@@ -1292,15 +1256,48 @@ class APSIMNG():
         solutes = sim.FindAllDescendants[Models.Soils.Solute]()
         return [s for s in solutes if s.Name == solute][0]
 
-    def clear(self):
-        self.path = None
-        self.out_path = None
-        self.Model = None
-        self._DataStore = None
-        self.datastore = None
-        # self.results = None
-        self.file_name = None
+    def clear_db(self):
+        """
+        Clears the attributes of the object and optionally deletes associated files.
+
+        If the `copy` attribute is set to True, this method will also attempt to delete
+        files at `self.path` and `self.datastore`. This is a destructive operation and
+        should be used with caution.
+
+        Returns:
+           >>None: This method does not return a value.
+           >> Please proceed with caution, we assume that if you want to clear the model objects, then you don't need them
+           but by making copy compulsory, then, we are clearing the edited files
+        """
+        self._DataStore.Close()
+        Path(self.path).unlink(missing_ok=True)
+        Path(self.path.strip('apsimx') + "db-wal").unlink(missing_ok=True)
+        Path(self.path.strip('apsimx') + "bak").unlink(missing_ok=True)
+        self._DataStore.Dispose()
+        Path(self.datastore).unlink(missing_ok=True)
+
         return self
+
+    def clear(self):
+        """
+        Clears the attributes of the object and optionally deletes associated files.
+
+        If the `copy` attribute is set to True, this method will also attempt to delete
+        files at `self.path` and `self.datastore`. This is a destructive operation and
+        should be used with caution.
+
+        Returns:
+           >>None: This method does not return a value. 
+           >> Please proceed with caution, we assume that if you want to clear the model objects, then you don't need them
+           but by making copy compulsory, then, we are clearing the edited files
+        """
+        Path(self.path.strip('apsimx') + "db-shm").unlink(missing_ok=True)
+        Path(self.path).unlink(missing_ok=True)
+        Path(self.path.strip('apsimx') + "db-wal").unlink(missing_ok=True)
+        Path(self.path.strip('apsimx') + "bak").unlink(missing_ok=True)
+        Path(self.datastore).unlink(missing_ok=True)
+        self.Simulations = None
+        self._DataStore = None
 
     def replace_soil_organic(self, organic_name, simulation_name=None):
         """replace the organic module comprising Carbon , FBIOm, FInert/ C/N
@@ -1354,45 +1351,6 @@ class APSIMNG():
         self._set_initial_values("Urea", values, simulations)
         # inherit properties from the ancestors apsimng object
 
-    @property
-    def wd(self):
-        return os.getcwd()
-
-    @staticmethod
-    @timing_decorator
-    # this method will attempt to bring evrythign to memory. where we copy from one file and simulate multiple files without rizig permission errors
-    def from_string(path, fn):
-        from apsimNGpy.utililies.run_utils import _read_simulation
-        path = os.path.realpath(path)
-        try:
-            with open(path, "r+") as apsimx:
-                app_ap = json.load(apsimx)
-            string_name = json.dumps(app_ap)
-            # fn = path
-            Model = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](string_name, None,
-                                                                                             True, fileName=fn)
-
-            if 'NewModel' in dir(Model):
-                Model = Model.get_NewModel()
-            Model.FindChild[Models.Storage.DataStore]().UseInMemoryDB = True
-            id = Model.FindChild[Models.Storage.DataStore]()
-            dt = Model.FindChild[Models.Storage.DataStoreReader]()
-            print(dt)
-
-            multithread = True
-            if multithread:
-                runtype = Models.Core.Run.Runner.RunTypeEnum.MultiThreaded
-            else:
-                runtype = Models.Core.Run.Runner.RunTypeEnum.SingleThreaded
-            runmodel = Models.Core.Run.Runner(Model, True, False, False, None, runtype)
-            e = runmodel.Run()
-            Model.FindChild[Models.Storage.IDataStore]().Open()
-            lp = Models.Core.Run.Runner(Model)
-            data = _read_simulation(id.FileName)
-            return Model.FindChild[Models.Storage.IDataStore]().get_Reader()
-        except Exception as e:
-            raise Exception(f'{type(e)}: occured')
-
 
 # ap = dat.GetDataUsingSql("SELECT * FROM [MaizeR]")
 class ApsiMet(APSIMNG):
@@ -1413,35 +1371,25 @@ class ApsiMet(APSIMNG):
 
 
 if __name__ == '__main__':
+
     # test
     from pathlib import Path
+    from time import perf_counter
 
     # Model = FileFormat.ReadFromFile[Models.Core.Simulations](model, None, False)
     os.chdir(Path.home())
     from apsimNGpy.core.base_data import LoadExampleFiles
 
     al = LoadExampleFiles(Path.cwd())
-    model = al.get_maize
-    model = APSIMNG(model, read_from_string=False)
-    pl = {"Name": "AddfertlizerRotationWheat", "Crop": 'Soybean'}
-    pm = {'Name': 'PostharvestillageMaize', "Fraction": 0.0}
-    pt = {'Name': 'PostharvestillageSoybean', 'Fraction': 0.95, 'Depth': 290}
+    modelm = al.get_maize
 
-    # pm = model.from_string(path = al.get_maize, fn ='apsimtrie.apsimx')
+    model = APSIMNG(model=None, out_path='me.apsimx')
+    for _ in range(1):
+        a = perf_counter()
+        # model.RevertCheckpoint()
 
-    for i in [0.5, 0.0, 0.1, 1]:
-        # model = APSIMNG(al.get_maize, read_from_string=False)
-        pm = {'Name': 'PostharvestillageMaize', "Fraction": i}
-        model.update_management_decissions(
-            [pm, pt, pl], simulations=model.extract_simulation_name)
-        lm = model
-        # model.examine_management_info()
-
-        model.run()
-        xp = model.get_result_stat(model.results['Annual'], 'TopN2O', 'mean')
-        # model.clear()
-        print(xp)
-    pm = model.check_som()
-    pt = model.update_mgt(pl)
-
-    path = r'C:\Users\rmagala\OneDrive\ApsimX'
+        model.update_mgt({"Name": "Simple Rotation", 'Crops': 'Maize'}, reload=True)
+        res = model.run_simulations(reports="MaizeR", clean_up=False, results=True)
+        b = perf_counter()
+        print(b - a, 'seconds')
+        model.clear_links()

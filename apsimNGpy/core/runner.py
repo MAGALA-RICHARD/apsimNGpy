@@ -1,5 +1,5 @@
 """
-Interface to APSIM simulation models using Python.NET build on top of Matti Pastell farmingpy framework.
+Interface to APSIM simulation models using Python.NET build on top of a Matti Pastell farmingpy framework.
 """
 import os
 import pandas as pd
@@ -36,46 +36,52 @@ sys.path.append(os.path.realpath(apsim_model))
 def _read_simulation(datastore, report_name=None):
     """ returns all data frame the available report tables"""
     conn = sqlite3.connect(datastore)
-    cursor = conn.cursor()
+    try:
+        cursor = conn.cursor()
 
-    # reading all table names
+        # reading all table names
 
-    table_names = [a for a in cursor.execute("SELECT name FROM sqlite_master WHERE type = 'table'")]
+        table_names = [a for a in cursor.execute("SELECT name FROM sqlite_master WHERE type = 'table'")]
 
-    table_list = []
-    for i in table_names:
-        table_list.append(i[0])
-        # remove these
-    rm = ['_InitialConditions', '_Messages', '_Checkpoints', '_Units']
-    for i in rm:
-        if i in table_list:
-            table_list.remove(i)
-            # start selecting tables
-    select_template = 'SELECT * FROM {table_list}'
+        table_list = []
+        for i in table_names:
+            table_list.append(i[0])
+            # remove these
+        rm = ['_InitialConditions', '_Messages', '_Checkpoints', '_Units']
+        for i in rm:
+            if i in table_list:
+                table_list.remove(i)
+                # start selecting tables
+        select_template = 'SELECT * FROM {table_list}'
 
-    # create data fram dictionary to keep all the tables
-    dataframe_dict = {}
+        # create data fram dictionary to keep all the tables
+        dataframe_dict = {}
 
-    for tname in table_list:
-        query = select_template.format(table_list=tname)
-        dataframe_dict[tname] = pd.read_sql(query, conn)
-    # close the connection cursor
-    conn.close()
-    dfl = len(dataframe_dict)
-    if len(dataframe_dict) == 0:
-        print("the data dictionary is empty. no data has been returned")
-        # else:
-        # remove elements
-        # print(f"{dfl} data frames has been returned")
+        for tname in table_list:
+            query = select_template.format(table_list=tname)
+            dataframe_dict[tname] = pd.read_sql(query, conn)
+        # close the connection cursor
 
-    if report_name:
-        return dataframe_dict[report_name]
-    else:
-        return dataframe_dict
+        dfl = len(dataframe_dict)
+        if len(dataframe_dict) == 0:
+            print("the data dictionary is empty. no data has been returned")
+            # else:
+            # remove elements
+            # print(f"{dfl} data frames has been returned")
+
+        if report_name:
+            return dataframe_dict[report_name]
+        else:
+            return dataframe_dict
+    finally:
+        conn.close()
 
 
 def run(named_tuple_data, results=True, multithread=True):
-    """Run apsimx model in the simulations. the method first cleans the existing database
+    """Run apsimx model in the simulations. the method first cleans the existing database.
+
+     This is the safest way to run apsimx files in parallel
+     as named tuples are immutable so the chances of race conditioning are very low
 
         Parameters
         ----------
@@ -119,7 +125,6 @@ def run_model(named_tuple_model, results=False, clean_up =False):
     try:
         res = run(named_tuple_model, results=results)
         if clean_up:
-            named_tuple_model.DataStore.Dispose()
             Path(named_tuple_model.path).unlink(missing_ok=True)
         return res
     except Exception as e:

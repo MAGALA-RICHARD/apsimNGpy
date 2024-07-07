@@ -238,43 +238,6 @@ class APSIMNG:
         # self.version = self.Model.get_ApsimVersion()
         return self
 
-    # loads apsimx file from the computer into memory using its path
-    # def _load_apsimx(self, path):
-    #     try:
-    #         if not os.path.isfile(path):
-    #             raise ValueError("file path is missing apsim extention. did you forget to include .apsimx extension")
-    #         self.Model = FileFormat.ReadFromFile[Models.Core.Simulations](path, None, False)
-    #         if 'NewModel' in dir(self.Model):
-    #             self.Model = self.Model.get_NewModel()
-    #
-    #     except Exception as e:
-    #         print(repr(e))  # this error will be logged to the folder logs in the current working directory
-    #         print('reading from clone\n----ignore error-----')
-    #         self.Model = self.load_apsimx_model(path)
-    #         raise
-    #     self.datastore = self.Model.FindChild[Models.Storage.DataStore]().FileName
-    #     self._DataStore = self.Model.FindChild[Models.Storage.DataStore]()
-    #     # self.version = self.Model.get_ApsimVersion()
-
-    def load_external_apsimx(self, path, read_from_string=True):
-        # when we load we replace exisiting ones, so fune null it
-        self.Model = None
-        self.path = path
-        try:
-            assert path.endswith(
-                ".apsimx"), "file path is missing APSIM extension. did you forget to include .apsimx extension"
-            if read_from_string:
-                self.load_apsimx_model(path)
-            else:
-                self.Model = FileFormat.ReadFromFile[Models.Core.Simulations](path, None, False)
-                if 'NewModel' in dir(self.Model):
-                    self.Model = self.Model.get_NewModel()
-        except Exception as e:
-            print(repr(e))  # this error will be logged to the folder logs in the current working directory
-            raise
-        self.datastore = self.Model.FindChild[Models.Storage.DataStore]().FileName
-        self._DataStore = self.Model.FindChild[Models.Storage.DataStore]()
-
     def _reload_saved_file(self):
         self.save_edited_file(self.path)
         return self

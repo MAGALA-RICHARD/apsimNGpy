@@ -49,9 +49,7 @@ from apsimNGpy.core.runner import run_model
 class APSIMNG:
     """Modify and run Apsim next generation simulation models."""
 
-    def __init__(self, model=None, out_path=None, out=None, load=True, **kwargs):
-
-        self._met = kwargs.get('met_file')
+    def __init__(self, model=None, out_path=None, out=None, **kwargs):
 
         self.others = kwargs.copy()
         if kwargs.get('copy'):
@@ -74,17 +72,19 @@ class APSIMNG:
         self.copy = kwargs.get('copy')  # Mandatory to conserve the original file
         # all these can be changed after initialization
         self.results = None
-        self.load = load
         self._str_model = None
         self._model = model
         self.out_path = out_path or out
         # model_info is named tuple safe for parallel simulations as named tuples are immutable
-        self.model_info = load_apx_model(self._model, out=self.out_path)
+        self.model_info = load_apx_model(self._model, out=self.out_path, met_file=kwargs.get('met_file'))
         self.Simulations = self.model_info.IModel
         self.datastore = self.model_info.datastore
         self.Datastore = self.model_info.DataStore
         self._DataStore = self.model_info.DataStore
         self.path = self.model_info.path
+        self._met_file = kwargs.get('met_file')
+        if self._met_file is not None:
+            self.replace_met_file(self._met_file)
 
     def run_simulations(self, results=None, reports=None, clean_up=False):
         """

@@ -50,7 +50,7 @@ class ApsimModel(APSIMNG):
     def __init__(self, model, out_path: str = None, out=None,
                  lonlat=None, soil_series: str = 'domtcp', thickness: int = 20, bottomdepth: int = 200,
                  thickness_values: list = None, run_all_soils: bool = False, load=True, **kwargs):
-        super().__init__(model, out_path, load)
+        super().__init__(model, out_path, **kwargs)
         self.SWICON = None
         """get suurgo soil tables and organise it to apsim soil profiles
         --------------------
@@ -67,7 +67,7 @@ class ApsimModel(APSIMNG):
         self.soil_series = soil_series
         self.thickness = thickness
         self.out_path = out_path or out
-        self.load = load
+        
         self.copy = True
         self.run_all_soils = run_all_soils
         if not isinstance(thickness_values, np.ndarray):

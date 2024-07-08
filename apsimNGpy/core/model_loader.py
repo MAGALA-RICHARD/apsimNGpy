@@ -58,7 +58,10 @@ def load_apx_model(model=None, out=None, met_file=None):
        returns a named tuple with an out path, datastore path, and IModel in memory
        """
     # name according to the order of preference
-    out2 = f"{Path(model).parent}/{Path(model).stem}_copy.apsimx" if model is not None else None
+    if model is not None and isinstance(model, (str, Path)):
+        out2 = f"{Path(model).parent}/{Path(model).stem}_copy.apsimx"
+    else:
+        out2 = None
     out1 = realpath(out) if out is not None else None
     out3 = realpath('ngpy_model.apsimx')
     _out = out1 or out2 or out3
@@ -103,7 +106,8 @@ def load_apx_model(model=None, out=None, met_file=None):
         Model = Model.get_NewModel()
     datastore = Model.FindChild[Models.Storage.DataStore]().FileName
     DataStore = Model.FindChild[Models.Storage.DataStore]()
-    named_tuple = Model_data(IModel=Model, path=_out, datastore=datastore, DataStore=DataStore, results=None, met_path=met_file )
+    named_tuple = Model_data(IModel=Model, path=_out, datastore=datastore, DataStore=DataStore, results=None,
+                             met_path=met_file)
     return named_tuple
 
 

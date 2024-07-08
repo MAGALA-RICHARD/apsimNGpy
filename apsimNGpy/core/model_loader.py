@@ -49,7 +49,7 @@ def load_from_path(path2file):
 from functools import singledispatch
 
 
-def load_apx_model(model=None, out=None):
+def load_apx_model(model=None, out=None, met_file=None):
     """
        >> we are loading apsimx model from file, dict, or in memory.
        >> if model is none, we will return a pre - reloaded one from memory.
@@ -62,7 +62,7 @@ def load_apx_model(model=None, out=None):
     out1 = realpath(out) if out is not None else None
     out3 = realpath('ngpy_model.apsimx')
     _out = out1 or out2 or out3
-    Model_data = namedtuple('model_data', ['IModel', 'path', 'datastore', "DataStore", 'results'])
+    Model_data = namedtuple('model_data', ['IModel', 'path', 'datastore', "DataStore", 'results', 'met_path'])
 
     @singledispatch
     def loader(_model):
@@ -103,7 +103,7 @@ def load_apx_model(model=None, out=None):
         Model = Model.get_NewModel()
     datastore = Model.FindChild[Models.Storage.DataStore]().FileName
     DataStore = Model.FindChild[Models.Storage.DataStore]()
-    named_tuple = Model_data(IModel=Model, path=_out, datastore=datastore, DataStore=DataStore, results=None)
+    named_tuple = Model_data(IModel=Model, path=_out, datastore=datastore, DataStore=DataStore, results=None, met_path=met_file )
     return named_tuple
 
 

@@ -238,7 +238,8 @@ def custom_parallel(func, iterable, *args, **kwargs):
         else:
             for future in as_completed(futures):
                 yield future.result()
-    print(f'processing {count} took', perf_counter() - a, f'seconds', f'to run. efficiency per worker was: {count/cpu_cores}')
+    _seconds = perf_counter() - a
+    print(f'processing {count} took', _seconds, f'seconds', f'to run. time per worker: {_seconds/cpu_cores}')
 
 
 def simulate_in_chunks(w_d, iterable_generator, chunk_size, con_data_base=None, table_tag='t', save_to_csv=True):

@@ -2,30 +2,17 @@
 Interface to APSIM simulation models using Python.NET build on top of a Matti Pastell farmingpy framework.
 """
 import os
-import pandas as pd
-import pathlib
-import pythonnet
-import shutil
 import sqlite3
 import sys
-import warnings
-import pythonnet
+import pandas as pd
 from apsimNGpy.core.pythonet_config import LoadPythonnet, APSIM_PATH
-
 apsim_model = APSIM_PATH
 loader = LoadPythonnet()()
-from os.path import realpath
-import warnings
 from System.Collections.Generic import *
-from Models.Core import Simulations
 from System import *
-from Models.PMF import Cultivar
-from Models import Options
 from pathlib import Path
 import Models
 from System import *
-from collections import namedtuple
-import json
 from System.Collections.Generic import *
 
 FAILED_RUNS = []

@@ -26,7 +26,7 @@ from Models.Soils import Solute, Water, Chemical
 from Models.Soils import Soil, Physical, SoilCrop, Organic, LayerStructure
 import Models
 
-from apsimNGpy.core.api import APSIMNG
+from apsimNGpy.core.core import APSIMNG
 
 # constants
 REPORT_PATH = {'Carbon': '[Soil].Nutrient.TotalC/1000 as dyn', 'DUL': '[Soil].SoilWater.PAW as paw', 'N03':
@@ -432,7 +432,7 @@ class ApsimModel(APSIMNG):
             pathlib.Path(self._DataStore.FileName).unlink(missing_ok=True)
             self._DataStore.Open()
         if simulations is None:
-            runmodel = Models.Core.Run.Runner(self.Model, True, False, False, None, runspeed)
+            runmodel = Models.Core.Run.Runner(self.Simulations, True, False, False, None, runspeed)
             data_run = runmodel.Run()
         else:
             sims = self.find_simulations(simulations)

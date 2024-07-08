@@ -38,9 +38,9 @@ from Models.Soils import Soil, Physical, SoilCrop, Organic
 import Models
 from Models.PMF import Cultivar
 from apsimNGpy.core.apsim_file import XFile as load_model
-from model_loader import (load_apx_model, save_model_to_file)
+from apsimNGpy.core.model_loader import (load_apx_model, save_model_to_file)
 from apsimNGpy.utililies.utils import timer
-from runner import run_model
+from apsimNGpy.core.runner import run_model
 
 
 # from settings import * This file is not ready and i wanted to do some test
@@ -51,10 +51,8 @@ class APSIMNG:
 
     def __init__(self, model=None, out_path=None, out=None, load=True, **kwargs):
 
-        self.file_name = None
-        self._DataStore = None
-        self._met = None
-        self.path = None
+        self._met = kwargs.get('met_file')
+
         self.others = kwargs.copy()
         if kwargs.get('copy'):
             warnings.warn(
@@ -77,15 +75,16 @@ class APSIMNG:
         # all these can be changed after initialization
         self.results = None
         self.load = load
-        self.datastore = None
         self._str_model = None
         self._model = model
         self.out_path = out_path or out
+        # model_info is named tuple safe for parallel simulations as named tuples are immutable
         self.model_info = load_apx_model(self._model, out=self.out_path)
         self.Simulations = self.model_info.IModel
         self.datastore = self.model_info.datastore
         self.Datastore = self.model_info.DataStore
         self._DataStore = self.model_info.DataStore
+        self.path = self.model_info.path
 
     def run_simulations(self, results=None, reports=None, clean_up=False):
         """
@@ -101,11 +100,11 @@ class APSIMNG:
             return [res[repo] for repo in reports] if isinstance(reports, (list, tuple, set)) else res[reports]
 
     @property
-    def set_model(self):
+    def model_object(self):
         return self._model
 
-    @set_model.setter
-    def set_model(self, value):
+    @model_object.setter
+    def model_object(self, value):
         self._model = value
 
     def clear_links(self):
@@ -123,40 +122,39 @@ class APSIMNG:
             db_file = pathlib.Path(f"{_name}.db{suffix}")
             db_file.unlink(missing_ok=True)
 
-    def _init_from_simulations(self, model: Simulations):
-        """Initialize the object from a Simulations object."""
-        self.Simulations = model
-        self.datastore = self.Simulations.FindChild[Models.Storage.DataStore]().FileName
-        self._DataStore = self.Simulations.FindChild[Models.Storage.DataStore]()
-
     @staticmethod
     def generate_unique_name(base_name, length=6):
         random_suffix = ''.join(random.choices(string.ascii_lowercase, k=length))
         unique_name = base_name + '_' + random_suffix
         return unique_name
 
-    @property
-    def filename(self):
-        self.file_name = os.path.basename(self.path)
-        return self.file_name
-
-    # searches the simulations from aspsim models.core object
+    # searches the simulations from APSIM models.core object
     @property
     def simulations(self):
         try:
-            simus = list(self.Simulations.FindAllChildren[Models.Core.Simulation]())
-            if len(simus) != 0:
+            simulationList = list(self.Simulations.FindAllChildren[Models.Core.Simulation]())
+            if len(simulationList) != 0:
                 return list(self.Simulations.FindAllChildren[Models.Core.Simulation]())
             else:
                 experiment = self.Simulations.FindAllChildren[Models.Factorial.Experiment]()
 
                 for i in experiment:
-                    simus = list(i.FindAllChildren[Models.Core.Simulation]())
-
-                return (simus)
+                    simulationList = list(i.FindAllChildren[Models.Core.Simulation]())
+            if len(simulationList) != 0:
+                return simulationList
+            else:
+                folder = list(self.Simulations.FindAllChildren[Models.Core.Folder]())
+                simulationList = []
+                for i in folder:
+                    simus.append(list(i.FindAllChildren[Models.Core.Simulation]()))
+                    if len(simulationList) != 0:
+                        return simulationList
+                    else:
+                        raise TypeError('The model structure is not currently supported edit the file in GUI and try '
+                                        'again')
 
         except Exception as e:
-            print(type(e), "occured")
+            print(type(e), "occurred")
             raise Exception(type(e))
 
     @property
@@ -167,16 +165,6 @@ class APSIMNG:
     def str_model(self, value: dict):
         self._str_model = json.dumps(value)
 
-    def load_from_memory(self, file_name):
-        str_ = self.str_model
-        self.Simulations = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](str_, None, True,
-                                                                                              fileName=file_name)
-        self.datastore = self.Simulations.FindChild[Models.Storage.DataStore]().UpdateFileName()
-        self.Simulations.ClearSimulationReferences()
-
-        return self
-
-    # loads the apsimx file into memory but from string
     def initialise_model(self):
         simulationList = self.Simulations.FindAllDescendants[Simulation]()
         for models in self.Simulations.FindAllDescendants():
@@ -200,6 +188,7 @@ class APSIMNG:
         self.datastore = self.model_info.datastore
         self.Datastore = self.model_info.DataStore
         self._DataStore = self.model_info.DataStore
+        self.path = self.model_info.path
         return self
 
     def save_edited_file(self, out_path=None, reload=False):
@@ -295,9 +284,10 @@ class APSIMNG:
             # clone_zone = clone_sim.FindChild[Models.Core.Zone]()
             # clone_zone.Name = target
 
-            self.Simulations.Children.Clear(clone_sim.Name)
+            # self.Simulations.Children.Clear(clone_sim.Name)
             self.Simulations.Children.Add(clone_sim)
         self._reload_saved_file()
+        return self
 
     def remove_simulation(self, simulation):
         """Remove a simulation from the model
@@ -311,7 +301,6 @@ class APSIMNG:
         sim = self._find_simulation(simulation)
         self.Simulations.Children.Remove(sim)
         self.save_edited_file()
-        self._load_apsimx(self.path)
 
     @property
     def extract_simulation_name(self):
@@ -333,7 +322,7 @@ class APSIMNG:
             Parameters
             ----------
             target
-                target simulation name
+                 simulation name
             zone
                 Name of the zone to clone
             simulation, optional
@@ -345,8 +334,8 @@ class APSIMNG:
         clone_zone = Models.Core.Apsim.Clone(zone)
         clone_zone.Name = target
         sim.Children.Add(clone_zone)
-        self.save_edited_file()
-        self._load_apsimx(self.path)
+        self.save_edited_file(reload=True)
+        return self
 
     def find_zones(self, simulation):
         """Find zones from a simulation
@@ -371,14 +360,6 @@ class APSIMNG:
         table_list = get_db_table_names(self.datastore)
         rm = ['_InitialConditions', '_Messages', '_Checkpoints', '_Units']
         return [im for im in table_list if im not in rm]
-
-    @staticmethod
-    def read_apsimx_db(datastore, report_name):
-        """
-        reads an already simulated model data base
-         returns all data frame the available report tables"""
-        data = read_db_table(datastore, report_name)
-        return data
 
     # perhaps a good a example of how to edit cultvar
     def adjust_rue(self, csr, cultivar_name='B_110', base_csr=2):  # Iowa only
@@ -406,11 +387,12 @@ class APSIMNG:
         """
         if path is None:
             file_name = self.path.rsplit('.apsimx', 1)[0]
-            return [shutil.copy(self.path, f"{file_name}_{tag}_{i}_.apsimx") for i in range(k)]
+            return [shutil.copy(self.Model.FileName, f"{file_name}_{tag}_{i}_.apsimx") for i in range(k)]
 
         else:
             b_name = os.path.basename(self.path).rsplit('.apsimx', 1)[0]
-            return [shutil.copy(self.path, os.path.join(path, f"{b_name}_{tag}_{i}.apsimx")) for i in range(k)]
+            return [shutil.copy(self.Model.FileName, os.path.join(path, f"{b_name}_{tag}_{i}.apsimx")) for i in
+                    range(k)]
 
     def _cultivar_params(self, cultivar):
         """
@@ -755,6 +737,8 @@ class APSIMNG:
         save_model_to_file(self.Simulations, out_mgt_path)
         if reload:
             self.model_info = load_apx_model(out_mgt_path)
+            self.restart_model()
+        return self
 
     # immediately open the file in GUI
     def show_file_in_APSIM_GUI(self):

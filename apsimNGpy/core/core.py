@@ -100,11 +100,27 @@ class APSIMNG:
             return [res[repo] for repo in reports] if isinstance(reports, (list, tuple, set)) else res[reports]
 
     @property
-    def model_object(self):
+    def simulation_object(self):
+        """
+        # A simulation_object in this context is:
+        # A path to apsimx file, a str or pathlib Path object
+        # A dictionary (apsimx json file converted to a dictionary using the json module)
+        # apsimx simulation object already in memory
+        """
         return self._model
 
-    @model_object.setter
-    def model_object(self, value):
+    @simulation_object.setter
+    def simulation_object(self, value):
+        """
+        Set the model if you don't want to initialize again
+        :param value:
+        # A value in this context is:
+        # A path to apsimx file, a str or pathlib Path object
+        # A dictionary (apsimx json file converted to a dictionary using the json module)
+        # apsimx simulation object already in memory
+
+
+        """
         self._model = value
 
     def clear_links(self):
@@ -131,6 +147,16 @@ class APSIMNG:
     # searches the simulations from APSIM models.core object
     @property
     def simulations(self):
+        """
+        Retrieve simulation nodes in the APSIMx `Model.Core.Simulations` object.
+
+        The challenge is that APSIM simulation objects are JSON files that are highly nested.
+        This becomes more complicated if the file has an experiment, or folders housing the simulations.
+        The first step is to iterate through the file assuming none of the above exist. If none are found, we
+        search through the experiment and, if still false, we search through the folder. At this stage,
+        if we find none, we raise an error.
+
+        """
         try:
             simulationList = list(self.Simulations.FindAllChildren[Models.Core.Simulation]())
             if len(simulationList) != 0:
@@ -182,6 +208,19 @@ class APSIMNG:
         return self
 
     def restart_model(self, model_info=None):
+        """
+         :param model_info: A named tuple object returned by `load_apx_model` from the `model_loader` module.
+
+        Notes:
+        - This parameter is crucial whenever we need to reinitialize the model, especially after updating management practices or editing the file.
+        - In some cases, this method is executed automatically.
+        - If `model_info` is not specified, the simulation will be reinitialized from `self`.
+
+        This function is called by `save_edited_file` and `update_mgt`.
+
+        :return: self
+        """
+
         if model_info:
             self.model_info = model_info
         self.Simulations = self.model_info.IModel
@@ -192,13 +231,16 @@ class APSIMNG:
         return self
 
     def save_edited_file(self, out_path=None, reload=False):
-        """Save the model
+        """ Saves the model to the local drive.
 
-        Parameters
-        ----------
+            Notes: - If `out_path` is None, the `save_model_to_file` function extracts the filename from the
+            `Model.Core.Simulation` object. - `out_path`, however, is given high priority. Therefore,
+            we first evaluate if it is not None before extracting from the file. - This is crucial if you want to
+            give the file a new name different from the original one while saving.
 
-            :out_path (str) desired path .apsimx file, by default, None
-            :reload: bool to load the file using the out_path or the model file name
+            Parameters
+            - out_path (str): Desired path for the .apsimx file, by default, None.
+            - reload (bool): Whether to load the file using the `out_path` or the model's original file name.
 
         """
         # Determine the output path
@@ -743,15 +785,6 @@ class APSIMNG:
     # immediately open the file in GUI
     def show_file_in_APSIM_GUI(self):
         os.startfile(self.path)
-
-    # dynamically saves the file and relaod into the system. in otherwords it compiles the scripts
-    def dynamic_path_handler(self):
-        self.save_edited_file()
-        if self.out_path:
-            self._load_apsimx(self.out_path)
-        else:
-            self._load_apsimx(self.path)
-        return self
 
     def _kvtodict(self, kv):
         return {kv[i].Key: kv[i].Value for i in range(kv.Count)}

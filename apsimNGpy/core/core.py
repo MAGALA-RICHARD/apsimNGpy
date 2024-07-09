@@ -155,6 +155,7 @@ class APSIMNG:
         any file of apsim file any structure can be handled
         """
         # fixed
+        # we can actually specify the simulation name in the bracket
         return list(self.Simulations.FindAllInScope[Models.Core.Simulation]())
 
     @property
@@ -276,6 +277,8 @@ class APSIMNG:
                 print(e[0].ToString())
             if report_name is None:
                 report_name = get_db_table_names(self.datastore)
+                # issues with decoding '_Units' we remove it
+                if '_Units' in report_name: report_name.remove('_Units')
                 warnings.warn('No tables were specified, retrieved tables includes:: {}'.format(report_name))
             if isinstance(report_name, (tuple, list)):
                 self.results = [read_db_table(self.datastore, report_name=rep) for rep in report_name]
@@ -324,6 +327,7 @@ class APSIMNG:
 
     @property
     def extract_simulation_name(self):
+        warnings.warn('extract_simulation_name is deprecated for future versions use simulation_names or get_simulation_names')
         """print or extract a simulation name from the model
 
             Parameters
@@ -331,10 +335,8 @@ class APSIMNG:
             simulation
                 The name of the simulation to remove
         """
-        sim_names = []
-        for simu in self.simulations:
-            sim_names.append(simu.Name)
-            return sim_names
+        # this is a repetition because I want to deprecate it and maintain simulation_name or use get_simulation_name
+        return self.simulation_names
 
     def clone_zone(self, target, zone, simulation=None):
         """Clone a zone and add it to Model

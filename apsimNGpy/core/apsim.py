@@ -63,7 +63,7 @@ class ApsimModel(APSIMNG):
          """
         self.lonlat = lonlat
         self.Nlayers = bottomdepth / thickness
-        self.simulation_names = self.path
+       
         self.soil_series = soil_series
         self.thickness = thickness
         self.out_path = out_path or out

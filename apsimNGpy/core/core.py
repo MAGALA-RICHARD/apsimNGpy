@@ -150,10 +150,11 @@ class APSIMNG:
         """
         Retrieve simulation nodes in the APSIMx `Model.Core.Simulations` object.
 
-        We search all Models.Core.Simulation in the scope of Model.Core.Siumulations. Please the difference Simulations is the whole json object Simulation is the node with Model info
-
+        We search all Models.Core.Simulation in the scope of Model.Core.Simulations. Please the difference
+        Simulations is the whole json object Simulation is the node with the field zones, crops, soils and managers
+        any file of apsim file any structure can be handled
         """
-        # this might fix the long iterations
+        # fixed
         return list(self.Simulations.FindAllInScope[Models.Core.Simulation]())
 
     @property

@@ -150,38 +150,15 @@ class APSIMNG:
         """
         Retrieve simulation nodes in the APSIMx `Model.Core.Simulations` object.
 
-        The challenge is that APSIM simulation objects are JSON files that are highly nested.
-        This becomes more complicated if the file has an experiment, or folders housing the simulations.
-        The first step is to iterate through the file assuming none of the above exist. If none are found, we
-        search through the experiment and, if still false, we search through the folder. At this stage,
-        if we find none, we raise an error.
+        We search all Models.Core.Simulation in the scope of Model.Core.Siumulations. Please the difference Simulations is the whole json object Simulation is the node with Model info
 
         """
-        try:
-            simulationList = list(self.Simulations.FindAllChildren[Models.Core.Simulation]())
-            if len(simulationList) != 0:
-                return list(self.Simulations.FindAllChildren[Models.Core.Simulation]())
-            else:
-                experiment = self.Simulations.FindAllChildren[Models.Factorial.Experiment]()
+        # this might fix the long iterations
+        return list(self.Simulations.FindAllInScope[Models.Core.Simulation]())
 
-                for i in experiment:
-                    simulationList = list(i.FindAllChildren[Models.Core.Simulation]())
-            if len(simulationList) != 0:
-                return simulationList
-            else:
-                folder = list(self.Simulations.FindAllChildren[Models.Core.Folder]())
-                simulationList = []
-                for i in folder:
-                    simus.append(list(i.FindAllChildren[Models.Core.Simulation]()))
-                    if len(simulationList) != 0:
-                        return simulationList
-                    else:
-                        raise TypeError('The model structure is not currently supported edit the file in GUI and try '
-                                        'again')
-
-        except Exception as e:
-            print(type(e), "occurred")
-            raise Exception(type(e))
+    @property
+    def simulation_names(self):
+        return [s.Name for s in self.simulations]
 
     @property
     def str_model(self):
@@ -1405,8 +1382,13 @@ if __name__ == '__main__':
         a = perf_counter()
         # model.RevertCheckpoint()
 
-        model.update_mgt({"Name": "Simple Rotation", 'Crops': 'Maize'}, reload=True)
-        res = model.run_simulations(reports="MaizeR", clean_up=False, results=True)
+        # model.update_mgt({"Name": "Simple Rotation", 'Crops': 'Maize'}, reload=True)
+        model.run('MaizeR')
         b = perf_counter()
         print(b - a, 'seconds')
         model.clear_links()
+        a = perf_counter()
+
+        res = model.run_simulations(reports="MaizeR", clean_up=False, results=True)
+        b = perf_counter()
+        print(b - a, 'seconds')

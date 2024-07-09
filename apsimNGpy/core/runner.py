@@ -64,7 +64,7 @@ def _read_simulation(datastore, report_name=None):
         conn.close()
 
 
-def run(named_tuple_data, results=True, multithread=True):
+def run(named_tuple_data, results=True, multithread=True, simulations =None):
     """Run apsimx model in the simulations. the method first cleans the existing database.
 
      This is the safest way to run apsimx files in parallel
@@ -85,11 +85,21 @@ def run(named_tuple_data, results=True, multithread=True):
     else:
         runtype = Models.Core.Run.Runner.RunTypeEnum.SingleThreaded
     try:
-
         named_tuple_data.DataStore.Dispose()
         named_tuple_data.DataStore.Open()
-        runmodel = Models.Core.Run.Runner(named_tuple_data.IModel, True, False, False, None, runtype)
-        e = runmodel.Run()
+        if simulations is None:
+            runmodel = Models.Core.Run.Runner(named_tuple_data.IModel, True, False, False, None, runtype)
+            e = runmodel.Run()
+        else:
+            sims = named_tuple_data.IModel.FindAllInScope[Models.Core.Simulation]()
+            # Runner needs C# list
+            cs_sims = List[Models.Core.Simulation]()
+            for s in sims:
+                cs_sims.Add(s)
+                runmodel = Models.Core.Run.Runner(cs_sims, True, False, False, None, runtype)
+                e = runmodel.Run()
+        if len(e) > 0:
+            print(e[0].ToString())
         if results:
             data = _read_simulation(named_tuple_data.datastore)
 

@@ -729,7 +729,7 @@ class APSIMNG:
         self.load_apsimx_model()
 
     # experimental
-    @timer
+    
     def update_mgt(self, management, simulations=None,  out=None):
         """Update management, handles one manager at a time
 

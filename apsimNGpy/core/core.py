@@ -96,7 +96,7 @@ class APSIMNG:
         returns results if results is True else None
         """
         resu = run_model(self.model_info, results=results, clean_up=clean_up)
-        
+
         if reports:
             return [resu[repo] for repo in reports] if isinstance(reports, (list, tuple, set)) else resu[reports]
         else:
@@ -330,7 +330,8 @@ class APSIMNG:
 
     @property
     def extract_simulation_name(self):
-        warnings.warn('extract_simulation_name is deprecated for future versions use simulation_names or get_simulation_names')
+        warnings.warn(
+            'extract_simulation_name is deprecated for future versions use simulation_names or get_simulation_names')
         """print or extract a simulation name from the model
 
             Parameters
@@ -729,19 +730,20 @@ class APSIMNG:
 
     # experimental
     @timer
-    def update_mgt(self, management, simulations=None, reload=True, out=None):
+    def update_mgt(self, management, simulations=None,  out=None):
         """Update management, handles one manager at a time
 
         Parameters
         ----------
         management
 
-            Parameter = value dictionary of management paramaters to update. examine_management_info` to see current values.
-            make a dictionary with 'Name' as the for the of  management script
-        simulations, optional
-            List of simulation names to update, if `None` update all simulations not recommended.
-            :param out: to save the file after editing
-            :param reload:
+            Parameter = value dictionary of management parameters to update. examine_management_info` to see current 
+            values. make a dictionary with 'Name' as the for the of management script simulations, optional List of 
+            simulation names to update, if `None` update all simulations not recommended. 
+            :param out (str or pathlike ): to harmonize a database path after editing note: No need to reload any
+             more that should be called with save_edited_file method, 
+            we just don't want to make a lot of evaluations while running batch files
+            
         """
         if not isinstance(management, list):
             management = [management]
@@ -760,7 +762,6 @@ class APSIMNG:
         out_mgt_path = out or self.out_path or self.Simulations.FileName
         self.restart_model(model_info=recompile(self.Simulations, out=out_mgt_path))
         return self
-        
 
     # immediately open the file in GUI
     def show_file_in_APSIM_GUI(self):

@@ -30,8 +30,8 @@ def contour_plot(**kwargs):
     fig_name = kwargs.get("fig_name")
     show = kwargs.get("show", None)
     color_bar_label = kwargs.get("color_bar_label")
-    y_label = kwargs.get("y_label", 'Y')
-    x_label = kwargs.get("x_label", 'X')
+    y_label = kwargs.get("ylabel", 'Y')
+    x_label = kwargs.get("xlabel", 'X')
     height = kwargs.get("height", 6)
     width = kwargs.get("width", 10)
     # Step 3: Create the contour plot
@@ -54,4 +54,4 @@ def contour_plot(**kwargs):
     startfile(fig_name)
     if show:
         plt.show()
-    plt.close()
+    return contour

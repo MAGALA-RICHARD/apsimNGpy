@@ -38,7 +38,7 @@ from Models.Soils import Soil, Physical, SoilCrop, Organic
 import Models
 from Models.PMF import Cultivar
 from apsimNGpy.core.apsim_file import XFile as load_model
-from apsimNGpy.core.model_loader import (load_apx_model, save_model_to_file)
+from apsimNGpy.core.model_loader import (load_apx_model, save_model_to_file, recompile)
 from apsimNGpy.utililies.utils import timer
 from apsimNGpy.core.runner import run_model
 
@@ -47,7 +47,7 @@ from apsimNGpy.core.runner import run_model
 
 
 class APSIMNG:
-    """Modify and run Apsim next generation simulation models."""
+    """Modify and run APSIM next generation simulation models."""
 
     def __init__(self, model=None, out_path=None, out=None, **kwargs):
 
@@ -95,9 +95,12 @@ class APSIMNG:
         clean_up : bool deletes the file on disk, by default False
         returns results if results is True else None
         """
-        res = run_model(self.model_info, results=results, clean_up=clean_up)
+        resu = run_model(self.model_info, results=results, clean_up=clean_up)
+        
         if reports:
-            return [res[repo] for repo in reports] if isinstance(reports, (list, tuple, set)) else res[reports]
+            return [resu[repo] for repo in reports] if isinstance(reports, (list, tuple, set)) else resu[reports]
+        else:
+            return resu
 
     @property
     def simulation_object(self):
@@ -150,9 +153,9 @@ class APSIMNG:
         """
         Retrieve simulation nodes in the APSIMx `Model.Core.Simulations` object.
 
-        We search all Models.Core.Simulation in the scope of Model.Core.Simulations. Please the difference
+        We search all Models.Core.Simulation in the scope of Model.Core.Simulations. Please note the difference
         Simulations is the whole json object Simulation is the node with the field zones, crops, soils and managers
-        any file of apsim file any structure can be handled
+        any structure of apsimx file any structure can be handled
         """
         # fixed
         # we can actually specify the simulation name in the bracket
@@ -725,7 +728,7 @@ class APSIMNG:
         self.load_apsimx_model()
 
     # experimental
-
+    @timer
     def update_mgt(self, management, simulations=None, reload=True, out=None):
         """Update management, handles one manager at a time
 
@@ -755,7 +758,8 @@ class APSIMNG:
                     if param in values.keys():
                         fp.Value.Parameters[i] = KeyValuePair[String, String](param, f"{values[param]}")
         out_mgt_path = out or self.out_path or self.Simulations.FileName
-
+        self.restart_model(model_info=recompile(self.Simulations, out=out_mgt_path))
+        return self
         save_model_to_file(self.Simulations, out_mgt_path)
         if reload:
             self.model_info = load_apx_model(out_mgt_path)
@@ -1385,7 +1389,7 @@ if __name__ == '__main__':
         a = perf_counter()
         # model.RevertCheckpoint()
 
-        # model.update_mgt({"Name": "Simple Rotation", 'Crops': 'Maize'}, reload=True)
+        model.update_mgt({"Name": "Simple Rotation", 'Crops': 'Maize, Soybean, Wheat'}, reload=True)
         model.run('MaizeR')
         b = perf_counter()
         print(b - a, 'seconds')

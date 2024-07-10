@@ -135,6 +135,38 @@ def save_model_to_file(_model, out=None):
     return final_out_path
 
 
+def recompile(_model, out=None, met_path=None):
+    """ recompile without saving to disk useful for recombiling the same model on the go after updating management scripts
+
+            Parameters
+            ----------
+            out : str, optional path to save the model to
+
+                :param met_path: path to met file
+                :param out: out path name for database reconfiguration
+                :param _model:APSIM Models.Core.Simulations object
+                returns named tuple with a recompiled model
+            """
+    # Determine the output path
+
+    final_out_path = out or _model.FileName
+
+    # Serialize the model to JSON string
+    json_string = Models.Core.ApsimFile.FileFormat.WriteToString(_model)
+
+    Model = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](json_string, None, True,
+                                                                                    fileName=final_out_path)
+    if 'NewModel' in dir(Model):
+        Model = Model.get_NewModel()
+    datastore = Model.FindChild[Models.Storage.DataStore]().FileName
+    DataStore = Model.FindChild[Models.Storage.DataStore]()
+    # need to make ModelData a constant and named outside the script for consistency across scripts
+    ModelData = namedtuple('model_data', ['IModel', 'path', 'datastore', "DataStore", 'results', 'met_path'])
+    Model_named_tuple = ModelData(IModel=Model, path=final_out_path, datastore=datastore, DataStore=DataStore, results=None,
+                             met_path=met_path)
+    return Model_named_tuple
+
+
 if __name__ == '__main__':
     import time
     from pathlib import Path

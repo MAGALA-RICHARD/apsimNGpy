@@ -760,11 +760,7 @@ class APSIMNG:
         out_mgt_path = out or self.out_path or self.Simulations.FileName
         self.restart_model(model_info=recompile(self.Simulations, out=out_mgt_path))
         return self
-        save_model_to_file(self.Simulations, out_mgt_path)
-        if reload:
-            self.model_info = load_apx_model(out_mgt_path)
-            self.restart_model()
-        return self
+        
 
     # immediately open the file in GUI
     def show_file_in_APSIM_GUI(self):

@@ -49,6 +49,7 @@ def contour_plot(**kwargs):
     # plt.title(' Buffer width and cost price comparison', fontsize=22)
     plt.xticks(fontsize=16)
     plt.yticks(fontsize=16)
+    plt.title(kwargs.get('title', ''), fontsize=20)
     plt.grid(False)
     plt.savefig(fig_name, dpi=450)
     startfile(fig_name)

@@ -302,3 +302,4 @@ We would also like to express our sincere thanks to the APSIM Initiative. Their 
 
 Our project stands on the shoulders of these partnerships and support systems, and we are deeply thankful for their contribution to advancing agricultural research and development. Please not that that this library is designed as a bridge to APSIM software, and we hope that by using this library, you have the appropriate APSIM license to do so whether free or commercial.
 
+lastly but not least, ApsimNGpy is not created in isolation but draws inspiration from apsimx, an R package. We acknowledge and appreciate the writers and contributors of apsimx for their foundational work. ApsimNGpy is designed to complement apsimx by offering similar functionalities and capabilities in the Python ecosystem.

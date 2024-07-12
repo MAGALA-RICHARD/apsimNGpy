@@ -1,6 +1,9 @@
 import logging
+
+
 class DualLogger:
-    def __init__(self, name='apsimNGpy', log_file='apsimNGpy_sim.log', console_level=logging.DEBUG, file_level=logging.INFO):
+    def __init__(self, name='apsimNGpy', log_file='apsimNGpy_sim.log', console_level=logging.DEBUG,
+                 file_level=logging.INFO):
         """
         Initialize the DualLogger.
 
@@ -58,4 +61,3 @@ class DualLogger:
             self.logger.critical(message)
         else:
             raise ValueError(f"Invalid log level: {level}")
-

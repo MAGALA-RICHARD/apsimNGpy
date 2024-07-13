@@ -19,6 +19,7 @@ WINDOWS_PROGRAMFILES = Path(cdrive) if cdrive else None
 gt = Config.get_aPSim_bin_path()
 print(gt)
 
+
 class GetAPSIMPath:
     """searches for apsimx path"""
 

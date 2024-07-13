@@ -9,7 +9,7 @@ class Config:
 
     @classmethod
     def set_aPSim_bin_path(cls, path):
-        cls.software_path = path
+        cls.ApSIM_LOCATION = path
 
     @classmethod
     def get_aPSim_bin_path(cls):

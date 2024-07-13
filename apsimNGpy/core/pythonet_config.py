@@ -8,7 +8,7 @@ import json
 from os.path import realpath
 from dataclasses import dataclass
 import pythonnet
-from apsimNGpy.core.config import  Config
+from apsimNGpy.config import  Config
 from apsimNGpy.utililies.utils import timer, find_models
 from apsimNGpy.core.config import config_path
 HOME_DATA = Path.home().joinpath('AppData', 'Local', 'Programs')

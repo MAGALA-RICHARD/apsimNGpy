@@ -8,9 +8,9 @@ import json
 from os.path import realpath
 from dataclasses import dataclass
 import pythonnet
-from apsimNGpy.core.config import Config
+from config import Config
 from apsimNGpy.utililies.utils import timer, find_models
-
+from config import  config_path
 HOME_DATA = Path.home().joinpath('AppData', 'Local', 'Programs')
 cdrive = os.environ.get('PROGRAMFILES')
 WINDOWS_PROGRAMFILES = Path(cdrive) if cdrive else None

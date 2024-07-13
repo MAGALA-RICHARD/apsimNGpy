@@ -5,8 +5,8 @@ import os
 import sqlite3
 import sys
 import pandas as pd
-from apsimNGpy.core.pythonet_config import LoadPythonnet, APSIM_PATH
-apsim_model = APSIM_PATH
+from apsimNGpy.core.pythonet_config import LoadPythonnet, aPSim_PATH
+apsim_model = aPSim_PATH
 loader = LoadPythonnet()()
 from System.Collections.Generic import *
 from System import *

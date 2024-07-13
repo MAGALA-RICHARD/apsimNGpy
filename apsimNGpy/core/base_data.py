@@ -237,9 +237,9 @@ class LoadExampleFiles:
 
 
 try:
-    pat = APSIM_PATH
+    pat = aPSim_PATH
 except KeyError:
-    pat = APSIM_PATH
+    pat = aPSim_PATH
 if pat:
     apsim = os.path.dirname(pat)
     examples = join(apsim, 'Examples')

@@ -14,7 +14,8 @@ import apsimNGpy.manager.weathermanager as weather
 import pandas as pd
 
 # prepare for the C# import
-from apsimNGpy.core.pythonet_config import LoadPythonnet, APSIM_PATH
+from apsimNGpy.core.pythonet_config import LoadPythonnet
+from apsimNGpy.core.pythonet_config import aPSim_PATH as APSIM_PATH
 
 py_config = LoadPythonnet()()
 

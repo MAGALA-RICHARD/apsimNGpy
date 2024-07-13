@@ -54,10 +54,22 @@ before importing any apsimNGpy class, especially class from ApsimNGpy.core modul
 
     # search for the program binary installation path and add to os.environ as follows
     import os
+    # A more intuitive way is to use apsimNGpy config Module
+    from apsimNGpy.config import Config
+    # now set the path to ASPIMX binaries
+    Config.set_aPSim_bin_path(path = r'path/toyourapsimbinaryfolder/bin)
+    # in the pythonnet_config module, priority is first given to the user supplied binary path, we also search through the python global env using the os module,
+    # if that fail it searches through other sources such as the user program installation folders.
+    # Not sure whether this can work all the time but you can try changing through os.environ as follows:
     os.environ['APSIM'] =r'path/toyourapsimbinaryfolder/bin
+    # or
+    os.environ['Models'] =r'path/toyourapsimbinaryfolder/bin
+    # alternatively, you can add the path to the system environmental variables. if this is the case the shutil.which method is used to retrieve that path
+    # if all approaches have been tried and nothing has been returned, I assure you that a value errors will be raised
+    # now we are than we can import any module attached to pythonnet
     # try importing SoilModel class
     from apsimNGpy.core.apsim import ApsimModel
-    # alternatively, you can add the path to the system environmental variables
+
 
 .. _Usage:
 

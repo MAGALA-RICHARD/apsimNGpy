@@ -19,6 +19,8 @@ WEA = 'Iem_IA0200.met'
 APSIM_DATA = 'apsim'
 WEATHER = 'weather'
 
+print(APSIM_PATH)
+
 
 def _weather(path, WEATHER_CON=WEATHER_CO):
     resource_directory = files(DATA)
@@ -44,10 +46,10 @@ def _get_maize(file_path):
     resource_directory = files(DATA)
     json_file_path = resource_directory / APSIM_DATA / 'clone.apsimx'
     contents = json_file_path.read_text()
-    nameout = join(file_path, 'clone.apsimx')
-    with open(nameout, "w+") as openfile:
+    name_out = join(file_path, 'clone.apsimx')
+    with open(name_out, "w+") as openfile:
         openfile.write(contents)
-    return nameout
+    return name_out
 
 
 def _get_maize_no_till(file_path):
@@ -235,7 +237,7 @@ class LoadExampleFiles:
 
 
 try:
-    pat = os.environ['APSIM']
+    pat = APSIM_PATH
 except KeyError:
     pat = APSIM_PATH
 if pat:

@@ -4,7 +4,7 @@ import os
 from apsimNGpy.core.apsim import ApsimModel
 import numpy as np
 from apsimNGpy.experiment.variable import BoundedVariable, DiscreteVariable
-
+import shutil
 
 def  sobol_samples(problem_specifics):
     sobo, n_s_f, problem_= problem_specifics.sobol_seq, problem_specifics.sample_factor,  problem_specifics.problem_summary
@@ -48,7 +48,7 @@ def generate_initial_data(w_d, xdata, file):
     pNames = [xdat.name for xdat in xdata]
     del files
     return ((dict(zip(pNames, parameters[ever])), {'file':filePath[ever]}) for ever in range(number_of_sims))
-import shutil
+
 def replace_samples(xdata, wf, wd):
     """xdata is sobol sample sequence"""
     if os.path.exists(wd):

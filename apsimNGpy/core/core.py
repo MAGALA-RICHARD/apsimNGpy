@@ -729,8 +729,29 @@ class APSIMNG:
         self.load_apsimx_model()
 
     # experimental
-    
-    def update_mgt(self, management, simulations=None,  out=None):
+    def update_manager(self, **kwargs):
+        """
+        updates a single management script by kew word arguments. it is thread safe to call this during multiple processing
+        kwargs can be the key value pairs of the parameters of the management script, if Name if the script is not specified, updates will not be successfull
+        """
+        manager = self.Simulations.FindAllInScope[Models.Manager](kwargs['Name'])
+        manager_scripts = [i for i in manager]
+        for single in manager_scripts:
+            for i in range(len(single.Parameters)):
+                kvp = single.Parameters[i]
+                if kvp.Key in kwargs.keys():
+                    updated_kvp = KeyValuePair[str, str](kvp.Key, kwargs[kvp.Key])
+                    single.Parameters[i] = updated_kvp
+            # Serialize the model to JSON string
+
+        _json_string = Models.Core.ApsimFile.FileFormat.WriteToString(self.Simulations)
+        fileName = kwargs.get('out_path') or self.Simulations.FileName
+        self.Simulations = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](_json_string,
+                                                                                                    None, True,
+                                                                                                    fileName=fileName)
+        return self
+
+    def update_mgt(self, management, simulations=None, out=None):
         """Update management, handles one manager at a time
 
         Parameters
@@ -1383,16 +1404,31 @@ if __name__ == '__main__':
 
     model = APSIMNG(model=None, out_path='me.apsimx')
     for _ in range(1):
-        a = perf_counter()
-        # model.RevertCheckpoint()
 
-        model.update_mgt({"Name": "Simple Rotation", 'Crops': 'Maize, Soybean, Wheat'}, reload=True)
-        model.run('MaizeR')
-        b = perf_counter()
-        print(b - a, 'seconds')
+        for rn in ['Maize, Soybean, Wheat', 'Maize', 'Soybean, Wheat']:
+            a = perf_counter()
+            # model.RevertCheckpoint()
+
+            model.update_manager(Name="Simple Rotation", Crops=rn)
+
+            b = perf_counter()
+
+            print(b - a, 'seconds')
+            model.run('Carbon')
+            print(model.results.mean(numeric_only=True))
         model.clear_links()
         a = perf_counter()
 
         res = model.run_simulations(reports="MaizeR", clean_up=False, results=True)
         b = perf_counter()
         print(b - a, 'seconds')
+        mod = model.Simulations
+        # xp = mod.FindAllInScope[Models.Manager]('Simple Rotation')
+        # a = [i for i in xp]
+        # for p in a:
+        #  for i in range(len(p.Parameters)):
+        #      kvp =p.Parameters[i]
+        #      if kvp.Key == "Crops":
+        #          updated_kvp = KeyValuePair[str, str](kvp.Key, "UpdatedValue")
+        #          p.Parameters[i] = updated_kvp
+        #      print(p.Parameters[i])

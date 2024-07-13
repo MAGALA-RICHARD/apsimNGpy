@@ -42,7 +42,7 @@ class GetAPSIMPath:
 
         """
         fromConfig = Config.get_aPSim_bin_path()
-        print(fromConfig)
+
         if os.path.exists(fromConfig):
             _config_path = fromConfig
         else: _config_path = None

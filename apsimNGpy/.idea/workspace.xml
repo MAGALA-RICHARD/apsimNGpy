@@ -6,6 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="5d471312-8496-4246-98d6-790439318160" name="Changes" comment="config apsim. users can set the apsim bin folder path">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/pythonet_config.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/pythonet_config.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -30,50 +31,52 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
-    &quot;Python.__init__.executor&quot;: &quot;Run&quot;,
-    &quot;Python.api.executor&quot;: &quot;Run&quot;,
-    &quot;Python.apsim.executor&quot;: &quot;Run&quot;,
-    &quot;Python.config.executor&quot;: &quot;Run&quot;,
-    &quot;Python.glue.executor&quot;: &quot;Run&quot;,
-    &quot;Python.logger.executor&quot;: &quot;Run&quot;,
-    &quot;Python.met_functions.executor&quot;: &quot;Run&quot;,
-    &quot;Python.problem.executor&quot;: &quot;Run&quot;,
-    &quot;Python.process.executor&quot;: &quot;Run&quot;,
-    &quot;Python.senstivity.executor&quot;: &quot;Run&quot;,
-    &quot;Python.sobol.executor&quot;: &quot;Run&quot;,
-    &quot;Python.soilmanager.executor&quot;: &quot;Run&quot;,
-    &quot;Python.tools.executor&quot;: &quot;Run&quot;,
-    &quot;Python.utils.executor&quot;: &quot;Run&quot;,
-    &quot;Python.variable.executor&quot;: &quot;Run&quot;,
-    &quot;Python.weathermanager.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;last_opened_file_path&quot;: &quot;D:/package/apsimNGpy/apsimNGpy/uncertainity_box&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;inlay.hints&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "Python.__init__.executor": "Run",
+    "Python.api.executor": "Run",
+    "Python.apsim.executor": "Run",
+    "Python.base_data.executor": "Run",
+    "Python.config.executor": "Run",
+    "Python.glue.executor": "Run",
+    "Python.logger.executor": "Run",
+    "Python.met_functions.executor": "Run",
+    "Python.problem.executor": "Run",
+    "Python.process.executor": "Run",
+    "Python.pythonet_config.executor": "Run",
+    "Python.senstivity.executor": "Run",
+    "Python.sobol.executor": "Run",
+    "Python.soilmanager.executor": "Run",
+    "Python.tools.executor": "Run",
+    "Python.utils.executor": "Run",
+    "Python.variable.executor": "Run",
+    "Python.weathermanager.executor": "Run",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "git-widget-placeholder": "main",
+    "last_opened_file_path": "D:/package/apsimNGpy/apsimNGpy",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "inlay.hints",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\package\apsimNGpy\apsimNGpy" />
       <recent name="D:\package\apsimNGpy\apsimNGpy\uncertainity_box" />
       <recent name="D:\package\apsimNGpy\apsimNGpy\manager" />
       <recent name="D:\package\apsimNGpy\apsimNGpy\core" />
       <recent name="D:\ACPd\Bear creek simulations" />
-      <recent name="C:\Users\rmagala\Box\apsimNGpy\apsimNGpy\core" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.config">
+  <component name="RunManager" selected="Python.pythonet_config">
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
       <module name="apsimNGpy" />
       <option name="ENV_FILES" value="" />
@@ -120,7 +123,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="config" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="base_data" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="apsimNGpy" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -131,7 +134,7 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/core/config.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/core/base_data.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="true" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -140,21 +143,18 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="problem" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="config" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="apsimNGpy" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/uncertainity_box" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/uncertainity_box/problem.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/config.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="true" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -163,21 +163,18 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="sobol" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="pythonet_config" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="apsimNGpy" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/uncertainity_box" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/core" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/uncertainity_box/sobol.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/core/pythonet_config.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="true" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -211,11 +208,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.pythonet_config" />
+        <item itemvalue="Python.base_data" />
+        <item itemvalue="Python.config" />
         <item itemvalue="Python.config" />
         <item itemvalue="Python.api" />
-        <item itemvalue="Python.problem" />
-        <item itemvalue="Python.sobol" />
-        <item itemvalue="Python.variable" />
       </list>
     </recent_temporary>
   </component>
@@ -286,38 +283,7 @@
       <workItem from="1720631099454" duration="1296000" />
       <workItem from="1720813931098" duration="4156000" />
       <workItem from="1720845565670" duration="959000" />
-    </task>
-    <task id="LOCAL-00268" summary="simulate from a shape file">
-      <option name="closed" value="true" />
-      <created>1707192373925</created>
-      <option name="number" value="00268" />
-      <option name="presentableId" value="LOCAL-00268" />
-      <option name="project" value="LOCAL" />
-      <updated>1707192373925</updated>
-    </task>
-    <task id="LOCAL-00269" summary="simulate from a shape file">
-      <option name="closed" value="true" />
-      <created>1707192539604</created>
-      <option name="number" value="00269" />
-      <option name="presentableId" value="LOCAL-00269" />
-      <option name="project" value="LOCAL" />
-      <updated>1707192539604</updated>
-    </task>
-    <task id="LOCAL-00270" summary="simulate from a shape file">
-      <option name="closed" value="true" />
-      <created>1707192720078</created>
-      <option name="number" value="00270" />
-      <option name="presentableId" value="LOCAL-00270" />
-      <option name="project" value="LOCAL" />
-      <updated>1707192720078</updated>
-    </task>
-    <task id="LOCAL-00271" summary="simulate from a shape file">
-      <option name="closed" value="true" />
-      <created>1707193013530</created>
-      <option name="number" value="00271" />
-      <option name="presentableId" value="LOCAL-00271" />
-      <option name="project" value="LOCAL" />
-      <updated>1707193013530</updated>
+      <workItem from="1720891138928" duration="1940000" />
     </task>
     <task id="LOCAL-00272" summary="simulate from a shape file">
       <option name="closed" value="true" />
@@ -679,7 +645,39 @@
       <option name="project" value="LOCAL" />
       <updated>1720846423079</updated>
     </task>
-    <option name="localTasksCounter" value="317" />
+    <task id="LOCAL-00317" summary="config apsim. users can set the apsim bin folder path">
+      <option name="closed" value="true" />
+      <created>1720891401357</created>
+      <option name="number" value="00317" />
+      <option name="presentableId" value="LOCAL-00317" />
+      <option name="project" value="LOCAL" />
+      <updated>1720891401358</updated>
+    </task>
+    <task id="LOCAL-00318" summary="config apsim. users can set the apsim bin folder path">
+      <option name="closed" value="true" />
+      <created>1720891751972</created>
+      <option name="number" value="00318" />
+      <option name="presentableId" value="LOCAL-00318" />
+      <option name="project" value="LOCAL" />
+      <updated>1720891751973</updated>
+    </task>
+    <task id="LOCAL-00319" summary="config apsim. users can set the apsim bin folder path">
+      <option name="closed" value="true" />
+      <created>1720892337706</created>
+      <option name="number" value="00319" />
+      <option name="presentableId" value="LOCAL-00319" />
+      <option name="project" value="LOCAL" />
+      <updated>1720892337706</updated>
+    </task>
+    <task id="LOCAL-00320" summary="config apsim. users can set the apsim bin folder path">
+      <option name="closed" value="true" />
+      <created>1720892591833</created>
+      <option name="number" value="00320" />
+      <option name="presentableId" value="LOCAL-00320" />
+      <option name="project" value="LOCAL" />
+      <updated>1720892591833</updated>
+    </task>
+    <option name="localTasksCounter" value="321" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -740,6 +738,10 @@
           <url>file://$PROJECT_DIR$/core/api.py</url>
           <line>6</line>
           <option name="timeStamp" value="3" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/config.py</url>
+          <option name="timeStamp" value="4" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

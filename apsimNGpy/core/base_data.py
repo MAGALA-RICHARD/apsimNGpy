@@ -20,8 +20,6 @@ APSIM_DATA = 'apsim'
 WEATHER = 'weather'
 
 
-
-
 def _weather(path, WEATHER_CON=WEATHER_CO):
     resource_directory = files(DATA)
     data_file_path = resource_directory / WEATHER / WEATHER_CON

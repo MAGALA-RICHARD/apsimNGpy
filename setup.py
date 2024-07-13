@@ -18,7 +18,7 @@ setup(
     long_description=readme,
     packages=find_packages(),
     include_package_data=True,
-    package_data={'': ['./apsimNGpy/data/*.apsimx', './apsimNGpy/*.met', './apsimNGpy/examples/*.png']},
+    package_data={'': ['./apsimNGpy/data/*.apsimx', './apsimNGpy/*.met', './apsimNGpy/examples/*.png', './apsimNGpy/*.ini']},
     keywords=['python', 'APSIM Next Generation', 'pythonnet', 'crop modeling'],
     classifiers=[
         "Development Status :: 3 - Alpha",

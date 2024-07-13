@@ -1,7 +1,7 @@
 import configparser
 import os
 
-config_path = os.path.join(os.path.expanduser('~'), 'config.ini')
+config_path = os.path.realpath('config.ini')
 
 if not os.path.exists(config_path):
     config = configparser.ConfigParser()

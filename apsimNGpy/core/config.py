@@ -1,16 +1,30 @@
+import configparser
+import os
+
+config_path = os.path.join(os.path.dirname(__file__), 'config.ini')
+
+if not os.path.exists(config_path):
+    config = configparser.ConfigParser()
+    config['Paths'] = {'ApSIM_LOCATION': ''}
+    with open(config_path, 'w') as configfile:
+        config.write(configfile)
+
 
 class Config:
     """
-    The configuration of this aPsimNGpy in general providing the place
-    for declaring global variables.
-    """
+        The configuration of this aPsimNGpy in general providing the place
+        for declaring global variables such as aPSim bin locations.
+        """
 
-    ApSIM_LOCATION = None
-
-    @classmethod
-    def set_aPSim_bin_path(cls, path):
-        cls.ApSIM_LOCATION = path
+    config = configparser.ConfigParser()
+    config.read(config_path)
 
     @classmethod
     def get_aPSim_bin_path(cls):
-        return cls.ApSIM_LOCATION
+        return cls.config['Paths']['ApSIM_LOCATION']
+
+    @classmethod
+    def set_aPSim_bin_path(cls, path):
+        cls.config['Paths']['ApSIM_LOCATION'] = path
+        with open('config.ini', 'w') as configfile:
+            cls.config.write(configfile)

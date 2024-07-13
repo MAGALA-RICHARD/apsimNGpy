@@ -41,10 +41,14 @@ class GetAPSIMPath:
         - str or False: The APSIM installation path if found, or False if not found.
 
         """
-        fromConf  = Config.get_aPSim_bin_path()
-        print(fromConf)
-        return Config.get_aPSim_bin_path() or os.environ.get("APSIM") or os.environ.get("Models") or self._shut() or find_models(HOME_DATA,
-                                                                                                  "Models.exe") \
+        fromConfig = Config.get_aPSim_bin_path()
+        print(fromConfig)
+        if os.path.exists(fromConfig):
+            _config_path = fromConfig
+        else: _config_path = None
+        return _config_path or os.environ.get("APSIM") or os.environ.get(
+            "Models") or self._shut() or find_models(HOME_DATA,
+                                                     "Models.exe") \
             or self._search_from_C()
 
 
@@ -100,10 +104,12 @@ class LoadPythonnet:
     ----------
     None
     """
+
     def __init__(self):
 
         self._apsimPath = GetAPSIMPath()()
-    #TODO to be completed
+
+    # TODO to be completed
     @property
     def load_path(self):
         """Property getter for APSIM binary path."""
@@ -211,10 +217,12 @@ if __name__ == '__main__':
     # try importing the C# models and see if the process is successful
     import Models
     import System
+
     fib = fibonacci_sequence(20)
     lp = []
     for i in fib:
         lp.append(i)
     print(lp)
     import numpy as np
+
     RP = np.arange(0.5, 3, 0.5)

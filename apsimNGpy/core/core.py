@@ -32,7 +32,7 @@ from apsimNGpy.utililies.utils import timer
 from System.Collections.Generic import *
 from Models.Core import Simulations, ScriptCompiler, Simulation
 from System import *
-from Models.Core.ApsimFile import FileFormat, Conve
+from Models.Core.ApsimFile import FileFormat
 from Models.Climate import Weather
 from Models.Soils import Soil, Physical, SoilCrop, Organic
 import Models

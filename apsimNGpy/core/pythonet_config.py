@@ -41,7 +41,7 @@ class GetAPSIMPath:
         - str or False: The APSIM installation path if found, or False if not found.
 
         """
-        return Config.get_aPSim_bin_path or os.environ.get("APSIM") or os.environ.get("Models") or self._shut() or find_models(HOME_DATA,
+        return Config.get_aPSim_bin_path() or os.environ.get("APSIM") or os.environ.get("Models") or self._shut() or find_models(HOME_DATA,
                                                                                                   "Models.exe") \
             or self._search_from_C()
 

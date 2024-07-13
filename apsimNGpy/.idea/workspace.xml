@@ -4,9 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5d471312-8496-4246-98d6-790439318160" name="Changes" comment="adjust swim DUL and SAT values">
+    <list default="true" id="5d471312-8496-4246-98d6-790439318160" name="Changes" comment="config apsim. users can set the apsim bin folder path">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/uncertainity_box/sobol.py" beforeDir="false" afterPath="$PROJECT_DIR$/uncertainity_box/sobol.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -37,6 +36,7 @@
     &quot;Python.__init__.executor&quot;: &quot;Run&quot;,
     &quot;Python.api.executor&quot;: &quot;Run&quot;,
     &quot;Python.apsim.executor&quot;: &quot;Run&quot;,
+    &quot;Python.config.executor&quot;: &quot;Run&quot;,
     &quot;Python.glue.executor&quot;: &quot;Run&quot;,
     &quot;Python.logger.executor&quot;: &quot;Run&quot;,
     &quot;Python.met_functions.executor&quot;: &quot;Run&quot;,
@@ -73,30 +73,7 @@
       <recent name="C:\Users\rmagala\Box\apsimNGpy\apsimNGpy\core" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.api">
-    <configuration name="__init__" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="apsimNGpy" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$USER_HOME$/AppData/Local/ESRI/conda/envs/arcgispro-py3-clone-env/Lib/site-packages/SALib/util" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$USER_HOME$/AppData/Local/ESRI/conda/envs/arcgispro-py3-clone-env/Lib/site-packages/SALib/util/__init__.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="true" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
+  <component name="RunManager" selected="Python.config">
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
       <module name="apsimNGpy" />
       <option name="ENV_FILES" value="" />
@@ -135,6 +112,29 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/core/api.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="config" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="apsimNGpy" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/core" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/core/config.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="true" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -214,11 +214,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.config" />
         <item itemvalue="Python.api" />
         <item itemvalue="Python.problem" />
         <item itemvalue="Python.sobol" />
         <item itemvalue="Python.variable" />
-        <item itemvalue="Python.__init__" />
       </list>
     </recent_temporary>
   </component>
@@ -286,38 +286,9 @@
       <workItem from="1718390001089" duration="4703000" />
       <workItem from="1718430241747" duration="2039000" />
       <workItem from="1718628761706" duration="3748000" />
-    </task>
-    <task id="LOCAL-00264" summary="new">
-      <option name="closed" value="true" />
-      <created>1707159679845</created>
-      <option name="number" value="00264" />
-      <option name="presentableId" value="LOCAL-00264" />
-      <option name="project" value="LOCAL" />
-      <updated>1707159679845</updated>
-    </task>
-    <task id="LOCAL-00265" summary="spatial">
-      <option name="closed" value="true" />
-      <created>1707186672810</created>
-      <option name="number" value="00265" />
-      <option name="presentableId" value="LOCAL-00265" />
-      <option name="project" value="LOCAL" />
-      <updated>1707186672810</updated>
-    </task>
-    <task id="LOCAL-00266" summary="spatial">
-      <option name="closed" value="true" />
-      <created>1707187642995</created>
-      <option name="number" value="00266" />
-      <option name="presentableId" value="LOCAL-00266" />
-      <option name="project" value="LOCAL" />
-      <updated>1707187642995</updated>
-    </task>
-    <task id="LOCAL-00267" summary="simulate from a shape file">
-      <option name="closed" value="true" />
-      <created>1707188831878</created>
-      <option name="number" value="00267" />
-      <option name="presentableId" value="LOCAL-00267" />
-      <option name="project" value="LOCAL" />
-      <updated>1707188831878</updated>
+      <workItem from="1720631099454" duration="1296000" />
+      <workItem from="1720813931098" duration="4156000" />
+      <workItem from="1720845565670" duration="959000" />
     </task>
     <task id="LOCAL-00268" summary="simulate from a shape file">
       <option name="closed" value="true" />
@@ -679,7 +650,39 @@
       <option name="project" value="LOCAL" />
       <updated>1709419460985</updated>
     </task>
-    <option name="localTasksCounter" value="313" />
+    <task id="LOCAL-00313" summary="visual">
+      <option name="closed" value="true" />
+      <created>1720631213216</created>
+      <option name="number" value="00313" />
+      <option name="presentableId" value="LOCAL-00313" />
+      <option name="project" value="LOCAL" />
+      <updated>1720631213216</updated>
+    </task>
+    <task id="LOCAL-00314" summary="visual">
+      <option name="closed" value="true" />
+      <created>1720813936141</created>
+      <option name="number" value="00314" />
+      <option name="presentableId" value="LOCAL-00314" />
+      <option name="project" value="LOCAL" />
+      <updated>1720813936142</updated>
+    </task>
+    <task id="LOCAL-00315" summary="visual">
+      <option name="closed" value="true" />
+      <created>1720843175491</created>
+      <option name="number" value="00315" />
+      <option name="presentableId" value="LOCAL-00315" />
+      <option name="project" value="LOCAL" />
+      <updated>1720843175491</updated>
+    </task>
+    <task id="LOCAL-00316" summary="config apsim. users can set the apsim bin folder path">
+      <option name="closed" value="true" />
+      <created>1720846423078</created>
+      <option name="number" value="00316" />
+      <option name="presentableId" value="LOCAL-00316" />
+      <option name="project" value="LOCAL" />
+      <updated>1720846423079</updated>
+    </task>
+    <option name="localTasksCounter" value="317" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -697,8 +700,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="store default files to current working directory is path is not specified" />
-    <MESSAGE value="core will replace models andother folders&#10;soil model and apsimpy to duplicated" />
     <MESSAGE value="SoilModel class is confusing changed to ApsimModel" />
     <MESSAGE value="Sno need to rebuild script in order to compile the new model scripts" />
     <MESSAGE value="removed duplicates" />
@@ -722,7 +723,9 @@
     <MESSAGE value="Added layersture for swim node" />
     <MESSAGE value="added met functions for downloading nasa power met" />
     <MESSAGE value="adjust swim DUL and SAT values" />
-    <option name="LAST_COMMIT_MESSAGE" value="adjust swim DUL and SAT values" />
+    <MESSAGE value="visual" />
+    <MESSAGE value="config apsim. users can set the apsim bin folder path" />
+    <option name="LAST_COMMIT_MESSAGE" value="config apsim. users can set the apsim bin folder path" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

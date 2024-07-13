@@ -21,7 +21,7 @@ print(gt)
 
 
 class GetAPSIMPath:
-    """searches for apsimx path"""
+    """searches for an apsimx path"""
 
     def __init__(self, user_path=None):
         self.user_apsim_model = user_path
@@ -57,9 +57,9 @@ class GetAPSIMPath:
             or self._search_from_C()
 
 
-APSIM_PATH = GetAPSIMPath()()
+aPSim_PATH = GetAPSIMPath()()
 
-apsim_config = {}
+aPSim_config = {}
 
 
 def _dumper(obj):
@@ -76,7 +76,7 @@ path = '../base/apsimNGpy.json'
 def write_pathto_file(path):
     path = '../base/apsimNGpy.json'
     apsim_json = os.path.realpath(path)
-    obj = json.dumps(apsim_config, default=_dumper, indent=2)
+    obj = json.dumps(aPSim_config, default=_dumper, indent=2)
     with open(apsim_json, 'w+') as f:
         f.writelines(obj)
     return apsim_json
@@ -112,23 +112,23 @@ class LoadPythonnet:
 
     def __init__(self):
 
-        self._apsimPath = GetAPSIMPath()()
+        self._aPSim_Path = GetAPSIMPath()()
 
     # TODO to be completed
     @property
     def load_path(self):
         """Property getter for APSIM binary path."""
-        if not self._apsimPath:
+        if not self._aPSim_Path:
             raise KeyError("APSIM is not loaded in the system environmental variable")
 
-        if 'bin' not in self._apsimPath:
-            apsim_path = os.path.join(self._apsimPath, 'bin')
-            self._apsimPath = apsim_path
+        if 'bin' not in self._aPSim_Path:
+            aPSim_path = os.path.join(self._aPSim_Path, 'bin')
+            self._aPSim_Path = aPSim_path
 
-        if not os.path.exists(self._apsimPath):
+        if not os.path.exists(aPSim_path):
             raise ValueError("A full path to the binary folder is required or the path is invalid")
 
-        return self._apsimPath
+        return aPSim_path
 
     @load_path.setter
     def load_path(self, path):
@@ -136,7 +136,7 @@ class LoadPythonnet:
         if not path:
             raise ValueError("The path cannot be empty")
 
-        self._apsimPath = path
+        self._aPSim_Path = path
 
     def start_pythonnet(self):
         try:
@@ -173,7 +173,7 @@ class LoadPythonnet:
         #     pythonnet.load()
         self.start_pythonnet()
         # use get because it does not raise key error. it returns none if not found
-        apsim_path = APSIM_PATH
+        apsim_path = aPSim_PATH
         if not apsim_path:
             raise KeyError("APSIM is not loaded in the system environmental variable")
 

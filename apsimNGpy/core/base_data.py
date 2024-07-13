@@ -19,7 +19,7 @@ WEA = 'Iem_IA0200.met'
 APSIM_DATA = 'apsim'
 WEATHER = 'weather'
 
-print(aPSim_PATH)
+
 
 
 def _weather(path, WEATHER_CON=WEATHER_CO):

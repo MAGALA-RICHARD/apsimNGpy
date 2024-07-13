@@ -12,7 +12,7 @@ if not os.path.exists(config_path):
 
 class Config:
     """
-        The configuration of this aPsimNGpy in general providing the place
+        The configuration of this aPSimNGpy in general providing the place
         for declaring global variables such as aPSim bin locations.
         """
 

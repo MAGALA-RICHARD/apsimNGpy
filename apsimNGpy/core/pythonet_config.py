@@ -1,26 +1,18 @@
-import pythonnet
-import os
-from os.path import dirname
-from pathlib import Path
-from functools import cache
-import shutil
 import json
-from os.path import realpath
+import os
+import shutil
 from dataclasses import dataclass
+from functools import cache
+from pathlib import Path
+
 import pythonnet
-from apsimNGpy.config import (Config, config_path)
+from apsimNGpy.config import (Config)
 from apsimNGpy.utililies.utils import (timer, find_models)
-import configparser
 
 HOME_DATA = Path.home().joinpath('AppData', 'Local', 'Programs')
 cdrive = os.environ.get('PROGRAMFILES')
 WINDOWS_PROGRAMFILES = Path(cdrive) if cdrive else None
 
-gt = Config.get_aPSim_bin_path()
-
-config = configparser.ConfigParser()
-config.read(config_path)
-config_p =  config['Paths']['ApSIM_LOCATION']
 
 class GetAPSIMPath:
     """searches for an apsimx path"""
@@ -48,7 +40,6 @@ class GetAPSIMPath:
 
         """
         fromConfig = Config.get_aPSim_bin_path()
-        print('set_path is:', fromConfig)
         if os.path.exists(fromConfig):
             _config_path = fromConfig
         else:
@@ -222,8 +213,6 @@ if __name__ == '__main__':
     loader = LoadPythonnet()
     loaded_models = loader()
     # try importing the C# models and see if the process is successful
-    import Models
-    import System
 
     fib = fibonacci_sequence(20)
     lp = []

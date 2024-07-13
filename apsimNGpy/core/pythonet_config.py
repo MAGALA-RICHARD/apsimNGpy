@@ -47,7 +47,7 @@ class GetAPSIMPath:
         - str or False: The APSIM installation path if found, or False if not found.
 
         """
-        fromConfig = config_p
+        fromConfig = Config.get_aPSim_bin_path()
         print('set_path is:', fromConfig)
         if os.path.exists(fromConfig):
             _config_path = fromConfig

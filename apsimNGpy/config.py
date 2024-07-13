@@ -29,5 +29,6 @@ class Config:
         with open('config.ini', 'w') as configfile:
             cls.config.write(configfile)
 
+
 if __name__ == '__main__':
     print(Config.get_aPSim_bin_path())

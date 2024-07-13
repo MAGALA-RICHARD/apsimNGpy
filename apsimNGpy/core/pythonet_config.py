@@ -8,13 +8,16 @@ import json
 from os.path import realpath
 from dataclasses import dataclass
 import pythonnet
-from apsimNGpy.config import  Config
+from apsimNGpy.config import Config
 from apsimNGpy.utililies.utils import timer, find_models
-from apsimNGpy.core.config import config_path
+from apsimNGpy.config import config_path
+
 HOME_DATA = Path.home().joinpath('AppData', 'Local', 'Programs')
 cdrive = os.environ.get('PROGRAMFILES')
 WINDOWS_PROGRAMFILES = Path(cdrive) if cdrive else None
 
+gt = Config.get_aPSim_bin_path()
+print(gt)
 
 class GetAPSIMPath:
     """searches for apsimx path"""
@@ -45,7 +48,8 @@ class GetAPSIMPath:
 
         if os.path.exists(fromConfig):
             _config_path = fromConfig
-        else: _config_path = None
+        else:
+            _config_path = None
         return _config_path or os.environ.get("APSIM") or os.environ.get(
             "Models") or self._shut() or find_models(HOME_DATA,
                                                      "Models.exe") \

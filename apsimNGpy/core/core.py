@@ -5,6 +5,7 @@ email: magalarich20@gmail.com
 
 """
 from apsimNGpy.config import Config
+
 Config.set_aPSim_bin_path(r'G:\APSIM2024.7.7550.0\bin')
 from functools import singledispatch
 import matplotlib.pyplot as plt
@@ -80,6 +81,7 @@ class APSIMNG:
         # model_info is named tuple safe for parallel simulations as named tuples are immutable
         self.model_info = load_apx_model(self._model, out=self.out_path, met_file=kwargs.get('met_file'))
         self.Simulations = self.model_info.IModel
+
         self.datastore = self.model_info.datastore
         self.Datastore = self.model_info.DataStore
         self._DataStore = self.model_info.DataStore
@@ -97,6 +99,8 @@ class APSIMNG:
         clean_up : bool deletes the file on disk, by default False
         returns results if results is True else None
         """
+        self.check_model()
+        self.model_info = self.model_info._replace(IModel=self.Simulations)
         resu = run_model(self.model_info, results=results, clean_up=clean_up)
 
         if reports:
@@ -136,6 +140,12 @@ class APSIMNG:
         self.Simulations.ClearSimulationReferences()
         return self
 
+    def check_model(self):
+        if isinstance(self.Simulations, Models.Core.ApsimFile.ConverterReturnType):
+            self.Simulations = self.Simulations.get_NewModel()
+            self.model_info = self.model_info._replace(IModel=self.Simulations)
+        return self
+
     @staticmethod
     def _remove_related_files(_name):
         """Remove related database files."""
@@ -161,6 +171,7 @@ class APSIMNG:
         """
         # fixed
         # we can actually specify the simulation name in the bracket
+        self.check_model()
         return list(self.Simulations.FindAllInScope[Models.Core.Simulation]())
 
     @property
@@ -232,6 +243,7 @@ class APSIMNG:
         save_model_to_file(self.Simulations, out=_out_path)
         if reload:
             self.model_info = load_apx_model(_out_path)
+
             self.restart_model()
             return self
 
@@ -730,12 +742,36 @@ class APSIMNG:
         self.save_edited_file(outpath=self.path)
         self.load_apsimx_model()
 
+    def convert_to_imodel(self):
+        if isinstance(self.Simulations, Models.Core.ApsimFile.ConverterReturnType):
+            return self.Simulations.get_NewModel()
+        else:
+            return self.Simulations
+
     # experimental
+    def recompile_edited_model(self, out_path):
+
+        model_to_string = self.convert_to_imodel()
+        _json_string = Models.Core.ApsimFile.FileFormat.WriteToString(model_to_string)
+        fileName = out_path
+        __model = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](_json_string,
+                                                                                           None, True,
+                                                                                           fileName=fileName)
+        try:
+            if isinstance(__model, Models.Core.ApsimFile.Models.Core.ApsimFile.ConverterReturnType):
+                self.Simulations = __model.get_NewModel()
+            else:
+                self.Simulations = __model
+        except AttributeError as e:
+            self.Simulations = __model
+        return self
+
     def update_manager(self, **kwargs):
         """
         updates a single management script by kew word arguments. it is thread safe to call this during multiple processing
         kwargs can be the key value pairs of the parameters of the management script, if Name if the script is not specified, updates will not be successfull
         """
+        self.Simulations = self.convert_to_imodel()
         manager = self.Simulations.FindAllInScope[Models.Manager](kwargs['Name'])
         manager_scripts = [i for i in manager]
         for single in manager_scripts:
@@ -745,13 +781,8 @@ class APSIMNG:
                     updated_kvp = KeyValuePair[str, str](kvp.Key, kwargs[kvp.Key])
                     single.Parameters[i] = updated_kvp
             # Serialize the model to JSON string
-
-        _json_string = Models.Core.ApsimFile.FileFormat.WriteToString(self.Simulations)
         fileName = kwargs.get('out_path') or self.model_info.path
-        self.Simulations = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](_json_string,
-                                                                                                    None, True,
-                                                                                                    fileName=fileName)
-        return self
+        self.recompile_edited_model(out_path=fileName)
 
     def update_mgt(self, management, simulations=None, out=None):
         """Update management, handles one manager at a time
@@ -760,13 +791,13 @@ class APSIMNG:
         ----------
         management
 
-            Parameter = value dictionary of management parameters to update. examine_management_info` to see current 
-            values. make a dictionary with 'Name' as the for the of management script simulations, optional List of 
-            simulation names to update, if `None` update all simulations not recommended. 
+            Parameter = value dictionary of management parameters to update. examine_management_info` to see current
+            values. make a dictionary with 'Name' as the for the of management script simulations, optional List of
+            simulation names to update, if `None` update all simulations not recommended.
             :param out (str or pathlike ): to harmonize a database path after editing note: No need to reload any
-             more that should be called with save_edited_file method, 
+             more that should be called with save_edited_file method,
             we just don't want to make a lot of evaluations while running batch files
-            
+
         """
         if not isinstance(management, list):
             management = [management]
@@ -783,7 +814,7 @@ class APSIMNG:
                     if param in values.keys():
                         fp.Value.Parameters[i] = KeyValuePair[String, String](param, f"{values[param]}")
         out_mgt_path = out or self.out_path or self.model_info.path
-        self.restart_model(model_info=recompile(self.Simulations, out=out_mgt_path))
+        self.recompile_edited_model(out_mgt_path)
         return self
 
     # immediately open the file in GUI
@@ -1308,7 +1339,7 @@ class APSIMNG:
         should be used with caution.
 
         Returns:
-           >>None: This method does not return a value. 
+           >>None: This method does not return a value.
            >> Please proceed with caution, we assume that if you want to clear the model objects, then you don't need them
            but by making copy compulsory, then, we are clearing the edited files
         """
@@ -1412,13 +1443,13 @@ if __name__ == '__main__':
             # model.RevertCheckpoint()
 
             model.update_manager(Name="Simple Rotation", Crops=rn)
-
+            print(model.extract_user_input('Simple Rotation'))
             b = perf_counter()
 
             print(b - a, 'seconds')
             model.run('Carbon')
             print(model.results.mean(numeric_only=True))
-        model.clear_links()
+
         a = perf_counter()
 
         res = model.run_simulations(reports="MaizeR", clean_up=False, results=True)

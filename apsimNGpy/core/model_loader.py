@@ -1,6 +1,7 @@
 """
 This module offers a procedural alternative other than object-oriented approach provided in api and ApsimModel classes
 """
+from functools import singledispatch
 from apsimNGpy.core.pythonet_config import LoadPythonnet
 # now we can safely import C# libraries
 from System.Collections.Generic import *
@@ -46,9 +47,6 @@ def load_from_path(path2file):
                                                                                     fileName=f_name)
 
 
-from functools import singledispatch
-
-
 def load_apx_model(model=None, out=None, met_file=None):
     """
        >> we are loading apsimx model from file, dict, or in memory.
@@ -65,7 +63,8 @@ def load_apx_model(model=None, out=None, met_file=None):
     out1 = realpath(out) if out is not None else None
     out3 = realpath('ngpy_model.apsimx')
     _out = out1 or out2 or out3
-    Model_data = namedtuple('model_data', ['IModel', 'path', 'datastore', "DataStore", 'results', 'met_path'])
+    Model_data = namedtuple('model_data',
+                            ['IModel', 'path', 'datastore', "DataStore", 'results', 'met_path'])
 
     @singledispatch
     def loader(_model):
@@ -102,6 +101,8 @@ def load_apx_model(model=None, out=None, met_file=None):
         return _model
 
     Model = loader(model)
+    originalFilename = None
+
     if 'NewModel' in dir(Model):
         Model = Model.get_NewModel()
     datastore = Model.FindChild[Models.Storage.DataStore]().FileName
@@ -155,15 +156,16 @@ def recompile(_model, out=None, met_path=None):
     json_string = Models.Core.ApsimFile.FileFormat.WriteToString(_model)
 
     Model = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](json_string, None, True,
-                                                                                    fileName=final_out_path)
+                                                                                     fileName=final_out_path)
     if 'NewModel' in dir(Model):
         Model = Model.get_NewModel()
     datastore = Model.FindChild[Models.Storage.DataStore]().FileName
     DataStore = Model.FindChild[Models.Storage.DataStore]()
     # need to make ModelData a constant and named outside the script for consistency across scripts
     ModelData = namedtuple('model_data', ['IModel', 'path', 'datastore', "DataStore", 'results', 'met_path'])
-    Model_named_tuple = ModelData(IModel=Model, path=final_out_path, datastore=datastore, DataStore=DataStore, results=None,
-                             met_path=met_path)
+    Model_named_tuple = ModelData(IModel=Model, path=final_out_path, datastore=datastore, DataStore=DataStore,
+                                  results=None,
+                                  met_path=met_path)
     return Model_named_tuple
 
 

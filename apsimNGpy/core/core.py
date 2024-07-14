@@ -226,7 +226,7 @@ class APSIMNG:
 
         """
         # Determine the output path
-        _out_path = out_path or self.Simulations.FileName
+        _out_path = out_path or self.model_info.path
         save_model_to_file(self.Simulations, out=_out_path)
         if reload:
             self.model_info = load_apx_model(_out_path)

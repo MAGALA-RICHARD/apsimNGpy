@@ -170,10 +170,9 @@ def recompile(_model, out=None, met_path=None):
     DataStore = _Model.FindChild[Models.Storage.DataStore]()
     # need to make ModelData a constant and named outside the script for consistency across scripts
     ModelData = namedtuple('model_data', ['IModel', 'path', 'datastore', "DataStore", 'results', 'met_path'])
-    Model_named_tuple = ModelData(IModel=_Model, path=final_out_path, datastore=datastore, DataStore=DataStore,
-                                  results=None,
-                                  met_path=met_path)
-    return Model_named_tuple
+    return ModelData(IModel=_Model, path=final_out_path, datastore=datastore, DataStore=DataStore,
+                     results=None,
+                     met_path=met_path)
 
 
 if __name__ == '__main__':

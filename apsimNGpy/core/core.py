@@ -742,7 +742,7 @@ class APSIMNG:
         self.save_edited_file(outpath=self.path)
         self.load_apsimx_model()
 
-    def convert_to_imodel(self):
+    def convert_to_IModel(self):
         if isinstance(self.Simulations, Models.Core.ApsimFile.ConverterReturnType):
             return self.Simulations.get_NewModel()
         else:
@@ -751,7 +751,7 @@ class APSIMNG:
     # experimental
     def recompile_edited_model(self, out_path):
 
-        model_to_string = self.convert_to_imodel()
+        model_to_string = self.convert_to_IModel()
         _json_string = Models.Core.ApsimFile.FileFormat.WriteToString(model_to_string)
         fileName = out_path
         __model = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](_json_string,
@@ -771,7 +771,7 @@ class APSIMNG:
         updates a single management script by kew word arguments. it is thread safe to call this during multiple processing
         kwargs can be the key value pairs of the parameters of the management script, if Name if the script is not specified, updates will not be successfull
         """
-        self.Simulations = self.convert_to_imodel()
+        self.Simulations = self.convert_to_IModel()
         manager = self.Simulations.FindAllInScope[Models.Manager](kwargs['Name'])
         manager_scripts = [i for i in manager]
         for single in manager_scripts:
@@ -783,6 +783,8 @@ class APSIMNG:
             # Serialize the model to JSON string
         fileName = kwargs.get('out_path') or self.model_info.path
         self.recompile_edited_model(out_path=fileName)
+        self.Simulations = self.convert_to_IModel()
+        return self
 
     def update_mgt(self, management, simulations=None, out=None):
         """Update management, handles one manager at a time
@@ -815,6 +817,7 @@ class APSIMNG:
                         fp.Value.Parameters[i] = KeyValuePair[String, String](param, f"{values[param]}")
         out_mgt_path = out or self.out_path or self.model_info.path
         self.recompile_edited_model(out_mgt_path)
+        self.Simulations = self.convert_to_IModel()
         return self
 
     # immediately open the file in GUI

@@ -4,6 +4,8 @@ author: Richard Magala
 email: magalarich20@gmail.com
 
 """
+from apsimNGpy.config import Config
+Config.set_aPSim_bin_path(r'G:\APSIM2024.7.7550.0\bin')
 from functools import singledispatch
 import matplotlib.pyplot as plt
 import random, logging, pathlib

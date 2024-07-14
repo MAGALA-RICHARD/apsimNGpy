@@ -101,7 +101,7 @@ def load_apx_model(model=None, out=None, met_file=None):
         return _model
 
     Model = loader(model)
-    originalFilename = None
+
 
     if 'NewModel' in dir(Model):
         Model = Model.get_NewModel()

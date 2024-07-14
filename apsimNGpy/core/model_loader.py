@@ -28,6 +28,13 @@ def load_from_dict(dict_data, out):
                                                                                     fileName=out)
 
 
+def covert_to_IModel(object_to_convert):
+    if isinstance(object_to_convert, Models.Core.ApsimFile.ConverterReturnType):
+        return object_to_convert.get_NewModel()
+    else:
+        return object_to_convert
+
+
 def load_model_from_dict(dict_model, out, met_file):
     """useful for spawning many simulation files"""
     met_file = realpath(met_file)
@@ -128,8 +135,8 @@ def save_model_to_file(_model, out=None):
             returns the filename or the specified out name
         """
     # Determine the output path
-
-    final_out_path = out or _model.FileName
+    _model = covert_to_IModel(object_to_convert=_model)
+    final_out_path = out or '_saved_model.apsimx'
 
     # Serialize the model to JSON string
     json_string = Models.Core.ApsimFile.FileFormat.WriteToString(_model)

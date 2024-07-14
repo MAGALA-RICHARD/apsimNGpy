@@ -42,13 +42,14 @@ def load_from_path(path2file):
         app_ap = json.load(apsimx)
     string_name = json.dumps(app_ap)
 
-    __model= Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](string_name, None,
-                                                                                    True,
-                                                                                    fileName=f_name)
+    __model = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](string_name, None,
+                                                                                       True,
+                                                                                       fileName=f_name)
     if isinstance(__model, Models.Core.ApsimFile.ConverterReturnType):
         return __model.get_NewModel()
     else:
         return __model
+
 
 def load_apx_model(model=None, out=None, met_file=None):
     """
@@ -111,9 +112,8 @@ def load_apx_model(model=None, out=None, met_file=None):
         _Model = Model
     datastore = _Model.FindChild[Models.Storage.DataStore]().FileName
     DataStore = _Model.FindChild[Models.Storage.DataStore]()
-    named_tuple = Model_data(IModel=_Model, path=_out, datastore=datastore, DataStore=DataStore, results=None,
-                             met_path=met_file)
-    return named_tuple
+    return Model_data(IModel=_Model, path=_out, datastore=datastore, DataStore=DataStore, results=None,
+                      met_path=met_file)
 
 
 def save_model_to_file(_model, out=None):

@@ -816,8 +816,7 @@ class APSIMNG:
                     if param in values.keys():
                         fp.Value.Parameters[i] = KeyValuePair[String, String](param, f"{values[param]}")
         out_mgt_path = out or self.out_path or self.model_info.path
-        self.recompile_edited_model(out_mgt_path)
-        self.Simulations = self.convert_to_IModel()
+        self.restart_model(load_apx_model(self.path))
         return self
 
     # immediately open the file in GUI

@@ -101,13 +101,13 @@ def load_apx_model(model=None, out=None, met_file=None):
         return _model
 
     Model = loader(model)
-
-    if 'NewModel' in dir(Model):
+    _Model = False
+    if isinstance(Model, Models.Core.ApsimFile.ConverterReturnType):
         _Model = Model.get_NewModel()
     else:
         _Model = Model
-    datastore = Model.FindChild[Models.Storage.DataStore]().FileName
-    DataStore = Model.FindChild[Models.Storage.DataStore]()
+    datastore = _Model.FindChild[Models.Storage.DataStore]().FileName
+    DataStore = _Model.FindChild[Models.Storage.DataStore]()
     named_tuple = Model_data(IModel=_Model, path=_out, datastore=datastore, DataStore=DataStore, results=None,
                              met_path=met_file)
     return named_tuple
@@ -158,12 +158,13 @@ def recompile(_model, out=None, met_path=None):
 
     Model = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](json_string, None, True,
                                                                                      fileName=final_out_path)
-    if 'NewModel' in dir(Model):
+    _Model = False
+    if isinstance(Model, Models.Core.ApsimFile.ConverterReturnType):
         _Model = Model.get_NewModel()
     else:
         _Model = Model
-    datastore = Model.FindChild[Models.Storage.DataStore]().FileName
-    DataStore = Model.FindChild[Models.Storage.DataStore]()
+    datastore = _Model.FindChild[Models.Storage.DataStore]().FileName
+    DataStore = _Model.FindChild[Models.Storage.DataStore]()
     # need to make ModelData a constant and named outside the script for consistency across scripts
     ModelData = namedtuple('model_data', ['IModel', 'path', 'datastore', "DataStore", 'results', 'met_path'])
     Model_named_tuple = ModelData(IModel=_Model, path=final_out_path, datastore=datastore, DataStore=DataStore,

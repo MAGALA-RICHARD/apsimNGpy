@@ -42,10 +42,13 @@ def load_from_path(path2file):
         app_ap = json.load(apsimx)
     string_name = json.dumps(app_ap)
 
-    return Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](string_name, None,
+    __model= Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](string_name, None,
                                                                                     True,
                                                                                     fileName=f_name)
-
+    if isinstance(__model, Models.Core.ApsimFile.ConverterReturnType):
+        return __model.get_NewModel()
+    else:
+        return __model
 
 def load_apx_model(model=None, out=None, met_file=None):
     """
@@ -179,13 +182,13 @@ if __name__ == '__main__':
 
     chdir(Path.home())
     a = time.perf_counter()
-    pp = r'D:\ndata/sw.apsimx'
+    pp = r'C:\Users\rmagala\Box\PhD thesis\CHAPTER FOUR\apsim\source/soy.apsimx'
     mod = load_from_path(pp)
     b = time.perf_counter()
     print(b - a, 'seconds')
 
     aa = time.perf_counter()
-    model = load_apx_model(pp)
+    model = load_apx_model(model=pp)
     print(time.perf_counter() - aa, 'seconds')
     from runner import run_model
 

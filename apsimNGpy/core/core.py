@@ -413,11 +413,11 @@ class APSIMNG:
         """
         if path is None:
             file_name = self.path.rsplit('.apsimx', 1)[0]
-            return [shutil.copy(self.Model.FileName, f"{file_name}_{tag}_{i}_.apsimx") for i in range(k)]
+            return [shutil.copy(self.model_info.path, f"{file_name}_{tag}_{i}_.apsimx") for i in range(k)]
 
         else:
             b_name = os.path.basename(self.path).rsplit('.apsimx', 1)[0]
-            return [shutil.copy(self.Model.FileName, os.path.join(path, f"{b_name}_{tag}_{i}.apsimx")) for i in
+            return [shutil.copy(self.model_info.path, os.path.join(path, f"{b_name}_{tag}_{i}.apsimx")) for i in
                     range(k)]
 
     def _cultivar_params(self, cultivar):
@@ -745,7 +745,7 @@ class APSIMNG:
             # Serialize the model to JSON string
 
         _json_string = Models.Core.ApsimFile.FileFormat.WriteToString(self.Simulations)
-        fileName = kwargs.get('out_path') or self.Simulations.FileName
+        fileName = kwargs.get('out_path') or self.model_info.path
         self.Simulations = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](_json_string,
                                                                                                     None, True,
                                                                                                     fileName=fileName)
@@ -780,7 +780,7 @@ class APSIMNG:
                     param = fp.Value.Parameters[i].Key
                     if param in values.keys():
                         fp.Value.Parameters[i] = KeyValuePair[String, String](param, f"{values[param]}")
-        out_mgt_path = out or self.out_path or self.Simulations.FileName
+        out_mgt_path = out or self.out_path or self.model_info.path
         self.restart_model(model_info=recompile(self.Simulations, out=out_mgt_path))
         return self
 

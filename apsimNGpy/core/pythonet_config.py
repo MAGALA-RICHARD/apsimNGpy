@@ -52,43 +52,14 @@ class GetAPSIMPath:
 
 aPSim_PATH = GetAPSIMPath()()
 
-aPSim_config = {}
 
-
-def _dumper(obj):
+def start_pythonnet():
     try:
-        return obj.toJSON()
+        if pythonnet.get_runtime_info() is None:
+            return pythonnet.load("coreclr")
     except:
-        return obj.__dict__
-
-
-path = '../base/apsimNGpy.json'
-
-
-# this creates a json file with the path
-def write_pathto_file(path):
-    path = '../base/apsimNGpy.json'
-    apsim_json = os.path.realpath(path)
-    obj = json.dumps(aPSim_config, default=_dumper, indent=2)
-    with open(apsim_json, 'w+') as f:
-        f.writelines(obj)
-    return apsim_json
-
-
-@timer
-@cache
-def load_path_from_file(json_file_path):
-    try:
-        with open(json_file_path, 'r') as json_file:
-            data = json.load(json_file)
-        # Now 'data' contains the JSON data as a Python dictionary or list
-        print(data)
-    except FileNotFoundError:
-        print(f"File '{json_file_path}' not found.")
-    except json.JSONDecodeError as e:
-        print(f"Error decoding JSON: {str(e)}")
-    except Exception as e:
-        print(f"An error occurred: {str(e)}")
+        print("dotnet not found, trying alternate runtime")
+        return pythonnet.load()
 
 
 @dataclass
@@ -106,38 +77,6 @@ class LoadPythonnet:
     def __init__(self):
 
         self._aPSim_Path = GetAPSIMPath()()
-
-    # TODO to be completed
-    @property
-    def load_path(self):
-        """Property getter for APSIM binary path."""
-        if not self._aPSim_Path:
-            raise KeyError("APSIM is not loaded in the system environmental variable")
-
-        if 'bin' not in self._aPSim_Path:
-            aPSim_path = os.path.join(self._aPSim_Path, 'bin')
-            self._aPSim_Path = aPSim_path
-
-        if not os.path.exists(aPSim_path):
-            raise ValueError("A full path to the binary folder is required or the path is invalid")
-
-        return aPSim_path
-
-    @load_path.setter
-    def load_path(self, path):
-        """Property setter for APSIM binary path."""
-        if not path:
-            raise ValueError("The path cannot be empty")
-
-        self._aPSim_Path = path
-
-    def start_pythonnet(self):
-        try:
-            if pythonnet.get_runtime_info() is None:
-                return pythonnet.load("coreclr")
-        except:
-            print("dotnet not found, trying alternate runtime")
-            return pythonnet.load()
 
     def __call__(self):
         """
@@ -164,48 +103,24 @@ class LoadPythonnet:
         # except:
         #     print("dotnet not found, trying alternate runtime")
         #     pythonnet.load()
-        self.start_pythonnet()
+        start_pythonnet()
         # use get because it does not raise key error. it returns none if not found
-        apsim_path = aPSim_PATH
-        if not apsim_path:
+        aPSim_path = aPSim_PATH
+        if not aPSim_path:
             raise KeyError("APSIM is not loaded in the system environmental variable")
 
-        if 'bin' not in apsim_path:
-            apsim_path = os.path.join(apsim_path, 'bin')
+        if 'bin' not in aPSim_path:
+            aPSim_path = os.path.join(aPSim_path, 'bin')
 
-        if not os.path.exists(apsim_path):
+        if not os.path.exists(aPSim_path):
             raise ValueError("A full path to the binary folder is required or the path is invalid")
         import sys
-        sys.path.append(apsim_path)
+        sys.path.append(aPSim_path)
         import clr
         sys = clr.AddReference("System")
         lm = clr.AddReference("Models")
 
         # return lm, sys, pythonnet.get_runtime_info()
-
-
-def add_path(new_path):
-    import sys
-    if not new_path in sys.path:
-        sys.path += [new_path]
-        print(f"{new_path} successfully added to the system")
-    else:
-        print("path is already added to the system")
-
-
-loader = LoadPythonnet()()
-
-from apsimNGpy.utililies.utils import timer
-
-
-@timer
-def fibonacci_sequence(limit):
-    a, b = 0, 1
-    count = 0
-    while count < limit:
-        yield a
-        a, b = b, a + b
-        count += 1
 
 
 # Example usage:
@@ -214,11 +129,4 @@ if __name__ == '__main__':
     loaded_models = loader()
     # try importing the C# models and see if the process is successful
 
-    fib = fibonacci_sequence(20)
-    lp = []
-    for i in fib:
-        lp.append(i)
-    print(lp)
-    import numpy as np
 
-    RP = np.arange(0.5, 3, 0.5)

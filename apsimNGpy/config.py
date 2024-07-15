@@ -12,8 +12,8 @@ if not exists(config_path):
 
 class Config:
     """
-        The configuration of this aPSimNGpy in general providing the place
-        for declaring global variables such as aPSim bin locations.
+        The configuration module providing the leeway for the user to change the
+       global variables such as aPSim bin locations.
         """
 
     config = configparser.ConfigParser()

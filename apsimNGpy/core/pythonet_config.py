@@ -33,7 +33,7 @@ class GetAPSIMPath:
     def __call__(self):
         """
         Find the APSIM installation path using the os  module.
-        if APSIM was installed it is possible the path is added to the os.environ
+        if APSIM was installed, it is possible the path is added to the os.environ
 
         Returns:
         - str or False: The APSIM installation path if found, or False if not found.

@@ -41,7 +41,7 @@ class GetAPSIMPath:
         """
         fromConfig = Config.get_aPSim_bin_path()
 
-        return fromConfig or os.environ.get("APSIM") or os.environ.get(
+        return fromConfig or os.getenv("APSIM") or os.getenv(
             "Models") or self._shut() or find_models(HOME_DATA,
                                                      "Models.exe") \
             or self._search_from_C()

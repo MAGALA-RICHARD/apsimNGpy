@@ -1,8 +1,10 @@
 from setuptools import setup, find_packages
-from . import Config
+
 import sys
 import os
-
+cur_dir = os.path.dirname(__file__)
+path = sys.path.append(cur_dir)
+from config import Config
 VERSION = '0.0.27.1'
 DESCRIPTION = 'apsimx next generation package interface'
 LONG_DESCRIPTION = 'run, edit, download soils and weather and interact with the apsimx file'

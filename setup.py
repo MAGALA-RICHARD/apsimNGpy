@@ -1,11 +1,12 @@
 from setuptools import setup, find_packages
-from apsimNGpy.config import Config
+from config import Config
 import sys
 import os
 
 VERSION = '0.0.27.1'
 DESCRIPTION = 'apsimx next generation package interface'
 LONG_DESCRIPTION = 'run, edit, download soils and weather and interact with the apsimx file'
+
 apsIM = input('please provide the bin path for aPSim installation')
 assert os.path.exists(apsIM) and os.path.isdir(apsIM) and apsIM.endswith('bin'), 'Provided Path is not valid'
 is_bin_model = os.path.join(apsIM,  'Models.exe')
@@ -26,7 +27,7 @@ setup(
     long_description=readme,
     packages=find_packages(),
     include_package_data=True,
-    package_data={'': ['./apsimNGpy/data/*.apsimx', './apsimNGpy/*.met', './apsimNGpy/examples/*.png', './apsimNGpy/*.ini']},
+    package_data={'': ['./apsimNGpy/data/*.apsimx', './apsimNGpy/*.met', './apsimNGpy/examples/*.png', './apsimNGpy/*.ini', "./*.ini"]},
     keywords=['python', 'APSIM Next Generation', 'pythonnet', 'crop modeling'],
     classifiers=[
         "Development Status :: 3 - Alpha",

@@ -776,7 +776,7 @@ class APSIMNG:
             for i in range(len(single.Parameters)):
                 kvp = single.Parameters[i]
                 if kvp.Key in kwargs.keys():
-                    updated_kvp = KeyValuePair[str, str](kvp.Key, kwargs[kvp.Key])
+                    updated_kvp = KeyValuePair[String, String](kvp.Key, kwargs[kvp.Key])
                     single.Parameters[i] = updated_kvp
             # Serialize the model to JSON string
         fileName = kwargs.get('out_path') or self.model_info.path

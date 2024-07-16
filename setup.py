@@ -7,13 +7,7 @@ VERSION = '0.0.27.1'
 DESCRIPTION = 'apsimx next generation package interface'
 LONG_DESCRIPTION = 'run, edit, download soils and weather and interact with the apsimx file'
 
-apsIM = input('please provide the bin path for aPSim installation')
-assert os.path.exists(apsIM) and os.path.isdir(apsIM) and apsIM.endswith('bin'), 'Provided Path is not valid'
-is_bin_model = os.path.join(apsIM,  'Models.exe')
-if not os.access(is_bin_model, os.X_OK):
-    raise FileNotFoundError("aPSim binaries not found")
-else:
-    Config.set_aPSim_bin_path(apsIM)
+
 with open('README.rst') as readme_file:
     readme = readme_file.read()
 setup(
@@ -54,3 +48,11 @@ setup(
 
     ]
 )
+
+apsIM = input('please provide the bin path for aPSim installation')
+assert os.path.exists(apsIM) and os.path.isdir(apsIM) and apsIM.endswith('bin'), 'Provided Path is not valid'
+is_bin_model = os.path.join(apsIM,  'Models.exe')
+if not os.access(is_bin_model, os.X_OK):
+    raise FileNotFoundError("aPSim binaries not found")
+else:
+    Config.set_aPSim_bin_path(apsIM)

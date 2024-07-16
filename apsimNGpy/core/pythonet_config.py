@@ -40,11 +40,8 @@ class GetAPSIMPath:
 
         """
         fromConfig = Config.get_aPSim_bin_path()
-        if os.path.exists(fromConfig):
-            _config_path = fromConfig
-        else:
-            _config_path = None
-        return _config_path or os.environ.get("APSIM") or os.environ.get(
+
+        return fromConfig or os.environ.get("APSIM") or os.environ.get(
             "Models") or self._shut() or find_models(HOME_DATA,
                                                      "Models.exe") \
             or self._search_from_C()

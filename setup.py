@@ -1,5 +1,5 @@
 from setuptools import setup, find_packages
-from config import Config
+from . import Config
 import sys
 import os
 

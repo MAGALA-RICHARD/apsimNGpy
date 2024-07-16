@@ -58,7 +58,7 @@ def load_from_path(path2file):
         return __model
 
 
-def load_apx_model(model=None, out=None, met_file=None):
+def load_apx_model(model=None, out=None, met_file=None, **kwargs):
     """
        >> we are loading apsimx model from file, dict, or in memory.
        >> if model is none, we will return a pre - reloaded one from memory.
@@ -93,6 +93,7 @@ def load_apx_model(model=None, out=None, met_file=None):
     def _(_model: str):
         # we first copy the file before loading it
         shutil.copy(_model, _out)
+
         return load_from_path(_out)
 
     @loader.register(Path)

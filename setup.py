@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 import sys
 import os
-cur_dir = os.path.dirname(__file__)
+cur_dir = os.path.joinpath(os.path.dirname(__file__), 'apsimNGpy')
 path = sys.path.append(cur_dir)
 from config import Config
 VERSION = '0.0.27.1'

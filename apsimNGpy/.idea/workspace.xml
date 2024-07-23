@@ -6,8 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="5d471312-8496-4246-98d6-790439318160" name="Changes" comment="config apsim. users can set the apsim bin folder path">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config.ini" beforeDir="false" afterPath="$PROJECT_DIR$/config.ini" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/config.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/experiment/permutations.py" beforeDir="false" afterPath="$PROJECT_DIR$/experiment/permutations.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -32,44 +31,45 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
-    &quot;Python.__init__.executor&quot;: &quot;Run&quot;,
-    &quot;Python.api.executor&quot;: &quot;Run&quot;,
-    &quot;Python.apsim.executor&quot;: &quot;Run&quot;,
-    &quot;Python.base_data.executor&quot;: &quot;Run&quot;,
-    &quot;Python.config.executor&quot;: &quot;Run&quot;,
-    &quot;Python.core.executor&quot;: &quot;Run&quot;,
-    &quot;Python.glue.executor&quot;: &quot;Run&quot;,
-    &quot;Python.logger.executor&quot;: &quot;Run&quot;,
-    &quot;Python.met_functions.executor&quot;: &quot;Run&quot;,
-    &quot;Python.problem.executor&quot;: &quot;Run&quot;,
-    &quot;Python.process.executor&quot;: &quot;Run&quot;,
-    &quot;Python.pythonet_config.executor&quot;: &quot;Run&quot;,
-    &quot;Python.runner.executor&quot;: &quot;Run&quot;,
-    &quot;Python.senstivity.executor&quot;: &quot;Run&quot;,
-    &quot;Python.sobol.executor&quot;: &quot;Run&quot;,
-    &quot;Python.soilmanager.executor&quot;: &quot;Run&quot;,
-    &quot;Python.tools.executor&quot;: &quot;Run&quot;,
-    &quot;Python.utils.executor&quot;: &quot;Run&quot;,
-    &quot;Python.variable.executor&quot;: &quot;Run&quot;,
-    &quot;Python.weathermanager.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;last_opened_file_path&quot;: &quot;D:/package/apsimNGpy/apsimNGpy&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;inlay.hints&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "Python.__init__.executor": "Run",
+    "Python.api.executor": "Run",
+    "Python.apsim.executor": "Run",
+    "Python.base_data.executor": "Run",
+    "Python.config.executor": "Run",
+    "Python.core.executor": "Run",
+    "Python.glue.executor": "Run",
+    "Python.logger.executor": "Run",
+    "Python.met_functions.executor": "Run",
+    "Python.model_loader.executor": "Run",
+    "Python.problem.executor": "Run",
+    "Python.process.executor": "Run",
+    "Python.pythonet_config.executor": "Run",
+    "Python.runner.executor": "Run",
+    "Python.senstivity.executor": "Run",
+    "Python.sobol.executor": "Run",
+    "Python.soilmanager.executor": "Run",
+    "Python.tools.executor": "Run",
+    "Python.utils.executor": "Run",
+    "Python.variable.executor": "Run",
+    "Python.weathermanager.executor": "Run",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "git-widget-placeholder": "main",
+    "last_opened_file_path": "D:/package/apsimNGpy/apsimNGpy",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "inlay.hints",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="D:\package\apsimNGpy\apsimNGpy" />
@@ -79,7 +79,7 @@
       <recent name="D:\ACPd\Bear creek simulations" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.config">
+  <component name="RunManager" selected="Python.model_loader">
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
       <module name="apsimNGpy" />
       <option name="ENV_FILES" value="" />
@@ -131,6 +131,9 @@
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <option name="IS_MODULE_SDK" value="true" />
@@ -169,6 +172,26 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="model_loader" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="apsimNGpy" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/core" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/core/model_loader.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="pythonet_config" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="apsimNGpy" />
       <option name="ENV_FILES" value="" />
@@ -192,36 +215,13 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="variable" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="apsimNGpy" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/experiment" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/experiment/variable.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="true" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.config" />
+        <item itemvalue="Python.model_loader" />
         <item itemvalue="Python.pythonet_config" />
+        <item itemvalue="Python.config" />
         <item itemvalue="Python.base_data" />
         <item itemvalue="Python.core" />
-        <item itemvalue="Python.base_data" />
       </list>
     </recent_temporary>
   </component>
@@ -295,135 +295,8 @@
       <workItem from="1720891138928" duration="2235000" />
       <workItem from="1720893576690" duration="820000" />
       <workItem from="1720894440413" duration="3835000" />
-      <workItem from="1721074083766" duration="1402000" />
-    </task>
-    <task id="LOCAL-00285" summary="simulate from a shape file">
-      <option name="closed" value="true" />
-      <created>1707270740458</created>
-      <option name="number" value="00285" />
-      <option name="presentableId" value="LOCAL-00285" />
-      <option name="project" value="LOCAL" />
-      <updated>1707270740458</updated>
-    </task>
-    <task id="LOCAL-00286" summary="simulate from a shape file">
-      <option name="closed" value="true" />
-      <created>1707270824103</created>
-      <option name="number" value="00286" />
-      <option name="presentableId" value="LOCAL-00286" />
-      <option name="project" value="LOCAL" />
-      <updated>1707270824103</updated>
-    </task>
-    <task id="LOCAL-00287" summary="simulate from a shape file">
-      <option name="closed" value="true" />
-      <created>1707271508722</created>
-      <option name="number" value="00287" />
-      <option name="presentableId" value="LOCAL-00287" />
-      <option name="project" value="LOCAL" />
-      <updated>1707271508722</updated>
-    </task>
-    <task id="LOCAL-00288" summary="simulate from a shape file">
-      <option name="closed" value="true" />
-      <created>1707321613416</created>
-      <option name="number" value="00288" />
-      <option name="presentableId" value="LOCAL-00288" />
-      <option name="project" value="LOCAL" />
-      <updated>1707321613416</updated>
-    </task>
-    <task id="LOCAL-00289" summary="simulate from a shape file">
-      <option name="closed" value="true" />
-      <created>1707321657337</created>
-      <option name="number" value="00289" />
-      <option name="presentableId" value="LOCAL-00289" />
-      <option name="project" value="LOCAL" />
-      <updated>1707321657337</updated>
-    </task>
-    <task id="LOCAL-00290" summary="simulate from a shape file">
-      <option name="closed" value="true" />
-      <created>1707333691885</created>
-      <option name="number" value="00290" />
-      <option name="presentableId" value="LOCAL-00290" />
-      <option name="project" value="LOCAL" />
-      <updated>1707333691885</updated>
-    </task>
-    <task id="LOCAL-00291" summary="simulate from a shape file">
-      <option name="closed" value="true" />
-      <created>1707335242682</created>
-      <option name="number" value="00291" />
-      <option name="presentableId" value="LOCAL-00291" />
-      <option name="project" value="LOCAL" />
-      <updated>1707335242682</updated>
-    </task>
-    <task id="LOCAL-00292" summary="simulate from a shape file">
-      <option name="closed" value="true" />
-      <created>1707336237388</created>
-      <option name="number" value="00292" />
-      <option name="presentableId" value="LOCAL-00292" />
-      <option name="project" value="LOCAL" />
-      <updated>1707336237388</updated>
-    </task>
-    <task id="LOCAL-00293" summary="simulate from a shape file">
-      <option name="closed" value="true" />
-      <created>1707348409975</created>
-      <option name="number" value="00293" />
-      <option name="presentableId" value="LOCAL-00293" />
-      <option name="project" value="LOCAL" />
-      <updated>1707348409975</updated>
-    </task>
-    <task id="LOCAL-00294" summary="simulate from a shape file">
-      <option name="closed" value="true" />
-      <created>1707349137785</created>
-      <option name="number" value="00294" />
-      <option name="presentableId" value="LOCAL-00294" />
-      <option name="project" value="LOCAL" />
-      <updated>1707349137785</updated>
-    </task>
-    <task id="LOCAL-00295" summary="simulate from a shape file">
-      <option name="closed" value="true" />
-      <created>1707350138520</created>
-      <option name="number" value="00295" />
-      <option name="presentableId" value="LOCAL-00295" />
-      <option name="project" value="LOCAL" />
-      <updated>1707350138520</updated>
-    </task>
-    <task id="LOCAL-00296" summary="simulate from a shape file">
-      <option name="closed" value="true" />
-      <created>1707351885810</created>
-      <option name="number" value="00296" />
-      <option name="presentableId" value="LOCAL-00296" />
-      <option name="project" value="LOCAL" />
-      <updated>1707351885810</updated>
-    </task>
-    <task id="LOCAL-00297" summary="simulate from a shape file">
-      <option name="closed" value="true" />
-      <created>1707352426786</created>
-      <option name="number" value="00297" />
-      <option name="presentableId" value="LOCAL-00297" />
-      <option name="project" value="LOCAL" />
-      <updated>1707352426787</updated>
-    </task>
-    <task id="LOCAL-00298" summary="simulate from a shape file">
-      <option name="closed" value="true" />
-      <created>1707354087522</created>
-      <option name="number" value="00298" />
-      <option name="presentableId" value="LOCAL-00298" />
-      <option name="project" value="LOCAL" />
-      <updated>1707354087522</updated>
-    </task>
-    <task id="LOCAL-00299" summary="simulate from a shape file">
-      <option name="closed" value="true" />
-      <created>1707354477061</created>
-      <option name="number" value="00299" />
-      <option name="presentableId" value="LOCAL-00299" />
-      <option name="project" value="LOCAL" />
-      <updated>1707354477061</updated>
-    </task>
-    <task id="LOCAL-00300" summary="simulate from a shape file">
-      <option name="closed" value="true" />
-      <created>1707354501171</created>
-      <option name="number" value="00300" />
-      <option name="presentableId" value="LOCAL-00300" />
-      <option name="project" value="LOCAL" />
-      <updated>1707354501171</updated>
+      <workItem from="1721074083766" duration="6639000" />
+      <workItem from="1721097488731" duration="6345000" />
     </task>
     <task id="LOCAL-00301" summary="simulate from a shape file">
       <option name="closed" value="true" />
@@ -689,7 +562,135 @@
       <option name="project" value="LOCAL" />
       <updated>1720897689481</updated>
     </task>
-    <option name="localTasksCounter" value="334" />
+    <task id="LOCAL-00334" summary="config apsim. users can set the apsim bin folder path">
+      <option name="closed" value="true" />
+      <created>1721075662269</created>
+      <option name="number" value="00334" />
+      <option name="presentableId" value="LOCAL-00334" />
+      <option name="project" value="LOCAL" />
+      <updated>1721075662269</updated>
+    </task>
+    <task id="LOCAL-00335" summary="config apsim. users can set the apsim bin folder path">
+      <option name="closed" value="true" />
+      <created>1721075786188</created>
+      <option name="number" value="00335" />
+      <option name="presentableId" value="LOCAL-00335" />
+      <option name="project" value="LOCAL" />
+      <updated>1721075786188</updated>
+    </task>
+    <task id="LOCAL-00336" summary="config apsim. users can set the apsim bin folder path">
+      <option name="closed" value="true" />
+      <created>1721075895401</created>
+      <option name="number" value="00336" />
+      <option name="presentableId" value="LOCAL-00336" />
+      <option name="project" value="LOCAL" />
+      <updated>1721075895401</updated>
+    </task>
+    <task id="LOCAL-00337" summary="config apsim. users can set the apsim bin folder path">
+      <option name="closed" value="true" />
+      <created>1721076570855</created>
+      <option name="number" value="00337" />
+      <option name="presentableId" value="LOCAL-00337" />
+      <option name="project" value="LOCAL" />
+      <updated>1721076570855</updated>
+    </task>
+    <task id="LOCAL-00338" summary="config apsim. users can set the apsim bin folder path">
+      <option name="closed" value="true" />
+      <created>1721085999301</created>
+      <option name="number" value="00338" />
+      <option name="presentableId" value="LOCAL-00338" />
+      <option name="project" value="LOCAL" />
+      <updated>1721085999303</updated>
+    </task>
+    <task id="LOCAL-00339" summary="config apsim. users can set the apsim bin folder path">
+      <option name="closed" value="true" />
+      <created>1721089187227</created>
+      <option name="number" value="00339" />
+      <option name="presentableId" value="LOCAL-00339" />
+      <option name="project" value="LOCAL" />
+      <updated>1721089187227</updated>
+    </task>
+    <task id="LOCAL-00340" summary="config apsim. users can set the apsim bin folder path">
+      <option name="closed" value="true" />
+      <created>1721094285402</created>
+      <option name="number" value="00340" />
+      <option name="presentableId" value="LOCAL-00340" />
+      <option name="project" value="LOCAL" />
+      <updated>1721094285402</updated>
+    </task>
+    <task id="LOCAL-00341" summary="config apsim. users can set the apsim bin folder path">
+      <option name="closed" value="true" />
+      <created>1721097547092</created>
+      <option name="number" value="00341" />
+      <option name="presentableId" value="LOCAL-00341" />
+      <option name="project" value="LOCAL" />
+      <updated>1721097547093</updated>
+    </task>
+    <task id="LOCAL-00342" summary="config apsim. users can set the apsim bin folder path">
+      <option name="closed" value="true" />
+      <created>1721097843071</created>
+      <option name="number" value="00342" />
+      <option name="presentableId" value="LOCAL-00342" />
+      <option name="project" value="LOCAL" />
+      <updated>1721097843071</updated>
+    </task>
+    <task id="LOCAL-00343" summary="config apsim. users can set the apsim bin folder path">
+      <option name="closed" value="true" />
+      <created>1721098129719</created>
+      <option name="number" value="00343" />
+      <option name="presentableId" value="LOCAL-00343" />
+      <option name="project" value="LOCAL" />
+      <updated>1721098129719</updated>
+    </task>
+    <task id="LOCAL-00344" summary="config apsim. users can set the apsim bin folder path">
+      <option name="closed" value="true" />
+      <created>1721098214541</created>
+      <option name="number" value="00344" />
+      <option name="presentableId" value="LOCAL-00344" />
+      <option name="project" value="LOCAL" />
+      <updated>1721098214541</updated>
+    </task>
+    <task id="LOCAL-00345" summary="config apsim. users can set the apsim bin folder path">
+      <option name="closed" value="true" />
+      <created>1721098314558</created>
+      <option name="number" value="00345" />
+      <option name="presentableId" value="LOCAL-00345" />
+      <option name="project" value="LOCAL" />
+      <updated>1721098314558</updated>
+    </task>
+    <task id="LOCAL-00346" summary="config apsim. users can set the apsim bin folder path">
+      <option name="closed" value="true" />
+      <created>1721098418409</created>
+      <option name="number" value="00346" />
+      <option name="presentableId" value="LOCAL-00346" />
+      <option name="project" value="LOCAL" />
+      <updated>1721098418409</updated>
+    </task>
+    <task id="LOCAL-00347" summary="config apsim. users can set the apsim bin folder path">
+      <option name="closed" value="true" />
+      <created>1721098454911</created>
+      <option name="number" value="00347" />
+      <option name="presentableId" value="LOCAL-00347" />
+      <option name="project" value="LOCAL" />
+      <updated>1721098454911</updated>
+    </task>
+    <task id="LOCAL-00348" summary="config apsim. users can set the apsim bin folder path">
+      <option name="closed" value="true" />
+      <created>1721098524431</created>
+      <option name="number" value="00348" />
+      <option name="presentableId" value="LOCAL-00348" />
+      <option name="project" value="LOCAL" />
+      <updated>1721098524431</updated>
+    </task>
+    <task id="LOCAL-00349" summary="config apsim. users can set the apsim bin folder path">
+      <option name="closed" value="true" />
+      <created>1721098634241</created>
+      <option name="number" value="00349" />
+      <option name="presentableId" value="LOCAL-00349" />
+      <option name="project" value="LOCAL" />
+      <updated>1721098634241</updated>
+    </task>
+    <option name="localTasksCounter" value="350" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

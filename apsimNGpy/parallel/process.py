@@ -6,7 +6,9 @@ from multiprocessing import cpu_count
 from pathlib import Path
 from apsimNGpy.utililies.utils import timer
 from apsimNGpy.utililies.run_utils import run_model, read_simulation
-from apsimNGpy.settings import CORES
+from apsimNGpy.settings import ConstantSettings
+
+CORES = ConstantSettings.CORES.value
 # from apsimNGpy.utililies.database_utils import read_db_table
 from apsimNGpy.utililies.utils import select_process
 from apsimNGpy.utililies.database_utils import read_db_table
@@ -225,7 +227,7 @@ def custom_parallel(func, iterable, *args, **kwargs):
     with selection as pool:
         futures = [pool.submit(func, i, *args) for i in iterable]
         if verbose:
-        
+
             progress = tqdm(total=len(futures), position=0, leave=True,
                             bar_format=f'processing via: {func.__name__} function:' '{percentage:3.0f}% completed')
             # Iterate over the futures as they complete
@@ -239,7 +241,7 @@ def custom_parallel(func, iterable, *args, **kwargs):
             for future in as_completed(futures):
                 yield future.result()
     _seconds = perf_counter() - a
-    print(f'processing {count} took', _seconds, f'seconds', f'to run. time per worker: {_seconds/cpu_cores}')
+    print(f'processing {count} took', _seconds, f'seconds', f'to run. time per worker: {_seconds / cpu_cores}')
 
 
 def simulate_in_chunks(w_d, iterable_generator, chunk_size, con_data_base=None, table_tag='t', save_to_csv=True):

@@ -8,7 +8,7 @@ from apsimNGpy.utililies.utils import timer
 from apsimNGpy.utililies.run_utils import run_model, read_simulation
 from apsimNGpy.settings import ConstantSettings
 
-CORES = ConstantSettings.CORES.value
+CORES = ConstantSettings.CORES
 # from apsimNGpy.utililies.database_utils import read_db_table
 from apsimNGpy.utililies.utils import select_process
 from apsimNGpy.utililies.database_utils import read_db_table

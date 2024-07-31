@@ -14,10 +14,10 @@ import apsimNGpy.manager.weathermanager as weather
 import pandas as pd
 
 # prepare for the C# import
-from apsimNGpy.core.pythonet_config import LoadPythonnet
+from apsimNGpy.core.pythonet_config import start_pythonnet
 from apsimNGpy.core.pythonet_config import aPSim_PATH as APSIM_PATH
 
-py_config = LoadPythonnet()()
+#py_config = LoadPythonnet()()
 
 # now we can safely import any c# related libraries
 from System.Collections.Generic import *
@@ -53,15 +53,11 @@ class ApsimModel(APSIMNG):
                  thickness_values: list = None, run_all_soils: bool = False, load=True, **kwargs):
         super().__init__(model, out_path, **kwargs)
         self.SWICON = None
-        """get suurgo soil tables and organise it to apsim soil profiles
-        --------------------
-        parameters
-         soil_series (_str_) specifying the soils series default is domcp meaning dorminant soil series, users can specify any other series
-         if known.
-         lonlat {_lonlat_} of the specified location
-         run_all_soils (__boolean_) if True, all soil series in the map units will be analysed if false the soil series will be the one determiend by paramter soil series
-         model is a path of apsims file or apsimng object
-         """
+        """get SSURG soil tables and organise it to aPSim soil profiles -------------------- parameters soil_series (
+        _str_) specifying the soils series default is domcp meaning dominant soil series, users can specify any 
+        other series if known. lonlat {_lonlat_} of the specified location run_all_soils (__boolean_) if True, 
+        all soil series in the map units will be analysed if false the soil series will be the one determined by 
+        parameter soil series model is a path of aPSim file or aPSIMNG object"""
         self.lonlat = lonlat
         self.Nlayers = bottomdepth / thickness
        
@@ -554,7 +550,7 @@ if __name__ == '__main__':
         print(model)
         from apsimNGpy import settings
 
-        model = ApsimModel(model, out_path=None, read_from_string=True, thickness_values=settings.SOIL_THICKNESS)
+        model = ApsimModel(model, out_path=None, read_from_string=True, thickness_values=settings.ConstantSettings.SOIL_THICKNESS)
         model.replace_met_from_web(lonlat=lonlat, start_year=2001, end_year=2020)
         from apsimNGpy.manager import soilmanager as sm
 

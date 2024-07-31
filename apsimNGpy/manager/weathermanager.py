@@ -3,6 +3,8 @@ from os.path import join as opj
 from datetime import datetime
 import datetime
 import urllib
+from pathlib import Path
+
 import requests
 import random
 import json
@@ -32,6 +34,7 @@ import numpy as np
 from scipy import interpolate
 import copy
 import warnings
+
 
 def generate_unique_name(base_name, length=6):
     # TODO this function has 4 duplicates
@@ -512,9 +515,6 @@ def create_met_header(fname, lonlat, tav, AMP, site=None):
         f2app.writelines(['() () (MJ/m2/day) (oC) (oC) (mm)\n'])
 
 
-
-
-
 def impute_data(met, method="mean", verbose=False, **kwargs):
     """
     Imputes missing data in a pandas DataFrame using specified interpolation or mean value.
@@ -642,7 +642,9 @@ def get_weather(lonlat, start=1990, end=2000, source='daymet', filename='__met_.
         file_name = "nasapower_" + filename
         return met_nasapower(lonlat, start, end, fname=file_name)
     else:
-        raise ValueError(f"Invalid source: {source} according to supplied {lonlat} lon_lat values try nasapower instead")
+        raise ValueError(
+            f"Invalid source: {source} according to supplied {lonlat} lon_lat values try nasapower instead")
+
 
 def read_apsim_met(met_path, skip=5, index_drop=0, separator=' '):
     try:
@@ -652,7 +654,21 @@ def read_apsim_met(met_path, skip=5, index_drop=0, separator=' '):
     except Exception as e:
         print(repr(e))
 
-def write_edited_met(old, daf, filename="edited_met.met"):
+
+def write_edited_met(old: [str, Path], daf: pd.DataFrame, filename: str = "edited_met.met") -> str:
+    """
+
+    Parameters
+    ----------
+    old; pathlinke to original met file
+
+    daf: new data inform of a pandas dataframe
+    filename; file name to save defaults to edited_met.met
+
+    Returns
+    -------
+    new path to the saved file
+    """
     existing_lines = []
     with open(old, 'r+') as file:
         for i, line in enumerate(file):
@@ -699,6 +715,7 @@ def merge_columns(df1_main, common_column, df2, fill_column, df2_colummn):
     except Exception as e:
         print(repr(e))
 
+
 def validate_met(met):
     import datetime
     if not isinstance(met, pd.DataFrame):
@@ -715,15 +732,15 @@ def validate_met(met):
     for cols in met.columns:
         if cols == 'year':
             try:
-              met = met[met['year'] != '!site:']
-              met[cols] = met[cols].astype(int)
+                met = met[met['year'] != '!site:']
+                met[cols] = met[cols].astype(int)
             except:
-              met[cols] = met[cols].astype('float')
+                met[cols] = met[cols].astype('float')
         else:
-         try:
-           met[cols] = met[cols].astype('float')
-         except:
-             pass
+            try:
+                met[cols] = met[cols].astype('float')
+            except:
+                pass
     if met['year'].isna().any():
         logging.warning(met[met['year'].isna()])
         warnings.warn("Missing values found for year")
@@ -753,28 +770,29 @@ def validate_met(met):
 
     # Example for date checks
     if len(met) > 0:
-        first_day = datetime.datetime(int(met.iloc[0]['year']), 1, 1) + pd.to_timedelta(met.iloc[0]['day'] - 1, unit='d')
-        last_day = datetime.datetime(int(met.iloc[-1]['year']), 1, 1) + pd.to_timedelta(met.iloc[-1]['day'] - 1, unit='d')
+        first_day = datetime.datetime(int(met.iloc[0]['year']), 1, 1) + pd.to_timedelta(met.iloc[0]['day'] - 1,
+                                                                                        unit='d')
+        last_day = datetime.datetime(int(met.iloc[-1]['year']), 1, 1) + pd.to_timedelta(met.iloc[-1]['day'] - 1,
+                                                                                        unit='d')
         expected_dates = pd.date_range(start=first_day, end=last_day, freq='D')
         if len(met) < len(expected_dates):
             warnings.warn(f"{len(expected_dates) - len(met)} date discontinuities found. Consider checking data.")
-    check_rain = met[met['rain'] >95]
-    rad_high = met[met['radn'] >41]
+    check_rain = met[met['rain'] > 95]
+    rad_high = met[met['radn'] > 41]
     if not rad_high.empty:
         print(rad_high)
         warnings.warn("radiation is too high")
     if not check_rain.empty:
         warnings.warn('probably rain is too high')
-        print(met[met['rain'] >95])
-
+        print(met[met['rain'] > 95])
 
     def check_missing(col):
         if met[col].isna().any():
-           warnings.warn(f"{col}: has missing values_****___")
-           print(met[col].isna())
+            warnings.warn(f"{col}: has missing values_****___")
+            print(met[col].isna())
 
     check_radn = met[met['radn'] < 0]
-    if not  check_radn.empty:
+    if not check_radn.empty:
         logging.warning('probably radiation is too low or missing')
         print(met[met['radn'] < 0])
 
@@ -782,12 +800,12 @@ def validate_met(met):
     # Radiation, rain, and other checks as per the original function's logic
     for cols in met.columns:
         check_missing(cols)
-    min_t =met[met['mint']<-60]
+    min_t = met[met['mint'] < -60]
     if not min_t.empty:
         warnings.warn("min temp is too low")
         print(min_t)
 
-    min_t_high = met[met['mint']>40]
+    min_t_high = met[met['mint'] > 40]
     if not min_t_high.empty:
         warnings.warn('Minimum temp is too high')
         print(min_t_high)
@@ -801,9 +819,13 @@ def validate_met(met):
         print(maxt_high)
     if len(daterange(met.year.min(), met.year.max())) != len(met):
         warnings.warn('daterange is not standard')
-    else: print('daterange matched expected')
+    else:
+        print('daterange matched expected')
+
 
 from datetime import datetime, timedelta
+
+
 def day_of_year_to_date(year, day_of_year):
     """
     Convert day of the year to a date.
@@ -822,26 +844,27 @@ def day_of_year_to_date(year, day_of_year):
     """
     return datetime(year, 1, 1) + timedelta(days=day_of_year - 1)
 
-def impute_missing_leaps(dmet, fill = 0):
-   dmet['year'] = dmet['year'].astype(int)
-   dmet['day'] = dmet['day'].astype(int)
-   datee = [day_of_year_to_date(_year, day) for _year, day in zip(dmet.year, dmet.day)]
 
-   # Create a copy and set the date as the index
-   dmett = dmet.copy()
-   dmett['datee'] = pd.to_datetime(datee)
-   dmett.set_index('datee', inplace=True)
-   indexDate = pd.date_range(start=dmett.index.min(), end=dmett.index.max(), freq='D')
-   check = daterange(dmett.year.min(), dmett.year.max())
-   # Reindex the DataFrame to include all dates in the range
-   df_daily = dmett.reindex(check)
-   df_fill = df_daily.fillna(fill).copy(deep=True)
-   df_fill['day'] = df_fill.index.day
-   df_fill['year'] = df_fill.index.year
-   # Optionally, fill missing values (for example, with the mean of the column)
+def impute_missing_leaps(dmet, fill=0):
+    dmet['year'] = dmet['year'].astype(int)
+    dmet['day'] = dmet['day'].astype(int)
+    datee = [day_of_year_to_date(_year, day) for _year, day in zip(dmet.year, dmet.day)]
 
+    # Create a copy and set the date as the index
+    dmett = dmet.copy()
+    dmett['datee'] = pd.to_datetime(datee)
+    dmett.set_index('datee', inplace=True)
+    indexDate = pd.date_range(start=dmett.index.min(), end=dmett.index.max(), freq='D')
+    check = daterange(dmett.year.min(), dmett.year.max())
+    # Reindex the DataFrame to include all dates in the range
+    df_daily = dmett.reindex(check)
+    df_fill = df_daily.fillna(fill).copy(deep=True)
+    df_fill['day'] = df_fill.index.day
+    df_fill['year'] = df_fill.index.year
+    # Optionally, fill missing values (for example, with the mean of the column)
 
-   return df_fill
+    return df_fill
+
 
 if __name__ == '__main__':
     # imputed_df = impute_data(df, method="approx", verbose=True, copy=True)

@@ -11,7 +11,7 @@ from apsimNGpy.utililies.utils import (timer, find_models)
 
 HOME_DATA = Path.home().joinpath('AppData', 'Local', 'Programs')
 cdrive = os.environ.get('PROGRAMFILES')
-WINDOWS_PROGRAMFILES = Path(cdrive) if cdrive else None
+WINDOWS_PROGRAM_FILES = Path(cdrive) if cdrive else None
 
 
 class GetAPSIMPath:
@@ -27,16 +27,16 @@ class GetAPSIMPath:
 
     @cache
     def _search_from_C(self):
-        return find_models(WINDOWS_PROGRAMFILES, "Models.exe") if WINDOWS_PROGRAMFILES else None
+        return find_models(WINDOWS_PROGRAM_FILES, "Models.exe") if WINDOWS_PROGRAM_FILES else None
 
     @cache
     def __call__(self):
         """
-        Find the APSIM installation path using the os  module.
-        if APSIM was installed, it is possible the path is added to the os.environ
-
+        Find the aPSim installation path using the os module.
+        If aPSim was installed, it is possible the path is added to the os.environ
+        but first we first check is the user has sent their own path, and then we proceed to check to already added path
         Returns:
-        - str or False: The APSIM installation path if found, or False if not found.
+        - str or False: The aPSim installation path if found, or False if not found.
 
         """
         fromConfig = Config.get_aPSim_bin_path()

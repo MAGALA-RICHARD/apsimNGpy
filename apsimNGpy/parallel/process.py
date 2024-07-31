@@ -1,26 +1,21 @@
+import os
 from concurrent.futures import ProcessPoolExecutor, as_completed, ThreadPoolExecutor
-import glob, os, sys
-from time import perf_counter
-from tqdm import tqdm
 from multiprocessing import cpu_count
-from pathlib import Path
-from apsimNGpy.utililies.utils import timer
-from apsimNGpy.utililies.run_utils import run_model, read_simulation
+from time import perf_counter
 from apsimNGpy.settings import ConstantSettings
+from apsimNGpy.utililies.run_utils import run_model
+from tqdm import tqdm
 
-CORES = ConstantSettings.CORES
-# from apsimNGpy.utililies.database_utils import read_db_table
 from apsimNGpy.utililies.utils import select_process
 from apsimNGpy.utililies.database_utils import read_db_table
 from apsimNGpy.parallel.safe import download_soil_table
-from sqlalchemy import create_engine
-import sqlalchemy
 from itertools import islice
 import pandas as pd
 import multiprocessing as mp
+import types
 
 CPU = int(int(cpu_count()) * 0.5)
-import types
+CORES = ConstantSettings.CORES
 
 
 # _______________________________________________________________

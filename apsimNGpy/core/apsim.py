@@ -12,7 +12,7 @@ import apsimNGpy.manager.weathermanager as weather
 from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganizeAPSIMsoil_profile
 import apsimNGpy.manager.weathermanager as weather
 import pandas as pd
-
+import sys
 # prepare for the C# import
 from apsimNGpy.core.pythonet_config import start_pythonnet
 from apsimNGpy.core.pythonet_config import aPSim_PATH as APSIM_PATH
@@ -550,7 +550,8 @@ if __name__ == '__main__':
         print(model)
         from apsimNGpy import settings
 
-        model = ApsimModel(model, out_path=None, read_from_string=True, thickness_values=settings.ConstantSettings.SOIL_THICKNESS)
+        model = ApsimModel(model, out_path=None, read_from_string=True,
+                           thickness_values=settings.ConstantSettings.SOIL_THICKNESS)
         model.replace_met_from_web(lonlat=lonlat, start_year=2001, end_year=2020)
         from apsimNGpy.manager import soilmanager as sm
 
@@ -565,4 +566,3 @@ if __name__ == '__main__':
         # Extract the line number from the traceback object
         line_number = exc_traceback.tb_lineno
         print(f"Error: {type(e).__name__} occurred on line: {line_number} execution value: {exc_value}")
-        print(lon_lat)

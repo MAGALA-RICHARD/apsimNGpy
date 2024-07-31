@@ -125,5 +125,3 @@ if __name__ == '__main__':
     loader = LoadPythonnet()
     loaded_models = loader()
     # try importing the C# models and see if the process is successful
-
-

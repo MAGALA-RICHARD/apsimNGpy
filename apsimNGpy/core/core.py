@@ -749,20 +749,13 @@ class APSIMNG:
     # experimental
     def recompile_edited_model(self, out_path):
 
-        model_to_string = self.convert_to_IModel()
-        _json_string = Models.Core.ApsimFile.FileFormat.WriteToString(model_to_string)
-        fileName = out_path
-        __model = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](_json_string,
-                                                                                           None, True,
-                                                                                           fileName=fileName)
         try:
-            if isinstance(__model, Models.Core.ApsimFile.Models.Core.ApsimFile.ConverterReturnType):
-                self.Simulations = __model.get_NewModel()
-            else:
-                self.Simulations = __model
+            if isinstance(self.Simulations, Models.Core.ApsimFile.Models.Core.ApsimFile.ConverterReturnType):
+                self.Simulations =self.Simulations.get_NewModel()
         except AttributeError as e:
-            self.Simulations = __model
+            pass
         return self
+
 
     def update_manager(self, **kwargs):
         """

@@ -252,7 +252,7 @@ for i in dr:
 weather_path = os.path.join(examples, "WeatherFiles")
 
 
-class DetectApsimExamples:
+class __DetectApsimExamples:
     def __init__(self, copy_path: str = None):
         self.all = []
         self.copy_path = copy_path
@@ -293,7 +293,9 @@ class DetectApsimExamples:
         return [self.get_example(i) for i in self.all]
 
 
-ApsimExample = DetectApsimExamples()
+def load_default_simulations(crop):
+    return __DetectApsimExamples().get_example(crop)
+
 
 if __name__ == '__main__':
     pp = Path.home()

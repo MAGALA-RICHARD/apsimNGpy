@@ -44,6 +44,13 @@ def load_model_from_dict(dict_model, out, met_file):
 
 
 def load_from_path(path2file, method='string'):
+    """"
+
+    :param path2file: path to apsimx file
+    :param method: str  with string, we direct the method to first convert the file
+    into a string using json and then use the APSIM in-built method to load the file with file, we read directly from
+    the file path. This is slower than the former.
+    """
     f_name = realpath(path2file)
     with open(path2file, "r+", encoding='utf-8') as apsimx:
         app_ap = json.load(apsimx)
@@ -55,6 +62,7 @@ def load_from_path(path2file, method='string'):
     else:
         __model = Models.Core.ApsimFile.FileFormat.ReadFromFile[Models.Core.Simulations](f_name, None, True)
     if isinstance(__model, Models.Core.ApsimFile.ConverterReturnType):
+
         return __model.get_NewModel()
     else:
         return __model
@@ -191,23 +199,14 @@ if __name__ == '__main__':
     from apsimNGpy.core.base_data import load_default_simulations
 
     maze = load_default_simulations('maize', path=r'D:/p')
-   #maze.initialise_model()
+    soy = load_default_simulations('soybean', path=r'D:')
+
+    # maze.initialise_model()
     chdir(Path.home())
     a = time.perf_counter()
-
-    mod = load_from_path(maze.path, method='file')
+    mod = load_from_path(maze.path, method='string')
     b = time.perf_counter()
-    print(b - a, 'seconds')
-
+    print(b - a, 'seconds', 'loading from file')
     aa = time.perf_counter()
-    model = load_apx_model(model=maze.path)
-    print(time.perf_counter() - aa, 'seconds')
-    from runner import run_model
-    from apsimNGpy.core.core import APSIMNG
-    ap = APSIMNG(r'D:\try.apsimx').run('Report')
-    a = time.perf_counter()
-    resm = run_model(ap.model_info, results=True, clean_up=True)
-    print(time.perf_counter() - a, 'seconds')
-    fn = save_model_to_file(maze.Simulations, out= 'hv.apsimx')
-    model = load_apx_model(fn)
-
+    model = load_from_path(soy.path, method='string')
+    print(time.perf_counter() - aa, 'seconds', 'loading from string')

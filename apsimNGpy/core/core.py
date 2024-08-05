@@ -776,23 +776,38 @@ class APSIMNG:
         self.Simulations = self.convert_to_IModel()
         return self
 
-    def update_mgt(self, management, simulations=None, out=None):
-        """Update management, handles one manager at a time
-
-        Parameters
-        ----------
-        management
-
-            Parameter = value dictionary of management parameters to update. examine_management_info` to see current
-            values. make a dictionary with 'Name' as the for the of management script simulations, optional List of
-            simulation names to update, if `None` update all simulations not recommended.
-            :param out (str or pathlike ): to harmonize a database path after editing note: No need to reload any
-             more that should be called with save_edited_file method,
-            we just don't want to make a lot of evaluations while running batch files
-
+    def update_mgt(self, management:[dict, tuple], simulations=None, out=None):
         """
-        if not isinstance(management, list):
-            management = [management]
+            Update management settings in the model. This method handles one management parameter at a time.
+
+            Parameters
+            ----------
+            management : dict or tuple
+                A dictionary or tuple of management parameters to update. The dictionary should have 'Name' as the key
+                for the management script's name and corresponding values to update. Lists are not allowed as they are mutable
+                and may cause issues with parallel processing. If a tuple is provided, it should be in the form (param_name, param_value).
+
+            simulations : list of str, optional
+                List of simulation names to update. If `None`, updates all simulations. This is not recommended for large
+                numbers of simulations as it may result in a high computational load.
+
+            out : str or pathlike, optional
+                Path to save the edited model. If `None`, uses the default output path specified in `self.out_path` or
+                `self.model_info.path`. No need to call `save_edited_file` after updating, as this method handles saving.
+
+            Returns
+            -------
+            self : Editor
+                Returns the instance of the `Editor` class for method chaining.
+
+            Notes ----- - Ensure that the `management` parameter is provided in the correct format to avoid errors. -
+            This method does not perform validation on the provided `management` dictionary beyond checking for key
+            existence. - If the specified management script or parameters do not exist, they will be ignored.
+            using a tuple for a specifying management script, paramters is recommended if you are going to pass the function to  a multi-processing class fucntion
+        """
+        if not isinstance(management, tuple):
+            # note the coma creates a tuple
+            management = management,
 
         for sim in self.find_simulations(simulations):
             zone = sim.FindChild[Models.Core.Zone]()
@@ -1261,7 +1276,7 @@ class APSIMNG:
 
         Returns:
            >>None: This method does not return a value.
-           >> Please proceed with caution, we assume that if you want to clear the model objects, then you don't need them
+           >> Please proceed with caution, we assume that if you want to clear the model objects, then you don't need them,
            but by making copy compulsory, then, we are clearing the edited files
         """
         self._DataStore.Close()

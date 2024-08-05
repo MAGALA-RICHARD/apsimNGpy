@@ -1,11 +1,11 @@
 """
 This module offers a procedural alternative other than object-oriented approach provided in api and ApsimModel classes
 """
+import os
 from functools import singledispatch
 from apsimNGpy.core.pythonet_config import LoadPythonnet
 # now we can safely import C# libraries
 from System.Collections.Generic import *
-from Models.Core import Simulations, ScriptCompiler, Simulation
 from System import *
 from Models.Core.ApsimFile import FileFormat
 from Models.Climate import Weather
@@ -14,7 +14,7 @@ import Models
 from Models.PMF import Cultivar
 from apsimNGpy.core.apsim_file import XFile as load_model
 import json
-from os.path import (join, dirname, realpath, isfile)
+from os.path import (dirname, realpath, isfile)
 from os import chdir
 from pathlib import Path
 import shutil
@@ -43,22 +43,24 @@ def load_model_from_dict(dict_model, out, met_file):
     return memo
 
 
-def load_from_path(path2file):
+def load_from_path(path2file, method='string'):
     f_name = realpath(path2file)
     with open(path2file, "r+", encoding='utf-8') as apsimx:
         app_ap = json.load(apsimx)
     string_name = json.dumps(app_ap)
-
-    __model = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](string_name, None,
-                                                                                       True,
-                                                                                       fileName=f_name)
+    if method == 'string':
+        __model = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](string_name, None,
+                                                                                           True,
+                                                                                           fileName=f_name)
+    else:
+        __model = Models.Core.ApsimFile.FileFormat.ReadFromFile[Models.Core.Simulations](f_name, None, True)
     if isinstance(__model, Models.Core.ApsimFile.ConverterReturnType):
         return __model.get_NewModel()
     else:
         return __model
 
 
-def load_apx_model(model=None, out=None, met_file=None, **kwargs):
+def load_apx_model(model=None, out=None, file_load_method='string', met_file=None, **kwargs):
     """
        >> we are loading apsimx model from file, dict, or in memory.
        >> if model is none, we will return a pre - reloaded one from memory.
@@ -80,7 +82,7 @@ def load_apx_model(model=None, out=None, met_file=None, **kwargs):
     @singledispatch
     def loader(_model):
         # this will raise not implemented error if the _model is not a dict, str, None, Models.Core.Simulation,
-        # or apathlib path object
+        # or a pathlib path object
         raise NotImplementedError(f"Unsupported type: {type(_model)}")
 
     @loader.register(dict)
@@ -94,7 +96,7 @@ def load_apx_model(model=None, out=None, met_file=None, **kwargs):
         # we first copy the file before loading it
         shutil.copy(_model, _out)
 
-        return load_from_path(_out)
+        return load_from_path(_out, file_load_method)
 
     @loader.register(Path)
     def _(_model: Path):
@@ -186,19 +188,26 @@ def recompile(_model, out=None, met_path=None):
 if __name__ == '__main__':
     import time
     from pathlib import Path
+    from apsimNGpy.core.base_data import load_default_simulations
 
+    maze = load_default_simulations('maize', path=r'D:/p')
+   #maze.initialise_model()
     chdir(Path.home())
     a = time.perf_counter()
-    pp = r'C:\Users\rmagala\Box\PhD thesis\CHAPTER FOUR\apsim\source/soy.apsimx'
-    mod = load_from_path(pp)
+
+    mod = load_from_path(maze.path, method='file')
     b = time.perf_counter()
     print(b - a, 'seconds')
 
     aa = time.perf_counter()
-    model = load_apx_model(model=pp)
+    model = load_apx_model(model=maze.path)
     print(time.perf_counter() - aa, 'seconds')
     from runner import run_model
-
+    from apsimNGpy.core.core import APSIMNG
+    ap = APSIMNG(r'D:\try.apsimx').run('Report')
     a = time.perf_counter()
-    resm = run_model(model, results=True, clean_up=True)
+    resm = run_model(ap.model_info, results=True, clean_up=True)
     print(time.perf_counter() - a, 'seconds')
+    fn = save_model_to_file(maze.Simulations, out= 'hv.apsimx')
+    model = load_apx_model(fn)
+

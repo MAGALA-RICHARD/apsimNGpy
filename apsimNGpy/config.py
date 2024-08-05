@@ -52,7 +52,7 @@ if __name__ == '__main__':
     # example windows;
     from pathlib import Path
 
-    # This is an example if apsim is installed at the user's directory'
-    Home_aPSim = list(Path.home().joinpath('AppData', 'Local', 'Programs').rglob('*2022.12.7130.0'))[0].joinpath('bin')
-    Config.set_aPSim_bin_path(Home_aPSim)
-    print(Config.get_aPSim_bin_path())
+    # # This is an example if apsim is installed at the user's directory'
+    # Home_aPSim = list(Path.home().joinpath('AppData', 'Local', 'Programs').rglob('*2022.12.7130.0'))[0].joinpath('bin')
+    # Config.set_aPSim_bin_path(Home_aPSim)
+    # print(Config.get_aPSim_bin_path())

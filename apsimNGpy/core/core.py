@@ -751,11 +751,10 @@ class APSIMNG:
 
         try:
             if isinstance(self.Simulations, Models.Core.ApsimFile.Models.Core.ApsimFile.ConverterReturnType):
-                self.Simulations =self.Simulations.get_NewModel()
+                self.Simulations = self.Simulations.get_NewModel()
         except AttributeError as e:
             pass
         return self
-
 
     def update_manager(self, **kwargs):
         """
@@ -1246,56 +1245,6 @@ class APSIMNG:
         sim = self._find_simulation(simulation)
         wb = sim.FindDescendant[Models.WaterModel.WaterBalance]()
         return np.array(wb.SWCON)
-
-    def plot_objectives(self, x, *args, **kwargs):
-        """
-
-        :param x: x variable to go on the x- axis
-        :param args: y variables to plotted against the x variable, e.g 'Maize yield'
-        :param kwargs: key word argument specifying the report name e.g report = "Annual"
-        :return: graph
-        """
-        assert self.results, "Please run the apsim simulation first"
-        assert len(kwargs) == 1, "Please provide atleast one report table"
-        assert isinstance(x, str), 'x variable must be a string'
-        report_name = [p for p in kwargs.values()][0]
-        report_table = self.results[report_name]
-        for y in args:
-            assert y in report_table.columns, f"Column '{y}' must be in the data frame."
-        x_variable = report_table[x]
-        for obj, y in enumerate(args):
-            y_variable = report_table[y]
-            print(len(y))
-
-            plt.figure(figsize=(7, 5))
-            plt.plot(x_variable, y_variable)
-            plt.title(f"{x} vs {y} plot")
-            plt.xlabel(f"{x}")  # Add x-axis label
-            plt.ylabel(f"{y}")
-            plt.show()
-
-    def extract_soil_profile(self, simulation=None):
-        """Get soil definition as dataframe
-
-        Parameters
-        ----------
-        simulation, optional
-            Simulation name.
-        Returns
-        -------
-            Dataframe with soil definition
-        """
-        sat = self.get_sat(simulation)
-        dul = self.get_dul(simulation)
-        ll15 = self.get_ll15(simulation)
-        cll = self.get_crop_ll(simulation)
-        psoil = self.find_physical_soil(simulation)
-        depth = psoil.Depth
-        return pd.DataFrame({"Depth": depth, "LL15": ll15, "DUL": dul, "SAT": sat, "Crop LL": cll,
-                             "Bulk density": self.get_bd(simulation),
-                             "SWCON": self.get_swcon(simulation),
-                             "Initial NO3": self.get_initial_no3(simulation),
-                             "Initial NH4": self.get_initial_nh4(simulation)})
 
     def _find_solute(self, solute, simulation=None):
         sim = self._find_simulation(simulation)

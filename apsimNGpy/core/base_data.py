@@ -260,7 +260,7 @@ class __DetectApsimExamples:
             setattr(self, name, name)
             self.all.append(name)
 
-    def get_example(self, crop):
+    def get_example(self, crop, path=None, simulations_object: bool = True):
         """
         Get an APSIM example file path for a specific crop model.
 
@@ -277,14 +277,18 @@ class __DetectApsimExamples:
         Raises:
         OSError: If there are issues with copying or replacing files.
         """
-        if not self.copy_path:
+        if not path:
             self.copy_path = os.getcwd()
+        else:
+            self.copy_path  = path
         path = join(self.copy_path, crop) + '.apsimx'
         cp = shutil.copy(examples_files[crop], path)
-        apsim = SoilModel(cp)
-        wp = os.path.join(weather_path, os.path.basename(apsim.show_met_file_in_simulation()))
-        apsim.replace_met_file(wp)
-        return apsim
+        if not simulations_object:
+            return cp
+        aPSim = SoilModel(cp)
+        wp = os.path.join(weather_path, os.path.basename(aPSim.show_met_file_in_simulation()))
+        aPSim.replace_met_file(wp)
+        return aPSim
 
     def get_all(self):
         """
@@ -293,20 +297,21 @@ class __DetectApsimExamples:
         return [self.get_example(i) for i in self.all]
 
 
-def load_default_simulations(crop):
-    return __DetectApsimExamples().get_example(crop)
+def load_default_simulations(crop: str, path: [str, Path] = None, simulations_object:bool = True):
+    """
+    Load default simulation model from aPSim folder
+    :param crop: string of the crop to load e.g. Maize, not case-sensitive
+    :param path: string of the path to copy the model
+    simulations_object: bool to specify whether to return apsimNGp.core simulation object defaults to True
+    :return: apsimNGpy.core.APSIMNG simulation objects
+
+    """
+    return __DetectApsimExamples().get_example(crop.capitalize(), path, simulations_object)
 
 
 if __name__ == '__main__':
     pp = Path.home()
     os.chdir(pp)
-    from apsimNGpy.core.base_data import LoadExampleFiles
+    mn = load_default_simulations('Maize', simulations_object=True)
 
-    maize = LoadExampleFiles()
-    from apsimNGpy import core
 
-    model = core.base_data.LoadExampleFiles().load_in_memory('outpp.apsimx')
-    print(model.met)
-    print(model.path)
-    dt = maize.get_maize
-    print(dt)

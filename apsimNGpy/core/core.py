@@ -758,8 +758,8 @@ class APSIMNG:
 
     def update_manager(self, **kwargs):
         """
-        updates a single management script by kew word arguments. it is thread safe to call this during multiple processing
-        kwargs can be the key value pairs of the parameters of the management script, if Name if the script is not specified, updates will not be successfull
+        updates a single management script by kew word arguments. kwargs can be the key value pairs of the parameters
+        of the management script, if Name of the script is not specified, updates will not be successfully
         """
         self.Simulations = self.convert_to_IModel()
         manager = self.Simulations.FindAllInScope[Models.Manager](kwargs['Name'])
@@ -776,7 +776,7 @@ class APSIMNG:
         self.Simulations = self.convert_to_IModel()
         return self
 
-    def update_mgt(self, management:[dict, tuple], simulations=None, out=None):
+    def update_mgt(self, management:[dict, tuple], simulations=None, out:[Path, str]=None):
         """
             Update management settings in the model. This method handles one management parameter at a time.
 
@@ -815,12 +815,14 @@ class APSIMNG:
             for mgt in management:
                 action_path = f'{zone_path}.{mgt.get("Name")}'
                 fp = zone.FindByPath(action_path)
-                values = mgt
-                for i in range(len(fp.Value.Parameters)):
-                    param = fp.Value.Parameters[i].Key
-                    if param in values.keys():
-                        fp.Value.Parameters[i] = KeyValuePair[String, String](param, f"{values[param]}")
-        out_mgt_path = out or self.out_path or self.model_info.path
+                # before proceeding, we need to check if fp is not None, that is if that script name does not exist
+                if fp is not None:
+                    values = mgt
+                    for i in range(len(fp.Value.Parameters)):
+                        param = fp.Value.Parameters[i].Key
+                        if param in values.keys():
+                            fp.Value.Parameters[i] = KeyValuePair[String, String](param, f"{values[param]}")
+            out_mgt_path = out or self.out_path or self.model_info.path
         self.recompile_edited_model(out_path=out_mgt_path)
 
         return self
@@ -1187,7 +1189,7 @@ class APSIMNG:
         if simulations is None:
             return self.simulations
         if type(simulations) == str:
-            simulations = [simulations]
+            simulations = tuple(simulations)
         sims = []
         for s in self.simulations:
             if s.Name in simulations:

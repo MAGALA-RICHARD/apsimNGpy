@@ -942,13 +942,14 @@ class APSIMNG:
             simulations, optional
                 List of simulation names to update, if `None` update all simulations
             """
-            assert weather_file.endswith(
-                '.met'), "the file entered may not be a met file did you forget to put .met extension?"
+            if not os.path.isfile(weather_file):
+                raise FileNotFoundError(weather_file)
             for sim_name in self.find_simulations(simulations):
                 weathers = sim_name.FindAllDescendants[Weather]()
                 for met in weathers:
-                    met.FileName = weather_file
+                    met.FileName = os.path.realpath(weather_file)
             return self
+
         except Exception as e:
             print(repr(e))  # this error will be logged to the folder logs in the current working directory
             raise

@@ -354,7 +354,7 @@ class ApsimModel(APSIMNG):
                 swim.LayerStructure = self.thickness_values
             except Exception as e:
                 pass
-        # repalce drainage coefficient for eahc layer based on DUL and BD
+        # replace drainage coefficient for each layer based on DUL and BD
         for sim in self.find_simulations(simulation_names):
             try:
                 wb = sim.FindDescendant[Models.WaterModel.WaterBalance]()

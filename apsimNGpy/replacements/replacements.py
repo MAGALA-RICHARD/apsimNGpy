@@ -42,7 +42,7 @@ class ReplacementHolder(APSIMNG, ABC):
         self._model = model
 
     @abstractmethod
-    def make_replacements(self, action_type, **kwargs):
+    def make_replacements(self, node, **kwargs):
         """Abstract method to perform various actions. Must be implemented by subclasses."""
         pass
 

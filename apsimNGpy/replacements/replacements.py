@@ -49,21 +49,21 @@ class Replacements(ReplacementHolder):
         super().__init__(model, **kwargs)
         # Map action types to method names
         self.action_map = {
-            'update_cultivar': self.edit_cultivar,
-            'update_mgt_practices': self.update_mgt,
-            'update_weather': self.replace_met_file,
-            'update_soil_physical': self.replace_any_soil_physical,
-            'update_soil_organic': self.replace_any_soil_organic,
-            'update_soil_chemical': self.replace_any_solute,
-            'update_soil_water': self.replace_crop_soil_water,
-            'update_som': self.change_som
+            'cultivar': self.edit_cultivar,
+            'manager': self.update_mgt,
+            'weather': self.replace_met_file,
+            'soil_physical': self.replace_any_soil_physical,
+            'soil_organic': self.replace_any_soil_organic,
+            'soil_chemical': self.replace_any_solute,
+            'soil_water': self.replace_crop_soil_water,
+            'soil_organic_matter': self.change_som
         }
 
-    def make_replacements(self, action_type, **kwargs):
+    def make_replacements(self, node, **kwargs):
         """Perform various actions based on the action_type."""
-        if action_type not in self.action_map:
-            raise ValueError(f"Unknown action_type: {action_type}")
-        return self.action_map[action_type](**kwargs)
+        if node not in self.action_map:
+            raise ValueError(f"Unknown action_type: {node}, node should be any of {self.action_map.keys()}")
+        return self.action_map[node](**kwargs)
 
 
 if __name__ == '__main__':
@@ -77,6 +77,6 @@ if __name__ == '__main__':
     mets = Path(weather_path).glob('*.met')
     met = os.path.realpath(list(mets)[0])
     # the method make_replacements can be chained with several other action types
-    model = ce.make_replacements(action_type='edit_weather',weather_file = met).make_replacements(action_type='edit_weather',weather_file = met)
+    model = ce.make_replacements(node='weather',weather_file = met).make_replacements(node='weather',weather_file = met)
 
 

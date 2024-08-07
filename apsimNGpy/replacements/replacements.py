@@ -48,35 +48,40 @@ class Replacements(ReplacementHolder):
     def __init__(self, model, **kwargs):
         super().__init__(model, **kwargs)
         # Map action types to method names
-        self.action_map = {
-            'cultivar': self.edit_cultivar,
-            'manager': self.update_mgt,
-            'weather': self.replace_met_file,
-            'soil_physical': self.replace_any_soil_physical,
-            'soil_organic': self.replace_any_soil_organic,
-            'soil_chemical': self.replace_any_solute,
-            'soil_water': self.replace_crop_soil_water,
-            'soil_organic_matter': self.change_som
+        #this will hold lower key mpas
+        self.methods = None
+        # define them with human-readable formats
+        self._methods = {
+            'Cultivar': self.edit_cultivar,
+            'Manager': self.update_mgt,
+            'Weather': self.replace_met_file,
+            'SoilPhysical': self.replace_any_soil_physical,
+            'SoilOrganic': self.replace_any_soil_organic,
+            'SoilChemical': self.replace_any_solute,
+            'SoilWater': self.replace_crop_soil_water,
+            'SoilOrganicMatter': self.change_som
         }
 
     def make_replacements(self, node, **kwargs):
-        """Perform various actions based on the action_type."""
-        if node not in self.action_map:
-            raise ValueError(f"Unknown action_type: {node}, node should be any of {self.action_map.keys()}")
-        return self.action_map[node](**kwargs)
+        # Convert keys to lowercase
+        self.methods = {key.lower(): value for key, value in self._methods.items()}
+        """Perform various actions based on the node_type."""
+        if node.lower() not in self.methods:
+            raise ValueError(f"Unknown action_type: {node}, node should be any of {self._methods.keys()}")
+        return self.methods[node.lower()](**kwargs)
 
 
 if __name__ == '__main__':
     from pathlib import Path
 
     import os
+
     os.chdir(Path.home())
     from apsimNGpy.core.base_data import load_default_simulations, weather_path
+
     mn = load_default_simulations('Maize')
-    ce= Replacements(mn.path)
+    ce = Replacements(mn.path)
     mets = Path(weather_path).glob('*.met')
     met = os.path.realpath(list(mets)[0])
     # the method make_replacements can be chained with several other action types
-    model = ce.make_replacements(node='weather',weather_file = met).make_replacements(node='weather',weather_file = met)
-
-
+    model = ce.make_replacements(node='weather', weather_file=met).make_replacements(node='weather', weather_file=met)

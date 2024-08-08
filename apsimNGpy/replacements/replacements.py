@@ -76,7 +76,7 @@ class Replacements(ReplacementHolder):
         # convert to lower and also remove spaces if any
         node = node.replace(" ", "")
         if node.lower() not in self.methods:
-            raise ValueError(f"Unknown node: {node}, node should be any of {self._methods.keys()}")
+            raise TypeError(f"Unknown node: {node}, node should be any of {self._methods.keys()}")
         args_s = kwargs,
         return self.methods[node.lower()](**args_s[0])
 

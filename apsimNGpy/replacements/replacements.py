@@ -51,7 +51,7 @@ class Replacements(ReplacementHolder):
     def __init__(self, model, **kwargs):
         super().__init__(model, **kwargs)
         # Map action types to method names
-        #this will hold lower key mpas
+        # this will hold lower key
         self.methods = None
         # define them with human-readable formats
         self._methods = {
@@ -70,7 +70,7 @@ class Replacements(ReplacementHolder):
         self.methods = {key.lower(): value for key, value in self._methods.items()}
         """Perform various actions based on the node_type."""
         if node.lower() not in self.methods:
-            raise ValueError(f"Unknown action_type: {node}, node should be any of {self._methods.keys()}")
+            raise ValueError(f"Unknown node: {node}, node should be any of {self._methods.keys()}")
         return self.methods[node.lower()](**kwargs)
 
 

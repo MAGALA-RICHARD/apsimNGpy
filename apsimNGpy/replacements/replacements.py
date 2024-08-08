@@ -78,6 +78,7 @@ class Replacements(ReplacementHolder):
         if node.lower() not in self.methods:
             raise ValueError(f"Unknown node: {node}, node should be any of {self._methods.keys()}")
         args_s = copy.deepcopy(kwargs)
+        kwargs = None
         return self.methods[node.lower()](**args_s)
 
 

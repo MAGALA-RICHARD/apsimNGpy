@@ -67,7 +67,7 @@ class Replacements(ReplacementHolder):
 
     def make_replacements(self, node, **kwargs):
         """Abstract method to perform various paramters replacements in apSim model
-        :param node: node e.g. weather space is allowed for more descriptive one such a soil organic not case-sensitive
+        :param node: node e.g., weather space is allowed for more descriptive one such a soil organic not case-sensitive
         :keyword kwargs: these correspond to eahc node you are editing see the corresponding methods for each node
         """
         # Convert keys to lowercase
@@ -77,9 +77,8 @@ class Replacements(ReplacementHolder):
         node = node.replace(" ", "")
         if node.lower() not in self.methods:
             raise ValueError(f"Unknown node: {node}, node should be any of {self._methods.keys()}")
-        args_s = copy.deepcopy(kwargs)
-        kwargs = None
-        return self.methods[node.lower()](**args_s)
+        args_s = kwargs,
+        return self.methods[node.lower()](**args_s[0])
 
 
 if __name__ == '__main__':

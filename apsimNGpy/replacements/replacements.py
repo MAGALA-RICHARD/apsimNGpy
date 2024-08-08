@@ -3,7 +3,7 @@ This module attempts to provide an abstract methods for replacement various data
 """
 from apsimNGpy.core.core import APSIMNG
 from abc import ABC, abstractmethod
-
+import copy
 
 class Editor(APSIMNG):
     def __init__(self, model, **kwargs):
@@ -66,12 +66,19 @@ class Replacements(ReplacementHolder):
         }
 
     def make_replacements(self, node, **kwargs):
+        """Abstract method to perform various paramters replacements in apSim model
+        :param node: node e.g. weather space is allowed for more descriptive one such a soil organic not case-sensitive
+        :keyword kwargs: these correspond to eahc node you are editing see the corresponding methods for each node
+        """
         # Convert keys to lowercase
         self.methods = {key.lower(): value for key, value in self._methods.items()}
         """Perform various actions based on the node_type."""
+        # convert to lower and also remove spaces if any
+        node = node.replace(" ", "")
         if node.lower() not in self.methods:
             raise ValueError(f"Unknown node: {node}, node should be any of {self._methods.keys()}")
-        return self.methods[node.lower()](**kwargs)
+        args_s = copy.deepcopy(kwargs)
+        return self.methods[node.lower()](**args_s)
 
 
 if __name__ == '__main__':
@@ -82,9 +89,9 @@ if __name__ == '__main__':
     os.chdir(Path.home())
     from apsimNGpy.core.base_data import load_default_simulations, weather_path
 
-    mn = load_default_simulations('Maize')
+    mn = load_default_simulations(crop ='Maize')
     ce = Replacements(mn.path)
     mets = Path(weather_path).glob('*.met')
     met = os.path.realpath(list(mets)[0])
     # the method make_replacements can be chained with several other action types
-    model = ce.make_replacements(node='weather', weather_file=met).make_replacements(node='weather', weather_file=met)
+    model = ce.make_replacements(node=' Weather', weather_file=met).make_replacements(node='weather', weather_file=met)

@@ -400,11 +400,6 @@ class APSIMNG:
         return [im for im in table_list if im not in rm]
 
     # perhaps a good a example of how to edit cultvar
-    def adjust_rue(self, csr, cultivar_name='B_110', base_csr=2):  # Iowa only
-        CSR = csr ** np.log(1 / csr) * base_csr,
-        command = '[Leaf].Photosynthesis.RUE.FixedValue',
-        self.edit_cultivar(cultivar_name, commands=command, values=CSR)
-        return self
 
     def replicate_file(self, k, path=None, tag="replica"):
         """
@@ -481,7 +476,7 @@ class APSIMNG:
                 return i
         return self
 
-    def edit_cultivar(self, CultivarName, commands: tuple, values: tuple):
+    def edit_cultivar(self, *, CultivarName, commands: tuple, values: tuple):
         """
         Edits the parameters of a given cultivar.
 
@@ -663,7 +658,7 @@ class APSIMNG:
             else:
                 raise Exception("File node structure is not supported at a moment")
 
-    def change_som(self, simulations=None, inrm: int = 1250, icnr: int = 27):
+    def change_som(self, *, simulations=None, inrm: int = 1250, icnr: int = 27):
         """
          Change Surface Organic Matter (SOM) properties in specified simulations.
 
@@ -776,7 +771,7 @@ class APSIMNG:
         self.Simulations = self.convert_to_IModel()
         return self
 
-    def update_mgt(self, management:[dict, tuple], simulations=None, out:[Path, str]=None):
+    def update_mgt(self, *, management: [dict, tuple], simulations=None, out:[Path, str]=None):
         """
             Update management settings in the model. This method handles one management parameter at a time.
 

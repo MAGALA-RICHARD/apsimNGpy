@@ -1,39 +1,9 @@
 """
-This module attempts to provide an abstract methods for replacement various data in apsim simulations model
+This module attempts to provide abstract methods for paramters replacement to various nodes or childs in apsim simulations model
 """
 from apsimNGpy.core.core import APSIMNG
 from abc import ABC, abstractmethod
 import copy
-
-class Editor(APSIMNG):
-    def __init__(self, model, **kwargs):
-        super().__init__(model, **kwargs)
-        self._model = model
-
-    def change_cultivar(self, **kwargs):
-        self.edit_cultivar(**kwargs)
-        return self
-
-    def edit_mgt_practices(self, **kwargs):
-        self.update_mgt(**kwargs)
-        return self
-
-    def edit_weather(self, **kwargs):
-        self.replace_met_file(**kwargs)
-
-    def update_soil_physical(self, **kwargs):
-        self.replace_any_soil_physical(**kwargs)
-        return self
-
-    def update_soil_organic(self, **kwargs):
-        self.replace_any_soil_organic(**kwargs)
-
-    def update_soil_chemical(self, **kwargs):
-        self.replace_any_solute(**kwargs)
-        return self
-
-    def update_soil_water(self, **kwargs):
-        self.replace_crop_soil_water(**kwargs)
 
 
 class ReplacementHolder(APSIMNG, ABC):
@@ -42,8 +12,13 @@ class ReplacementHolder(APSIMNG, ABC):
         self._model = model
 
     @abstractmethod
-    def make_replacements(self, node, **kwargs):
-        """Abstract method to perform various actions. Must be implemented by subclasses."""
+    def update_child_params(self, child: str, **kwargs):
+        """Abstract method to replace parameters for a single child node"""
+        pass
+
+    @abstractmethod
+    def update_children_params(self, children: tuple, **kwargs):
+        """Abstract method to replace parameters for more than one child node"""
         pass
 
 
@@ -65,20 +40,39 @@ class Replacements(ReplacementHolder):
             'SoilOrganicMatter': self.change_som
         }
 
-    def make_replacements(self, node, **kwargs):
-        """Abstract method to perform various paramters replacements in apSim model
-        :param node: node e.g., weather space is allowed for more descriptive one such a soil organic not case-sensitive
-        :keyword kwargs: these correspond to eahc node you are editing see the corresponding methods for each node
+    def update_child_params(self, child: str, **kwargs):
+        """Abstract method to perform various parameters replacements in apSim model.
+        :param child: (str): name of e.g., weather space is allowed for more descriptive one such a soil organic not case-sensitive
+        :keyword kwargs: these correspond to each node you are editing . Please see the corresponding methods for each node
         """
         # Convert keys to lowercase
         self.methods = {key.lower(): value for key, value in self._methods.items()}
         """Perform various actions based on the node_type."""
         # convert to lower and also remove spaces if any
-        node = node.replace(" ", "")
+        node = child.replace(" ", "")
         if node.lower() not in self.methods:
-            raise TypeError(f"Unknown node: {node}, node should be any of {self._methods.keys()}")
+            raise TypeError(f"Unknown node: {child}, children should be any of {self._methods.keys()}")
         args_s = kwargs,
         return self.methods[node.lower()](**args_s[0])
+
+    # to be deprecated
+    def update_children_params(self, children: tuple, **kwargs):
+        """Abstract method to perform various parameters replacements in apSim model.
+        :param children: (str): name of e.g., weather space is allowed for more descriptive one such a soil organic not case-sensitive
+        :keyword kwargs: these correspond to each node you are editing see the corresponding methods for each node
+        """
+        # Convert keys to lowercase
+        self.methods = {key.lower(): value for key, value in self._methods.items()}
+        """Perform various actions based on the node_type."""
+        # convert to lower and also remove spaces if any
+        nodes = [child.replace(" ", "") for child in children]
+        args_s = kwargs,
+        for node in nodes:
+            if node.lower() not in self.methods:
+                raise TypeError(f"Unknown child node: {node}, children should be any of {self._methods.keys()}")
+
+            else:
+                self.methods[node.lower()](**args_s[0])
 
 
 if __name__ == '__main__':
@@ -89,9 +83,11 @@ if __name__ == '__main__':
     os.chdir(Path.home())
     from apsimNGpy.core.base_data import load_default_simulations, weather_path
 
-    mn = load_default_simulations(crop ='Maize')
+    mn = load_default_simulations(crop='Maize')
     ce = Replacements(mn.path)
     mets = Path(weather_path).glob('*.met')
     met = os.path.realpath(list(mets)[0])
     # the method make_replacements can be chained with several other action types
-    model = ce.make_replacements(node=' Weather', weather_file=met).make_replacements(node='weather', weather_file=met)
+    model = ce.update_child_params(child=' Weather', weather_file=met).update_child_params(child='weather',
+                                                                                           weather_file=met)
+    ce.update_children_params(children=('weather', 'cultivar'), weather_file=met)

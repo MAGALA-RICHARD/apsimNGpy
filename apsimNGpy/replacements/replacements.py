@@ -67,15 +67,14 @@ class Replacements(ReplacementHolder):
         self.methods = {key.lower(): value for key, value in self._methods.items()}
         """Perform various actions based on the node_type."""
         # convert to lower and also remove spaces if any
-        nodes = [child.replace(" ", "") for child in children]
+        nodes = (child.replace(" ", "") for child in children)
 
-        args_s = kwargs,
         for node in nodes:
             if node.lower() not in self.methods:
                 raise TypeError(f"Unknown child node: {node}, children should be any of {self._methods.keys()}")
 
             else:
-                self.methods[node.lower()](**args_s[0])
+                self.methods[node.lower()](**kwargs[0])
         return self
 
 
@@ -96,4 +95,4 @@ if __name__ == '__main__':
                                                                                            weather_file=met)
     mgt = {'Name': 'Simple Rotation', 'Crops': "Maize, Soybean"},
     chilredren = 'Manager', 'weather', 'SoilOrganicMatter'
-    ce.update_children_params(children=chilredren, icnr =120, weather_file= met,management=mgt)
+    ce.update_children_params(children=chilredren, icnr=120, weather_file=met, management=mgt)

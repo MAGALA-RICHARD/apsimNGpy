@@ -95,4 +95,4 @@ if __name__ == '__main__':
                                                                                            weather_file=met)
     mgt = {'Name': 'Simple Rotation', 'Crops': "Maize, Soybean"},
     chilredren = 'Manager',
-    ce.update_children_params(children=chilredren,management=mgt)
+    ce.update_children_params(children=chilredren, weather_file= met,management=mgt)

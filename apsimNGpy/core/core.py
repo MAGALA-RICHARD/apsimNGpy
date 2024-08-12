@@ -773,7 +773,7 @@ class APSIMNG:
 
     def update_mgt(self, *, management: [dict, tuple],
                    simulations=None,
-                   out: [Path, str] = None
+                   out: [Path, str] = None,
                    **kwargs):
         """
             Update management settings in the model. This method handles one management parameter at a time.
@@ -957,7 +957,7 @@ class APSIMNG:
         for weather in self.Simulations.FindAllDescendants[Weather]():
             return weather.FileName
 
-    def change_report(self, command: str, report_name='Report', simulations=None, set_DayAfterLastOutput=None):
+    def change_report(self, command: str, report_name='Report', simulations=None, set_DayAfterLastOutput=None, **kwargs):
         """
             Set APSIM report variables for specified simulations.
 

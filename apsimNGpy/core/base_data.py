@@ -287,7 +287,7 @@ class __DetectApsimExamples:
             return cp
         aPSim = SoilModel(cp)
         wp = os.path.join(weather_path, os.path.basename(aPSim.show_met_file_in_simulation()))
-        aPSim.replace_met_file(wp)
+        aPSim.replace_met_file(weather_file=wp)
         return aPSim
 
     def get_all(self):

@@ -848,7 +848,7 @@ class APSIMNG:
         formatted_date_string = date_object.strftime("%Y-%m-%dT%H:%M:%S")
         return formatted_date_string  # Output: 2010-01-01T00:00:00
 
-    def change_simulation_dates(self, start_date=None, end_date=None, simulations=None):
+    def change_simulation_dates(self, *, start_date=None, end_date=None, simulations=None):
         """Set simulation dates. this is important to run this method before run the weather replacement method as
         the date needs to be alligned into weather
 
@@ -926,7 +926,7 @@ class APSIMNG:
         self.replace_met_file(self.met)
         return self
 
-    def replace_met_file(self, weather_file, simulations=None):
+    def replace_met_file(self, *, weather_file, simulations=None):
         try:
             """searched the weather node and replaces it with a new one
 
@@ -1030,7 +1030,7 @@ class APSIMNG:
         soilp_param = getattr(soil_physical, parameter)
         return list(soilp_param)
 
-    def replace_any_soil_physical(self, parameter: str, param_values, simulation: str = None):
+    def replace_any_soil_physical(self, *, parameter: str, param_values, simulation: str = None):
         """relaces specified soil physical parameters in the simulation
 
         ______________________________________________________
@@ -1082,7 +1082,7 @@ class APSIMNG:
         sol = getattr(solutes, parameter)
         return list(sol)
 
-    def replace_any_solute(self, parameter: str, values: list, simulation=None):
+    def replace_any_solute(self, *, parameter: str, values: list, simulation=None):
         """# replaces with new solute
 
         Parameters
@@ -1108,7 +1108,7 @@ class APSIMNG:
         get_organic = getattr(soil_organic, parameter)
         return list(get_organic)
 
-    def replace_any_soil_organic(self, parameter, param_values, simulation=None):
+    def replace_any_soil_organic(self, *, parameter, param_values, simulation=None):
         """replaces any specified soil  parameters in the simulation
 
         Args:
@@ -1145,7 +1145,7 @@ class APSIMNG:
                     param_values = getattr(crops, parameter)
                     return list(param_values)
 
-    def replace_crop_soil_water(self, parameter, param_values, crop="Maize", simulation=None):
+    def replace_crop_soil_water(self, *, parameter, param_values, crop="Maize", simulation=None):
         """_summary_
 
         Args:
@@ -1307,7 +1307,7 @@ class APSIMNG:
         self.Simulations = None
         self._DataStore = None
 
-    def replace_soil_organic(self, organic_name, simulation_name=None):
+    def replace_soil_organic(self, *, organic_name, simulation_name=None):
         """replace the organic module comprising Carbon , FBIOm, FInert/ C/N
 
         Args:

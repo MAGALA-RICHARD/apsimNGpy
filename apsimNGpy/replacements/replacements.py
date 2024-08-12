@@ -37,7 +37,8 @@ class Replacements(ReplacementHolder):
             'SoilOrganic': self.replace_any_soil_organic,
             'SoilChemical': self.replace_any_solute,
             'SoilWater': self.replace_crop_soil_water,
-            'SoilOrganicMatter': self.change_som
+            'SoilOrganicMatter': self.change_som,
+            'Clock': self.change_simulation_dates
         }
 
     def update_child_params(self, child: str, **kwargs):

@@ -68,7 +68,7 @@ class Replacements(ReplacementHolder):
         """Perform various actions based on the node_type."""
         # convert to lower and also remove spaces if any
         nodes = [child.replace(" ", "") for child in children]
-        print(nodes)
+
         args_s = kwargs,
         for node in nodes:
             if node.lower() not in self.methods:
@@ -94,5 +94,5 @@ if __name__ == '__main__':
     model = ce.update_child_params(child=' Weather', weather_file=met).update_child_params(child='weather',
                                                                                            weather_file=met)
     mgt = {'Name': 'Simple Rotation', 'Crops': "Maize, Soybean"},
-    chilredren = 'Manager',
+    chilredren = 'Manager', 'weather'
     ce.update_children_params(children=chilredren, weather_file= met,management=mgt)

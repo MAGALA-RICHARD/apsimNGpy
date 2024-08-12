@@ -23,6 +23,7 @@ class ReplacementHolder(APSIMNG, ABC):
 
 
 class Replacements(ReplacementHolder):
+
     def __init__(self, model, **kwargs):
         super().__init__(model, **kwargs)
         # Map action types to method names
@@ -67,6 +68,7 @@ class Replacements(ReplacementHolder):
         """Perform various actions based on the node_type."""
         # convert to lower and also remove spaces if any
         nodes = [child.replace(" ", "") for child in children]
+        print(nodes)
         args_s = kwargs,
         for node in nodes:
             if node.lower() not in self.methods:
@@ -91,4 +93,6 @@ if __name__ == '__main__':
     # the method make_replacements can be chained with several other action types
     model = ce.update_child_params(child=' Weather', weather_file=met).update_child_params(child='weather',
                                                                                            weather_file=met)
-    ce.update_children_params(children=('weather', 'cultivar'), weather_file=met)
+    mgt = {'Name': 'Simple Rotation', 'Crops': "Maize, Soybean"},
+    chilredren = 'Manager',
+    ce.update_children_params(children=chilredren,management=mgt)

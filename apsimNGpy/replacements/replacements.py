@@ -76,6 +76,7 @@ class Replacements(ReplacementHolder):
 
             else:
                 self.methods[node.lower()](**args_s[0])
+        return self
 
 
 if __name__ == '__main__':
@@ -94,5 +95,5 @@ if __name__ == '__main__':
     model = ce.update_child_params(child=' Weather', weather_file=met).update_child_params(child='weather',
                                                                                            weather_file=met)
     mgt = {'Name': 'Simple Rotation', 'Crops': "Maize, Soybean"},
-    chilredren = 'Manager', 'weather'
-    ce.update_children_params(children=chilredren, weather_file= met,management=mgt)
+    chilredren = 'Manager', 'weather', 'SoilOrganicMatter'
+    ce.update_children_params(children=chilredren, icnr =120, weather_file= met,management=mgt)

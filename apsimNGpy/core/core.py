@@ -476,7 +476,7 @@ class APSIMNG:
                 return i
         return self
 
-    def edit_cultivar(self, *, CultivarName, commands: tuple, values: tuple):
+    def edit_cultivar(self, *, CultivarName, commands: tuple, values: tuple, **kwargs):
         """
         Edits the parameters of a given cultivar.
 
@@ -591,7 +591,7 @@ class APSIMNG:
         data = results[report_names]
         return data
 
-    def update_cultivar(self, parameters, simulations=None, clear=False):
+    def update_cultivar(self, parameters, simulations=None, clear=False, **kwargs):
         """Update cultivar parameters
 
         Parameters
@@ -658,7 +658,7 @@ class APSIMNG:
             else:
                 raise Exception("File node structure is not supported at a moment")
 
-    def change_som(self, *, simulations=None, inrm: int = 1250, icnr: int = 27):
+    def change_som(self, *, simulations=None, inrm: int = 1250, icnr: int = 27, **kwargs):
         """
          Change Surface Organic Matter (SOM) properties in specified simulations.
 
@@ -771,7 +771,10 @@ class APSIMNG:
         self.Simulations = self.convert_to_IModel()
         return self
 
-    def update_mgt(self, *, management: [dict, tuple], simulations=None, out:[Path, str]=None):
+    def update_mgt(self, *, management: [dict, tuple],
+                   simulations=None,
+                   out: [Path, str] = None
+                   **kwargs):
         """
             Update management settings in the model. This method handles one management parameter at a time.
 
@@ -848,7 +851,7 @@ class APSIMNG:
         formatted_date_string = date_object.strftime("%Y-%m-%dT%H:%M:%S")
         return formatted_date_string  # Output: 2010-01-01T00:00:00
 
-    def change_simulation_dates(self, *, start_date=None, end_date=None, simulations=None):
+    def change_simulation_dates(self, *, start_date=None, end_date=None, simulations=None, **kwargs):
         """Set simulation dates. this is important to run this method before run the weather replacement method as
         the date needs to be alligned into weather
 
@@ -926,7 +929,7 @@ class APSIMNG:
         self.replace_met_file(self.met)
         return self
 
-    def replace_met_file(self, *, weather_file, simulations=None):
+    def replace_met_file(self, *, weather_file, simulations=None, **kwargs):
         try:
             """searched the weather node and replaces it with a new one
 
@@ -1030,7 +1033,7 @@ class APSIMNG:
         soilp_param = getattr(soil_physical, parameter)
         return list(soilp_param)
 
-    def replace_any_soil_physical(self, *, parameter: str, param_values, simulation: str = None):
+    def replace_any_soil_physical(self, *, parameter: str, param_values, simulation: str = None, **kwargs):
         """relaces specified soil physical parameters in the simulation
 
         ______________________________________________________
@@ -1082,7 +1085,7 @@ class APSIMNG:
         sol = getattr(solutes, parameter)
         return list(sol)
 
-    def replace_any_solute(self, *, parameter: str, values: list, simulation=None):
+    def replace_any_solute(self, *, parameter: str, values: list, simulation=None, **kwargs):
         """# replaces with new solute
 
         Parameters
@@ -1108,7 +1111,7 @@ class APSIMNG:
         get_organic = getattr(soil_organic, parameter)
         return list(get_organic)
 
-    def replace_any_soil_organic(self, *, parameter, param_values, simulation=None):
+    def replace_any_soil_organic(self, *, parameter, param_values, simulation=None, **kwargs):
         """replaces any specified soil  parameters in the simulation
 
         Args:
@@ -1145,7 +1148,7 @@ class APSIMNG:
                     param_values = getattr(crops, parameter)
                     return list(param_values)
 
-    def replace_crop_soil_water(self, *, parameter, param_values, crop="Maize", simulation=None):
+    def replace_crop_soil_water(self, *, parameter, param_values, crop="Maize", simulation=None, **kwargs):
         """_summary_
 
         Args:
@@ -1227,7 +1230,7 @@ class APSIMNG:
                 dul_[enum] = d
         return dul_
 
-    def set_swcon(self, swcon, simulations=None, thickness_values=None):
+    def set_swcon(self, swcon, simulations=None, thickness_values=None, **kwargs):
         """Set soil water conductivity (SWCON) constant for each soil layer.
 
         Parameters
@@ -1307,7 +1310,7 @@ class APSIMNG:
         self.Simulations = None
         self._DataStore = None
 
-    def replace_soil_organic(self, *, organic_name, simulation_name=None):
+    def replace_soil_organic(self, *, organic_name, simulation_name=None, **kwargs):
         """replace the organic module comprising Carbon , FBIOm, FInert/ C/N
 
         Args:

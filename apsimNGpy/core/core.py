@@ -1367,7 +1367,7 @@ class ApsiMet(APSIMNG):
         self.lonlat = lonlat
         self.simulation_names = simulation_names
 
-    def insertweather_file(self):
+    def insert_weather_file(self):
         start, end = self.extract_start_end_years()
         wp = weather.daymet_bylocation(self.lonlat, start=start, end=end)
         wp = os.path.join(os.getcwd(), wp)

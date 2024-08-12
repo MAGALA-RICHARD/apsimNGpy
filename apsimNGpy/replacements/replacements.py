@@ -74,7 +74,7 @@ class Replacements(ReplacementHolder):
                 raise TypeError(f"Unknown child node: {node}, children should be any of {self._methods.keys()}")
 
             else:
-                self.methods[node.lower()](**kwargs[0])
+                self.methods[node.lower()](**kwargs)
         return self
 
 

@@ -109,7 +109,7 @@ Usage
     data = LoadExampleFiles(wd)
     # Get maize model
     maize = data.get_maize
-    # laternatively, you can laod from the factory default module
+    # Alternatively, you can laod from the factory default modules 
     soybean_model = load_default_simulations(crop = 'soybean') # don't worry it is not case senstive
     #the load_default_simulation returns a prelloaded model ready to run the existing module
 
@@ -174,10 +174,10 @@ Change  APSIM model management decisions
 
     # in this node we have a script named the Simple Rotation,we want to change the rotation to maybe Maize, Wheat or
     something else
-    rotation  = {'Name': "Simple Rotation", "Crops": 'Maize, Wheat, Soybean' # the crops must be seperated my commas
-    apsim.update_multiple_management_decisions([rotation], simulations=apsim.extract_simulation_name, reload=True)
-    # now you cans see we passed rotation as a list. That means you can add other scripts as much as you all  to be
-    changed at the same time
+    rotation  = {'Name': "Simple Rotation", "Crops": 'Maize, Wheat, Soybean'}, # the crops must be seperated my commas
+    apsim.update_mgt(management = rotation, reload=True)
+    # now you cans see we passed rotation as aturple. That means you can add other scripts as your needs suggest. They will all be changed at the 
+    same time
 
 Populating the APSIM model with new weather data
 *********************************************************************************

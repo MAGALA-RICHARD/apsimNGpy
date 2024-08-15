@@ -54,7 +54,7 @@ class Replacements(ReplacementHolder):
             'soilorganic': 'replace_any_soil_organic',
             'soilchemical': 'replace_any_solute',
             'soilwater': 'replace_crop_soil_water',
-            'soilorganicMatter': 'change_som',
+            'soilorganicmatter': 'change_som',
             'clock': 'change_simulation_dates'
         }
         if child in self.mt:
@@ -79,6 +79,7 @@ class Replacements(ReplacementHolder):
         """
         for child in children:
             _child = child.lower().replace(" ", "")
+            print(_child)
             self.__methods(_child)(**kwargs)
         return self
 
@@ -99,4 +100,4 @@ if __name__ == '__main__':
     model = ce.update_child_params(child='weather', weather_file=met)
     mgt = {'Name': 'Simple Rotation', 'Crops': "Maize, Soybean"},
     chilredren = 'Manager', 'weather', 'SoilOrganicMatter'
-    ce.update_children_params(children=chilredren, icnr=120, weather_file=met, management=mgt)
+    ce.update_children_params(children=chilredren, icnr=143, weather_file=met, management=mgt)

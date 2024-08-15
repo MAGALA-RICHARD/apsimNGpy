@@ -79,7 +79,7 @@ class Replacements(ReplacementHolder):
         """
         for child in children:
             _child = child.lower().replace(" ", "")
-            print(_child)
+
             self.__methods(_child)(**kwargs)
         return self
 

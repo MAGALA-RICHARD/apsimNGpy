@@ -21,17 +21,20 @@ class ReplacementHolder(APSIMNG, ABC):
         """Abstract method to replace parameters for more than one child node"""
         pass
 
-Nodes= [
-            'cultivar',
-            'manager',
-            'weather',
-            'soilphysical',
-            'soilorganic',
-            'soilchemical',
-            'soilwater',
-            'soilorganicMatter',
-            'clock'
-        ]
+
+Nodes = [
+    'cultivar',
+    'manager',
+    'weather',
+    'soilphysical',
+    'soilorganic',
+    'soilchemical',
+    'soilwater',
+    'soilorganicMatter',
+    'clock'
+]
+
+
 class Replacements(ReplacementHolder):
 
     def __init__(self, model, **kwargs):
@@ -66,8 +69,7 @@ class Replacements(ReplacementHolder):
         """
         # Convert keys to lowercase
         _child = child.lower().replace(" ", "")
-        methods = self.__methods(_child)
-        return methods(**kwargs)
+        return self.__methods(_child)(**kwargs)
 
     # to be deprecated
     def update_children_params(self, children: tuple, **kwargs):

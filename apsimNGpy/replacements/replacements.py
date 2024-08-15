@@ -33,17 +33,24 @@ class Replacements(ReplacementHolder):
 
     @property
     def __methods(self):
-        return {
-            'Cultivar': self.edit_cultivar,
-            'Manager': self.update_mgt,
-            'Weather': self.replace_met_file,
-            'SoilPhysical': self.replace_any_soil_physical,
-            'SoilOrganic': self.replace_any_soil_organic,
-            'SoilChemical': self.replace_any_solute,
-            'SoilWater': self.replace_crop_soil_water,
-            'SoilOrganicMatter': self.change_som,
-            'Clock': self.change_simulation_dates
+        ___methods = {
+            'cultivar': self.edit_cultivar,
+            'manager': self.update_mgt,
+            'weather': self.replace_met_file,
+            'soilphysical': self.replace_any_soil_physical,
+            'soilorganic': self.replace_any_soil_organic,
+            'soilchemical': self.replace_any_solute,
+            'soilwater': self.replace_crop_soil_water,
+            'soilorganicMatter': self.change_som,
+            'clock': self.change_simulation_dates
         }
+        return ___methods
+
+    def Method(self, child):
+        if child in self.__methods:
+            return self.__methods[child]
+        else:
+            raise TypeError(f"Unknown node: {child}, children should be any of {self.__methods.keys()}")
 
     def update_child_params(self, child: str, **kwargs):
         """Abstract method to perform various parameters replacements in apSim model. :param child: (str): name of
@@ -51,14 +58,9 @@ class Replacements(ReplacementHolder):
         kwargs: these correspond to each node you are editing. Please see the corresponding methods for each node
         """
         # Convert keys to lowercase
-        methods = {key.lower(): value for key, value in self.__methods.items()}
-        """Perform various actions based on the node_type."""
-        # convert to lower and also remove spaces if any
-        node = child.replace(" ", "")
-        if node.lower() not in methods:
-            raise TypeError(f"Unknown node: {child}, children should be any of {self._methods.keys()}")
-
-        return methods[node.lower()](**kwargs)
+        _child = child.lower().replace(" ", "")
+        methods = self.Method(_child)
+        return methods(**kwargs)
 
     # to be deprecated
     def update_children_params(self, children: tuple, **kwargs):
@@ -67,7 +69,7 @@ class Replacements(ReplacementHolder):
         :keyword kwargs: these correspond to each node you are editing see the corresponding methods for each node
         """
         # Convert keys to lowercase
-        self.methods = {key.lower(): value for key, value in self.__methods.items()}
+        self.methods = {key.lower(): value for key, value in self.__methods(chilredren).items()}
         """Perform various actions based on the node_type."""
         # convert to lower and also remove spaces if any
         nodes = (child.replace(" ", "") for child in children)
@@ -94,8 +96,7 @@ if __name__ == '__main__':
     mets = Path(weather_path).glob('*.met')
     met = os.path.realpath(list(mets)[0])
     # the method make_replacements can be chained with several other action types
-    model = ce.update_child_params(child=' Weather', weather_file=met).update_child_params(child='weather',
-                                                                                           weather_file=met)
+    model = ce.update_child_params(child='weather', weather_file=met)
     mgt = {'Name': 'Simple Rotation', 'Crops': "Maize, Soybean"},
     chilredren = 'Manager', 'weather', 'SoilOrganicMatter'
-    ce.update_children_params(children=chilredren, icnr=120, weather_file=met, management=mgt)
+    # ce.update_children_params(children=chilredren, icnr=120, weather_file=met, management=mgt)

@@ -30,7 +30,10 @@ class Replacements(ReplacementHolder):
         # this will hold lower key
         self.methods = None
         # define them with human-readable formats
-        self._methods = {
+
+    @property
+    def __methods(self):
+        return {
             'Cultivar': self.edit_cultivar,
             'Manager': self.update_mgt,
             'Weather': self.replace_met_file,
@@ -48,7 +51,7 @@ class Replacements(ReplacementHolder):
         kwargs: these correspond to each node you are editing. Please see the corresponding methods for each node
         """
         # Convert keys to lowercase
-        methods = {key.lower(): value for key, value in self._methods.items()}
+        methods = {key.lower(): value for key, value in self.__methods.items()}
         """Perform various actions based on the node_type."""
         # convert to lower and also remove spaces if any
         node = child.replace(" ", "")
@@ -64,14 +67,14 @@ class Replacements(ReplacementHolder):
         :keyword kwargs: these correspond to each node you are editing see the corresponding methods for each node
         """
         # Convert keys to lowercase
-        self.methods = {key.lower(): value for key, value in self._methods.items()}
+        self.methods = {key.lower(): value for key, value in self.__methods.items()}
         """Perform various actions based on the node_type."""
         # convert to lower and also remove spaces if any
         nodes = (child.replace(" ", "") for child in children)
 
         for node in nodes:
             if node.lower() not in self.methods:
-                raise TypeError(f"Unknown child node: {node}, children should be any of {self._methods.keys()}")
+                raise TypeError(f"Unknown child node: {node}, children should be any of {self.__methods.keys()}")
 
             else:
                 self.methods[node.lower()](**kwargs)

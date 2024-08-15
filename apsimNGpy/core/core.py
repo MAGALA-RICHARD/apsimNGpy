@@ -771,10 +771,10 @@ class APSIMNG:
         self.Simulations = self.convert_to_IModel()
         return self
 
-    def update_mgt(self, *, management: [dict, tuple],
+    def update_mgt(self,  management: [dict, tuple],
                    simulations=None,
                    out: [Path, str] = None,
-                   **kwargs):
+                   ):
         """
             Update management settings in the model. This method handles one management parameter at a time.
 
@@ -851,7 +851,7 @@ class APSIMNG:
         formatted_date_string = date_object.strftime("%Y-%m-%dT%H:%M:%S")
         return formatted_date_string  # Output: 2010-01-01T00:00:00
 
-    def change_simulation_dates(self, *, start_date=None, end_date=None, simulations=None, **kwargs):
+    def change_simulation_dates(self, start_date=None, end_date=None, simulations=None):
         """Set simulation dates. this is important to run this method before run the weather replacement method as
         the date needs to be alligned into weather
 
@@ -929,7 +929,7 @@ class APSIMNG:
         self.replace_met_file(self.met)
         return self
 
-    def replace_met_file(self, *, weather_file, simulations=None, **kwargs):
+    def replace_met_file(self, weather_file, simulations=None):
         try:
             """searched the weather node and replaces it with a new one
 

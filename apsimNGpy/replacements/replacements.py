@@ -77,18 +77,9 @@ class Replacements(ReplacementHolder):
         :param children: (str): name of e.g., weather space is allowed for more descriptive one such a soil organic not case-sensitive
         :keyword kwargs: these correspond to each node you are editing see the corresponding methods for each node
         """
-        # Convert keys to lowercase
-        self.methods = {key.lower(): value for key, value in self.__methods(chilredren).items()}
-        """Perform various actions based on the node_type."""
-        # convert to lower and also remove spaces if any
-        nodes = (child.replace(" ", "") for child in children)
-
-        for node in nodes:
-            if node.lower() not in self.methods:
-                raise TypeError(f"Unknown child node: {node}, children should be any of {self.__methods.keys()}")
-
-            else:
-                self.methods[node.lower()](**kwargs)
+        for child in children:
+            _child = child.lower().replace(" ", "")
+            self.__methods(_child)(**kwargs)
         return self
 
 

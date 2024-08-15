@@ -591,7 +591,7 @@ class APSIMNG:
         data = results[report_names]
         return data
 
-    def update_cultivar(self, parameters, simulations=None, clear=False, **kwargs):
+    def update_cultivar(self, *, parameters, simulations=None, clear=False, **kwargs):
         """Update cultivar parameters
 
         Parameters
@@ -774,7 +774,7 @@ class APSIMNG:
     def update_mgt(self, *, management: [dict, tuple],
                    simulations=None,
                    out: [Path, str] = None,
-                   ):
+                   **kwargs):
         """
             Update management settings in the model. This method handles one management parameter at a time.
 

@@ -109,6 +109,9 @@ Usage
     data = LoadExampleFiles(wd)
     # Get maize model
     maize = data.get_maize
+    # Alternatively, you can laod from the factory default modules 
+    soybean_model = load_default_simulations(crop = 'soybean') # don't worry it is not case senstive
+    #the load_default_simulation returns a prelloaded model ready to run the existing module
 
     # Initialize the simulation methods
     apsim = SoilModel(maize, copy=True)
@@ -119,7 +122,7 @@ Usage
     print(apsim.results) # prints all data frames in the storage domain subset usign report names
     # check the manager modules in the apsim simulation file
     # first get the simualtion names
-    sim_name = apsim.extract_simulation_name
+    sim_name = apsim.simulation_names
     apsim.examine_management_info(simulations=sim_name)
     # show current simulation in apsim GUI
     # plot the data
@@ -171,10 +174,10 @@ Change  APSIM model management decisions
 
     # in this node we have a script named the Simple Rotation,we want to change the rotation to maybe Maize, Wheat or
     something else
-    rotation  = {'Name': "Simple Rotation", "Crops": 'Maize, Wheat, Soybean' # the crops must be seperated my commas
-    apsim.update_multiple_management_decisions([rotation], simulations=apsim.extract_simulation_name, reload=True)
-    # now you cans see we passed rotation as a list. That means you can add other scripts as much as you all  to be
-    changed at the same time
+    rotation  = {'Name': "Simple Rotation", "Crops": 'Maize, Wheat, Soybean'}, # the crops must be seperated my commas
+    apsim.update_mgt(management = rotation, reload=True)
+    # now you cans see we passed rotation as aturple. That means you can add other scripts as your needs suggest. They will all be changed at the 
+    same time
 
 Populating the APSIM model with new weather data
 *********************************************************************************
@@ -188,7 +191,7 @@ Populating the APSIM model with new weather data
     mis = apsim.show_met_file_in_simulation()
     print(mis)
     # change
-    apsim.replace_met_file(wf)
+    apsim.replace_met_file(weather_file=wf)
     # check again if you want to
     mis = apsim.show_met_file_in_simulation()
     print(mis)

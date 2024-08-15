@@ -43,19 +43,19 @@ class Replacements(ReplacementHolder):
         }
 
     def update_child_params(self, child: str, **kwargs):
-        """Abstract method to perform various parameters replacements in apSim model.
-        :param child: (str): name of e.g., weather space is allowed for more descriptive one such a soil organic not case-sensitive
-        :keyword kwargs: these correspond to each node you are editing . Please see the corresponding methods for each node
+        """Abstract method to perform various parameters replacements in apSim model. :param child: (str): name of
+        e.g., weather space is allowed for more descriptive one such a soil organic not case-sensitive :keyword
+        kwargs: these correspond to each node you are editing. Please see the corresponding methods for each node
         """
         # Convert keys to lowercase
-        self.methods = {key.lower(): value for key, value in self._methods.items()}
+        methods = {key.lower(): value for key, value in self._methods.items()}
         """Perform various actions based on the node_type."""
         # convert to lower and also remove spaces if any
         node = child.replace(" ", "")
-        if node.lower() not in self.methods:
+        if node.lower() not in methods:
             raise TypeError(f"Unknown node: {child}, children should be any of {self._methods.keys()}")
-        args_s = kwargs,
-        return self.methods[node.lower()](**args_s[0])
+
+        return methods[node.lower()](**kwargs)
 
     # to be deprecated
     def update_children_params(self, children: tuple, **kwargs):

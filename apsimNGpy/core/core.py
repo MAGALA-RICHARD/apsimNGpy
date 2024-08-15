@@ -929,7 +929,7 @@ class APSIMNG:
         self.replace_met_file(self.met)
         return self
 
-    def replace_met_file(self, weather_file, simulations=None):
+    def replace_met_file(self, *, weather_file, simulations=None, **kwargs):
         try:
             """searched the weather node and replaces it with a new one
 

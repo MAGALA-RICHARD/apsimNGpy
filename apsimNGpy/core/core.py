@@ -747,6 +747,7 @@ class APSIMNG:
         try:
             if isinstance(self.Simulations, Models.Core.ApsimFile.Models.Core.ApsimFile.ConverterReturnType):
                 self.Simulations = self.Simulations.get_NewModel()
+                self.path  = out_path or self.path
         except AttributeError as e:
             pass
         return self

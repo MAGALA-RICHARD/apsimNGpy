@@ -771,7 +771,7 @@ class APSIMNG:
         self.Simulations = self.convert_to_IModel()
         return self
 
-    def update_mgt(self,  management: [dict, tuple],
+    def update_mgt(self, *, management: [dict, tuple],
                    simulations=None,
                    out: [Path, str] = None,
                    ):

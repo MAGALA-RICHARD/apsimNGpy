@@ -99,4 +99,4 @@ if __name__ == '__main__':
     model = ce.update_child_params(child='weather', weather_file=met)
     mgt = {'Name': 'Simple Rotation', 'Crops': "Maize, Soybean"},
     chilredren = 'Manager', 'weather', 'SoilOrganicMatter'
-    # ce.update_children_params(children=chilredren, icnr=120, weather_file=met, management=mgt)
+    ce.update_children_params(children=chilredren, icnr=120, weather_file=met, management=mgt)

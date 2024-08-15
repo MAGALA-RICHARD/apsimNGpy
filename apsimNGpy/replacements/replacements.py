@@ -21,7 +21,17 @@ class ReplacementHolder(APSIMNG, ABC):
         """Abstract method to replace parameters for more than one child node"""
         pass
 
-
+Nodes= [
+            'cultivar',
+            'manager',
+            'weather',
+            'soilphysical',
+            'soilorganic',
+            'soilchemical',
+            'soilwater',
+            'soilorganicMatter',
+            'clock'
+        ]
 class Replacements(ReplacementHolder):
 
     def __init__(self, model, **kwargs):
@@ -29,28 +39,25 @@ class Replacements(ReplacementHolder):
         # Map action types to method names
         # this will hold lower key
         self.methods = None
+
         # define them with human-readable formats
 
-    @property
-    def __methods(self):
-        ___methods = {
-            'cultivar': self.edit_cultivar,
-            'manager': self.update_mgt,
-            'weather': self.replace_met_file,
-            'soilphysical': self.replace_any_soil_physical,
-            'soilorganic': self.replace_any_soil_organic,
-            'soilchemical': self.replace_any_solute,
-            'soilwater': self.replace_crop_soil_water,
-            'soilorganicMatter': self.change_som,
-            'clock': self.change_simulation_dates
+    def __methods(self, child):
+        self.mt = {
+            'cultivar': 'edit_cultivar',
+            'manager': 'update_mgt',
+            'weather': 'replace_met_file',
+            'soilphysical': 'replace_any_soil_physical',
+            'soilorganic': 'replace_any_soil_organic',
+            'soilchemical': 'replace_any_solute',
+            'soilwater': 'replace_crop_soil_water',
+            'soilorganicMatter': 'change_som',
+            'clock': 'change_simulation_dates'
         }
-        return ___methods
-
-    def Method(self, child):
-        if child in self.__methods:
-            return self.__methods[child]
+        if child in self.mt:
+            return getattr(self, self.mt[child])
         else:
-            raise TypeError(f"Unknown node: {child}, children should be any of {self.__methods.keys()}")
+            raise TypeError(f"Unknown node: {child}, children should be any of {self.mt.keys()}")
 
     def update_child_params(self, child: str, **kwargs):
         """Abstract method to perform various parameters replacements in apSim model. :param child: (str): name of
@@ -59,7 +66,7 @@ class Replacements(ReplacementHolder):
         """
         # Convert keys to lowercase
         _child = child.lower().replace(" ", "")
-        methods = self.Method(_child)
+        methods = self.__methods(_child)
         return methods(**kwargs)
 
     # to be deprecated

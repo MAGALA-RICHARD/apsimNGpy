@@ -7,9 +7,10 @@ import copy
 
 
 class ReplacementHolder(APSIMNG, ABC):
-    def __init__(self, model, **kwargs):
-        super().__init__(model, **kwargs)
+    def __init__(self, model, out_path= None, **kwargs):
+        super().__init__(model, out_path= None, **kwargs)
         self._model = model
+        self.out_path = out_path
 
     @abstractmethod
     def update_child_params(self, child: str, **kwargs):
@@ -37,8 +38,8 @@ Nodes = [
 
 class Replacements(ReplacementHolder):
 
-    def __init__(self, model, **kwargs):
-        super().__init__(model, **kwargs)
+    def __init__(self, model, out_path= None, **kwargs):
+        super().__init__(model, out_path, **kwargs)
         # Map action types to method names
         # this will hold lower key
         self.methods = None

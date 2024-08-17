@@ -1102,7 +1102,7 @@ class APSIMNG:
         solutes = self._extract_solute(simulation)
         setattr(solutes, parameter, values)
 
-    def extract_any_soil_organic(self, parameter, simulation=None):
+    def extract_any_soil_organic(self, parameter: str, simulation: tuple = None):
         """extracts any specified soil  parameters in the simulation
 
         Args:
@@ -1110,10 +1110,14 @@ class APSIMNG:
             simulation (string, optional): Targeted simulation name. Defaults to None.
             param_values (array, required): arrays or list of values for the specified parameter to replace
         """
-        assert isinstance(parameter, str) == True, "Soil parameter name must be a string"
+
         soil_organic = self.extract_soil_organic(simulation)
-        get_organic = getattr(soil_organic, parameter)
-        return list(get_organic)
+        get_organic = {sim:
+                           list(getattr(soil_organic[sim], parameter))
+                       for sim in (simulation if simulation is not None else self.simulation_names)
+                       }
+
+        return get_organic
 
     def replace_any_soil_organic(self, *, parameter, param_values, simulation=None, **kwargs):
         """replaces any specified soil  parameters in the simulation

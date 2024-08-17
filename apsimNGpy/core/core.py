@@ -747,7 +747,7 @@ class APSIMNG:
         try:
             if isinstance(self.Simulations, Models.Core.ApsimFile.Models.Core.ApsimFile.ConverterReturnType):
                 self.Simulations = self.Simulations.get_NewModel()
-                self.path  = out_path or self.path
+                self.path = out_path or self.path
         except AttributeError as e:
             pass
         return self
@@ -958,7 +958,8 @@ class APSIMNG:
         for weather in self.Simulations.FindAllDescendants[Weather]():
             return weather.FileName
 
-    def change_report(self, command: str, report_name='Report', simulations=None, set_DayAfterLastOutput=None, **kwargs):
+    def change_report(self, command: str, report_name='Report', simulations=None, set_DayAfterLastOutput=None,
+                      **kwargs):
         """
             Set APSIM report variables for specified simulations.
 
@@ -1049,7 +1050,7 @@ class APSIMNG:
         setattr(soil_physical, parameter, param_values)
 
     # find organic paramters
-    def extract_soil_organic(self, simulation=None):
+    def extract_soil_organic(self, simulation: tuple = None):
         """Find physical soil
 
         Parameters
@@ -1060,10 +1061,12 @@ class APSIMNG:
         -------
             APSIM Models.Soils.Physical object
         """
+        soil_organics = {}
         for simu in self.find_simulations(simulation):
             soil_object = simu.FindDescendant[Soil]()
             organic_soil = soil_object.FindDescendant[Organic]()
-            return organic_soil
+            soil_organics[simu.Name] = organic_soil
+        return soil_organics
 
     def _extract_solute(self, simulation=None):
         # find the solute node in the simulation
@@ -1120,10 +1123,10 @@ class APSIMNG:
             simulation (string, optional): Targeted simulation name. Defaults to None.
             param_values (array, required): arrays or list of values for the specified parameter to replace
         """
-        assert len(param_values) == len(
-            self.extract_any_soil_organic(parameter, simulation)), 'lengths are not equal please try again'
+
         soil_organic = self.extract_soil_organic(simulation)
-        setattr(soil_organic, parameter, param_values)
+        for k, v in soil_organic.items():
+            setattr(v, parameter, param_values)
 
     # Find a list of simulations by name
     def extract_crop_soil_water(self, parameter, crop="Maize", simulation=None):

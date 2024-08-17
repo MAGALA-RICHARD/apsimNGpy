@@ -1131,6 +1131,7 @@ class APSIMNG:
         soil_organic = self.extract_soil_organic(simulation)
         for k, v in soil_organic.items():
             setattr(v, parameter, param_values)
+        return self
 
     # Find a list of simulations by name
     def extract_crop_soil_water(self, parameter, crop="Maize", simulation=None):

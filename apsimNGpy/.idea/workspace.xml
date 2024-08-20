@@ -4,7 +4,22 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5d471312-8496-4246-98d6-790439318160" name="Changes" comment="config apsim. users can set the apsim bin folder path" />
+    <list default="true" id="5d471312-8496-4246-98d6-790439318160" name="Changes" comment="replacements">
+      <change afterPath="$PROJECT_DIR$/parallel/csp/obj/rider.project.model.nuget.info" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/config.ini" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/parallel/csp/obj/Debug/net6.0/csp.AssemblyInfo.cs" beforeDir="false" afterPath="$PROJECT_DIR$/parallel/csp/obj/Debug/net6.0/csp.AssemblyInfo.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/parallel/csp/obj/Debug/net6.0/csp.AssemblyInfoInputs.cache" beforeDir="false" afterPath="$PROJECT_DIR$/parallel/csp/obj/Debug/net6.0/csp.AssemblyInfoInputs.cache" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/parallel/csp/obj/Debug/net6.0/csp.GeneratedMSBuildEditorConfig.editorconfig" beforeDir="false" afterPath="$PROJECT_DIR$/parallel/csp/obj/Debug/net6.0/csp.GeneratedMSBuildEditorConfig.editorconfig" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/parallel/csp/obj/Debug/net6.0/csp.RazorAssemblyInfo.cache" beforeDir="false" afterPath="$PROJECT_DIR$/parallel/csp/obj/Debug/net6.0/csp.RazorAssemblyInfo.cache" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/parallel/csp/obj/Debug/net6.0/csp.assets.cache" beforeDir="false" afterPath="$PROJECT_DIR$/parallel/csp/obj/Debug/net6.0/csp.assets.cache" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/parallel/csp/obj/Debug/net6.0/csp.csproj.AssemblyReference.cache" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/parallel/csp/obj/csp.csproj.nuget.dgspec.json" beforeDir="false" afterPath="$PROJECT_DIR$/parallel/csp/obj/csp.csproj.nuget.dgspec.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/parallel/csp/obj/csp.csproj.nuget.g.props" beforeDir="false" afterPath="$PROJECT_DIR$/parallel/csp/obj/csp.csproj.nuget.g.props" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/parallel/csp/obj/project.assets.json" beforeDir="false" afterPath="$PROJECT_DIR$/parallel/csp/obj/project.assets.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/parallel/csp/obj/project.nuget.cache" beforeDir="false" afterPath="$PROJECT_DIR$/parallel/csp/obj/project.nuget.cache" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/replacements/replacements.py" beforeDir="false" afterPath="$PROJECT_DIR$/replacements/replacements.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -44,8 +59,10 @@
     "Python.problem.executor": "Run",
     "Python.process.executor": "Run",
     "Python.pythonet_config.executor": "Run",
+    "Python.replacements.executor": "Run",
     "Python.runner.executor": "Run",
     "Python.senstivity.executor": "Run",
+    "Python.settings.executor": "Run",
     "Python.sobol.executor": "Run",
     "Python.soilmanager.executor": "Run",
     "Python.tools.executor": "Run",
@@ -76,27 +93,7 @@
       <recent name="D:\ACPd\Bear creek simulations" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.__init__">
-    <configuration name="__init__" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="apsimNGpy" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$USER_HOME$/AppData/Local/Programs/Python/Python312/Lib/site-packages/twine" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$USER_HOME$/AppData/Local/Programs/Python/Python312/Lib/site-packages/twine/__init__.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="true" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
+  <component name="RunManager" selected="Python.replacements">
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
       <module name="apsimNGpy" />
       <option name="ENV_FILES" value="" />
@@ -120,7 +117,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="base_data" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="apsim" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="apsimNGpy" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -134,30 +131,7 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/core/base_data.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="true" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="config" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="apsimNGpy" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/config.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/core/apsim.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="true" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -189,6 +163,29 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="process" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="apsimNGpy" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/parallel" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/parallel/process.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="pythonet_config" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="apsimNGpy" />
       <option name="ENV_FILES" value="" />
@@ -212,13 +209,33 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="replacements" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="apsimNGpy" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/replacements" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/replacements/replacements.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.__init__" />
+        <item itemvalue="Python.replacements" />
         <item itemvalue="Python.model_loader" />
+        <item itemvalue="Python.apsim" />
         <item itemvalue="Python.pythonet_config" />
-        <item itemvalue="Python.config" />
-        <item itemvalue="Python.base_data" />
+        <item itemvalue="Python.process" />
       </list>
     </recent_temporary>
   </component>
@@ -295,86 +312,9 @@
       <workItem from="1721074083766" duration="6639000" />
       <workItem from="1721097488731" duration="6345000" />
       <workItem from="1721697999882" duration="409000" />
-    </task>
-    <task id="LOCAL-00303" summary="simulate from a shape file">
-      <option name="closed" value="true" />
-      <created>1707356018743</created>
-      <option name="number" value="00303" />
-      <option name="presentableId" value="LOCAL-00303" />
-      <option name="project" value="LOCAL" />
-      <updated>1707356018743</updated>
-    </task>
-    <task id="LOCAL-00304" summary="simulate from a shape file">
-      <option name="closed" value="true" />
-      <created>1707356717536</created>
-      <option name="number" value="00304" />
-      <option name="presentableId" value="LOCAL-00304" />
-      <option name="project" value="LOCAL" />
-      <updated>1707356717536</updated>
-    </task>
-    <task id="LOCAL-00305" summary="simulate from a shape file">
-      <option name="closed" value="true" />
-      <created>1707356910427</created>
-      <option name="number" value="00305" />
-      <option name="presentableId" value="LOCAL-00305" />
-      <option name="project" value="LOCAL" />
-      <updated>1707356910427</updated>
-    </task>
-    <task id="LOCAL-00306" summary="download soils from web">
-      <option name="closed" value="true" />
-      <created>1708986238919</created>
-      <option name="number" value="00306" />
-      <option name="presentableId" value="LOCAL-00306" />
-      <option name="project" value="LOCAL" />
-      <updated>1708986238920</updated>
-    </task>
-    <task id="LOCAL-00307" summary="download soils from web">
-      <option name="closed" value="true" />
-      <created>1708986702343</created>
-      <option name="number" value="00307" />
-      <option name="presentableId" value="LOCAL-00307" />
-      <option name="project" value="LOCAL" />
-      <updated>1708986702343</updated>
-    </task>
-    <task id="LOCAL-00308" summary="Added layersture for swim node">
-      <option name="closed" value="true" />
-      <created>1709269492858</created>
-      <option name="number" value="00308" />
-      <option name="presentableId" value="LOCAL-00308" />
-      <option name="project" value="LOCAL" />
-      <updated>1709269492859</updated>
-    </task>
-    <task id="LOCAL-00309" summary="Added layersture for swim node">
-      <option name="closed" value="true" />
-      <created>1709309668756</created>
-      <option name="number" value="00309" />
-      <option name="presentableId" value="LOCAL-00309" />
-      <option name="project" value="LOCAL" />
-      <updated>1709309668756</updated>
-    </task>
-    <task id="LOCAL-00310" summary="added met functions for downloading nasa power met">
-      <option name="closed" value="true" />
-      <created>1709309709610</created>
-      <option name="number" value="00310" />
-      <option name="presentableId" value="LOCAL-00310" />
-      <option name="project" value="LOCAL" />
-      <updated>1709309709611</updated>
-    </task>
-    <task id="LOCAL-00311" summary="adjust swim DUL and SAT values">
-      <option name="closed" value="true" />
-      <created>1709311477376</created>
-      <option name="number" value="00311" />
-      <option name="presentableId" value="LOCAL-00311" />
-      <option name="project" value="LOCAL" />
-      <updated>1709311477376</updated>
-    </task>
-    <task id="LOCAL-00312" summary="adjust swim DUL and SAT values">
-      <option name="closed" value="true" />
-      <created>1709419460985</created>
-      <option name="number" value="00312" />
-      <option name="presentableId" value="LOCAL-00312" />
-      <option name="project" value="LOCAL" />
-      <updated>1709419460985</updated>
+      <workItem from="1722392396768" duration="2278000" />
+      <workItem from="1722611343474" duration="1285000" />
+      <workItem from="1723146818292" duration="1124000" />
     </task>
     <task id="LOCAL-00313" summary="visual">
       <option name="closed" value="true" />
@@ -688,7 +628,87 @@
       <option name="project" value="LOCAL" />
       <updated>1721698245675</updated>
     </task>
-    <option name="localTasksCounter" value="352" />
+    <task id="LOCAL-00352" summary="import">
+      <option name="closed" value="true" />
+      <created>1722393037701</created>
+      <option name="number" value="00352" />
+      <option name="presentableId" value="LOCAL-00352" />
+      <option name="project" value="LOCAL" />
+      <updated>1722393037701</updated>
+    </task>
+    <task id="LOCAL-00353" summary="import">
+      <option name="closed" value="true" />
+      <created>1722393167769</created>
+      <option name="number" value="00353" />
+      <option name="presentableId" value="LOCAL-00353" />
+      <option name="project" value="LOCAL" />
+      <updated>1722393167769</updated>
+    </task>
+    <task id="LOCAL-00354" summary="import">
+      <option name="closed" value="true" />
+      <created>1722393179314</created>
+      <option name="number" value="00354" />
+      <option name="presentableId" value="LOCAL-00354" />
+      <option name="project" value="LOCAL" />
+      <updated>1722393179314</updated>
+    </task>
+    <task id="LOCAL-00355" summary="no circular import">
+      <option name="closed" value="true" />
+      <created>1722393553959</created>
+      <option name="number" value="00355" />
+      <option name="presentableId" value="LOCAL-00355" />
+      <option name="project" value="LOCAL" />
+      <updated>1722393553959</updated>
+    </task>
+    <task id="LOCAL-00356" summary="no circular import">
+      <option name="closed" value="true" />
+      <created>1722393588898</created>
+      <option name="number" value="00356" />
+      <option name="presentableId" value="LOCAL-00356" />
+      <option name="project" value="LOCAL" />
+      <updated>1722393588898</updated>
+    </task>
+    <task id="LOCAL-00357" summary="no circular import">
+      <option name="closed" value="true" />
+      <created>1722393689573</created>
+      <option name="number" value="00357" />
+      <option name="presentableId" value="LOCAL-00357" />
+      <option name="project" value="LOCAL" />
+      <updated>1722393689573</updated>
+    </task>
+    <task id="LOCAL-00358" summary="no circular import">
+      <option name="closed" value="true" />
+      <created>1722394519258</created>
+      <option name="number" value="00358" />
+      <option name="presentableId" value="LOCAL-00358" />
+      <option name="project" value="LOCAL" />
+      <updated>1722394519259</updated>
+    </task>
+    <task id="LOCAL-00359" summary="no circular import">
+      <option name="closed" value="true" />
+      <created>1722394579200</created>
+      <option name="number" value="00359" />
+      <option name="presentableId" value="LOCAL-00359" />
+      <option name="project" value="LOCAL" />
+      <updated>1722394579200</updated>
+    </task>
+    <task id="LOCAL-00360" summary="replacements">
+      <option name="closed" value="true" />
+      <created>1723146837783</created>
+      <option name="number" value="00360" />
+      <option name="presentableId" value="LOCAL-00360" />
+      <option name="project" value="LOCAL" />
+      <updated>1723146837783</updated>
+    </task>
+    <task id="LOCAL-00361" summary="replacements">
+      <option name="closed" value="true" />
+      <created>1723147271613</created>
+      <option name="number" value="00361" />
+      <option name="presentableId" value="LOCAL-00361" />
+      <option name="project" value="LOCAL" />
+      <updated>1723147271613</updated>
+    </task>
+    <option name="localTasksCounter" value="362" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -706,9 +726,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="SoilModel class is confusing changed to ApsimModel" />
-    <MESSAGE value="Sno need to rebuild script in order to compile the new model scripts" />
-    <MESSAGE value="removed duplicates" />
     <MESSAGE value="keep the simulations in memory" />
     <MESSAGE value="change som" />
     <MESSAGE value="dev version" />
@@ -731,7 +748,10 @@
     <MESSAGE value="adjust swim DUL and SAT values" />
     <MESSAGE value="visual" />
     <MESSAGE value="config apsim. users can set the apsim bin folder path" />
-    <option name="LAST_COMMIT_MESSAGE" value="config apsim. users can set the apsim bin folder path" />
+    <MESSAGE value="import" />
+    <MESSAGE value="no circular import" />
+    <MESSAGE value="replacements" />
+    <option name="LAST_COMMIT_MESSAGE" value="replacements" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

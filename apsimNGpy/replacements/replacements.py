@@ -43,6 +43,7 @@ class Replacements(ReplacementHolder):
         # Map action types to method names
         # this will hold lower key
         self.methods = None
+        self.out_path = out_path
 
         # define them with human-readable formats
 
@@ -94,7 +95,7 @@ if __name__ == '__main__':
     from apsimNGpy.core.base_data import load_default_simulations, weather_path
 
     mn = load_default_simulations(crop='Maize')
-    ce = Replacements(mn.path)
+    ce = Replacements(mn.path, out_path='a.apsimx')
     mets = Path(weather_path).glob('*.met')
     met = os.path.realpath(list(mets)[0])
     # the method make_replacements can be chained with several other action types

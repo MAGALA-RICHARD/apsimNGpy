@@ -1119,15 +1119,15 @@ class APSIMNG:
 
         return get_organic
 
-    def replace_any_soil_organic(self, *, parameter, param_values, simulation=None, **kwargs):
-        """replaces any specified soil  parameters in the simulation
+    def replace_any_soil_organic(self, *, parameter:str, param_values: list, simulation: tuple = None, **kwargs):
+        """replaces any specified soil parameters in the simulation
 
         Args:
-            parameter (_string_, required): string e.g Carbon, FBiom. open APSIMX file in the GUI and examne the phyicals node for clues on the parameter names
+            parameter (_string_, required): string e.g. Carbon, FBiom. open APSIMX file in the GUI and examne the phyicals node for clues on the parameter names
             simulation (string, optional): Targeted simulation name. Defaults to None.
             param_values (array, required): arrays or list of values for the specified parameter to replace
         """
-
+        # for now, we are assuming that changes go to each simulation, but it is not the case, we will fix this later
         soil_organic = self.extract_soil_organic(simulation)
         for k, v in soil_organic.items():
             setattr(v, parameter, param_values)

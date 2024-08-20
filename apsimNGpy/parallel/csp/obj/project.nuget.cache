@@ -1,8 +1,12 @@
 {
   "version": 2,
-  "dgSpecHash": "OiUtllw5gV4WmjmHUuMctmgkm4VGKizgv/8WDJCdr3+cW5q6El0+BEs4wJ9aHP+98IDVTIrd3gREkNj4bFANEQ==",
+  "dgSpecHash": "dbxTHYcGxePk6IjLHlQM5vD6zP9zFC3O8Yg6Xfp/Y2F4aRAHbpa5uTCJ80eATFht0SpC28IErzKjgytB67nK8A==",
   "success": true,
   "projectFilePath": "D:\\package\\apsimNGpy\\apsimNGpy\\parallel\\csp\\csp.csproj",
-  "expectedPackageFiles": [],
+  "expectedPackageFiles": [
+    "C:\\Users\\rmagala\\.nuget\\packages\\microsoft.netcore.app.ref\\6.0.31\\microsoft.netcore.app.ref.6.0.31.nupkg.sha512",
+    "C:\\Users\\rmagala\\.nuget\\packages\\microsoft.windowsdesktop.app.ref\\6.0.31\\microsoft.windowsdesktop.app.ref.6.0.31.nupkg.sha512",
+    "C:\\Users\\rmagala\\.nuget\\packages\\microsoft.aspnetcore.app.ref\\6.0.31\\microsoft.aspnetcore.app.ref.6.0.31.nupkg.sha512"
+  ],
   "logs": []
 }

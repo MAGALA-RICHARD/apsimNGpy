@@ -4,7 +4,7 @@ This module attempts to provide abstract methods for paramters replacement to va
 from apsimNGpy.core.core import APSIMNG
 from abc import ABC, abstractmethod
 import copy
-
+from apsimNGpy.utililies.utils import timer
 
 class ReplacementHolder(APSIMNG, ABC):
     def __init__(self, model, out_path= None, **kwargs):
@@ -64,6 +64,7 @@ class Replacements(ReplacementHolder):
         else:
             raise TypeError(f"Unknown node: {child}, children should be any of {self.mt.keys()}")
 
+    @timer
     def update_child_params(self, child: str, **kwargs):
         """Abstract method to perform various parameters replacements in apSim model. :param child: (str): name of
         e.g., weather space is allowed for more descriptive one such a soil organic not case-sensitive :keyword
@@ -74,15 +75,19 @@ class Replacements(ReplacementHolder):
         return self.__methods(_child)(**kwargs)
 
     # to be deprecated
+    @timer
     def update_children_params(self, children: tuple, **kwargs):
-        """Abstract method to perform various parameters replacements in apSim model.
+        """Method to perform various parameters replacements in apSim model.
         :param children: (str): name of e.g., weather space is allowed for more descriptive one such a soil organic not case-sensitive
         :keyword kwargs: these correspond to each node you are editing see the corresponding methods for each node
         """
-        for child in children:
-            _child = child.lower().replace(" ", "")
-
-            self.__methods(_child)(**kwargs)
+        chd = iter(children)
+        while True:
+            child = next(chd, None)
+            if child is None:
+                break
+            child = child.lower().replace(" ", "")
+            self.__methods(child)(**kwargs)
         return self
 
 
@@ -96,10 +101,14 @@ if __name__ == '__main__':
 
     mn = load_default_simulations(crop='Maize')
     ce = Replacements(mn.path, out_path='a.apsimx')
-    mets = Path(weather_path).glob('*.met')
+    mets = list(Path(weather_path).glob('*.met'))
     met = os.path.realpath(list(mets)[0])
+    met2 = os.path.realpath(list(mets)[6])
     # the method make_replacements can be chained with several other action types
     model = ce.update_child_params(child='weather', weather_file=met)
-    mgt = {'Name': 'Simple Rotation', 'Crops': "Maize, Soybean"},
+    mgt = {'Name': 'Sow using a variable rule', 'Population': 8.5},
     chilredren = 'Manager', 'weather', 'SoilOrganicMatter'
-    ce.update_children_params(children=chilredren, icnr=143, weather_file=met, management=mgt)
+    ce.update_children_params(children=chilredren, icnr=143, weather_file=met2, management=mgt)
+    xi = ce.extract_user_input('Sow using a variable rule')
+    ce.show_met_file_in_simulation()
+    ce.show_file_in_APSIM_GUI()

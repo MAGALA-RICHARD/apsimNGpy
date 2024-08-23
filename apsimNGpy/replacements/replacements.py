@@ -5,10 +5,12 @@ from apsimNGpy.core.core import APSIMNG
 from abc import ABC, abstractmethod
 import copy
 from apsimNGpy.utililies.utils import timer
+import inspect
+
 
 class ReplacementHolder(APSIMNG, ABC):
-    def __init__(self, model, out_path= None, **kwargs):
-        super().__init__(model, out_path= None, **kwargs)
+    def __init__(self, model, out_path=None, **kwargs):
+        super().__init__(model, out_path=None, **kwargs)
         self._model = model
         self.out_path = out_path
 
@@ -36,28 +38,9 @@ Nodes = [
 ]
 
 
-def _parameters(node, **kwargs):
-    """
-    Filters the parameters before they are passed to each method for each node.
-    However, it is still okay to just pass a batch so long as they are correctly specified.
-    """
-    params = {
-        'cultivar': ('simulations','CultivarName', 'commands', 'values'),
-        'manager': ('management', 'simulations', 'out'),
-        'weather': ('weather_file', 'simulations'),
-        'soilphysical': ('parameter', 'param_values', 'simulation'),
-        'soilorganic': ('parameter', 'param_values', 'simulation'),
-        'soilchemical': ('parameter', 'param_values', 'simulation'),
-        'soilwater': ('parameter', 'param_values', 'simulation'),
-        'soilorganicmatter': ('simulations', 'inrm', 'icnr'),
-        'clock': ('start_date', 'end_date', 'simulations')
-    }
-
-    return {k: v for k, v in kwargs.items() if k in params[node]}
-
 class Replacements(ReplacementHolder):
 
-    def __init__(self, model, out_path= None, **kwargs):
+    def __init__(self, model, out_path=None, **kwargs):
         super().__init__(model, out_path, **kwargs)
         # Map action types to method names
         # this will hold lower key
@@ -101,9 +84,8 @@ class Replacements(ReplacementHolder):
         """
         # Convert keys to lowercase
         _child = child.lower().replace(" ", "")
-        args = _parameters(node=_child,**kwargs)
-        return self.__methods(_child)(**args)
-
+        # no need to filter paramters as it takes one child node
+        return self.__methods(_child)(**kwargs)
 
     @timer
     def update_children_params(self, children: tuple, **kwargs):
@@ -127,9 +109,11 @@ class Replacements(ReplacementHolder):
             if child is None:
                 break
             child = child.lower().replace(" ", "")
-            args = _parameters(node=child, **kwargs)
-            self.__methods(child)(**args)
-        return self
+            method = self.__methods(child)
+            sig  = inspect.signature(method)
+            args = {k: v for k, v in kwargs.items() if k in sig.parameters.keys()}
+            return method(**args)
+
 
 
 if __name__ == '__main__':
@@ -147,10 +131,10 @@ if __name__ == '__main__':
     met2 = os.path.realpath(list(mets)[6])
     # the method make_replacements can be chained with several other action types
     mgt = {'Name': 'Sow using a variable rule', 'Population': 8.5},
-    model = ce.update_child_params(child='manager', management= mgt)
-    mgt = {'Name': 'Sow using a variable rule', 'Population': 8.5},
+    model = ce.update_child_params(child='weather', weather_file = met)
+    mgt = {'Name': 'Sow using a variable rule', 'Population': 7.5},
     chilredren = 'Manager', 'weather', 'SoilOrganicMatter'
     ce.update_children_params(children=chilredren, icnr=143, weather_file=met2, management=mgt)
     xi = ce.extract_user_input('Sow using a variable rule')
-    ce.show_met_file_in_simulation()
 
+    ce.show_met_file_in_simulation()

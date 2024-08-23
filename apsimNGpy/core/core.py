@@ -773,7 +773,7 @@ class APSIMNG:
         return self
 
     def update_mgt(self, *, management: [dict, tuple],
-                   simulations=None,
+                   simulations:[list, tuple] =None,
                    out: [Path, str] = None,
                    **kwargs):
         """
@@ -958,7 +958,7 @@ class APSIMNG:
         for weather in self.Simulations.FindAllDescendants[Weather]():
             return weather.FileName
 
-    def change_report(self, command: str, report_name='Report', simulations=None, set_DayAfterLastOutput=None,
+    def change_report(self, *, command: str, report_name='Report', simulations=None, set_DayAfterLastOutput=None,
                       **kwargs):
         """
             Set APSIM report variables for specified simulations.
@@ -1089,18 +1089,18 @@ class APSIMNG:
         sol = getattr(solutes, parameter)
         return list(sol)
 
-    def replace_any_solute(self, *, parameter: str, values: list, simulation=None, **kwargs):
+    def replace_any_solute(self, *, parameter: str, param_values: list, simulation=None, **kwargs):
         """# replaces with new solute
 
         Parameters
         ____________________________________
-        parameter: paramter name e.g NO3
-        values: new values as a list to replace the old ones
+        parameter: parameter name e.g NO3
+        param_values: new values as a list to replace the old ones
         simulation, optional
             Simulation name, if `None` use the first simulation.
         """
         solutes = self._extract_solute(simulation)
-        setattr(solutes, parameter, values)
+        setattr(solutes, parameter, param_values)
 
     def extract_any_soil_organic(self, parameter: str, simulation: tuple = None):
         """extracts any specified soil  parameters in the simulation

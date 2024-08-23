@@ -112,7 +112,7 @@ class Replacements(ReplacementHolder):
             method = self.__methods(child)
             sig  = inspect.signature(method)
             args = {k: v for k, v in kwargs.items() if k in sig.parameters.keys()}
-            return method(**args)
+        return method(**args)
 
 
 
@@ -128,13 +128,14 @@ if __name__ == '__main__':
     ce = Replacements(mn.path, out_path='a.apsimx')
     mets = list(Path(weather_path).glob('*.met'))
     met = os.path.realpath(list(mets)[0])
-    met2 = os.path.realpath(list(mets)[6])
+    met2 = os.path.realpath(list(mets)[4])
+    met2 = ''
     # the method make_replacements can be chained with several other action types
     mgt = {'Name': 'Sow using a variable rule', 'Population': 8.5},
     model = ce.update_child_params(child='weather', weather_file = met)
     mgt = {'Name': 'Sow using a variable rule', 'Population': 7.5},
     chilredren = 'Manager', 'weather', 'SoilOrganicMatter'
-    ce.update_children_params(children=chilredren, icnr=143, weather_file=met2, management=mgt)
+    ce.update_children_params(children=chilredren, icnr=148, weather_file=met2, management=mgt)
     xi = ce.extract_user_input('Sow using a variable rule')
 
     ce.show_met_file_in_simulation()

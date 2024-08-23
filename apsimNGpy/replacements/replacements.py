@@ -45,12 +45,12 @@ def _parameters(node, **kwargs):
         'cultivar': ('simulations','CultivarName', 'commands', 'values'),
         'manager': ('management', 'simulations', 'out'),
         'weather': ('weather_file', 'simulations'),
-        'soilphysical': 'replace_any_soil_physical',
-        'soilorganic': 'replace_any_soil_organic',
-        'soilchemical': 'replace_any_solute',
-        'soilwater': 'replace_crop_soil_water',
-        'soilorganicmatter': 'change_som',
-        'clock': 'change_simulation_dates'
+        'soilphysical': ('parameter', 'param_values', 'simulation'),
+        'soilorganic': ('parameter', 'param_values', 'simulation'),
+        'soilchemical': ('parameter', 'param_values', 'simulation'),
+        'soilwater': ('parameter', 'param_values', 'simulation'),
+        'soilorganicmatter': ('simulations', 'inrm', 'icnr'),
+        'clock': ('start_date', 'end_date', 'simulations')
     }
 
     return {k: v for k, v in kwargs.items() if k in params[node]}
@@ -91,7 +91,6 @@ class Replacements(ReplacementHolder):
         """
         # Convert keys to lowercase
         _child = child.lower().replace(" ", "")
-        #return self.__methods(_child)(**kwargs)
         args = _parameters(node=_child,**kwargs)
         return self.__methods(_child)(**args)
 
@@ -109,9 +108,7 @@ class Replacements(ReplacementHolder):
                 break
             child = child.lower().replace(" ", "")
             args = _parameters(node=child, **kwargs)
-            print(args)
             self.__methods(child)(**args)
-            #self.__methods(child)(**kwargs)
         return self
 
 

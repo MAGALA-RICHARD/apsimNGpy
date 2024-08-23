@@ -64,7 +64,7 @@ class BoundedVariable(Variable):
         self.step = interval
         self._sigma = None
 
-        self.seed= kwargs.get('random_state', 1)
+        self.seed = kwargs.get('random_state', 1)
         self._var_type = kwargs.get('var_type', float)
         if interval is None:
             self.variables = np.arange(bounds[0], bounds[1])
@@ -94,6 +94,7 @@ class BoundedVariable(Variable):
     @property
     def var_type(self):
         return self._var_type
+
     @var_type.setter
     def var_type(self, value):
         self._var_type = value
@@ -118,23 +119,26 @@ class BoundedVariable(Variable):
         if dist == 'uniform' and self.var_type == float:
             return Sample(self.distribution).get_distribution(low=self.lower, high=self.upper,
                                                               size=self._sample_size)
-        elif dist =='uniform' and self.var_type == int:
+        elif dist == 'uniform' and self.var_type == int:
             return np.random.randint(self.lower, self.upper, size=self._sample_size)
         elif dist == 'normal':
             normal = Sample(self.distribution).get_distribution(self.mean, self.sigma, self.sample_size)
-            if self.var_type ==int:
+            if self.var_type == int:
                 normal = normal.astype(int)
             return normal
         else:
             raise NotImplementedError('Distribution not implemented or supported')
+
     @property
     def samples(self):
         return self._samples
+
     @samples.setter
     def samples(self, value):
         if self.sample_size != len(value):
             warnings.warn('attempting to change samples without changing the sample size can be error prone')
         self._samples = value
+
     @property
     def distribution(self):
         return self._distribution
@@ -188,7 +192,6 @@ class BoundedVariable(Variable):
         self._distribution = value
 
 
-
 class DiscreteVariable(Variable):
     """
     for setting components for discrete variables
@@ -213,7 +216,6 @@ class DiscreteVariable(Variable):
 
         self._sample_size = kwargs.get('sample_size', 'None')
 
-
     @property
     def manager(self):
         return self._manager
@@ -233,9 +235,11 @@ class DiscreteVariable(Variable):
     @property
     def sample_size(self):
         return self._sample_size
+
     @property
     def options(self):
         return self._options
+
     @options.setter
     def options(self, values):
         """
@@ -244,6 +248,7 @@ class DiscreteVariable(Variable):
         if not isinstance(values, (list, np.ndarray, tuple)):
             raise TypeError('Values must be array-like')
         self._options = values
+
     @sample_size.setter
     def sample_size(self, value):
         self._sample_size = value
@@ -273,8 +278,6 @@ class DiscreteVariable(Variable):
     #     if len(values) != self.sample_size:
     #         logging.warning('Sample size is not equal to the intiial sample size')
     #     self._samples = values
-
-
 
 
 if __name__ == '__main__':

@@ -1,3 +1,4 @@
+# this script is a work in progress
 from itertools import product
 from collections import defaultdict
 

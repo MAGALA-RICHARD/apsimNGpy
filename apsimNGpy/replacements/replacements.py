@@ -36,6 +36,25 @@ Nodes = [
 ]
 
 
+def _parameters(node, **kwargs):
+    """
+    filters the paramters before they are passed to each method for each node.
+    However, it is still okay to just pass a batch so long as they are correctly specified
+    """
+    params = {
+        'cultivar': ('simulations','CultivarName', 'commands', 'values'),
+        'manager': ('management', 'simulations', 'out'),
+        'weather': ('weather_file', 'simulations'),
+        'soilphysical': 'replace_any_soil_physical',
+        'soilorganic': 'replace_any_soil_organic',
+        'soilchemical': 'replace_any_solute',
+        'soilwater': 'replace_crop_soil_water',
+        'soilorganicmatter': 'change_som',
+        'clock': 'change_simulation_dates'
+    }
+
+    return {k: v for k, v in kwargs.items() if k in params[node]}
+
 class Replacements(ReplacementHolder):
 
     def __init__(self, model, out_path= None, **kwargs):
@@ -72,7 +91,9 @@ class Replacements(ReplacementHolder):
         """
         # Convert keys to lowercase
         _child = child.lower().replace(" ", "")
-        return self.__methods(_child)(**kwargs)
+        #return self.__methods(_child)(**kwargs)
+        args = _parameters(node=_child,**kwargs)
+        return self.__methods(_child)(**args)
 
     # to be deprecated
     @timer
@@ -87,7 +108,10 @@ class Replacements(ReplacementHolder):
             if child is None:
                 break
             child = child.lower().replace(" ", "")
-            self.__methods(child)(**kwargs)
+            args = _parameters(node=child, **kwargs)
+            print(args)
+            self.__methods(child)(**args)
+            #self.__methods(child)(**kwargs)
         return self
 
 
@@ -105,10 +129,11 @@ if __name__ == '__main__':
     met = os.path.realpath(list(mets)[0])
     met2 = os.path.realpath(list(mets)[6])
     # the method make_replacements can be chained with several other action types
-    model = ce.update_child_params(child='weather', weather_file=met)
+    mgt = {'Name': 'Sow using a variable rule', 'Population': 8.5},
+    model = ce.update_child_params(child='manager', management= mgt)
     mgt = {'Name': 'Sow using a variable rule', 'Population': 8.5},
     chilredren = 'Manager', 'weather', 'SoilOrganicMatter'
     ce.update_children_params(children=chilredren, icnr=143, weather_file=met2, management=mgt)
     xi = ce.extract_user_input('Sow using a variable rule')
     ce.show_met_file_in_simulation()
-    ce.show_file_in_APSIM_GUI()
+

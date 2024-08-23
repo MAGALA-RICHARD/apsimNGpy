@@ -38,8 +38,8 @@ Nodes = [
 
 def _parameters(node, **kwargs):
     """
-    filters the paramters before they are passed to each method for each node.
-    However, it is still okay to just pass a batch so long as they are correctly specified
+    Filters the parameters before they are passed to each method for each node.
+    However, it is still okay to just pass a batch so long as they are correctly specified.
     """
     params = {
         'cultivar': ('simulations','CultivarName', 'commands', 'values'),
@@ -88,18 +88,38 @@ class Replacements(ReplacementHolder):
         """Abstract method to perform various parameters replacements in apSim model. :param child: (str): name of
         e.g., weather space is allowed for more descriptive one such a soil organic not case-sensitive :keyword
         kwargs: these correspond to each node you are editing. Please see the corresponding methods for each node
+        the followingare the parameters for each node:
+        'cultivar': ('simulations','CultivarName', 'commands', 'values'),
+        'manager': ('management', 'simulations', 'out'),
+        'weather': ('weather_file', 'simulations'),
+        'soilphysical': ('parameter', 'param_values', 'simulation'),
+        'soilorganic': ('parameter', 'param_values', 'simulation'),
+        'soilchemical': ('parameter', 'param_values', 'simulation'),
+        'soilwater': ('parameter', 'param_values', 'simulation'),
+        'soilorganicmatter': ('simulations', 'inrm', 'icnr'),
+        'clock': ('start_date', 'end_date', 'simulations')
         """
         # Convert keys to lowercase
         _child = child.lower().replace(" ", "")
         args = _parameters(node=_child,**kwargs)
         return self.__methods(_child)(**args)
 
-    # to be deprecated
+
     @timer
     def update_children_params(self, children: tuple, **kwargs):
         """Method to perform various parameters replacements in apSim model.
         :param children: (str): name of e.g., weather space is allowed for more descriptive one such a soil organic not case-sensitive
         :keyword kwargs: these correspond to each node you are editing see the corresponding methods for each node
+        the following are available for each child passed to children
+        'cultivar': ('simulations','CultivarName', 'commands', 'values'),
+        'manager': ('management', 'simulations', 'out'),
+        'weather': ('weather_file', 'simulations'),
+        'soilphysical': ('parameter', 'param_values', 'simulation'),
+        'soilorganic': ('parameter', 'param_values', 'simulation'),
+        'soilchemical': ('parameter', 'param_values', 'simulation'),
+        'soilwater': ('parameter', 'param_values', 'simulation'),
+        'soilorganicmatter': ('simulations', 'inrm', 'icnr'),
+        'clock': ('start_date', 'end_date', 'simulations')
         """
         chd = iter(children)
         while True:

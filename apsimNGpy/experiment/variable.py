@@ -279,6 +279,7 @@ class DiscreteVariable(Variable):
     #         logging.warning('Sample size is not equal to the intiial sample size')
     #     self._samples = values
 
+
 if __name__ == '__main__':
     DV = DiscreteVariable(options=[1, 2], place_holder_name='tillage', manager='simple rotation', sample_size=10)
     bv = BoundedVariable(bounds=[0, 100], place_holder_name='Nitrogen', manager='simple rotation')

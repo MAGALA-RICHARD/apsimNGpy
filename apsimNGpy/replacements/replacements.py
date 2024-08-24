@@ -103,11 +103,12 @@ class Replacements(ReplacementHolder):
         'soilorganicmatter': ('simulations', 'inrm', 'icnr'),
         'clock': ('start_date', 'end_date', 'simulations')
         """
-        chd = iter(children)
-        while True:
-            child = next(chd, None)
-            if child is None:
-                break
+        #chd = iter(children)
+        # while True:
+        #     child = next(chd, None)
+        #     if child is None:
+        #         break
+        for child in children:
             child = child.lower().replace(" ", "")
             method = self.__methods(child)
             sig  = inspect.signature(method)
@@ -129,7 +130,7 @@ if __name__ == '__main__':
     ce = Replacements(mn.path, out_path='a.apsimx')
     mets = list(Path(weather_path).glob('*.met'))
     met = os.path.realpath(list(mets)[0])
-    met2 = os.path.realpath(list(mets)[10])
+    met2 = os.path.realpath(list(mets)[5])
 
     # the method make_replacements can be chained with several other action types
     mgt = {'Name': 'Sow using a variable rule', 'Population': 8.5},

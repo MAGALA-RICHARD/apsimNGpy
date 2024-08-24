@@ -47,6 +47,12 @@ from apsimNGpy.core.runner import run_model
 # from settings import * This file is not ready and i wanted to do some test
 
 
+def replace_variable_by_index(old_list: list, new_value: list, indices: list):
+    for idx, new_val in zip(indices, new_value):
+        old_list[idx] = new_val
+    return old_list
+
+
 class APSIMNG:
     """Modify and run APSIM next generation simulation models."""
 
@@ -773,7 +779,7 @@ class APSIMNG:
         return self
 
     def update_mgt(self, *, management: [dict, tuple],
-                   simulations:[list, tuple] =None,
+                   simulations: [list, tuple] = None,
                    out: [Path, str] = None,
                    **kwargs):
         """
@@ -1005,7 +1011,7 @@ class APSIMNG:
             report = (si.FindAllDescendants[Models.Report]())
             print(list(report))
 
-    def extract_soil_physical(self, simulation=None):
+    def extract_soil_physical(self, simulations: [tuple, list] = None):
         """Find physical soil
 
         Parameters
@@ -1016,38 +1022,53 @@ class APSIMNG:
         -------
             APSIM Models.Soils.Physical object
         """
-        for simu in self._find_simulation(simulation):
+        sim_physical = {}
+        for nn, simu in enumerate(self._find_simulation(simulations)):
             soil_object = simu.FindDescendant[Soil]()
             physical_soil = soil_object.FindDescendant[Physical]()
-            return physical_soil
+            sim_physical[simu.Name] = physical_soil
+        return sim_physical
 
-    def extract_any_soil_physical(self, parameter, simulation=None):
+    def extract_any_soil_physical(self, parameter, simulations: [list, tuple] = None):
         """extracts soil physical parameters in the simulation
 
         Args:
             parameter (_string_): string e.g DUL, SAT
-            simulation (string, optional): Targeted simulation name. Defaults to None.
+            simulations (string, optional): Targeted simulation name. Defaults to None.
         ---------------------------------------------------------------------------
         returns an array of the parameter values
         """
         assert isinstance(parameter, str) == True, "Soil parameter name must be a string"
-        soil_physical = self.extract_soil_physical(simulation)
-        soilp_param = getattr(soil_physical, parameter)
-        return list(soilp_param)
+        data = {}
+        _simulations = simulations if simulations else self.simulation_names
+        sop = self.extract_soil_physical(_simulations)
+        for sim in _simulations:
+            soil_physical = sop[sim]
+            soil_p_param = getattr(soil_physical, parameter)
+            data[sim] = list(soil_p_param)
+        return data
 
-    def replace_any_soil_physical(self, *, parameter: str, param_values, simulation: str = None, **kwargs):
-        """relaces specified soil physical parameters in the simulation
+    def replace_any_soil_physical(self, *, parameter: str,
+                                  param_values: [tuple, list],
+                                  simulations: str = None,
+                                  indices=None, **kwargs):
+        """replaces specified soil physical parameters in the simulation
 
-        ______________________________________________________
-        Args:
-            parameter (_string_, required): string e.g DUL, SAT. open APSIMX file in the GUI and examne the phyicals node for clues on the parameter names
-            simulation (string, optional): Targeted simulation name. Defaults to None.
-            param_values (array, required): arrays or list of values for the specified parameter to replace
+        ______________________________________________________ Args: parameter (_string_, required): string e.g. DUL,
+        SAT. open APSIMX file in the GUI and examine the physical node for clues on the parameter names simulation (
+        string, optional): Targeted simulation name. Defaults to None. param_values (array, required): arrays or list
+        of values for the specified parameter to replace index (int, optional):
+        if inidces is None replacement is done with corresponding indices of the param values
         """
-        assert len(param_values) == len(
-            self.extract_any_soil_physical(parameter, simulation)), 'lengths are not equal please try again'
-        soil_physical = self.extract_soil_physical(simulation)
-        setattr(soil_physical, parameter, param_values)
+        _simulations = simulations if simulations else self.simulation_names
+        if indices is None:
+            indices = [param_values.index(i) for i in param_values]
+        sop = self.extract_soil_physical(_simulations)
+        for sim in _simulations:
+            soil_physical = sop[sim]
+            soil_p_param = list(getattr(soil_physical, parameter))
+            param_news = replace_variable_by_index(soil_p_param, param_values, indices)
+            setattr(soil_physical, parameter, param_news)
 
     # find organic paramters
     def extract_soil_organic(self, simulation: tuple = None):
@@ -1119,18 +1140,29 @@ class APSIMNG:
 
         return get_organic
 
-    def replace_any_soil_organic(self, *, parameter:str, param_values: list, simulation: tuple = None, **kwargs):
+    def replace_any_soil_organic(self, *, parameter: str,
+                                 param_values: list,
+                                 simulations: [list, tuple] = None,
+                                 indices=None,
+                                 **kwargs):
         """replaces any specified soil parameters in the simulation
 
         Args:
             parameter (_string_, required): string e.g. Carbon, FBiom. open APSIMX file in the GUI and examne the phyicals node for clues on the parameter names
-            simulation (string, optional): Targeted simulation name. Defaults to None.
+            simulations (string, optional): Targeted simulation name. Defaults to None.
             param_values (array, required): arrays or list of values for the specified parameter to replace
+            indices corresponding position for the param values if none default indices of param_values are used
         """
         # for now, we are assuming that changes go to each simulation, but it is not the case, we will fix this later
-        soil_organic = self.extract_soil_organic(simulation)
-        for k, v in soil_organic.items():
-            setattr(v, parameter, param_values)
+        if indices is None:
+            indices = [param_values.index(i) for i in param_values]
+        soil_organic = self.extract_soil_organic(simulations)
+        _simulations = simulations if simulations is not None else self.simulation_names
+        for sim in _simulations:
+            simu_organic = soil_organic[sim]
+            organic_node = list(getattr(simu_organic, parameter))
+            organic_param_new = replace_variable_by_index(organic_node, param_values, indices)
+            setattr(simu_organic, parameter, organic_param_new)
         return self
 
     # Find a list of simulations by name
@@ -1208,18 +1240,12 @@ class APSIMNG:
             return sims
 
     # Find a single simulation by name
-    def _find_simulation(self, simulation=None):
-        if simulation is None:
-            return self.simulations  # removed [0]
-        sim = None
-        for s in self.simulations:
-            if s.Name == simulation:
-                sim = s
-                break
-        if sim is None:
-            print("Not found!")
+    def _find_simulation(self, simulations: [tuple, list] = None):
+        if simulations is None:
+            return self.simulations
+
         else:
-            return sim
+            return [self.Simulations.FindDescendant(i) for i in simulations if i in self.simulation_names]
 
     @staticmethod
     def adjustSatDul(sat_, dul_):
@@ -1271,10 +1297,10 @@ class APSIMNG:
         wb = sim.FindDescendant[Models.WaterModel.WaterBalance]()
         return np.array(wb.SWCON)
 
-    def _find_solute(self, solute, simulation=None):
-        sim = self._find_simulation(simulation)
-        solutes = sim.FindAllDescendants[Models.Soils.Solute]()
-        return [s for s in solutes if s.Name == solute][0]
+    def _find_solute(self, solute, simulations=None):
+        # values should be returned tagged by their simulation  names
+        solutes = [sim.FindAllDescendants[Models.Soils.Solute](solute) for sim in self._find_simulation(simulations)]
+        return solutes
 
     def clear_db(self):
         """

@@ -53,6 +53,12 @@ def replace_variable_by_index(old_list: list, new_value: list, indices: list):
     return old_list
 
 
+def soil_components(component):
+    _comp = component.lower()
+    comps = {'organic': Organic, 'physical': Physical, 'soilcrop': SoilCrop}
+    return comps[_comp]
+
+
 class APSIMNG:
     """Modify and run APSIM next generation simulation models."""
 
@@ -1123,6 +1129,32 @@ class APSIMNG:
         solutes = self._extract_solute(simulation)
         setattr(solutes, parameter, param_values)
 
+    def replace_soil_property_values(self, *, parameter: str,
+                                     param_values: list,
+                                     soil_child: str,
+                                     simulations: list = None,
+                                     indices: list = None,
+                                     **kwargs):
+        """
+        Replaces values in any soil property array. The soil property array
+        :param parameter: str: parameter name e.g., NO3, 'BD'
+        :param param_values:list or tuple: values of the specified soil property name to replace
+        :param soil_child: str: sub child of the soil component e.g., organic, physical etc.
+        :param simulations: list: list of simulations to where the node is found if
+        not found, all current simulations will receive the new values, thus defaults to None
+        :param indices: list. Positions in the array which will be replaced. Please note that unlike C#, python satrt counting from 0
+
+        """
+        if indices is None:
+            indices = [param_values.index(i) for i in param_values]
+        for simu in self.find_simulations(simulations):
+            soil_object = simu.FindDescendant[Soil]()
+            soil_child = soil_object.FindDescendant[soil_components(soil_child)]()
+            param_values_new = list(getattr(soil_child, parameter))
+            organic_param_new = replace_variable_by_index(param_values_new, param_values, indices)
+            setattr(soil_child, parameter, organic_param_new)
+        return self
+
     def extract_any_soil_organic(self, parameter: str, simulation: tuple = None):
         """extracts any specified soil  parameters in the simulation
 
@@ -1148,7 +1180,7 @@ class APSIMNG:
         """replaces any specified soil parameters in the simulation
 
         Args:
-            parameter (_string_, required): string e.g. Carbon, FBiom. open APSIMX file in the GUI and examne the phyicals node for clues on the parameter names
+            parameter (_string_, required): string e.g., Carbon, FBIOM. open APSIMX file in the GUI and examne the phyicals node for clues on the parameter names
             simulations (string, optional): Targeted simulation name. Defaults to None.
             param_values (array, required): arrays or list of values for the specified parameter to replace
             indices corresponding position for the param values if none default indices of param_values are used
@@ -1182,7 +1214,7 @@ class APSIMNG:
         for simu in self.find_simulations(simulation):
             soil_object = simu.FindDescendant[Soil]()
             soil_crop = soil_object.FindAllDescendants[SoilCrop]()
-            # can be use to target specific crop
+            # can be used to target specific crop
             for crops in soil_crop:
                 crop_soil = crop + "Soil"
                 if crops.Name == crop_soil:

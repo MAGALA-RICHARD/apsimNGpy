@@ -1154,7 +1154,7 @@ class APSIMNG:
         :param simulations: list: list of simulations to where the node is found if
         not found, all current simulations will receive the new values, thus defaults to None
         :param indices: list. Positions in the array which will be replaced. Please note that unlike C#, python satrt counting from 0
-        : crop (str, optional): string for soil water replacement. Default is None
+        :crop (str, optional): string for soil water replacement. Default is None
 
         """
 
@@ -1195,31 +1195,6 @@ class APSIMNG:
 
         return get_organic
 
-    def replace_any_soil_organic(self, *, parameter: str,
-                                 param_values: list,
-                                 simulations: [list, tuple] = None,
-                                 indices=None,
-                                 **kwargs):
-        """replaces any specified soil parameters in the simulation
-
-        Args:
-            parameter (_string_, required): string e.g., Carbon, FBIOM. open APSIMX file in the GUI and examne the phyicals node for clues on the parameter names
-            simulations (string, optional): Targeted simulation name. Defaults to None.
-            param_values (array, required): arrays or list of values for the specified parameter to replace
-            indices (array, optional):  corresponding position for the param values if none default indices of param_values are used
-        """
-        # for now, we are assuming that changes go to each simulation, but it is not the case, we will fix this later
-        if indices is None:
-            indices = [param_values.index(i) for i in param_values]
-        soil_organic = self.extract_soil_organic(simulations)
-        _simulations = simulations if simulations is not None else self.simulation_names
-        for sim in _simulations:
-            simu_organic = soil_organic[sim]
-            organic_node = list(getattr(simu_organic, parameter))
-            organic_param_new = replace_variable_by_index(organic_node, param_values, indices)
-            setattr(simu_organic, parameter, organic_param_new)
-        return self
-
     # Find a list of simulations by name
     def extract_crop_soil_water(self, parameter, crop="Maize", simulation=None):
         """_summary_
@@ -1243,31 +1218,6 @@ class APSIMNG:
                 if crops.Name == crop_soil:
                     param_values = getattr(crops, parameter)
                     return list(param_values)
-
-    def replace_crop_soil_water(self, *, parameter, param_values, crop="Maize", simulation=None, **kwargs):
-        """_summary_
-
-        Args:
-            parameter (_str_): crop soil water parameter names e.g. LL, XF etc
-            crop (str, optional): crop name. Defaults to "Maize".
-            simulation (_str_, optional): _target simulation name . Defaults to None.
-             param_values (_list_ required) values of LL of istance list or 1-D arrays
-
-        Returns:
-            doesn't return anything it mutates the specified value in the soil simulation object
-        """
-        assert len(param_values) == len(self.extract_crop_soil_water(parameter, crop, simulation))
-        assert isinstance(parameter, str), 'Parameter name should be a string'
-        assert isinstance(crop, str), "Crop name should be a string"
-        for simu in self.find_simulations(simulation):
-            soil_object = simu.FindDescendant[Soil]()
-            soil_crop = soil_object.FindAllDescendants[SoilCrop]()
-            # can be use to target specific crop
-            for crops in soil_crop:
-                crop_soil = crop + "Soil"
-                if crops.Name == crop_soil:
-                    setattr(crops, parameter, param_values)
-                    break
 
     def find_simulations(self, simulations=None):
         """Find simulations by name

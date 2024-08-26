@@ -17,8 +17,6 @@ import sys
 from apsimNGpy.core.pythonet_config import start_pythonnet
 from apsimNGpy.core.pythonet_config import aPSim_PATH as APSIM_PATH
 
-#py_config = LoadPythonnet()()
-
 # now we can safely import any c# related libraries
 from System.Collections.Generic import *
 from Models.Core import Simulations
@@ -534,35 +532,35 @@ class ApsimModel(APSIMNG):
         self.replace_downloaded_soils(sop, simulation_names=sim_name)
         return self
 
-
-if __name__ == '__main__':
-    # test
-    from pathlib import Path
-
-    # Model = FileFormat.ReadFromFile[Models.Core.Simulations](model, None, False)
-    os.chdir(Path.home())
-    from apsimNGpy.core.base_data import LoadExampleFiles
-
-    try:
-        lonlat = -91.7738, 41.0204
-        al = LoadExampleFiles(Path.cwd())
-        model = al.get_maize
-        print(model)
-        from apsimNGpy import settings
-
-        model = ApsimModel(model, out_path=None, read_from_string=True,
-                           thickness_values=settings.ConstantSettings.SOIL_THICKNESS)
-        model.replace_met_from_web(lonlat=lonlat, start_year=2001, end_year=2020)
-        from apsimNGpy.manager import soilmanager as sm
-
-        st = sm.DownloadsurgoSoiltables(lonlat)
-        sp = sm.OrganizeAPSIMsoil_profile(st, 20)
-        sop = sp.cal_missingFromSurgo()
-        model.replace_downloaded_soils(sop, model.extract_simulation_name, No_till=True)
-        bd = model.extract_any_soil_physical("BD")
-    except Exception as e:
-        print(type(e).__name__, repr(e))
-        exc_type, exc_value, exc_traceback = sys.exc_info()
-        # Extract the line number from the traceback object
-        line_number = exc_traceback.tb_lineno
-        print(f"Error: {type(e).__name__} occurred on line: {line_number} execution value: {exc_value}")
+#
+# if __name__ == '__main__':
+#     # test
+#     from pathlib import Path
+#
+#     # Model = FileFormat.ReadFromFile[Models.Core.Simulations](model, None, False)
+#     os.chdir(Path.home())
+#     from apsimNGpy.core.base_data import LoadExampleFiles
+#
+#     try:
+#         lonlat = -91.7738, 41.0204
+#         al = LoadExampleFiles(Path.cwd())
+#         model = al.get_maize
+#         print(model)
+#         from apsimNGpy import settings
+#
+#         model = ApsimModel(model, out_path=None, read_from_string=True,
+#                            thickness_values=settings.ConstantSettings.SOIL_THICKNESS)
+#         model.replace_met_from_web(lonlat=lonlat, start_year=2001, end_year=2020)
+#         from apsimNGpy.manager import soilmanager as sm
+#
+#         st = sm.DownloadsurgoSoiltables(lonlat)
+#         sp = sm.OrganizeAPSIMsoil_profile(st, 20)
+#         sop = sp.cal_missingFromSurgo()
+#         model.replace_downloaded_soils(sop, model.extract_simulation_name, No_till=True)
+#         bd = model.extract_any_soil_physical("BD")
+#     except Exception as e:
+#         print(type(e).__name__, repr(e))
+#         exc_type, exc_value, exc_traceback = sys.exc_info()
+#         # Extract the line number from the traceback object
+#         line_number = exc_traceback.tb_lineno
+#         print(f"Error: {type(e).__name__} occurred on line: {line_number} execution value: {exc_value}")

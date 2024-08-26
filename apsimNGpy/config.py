@@ -5,7 +5,7 @@ config_path = realpath('config.ini')
 
 if not exists(config_path):
     config = configparser.ConfigParser()
-    config['Paths'] = {'ApSIM_LOCATION': ''}
+    config['Paths'] = {'APSIM_LOCATION': ''}
     with open(config_path, 'w') as configfile:
         config.write(configfile)
 
@@ -22,7 +22,7 @@ class Config:
     @classmethod
     def get_aPSim_bin_path(cls):
         """We can extract the current path from config.ini"""
-        return cls.config['Paths']['ApSIM_LOCATION']
+        return cls.config['Paths']['APSIM_LOCATION']
 
     @classmethod
     def set_aPSim_bin_path(cls, path):
@@ -43,7 +43,7 @@ class Config:
             # send a non-working path to the pythonnet config module
             # at this point the user may need to change to another path
             assert isfile(Is_Model_in_bin_folder), f"aPSim binaries may not be present at this location: {_path}"
-            cls.config['Paths']['ApSIM_LOCATION'] = _path
+            cls.config['Paths']['APSIM_LOCATION'] = _path
             with open('config.ini', 'w') as config_file:
                 cls.config.write(config_file)
 

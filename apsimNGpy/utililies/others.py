@@ -117,6 +117,9 @@ def match_crop(abb, add_wheat=None):
 
 from functools import singledispatch
 
+# TODO this is none the less cool, but not that necessary. It is just better to set a.union(b)
+# rather than append(seta, setb): remember append is used to implement iterables like list
+# plus it does mean much for integers or floats/decimals.
 
 @singledispatch
 def append(obj, x):

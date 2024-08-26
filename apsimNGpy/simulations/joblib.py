@@ -16,7 +16,7 @@ from apsimNGpy.parallel.process import download_soil_tables
 from tqdm import tqdm
 import random
 from apsimNGpy.manager.soilmanager import OrganizeAPSIMsoil_profile, DownloadsurgoSoiltables
-from apsimNGpy.core.weather import daymet_bylocation_nocsv
+from apsimNGpy.core.weathermanager import daymet_bylocation_nocsv
 from apsimNGpy.parallel.process import custom_parallel
 from apsimNGpy.parallel.safe import initialise
 
@@ -66,7 +66,7 @@ def create_fishnet1(pt, lon_step=200, lat_step=200, ncores=3, use_thread=True, *
 # Function to generate random points within a polygon
 def generate_random_points(pt, resolution, ncores, num_points):
     """
-
+    # TODO this function is duplicated three times in spat, and
     Args:
         pt: shape file
         resolution: resolution in meters
@@ -290,6 +290,7 @@ def match_crop(abb, add_wheat=None):
 
 def create_apsimx_sim_files(wd, model, iterable):
     """
+    # TODO: this code is duplicated in spatial
     Creates copies of a specified APSIM model file for each element in the provided iterable,
     renaming the files to have unique identifiers based on their index in the iterable.
     The new files are saved in the specified working directory.

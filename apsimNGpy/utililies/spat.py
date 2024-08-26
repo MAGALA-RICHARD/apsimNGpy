@@ -6,19 +6,20 @@ from shapely.geometry import Polygon
 import random
 from shapely.geometry import Point
 from shapely.ops import unary_union
-
+ # TODO unify this module with utilities.spatial and simulations.joblib
 WGS84 = 'epsg:4326'
 shp = r'D:\ACPd\Bear creek simulations\bearcreek_shape\bearcreek.shp'
 
 
 def create_polygon1(args):
     lon, lat, lon_step, lat_step = args
-    return Polygon([(lon, lat), (lon + lon_step, lat), (lon + lon_step, lat + lat_step), (lon, lat + lat_step)])
+    return Polygon(
+        [(lon, lat), (lon + lon_step, lat), (lon + lon_step, lat + lat_step), (lon, lat + lat_step)])
 
 
 def create_fishnet1(pt, lon_step=200, lat_step=200, ncores=3, use_thread=True, **kwargs):
     """
-
+    # TODO this has the same duplication pattern as generate_random_points
     Args:
         pt: shape or point feature class layer
         lon_step: height of the polygon
@@ -31,6 +32,7 @@ def create_fishnet1(pt, lon_step=200, lat_step=200, ncores=3, use_thread=True, *
     """
     gdf_shape = gpd.read_file(pt)
     CRS = gdf_shape.crs
+    # TODO duplicated in joblib
     min_lon, min_lat, max_lon, max_lat = gdf_shape.total_bounds
     lats = np.arange(min_lat, max_lat, lat_step)
     lons = np.arange(min_lon, max_lon, lon_step)
@@ -51,7 +53,7 @@ def create_fishnet1(pt, lon_step=200, lat_step=200, ncores=3, use_thread=True, *
 
 # Function to generate random points within a polygon
 def generate_random_points(pt, resolution,  ncores, num_points):
-
+    # TODO duplicated in joblib, and partly in spatial.
     all_points = []
 
     def generate():

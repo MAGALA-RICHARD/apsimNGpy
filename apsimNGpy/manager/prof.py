@@ -1,4 +1,7 @@
 import numpy as np
+
+# TODO, this too is a terrible name for the file.
+
 def soilvar_perdep_cor(nlayers, soil_bottom=200, a=0.5, b=0.5):  # has potential to cythonize
     depthn = np.arange(1, nlayers + 1, 1)
     if a < 0:

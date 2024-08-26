@@ -5,50 +5,56 @@ email: magalarich20@gmail.com
 
 """
 
-from functools import singledispatch
-import matplotlib.pyplot as plt
-import random, logging, pathlib
-import string
-from typing import Union
-import os, sys, datetime, shutil
-import numpy as np
-import pandas as pd
-from os.path import join as opj
-import sqlite3
+import Models
+import datetime
+import datetime
 import json
-from pathlib import Path
+import logging
+import matplotlib.pyplot as plt
+import numpy as np
+import os
+import pandas as pd
+import pathlib
+import random
+import shutil
+import sqlite3
+import string
+import sys
 import threading
 import time
-import datetime
-import apsimNGpy.manager.weathermanager as weather
-from functools import cache
-# prepare for the C# import
-from apsimNGpy.core.pythonet_config import LoadPythonnet
-from apsimNGpy.utililies.database_utils import read_db_table, get_db_table_names
 import warnings
-from apsimNGpy.utililies.utils import timer
-# py_config = LoadPythonnet()()  # double brackets avoids calling it twice
-
+from Models.Climate import Weather
+from Models.Core import Simulations, ScriptCompiler, Simulation
+from Models.Core.ApsimFile import FileFormat
+from Models.PMF import Cultivar
+from Models.Soils import Soil, Physical, SoilCrop, Organic
+from System import *
 # now we can safely import C# libraries
 from System.Collections.Generic import *
-from Models.Core import Simulations, ScriptCompiler, Simulation
-from System import *
-from Models.Core.ApsimFile import FileFormat
-from Models.Climate import Weather
-from Models.Soils import Soil, Physical, SoilCrop, Organic
-import Models
-from Models.PMF import Cultivar
+from functools import cache
+from functools import singledispatch
+from os.path import join as opj
+from pathlib import Path
+from typing import Union
+
+import apsimNGpy.manager.weathermanager as weather
 from apsimNGpy.core.apsim_file import XFile as load_model
 from apsimNGpy.core.model_loader import (load_apx_model, save_model_to_file, recompile)
-from apsimNGpy.utililies.utils import timer
+# prepare for the C# import
+from apsimNGpy.core.pythonet_config import LoadPythonnet
 from apsimNGpy.core.runner import run_model
+from apsimNGpy.utililies.database_utils import read_db_table, get_db_table_names
+from apsimNGpy.utililies.utils import timer
+from apsimNGpy.utililies.utils import timer
+
+
+# py_config = LoadPythonnet()()  # double brackets avoids calling it twice
 
 
 # from settings import * This file is not ready and i wanted to do some test
 
 
 class APSIMNG:
-    """Modify and run APSIM next generation simulation models."""
 
     def __init__(self, model=None, out_path=None, out=None, **kwargs):
 
@@ -99,12 +105,14 @@ class APSIMNG:
         """
         self.check_model()
         self.model_info = self.model_info._replace(IModel=self.Simulations)
-        resu = run_model(self.model_info, results=results, clean_up=clean_up)
+        simulation_result = run_model(self.model_info, results=results, clean_up=clean_up)
 
         if reports:
-            return [resu[repo] for repo in reports] if isinstance(reports, (list, tuple, set)) else resu[reports]
+            return [
+                simulation_result[report] for report in reports] \
+                if isinstance(reports, (list, tuple, set)) else simulation_result[reports]
         else:
-            return resu
+            return simulation_result
 
     @property
     def simulation_object(self):

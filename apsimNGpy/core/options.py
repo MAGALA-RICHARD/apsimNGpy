@@ -4,6 +4,8 @@ import time
 from pathlib import Path
 from dataclasses import dataclass
 
+# TODO DElETE THIS FILE
+
 
 def _check_path(apsim_version):
     path = True if osp.exists(apsim_version) and apsim_version.endswith("bin") and 'APSIM' in apsim_version else None

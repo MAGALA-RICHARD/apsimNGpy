@@ -2,45 +2,46 @@
 Interface to APSIM simulation models using Python.NET
 author: Richard Magala
 email: magalarich20@gmail.com
-
+NOTE: Module is deprecated.
 """
-from functools import singledispatch
-import matplotlib.pyplot as plt
-import random, logging, pathlib
-import string
-from typing import Union
-import os, sys, datetime, shutil
-import numpy as np
-import pandas as pd
-from os.path import join as opj
-import sqlite3
+import Models
+import datetime
+import datetime
 import json
-from pathlib import Path
+import logging
+import matplotlib.pyplot as plt
+import numpy as np
+import os
+import pandas as pd
+import pathlib
+import random
+import shutil
+import sqlite3
+import string
+import sys
 import threading
 import time
-import datetime
-import apsimNGpy.manager.weathermanager as weather
+import warnings
+from Models.Climate import Weather
+from Models.Core import Simulations, ScriptCompiler, Simulation
+from Models.Core.ApsimFile import FileFormat
+from Models.PMF import Cultivar
+from Models.Soils import Soil, Physical, SoilCrop, Organic
+from System import *
+# now we can safely import C# libraries
+from System.Collections.Generic import *
 from functools import cache
+from functools import singledispatch
+from os.path import join as opj
+from pathlib import Path
+from typing import Union
+
+import apsimNGpy.manager.weathermanager as weather
+from apsimNGpy.core.apsim_file import XFile as load_model
 # prepare for the C# import
 from apsimNGpy.core.pythonet_config import LoadPythonnet
 from apsimNGpy.utililies.database_utils import read_db_table, get_db_table_names
-import warnings
 from apsimNGpy.utililies.utils import timer
-# py_config = LoadPythonnet()()  # double brackets avoids calling it twice
-
-# now we can safely import C# libraries
-from System.Collections.Generic import *
-from Models.Core import Simulations, ScriptCompiler, Simulation
-from System import *
-from Models.Core.ApsimFile import FileFormat
-from Models.Climate import Weather
-from Models.Soils import Soil, Physical, SoilCrop, Organic
-import Models
-from Models.PMF import Cultivar
-from apsimNGpy.core.apsim_file import XFile as load_model
-
-
-# from settings import * This file is not ready and i wanted to do some test
 
 
 # decorator to monitor performance
@@ -60,7 +61,15 @@ class APSIMNG:
     """Modify and run Apsim next generation simulation models."""
 
     def __init__(self, model=None, out_path=None, out=None, load=True, **kwargs):
-
+        """
+        Parameters
+        model : str or Simulations Path to .apsimx file or a Simulations object.
+        copy : bool, optional If True, a copy of the original simulation will be created on init
+        to conserve the original file, by default True.
+        out_path : str, optional Path of the modified simulation; if None, it will be set
+        automatically. read_from_string : bool, optional If True, file is uploaded to memory through
+        json module (preferred); otherwise, we read from file.
+        """
         self.file_name = None
         self._DataStore = None
         self._met = None
@@ -69,18 +78,7 @@ class APSIMNG:
             warnings.warn(
                 'copy argument is deprecated, it is now mandatory to copy the model in order to conserve the original '
                 'model.')
-        """
-            Parameters
-            ----------
-            model : str or Simulations
-                Path to .apsimx file or a Simulations object.
-            copy : bool, optional
-                If True, a copy of the original simulation will be created on init to conserve the original file, by default True.
-            out_path : str, optional
-                Path of the modified simulation; if None, it will be set automatically.
-            read_from_string : bool, optional
-                If True, file is uploaded to memory through json module (preferred); otherwise, we read from file.
-            """
+
         out_path = out_path if isinstance(out_path, str) or isinstance(out_path, Path) else None
         self.copy = True  # Mandatory to conserve the original file
         self.results = None
@@ -93,14 +91,12 @@ class APSIMNG:
         self.load_apsimx_model()
 
     @property
-    def set_model(self):
+    def model(self):
         return self._model
 
-    @set_model.setter
-    def set_model(self, value):
+    @model.setter
+    def model(self, value):
         self._model = value
-
-        # self.Model = self.load_apsimx_model()
 
     def clear_links(self):
         self.Model.ClearLinks()
@@ -134,9 +130,9 @@ class APSIMNG:
         self.file_name = os.path.basename(self.path)
         return self.file_name
 
-    # searches the simulations from aspsim models.core object
     @property
     def simulations(self):
+        # searches the simulations from apsim models.core object
         try:
             simus = list(self.Model.FindAllChildren[Models.Core.Simulation]())
             if len(simus) != 0:
@@ -151,7 +147,7 @@ class APSIMNG:
 
         except Exception as e:
             print(type(e), "occured")
-            raise Exception(type(e))
+            raise
 
     @property
     def str_model(self):
@@ -162,6 +158,7 @@ class APSIMNG:
         self._str_model = json.dumps(value)
 
     def load_from_memory(self, file_name):
+        # loads the apsimx file into memory but from string
         str_ = self.str_model
         self.Model = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](str_, None, True,
                                                                                               fileName=file_name)
@@ -169,8 +166,6 @@ class APSIMNG:
         self.Model.ClearSimulationReferences()
 
         return self
-
-    # loads the apsimx file into memory but from string
 
     def initialise_model(self):
         simulationList = self.Model.FindAllDescendants[Simulation]()
@@ -268,50 +263,30 @@ class APSIMNG:
             return self
 
     def run(self, report_name=None, simulations=None, clean=False, multithread=True):
-        """Run apsim model in the simulations
+        # def run(named_tuple_data, results=True, multithread=True, simulations=None):
+        """
+        Run apsim model in the simulations
 
         Parameters
         ----------
-        report_name: str. defaults to APSIM defaults Report Name and if not specified or Report Name not in the simulation tables, the simulator will
-            execute the model and save the outcomes in a database file, accessible through alternative retrieval methods.
+        report_name: str.
+            defaults to APSIM defaults Report Name and if not specified
+            or Report Name not in the simulation tables, the simulator will execute the model and save
+            the outcomes in a database file, accessible through alternative retrieval methods.
 
-        simulations (__str_), optional
+        simulations: str
             List of simulation names to run, if `None` runs all simulations, by default `None`.
 
-        clean (_-boolean_), optional
+        clean: boolean
             If `True` remove an existing database for the file before running, deafults to False`
 
-        multithread
+        multithread: boolean
             If `True` APSIM uses multiple threads, by default `True`
         """
         global e
-        if multithread:
-            runtype = Models.Core.Run.Runner.RunTypeEnum.MultiThreaded
-        else:
-            runtype = Models.Core.Run.Runner.RunTypeEnum.SingleThreaded
-        # open the datastore
-
-        self._DataStore.Open()
-        # Clear old data before running
-        self.results = None
-        if clean:
-            self._DataStore.Dispose()
-            pathlib.Path(self._DataStore.FileName).unlink(missing_ok=True)
-
-        if simulations is None:
-            runmodel = Models.Core.Run.Runner(self.Model, True, False, False, None, runtype)
-            e = runmodel.Run()
-        else:
-            sims = self.find_simulations(simulations)
-            # Runner needs C# list
-            cs_sims = List[Models.Core.Simulation]()
-            for s in sims:
-                cs_sims.Add(s)
-                runmodel = Models.Core.Run.Runner(cs_sims, True, False, False, None, runtype)
-                e = runmodel.Run()
-
-        if len(e) > 0:
-            print(e[0].ToString())
+        from .runner import run_helper
+        data_store, IModel = self._DataStore, self.IModel
+        result = run_helper(data_store, IModel, results=results, multithread=multithread, simulations=simulations)
         if report_name is None:
             report_name = get_db_table_names(self.datastore)
             warnings.warn('No tables were specified, retrieved tables includes:: {}'.format(report_name))
@@ -320,7 +295,7 @@ class APSIMNG:
         else:
             self.results = read_db_table(self.datastore, report_name=report_name)
         # close the datastore
-        self._DataStore.Close()
+        data_store.Close()
         return self
 
     def clone_simulation(self, target, simulation=None):
@@ -502,42 +477,12 @@ class APSIMNG:
 
     @staticmethod
     def _read_external_simulation(datastore, report_name=None):
-        ''' returns all data frame the available report tables'''
-        conn = sqlite3.connect(datastore)
-        cursor = conn.cursor()
+        """ returns all data frame the available report tables"""
+        from apsimNGpy.utilities.run_utils import read_simulation
+        return read_simulation(datastore, report_name=report_name)
 
-        # reading all table names
-
-        table_names = [a for a in cursor.execute("SELECT name FROM sqlite_master WHERE type = 'table'")]
-
-        table_list = []
-        for i in table_names:
-            table_list.append(i[0])
-            # remove these
-        rm = ['_InitialConditions', '_Messages', '_Checkpoints', '_Units']
-        for i in rm:
-            if i in table_list:
-                table_list.remove(i)
-                # start selecting tables
-        select_template = 'SELECT * FROM {table_list}'
-
-        # create data fram dictionary to keep all the tables
-        dataframe_dict = {}
-
-        for tname in table_list:
-            query = select_template.format(table_list=tname)
-            dataframe_dict[tname] = pd.read_sql(query, conn)
-        # close the connection cursor
-        conn.close()
-        dfl = len(dataframe_dict)
-        if len(dataframe_dict) == 0:
-            print("the data dictionary is empty. no data has been returned")
-        if report_name:
-            return dataframe_dict[report_name]
-        else:
-            return dataframe_dict
-
-    def _cultivar_params(self, cultivar):
+    @staticmethod
+    def _cultivar_params(cultivar):
         """
          returns all params in a cultivar
         """
@@ -666,8 +611,8 @@ class APSIMNG:
         shutil.copy(self.path, file_path)
 
     def update_manager_parameters(self, **kwargs):
-        """updates  the manager module by passing the parameters as keys and their values as values
-
+        """
+        Updates the manager module by passing the parameters as keys and their values as values
         >>>> from apsimNGpy.core.apsim import ApsimModel
         >>>> from apsimNGpy.core.base_data. import LoadExampleFiles, Path
         >>>> pp = Path.home()
@@ -677,8 +622,9 @@ class APSIMNG:
         >>>> model = init.maize.get_maize
         >>>> print(model)
         >>>> _model = ApsimModel(file)
-        >>>> _model.update_manager_parameters('Name'= Tillage, Fraction =0.75)
-        Tillage is the name of the manager script which is displayed in the GUI while fraction is the corresponding parameter name and 0.75 is the new value to update
+        >>>> _model.update_manager_parameters(Name='Tillage', Fraction =0.75)
+        Tillage is the name of the manager script which is displayed in the GUI while fraction is the corresponding
+        parameter name and 0.75 is the new value to update
         """
         mgt_params = {i: J for i, J in kwargs.items()}
         try:

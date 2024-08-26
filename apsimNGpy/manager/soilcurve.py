@@ -1,4 +1,4 @@
-
+# TODO this can fit in another file. If its constants we can find a way of dealing with them
 soil_types_c2bare = {
     "Sand": 68,
     "Heavy clay": 73,

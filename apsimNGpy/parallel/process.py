@@ -15,7 +15,7 @@ import multiprocessing as mp
 import types
 
 CPU = int(int(cpu_count()) * 0.5)
-CORES = ConstantSettings.CORES
+CORES = settings.NUM_CORES
 
 
 # _______________________________________________________________
@@ -108,10 +108,7 @@ def read_result_in_parallel(iterable_files, ncores=None, use_threads=False, repo
 
     # remove duplicates. because duplicates will be susceptible to race conditioning in paralell computing
     files = set(iterable_files)
-    if ncores:
-        ncore2use = ncores
-    else:
-        ncore2use = int(cpu_count() * 0.50)
+    ncore2use = ncores or int(cpu_count()) * 0.5
 
     a = perf_counter()
     counter = 0

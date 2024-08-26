@@ -22,6 +22,8 @@ from sklearn.svm import SVC
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
 
 # let's get the data
+# TODO if fells like this module does not yet belong to the library. It calls noe of the libraries fns
+# It should be deleted.
 data = ""
 
 # Display the first few rows of the dataset

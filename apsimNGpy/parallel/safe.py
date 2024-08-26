@@ -1,5 +1,5 @@
 from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganizeAPSIMsoil_profile
-from apsimNGpy.core.weather import daymet_bylocation_nocsv
+from apsimNGpy.core.weathermanager import daymet_bylocation_nocsv
 from apsimNGpy.core.apsim import ApsimModel
 
 def initialise(model, reports):

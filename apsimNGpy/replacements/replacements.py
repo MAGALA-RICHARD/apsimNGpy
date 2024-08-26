@@ -1,5 +1,7 @@
 """
-This module attempts to provide abstract methods for paramters replacement to various nodes or childs in apsim simulations model
+This module attempts to provide abstract methods for paramters replacement to various nodes or
+childs in apsim simulations model.
+TODO not needed.
 """
 from apsimNGpy.core.core import APSIMNG
 from abc import ABC, abstractmethod

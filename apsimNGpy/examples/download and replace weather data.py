@@ -1,7 +1,6 @@
 import os
 
-from apsimNGpy.weather import daymet_bylocation_nocsv
-from apsimNGpy.weather import daymet_bylocation_nocsv
+from apsimNGpy.core.weathermanager import daymet_bylocation_nocsv
 from apsimNGpy.base_data import load_example_files
 from apsimNGpy.model.soilmodel import SoilModel
 from pathlib import Path

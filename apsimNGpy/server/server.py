@@ -235,6 +235,7 @@ class ApsimClient:
 
 if __name__ == '__main__':
     # Example usage:
+    # JUST curious is there already a client someone can use. This seems to me to be an overkill.
     apsim_client = ApsimClient("10.24.22.192", 11)
     # You can now use apsim_client to interact with the Apsim server.
     lp= apsim_client.start_apsim_server()

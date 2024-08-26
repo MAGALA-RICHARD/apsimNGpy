@@ -20,52 +20,37 @@ FAILED_RUNS = []
 sys.path.append(os.path.realpath(apsim_model))
 
 
-def _read_simulation(datastore, report_name=None):
-    """ returns all data frame the available report tables"""
-    conn = sqlite3.connect(datastore)
-    try:
-        cursor = conn.cursor()
+def run_helper(data_store, IModel, results=True, multithread=True, simulations=None):
+    """
+    Runs a simulation:
+    """
+    run_type_enum = Models.Core.Run.Runner.RunTypeEnum
+    run_type = run_type_enum.MULTITHREAD if multithread else run_type_enum.SINGLETHREAD
 
-        # reading all table names
+    data_store.Dispose()  # start by cleaning the datastore
+    data_store.DataStore.Open()
 
-        table_names = [a for a in cursor.execute("SELECT name FROM sqlite_master WHERE type = 'table'")]
+    if simulations is None:
+        runmodel = Models.Core.Run.Runner(IModel, True, False, False, None, run_type)
+        e = runmodel.Run()
+    else:
+        sims = IModel.FindAllInScope[Models.Core.Simulation]()
+        # Runner needs C# list
+        cs_sims = List[Models.Core.Simulation]()
+        for s in sims:
+            cs_sims.Add(s)
+            runmodel = Models.Core.Run.Runner(cs_sims, True, False, False, None, runtype)
+            e = runmodel.Run()
 
-        table_list = []
-        for i in table_names:
-            table_list.append(i[0])
-            # remove these
-        rm = ['_InitialConditions', '_Messages', '_Checkpoints', '_Units']
-        for i in rm:
-            if i in table_list:
-                table_list.remove(i)
-                # start selecting tables
-        select_template = 'SELECT * FROM {table_list}'
-
-        # create data fram dictionary to keep all the tables
-        dataframe_dict = {}
-
-        for tname in table_list:
-            query = select_template.format(table_list=tname)
-            dataframe_dict[tname] = pd.read_sql(query, conn)
-        # close the connection cursor
-
-        dfl = len(dataframe_dict)
-        if len(dataframe_dict) == 0:
-            print("the data dictionary is empty. no data has been returned")
-            # else:
-            # remove elements
-            # print(f"{dfl} data frames has been returned")
-
-        if report_name:
-            return dataframe_dict[report_name]
-        else:
-            return dataframe_dict
-    finally:
-        conn.close()
+        if len(e) > 0:  # this function is not doing much.
+            print(e[0].ToString())
 
 
-def run(named_tuple_data, results=True, multithread=True, simulations =None):
-    """Run apsimx model in the simulations. the method first cleans the existing database.
+def run(named_tuple_data, results=True, multithread=True, simulations=None):
+    """
+    # TODO generally when people see a method call run, they thing of multithreading.
+    # it looks like this is for a simulation of some sort.
+    Run apsimx model in the simulations. the method first cleans the existing database.
 
      This is the safest way to run apsimx files in parallel
      as named tuples are immutable so the chances of race conditioning are very low
@@ -79,35 +64,19 @@ def run(named_tuple_data, results=True, multithread=True, simulations =None):
             If `True` APSIM uses multiple threads, by default `True`
 
         results (bool), optional: if True, the results will be returned else the function execute without returning anything
-        """
-    if multithread:
-        runtype = Models.Core.Run.Runner.RunTypeEnum.MultiThreaded
-    else:
-        runtype = Models.Core.Run.Runner.RunTypeEnum.SingleThreaded
+    """
+    data_store, IModel = named_tuple_data.DataStore, named_tuple_data.IModel
     try:
-        named_tuple_data.DataStore.Dispose()
-        named_tuple_data.DataStore.Open()
-        if simulations is None:
-            runmodel = Models.Core.Run.Runner(named_tuple_data.IModel, True, False, False, None, runtype)
-            e = runmodel.Run()
-        else:
-            sims = named_tuple_data.IModel.FindAllInScope[Models.Core.Simulation]()
-            # Runner needs C# list
-            cs_sims = List[Models.Core.Simulation]()
-            for s in sims:
-                cs_sims.Add(s)
-                runmodel = Models.Core.Run.Runner(cs_sims, True, False, False, None, runtype)
-                e = runmodel.Run()
-        if len(e) > 0:
-            print(e[0].ToString())
-        if results:
-            data = _read_simulation(named_tuple_data.datastore)
-
-            return data
+        run_helper(data_store, IModel, results=results, multithread=multithread, simulations=simulations)
     except Exception as e:
-        raise
+        logger.exception(repr(e))
     finally:
-        named_tuple_data.DataStore.Close()
+        data_store.close()
+
+    if results:
+        from apsimNGpy.utilities.run_utils import read_simulation
+        data = read_simulation(data_store)
+        return data
 
 
 def run_model(named_tuple_model, results=False, clean_up =False):

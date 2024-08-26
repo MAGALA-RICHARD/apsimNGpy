@@ -1,44 +1,46 @@
 import configparser
 from os.path import (realpath, join, isfile, exists)
+import sys
 
-config_path = realpath('config.ini')
 
-if not exists(config_path):
+def start_pythonnet():
+    try:
+        if pythonnet.get_runtime_info() is None:
+            return pythonnet.load("coreclr")
+    except Exception as e:
+        print("dotnet not found, trying alternate runtime", repr(e))
+        return pythonnet.load()
+
+
+def get_apsim_binary_path():
     config = configparser.ConfigParser()
-    config['Paths'] = {'ApSIM_LOCATION': ''}
-    with open(config_path, 'w') as configfile:
-        config.write(configfile)
+    config.read()
+
+    APSIM_LOC = config['Paths']['APSIM_LOCATION']
+    # JUST ENSURE THAT THE FILE EXISTS 1. AND THEN ENSURE IT HAS THE CONFIG, We should not catch any error HERE.
+    # What we do is check if the APSIM PATH IS VALID.
+    # one advantage of encapsulating logic in method is you can control when they are called.
+    return APSIM_LOC
 
 
-class Config:
+def load_python_net():
     """
-        The configuration module providing the leeway for the user to change the
-       global variables such as aPSim bin locations.
-        """
+    This function belongs to the config at the root. It will replace the need for the class
+    """
+    start_pythonnet()
+    # use get because it does not raise key error. it returns none if not found
+    APSIM_PATH = get_apsim_binary_path()
 
-    config = configparser.ConfigParser()
-    config.read(config_path)
+    if 'bin' not in APSIM_PATH:
+        APSIM_PATH = os.path.join(APSIM_PATH, 'bin')
 
-    @classmethod
-    def get_aPSim_bin_path(cls):
-        return cls.config['Paths']['ApSIM_LOCATION']
+    if not os.path.exists(APSIM_PATH):
+        raise ValueError("A full path to the binary folder is required or the path is invalid")
 
-    @classmethod
-    def set_aPSim_bin_path(cls, path):
-        _path = realpath(path)
-        if _path != cls.get_aPSim_bin_path():
-            Is_Model_in_bin_folder = join(_path, 'Models.exe')
-            # if not, we raise assertion error
-            assert isfile(Is_Model_in_bin_folder), f"aPSim binaries may not be present at this location: {_path}"
-            cls.config['Paths']['ApSIM_LOCATION'] = _path
-            with open('config.ini', 'w') as config_file:
-                cls.config.write(config_file)
+    sys.path.append(APSIM_PATH)
+
+    import clr
+    sys = clr.AddReference("System")
+    lm = clr.AddReference("Models")
 
 
-if __name__ == '__main__':
-    # example windows;
-    from pathlib import Path
-
-    Home_aPSim = list(Path.home().joinpath('AppData', 'Local', 'Programs').rglob('*2022.12.7130.0'))[0].joinpath('bin')
-    Config.set_aPSim_bin_path(Home_aPSim)
-    print(Config.get_aPSim_bin_path())

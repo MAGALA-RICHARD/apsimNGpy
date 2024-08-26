@@ -1,5 +1,5 @@
 from builtins import function
-
+ # TODO delete this entire class.
 import pandas as pd
 import time
 from scipy.optimize import minimize, least_squares

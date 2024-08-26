@@ -14,7 +14,7 @@ wd = Path.home()
 os.chdir(wd)
 # maize = LoadExampleFiles(wd).get_maize_model
 import numpy as np
-
+# TODO; this is not a good name for this file.
 lon = -93.620369, 42.034534
 
 
@@ -140,7 +140,7 @@ def impute_data(met, method="mean", verbose=False, **kwargs):
 
 def separate_date(date_str):
     # Ensure the date string is of the correct format
-
+    # TODO introduce the use of the dateutils package. delete this function
     # Extracting year, month, and day
     year = date_str[:4]
     month = date_str[4:6]
@@ -150,6 +150,7 @@ def separate_date(date_str):
 
 
 def getnasa_df(lonlat, start, end):
+    # TODO This function name is likely duplicated
     lon = lonlat[0]
     lat = lonlat[1]
     param = ["T2M_MAX", "T2M_MIN", "ALLSKY_SFC_SW_DWN", "PRECTOTCORR", "RH2M", "WS2M"]

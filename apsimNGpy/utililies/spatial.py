@@ -16,7 +16,7 @@ from apsimNGpy.parallel.process import download_soil_tables
 from tqdm import tqdm
 import random
 from apsimNGpy.manager.soilmanager import OrganizeAPSIMsoil_profile, DownloadsurgoSoiltables
-from apsimNGpy.core.weather import daymet_bylocation_nocsv
+from apsimNGpy.core.weathermanager import daymet_bylocation_nocsv
 from apsimNGpy.parallel.process import custom_parallel
 from apsimNGpy.parallel.safe import initialise
 

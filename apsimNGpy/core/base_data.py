@@ -253,6 +253,9 @@ weather_path = os.path.join(examples, "WeatherFiles")
 
 
 class __DetectApsimExamples:
+    """
+    TODO delete this class. It is enough to write a single function get_example.
+    """
     def __init__(self, copy_path: str = None):
         self.all = []
         self.copy_path = copy_path

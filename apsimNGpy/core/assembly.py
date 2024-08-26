@@ -6,9 +6,11 @@ from pathlib import Path
 from apsimNGpy.parallel.process import custom_parallel
 import pandas as pd
 from typing import Union
+
+
 class Assembly:
-    def __init__(self, data, sim_id, model, tag ='onion', wd =None, location_column='lon_lat',
-                 water_model = "swat", end = 2022, start =1986):
+    def __init__(self, data, sim_id, model, tag='onion', wd =None, location_column='lon_lat',
+                 water_model="swat", end=2022, start =1986):
 
         self.data = data
         self.sim_id = sim_id

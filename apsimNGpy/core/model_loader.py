@@ -89,6 +89,8 @@ def load_apx_model(model=None, out=None, file_load_method='string', met_file=Non
 
     @singledispatch
     def loader(_model):
+        # TODO this single dispatch is hiding implementation.
+        #  You can achieve this with conditional statements. compress 35 lines into 15 or less.
         # this will raise not implemented error if the _model is not a dict, str, None, Models.Core.Simulation,
         # or a pathlib path object
         raise NotImplementedError(f"Unsupported type: {type(_model)}")
@@ -159,19 +161,19 @@ def save_model_to_file(_model, out=None):
 
 
 def recompile(_model, out=None, met_path=None):
-    """ recompile without saving to disk useful for recombiling the same model on the go after updating management scripts
+    """
+    recompile without saving to disk useful for recombiling the same model on the go after
+    updating management scripts
 
-            Parameters
-            ----------
-            out : str, optional path to save the model to
-
-                :param met_path: path to met file
-                :param out: out path name for database reconfiguration
-                :param _model:APSIM Models.Core.Simulations object
-                returns named tuple with a recompiled model
-            """
+    Parameters
+    ----------
+    :out : str, optional path to save the model to
+    :param met_path: path to met file
+    :param out: out path name for database reconfiguration
+    :param _model:APSIM Models.Core.Simulations object
+    returns named tuple with a recompiled model
+    """
     # Determine the output path
-
     final_out_path = out or _model.FileName
 
     # Serialize the model to JSON string
@@ -187,6 +189,9 @@ def recompile(_model, out=None, met_path=None):
     datastore = _Model.FindChild[Models.Storage.DataStore]().FileName
     DataStore = _Model.FindChild[Models.Storage.DataStore]()
     # need to make ModelData a constant and named outside the script for consistency across scripts
+    # Yes, I agree with the above assessment. Ideally in core, where you define a model
+    # TODO this is probably a good use case for data class. But also need to change name.
+    # Even when using different cases, two variables cant be given the same name: datastore/DataStore
     ModelData = namedtuple('model_data', ['IModel', 'path', 'datastore', "DataStore", 'results', 'met_path'])
     return ModelData(IModel=_Model, path=final_out_path, datastore=datastore, DataStore=DataStore,
                      results=None,

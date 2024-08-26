@@ -10,6 +10,7 @@ import json
 import requests
 from datetime import datetime
 
+# The functions defined here look like they are suitable for the file weather manager
 
 wd = Path.home()
 os.chdir(wd)

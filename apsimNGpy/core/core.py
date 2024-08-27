@@ -385,11 +385,12 @@ class APSIMNG:
                 Simulation name to be cloned, of None clone the first simulation in model
         """
 
-        sim = self._find_simulation(simulation)
-        zone = sim.FindChild[Models.Core.Zone](zone)
-        clone_zone = Models.Core.Apsim.Clone(zone)
-        clone_zone.Name = target
-        sim.Children.Add(clone_zone)
+        sims = self._find_simulation(simulation)
+        for sim in sims:
+            zone = sim.FindChild[Models.Core.Zone](zone)
+            clone_zone = Models.Core.Apsim.Clone(zone)
+            clone_zone.Name = target
+            sim.Children.Add(clone_zone)
         self.save_edited_file(reload=True)
         return self
 
@@ -406,9 +407,9 @@ class APSIMNG:
                 list of zones as APSIM Models.Core.Zone objects
         """
 
-        sim = self._find_simulation(simulation)
-        zones = sim.FindAllDescendants[Models.Core.Zone]()
-        return list(zones)
+        sims = self._find_simulation(simulation)
+        zones = [sim.FindAllDescendants[Models.Core.Zone]() for sim in sims]
+        return [*zip(*zones)]
 
     @property  #
     def extract_report_names(self):
@@ -462,19 +463,19 @@ class APSIMNG:
         rep = self.Simulations.FindChild[Models.Core.Folder]()
         return rep
 
-    def _find_cultvar(self, CultvarName):
+    def _find_cultivar(self, cultivar_name):
 
         rep = self._find_replacement().FindAllDescendants[Models.PMF.Cultivar]()
         xp = [i for i in rep]
         for cult in xp:
-            if cult.Name == CultvarName:
+            if cult.Name == cultivar_name:
                 return cult
                 break
         return rep
 
-    def read_cultvar_params(self, name, verbose=None):
-        cultvar = self._find_cultvar(name)
-        c_param = self._cultivar_params(cultvar)
+    def read_cultivar_params(self, name, verbose=None):
+        cultivar = self._find_cultivar(name)
+        c_param = self._cultivar_params(cultivar)
         if verbose:
             for i in c_param:
                 print(f"{i} : {c_param[i]} \n")
@@ -511,7 +512,7 @@ class APSIMNG:
         if len(commands) != len(values):
             raise ValueError("The length of values and commands must be equal")
 
-        cultvar = self._find_cultvar(CultivarName)
+        cultvar = self._find_cultivar(CultivarName)
         if cultvar is None:
             raise ValueError(f"Cultivar '{CultivarName}' not found")
 
@@ -525,7 +526,7 @@ class APSIMNG:
 
         return self
 
-    def get_current_cultvar_name(self, ManagerName):
+    def get_current_cultivar_name(self, ManagerName):
         try:
             ap = self.extract_user_input(ManagerName)['CultivarName']
             return ap
@@ -560,12 +561,6 @@ class APSIMNG:
         result = func(df[column])
 
         return result
-
-    @staticmethod
-    def generate_unique_name(base_name, length=6):
-        random_suffix = ''.join(random.choices(string.ascii_lowercase, k=length))
-        unique_name = base_name + '_' + random_suffix
-        return unique_name
 
     # clone apsimx file by generating unquie name
     def copy_apsim_file(self):
@@ -717,42 +712,6 @@ class APSIMNG:
         self.Simulations = self.Simulations.RevertCheckpoint('new_model')
         return self
 
-    def update_management_decissions(self, management, simulations=None, out=None):
-        """Update management, handles multiple managers in a loop
-
-        Parameters
-        ----------
-        management: a list of dictionaries of management paramaters or a dictionary with keyvarlue pairs of parameters and associated values, respectivelyto update. examine_management_info` to see current values.
-        make a dictionary with 'Name' as the for the of  management script
-        simulations, optional
-            List of simulation names to update, if `None` update all simulations not recommended.
-        reload, optional
-            _description_ defaults to True
-            out: bool, optional specifies the new filename
-        """
-        if not isinstance(management, list):
-            management = [management]
-        # from apsimx.utils import KeyValuePair
-        for sim in self.find_simulations(simulations):
-            zone = sim.FindChild[Models.Core.Zone]()
-            atn = []
-            for action in zone.FindAllChildren[Models.Manager]():
-                for managementt in management:
-                    if action.Name == managementt["Name"]:
-                        values = managementt
-                        for i in range(len(action.Parameters)):
-                            param = action.Parameters[i].Key
-
-                            if param in values:
-                                fvalue = f"{values[param]}"
-                                action.Parameters[i] = KeyValuePair[String, String](param, fvalue)
-
-                                # action.Parameters[i]= {param:f"{values[param]}"}
-        # self.examine_management_info()                # action.GetParametersFromScriptModel()
-        self.path = out or self.out_path
-        self.save_edited_file(outpath=self.path)
-        self.load_apsimx_model()
-
     def convert_to_IModel(self):
         if isinstance(self.Simulations, Models.Core.ApsimFile.ConverterReturnType):
             return self.Simulations.get_NewModel()
@@ -768,26 +727,6 @@ class APSIMNG:
                 self.path = out_path or self.path
         except AttributeError as e:
             pass
-        return self
-
-    def update_manager(self, **kwargs):
-        """
-        updates a single management script by kew word arguments. kwargs can be the key value pairs of the parameters
-        of the management script, if Name of the script is not specified, updates will not be successfully
-        """
-        self.Simulations = self.convert_to_IModel()
-        manager = self.Simulations.FindAllInScope[Models.Manager](kwargs['Name'])
-        manager_scripts = [i for i in manager]
-        for single in manager_scripts:
-            for i in range(len(single.Parameters)):
-                kvp = single.Parameters[i]
-                if kvp.Key in kwargs.keys():
-                    updated_kvp = KeyValuePair[String, String](kvp.Key, kwargs[kvp.Key])
-                    single.Parameters[i] = updated_kvp
-            # Serialize the model to JSON string
-        fileName = kwargs.get('out_path') or self.model_info.path
-        self.recompile_edited_model(out_path=fileName)
-        self.Simulations = self.convert_to_IModel()
         return self
 
     def update_mgt(self, *, management: [dict, tuple],

@@ -103,7 +103,7 @@ class Replacements(ReplacementHolder):
         'soilorganicmatter': ('simulations', 'inrm', 'icnr'),
         'clock': ('start_date', 'end_date', 'simulations')
         """
-        #chd = iter(children)
+        # chd = iter(children)
         # while True:
         #     child = next(chd, None)
         #     if child is None:
@@ -111,11 +111,10 @@ class Replacements(ReplacementHolder):
         for child in children:
             child = child.lower().replace(" ", "")
             method = self.__methods(child)
-            sig  = inspect.signature(method)
+            sig = inspect.signature(method)
             args = {k: v for k, v in kwargs.items() if k in sig.parameters.keys()}
             method(**args)
         return self
-
 
 
 if __name__ == '__main__':
@@ -134,7 +133,7 @@ if __name__ == '__main__':
 
     # the method make_replacements can be chained with several other action types
     mgt = {'Name': 'Sow using a variable rule', 'Population': 8.5},
-    model = ce.update_child_params(child='weather', weather_file = met)
+    model = ce.update_child_params(child='weather', weather_file=met)
     mgt = {'Name': 'Sow using a variable rule', 'Population': 7.5},
     chilredren = 'Manager', 'weather', 'SoilOrganicMatter'
     ce.update_children_params(children=chilredren, icnr=148, weather_file=met2, management=mgt)

@@ -293,19 +293,16 @@ class APSIMNG:
             if clean:
                 self._DataStore.Dispose()
                 pathlib.Path(self._DataStore.FileName).unlink(missing_ok=True)
-
-            if simulations is None:
-                runmodel = Models.Core.Run.Runner(self.Simulations, True, False, False, None, runtype)
-                e = runmodel.Run()
-            else:
-                sims = self.find_simulations(simulations)
-                # Runner needs C# list
+            sims = self.find_simulations(simulations) if simulations else self.Simulations
+            if simulations:
                 cs_sims = List[Models.Core.Simulation]()
                 for s in sims:
                     cs_sims.Add(s)
-                    runmodel = Models.Core.Run.Runner(cs_sims, True, False, False, None, runtype)
-                    e = runmodel.Run()
-
+                sim = cs_sims
+            else:
+                sim = sims
+            _run_model = Models.Core.Run.Runner(sim, True, False, False, None, runtype)
+            e = _run_model.Run()
             if len(e) > 0:
                 print(e[0].ToString())
             if report_name is None:
@@ -1380,12 +1377,11 @@ if __name__ == '__main__':
             a = perf_counter()
             # model.RevertCheckpoint()
 
-            model.update_manager(Name="Simple Rotation", Crops=rn)
             print(model.extract_user_input('Simple Rotation'))
             b = perf_counter()
 
             print(b - a, 'seconds')
-            model.run('Carbon')
+            model.run('Carbon', simulations=['P30511', 'P3051'])
             print(model.results.mean(numeric_only=True))
 
         a = perf_counter()

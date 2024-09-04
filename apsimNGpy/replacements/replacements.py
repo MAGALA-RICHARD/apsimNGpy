@@ -66,7 +66,6 @@ class Replacements(ReplacementHolder):
         else:
             raise TypeError(f"Unknown node: {child}, children should be any of {self.mt.keys()}")
 
-    @timer
     def update_child_params(self, child: str, **kwargs):
         """Abstract method to perform various parameters replacements in apSim model. :param child: (str): name of
         e.g., weather space is allowed for more descriptive one such a soil organic not case-sensitive :keyword
@@ -87,7 +86,6 @@ class Replacements(ReplacementHolder):
         # no need to filter paramters as it takes one child node
         return self.__methods(_child)(**kwargs)
 
-    @timer
     def update_children_params(self, children: tuple, **kwargs):
         """Method to perform various parameters replacements in apSim model.
         :param children: (str): name of e.g., weather space is allowed for more descriptive one such a soil organic not case-sensitive

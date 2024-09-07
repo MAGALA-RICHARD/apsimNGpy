@@ -116,7 +116,7 @@ def run_model(named_tuple_model, results=False, clean_up =False):
     :param results (bool) for return results
     :param named_tuple_model: named tuple from model_loader
     :param clean_up (bool), deletes the files associated with the Apsim model. there is no need to worry about this
-    because everything is compied in the model_loader
+    because everything is compiled in the model_loader
     :return: a named tuple objects populated with the results if results is True
     """
     try:

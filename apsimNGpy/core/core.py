@@ -1087,12 +1087,12 @@ class APSIMNG:
 
         :param path:
             A string representing the hierarchical path of nodes in the order:
-            'simulations.soil_child.crop.indices.parameter'.
+            'simulations.Soil.soil_child.crop.indices.parameter'. Soil here is a constant
 
             - The components 'simulations', 'crop', and 'indices' can be `None`.
-            - Example of a `None`-inclusive path: 'None.physical.None.None.BD'
+            - Example of a `None`-inclusive path: 'None.Soil.physical.None.None.BD'
             - If `indices` is a list, it is expected to be wrapped in square brackets.
-            - Example when `indices` are not `None`: 'None.physical.None.[1].BD'
+            - Example when `indices` are not `None`: 'None.Soil.physical.None.[1].BD'
             - if simulations please use square blocks
                Example when `indices` are not `None`: '[maize_simulation].physical.None.[1].BD'
 
@@ -1119,16 +1119,17 @@ class APSIMNG:
 
             from apsimNGpy.core.base_data import load_default_simulations
             model = load_default_simulations(crop = 'maize')
-            model.replace_soil_properties_by_path(path = 'None.Organic.None.None.Carbon', param_values= [1.23])
+            model.replace_soil_properties_by_path(path = 'None.Soil.Organic.None.None.Carbon', param_values= [1.23])
             if we want to replace carbon at the bottom of the soil profile, we use a negative index  -1
-            model.replace_soil_properties_by_path(path = 'None.Organic.None.[-1].Carbon', param_values= [1.23])
+            model.replace_soil_properties_by_path(path = 'None.Soil.Organic.None.[-1].Carbon', param_values= [1.23])
         """
 
-        function_parameters = ['simulations', 'soil_child', 'crop', 'indices', 'parameter']
+        function_parameters = ['simulations', 'Soil', 'soil_child', 'crop', 'indices', 'parameter']
         expected_nones = ['simulations', 'crop', 'indices']
         args = path.split(str_fmt)
         if len(args) != len(function_parameters):
-            raise TypeError(f"expected order is: {function_parameters}, crop, indices and simulations can be None")
+            raise TypeError(f"expected order is: {function_parameters}, crop, indices and simulations can be None"
+                            f"if replacement is related to soil properties, soil is a constant after the simulation name")
         # bind them to the function paramters
         fpv = dict(zip(function_parameters, args))
 

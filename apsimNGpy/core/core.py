@@ -43,6 +43,7 @@ from apsimNGpy.core.apsim_file import XFile as load_model
 from apsimNGpy.core.model_loader import (load_apx_model, save_model_to_file, recompile)
 from apsimNGpy.utililies.utils import timer
 from apsimNGpy.core.runner import run_model
+import ast
 
 
 # from settings import * This file is not ready and i wanted to do some test
@@ -279,6 +280,7 @@ class APSIMNG:
 
         multithread
             If `True` APSIM uses multiple threads, by default `True`
+            :param simulations:
         """
         try:
             if multithread:
@@ -1003,10 +1005,9 @@ class APSIMNG:
         """replaces specified soil physical parameters in the simulation
 
         ______________________________________________________ Args: parameter (_string_, required): string e.g. DUL,
-        SAT. open APSIMX file in the GUI and examine the physical node for clues on the parameter names simulation (
-        string, optional): Targeted simulation name. Defaults to None. param_values (array, required): arrays or list
+        SAT. open APSIMX file in the GUI and examine the physical node for clues on the parameter names simulation (        string, optional): Targeted simulation name. Defaults to None. param_values (array, required): arrays or list
         of values for the specified parameter to replace index (int, optional):
-        if inidces is None replacement is done with corresponding indices of the param values
+        if indices is None replacement is done with corresponding indices of the param values
         """
         _simulations = simulations if simulations else self.simulation_names
         if indices is None:
@@ -1075,6 +1076,65 @@ class APSIMNG:
         solutes = self._extract_solute(simulation)
         setattr(solutes, parameter, param_values)
 
+    def replace_soil_properties_by_path(self, path: str,
+                                        param_values: list,
+                                        str_fmt=".",
+                                        ** kwargs):
+        # TODO I know there is a better way to implement this
+        """
+        This function processes a path where each component represents different nodes in a hierarchy,
+        with the ability to replace parameter values at various levels.
+
+        :param path:
+            A string representing the hierarchical path of nodes in the order:
+            'simulations.soil_child.crop.indices.parameter'.
+
+            - The components 'simulations', 'crop', and 'indices' can be `None`.
+            - Example of a `None`-inclusive path: 'None.physical.None.None.BD'
+            - If `indices` is a list, it is expected to be wrapped in square brackets.
+            - Example when `indices` are not `None`: 'None.physical.None.[1].BD'
+
+            **Note: **
+            - The `soil_child` node might be replaced in a non-systematic manner, which is why indices
+              are used to handle varying soil values.
+            - When a component is `None`, default values are used for that part of the path. See the
+              documentation for the `replace_soil_property_values` function for more information on
+              default values.
+
+        :param param_values:
+            A list of parameter values that will replace the existing values in the specified path.
+            For example, `[0.1, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08]` could be used to replace values for `NH3`.
+
+        :param str_fmt:
+            A string specifying the formatting character used to separate each component in the path.
+            Examples include ".", "_", or "/". This defines how the components are joined together to
+            form the full path.
+
+        :return:
+            Returns the instance of `self` after processing the path and applying the parameter value replacements.
+
+            Example f
+
+            from apsimNGpy.core.base_data import load_default_simulations
+            model = load_default_simulations(crop = 'maize')
+            model.replace_soil_properties_by_path(path = 'None.Organic.None.None.Carbon', param_values= [1.23])
+            if we want to replace carbon at the bottom of the soil profile, we use a negative index  -1
+        """
+
+        function_parameters = ['simulations', 'soil_child', 'crop', 'indices', 'parameter']
+        expected_nones = ['simulations', 'crop', 'indices']
+        args = path.split(str_fmt)
+        if len(args) != len(function_parameters):
+            raise TypeError(f"expected order is: {function_parameters}, crop, indices and simulations can be None")
+        # bind them to the function paramters
+        fpv = dict(zip(function_parameters, args))
+        # by all means, we want indices to be evaluated
+        fpt = {k: (p := ast.literal_eval(v)) if (k in expected_nones and v == 'None' or k == 'indices') else (p := v)
+               for k, v in fpv.items()}
+        # we can now call the method below. First, we update param_values
+        fpt['param_values'] = param_values
+        return self.replace_soil_property_values(**fpt)
+
     def replace_soil_property_values(self, *, parameter: str,
                                      param_values: list,
                                      soil_child: str,
@@ -1086,7 +1146,7 @@ class APSIMNG:
         Replaces values in any soil property array. The soil property array
         :param parameter: str: parameter name e.g., NO3, 'BD'
         :param param_values:list or tuple: values of the specified soil property name to replace
-        :param _soil_child: str: sub child of the soil component e.g., organic, physical etc.
+        :param soil_child: str: sub child of the soil component e.g., organic, physical etc.
         :param simulations: list: list of simulations to where the node is found if
         not found, all current simulations will receive the new values, thus defaults to None
         :param indices: list. Positions in the array which will be replaced. Please note that unlike C#, python satrt counting from 0

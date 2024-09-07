@@ -44,13 +44,7 @@ class Replacements(ReplacementHolder):
         super().__init__(model, out_path, **kwargs)
         # Map action types to method names
         # this will hold lower key
-        self.methods = None
-        self.out_path = out_path
-
-        # define them with human-readable formats
-
-    def __methods(self, child):
-        self.mt = {
+        self._methods = {
             'cultivar': 'edit_cultivar',
             'manager': 'update_mgt',
             'weather': 'replace_met_file',
@@ -61,10 +55,17 @@ class Replacements(ReplacementHolder):
             'soilorganicmatter': 'change_som',
             'clock': 'change_simulation_dates'
         }
-        if child in self.mt:
-            return getattr(self, self.mt[child])
+        self.methods = None
+        self.out_path = out_path
+
+        # define them with human-readable formats
+
+    def replacement_methods(self, child):
+
+        if child in self._methods:
+            return getattr(self, self._methods[child])
         else:
-            raise TypeError(f"Unknown node: {child}, children should be any of {self.mt.keys()}")
+            raise TypeError(f"Unknown node: {child}, children should be any of {self._methods.keys()}")
 
     def update_child_params(self, child: str, **kwargs):
         """Abstract method to perform various parameters replacements in apSim model. :param child: (str): name of
@@ -84,7 +85,7 @@ class Replacements(ReplacementHolder):
         # Convert keys to lowercase
         _child = child.lower().replace(" ", "")
         # no need to filter paramters as it takes one child node
-        return self.__methods(_child)(**kwargs)
+        return self.replacement_methods(_child)(**kwargs)
 
     def update_children_params(self, children: tuple, **kwargs):
         """Method to perform various parameters replacements in apSim model.
@@ -108,7 +109,7 @@ class Replacements(ReplacementHolder):
         #         break
         for child in children:
             child = child.lower().replace(" ", "")
-            method = self.__methods(child)
+            method = self.replacement_methods(child)
             sig = inspect.signature(method)
             args = {k: v for k, v in kwargs.items() if k in sig.parameters.keys()}
             method(**args)
@@ -138,3 +139,9 @@ if __name__ == '__main__':
     xi = ce.extract_user_input('Sow using a variable rule')
 
     ce.show_met_file_in_simulation()
+    from apsimNGpy.core.base_data import load_default_simulations
+
+    soybean_model = load_default_simulations(crop='soybean')
+    soybean_model.run("Report")
+    res = soybean_model.results
+    print(res)

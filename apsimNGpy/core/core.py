@@ -1079,7 +1079,7 @@ class APSIMNG:
     def replace_soil_properties_by_path(self, path: str,
                                         param_values: list,
                                         str_fmt=".",
-                                        ** kwargs):
+                                        **kwargs):
         # TODO I know there is a better way to implement this
         """
         This function processes a path where each component represents different nodes in a hierarchy,
@@ -1093,10 +1093,12 @@ class APSIMNG:
             - Example of a `None`-inclusive path: 'None.physical.None.None.BD'
             - If `indices` is a list, it is expected to be wrapped in square brackets.
             - Example when `indices` are not `None`: 'None.physical.None.[1].BD'
+            - if simulations please use square blocks
+               Example when `indices` are not `None`: '[maize_simulation].physical.None.[1].BD'
 
             **Note: **
             - The `soil_child` node might be replaced in a non-systematic manner, which is why indices
-              are used to handle varying soil values.
+              are used to handle this complexity.
             - When a component is `None`, default values are used for that part of the path. See the
               documentation for the `replace_soil_property_values` function for more information on
               default values.
@@ -1119,6 +1121,7 @@ class APSIMNG:
             model = load_default_simulations(crop = 'maize')
             model.replace_soil_properties_by_path(path = 'None.Organic.None.None.Carbon', param_values= [1.23])
             if we want to replace carbon at the bottom of the soil profile, we use a negative index  -1
+            model.replace_soil_properties_by_path(path = 'None.Organic.None.[-1].Carbon', param_values= [1.23])
         """
 
         function_parameters = ['simulations', 'soil_child', 'crop', 'indices', 'parameter']
@@ -1128,8 +1131,16 @@ class APSIMNG:
             raise TypeError(f"expected order is: {function_parameters}, crop, indices and simulations can be None")
         # bind them to the function paramters
         fpv = dict(zip(function_parameters, args))
+
         # by all means, we want indices to be evaluated
-        fpt = {k: (p := ast.literal_eval(v)) if (k in expected_nones and v == 'None' or k == 'indices') else (p := v)
+        def _try_literal_eval(_string):
+            try:
+                string_new = ast.literal_eval(_string)
+            except ValueError:
+                return _string
+            return string_new
+
+        fpt = {k: (p := _try_literal_eval(v)) if (k in expected_nones) else (p := v)
                for k, v in fpv.items()}
         # we can now call the method below. First, we update param_values
         fpt['param_values'] = param_values

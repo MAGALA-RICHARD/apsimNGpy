@@ -67,6 +67,23 @@ class Replacements(ReplacementHolder):
         else:
             raise TypeError(f"Unknown node: {child}, children should be any of {self._methods.keys()}")
 
+    def update_mgt_by_path(self, *, path, param_values, fmt='.'):
+        parameters_guide = ['simulations_name', 'Manager', 'manager_name', 'out_path_name', 'parameter_name']
+        parameters = ['simulations', 'Manager', 'Name', 'out']
+        args = path.split(fmt)
+        if len(args) != len(parameters_guide):
+            join_p = ".".join(parameters_guide)
+            raise ValueError(f"Invalid path '{path}' expected path should follow {join_p}")
+        args = [(p := f"'{arg}'") if " " in arg and fmt != " " and '[' not in arg else arg for arg in args]
+        _eval_params = [self._try_literal_eval(arg) for arg in args]
+
+        _eval_params[1] = {'Name': _eval_params[2], _eval_params[-1]: param_values},
+        parameters[1] = 'management'
+
+        _param_values = dict(zip(parameters, _eval_params))
+
+        return self.update_mgt(**_param_values)
+
     def update_child_params(self, child: str, **kwargs):
         """Abstract method to perform various parameters replacements in apSim model. :param child: (str): name of
         e.g., weather space is allowed for more descriptive one such a soil organic not case-sensitive :keyword

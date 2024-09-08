@@ -728,6 +728,21 @@ class APSIMNG:
             pass
         return self
 
+    def update_mgt_by_path(self, *, path, param_values, fmt='.'):
+        parameters_guide = ['simulations_name', 'manager_name', 'out_path_name', 'parameter_name']
+        parameters = ['simulations', 'Name', 'out']
+        args = path.split(fmt)
+        if len(args) != len(parameters_guide):
+            join_p = ".".join(parameters_guide)
+            raise ValueError(f"Invalid path '{path}' expected path should follow {join_p}")
+        args = [(p := f"'{arg}'") if " " in arg and fmt != " " and '[' not in arg else arg for arg in args]
+        _eval_params = [APSIMNG._try_literal_eval(arg) for arg in args]
+        _eval_params[1] = {'Name': _eval_params[1], _eval_params[-1]: param_values},
+        parameters[1] = 'management'
+        _param_values = dict(zip(parameters, _eval_params))
+
+        return self.update_mgt(**_param_values)
+
     def update_mgt(self, *, management: [dict, tuple],
                    simulations: [list, tuple] = None,
                    out: [Path, str] = None,
@@ -1134,18 +1149,20 @@ class APSIMNG:
         fpv = dict(zip(function_parameters, args))
 
         # by all means, we want indices to be evaluated
-        def _try_literal_eval(_string):
-            try:
-                string_new = ast.literal_eval(_string)
-            except ValueError:
-                return _string
-            return string_new
 
-        fpt = {k: (p := _try_literal_eval(v)) if (k in expected_nones) else (p := v)
+        fpt = {k: (p := APSIMNG._try_literal_eval(v)) if (k in expected_nones) else (p := v)
                for k, v in fpv.items()}
         # we can now call the method below. First, we update param_values
         fpt['param_values'] = param_values
         return self.replace_soil_property_values(**fpt)
+
+    @staticmethod
+    def _try_literal_eval(_string):
+        try:
+            string_new = ast.literal_eval(_string)
+        except ValueError:
+            return _string
+        return string_new
 
     def replace_soil_property_values(self, *, parameter: str,
                                      param_values: list,

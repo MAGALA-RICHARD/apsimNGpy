@@ -16,12 +16,18 @@ class ReplacementHolder(APSIMNG, ABC):
 
     @abstractmethod
     def update_mgt_by_path(self, **kwargs):
-        """Abstract method to replace parameters for a single child node"""
+        """Abstract method to replace parameters manager scripts"""
         pass
 
     @abstractmethod
     def update_children_params(self, children: tuple, **kwargs):
         """Abstract method to replace parameters for more than one child node"""
+        pass
+
+    def replace_soil_properties_by_path(self, **kwargs):
+        """
+        Abstract method to replace soil properties
+        """
         pass
 
 

@@ -139,7 +139,7 @@ class Replacements(ReplacementHolder):
         return self.replace_soil_property_values(**fpt)
 
     def update_mgt_by_path(self, *, path: str,
-                           param_values, fmt='.'):
+                           param_values, fmt='.', **kwargs):
         """
             Updates management parameters based on a given path and corresponding parameter values.
 

@@ -264,23 +264,32 @@ class APSIMNG:
             self.restart_model()
             return self
 
-    def run(self, report_name=None, simulations=None, clean=False, multithread=True):
+    def run(self, report_name=None,
+            simulations=None,
+            clean=False,
+            multithread=True,
+            get_dict=False, **kwargs):
         """Run apsim model in the simulations
 
         Parameters
         ----------
-        report_name: str. defaults to APSIM defaults Report Name and if not specified or Report Name not in the simulation tables, the simulator will
+         :param report_name: str. defaults to APSIM defaults Report Name, and if not specified or Report Name not in the simulation tables, the simulator will
             execute the model and save the outcomes in a database file, accessible through alternative retrieval methods.
 
         simulations (__str_), optional
             List of simulation names to run, if `None` runs all simulations, by default `None`.
 
-        clean (_-boolean_), optional
+        :param clean (_-boolean_), optional
             If `True` remove an existing database for the file before running, deafults to False`
 
-        multithread
+        :param multithread: bool
             If `True` APSIM uses multiple threads, by default `True`
             :param simulations:
+
+
+        :param get_dict: bool, return a dictionary of data frame paired by the report table names default to False
+        returns
+            instance of the class APSIMNG
         """
         try:
             if multithread:
@@ -313,9 +322,16 @@ class APSIMNG:
                 if '_Units' in report_name: report_name.remove('_Units')
                 warnings.warn('No tables were specified, retrieved tables includes:: {}'.format(report_name))
             if isinstance(report_name, (tuple, list)):
-                self.results = [read_db_table(self.datastore, report_name=rep) for rep in report_name]
+                if not get_dict:
+                    self.results = [read_db_table(self.datastore, report_name=rep) for rep in report_name]
+                else:
+                    self.results = {rep: read_db_table(self.datastore, report_name=rep) for rep in report_name}
+
             else:
-                self.results = read_db_table(self.datastore, report_name=report_name)
+                if not get_dict:
+                    self.results = read_db_table(self.datastore, report_name=report_name)
+                else:
+                    self.results = {report_name: read_db_table(self.datastore, report_name=report_name)}
         finally:
             # close the datastore
             self._DataStore.Close()
@@ -729,8 +745,8 @@ class APSIMNG:
         return self
 
     def update_mgt_by_path(self, *, path, param_values, fmt='.'):
-        parameters_guide = ['simulations_name','Manager', 'manager_name', 'out_path_name', 'parameter_name']
-        parameters = ['simulations', 'Manager', 'Name',  'out']
+        parameters_guide = ['simulations_name', 'Manager', 'manager_name', 'out_path_name', 'parameter_name']
+        parameters = ['simulations', 'Manager', 'Name', 'out']
         args = path.split(fmt)
         if len(args) != len(parameters_guide):
             join_p = ".".join(parameters_guide)

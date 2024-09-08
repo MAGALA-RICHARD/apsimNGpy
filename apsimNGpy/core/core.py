@@ -268,6 +268,7 @@ class APSIMNG:
             simulations=None,
             clean=False,
             multithread=True,
+            verbose=False,
             get_dict=False, **kwargs):
         """Run apsim model in the simulations
 
@@ -286,7 +287,7 @@ class APSIMNG:
             If `True` APSIM uses multiple threads, by default `True`
             :param simulations:
 
-
+        :param verbose: bool prints diagnostic information such as false report name and simulation
         :param get_dict: bool, return a dictionary of data frame paired by the report table names default to False
         returns
             instance of the class APSIMNG
@@ -320,7 +321,7 @@ class APSIMNG:
                 report_name = get_db_table_names(self.datastore)
                 # issues with decoding '_Units' we remove it
                 if '_Units' in report_name: report_name.remove('_Units')
-                warnings.warn('No tables were specified, retrieved tables includes:: {}'.format(report_name))
+                warnings.warn('No tables were specified, retrieved tables includes:: {}'.format(report_name)) if verbose else None
             if isinstance(report_name, (tuple, list)):
                 if not get_dict:
                     self.results = [read_db_table(self.datastore, report_name=rep) for rep in report_name]

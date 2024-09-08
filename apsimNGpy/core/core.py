@@ -729,15 +729,15 @@ class APSIMNG:
         return self
 
     def update_mgt_by_path(self, *, path, param_values, fmt='.'):
-        parameters_guide = ['simulations_name', 'manager_name', 'out_path_name', 'parameter_name']
-        parameters = ['simulations', 'Name', 'out']
+        parameters_guide = ['simulations_name','Manager', 'manager_name', 'out_path_name', 'parameter_name']
+        parameters = ['simulations', 'Manager', 'Name',  'out']
         args = path.split(fmt)
         if len(args) != len(parameters_guide):
             join_p = ".".join(parameters_guide)
             raise ValueError(f"Invalid path '{path}' expected path should follow {join_p}")
         args = [(p := f"'{arg}'") if " " in arg and fmt != " " and '[' not in arg else arg for arg in args]
         _eval_params = [APSIMNG._try_literal_eval(arg) for arg in args]
-        _eval_params[1] = {'Name': _eval_params[1], _eval_params[-1]: param_values},
+        _eval_params[1] = {'Name': _eval_params[2], _eval_params[-1]: param_values},
         parameters[1] = 'management'
         _param_values = dict(zip(parameters, _eval_params))
 

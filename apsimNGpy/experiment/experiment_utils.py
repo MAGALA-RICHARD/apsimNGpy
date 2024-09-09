@@ -2,6 +2,9 @@ import os
 import shutil
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Union
+
+import numpy as np
 from sqlalchemy import create_engine
 from apsimNGpy.replacements.replacements import Replacements
 
@@ -91,7 +94,7 @@ def run_wrapper(data):
 ################################################################################
 # copy files
 ################################################################################
-def copy_to_many(ids, perms, base_file, path, tag):
+def copy_to_many(ids, base_file, path, tag):
     # def _copy(i_d):
     _path = Path(path)
     iN = ids
@@ -101,22 +104,55 @@ def copy_to_many(ids, perms, base_file, path, tag):
         shutil.copy(base_file, new_file)
 
 
-def define_management_factor(parameter: str, param_values: list,
-                             manager_name,
-                             simulations: list = None,
-                             out_path_name=None,
-                             ):
-    return [dict(path=f'{simulations}.Manager.{manager_name}.{out_path_name}.{parameter}', param_values=i)
-            for i in
-            param_values]
+@dataclass
+class Factor:
+    """
+    placeholder for factor variable and names. it is intended to ease the readability of the factor for the user
+    """
+    variables: Union[list, tuple, np.ndarray]
+    variable_name: str
 
 
-def define_soils_factor(parameter: str, param_values: list,
-                        soil_node: str,
-                        simulations: list = None,
-                        crop: str = None,
-                        indices: list = None
-                        ):
-    return [dict(path=f'{simulations}.Soil.{soil_node}.{crop}.{indices}.{parameter}', param_values=i)
-            for i in
-            param_values]
+def define_factor(parameter: str, param_values: list, factor_type: str,
+                  manager_name: str = None, soil_node: str = None,
+                  simulations: list = None, out_path_name: str = None,
+                  crop: str = None, indices: list = None) -> Factor:
+    """
+    Define a management or soil factor based on the specified type.
+
+    Args:
+        parameter (str): The parameter name.
+        param_values (list): A list of parameter values.
+        factor_type (str): Either 'management' or 'soils' to define the type of factor.
+        manager_name (str, optional): The manager name (for management factor).
+        soil_node (str, optional): The soil node (for soil factor).
+        simulations (list, optional): The list of simulations.
+        out_path_name (str, optional): The output path name (for management factor).
+        crop (str, optional): The crop name (for soil factor).
+        indices (list, optional): The indices (for soils factor).
+
+    Returns:
+        Factor: A Factor object containing the variable paths and the parameter values.
+    """
+    factor = factor_type.lower()
+    if factor == 'management' and manager_name is not None:
+        return Factor(
+            variables=[dict(path=f'{simulations}.Manager.{manager_name}.{out_path_name}.{parameter}', param_values=i)
+                       for i in param_values], variable_name=parameter)
+    elif factor == 'soils' and soil_node is not None:
+        return Factor(
+            variables=[dict(path=f'{simulations}.Soil.{soil_node}.{crop}.{indices}.{parameter}', param_values=i)
+                       for i in param_values], variable_name=parameter)
+    else:
+        raise ValueError(f'Invalid factor type: {factor_type} and {manager_name or soil_node}')
+
+
+# example
+if __name__ == '__main__':
+    from pprint import pprint
+
+    bd = define_factor(parameter="BD", param_values=[1, 23, 157], factor_type='soils', soil_node='Physical')
+    print(bd.variable_name)
+    pprint(bd.variables, indent=4, width=1)
+
+

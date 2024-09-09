@@ -16,7 +16,7 @@ from apsimNGpy.parallel.process import custom_parallel
 import warnings
 from collections import ChainMap
 from apsimNGpy.replacements.replacements import Replacements
-from experiment_utils import _run_experiment, MetaInfo, copy_to_many
+from experiment_utils import (_run_experiment, MetaInfo, copy_to_many, define_factor, Factor)
 
 
 ################################################################################
@@ -90,20 +90,13 @@ class DeepChainMap(ChainMap):
         return concat(gdata, axis=1) if gdata else None
 
 
-@dataclass
-class Factor:
-    """
-    placeholder for factor variable and names. it is intended to ease the readability of the factor for the user
-    """
-    variables: [list, tuple, np.ndarray]
-    name: str
-
-
 ################################################################################
 # define_parameters
 ################################################################################
 def define_parameters(factors_list):
-    return create_permutations([factor.variables for factor in factors_list], [factor.name for factor in factors_list])
+    permutations = create_permutations([factor.variables for factor in factors_list],
+                               [factor.variable_name for factor in factors_list])
+    return permutations
 
 
 @dataclass
@@ -174,7 +167,6 @@ def set_experiment(*, datastorage,
     list(
         custom_parallel(copy_to_many,
                         ids,
-                        perms,
                         base_file,
                         __path, tag,
                         use_thread=use_thread,
@@ -200,7 +192,7 @@ if __name__ == '__main__':
     Crops = [{'management': {'Name': "Simple Rotation", "Crops": i}} for i in
              ['Maize', 'Wheat, Maize']]
     a1 = Factor(name='Crops', variables=Crops)
-    b1 = Factor(name='Amount',variables=Amount)
+    b1 = Factor(name='Amount', variables=Amount)
 
     facs = [Crops, Amount]
     ap = set_experiment(factors=[a1, b1],

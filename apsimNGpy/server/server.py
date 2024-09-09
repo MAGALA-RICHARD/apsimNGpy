@@ -7,18 +7,19 @@ import socket
 import pandas as pd
 from time import sleep
 from ctypes import c_int32, c_double, c_char
+from .. import settings
 
 import os
 from pathlib import Path
-from apsimNGpy.core import pythonet_config
+from apsimNGpy.config import load_python_net
 from apsimNGpy.data.base_data import LoadExampleFiles
 import clr  # this should be import after importing pythonnet_config
 from System.Collections.Generic import *
 
-pat = pythonet_config.get_apsim_path()
+pat = settings.APSIM_PATH
 server_path = os.path.join(pat, 'apsim-server.dll')
 clr.AddReference(server_path)
-from APSIM.Server import Commands
+
 import APSIM
 
 maize = LoadExampleFiles(Path.home())

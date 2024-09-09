@@ -19,7 +19,6 @@ import numpy as np
 
 lon = -93.620369, 42.034534
 
-
 def calculate_tav_amp(df):
     mean_maxt = df['maxt'].mean(skipna=True, numeric_only=None)
     mean_mint = df['mint'].mean(skipna=True, numeric_only=None)

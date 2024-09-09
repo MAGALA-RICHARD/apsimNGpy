@@ -4,29 +4,21 @@ author: Richard Magala
 email: magalarich20@gmail.com
 
 """
-
+import logging
 import Models
-import datetime
+from dataclasses import replace
 import datetime
 import json
-import logging
-import matplotlib.pyplot as plt
 import numpy as np
 import os
 import pandas as pd
 import pathlib
 import random
 import shutil
-import sqlite3
 import string
-import sys
-import threading
-import time
 import warnings
 from Models.Climate import Weather
 from Models.Core import Simulations, ScriptCompiler, Simulation
-from Models.Core.ApsimFile import FileFormat
-from Models.PMF import Cultivar
 from Models.Soils import Soil, Physical, SoilCrop, Organic
 from System import *
 # now we can safely import C# libraries
@@ -38,20 +30,72 @@ from pathlib import Path
 from typing import Union
 
 import apsimNGpy.manager.weathermanager as weather
-from apsimNGpy.core.apsim_file import XFile as load_model
 from apsimNGpy.core.model_loader import (load_apx_model, save_model_to_file, recompile)
 # prepare for the C# import
-from apsimNGpy.core.pythonet_config import LoadPythonnet
-from apsimNGpy.core.runner import run_model
 from apsimNGpy.utililies.database_utils import read_db_table, get_db_table_names
 from apsimNGpy.utililies.utils import timer
-from apsimNGpy.utililies.utils import timer
+
+logger = logging.getLogger(__name__)
 
 
-# py_config = LoadPythonnet()()  # double brackets avoids calling it twice
+def _run_sim(simulation_model, data_store, read_result: bool = False, multithread: bool = True):
+    """
+    This is an internal method that is only called from inside.
+    This is not part of the API. It runs
+    simulation_model: Simulation; The simulation or simulations to run.
+    data_store:an sql database where the simulation data will be stored and read from. Note that
+    this value is dependent on the simulation itself. We are passing it here as a variable, because this function
+    does not have the mandate to load the simulation and is therefore unaware of the data_store.
+    read_result: bool, defaults to True. At the end of the simulation read the result from the data store.
+    multithread: bool, defaults to True, runs the simulation using the either single core and multiple cores.
+    clean_up: bool: to be determined.
+    """
+    run_type_enum = Models.Core.Run.Runner.RunTypeEnum
+    run_type = run_type_enum.MULTITHREAD if multithread else run_type_enum.SINGLETHREAD
+
+    try:
+        data_store.Dispose()  # start by cleaning the datastore
+        data_store.DataStore.Open()
+
+        model_to_run = Models.Core.Run.Runner(simulation_model, True, False, False, None, run_type)
+        _sim_errors = model_to_run.Run()
+    except Exception as e:  # we dont know which exceptions
+        logger.exception(repr(e))
+    else:
+        if len(_sim_errors) > 0:  # this function is not doing much.
+            for error in _sim_errors:
+                logger.debug(error.ToString())
+        if read_result:
+            """When read result is false"""
+            from ..utililies.database_utils import read_simulation_results
+            return read_simulation_results(data_store)
+    finally:
+        data_store.DataStore.Close()
 
 
-# from settings import * This file is not ready and i wanted to do some test
+def run_simulation(model_meta_data, results: bool = False):
+    """
+    Run a simulation. This function is the center of this code,
+    It will be the only place were we call Models.Core.Run.Runner.
+
+    :param results (bool) for return results
+    :param model_meta_data: Data about the model >> see model_loader
+    :return: a named tuple objects populated with the results if results is True
+    """
+    try:
+        IModel, data_store = model_meta_data.IModel, model_meta_data.datastore
+        return _run_sim(IModel, data_store, read_result=results)
+    except Exception as e:
+        print(f"{type(e)} has occured::::")
+        logger.info(f"apsimNGpy had issues running file {model_meta_data.path} : because of {repr(e)}")
+        raise
+
+
+def run_simulation_from_path(path: str):
+    """Runs a simulation from a bare path."""
+    from .model_loader import load_apx_model
+    model_meta_data = load_apx_model(path)
+    return run_simulation(model_meta_data)
 
 
 class APSIMNG:
@@ -73,7 +117,8 @@ class APSIMNG:
             out_path : str, optional
                 Path of the modified simulation; if None, it will be set automatically.
             read_from_string : bool, optional
-                If True, file is uploaded to memory through json module (preferred); otherwise, we read from file.
+                If True, file is uploaded to memory through json module (preferred);
+                 otherwise, we read from file.
             """
         out_path = out_path if isinstance(out_path, str) or isinstance(out_path, Path) else None
         self.copy = kwargs.get('copy')  # Mandatory to conserve the original file
@@ -104,8 +149,7 @@ class APSIMNG:
         returns results if results is True else None
         """
         self.check_model()
-        self.model_info = self.model_info._replace(IModel=self.Simulations)
-        simulation_result = run_model(self.model_info, results=results, clean_up=clean_up)
+        simulation_result = run_simulation(self.model_info, results=results, clean_up=clean_up)
 
         if reports:
             return [
@@ -149,7 +193,7 @@ class APSIMNG:
     def check_model(self):
         if isinstance(self.Simulations, Models.Core.ApsimFile.ConverterReturnType):
             self.Simulations = self.Simulations.get_NewModel()
-            self.model_info = self.model_info._replace(IModel=self.Simulations)
+            self.model_info = replace(self.model_info, IModel=self.Simulations)
         return self
 
     @staticmethod
@@ -253,7 +297,7 @@ class APSIMNG:
             self.restart_model()
             return self
 
-    def run(self, report_name=None, simulations=None, clean=False, multithread=True):
+    def simulate(self, report_name='', simulations=None, clean=False, multithread=True):
         """Run apsim model in the simulations
 
         Parameters
@@ -270,6 +314,14 @@ class APSIMNG:
         multithread
             If `True` APSIM uses multiple threads, by default `True`
         """
+        _sims = self.Simulations
+        if not _sims:
+            _sims_available = self.find_simulations()
+            _sims = List[Models.Core.Simulation]()
+            for s in _sims_available:
+                _sims.Add(s)
+        return run(_sims, report_name=report_name, multithread=multithread, clean=clean)
+
         try:
             if multithread:
                 runtype = Models.Core.Run.Runner.RunTypeEnum.MultiThreaded
@@ -283,21 +335,13 @@ class APSIMNG:
             if clean:
                 self._DataStore.Dispose()
                 pathlib.Path(self._DataStore.FileName).unlink(missing_ok=True)
+            _sim_errors = None
 
-            if simulations is None:
-                runmodel = Models.Core.Run.Runner(self.Simulations, True, False, False, None, runtype)
-                e = runmodel.Run()
-            else:
-                sims = self.find_simulations(simulations)
-                # Runner needs C# list
-                cs_sims = List[Models.Core.Simulation]()
-                for s in sims:
-                    cs_sims.Add(s)
-                    runmodel = Models.Core.Run.Runner(cs_sims, True, False, False, None, runtype)
-                    e = runmodel.Run()
+            runner = Models.Core.Run.Runner(_sims, True, False, False, None, runtype)
+            _sim_errors = runner.Run()
 
-            if len(e) > 0:
-                print(e[0].ToString())
+            for err in _sim_errors:
+                logger.debug(err[0].ToString())
             if report_name is None:
                 report_name = get_db_table_names(self.datastore)
                 # issues with decoding '_Units' we remove it
@@ -781,7 +825,7 @@ class APSIMNG:
         return self
 
     def update_mgt(self, *, management: [dict, tuple],
-                   simulations:[list, tuple] =None,
+                   simulations: [list, tuple] = None,
                    out: [Path, str] = None,
                    **kwargs):
         """
@@ -1127,7 +1171,7 @@ class APSIMNG:
 
         return get_organic
 
-    def replace_any_soil_organic(self, *, parameter:str, param_values: list, simulation: tuple = None, **kwargs):
+    def replace_any_soil_organic(self, *, parameter: str, param_values: list, simulation: tuple = None, **kwargs):
         """replaces any specified soil parameters in the simulation
 
         Args:
@@ -1211,7 +1255,9 @@ class APSIMNG:
             if s.Name in simulations:
                 sims.append(s)
         if len(sims) == 0:
-            print("Not found!")
+            # print("Not found!") Never do this, it gets lost in places you cant track
+            # should be a NotFoundError, Always fail Fast, Fail Early.
+            raise Exception('Simulations not found in APSIM model')
         else:
             return sims
 
@@ -1423,7 +1469,7 @@ if __name__ == '__main__':
             b = perf_counter()
 
             print(b - a, 'seconds')
-            model.run('Carbon')
+            model.simulate('Carbon')
             print(model.results.mean(numeric_only=True))
 
         a = perf_counter()

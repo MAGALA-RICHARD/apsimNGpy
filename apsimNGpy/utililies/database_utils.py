@@ -2,14 +2,12 @@
 Interface to APSIM simulation models using Python.NET 
 """
 from collections import namedtuple
-from os.path import exists
-from sqlite3 import connect
-from pandas import read_sql
-import numpy as np
-import time
-from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
-from functools import partial
-import pandas as pd
+
+try:
+    from collections import Iterable
+except ImportError:  # happens because Iterables moved to collections.abc
+    from collections.abc import Iterable
+
 from pandas import read_sql_query as rsq
 from pandas import errors
 from sqlalchemy import create_engine, inspect
@@ -18,52 +16,30 @@ from os.path import exists
 import sqlite3
 
 
-def read_with_query(db, query):
-    """
-        Executes an SQL query on a specified database and returns the result as a Pandas DataFrame.
-
-        Args:
-        db (str): The database file path or identifier to connect to.
-        query (str): The SQL query string to be executed. The query should be a valid SQL SELECT statement.
-
-        Returns:
-        pandas.DataFrame: A DataFrame containing the results of the SQL query.
-
-        The function opens a connection to the specified SQLite database, executes the given SQL query,
-        fetches the results into a DataFrame, then closes the database connection.
-
-        Example:
-            # Define the database and the query
-            database_path = 'your_database.sqlite'
-            sql_query = 'SELECT * FROM your_table WHERE condition = values'
-
-            # Get the query result as a DataFrame
-            df = read_with_query(database_path, sql_query)
-
-            # Work with the DataFrame
-            print(df)
-
-        Note: Ensure that the database path and the query are correct and that the query is a proper SQL SELECT statement.
-        The function uses 'sqlite3' for connecting to the database; make sure it is appropriate for your database.
-        """
-    # table = kwargs.get("table")
-    conn = sqlite3.connect(db)
-    df = rsq(query, conn)
-    conn.close()
-    return df
-
-
-def get_db_table_names(d_b):
+def get_db_table_names(sqlite_db):
     """
 
-    :param d_b: database name or path
+    :param sqlite_db: database name or path
     :return: all names sql database table names existing within the database
     """
-    d_b = f'sqlite:///{d_b}'
+    sqlite_db = f'sqlite:///{sqlite_db}'
     # engine = create_engine(mssql+pymssql://sa:saPassword@localhost:52865/{d_b})')
-    engine = create_engine(d_b)
+    engine = create_engine(sqlite_db)
     insp = inspect(engine)
     return insp.get_table_names()
+
+
+def _read_table(conn, table_name):
+    """
+    It gets a connection and records a table using that live connection
+    conn: A live database connection. This is a bit of a premature optimization.
+    We do not wish to open and close many connections just in case we wish to read multiple tables.
+    table_name: str
+    The name of the table to read.
+    Returns a pandas dataframe with the data. This function must be wrapped in appropriate error
+    """
+    query = f"SELECT * FROM {table_name}"
+    return rsq(query, conn)
 
 
 def read_db_table(db, report_name):
@@ -99,11 +75,9 @@ def read_db_table(db, report_name):
         """
     # table = kwargs.get("table")
     try:
-        conn = sqlite3.connect(db)
-        query = f"SELECT * FROM {report_name}"
-        df = rsq(query, conn)
-        conn.close()
-        return df
+        # conn = sqlite3.connect(db)
+        with sqlite3.connect(db) as conn:
+            return _read_table(conn, report_name)
     except errors.DatabaseError as ed:
         # print(repr(ed))
         # print(f" Seems like the specified table name: {report_name} does not exists in {db} data base")
@@ -156,3 +130,38 @@ def clear_all_tables(db):
             cursor.execute(f"DELETE FROM {table[0]}")
 
         conn.commit()
+
+
+def read_sqlite_simulation_data(sqlite_db, table_names=None):
+    """
+    Reads all the data from an sql database and returns a dataframe
+    """
+    # from .database_utils import get_db_table_names, _read_table
+
+    # note a string is also iterable
+    if table_names is None:
+        table_names = get_db_table_names(sqlite_db)  # is a simple list of table names
+        to_exclude = ['_InitialConditions', '_Messages', '_Checkpoints', '_Units']
+        tables_to_read = [table_name for table_name in table_names if table_name not in to_exclude]
+    elif isinstance(table_names, str):
+        tables_to_read = [table_names]
+    else:
+        assert isinstance(table_names, Iterable)
+        tables_to_read = table_names
+
+    dataframe_dict = {}
+    # Don't catch errors when you do not need. Minimize the number of times you do try catch.
+    # In other words, write code that fails and fails fast. That's the best way to get working code fast.
+    with sqlite3.connect(sqlite_db) as conn:
+        for table in tables_to_read:
+            dataframe_dict[table] = _read_table(conn, table)
+        return dataframe_dict
+
+
+def read_simulation_results(datastore, report_name=None):
+    """ returns all data frame the available report tables"""
+    dataframe_dict = read_sqlite_simulation_data(datastore, table_names=report_name)
+    if len(dataframe_dict) == 0:
+        print("the data dictionary is empty. no data has been returned")
+
+    return dataframe_dict if len(dataframe_dict) > 1 else dataframe_dict[report_name]

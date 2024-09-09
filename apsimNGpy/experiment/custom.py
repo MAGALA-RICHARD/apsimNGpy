@@ -9,7 +9,7 @@ class Custom(ApsimModel):
         super().__init__(model)
     def predict(self, lonlat):
         self.replace_met_from_web(lonlat=lonlat, start_year=1990, end_year=2021)
-        return self.run("MaizeR")
+        return self.simulate("MaizeR")
 
 custom = Custom(maize)
 lonlat = [-93.620369, 42.034534]

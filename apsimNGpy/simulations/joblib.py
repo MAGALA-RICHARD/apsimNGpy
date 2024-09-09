@@ -3,7 +3,7 @@ from functools import singledispatch
 import geopandas as gpd
 import pandas as pd
 import numpy as np
-from apsimNGpy.core import ApsimModel
+from apsimNGpy.core.apsim import ApsimModel
 from apsimNGpy.utililies.utils import select_process
 from shapely.geometry import Polygon
 import random
@@ -66,7 +66,7 @@ def create_fishnet1(pt, lon_step=200, lat_step=200, ncores=3, use_thread=True, *
 # Function to generate random points within a polygon
 def generate_random_points(pt, resolution, ncores, num_points):
     """
-    # TODO this function is duplicated three times in spat, and
+
     Args:
         pt: shape file
         resolution: resolution in meters
@@ -290,7 +290,7 @@ def match_crop(abb, add_wheat=None):
 
 def create_apsimx_sim_files(wd, model, iterable):
     """
-    # TODO: this code is duplicated in spatial
+
     Creates copies of a specified APSIM model file for each element in the provided iterable,
     renaming the files to have unique identifiers based on their index in the iterable.
     The new files are saved in the specified working directory.
@@ -374,7 +374,7 @@ def download_weather(df, start, end, use_thread=True, ncores=10, replace_soils=T
                 else:
                     mod.replace_downloaded_soils(sp, sim_name)
         if kwargs.get("report"):
-            mod.run(report_name=kwargs.get('report_names'))
+            mod.simulate(report_name=kwargs.get('report_names'))
             return mod.results
         else:
             mod.save_edited_file(out_path_name)

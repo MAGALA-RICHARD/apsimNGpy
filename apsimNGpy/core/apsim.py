@@ -3,19 +3,13 @@ Interface to APSIM simulation models using Python.NET
 author: Richard Magala
 email: magalarich20@gmail.com
 """
-import logging, pathlib
+import pathlib
 from typing import Union
 import os
 import numpy as np
-import time
-import apsimNGpy.manager.weathermanager as weather
 from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganizeAPSIMsoil_profile
 import apsimNGpy.manager.weathermanager as weather
-import pandas as pd
-import sys
 # prepare for the C# import
-from apsimNGpy.core.pythonet_config import start_pythonnet
-from apsimNGpy.core.pythonet_config import aPSim_PATH as APSIM_PATH
 
 # now we can safely import any c# related libraries
 from System.Collections.Generic import *
@@ -28,21 +22,10 @@ import Models
 from apsimNGpy.core.core import APSIMNG
 
 # constants
-REPORT_PATH = {'Carbon': '[Soil].Nutrient.TotalC/1000 as dyn', 'DUL': '[Soil].SoilWater.PAW as paw', 'N03':
-    '[Soil].Nutrient.NO3.ppm as N03'}
-
-
-# decorator to monitor performance
-def timing_decorator(func):
-    def wrapper(*args, **kwargs):
-        start_time = time.perf_counter()
-        result = func(*args, **kwargs)
-        end_time = time.perf_counter()
-        elapsed_time = end_time - start_time
-        print(f"{func.__name__} took {elapsed_time:.4f} seconds to execute.")
-        return result
-
-    return wrapper
+REPORT_PATH = {
+    'Carbon': '[Soil].Nutrient.TotalC/1000 as dyn', 'DUL': '[Soil].SoilWater.PAW as paw',
+    'N03': '[Soil].Nutrient.NO3.ppm as N03'
+}
 
 
 class ApsimModel(APSIMNG):
@@ -58,11 +41,11 @@ class ApsimModel(APSIMNG):
         parameter soil series model is a path of aPSim file or aPSIMNG object"""
         self.lonlat = lonlat
         self.Nlayers = bottomdepth / thickness
-       
+
         self.soil_series = soil_series
         self.thickness = thickness
         self.out_path = out_path or out
-        
+
         self.copy = True
         self.run_all_soils = run_all_soils
         if not isinstance(thickness_values, np.ndarray):
@@ -453,18 +436,20 @@ class ApsimModel(APSIMNG):
         """
         Perform a spin-up operation on the aPSim model.
 
-        This method is used to simulate a spin-up operation in an aPSim model. During a spin-up, various soil properties or
-        variables may be adjusted based on the simulation results.
+        This method is used to simulate a spin-up operation in an aPSim model.
+        During a spin-up, various soil properties or variables may be adjusted based on the simulation results.
 
         Parameters:
         ----------
         report_name : str, optional (default: 'Report')
             The name of the aPSim report to be used for simulation results.
         start : str, optional
-            The start date for the simulation (e.g., '01-01-2023'). If provided, it will change the simulation start date.
+            The start date for the simulation (e.g., '01-01-2023').
+            If provided, it will change the simulation start date.
         end : str, optional
             The end date for the simulation (e.g., '3-12-2023'). If provided, it will change the simulation end date.
-        spin_var : str, optional (default: 'Carbon'). the difference between the start and end date will determine the spin-up period
+        spin_var : str, optional (default: 'Carbon').
+            the difference between the start and end date will determine the spin-up period
             The variable representing the type of spin-up operation. Supported values are 'Carbon' or 'DUL'.
 
         Returns:
@@ -482,18 +467,19 @@ class ApsimModel(APSIMNG):
         th = np.array(THICKNESS)
         self.change_report(insert_var, report_name=report_name)
         rpn = insert_var.split(" ")[-1]
-        self.run(report_name=report_name)
+        self.simulate(report_name=report_name)
         DF = self.results
 
         df_sel = DF.filter(regex=r'^{0}'.format(rpn), axis=1)
         df_sel = df_sel.mean(numeric_only=True)
-        print(df_sel)
+        # print(df_sel)
         if spin_var == 'Carbon':
-            assert 'TotalC' in insert_var, "wrong report variable path: '{0}' supplied according to requested spin up " \
-                                           "var".format(insert_var)
+            assert 'TotalC' in insert_var, \
+                "wrong report variable path: '{0}' supplied according to requested spin up " \
+                "var".format(insert_var)
 
             bd = list(pysoil.DUL)
-            print(bd)
+            # print(bd)
             bd = np.array(bd)
             cf = np.array(bd) * np.array(th)
             cf = np.divide(cf, 1)  # this convert to percentage

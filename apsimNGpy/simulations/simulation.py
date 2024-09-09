@@ -6,7 +6,7 @@ from apsimNGpy.parallel.safe import simulator_worker
 from apsimNGpy.utililies.utils import select_process
 from apsimNGpy.core.weathermanager import daymet_bylocation_nocsv, daymet_bylocation
 from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganizeAPSIMsoil_profile
-from apsimNGpy.utililies.spatial import create_fishnet1, create_apsimx_sim_files, generate_random_points
+from apsimNGpy.simulations.joblib import create_fishnet1, create_apsimx_sim_files, generate_random_points
 from tqdm import tqdm
 
 
@@ -53,7 +53,7 @@ def simulate_single_point(model: Any, location: Tuple[float, float], report, rea
     # if replace management practices
     if kwargs.get("mgt_practices"):
         simulator_model.update_mgt(kwargs.get('mgt_practices'), sim_name)
-    simulator_model.run(report_name=report)
+    simulator_model.simulate(report_name=report)
     return simulator_model.results
 
 

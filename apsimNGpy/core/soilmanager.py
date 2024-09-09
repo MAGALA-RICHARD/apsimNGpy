@@ -1,18 +1,10 @@
-import json, os, sys
-from os.path import join as opj
 import numpy as np
 import numpy
 import requests
 import xmltodict
 import pandas as pd
-import time
 from numpy import array as npar
-import sys
 from scipy import interpolate
-import traceback
-from datetime import datetime
-import datetime
-import copy
 from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
 
@@ -98,11 +90,6 @@ def DownloadsurgoSoiltables(lonlat, select_componentname=None, summarytable=Fals
         return dom_component
 
 
-# test the function
-# aa= DownloadsurgoSoiltables([-90.72704709, 40.93103233],'Osco', summarytable = True)
-
-
-##Making APSIM soil profile starts here=============================
 len_layers = 10
 a = 1.35
 b = 1.4
@@ -113,16 +100,17 @@ def soilvar_perdep_cor(nlayers, soil_bottom=200, a=0.5, b=0.5):  # has potential
     depthn = np.arange(1, nlayers + 1, 1)
     if a < 0:
         print("Target parameter can not be negative")  # a * e^(-b * x).
-    elif (a > 0 and b != 0):
+    elif a > 0 and b != 0:
         ep = -b * depthn
         term1 = (a * depthn) * np.exp(ep)
         result = term1 / term1.max()
-        return (result)
-    elif (a == 0 and b != 0):
+        # TODO why are we returning a tuple.
+        return result
+    elif a == 0 and b != 0:
         ep = -b * depthn
         result = np.exp(ep) / np.exp(-b)
         return result
-    elif (a == 0, b == 0):
+    elif a == 0 and b == 0:
         ans = [1] * len_layers
         return ans
 

@@ -9,7 +9,7 @@ from pathlib import Path
 from apsimNGpy.utililies.utils import select_process
 from apsimNGpy.core.weathermanager import daymet_bylocation_nocsv, daymet_bylocation
 from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganizeAPSIMsoil_profile
-from apsimNGpy.utililies.spatial import create_fishnet1, create_apsimx_sim_files, generate_random_points
+from apsimNGpy.simulations.joblib import create_fishnet1, create_apsimx_sim_files, generate_random_points
 from tqdm import tqdm
 
 wd = Path.home()
@@ -58,7 +58,7 @@ def simulate_single_point(
     # if replace management practices
     if kwargs.get("mgt_practices"):
         simulator_model.update_mgt(kwargs.get('mgt_practices'), sim_name)
-    simulator_model.run(report_name=report)
+    simulator_model.simulate(report_name=report)
     return simulator_model.results
 
 
@@ -124,7 +124,7 @@ def simulate_single_from_shape_file(wd, shape_file, model: Any, resolution, repo
 
         if kwargs.get("mgt_practices"):
             simulator_model.update_mgt(kwargs.get('mgt_practices'), sim_names)
-        simulator_model.run(report_name=report)
+        simulator_model.simulate(report_name=report)
         return simulator_model.results
 
     with select_process(use_thread, ncores) as tpool:

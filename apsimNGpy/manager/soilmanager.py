@@ -21,7 +21,7 @@ hydro = {'A': 67, 'B': 78, 'C': 85, 'D': 89}
 
 
 def DownloadsurgoSoiltables(lonlat, select_componentname=None, summarytable=False):
-    '''
+    """
     TODO this is a duplicate File. Duplicate of soils/soilmanager
     Downloads SSURGO soil tables
 
@@ -33,7 +33,7 @@ def DownloadsurgoSoiltables(lonlat, select_componentname=None, summarytable=Fals
       if specified only that soil component table will be returned. in case it is not found the dominant componet will be returned with a caveat meassage.
         use select_componentname = 'domtcp' to return the dorminant component
     summarytable: prints the component names, their percentages
-    '''
+    """
 
     total_steps = 3
     # lat = "37.54189"
@@ -601,5 +601,5 @@ if __name__ == '__main__':
     m = ApsimModel(ap_sim, thickness_values=settings.SOIL_THICKNESS)
     m.replace_downloaded_soils(data, m.extract_simulation_name)
 
-    m.run("MaizeR")
+    m.simulate("MaizeR")
 

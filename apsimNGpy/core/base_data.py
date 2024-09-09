@@ -5,12 +5,8 @@ from os import listdir, walk, getcwd, mkdir
 from apsimNGpy.config import load_python_net
 import shutil
 from apsimNGpy import data as DATA
-
-conf = load_python_net()
 from apsimNGpy.core.apsim import ApsimModel as SoilModel
 from pathlib import Path
-from functools import cache
-from apsimNGpy.core.apsim_file import XFile as DFile
 import os
 
 WEATHER_CO = 'NewMetrrr.met'
@@ -240,7 +236,7 @@ from ..import settings
 pat = settings.BASE_DIR  # TODO fix this
 if pat:
     apsim = os.path.dirname(pat)
-    examples = join(apsim, 'apsimNGpy/examples')
+    examples = join(apsim, 'apsimNGpy/data')
 dr = listdir(examples)
 
 examples_files = {}

@@ -37,8 +37,8 @@ class ModelMetaData:
     DataStore: str
     IModel: Models.Core.Simulations
     path: Union[str, Path]
-    results = None
     met_path: Union[str, Path]
+    results: str = ''
 
 
 def load_from_dict(dict_data, out):

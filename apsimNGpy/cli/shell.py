@@ -74,6 +74,7 @@ def run_shell():
     """Adapted from django.core.management.commands.shell"""
         # Execute stdin if it has anything to read and exit.
         # Not supported on Windows due to select.select() limitations.
+
     if (
             sys.platform != "win32"
             and not sys.stdin.isatty()

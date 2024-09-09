@@ -1,91 +1,220 @@
 """This script is used to provide a simple design of experiments and to facilitate parameter replacement. The earlier
 script we realized was complicated for no good reason"""
 import os
-from dataclasses import dataclass
+import shutil
+from dataclasses import dataclass, replace
 from pathlib import Path
 from collections import namedtuple
 import numpy as np
+import msvcrt
 import pandas as pd
 from apsimNGpy.experiment.permutations import create_permutations
 from apsimNGpy.utililies.database_utils import get_db_table_names, read_db_table
+from pandas import DataFrame, concat
+from sqlalchemy import create_engine
+from apsimNGpy.parallel.process import custom_parallel
+import warnings
+from collections import ChainMap
+from apsimNGpy.replacements.replacements import Replacements
+from experiment_utils import _run_experiment, MetaInfo, copy_to_many
 
-NamedFactors = namedtuple('NamedFactors', [
-    'managers',
-    'factors',
-    'parameters',
-    'nodes'])
+
+################################################################################
+# Deep chain mapper
+################################################################################
+class DeepChainMap(ChainMap):
+    'Variant of ChainMap that allows direct updates to inner scopes from collection module'
+
+    def __setitem__(self, key, value):
+
+        for mapping in self.maps:
+
+            if key in mapping:
+                mapping[key] = value
+                return
+        self.maps[0][key] = value
+
+    def __delitem__(self, key):
+        for mapping in self.maps:
+            if key in mapping:
+                del mapping[key]
+                return
+        raise KeyError(key)
+
+    def merge(self):
+        result = {}
+        management = []
+        soils = []
+        for counter in range(len(self.maps)):
+            if isinstance(self.maps[counter], dict):
+                for k, d, in self.maps[counter].items():
+                    if isinstance(d, dict):
+                        for km, vm in d.items():
+                            if isinstance(vm, str):
+                                if 'Manager' in vm:
+                                    d = dict(d)
+                                    d[k] = d['param_values']
+                                    management.append(d)
+                                if 'Soil' in vm:
+                                    d = dict(d)
+                                    d[k] = d['param_values']
+                                    soils.append(d)
+                if bool(management):
+                    man = dict(management=tuple(management))
+
+                    result.update(man)
+                if soils:
+                    result.update(dict(soils_params=tuple(soils)))
+        return result
+
+    def control_variables(self, merged=None):
+        gdata = []
+        data = self.merge() if not merged else merged
+        management = data.get('management')
+        soils = data.get('soils_params')
+        cultivar = data.get('cultivar')
+
+        if management:
+            for i in management:
+                if i.get("Name"):
+                    i.pop('Name')
+            management_df = concat([DataFrame(i, [0]) for i in management], axis=1).drop(['path', 'param_values'],
+                                                                                         axis=1).reset_index(drop=True)
+            gdata.append(management_df)
+
+        if soils:
+            dt = {}
+            soil_df = concat([DataFrame(i, [0]) for i in soils], axis=1).drop(['path', 'param_values'],
+                                                                              axis=1).reset_index(drop=True)
+            gdata.append(soil_df)
+        return concat(gdata, axis=1) if gdata else None
 
 
 @dataclass
-class Factors:
-    factor: [list, tuple, np.ndarray]
-    manager: str
-    parameters: str
-    target_node: str
+class Factor:
+    """
+    placeholder for factor variable and names. it is intended to ease the readability of the factor for the user
+    """
+    variables: [list, tuple, np.ndarray]
+    name: str
 
 
-def organize_factors(factors: list):
-    return NamedFactors(factors=[i.factor for i in factors],
-                        managers=[i.manager for i in factors],
-                        nodes=[i.target_node for i in factors],
-                        parameters=[i.parameters for i in factors])
+################################################################################
+# define_parameters
+################################################################################
+def define_parameters(factors_list):
+    return create_permutations([factor.variables for factor in factors_list], [factor.name for factor in factors_list])
 
 
-class DesignExperiment:
-    def __init__(self, *, factors: list, datastorage: str, evaluate_completed=False,
-                 simulation_id: str = "SID"):
-        self.factors = factors
-        self.datastorage = datastorage
-        self.evaluate_completed = evaluate_completed
-        self.perms = None
-        self.children = None
-        self.simulation_id = simulation_id
-        self.clear = None
+@dataclass
+class MetaData:
+    ...
 
-    def evaluate_simulated(self, perms):
-        if self.evaluate_completed:
-            if os.path.isfile(self.datastorage) and bool(get_db_table_names(self.datastorage)):
-                print(f'Total simulations: {len(self.perms)}')
 
-                cur_data = pd.concat([read_db_table(self.datastorage, report_name=t) for t in
-                                      get_db_table_names(self.datastorage)],
-                                     ignore_index=True)
-                already_simulated = set(cur_data[self.simulation_id])
+################################################################################
+# check_completed
+################################################################################
+def check_completed(datastorage, perms, simulation_id):
+    if os.path.isfile(datastorage) and bool(get_db_table_names(datastorage)):
+        print(f'Total simulations: {len(perms)}')
+        try:
+            cur_data = pd.concat([read_db_table(datastorage, report_name=t) for t in
+                                  get_db_table_names(datastorage)],
+                                 ignore_index=True)
+            already_simulated = set(cur_data[simulation_id])
 
-                return {idx: perms[idx] for idx, perm in enumerate(perms) if idx not in already_simulated}
-        else:
+        except (KeyError, ValueError, TypeError):
+            warnings.warn('errors reading the simulated data\n'
+                          'proceeding with all total simulations without filter', UserWarning)
             return perms
 
-    def design_experiment(self):
+        perms = {idx: perms[idx] for idx, perm in enumerate(perms) if
+                 idx not in already_simulated}
+        return perms
 
-        og = organize_factors(self.factors)
-        self.perms = create_permutations(factors=og.factors, factor_names=og.parameters)
-        self.children = og.nodes
-        scrip = og.parameters
-        mgt_names = og.managers
+    else:
+        return perms
 
-        print(len(self.perms))
-        initD = dict(zip(mgt_names, scrip))
-        split = [{k: v, "Name": k} for k, v in initD.items()]
-        self.perms = self.evaluate_simulated(self.perms)
-        for perm in self.perms:
-            ID, items = perm, self.perms[perm]
 
-            # Create a tuple of dictionaries where each dictionary maps 'Name' to the corresponding value from initD
-            # data_tuple = tuple(
-            #     [{'Name': k, v: items[v]} for k, v in initD.items()]
-            # )
-            ap = []
-            for nm, j in zip(mgt_names, scrip):
-                dt = {'Name': nm, j: items[j]}
-                ap.append(dt)
-            # Yield the result as a tuple of index and data_tuple
-            yield ID, tuple(ap)
+################################################################################
+# set_experiment
+################################################################################
+def set_experiment(*, datastorage,
+                   tag,
+                   base_file,
+                   factors,
+                   wd=None,
+                   simulation_id='SID',
+                   use_thread=True,
+                   n_core=4,
+                   by_pass_completed=True,
+                   data_schema=None,
+                   **kwargs):
+    _path = Path(wd) if wd else Path(os.path.realpath(base_file)).parent
 
+    meta_ = dict(tag=tag, wd=_path,
+                 simulation_id=simulation_id,
+                 datastorage=datastorage,
+                 path=_path,
+                 data_schema=kwargs.get('data_schema', data_schema),
+                 n_core=n_core, **kwargs)
+
+    perms = define_parameters(factors_list=factors)
+    perms = check_completed(datastorage, perms, simulation_id) if by_pass_completed else perms
+
+    print(len(perms))
+    print(f"copying files to {_path}")
+    # def _copy(i_d)
+    ids = iter(perms)
+    __path = _path.joinpath('apSimNGpy_experiment')
+    # make sure we are creating files free from existing files
+    if __path.exists():
+        shutil.rmtree(__path)
+    __path.mkdir(exist_ok=True)
+    list(
+        custom_parallel(copy_to_many,
+                        ids,
+                        perms,
+                        base_file,
+                        __path, tag,
+                        use_thread=use_thread,
+                        n_core=n_core,
+                        **kwargs))
+    for ID, perm in perms.items():
+        Meta = MetaInfo()
+        [setattr(Meta, k.lower().strip(" "), v) for k, v in meta_.items()]
+        yield dict(SID=ID, meta_info=Meta,
+                   parameters=DeepChainMap(perm))
+    ...
+
+
+parameters = ['datastorage', 'perms', 'simulation_id', 'factors', 'base_file', 'tag', 'perms']
 
 if __name__ == '__main__':
-    a = [1, 3]
-    b = ('2', 4)
-    a1 = Factors(parameters='amount', factor=a, target_node='manager', manager='Simple Rotation')
-    b1 = Factors(parameters='b', factor=b, target_node='clock', manager='None')
-    mgd = DesignExperiment(factors=[a1, b1], datastorage='sb.db', )
+    path = Path(r'G:/').joinpath('scratchT')
+    a = ['Maize', "Wheat"]
+    reports = dict(zip(a, ['Annual', 'Annual']))
+
+    Amount = [{'management': dict(Name='MaizeNitrogenManager', Amount=i)} for i in
+              [20, 40, 60, 80]]
+    Crops = [{'management': {'Name': "Simple Rotation", "Crops": i}} for i in
+             ['Maize', 'Wheat, Maize']]
+    a1 = Factor(name='Crops', variables=Crops)
+    b1 = Factor(name='Amount',variables=Amount)
+
+    facs = [Crops, Amount]
+    ap = set_experiment(factors=[a1, b1],
+                        database_name='sbb.db',
+                        datastorage='sbx.db',
+                        tag='th', base_file='ed.apsimx',
+                        wd=path,
+                        use_thread=True,
+                        children=['manager'],
+                        by_pass_completed=False,
+                        reports={'Maize': 'Annual', 'Wheat, Maize': 'Annual'})
+
+    df = _run_experiment(**next(ap))
+
+    xp = create_permutations(facs, ['a', 'b'])
+    xm = DeepChainMap(xp[0])
+    from apsimNGpy.utililies.database_utils import read_db_table

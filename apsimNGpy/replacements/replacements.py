@@ -262,7 +262,7 @@ if __name__ == '__main__':
 
     # the method make_replacements can be chained with several other action types
     mgt = {'Name': 'Sow using a variable rule', 'Population': 8.5},
-    mgt = {'Name': 'Sow using a variable rule', 'Population': 7.5},
+
     chilredren = 'Manager', 'weather', 'SoilOrganicMatter'
     ce.update_children_params(children=chilredren, icnr=148, weather_file=met2, management=mgt)
     xi = ce.extract_user_input('Sow using a variable rule')

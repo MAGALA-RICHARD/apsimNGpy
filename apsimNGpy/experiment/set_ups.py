@@ -16,7 +16,7 @@ from apsimNGpy.parallel.process import custom_parallel
 import warnings
 from collections import ChainMap
 from apsimNGpy.replacements.replacements import Replacements
-from experiment_utils import (_run_experiment, MetaInfo, copy_to_many, define_factor, Factor)
+from experiment_utils import (_run_experiment, MetaInfo, copy_to_many, define_factor, Factor, define_cultivar)
 
 
 ################################################################################

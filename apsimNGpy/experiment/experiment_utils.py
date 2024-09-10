@@ -39,6 +39,18 @@ def get_file_path(iid, path, tag):
 
 
 ################################################################################
+# check report
+################################################################################
+
+def check_report(my_set, my_list):
+    # Convert the list to a set for efficient intersection checking
+    list_set = set(my_list)
+
+    # Check if there's any intersection between the set and the list
+    return not set(my_set).isdisjoint(list_set)
+
+
+################################################################################
 # run experiment
 ################################################################################
 
@@ -76,6 +88,12 @@ def _run_experiment(*, meta_info, SID, parameters):
         [Model.replace_cultivar_params(**cp) for cp in cultivar_params]
     report_tables = meta_info.reports
     Model.run(simulations=meta_info.simulations, multithread=meta_info.mult_threads, get_dict=True)
+    # wait a minute here,
+    # we have to check if at least a specified report exists before we proceed
+    # in a rotation some reports are tied to a specific crop, hence the need for the code below
+    if not check_report(report_tables, Model.results.keys()):
+        raise ValueError(f"any of the report table here '{report_tables}' "
+                         f"are not found, existing reports include {list(Model.results.keys())}")
     res = {tb: Model.results.get(tb) for tb in report_tables if tb in Model.results.keys()}
     for table, data in res.items():
         df = data
@@ -158,7 +176,7 @@ def define_factor(parameter: str, param_values: list, factor_type: str,
         raise ValueError(f'Invalid factor type: {factor_type} and {manager_name or soil_node}')
 
 
-def define_cultivar(cultivar_name, commands, param_values, cultivar_parameter_name):
+def define_cultivar(cultivar_name, commands, param_values, parameter):
     """
     Defines the cultivar parameters for a given cultivar_name. these methods are used to abstract arguments for
     replacing methods
@@ -180,8 +198,9 @@ def define_cultivar(cultivar_name, commands, param_values, cultivar_parameter_na
     """
     path = f"Cultivar/{cultivar_name}/{commands}"
     cultivar_factor = Factor(variables=[dict(path=path, param_values=pv) for pv in param_values],
-                             variable_name=cultivar_parameter_name)
+                             variable_name=parameter)
     return cultivar_factor
+
 
 # example
 if __name__ == '__main__':

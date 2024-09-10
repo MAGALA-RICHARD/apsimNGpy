@@ -321,7 +321,8 @@ class APSIMNG:
                 report_name = get_db_table_names(self.datastore)
                 # issues with decoding '_Units' we remove it
                 if '_Units' in report_name: report_name.remove('_Units')
-                warnings.warn('No tables were specified, retrieved tables includes:: {}'.format(report_name)) if verbose else None
+                warnings.warn(
+                    'No tables were specified, retrieved tables includes:: {}'.format(report_name)) if verbose else None
             if isinstance(report_name, (tuple, list)):
                 if not get_dict:
                     self.results = [read_db_table(self.datastore, report_name=rep) for rep in report_name]
@@ -929,6 +930,7 @@ class APSIMNG:
             simulations, optional
                 List of simulation names to update, if `None` update all simulations
             """
+            # we need to catch file not found errors before it becomes a problem
             if not os.path.isfile(weather_file):
                 raise FileNotFoundError(weather_file)
             for sim_name in self.find_simulations(simulations):
@@ -941,10 +943,14 @@ class APSIMNG:
             print(repr(e))  # this error will be logged to the folder logs in the current working directory
             raise
 
-    def show_met_file_in_simulation(self):
+    def show_met_file_in_simulation(self, simulations: list = None):
         """Show weather file for all simulations"""
-        for weather in self.Simulations.FindAllDescendants[Weather]():
-            return weather.FileName
+        weather_list = {}
+        for sim_name in self.find_simulations(simulations):
+            weathers = sim_name.FindAllDescendants[Weather]()
+            for met in weathers:
+                weather_list[sim_name.Name] = met.FileName
+        return weather_list
 
     def change_report(self, *, command: str, report_name='Report', simulations=None, set_DayAfterLastOutput=None,
                       **kwargs):

@@ -27,7 +27,7 @@ if __name__ == '__main__':
                         use_thread=True,
                         by_pass_completed=False,
                         verbose=True,
-                        test = True,
+                        test = False,
                         reports={'Report'})
 
     df = _run_experiment(**next(ap))

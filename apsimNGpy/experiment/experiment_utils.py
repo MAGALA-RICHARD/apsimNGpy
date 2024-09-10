@@ -61,13 +61,19 @@ def _run_experiment(*, meta_info, SID, parameters):
 
     fModel = get_file_path(idi, os.path.join(meta_info.path, 'apSimNGpy_experiment'), meta_info.tag)
     Model = Replacements(fModel)
+    # replace management-related factors
     manager_params = mgt_parameters.get('management')
     if manager_params is not None:
         print(manager_params) if meta_info.test else None
-        [Model.update_mgt_by_path(**i) for i in manager_params]
+        [Model.update_mgt_by_path(**man_params) for man_params in manager_params]
     soil_params = mgt_parameters.get('soils_params')
+    # replace soils
     if soil_params:
-        [Model.replace_soil_properties_by_path(**sp) for sp in soil_params]
+        [Model.replace_soil_properties_by_path(**soil_param) for soil_param in soil_params]
+    # replace cultivar related factors
+    cultivar_params = mgt_parameters.get('cultivar_params')
+    if cultivar_params:
+        [Model.replace_cultivar_params(**cp) for cp in cultivar_params]
     report_tables = meta_info.reports
     Model.run(simulations=meta_info.simulations, multithread=meta_info.mult_threads, get_dict=True)
     res = {tb: Model.results.get(tb) for tb in report_tables if tb in Model.results.keys()}
@@ -151,6 +157,31 @@ def define_factor(parameter: str, param_values: list, factor_type: str,
     else:
         raise ValueError(f'Invalid factor type: {factor_type} and {manager_name or soil_node}')
 
+
+def define_cultivar(cultivar_name, commands, param_values, cultivar_parameter_name):
+    """
+    Defines the cultivar parameters for a given cultivar_name. these methods are used to abstract arguments for
+    replacing methods
+    :param cultivar_name: name of the cultivar to edit
+    :param commands: commands path for the cutlivar parameter to edit
+    :param param_values: values to replace w=the old ones
+
+     Example
+     ...
+         from apsimNGpy.core.base_data import LoadExampleFiles
+         from apsimNGpy.replacements import Replacements
+        maize_path = LoadExampleFiles().get_maize_model.path
+        model_replacements  = Replacements(maize_path)
+        define the cultivar paramters as follows;
+         commands = '[Phenology].GrainFilling.Target.FixedValue'
+         cultivar_name ='B_110'
+         param_values= 540
+
+    """
+    path = f"Cultivar/{cultivar_name}/{commands}"
+    cultivar_factor = Factor(variables=[dict(path=path, param_values=pv) for pv in param_values],
+                             variable_name=cultivar_parameter_name)
+    return cultivar_factor
 
 # example
 if __name__ == '__main__':

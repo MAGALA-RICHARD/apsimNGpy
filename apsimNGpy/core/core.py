@@ -514,7 +514,8 @@ class APSIMNG:
 
     def edit_cultivar(self, *, CultivarName, commands: tuple, values: tuple, **kwargs):
         """
-        Edits the parameters of a given cultivar.
+        Edits the parameters of a given cultivar. we don't need a simulation name for this unless if you are defining it in the
+        manager section, if that it is the case, see update_mgt
 
         :param CultivarName: Name of the cultivar (e.g., 'laila').
         :param commands: A tuple of strings representing the parameter paths to be edited.

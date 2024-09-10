@@ -15,7 +15,8 @@ from apsimNGpy.replacements.replacements import Replacements
 @dataclass
 class MetaInfo:
     """
-    Meta info provides meta_infor for each experiment. Here it is initialized with defaults
+    Meta info provides meta_infor for each experiment. Here it is initialized with defaults, They can be changed via
+    the set experiment method
     """
     verbose: bool = None
     simulations: bool = None
@@ -62,6 +63,7 @@ def _run_experiment(*, meta_info, SID, parameters):
     Model = Replacements(fModel)
     manager_params = mgt_parameters.get('management')
     if manager_params is not None:
+        print(manager_params) if meta_info.test else None
         [Model.update_mgt_by_path(**i) for i in manager_params]
     soil_params = mgt_parameters.get('soils_params')
     if soil_params:
@@ -73,15 +75,18 @@ def _run_experiment(*, meta_info, SID, parameters):
         df = data
 
         df_no_dupS = df.loc[:, ~df.columns.duplicated()].copy()
-        # df_no_dupS['FoldName'] = FoldName
+
         df_no_dupS[meta_info.simulation_id] = idi
         for i in mf.columns:
             if i in df_no_dupS.columns and i != meta_info.simulation_id:
                 df_no_dupS.rename(columns={i: f"sim_{i}"}, inplace=True)
         ans = df_no_dupS.merge(mf, on=meta_info.simulation_id, how='inner').reset_index()
         ans_nodup = ans.loc[:, ~ans.columns.duplicated()].copy()
-
-        ans_nodup.to_sql(table, con=data_base_CONN, if_exists='append', index=False)
+        if not meta_info.test:
+            ans_nodup.to_sql(table, con=data_base_CONN, if_exists='append', index=False)
+        else:
+            print(ans_nodup)
+            return ans_nodup
     if meta_info.verbose:
         print(f"\n '{idi}' : completed", end='\r')
     ...
@@ -124,12 +129,12 @@ def define_factor(parameter: str, param_values: list, factor_type: str,
         parameter (str): The parameter name.
         param_values (list): A list of parameter values.
         factor_type (str): Either 'management' or 'soils' to define the type of factor.
-        manager_name (str, optional): The manager name (for management factor).
-        soil_node (str, optional): The soil node (for soil factor).
+        manager_name (str, optional): The manager name (for a management factor).
+        soil_node (str, optional): The soil node (for a soil factor).
         simulations (list, optional): The list of simulations.
-        out_path_name (str, optional): The output path name (for management factor).
-        crop (str, optional): The crop name (for soil factor).
-        indices (list, optional): The indices (for soils factor).
+        out_path_name (str, optional): The output path name (for a management factor).
+        crop (str, optional): The crop name (for a soil factor).
+        indices (list, optional): The indices (for soil factor).
 
     Returns:
         Factor: A Factor object containing the variable paths and the parameter values.
@@ -141,7 +146,7 @@ def define_factor(parameter: str, param_values: list, factor_type: str,
                        for i in param_values], variable_name=parameter)
     elif factor == 'soils' and soil_node is not None:
         return Factor(
-            variables=[dict(path=f'{simulations}.Soil.{soil_node}.{crop}.{indices}.{parameter}', param_values=i)
+            variables=[dict(path=f'{simulations}.Soil.{soil_node}.{crop}.{indices}.{parameter}', param_values=[i])
                        for i in param_values], variable_name=parameter)
     else:
         raise ValueError(f'Invalid factor type: {factor_type} and {manager_name or soil_node}')
@@ -154,5 +159,3 @@ if __name__ == '__main__':
     bd = define_factor(parameter="BD", param_values=[1, 23, 157], factor_type='soils', soil_node='Physical')
     print(bd.variable_name)
     pprint(bd.variables, indent=4, width=1)
-
-

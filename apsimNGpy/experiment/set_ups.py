@@ -45,6 +45,7 @@ class DeepChainMap(ChainMap):
         result = {}
         management = []
         soils = []
+        cultivar = []
         for counter in range(len(self.maps)):
             if isinstance(self.maps[counter], dict):
                 for k, d, in self.maps[counter].items():
@@ -59,12 +60,18 @@ class DeepChainMap(ChainMap):
                                     d = dict(d)
                                     d[k] = d['param_values']
                                     soils.append(d)
+                                if 'Cultivar' in vm:
+                                    d = dict(d)
+                                    d[k] = d['param_values']
+                                    cultivar.append(d)
                 if bool(management):
                     man = dict(management=tuple(management))
 
                     result.update(man)
                 if soils:
                     result.update(dict(soils_params=tuple(soils)))
+                if cultivar:
+                    result.update(dict(cultivar_params=tuple(cultivar)))
         return result
 
     def control_variables(self, merged=None):
@@ -83,10 +90,14 @@ class DeepChainMap(ChainMap):
             gdata.append(management_df)
 
         if soils:
-            dt = {}
+
             soil_df = concat([DataFrame(i, [0]) for i in soils], axis=1).drop(['path', 'param_values'],
                                                                               axis=1).reset_index(drop=True)
             gdata.append(soil_df)
+        if cultivar:
+            cultivar_df = concat([DataFrame(i, [0]) for i in cultivar], axis=1).drop(['path', 'param_values'],
+                                                                              axis=1).reset_index(drop=True)
+            gdata.append(cultivar_df)
         return concat(gdata, axis=1) if gdata else None
 
 
@@ -95,13 +106,17 @@ class DeepChainMap(ChainMap):
 ################################################################################
 def define_parameters(factors_list):
     permutations = create_permutations([factor.variables for factor in factors_list],
-                               [factor.variable_name for factor in factors_list])
+                                       [factor.variable_name for factor in factors_list])
     return permutations
 
 
 @dataclass
-class MetaData:
+class GlobalMetaData:
+    n_cores = 5
     ...
+
+
+GlobalMetaData = GlobalMetaData()
 
 
 ################################################################################
@@ -162,7 +177,7 @@ def set_experiment(*, datastorage,
     __path = _path.joinpath('apSimNGpy_experiment')
     # make sure we are creating files free from existing files
     if __path.exists():
-        shutil.rmtree(__path)
+        shutil.rmtree(__path, ignore_errors=True)
     __path.mkdir(exist_ok=True)
     list(
         custom_parallel(copy_to_many,

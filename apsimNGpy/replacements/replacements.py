@@ -1,6 +1,7 @@
 """
 This module attempts to provide abstract methods for paramters replacement to various nodes or childs in apsim simulations model
 """
+import numpy as np
 from apsimNGpy.core.core import APSIMNG
 from abc import ABC, abstractmethod
 import copy
@@ -28,6 +29,9 @@ class ReplacementHolder(APSIMNG, ABC):
         """
         Abstract method to replace soil properties
         """
+        pass
+
+    def replace_cultivar_params(self, **kwargs):
         pass
 
 
@@ -138,6 +142,23 @@ class Replacements(ReplacementHolder):
         fpt['param_values'] = param_values
         return self.replace_soil_property_values(**fpt)
 
+    def replace_cultivar_params(self, *, path, param_values:tuple, fmt="/", **kwargs):
+        """
+        the expected path is 'Cultivar/cultivar_name/commands' Note cultivars are best edited in the replacement folder, so,
+        make sure it exists in your simulation and the respective crop has been added
+        """
+        if fmt == '.':
+            raise ValueError(f"format character '{fmt}' is not a valid here")
+
+        args = path.split(fmt)
+        # not needed all expected are strings
+        #arg_ms = [(p := f"'{arg}'") if " " in arg and fmt != " " not in arg else arg for arg in args]
+        data = dict(zip(('CultivarName', 'commands'), args))
+        data['commands'] = data['commands'],
+
+        data['values'] = param_values if isinstance(param_values, (list, tuple, np.ndarray)) else param_values,
+        return self.edit_cultivar(**data)
+
     def update_mgt_by_path(self, *, path: str,
                            param_values, fmt='.', **kwargs):
         """
@@ -230,7 +251,8 @@ if __name__ == '__main__':
 
     os.chdir(Path.home())
     from apsimNGpy.core.base_data import load_default_simulations, weather_path
-
+    from apsimNGpy.core.base_data import LoadExampleFiles
+    mat=  LoadExampleFiles().get_maize_model.path
     mn = load_default_simulations(crop='Maize')
     ce = Replacements(mn.path, out_path='a.apsimx')
     mets = list(Path(weather_path).glob('*.met'))
@@ -251,3 +273,4 @@ if __name__ == '__main__':
     soybean_model.run("Report")
     res = soybean_model.results
     print(res)
+    rep = Replacements(mat, out = 'me.apsimx')

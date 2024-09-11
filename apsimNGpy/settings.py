@@ -35,4 +35,6 @@ file_handler.setFormatter(formatter)
 logger.addHandler(console_handler)
 logger.addHandler(file_handler)
 
+APSIM_LOCATION = os.environ.get('APSIM_LOCATION')
+
 

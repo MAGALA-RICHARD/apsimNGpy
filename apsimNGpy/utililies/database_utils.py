@@ -1,6 +1,7 @@
 """
 Interface to APSIM simulation models using Python.NET 
 """
+import logging
 from collections import namedtuple
 
 try:
@@ -14,6 +15,8 @@ from sqlalchemy import create_engine, inspect
 from os.path import exists
 
 import sqlite3
+
+logger = logging.getLogger(__name__)
 
 
 def get_db_table_names(sqlite_db):
@@ -162,6 +165,7 @@ def read_simulation_results(datastore, report_name=None):
     """ returns all data frame the available report tables"""
     dataframe_dict = read_sqlite_simulation_data(datastore, table_names=report_name)
     if len(dataframe_dict) == 0:
-        print("the data dictionary is empty. no data has been returned")
-
-    return dataframe_dict if len(dataframe_dict) > 1 else dataframe_dict[report_name]
+        logger.info("the data dictionary is empty. no data has been returned")
+    if report_name is not None and report_name in dataframe_dict:
+        return dataframe_dict[report_name]
+    return dataframe_dict

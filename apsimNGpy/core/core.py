@@ -38,7 +38,7 @@ from apsimNGpy.utililies.utils import timer
 logger = logging.getLogger(__name__)
 
 
-def _run_sim(simulation_model, data_store, read_result: bool = False, multithread: bool = True):
+def _run_sim(simulation_model, DataStore, sql_db, read_result: bool = True, multithread: bool = True):
     """
     This is an internal method that is only called from inside.
     This is not part of the API. It runs
@@ -51,11 +51,11 @@ def _run_sim(simulation_model, data_store, read_result: bool = False, multithrea
     clean_up: bool: to be determined.
     """
     run_type_enum = Models.Core.Run.Runner.RunTypeEnum
-    run_type = run_type_enum.MULTITHREAD if multithread else run_type_enum.SINGLETHREAD
+    run_type = run_type_enum.MultiThreaded if multithread else run_type_enum.SingleThreaded
 
     try:
-        data_store.Dispose()  # start by cleaning the datastore
-        data_store.DataStore.Open()
+        DataStore.Dispose()  # start by cleaning the datastore
+        DataStore.Open()
 
         model_to_run = Models.Core.Run.Runner(simulation_model, True, False, False, None, run_type)
         _sim_errors = model_to_run.Run()
@@ -64,13 +64,15 @@ def _run_sim(simulation_model, data_store, read_result: bool = False, multithrea
     else:
         if len(_sim_errors) > 0:  # this function is not doing much.
             for error in _sim_errors:
-                logger.debug(error.ToString())
+                msg = error.ToString()
+                logger.debug(msg)
+                print(msg)
         if read_result:
             """When read result is false"""
             from ..utililies.database_utils import read_simulation_results
-            return read_simulation_results(data_store)
+            return read_simulation_results(sql_db)
     finally:
-        data_store.DataStore.Close()
+        DataStore.Close()
 
 
 def run_simulation(model_meta_data, results: bool = False):
@@ -83,8 +85,9 @@ def run_simulation(model_meta_data, results: bool = False):
     :return: a named tuple objects populated with the results if results is True
     """
     try:
-        IModel, data_store = model_meta_data.IModel, model_meta_data.datastore
-        return _run_sim(IModel, data_store, read_result=results)
+        IModel, data_store = model_meta_data.IModel, model_meta_data.DataStore
+        sql_db = model_meta_data.datastore
+        return _run_sim(IModel, data_store, sql_db, read_result=results)
     except Exception as e:
         print(f"{type(e)} has occured::::")
         logger.info(f"apsimNGpy had issues running file {model_meta_data.path} : because of {repr(e)}")
@@ -149,7 +152,7 @@ class APSIMNG:
         returns results if results is True else None
         """
         self.check_model()
-        simulation_result = run_simulation(self.model_info, results=results, clean_up=clean_up)
+        simulation_result = run_simulation(self.model_info, results=results)
 
         if reports:
             return [
@@ -297,7 +300,7 @@ class APSIMNG:
             self.restart_model()
             return self
 
-    def simulate(self, report_name='', simulations=None, clean=False, multithread=True):
+    def simulate(self):
         """Run apsim model in the simulations
 
         Parameters
@@ -320,41 +323,7 @@ class APSIMNG:
             _sims = List[Models.Core.Simulation]()
             for s in _sims_available:
                 _sims.Add(s)
-        return run(_sims, report_name=report_name, multithread=multithread, clean=clean)
-
-        try:
-            if multithread:
-                runtype = Models.Core.Run.Runner.RunTypeEnum.MultiThreaded
-            else:
-                runtype = Models.Core.Run.Runner.RunTypeEnum.SingleThreaded
-            # open the datastore
-
-            self._DataStore.Open()
-            # Clear old data before running
-            self.results = None
-            if clean:
-                self._DataStore.Dispose()
-                pathlib.Path(self._DataStore.FileName).unlink(missing_ok=True)
-            _sim_errors = None
-
-            runner = Models.Core.Run.Runner(_sims, True, False, False, None, runtype)
-            _sim_errors = runner.Run()
-
-            for err in _sim_errors:
-                logger.debug(err[0].ToString())
-            if report_name is None:
-                report_name = get_db_table_names(self.datastore)
-                # issues with decoding '_Units' we remove it
-                if '_Units' in report_name: report_name.remove('_Units')
-                warnings.warn('No tables were specified, retrieved tables includes:: {}'.format(report_name))
-            if isinstance(report_name, (tuple, list)):
-                self.results = [read_db_table(self.datastore, report_name=rep) for rep in report_name]
-            else:
-                self.results = read_db_table(self.datastore, report_name=report_name)
-        finally:
-            # close the datastore
-            self._DataStore.Close()
-        return self
+        return _run_sim(_sims, self.model_info.DataStore, self.model_info.datastore)
 
     def clone_simulation(self, target, simulation=None):
         """Clone a simulation and add it to Model
@@ -1010,8 +979,9 @@ class APSIMNG:
         for weather in self.Simulations.FindAllDescendants[Weather]():
             return weather.FileName
 
-    def change_report(self, *, command: str, report_name='Report', simulations=None, set_DayAfterLastOutput=None,
-                      **kwargs):
+    def change_report(
+            self, *, command: str, report_name='Report', simulations=None, set_DayAfterLastOutput=None,
+            **kwargs):
         """
             Set APSIM report variables for specified simulations.
 
@@ -1054,7 +1024,7 @@ class APSIMNG:
         """
         sim = self._find_simulation(simulation)
         for si in sim:
-            report = (si.FindAllDescendants[Models.Report]())
+            report = si.FindAllDescendants[Models.Report]()
             print(list(report))
 
     def extract_soil_physical(self, simulation=None):

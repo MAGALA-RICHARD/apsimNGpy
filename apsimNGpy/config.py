@@ -44,6 +44,7 @@ def load_python_net():
         raise ValueError("A full path to the binary folder is required or the path is invalid")
 
     sys.path.append(APSIM_PATH)
+    os.environ['APSIM_BIN_LOCATION'] = APSIM_PATH
 
     import clr
     _sys = clr.AddReference("System")

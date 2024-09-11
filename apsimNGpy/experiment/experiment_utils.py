@@ -23,6 +23,7 @@ class MetaInfo:
     clear: bool = None
     test: bool = None
     mult_threads: bool = True
+    data_schema = None,
     ...
 
 
@@ -71,7 +72,7 @@ def _run_experiment(*, meta_info, SID, parameters):
 
     mf.rename(columns={'Name': 'ManagerName'}, inplace=True)
 
-    fModel = get_file_path(idi, os.path.join(meta_info.path, 'apSimNGpy_experiment'), meta_info.tag)
+    fModel = get_file_path(idi, os.path.join(meta_info.work_space, 'apSimNGpy_experiment'), meta_info.tag)
     Model = Replacements(fModel)
     # replace management-related factors
     manager_params = mgt_parameters.get('management')
@@ -116,7 +117,7 @@ def _run_experiment(*, meta_info, SID, parameters):
     ...
 
 
-def run_wrapper(data):
+def experiment_runner(data):
     _run_experiment(**data)
 
 

@@ -3,11 +3,13 @@ import os
 import shutil
 from os.path import realpath
 from pathlib import Path
-
+from apsimNGpy.utililies.database_utils import clear_all_tables, clear_table
 from apsimNGpy import custom_parallel
 from apsimNGpy.utililies.database_utils import read_db_table
-from apsimNGpy.experiment.experiment_utils import _run_experiment, experiment_runner, define_factor, define_cultivar, copy_to_many, MetaInfo
+from apsimNGpy.experiment.experiment_utils import _run_experiment, experiment_runner, define_factor, define_cultivar, \
+    copy_to_many, MetaInfo
 from apsimNGpy.experiment.set_ups import check_completed, DeepChainMap, define_parameters
+import warnings
 
 
 class Experiment:
@@ -116,7 +118,8 @@ class Experiment:
         """
         try:
             print(f"running  '{self.total_sims}' simulations")
-            list(custom_parallel(experiment_runner, self.set_experiment(), use_thread= self.use_thread, n_core=self.n_core))
+            list(custom_parallel(experiment_runner, self.set_experiment(), use_thread=self.use_thread,
+                                 n_core=self.n_core))
 
             size_in_bytes = os.path.getsize(self.meta_info.get('datastorage'))
             size_in_mb = size_in_bytes / (1024 * 1024)
@@ -135,6 +138,15 @@ class Experiment:
         cleans up stuff
         """
         shutil.rmtree(Path(self.meta_info.get('work_space') / 'apSimNGpy_experiment'), ignore_errors=True)
+
+    def clear_data_base(self, all_tables=True, report_name=None):
+        """
+        for clearing database before the start of the simulation, is by_pass completed is true, the process won't continue
+        :param all_tables:(bool) all existing tables will be cleared proceed with caution defaults to true
+        :param report_name: (str) if specified a specific table will be cleared proceed with caution
+        """
+        if not self.by_pass_completed:
+            clear_all_tables(self.datastorage) if all_tables else clear_table(self.datastorage, report_name)
 
 
 if __name__ == '__main__':
@@ -158,25 +170,27 @@ if __name__ == '__main__':
                                    cultivar_name='B_110',
                                    commands='[Phenology].GrainFilling.Target.FixedValue')
 
-    exp = Experiment(database_name='sbb.db',
-                     datastorage='sbx.db',
+    exp = Experiment(database_name='test.db',
+                     datastorage='test.db',
                      tag='th', base_file=model_path,
                      wd=path,
                      use_thread=True,
-                     by_pass_completed=False,
+                     by_pass_completed=True,
                      verbose=False,
                      test=False,
                      n_core=6,
-                     reports={'Report', 'MaizeR'})
+                     reports={'Report'})
 
     exp.add_factor(parameter='Carbon', param_values=[1.4, 2.4, 0.8], factor_type='soils', soil_node='Organic')
     exp.add_factor(parameter='Crops', param_values=['Maize', "Wheat"], factor_type='management', manager_name='Simple '
                                                                                                               'Rotation')
     # cultivar is edited via the replacement module, any simulation file supplied without Replacements for,
     # this method will fail quickly
-    exp.add_factor(parameter='grain_filling', param_values=[450, 650, 700, 500], cultivar_name='B_110',
+    exp.add_factor(parameter='grain_filling', param_values=[300, 450, 650, 700, 500], cultivar_name='B_110',
                    commands='[Phenology].GrainFilling.Target.FixedValue', factor_type='cultivar')
+
+    exp.clear_data_base()
     exp.start_experiment()
-    exp.test_experiment()
-    sim_data = exp.get_simulated_data()
+    sim_data = exp.get_simulated_data()[0]
+    sim_data.groupby('grain_filling').agg({"Yield": 'mean'})
     print(len(exp.factors))

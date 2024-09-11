@@ -44,7 +44,7 @@ def generate_unique_name(base_name, length=6):
 
 
 # from US_states_abbreviation import getabreviation
-def get_iem_bystation(dates, station, path, mettag):
+def get_iem_by_station(dates_tuple, station, path, met_tag):
     '''
       Dates is a tupple/list of strings with date ranges
       
@@ -55,43 +55,43 @@ def get_iem_bystation(dates, station, path, mettag):
       mettag: your prefered tag to save on filee
       '''
     # access the elements in the metdate class above
-    wdates = metdate(dates)
-    stationx = station[:2]
-    state_clim = stationx + "CLIMATE"
+    weather_dates = MetDate(dates_tuple)
+    stationX = station[:2]
+    state_clim = stationX + "CLIMATE"
     str0 = "http://mesonet.agron.iastate.edu/cgi-bin/request/coop.py?network="
     str1 = str0 + state_clim + "&stations=" + station
-    str2 = str1 + "&year1=" + wdates.year_start + "&month1=" + wdates.startmonth + "&day1=" + wdates.startday + "&year2=" + wdates.year_end + "&month2=" + wdates.endmonth + "&day2=" + wdates.endday
+    str2 = str1 + "&year1=" + weather_dates.year_start + "&month1=" + weather_dates.start_month + "&day1=" + weather_dates.start_day + "&year2=" + weather_dates.year_end + "&month2=" + weather_dates.end_month + "&day2=" + weather_dates.end_day
     str3 = (str2 + "&vars%5B%5D=apsim&what=view&delim=comma&gis=no")
     url = str3
     rep = requests.get(url)
     if rep.ok:
-        metname = station + mettag + ".met"
+        met_name_of_file = station + met_tag + ".met"
         os.chdir(path)
         if not os.path.exists('weatherdata'):
             os.mkdir('weatherdata')
-        pt = os.path.join('weatherdata', metname)
+        pt = os.path.join('weatherdata', met_name_of_file)
 
-        with open(pt, 'wb') as metfile1:
-            # dont forget to include the file extension name
-            metfile1.write(rep.content)
+        with open(pt, 'wb') as met_fileX:
+            # remember to include the file extension name
+            met_fileX.write(rep.content)
             rep.close()
-            metfile1.close()
+            met_fileX.close()
             print(rep.content)
     else:
         print("Failed to download the data web request returned code: ", rep)
 
 
-class metdate:
+class MetDate:
     def __init__(self, dates):
-        self.startdate = dates[0]
-        self.lastdate = dates[1]
-        self.startmonth = dates[0][:2]
-        self.endmonth = dates[1][:2]
+        self.start_date = dates[0]
+        self.end_date = dates[1]
+        self.start_month = dates[0][:2]
+        self.end_month = dates[1][:2]
         self.year_start = dates[0].split("-")[2]
         self.year_end = dates[1].split("-")[2]
         import datetime
-        self.startday = datetime.datetime.strptime(dates[0], '%m-%d-%Y').strftime('%j')
-        self.endday = datetime.datetime.strptime(dates[1], '%m-%d-%Y').strftime('%j')
+        self.start_day = datetime.datetime.strptime(dates[0], '%m-%d-%Y').strftime('%j')
+        self.end_day = datetime.datetime.strptime(dates[1], '%m-%d-%Y').strftime('%j')
 
 
 dates = ['01-01-2000', '12-31-2020']
@@ -872,4 +872,4 @@ if __name__ == '__main__':
     df = getnasa_df(kampala, 2000, 2020)
     imputed_df = impute_data(df, method="mean", verbose=True, copy=True)
     hf = met_nasapower(kampala, end=2020, fname='kampala_new.met')
-    wf = get_weather(kampala, start=1990, end=2020, source='daymet', filename='kampala_new.met')
+    wf = get_weather(kampala, start=1990, end=2020, source='nasapower', filename='kampala_new.met')

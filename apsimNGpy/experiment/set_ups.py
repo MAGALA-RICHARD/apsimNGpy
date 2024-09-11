@@ -14,9 +14,12 @@ from pandas import DataFrame, concat
 from sqlalchemy import create_engine
 from apsimNGpy.parallel.process import custom_parallel
 import warnings
+from os.path import realpath
 from collections import ChainMap
 from apsimNGpy.replacements.replacements import Replacements
-from experiment_utils import (_run_experiment, MetaInfo, copy_to_many, define_factor, Factor, define_cultivar)
+from experiment_utils import (_run_experiment, MetaInfo, copy_to_many,
+                              experiment_runner,
+                              define_factor, Factor, define_cultivar)
 
 
 ################################################################################
@@ -90,13 +93,12 @@ class DeepChainMap(ChainMap):
             gdata.append(management_df)
 
         if soils:
-
             soil_df = concat([DataFrame(i, [0]) for i in soils], axis=1).drop(['path', 'param_values'],
                                                                               axis=1).reset_index(drop=True)
             gdata.append(soil_df)
         if cultivar:
             cultivar_df = concat([DataFrame(i, [0]) for i in cultivar], axis=1).drop(['path', 'param_values'],
-                                                                              axis=1).reset_index(drop=True)
+                                                                                     axis=1).reset_index(drop=True)
             gdata.append(cultivar_df)
         return concat(gdata, axis=1) if gdata else None
 
@@ -156,21 +158,20 @@ def set_experiment(*, datastorage,
                    use_thread=True,
                    n_core=4,
                    by_pass_completed=True,
-                   data_schema=None,
+
                    **kwargs):
     _path = Path(wd) if wd else Path(os.path.realpath(base_file)).parent
 
     meta_ = dict(tag=tag, wd=_path,
                  simulation_id=simulation_id,
-                 datastorage=datastorage,
-                 path=_path,
-                 data_schema=kwargs.get('data_schema', data_schema),
+                 datastorage=realpath(datastorage),
+                 work_space = _path,
                  n_core=n_core, **kwargs)
 
     perms = define_parameters(factors_list=factors)
     perms = check_completed(datastorage, perms, simulation_id) if by_pass_completed else perms
-
-    print(len(perms))
+    Total_sims = len(perms)
+    print(Total_sims)
     print(f"copying files to {_path}")
     # def _copy(i_d)
     ids = iter(perms)
@@ -187,41 +188,28 @@ def set_experiment(*, datastorage,
                         use_thread=use_thread,
                         n_core=n_core,
                         **kwargs))
-    for ID, perm in perms.items():
-        Meta = MetaInfo()
-        [setattr(Meta, k.lower().strip(" "), v) for k, v in meta_.items()]
-        yield dict(SID=ID, meta_info=Meta,
-                   parameters=DeepChainMap(perm))
-    ...
+
+    def data_generator():
+        for ID, perm in perms.items():
+            Meta = MetaInfo()
+            [setattr(Meta, k.lower().strip(" "), v) for k, v in meta_.items()]
+            yield dict(SID=ID, meta_info=Meta,
+                       parameters=DeepChainMap(perm))
+
+    if kwargs.get('test'):
+        print('debugging started....')
+        d_f = _run_experiment(**next(data_generator()))
+        return d_f
+    else:
+        print(f"running  '{Total_sims}' simulations")
+        list(custom_parallel(experiment_runner, data_generator(), n_core=10))
+
+    size_in_bytes = os.path.getsize(meta_.get('datastorage'))
+    size_in_mb = size_in_bytes / (1024 * 1024)
+    meta_['data size'] = size_in_mb
+
+    return meta_
 
 
 parameters = ['datastorage', 'perms', 'simulation_id', 'factors', 'base_file', 'tag', 'perms']
 
-if __name__ == '__main__':
-    path = Path(r'G:/').joinpath('scratchT')
-    a = ['Maize', "Wheat"]
-    reports = dict(zip(a, ['Annual', 'Annual']))
-
-    Amount = [{'management': dict(Name='MaizeNitrogenManager', Amount=i)} for i in
-              [20, 40, 60, 80]]
-    Crops = [{'management': {'Name': "Simple Rotation", "Crops": i}} for i in
-             ['Maize', 'Wheat, Maize']]
-    a1 = Factor(name='Crops', variables=Crops)
-    b1 = Factor(name='Amount', variables=Amount)
-
-    facs = [Crops, Amount]
-    ap = set_experiment(factors=[a1, b1],
-                        database_name='sbb.db',
-                        datastorage='sbx.db',
-                        tag='th', base_file='ed.apsimx',
-                        wd=path,
-                        use_thread=True,
-                        children=['manager'],
-                        by_pass_completed=False,
-                        reports={'Maize': 'Annual', 'Wheat, Maize': 'Annual'})
-
-    df = _run_experiment(**next(ap))
-
-    xp = create_permutations(facs, ['a', 'b'])
-    xm = DeepChainMap(xp[0])
-    from apsimNGpy.utililies.database_utils import read_db_table

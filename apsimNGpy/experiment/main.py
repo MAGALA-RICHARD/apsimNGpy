@@ -6,8 +6,8 @@ from pathlib import Path
 
 from apsimNGpy import custom_parallel
 from apsimNGpy.utililies.database_utils import read_db_table
-from experiment_utils import _run_experiment, experiment_runner, define_factor, define_cultivar, copy_to_many, MetaInfo
-from set_ups import check_completed, DeepChainMap, define_parameters
+from apsimNGpy.experiment.experiment_utils import _run_experiment, experiment_runner, define_factor, define_cultivar, copy_to_many, MetaInfo
+from apsimNGpy.experiment.set_ups import check_completed, DeepChainMap, define_parameters
 
 
 class Experiment:
@@ -111,10 +111,12 @@ class Experiment:
     def start_experiment(self):
         """
         This will run the experiment
+        The method may fail miserably if you call it without a guard like if __name__ == '__main__':
+        It's advisable to use this class below the line
         """
         try:
             print(f"running  '{self.total_sims}' simulations")
-            list(custom_parallel(experiment_runner, self.set_experiment(), n_core=10))
+            list(custom_parallel(experiment_runner, self.set_experiment(), use_thread= self.use_thread, n_core=self.n_core))
 
             size_in_bytes = os.path.getsize(self.meta_info.get('datastorage'))
             size_in_mb = size_in_bytes / (1024 * 1024)

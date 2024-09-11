@@ -1,11 +1,13 @@
 from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganizeAPSIMsoil_profile
-from apsimNGpy.core.weather import daymet_bylocation_nocsv
+from apsimNGpy.manager.weathermanager import daymet_bylocation_nocsv
 from apsimNGpy.core.apsim import ApsimModel
+
 
 def initialise(model, reports):
     model = ApsimModel(model)
     model.run(report_name=reports)
     return model.results
+
 
 def download_soil_table(x):
     try:
@@ -51,5 +53,3 @@ def simulator_worker(row, dictio):
         print(type(e))
         print('+_____________________________________\n')
         print(e)
-
-

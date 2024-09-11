@@ -82,7 +82,7 @@ class DeepChainMap(ChainMap):
         data = self.merge() if not merged else merged
         management = data.get('management')
         soils = data.get('soils_params')
-        cultivar = data.get('cultivar')
+        cultivar = data.get('cultivar_params')
 
         if management:
             for i in management:
@@ -99,6 +99,7 @@ class DeepChainMap(ChainMap):
         if cultivar:
             cultivar_df = concat([DataFrame(i, [0]) for i in cultivar], axis=1).drop(['path', 'param_values'],
                                                                                      axis=1).reset_index(drop=True)
+            print(cultivar_df)
             gdata.append(cultivar_df)
         return concat(gdata, axis=1) if gdata else None
 

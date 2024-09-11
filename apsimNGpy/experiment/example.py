@@ -14,9 +14,7 @@ if __name__ == '__main__':
     # model_path = load_default_simulations(crop='maize', simulations_object=False, path=path.parent)
     model_path = path.joinpath('m.apsimx')
 
-
     # define the factors
-
 
     carbon = define_factor(parameter="Carbon", param_values=[1.4, 2.4, 0.8], factor_type='soils', soil_node='Organic')
     Amount = define_factor(parameter="Amount", param_values=[200, 324, 100], factor_type='Management',
@@ -37,4 +35,3 @@ if __name__ == '__main__':
                         verbose=True,
                         test=True,
                         reports={'Report', 'MaizeR'})
-

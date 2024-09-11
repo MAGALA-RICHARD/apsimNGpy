@@ -180,11 +180,13 @@ def define_factor(parameter: str, param_values: list, factor_type: str,
 def define_cultivar(cultivar_name, commands, param_values, parameter):
     """
     Defines the cultivar parameters for a given cultivar_name. these methods are used to abstract arguments for
-    replacing methods
+    replacing method
     :param cultivar_name: name of the cultivar to edit
-    :param commands: commands path for the cutlivar parameter to edit
-    :param param_values: values to replace w=the old ones
+    :param commands: commands a path for the cutlivar parameter to edit
+    :param param_values: values to replace with the old ones
 
+     # A cultivar is edited via the replacement module, any simulation file supplied without Replacements for,
+     # this method will fail quickly
      Example
      ...
          from apsimNGpy.core.base_data import LoadExampleFiles

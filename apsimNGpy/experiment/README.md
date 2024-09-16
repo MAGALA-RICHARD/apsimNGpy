@@ -1,7 +1,10 @@
 # Why use this apsimNGpy factorial module
 Factorial analysis is essential when performing sensitivity analysis, generating datasets for machine learning model training, or conducting uncertainty analysis. In these scenarios, a large volume of data is required, which can be handled by graphical user interfaces (GUIs). Still, they often face limitations regarding memory and performance as the number of factorial combinations increases. Moreover, GUIs may lack the flexibility for complex customizations. This is where the APSIMNGpy factorial module becomes invaluable. It allows for efficient handling of large factorial datasets, offering greater control, scalability, and customization without the constraints imposed by traditional GUI-based approaches.
 
-* Object oriented approach
+# Examples
+
+* Object-oriented approach
+
 ```python
     from pathlib import Path
     path = Path.home()
@@ -39,4 +42,4 @@ Factorial analysis is essential when performing sensitivity analysis, generating
 
 ```
 
-procedural oriented approach
+* Procedural oriented approach

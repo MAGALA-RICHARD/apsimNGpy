@@ -27,9 +27,9 @@ FactorialExperiment = Experiment(database_name='test.db',
                                  reports={'Report'})
 ```
 ## Adding factors
-Now we have finished initializing the Experiment, we can now add factors are replaced via the replacement module, we provide alot of abstractions
+Now we have finished initializing the Experiment, we can now add factors. These factors are replaced via the replacement module, here, we just provided a lot of abstractions
 The factors types can be either soils, management, cultivar, or surface organic matter factor, management factors are associated with the Manager module or scripts
-cultivar is edited via the replacement module, any simulation file supplied without Replacements for, this method will fail quickly
+cultivar is edited via the replacement module, any simulation file supplied without Replacements for this method will fail quickly
 ```python
 FactorialExperiment.add_factor(parameter='Carbon', param_values=[1.4, 2.4, 0.8], factor_type='soils', soil_node='Organic')
 FactorialExperiment.add_factor(parameter='Crops', param_values=['Maize', "Wheat"], factor_type='management', manager_name='Simple '

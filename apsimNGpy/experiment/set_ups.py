@@ -1,6 +1,7 @@
 """This script is used to provide a simple design of experiments and to facilitate parameter replacement. The earlier
 script we realized was complicated for no good reason"""
-import os
+import os, sys
+sys.path.append(os.path.dirname(os.path.realpath(__file__)))
 import shutil
 from dataclasses import dataclass, replace
 from pathlib import Path

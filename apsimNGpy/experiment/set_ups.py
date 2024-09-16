@@ -190,7 +190,7 @@ def set_experiment(*, datastorage,
                         n_core=n_core,
                         **kwargs))
 
-    def data_generator():
+    def _data_generator():
         for ID, perm in perms.items():
             Meta = MetaInfo()
             [setattr(Meta, k.lower().strip(" "), v) for k, v in meta_.items()]
@@ -199,11 +199,11 @@ def set_experiment(*, datastorage,
 
     if kwargs.get('test'):
         print('debugging started....')
-        d_f = _run_experiment(**next(data_generator()))
+        d_f = _run_experiment(**next(_data_generator()))
         return d_f
     else:
         print(f"running  '{Total_sims}' simulations")
-        list(custom_parallel(experiment_runner, data_generator(), n_core=10))
+        list(custom_parallel(experiment_runner, _data_generator(), n_core=10))
 
     size_in_bytes = os.path.getsize(meta_.get('datastorage'))
     size_in_mb = size_in_bytes / (1024 * 1024)

@@ -170,27 +170,27 @@ if __name__ == '__main__':
                                    cultivar_name='B_110',
                                    commands='[Phenology].GrainFilling.Target.FixedValue')
 
-    exp = Experiment(database_name='test.db',
-                     datastorage='test.db',
-                     tag='th', base_file=model_path,
-                     wd=path,
-                     use_thread=True,
-                     by_pass_completed=True,
-                     verbose=False,
-                     test=False,
-                     n_core=6,
-                     reports={'Report'})
+    FactorialExperiment = Experiment(database_name='test.db',
+                                     datastorage='test.db',
+                                     tag='th', base_file=model_path,
+                                     wd=path,
+                                     use_thread=True,
+                                     by_pass_completed=True,
+                                     verbose=False,
+                                     test=False,
+                                     n_core=6,
+                                     reports={'Report'})
 
-    exp.add_factor(parameter='Carbon', param_values=[1.4, 2.4, 0.8], factor_type='soils', soil_node='Organic')
-    exp.add_factor(parameter='Crops', param_values=['Maize', "Wheat"], factor_type='management', manager_name='Simple '
+    FactorialExperiment.add_factor(parameter='Carbon', param_values=[1.4, 2.4, 0.8], factor_type='soils', soil_node='Organic')
+    FactorialExperiment.add_factor(parameter='Crops', param_values=['Maize', "Wheat"], factor_type='management', manager_name='Simple '
                                                                                                               'Rotation')
     # cultivar is edited via the replacement module, any simulation file supplied without Replacements for,
     # this method will fail quickly
-    exp.add_factor(parameter='grain_filling', param_values=[300, 450, 650, 700, 500], cultivar_name='B_110',
-                   commands='[Phenology].GrainFilling.Target.FixedValue', factor_type='cultivar')
+    FactorialExperiment.add_factor(parameter='grain_filling', param_values=[300, 450, 650, 700, 500], cultivar_name='B_110',
+                                   commands='[Phenology].GrainFilling.Target.FixedValue', factor_type='cultivar')
 
-    exp.clear_data_base()
-    exp.start_experiment()
-    sim_data = exp.get_simulated_data()[0]
+    FactorialExperiment.clear_data_base()
+    FactorialExperiment.start_experiment()
+    sim_data = FactorialExperiment.get_simulated_data()[0]
     sim_data.groupby('grain_filling').agg({"Yield": 'mean'})
-    print(len(exp.factors))
+    print(len(FactorialExperiment.factors))

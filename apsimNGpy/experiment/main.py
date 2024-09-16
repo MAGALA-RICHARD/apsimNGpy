@@ -1,5 +1,6 @@
 import itertools
-import os
+import os, sys
+sys.path.append(os.path.dirname(os.path.realpath(__file__)))
 import shutil
 from os.path import realpath
 from pathlib import Path
@@ -184,8 +185,8 @@ if __name__ == '__main__':
     FactorialExperiment.add_factor(parameter='Carbon', param_values=[1.4, 2.4, 0.8], factor_type='soils', soil_node='Organic')
     FactorialExperiment.add_factor(parameter='Crops', param_values=['Maize', "Wheat"], factor_type='management', manager_name='Simple '
                                                                                                               'Rotation')
-    # cultivar is edited via the replacement module, any simulation file supplied without Replacements for,
-    # this method will fail quickly
+    # cultivar is edited via the replacement module, any simulation file supplied without Replacements appended
+    # to Simulations node, this method will fail quickly
     FactorialExperiment.add_factor(parameter='grain_filling', param_values=[300, 450, 650, 700, 500], cultivar_name='B_110',
                                    commands='[Phenology].GrainFilling.Target.FixedValue', factor_type='cultivar')
 

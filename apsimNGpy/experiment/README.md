@@ -3,9 +3,14 @@ Factorial analysis is essential when performing sensitivity analysis, generating
 
 * Object oriented approach
 ```python
-# manadatory arguments include datastorage, tag, wd and reports the rest are very optional and are clearly passed as key word argument
- FactorialExperiment = Experiment(database_name='test.db',
-                                     datastorage='test.db',
+    from pathlib import Path
+    path = Path.home()
+    from apsimNGpy.experiment.main import Experiment
+    from apsimNGpy.core.base_data import load_default_simulations
+    model_path = load_default_simulations(crop = 'Maize')
+    # manadatory arguments include datastorage, tag, wd and reports the rest are very optional and are clearly passed as key word argument
+    FactorialExperiment = Experiment(database_name='test.db',
+                                         datastorage='test.db',
                                      tag='th', base_file=model_path,
                                      wd=path,
                                      use_thread=True,

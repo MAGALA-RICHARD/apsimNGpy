@@ -650,9 +650,10 @@ def _is_within_USA_mainland(lonlat):
 
 def get_weather(lonlat, start=1990, end=2000, source='daymet', filename='__met_.met'):
     """collects data from various sources
-    only nasapower and dayment are currently supported sources
+    only nasapower and dayment are currently supported sources,so it will raise an error
+    Note if you not in mainland USA, please don't pass source = 'dayment' as it will raise an error due to geographical scope
     # example
-    WE are going to collect data from my home town Kampala
+    We are going to collect data from my hometown Kampala
     kampala_loc = 35.582520, 0.347596
     wf = get_weather(kampala_loc, start=1990, end=2020, source='nasa', filename='kampala_new.met')
 

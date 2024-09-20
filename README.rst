@@ -305,9 +305,14 @@ Join the Discussion
 
 Feel free to join in discussions on issues or pull requests. Your feedback and insights are valuable to the community!
 
-Code of Conduct
+version 0.27.8 new features
 ---------------
 
+Dynamic handling of simulations and their properties
+
+replacements made easier
+
+object oriented factorial experiment set ups and simulations
 
 Acknowledgements
 *********************************************************************************

@@ -649,15 +649,24 @@ def _is_within_USA_mainland(lonlat):
 
 
 def get_weather(lonlat, start=1990, end=2000, source='daymet', filename='__met_.met'):
+    """collects data from various sources
+    only nasapower and dayment are currently supported sources
+    # example
+    WE are going to collect data from my home town Kampala
+    kampala_loc = 35.582520, 0.347596
+    wf = get_weather(kampala_loc, start=1990, end=2020, source='nasa', filename='kampala_new.met')
+
+    """
+
     if source == 'daymet' and _is_within_USA_mainland(lonlat):
         file_name = "daymet_" + filename
         return get_met_from_day_met(lonlat, start=start, end=end, filename=file_name)
-    elif source == 'nasapower':
-        file_name = "nasapower_" + filename
+    elif source == 'nasa':
+        file_name = "nasa_" + filename
         return get_met_nasa_power(lonlat, start, end, fname=file_name)
     else:
         raise ValueError(
-            f"Invalid source: {source} according to supplied {lonlat} lon_lat values try nasapower instead")
+            f"Invalid source: {source} according to supplied {lonlat} lon_lat values try 'nasa' instead")
 
 
 def read_apsim_met(met_path, skip=5, index_drop=0, separator=' '):
@@ -886,7 +895,7 @@ if __name__ == '__main__':
     df = get_nasa_data(kampala, 2000, 2020)
     #imputed_df = impute_data(df, method="mean", verbose=True, copy=True)
     hf = get_met_nasa_power(kampala, end=2020, fname='kampala_new.met')
-    wf = get_weather(kampala, start=1990, end=2020, source='nasapower', filename='kampala_new.met')
+    wf = get_weather(kampala, start=1990, end=2020, source='nasa', filename='kampala_new.met')
     import time
     a = time.perf_counter()
     get_met_from_day_met(lonlat=(-93.04, 42.01247), start=2000, end =2020, filename='daymet.met')

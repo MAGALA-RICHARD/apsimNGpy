@@ -71,7 +71,7 @@ class Experiment:
                  simulation_id='SID',
                  use_thread=True,
                  n_core=4,
-                 by_pass_completed=True,
+                 skip_completed=True,
                  **kwargs):
         self.data_generator = None
         self.total_sims = None
@@ -79,7 +79,7 @@ class Experiment:
         self.define_factor = define_factor
         self.factors = []
         self.meta_info = None
-        self.by_pass_completed = by_pass_completed
+        self.skip_completed = skip_completed
         self.n_core = n_core
         self.simulation_id = simulation_id
         self.use_thread = use_thread
@@ -158,7 +158,7 @@ class Experiment:
                               n_core=self.n_core, **self._others)
 
         perms = define_parameters(factors_list=self.factors)
-        perms = track_completed(self.datastorage, perms, self.simulation_id) if self.by_pass_completed else perms
+        perms = track_completed(self.datastorage, perms, self.simulation_id) if self.skip_completed else perms
         self.total_sims = len(perms)
         print(self.total_sims)
         print(f"copying files to {_path}")
@@ -246,7 +246,7 @@ class Experiment:
         :param all_tables:(bool) all existing tables will be cleared proceed with caution defaults to true
         :param report_name: (str) if specified a specific table will be cleared proceed with caution
         """
-        if not self.by_pass_completed:
+        if not self.skip_completed:
             clear_all_tables(self.datastorage) if all_tables else clear_table(self.datastorage, report_name)
 
 
@@ -277,7 +277,7 @@ if __name__ == '__main__':
                                      tag='th', base_file=model_path,
                                      wd=path,
                                      use_thread=True,
-                                     by_pass_completed=True,
+                                     skip_completed=True,
                                      verbose=False,
                                      test=False,
                                      n_core=6,

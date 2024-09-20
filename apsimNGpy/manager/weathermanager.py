@@ -4,7 +4,7 @@ from datetime import datetime
 import datetime
 import urllib
 from pathlib import Path
-
+from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception, retry_if_exception_type
 import requests
 import random
 import json
@@ -35,6 +35,8 @@ from scipy import interpolate
 import copy
 import warnings
 
+# we only need to retry if any of these error occured, the rest we dont need to know
+NETWORK_EXCEPTIONS = (requests.ConnectionError, requests.Timeout, requests.RequestException)
 
 def generate_unique_name(base_name, length=6):
     # TODO this function has 4 duplicates
@@ -44,6 +46,9 @@ def generate_unique_name(base_name, length=6):
 
 
 # from US_states_abbreviation import getabreviation
+
+# let us manage network issues more gracefully
+@retry(stop=stop_after_attempt(3), wait=wait_fixed(0.5), retry=retry_if_exception_type(NETWORK_EXCEPTIONS))
 def get_iem_by_station(dates_tuple, station, path, met_tag):
     '''
       Dates is a tupple/list of strings with date ranges
@@ -185,6 +190,7 @@ def isleapyear(year):
 
 
 # download radiation data for replacement
+@retry(stop=stop_after_attempt(3), retry=retry_if_exception_type(NETWORK_EXCEPTIONS))
 def get_nasarad(lonlat, start, end):
     lon = lonlat[0]
     lat = lonlat[1]
@@ -199,7 +205,8 @@ def get_nasarad(lonlat, start, end):
     # fucntion to download data from daymet
 
 
-def daymet_bylocation(lonlat, start, end, cleanup=True, filename=None):
+@retry(stop=stop_after_attempt(3), retry=retry_if_exception_type(NETWORK_EXCEPTIONS))
+def day_met_by_location(lonlat, start, end, cleanup=True, filename=None):
     '''collect weather from daymet solar radiation is replaced with that of nasapower
    ------------
    parameters
@@ -338,7 +345,8 @@ def daymet_bylocation(lonlat, start, end, cleanup=True, filename=None):
                 return fname  # fname
 
 
-def daymet_bylocation_nocsv(lonlat, start, end, cleanup=True, filename=None):
+@retry(stop=stop_after_attempt(3), wait=wait_fixed(0.5), retry=retry_if_exception_type(NETWORK_EXCEPTIONS))
+def get_met_from_day_met(lonlat, start, end, cleanup=True, filename=None):
     '''collect weather from daymet solar radiation is replaced with that of nasapower
     ------------
     parameters
@@ -353,6 +361,11 @@ def daymet_bylocation_nocsv(lonlat, start, end, cleanup=True, filename=None):
 
     ------------
     returns complete path to the new met file but also write the met file to the disk in the working directory
+    Example:
+      # Assuming the function is imported from:
+          apsimNGpy.manager.weathermanager import get_met_from_day_met
+          wf = get_met_from_day_met(lonlat=(-93.04, 42.01247), start=2000, end=2020, filename='daymet.met')
+
     '''
     # import pdb
     # pdb.set_trace()
@@ -577,7 +590,8 @@ def separate_date(date_str):
     return year, month, day
 
 
-def getnasa_df(lonlat, start, end):
+@retry(stop=stop_after_attempt(3))
+def get_nasa_data(lonlat, start, end):
     lon = lonlat[0]
     lat = lonlat[1]
     param = ["T2M_MAX", "T2M_MIN", "ALLSKY_SFC_SW_DWN", "PRECTOTCORR", "RH2M", "WS2M"]
@@ -606,8 +620,8 @@ def getnasa_df(lonlat, start, end):
     return df
 
 
-def met_nasapower(lonlat, start=1990, end=2000, fname='met_nasapower.met'):
-    df = getnasa_df(lonlat, start, end)
+def get_met_nasa_power(lonlat, start=1990, end=2000, fname='get_met_nasa_power.met'):
+    df = get_nasa_data(lonlat, start, end)
     tav, AMP = calculate_tav_amp(df)
     create_met_header(fname, lonlat, tav, AMP, site=None)
     data_rows = []
@@ -637,10 +651,10 @@ def _is_within_USA_mainland(lonlat):
 def get_weather(lonlat, start=1990, end=2000, source='daymet', filename='__met_.met'):
     if source == 'daymet' and _is_within_USA_mainland(lonlat):
         file_name = "daymet_" + filename
-        return daymet_bylocation_nocsv(lonlat, start=start, end=end, filename=file_name)
+        return get_met_from_day_met(lonlat, start=start, end=end, filename=file_name)
     elif source == 'nasapower':
         file_name = "nasapower_" + filename
-        return met_nasapower(lonlat, start, end, fname=file_name)
+        return get_met_nasa_power(lonlat, start, end, fname=file_name)
     else:
         raise ValueError(
             f"Invalid source: {source} according to supplied {lonlat} lon_lat values try nasapower instead")
@@ -869,7 +883,12 @@ def impute_missing_leaps(dmet, fill=0):
 if __name__ == '__main__':
     # imputed_df = impute_data(df, method="approx", verbose=True, copy=True)
     kampala = 35.582520, 0.347596
-    df = getnasa_df(kampala, 2000, 2020)
-    imputed_df = impute_data(df, method="mean", verbose=True, copy=True)
-    hf = met_nasapower(kampala, end=2020, fname='kampala_new.met')
+    df = get_nasa_data(kampala, 2000, 2020)
+    #imputed_df = impute_data(df, method="mean", verbose=True, copy=True)
+    hf = get_met_nasa_power(kampala, end=2020, fname='kampala_new.met')
     wf = get_weather(kampala, start=1990, end=2020, source='nasapower', filename='kampala_new.met')
+    import time
+    a = time.perf_counter()
+    get_met_from_day_met(lonlat=(-93.04, 42.01247), start=2000, end =2020, filename='daymet.met')
+    b = time.perf_counter()
+    print(b-a)

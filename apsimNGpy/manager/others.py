@@ -178,7 +178,7 @@ def getnasa_df(lonlat, start, end):
     return df
 
 
-def met_nasapower(lonlat, start=1990, end=2000, fname='met_nasapower.met'):
+def met_nasapower(lonlat, start=1990, end=2000, fname='get_met_nasa_power.met'):
     df = getnasa_df(lonlat, start, end)
     tav, AMP = calculate_tav_amp(df)
     create_met_header(fname, lonlat, tav, AMP, site = None)

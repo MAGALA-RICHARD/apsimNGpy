@@ -652,10 +652,17 @@ def get_weather(lonlat, start=1990, end=2000, source='daymet', filename='__met_.
     """collects data from various sources
     only nasapower and dayment are currently supported sources,so it will raise an error
     Note if you not in mainland USA, please don't pass source = 'dayment' as it will raise an error due to geographical scope
-    # example
+    >> example
+    >>> from apsimNGpy.manager.weathermanager import get_weather
+    >>> from apsimNGpy.core.base_data import load_default_simulations
     We are going to collect data from my hometown Kampala
-    kampala_loc = 35.582520, 0.347596
-    wf = get_weather(kampala_loc, start=1990, end=2020, source='nasa', filename='kampala_new.met')
+    >>> kampala_loc = 35.582520, 0.347596
+    # Notice it return a path to the downloaded weather file
+    >>> met_file = get_weather(kampala_loc, start=1990, end=2020, source='nasa', filename='kampala_new.met')
+    >>> print(met_file)
+    # next we can pass this weather file to apsim model
+    >>> maize_model = load_default_simulations(crop = 'maize')
+    >>> maize_model.replace_met_file(weather_file = met_file)
 
     """
 

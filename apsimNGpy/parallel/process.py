@@ -237,8 +237,6 @@ def custom_parallel(func, iterable, *args, **kwargs):
     if verbose:
         _seconds = timeB- timeA
         print(f'processing {count} took', _seconds, f'seconds', f'to run. time per worker: {_seconds / cpu_cores}')
-
-
 def simulate_in_chunks(w_d, iterable_generator, chunk_size, con_data_base=None, table_tag='t', save_to_csv=True):
     """
     Iterate through a generator by specifying the chunk size. vital if the data to be simulated is so large to fit into the computer memory

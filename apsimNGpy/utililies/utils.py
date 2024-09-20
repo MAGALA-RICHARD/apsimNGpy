@@ -693,7 +693,7 @@ def exception_handler(re_raise=False):
     return decorator
 
 
-def flatten_nested_list(nested_list):
+def flatten_nested_list(nested_list, deep=True):
     """
     this will recursively flatten a nested list
     :param nested_list:  to flatten
@@ -701,7 +701,8 @@ def flatten_nested_list(nested_list):
     """
     flattened = []
     for item in nested_list:
-        if isinstance(item, list):
+
+        if isinstance(item, (tuple, list, set)):
             # Recursively flatten the sublist
             flattened.extend(flatten_nested_list(item))
         else:
@@ -723,13 +724,5 @@ def flatten_dict(nested_dict, parent_key='', separator='.'):
     return flattened
 
 
-
 if __name__ == '__main__':
-    # Example usage of the decorator
-    @exception_handler(re_raise=True)
-    def divide(x, y):
-        return x / y
-
-
-    # This will print the exception message along with the line number in the script where it occurred
-    divide(10, 0)
+    ...

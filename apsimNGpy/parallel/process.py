@@ -211,32 +211,32 @@ def custom_parallel(func, iterable, *args, **kwargs):
        cores on the machine.
      
      verbose (bool): if progress should be printed on the screen, default is True
+     progress_message (str) sentence to display progress such processing weather please wait
 
     """
 
     use_thread, cpu_cores = kwargs.get('use_thread', False), kwargs.get('ncores', CORES)
-    a = perf_counter()
+    timeA = perf_counter()
     verbose = kwargs.get('verbose', True)
+    progress_message = kwargs.get('progress_message', f"Processing multiple jobs via '{func.__name__}' please wait!")
     selection = select_type(use_thread=use_thread,
                             n_cores=cpu_cores)
     with selection as pool:
         futures = [pool.submit(func, i, *args) for i in iterable]
-        if verbose:
 
-            progress = tqdm(total=len(futures), position=0, leave=True,
-                            bar_format=f'processing via: {func.__name__} function:' '{percentage:3.0f}% completed')
-            # Iterate over the futures as they complete
-            count = 0
-            for future in as_completed(futures):
-                count += 1
-                yield future.result()
-                progress.update(1)
-            progress.close()
-        else:
-            for future in as_completed(futures):
-                yield future.result()
-    _seconds = perf_counter() - a
-    print(f'processing {count} took', _seconds, f'seconds', f'to run. time per worker: {_seconds / cpu_cores}')
+        progress = tqdm(total=len(futures), position=0, leave=True,
+                        bar_format=f'{progress_message}:' '{percentage:3.0f}% completed')
+        # Iterate over the futures as they complete
+        count = 0
+        for future in as_completed(futures):
+            count += 1
+            yield future.result()
+            progress.update(1)
+        progress.close()
+    timeB= perf_counter()
+    if verbose:
+        _seconds = timeB- timeA
+        print(f'processing {count} took', _seconds, f'seconds', f'to run. time per worker: {_seconds / cpu_cores}')
 
 
 def simulate_in_chunks(w_d, iterable_generator, chunk_size, con_data_base=None, table_tag='t', save_to_csv=True):
@@ -340,7 +340,8 @@ if __name__ == '__main__':
     gen_d = (i for i in range(100000))
     lm = custom_parallel(fnn, range(100000), use_thread=True, ncores=4)
     # lm2 = custom_parallel(fnn, gen_d, use_thread=True, ncores=10)
-
+   #with custom message
+    lm = custom_parallel(fnn, range(100000), use_thread=True, ncores=4, progress_message="running function A")
     # simple example
 
     ap = [i for i in lm]

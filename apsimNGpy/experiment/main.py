@@ -21,8 +21,8 @@ class Experiment:
     from apsimNGpy.core.base_data import load_default_simulations
 
     # import the model from APSIM.
-    # if we simulations_object it,
-    # returns a simulation object of apsimNGpy, but we want the path only.
+
+    # returns a simulation object of apsimNGpy, but we want the path only. so we pass simulations_object=False
     # model_path = load_default_simulations(crop='maize', simulations_object=False, path=path.parent)
     model_path = path.joinpath('m.apsimx')
 

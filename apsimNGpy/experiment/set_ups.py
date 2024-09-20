@@ -126,7 +126,7 @@ GlobalMetaData = GlobalMetaData()
 ################################################################################
 # check_completed
 ################################################################################
-def check_completed(datastorage, perms, simulation_id):
+def track_completed(datastorage, perms, simulation_id):
     if os.path.isfile(datastorage) and bool(get_db_table_names(datastorage)):
         print(f'Total simulations: {len(perms)}')
         try:
@@ -171,7 +171,7 @@ def set_experiment(*, datastorage,
                  n_core=n_core, **kwargs)
 
     perms = define_parameters(factors_list=factors)
-    perms = check_completed(datastorage, perms, simulation_id) if by_pass_completed else perms
+    perms = track_completed(datastorage, perms, simulation_id) if by_pass_completed else perms
     Total_sims = len(perms)
     print(Total_sims)
     print(f"copying files to {_path}")
@@ -189,6 +189,7 @@ def set_experiment(*, datastorage,
                         __path, tag,
                         use_thread=use_thread,
                         n_core=n_core,
+                        progress_message='processing factorial experiment please wait',
                         **kwargs))
 
     def _data_generator():
@@ -211,7 +212,4 @@ def set_experiment(*, datastorage,
     meta_['data size'] = size_in_mb
 
     return meta_
-
-
-parameters = ['datastorage', 'perms', 'simulation_id', 'factors', 'base_file', 'tag', 'perms']
 

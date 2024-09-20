@@ -124,7 +124,7 @@ GlobalMetaData = GlobalMetaData()
 
 
 ################################################################################
-# check_completed
+# track_completed
 ################################################################################
 def track_completed(datastorage, perms, simulation_id):
     if os.path.isfile(datastorage) and bool(get_db_table_names(datastorage)):

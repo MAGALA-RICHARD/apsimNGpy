@@ -205,7 +205,7 @@ def get_nasarad(lonlat, start, end):
     # fucntion to download data from daymet
 
 
-@retry(stop=stop_after_attempt(3), retry=retry_if_exception_type(NETWORK_EXCEPTIONS))
+@retry(stop=stop_after_attempt(2), retry=retry_if_exception_type(NETWORK_EXCEPTIONS))
 def day_met_by_location(lonlat, start, end, cleanup=True, filename=None):
     '''collect weather from daymet solar radiation is replaced with that of nasapower
    ------------
@@ -590,7 +590,7 @@ def separate_date(date_str):
     return year, month, day
 
 
-@retry(stop=stop_after_attempt(3))
+@retry(stop=stop_after_attempt(2), wait=wait_fixed(0.5), retry=retry_if_exception_type(NETWORK_EXCEPTIONS))
 def get_nasa_data(lonlat, start, end):
     lon = lonlat[0]
     lat = lonlat[1]

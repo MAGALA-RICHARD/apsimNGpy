@@ -406,7 +406,7 @@ def get_met_from_day_met(lonlat, start, end, filename=None, retry_number=1, **kw
 
             """
             try:
-                _conn = requests.get(url, timeout=60)
+                _conn = requests.get(url, timeout=kwa.get('timeout', 30))
                 return _conn
             # We want to retry only if the network exceptions defined above occur not value errors or type errors and
             # so forth

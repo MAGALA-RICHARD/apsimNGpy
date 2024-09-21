@@ -252,70 +252,76 @@ for i in dr:
 weather_path = os.path.join(examples, "WeatherFiles")
 
 
-class __DetectApsimExamples:
-    def __init__(self, copy_path: str = None):
-        self.all = []
-        self.copy_path = copy_path
-        for name, file in examples_files.items():
-            setattr(self, name, name)
-            self.all.append(name)
-
-    def get_example(self, crop, path=None, simulations_object: bool = True):
-        """
-        Get an APSIM example file path for a specific crop model.
-
-        This function copies the APSIM example file for the specified crop model to the target path,
-        creates a SoilModel instance from the copied file, replaces its weather file with the
-        corresponding weather file, and returns the SoilModel instance.
-
-        Args:
-        crop (str): The name of the crop model for which to retrieve the APSIM example.
-
-        Returns: SoilModel: An instance of the SoilModel class representing the APSIM example for the specified crop
-        model. the path of this model will be your current working directory
-
-        Raises:
-        OSError: If there are issues with copying or replacing files.
-        """
-        if not path:
-            self.copy_path = os.getcwd()
-        else:
-            self.copy_path  = path
-        path = join(self.copy_path, crop) + '.apsimx'
-        cp = shutil.copy(examples_files[crop], path)
-        if not simulations_object:
-            return cp
-        aPSim = SoilModel(cp)
-
-        return aPSim
-
-    def get_all(self):
-        """
-            This return all files from APSIM default examples in the example folder. But for what?
-        """
-        return [self.get_example(i) for i in self.all]
 
 
-def load_default_simulations(crop: str, path: [str, Path] = None, simulations_object:bool = True):
+
+def __get_example(crop, path=None, simulations_object=True):
+    """
+    Get an APSIM example file path for a specific crop model.
+
+    This function copies the APSIM example file for the specified crop model to the target path,
+    creates a SoilModel instance from the copied file, replaces its weather file with the
+    corresponding weather file, and returns the SoilModel instance.
+
+    Args:
+    crop (str): The name of the crop model for which to retrieve the APSIM example.
+    path (str, optional): The target path where the example file will be copied. Defaults to the current working directory.
+    simulations_object (bool): Flag indicating whether to return a SoilModel instance or just the copied file path.
+
+    Returns:
+    SoilModel or str: An instance of the SoilModel class representing the APSIM example for the specified crop model
+                      or the path to the copied file if `simulations_object` is False.
+
+    Raises:
+    OSError: If there are issues with copying or replacing files.
+    """
+    if not path:
+        copy_path = os.getcwd()
+    else:
+        copy_path = path
+
+    target_path = join(copy_path, crop) + '.apsimx'
+    copied_file = shutil.copy(examples_files[crop], target_path)
+
+    if not simulations_object:
+        return copied_file
+
+    aPSim = SoilModel(copied_file)
+    return aPSim
+
+
+def get_all_examples():
+    """
+    Retrieve all APSIM example files available in the example folder.
+
+    Returns:
+    list: A list of SoilModel instances or file paths for all crop examples.
+    """
+    all_examples = list(examples_files.keys())
+    return [__get_example(crop) for crop in all_examples]
+
+
+def load_default_simulations(crop: str, path: [str, Path] = None,
+                             simulations_object:bool = True):
     """
     Load default simulation model from aPSim folder
     :param crop: string of the crop to load e.g. Maize, not case-sensitive
     :param path: string of the path to copy the model
-    simulations_object: bool to specify whether to return apsimNGp.core simulation object defaults to True
+    :param simulations_object: bool to specify whether to return apsimNGp.core simulation object defaults to True
     :return: apsimNGpy.core.APSIMNG simulation objects
     >>># Example
     # load apsimNG object directly
     >>> model = load_default_simulations('Maize', simulations_object=True)
     # try running
-    >>> model.run(report_name='Report')
+    >>> model.run(report_name='Report', get_dict=True)
     # collect the results
-    >>> model.results
+    >>> model.results.get('Report')
     # just return the path
     >>> model =load_default_simulations('Maize', simulations_object=False)
 
 
     """
-    return __DetectApsimExamples().get_example(crop.capitalize(), path, simulations_object)
+    return __get_example(crop.capitalize(), path, simulations_object)
 
 
 if __name__ == '__main__':

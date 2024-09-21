@@ -303,6 +303,16 @@ def load_default_simulations(crop: str, path: [str, Path] = None, simulations_ob
     :param path: string of the path to copy the model
     simulations_object: bool to specify whether to return apsimNGp.core simulation object defaults to True
     :return: apsimNGpy.core.APSIMNG simulation objects
+    >>># Example
+    # load apsimNG object directly
+    >>> model = load_default_simulations('Maize', simulations_object=True)
+    # try running
+    >>> model.run(report_name='Report')
+    # collect the results
+    >>> model.results
+    # just return the path
+    >>> model =load_default_simulations('Maize', simulations_object=False)
+
 
     """
     return __DetectApsimExamples().get_example(crop.capitalize(), path, simulations_object)

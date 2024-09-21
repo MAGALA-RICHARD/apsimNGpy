@@ -428,9 +428,8 @@ def get_met_from_day_met(lonlat, start, end, filename=None, retry_number=1):
             text_stream = io.BytesIO(text_str)
             # Read the data into a DataFrame
             day_met_read = pd.read_csv(text_stream, delimiter=',', skiprows=6)
-            # dmett = pd.read_csv(outFname, delimiter=',', skiprows=7)
             vp = day_met_read['vp (Pa)'] * 0.01
-            # calcuate radn
+            # calculate radiation
             radiation = day_met_read['dayl (s)'] * day_met_read['srad (W/m^2)'] * 1e-06
             # re-arrange data frame
             year = np.array(day_met_read['year'])
@@ -473,11 +472,9 @@ def get_met_from_day_met(lonlat, start, end, filename=None, retry_number=1):
             rad = get_nasarad(lonlat, start, end)
             new_met["radn"] = rad.ALLSKY_SFC_SW_DWN.values
             if len(new_met) != len(check_date_range):
-                print('date discontinuities still exisists')
+                print('date discontinuities still exists')
             else:
-                # print("met data is in the range of specified dates no discontinuities")
                 rg = len(new_met.day.values) + 1
-                # newmet  = pd.concat(newmet)
                 mean_max_temp = new_met['maxt'].mean(skipna=True, numeric_only=None)
                 mean_mint = new_met['mint'].mean(skipna=True, numeric_only=None)
                 AMP = round(mean_max_temp - mean_mint, 2)

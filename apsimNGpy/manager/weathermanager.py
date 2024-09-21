@@ -370,7 +370,9 @@ def get_met_from_day_met(lonlat, start, end, filename=None, retry_number=1, **kw
     Cleanup:  A bolean True or False default is true: deletes the excel file generated during the file write up
 
     ------------
-    returns complete path to the new met file but also write the met file to the disk in the working directory
+    returns a complete path to the new met file but also write the met file to the disk in the working directory
+    :keyword timeout specifies the waiting time
+    :keyword wait: the time in secods to try for every retry in case of network errors
     Example:
       # Assuming the function is imported:
           >>> from apsimNGpy.manager.weathermanager import get_met_from_day_met
@@ -406,7 +408,7 @@ def get_met_from_day_met(lonlat, start, end, filename=None, retry_number=1, **kw
 
             """
             try:
-                _conn = requests.get(url, timeout=kwa.get('timeout', 30))
+                _conn = requests.get(url, timeout=kwa.get('timeout', 50))
                 return _conn
             # We want to retry only if the network exceptions defined above occur not value errors or type errors and
             # so forth

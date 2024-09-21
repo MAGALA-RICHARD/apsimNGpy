@@ -40,6 +40,13 @@ import warnings
 # we only need to retry if any of these error occured, the rest we dont need to know
 NETWORK_EXCEPTIONS = (requests.ConnectionError, requests.Timeout, requests.RequestException)
 
+
+def try_many_times(k_times):
+    if k:
+        return retry(stop=stop_after_attempt(k_times), wait=wait_fixed(0.5),
+                     retry=retry_if_exception_type(NETWORK_EXCEPTIONS))
+
+
 def generate_unique_name(base_name, length=6):
     # TODO this function has 4 duplicates
     random_suffix = ''.join(random.choices(string.ascii_lowercase, k=length))
@@ -347,12 +354,13 @@ def day_met_by_location(lonlat, start, end, cleanup=True, filename=None):
                 return fname  # fname
 
 
-@retry(stop=stop_after_attempt(3), wait=wait_fixed(0.5), retry=retry_if_exception_type(NETWORK_EXCEPTIONS))
-def get_met_from_day_met(lonlat, start, end, cleanup=True, filename=None):
-    '''collect weather from daymet solar radiation is replaced with that of nasapower
+def get_met_from_day_met(lonlat, start, end, filename=None, retry_number=1):
+    """collect weather from daymet solar radiation is replaced with that of nasapower
     ------------
     parameters
     ---------------
+    retry_number
+    filename
     start: Starting year
 
     end: Ending year
@@ -364,67 +372,83 @@ def get_met_from_day_met(lonlat, start, end, cleanup=True, filename=None):
     ------------
     returns complete path to the new met file but also write the met file to the disk in the working directory
     Example:
-      # Assuming the function is imported from:
-          apsimNGpy.manager.weathermanager import get_met_from_day_met
-          wf = get_met_from_day_met(lonlat=(-93.04, 42.01247), start=2000, end=2020, filename='daymet.met')
+      # Assuming the function is imported:
+          >>> from apsimNGpy.manager.weathermanager import get_met_from_day_met
+          >>> wf = get_met_from_day_met(lonlat=(-93.04, 42.01247), start=2000, end=2020, filename='daymet.met')
 
-    '''
+    """
     # import pdb
     # pdb.set_trace()
 
-    datecheck = daterange(start, end)
+    check_date_range = daterange(start, end)
     if start < 1980 or end > 2021:
-        print(
-            "requested year preceeds valid data range! \n end years should not exceed 2021 and start year should not be less than 1980")
+        print("requested year preceeds valid data range! \n"
+              " end years should not exceed 2021 and start year should not be less than 1980")
     else:
         base_url = 'https://daymet.ornl.gov/single-pixel/api/data?'
-        latstr = 'lat=' + str(lonlat[1])
-        lonstr = '&lon=' + str(lonlat[0])
-        varss = ['dayl', 'prcp', 'srad', 'tmax', 'tmin', 'vp', 'swe']
-        setyears = [str(year) for year in range(start, end + 1)]
+        lat_str = 'lat=' + str(lonlat[1])
+        lon_str = '&lon=' + str(lonlat[0])
+        var_headers = ['dayl', 'prcp', 'srad', 'tmax', 'tmin', 'vp', 'swe']
+        set_years = [str(year) for year in range(start, end + 1)]
         # join the years as a string
-        years_in_range = ",".join(setyears)
+        years_in_range = ",".join(set_years)
         years_str = "&years=" + years_in_range
-        varfield = ",".join(varss)
-        var_str = "&measuredParams=" + varfield
+        var_field = ",".join(var_headers)
+        var_str = "&measuredParams=" + var_field
         # join the string url together
-        url = base_url + latstr + lonstr + var_str + years_str
-        conn = requests.get(url, timeout=60)
+        url = base_url + lat_str + lon_str + var_str + years_str
 
-        if not conn.ok:
+        def connect():
+            """
+            just to allow users enter number retries and reduce overhead incase no retry is needed
+            Returns
+            -------
+
+            """
+
+            _conn = requests.get(url, timeout=60)
+            return _conn
+
+        if retry_number and isinstance(retry_number, int):
+            # Apply the retry decorator to the connect function
+            connect_with_retry = retry(wait=wait_fixed(0.5),
+                                       stop=stop_after_attempt(retry_number),
+                                       retry=retry_if_exception(NETWORK_EXCEPTIONS))(connect)
+            connector = connect_with_retry()
+        else:
+            connector = connect()
+        if not connector.ok:
             print("failed to connect to server")
-        elif conn.ok:
-            # print("connection established to download the following data", url)
-            # outFname = conn.headers["Content-Disposition"].split("=")[-1]
-            outFname = "w" + filename + conn.headers["Content-Disposition"].split("=")[-1]
-            text_str = conn.content
-            conn.close()
+        elif connector.ok:
+            out_file_name = "w" + filename + connector.headers["Content-Disposition"].split("=")[-1]
+            text_str = connector.content
+            connector.close()
             #  read the downloaded data to a data frame
             # Create an in-memory binary stream
             text_stream = io.BytesIO(text_str)
             # Read the data into a DataFrame
-            dmett = pd.read_csv(text_stream, delimiter=',', skiprows=6)
+            day_met_read = pd.read_csv(text_stream, delimiter=',', skiprows=6)
             # dmett = pd.read_csv(outFname, delimiter=',', skiprows=7)
-            vp = dmett['vp (Pa)'] * 0.01
+            vp = day_met_read['vp (Pa)'] * 0.01
             # calcuate radn
-            radn = dmett['dayl (s)'] * dmett['srad (W/m^2)'] * 1e-06
+            radiation = day_met_read['dayl (s)'] * day_met_read['srad (W/m^2)'] * 1e-06
             # re-arrange data frame
-            year = np.array(dmett['year'])
-            day = np.array(dmett['yday'])
-            radn = np.array(radn)
-            maxt = np.array(dmett['tmax (deg c)'])
-            mint = np.array(dmett['tmin (deg c)'])
-            rain = np.array(dmett['prcp (mm/day)'])
+            year = np.array(day_met_read['year'])
+            day = np.array(day_met_read['yday'])
+            radiation = np.array(radiation)
+            max_temp = np.array(day_met_read['tmax (deg c)'])
+            mint = np.array(day_met_read['tmin (deg c)'])
+            rain = np.array(day_met_read['prcp (mm/day)'])
             vp = np.array(vp)
-            swe = np.array(dmett['swe (kg/m^2)'])
-            df = pd.DataFrame(
-                {'year': year, 'day': day, 'radn': radn, 'maxt': maxt, 'mint': mint, 'rain': rain, 'vp': vp,
+            swe = np.array(day_met_read['swe (kg/m^2)'])
+            _data_frame = pd.DataFrame(
+                {'year': year, 'day': day, 'radn': radiation, 'maxt': max_temp, 'mint': mint, 'rain': rain, 'vp': vp,
                  'swe': swe})
             # bind the frame
             # calculate mean annual applitude in mean monthly temperature (TAV)
-            ab = [a for a in setyears]
+            ab = [a for a in set_years]
             # split the data frame
-            ab = [x for _, x in df.groupby(df['year'])]
+            ab = [x for _, x in _data_frame.groupby(_data_frame['year'])]
             df_bag = []
             # constants to evaluate the leap years
             leapfactor = 4
@@ -445,33 +469,33 @@ def get_met_from_day_met(lonlat, start, end, cleanup=True, filename=None):
                     frames = df_bag
             newmet = pd.concat(frames)
             newmet.index = range(0, len(newmet))
-            # repalce radn data
+            # replace radiation data
             rad = get_nasarad(lonlat, start, end)
             newmet["radn"] = rad.ALLSKY_SFC_SW_DWN.values
-            if len(newmet) != len(datecheck):
+            if len(newmet) != len(check_date_range):
                 print('date discontinuities still exisists')
             else:
                 # print("met data is in the range of specified dates no discontinuities")
                 rg = len(newmet.day.values) + 1
                 # newmet  = pd.concat(newmet)
-                mean_maxt = newmet['maxt'].mean(skipna=True, numeric_only=None)
+                mean_max_temp = newmet['maxt'].mean(skipna=True, numeric_only=None)
                 mean_mint = newmet['mint'].mean(skipna=True, numeric_only=None)
-                AMP = round(mean_maxt - mean_mint, 2)
-                tav = round(statistics.mean((mean_maxt, mean_mint)), 2)
-                tile = conn.headers["Content-Disposition"].split("=")[1].split("_")[0]
-                fn = conn.headers["Content-Disposition"].split("=")[1].replace("csv", 'met')
+                AMP = round(mean_max_temp - mean_mint, 2)
+                tav = round(statistics.mean((mean_max_temp, mean_mint)), 2)
+                tile = connector.headers["Content-Disposition"].split("=")[1].split("_")[0]
+                fn = connector.headers["Content-Disposition"].split("=")[1].replace("csv", 'met')
                 if not filename:
-                    shortenfn = generate_unique_name("Daymet") + '.met'
+                    short_file_name = generate_unique_name("Daymet") + '.met'
                 else:
-                    shortenfn = filename
+                    short_file_name = filename
                 if not os.path.exists('weatherdata'):
                     os.makedirs('weatherdata')
-                fn = shortenfn
-                fname = os.path.join('weatherdata', fn)
+                fn = short_file_name
+                file_name_path = os.path.join('weatherdata', fn)
                 headers = ['year', 'day', 'radn', 'maxt', 'mint', 'rain', 'vp', 'swe']
                 header_string = " ".join(headers) + "\n"
                 # close and append new lines
-                with open(fname, "a") as f2app:
+                with open(file_name_path, "a") as f2app:
                     f2app.writelines([f'!site: {tile}\n', f'latitude = {lonlat[1]} \n', f'longitude = {lonlat[0]}\n',
                                       f'tav ={tav}\n', f'amp ={AMP}\n'])
                     f2app.writelines([header_string])
@@ -487,14 +511,13 @@ def get_met_from_day_met(lonlat, start, end, cleanup=True, filename=None):
 
                     f2app.writelines(data_rows)
 
-                if cleanup:
-                    if os.path.isfile(os.path.join(os.getcwd(), outFname)):
-                        os.remove(os.path.join(os.getcwd(), outFname))
-                return fname  # fname
+                if os.path.isfile(os.path.join(os.getcwd(), out_file_name)):
+                    os.remove(os.path.join(os.getcwd(), out_file_name))
+                return file_name_path  # fname
 
 
-# dowload weather data from nasapower
-def getnasa(lonlat, start, end):
+# download weather data from nasa power
+def get_nasa(lonlat, start, end):
     lon = lonlat[0]
     lat = lonlat[1]
     param = ["T2M_MAX", "T2M_MIN", "ALLSKY_SFC_SW_DWN", "PRECTOTCORR", "RH2M", "WS2M"]
@@ -904,11 +927,12 @@ if __name__ == '__main__':
     # imputed_df = impute_data(df, method="approx", verbose=True, copy=True)
     kampala = 35.582520, 0.347596
     df = get_nasa_data(kampala, 2000, 2020)
-    #imputed_df = impute_data(df, method="mean", verbose=True, copy=True)
+    # imputed_df = impute_data(df, method="mean", verbose=True, copy=True)
     hf = get_met_nasa_power(kampala, end=2020, fname='kampala_new.met')
     wf = get_weather(kampala, start=1990, end=2020, source='nasa', filename='kampala_new.met')
     import time
+
     a = time.perf_counter()
-    get_met_from_day_met(lonlat=(-93.04, 42.01247), start=2000, end =2020, filename='daymet.met')
+    get_met_from_day_met(lonlat=(-93.04, 42.01247), start=2000, end=2020, filename='daymet.met')
     b = time.perf_counter()
-    print(b-a)
+    print(b - a)

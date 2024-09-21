@@ -354,7 +354,9 @@ def day_met_by_location(lonlat, start, end, cleanup=True, filename=None):
                 return fname  # fname
 
 
-def get_met_from_day_met(lonlat, start, end, filename=None, retry_number=1, **kwa):
+def get_met_from_day_met(lonlat: Union[tuple, list, np.ndarray], start: int,
+                         end: int, filename: str = None,
+                         retry_number: int = 1, **kwa: None) -> str:
     """collect weather from daymet solar radiation is replaced with that of nasapower API
     ------------
     parameters
@@ -364,13 +366,13 @@ def get_met_from_day_met(lonlat, start, end, filename=None, retry_number=1, **kw
     :filename. met file name to save on disk
     start: Starting year of the met data
     end: Ending year of the met data
-    lonlat (tuple): A tuple of XY cordnates, longitude first, then latitude second
+    lonlat (tuple, list, array): A tuple of XY cordnates, longitude first, then latitude second
     :keyword timeout specifies the waiting time
     :keyword wait: the time in secods to try for every retry in case of network errors
     returns a complete path to the new met file but also write the met file to the disk in the working directory
 
     Example:
-      # Assuming the function is imported:
+      # Assuming the function is imported as :
           >>> from apsimNGpy.manager.weathermanager import get_met_from_day_met
           >>> wf = get_met_from_day_met(lonlat=(-93.04, 42.01247),
               >>> start=2000, end=2020,timeout = 30, wait =2, retry_number=3, filename='daymet.met')

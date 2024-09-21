@@ -445,13 +445,13 @@ def get_met_from_day_met(lonlat, start, end, filename=None, retry_number=1):
                 {'year': year, 'day': day, 'radn': radiation, 'maxt': max_temp, 'mint': mint, 'rain': rain, 'vp': vp,
                  'swe': swe})
             # bind the frame
-            # calculate mean annual applitude in mean monthly temperature (TAV)
+            # calculate mean annual amplitude in mean monthly temperature (TAV)
             ab = [a for a in set_years]
             # split the data frame
             ab = [x for _, x in _data_frame.groupby(_data_frame['year'])]
             df_bag = []
             # constants to evaluate the leap years
-            leapfactor = 4
+            leap_factor = 4
             for i in ab:
                 if (all(i.year % 400 == 0)) and (all(i.year % 100 == 0)) or (all(i.year % 4 == 0)) and (
                         all(i.year % 100 != 0)):
@@ -467,19 +467,19 @@ def get_met_from_day_met(lonlat, start, end, filename=None, retry_number=1):
                 else:
                     df_bag.append(i)
                     frames = df_bag
-            newmet = pd.concat(frames)
-            newmet.index = range(0, len(newmet))
+            new_met = pd.concat(frames)
+            new_met.index = range(0, len(new_met))
             # replace radiation data
             rad = get_nasarad(lonlat, start, end)
-            newmet["radn"] = rad.ALLSKY_SFC_SW_DWN.values
-            if len(newmet) != len(check_date_range):
+            new_met["radn"] = rad.ALLSKY_SFC_SW_DWN.values
+            if len(new_met) != len(check_date_range):
                 print('date discontinuities still exisists')
             else:
                 # print("met data is in the range of specified dates no discontinuities")
-                rg = len(newmet.day.values) + 1
+                rg = len(new_met.day.values) + 1
                 # newmet  = pd.concat(newmet)
-                mean_max_temp = newmet['maxt'].mean(skipna=True, numeric_only=None)
-                mean_mint = newmet['mint'].mean(skipna=True, numeric_only=None)
+                mean_max_temp = new_met['maxt'].mean(skipna=True, numeric_only=None)
+                mean_mint = new_met['mint'].mean(skipna=True, numeric_only=None)
                 AMP = round(mean_max_temp - mean_mint, 2)
                 tav = round(statistics.mean((mean_max_temp, mean_mint)), 2)
                 tile = connector.headers["Content-Disposition"].split("=")[1].split("_")[0]
@@ -502,7 +502,7 @@ def get_met_from_day_met(lonlat, start, end, filename=None, retry_number=1):
                     f2app.writelines(['() () (MJ/m2/day) (oC) (oC) (mm) (hPa) (kg/m2)\n'])
                     # append the weather data
                     data_rows = []
-                    for index, row in newmet.iterrows():
+                    for index, row in new_met.iterrows():
                         current_row = []
                         for header in headers:
                             current_row.append(str(row[header]))

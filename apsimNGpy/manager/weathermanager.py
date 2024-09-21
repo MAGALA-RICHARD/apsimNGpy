@@ -4,6 +4,8 @@ from datetime import datetime
 import datetime
 import urllib
 from pathlib import Path
+from typing import Union
+
 from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception, retry_if_exception_type
 import requests
 import random
@@ -541,7 +543,7 @@ def impute_data(met, method="mean", verbose=False, **kwargs):
     Returns:
     - pd.DataFrame: DataFrame with imputed missing values.
     """
-    # Handle deep copy option
+
     if kwargs.get('copy', False):
         met = copy.deepcopy(met)
 
@@ -650,7 +652,7 @@ def _is_within_USA_mainland(lonlat):
 
 def get_weather(lonlat, start=1990, end=2000, source='daymet', filename='__met_.met'):
     """collects data from various sources
-    only nasapower and dayment are currently supported sources,so it will raise an error
+    only nasapower and dayment are currently supported sources,so it will raise an error if mesonnet is suggested
     Note if you not in mainland USA, please don't pass source = 'dayment' as it will raise an error due to geographical scope
     >> example
     >>> from apsimNGpy.manager.weathermanager import get_weather
@@ -686,14 +688,15 @@ def read_apsim_met(met_path, skip=5, index_drop=0, separator=' '):
         print(repr(e))
 
 
-def write_edited_met(old: [str, Path], daf: pd.DataFrame, filename: str = "edited_met.met") -> str:
+def write_edited_met(old: Union[str, Path], daf: pd.DataFrame, filename: str = "edited_met.met") -> str:
     """
 
     Parameters
     ----------
     old; pathlinke to original met file
 
-    daf: new data inform of a pandas dataframe
+    old
+    daf: new data in the form of a pandas dataframe
     filename; file name to save defaults to edited_met.met
 
     Returns

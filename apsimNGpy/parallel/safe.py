@@ -1,5 +1,5 @@
 from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganizeAPSIMsoil_profile
-from apsimNGpy.manager.weathermanager import daymet_bylocation_nocsv
+from apsimNGpy.manager.weathermanager import get_met_from_day_met
 from apsimNGpy.core.apsim import ApsimModel
 
 
@@ -35,7 +35,7 @@ def simulator_worker(row, dictio):
     stat, end = kwargs.get('start'), kwargs.get('end')
     if kwargs.get('replace_weather', False):
         wname = model.strip('.apsimx') + '_w.met'
-        wf = daymet_bylocation_nocsv(location, start=stat, end=end, filename=wname)
+        wf = get_met_from_day_met(location, start=stat, end=end, filename=wname)
         simulator_model.replace_met_file(wf, sim_names)
 
     if kwargs.get("replace_soil", False):

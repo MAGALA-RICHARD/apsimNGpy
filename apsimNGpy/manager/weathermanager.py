@@ -362,7 +362,7 @@ def get_met_from_day_met(lonlat: Union[tuple, list, np.ndarray], start: int,
     parameters
     ---------------:
 
-    retry_number (int): retry number of times in case of netowrk errors
+    retry_number (int): retry number of times in case of network errors
     :filename. met file name to save on disk
     start: Starting year of the met data
     end: Ending year of the met data
@@ -414,7 +414,7 @@ def get_met_from_day_met(lonlat: Union[tuple, list, np.ndarray], start: int,
             except NETWORK_EXCEPTIONS:
                 raise
 
-        if retry_number and isinstance(retry_number, int):
+        if retry_number:
             # Apply the retry decorator to the connect function
             connect_with_retry = retry(wait=wait_fixed(kwa.get('wait', 0.5)),
                                        stop=stop_after_attempt(retry_number),
@@ -422,100 +422,98 @@ def get_met_from_day_met(lonlat: Union[tuple, list, np.ndarray], start: int,
             connector = connect_with_retry()
         else:
             connector = connect()
-        if not connector.ok:
-            print("failed to connect to server")
-        elif connector.ok:
-            out_file_name = "w" + filename + connector.headers["Content-Disposition"].split("=")[-1]
-            text_str = connector.content
-            connector.close()
-            #  read the downloaded data to a data frame
-            # Create an in-memory binary stream
-            text_stream = io.BytesIO(text_str)
-            # Read the data into a DataFrame
-            day_met_read = pd.read_csv(text_stream, delimiter=',', skiprows=6)
-            vp = day_met_read['vp (Pa)'] * 0.01
-            # calculate radiation
-            radiation = day_met_read['dayl (s)'] * day_met_read['srad (W/m^2)'] * 1e-06
-            # re-arrange data frame
-            year = np.array(day_met_read['year'])
-            day = np.array(day_met_read['yday'])
-            radiation = np.array(radiation)
-            max_temp = np.array(day_met_read['tmax (deg c)'])
-            mint = np.array(day_met_read['tmin (deg c)'])
-            rain = np.array(day_met_read['prcp (mm/day)'])
-            vp = np.array(vp)
-            swe = np.array(day_met_read['swe (kg/m^2)'])
-            _data_frame = pd.DataFrame(
-                {'year': year, 'day': day, 'radn': radiation, 'maxt': max_temp, 'mint': mint, 'rain': rain, 'vp': vp,
-                 'swe': swe})
-            # bind the frame
-            # calculate mean annual amplitude in mean monthly temperature (TAV)
-            ab = [a for a in set_years]
-            # split the data frame
-            ab = [x for _, x in _data_frame.groupby(_data_frame['year'])]
-            df_bag = []
-            # constants to evaluate the leap years
-            leap_factor = 4
-            for i in ab:
-                if (all(i.year % 400 == 0)) and (all(i.year % 100 == 0)) or (all(i.year % 4 == 0)) and (
-                        all(i.year % 100 != 0)):
-                    x = i[['year', 'radn', 'maxt', 'mint', 'rain', 'vp', 'swe', ]].mean()
-                    year = round(x.iloc[0], 0)
-                    day = round(366, 0)
-                    new_row = pd.DataFrame(
-                        {'year': [year], 'day': [day], 'radn': [0], 'maxt': [0], 'mint': [0], 'rain': [0], 'vp': [0],
-                         'swe': [0]})
-                    df_bag.append(pd.concat([i, new_row], ignore_index=True))
 
-                    continue
-                else:
-                    df_bag.append(i)
-                    frames = df_bag
-            new_met = pd.concat(frames)
-            new_met.index = range(0, len(new_met))
-            # replace radiation data
-            rad = get_nasarad(lonlat, start, end)
-            new_met["radn"] = rad.ALLSKY_SFC_SW_DWN.values
-            if len(new_met) != len(check_date_range):
-                print('date discontinuities still exists')
+        out_file_name = "w" + filename + connector.headers["Content-Disposition"].split("=")[-1]
+        text_str = connector.content
+        connector.close()
+        #  read the downloaded data to a data frame
+        # Create an in-memory binary stream
+        text_stream = io.BytesIO(text_str)
+        # Read the data into a DataFrame
+        day_met_read = pd.read_csv(text_stream, delimiter=',', skiprows=6)
+        vp = day_met_read['vp (Pa)'] * 0.01
+        # calculate radiation
+        radiation = day_met_read['dayl (s)'] * day_met_read['srad (W/m^2)'] * 1e-06
+        # re-arrange data frame
+        year = np.array(day_met_read['year'])
+        day = np.array(day_met_read['yday'])
+        radiation = np.array(radiation)
+        max_temp = np.array(day_met_read['tmax (deg c)'])
+        mint = np.array(day_met_read['tmin (deg c)'])
+        rain = np.array(day_met_read['prcp (mm/day)'])
+        vp = np.array(vp)
+        swe = np.array(day_met_read['swe (kg/m^2)'])
+        _data_frame = pd.DataFrame(
+            {'year': year, 'day': day, 'radn': radiation, 'maxt': max_temp, 'mint': mint, 'rain': rain, 'vp': vp,
+             'swe': swe})
+        # bind the frame
+        # calculate mean annual amplitude in mean monthly temperature (TAV)
+        ab = [a for a in set_years]
+        # split the data frame
+        ab = [x for _, x in _data_frame.groupby(_data_frame['year'])]
+        df_bag = []
+        # constants to evaluate the leap years
+        leap_factor = 4
+        for i in ab:
+            if (all(i.year % 400 == 0)) and (all(i.year % 100 == 0)) or (all(i.year % 4 == 0)) and (
+                    all(i.year % 100 != 0)):
+                x = i[['year', 'radn', 'maxt', 'mint', 'rain', 'vp', 'swe', ]].mean()
+                year = round(x.iloc[0], 0)
+                day = round(366, 0)
+                new_row = pd.DataFrame(
+                    {'year': [year], 'day': [day], 'radn': [0], 'maxt': [0], 'mint': [0], 'rain': [0], 'vp': [0],
+                     'swe': [0]})
+                df_bag.append(pd.concat([i, new_row], ignore_index=True))
+
+                continue
             else:
-                rg = len(new_met.day.values) + 1
-                mean_max_temp = new_met['maxt'].mean(skipna=True, numeric_only=None)
-                mean_mint = new_met['mint'].mean(skipna=True, numeric_only=None)
-                AMP = round(mean_max_temp - mean_mint, 2)
-                tav = round(statistics.mean((mean_max_temp, mean_mint)), 2)
-                tile = connector.headers["Content-Disposition"].split("=")[1].split("_")[0]
-                fn = connector.headers["Content-Disposition"].split("=")[1].replace("csv", 'met')
-                if not filename:
-                    short_file_name = generate_unique_name("Daymet") + '.met'
-                else:
-                    short_file_name = filename
-                if not os.path.exists('weatherdata'):
-                    os.makedirs('weatherdata')
-                fn = short_file_name
-                file_name_path = os.path.join('weatherdata', fn)
-                headers = ['year', 'day', 'radn', 'maxt', 'mint', 'rain', 'vp', 'swe']
-                header_string = " ".join(headers) + "\n"
-                # close and append new lines
-                with open(file_name_path, "a") as f2app:
-                    f2app.writelines([f'!site: {tile}\n', f'latitude = {lonlat[1]} \n', f'longitude = {lonlat[0]}\n',
-                                      f'tav ={tav}\n', f'amp ={AMP}\n'])
-                    f2app.writelines([header_string])
-                    f2app.writelines(['() () (MJ/m2/day) (oC) (oC) (mm) (hPa) (kg/m2)\n'])
-                    # append the weather data
-                    data_rows = []
-                    for index, row in new_met.iterrows():
-                        current_row = []
-                        for header in headers:
-                            current_row.append(str(row[header]))
-                        current_str = " ".join(current_row) + '\n'
-                        data_rows.append(current_str)
+                df_bag.append(i)
+                frames = df_bag
+        new_met = pd.concat(frames)
+        new_met.index = range(0, len(new_met))
+        # replace radiation data
+        rad = get_nasarad(lonlat, start, end)
+        new_met["radn"] = rad.ALLSKY_SFC_SW_DWN.values
+        if len(new_met) != len(check_date_range):
+            print('date discontinuities still exists')
+        else:
+            rg = len(new_met.day.values) + 1
+            mean_max_temp = new_met['maxt'].mean(skipna=True, numeric_only=None)
+            mean_mint = new_met['mint'].mean(skipna=True, numeric_only=None)
+            AMP = round(mean_max_temp - mean_mint, 2)
+            tav = round(statistics.mean((mean_max_temp, mean_mint)), 2)
+            tile = connector.headers["Content-Disposition"].split("=")[1].split("_")[0]
+            fn = connector.headers["Content-Disposition"].split("=")[1].replace("csv", 'met')
+            if not filename:
+                short_file_name = generate_unique_name("Daymet") + '.met'
+            else:
+                short_file_name = filename
+            if not os.path.exists('weatherdata'):
+                os.makedirs('weatherdata')
+            fn = short_file_name
+            file_name_path = os.path.join('weatherdata', fn)
+            headers = ['year', 'day', 'radn', 'maxt', 'mint', 'rain', 'vp', 'swe']
+            header_string = " ".join(headers) + "\n"
+            # close and append new lines
+            with open(file_name_path, "a") as f2app:
+                f2app.writelines([f'!site: {tile}\n', f'latitude = {lonlat[1]} \n', f'longitude = {lonlat[0]}\n',
+                                  f'tav ={tav}\n', f'amp ={AMP}\n'])
+                f2app.writelines([header_string])
+                f2app.writelines(['() () (MJ/m2/day) (oC) (oC) (mm) (hPa) (kg/m2)\n'])
+                # append the weather data
+                data_rows = []
+                for index, row in new_met.iterrows():
+                    current_row = []
+                    for header in headers:
+                        current_row.append(str(row[header]))
+                    current_str = " ".join(current_row) + '\n'
+                    data_rows.append(current_str)
 
-                    f2app.writelines(data_rows)
+                f2app.writelines(data_rows)
 
-                if os.path.isfile(os.path.join(os.getcwd(), out_file_name)):
-                    os.remove(os.path.join(os.getcwd(), out_file_name))
-                return file_name_path  # fname
+            if os.path.isfile(os.path.join(os.getcwd(), out_file_name)):
+                os.remove(os.path.join(os.getcwd(), out_file_name))
+            return file_name_path  # fname
 
 
 # download weather data from nasa power

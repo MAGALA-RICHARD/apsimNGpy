@@ -354,7 +354,7 @@ def day_met_by_location(lonlat, start, end, cleanup=True, filename=None):
                 return fname  # fname
 
 
-def get_met_from_day_met(lonlat, start, end, filename=None, retry_number=1):
+def get_met_from_day_met(lonlat, start, end, filename=None, retry_number=1, **kwa):
     """collect weather from daymet solar radiation is replaced with that of nasapower
     ------------
     parameters
@@ -405,15 +405,19 @@ def get_met_from_day_met(lonlat, start, end, filename=None, retry_number=1):
             -------
 
             """
-
-            _conn = requests.get(url, timeout=60)
-            return _conn
+            try:
+                _conn = requests.get(url, timeout=60)
+                return _conn
+            # We want to retry only if the network exceptions defined above occur not value errors or type errors and
+            # so forth
+            except NETWORK_EXCEPTIONS:
+                raise
 
         if retry_number and isinstance(retry_number, int):
             # Apply the retry decorator to the connect function
-            connect_with_retry = retry(wait=wait_fixed(0.5),
+            connect_with_retry = retry(wait=wait_fixed(kwa.get('wait', 0.5)),
                                        stop=stop_after_attempt(retry_number),
-                                       retry=retry_if_exception(NETWORK_EXCEPTIONS))(connect)
+                                       )(connect)
             connector = connect_with_retry()
         else:
             connector = connect()

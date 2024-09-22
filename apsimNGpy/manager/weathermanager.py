@@ -537,15 +537,15 @@ def calculate_tav_amp(df):
     return tav, AMP
 
 
-def create_met_header(fname, lonlat, tav, AMP, site=None):
+def create_met_header(met_file_name, lonlat, tav, AMP, site=None):
     if not site:
         site = 'Not stated'
-    if os.path.isfile(fname):
-        os.remove(fname)
+    if os.path.isfile(met_file_name):
+        os.remove(met_file_name)
     headers = ['year', 'day', 'radn', 'maxt', 'mint', 'rain']
     header_string = " ".join(headers) + "\n"
     # close and append new lines
-    with open(fname, "a") as f2app:
+    with open(met_file_name, "a") as f2app:
         f2app.writelines(
             [f'!site: {site}\n', f'latitude = {lonlat[1]} \n', f'longitude = {lonlat[0]}\n', f'tav ={tav}\n',
              f'amp ={AMP}\n'])

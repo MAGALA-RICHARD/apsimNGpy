@@ -356,7 +356,7 @@ def day_met_by_location(lonlat, start, end, cleanup=True, filename=None):
 
 def get_met_from_day_met(lonlat: Union[tuple, list, np.ndarray], start: int,
                          end: int, filename: str = None,
-                         retry_number: int = 1, **kwa: None) -> str:
+                         retry_number: Union[int, None]= 1, **kwa: None) -> str:
     """collect weather from daymet solar radiation is replaced with that of nasapower API
     ------------
     parameters
@@ -378,7 +378,9 @@ def get_met_from_day_met(lonlat: Union[tuple, list, np.ndarray], start: int,
               >>> start=2000, end=2020,timeout = 30, wait =2, retry_number=3, filename='daymet.met')
 
     """
-
+    _start = f"{start}-01-01"
+    _end = f'{end}-12-31'
+    full_date_range = pd.date_range(start=_start, end=_end, freq='D')
     if start < 1980 or end > 2023:
         print("requested year precedes valid data range! \n"
               " end years should not exceed 2021 and start year should not be less than 1980")
@@ -387,7 +389,7 @@ def get_met_from_day_met(lonlat: Union[tuple, list, np.ndarray], start: int,
         lat_str = 'lat=' + str(lonlat[1])
         lon_str = '&lon=' + str(lonlat[0])
         var_headers = ['dayl', 'prcp', 'srad', 'tmax', 'tmin', 'vp', 'swe']
-        set_years = [str(year) for year in range(start, end + 1)]
+        set_years = [str(year) for year in full_date_range.year.unique()]
         # join the years as a string
         years_in_range = ",".join(set_years)
         years_str = "&years=" + years_in_range
@@ -398,7 +400,7 @@ def get_met_from_day_met(lonlat: Union[tuple, list, np.ndarray], start: int,
 
         def connect():
             """
-            just to allow users enter number retries and reduce overhead incase no retry is needed
+            just to allow users enter number retries
             Returns
             -------
 
@@ -432,7 +434,7 @@ def get_met_from_day_met(lonlat: Union[tuple, list, np.ndarray], start: int,
         # calculate radiation
         radiation = day_met_read['dayl (s)'] * day_met_read['srad (W/m^2)'] * 1e-06
         # re-arrange data frame
-        flip_cat ={
+        flip_cat = {
             'year': 'year',
             'yday': 'day',
             'dayl (s)': 'radn',
@@ -449,9 +451,6 @@ def get_met_from_day_met(lonlat: Union[tuple, list, np.ndarray], start: int,
         COLUMNs = ['year', 'day', 'radn', 'maxt', 'mint', 'rain', 'swe', 'vp']
         _data_frame = df[COLUMNs].copy()
 
-        _start = f"{start}-01-01"
-        _end = f'{end}-12-31'
-        full_date_range = pd.date_range(start=_start, end=_end, freq='D')
         _data_frame['Date'] = pd.to_datetime(_data_frame.year.astype(str) + _data_frame.day.astype(str), format='%Y%j')
         data_to = _data_frame.set_index('Date')
         # now reindex according to the date range
@@ -469,8 +468,6 @@ def get_met_from_day_met(lonlat: Union[tuple, list, np.ndarray], start: int,
         AMP = round(mean_max_temp - mean_mint, 2)
         tav = round(statistics.mean((mean_max_temp, mean_mint)), 2)
         tile = connector.headers["Content-Disposition"].split("=")[1].split("_")[0]
-        if filename:
-            filename = generate_unique_name("daymet") + ".met"
         short_file_name = filename or "Daymet" + '.met'
         if not os.path.exists('weatherdata'):
             os.makedirs('weatherdata')
@@ -906,15 +903,17 @@ if __name__ == '__main__':
     os.chdir(Path.home())
     import cProfile
 
-    a = time.perf_counter()
+
     profiler = cProfile.Profile()
     profiler.enable()
     Name = "dumu.met"
     if os.path.exists(Name):
         os.remove(Name)
-    xp = get_met_from_day_met(lonlat=(-93.50456, 42.601247), start=1989, end=2001, filename=Name, retry_number=None)
     profiler.disable()
     # profiler.print_stats(sort='time')
+    a = time.perf_counter()
+    xp = get_met_from_day_met(lonlat=(-93.50456, 42.601247), start=1989, end=2001, filename=Name, retry_number=3)
+
     b = time.perf_counter()
     print(b - a)
     from apsimNGpy.core.base_data import load_default_simulations

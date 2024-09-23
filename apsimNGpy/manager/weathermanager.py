@@ -355,7 +355,8 @@ def day_met_by_location(lonlat, start, end, cleanup=True, filename=None):
 
 
 def get_met_from_day_met(lonlat: Union[tuple, list, np.ndarray], start: int,
-                         end: int, filename: str = None,
+                         end: int, filename: str,
+                         fill_method: str= 'ffill',
                          retry_number: Union[int, None]= 1, **kwa: None) -> str:
     """collect weather from daymet solar radiation is replaced with that of nasapower API
     ------------
@@ -367,6 +368,7 @@ def get_met_from_day_met(lonlat: Union[tuple, list, np.ndarray], start: int,
     start: Starting year of the met data
     end: Ending year of the met data
     lonlat (tuple, list, array): A tuple of XY cordnates, longitude first, then latitude second
+    :fill_method (str, optional): fills the missing data based pandas fillna method arguments may be bfill, ffill defaults to ffill
     :keyword timeout specifies the waiting time
     :keyword wait: the time in secods to try for every retry in case of network errors
     returns a complete path to the new met file but also write the met file to the disk in the working directory
@@ -423,7 +425,6 @@ def get_met_from_day_met(lonlat: Union[tuple, list, np.ndarray], start: int,
         else:
             connector = connect()
 
-        out_file_name = "w" + filename + connector.headers["Content-Disposition"].split("=")[-1]
         text_str = connector.content
         connector.close()
         # Create an in-memory binary stream
@@ -458,9 +459,11 @@ def get_met_from_day_met(lonlat: Union[tuple, list, np.ndarray], start: int,
         # replacements for year and data
         new_met['year'] = full_date_range.year.astype(int)
         new_met['day'] = full_date_range.dayofyear.astype('int')
-        # replace radiation data
-        new_met.ffill(inplace=True)
+        # Now reindexing does not change NAs that were already there, even if we pass a fill method to it,
+        # so we need to change them here at once
+        new_met = getattr(new_met, fill_method)()
         new_met.index = range(0, len(new_met))
+        # replace radiation data
         rad = get_nasarad(lonlat, start, end)
         new_met["radn"] = rad.ALLSKY_SFC_SW_DWN.values
         mean_max_temp = new_met['maxt'].mean(skipna=True, numeric_only=None)

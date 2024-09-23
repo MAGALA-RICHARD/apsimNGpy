@@ -54,7 +54,7 @@ def generate_unique_name(base_name, length=6):
     return unique_name
 
 
-# from US_states_abbreviation import getabreviation
+# from US_states_abbreviation import get_abbreviation
 
 # let us manage network issues more gracefully
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(0.5), retry=retry_if_exception_type(NETWORK_EXCEPTIONS))
@@ -170,7 +170,7 @@ for k, v in states.items():
     new_dict[v] = k
 
 
-def getabreviation(x):
+def get_abbreviation(x):
     ab = new_dict[x]
     return (ab)
 
@@ -378,12 +378,9 @@ def get_met_from_day_met(lonlat: Union[tuple, list, np.ndarray], start: int,
               >>> start=2000, end=2020,timeout = 30, wait =2, retry_number=3, filename='daymet.met')
 
     """
-    # import pdb
-    # pdb.set_trace()
 
-    check_date_range = daterange(start, end)
-    if start < 1980 or end > 2021:
-        print("requested year preceeds valid data range! \n"
+    if start < 1980 or end > 2023:
+        print("requested year precedes valid data range! \n"
               " end years should not exceed 2021 and start year should not be less than 1980")
     else:
         base_url = 'https://daymet.ornl.gov/single-pixel/api/data?'
@@ -419,6 +416,7 @@ def get_met_from_day_met(lonlat: Union[tuple, list, np.ndarray], start: int,
             connect_with_retry = retry(wait=wait_fixed(kwa.get('wait', 0.5)),
                                        stop=stop_after_attempt(retry_number),
                                        )(connect)
+
             connector = connect_with_retry()
         else:
             connector = connect()
@@ -426,7 +424,6 @@ def get_met_from_day_met(lonlat: Union[tuple, list, np.ndarray], start: int,
         out_file_name = "w" + filename + connector.headers["Content-Disposition"].split("=")[-1]
         text_str = connector.content
         connector.close()
-        #  read the downloaded data to a data frame
         # Create an in-memory binary stream
         text_stream = io.BytesIO(text_str)
         # Read the data into a DataFrame
@@ -435,85 +432,63 @@ def get_met_from_day_met(lonlat: Union[tuple, list, np.ndarray], start: int,
         # calculate radiation
         radiation = day_met_read['dayl (s)'] * day_met_read['srad (W/m^2)'] * 1e-06
         # re-arrange data frame
-        year = np.array(day_met_read['year'])
-        day = np.array(day_met_read['yday'])
-        radiation = np.array(radiation)
-        max_temp = np.array(day_met_read['tmax (deg c)'])
-        mint = np.array(day_met_read['tmin (deg c)'])
-        rain = np.array(day_met_read['prcp (mm/day)'])
-        vp = np.array(vp)
-        swe = np.array(day_met_read['swe (kg/m^2)'])
-        _data_frame = pd.DataFrame(
-            {'year': year, 'day': day, 'radn': radiation, 'maxt': max_temp, 'mint': mint, 'rain': rain, 'vp': vp,
-             'swe': swe})
-        # bind the frame
-        # calculate mean annual amplitude in mean monthly temperature (TAV)
-        ab = [a for a in set_years]
-        # split the data frame
-        ab = [x for _, x in _data_frame.groupby(_data_frame['year'])]
-        df_bag = []
-        # constants to evaluate the leap years
-        leap_factor = 4
-        for i in ab:
-            if (all(i.year % 400 == 0)) and (all(i.year % 100 == 0)) or (all(i.year % 4 == 0)) and (
-                    all(i.year % 100 != 0)):
-                x = i[['year', 'radn', 'maxt', 'mint', 'rain', 'vp', 'swe', ]].mean()
-                year = round(x.iloc[0], 0)
-                day = round(366, 0)
-                new_row = pd.DataFrame(
-                    {'year': [year], 'day': [day], 'radn': [0], 'maxt': [0], 'mint': [0], 'rain': [0], 'vp': [0],
-                     'swe': [0]})
-                df_bag.append(pd.concat([i, new_row], ignore_index=True))
+        flip_cat ={
+            'year': 'year',
+            'yday': 'day',
+            'dayl (s)': 'radn',
+            'tmax (deg c)': 'maxt',
+            'tmin (deg c)': 'mint',
+            'prcp (mm/day)': 'rain',
+            'vp (Pa)': 'vp',
+            'swe (kg/m^2)': 'swe'
+        }
+        df = day_met_read.rename(columns=flip_cat)
+        df['radn'] = radiation
+        df['vp'] = vp
+        df.drop('srad (W/m^2)', axis=1, inplace=True)
+        COLUMNs = ['year', 'day', 'radn', 'maxt', 'mint', 'rain', 'swe', 'vp']
+        _data_frame = df[COLUMNs].copy()
 
-                continue
-            else:
-                df_bag.append(i)
-                frames = df_bag
-        new_met = pd.concat(frames)
-        new_met.index = range(0, len(new_met))
+        _start = f"{start}-01-01"
+        _end = f'{end}-12-31'
+        full_date_range = pd.date_range(start=_start, end=_end, freq='D')
+        _data_frame['Date'] = pd.to_datetime(_data_frame.year.astype(str) + _data_frame.day.astype(str), format='%Y%j')
+        data_to = _data_frame.set_index('Date')
+        # now reindex according to the date range
+        new_met = data_to.reindex(full_date_range, columns=COLUMNs)
+        # replacements for year and data
+        new_met['year'] = full_date_range.year.astype(int)
+        new_met['day'] = full_date_range.dayofyear.astype('int')
         # replace radiation data
+        new_met.ffill(inplace=True)
+        new_met.index = range(0, len(new_met))
         rad = get_nasarad(lonlat, start, end)
         new_met["radn"] = rad.ALLSKY_SFC_SW_DWN.values
-        if len(new_met) != len(check_date_range):
-            print('date discontinuities still exists')
-        else:
-            rg = len(new_met.day.values) + 1
-            mean_max_temp = new_met['maxt'].mean(skipna=True, numeric_only=None)
-            mean_mint = new_met['mint'].mean(skipna=True, numeric_only=None)
-            AMP = round(mean_max_temp - mean_mint, 2)
-            tav = round(statistics.mean((mean_max_temp, mean_mint)), 2)
-            tile = connector.headers["Content-Disposition"].split("=")[1].split("_")[0]
-            fn = connector.headers["Content-Disposition"].split("=")[1].replace("csv", 'met')
-            if not filename:
-                short_file_name = generate_unique_name("Daymet") + '.met'
-            else:
-                short_file_name = filename
-            if not os.path.exists('weatherdata'):
-                os.makedirs('weatherdata')
-            fn = short_file_name
-            file_name_path = os.path.join('weatherdata', fn)
-            headers = ['year', 'day', 'radn', 'maxt', 'mint', 'rain', 'vp', 'swe']
-            header_string = " ".join(headers) + "\n"
-            # close and append new lines
-            with open(file_name_path, "a") as f2app:
-                f2app.writelines([f'!site: {tile}\n', f'latitude = {lonlat[1]} \n', f'longitude = {lonlat[0]}\n',
-                                  f'tav ={tav}\n', f'amp ={AMP}\n'])
-                f2app.writelines([header_string])
-                f2app.writelines(['() () (MJ/m2/day) (oC) (oC) (mm) (hPa) (kg/m2)\n'])
-                # append the weather data
-                data_rows = []
-                for index, row in new_met.iterrows():
-                    current_row = []
-                    for header in headers:
-                        current_row.append(str(row[header]))
-                    current_str = " ".join(current_row) + '\n'
-                    data_rows.append(current_str)
-
-                f2app.writelines(data_rows)
-
-            if os.path.isfile(os.path.join(os.getcwd(), out_file_name)):
-                os.remove(os.path.join(os.getcwd(), out_file_name))
-            return file_name_path  # fname
+        mean_max_temp = new_met['maxt'].mean(skipna=True, numeric_only=None)
+        mean_mint = new_met['mint'].mean(skipna=True, numeric_only=None)
+        AMP = round(mean_max_temp - mean_mint, 2)
+        tav = round(statistics.mean((mean_max_temp, mean_mint)), 2)
+        tile = connector.headers["Content-Disposition"].split("=")[1].split("_")[0]
+        if filename:
+            filename = generate_unique_name("daymet") + ".met"
+        short_file_name = filename or "Daymet" + '.met'
+        if not os.path.exists('weatherdata'):
+            os.makedirs('weatherdata')
+        fn = short_file_name
+        file_name_path = os.path.join('weatherdata', fn)
+        headers = ['year', 'day', 'radn', 'maxt', 'mint', 'rain', 'vp', 'swe']
+        header_string = " ".join(headers) + "\n"
+        # close and append new lines
+        with open(file_name_path, "a") as f2app:
+            f2app.writelines([f'!site: {tile}\n', f'latitude = {lonlat[1]} \n', f'longitude = {lonlat[0]}\n',
+                              f'tav ={tav}\n', f'amp ={AMP}\n'])
+            f2app.writelines([header_string])
+            f2app.writelines(['() () (MJ/m2/day) (oC) (oC) (mm) (hPa) (kg/m2)\n'])
+            # append the weather data
+            data_rows = new_met.apply(lambda row: " ".join([str(row[header]) for header in headers]) + '\n', axis=1)
+            # Write all rows to the file at once
+            f2app.writelines(data_rows)
+        return file_name_path
 
 
 # download weather data from nasa power
@@ -924,15 +899,28 @@ def impute_missing_leaps(dmet, fill=0):
 
 
 if __name__ == '__main__':
-    # imputed_df = impute_data(df, method="approx", verbose=True, copy=True)
-    kampala = 35.582520, 0.347596
-    df = get_nasa_data(kampala, 2000, 2020)
-    # imputed_df = impute_data(df, method="mean", verbose=True, copy=True)
-    hf = get_met_nasa_power(kampala, end=2020, fname='kampala_new.met')
-    wf = get_weather(kampala, start=1990, end=2020, source='nasa', filename='kampala_new.met')
-    import time
+    from pathlib import Path
+
+    p = Path.cwd().glob("*.met")
+    [os.remove(i) for i in p]
+    os.chdir(Path.home())
+    import cProfile
 
     a = time.perf_counter()
-    get_met_from_day_met(lonlat=(-93.04, 42.01247), start=2000, end=2020, filename='daymet.met')
+    profiler = cProfile.Profile()
+    profiler.enable()
+    Name = "dumu.met"
+    if os.path.exists(Name):
+        os.remove(Name)
+    xp = get_met_from_day_met(lonlat=(-93.50456, 42.601247), start=1989, end=2001, filename=Name, retry_number=None)
+    profiler.disable()
+    # profiler.print_stats(sort='time')
     b = time.perf_counter()
     print(b - a)
+    from apsimNGpy.core.base_data import load_default_simulations
+
+    model = load_default_simulations(crop='maize')
+    # model.path = 'clone.apsimx'
+
+    model.replace_met_file(weather_file=xp)
+    model.run()

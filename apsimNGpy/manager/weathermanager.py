@@ -6,6 +6,7 @@ import urllib
 from pathlib import Path
 
 import requests
+import copy
 import random
 import json
 import pandas as pd
@@ -35,7 +36,7 @@ from scipy import interpolate
 import copy
 import warnings
 
-
+# TODO this file is duplicated in core/ and in manager/
 def generate_unique_name(base_name, length=6):
     # TODO this function has 4 duplicates
     random_suffix = ''.join(random.choices(string.ascii_lowercase, k=length))
@@ -55,7 +56,7 @@ def get_iem_bystation(dates, station, path, mettag):
       mettag: your prefered tag to save on filee
       '''
     # access the elements in the metdate class above
-    wdates = metdate(dates)
+    wdates = _MetDate(dates)
     stationx = station[:2]
     state_clim = stationx + "CLIMATE"
     str0 = "http://mesonet.agron.iastate.edu/cgi-bin/request/coop.py?network="
@@ -81,7 +82,10 @@ def get_iem_bystation(dates, station, path, mettag):
         print("Failed to download the data web request returned code: ", rep)
 
 
-class metdate:
+class _MetDate:
+    """
+    This class organises the data for IEM weather download
+    """
     def __init__(self, dates):
         self.startdate = dates[0]
         self.lastdate = dates[1]
@@ -89,7 +93,6 @@ class metdate:
         self.endmonth = dates[1][:2]
         self.year_start = dates[0].split("-")[2]
         self.year_end = dates[1].split("-")[2]
-        import datetime
         self.startday = datetime.datetime.strptime(dates[0], '%m-%d-%Y').strftime('%j')
         self.endday = datetime.datetime.strptime(dates[1], '%m-%d-%Y').strftime('%j')
 
@@ -275,7 +278,7 @@ def daymet_bylocation(lonlat, start, end, cleanup=True, filename=None):
             leapfactor = 4
             for i in ab:
                 if (all(i.year % 400 == 0)) and (all(i.year % 100 == 0)) or (all(i.year % 4 == 0)) and (
-                        all(i.year % 100 != 0)):
+                all(i.year % 100 != 0)):
                     x = i[['year', 'radn', 'maxt', 'mint', 'rain', 'vp', 'swe', ]].mean()
                     year = round(x.iloc[0], 0)
                     day = round(366, 0)
@@ -338,8 +341,10 @@ def daymet_bylocation(lonlat, start, end, cleanup=True, filename=None):
                 return fname  # fname
 
 
-def daymet_bylocation_nocsv(lonlat, start, end, cleanup=True, filename=None):
-    '''collect weather from daymet solar radiation is replaced with that of nasapower
+def daymet_bylocation_nocsv(lonlat, start, end, cleanup=True, filename='daymet'):
+    """
+    collect weather from daymet. doesnt store data to csv
+     solar radiation is replaced with that of nasapower
     ------------
     parameters
     ---------------
@@ -353,14 +358,15 @@ def daymet_bylocation_nocsv(lonlat, start, end, cleanup=True, filename=None):
 
     ------------
     returns complete path to the new met file but also write the met file to the disk in the working directory
-    '''
+    """
     # import pdb
     # pdb.set_trace()
 
     datecheck = daterange(start, end)
     if start < 1980 or end > 2021:
         print(
-            "requested year preceeds valid data range! \n end years should not exceed 2021 and start year should not be less than 1980")
+            "requested year preceeds valid data range! \n end years should not exceed 2021 and start year should not "
+            "be less than 1980")
     else:
         base_url = 'https://daymet.ornl.gov/single-pixel/api/data?'
         latstr = 'lat=' + str(lonlat[1])
@@ -388,7 +394,7 @@ def daymet_bylocation_nocsv(lonlat, start, end, cleanup=True, filename=None):
             # Create an in-memory binary stream
             text_stream = io.BytesIO(text_str)
             # Read the data into a DataFrame
-            dmett = pd.read_csv(text_stream, delimiter=',', skiprows=6)
+            dmett = pd.read_csv(text_stream, delimiter=',', skiprows=7)
             # dmett = pd.read_csv(outFname, delimiter=',', skiprows=7)
             vp = dmett['vp (Pa)'] * 0.01
             # calcuate radn
@@ -417,7 +423,7 @@ def daymet_bylocation_nocsv(lonlat, start, end, cleanup=True, filename=None):
                 if (all(i.year % 400 == 0)) and (all(i.year % 100 == 0)) or (all(i.year % 4 == 0)) and (
                         all(i.year % 100 != 0)):
                     x = i[['year', 'radn', 'maxt', 'mint', 'rain', 'vp', 'swe', ]].mean()
-                    year = round(x.iloc[0], 0)
+                    year = round(x[0], 0)
                     day = round(366, 0)
                     new_row = pd.DataFrame(
                         {'year': [year], 'day': [day], 'radn': [0], 'maxt': [0], 'mint': [0], 'rain': [0], 'vp': [0],
@@ -478,18 +484,143 @@ def daymet_bylocation_nocsv(lonlat, start, end, cleanup=True, filename=None):
                 return fname  # fname
 
 
-# dowload weather data from nasapower
-def getnasa(lonlat, start, end):
-    lon = lonlat[0]
-    lat = lonlat[1]
-    param = ["T2M_MAX", "T2M_MIN", "ALLSKY_SFC_SW_DWN", "PRECTOTCORR", "RH2M", "WS2M"]
-    pars = ",".join(param)
-    rm = f'https://power.larc.nasa.gov/api/temporal/daily/point?start={start}0101&end={end}1231&latitude={lat}&longitude={lon}&community=ag&parameters={pars}&format=json&user=richard&header=true&time-standard=lst'
-    data = requests.get(rm)
-    dt = json.loads(data.content)
-    df = pd.DataFrame(dt["properties"]['parameter'])
-    return df
+class EditMet:
+    """
+    This class edits the weather files
+    """
+    def __init__(self, weather, skip=5, index_drop=0, separator=' '):
+        self.skip = skip
+        self.index_drop = index_drop
+        self.seperator = separator
+        self.weather = weather
 
+    def _edit_apsim_met(self):
+        """
+        converts the weather file into a pandas dataframe by removing specified rows.
+        It is easier to edit  a pandas data frame than a text file
+
+        Returns:
+        - pandas.DataFrame: A DataFrame containing the modified APSIM weather data.
+
+        Example:
+        """
+        try:
+            with open(self.weather, "r+") as f:
+                string = f.read()
+                data = pd.read_table(StringIO(string), sep=f"{self.seperator}", skiprows=self.skip)
+                row_index = self.index_drop
+                df = data.drop(row_index).reset_index()
+                return df
+        except Exception as e:
+            print(repr(e))
+
+    def write_edited_met(self, old, daf, filename="edited_met.met"):
+        """
+        Write an edited APSIM weather file using an existing file as a template.
+
+        This function takes an existing APSIM weather file ('old'), replaces specific data rows with data from a DataFrame ('daf'),
+        and writes the modified data to a new weather file ('filename').
+
+        Args:
+        - old (str): The path to the existing APSIM weather file used as a template.
+        - daf (pandas.DataFrame): A DataFrame containing the edited weather data to be inserted.
+        - filename (str, optional): The name of the new weather file to be created. Default is 'edited_met.met'.
+
+        Returns:
+        - str: The path to the newly created APSIM weather file.
+
+        Example:
+        ```python
+        from your_module import write_edited_met
+
+        # Specify the paths to the existing weather file and the edited data DataFrame
+        existing_weather_file = "original_met.met"
+        edited_data = pd.DataFrame(...)  # Replace with your edited data
+
+        # Call the write_edited_met function to create a new weather file with edited data
+        new_weather_file = write_edited_met(existing_weather_file, edited_data)
+
+        # Use the new_weather_file path for further purposes
+        ```
+
+        Notes:
+        - This function reads the existing APSIM weather file, identifies the location to insert the edited data,
+          and then creates a new weather file containing the combined data.
+        - The edited data is expected to be in the 'daf' DataFrame with specific columns ('year', 'day', 'radn', 'maxt', 'mint', 'rain', 'vp', 'swe').
+        - The 'filename' parameter specifies the name of the new weather file to be created.
+        - The function returns the path to the newly created weather file.
+
+        """
+        if not filename.endswith('.met'):
+            raise NameError("file name should have  .met extension")
+        existing_lines = []
+        with open(old, 'r+') as file:
+            for i, line in enumerate(file):
+                existing_lines.append(line)
+                if 'MJ' in line and 'mm' in line and 'day in line':
+                    print(line)
+                    break
+
+        # Iterate through the edited DataFrame 'daf' and construct new data rows
+        headers = ['year', 'day', 'radn', 'maxt', 'mint', 'rain', 'vp', 'swe']
+        for index, row in daf.iterrows():
+            current_row = []
+            for header in headers:
+                current_row.append(str(row[header]))
+            current_str = " ".join(current_row) + '\n'
+            existing_lines.append(current_str)
+
+        fname = os.path.join(os.path.dirname(old), filename)
+
+        # Remove the file if it already exists
+        if os.path.exists(fname):
+            os.remove(fname)
+
+        # Write the edited data to the new weather file
+        with open(fname, "a") as df_2met:
+            df_2met.writelines(existing_lines)
+
+        return fname
+
+    def _read_line_from_file(self, line_number):
+        with open(self.weather, 'r') as file:
+            lines = file.readlines()
+            if 0 <= line_number < len(lines):
+                return lines[line_number]
+            else:
+                raise IndexError(f"Line number {line_number} is out of range.")
+
+    def met_replace_var(self, parameter, values):
+        """
+        in case we want to change some columns or rows in the APSIM met file
+        this function replace specific data in the APSIM weather file with new values.
+
+        This method allows for the replacement of specific columns or rows in the APSIM weather file by providing a
+        'parameter' (column name) and a list of 'values' to replace the existing data.
+
+        Args:
+        - parameter (str): The name of the column (parameter) to be replaced.
+        - values (list, array or pandas series):  values to replace the existing data in the specified column.
+
+        Returns:
+        - str: The path to the newly created APSIM weather file with the replaced data.
+
+        """
+        df = self._edit_apsim_met()
+        if len(df[parameter]) != len(values):
+            raise ValueError("number of rows must be equal")
+        if parameter not in df.columns:
+            raise ValueError("column name not found")
+        df['parameter'] = list(values)
+        fname = os.path.join(os.path.dirname(self.weather), "edited_" + os.path.basename(self.weather))
+        return self.write_edited_met(old = self.weather, daf = df, filename=fname)
+
+    def check_met(self):
+        df = self._edit_apsim_met()
+        rain = np.array(df['rain'])
+        ch = np.any(rain <= 0)
+        if True in ch:
+            print(f'the met file has some negative values {ch}')
 
 def calculate_tav_amp(df):
     mean_maxt = df['maxt'].mean(skipna=True, numeric_only=None)
@@ -646,11 +777,39 @@ def get_weather(lonlat, start=1990, end=2000, source='daymet', filename='__met_.
             f"Invalid source: {source} according to supplied {lonlat} lon_lat values try nasapower instead")
 
 
+    def met_replace_var(self, parameter, values):
+        """
+        in case we want to change some columns or rows in the APSIM met file
+        this function replace specific data in the APSIM weather file with new values.
+
+        This method allows for the replacement of specific columns or rows in the APSIM weather file by providing a
+        'parameter' (column name) and a list of 'values' to replace the existing data.
+
+        Args:
+        - parameter (str): The name of the column (parameter) to be replaced.
+        - values (list, array or pandas series):  values to replace the existing data in the specified column.
+
+        Returns:
+        - str: The path to the newly created APSIM weather file with the replaced data.
+
+        """
+        df = self._edit_apsim_met()
+        if len(df[parameter]) != len(values):
+            raise ValueError("number of rows must be equal")
+        if parameter not in df.columns:
+            raise ValueError("column name not found")
+        df['parameter'] = list(values)
+        fname = os.path.join(os.path.dirname(self.weather), "edited_" + os.path.basename(self.weather))
+        return self.write_edited_met(old = self.weather, daf = df, filename=fname)
+
 def read_apsim_met(met_path, skip=5, index_drop=0, separator=' '):
     try:
-        data = pd.read_csv(met_path, skiprows=skip, delim_whitespace=True)
-        return data.drop(0)
-
+        with open(met_path, "r+") as f:
+            string = f.read()
+            data = pd.read_csv(StringIO(string), sep=f"{separator}", skiprows=skip)
+            row_index = index_drop
+            df = data.drop(row_index).reset_index()
+            return df
     except Exception as e:
         print(repr(e))
 
@@ -678,6 +837,7 @@ def write_edited_met(old: [str, Path], daf: pd.DataFrame, filename: str = "edite
                 break
     # iterate through the edited data frame met
     headers = daf.columns.to_list()
+    # headers = ['year', 'day', 'radn', 'maxt', 'mint', 'rain', 'vp', 'swe']
     for index, row in daf.iterrows():
         current_row = []
         for header in headers:
@@ -865,6 +1025,18 @@ def impute_missing_leaps(dmet, fill=0):
 
     return df_fill
 
+
+# dowload weather data from nasapower
+def getnasa(lonlat, start, end):
+    lon = lonlat[0]
+    lat = lonlat[1]
+    param = ["T2M_MAX", "T2M_MIN", "ALLSKY_SFC_SW_DWN", "PRECTOTCORR", "RH2M", "WS2M"]
+    pars = ",".join(param)
+    rm = f'https://power.larc.nasa.gov/api/temporal/daily/point?start={start}0101&end={end}1231&latitude={lat}&longitude={lon}&community=ag&parameters={pars}&format=json&user=richard&header=true&time-standard=lst'
+    data = requests.get(rm)
+    dt = json.loads(data.content)
+    df = pd.DataFrame(dt["properties"]['parameter'])
+    return df
 
 if __name__ == '__main__':
     # imputed_df = impute_data(df, method="approx", verbose=True, copy=True)

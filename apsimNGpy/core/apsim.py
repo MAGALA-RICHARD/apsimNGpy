@@ -7,7 +7,7 @@ import pathlib
 from typing import Union
 import os
 import numpy as np
-from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganizeAPSIMsoil_profile
+from apsimNGpy.manager.soilmanager import get_surgo_soil_tables, APSimSoilProfile
 import apsimNGpy.manager.weathermanager as weather
 # prepare for the C# import
 
@@ -123,13 +123,13 @@ class ApsimModel(APSIMNG):
         self.lonlat = lonlat
         self.dict_of_soils_tables = {}
         if not self.run_all_soils:
-            self.soil_tables = DownloadsurgoSoiltables(self.lonlat, select_componentname=self.soil_series)
+            self.soil_tables = get_surgo_soil_tables(self.lonlat, select_componentname=self.soil_series)
             for ss in self.soil_tables.componentname.unique():
                 self.dict_of_soils_tables[ss] = self.soil_tables[self.soil_tables['componentname'] == ss]
 
         if self.run_all_soils:
             self.dict_of_soils_tables = {}
-            self.soil_tables = DownloadsurgoSoiltables(self.lonlat)
+            self.soil_tables = get_surgo_soil_tables(self.lonlat)
 
             self.percent = self.soil_tables.prcent.unique()
             # create a dictionary of soil series
@@ -160,7 +160,7 @@ class ApsimModel(APSIMNG):
             lonlat (_tuple_): longitude and latitude of the target location
         """
         try:
-            soil_tables = DownloadsurgoSoiltables(self.lonlat)
+            soil_tables = get_surgo_soil_tables(self.lonlat)
             pr = soil_tables.prcent.unique()
 
             grouped = soil_tables.groupby('componentname')[
@@ -183,9 +183,9 @@ class ApsimModel(APSIMNG):
             self.soiltype = keys
             if verbose:
                 print("Padding variabales for:", keys)
-            self.soil_profile = OrganizeAPSIMsoil_profile(self.dict_of_soils_tables[keys],
-                                                          thickness_values=self.thickness_values,
-                                                          thickness=self.thickness)
+            self.soil_profile = APSimSoilProfile(self.dict_of_soils_tables[keys],
+                                                 thickness_values=self.thickness_values,
+                                                 thickness=self.thickness)
             missing_properties = self.soil_profile.cal_missingFromSurgo()  # returns a list of physical, organic and cropdf each in a data frame
             physical_calculated = missing_properties[0]
             self.organic_calcualted = missing_properties[1]
@@ -513,8 +513,8 @@ class ApsimModel(APSIMNG):
         thickness = kwargs.get('thickness', 20)
         sim_name = kwargs.get('sim_name', self.extract_simulation_name)
         assert lon_lat, 'Please supply the lonlat'
-        sp = DownloadsurgoSoiltables(lon_lat)
-        sop = OrganizeAPSIMsoil_profile(sp, thickness, thickness_values=self.thickness_values).cal_missingFromSurgo()
+        sp = get_surgo_soil_tables(lon_lat)
+        sop = APSimSoilProfile(sp, thickness, thickness_values=self.thickness_values).cal_missingFromSurgo()
         self.replace_downloaded_soils(sop, simulation_names=sim_name)
         return self
 

@@ -393,7 +393,7 @@ class ApsimModel(APSIMNG):
 
 
         start, end = self.extract_start_end_years()
-        wp = weather.daymet_bylocation(self.lonlat, start, end)
+        wp = weather.get_met_from_day_met(self.lonlat, start, end)
         wpath = os.path.join(os.getcwd(), wp)
         wpath = os.path.join(os.getcwd(), wp)
         if self.simulation_names:
@@ -444,11 +444,6 @@ class ApsimModel(APSIMNG):
         self.results = self._read_simulation()  # still wondering if this should be a static method
         self._DataStore.Close()
         return self.results
-
-    @property
-    def read_data_tables(self):
-        read_ = self._read_simulation()
-        return read_.keys()
 
     def spin_up(self, report_name: str = 'Report', start=None, end=None, spin_var="Carbon", simulations=None):
         """

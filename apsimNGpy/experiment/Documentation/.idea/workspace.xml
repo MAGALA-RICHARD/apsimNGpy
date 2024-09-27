@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="502bf70a-d385-417c-bd03-2bf73f27e99f" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/../../.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../../.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../core/Barley.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../core/Barley_copy.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../core/Barley_copy.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../core/Barley_copy.db-shm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../core/Barley_copy.db-wal" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../core/Barley_copy_copy.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../core/Maize.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../core/Maize_copy.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../core/Maize_copy.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../core/Maize_copy.db-shm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../core/Maize_copy.db-wal" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../core/Maize_copy_copy.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../core/Maize_copy_copy.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../core/Maize_copy_copy.db-shm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../core/Maize_copy_copy.db-wal" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../core/Soybean.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../core/config.ini" beforeDir="false" afterPath="$PROJECT_DIR$/../../core/config.ini" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../core/fit.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../core/met_functions.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../core/options.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../core/soilmanager.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../core/weather.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../core/weathermanager.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Why use this apsimNGpy factorial module.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Why use this apsimNGpy factorial module.md" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../../.." />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 4
+}]]></component>
+  <component name="ProjectId" id="2m4WZZzt0mS9KoxuGccHBmiugLR" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+    <option name="sortByType" value="true" />
+    <option name="sortKey" value="BY_TYPE" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "development",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-python-sdk-5a2391486177-2887949eec09-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-233.13763.11" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="502bf70a-d385-417c-bd03-2bf73f27e99f" name="Changes" comment="" />
+      <created>1726336384453</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1726336384453</updated>
+      <workItem from="1726336385512" duration="837000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+</project>

@@ -13,9 +13,7 @@ import numpy as np
 import os
 import pandas as pd
 import pathlib
-import random
 import shutil
-import string
 import warnings
 from Models.Climate import Weather
 from Models.Core import Simulations, ScriptCompiler, Simulation
@@ -32,8 +30,9 @@ from typing import Union
 import apsimNGpy.manager.weathermanager as weather
 from apsimNGpy.core.model_loader import (load_apx_model, save_model_to_file, recompile)
 # prepare for the C# import
-from apsimNGpy.utililies.database_utils import read_db_table, get_db_table_names
-from apsimNGpy.utililies.utils import timer
+from apsimNGpy.utililies.database_utils import get_db_table_names
+from apsimNGpy.utililies.utils import timer, generate_unique_name
+
 
 logger = logging.getLogger(__name__)
 
@@ -205,12 +204,6 @@ class APSIMNG:
         for suffix in ["", "-shm", "-wal"]:
             db_file = pathlib.Path(f"{_name}.db{suffix}")
             db_file.unlink(missing_ok=True)
-
-    @staticmethod
-    def generate_unique_name(base_name, length=6):
-        random_suffix = ''.join(random.choices(string.ascii_lowercase, k=length))
-        unique_name = base_name + '_' + random_suffix
-        return unique_name
 
     # searches the simulations from APSIM models.core object
     @property
@@ -564,16 +557,10 @@ class APSIMNG:
 
         return result
 
-    @staticmethod
-    def generate_unique_name(base_name, length=6):
-        random_suffix = ''.join(random.choices(string.ascii_lowercase, k=length))
-        unique_name = base_name + '_' + random_suffix
-        return unique_name
-
     # clone apsimx file by generating unquie name
     def copy_apsim_file(self):
         path = os.getcwd()
-        file_path = opj(path, self.generate_unique_name("clones")) + ".apsimx"
+        file_path = opj(path, generate_unique_name("clones")) + ".apsimx"
         shutil.copy(self.path, file_path)
 
     def summarize_output_variable(self, var_name, table_name='Report'):
@@ -1405,7 +1392,7 @@ class ApsiMet(APSIMNG):
 
     def insert_weather_file(self):
         start, end = self.extract_start_end_years()
-        wp = weather.daymet_bylocation(self.lonlat, start=start, end=end)
+        wp = weather.get_met_from_day_met(self.lonlat, start=start, end=end)
         wp = os.path.join(os.getcwd(), wp)
         if self.simulation_names:
             sim_name = list(self.simulation_names)

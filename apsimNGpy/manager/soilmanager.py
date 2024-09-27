@@ -538,7 +538,6 @@ if __name__ == '__main__':
     data = sop.cal_missingFromSurgo()
     from apsimNGpy.core.apsim import ApsimModel
     from apsimNGpy.core.base_data import LoadExampleFiles
-    from pathlib import Path
     from apsimNGpy import settings
     import os
     ap_sim = LoadExampleFiles(os.getcwd()).get_maize

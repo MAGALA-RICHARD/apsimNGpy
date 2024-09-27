@@ -148,7 +148,7 @@ class ApsimModel(APSIMNG):
 
     @staticmethod
     def get_weather_online(lonlat, start, end):
-        wp = weather.daymet_bylocation(lonlat, start=start, end=end)
+        wp = weather.daymet_by_location(lonlat, start=start, end=end)
         wpath = os.path.join(os.getcwd(), wp)
         return wpath
 
@@ -375,7 +375,7 @@ class ApsimModel(APSIMNG):
         self.simulation_names = simulation_names
 
         start, end = self.extract_start_end_years()
-        wp = weather.daymet_bylocation(self.lonlat, start, end)
+        wp = weather.daymet_by_location(self.lonlat, start, end)
         wpath = os.path.join(os.getcwd(), wp)
         wpath = os.path.join(os.getcwd(), wp)
         if self.simulation_names:

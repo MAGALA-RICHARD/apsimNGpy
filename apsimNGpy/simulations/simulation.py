@@ -4,7 +4,7 @@ from typing import Tuple, Any
 from apsimNGpy.core.apsim import ApsimModel
 from apsimNGpy.parallel.safe import simulator_worker
 from apsimNGpy.utililies.utils import select_process
-from apsimNGpy.manager.weathermanager import daymet_bylocation_nocsv, daymet_bylocation
+from apsimNGpy.manager.weathermanager import daymet_bylocation_nocsv, daymet_by_location
 from apsimNGpy.manager.soilmanager import get_surgo_soil_tables, APSimSoilProfile
 from apsimNGpy.simulations.joblib import create_fishnet1, create_apsimx_sim_files, generate_random_points
 from tqdm import tqdm

@@ -5,7 +5,7 @@ import datetime
 import urllib
 from pathlib import Path
 from typing import Union
-
+import gc
 from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception, retry_if_exception_type
 import requests
 import random
@@ -214,150 +214,10 @@ def get_nasarad(lonlat, start, end):
     # fucntion to download data from daymet
 
 
-@retry(stop=stop_after_attempt(2), retry=retry_if_exception_type(NETWORK_EXCEPTIONS))
-def day_met_by_location(lonlat, start, end, cleanup=True, filename=None):
-    '''collect weather from daymet solar radiation is replaced with that of nasapower
-   ------------
-   parameters
-   ---------------
-   start: Starting year
-   
-   end: Ending year
-   
-   lonlat: A tuple of xy cordnates
-   
-   Cleanup:  A bolean True or False default is true: deletes the excel file generated during the file write up
-   
-   ------------
-   returns complete path to the new met file but also write the met file to the disk in the working directory
-   '''
-    # import pdb
-    # pdb.set_trace()
-
-    datecheck = daterange(start, end)
-    if start < 1980 or end > 2021:
-        print(
-            "requested year preceeds valid data range! \n end years should not exceed 2021 and start year should not be less than 1980")
-    else:
-        base_url = 'https://daymet.ornl.gov/single-pixel/api/data?'
-        latstr = 'lat=' + str(lonlat[1])
-        lonstr = '&lon=' + str(lonlat[0])
-        varss = ['dayl', 'prcp', 'srad', 'tmax', 'tmin', 'vp', 'swe']
-        setyears = [str(year) for year in range(start, end + 1)]
-        # join the years as a string
-        years_in_range = ",".join(setyears)
-        years_str = "&years=" + years_in_range
-        varfield = ",".join(varss)
-        var_str = "&measuredParams=" + varfield
-        # join the string url together
-        url = base_url + latstr + lonstr + var_str + years_str
-        conn = requests.get(url, timeout=60)
-
-        if not conn.ok:
-            print("failed to connect to server")
-        elif conn.ok:
-            # print("connection established to download the following data", url)
-            # outFname = conn.headers["Content-Disposition"].split("=")[-1]
-            outFname = conn.headers["Content-Disposition"].split("=")[-1]
-            text_str = conn.content
-            outF = open(outFname, 'wb')
-            outF.write(text_str)
-            outF.close()
-            conn.close()
-            #       read the downloaded data to a data frame
-            dmett = pd.read_csv(outFname, delimiter=',', skiprows=7)
-            vp = dmett['vp (Pa)'] * 0.01
-            # calcuate radn
-            radn = dmett['dayl (s)'] * dmett['srad (W/m^2)'] * 1e-06
-            # re-arrange data frame
-            year = np.array(dmett['year'])
-            day = np.array(dmett['yday'])
-            radn = np.array(radn)
-            maxt = np.array(dmett['tmax (deg c)'])
-            mint = np.array(dmett['tmin (deg c)'])
-            rain = np.array(dmett['prcp (mm/day)'])
-            vp = np.array(vp)
-            swe = np.array(dmett['swe (kg/m^2)'])
-            df = pd.DataFrame(
-                {'year': year, 'day': day, 'radn': radn, 'maxt': maxt, 'mint': mint, 'rain': rain, 'vp': vp,
-                 'swe': swe})
-            # bind the frame
-            # calculate mean annual applitude in mean monthly temperature (TAV)
-            ab = [a for a in setyears]
-            # split the data frame
-            ab = [x for _, x in df.groupby(df['year'])]
-            df_bag = []
-            # constants to evaluate the leap years
-            leapfactor = 4
-            for i in ab:
-                if (all(i.year % 400 == 0)) and (all(i.year % 100 == 0)) or (all(i.year % 4 == 0)) and (
-                        all(i.year % 100 != 0)):
-                    x = i[['year', 'radn', 'maxt', 'mint', 'rain', 'vp', 'swe', ]].mean()
-                    year = round(x.iloc[0], 0)
-                    day = round(366, 0)
-                    new_row = pd.DataFrame(
-                        {'year': [year], 'day': [day], 'radn': [0], 'maxt': [0], 'mint': [0], 'rain': [0], 'vp': [0],
-                         'swe': [0]})
-                    df_bag.append(pd.concat([i, new_row], ignore_index=True))
-
-                    continue
-                else:
-                    df_bag.append(i)
-                    frames = df_bag
-            newmet = pd.concat(frames)
-            newmet.index = range(0, len(newmet))
-            # repalce radn data
-            rad = get_nasarad(lonlat, start, end)
-            newmet["radn"] = rad.ALLSKY_SFC_SW_DWN.values
-            if len(newmet) != len(datecheck):
-                print('date discontinuities still exisists')
-            else:
-                # print("met data is in the range of specified dates no discontinuities")
-                rg = len(newmet.day.values) + 1
-                # newmet  = pd.concat(newmet)
-                mean_maxt = newmet['maxt'].mean(skipna=True, numeric_only=None)
-                mean_mint = newmet['mint'].mean(skipna=True, numeric_only=None)
-                AMP = round(mean_maxt - mean_mint, 2)
-                tav = round(statistics.mean((mean_maxt, mean_mint)), 2)
-                tile = conn.headers["Content-Disposition"].split("=")[1].split("_")[0]
-                fn = conn.headers["Content-Disposition"].split("=")[1].replace("csv", 'met')
-                if not filename:
-                    shortenfn = generate_unique_name("Daymet") + '.met'
-                else:
-                    shortenfn = filename
-                if not os.path.exists('weatherdata'):
-                    os.makedirs('weatherdata')
-                fn = shortenfn
-                fname = os.path.join('weatherdata', fn)
-                headers = ['year', 'day', 'radn', 'maxt', 'mint', 'rain', 'vp', 'swe']
-                header_string = " ".join(headers) + "\n"
-                # close and append new lines
-                with open(fname, "a") as f2app:
-                    f2app.writelines([f'!site: {tile}\n', f'latitude = {lonlat[1]} \n', f'longitude = {lonlat[0]}\n',
-                                      f'tav ={tav}\n', f'amp ={AMP}\n'])
-                    f2app.writelines([header_string])
-                    f2app.writelines(['() () (MJ/m2/day) (oC) (oC) (mm) (hPa) (kg/m2)\n'])
-                    # append the weather data
-                    data_rows = []
-                    for index, row in newmet.iterrows():
-                        current_row = []
-                        for header in headers:
-                            current_row.append(str(row[header]))
-                        current_str = " ".join(current_row) + '\n'
-                        data_rows.append(current_str)
-
-                    f2app.writelines(data_rows)
-
-                if cleanup:
-                    if os.path.isfile(os.path.join(os.getcwd(), outFname)):
-                        os.remove(os.path.join(os.getcwd(), outFname))
-                return fname  # fname
-
-
 def get_met_from_day_met(lonlat: Union[tuple, list, np.ndarray], start: int,
                          end: int, filename: str,
-                         fill_method: str= 'ffill',
-                         retry_number: Union[int, None]= 1, **kwa: None) -> str:
+                         fill_method: str = 'ffill',
+                         retry_number: Union[int, None] = 1, **kwa: None) -> str:
     """collect weather from daymet solar radiation is replaced with that of nasapower API
     ------------
     parameters
@@ -388,14 +248,13 @@ def get_met_from_day_met(lonlat: Union[tuple, list, np.ndarray], start: int,
               " end years should not exceed 2021 and start year should not be less than 1980")
     else:
         base_url = 'https://daymet.ornl.gov/single-pixel/api/data?'
-        lat_str = 'lat=' + str(lonlat[1])
-        lon_str = '&lon=' + str(lonlat[0])
+        lat_str, lon_str = 'lat=' + str(lonlat[1]), '&lon=' + str(lonlat[0])
+
         var_headers = ['dayl', 'prcp', 'srad', 'tmax', 'tmin', 'vp', 'swe']
-        set_years = [str(year) for year in full_date_range.year.unique()]
+        years_in_range = ",".join([str(year) for year in full_date_range.year.unique()])
         # join the years as a string
-        years_in_range = ",".join(set_years)
-        years_str = "&years=" + years_in_range
-        var_field = ",".join(var_headers)
+        years_str, var_field = "&years=" + years_in_range,  ",".join(var_headers)
+
         var_str = "&measuredParams=" + var_field
         # join the string url together
         url = base_url + lat_str + lon_str + var_str + years_str
@@ -462,7 +321,6 @@ def get_met_from_day_met(lonlat: Union[tuple, list, np.ndarray], start: int,
         # Now reindexing does not change NAs that were already there, even if we pass a fill method to it,
         # so we need to change them here at once
         new_met = getattr(new_met, fill_method)()
-        new_met.index = range(0, len(new_met))
         # replace radiation data
         rad = get_nasarad(lonlat, start, end)
         new_met["radn"] = rad.ALLSKY_SFC_SW_DWN.values
@@ -474,8 +332,7 @@ def get_met_from_day_met(lonlat: Union[tuple, list, np.ndarray], start: int,
         short_file_name = filename or "Daymet" + '.met'
         if not os.path.exists('weatherdata'):
             os.makedirs('weatherdata')
-        fn = short_file_name
-        file_name_path = os.path.join('weatherdata', fn)
+        file_name_path = os.path.join('weatherdata', short_file_name)
         headers = ['year', 'day', 'radn', 'maxt', 'mint', 'rain', 'vp', 'swe']
         header_string = " ".join(headers) + "\n"
         # close and append new lines
@@ -488,6 +345,8 @@ def get_met_from_day_met(lonlat: Union[tuple, list, np.ndarray], start: int,
             data_rows = new_met.apply(lambda row: " ".join([str(row[header]) for header in headers]) + '\n', axis=1)
             # Write all rows to the file at once
             f2app.writelines(data_rows)
+        # we need a clean up
+        del new_met, _data_frame, headers, mean_max_temp, data_to, text_str, radiation, years_in_range, text_stream
         return file_name_path
 
 
@@ -898,6 +757,7 @@ def impute_missing_leaps(dmet, fill=0):
     return df_fill
 
 
+gc.collect()
 if __name__ == '__main__':
     from pathlib import Path
 
@@ -905,7 +765,6 @@ if __name__ == '__main__':
     [os.remove(i) for i in p]
     os.chdir(Path.home())
     import cProfile
-
 
     profiler = cProfile.Profile()
     profiler.enable()

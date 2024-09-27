@@ -4,7 +4,6 @@ This module offers a procedural alternative other than object-oriented approach 
 # TODO this module/file is named badly. the functions here should go to core or base.
 # for a start, we can use the functions defined here instead of using the ones in APSIMNG's loader.
 
-from apsimNGpy.core.pythonet_config import LoadPythonnet
 # now we can safely import C# libraries
 from System.Collections.Generic import *
 from Models.Core import Simulations, ScriptCompiler, Simulation

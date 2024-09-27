@@ -4,9 +4,9 @@ from typing import Tuple, Any
 from apsimNGpy.core.apsim import ApsimModel
 from apsimNGpy.parallel.safe import simulator_worker
 from apsimNGpy.utililies.utils import select_process
-from apsimNGpy.core.weathermanager import daymet_bylocation_nocsv, daymet_bylocation
-from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganizeAPSIMsoil_profile
-from apsimNGpy.utililies.spatial import create_fishnet1, create_apsimx_sim_files, generate_random_points
+from apsimNGpy.manager.weathermanager import daymet_bylocation_nocsv, daymet_by_location
+from apsimNGpy.manager.soilmanager import get_surgo_soil_tables, APSimSoilProfile
+from apsimNGpy.simulations.joblib import create_fishnet1, create_apsimx_sim_files, generate_random_points
 from tqdm import tqdm
 
 
@@ -46,14 +46,14 @@ def simulate_single_point(model: Any, location: Tuple[float, float], report, rea
         simulator_model.replace_met_file(wf, sim_name)
     # replace soil is true
     if kwargs.get("replace_soil", False):
-        table = DownloadsurgoSoiltables(location)
-        sp = OrganizeAPSIMsoil_profile(table, thickness=20, thickness_values=th)
+        table = get_surgo_soil_tables(location)
+        sp = APSimSoilProfile(table, thickness=20, thickness_values=th)
         sp = sp.cal_missingFromSurgo()
         simulator_model.replace_downloaded_soils(sp, sim_name)
     # if replace management practices
     if kwargs.get("mgt_practices"):
         simulator_model.update_mgt(kwargs.get('mgt_practices'), sim_name)
-    simulator_model.run(report_name=report)
+    simulator_model.simulate(report_name=report)
     return simulator_model.results
 
 
@@ -65,7 +65,7 @@ def simulate_from_shape_file(wd, shape_file, model: Any, resolution,  start=1990
      model: Union[str, Simulations],
      location: longitude and latitude to run from, previously lonlat
      soil_series: str
-     wd: pathlike stirng
+     wd: path-like string
      kwargs:
         copy: bool = False, out_path: str = None, read_from_string=True,
 

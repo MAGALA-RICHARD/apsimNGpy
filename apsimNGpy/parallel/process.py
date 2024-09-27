@@ -2,8 +2,6 @@ import os
 from concurrent.futures import ProcessPoolExecutor, as_completed, ThreadPoolExecutor
 from multiprocessing import cpu_count
 from time import perf_counter
-from apsimNGpy.settings import ConstantSettings
-from apsimNGpy.utililies.run_utils import run_model
 from tqdm import tqdm
 
 from apsimNGpy.utililies.utils import select_process
@@ -13,6 +11,8 @@ from itertools import islice
 import pandas as pd
 import multiprocessing as mp
 import types
+
+from .. import settings
 
 CPU = int(int(cpu_count()) * 0.5)
 CORES = settings.NUM_CORES
@@ -26,7 +26,8 @@ def run_apsimxfiles_in_parallel(iterable_files, ncores=None, use_threads=False):
     Args:
     - iterable_files (list): A list of APSIMX  files to be run in parallel.
     - ncores (int, optional): The number of CPU cores or threads to use for parallel processing. If not provided, it defaults to 50% of available CPU cores.
-    - use_threads (bool, optional): If set to True, the function uses thread pool execution; otherwise, it uses process pool execution. Default is False.
+    - use_threads (bool, optional): If set to True, the function uses thread pool execution; otherwise,
+    it uses process pool execution. Default is False.
 
     Returns:
     - returns a generator object containing the path to the datastore or sql databases
@@ -55,10 +56,10 @@ def run_apsimxfiles_in_parallel(iterable_files, ncores=None, use_threads=False):
         ncore2use = ncores
     else:
         ncore2use = int(cpu_count() * 0.50)
-
+    from ..core.core import run_simulation_from_path as run_sim
     a = perf_counter()
     with select_process(use_thread=use_threads, ncores=ncore2use) as pool:
-        futures = [pool.submit(run_model, i) for i in files]
+        futures = [pool.submit(run_sim, i) for i in files]
         progress = tqdm(total=len(futures), position=0, leave=True,
                         bar_format='Running apsimx files: {percentage:3.0f}% completed')
         for future in as_completed(futures):

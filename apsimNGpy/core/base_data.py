@@ -2,15 +2,11 @@ import os.path
 from importlib.resources import files
 from os.path import join, realpath, dirname, exists, split, basename
 from os import listdir, walk, getcwd, mkdir
-from apsimNGpy.core.pythonet_config import LoadPythonnet, aPSim_PATH
+from apsimNGpy.config import load_python_net
 import shutil
 from apsimNGpy import data as DATA
-
-conf = LoadPythonnet()()
 from apsimNGpy.core.apsim import ApsimModel as SoilModel
 from pathlib import Path
-from functools import cache
-from apsimNGpy.core.apsim_file import XFile as DFile
 import os
 
 WEATHER_CO = 'NewMetrrr.met'
@@ -234,22 +230,21 @@ class LoadExampleFiles:
         return SoilModel(self.get_maize_no_till)
 
 
-try:
-    pat = aPSim_PATH
-except KeyError:
-    pat = aPSim_PATH
-if pat:
-    apsim = os.path.dirname(pat)
-    examples = join(apsim, 'Examples')
-dr = listdir(examples)
+from ..import settings
 
-examples_files = {}
-for i in dr:
-    if i.endswith(".apsimx"):
-        name, ext = i.split(".")
-        examples_files[name] = join(examples, i)
 
-weather_path = os.path.join(examples, "WeatherFiles")
+def read_examples_dir():
+    if settings.BASE_DIR:
+        apsim = os.path.dirname(settings.BASE_DIR)
+        examples_folder = join(settings.BASE_DIR, 'data')
+        example_file_paths = listdir(examples_folder)
+
+        example_files = {}
+        for file_path in example_file_paths:
+            if file_path.endswith(".apsimx"):
+                name, ext = file_path.split(".")
+                example_files[name] = file_path
+        return example_files
 
 
 class __DetectApsimExamples:
@@ -259,6 +254,8 @@ class __DetectApsimExamples:
     def __init__(self, copy_path: str = None):
         self.all = []
         self.copy_path = copy_path
+        examples_files = read_examples_dir()
+        self.examples_files = examples_files
         for name, file in examples_files.items():
             setattr(self, name, name)
             self.all.append(name)
@@ -281,15 +278,22 @@ class __DetectApsimExamples:
         OSError: If there are issues with copying or replacing files.
         """
         if not path:
-            self.copy_path = os.getcwd()
+            self.copy_path = join(settings.BASE_DIR, 'data/copy')
+            if not os.path.exists(self.copy_path):
+                os.mkdir(self.copy_path)
         else:
-            self.copy_path  = path
+            self.copy_path = path
         path = join(self.copy_path, crop) + '.apsimx'
-        cp = shutil.copy(examples_files[crop], path)
+        cp = shutil.copy(self.examples_files[crop], path)
         if not simulations_object:
             return cp
         aPSim = SoilModel(cp)
-        wp = os.path.join(weather_path, os.path.basename(aPSim.show_met_file_in_simulation()))
+        weather_files = os.path.basename(aPSim.show_met_file_in_simulation())
+        APSIM_BIN_LOC = os.environ.get('APSIM_BIN_LOCATION')
+        APSIM_BASE = os.path.dirname(APSIM_BIN_LOC)
+
+        weather_path = os.path.join(APSIM_BASE, "Examples/WeatherFiles")
+        wp = os.path.join(weather_path, weather_files)
         aPSim.replace_met_file(weather_file=wp)
         return aPSim
 

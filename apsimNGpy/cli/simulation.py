@@ -2,10 +2,14 @@
 
 import argparse
 import json
-from apsimNGpy.core.simulation import simulate
+import click
 
 
-def main():
+@click.command()
+@click.option('--location', type=str)
+@click.option('--model', type=str)
+def run_simulation():
+    from apsimNGpy.core.simulation import simulate
     parser = argparse.ArgumentParser(description='Run a simulation of a given crop.')
 
     args = parser.parse_args()

@@ -18,7 +18,7 @@ setup(
     long_description=readme,
     packages=find_packages(),
     include_package_data=True,
-    package_data={'': ['./apsimNGpy/data/*.apsimx', './apsimNGpy/*.met', './apsimNGpy/examples/*.png', './apsimNGpy/*.ini', "./*.ini"]},
+    package_data={'': ['./apsimNGpy/data/*.apsimx', './apsimNGpy/data/WeatherFiles/*.met', './apsimNGpy/examples/*.png', './apsimNGpy/*.ini', "./*.ini"]},
     keywords=['python', 'APSIM Next Generation', 'pythonnet', 'crop modeling'],
     classifiers=[
         "Development Status :: 3 - Alpha",
@@ -41,8 +41,13 @@ setup(
         'tqdm >= 4.66.2',
         'progressbar >= 2.5',
         'joblib >= 1.3.2',
-        'sqlalchemy >=2.0'
-
-    ]
+        'sqlalchemy >=2.0',
+        'click >= 8.1.0'
+    ],
+    entry_points={
+        'console_scripts': [
+            'apsim_python_shell = apsimNGpy.cli.shell:run_shell'
+        ]
+    }
 )
 

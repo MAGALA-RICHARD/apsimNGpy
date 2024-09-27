@@ -485,8 +485,9 @@ class ApsimModel(APSIMNG):
         df_sel = df_sel.mean(numeric_only=True)
         print(df_sel)
         if spin_var == 'Carbon':
-            assert 'TotalC' in insert_var, "wrong report variable path: '{0}' supplied according to requested spin up " \
-                                           "var".format(insert_var)
+            if 'TotalC' not in insert_var:
+                raise ValueError("wrong report variable path: '{0}' supplied according to requested spin up " \
+                                           "var".format(insert_var))
 
             bd = list(pysoil.DUL)
             print(bd)
@@ -499,8 +500,9 @@ class ApsimModel(APSIMNG):
             print(len(new_carbon))
             self.replace_any_soil_organic(spin_var, new_carbon)
         if spin_var == 'DUL':
-            assert 'PAW' in insert_var, "wrong report variable path: '{0}' supplied according to requested spin up var" \
-                .format(insert_var)
+            if 'PAW' not in insert_var:
+                raise ValueError("wrong report variable path: '{0}' supplied according to requested spin up var" \
+                .format(insert_var))
             l_15 = pysoil.LL15
             ll = np.array(l_15)
             dul = ll + df_sel

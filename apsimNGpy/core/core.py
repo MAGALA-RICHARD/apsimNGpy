@@ -75,7 +75,7 @@ class APSIMNG:
         if kwargs.get('copy'):
             warnings.warn(
                 'copy argument is deprecated, it is now mandatory to copy the model in order to conserve the original '
-                'model.')
+                'model.', UserWarning)
         """
             Parameters
             ----------

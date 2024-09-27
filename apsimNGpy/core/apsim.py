@@ -8,7 +8,6 @@ from typing import Union
 import os
 import numpy as np
 import time
-import apsimNGpy.manager.weathermanager as weather
 from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganizeAPSIMsoil_profile
 import apsimNGpy.manager.weathermanager as weather
 import pandas as pd
@@ -167,7 +166,7 @@ class ApsimModel(APSIMNG):
 
     @staticmethod
     def get_weather_online(lonlat, start, end):
-        wp = weather.daymet_bylocation(lonlat, start=start, end=end)
+        wp =  weather.get_met_from_day_met(lonlat, start=start, end=end)
         wpath = os.path.join(os.getcwd(), wp)
         return wpath
 
@@ -391,7 +390,7 @@ class ApsimModel(APSIMNG):
             self.lonlat = self.lonlat
         else:
             self.lonlat = lonlatmet
-        self.simulation_names = simulation_names
+
 
         start, end = self.extract_start_end_years()
         wp = weather.daymet_bylocation(self.lonlat, start, end)
@@ -519,15 +518,15 @@ class ApsimModel(APSIMNG):
     def replace_met_from_web(self, lonlat, start_year, end_year, file_name=None):
         if not file_name:
             file_name = self.path.strip(".apsimx") + "_w_.met"
-        w_f = weather.daymet_bylocation_nocsv(lonlat, start=start_year, end=end_year, filename=file_name)
+        w_f = weather.get_met_from_day_met(lonlat, start=start_year, end=end_year, filename=file_name)
         wf = os.path.abspath(w_f)
-        self.replace_met_file(wf, self.extract_simulation_name)
+        self.replace_met_file(weather_file=wf)
         return self
 
     def replace_soil_profile_from_web(self, **kwargs):
         lon_lat = kwargs.get('lonlat', self.lonlat)
         thickness = kwargs.get('thickness', 20)
-        sim_name = kwargs.get('sim_name', self.extract_simulation_name)
+        sim_name = kwargs.get('sim_name', self.simulation_names)
         assert lon_lat, 'Please supply the lonlat'
         sp = DownloadsurgoSoiltables(lon_lat)
         sop = OrganizeAPSIMsoil_profile(sp, thickness, thickness_values=self.thickness_values).cal_missingFromSurgo()
@@ -558,7 +557,7 @@ if __name__ == '__main__':
         st = sm.DownloadsurgoSoiltables(lonlat)
         sp = sm.OrganizeAPSIMsoil_profile(st, 20)
         sop = sp.cal_missingFromSurgo()
-        model.replace_downloaded_soils(sop, model.extract_simulation_name, No_till=True)
+        model.replace_downloaded_soils(sop, model.simulation_names, No_till=True)
         bd = model.extract_any_soil_physical("BD")
     except Exception as e:
         print(type(e).__name__, repr(e))

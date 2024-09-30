@@ -1,5 +1,4 @@
 import configparser
-from os.path import (realpath, join, isfile, exists)
 import configparser
 import os
 from os.path import (realpath, join, isfile, exists)
@@ -17,16 +16,28 @@ def start_pythonnet():
         return pythonnet.load()
 
 
+# to avoid being called two times
+config = configparser.ConfigParser()
+config_path = join(os.path.dirname(__file__), 'config.ini')
+config.read(config_path)
+
+
 def get_apsim_binary_path():
-    config = configparser.ConfigParser()
-    from os.path import join
-    config_path = join(os.path.dirname(__file__), 'config.ini')
-    config.read(config_path)
     APSIM_LOC = config['Paths']['APSIM_LOCATION']
+    if not exists(APSIM_LOC):
+        return None
     # JUST ENSURE THAT THE FILE EXISTS 1. AND THEN ENSURE IT HAS THE CONFIG, We should not catch any error HERE.
     # What we do is check if the APSIM PATH IS VALID.
     # one advantage of encapsulating logic in method is you can control when they are called.
     return APSIM_LOC
+
+
+def change_apsim_bin_path(apsim_binary_path):
+    if 'Paths' not in config:
+        config['Paths'] = {}
+    config['Paths']['APSIM_LOCATION'] = apsim_binary_path
+    with open(config_path, 'w') as configfile:
+        config.write(configfile)
 
 
 def load_python_net():
@@ -35,8 +46,7 @@ def load_python_net():
     """
     start_pythonnet()
     # use get because it does not raise key error. it returns none if not found
-    APSIM_PATH = get_apsim_binary_path()
-
+    APSIM_PATH = get_apsim_binary_path() or os.getenv('APSIM') or os.getenv('Models')
     if 'bin' not in APSIM_PATH:
         APSIM_PATH = os.path.join(APSIM_PATH, 'bin')
 
@@ -51,3 +61,26 @@ def load_python_net():
     _lm = clr.AddReference("Models")
 
 
+def version():
+    """
+    get the version of the APSIM model currently installed and available for apsimNGpy to run
+    """
+    # we split the apsim binary path
+    _bin_path = get_apsim_binary_path() or os.getenv('APSIM') or os.getenv('Models')
+    # if the path does not end with bin, then the code below will fail miserably so, we check it
+    if _bin_path and os.path.exists(_bin_path) and _bin_path.endswith('bin'):
+        path, _ = os.path.split(get_apsim_binary_path())
+        _complete_version = os.path.basename(path)
+        # split the path
+        # _splits = _complete_version.split('.')
+        # year = int(_splits[0].strip('APSIM'))
+        # print(year)
+        return _complete_version
+
+
+load_python_net()
+if __name__ == '__main__':
+    start_pythonnet()
+    change_apsim_bin_path(r'C:\Program Files\APSIM2024.5.7493.0\bin')
+    x = get_apsim_binary_path()
+    load_python_net()

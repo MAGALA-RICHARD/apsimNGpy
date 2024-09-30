@@ -4,6 +4,7 @@ author: Richard Magala
 email: magalarich20@gmail.com
 
 """
+from apsimNGpy import config
 import logging
 import Models
 from dataclasses import replace
@@ -60,6 +61,7 @@ def _run_sim(simulation_model, DataStore, sql_db, read_result: bool = True, mult
         _sim_errors = model_to_run.Run()
     except Exception as e:  # we dont know which exceptions
         logger.exception(repr(e))
+        raise
     else:
         if len(_sim_errors) > 0:  # this function is not doing much.
             for error in _sim_errors:
@@ -68,7 +70,7 @@ def _run_sim(simulation_model, DataStore, sql_db, read_result: bool = True, mult
                 print(msg)
         if read_result:
             """When read result is false"""
-            from ..utililies.database_utils import read_simulation_results
+            from apsimNGpy.utililies.database_utils import read_simulation_results
             return read_simulation_results(sql_db)
     finally:
         DataStore.Close()
@@ -1415,19 +1417,22 @@ if __name__ == '__main__':
     modelm = al.get_maize
 
     model = APSIMNG(model=None, out_path='me.apsimx')
+    a = perf_counter()
     for _ in range(1):
-
+      adv = model.simulate()
+    print(perf_counter() - a, 'seconds')
+    for _ in range(1):
+        print(_)
         for rn in ['Maize, Soybean, Wheat', 'Maize', 'Soybean, Wheat']:
-            a = perf_counter()
-            # model.RevertCheckpoint()
-
             model.update_manager(Name="Simple Rotation", Crops=rn)
             print(model.extract_user_input('Simple Rotation'))
+            a = perf_counter()
+            # model.RevertCheckpoint()
+            ad = model.simulate()
             b = perf_counter()
 
             print(b - a, 'seconds')
-            model.simulate('Carbon')
-            print(model.results.mean(numeric_only=True))
+            print(ad['MaizeR'].mean(numeric_only=True))
 
         a = perf_counter()
 

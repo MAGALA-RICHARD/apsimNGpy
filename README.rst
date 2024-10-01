@@ -11,7 +11,7 @@ Requirements
 1. Dotnet, install from https://learn.microsoft.com/en-us/dotnet/core/install/
 2. Python3
 3. APSIM Binary from https://apsim.info
-6. Minimum; 8GM RAM, CPU Core i7
+6. Minimum; 4GB RAM,
 
 .. _Installation:
 

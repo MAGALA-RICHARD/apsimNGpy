@@ -16,14 +16,16 @@ def start_pythonnet():
         return pythonnet.load()
 
 
-# to avoid being called two times
-config = configparser.ConfigParser()
+CONFIG = configparser.ConfigParser()
 config_path = join(os.path.dirname(__file__), 'config.ini')
-config.read(config_path)
+if not exists(config_path):
+    with open(config_path, 'w') as cfp:
+        CONFIG.write(cfp)
+CONFIG.read(config_path)
 
 
 def get_apsim_binary_path():
-    APSIM_LOC = config['Paths']['APSIM_LOCATION']
+    APSIM_LOC = CONFIG['Paths']['APSIM_LOCATION']
     if not exists(APSIM_LOC):
         return None
     # JUST ENSURE THAT THE FILE EXISTS 1. AND THEN ENSURE IT HAS THE CONFIG, We should not catch any error HERE.
@@ -33,11 +35,11 @@ def get_apsim_binary_path():
 
 
 def change_apsim_bin_path(apsim_binary_path):
-    if 'Paths' not in config:
-        config['Paths'] = {}
-    config['Paths']['APSIM_LOCATION'] = apsim_binary_path
+    if 'Paths' not in CONFIG:
+        CONFIG['Paths'] = {}
+    CONFIG['Paths']['APSIM_LOCATION'] = apsim_binary_path
     with open(config_path, 'w') as configfile:
-        config.write(configfile)
+        CONFIG.write(configfile)
 
 
 def load_python_net():

@@ -32,6 +32,8 @@ CONFIG.read(config_path)
 
 def get_apsim_binary_path():
     APSIM_LOC = CONFIG['Paths']['APSIM_LOCATION']
+    # I am sure we can get apsim from sys path so, we provide three options, and i have provided this documentation
+    # The priority is to allow the user change versions or path though
     # strict evaluation
     if not exists(APSIM_LOC) and not APSIM_LOC.endswith('bin') and 'APSIM' not in APSIM_LOC:
         return None
@@ -74,7 +76,8 @@ def version():
     """
     get the version of the APSIM model currently installed and available for apsimNGpy to run
     """
-    # we split the apsim binary path
+    # I am sure we can get apsim from sys path so, we provide three options, and i have provided this documentation
+    # The priority is to allow the user change versions or path though
     _bin_path = get_apsim_binary_path() or os.getenv('APSIM') or os.getenv('Models')
     # if the path does not end with bin, then the code below will fail miserably so, we check it
     if _bin_path and os.path.exists(_bin_path) and _bin_path.endswith('bin'):
@@ -87,7 +90,9 @@ def version():
         return _complete_version
 
 
+# we need to start it read to run before it is called
 load_python_net()
+
 if __name__ == '__main__':
     start_pythonnet()
     change_apsim_bin_path(r'C:\Program Files\APSIM2024.5.7493.0\bin')

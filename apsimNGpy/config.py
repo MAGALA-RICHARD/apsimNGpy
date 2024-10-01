@@ -16,6 +16,12 @@ def start_pythonnet():
         return pythonnet.load()
 
 
+# I believe this file should be generated automatically during any time the module is recalled.
+# So, we check if it exists first
+# I also noticed you've provided a manual option, but after installation,
+# the package paths are usually abstracted.
+# Therefore, I am implementing an automatic method to handle this.
+
 CONFIG = configparser.ConfigParser()
 config_path = join(os.path.dirname(__file__), 'config.ini')
 if not exists(config_path):
@@ -26,7 +32,8 @@ CONFIG.read(config_path)
 
 def get_apsim_binary_path():
     APSIM_LOC = CONFIG['Paths']['APSIM_LOCATION']
-    if not exists(APSIM_LOC):
+    # strict evaluation
+    if not exists(APSIM_LOC) and not APSIM_LOC.endswith('bin') and 'APSIM' not in APSIM_LOC:
         return None
     # JUST ENSURE THAT THE FILE EXISTS 1. AND THEN ENSURE IT HAS THE CONFIG, We should not catch any error HERE.
     # What we do is check if the APSIM PATH IS VALID.

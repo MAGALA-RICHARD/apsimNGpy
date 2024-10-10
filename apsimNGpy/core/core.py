@@ -102,6 +102,23 @@ def run_simulation_from_path(path: str):
     return run_simulation(model_meta_data)
 
 
+def replace_variable_by_index(old_list: list, new_value: list, indices: list):
+    for idx, new_val in zip(indices, new_value):
+        old_list[idx] = new_val
+    return old_list
+
+
+def soil_components(component):
+    _comp = component.lower()
+    comps = {'organic': Organic,
+             'physical': Physical,
+             'soilcrop': SoilCrop,
+             'solute': Solute,
+             'chemical': Chemical,
+             }
+    return comps[_comp]
+
+
 class APSIMNG:
 
     def __init__(self, model=None, out_path=None, out=None, **kwargs):
@@ -110,7 +127,7 @@ class APSIMNG:
         if kwargs.get('copy'):
             warnings.warn(
                 'copy argument is deprecated, it is now mandatory to copy the model in order to conserve the original '
-                'model.')
+                'model.', UserWarning)
         """
             Parameters
             ----------
@@ -300,17 +317,23 @@ class APSIMNG:
 
         Parameters
         ----------
-        report_name: str. defaults to APSIM defaults Report Name and if not specified or Report Name not in the simulation tables, the simulator will
+         :param report_name: str. defaults to APSIM defaults Report Name, and if not specified or Report Name not in the simulation tables, the simulator will
             execute the model and save the outcomes in a database file, accessible through alternative retrieval methods.
 
         simulations (__str_), optional
             List of simulation names to run, if `None` runs all simulations, by default `None`.
 
-        clean (_-boolean_), optional
+        :param clean (_-boolean_), optional
             If `True` remove an existing database for the file before running, deafults to False`
 
-        multithread
+        :param multithread: bool
             If `True` APSIM uses multiple threads, by default `True`
+            :param simulations:
+
+        :param verbose: bool prints diagnostic information such as false report name and simulation
+        :param get_dict: bool, return a dictionary of data frame paired by the report table names default to False
+        returns
+            instance of the class APSIMNG
         """
         _sims = self.Simulations
         if not _sims:
@@ -383,11 +406,12 @@ class APSIMNG:
                 Simulation name to be cloned, of None clone the first simulation in model
         """
 
-        sim = self._find_simulation(simulation)
-        zone = sim.FindChild[Models.Core.Zone](zone)
-        clone_zone = Models.Core.Apsim.Clone(zone)
-        clone_zone.Name = target
-        sim.Children.Add(clone_zone)
+        sims = self._find_simulation(simulation)
+        for sim in sims:
+            zone = sim.FindChild[Models.Core.Zone](zone)
+            clone_zone = Models.Core.Apsim.Clone(zone)
+            clone_zone.Name = target
+            sim.Children.Add(clone_zone)
         self.save_edited_file(reload=True)
         return self
 
@@ -404,9 +428,9 @@ class APSIMNG:
                 list of zones as APSIM Models.Core.Zone objects
         """
 
-        sim = self._find_simulation(simulation)
-        zones = sim.FindAllDescendants[Models.Core.Zone]()
-        return list(zones)
+        sims = self._find_simulation(simulation)
+        zones = [sim.FindAllDescendants[Models.Core.Zone]() for sim in sims]
+        return [*zip(*zones)]
 
     @property  #
     def extract_report_names(self):
@@ -460,19 +484,19 @@ class APSIMNG:
         rep = self.Simulations.FindChild[Models.Core.Folder]()
         return rep
 
-    def _find_cultvar(self, CultvarName):
+    def _find_cultivar(self, cultivar_name):
 
         rep = self._find_replacement().FindAllDescendants[Models.PMF.Cultivar]()
         xp = [i for i in rep]
         for cult in xp:
-            if cult.Name == CultvarName:
+            if cult.Name == cultivar_name:
                 return cult
                 break
         return rep
 
-    def read_cultvar_params(self, name, verbose=None):
-        cultvar = self._find_cultvar(name)
-        c_param = self._cultivar_params(cultvar)
+    def read_cultivar_params(self, name, verbose=None):
+        cultivar = self._find_cultivar(name)
+        c_param = self._cultivar_params(cultivar)
         if verbose:
             for i in c_param:
                 print(f"{i} : {c_param[i]} \n")
@@ -494,7 +518,8 @@ class APSIMNG:
 
     def edit_cultivar(self, *, CultivarName, commands: tuple, values: tuple, **kwargs):
         """
-        Edits the parameters of a given cultivar.
+        Edits the parameters of a given cultivar. we don't need a simulation name for this unless if you are defining it in the
+        manager section, if that it is the case, see update_mgt
 
         :param CultivarName: Name of the cultivar (e.g., 'laila').
         :param commands: A tuple of strings representing the parameter paths to be edited.
@@ -509,7 +534,7 @@ class APSIMNG:
         if len(commands) != len(values):
             raise ValueError("The length of values and commands must be equal")
 
-        cultvar = self._find_cultvar(CultivarName)
+        cultvar = self._find_cultivar(CultivarName)
         if cultvar is None:
             raise ValueError(f"Cultivar '{CultivarName}' not found")
 
@@ -523,7 +548,7 @@ class APSIMNG:
 
         return self
 
-    def get_current_cultvar_name(self, ManagerName):
+    def get_current_cultivar_name(self, ManagerName):
         try:
             ap = self.extract_user_input(ManagerName)['CultivarName']
             return ap
@@ -709,42 +734,6 @@ class APSIMNG:
         self.Simulations = self.Simulations.RevertCheckpoint('new_model')
         return self
 
-    def update_management_decissions(self, management, simulations=None, out=None):
-        """Update management, handles multiple managers in a loop
-
-        Parameters
-        ----------
-        management: a list of dictionaries of management paramaters or a dictionary with keyvarlue pairs of parameters and associated values, respectivelyto update. examine_management_info` to see current values.
-        make a dictionary with 'Name' as the for the of  management script
-        simulations, optional
-            List of simulation names to update, if `None` update all simulations not recommended.
-        reload, optional
-            _description_ defaults to True
-            out: bool, optional specifies the new filename
-        """
-        if not isinstance(management, list):
-            management = [management]
-        # from apsimx.utils import KeyValuePair
-        for sim in self.find_simulations(simulations):
-            zone = sim.FindChild[Models.Core.Zone]()
-            atn = []
-            for action in zone.FindAllChildren[Models.Manager]():
-                for managementt in management:
-                    if action.Name == managementt["Name"]:
-                        values = managementt
-                        for i in range(len(action.Parameters)):
-                            param = action.Parameters[i].Key
-
-                            if param in values:
-                                fvalue = f"{values[param]}"
-                                action.Parameters[i] = KeyValuePair[String, String](param, fvalue)
-
-                                # action.Parameters[i]= {param:f"{values[param]}"}
-        # self.examine_management_info()                # action.GetParametersFromScriptModel()
-        self.path = out or self.out_path
-        self.save_edited_file(outpath=self.path)
-        self.load_apsimx_model()
-
     def convert_to_IModel(self):
         if isinstance(self.Simulations, Models.Core.ApsimFile.ConverterReturnType):
             return self.Simulations.get_NewModel()
@@ -762,25 +751,20 @@ class APSIMNG:
             pass
         return self
 
-    def update_manager(self, **kwargs):
-        """
-        updates a single management script by kew word arguments. kwargs can be the key value pairs of the parameters
-        of the management script, if Name of the script is not specified, updates will not be successfully
-        """
-        self.Simulations = self.convert_to_IModel()
-        manager = self.Simulations.FindAllInScope[Models.Manager](kwargs['Name'])
-        manager_scripts = [i for i in manager]
-        for single in manager_scripts:
-            for i in range(len(single.Parameters)):
-                kvp = single.Parameters[i]
-                if kvp.Key in kwargs.keys():
-                    updated_kvp = KeyValuePair[String, String](kvp.Key, kwargs[kvp.Key])
-                    single.Parameters[i] = updated_kvp
-            # Serialize the model to JSON string
-        fileName = kwargs.get('out_path') or self.model_info.path
-        self.recompile_edited_model(out_path=fileName)
-        self.Simulations = self.convert_to_IModel()
-        return self
+    def update_mgt_by_path(self, *, path, param_values, fmt='.'):
+        parameters_guide = ['simulations_name', 'Manager', 'manager_name', 'out_path_name', 'parameter_name']
+        parameters = ['simulations', 'Manager', 'Name', 'out']
+        args = path.split(fmt)
+        if len(args) != len(parameters_guide):
+            join_p = ".".join(parameters_guide)
+            raise ValueError(f"Invalid path '{path}' expected path should follow {join_p}")
+        args = [(p := f"'{arg}'") if " " in arg and fmt != " " and '[' not in arg else arg for arg in args]
+        _eval_params = [APSIMNG._try_literal_eval(arg) for arg in args]
+        _eval_params[1] = {'Name': _eval_params[2], _eval_params[-1]: param_values},
+        parameters[1] = 'management'
+        _param_values = dict(zip(parameters, _eval_params))
+
+        return self.update_mgt(**_param_values)
 
     def update_mgt(self, *, management: [dict, tuple],
                    simulations: [list, tuple] = None,
@@ -951,6 +935,7 @@ class APSIMNG:
             simulations, optional
                 List of simulation names to update, if `None` update all simulations
             """
+            # we need to catch file not found errors before it becomes a problem
             if not os.path.isfile(weather_file):
                 raise FileNotFoundError(weather_file)
             for sim_name in self.find_simulations(simulations):
@@ -963,10 +948,14 @@ class APSIMNG:
             print(repr(e))  # this error will be logged to the folder logs in the current working directory
             raise
 
-    def show_met_file_in_simulation(self):
+    def show_met_file_in_simulation(self, simulations: list = None):
         """Show weather file for all simulations"""
-        for weather in self.Simulations.FindAllDescendants[Weather]():
-            return weather.FileName
+        weather_list = {}
+        for sim_name in self.find_simulations(simulations):
+            weathers = sim_name.FindAllDescendants[Weather]()
+            for met in weathers:
+                weather_list[sim_name.Name] = met.FileName
+        return weather_list
 
     def change_report(
             self, *, command: str, report_name='Report', simulations=None, set_DayAfterLastOutput=None,
@@ -1016,7 +1005,7 @@ class APSIMNG:
             report = si.FindAllDescendants[Models.Report]()
             print(list(report))
 
-    def extract_soil_physical(self, simulation=None):
+    def extract_soil_physical(self, simulations: [tuple, list] = None):
         """Find physical soil
 
         Parameters
@@ -1027,38 +1016,52 @@ class APSIMNG:
         -------
             APSIM Models.Soils.Physical object
         """
-        for simu in self._find_simulation(simulation):
+        sim_physical = {}
+        for nn, simu in enumerate(self._find_simulation(simulations)):
             soil_object = simu.FindDescendant[Soil]()
             physical_soil = soil_object.FindDescendant[Physical]()
-            return physical_soil
+            sim_physical[simu.Name] = physical_soil
+        return sim_physical
 
-    def extract_any_soil_physical(self, parameter, simulation=None):
+    def extract_any_soil_physical(self, parameter, simulations: [list, tuple] = None):
         """extracts soil physical parameters in the simulation
 
         Args:
             parameter (_string_): string e.g DUL, SAT
-            simulation (string, optional): Targeted simulation name. Defaults to None.
+            simulations (string, optional): Targeted simulation name. Defaults to None.
         ---------------------------------------------------------------------------
         returns an array of the parameter values
         """
         assert isinstance(parameter, str) == True, "Soil parameter name must be a string"
-        soil_physical = self.extract_soil_physical(simulation)
-        soilp_param = getattr(soil_physical, parameter)
-        return list(soilp_param)
+        data = {}
+        _simulations = simulations if simulations else self.simulation_names
+        sop = self.extract_soil_physical(_simulations)
+        for sim in _simulations:
+            soil_physical = sop[sim]
+            soil_p_param = getattr(soil_physical, parameter)
+            data[sim] = list(soil_p_param)
+        return data
 
-    def replace_any_soil_physical(self, *, parameter: str, param_values, simulation: str = None, **kwargs):
-        """relaces specified soil physical parameters in the simulation
+    def replace_any_soil_physical(self, *, parameter: str,
+                                  param_values: [tuple, list],
+                                  simulations: str = None,
+                                  indices=None, **kwargs):
+        """replaces specified soil physical parameters in the simulation
 
-        ______________________________________________________
-        Args:
-            parameter (_string_, required): string e.g DUL, SAT. open APSIMX file in the GUI and examne the phyicals node for clues on the parameter names
-            simulation (string, optional): Targeted simulation name. Defaults to None.
-            param_values (array, required): arrays or list of values for the specified parameter to replace
+        ______________________________________________________ Args: parameter (_string_, required): string e.g. DUL,
+        SAT. open APSIMX file in the GUI and examine the physical node for clues on the parameter names simulation (        string, optional): Targeted simulation name. Defaults to None. param_values (array, required): arrays or list
+        of values for the specified parameter to replace index (int, optional):
+        if indices is None replacement is done with corresponding indices of the param values
         """
-        assert len(param_values) == len(
-            self.extract_any_soil_physical(parameter, simulation)), 'lengths are not equal please try again'
-        soil_physical = self.extract_soil_physical(simulation)
-        setattr(soil_physical, parameter, param_values)
+        _simulations = simulations if simulations else self.simulation_names
+        if indices is None:
+            indices = [param_values.index(i) for i in param_values]
+        sop = self.extract_soil_physical(_simulations)
+        for sim in _simulations:
+            soil_physical = sop[sim]
+            soil_p_param = list(getattr(soil_physical, parameter))
+            param_news = replace_variable_by_index(soil_p_param, param_values, indices)
+            setattr(soil_physical, parameter, param_news)
 
     # find organic paramters
     def extract_soil_organic(self, simulation: tuple = None):
@@ -1081,9 +1084,12 @@ class APSIMNG:
 
     def _extract_solute(self, simulation=None):
         # find the solute node in the simulation
-        sim = self._find_simulation(simulation)
-        solutes = sim.FindAllDescendants[Models.Soils.Solute]()
-        return solutes
+        sims = self._find_simulation(simulation)
+        solute = {}
+        for sim in sims:
+            solute[sim.Name] = sim.FindAllDescendants[Models.Soils.Solute]()
+
+        return solute
 
     def extract_any_solute(self, parameter: str, simulation=None):
         """
@@ -1096,9 +1102,10 @@ class APSIMNG:
         ___________________
         the solute array or list
         """
+        _simulation = simulation if simulation else self.simulation_names
         solutes = self._extract_solute(simulation)
-        sol = getattr(solutes, parameter)
-        return list(sol)
+        sol = {k: getattr(v, parameter) for k, v in solutes.items()}
+        return sol
 
     def replace_any_solute(self, *, parameter: str, param_values: list, simulation=None, **kwargs):
         """# replaces with new solute
@@ -1112,6 +1119,118 @@ class APSIMNG:
         """
         solutes = self._extract_solute(simulation)
         setattr(solutes, parameter, param_values)
+
+    def replace_soil_properties_by_path(self, path: str,
+                                        param_values: list,
+                                        str_fmt=".",
+                                        **kwargs):
+        # TODO I know there is a better way to implement this
+        """
+        This function processes a path where each component represents different nodes in a hierarchy,
+        with the ability to replace parameter values at various levels.
+
+        :param path:
+            A string representing the hierarchical path of nodes in the order:
+            'simulations.Soil.soil_child.crop.indices.parameter'. Soil here is a constant
+
+            - The components 'simulations', 'crop', and 'indices' can be `None`.
+            - Example of a `None`-inclusive path: 'None.Soil.physical.None.None.BD'
+            - If `indices` is a list, it is expected to be wrapped in square brackets.
+            - Example when `indices` are not `None`: 'None.Soil.physical.None.[1].BD'
+            - if simulations please use square blocks
+               Example when `indices` are not `None`: '[maize_simulation].physical.None.[1].BD'
+
+            **Note: **
+            - The `soil_child` node might be replaced in a non-systematic manner, which is why indices
+              are used to handle this complexity.
+            - When a component is `None`, default values are used for that part of the path. See the
+              documentation for the `replace_soil_property_values` function for more information on
+              default values.
+
+        :param param_values:
+            A list of parameter values that will replace the existing values in the specified path.
+            For example, `[0.1, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08]` could be used to replace values for `NH3`.
+
+        :param str_fmt:
+            A string specifying the formatting character used to separate each component in the path.
+            Examples include ".", "_", or "/". This defines how the components are joined together to
+            form the full path.
+
+        :return:
+            Returns the instance of `self` after processing the path and applying the parameter value replacements.
+
+            Example f
+
+            from apsimNGpy.core.base_data import load_default_simulations
+            model = load_default_simulations(crop = 'maize')
+            model.replace_soil_properties_by_path(path = 'None.Soil.Organic.None.None.Carbon', param_values= [1.23])
+            if we want to replace carbon at the bottom of the soil profile, we use a negative index  -1
+            model.replace_soil_properties_by_path(path = 'None.Soil.Organic.None.[-1].Carbon', param_values= [1.23])
+        """
+
+        function_parameters = ['simulations', 'Soil', 'soil_child', 'crop', 'indices', 'parameter']
+        expected_nones = ['simulations', 'crop', 'indices']
+        args = path.split(str_fmt)
+        if len(args) != len(function_parameters):
+            raise TypeError(f"expected order is: {function_parameters}, crop, indices and simulations can be None"
+                            f"if replacement is related to soil properties, soil is a constant after the simulation name")
+        # bind them to the function paramters
+        fpv = dict(zip(function_parameters, args))
+
+        # by all means, we want indices to be evaluated
+
+        fpt = {k: (p := APSIMNG._try_literal_eval(v)) if (k in expected_nones) else (p := v)
+               for k, v in fpv.items()}
+        # we can now call the method below. First, we update param_values
+        fpt['param_values'] = param_values
+        return self.replace_soil_property_values(**fpt)
+
+    @staticmethod
+    def _try_literal_eval(_string):
+        try:
+            string_new = ast.literal_eval(_string)
+        except ValueError:
+            return _string
+        return string_new
+
+    def replace_soil_property_values(self, *, parameter: str,
+                                     param_values: list,
+                                     soil_child: str,
+                                     simulations: list = None,
+                                     indices: list = None,
+                                     crop=None,
+                                     **kwargs):
+        """
+        Replaces values in any soil property array. The soil property array
+        :param parameter: str: parameter name e.g., NO3, 'BD'
+        :param param_values:list or tuple: values of the specified soil property name to replace
+        :param soil_child: str: sub child of the soil component e.g., organic, physical etc.
+        :param simulations: list: list of simulations to where the node is found if
+        not found, all current simulations will receive the new values, thus defaults to None
+        :param indices: list. Positions in the array which will be replaced. Please note that unlike C#, python satrt counting from 0
+        :crop (str, optional): string for soil water replacement. Default is None
+
+        """
+
+        if indices is None:
+            indices = [param_values.index(i) for i in param_values]
+        for simu in self.find_simulations(simulations):
+            soil_object = simu.FindDescendant[Soil]()
+            _soil_child = soil_object.FindDescendant[soil_components(soil_child)]()
+
+            param_values_new = list(getattr(_soil_child, parameter))
+            if soil_child == 'soilcrop':
+                if crop is None:
+                    raise ValueError('Crop not defined')
+                crop = crop.capitalize() + "Soil"
+                _soil_child = soil_object.FindDescendant[soil_components(soil_child)](crop)
+                param_values_new = list(getattr(_soil_child, parameter))
+                _param_new = replace_variable_by_index(param_values_new, param_values, indices)
+                setattr(_soil_child, parameter, _param_new)
+            else:
+                _param_new = replace_variable_by_index(param_values_new, param_values, indices)
+                setattr(_soil_child, parameter, _param_new)
+        return self
 
     def extract_any_soil_organic(self, parameter: str, simulation: tuple = None):
         """extracts any specified soil  parameters in the simulation
@@ -1161,37 +1280,12 @@ class APSIMNG:
         for simu in self.find_simulations(simulation):
             soil_object = simu.FindDescendant[Soil]()
             soil_crop = soil_object.FindAllDescendants[SoilCrop]()
-            # can be use to target specific crop
+            # can be used to target specific crop
             for crops in soil_crop:
                 crop_soil = crop + "Soil"
                 if crops.Name == crop_soil:
                     param_values = getattr(crops, parameter)
                     return list(param_values)
-
-    def replace_crop_soil_water(self, *, parameter, param_values, crop="Maize", simulation=None, **kwargs):
-        """_summary_
-
-        Args:
-            parameter (_str_): crop soil water parameter names e.g. LL, XF etc
-            crop (str, optional): crop name. Defaults to "Maize".
-            simulation (_str_, optional): _target simulation name . Defaults to None.
-             param_values (_list_ required) values of LL of istance list or 1-D arrays
-
-        Returns:
-            doesn't return anything it mutates the specified value in the soil simulation object
-        """
-        assert len(param_values) == len(self.extract_crop_soil_water(parameter, crop, simulation))
-        assert isinstance(parameter, str), 'Parameter name should be a string'
-        assert isinstance(crop, str), "Crop name should be a string"
-        for simu in self.find_simulations(simulation):
-            soil_object = simu.FindDescendant[Soil]()
-            soil_crop = soil_object.FindAllDescendants[SoilCrop]()
-            # can be use to target specific crop
-            for crops in soil_crop:
-                crop_soil = crop + "Soil"
-                if crops.Name == crop_soil:
-                    setattr(crops, parameter, param_values)
-                    break
 
     def find_simulations(self, simulations=None):
         """Find simulations by name
@@ -1221,18 +1315,12 @@ class APSIMNG:
             return sims
 
     # Find a single simulation by name
-    def _find_simulation(self, simulation=None):
-        if simulation is None:
-            return self.simulations  # removed [0]
-        sim = None
-        for s in self.simulations:
-            if s.Name == simulation:
-                sim = s
-                break
-        if sim is None:
-            print("Not found!")
+    def _find_simulation(self, simulations: [tuple, list] = None):
+        if simulations is None:
+            return self.simulations
+
         else:
-            return sim
+            return [self.Simulations.FindDescendant(i) for i in simulations if i in self.simulation_names]
 
     @staticmethod
     def adjustSatDul(sat_, dul_):
@@ -1284,10 +1372,10 @@ class APSIMNG:
         wb = sim.FindDescendant[Models.WaterModel.WaterBalance]()
         return np.array(wb.SWCON)
 
-    def _find_solute(self, solute, simulation=None):
-        sim = self._find_simulation(simulation)
-        solutes = sim.FindAllDescendants[Models.Soils.Solute]()
-        return [s for s in solutes if s.Name == solute][0]
+    def _find_solute(self, solute, simulations=None):
+        # values should be returned tagged by their simulation  names
+        solutes = [sim.FindAllDescendants[Models.Soils.Solute](solute) for sim in self._find_simulation(simulations)]
+        return solutes
 
     def clear_db(self):
         """

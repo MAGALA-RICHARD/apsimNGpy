@@ -1,101 +1,60 @@
 import os
-from os.path import join as opj
-from datetime import datetime
 import datetime
-import urllib
 from pathlib import Path
-from typing import Union
-
-from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception, retry_if_exception_type
-import requests
 import random
 import json
-import pandas as pd
-import time
 import statistics
-from progressbar import ProgressBar
-import progressbar
-import numpy as np
-import string
-import io
-from scipy import interpolate
-import copy
 import requests
-from datetime import datetime
 import string
 from io import StringIO
 import io
-import os
-from scipy import interpolate
-from scipy.interpolate import UnivariateSpline
 import logging
 
-from datetime import datetime
 import pandas as pd
 import numpy as np
 from scipy import interpolate
 import copy
 import warnings
 
-# we only need to retry if any of these error occured, the rest we dont need to know
-NETWORK_EXCEPTIONS = (requests.ConnectionError, requests.Timeout, requests.RequestException)
+from ..utililies.utils import generate_unique_name
 
 
-def try_many_times(k_times):
-    if k:
-        return retry(stop=stop_after_attempt(k_times), wait=wait_fixed(0.5),
-                     retry=retry_if_exception_type(NETWORK_EXCEPTIONS))
-
-
-def generate_unique_name(base_name, length=6):
-    # TODO this function has 4 duplicates
-    random_suffix = ''.join(random.choices(string.ascii_lowercase, k=length))
-    unique_name = base_name + '_' + random_suffix
-    return unique_name
-
-
-# from US_states_abbreviation import getabreviation
-
-# let us manage network issues more gracefully
-@retry(stop=stop_after_attempt(3), wait=wait_fixed(0.5), retry=retry_if_exception_type(NETWORK_EXCEPTIONS))
-def get_iem_by_station(dates_tuple, station, path, met_tag):
-    '''
-      Dates is a tupple/list of strings with date ranges
-      
+def get_iem_by_station(dates, station, path, mettag):
+    """
+      Dates is a tuple/list of strings with date ranges
       an example date string should look like this: dates = ["01-01-2012","12-31-2012"]
-      
       if station is given data will be downloaded directly from the station the default is false.
-      
-      mettag: your prefered tag to save on filee
-      '''
+      mettag: your preferred tag to save on file
+      """
     # access the elements in the metdate class above
-    weather_dates = MetDate(dates_tuple)
-    stationX = station[:2]
-    state_clim = stationX + "CLIMATE"
-    str0 = "http://mesonet.agron.iastate.edu/cgi-bin/request/coop.py?network="
-    str1 = str0 + state_clim + "&stations=" + station
-    str2 = str1 + "&year1=" + weather_dates.year_start + "&month1=" + weather_dates.start_month + "&day1=" + weather_dates.start_day + "&year2=" + weather_dates.year_end + "&month2=" + weather_dates.end_month + "&day2=" + weather_dates.end_day
-    str3 = (str2 + "&vars%5B%5D=apsim&what=view&delim=comma&gis=no")
-    url = str3
+    wdates = MetDate(dates)
+    stationx = station[:2]
+    state_clim = stationx + "CLIMATE"
+    iastate_weather_url = "https://mesonet.agron.iastate.edu/cgi-bin/request/coop.py?network="
+    query_str = f"{state_clim}&stations={station}&year1={wdates.year_start}&month1={wdates.start_month}" \
+                f"&day1={wdates.start_day}&year2={wdates.year_end}&month2={wdates.end_month}&day2={wdates.end_day}" \
+                f"&vars%5B%5D=apsim&what=view&delim=comma&gis=no"
+    url = f"{iastate_weather_url}{query_str}"
     rep = requests.get(url)
     if rep.ok:
-        met_name_of_file = station + met_tag + ".met"
+        met_name = station + mettag + ".met"
         os.chdir(path)
         if not os.path.exists('weatherdata'):
             os.mkdir('weatherdata')
-        pt = os.path.join('weatherdata', met_name_of_file)
+        pt = os.path.join('weatherdata', met_name)
 
-        with open(pt, 'wb') as met_fileX:
-            # remember to include the file extension name
-            met_fileX.write(rep.content)
+        with open(pt, 'wb') as met_file:
+            # dont forget to include the file extension name
+            met_file.write(rep.content)
             rep.close()
-            met_fileX.close()
-            print(rep.content)
-    else:
-        print("Failed to download the data web request returned code: ", rep)
+            met_file.close()
 
 
 class MetDate:
+    """
+    This class organises the data for IEM weather download
+    """
+
     def __init__(self, dates):
         self.start_date = dates[0]
         self.end_date = dates[1]
@@ -103,7 +62,6 @@ class MetDate:
         self.end_month = dates[1][:2]
         self.year_start = dates[0].split("-")[2]
         self.year_end = dates[1].split("-")[2]
-        import datetime
         self.start_day = datetime.datetime.strptime(dates[0], '%m-%d-%Y').strftime('%j')
         self.end_day = datetime.datetime.strptime(dates[1], '%m-%d-%Y').strftime('%j')
 
@@ -170,102 +128,243 @@ for k, v in states.items():
     new_dict[v] = k
 
 
-def getabreviation(x):
+def get_abbreviation(x):
     ab = new_dict[x]
-    return (ab)
+    return ab
 
 
 # function to define the date ranges
-def daterange(start, end):
-    '''
-  start: the starting year to download the weather data
-  -----------------
-  end: the year under which download should stop
-  '''
-    startdates = '01-01'
-    enddates = '12-31'
-    end = str(end) + "-" + enddates
-    start = str(start) + "-" + startdates
-    drange = pd.date_range(start, end)
-    return (drange)
+def date_range(start, end):
+    """
+    start: the starting year to download the weather data
+    -----------------
+    end: the year under which download should stop
+    """
+    start_dates = '01-01'
+    end_dates = '12-31'
+    end = str(end) + "-" + end_dates
+    start = str(start) + "-" + start_dates
+    d_range = pd.date_range(start, end)
+    return d_range
 
 
 # check if a year is aleap year
-def isleapyear(year):
+def is_leap_year(year):
     if (year % 400 == 0) and (year % 100 == 0) or (year % 4 == 0) and (year % 100 != 0):
-        return (True)
+        return True
     else:
-        return (False)
+        return False
 
 
-# download radiation data for replacement
-@retry(stop=stop_after_attempt(3), retry=retry_if_exception_type(NETWORK_EXCEPTIONS))
-def get_nasarad(lonlat, start, end):
+def get_nasa_rad(lonlat, start, end):
+    # download radiation data for replacement
     lon = lonlat[0]
     lat = lonlat[1]
     pars = "ALLSKY_SFC_SW_DWN"
-    rm = f'https://power.larc.nasa.gov/api/temporal/daily/point?start={start}0101&end={end}1231&latitude={lat}&longitude={lon}&community=ag&parameters={pars}&format=json&user=richard&header=true&time-standard=lst'
-    data = requests.get(rm)
+    nasa_rad_url = f'https://power.larc.nasa.gov/api/temporal/daily/point?start={start}' \
+         f'0101&end={end}1231&latitude={lat}&longitude={lon}&community=ag&parameters={pars}' \
+         f'&format=json&user=richard&header=true&time-standard=lst'
+    data = requests.get(nasa_rad_url)
     dt = json.loads(data.content)
     df = pd.DataFrame(dt["properties"]['parameter'])
-    if len(df) == len(daterange(start, end)):
+    if len(df) == len(date_range(start, end)):
         return df
 
-    # fucntion to download data from daymet
 
-
-@retry(stop=stop_after_attempt(2), retry=retry_if_exception_type(NETWORK_EXCEPTIONS))
-def day_met_by_location(lonlat, start, end, cleanup=True, filename=None):
-    '''collect weather from daymet solar radiation is replaced with that of nasapower
+def daymet_by_location(lonlat: str, start_year: int, end_year: int, clean_up: bool=True, file_name=None):
+    """
+    Collect weather from daymet solar radiation is replaced with that of nasapower
    ------------
    parameters
    ---------------
-   start: Starting year
-   
-   end: Ending year
-   
-   lonlat: A tuple of xy cordnates
-   
-   Cleanup:  A bolean True or False default is true: deletes the excel file generated during the file write up
-   
+   start_year: Starting year
+   end_year: Ending year
+   lonlat: A tuple of gps coordinates of the location
+   clean_up:  Deletes the excel file generated during the file write up default to true
+   file_name: The name of the file to which the data will be written.
    ------------
    returns complete path to the new met file but also write the met file to the disk in the working directory
-   '''
+   """
+    if start_year < 1980:
+        raise ValueError("The database contains data only from 1980 onwards")
+
+    current_year = datetime.datetime.now().year
+    if end_year + 1 >= current_year:
+        raise ValueError(f"The {current_year} weather data may not be stable, use at least 1 year before")
+
+    datecheck = date_range(start_year, end_year)
+
+    base_url = 'https://daymet.ornl.gov/single-pixel/api/data?'
+    met_vars = ",".join(['dayl', 'prcp', 'srad', 'tmax', 'tmin', 'vp', 'swe'])
+    weather_years = [str(year) for year in range(start_year, end_year + 1)]
+    years_in_range = ",".join(weather_years)
+        # join the years as a string
+
+    query_str = f"lat={str(lonlat[1])}&lon={str(lonlat[0])}&measuredParams={met_vars}&years={years_in_range}"
+    # join the string url together
+    url = f"{base_url}{query_str}"
+    conn = requests.get(url, timeout=60)
+
+    if not conn.ok:
+        # TODO refactor this function to handle the request in a separate function
+        raise ValueError("failed to connect to server")
+    elif conn.ok:
+        out_filename = conn.headers["Content-Disposition"].split("=")[-1]
+        text_str = conn.content
+        with open(out_filename, 'wb') as out_file:
+            out_file.write(text_str)
+            # read the downloaded data to a data frame
+            dmett = pd.read_csv(out_filename, delimiter=',', skiprows=7)
+            vp = dmett['vp (Pa)'] * 0.01
+            # calculate radiation
+            radn = dmett['dayl (s)'] * dmett['srad (W/m^2)'] * 1e-06
+            # re-arrange data frame
+            year = np.array(dmett['year'])
+            day = np.array(dmett['yday'])
+            radn = np.array(radn)
+            maxt = np.array(dmett['tmax (deg c)'])
+            mint = np.array(dmett['tmin (deg c)'])
+            rain = np.array(dmett['prcp (mm/day)'])
+            vp = np.array(vp)
+            swe = np.array(dmett['swe (kg/m^2)'])
+            df = pd.DataFrame(
+                {'year': year, 'day': day, 'radn': radn, 'maxt': maxt, 'mint': mint, 'rain': rain, 'vp': vp,
+                 'swe': swe})
+            # bind the frame
+            # calculate mean annual amplitude in mean monthly temperature (TAV)
+            ab = [a for a in weather_years]
+            # split the data frame
+            ab = [x for _, x in df.groupby(df['year'])]
+            df_bag = []
+            # constants to evaluate the leap years
+            for i in ab:
+                if is_leap_year(i.year):
+                    x = i[['year', 'radn', 'maxt', 'mint', 'rain', 'vp', 'swe', ]].mean()
+                    year = round(x.iloc[0], 0)
+                    day = round(366, 0)
+                    new_row = pd.DataFrame(
+                        {'year': [year], 'day': [day], 'radn': [0], 'maxt': [0], 'mint': [0], 'rain': [0], 'vp': [0],
+                         'swe': [0]})
+                    df_bag.append(pd.concat([i, new_row], ignore_index=True))
+
+                    continue
+                else:
+                    df_bag.append(i)
+                    frames = df_bag
+            newmet = pd.concat(frames)
+            newmet.index = range(0, len(newmet))
+            # repalce radn data
+            rad = get_nasa_rad(lonlat, start_year, end_year)
+            newmet["radn"] = rad.ALLSKY_SFC_SW_DWN.values
+            if len(newmet) != len(datecheck):
+                print('date discontinuities still exisists')
+            else:
+                # print("met data is in the range of specified dates no discontinuities")
+                rg = len(newmet.day.values) + 1
+                # newmet  = pd.concat(newmet)
+                mean_maxt = newmet['maxt'].mean(skipna=True, numeric_only=None)
+                mean_mint = newmet['mint'].mean(skipna=True, numeric_only=None)
+                AMP = round(mean_maxt - mean_mint, 2)
+                tav = round(statistics.mean((mean_maxt, mean_mint)), 2)
+                tile = conn.headers["Content-Disposition"].split("=")[1].split("_")[0]
+                fn = conn.headers["Content-Disposition"].split("=")[1].replace("csv", 'met')
+                if not file_name:
+                    shortenfn = generate_unique_name("Daymet") + '.met'
+                else:
+                    shortenfn = file_name
+                if not os.path.exists('weatherdata'):
+                    os.makedirs('weatherdata')
+                fn = shortenfn
+                fname = os.path.join('weatherdata', fn)
+                headers = ['year', 'day', 'radn', 'maxt', 'mint', 'rain', 'vp', 'swe']
+                header_string = " ".join(headers) + "\n"
+                # close and append new lines
+                with open(fname, "a") as f2app:
+                    f2app.writelines([f'!site: {tile}\n', f'latitude = {lonlat[1]} \n', f'longitude = {lonlat[0]}\n',
+                                      f'tav ={tav}\n', f'amp ={AMP}\n'])
+                    f2app.writelines([header_string])
+                    f2app.writelines(['() () (MJ/m2/day) (oC) (oC) (mm) (hPa) (kg/m2)\n'])
+                    # append the weather data
+                    data_rows = []
+                    for index, row in newmet.iterrows():
+                        current_row = []
+                        for header in headers:
+                            current_row.append(str(row[header]))
+                        current_str = " ".join(current_row) + '\n'
+                        data_rows.append(current_str)
+
+                    f2app.writelines(data_rows)
+
+                if clean_up:
+                    if os.path.isfile(os.path.join(os.getcwd(), out_filename)):
+                        os.remove(os.path.join(os.getcwd(), out_filename))
+                return fname  # fname
+
+
+def daymet_bylocation_nocsv(lonlat, start, end, cleanup=True, filename='daymet'):
+    """
+    collect weather from daymet. doesnt store data to csv
+     solar radiation is replaced with that of nasapower
+    ------------
+    parameters
+    ---------------:
+
+    retry_number (int): retry number of times in case of network errors
+    :filename. met file name to save on disk
+    start: Starting year of the met data
+    end: Ending year of the met data
+    lonlat (tuple, list, array): A tuple of XY cordnates, longitude first, then latitude second
+    :fill_method (str, optional): fills the missing data based pandas fillna method arguments may be bfill, ffill defaults to ffill
+    :keyword timeout specifies the waiting time
+    :keyword wait: the time in secods to try for every retry in case of network errors
+    returns a complete path to the new met file but also write the met file to the disk in the working directory
+
+    Example:
+      # Assuming the function is imported as :
+          >>> from apsimNGpy.manager.weathermanager import get_met_from_day_met
+          >>> wf = get_met_from_day_met(lonlat=(-93.04, 42.01247),
+              >>> start=2000, end=2020,timeout = 30, wait =2, retry_number=3, filename='daymet.met')
+
+    Cleanup:  A bolean True or False default is true: deletes the excel file generated during the file write up
+
+    ------------
+    returns complete path to the new met file but also write the met file to the disk in the working directory
+    """
     # import pdb
     # pdb.set_trace()
 
-    datecheck = daterange(start, end)
+    datecheck = date_range(start, end)
     if start < 1980 or end > 2021:
         print(
-            "requested year preceeds valid data range! \n end years should not exceed 2021 and start year should not be less than 1980")
+            "requested year preceeds valid data range! \n end years should not exceed 2021 and start year should not "
+            "be less than 1980")
     else:
         base_url = 'https://daymet.ornl.gov/single-pixel/api/data?'
-        latstr = 'lat=' + str(lonlat[1])
-        lonstr = '&lon=' + str(lonlat[0])
-        varss = ['dayl', 'prcp', 'srad', 'tmax', 'tmin', 'vp', 'swe']
-        setyears = [str(year) for year in range(start, end + 1)]
+        lat_str, lon_str = 'lat=' + str(lonlat[1]), '&lon=' + str(lonlat[0])
+
+        var_headers = ['dayl', 'prcp', 'srad', 'tmax', 'tmin', 'vp', 'swe']
+        years_in_range = ",".join([str(year) for year in full_date_range.year.unique()])
         # join the years as a string
-        years_in_range = ",".join(setyears)
-        years_str = "&years=" + years_in_range
-        varfield = ",".join(varss)
-        var_str = "&measuredParams=" + varfield
+        years_str, var_field = "&years=" + years_in_range,  ",".join(var_headers)
+
+        var_str = "&measuredParams=" + var_field
         # join the string url together
-        url = base_url + latstr + lonstr + var_str + years_str
-        conn = requests.get(url, timeout=60)
+        url = base_url + lat_str + lon_str + var_str + years_str
 
         if not conn.ok:
             print("failed to connect to server")
         elif conn.ok:
             # print("connection established to download the following data", url)
             # outFname = conn.headers["Content-Disposition"].split("=")[-1]
-            outFname = conn.headers["Content-Disposition"].split("=")[-1]
+            outFname = "w" + filename + conn.headers["Content-Disposition"].split("=")[-1]
             text_str = conn.content
-            outF = open(outFname, 'wb')
-            outF.write(text_str)
-            outF.close()
             conn.close()
-            #       read the downloaded data to a data frame
-            dmett = pd.read_csv(outFname, delimiter=',', skiprows=7)
+            #  read the downloaded data to a data frame
+            # Create an in-memory binary stream
+            text_stream = io.BytesIO(text_str)
+            # Read the data into a DataFrame
+            dmett = pd.read_csv(text_stream, delimiter=',', skiprows=7)
+            # dmett = pd.read_csv(outFname, delimiter=',', skiprows=7)
             vp = dmett['vp (Pa)'] * 0.01
             # calcuate radn
             radn = dmett['dayl (s)'] * dmett['srad (W/m^2)'] * 1e-06
@@ -293,7 +392,7 @@ def day_met_by_location(lonlat, start, end, cleanup=True, filename=None):
                 if (all(i.year % 400 == 0)) and (all(i.year % 100 == 0)) or (all(i.year % 4 == 0)) and (
                         all(i.year % 100 != 0)):
                     x = i[['year', 'radn', 'maxt', 'mint', 'rain', 'vp', 'swe', ]].mean()
-                    year = round(x.iloc[0], 0)
+                    year = round(x[0], 0)
                     day = round(366, 0)
                     new_row = pd.DataFrame(
                         {'year': [year], 'day': [day], 'radn': [0], 'maxt': [0], 'mint': [0], 'rain': [0], 'vp': [0],
@@ -307,7 +406,7 @@ def day_met_by_location(lonlat, start, end, cleanup=True, filename=None):
             newmet = pd.concat(frames)
             newmet.index = range(0, len(newmet))
             # repalce radn data
-            rad = get_nasarad(lonlat, start, end)
+            rad = get_nasa_rad(lonlat, start, end)
             newmet["radn"] = rad.ALLSKY_SFC_SW_DWN.values
             if len(newmet) != len(datecheck):
                 print('date discontinuities still exisists')
@@ -346,87 +445,18 @@ def day_met_by_location(lonlat, start, end, cleanup=True, filename=None):
                         current_str = " ".join(current_row) + '\n'
                         data_rows.append(current_str)
 
-                    f2app.writelines(data_rows)
-
-                if cleanup:
-                    if os.path.isfile(os.path.join(os.getcwd(), outFname)):
-                        os.remove(os.path.join(os.getcwd(), outFname))
-                return fname  # fname
-
-
-def get_met_from_day_met(lonlat: Union[tuple, list, np.ndarray], start: int,
-                         end: int, filename: str = None,
-                         retry_number: int = 1, **kwa: None) -> str:
-    """collect weather from daymet solar radiation is replaced with that of nasapower API
-    ------------
-    parameters
-    ---------------:
-
-    retry_number (int): retry number of times in case of network errors
-    :filename. met file name to save on disk
-    start: Starting year of the met data
-    end: Ending year of the met data
-    lonlat (tuple, list, array): A tuple of XY cordnates, longitude first, then latitude second
-    :keyword timeout specifies the waiting time
-    :keyword wait: the time in secods to try for every retry in case of network errors
-    returns a complete path to the new met file but also write the met file to the disk in the working directory
-
-    Example:
-      # Assuming the function is imported as :
-          >>> from apsimNGpy.manager.weathermanager import get_met_from_day_met
-          >>> wf = get_met_from_day_met(lonlat=(-93.04, 42.01247),
-              >>> start=2000, end=2020,timeout = 30, wait =2, retry_number=3, filename='daymet.met')
-
-    """
-    # import pdb
-    # pdb.set_trace()
-
-    check_date_range = daterange(start, end)
-    if start < 1980 or end > 2021:
-        print("requested year preceeds valid data range! \n"
-              " end years should not exceed 2021 and start year should not be less than 1980")
-    else:
-        base_url = 'https://daymet.ornl.gov/single-pixel/api/data?'
-        lat_str = 'lat=' + str(lonlat[1])
-        lon_str = '&lon=' + str(lonlat[0])
-        var_headers = ['dayl', 'prcp', 'srad', 'tmax', 'tmin', 'vp', 'swe']
-        set_years = [str(year) for year in range(start, end + 1)]
-        # join the years as a string
-        years_in_range = ",".join(set_years)
-        years_str = "&years=" + years_in_range
-        var_field = ",".join(var_headers)
-        var_str = "&measuredParams=" + var_field
-        # join the string url together
-        url = base_url + lat_str + lon_str + var_str + years_str
-
-        def connect():
-            """
-            just to allow users enter number retries and reduce overhead incase no retry is needed
-            Returns
-            -------
-
-            """
-            try:
-                _conn = requests.get(url, timeout=kwa.get('timeout', 50))
-                return _conn
-            # We want to retry only if the network exceptions defined above occur not value errors or type errors and
-            # so forth
-            except NETWORK_EXCEPTIONS:
-                raise
-
         if retry_number:
             # Apply the retry decorator to the connect function
             connect_with_retry = retry(wait=wait_fixed(kwa.get('wait', 0.5)),
                                        stop=stop_after_attempt(retry_number),
                                        )(connect)
+
             connector = connect_with_retry()
         else:
             connector = connect()
 
-        out_file_name = "w" + filename + connector.headers["Content-Disposition"].split("=")[-1]
         text_str = connector.content
         connector.close()
-        #  read the downloaded data to a data frame
         # Create an in-memory binary stream
         text_stream = io.BytesIO(text_str)
         # Read the data into a DataFrame
@@ -435,98 +465,200 @@ def get_met_from_day_met(lonlat: Union[tuple, list, np.ndarray], start: int,
         # calculate radiation
         radiation = day_met_read['dayl (s)'] * day_met_read['srad (W/m^2)'] * 1e-06
         # re-arrange data frame
-        year = np.array(day_met_read['year'])
-        day = np.array(day_met_read['yday'])
-        radiation = np.array(radiation)
-        max_temp = np.array(day_met_read['tmax (deg c)'])
-        mint = np.array(day_met_read['tmin (deg c)'])
-        rain = np.array(day_met_read['prcp (mm/day)'])
-        vp = np.array(vp)
-        swe = np.array(day_met_read['swe (kg/m^2)'])
-        _data_frame = pd.DataFrame(
-            {'year': year, 'day': day, 'radn': radiation, 'maxt': max_temp, 'mint': mint, 'rain': rain, 'vp': vp,
-             'swe': swe})
-        # bind the frame
-        # calculate mean annual amplitude in mean monthly temperature (TAV)
-        ab = [a for a in set_years]
-        # split the data frame
-        ab = [x for _, x in _data_frame.groupby(_data_frame['year'])]
-        df_bag = []
-        # constants to evaluate the leap years
-        leap_factor = 4
-        for i in ab:
-            if (all(i.year % 400 == 0)) and (all(i.year % 100 == 0)) or (all(i.year % 4 == 0)) and (
-                    all(i.year % 100 != 0)):
-                x = i[['year', 'radn', 'maxt', 'mint', 'rain', 'vp', 'swe', ]].mean()
-                year = round(x.iloc[0], 0)
-                day = round(366, 0)
-                new_row = pd.DataFrame(
-                    {'year': [year], 'day': [day], 'radn': [0], 'maxt': [0], 'mint': [0], 'rain': [0], 'vp': [0],
-                     'swe': [0]})
-                df_bag.append(pd.concat([i, new_row], ignore_index=True))
+        flip_cat = {
+            'year': 'year',
+            'yday': 'day',
+            'dayl (s)': 'radn',
+            'tmax (deg c)': 'maxt',
+            'tmin (deg c)': 'mint',
+            'prcp (mm/day)': 'rain',
+            'vp (Pa)': 'vp',
+            'swe (kg/m^2)': 'swe'
+        }
+        df = day_met_read.rename(columns=flip_cat)
+        df['radn'] = radiation
+        df['vp'] = vp
+        df.drop('srad (W/m^2)', axis=1, inplace=True)
+        COLUMNs = ['year', 'day', 'radn', 'maxt', 'mint', 'rain', 'swe', 'vp']
+        _data_frame = df[COLUMNs].copy()
 
-                continue
-            else:
-                df_bag.append(i)
-                frames = df_bag
-        new_met = pd.concat(frames)
-        new_met.index = range(0, len(new_met))
+        _data_frame['Date'] = pd.to_datetime(_data_frame.year.astype(str) + _data_frame.day.astype(str), format='%Y%j')
+        data_to = _data_frame.set_index('Date')
+        # now reindex according to the date range
+        new_met = data_to.reindex(full_date_range, columns=COLUMNs)
+        # replacements for year and data
+        new_met['year'] = full_date_range.year.astype(int)
+        new_met['day'] = full_date_range.dayofyear.astype('int')
+        # Now reindexing does not change NAs that were already there, even if we pass a fill method to it,
+        # so we need to change them here at once
+        new_met = getattr(new_met, fill_method)()
         # replace radiation data
         rad = get_nasarad(lonlat, start, end)
         new_met["radn"] = rad.ALLSKY_SFC_SW_DWN.values
-        if len(new_met) != len(check_date_range):
-            print('date discontinuities still exists')
-        else:
-            rg = len(new_met.day.values) + 1
-            mean_max_temp = new_met['maxt'].mean(skipna=True, numeric_only=None)
-            mean_mint = new_met['mint'].mean(skipna=True, numeric_only=None)
-            AMP = round(mean_max_temp - mean_mint, 2)
-            tav = round(statistics.mean((mean_max_temp, mean_mint)), 2)
-            tile = connector.headers["Content-Disposition"].split("=")[1].split("_")[0]
-            fn = connector.headers["Content-Disposition"].split("=")[1].replace("csv", 'met')
-            if not filename:
-                short_file_name = generate_unique_name("Daymet") + '.met'
+        mean_max_temp = new_met['maxt'].mean(skipna=True, numeric_only=None)
+        mean_mint = new_met['mint'].mean(skipna=True, numeric_only=None)
+        AMP = round(mean_max_temp - mean_mint, 2)
+        tav = round(statistics.mean((mean_max_temp, mean_mint)), 2)
+        tile = connector.headers["Content-Disposition"].split("=")[1].split("_")[0]
+        short_file_name = filename or "Daymet" + '.met'
+        if not os.path.exists('weatherdata'):
+            os.makedirs('weatherdata')
+        file_name_path = os.path.join('weatherdata', short_file_name)
+        headers = ['year', 'day', 'radn', 'maxt', 'mint', 'rain', 'vp', 'swe']
+        header_string = " ".join(headers) + "\n"
+        # close and append new lines
+        with open(file_name_path, "a") as f2app:
+            f2app.writelines([f'!site: {tile}\n', f'latitude = {lonlat[1]} \n', f'longitude = {lonlat[0]}\n',
+                              f'tav ={tav}\n', f'amp ={AMP}\n'])
+            f2app.writelines([header_string])
+            f2app.writelines(['() () (MJ/m2/day) (oC) (oC) (mm) (hPa) (kg/m2)\n'])
+            # append the weather data
+            data_rows = new_met.apply(lambda row: " ".join([str(row[header]) for header in headers]) + '\n', axis=1)
+            # Write all rows to the file at once
+            f2app.writelines(data_rows)
+        # we need a clean up
+        del new_met, _data_frame, headers, mean_max_temp, data_to, text_str, radiation, years_in_range, text_stream
+        return file_name_path
+
+
+class EditMet:
+    """
+    This class edits the weather files
+    """
+
+    def __init__(self, weather, skip=5, index_drop=0, separator=' '):
+        self.skip = skip
+        self.index_drop = index_drop
+        self.seperator = separator
+        self.weather = weather
+
+    def _edit_apsim_met(self):
+        """
+        converts the weather file into a pandas dataframe by removing specified rows.
+        It is easier to edit  a pandas data frame than a text file
+
+        Returns:
+        - pandas.DataFrame: A DataFrame containing the modified APSIM weather data.
+
+        Example:
+        """
+        try:
+            with open(self.weather, "r+") as f:
+                string = f.read()
+                data = pd.read_table(StringIO(string), sep=f"{self.seperator}", skiprows=self.skip)
+                row_index = self.index_drop
+                df = data.drop(row_index).reset_index()
+                return df
+        except Exception as e:
+            print(repr(e))
+
+    def write_edited_met(self, old, daf, filename="edited_met.met"):
+        """
+        Write an edited APSIM weather file using an existing file as a template.
+
+        This function takes an existing APSIM weather file ('old'), replaces specific data rows with data from a DataFrame ('daf'),
+        and writes the modified data to a new weather file ('filename').
+
+        Args:
+        - old (str): The path to the existing APSIM weather file used as a template.
+        - daf (pandas.DataFrame): A DataFrame containing the edited weather data to be inserted.
+        - filename (str, optional): The name of the new weather file to be created. Default is 'edited_met.met'.
+
+        Returns:
+        - str: The path to the newly created APSIM weather file.
+
+        Example:
+        ```python
+        from your_module import write_edited_met
+
+        # Specify the paths to the existing weather file and the edited data DataFrame
+        existing_weather_file = "original_met.met"
+        edited_data = pd.DataFrame(...)  # Replace with your edited data
+
+        # Call the write_edited_met function to create a new weather file with edited data
+        new_weather_file = write_edited_met(existing_weather_file, edited_data)
+
+        # Use the new_weather_file path for further purposes
+        ```
+
+        Notes:
+        - This function reads the existing APSIM weather file, identifies the location to insert the edited data,
+          and then creates a new weather file containing the combined data.
+        - The edited data is expected to be in the 'daf' DataFrame with specific columns ('year', 'day', 'radn', 'maxt', 'mint', 'rain', 'vp', 'swe').
+        - The 'filename' parameter specifies the name of the new weather file to be created.
+        - The function returns the path to the newly created weather file.
+
+        """
+        if not filename.endswith('.met'):
+            raise NameError("file name should have  .met extension")
+        existing_lines = []
+        with open(old, 'r+') as file:
+            for i, line in enumerate(file):
+                existing_lines.append(line)
+                if 'MJ' in line and 'mm' in line and 'day in line':
+                    print(line)
+                    break
+
+        # Iterate through the edited DataFrame 'daf' and construct new data rows
+        headers = ['year', 'day', 'radn', 'maxt', 'mint', 'rain', 'vp', 'swe']
+        for index, row in daf.iterrows():
+            current_row = []
+            for header in headers:
+                current_row.append(str(row[header]))
+            current_str = " ".join(current_row) + '\n'
+            existing_lines.append(current_str)
+
+        fname = os.path.join(os.path.dirname(old), filename)
+
+        # Remove the file if it already exists
+        if os.path.exists(fname):
+            os.remove(fname)
+
+        # Write the edited data to the new weather file
+        with open(fname, "a") as df_2met:
+            df_2met.writelines(existing_lines)
+
+        return fname
+
+    def _read_line_from_file(self, line_number):
+        with open(self.weather, 'r') as file:
+            lines = file.readlines()
+            if 0 <= line_number < len(lines):
+                return lines[line_number]
             else:
-                short_file_name = filename
-            if not os.path.exists('weatherdata'):
-                os.makedirs('weatherdata')
-            fn = short_file_name
-            file_name_path = os.path.join('weatherdata', fn)
-            headers = ['year', 'day', 'radn', 'maxt', 'mint', 'rain', 'vp', 'swe']
-            header_string = " ".join(headers) + "\n"
-            # close and append new lines
-            with open(file_name_path, "a") as f2app:
-                f2app.writelines([f'!site: {tile}\n', f'latitude = {lonlat[1]} \n', f'longitude = {lonlat[0]}\n',
-                                  f'tav ={tav}\n', f'amp ={AMP}\n'])
-                f2app.writelines([header_string])
-                f2app.writelines(['() () (MJ/m2/day) (oC) (oC) (mm) (hPa) (kg/m2)\n'])
-                # append the weather data
-                data_rows = []
-                for index, row in new_met.iterrows():
-                    current_row = []
-                    for header in headers:
-                        current_row.append(str(row[header]))
-                    current_str = " ".join(current_row) + '\n'
-                    data_rows.append(current_str)
+                raise IndexError(f"Line number {line_number} is out of range.")
 
-                f2app.writelines(data_rows)
+    def met_replace_var(self, parameter, values):
+        """
+        in case we want to change some columns or rows in the APSIM met file
+        this function replace specific data in the APSIM weather file with new values.
 
-            if os.path.isfile(os.path.join(os.getcwd(), out_file_name)):
-                os.remove(os.path.join(os.getcwd(), out_file_name))
-            return file_name_path  # fname
+        This method allows for the replacement of specific columns or rows in the APSIM weather file by providing a
+        'parameter' (column name) and a list of 'values' to replace the existing data.
 
+        Args:
+        - parameter (str): The name of the column (parameter) to be replaced.
+        - values (list, array or pandas series):  values to replace the existing data in the specified column.
 
-# download weather data from nasa power
-def get_nasa(lonlat, start, end):
-    lon = lonlat[0]
-    lat = lonlat[1]
-    param = ["T2M_MAX", "T2M_MIN", "ALLSKY_SFC_SW_DWN", "PRECTOTCORR", "RH2M", "WS2M"]
-    pars = ",".join(param)
-    rm = f'https://power.larc.nasa.gov/api/temporal/daily/point?start={start}0101&end={end}1231&latitude={lat}&longitude={lon}&community=ag&parameters={pars}&format=json&user=richard&header=true&time-standard=lst'
-    data = requests.get(rm)
-    dt = json.loads(data.content)
-    df = pd.DataFrame(dt["properties"]['parameter'])
-    return df
+        Returns:
+        - str: The path to the newly created APSIM weather file with the replaced data.
+
+        """
+        df = self._edit_apsim_met()
+        if len(df[parameter]) != len(values):
+            raise ValueError("number of rows must be equal")
+        if parameter not in df.columns:
+            raise ValueError("column name not found")
+        df['parameter'] = list(values)
+        fname = os.path.join(os.path.dirname(self.weather), "edited_" + os.path.basename(self.weather))
+        return self.write_edited_met(old=self.weather, daf=df, filename=fname)
+
+    def check_met(self):
+        df = self._edit_apsim_met()
+        rain = np.array(df['rain'])
+        ch = np.any(rain <= 0)
+        if True in ch:
+            print(f'the met file has some negative values {ch}')
 
 
 def calculate_tav_amp(df):
@@ -537,15 +669,15 @@ def calculate_tav_amp(df):
     return tav, AMP
 
 
-def create_met_header(fname, lonlat, tav, AMP, site=None):
+def create_met_header(met_file_name, lonlat, tav, AMP, site=None):
     if not site:
         site = 'Not stated'
-    if os.path.isfile(fname):
-        os.remove(fname)
+    if os.path.isfile(met_file_name):
+        os.remove(met_file_name)
     headers = ['year', 'day', 'radn', 'maxt', 'mint', 'rain']
     header_string = " ".join(headers) + "\n"
     # close and append new lines
-    with open(fname, "a") as f2app:
+    with open(met_file_name, "a") as f2app:
         f2app.writelines(
             [f'!site: {site}\n', f'latitude = {lonlat[1]} \n', f'longitude = {lonlat[0]}\n', f'tav ={tav}\n',
              f'amp ={AMP}\n'])
@@ -701,12 +833,40 @@ def get_weather(lonlat, start=1990, end=2000, source='daymet', filename='__met_.
         raise ValueError(
             f"Invalid source: {source} according to supplied {lonlat} lon_lat values try 'nasa' instead")
 
+    def met_replace_var(self, parameter, values):
+        """
+        in case we want to change some columns or rows in the APSIM met file
+        this function replace specific data in the APSIM weather file with new values.
+
+        This method allows for the replacement of specific columns or rows in the APSIM weather file by providing a
+        'parameter' (column name) and a list of 'values' to replace the existing data.
+
+        Args:
+        - parameter (str): The name of the column (parameter) to be replaced.
+        - values (list, array or pandas series):  values to replace the existing data in the specified column.
+
+        Returns:
+        - str: The path to the newly created APSIM weather file with the replaced data.
+
+        """
+        df = self._edit_apsim_met()
+        if len(df[parameter]) != len(values):
+            raise ValueError("number of rows must be equal")
+        if parameter not in df.columns:
+            raise ValueError("column name not found")
+        df['parameter'] = list(values)
+        fname = os.path.join(os.path.dirname(self.weather), "edited_" + os.path.basename(self.weather))
+        return self.write_edited_met(old=self.weather, daf=df, filename=fname)
+
 
 def read_apsim_met(met_path, skip=5, index_drop=0, separator=' '):
     try:
-        data = pd.read_csv(met_path, skiprows=skip, delim_whitespace=True)
-        return data.drop(0)
-
+        with open(met_path, "r+") as f:
+            string = f.read()
+            data = pd.read_csv(StringIO(string), sep=f"{separator}", skiprows=skip)
+            row_index = index_drop
+            df = data.drop(row_index).reset_index()
+            return df
     except Exception as e:
         print(repr(e))
 
@@ -735,6 +895,7 @@ def write_edited_met(old: Union[str, Path], daf: pd.DataFrame, filename: str = "
                 break
     # iterate through the edited data frame met
     headers = daf.columns.to_list()
+    # headers = ['year', 'day', 'radn', 'maxt', 'mint', 'rain', 'vp', 'swe']
     for index, row in daf.iterrows():
         current_row = []
         for header in headers:
@@ -874,7 +1035,7 @@ def validate_met(met):
     if not maxt_high.empty:
         print("max temp is too high")
         print(maxt_high)
-    if len(daterange(met.year.min(), met.year.max())) != len(met):
+    if len(date_range(met.year.min(), met.year.max())) != len(met):
         warnings.warn('daterange is not standard')
     else:
         print('daterange matched expected')
@@ -912,7 +1073,7 @@ def impute_missing_leaps(dmet, fill=0):
     dmett['datee'] = pd.to_datetime(datee)
     dmett.set_index('datee', inplace=True)
     indexDate = pd.date_range(start=dmett.index.min(), end=dmett.index.max(), freq='D')
-    check = daterange(dmett.year.min(), dmett.year.max())
+    check = date_range(dmett.year.min(), dmett.year.max())
     # Reindex the DataFrame to include all dates in the range
     df_daily = dmett.reindex(check)
     df_fill = df_daily.fillna(fill).copy(deep=True)
@@ -923,16 +1084,43 @@ def impute_missing_leaps(dmet, fill=0):
     return df_fill
 
 
-if __name__ == '__main__':
-    # imputed_df = impute_data(df, method="approx", verbose=True, copy=True)
-    kampala = 35.582520, 0.347596
-    df = get_nasa_data(kampala, 2000, 2020)
-    # imputed_df = impute_data(df, method="mean", verbose=True, copy=True)
-    hf = get_met_nasa_power(kampala, end=2020, fname='kampala_new.met')
-    wf = get_weather(kampala, start=1990, end=2020, source='nasa', filename='kampala_new.met')
-    import time
+# dowload weather data from nasapower
+def getnasa(lonlat, start, end):
+    lon = lonlat[0]
+    lat = lonlat[1]
+    param = ["T2M_MAX", "T2M_MIN", "ALLSKY_SFC_SW_DWN", "PRECTOTCORR", "RH2M", "WS2M"]
+    pars = ",".join(param)
+    rm = f'https://power.larc.nasa.gov/api/temporal/daily/point?start={start}0101&end={end}1231&latitude={lat}&longitude={lon}&community=ag&parameters={pars}&format=json&user=richard&header=true&time-standard=lst'
+    data = requests.get(rm)
+    dt = json.loads(data.content)
+    df = pd.DataFrame(dt["properties"]['parameter'])
+    return df
 
+
+if __name__ == '__main__':
+    from pathlib import Path
+
+    p = Path.cwd().glob("*.met")
+    [os.remove(i) for i in p]
+    os.chdir(Path.home())
+    import cProfile
+
+    profiler = cProfile.Profile()
+    profiler.enable()
+    Name = "dumu.met"
+    if os.path.exists(Name):
+        os.remove(Name)
+    profiler.disable()
+    # profiler.print_stats(sort='time')
     a = time.perf_counter()
-    get_met_from_day_met(lonlat=(-93.04, 42.01247), start=2000, end=2020, filename='daymet.met')
+    xp = get_met_from_day_met(lonlat=(-93.50456, 42.601247), start=1989, end=2001, filename=Name, retry_number=3)
+
     b = time.perf_counter()
     print(b - a)
+    from apsimNGpy.core.base_data import load_default_simulations
+
+    model = load_default_simulations(crop='maize')
+    # model.path = 'clone.apsimx'
+
+    model.replace_met_file(weather_file=xp)
+    model.run()

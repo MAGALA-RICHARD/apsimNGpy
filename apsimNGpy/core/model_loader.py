@@ -3,7 +3,7 @@ This module offers a procedural alternative other than object-oriented approach 
 """
 import os
 from functools import singledispatch
-from apsimNGpy.core.pythonet_config import LoadPythonnet
+from typing import Union
 # now we can safely import C# libraries
 from System.Collections.Generic import *
 from System import *
@@ -12,6 +12,7 @@ from Models.Climate import Weather
 from Models.Soils import Soil, Physical, SoilCrop, Organic
 import Models
 from Models.PMF import Cultivar
+from dataclasses import dataclass
 from apsimNGpy.core.apsim_file import XFile as load_model
 import json
 from os.path import (dirname, realpath, isfile)
@@ -19,6 +20,25 @@ from os import chdir
 from pathlib import Path
 import shutil
 from collections import namedtuple
+
+
+@dataclass
+class ModelMetaData:
+    """
+    This data class defines the meta info to be passed to the load_apx_model and to be used in the APSIMNG class in the core module
+    datastore: defines the path to the database store of the apsim module. Note this is the naming used
+    within the apsimNG in C#. We decide to keep the convention, rfr'g to datastore vs Datastore.
+    Datastore: is the same as the datastore but it points to the in memory datastore of the aPSim model
+    IModel: is the model.core.simulation in memory model
+    met_path: defines the path to the met file of the aPSim model
+    results: associated results from the simulation if any
+    """
+    datastore: Union[str, Path]
+    DataStore: str
+    IModel: Models.Core.Simulations
+    path: Union[str, Path]
+    met_path: Union[str, Path]
+    results: str = ''
 
 
 def load_from_dict(dict_data, out):
@@ -84,11 +104,14 @@ def load_apx_model(model=None, out=None, file_load_method='string', met_file=Non
     out1 = realpath(out) if out is not None else None
     out3 = realpath('ngpy_model.apsimx')
     _out = out1 or out2 or out3
-    Model_data = namedtuple('model_data',
-                            ['IModel', 'path', 'datastore', "DataStore", 'results', 'met_path'])
+
+    # Model_data = namedtuple('model_data',
+    #                        ['IModel', 'path', 'datastore', "DataStore", 'results', 'met_path'])
 
     @singledispatch
     def loader(_model):
+        # TODO this single dispatch is hiding implementation.
+        #  You can achieve this with conditional statements. compress 35 lines into 15 or less.
         # this will raise not implemented error if the _model is not a dict, str, None, Models.Core.Simulation,
         # or a pathlib path object
         raise NotImplementedError(f"Unsupported type: {type(_model)}")
@@ -130,8 +153,9 @@ def load_apx_model(model=None, out=None, file_load_method='string', met_file=Non
         _Model = Model
     datastore = _Model.FindChild[Models.Storage.DataStore]().FileName
     DataStore = _Model.FindChild[Models.Storage.DataStore]()
-    return Model_data(IModel=_Model, path=_out, datastore=datastore, DataStore=DataStore, results=None,
-                      met_path=met_file)
+    return ModelMetaData(
+        IModel=_Model, path=_out, datastore=datastore, DataStore=DataStore, results=None,
+        met_path=met_file)
 
 
 def save_model_to_file(_model, out=None):
@@ -159,19 +183,19 @@ def save_model_to_file(_model, out=None):
 
 
 def recompile(_model, out=None, met_path=None):
-    """ recompile without saving to disk useful for recombiling the same model on the go after updating management scripts
+    """
+    recompile without saving to disk useful for recombiling the same model on the go after
+    updating management scripts
 
-            Parameters
-            ----------
-            out : str, optional path to save the model to
-
-                :param met_path: path to met file
-                :param out: out path name for database reconfiguration
-                :param _model:APSIM Models.Core.Simulations object
-                returns named tuple with a recompiled model
-            """
+    Parameters
+    ----------
+    :out : str, optional path to save the model to
+    :param met_path: path to met file
+    :param out: out path name for database reconfiguration
+    :param _model:APSIM Models.Core.Simulations object
+    returns named tuple with a recompiled model
+    """
     # Determine the output path
-
     final_out_path = out or _model.FileName
 
     # Serialize the model to JSON string
@@ -187,10 +211,12 @@ def recompile(_model, out=None, met_path=None):
     datastore = _Model.FindChild[Models.Storage.DataStore]().FileName
     DataStore = _Model.FindChild[Models.Storage.DataStore]()
     # need to make ModelData a constant and named outside the script for consistency across scripts
-    ModelData = namedtuple('model_data', ['IModel', 'path', 'datastore', "DataStore", 'results', 'met_path'])
-    return ModelData(IModel=_Model, path=final_out_path, datastore=datastore, DataStore=DataStore,
-                     results=None,
-                     met_path=met_path)
+    # Yes, I agree with the above assessment. Ideally in core, where you define a model
+    # TODO this is probably a good use case for data class. But also need to change name.
+    # Even when using different cases, two variables cant be given the same name: datastore/DataStore
+    return ModelMetaData(
+        IModel=_Model, path=final_out_path, datastore=datastore, DataStore=DataStore, results=None,
+        met_path=met_path)
 
 
 if __name__ == '__main__':

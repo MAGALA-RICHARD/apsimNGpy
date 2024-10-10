@@ -1,5 +1,4 @@
 
-
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
@@ -16,6 +15,7 @@ import math
 NCORE= math.ceil(cpu_count() / 2)
 n = 100  # Length of data series
 
+# TODO I don't understand this module exists. The name glue needs to be done nicely.
 # For the independent variable, x, we will choose n values equally spaced
 # between 0 and 10
 x = np.linspace(0, 10, n)

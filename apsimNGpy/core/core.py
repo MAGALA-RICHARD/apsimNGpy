@@ -4,49 +4,102 @@ author: Richard Magala
 email: magalarich20@gmail.com
 
 """
-
-from functools import singledispatch
-import matplotlib.pyplot as plt
-import random, logging, pathlib
-import string
-from typing import Union
-import os, sys, datetime, shutil
-import numpy as np
-import pandas as pd
-from os.path import join as opj
-import sqlite3
-import json
-from pathlib import Path
-import threading
-import time
+from apsimNGpy import config
+import logging
+import Models
+from dataclasses import replace
 import datetime
-import apsimNGpy.manager.weathermanager as weather
-from functools import cache
-# prepare for the C# import
-from apsimNGpy.core.pythonet_config import LoadPythonnet
-from apsimNGpy.utililies.database_utils import read_db_table, get_db_table_names
+import json
+import numpy as np
+import os
+import pandas as pd
+import pathlib
+import shutil
 import warnings
-from apsimNGpy.utililies.utils import timer
-# py_config = LoadPythonnet()()  # double brackets avoids calling it twice
-
+from Models.Climate import Weather
+from Models.Core import Simulations, ScriptCompiler, Simulation
+from Models.Soils import Soil, Physical, SoilCrop, Organic
+from System import *
 # now we can safely import C# libraries
 from System.Collections.Generic import *
-from Models.Core import Simulations, ScriptCompiler, Simulation
-from System import *
-from Models.Core.ApsimFile import FileFormat
-from Models.Climate import Weather
-from Models.Soils import Soil, Physical, SoilCrop, Organic, Solute, Chemical
+from functools import cache
+from functools import singledispatch
+from os.path import join as opj
+from pathlib import Path
+from typing import Union
 
-import Models
-from Models.PMF import Cultivar
-from apsimNGpy.core.apsim_file import XFile as load_model
+import apsimNGpy.manager.weathermanager as weather
 from apsimNGpy.core.model_loader import (load_apx_model, save_model_to_file, recompile)
-from apsimNGpy.utililies.utils import timer
-from apsimNGpy.core.runner import run_model
-import ast
+# prepare for the C# import
+from apsimNGpy.utililies.database_utils import get_db_table_names
+from apsimNGpy.utililies.utils import timer, generate_unique_name
 
 
-# from settings import * This file is not ready and i wanted to do some test
+logger = logging.getLogger(__name__)
+
+
+def _run_sim(simulation_model, DataStore, sql_db, read_result: bool = True, multithread: bool = True):
+    """
+    This is an internal method that is only called from inside.
+    This is not part of the API. It runs
+    simulation_model: Simulation; The simulation or simulations to run.
+    data_store:an sql database where the simulation data will be stored and read from. Note that
+    this value is dependent on the simulation itself. We are passing it here as a variable, because this function
+    does not have the mandate to load the simulation and is therefore unaware of the data_store.
+    read_result: bool, defaults to True. At the end of the simulation read the result from the data store.
+    multithread: bool, defaults to True, runs the simulation using the either single core and multiple cores.
+    clean_up: bool: to be determined.
+    """
+    run_type_enum = Models.Core.Run.Runner.RunTypeEnum
+    run_type = run_type_enum.MultiThreaded if multithread else run_type_enum.SingleThreaded
+
+    try:
+        DataStore.Dispose()  # start by cleaning the datastore
+        DataStore.Open()
+
+        model_to_run = Models.Core.Run.Runner(simulation_model, True, False, False, None, run_type)
+        _sim_errors = model_to_run.Run()
+    except Exception as e:  # we dont know which exceptions
+        logger.exception(repr(e))
+        raise
+    else:
+        if len(_sim_errors) > 0:  # this function is not doing much.
+            for error in _sim_errors:
+                msg = error.ToString()
+                logger.debug(msg)
+                print(msg)
+        if read_result:
+            """When read result is false"""
+            from apsimNGpy.utililies.database_utils import read_simulation_results
+            return read_simulation_results(sql_db)
+    finally:
+        DataStore.Close()
+
+
+def run_simulation(model_meta_data, results: bool = False):
+    """
+    Run a simulation. This function is the center of this code,
+    It will be the only place were we call Models.Core.Run.Runner.
+
+    :param results (bool) for return results
+    :param model_meta_data: Data about the model >> see model_loader
+    :return: a named tuple objects populated with the results if results is True
+    """
+    try:
+        IModel, data_store = model_meta_data.IModel, model_meta_data.DataStore
+        sql_db = model_meta_data.datastore
+        return _run_sim(IModel, data_store, sql_db, read_result=results)
+    except Exception as e:
+        print(f"{type(e)} has occured::::")
+        logger.info(f"apsimNGpy had issues running file {model_meta_data.path} : because of {repr(e)}")
+        raise
+
+
+def run_simulation_from_path(path: str):
+    """Runs a simulation from a bare path."""
+    from .model_loader import load_apx_model
+    model_meta_data = load_apx_model(path)
+    return run_simulation(model_meta_data)
 
 
 def replace_variable_by_index(old_list: list, new_value: list, indices: list):
@@ -67,7 +120,6 @@ def soil_components(component):
 
 
 class APSIMNG:
-    """Modify and run APSIM next generation simulation models."""
 
     def __init__(self, model=None, out_path=None, out=None, **kwargs):
 
@@ -75,7 +127,7 @@ class APSIMNG:
         if kwargs.get('copy'):
             warnings.warn(
                 'copy argument is deprecated, it is now mandatory to copy the model in order to conserve the original '
-                'model.')
+                'model.', UserWarning)
         """
             Parameters
             ----------
@@ -86,7 +138,8 @@ class APSIMNG:
             out_path : str, optional
                 Path of the modified simulation; if None, it will be set automatically.
             read_from_string : bool, optional
-                If True, file is uploaded to memory through json module (preferred); otherwise, we read from file.
+                If True, file is uploaded to memory through json module (preferred);
+                 otherwise, we read from file.
             """
         out_path = out_path if isinstance(out_path, str) or isinstance(out_path, Path) else None
         self.copy = kwargs.get('copy')  # Mandatory to conserve the original file
@@ -117,13 +170,14 @@ class APSIMNG:
         returns results if results is True else None
         """
         self.check_model()
-        self.model_info = self.model_info._replace(IModel=self.Simulations)
-        resu = run_model(self.model_info, results=results, clean_up=clean_up)
+        simulation_result = run_simulation(self.model_info, results=results)
 
         if reports:
-            return [resu[repo] for repo in reports] if isinstance(reports, (list, tuple, set)) else resu[reports]
+            return [
+                simulation_result[report] for report in reports] \
+                if isinstance(reports, (list, tuple, set)) else simulation_result[reports]
         else:
-            return resu
+            return simulation_result
 
     @property
     def simulation_object(self):
@@ -160,7 +214,7 @@ class APSIMNG:
     def check_model(self):
         if isinstance(self.Simulations, Models.Core.ApsimFile.ConverterReturnType):
             self.Simulations = self.Simulations.get_NewModel()
-            self.model_info = self.model_info._replace(IModel=self.Simulations)
+            self.model_info = replace(self.model_info, IModel=self.Simulations)
         return self
 
     @staticmethod
@@ -169,12 +223,6 @@ class APSIMNG:
         for suffix in ["", "-shm", "-wal"]:
             db_file = pathlib.Path(f"{_name}.db{suffix}")
             db_file.unlink(missing_ok=True)
-
-    @staticmethod
-    def generate_unique_name(base_name, length=6):
-        random_suffix = ''.join(random.choices(string.ascii_lowercase, k=length))
-        unique_name = base_name + '_' + random_suffix
-        return unique_name
 
     # searches the simulations from APSIM models.core object
     @property
@@ -264,12 +312,7 @@ class APSIMNG:
             self.restart_model()
             return self
 
-    def run(self, report_name=None,
-            simulations=None,
-            clean=False,
-            multithread=True,
-            verbose=False,
-            get_dict=False, **kwargs):
+    def simulate(self):
         """Run apsim model in the simulations
 
         Parameters
@@ -292,52 +335,13 @@ class APSIMNG:
         returns
             instance of the class APSIMNG
         """
-        try:
-            if multithread:
-                runtype = Models.Core.Run.Runner.RunTypeEnum.MultiThreaded
-            else:
-                runtype = Models.Core.Run.Runner.RunTypeEnum.SingleThreaded
-            # open the datastore
-
-            self._DataStore.Open()
-            # Clear old data before running
-            self.results = None
-            if clean:
-                self._DataStore.Dispose()
-                pathlib.Path(self._DataStore.FileName).unlink(missing_ok=True)
-            sims = self.find_simulations(simulations) if simulations else self.Simulations
-            if simulations:
-                cs_sims = List[Models.Core.Simulation]()
-                for s in sims:
-                    cs_sims.Add(s)
-                sim = cs_sims
-            else:
-                sim = sims
-            _run_model = Models.Core.Run.Runner(sim, True, False, False, None, runtype)
-            e = _run_model.Run()
-            if len(e) > 0:
-                print(e[0].ToString())
-            if report_name is None:
-                report_name = get_db_table_names(self.datastore)
-                # issues with decoding '_Units' we remove it
-                if '_Units' in report_name: report_name.remove('_Units')
-                warnings.warn(
-                    'No tables were specified, retrieved tables includes:: {}'.format(report_name)) if verbose else None
-            if isinstance(report_name, (tuple, list)):
-                if not get_dict:
-                    self.results = [read_db_table(self.datastore, report_name=rep) for rep in report_name]
-                else:
-                    self.results = {rep: read_db_table(self.datastore, report_name=rep) for rep in report_name}
-
-            else:
-                if not get_dict:
-                    self.results = read_db_table(self.datastore, report_name=report_name)
-                else:
-                    self.results = {report_name: read_db_table(self.datastore, report_name=report_name)}
-        finally:
-            # close the datastore
-            self._DataStore.Close()
-        return self
+        _sims = self.Simulations
+        if not _sims:
+            _sims_available = self.find_simulations()
+            _sims = List[Models.Core.Simulation]()
+            for s in _sims_available:
+                _sims.Add(s)
+        return _run_sim(_sims, self.model_info.DataStore, self.model_info.datastore)
 
     def clone_simulation(self, target, simulation=None):
         """Clone a simulation and add it to Model
@@ -583,7 +587,7 @@ class APSIMNG:
     # clone apsimx file by generating unquie name
     def copy_apsim_file(self):
         path = os.getcwd()
-        file_path = opj(path, self.generate_unique_name("clones")) + ".apsimx"
+        file_path = opj(path, generate_unique_name("clones")) + ".apsimx"
         shutil.copy(self.path, file_path)
 
     def summarize_output_variable(self, var_name, table_name='Report'):
@@ -953,8 +957,9 @@ class APSIMNG:
                 weather_list[sim_name.Name] = met.FileName
         return weather_list
 
-    def change_report(self, *, command: str, report_name='Report', simulations=None, set_DayAfterLastOutput=None,
-                      **kwargs):
+    def change_report(
+            self, *, command: str, report_name='Report', simulations=None, set_DayAfterLastOutput=None,
+            **kwargs):
         """
             Set APSIM report variables for specified simulations.
 
@@ -997,7 +1002,7 @@ class APSIMNG:
         """
         sim = self._find_simulation(simulation)
         for si in sim:
-            report = (si.FindAllDescendants[Models.Report]())
+            report = si.FindAllDescendants[Models.Report]()
             print(list(report))
 
     def extract_soil_physical(self, simulations: [tuple, list] = None):
@@ -1244,6 +1249,20 @@ class APSIMNG:
 
         return get_organic
 
+    def replace_any_soil_organic(self, *, parameter: str, param_values: list, simulation: tuple = None, **kwargs):
+        """replaces any specified soil parameters in the simulation
+
+        Args:
+            parameter (_string_, required): string e.g. Carbon, FBiom. open APSIMX file in the GUI and examne the phyicals node for clues on the parameter names
+            simulation (string, optional): Targeted simulation name. Defaults to None.
+            param_values (array, required): arrays or list of values for the specified parameter to replace
+        """
+        # for now, we are assuming that changes go to each simulation, but it is not the case, we will fix this later
+        soil_organic = self.extract_soil_organic(simulation)
+        for k, v in soil_organic.items():
+            setattr(v, parameter, param_values)
+        return self
+
     # Find a list of simulations by name
     def extract_crop_soil_water(self, parameter, crop="Maize", simulation=None):
         """_summary_
@@ -1289,7 +1308,9 @@ class APSIMNG:
             if s.Name in simulations:
                 sims.append(s)
         if len(sims) == 0:
-            print("Not found!")
+            # print("Not found!") Never do this, it gets lost in places you cant track
+            # should be a NotFoundError, Always fail Fast, Fail Early.
+            raise Exception('Simulations not found in APSIM model')
         else:
             return sims
 
@@ -1461,7 +1482,7 @@ class ApsiMet(APSIMNG):
 
     def insert_weather_file(self):
         start, end = self.extract_start_end_years()
-        wp = weather.daymet_bylocation(self.lonlat, start=start, end=end)
+        wp = weather.get_met_from_day_met(self.lonlat, start=start, end=end)
         wp = os.path.join(os.getcwd(), wp)
         if self.simulation_names:
             sim_name = list(self.simulation_names)
@@ -1484,18 +1505,22 @@ if __name__ == '__main__':
     modelm = al.get_maize
 
     model = APSIMNG(model=None, out_path='me.apsimx')
+    a = perf_counter()
     for _ in range(1):
-
+      adv = model.simulate()
+    print(perf_counter() - a, 'seconds')
+    for _ in range(1):
+        print(_)
         for rn in ['Maize, Soybean, Wheat', 'Maize', 'Soybean, Wheat']:
+            model.update_manager(Name="Simple Rotation", Crops=rn)
+            print(model.extract_user_input('Simple Rotation'))
             a = perf_counter()
             # model.RevertCheckpoint()
-
-            print(model.extract_user_input('Simple Rotation'))
+            ad = model.simulate()
             b = perf_counter()
 
             print(b - a, 'seconds')
-            model.run('Carbon', simulations=['P30511', 'P3051'])
-            print(model.results.mean(numeric_only=True))
+            print(ad['MaizeR'].mean(numeric_only=True))
 
         a = perf_counter()
 

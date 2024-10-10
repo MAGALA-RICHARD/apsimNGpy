@@ -1,58 +1,100 @@
 import configparser
+import configparser
+import os
 from os.path import (realpath, join, isfile, exists)
+import sys
 
-config_path = realpath('config.ini')
+import pythonnet
 
+
+def start_pythonnet():
+    try:
+        if pythonnet.get_runtime_info() is None:
+            return pythonnet.load("coreclr")
+    except Exception as e:
+        print("dotnet not found, trying alternate runtime", repr(e))
+        return pythonnet.load()
+
+
+# I believe this file should be generated automatically during any time the module is recalled.
+# So, we check if it exists first
+# I also noticed you've provided a manual option, but after installation,
+# the package paths are usually abstracted.
+# Therefore, I am implementing an automatic method to handle this.
+
+CONFIG = configparser.ConfigParser()
+config_path = join(os.path.dirname(__file__), 'config.ini')
 if not exists(config_path):
-    config = configparser.ConfigParser()
-    config['Paths'] = {'ApSIM_LOCATION': ''}
+    with open(config_path, 'w') as cfp:
+        CONFIG.write(cfp)
+CONFIG.read(config_path)
+
+
+def get_apsim_binary_path():
+    APSIM_LOC = CONFIG['Paths']['APSIM_LOCATION']
+    # I am sure we can get apsim from sys path so, we provide three options, and i have provided this documentation
+    # The priority is to allow the user change versions or path though
+    # strict evaluation
+    if not exists(APSIM_LOC) and not APSIM_LOC.endswith('bin') and 'APSIM' not in APSIM_LOC:
+        return None
+    # JUST ENSURE THAT THE FILE EXISTS 1. AND THEN ENSURE IT HAS THE CONFIG, We should not catch any error HERE.
+    # What we do is check if the APSIM PATH IS VALID.
+    # one advantage of encapsulating logic in method is you can control when they are called.
+    return APSIM_LOC
+
+
+def change_apsim_bin_path(apsim_binary_path):
+    if 'Paths' not in CONFIG:
+        CONFIG['Paths'] = {}
+    CONFIG['Paths']['APSIM_LOCATION'] = apsim_binary_path
     with open(config_path, 'w') as configfile:
-        config.write(configfile)
+        CONFIG.write(configfile)
 
 
-class Config:
+def load_python_net():
     """
-        The configuration module providing the leeway for the user to change the
-       global variables such as aPSim bin locations.
-        """
+    This function belongs to the config at the root. It will replace the need for the class
+    """
+    start_pythonnet()
+    # use get because it does not raise key error. it returns none if not found
+    APSIM_PATH = get_apsim_binary_path() or os.getenv('APSIM') or os.getenv('Models')
+    if 'bin' not in APSIM_PATH:
+        APSIM_PATH = os.path.join(APSIM_PATH, 'bin')
 
-    config = configparser.ConfigParser()
-    config.read(config_path)
+    if not os.path.exists(APSIM_PATH):
+        raise ValueError("A full path to the binary folder is required or the path is invalid")
 
-    @classmethod
-    def get_aPSim_bin_path(cls):
-        """We can extract the current path from config.ini"""
-        return cls.config['Paths']['ApSIM_LOCATION']
+    sys.path.append(APSIM_PATH)
+    os.environ['APSIM_BIN_LOCATION'] = APSIM_PATH
 
-    @classmethod
-    def set_aPSim_bin_path(cls, path):
-        """ Send your desired path to the aPSim binary folder to the config module
-        the path should end with bin as the parent directory of the aPSim Model.exe
-        >> Please be careful with adding an uninstalled path, which do not have model.exe file.
-        It won't work and python with throw an error
-        >> example from apsimNGpy.config import Config
-        # check the current path
-         config = Config.get_aPSim_bin_path()
-         # set the desired path
-         >> Config.set_aPSim_bin_path(path = '/path/to/aPSimbinaryfolder/bin')
-        """
-        _path = realpath(path)
-        if _path != cls.get_aPSim_bin_path():
-            Is_Model_in_bin_folder = join(_path, 'Models.exe')
-            # if not, we raise assertion error because there is no point to
-            # send a non-working path to the pythonnet config module
-            # at this point the user may need to change to another path
-            assert isfile(Is_Model_in_bin_folder), f"aPSim binaries may not be present at this location: {_path}"
-            cls.config['Paths']['ApSIM_LOCATION'] = _path
-            with open('config.ini', 'w') as config_file:
-                cls.config.write(config_file)
+    import clr
+    _sys = clr.AddReference("System")
+    _lm = clr.AddReference("Models")
 
+
+def version():
+    """
+    get the version of the APSIM model currently installed and available for apsimNGpy to run
+    """
+    # I am sure we can get apsim from sys path so, we provide three options, and i have provided this documentation
+    # The priority is to allow the user change versions or path though
+    _bin_path = get_apsim_binary_path() or os.getenv('APSIM') or os.getenv('Models')
+    # if the path does not end with bin, then the code below will fail miserably so, we check it
+    if _bin_path and os.path.exists(_bin_path) and _bin_path.endswith('bin'):
+        path, _ = os.path.split(get_apsim_binary_path())
+        _complete_version = os.path.basename(path)
+        # split the path
+        # _splits = _complete_version.split('.')
+        # year = int(_splits[0].strip('APSIM'))
+        # print(year)
+        return _complete_version
+
+
+# we need to start it read to run before it is called
+load_python_net()
 
 if __name__ == '__main__':
-    # example windows;
-    from pathlib import Path
-
-    # # This is an example if apsim is installed at the user's directory'
-    # Home_aPSim = list(Path.home().joinpath('AppData', 'Local', 'Programs').rglob('*2022.12.7130.0'))[0].joinpath('bin')
-    # Config.set_aPSim_bin_path(Home_aPSim)
-    # print(Config.get_aPSim_bin_path())
+    start_pythonnet()
+    change_apsim_bin_path(r'C:\Program Files\APSIM2024.5.7493.0\bin')
+    x = get_apsim_binary_path()
+    load_python_net()

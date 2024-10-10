@@ -1,7 +1,9 @@
 """
 This module offers a procedural alternative other than object-oriented approach provided in api and ApsimModel classes
 """
-from apsimNGpy.core.pythonet_config import LoadPythonnet
+# TODO this module/file is named badly. the functions here should go to core or base.
+# for a start, we can use the functions defined here instead of using the ones in APSIMNG's loader.
+
 # now we can safely import C# libraries
 from System.Collections.Generic import *
 from Models.Core import Simulations, ScriptCompiler, Simulation
@@ -58,6 +60,10 @@ def load_apx_model(model=None, out=None):
        returns a named tuple with an out path, datastore path, and IModel in memory
        """
     # name according to the order of preference
+    # TODO this is a nice abstractions, except for the use of the loader, just use
+    # it functions perfectly as an api function which means that external functions should never know
+    # about the functions defined above which are used by this function to load models.
+    # conditionals.
     out2 = f"{Path(model).parent}/{Path(model).stem}_copy.apsimx" if model is not None else None
     out1 = realpath(out) if out is not None else None
     out3 = realpath('ngpy_model.apsimx')

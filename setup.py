@@ -1,8 +1,6 @@
 from setuptools import setup, find_packages
 
-
-
-VERSION = '0.0.27.8'
+VERSION = '0.0.27.6b'
 DESCRIPTION = 'apsimx next generation package interface'
 LONG_DESCRIPTION = 'run, edit, download soils and weather and interact with the apsimx file'
 
@@ -20,11 +18,7 @@ setup(
     long_description=readme,
     packages=find_packages(),
     include_package_data=True,
-    package_data={'': ['./apsimNGpy/data/*.apsimx',
-                       './apsimNGpy/*.met',
-                       "./apsimNGpy/experiment/*.py",
-                       './apsimNGpy/examples/*.png',
-                       './apsimNGpy/*.ini', "./*.ini"]},
+    package_data={'': ['./apsimNGpy/data/*.apsimx', './apsimNGpy/data/WeatherFiles/*.met', './apsimNGpy/examples/*.png', './apsimNGpy/*.ini', "./*.ini"]},
     keywords=['python', 'APSIM Next Generation', 'pythonnet', 'crop modeling'],
     classifiers=[
         "Development Status :: 3 - Alpha",
@@ -48,9 +42,12 @@ setup(
         'progressbar >= 2.5',
         'joblib >= 1.3.2',
         'sqlalchemy >=2.0',
-        'matplotlib',
-        'tenacity'
-
-    ]
+        'click >= 8.1.0'
+    ],
+    entry_points={
+        'console_scripts': [
+            'apsim_python_shell = apsimNGpy.cli.shell:run_shell'
+        ]
+    }
 )
 

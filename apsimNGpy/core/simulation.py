@@ -7,9 +7,9 @@ from apsimNGpy.core.base_data import LoadExampleFiles
 from pathlib import Path
 
 from apsimNGpy.utililies.utils import select_process
-from apsimNGpy.weather import daymet_bylocation_nocsv, daymet_bylocation
-from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganizeAPSIMsoil_profile
-from apsimNGpy.utililies.spatial import create_fishnet1, create_apsimx_sim_files, generate_random_points
+from apsimNGpy.manager.weathermanager import daymet_bylocation_nocsv, daymet_by_location
+from apsimNGpy.manager.soilmanager import get_surgo_soil_tables, APSimSoilProfile
+from apsimNGpy.simulations.joblib import create_fishnet1, create_apsimx_sim_files, generate_random_points
 from tqdm import tqdm
 
 wd = Path.home()
@@ -20,9 +20,9 @@ maize = LoadExampleFiles(wd).get_maize
 lon = -91.620369, 43.034534
 
 
-def simulate_single_point(model: Any, location: Tuple[float, float], report, read_from_string=True, start=1990,
-                          end=2020,
-                          soil_series: str = 'domtcp', **kwargs):
+def simulate_single_point(
+        model: Any, location: Tuple[float, float], report, read_from_string=True, start=1990,
+        end=2020, soil_series: str = 'domtcp', **kwargs):
     """
     Run a simulation of a given crop.
      model: Union[str, Simulations],
@@ -30,18 +30,13 @@ def simulate_single_point(model: Any, location: Tuple[float, float], report, rea
      soil_series: str
      kwargs:
         copy: bool = False, out_path: str = None, read_from_string=True,
-
-        soil_series: str = 'domtcp', thickness: int = 20, bottomdepth: int = 200,
-
+        soil_series: str = 'dom_tcp', thickness: int = 20, bottom_depth: int = 200,
         thickness_values: list = None, run_all_soils: bool = False
-
-        report_name: str specifies the report or table name in the simulation, for which to read the reasults
-
-        replace_weather: Set this boolean to true to download and replace the weather data based on the specified location.
-
+        report_name: str specifies the report or table name in the simulation, for which to read the results
+        replace_weather: Set this boolean to true to download and replace the weather data based on the
+        specified location.
         replace_soil: Set this boolean to true to download and replace the soil data using the given location details.
-
-        mgt_practices: Provide a list of management decissions
+        mgt_practices: Provide a list of management decisions
 
     """
     thi = [150, 150, 200, 200, 200, 250, 300, 300, 400, 500]
@@ -56,14 +51,14 @@ def simulate_single_point(model: Any, location: Tuple[float, float], report, rea
         simulator_model.replace_met_file(wf, sim_name)
     # replace soil is true
     if kwargs.get("replace_soil", False):
-        table = DownloadsurgoSoiltables(location)
-        sp = OrganizeAPSIMsoil_profile(table, thickness=20, thickness_values=th)
+        table = get_surgo_soil_tables(location)
+        sp = APSimSoilProfile(table, thickness=20, thickness_values=th)
         sp = sp.cal_missingFromSurgo()
         simulator_model.replace_downloaded_soils(sp, sim_name)
     # if replace management practices
     if kwargs.get("mgt_practices"):
         simulator_model.update_mgt(kwargs.get('mgt_practices'), sim_name)
-    simulator_model.run(report_name=report)
+    simulator_model.simulate(report_name=report)
     return simulator_model.results
 
 
@@ -122,14 +117,14 @@ def simulate_single_from_shape_file(wd, shape_file, model: Any, resolution, repo
             simulator_model.replace_met_file(wf, sim_names)
 
         if kwargs.get("replace_soil", False):
-            table = DownloadsurgoSoiltables(location)
-            sp = OrganizeAPSIMsoil_profile(table, thickness=20, thickness_values=th)
+            table = get_surgo_soil_tables(location)
+            sp = APSimSoilProfile(table, thickness=20, thickness_values=th)
             sp = sp.cal_missingFromSurgo()
             simulator_model.replace_downloaded_soils(sp, sim_names)
 
         if kwargs.get("mgt_practices"):
             simulator_model.update_mgt(kwargs.get('mgt_practices'), sim_names)
-        simulator_model.run(report_name=report)
+        simulator_model.simulate(report_name=report)
         return simulator_model.results
 
     with select_process(use_thread, ncores) as tpool:
@@ -149,5 +144,6 @@ if __name__ == '__main__':
     pp = simulate_single_point(maize, lon, replace_weather=True, replace_soil=True, mgt_practices=md, report='MaizeR')
     shp = r'D:\ACPd\Bear creek simulations\bearcreek_shape\bearcreek.shp'
     wd = r'C:\Users\rmagala'
-    lp = simulate_single_from_shape_file(wd, shp, maize, 1200, report='MaizeR', random_grid_points=True, replace_soil=True, replace_weather=True)
+    lp = simulate_single_from_shape_file(wd, shp, maize, 1200, report='MaizeR', random_grid_points=True,
+                                         replace_soil=True, replace_weather=True)
     lip = list(lp)

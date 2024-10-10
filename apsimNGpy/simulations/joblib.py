@@ -3,7 +3,7 @@ from functools import singledispatch
 import geopandas as gpd
 import pandas as pd
 import numpy as np
-from apsimNGpy.core import ApsimModel
+from apsimNGpy.core.apsim import ApsimModel
 from apsimNGpy.utililies.utils import select_process
 from shapely.geometry import Polygon
 import random
@@ -15,8 +15,8 @@ from apsimNGpy.core.base_data import LoadExampleFiles
 from apsimNGpy.parallel.process import download_soil_tables
 from tqdm import tqdm
 import random
-from apsimNGpy.manager.soilmanager import OrganizeAPSIMsoil_profile, DownloadsurgoSoiltables
-from apsimNGpy.core.weather import daymet_bylocation_nocsv
+from apsimNGpy.manager.soilmanager import APSimSoilProfile, get_surgo_soil_tables
+from apsimNGpy.manager.weathermanager import daymet_bylocation_nocsv
 from apsimNGpy.parallel.process import custom_parallel
 from apsimNGpy.parallel.safe import initialise
 
@@ -290,6 +290,7 @@ def match_crop(abb, add_wheat=None):
 
 def create_apsimx_sim_files(wd, model, iterable):
     """
+
     Creates copies of a specified APSIM model file for each element in the provided iterable,
     renaming the files to have unique identifiers based on their index in the iterable.
     The new files are saved in the specified working directory.
@@ -363,9 +364,9 @@ def download_weather(df, start, end, use_thread=True, ncores=10, replace_soils=T
         if kwargs.get("verbose"):
             print("downloading and replacing soils now")
         if replace_soils:
-            table = DownloadsurgoSoiltables(location)
+            table = get_surgo_soil_tables(location)
             if isinstance(table, pd.DataFrame):
-                sp = OrganizeAPSIMsoil_profile(table, thickness=20, thickness_values=th)
+                sp = APSimSoilProfile(table, thickness=20, thickness_values=th)
                 sp = sp.cal_missingFromSurgo()
                 if sp[0].isna().any().any() or sp[1].isna().any().any() or sp[2].isna().any().any():
                     print(f"soils not replaced at {location}")
@@ -373,7 +374,7 @@ def download_weather(df, start, end, use_thread=True, ncores=10, replace_soils=T
                 else:
                     mod.replace_downloaded_soils(sp, sim_name)
         if kwargs.get("report"):
-            mod.run(report_name=kwargs.get('report_names'))
+            mod.simulate(report_name=kwargs.get('report_names'))
             return mod.results
         else:
             mod.save_edited_file(out_path_name)

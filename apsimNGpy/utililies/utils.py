@@ -678,7 +678,7 @@ def exception_handler(re_raise=False):
 
                 for trace in trace_back:
                     stack_trace.append("File : %s , Line : %d, Func.Name : %s, Message : %s" % (
-                    trace[0], trace[1], trace[2], trace[3]))
+                        trace[0], trace[1], trace[2], trace[3]))
 
                 print(f"Exception occurred in {func.__name__}: {e}")
                 print("Error details : ")
@@ -692,13 +692,38 @@ def exception_handler(re_raise=False):
         return wrapper
 
     return decorator
+
+
+def flatten_nested_list(nested_list, deep=True):
+    """
+    this will recursively flatten a nested list
+    :param nested_list:  to flatten
+    :return: a list with nested flattened values
+    """
+    flattened = []
+    for item in nested_list:
+
+        if isinstance(item, (tuple, list, set)):
+            # Recursively flatten the sublist
+            flattened.extend(flatten_nested_list(item))
+        else:
+            # If the item is not a list, append it to the flattened list
+            flattened.append(item)
+    return flattened
+
+
+def flatten_dict(nested_dict, parent_key='', separator='.'):
+    flattened = {}
+    for key, value in nested_dict.items():
+        new_key = f"{parent_key}{separator}{key}" if parent_key else key
+        if isinstance(value, dict):
+            # Recursively flatten the sub-dictionary
+            flattened.update(flatten_dict(value, new_key, separator=separator))
+        else:
+            # Add the current key-value pair to the flattened dictionary
+            flattened[new_key] = value
+    return flattened
+
+
 if __name__ == '__main__':
-
-    # Example usage of the decorator
-    @exception_handler(re_raise=True)
-    def divide(x, y):
-        return x / y
-
-
-    # This will print the exception message along with the line number in the script where it occurred
-    divide(10, 0)
+    ...

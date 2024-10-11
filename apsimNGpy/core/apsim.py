@@ -148,7 +148,7 @@ class ApsimModel(APSIMNG):
 
     @staticmethod
     def get_weather_online(lonlat, start, end):
-        wp = weather.daymet_by_location(lonlat, start=start, end=end)
+        wp =  weather.get_met_from_day_met(lonlat, start=start, end=end)
         wpath = os.path.join(os.getcwd(), wp)
         return wpath
 
@@ -372,10 +372,11 @@ class ApsimModel(APSIMNG):
             self.lonlat = self.lonlat
         else:
             self.lonlat = lonlatmet
-        self.simulation_names = simulation_names
+
 
         start, end = self.extract_start_end_years()
-        wp = weather.daymet_by_location(self.lonlat, start, end)
+        wp = weather.get_met_from_day_met(self.lonlat, start, end)
+        #wp = weather.daymet_by_location(self.lonlat, start, end)
         wpath = os.path.join(os.getcwd(), wp)
         wpath = os.path.join(os.getcwd(), wp)
         if self.simulation_names:
@@ -427,11 +428,6 @@ class ApsimModel(APSIMNG):
         self._DataStore.Close()
         return self.results
 
-    @property
-    def read_data_tables(self):
-        read_ = self._read_simulation()
-        return read_.keys()
-
     def spin_up(self, report_name: str = 'Report', start=None, end=None, spin_var="Carbon", simulations=None):
         """
         Perform a spin-up operation on the aPSim model.
@@ -477,9 +473,12 @@ class ApsimModel(APSIMNG):
             assert 'TotalC' in insert_var, \
                 "wrong report variable path: '{0}' supplied according to requested spin up " \
                 "var".format(insert_var)
+            if 'TotalC' not in insert_var:
+                raise ValueError("wrong report variable path: '{0}' supplied according to requested spin up " \
+                                           "var".format(insert_var))
 
             bd = list(pysoil.DUL)
-            # print(bd)
+            print(bd)
             bd = np.array(bd)
             cf = np.array(bd) * np.array(th)
             cf = np.divide(cf, 1)  # this convert to percentage
@@ -489,8 +488,9 @@ class ApsimModel(APSIMNG):
             print(len(new_carbon))
             self.replace_any_soil_organic(spin_var, new_carbon)
         if spin_var == 'DUL':
-            assert 'PAW' in insert_var, "wrong report variable path: '{0}' supplied according to requested spin up var" \
-                .format(insert_var)
+            if 'PAW' not in insert_var:
+                raise ValueError("wrong report variable path: '{0}' supplied according to requested spin up var" \
+                .format(insert_var))
             l_15 = pysoil.LL15
             ll = np.array(l_15)
             dul = ll + df_sel
@@ -503,15 +503,15 @@ class ApsimModel(APSIMNG):
     def replace_met_from_web(self, lonlat, start_year, end_year, file_name=None):
         if not file_name:
             file_name = self.path.strip(".apsimx") + "_w_.met"
-        w_f = weather.daymet_bylocation_nocsv(lonlat, start=start_year, end=end_year, filename=file_name)
+        w_f = weather.get_met_from_day_met(lonlat, start=start_year, end=end_year, filename=file_name)
         wf = os.path.abspath(w_f)
-        self.replace_met_file(wf, self.extract_simulation_name)
+        self.replace_met_file(weather_file=wf)
         return self
 
     def replace_soil_profile_from_web(self, **kwargs):
         lon_lat = kwargs.get('lonlat', self.lonlat)
         thickness = kwargs.get('thickness', 20)
-        sim_name = kwargs.get('sim_name', self.extract_simulation_name)
+        sim_name = kwargs.get('sim_name', self.simulation_names)
         assert lon_lat, 'Please supply the lonlat'
         sp = get_surgo_soil_tables(lon_lat)
         sop = APSimSoilProfile(sp, thickness, thickness_values=self.thickness_values).cal_missingFromSurgo()

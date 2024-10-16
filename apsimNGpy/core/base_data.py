@@ -234,75 +234,21 @@ from ..import settings
 
 
 def read_examples_dir():
-    if settings.BASE_DIR:
-        apsim = os.path.dirname(settings.BASE_DIR)
-        examples_folder = join(settings.BASE_DIR, 'data')
-        example_file_paths = listdir(examples_folder)
+    APSIM_PATH = settings.APSIM_LOCATION
+    if not APSIM_PATH:
+        APSIM_PATH = os.getenv('APSIM_BIN_LOCATION')
+    assert bool(APSIM_PATH), f'The path to APSIM BINARY is required {APSIM_PATH}'
 
-        example_files = {}
-        for file_path in example_file_paths:
-            if file_path.endswith(".apsimx"):
-                name, ext = file_path.split(".")
-                example_files[name] = file_path
-        return example_files
+    APSIM_LOC = os.path.dirname(APSIM_PATH)
+    examples = os.path.join(APSIM_LOC, 'Examples')
+    all_files = os.listdir(examples)
+    apsim_files = {}
+    for _file in all_files:
+        if _file.endswith('.apsimx'):
+            name, ext = _file.split('.')
+            apsim_files[name] = os.path.join(examples, _file)
 
-
-class __DetectApsimExamples:
-    """
-    TODO delete this class. It is enough to write a single function get_example.
-    """
-    def __init__(self, copy_path: str = None):
-        self.all = []
-        self.copy_path = copy_path
-        examples_files = read_examples_dir()
-        self.examples_files = examples_files
-        for name, file in examples_files.items():
-            setattr(self, name, name)
-            self.all.append(name)
-
-    def get_example(self, crop, path=None, simulations_object: bool = True):
-        """
-        Get an APSIM example file path for a specific crop model.
-
-        This function copies the APSIM example file for the specified crop model to the target path,
-        creates a SoilModel instance from the copied file, replaces its weather file with the
-        corresponding weather file, and returns the SoilModel instance.
-
-        Args:
-        crop (str): The name of the crop model for which to retrieve the APSIM example.
-
-        Returns: SoilModel: An instance of the SoilModel class representing the APSIM example for the specified crop
-        model. the path of this model will be your current working directory
-
-        Raises:
-        OSError: If there are issues with copying or replacing files.
-        """
-        if not path:
-            self.copy_path = join(settings.BASE_DIR, 'data/copy')
-            if not os.path.exists(self.copy_path):
-                os.mkdir(self.copy_path)
-        else:
-            self.copy_path = path
-        path = join(self.copy_path, crop) + '.apsimx'
-        cp = shutil.copy(self.examples_files[crop], path)
-        if not simulations_object:
-            return cp
-        aPSim = SoilModel(cp)
-        weather_files = os.path.basename(aPSim.show_met_file_in_simulation())
-        APSIM_BIN_LOC = os.environ.get('APSIM_BIN_LOCATION')
-        APSIM_BASE = os.path.dirname(APSIM_BIN_LOC)
-
-        weather_path = os.path.join(APSIM_BASE, "Examples/WeatherFiles")
-        wp = os.path.join(weather_path, weather_files)
-        aPSim.replace_met_file(weather_file=wp)
-        return aPSim
-
-    def get_all(self):
-        """
-            This return all files from APSIM default examples in the example folder. But for what?
-        """
-        return [self.get_example(i) for i in self.all]
-
+    return apsim_files
 
 
 def __get_example(crop, path=None, simulations_object=True):
@@ -326,12 +272,16 @@ def __get_example(crop, path=None, simulations_object=True):
     OSError: If there are issues with copying or replacing files.
     """
     if not path:
-        copy_path = os.getcwd()
+        copy_path = settings.DATA_PATH
     else:
         copy_path = path
 
     target_path = join(copy_path, crop) + '.apsimx'
-    copied_file = shutil.copy(examples_files[crop], target_path)
+    examples_files = read_examples_dir()
+    try:
+        copied_file = shutil.copy(examples_files[crop], target_path)
+    except FileNotFoundError as e:
+        breakpoint()
 
     if not simulations_object:
         return copied_file
@@ -347,6 +297,7 @@ def get_all_examples():
     Returns:
     list: A list of SoilModel instances or file paths for all crop examples.
     """
+    example_files = read_examples_dir()
     all_examples = list(examples_files.keys())
     return [__get_example(crop) for crop in all_examples]
 

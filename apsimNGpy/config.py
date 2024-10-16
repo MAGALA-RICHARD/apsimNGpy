@@ -61,8 +61,10 @@ def load_python_net():
     if 'bin' not in APSIM_PATH:
         APSIM_PATH = os.path.join(APSIM_PATH, 'bin')
 
-    if not os.path.exists(APSIM_PATH):
-        raise ValueError("A full path to the binary folder is required or the path is invalid")
+    if APSIM_PATH and not os.path.exists(APSIM_PATH):
+        raise ValueError(f"The provided APSIM PATH {APSIM_PATH} does not exist")
+    if not APSIM_PATH:
+        raise ValueError(f"The APSIM PATH has not been set the APSIM_PATH in config.ini, refer to the README.rst")
 
     sys.path.append(APSIM_PATH)
     os.environ['APSIM_BIN_LOCATION'] = APSIM_PATH

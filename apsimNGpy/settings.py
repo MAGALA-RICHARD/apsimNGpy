@@ -3,6 +3,7 @@ import logging
 import os
 
 BASE_DIR = os.path.dirname(__file__)
+DATA_PATH = os.path.join(BASE_DIR, 'data')
 
 WGS84 = 'epsg:4326'
 NUM_CORES: int = int(cpu_count() * 0.6)

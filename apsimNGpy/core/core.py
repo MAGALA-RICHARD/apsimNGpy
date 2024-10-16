@@ -453,8 +453,6 @@ class APSIMNG:
         - k (int): The number of copies to create.
         - path (str, optional): The directory where the replicated files will be saved. Defaults to None, meaning the same directory as the source file.
         - tag (str, optional): a tag to attached with the copies. Defaults to "replicate"
-
-
         Returns:
         - A list of paths to the newly created files if get_back_list is True else a generator is returned.
         """
@@ -552,7 +550,7 @@ class APSIMNG:
         try:
             ap = self.extract_user_input(ManagerName)['CultivarName']
             return ap
-        except  KeyError:
+        except KeyError:
             parameterName = 'CultivarName'
             print(f"cultivar name: is not found")
 
@@ -1120,6 +1118,31 @@ class APSIMNG:
         solutes = self._extract_solute(simulation)
         setattr(solutes, parameter, param_values)
 
+    def replace_crop_soil_water(self, *, parameter, param_values, crop="Maize", simulation=None, **kwargs):
+        """_summary_
+        Args:
+            parameter (_str_): crop soil water parameter names e.g. LL, XF etc
+            crop (str, optional): crop name. Defaults to "Maize".
+            simulation (_str_, optional): _target simulation name . Defaults to None.
+            param_values (_list_ required) values of LL of istance list or 1-D arrays
+            Returns:
+            doesn't return anything it mutates the specified value in the soil simulation object
+            """
+
+        assert len(param_values) == len(self.extract_crop_soil_water(parameter, crop, simulation))
+        assert isinstance(parameter, str), 'Parameter name should be a string'
+        assert isinstance(crop, str), "Crop name should be a string"
+        for simu in self.find_simulations(simulation):
+            soil_object = simu.FindDescendant[Soil]()
+            soil_crop = soil_object.FindAllDescendants[SoilCrop]()
+            # can be use to target specific crop
+            for crops in soil_crop:
+                crop_soil = crop + "Soil"
+
+                if crops.Name == crop_soil:
+                    setattr(crops, parameter, param_values)
+                    break
+
     def replace_soil_properties_by_path(self, path: str,
                                         param_values: list,
                                         str_fmt=".",
@@ -1318,7 +1341,6 @@ class APSIMNG:
     def _find_simulation(self, simulations: [tuple, list] = None):
         if simulations is None:
             return self.simulations
-
         else:
             return [self.Simulations.FindDescendant(i) for i in simulations if i in self.simulation_names]
 

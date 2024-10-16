@@ -2,7 +2,7 @@ apsimNGpy: The Next Generation Agroecosytem Simulation Library
 
 ====================================================================
 
-Our cutting-edge open-source framework, apsimNGpy, empowers advanced agroecosystem modeling through the utilization
+Our cutting-edge open-source framework, apsimNGpy, empowers advanced agro-ecosystem modeling through the utilization
 of object-oriented principles. It features fast batch file simulation, model prediction, evaluation,
 apsimx file editing, seamless weather data retrieval, and efficient soil profile development
 
@@ -25,7 +25,8 @@ Register, download and install the Apsim Binary from https://apsim.info Its impo
 of the location of installation of APSIM binary files. We shall shall use in step 3.
 This location of this folder will depend on the operating System.
 
-In windows it will be located in /
+In windows it will be located in
+C:\Program Files\APSIM\{APSIM VERSION}\bin e.g. C:\Program Files\APSIM\2024.5.7493.0\bin
 
 In linux it usually is in /usr/local/lib/apsim/{APSIM VERSION}/bin e.g.
 /usr/local/lib/apsim/2024.8.7571.0/bin
@@ -58,7 +59,7 @@ You could also install using pip directly from github.
 - STEP 3:
 Set APSIM Binary File Path you stored in step 1
 
-In the file /apsimNGpy/apsimNGpyconfig.ini
+In the file /apsimNGpy/apsimNGpy/config.ini
  Add the following entry:
 .. code:: ini
     [Paths]
@@ -70,12 +71,10 @@ In the file /apsimNGpy/apsimNGpyconfig.ini
 If you installed from pip into a virtual environment;
 With the virtual environment you can jump straight to the python shell by running apsim_python_shell in terminal
 .. code:: python
-    from apsimNGpy.core.base_data import load_default_simulations
-    crop_model = load_default_simulations(crop='soybean')
-    # default supported crops include, soybean, maize, wheat.
-    # initialize the simulation
-    model_simulation = SoilModel(crop_model)
-    result = model_simulation.simulate()
+    from apsimNGpy import load_default_simulations
+    crop_model = load_default_simulations('Soybean')
+    # default supported crops include, Soybean, Maize, Wheat.
+    result = crop_model.simulate()
     print(results)
     print(model_simulation.simulation_names)
 
@@ -91,7 +90,7 @@ Required Dependencies:
 - requests
 -
 
-Please note that apsimNGpy is tested on Python 3. We are not aware of its performance in Python 2 because it utilizes some of the new libraries like pathlib and f-strings.
+apsimNGpy is tested on python 3.10
 
 Usage
 

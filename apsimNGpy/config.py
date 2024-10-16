@@ -1,4 +1,5 @@
 import configparser
+import os
 from os.path import (realpath, join, isfile, exists)
 
 config_path = realpath('config.ini')
@@ -22,10 +23,12 @@ class Config:
     @classmethod
     def get_aPSim_bin_path(cls):
         """We can extract the current path from config.ini"""
-        return cls.config['Paths']['ApSIM_LOCATION']
+        from_sys = os.getenv('Models') or os.getenv('APSIM')
+        return cls.config['Paths']['ApSIM_LOCATION'] or from_sys or " "
 
     @classmethod
     def set_aPSim_bin_path(cls, path):
+        from pathlib import Path
         """ Send your desired path to the aPSim binary folder to the config module
         the path should end with bin as the parent directory of the aPSim Model.exe
         >> Please be careful with adding an uninstalled path, which do not have model.exe file.
@@ -37,12 +40,16 @@ class Config:
          >> Config.set_aPSim_bin_path(path = '/path/to/aPSimbinaryfolder/bin')
         """
         _path = realpath(path)
+        path_to_search = Path(_path)
+        model_files = list(path_to_search.glob('*Models.*'))
+
         if _path != cls.get_aPSim_bin_path():
             Is_Model_in_bin_folder = join(_path, 'Models.exe')
             # if not, we raise assertion error because there is no point to
             # send a non-working path to the pythonnet config module
             # at this point the user may need to change to another path
-            assert isfile(Is_Model_in_bin_folder), f"aPSim binaries may not be present at this location: {_path}"
+            if not model_files:
+                raise ValueError(f"aPSim binaries may not be present at this location: {_path}")
             cls.config['Paths']['ApSIM_LOCATION'] = _path
             with open('config.ini', 'w') as config_file:
                 cls.config.write(config_file)
@@ -51,6 +58,10 @@ class Config:
 if __name__ == '__main__':
     # example windows;
     from pathlib import Path
+
+    ax = 'C:\\Program Files\\APSIM2024.5.7493.0\\bin'
+    ax = ''
+    Config.set_aPSim_bin_path(ax)
 
     # # This is an example if apsim is installed at the user's directory'
     # Home_aPSim = list(Path.home().joinpath('AppData', 'Local', 'Programs').rglob('*2022.12.7130.0'))[0].joinpath('bin')

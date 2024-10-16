@@ -42,6 +42,9 @@ class Config:
         _path = realpath(path)
         path_to_search = Path(_path)
         model_files = list(path_to_search.glob('*Models.*'))
+        # we also dont want to send a path does not work
+        if not path_to_search.is_dir() or not path_to_search.exists():
+            raise FileNotFoundError(f"{path} is not a directory or does not exists")
 
         if _path != cls.get_aPSim_bin_path():
             Is_Model_in_bin_folder = join(_path, 'Models.exe')
@@ -60,7 +63,7 @@ if __name__ == '__main__':
     from pathlib import Path
 
     ax = 'C:\\Program Files\\APSIM2024.5.7493.0\\bin'
-    ax = ''
+
     Config.set_aPSim_bin_path(ax)
 
     # # This is an example if apsim is installed at the user's directory'

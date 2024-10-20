@@ -104,8 +104,7 @@ class APSIMNG:
         self._DataStore = self.model_info.DataStore
         self.path = self.model_info.path
         self._met_file = kwargs.get('met_file')
-        if self._met_file is not None:
-            self.replace_met_file(self._met_file)
+
 
     def run_simulations(self, results=None, reports=None, clean_up=False):
         """

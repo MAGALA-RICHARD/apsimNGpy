@@ -193,17 +193,9 @@ def split_and_replace(data):
     return "".join(result)
 
 
-def convert_negative_to_positive(arr, column_index):
-    # Check if all values in the specified column are negative
-    for i in column_index:
-        # Convert all negative values to positive
-        arr[:, i] = np.abs(arr[:, i])
-        print(f"changing column {i} to postive")
-    return arr
-
-
 def split_and_replace(data):
     """
+    TODO which of these two functions is the correct one.
     Replaces rows in the 'CropRotatn' column of the input structured array ('data')
     with calculated values based on a mapping ('crop_mapping').
 
@@ -229,6 +221,15 @@ def split_and_replace(data):
     new_column[valid_indices] = [", ".join([crop_mapping[c] for c in row]) for row in data['CropRotatn'][valid_indices]]
 
     return new_column
+
+
+def convert_negative_to_positive(arr, column_index):
+    # Check if all values in the specified column are negative
+    for i in column_index:
+        # Convert all negative values to positive
+        arr[:, i] = np.abs(arr[:, i])
+        print(f"changing column {i} to postive")
+    return arr
 
 
 def convert_fc_to_numpy(fc):

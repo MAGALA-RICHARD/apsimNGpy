@@ -2,15 +2,11 @@ import os.path
 from importlib.resources import files
 from os.path import join, realpath, dirname, exists, split, basename
 from os import listdir, walk, getcwd, mkdir
-from apsimNGpy.core.pythonet_config import LoadPythonnet, aPSim_PATH
+from apsimNGpy.config import load_python_net
 import shutil
 from apsimNGpy import data as DATA
-
-conf = LoadPythonnet()()
 from apsimNGpy.core.apsim import ApsimModel as SoilModel
 from pathlib import Path
-from functools import cache
-from apsimNGpy.core.apsim_file import XFile as DFile
 import os
 
 WEATHER_CO = 'NewMetrrr.met'
@@ -234,25 +230,25 @@ class LoadExampleFiles:
         return SoilModel(self.get_maize_no_till)
 
 
-try:
-    pat = aPSim_PATH
-except KeyError:
-    pat = aPSim_PATH
-if pat:
-    apsim = os.path.dirname(pat)
-    examples = join(apsim, 'Examples')
-dr = listdir(examples)
-
-examples_files = {}
-for i in dr:
-    if i.endswith(".apsimx"):
-        name, ext = i.split(".")
-        examples_files[name] = join(examples, i)
-
-weather_path = os.path.join(examples, "WeatherFiles")
+from ..import settings
 
 
+def read_examples_dir():
+    APSIM_PATH = settings.APSIM_LOCATION
+    if not APSIM_PATH:
+        APSIM_PATH = os.getenv('APSIM_BIN_LOCATION')
+    assert bool(APSIM_PATH), f'The path to APSIM BINARY is required {APSIM_PATH}'
 
+    APSIM_LOC = os.path.dirname(APSIM_PATH)
+    examples = os.path.join(APSIM_LOC, 'Examples')
+    all_files = os.listdir(examples)
+    apsim_files = {}
+    for _file in all_files:
+        if _file.endswith('.apsimx'):
+            name, ext = _file.split('.')
+            apsim_files[name] = os.path.join(examples, _file)
+
+    return apsim_files
 
 
 def __get_example(crop, path=None, simulations_object=True):
@@ -276,12 +272,16 @@ def __get_example(crop, path=None, simulations_object=True):
     OSError: If there are issues with copying or replacing files.
     """
     if not path:
-        copy_path = os.getcwd()
+        copy_path = settings.DATA_PATH
     else:
         copy_path = path
 
     target_path = join(copy_path, crop) + '.apsimx'
-    copied_file = shutil.copy(examples_files[crop], target_path)
+    examples_files = read_examples_dir()
+    try:
+        copied_file = shutil.copy(examples_files[crop], target_path)
+    except FileNotFoundError as e:
+        breakpoint()
 
     if not simulations_object:
         return copied_file
@@ -297,6 +297,7 @@ def get_all_examples():
     Returns:
     list: A list of SoilModel instances or file paths for all crop examples.
     """
+    example_files = read_examples_dir()
     all_examples = list(examples_files.keys())
     return [__get_example(crop) for crop in all_examples]
 

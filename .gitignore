@@ -35,6 +35,12 @@ var/
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
+*.apsimx
+*.metr
+*.db
+*.db-shim
+*.db-wal
+apsimNGpy/config.ini
 
 # Unit test / coverage reports
 htmlcov/

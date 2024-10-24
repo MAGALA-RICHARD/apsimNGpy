@@ -2,7 +2,7 @@ apsimNGpy: The Next Generation Agroecosytem Simulation Library
 
 ====================================================================
 
-Our cutting-edge open-source framework, apsimNGpy, empowers advanced agroecosystem modeling through the utilization
+Our cutting-edge open-source framework, apsimNGpy, empowers advanced agro-ecosystem modeling through the utilization
 of object-oriented principles. It features fast batch file simulation, model prediction, evaluation,
 apsimx file editing, seamless weather data retrieval, and efficient soil profile development
 
@@ -10,10 +10,8 @@ Requirements
 ***********************************************************************************
 1. Dotnet, install from https://learn.microsoft.com/en-us/dotnet/core/install/
 2. Python3
-3. APSIM: Add the directory containing the models executable to the system's PATH or python path (to locate the required .dll files). This can be achieved in either of the following ways:
-4. Utilize the APSIM installer provided for this purpose.
-5. Build APSIM from its source code. This is comming soon
-6. Minimum; 8GM RAM, CPU Core i7
+3. APSIM Binary from https://apsim.info
+6. Minimum; 4GB RAM,
 
 .. _Installation:
 
@@ -22,14 +20,28 @@ Installation
 ********************************************************************************
 
 All versions are currently in development, phase and they can be installed as follows:
+- Step 1:
+Register, download and install the Apsim Binary from https://apsim.info Its important to keep track
+of the location of installation of APSIM binary files. We shall shall use in step 3.
+This location of this folder will depend on the operating System.
 
-- Method 1. install from PyPI
+In windows it will be located in
+C:\Program Files\APSIM\{APSIM VERSION}\bin e.g. C:\Program Files\APSIM\2024.5.7493.0\bin
+
+In linux it usually is in /usr/local/lib/apsim/{APSIM VERSION}/bin e.g.
+/usr/local/lib/apsim/2024.8.7571.0/bin
+
+We will need this value for later usage before running the APSIM File Successfully.
+
+-STEP 2:
+
+-- Either install from PyPI
 
 .. code:: bash
 
     pip install apsimNGpy
 
-- Method 1. clone the current development repositry    
+-- Or clone the current development repository
 
 .. code:: bash
 
@@ -37,43 +49,35 @@ All versions are currently in development, phase and they can be installed as fo
     cd apsimNGpy
     pip install .
 
-- Method 2. Use pip straight away and install from github
+You could also install using pip directly from github.
 
 .. code:: bash
 
      pip install git+https://github.com/MAGALA-RICHARD/apsimNGpy.git@dev
 
 
-Debugging import error due to improper SYSTEM APSIM path configuration
-*********************************************************************************
+- STEP 3:
+Set APSIM Binary File Path you stored in step 1
 
-If you have apsim installed and the program refuses to load run the following code at the top of your python script
-before importing any apsimNGpy class, especially class from ApsimNGpy.core modules The classes are  CamelCased.
-
-.. code:: python
-
-    # search for the program binary installation path and add to os.environ as follows
-    import os
-    # A more intuitive way is to use apsimNGpy config Module
-    from apsimNGpy.config import Config
-    # now set the path to ASPIMX binaries
-    Config.set_aPSim_bin_path(path = r'path/toyourapsimbinaryfolder/bin)
-    # in the pythonnet_config module, priority is first given to the user supplied binary path, we also search through the python global env using the os module,
-    # if that fail it searches through other sources such as the user program installation folders.
-    # Not sure whether this can work all the time but you can try changing through os.environ as follows:
-    os.environ['APSIM'] =r'path/toyourapsimbinaryfolder/bin
-    # or
-    os.environ['Models'] =r'path/toyourapsimbinaryfolder/bin
-    # alternatively, you can add the path to the system environmental variables. if this is the case the shutil.which method is used to retrieve that path
-    # if all approaches have been tried and nothing has been returned, I assure you that a value errors will be raised
-    # now we are than we can import any module attached to pythonnet
-    # try importing SoilModel class
-    from apsimNGpy.core.apsim import ApsimModel
+In the file /apsimNGpy/apsimNGpy/config.ini
+ Add the following entry:
+.. code:: ini
+    [Paths]
+    APSIM_LOCATION = /usr/local/lib/apsim/2024.8.7571.0/bin
 
 
 .. _Usage:
 
-The above code is also applicable for running different versions of APSIM models. Please note that if your APSIM installation hasn't been added to the system path, this script line should always be placed at the beginning of your simulation script.
+If you installed from pip into a virtual environment;
+With the virtual environment you can jump straight to the python shell by running apsim_python_shell in terminal
+.. code:: python
+    from apsimNGpy import load_default_simulations
+    crop_model = load_default_simulations('Soybean')
+    # default supported crops include, Soybean, Maize, Wheat.
+    result = crop_model.simulate()
+    print(results)
+    print(model_simulation.simulation_names)
+
 
 Required Dependencies:
 *****************************
@@ -84,8 +88,9 @@ Required Dependencies:
 - xmltodict
 - tqdm
 - requests
+-
 
-Please note that apsimNGpy is tested on Python 3. We are not aware of its performance in Python 2 because it utilizes some of the new libraries like pathlib and f-strings.
+apsimNGpy is tested on python 3.10
 
 Usage
 

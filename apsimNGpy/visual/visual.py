@@ -1,6 +1,19 @@
 import matplotlib.pyplot as plt
 
-from os import startfile
+import os
+import platform
+import subprocess
+from apsimNGpy.visual import visual
+def open_file_in_window(filepath):
+    if platform.system() == 'Darwin':  # macOS
+        subprocess.call(['open', filepath])
+    elif platform.system() == 'Windows':  # Windows
+        os.startfile(filepath)
+    elif platform.system() == 'Linux':  # Linux
+        subprocess.call(['xdg-open', filepath])
+    else:
+        raise OSError('Unsupported operating system')
+
 
 
 def quick_plot(**kwargs):
@@ -20,7 +33,7 @@ def quick_plot(**kwargs):
     plt.close()
 
 
-def contour_plot(**kwargs):
+def contour_plot(preview_in_window =True, **kwargs):
     x = kwargs.get('x')
     y = kwargs.get('y')
     z = kwargs.get('z')
@@ -52,7 +65,8 @@ def contour_plot(**kwargs):
     plt.title(kwargs.get('title', ''), fontsize=20)
     plt.grid(False)
     plt.savefig(fig_name, dpi=450)
-    startfile(fig_name)
-    if show:
+    if preview_in_window:
+         open_file_in_window(fig_name)
+    else:
         plt.show()
     return contour

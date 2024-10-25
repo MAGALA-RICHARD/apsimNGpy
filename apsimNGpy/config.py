@@ -36,17 +36,36 @@ class Config:
          # set the desired path
          >> Config.set_aPSim_bin_path(path = '/path/to/aPSimbinaryfolder/bin')
         """
+        from pathlib import Path
+        """ Send your desired path to the aPSim binary folder to the config module
+        the path should end with bin as the parent directory of the aPSim Model.exe
+        >> Please be careful with adding an uninstalled path, which do not have model.exe file.
+        It won't work and python with throw an error
+        >> example from apsimNGpy.config import Config
+        # check the current path
+         config = Config.get_aPSim_bin_path()
+         # set the desired path
+         >> Config.set_aPSim_bin_path(path = '/path/to/aPSimbinaryfolder/bin')
+         --raises
+            -- value error if the the path is suspected not to be found
+        """
         _path = realpath(path)
+        path_to_search = Path(_path)
+        model_files = list(path_to_search.glob('*Models.*'))
+        # we also dont want to send a path does not work
+        if not path_to_search.is_dir() or not path_to_search.exists():
+            raise FileNotFoundError(f"{path} is not a directory or does not exists")
+
         if _path != cls.get_aPSim_bin_path():
             Is_Model_in_bin_folder = join(_path, 'Models.exe')
-            # if not, we raise assertion error because there is no point to
+            # if not, we raise value error error because there is no point to
             # send a non-working path to the pythonnet config module
             # at this point the user may need to change to another path
-            assert isfile(Is_Model_in_bin_folder), f"aPSim binaries may not be present at this location: {_path}"
+            if not model_files:
+                raise ValueError(f"aPSim binaries may not be present at this location: {_path}")
             cls.config['Paths']['ApSIM_LOCATION'] = _path
             with open('config.ini', 'w') as config_file:
                 cls.config.write(config_file)
-
 
 if __name__ == '__main__':
     # example windows;

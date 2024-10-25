@@ -1,26 +1,22 @@
 """This script is used to provide a simple design of experiments and to facilitate parameter replacement. The earlier
 script we realized was complicated for no good reason"""
-import os, sys
+import os
+import sys
+
 sys.path.append(os.path.dirname(os.path.realpath(__file__)))
 import shutil
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 from pathlib import Path
-from collections import namedtuple
-import numpy as np
-import msvcrt
 import pandas as pd
 from apsimNGpy.experiment.permutations import create_permutations
 from apsimNGpy.utililies.database_utils import get_db_table_names, read_db_table
 from pandas import DataFrame, concat
-from sqlalchemy import create_engine
 from apsimNGpy.parallel.process import custom_parallel
 import warnings
 from os.path import realpath
 from collections import ChainMap
-from apsimNGpy.replacements.replacements import Replacements
 from experiment_utils import (_run_experiment, MetaInfo, copy_to_many,
-                              experiment_runner,
-                              define_factor, Factor, define_cultivar)
+                              experiment_runner)
 
 
 ################################################################################

@@ -28,7 +28,9 @@ from apsimNGpy.utililies.database_utils import read_db_table, get_db_table_names
 import warnings
 from apsimNGpy.utililies.utils import timer
 # py_config = LoadPythonnet()()  # double brackets avoids calling it twice
-
+from apsimNGpy.config import Config
+if not bool(Config.get_aPSim_bin_path()):
+    raise ValueError('Please APSIM binary path not configured! ', UserWarning)
 # now we can safely import C# libraries
 from System.Collections.Generic import *
 from Models.Core import Simulations, ScriptCompiler, Simulation
@@ -1480,6 +1482,11 @@ class ApsiMet(APSIMNG):
 
 
 if __name__ == '__main__':
+    path = '/Applications/APSIM2024.5.7493.0.app/Contents/Resources/bin'
+    from apsimNGpy.config import Config
+
+    Config.set_aPSim_bin_path(path)
+    print(Config.get_aPSim_bin_path())
 
     # test
     from pathlib import Path

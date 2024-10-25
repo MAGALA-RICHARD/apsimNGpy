@@ -119,7 +119,7 @@ class LoadPythonnet:
 
         # return lm, sys, pythonnet.get_runtime_info()
 
-
+LoadPythonnet()()
 # Example usage:
 if __name__ == '__main__':
     loader = LoadPythonnet()

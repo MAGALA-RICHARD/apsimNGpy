@@ -24,6 +24,7 @@ import apsimNGpy.manager.weathermanager as weather
 from functools import cache
 # prepare for the C# import
 from apsimNGpy.core.pythonet_config import LoadPythonnet
+
 from apsimNGpy.utililies.database_utils import read_db_table, get_db_table_names
 import warnings
 from apsimNGpy.utililies.utils import timer
@@ -1494,12 +1495,12 @@ if __name__ == '__main__':
 
     # Model = FileFormat.ReadFromFile[Models.Core.Simulations](model, None, False)
     os.chdir(Path.home())
-    from apsimNGpy.core.base_data import LoadExampleFiles
+    from apsimNGpy.core.base_data import LoadExampleFiles, load_default_simulations
 
     al = LoadExampleFiles(Path.cwd())
     modelm = al.get_maize
 
-    model = APSIMNG(model=None, out_path='me.apsimx')
+    model = load_default_simulations('maize')
     for _ in range(1):
 
         for rn in ['Maize, Soybean, Wheat', 'Maize', 'Soybean, Wheat']:
@@ -1507,15 +1508,17 @@ if __name__ == '__main__':
             # model.RevertCheckpoint()
 
             print(model.extract_user_input('Simple Rotation'))
-            b = perf_counter()
 
-            print(b - a, 'seconds')
-            model.run('Carbon', simulations=['P30511', 'P3051'])
+
+
+            model.run('Report')
             print(model.results.mean(numeric_only=True))
+            b = perf_counter()
+            print(b - a, 'seconds')
 
         a = perf_counter()
 
-        res = model.run_simulations(reports="MaizeR", clean_up=False, results=True)
+        res = model.run_simulations(reports="Report", clean_up=False, results=True)
         b = perf_counter()
         print(b - a, 'seconds')
         mod = model.Simulations

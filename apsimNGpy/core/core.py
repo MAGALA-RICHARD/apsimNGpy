@@ -816,8 +816,18 @@ class APSIMNG:
         return self
 
     # immediately open the file in GUI
-    def show_file_in_APSIM_GUI(self):
-        os.startfile(self.path)
+    def preview_simulation_file_in_gui(self):
+        filepath = self.path
+        import platform
+        import subprocess
+        if platform.system() == 'Darwin':  # macOS
+            subprocess.call(['open', filepath])
+        elif platform.system() == 'Windows':  # Windows
+            os.startfile(filepath)
+        elif platform.system() == 'Linux':  # Linux
+            subprocess.call(['xdg-open', filepath])
+        else:
+            raise OSError('Unsupported operating system')
 
     def _kvtodict(self, kv):
         return {kv[i].Key: kv[i].Value for i in range(kv.Count)}

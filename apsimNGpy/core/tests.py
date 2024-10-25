@@ -1,6 +1,7 @@
 import glob
 import os,sys
 import platform
+from pathlib import Path
 from apsimNGpy.config import Config
 current_path  = os.path.dirname(os.path.abspath(__file__))
 
@@ -8,24 +9,14 @@ sys.path.append(current_path)
 sys.path.append(os.path.dirname(current_path))
 from pythonet_config import GetAPSIMPath
 from core import APSIMNG
+from apsim import ApsimModel
 # auto detect
 loaded = GetAPSIMPath()
-loaded.auto_detect()
-print(current_path)
-if platform.system() == 'Darwin':
-    # Define the pattern
-    pattern = '/Applications/APSIM*.app/Contents/Resources/bin'
-
-    # Use glob to find matching paths
-    matching_paths = glob.glob(pattern)
-
-    # Output the results
-    for path in matching_paths:
-        print(path)
-    if path[0]:
-        Config.set_aPSim_bin_path(path)
+auto = loaded.auto_detect()
+print(auto)
 
 
+dat = Path(current_path)
 
 
 
@@ -50,11 +41,13 @@ if __name__ == '__main__':
             # model.RevertCheckpoint()
 
             print(model.extract_user_input('Simple Rotation'))
-            b = perf_counter()
 
-            print(b - a, 'seconds')
             model.run('report')
-            print(model.results.mean(numeric_only=True))
+            # print(model.results.mean(numeric_only=True))
+
+            # print(model.results.mean(numeric_only=True))
+
+            print(perf_counter() - a, 'seconds, taken')
 
         a = perf_counter()
 

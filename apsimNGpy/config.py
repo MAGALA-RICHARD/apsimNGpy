@@ -22,6 +22,7 @@ def get_aPSim_bin_path():
     CONFIG.read(config_path)
     return CONFIG['Paths']['ApSIM_LOCATION']
 if not exists(config_path):
+    from apsimNGpy.core.path_finders import auto_searched
     __create_config(apsim_path=auto_searched)
 
 if not get_aPSim_bin_path():

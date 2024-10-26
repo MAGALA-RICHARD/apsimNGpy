@@ -27,7 +27,6 @@ if __name__ == '__main__':
     # test
     from pathlib import Path
     from time import perf_counter
-
     # Model = FileFormat.ReadFromFile[Models.Core.Simulations](model, None, False)
     os.chdir(Path.home())
     from apsimNGpy.core.base_data import LoadExampleFiles, load_default_simulations

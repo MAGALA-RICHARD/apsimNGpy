@@ -2,7 +2,7 @@ import configparser
 import os
 import warnings
 from os.path import (realpath, join, isfile, exists)
-from apsimNGpy.core.path_finders import search_from_programs, search_from_users, _apsim_model_is_installed, auto_searched
+from apsimNGpy.core.path_finders import  _apsim_model_is_installed, auto_searched
 
 config_path = realpath('config.ini')
 CONFIG = configparser.ConfigParser()
@@ -36,15 +36,12 @@ def set_aPSim_bin_path(path):
     path_to_search = Path(_path)
     model_files = list(path_to_search.glob('*Models.*'))
     # we also dont want to send a path does not work
-    if not path_to_search.is_dir() or not path_to_search.exists():
-        raise FileNotFoundError(f"{path} is not a directory or does not exists")
-
+    if not _apsim_model_is_installed(_path):
+        raise ValueError(f"files might have been uninstalled at this location{_path}")
     if _path != get_aPSim_bin_path():
         # if not, we raise assertion error because there is no point to
         # send a non-working path to the pythonnet config module
         # at this point the user may need to change to another path
-        if not model_files:
-            raise ValueError(f"aPSim binaries may not be present at this location: {_path}")
         CONFIG['Paths']['ApSIM_LOCATION'] = _path
         with open('config.ini', 'w') as config_file:
             CONFIG.write(config_file)

@@ -2,23 +2,20 @@ import glob
 import os,sys
 import platform
 from pathlib import Path
-from apsimNGpy.config import Config
-
-
 
 current_path  = os.path.dirname(os.path.abspath(__file__))
 
 sys.path.append(current_path)
 sys.path.append(os.path.dirname(current_path))
 from path_finders import  auto_detect_apsim_bin_path
-
+from apsimNGpy.config import get_aPSim_bin_path
+print(get_aPSim_bin_path())
 from core import APSIMNG
 from apsim import ApsimModel
 # auto detect
 
 auto = auto_detect_apsim_bin_path()
 
-print(auto)
 dat = Path(current_path)
 
 
@@ -34,7 +31,7 @@ if __name__ == '__main__':
     modelm = al.get_maize
 
     model = load_default_simulations(crop ='maize')
-    model.preview_simulation_file_in_gui()
+
     for _ in range(1):
 
         for rn in ['Maize, Soybean, Wheat', 'Maize', 'Soybean, Wheat']:

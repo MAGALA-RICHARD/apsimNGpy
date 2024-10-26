@@ -24,7 +24,6 @@ dat = Path(current_path)
 
 
 if __name__ == '__main__':
-
     # test
     from pathlib import Path
     from time import perf_counter

@@ -20,7 +20,7 @@ if __name__ == '__main__':
                                      tag='th', base_file=model_path,
                                      wd=path,
                                      use_thread=True,
-                                     skip_completed=True,
+                                     skip_completed= False,
                                      verbose=False,
                                      test=False,
                                      n_core=6,
@@ -42,7 +42,7 @@ if __name__ == '__main__':
     sim_data = FactorialExperiment.get_simulated_data()[0]
     mn = sim_data.groupby(['FBiom', 'Carbon'])['Yield'].mean()
     "if we dont see any variationa for each of the factors then it is not working configure again"
-    print(mn)
+    #print(mn)
     print(len(FactorialExperiment.factors))
 
 

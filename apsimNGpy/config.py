@@ -22,7 +22,7 @@ def get_aPSim_bin_path():
         return CONFIG['Paths']['ApSIM_LOCATION']
 
 if get_aPSim_bin_path() is None:
-    print("path is not none")
+
     __create_config(auto_searched)
 
 def set_aPSim_bin_path(path):

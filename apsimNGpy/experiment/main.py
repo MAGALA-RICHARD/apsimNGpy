@@ -5,10 +5,10 @@ import shutil
 from os.path import realpath
 from pathlib import Path
 from apsimNGpy.utililies.database_utils import clear_all_tables, clear_table
-from apsimNGpy import custom_parallel
+from apsimNGpy.parallel.process import custom_parallel
 from apsimNGpy.utililies.database_utils import read_db_table
 from apsimNGpy.experiment.experiment_utils import _run_experiment, experiment_runner, define_factor, define_cultivar, \
-    copy_to_many, MetaInfo
+    copy_to_many, MetaInfo, Factor
 from apsimNGpy.experiment.set_ups import track_completed, DeepChainMap, define_parameters
 import warnings
 
@@ -251,14 +251,15 @@ class Experiment:
 
 
 if __name__ == '__main__':
-    path = Path(r'G:/').joinpath('scratchT')
+    path = Path.home().joinpath('scratchT')
+    path.mkdir(exist_ok=True)
     from apsimNGpy.core.base_data import load_default_simulations
 
     # import the model from APSIM.
     # if we simulations_object it,
     # returns a simulation object of apsimNGpy, but we want the path only.
     # model_path = load_default_simulations(crop='maize', simulations_object=False, path=path.parent)
-    model_path = path.joinpath('m.apsimx')
+    model_path = load_default_simulations('maize').path
 
     # define the factors
 
@@ -286,13 +287,14 @@ if __name__ == '__main__':
     FactorialExperiment.add_factor(parameter='Carbon', param_values=[1.4, 2.4, 0.8], factor_type='soils', soil_node='Organic')
     FactorialExperiment.add_factor(parameter='Crops', param_values=['Maize', "Wheat"], factor_type='management', manager_name='Simple '
                                                                                                               'Rotation')
-    # cultivar is edited via the replacement module, any simulation file supplied without Replacements appended
-    # to Simulations node, this method will fail quickly
-    FactorialExperiment.add_factor(parameter='grain_filling', param_values=[300, 450, 650, 700, 500], cultivar_name='B_110',
-                                   commands='[Phenology].GrainFilling.Target.FixedValue', factor_type='cultivar')
+    # # cultivar is edited via the replacement module, any simulation file supplied without Replacements appended
+    # # to Simulations node, this method will fail quickly
+    # FactorialExperiment.add_factor(parameter='grain_filling', param_values=[300, 450, 650, 700, 500], cultivar_name='B_110',
+    #                                commands='[Phenology].GrainFilling.Target.FixedValue', factor_type='cultivar')
 
     FactorialExperiment.clear_data_base()
+    #os.remove(FactorialExperiment.datastorage)
     FactorialExperiment.start_experiment()
     sim_data = FactorialExperiment.get_simulated_data()[0]
-    sim_data.groupby('grain_filling').agg({"Yield": 'mean'})
+
     print(len(FactorialExperiment.factors))

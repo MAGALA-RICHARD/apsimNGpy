@@ -3,16 +3,20 @@ import os,sys
 import platform
 from pathlib import Path
 from apsimNGpy.config import Config
+
+
+
 current_path  = os.path.dirname(os.path.abspath(__file__))
 
 sys.path.append(current_path)
 sys.path.append(os.path.dirname(current_path))
-from pythonet_config import GetAPSIMPath
+from pythonet_config import collect_apsim_path, auto_detect_apsim_bin_path
+from pythonet_config import collect_apsim_path, auto_detect_apsim_bin_path
 from core import APSIMNG
 from apsim import ApsimModel
 # auto detect
-loaded = GetAPSIMPath()
-auto = auto_detect()
+loaded = collect_apsim_path()
+auto = auto_detect_apsim_bin_path()
 
 print(auto)
 dat = Path(current_path)

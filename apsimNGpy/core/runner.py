@@ -5,9 +5,9 @@ import os
 import sqlite3
 import sys
 import pandas as pd
-from apsimNGpy.core.pythonet_config import LoadPythonnet, aPSim_PATH
+from apsimNGpy.core.pythonet_config import load_pythonnet, aPSim_PATH
 apsim_model = aPSim_PATH
-loader = LoadPythonnet()()
+loader = load_pythonnet
 from System.Collections.Generic import *
 from System import *
 from pathlib import Path

@@ -98,25 +98,13 @@ def start_pythonnet():
         return pythonnet.load()
 
 
-@dataclass
-class LoadPythonnet:
+@cache
+def load_pythonnet():
     """
-    A class for loading Python for .NET (pythonnet) and APSIM models.
+    A method for loading Python for .NET (pythonnet) and APSIM models.
 
     This class provides a callable method for initializing the Python for .NET (pythonnet) runtime and loading APSIM models.
-
-    Attributes:
-    ----------
-    None
-    """
-
-    def __init__(self):
-
-        self._aPSim_Path = collect_apsim_path()
-
-    def __call__(self):
-        """
-        Initialize the Python for .NET (pythonnet) runtime and load APSIM models.
+    Initialize the Python for .NET (pythonnet) runtime and load APSIM models.
 
         This method attempts to load the 'coreclr' runtime, and if not found, falls back to an alternate runtime.
         It also sets the APSIM binary path, adds necessary references, and returns a reference to the loaded APSIM models.
@@ -132,35 +120,42 @@ class LoadPythonnet:
 
         Notes:
         It raises a KeyError if APSIM path is not found. Please edit the system environmental variable on your computer.
-        """
-        # try:
-        #     if pythonnet.get_runtime_info() is None:
-        #         pythonnet.load("coreclr")
-        # except:
-        #     print("dotnet not found, trying alternate runtime")
-        #     pythonnet.load()
-        start_pythonnet()
-        # use get because it does not raise key error. it returns none if not found
-        aPSim_path = aPSim_PATH
-        if not aPSim_path:
-            raise KeyError("APSIM is not loaded in the system environmental variable")
+    Attributes:
+    ----------
+    None
+    """
 
-        if 'bin' not in aPSim_path:
-            aPSim_path = os.path.join(aPSim_path, 'bin')
 
-        if not os.path.exists(aPSim_path):
-            raise ValueError("A full path to the binary folder is required or the path is invalid")
-        import sys
-        sys.path.append(aPSim_path)
-        import clr
-        sys = clr.AddReference("System")
-        lm = clr.AddReference("Models")
+
+    _aPSim_Path = collect_apsim_path()
+
+    # try:
+    #     if pythonnet.get_runtime_info() is None:
+    #         pythonnet.load("coreclr")
+    # except:
+    #     print("dotnet not found, trying alternate runtime")
+    #     pythonnet.load()
+    start_pythonnet()
+    # use get because it does not raise key error. it returns none if not found
+    aPSim_path = aPSim_PATH
+    if not aPSim_path:
+        raise KeyError("APSIM is not loaded in the system environmental variable")
+    if 'bin' not in aPSim_path:
+        aPSim_path = os.path.join(aPSim_path, 'bin')
+
+    import sys
+    sys.path.append(aPSim_path)
+    import clr
+    sys = clr.AddReference("System")
+    lm = clr.AddReference("Models")
 
         # return lm, sys, pythonnet.get_runtime_info()
-LoadPythonnet()()
+
+load_pythonnet()
 
 # Example usage:
 if __name__ == '__main__':
-    loader = LoadPythonnet()
-    loaded_models = loader()
+    loader = load_pythonnet()
+    loaded_models = loader
+    import Models
     # try importing the C# models and see if the process is successful

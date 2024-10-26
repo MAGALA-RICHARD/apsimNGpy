@@ -9,3 +9,8 @@ a  = time.perf_counter()
 run(model)
 b = time.perf_counter()
 print(b-a, 'seconds')
+
+from apsimNGpy.config import Config
+
+import apsimNGpy
+print(apsimNGpy.__file__)

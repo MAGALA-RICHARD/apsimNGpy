@@ -21,6 +21,7 @@ def get_aPSim_bin_path():
     CONFIG = configparser.ConfigParser()
     CONFIG.read(config_path)
     return CONFIG['Paths']['ApSIM_LOCATION']
+
 if not exists(config_path):
     auto_searched = auto_detect_apsim_bin_path()
     __create_config(apsim_path=auto_searched)

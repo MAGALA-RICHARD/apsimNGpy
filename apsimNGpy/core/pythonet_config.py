@@ -89,6 +89,7 @@ def load_pythonnet():
 
         # return lm, sys, pythonnet.get_runtime_info()
 
+start_pythonnet()
 load_pythonnet()
 
 # Example usage:

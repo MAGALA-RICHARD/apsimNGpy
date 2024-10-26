@@ -19,7 +19,7 @@ if __name__ == '__main__':
                                      datastorage='test.db',
                                      tag='th', base_file=model_path,
                                      wd=path,
-                                     use_thread=True,
+                                     use_thread=False,
                                      skip_completed= False,
                                      verbose=False,
                                      test=False,

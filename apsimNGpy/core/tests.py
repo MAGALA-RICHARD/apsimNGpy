@@ -24,7 +24,7 @@ dat = Path(current_path)
 
 
 if __name__ == '__main__':
-    # test
+    # test module
     from pathlib import Path
     from time import perf_counter
     # Model = FileFormat.ReadFromFile[Models.Core.Simulations](model, None, False)

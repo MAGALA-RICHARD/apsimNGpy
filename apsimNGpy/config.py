@@ -86,6 +86,7 @@ class Config:
         return set_aPSim_bin_path(_path)
 
 
+
 if __name__ == '__main__':
     # example windows;
     print(get_aPSim_bin_path(), 'after removing .config')

@@ -88,7 +88,6 @@ class Config:
 
 if __name__ == '__main__':
     # example windows;
-    os.remove(config_path)
     print(get_aPSim_bin_path(), 'after removing .config')
     from pathlib import Path
     print (get_aPSim_bin_path())

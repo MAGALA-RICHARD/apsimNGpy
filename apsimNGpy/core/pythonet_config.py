@@ -70,6 +70,7 @@ def auto_detect_apsim_bin_path():
             return _match_pattern_to_path(pattern1) or _match_pattern_to_path(pattern2)
 
 auto_searched = auto_detect_apsim_bin_path()
+print(auto_searched)
 @cache
 def collect_apsim_path():
     """searches for an apsimx path

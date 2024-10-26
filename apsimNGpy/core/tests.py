@@ -32,7 +32,7 @@ if __name__ == '__main__':
 
     model = load_default_simulations(crop ='maize')
 
-    for _ in range(1):
+    for _ in range(4):
 
         for rn in ['Maize, Soybean, Wheat', 'Maize', 'Soybean, Wheat']:
             a = perf_counter()

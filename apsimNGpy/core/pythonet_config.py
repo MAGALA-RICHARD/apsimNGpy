@@ -14,7 +14,29 @@ HOME_DATA = Path.home().joinpath('AppData', 'Local', 'Programs')
 cdrive = os.environ.get('PROGRAMFILES')
 WINDOWS_PROGRAM_FILES = Path(cdrive) if cdrive else None
 
-
+def _apsim_model_is_installed(_path):
+    """
+   Checks if the APSIM model is installed by verifying the presence of binaries, especially if they haven't been deleted. Sometimes, after uninstallation, the `bin` folder remains, so tracking it
+   may give a false indication that the binary path exists due to leftover files.
+   :param _path: path to APSIM model binaries
+    """
+    model_files = False
+    path_to_search = Path(_path)
+    if platform.system() == 'Windows':
+        model_files = list(path_to_search.glob('*Models.exe*'))
+    if platform.system() == 'Darwin':
+        model_files = list(path_to_search.glob('*Models.pdb*'))
+    if model_files:
+        return True
+    else:
+        return False
+def search_from_programs():
+    prog_path = glob.glob(f'{cdrive}/APSIM*/bin')
+    for path_fpath in prog_path:
+        if os.path.isdir(path_fpath) and os.path.exists(path_fpath) and _apsim_model_is_installed(path_fpath):
+            return path_fpath
+        else:
+            return None
 def search_from_users():
     home_path = os.path.realpath(Path.home())
     trial_search = glob.glob(f"{home_path}/AppData/Local/Programs/APSIM*/bin")

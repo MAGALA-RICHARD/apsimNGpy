@@ -2,26 +2,37 @@ import glob
 import os,sys
 import platform
 from pathlib import Path
-
+import logging
 current_path  = os.path.dirname(os.path.abspath(__file__))
+# Set up basic configuration for logging
+logger = logging.basicConfig(level=logging.INFO)
+
+# This will now print to the console
 
 sys.path.append(current_path)
 sys.path.append(os.path.dirname(current_path))
 from path_finders import  auto_detect_apsim_bin_path
 from apsimNGpy.config import get_aPSim_bin_path
-print(get_aPSim_bin_path())
-from core import APSIMNG
-from apsim import ApsimModel
-# auto detect
+
+try:
+    from core import APSIMNG
+    from apsim import ApsimModel
+    # auto detect
+    # for some reasons when imported after compiling, with compiling i mean installing the package so we import directly from the package
+except ImportError:
+    print("passed import error")
+    from apsimNGpy.core.core import APSIMNG
+    from apsimNGpy.core.apsim import ApsimModel
 
 auto = auto_detect_apsim_bin_path()
 
-dat = Path(current_path)
 
+def test():
+    # test auto detect;
+    if auto:
+        logging.info(f"apsim path detected automatically at: {auto}")
+    # test pythonnet
 
-
-if __name__ == '__main__':
-    # test module
     from pathlib import Path
     from time import perf_counter
     # Model = FileFormat.ReadFromFile[Models.Core.Simulations](model, None, False)
@@ -30,15 +41,13 @@ if __name__ == '__main__':
     al = LoadExampleFiles(Path.cwd())
     modelm = al.get_maize
 
-    model = load_default_simulations(crop ='maize')
+    model = load_default_simulations(crop='maize')
 
-    for _ in range(4):
+    for _ in range(2):
 
         for rn in ['Maize, Soybean, Wheat', 'Maize', 'Soybean, Wheat']:
             a = perf_counter()
             # model.RevertCheckpoint()
-
-            print(model.extract_user_input('Simple Rotation'))
 
             model.run('report')
             # print(model.results.mean(numeric_only=True))
@@ -53,14 +62,9 @@ if __name__ == '__main__':
         b = perf_counter()
         print(b - a, 'seconds')
         mod = model.Simulations
-        # xp = mod.FindAllInScope[Models.Manager]('Simple Rotation')
-        # a = [i for i in xp]
-        # for p in a:
-        #  for i in range(len(p.Parameters)):
-        #      kvp =p.Parameters[i]
-        #      if kvp.Key == "Crops":
-        #          updated_kvp = KeyValuePair[str, str](kvp.Key, "UpdatedValue")
-        #          p.Parameters[i] = updated_kvp
-        #      print(p.Parameters[i])
 
+
+
+if __name__ == '__main__':
+    test()
 

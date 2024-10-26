@@ -3,7 +3,7 @@ This module offers a procedural alternative other than object-oriented approach 
 """
 import os
 from functools import singledispatch
-from apsimNGpy.core.pythonet_config import LoadPythonnet
+from apsimNGpy.core import pythonet_config
 # now we can safely import C# libraries
 from System.Collections.Generic import *
 from System import *

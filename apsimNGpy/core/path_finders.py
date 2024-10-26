@@ -68,22 +68,6 @@ def auto_detect_apsim_bin_path():
             return _match_pattern_to_path(pattern1) or _match_pattern_to_path(pattern2)
 
 auto_searched = auto_detect_apsim_bin_path()
-@cache
-def collect_apsim_path():
-    """searches for an apsimx path
-        Find the aPSim installation path using the os module.
-        If aPSim was installed, it is possible the path is added to the os.environ
-        but first we first check is the user has sent their own path, and then we proceed to check to already added path
-        @return: unix or windows path
-          --- if found, or False if not found.
-
-        """
-    from_config = Config.get_aPSim_bin_path()
-    configured = from_config if os.path.exists(from_config) else None
-    return configured or auto_searched or os.getenv("APSIM") or os.getenv(
-        "Models")
-
-
 
 
 

@@ -16,7 +16,6 @@ from System import *
 from System.Collections.Generic import *
 
 FAILED_RUNS = []
-
 sys.path.append(os.path.realpath(apsim_model))
 
 

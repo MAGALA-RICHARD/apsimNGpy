@@ -9,5 +9,4 @@ try:
                'utililies', 'config','APSIMNG']
 except Exception as e:
     # It's good practice to log the exception
-    ...
-
+    pass

@@ -26,9 +26,9 @@ if __name__ == '__main__':
                                      n_core=6,
                                      reports={'Report'})
 
-    FactorialExperiment.add_factor(parameter='Carbon', param_values=[1.4, 2.4, 0.8], factor_type='soils',
+    FactorialExperiment.add_factor(parameter='Carbon', param_values=[1.4,0.2, 0.4, 0.9, 2.4, 0.8], factor_type='soils',
                                    soil_node='Organic')
-    FactorialExperiment.add_factor(parameter='FBiom', param_values=[1.4, 2.4, 0.8], factor_type='soils',
+    FactorialExperiment.add_factor(parameter='FBiom', param_values=[0.045, 1.4, 2.4, 0.8], factor_type='soils',
                                    soil_node='Organic')
 
     # # cultivar is edited via the replacement module, any simulation file supplied without Replacements appended
@@ -40,7 +40,9 @@ if __name__ == '__main__':
     # os.remove(FactorialExperiment.datastorage)
     FactorialExperiment.start_experiment()
     sim_data = FactorialExperiment.get_simulated_data()[0]
-
+    mn = sim_data.groupby(['FBiom', 'Carbon'])['Yield'].mean()
+    "if we dont see any variationa for each of the factors then it is not working configure again"
+    print(mn)
     print(len(FactorialExperiment.factors))
 
 

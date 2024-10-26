@@ -24,7 +24,6 @@ import apsimNGpy.manager.weathermanager as weather
 from functools import cache
 # prepare for the C# import
 from apsimNGpy.core import pythonet_config
-
 from apsimNGpy.utililies.database_utils import read_db_table, get_db_table_names
 import warnings
 from apsimNGpy.utililies.utils import timer

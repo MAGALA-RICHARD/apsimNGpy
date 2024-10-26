@@ -18,12 +18,15 @@ def __create_config(apsim_path = ""):
 
 def get_aPSim_bin_path():
     """We can extract the current path from config.ini"""
+    CONFIG = configparser.ConfigParser()
+    CONFIG.read(config_path)
     return CONFIG['Paths']['ApSIM_LOCATION']
 if not exists(config_path):
     __create_config(apsim_path=auto_searched)
+
 if not get_aPSim_bin_path():
     __create_config(apsim_path=auto_searched)
-print('after', get_aPSim_bin_path())
+
 def set_aPSim_bin_path(path):
     from pathlib import Path
     """ Send your desired path to the aPSim binary folder to the config module

@@ -13,11 +13,9 @@ import apsimNGpy.manager.weathermanager as weather
 import pandas as pd
 import sys
 # prepare for the C# import
-from apsimNGpy.core.pythonet_config import start_pythonnet
-from apsimNGpy.core.pythonet_config import aPSim_PATH as APSIM_PATH
+#from apsimNGpy.core.pythonet_config import start_pythonnet
 
-#py_config = LoadPythonnet()()
-
+from apsimNGpy.core.core import APSIMNG
 # now we can safely import any c# related libraries
 from System.Collections.Generic import *
 from Models.Core import Simulations
@@ -26,7 +24,7 @@ from Models.Soils import Solute, Water, Chemical
 from Models.Soils import Soil, Physical, SoilCrop, Organic, LayerStructure
 import Models
 
-from apsimNGpy.core.core import APSIMNG
+
 
 # constants
 REPORT_PATH = {'Carbon': '[Soil].Nutrient.TotalC/1000 as dyn', 'DUL': '[Soil].SoilWater.PAW as paw', 'N03':

@@ -12,9 +12,9 @@ from core import APSIMNG
 from apsim import ApsimModel
 # auto detect
 loaded = GetAPSIMPath()
-auto = loaded.auto_detect()
+auto = auto_detect()
 
-
+print(auto)
 dat = Path(current_path)
 
 

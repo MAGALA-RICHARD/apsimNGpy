@@ -7,18 +7,23 @@ from apsimNGpy.core.path_finders import  _apsim_model_is_installed, auto_searche
 config_path = realpath('config.ini')
 CONFIG = configparser.ConfigParser()
 CONFIG.read(config_path)
-if not exists(config_path):
+def __create_config(apsim_path = " "):
     CONFIG = configparser.ConfigParser()
-    put_default_path  = auto_searched or " "
+    put_default_path  =  apsim_path
     CONFIG['Paths'] = {'ApSIM_LOCATION': put_default_path}
     with open(config_path, 'w') as configured_file:
         CONFIG.write(configured_file)
+if not exists(config_path):
+    __create_config()
 
 
 def get_aPSim_bin_path():
         """We can extract the current path from config.ini"""
         return CONFIG['Paths']['ApSIM_LOCATION']
 
+if get_aPSim_bin_path() is None:
+    print("path is not none")
+    __create_config(auto_searched)
 
 def set_aPSim_bin_path(path):
     from pathlib import Path

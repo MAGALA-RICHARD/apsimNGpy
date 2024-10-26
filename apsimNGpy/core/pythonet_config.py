@@ -82,7 +82,7 @@ class GetAPSIMPath:
                 # Use glob to find matching paths
                 matching_paths = glob.glob(pattern)
                 for matching_path in matching_paths:
-                    if os.path.isdir(matching_path):
+                    if os.path.isdir(matching_path) and _apsim_model_is_installed(matching_path):
                         return matching_path
                     else:
                         return None

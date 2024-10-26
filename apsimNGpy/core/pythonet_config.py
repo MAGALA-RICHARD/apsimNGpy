@@ -55,7 +55,7 @@ def _match_pattern_to_path(pattern):
             return matching_path
         else:
             return None
-
+@cache
 def auto_detect_apsim_bin_path():
         if platform.system() == 'Windows':
             return  shutil.which("Models") or search_from_programs() or search_from_users()
@@ -69,7 +69,7 @@ def auto_detect_apsim_bin_path():
             pattern2 = '~/.APSIM*/Contents/Resources/bin'
             return _match_pattern_to_path(pattern1) or _match_pattern_to_path(pattern2)
 
-
+auto_searched = auto_detect_apsim_bin_path()
 @cache
 def collect_apsim_path():
     """searches for an apsimx path
@@ -82,7 +82,7 @@ def collect_apsim_path():
         """
     from_config = Config.get_aPSim_bin_path()
     configured = from_config if os.path.exists(from_config) else None
-    return configured or auto_detect_apsim_bin_path() or os.getenv("APSIM") or os.getenv(
+    return configured or auto_searched or os.getenv("APSIM") or os.getenv(
         "Models")
 
 

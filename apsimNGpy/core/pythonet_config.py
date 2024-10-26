@@ -1,10 +1,11 @@
+import glob
 import json
 import os
 import shutil
 from dataclasses import dataclass
 from functools import cache
 from pathlib import Path
-
+import platform
 import pythonnet
 from apsimNGpy.config import (Config)
 from apsimNGpy.utililies.utils import (timer, find_models)
@@ -14,11 +15,26 @@ cdrive = os.environ.get('PROGRAMFILES')
 WINDOWS_PROGRAM_FILES = Path(cdrive) if cdrive else None
 
 
+def search_from_users():
+    home_path = os.path.realpath(Path.home())
+    trial_search = glob.glob(f"{home_path}/AppData/Local/Programs/APSIM*/bin")
+    _path  = None
+    if trial_search:
+        for paths in trial_search:
+            if os.path.isdir(paths) and os.path.exists(paths):
+                _path = Path(paths)
+                return _path
+
+    else:
+        return None
+
+
 class GetAPSIMPath:
     """searches for an apsimx path"""
 
     def __init__(self, user_path=None):
         self.user_apsim_model = user_path
+        self.auto_bin_path  = ' '
 
     @cache
     def _shut(self):
@@ -27,7 +43,30 @@ class GetAPSIMPath:
 
     @cache
     def _search_from_C(self):
-        return find_models(WINDOWS_PROGRAM_FILES, "Models.exe") if WINDOWS_PROGRAM_FILES else None
+        if platform.system() == "Windows":
+            return find_models(WINDOWS_PROGRAM_FILES, "Models.exe") if WINDOWS_PROGRAM_FILES else None
+        else:
+            return None
+
+    def auto_detect(self):
+            if platform.system() == 'Windows':
+                return  self._shut() or find_models(HOME_DATA,
+                                                     "Models.exe") \
+            or self._search_from_C() or search_from_users()
+            if platform.system() == 'Darwin':
+                # we search in applications and give up
+                pattern = '/Applications/APSIM*.app/Contents/Resources/bin'
+
+                # Use glob to find matching paths
+                matching_paths = glob.glob(pattern)
+                for matching_path in matching_paths:
+                    if os.path.isdir(matching_path):
+                        return matching_path
+                    else:
+                        return None
+            else:
+                #TODO to impliment for linnux
+                return None
 
     @cache
     def __call__(self):
@@ -42,9 +81,7 @@ class GetAPSIMPath:
         fromConfig = Config.get_aPSim_bin_path()
         configured = fromConfig if os.path.exists(fromConfig) else None
         return configured or os.getenv("APSIM") or os.getenv(
-            "Models") or self._shut() or find_models(HOME_DATA,
-                                                     "Models.exe") \
-            or self._search_from_C()
+            "Models") or self.auto_detect()
 
 
 aPSim_PATH = GetAPSIMPath()()
@@ -118,8 +155,8 @@ class LoadPythonnet:
         lm = clr.AddReference("Models")
 
         # return lm, sys, pythonnet.get_runtime_info()
-
 LoadPythonnet()()
+
 # Example usage:
 if __name__ == '__main__':
     loader = LoadPythonnet()

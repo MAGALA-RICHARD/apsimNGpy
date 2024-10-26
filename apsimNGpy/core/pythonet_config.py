@@ -24,89 +24,69 @@ def _apsim_model_is_installed(_path):
     path_to_search = Path(_path)
     if platform.system() == 'Windows':
         model_files = list(path_to_search.glob('*Models.exe*'))
-    if platform.system() == 'Darwin':
-        model_files = list(path_to_search.glob('*Models.pdb*'))
+    if platform.system() == 'Darwin' or platform.system() == 'Linux':
+        model_files = list(path_to_search.glob('*Models'))
     if model_files:
         return True
     else:
         return False
 def search_from_programs():
-    prog_path = glob.glob(f'{cdrive}/APSIM*/bin')
-    for path_fpath in prog_path:
-        if os.path.isdir(path_fpath) and os.path.exists(path_fpath) and _apsim_model_is_installed(path_fpath):
-            return path_fpath
-        else:
+    # if the executable is not found, then most likely even if the bin path exists, apsim is uninstalled
+    prog_path = glob.glob(f'{cdrive}/APSIM*/bin/Models.exe')
+    if prog_path:
+      for path_fpath in prog_path:
+            return os.path.dirname(path_fpath)
+    else:
             return None
 def search_from_users():
+    # if the executable is not found, then most likely even if the bin path exists, apsim is uninstalled
     home_path = os.path.realpath(Path.home())
-    trial_search = glob.glob(f"{home_path}/AppData/Local/Programs/APSIM*/bin")
+    trial_search = glob.glob(f"{home_path}/AppData/Local/Programs/APSIM*/bin/Models.exe")
     _path  = None
     if trial_search:
         for paths in trial_search:
-            if os.path.isdir(paths) and os.path.exists(paths):
-                _path = Path(paths)
-                return _path
-
+            return os.path.dirname(paths)
     else:
         return None
-
-
-class GetAPSIMPath:
-    """searches for an apsimx path"""
-
-    def __init__(self, user_path=None):
-        self.user_apsim_model = user_path
-        self.auto_bin_path  = ' '
-
-    @cache
-    def _shut(self):
-        path = shutil.which("Models")
-        return os.path.dirname(path) if path else None
-
-    @cache
-    def _search_from_C(self):
-        if platform.system() == "Windows":
-            return find_models(WINDOWS_PROGRAM_FILES, "Models.exe") if WINDOWS_PROGRAM_FILES else None
+def _match_pattern_to_path(pattern):
+    matching_paths = glob.glob(pattern)
+    for matching_path in matching_paths:
+        if os.path.isdir(matching_path) and _apsim_model_is_installed(matching_path):
+            return matching_path
         else:
             return None
 
-    def auto_detect(self):
-            if platform.system() == 'Windows':
-                return  self._shut() or find_models(HOME_DATA,
-                                                     "Models.exe") \
-            or self._search_from_C() or search_from_users()
-            if platform.system() == 'Darwin':
-                # we search in applications and give up
-                pattern = '/Applications/APSIM*.app/Contents/Resources/bin'
+def auto_detect_apsim_bin_path():
+        if platform.system() == 'Windows':
+            return  shutil.which("Models") or search_from_programs() or search_from_users()
+        if platform.system() == 'Darwin':
+            # we search in applications and give up
+            pattern = '/Applications/APSIM*.app/Contents/Resources/bin'
+            return _match_pattern_to_path(pattern)
 
-                # Use glob to find matching paths
-                matching_paths = glob.glob(pattern)
-                for matching_path in matching_paths:
-                    if os.path.isdir(matching_path) and _apsim_model_is_installed(matching_path):
-                        return matching_path
-                    else:
-                        return None
-            else:
-                #TODO to impliment for linnux
-                return None
+        if platform.system() == 'Linux':
+            pattern1  = '/usr/local/APSIM*/Contents/Resources/bin'
+            pattern2 = '~/.APSIM*/Contents/Resources/bin'
+            return _match_pattern_to_path(pattern1) or _match_pattern_to_path(pattern2)
 
-    @cache
-    def __call__(self):
-        """
+
+@cache
+def collect_apsim_path():
+    """searches for an apsimx path
         Find the aPSim installation path using the os module.
         If aPSim was installed, it is possible the path is added to the os.environ
         but first we first check is the user has sent their own path, and then we proceed to check to already added path
-        Returns:
-        - str or False: The aPSim installation path if found, or False if not found.
+        @return: unix or windows path
+          --- if found, or False if not found.
 
         """
-        fromConfig = Config.get_aPSim_bin_path()
-        configured = fromConfig if os.path.exists(fromConfig) else None
-        return configured or os.getenv("APSIM") or os.getenv(
-            "Models") or self.auto_detect()
+    from_config = Config.get_aPSim_bin_path()
+    configured = from_config if os.path.exists(from_config) else None
+    return configured or auto_detect_apsim_bin_path() or os.getenv("APSIM") or os.getenv(
+        "Models")
 
 
-aPSim_PATH = GetAPSIMPath()()
+aPSim_PATH = collect_apsim_path()
 
 
 def start_pythonnet():
@@ -132,7 +112,7 @@ class LoadPythonnet:
 
     def __init__(self):
 
-        self._aPSim_Path = GetAPSIMPath()()
+        self._aPSim_Path = collect_apsim_path()
 
     def __call__(self):
         """

@@ -80,7 +80,7 @@ def read_db_table(db, report_name):
         The function establishes a connection to the specified SQLite database, constructs and executes a SQL query
         to select all records from the specified table, fetches the results into a DataFrame, then closes the database connection.
 
-        Example:
+        Examples:
             # Define the database and the table name
             database_path = 'your_database.sqlite'
             table_name = 'your_table'

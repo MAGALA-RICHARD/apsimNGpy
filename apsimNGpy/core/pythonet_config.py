@@ -14,7 +14,7 @@ HOME_DATA = Path.home().joinpath('AppData', 'Local', 'Programs')
 cdrive = os.environ.get('PROGRAMFILES')
 WINDOWS_PROGRAM_FILES = Path(cdrive) if cdrive else None
 
-
+@cache
 def search_from_users():
     home_path = os.path.realpath(Path.home())
     trial_search = glob.glob(f"{home_path}/AppData/Local/Programs/APSIM*/bin")

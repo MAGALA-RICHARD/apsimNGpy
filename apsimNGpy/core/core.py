@@ -28,8 +28,8 @@ from apsimNGpy.utililies.database_utils import read_db_table, get_db_table_names
 import warnings
 from apsimNGpy.utililies.utils import timer
 # py_config = LoadPythonnet()()  # double brackets avoids calling it twice
-from apsimNGpy.config import Config
-if not bool(Config.get_aPSim_bin_path()):
+from apsimNGpy.config import get_aPSim_bin_path
+if not bool(get_aPSim_bin_path()):
     raise ValueError('Please APSIM binary path not configured! ', UserWarning)
 # now we can safely import C# libraries
 from System.Collections.Generic import *

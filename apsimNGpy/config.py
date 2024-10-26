@@ -3,7 +3,7 @@ import os
 import warnings
 from os.path import (realpath, join, isfile, exists)
 
-from apsimNGpy.core.path_finders import  _apsim_model_is_installed, auto_searched
+from apsimNGpy.core.path_finders import  _apsim_model_is_installed, auto_detect_apsim_bin_path
 
 config_path = realpath('config.ini')
 CONFIG = configparser.ConfigParser()
@@ -22,10 +22,11 @@ def get_aPSim_bin_path():
     CONFIG.read(config_path)
     return CONFIG['Paths']['ApSIM_LOCATION']
 if not exists(config_path):
-    from apsimNGpy.core.path_finders import auto_searched
+    auto_searched = auto_detect_apsim_bin_path()
     __create_config(apsim_path=auto_searched)
 
 if not get_aPSim_bin_path():
+    auto_searched = auto_detect_apsim_bin_path()
     __create_config(apsim_path=auto_searched)
 
 def set_aPSim_bin_path(path):

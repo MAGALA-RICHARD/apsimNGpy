@@ -87,7 +87,7 @@ class Config:
 if __name__ == '__main__':
     # example windows;
     from pathlib import Path
-
+    print (get_aPSim_bin_path())
     ax = auto_searched
 
     Config.set_aPSim_bin_path(ax)

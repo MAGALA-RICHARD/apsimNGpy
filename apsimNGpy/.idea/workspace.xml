@@ -4,21 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5d471312-8496-4246-98d6-790439318160" name="Changes" comment="replacements">
-      <change afterPath="$PROJECT_DIR$/parallel/csp/obj/rider.project.model.nuget.info" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config.ini" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/parallel/csp/obj/Debug/net6.0/csp.AssemblyInfo.cs" beforeDir="false" afterPath="$PROJECT_DIR$/parallel/csp/obj/Debug/net6.0/csp.AssemblyInfo.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/parallel/csp/obj/Debug/net6.0/csp.AssemblyInfoInputs.cache" beforeDir="false" afterPath="$PROJECT_DIR$/parallel/csp/obj/Debug/net6.0/csp.AssemblyInfoInputs.cache" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/parallel/csp/obj/Debug/net6.0/csp.GeneratedMSBuildEditorConfig.editorconfig" beforeDir="false" afterPath="$PROJECT_DIR$/parallel/csp/obj/Debug/net6.0/csp.GeneratedMSBuildEditorConfig.editorconfig" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/parallel/csp/obj/Debug/net6.0/csp.RazorAssemblyInfo.cache" beforeDir="false" afterPath="$PROJECT_DIR$/parallel/csp/obj/Debug/net6.0/csp.RazorAssemblyInfo.cache" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/parallel/csp/obj/Debug/net6.0/csp.assets.cache" beforeDir="false" afterPath="$PROJECT_DIR$/parallel/csp/obj/Debug/net6.0/csp.assets.cache" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/parallel/csp/obj/Debug/net6.0/csp.csproj.AssemblyReference.cache" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/parallel/csp/obj/csp.csproj.nuget.dgspec.json" beforeDir="false" afterPath="$PROJECT_DIR$/parallel/csp/obj/csp.csproj.nuget.dgspec.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/parallel/csp/obj/csp.csproj.nuget.g.props" beforeDir="false" afterPath="$PROJECT_DIR$/parallel/csp/obj/csp.csproj.nuget.g.props" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/parallel/csp/obj/project.assets.json" beforeDir="false" afterPath="$PROJECT_DIR$/parallel/csp/obj/project.assets.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/parallel/csp/obj/project.nuget.cache" beforeDir="false" afterPath="$PROJECT_DIR$/parallel/csp/obj/project.nuget.cache" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/replacements/replacements.py" beforeDir="false" afterPath="$PROJECT_DIR$/replacements/replacements.py" afterDir="false" />
+    <list default="true" id="5d471312-8496-4246-98d6-790439318160" name="Changes" comment="no import of modules calling pythonnet api">
+      <change beforePath="$PROJECT_DIR$/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/__init__.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -33,7 +20,15 @@
     </option>
   </component>
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$/.." value="development_0.27.8" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
   </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 3
@@ -43,47 +38,47 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_ADD_EXTERNAL_FILES": "true",
-    "Python.__init__.executor": "Run",
-    "Python.api.executor": "Run",
-    "Python.apsim.executor": "Run",
-    "Python.base_data.executor": "Run",
-    "Python.config.executor": "Run",
-    "Python.core.executor": "Run",
-    "Python.glue.executor": "Run",
-    "Python.logger.executor": "Run",
-    "Python.met_functions.executor": "Run",
-    "Python.model_loader.executor": "Run",
-    "Python.problem.executor": "Run",
-    "Python.process.executor": "Run",
-    "Python.pythonet_config.executor": "Run",
-    "Python.replacements.executor": "Run",
-    "Python.runner.executor": "Run",
-    "Python.senstivity.executor": "Run",
-    "Python.settings.executor": "Run",
-    "Python.sobol.executor": "Run",
-    "Python.soilmanager.executor": "Run",
-    "Python.tools.executor": "Run",
-    "Python.utils.executor": "Run",
-    "Python.variable.executor": "Run",
-    "Python.weathermanager.executor": "Run",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "main",
-    "last_opened_file_path": "D:/package/apsimNGpy/setup.py",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "inlay.hints",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;Python.__init__.executor&quot;: &quot;Run&quot;,
+    &quot;Python.api.executor&quot;: &quot;Run&quot;,
+    &quot;Python.apsim.executor&quot;: &quot;Run&quot;,
+    &quot;Python.base_data.executor&quot;: &quot;Run&quot;,
+    &quot;Python.config.executor&quot;: &quot;Run&quot;,
+    &quot;Python.core.executor&quot;: &quot;Run&quot;,
+    &quot;Python.glue.executor&quot;: &quot;Run&quot;,
+    &quot;Python.logger.executor&quot;: &quot;Run&quot;,
+    &quot;Python.met_functions.executor&quot;: &quot;Run&quot;,
+    &quot;Python.model_loader.executor&quot;: &quot;Run&quot;,
+    &quot;Python.problem.executor&quot;: &quot;Run&quot;,
+    &quot;Python.process.executor&quot;: &quot;Run&quot;,
+    &quot;Python.pythonet_config.executor&quot;: &quot;Run&quot;,
+    &quot;Python.replacements.executor&quot;: &quot;Run&quot;,
+    &quot;Python.runner.executor&quot;: &quot;Run&quot;,
+    &quot;Python.senstivity.executor&quot;: &quot;Run&quot;,
+    &quot;Python.settings.executor&quot;: &quot;Run&quot;,
+    &quot;Python.sobol.executor&quot;: &quot;Run&quot;,
+    &quot;Python.soilmanager.executor&quot;: &quot;Run&quot;,
+    &quot;Python.tools.executor&quot;: &quot;Run&quot;,
+    &quot;Python.utils.executor&quot;: &quot;Run&quot;,
+    &quot;Python.variable.executor&quot;: &quot;Run&quot;,
+    &quot;Python.weathermanager.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/package/apsimNGpy/setup.py&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;inlay.hints&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="D:\package\apsimNGpy\apsimNGpy" />
@@ -93,7 +88,27 @@
       <recent name="D:\ACPd\Bear creek simulations" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.replacements">
+  <component name="RunManager" selected="Python.__init__">
+    <configuration name="__init__" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="apsimNGpy" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/__init__.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
       <module name="apsimNGpy" />
       <option name="ENV_FILES" value="" />
@@ -140,6 +155,26 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="config" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="apsimNGpy" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/config.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="model_loader" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="apsimNGpy" />
       <option name="ENV_FILES" value="" />
@@ -163,57 +198,14 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="process" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="apsimNGpy" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/parallel" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/parallel/process.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="true" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="pythonet_config" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="apsimNGpy" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/core" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/core/pythonet_config.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="true" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
     <configuration name="replacements" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="apsimNGpy" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/replacements" />
       <option name="IS_MODULE_SDK" value="true" />
@@ -231,11 +223,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.__init__" />
+        <item itemvalue="Python.config" />
         <item itemvalue="Python.replacements" />
         <item itemvalue="Python.model_loader" />
         <item itemvalue="Python.apsim" />
-        <item itemvalue="Python.pythonet_config" />
-        <item itemvalue="Python.process" />
       </list>
     </recent_temporary>
   </component>
@@ -315,62 +307,7 @@
       <workItem from="1722392396768" duration="2278000" />
       <workItem from="1722611343474" duration="1285000" />
       <workItem from="1723146818292" duration="1124000" />
-    </task>
-    <task id="LOCAL-00313" summary="visual">
-      <option name="closed" value="true" />
-      <created>1720631213216</created>
-      <option name="number" value="00313" />
-      <option name="presentableId" value="LOCAL-00313" />
-      <option name="project" value="LOCAL" />
-      <updated>1720631213216</updated>
-    </task>
-    <task id="LOCAL-00314" summary="visual">
-      <option name="closed" value="true" />
-      <created>1720813936141</created>
-      <option name="number" value="00314" />
-      <option name="presentableId" value="LOCAL-00314" />
-      <option name="project" value="LOCAL" />
-      <updated>1720813936142</updated>
-    </task>
-    <task id="LOCAL-00315" summary="visual">
-      <option name="closed" value="true" />
-      <created>1720843175491</created>
-      <option name="number" value="00315" />
-      <option name="presentableId" value="LOCAL-00315" />
-      <option name="project" value="LOCAL" />
-      <updated>1720843175491</updated>
-    </task>
-    <task id="LOCAL-00316" summary="config apsim. users can set the apsim bin folder path">
-      <option name="closed" value="true" />
-      <created>1720846423078</created>
-      <option name="number" value="00316" />
-      <option name="presentableId" value="LOCAL-00316" />
-      <option name="project" value="LOCAL" />
-      <updated>1720846423079</updated>
-    </task>
-    <task id="LOCAL-00317" summary="config apsim. users can set the apsim bin folder path">
-      <option name="closed" value="true" />
-      <created>1720891401357</created>
-      <option name="number" value="00317" />
-      <option name="presentableId" value="LOCAL-00317" />
-      <option name="project" value="LOCAL" />
-      <updated>1720891401358</updated>
-    </task>
-    <task id="LOCAL-00318" summary="config apsim. users can set the apsim bin folder path">
-      <option name="closed" value="true" />
-      <created>1720891751972</created>
-      <option name="number" value="00318" />
-      <option name="presentableId" value="LOCAL-00318" />
-      <option name="project" value="LOCAL" />
-      <updated>1720891751973</updated>
-    </task>
-    <task id="LOCAL-00319" summary="config apsim. users can set the apsim bin folder path">
-      <option name="closed" value="true" />
-      <created>1720892337706</created>
-      <option name="number" value="00319" />
-      <option name="presentableId" value="LOCAL-00319" />
-      <option name="project" value="LOCAL" />
-      <updated>1720892337706</updated>
+      <workItem from="1729088815231" duration="4985000" />
     </task>
     <task id="LOCAL-00320" summary="config apsim. users can set the apsim bin folder path">
       <option name="closed" value="true" />
@@ -708,7 +645,63 @@
       <option name="project" value="LOCAL" />
       <updated>1723147271613</updated>
     </task>
-    <option name="localTasksCounter" value="362" />
+    <task id="LOCAL-00362" summary="deleted">
+      <option name="closed" value="true" />
+      <created>1729088887759</created>
+      <option name="number" value="00362" />
+      <option name="presentableId" value="LOCAL-00362" />
+      <option name="project" value="LOCAL" />
+      <updated>1729088887759</updated>
+    </task>
+    <task id="LOCAL-00363" summary="deleted">
+      <option name="closed" value="true" />
+      <created>1729089011991</created>
+      <option name="number" value="00363" />
+      <option name="presentableId" value="LOCAL-00363" />
+      <option name="project" value="LOCAL" />
+      <updated>1729089011992</updated>
+    </task>
+    <task id="LOCAL-00364" summary="no import of modules calling pythonnet api">
+      <option name="closed" value="true" />
+      <created>1729089063880</created>
+      <option name="number" value="00364" />
+      <option name="presentableId" value="LOCAL-00364" />
+      <option name="project" value="LOCAL" />
+      <updated>1729089063881</updated>
+    </task>
+    <task id="LOCAL-00365" summary="no import of modules calling pythonnet api">
+      <option name="closed" value="true" />
+      <created>1729090527445</created>
+      <option name="number" value="00365" />
+      <option name="presentableId" value="LOCAL-00365" />
+      <option name="project" value="LOCAL" />
+      <updated>1729090527445</updated>
+    </task>
+    <task id="LOCAL-00366" summary="no import of modules calling pythonnet api">
+      <option name="closed" value="true" />
+      <created>1729091001126</created>
+      <option name="number" value="00366" />
+      <option name="presentableId" value="LOCAL-00366" />
+      <option name="project" value="LOCAL" />
+      <updated>1729091001126</updated>
+    </task>
+    <task id="LOCAL-00367" summary="no import of modules calling pythonnet api">
+      <option name="closed" value="true" />
+      <created>1729102789261</created>
+      <option name="number" value="00367" />
+      <option name="presentableId" value="LOCAL-00367" />
+      <option name="project" value="LOCAL" />
+      <updated>1729102789262</updated>
+    </task>
+    <task id="LOCAL-00368" summary="no import of modules calling pythonnet api">
+      <option name="closed" value="true" />
+      <created>1729102889977</created>
+      <option name="number" value="00368" />
+      <option name="presentableId" value="LOCAL-00368" />
+      <option name="project" value="LOCAL" />
+      <updated>1729102889978</updated>
+    </task>
+    <option name="localTasksCounter" value="369" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -726,7 +719,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="keep the simulations in memory" />
     <MESSAGE value="change som" />
     <MESSAGE value="dev version" />
     <MESSAGE value="dev______version" />
@@ -734,7 +726,6 @@
     <MESSAGE value="core_changes" />
     <MESSAGE value="un" />
     <MESSAGE value="bacjed data changed" />
-    <MESSAGE value="deleted" />
     <MESSAGE value="new approach" />
     <MESSAGE value="update readme" />
     <MESSAGE value="updated database functgions" />
@@ -751,7 +742,9 @@
     <MESSAGE value="import" />
     <MESSAGE value="no circular import" />
     <MESSAGE value="replacements" />
-    <option name="LAST_COMMIT_MESSAGE" value="replacements" />
+    <MESSAGE value="deleted" />
+    <MESSAGE value="no import of modules calling pythonnet api" />
+    <option name="LAST_COMMIT_MESSAGE" value="no import of modules calling pythonnet api" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

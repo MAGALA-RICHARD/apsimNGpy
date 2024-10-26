@@ -37,6 +37,7 @@ if __name__ == '__main__':
     modelm = al.get_maize
 
     model = load_default_simulations(crop ='maize')
+    model.preview_simulation_file_in_gui()
     for _ in range(1):
 
         for rn in ['Maize, Soybean, Wheat', 'Maize', 'Soybean, Wheat']:

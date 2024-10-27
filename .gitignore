@@ -201,3 +201,6 @@ apsimNGpy/manager/*.apsimx
 apsimNGpy/manager/*.db-shm
 apsimNGpy/manager/*.db
 apsimNGpy/manager/*.db-wal
+
+apsimNGpy/manager/*.met
+apsimNGpy/manager/weatherdata

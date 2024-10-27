@@ -49,7 +49,7 @@ def set_aPSim_bin_path(path):
     _path = realpath(path)
     path_to_search = Path(_path)
     model_files = list(path_to_search.glob('*Models.*'))
-    # we also dont want to send a path does not work
+    # we also don't want to send a path does not work
     if not _apsim_model_is_installed(_path):
         raise ValueError(f"files might have been uninstalled at this location{_path}")
     if _path != get_aPSim_bin_path():
@@ -104,7 +104,3 @@ if __name__ == '__main__':
     print(get_aPSim_bin_path())
 
 
-    # # This is an example if apsim is installed at the user's directory'
-    # Home_aPSim = list(Path.home().joinpath('AppData', 'Local', 'Programs').rglob('*2022.12.7130.0'))[0].joinpath('bin')
-    # Config.set_aPSim_bin_path(Home_aPSim)
-    # print(Config.get_aPSim_bin_path())

@@ -17,8 +17,8 @@ from apsimNGpy.config import get_aPSim_bin_path
 try:
     from core import APSIMNG
     from apsim import ApsimModel
-    # auto detect
-    # for some reasons when imported after compiling, with compiling i mean installing the package so we import directly from the package
+    # auto-detect for some reasons when imported after compiling, with compiling i mean installing the package so we
+    # import directly from the package
 except ImportError:
     logging.info("passed import error")
     from apsimNGpy.core.core import APSIMNG

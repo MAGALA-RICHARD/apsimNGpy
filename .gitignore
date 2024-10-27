@@ -187,3 +187,4 @@ fabric.properties
 
 # configuration file
 *.ini
+apsimNGpy/core/*.apsimx

@@ -6,7 +6,7 @@ from os.path import (realpath, join, isfile, exists, dirname)
 from apsimNGpy.core.path_finders import  _apsim_model_is_installed, auto_detect_apsim_bin_path
 
 config_path =join(dirname(__file__), 'config.ini')
-from apsimNGpy import CONFIG_PATH as config_path
+
 CONFIG = configparser.ConfigParser()
 CONFIG.read(config_path)
 

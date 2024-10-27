@@ -116,6 +116,7 @@ class APSIMNG:
         self._DataStore = self.model_info.DataStore
         self.path = self.model_info.path
         self._met_file = kwargs.get('met_file')
+        self.init_model()
 
     def run_simulations(self, results=None, reports=None, clean_up=False):
         """
@@ -1503,11 +1504,13 @@ if __name__ == '__main__':
 
     al = LoadExampleFiles(Path.cwd())
     modelm = al.get_maize
-    a = perf_counter()
+
     model = load_default_simulations('maize')
+    a = perf_counter()
+    model.init_model()
     b = perf_counter()
     print(b - a, 'seconds for initialisation', )
-    model.init_model()
+
     for _ in range(1):
 
         for rn in ['Maize, Soybean, Wheat', 'Maize', 'Soybean, Wheat']:

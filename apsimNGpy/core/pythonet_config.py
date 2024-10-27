@@ -62,8 +62,9 @@ def load_pythonnet():
     system.path.append(aPSim_path)
     import clr
     start_pythonnet()
-    sys = clr.AddReference("System")
-    lm = clr.AddReference("Models")
+    SYSTEM = clr.AddReference("System")
+
+    MMODELSS = clr.AddReference("Models")
 
     # return lm, sys, pythonnet.get_runtime_info()
 

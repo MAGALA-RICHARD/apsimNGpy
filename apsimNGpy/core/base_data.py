@@ -2,11 +2,11 @@ import os.path
 from importlib.resources import files
 from os.path import join, realpath, dirname, exists, split, basename
 from os import listdir, walk, getcwd, mkdir
-from apsimNGpy.core.pythonet_config import LoadPythonnet, aPSim_PATH
+from apsimNGpy.config import get_aPSim_bin_path
 import shutil
 from apsimNGpy import data as DATA
+from pathlib import Path
 
-conf = LoadPythonnet()()
 from apsimNGpy.core.apsim import ApsimModel as SoilModel
 from pathlib import Path
 from functools import cache
@@ -129,7 +129,7 @@ class LoadExampleFiles:
         """
         self.weather_example = None
         if path is None:
-            self.path = os.getcwd()
+            self.path = realpath(Path.home())
         else:
             self.path = path
 
@@ -234,10 +234,7 @@ class LoadExampleFiles:
         return SoilModel(self.get_maize_no_till)
 
 
-try:
-    pat = aPSim_PATH
-except KeyError:
-    pat = aPSim_PATH
+pat = get_aPSim_bin_path()
 if pat:
     apsim = os.path.dirname(pat)
     examples = join(apsim, 'Examples')
@@ -276,7 +273,7 @@ def __get_example(crop, path=None, simulations_object=True):
     OSError: If there are issues with copying or replacing files.
     """
     if not path:
-        copy_path = os.getcwd()
+        copy_path = realpath(Path.home())
     else:
         copy_path = path
 

@@ -1,24 +1,23 @@
 """
 This module offers a procedural alternative other than object-oriented approach provided in api and ApsimModel classes
 """
-import os
+
 from functools import singledispatch
-from apsimNGpy.core.pythonet_config import LoadPythonnet
+
+from apsimNGpy.core import pythonet_config
+
+pyth = pythonet_config
 # now we can safely import C# libraries
 from System.Collections.Generic import *
 from System import *
-from Models.Core.ApsimFile import FileFormat
-from Models.Climate import Weather
-from Models.Soils import Soil, Physical, SoilCrop, Organic
 import Models
-from Models.PMF import Cultivar
 from apsimNGpy.core.apsim_file import XFile as load_model
 import json
-from os.path import (dirname, realpath, isfile)
+from os.path import (realpath)
 from os import chdir
-from pathlib import Path
 import shutil
 from collections import namedtuple
+from pathlib import Path
 
 
 def load_from_dict(dict_data, out):

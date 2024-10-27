@@ -1,19 +1,21 @@
-import os.path as osp
-import os
+from apsimNGpy.core.base_data import load_default_simulations
+
+model = load_default_simulations(crop='maize')
+
+
+def run(model):
+    for _ in [1]:
+        model
+        model.run("report")
+
+
 import time
-from pathlib import Path
-from dataclasses import dataclass
 
+a = time.perf_counter()
+run(model)
+b = time.perf_counter()
+print(b - a, 'seconds')
 
-def _check_path(apsim_version):
-    path = True if osp.exists(apsim_version) and apsim_version.endswith("bin") and 'APSIM' in apsim_version else None
+import apsimNGpy
 
-# option for changing apsim model
-class Options:
-    def __init__(self, path):
-        self.__path2_apsim = path
-
-    @property
-    def APSIMPATH(self):
-        return self.__path2_apsim if _check_path(self.__path2_apsim) else None
-
+print(apsimNGpy.__file__)

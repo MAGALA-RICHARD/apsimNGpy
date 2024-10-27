@@ -1,6 +1,6 @@
-
+from apsimNGpy import config
 try:
-    from apsimNGpy import core, replacements, manager, utililies, config
+    from apsimNGpy import core, replacements, manager, utililies
     from apsimNGpy.core.core import APSIMNG
     from apsimNGpy.core.apsim import ApsimModel
 

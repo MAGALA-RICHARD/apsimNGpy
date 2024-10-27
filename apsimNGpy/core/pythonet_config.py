@@ -1,27 +1,19 @@
 import os
 from functools import cache
-
+import configparser
 import pythonnet
-
-from apsimNGpy.config import get_aPSim_bin_path
+import sys as system
 
 
 @cache
-def collect_apsim_path():
-    """searches for an apsimx path
-        Find the aPSim installation path using the os module.
-        If aPSim was installed, it is possible the path is added to the os.environ
-        but first we first check is the user has sent their own path, and then we proceed to check to already added path
-        @return: unix or windows path
-          --- if found, or False if not found.
-
-        """
-    from_config = get_aPSim_bin_path()
-    configured = from_config if os.path.exists(from_config) else None
-    return configured
+def get_pythonnet_config():
+    config_path = os.path.realpath('config.ini')
+    CONFIG = configparser.ConfigParser()
+    CONFIG.read(config_path)
+    return CONFIG['Paths']['ApSIM_LOCATION']
 
 
-aPSim_PATH = get_aPSim_bin_path()
+aPSim_PATH = get_pythonnet_config()
 
 
 def start_pythonnet():
@@ -60,7 +52,6 @@ def load_pythonnet():
     None
     """
 
-
     _aPSim_Path = aPSim_PATH
 
     # try:
@@ -76,15 +67,13 @@ def load_pythonnet():
         raise KeyError("APSIM is not loaded in the system environmental variable")
     if 'bin' not in aPSim_path:
         aPSim_path = os.path.join(aPSim_path, 'bin')
-
-    import sys
-    sys.path.append(aPSim_path)
+    system.path.append(aPSim_path)
     import clr
     start_pythonnet()
     sys = clr.AddReference("System")
     lm = clr.AddReference("Models")
 
-        # return lm, sys, pythonnet.get_runtime_info()
+    # return lm, sys, pythonnet.get_runtime_info()
 
 
 load_pythonnet()

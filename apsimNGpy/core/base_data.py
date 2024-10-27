@@ -129,7 +129,7 @@ class LoadExampleFiles:
         """
         self.weather_example = None
         if path is None:
-            self.path = os.getcwd()
+            self.path = realpath(Path.home())
         else:
             self.path = path
 
@@ -273,7 +273,7 @@ def __get_example(crop, path=None, simulations_object=True):
     OSError: If there are issues with copying or replacing files.
     """
     if not path:
-        copy_path = os.getcwd()
+        copy_path = realpath(Path.home())
     else:
         copy_path = path
 

@@ -2,8 +2,10 @@ import glob
 import os
 import platform
 from functools import cache
+from os.path import (join, dirname)
 from pathlib import Path
 
+CONFIG_PATH = join(dirname(dirname(__file__)), 'config.ini')
 HOME_DATA = Path.home().joinpath('AppData', 'Local', 'Programs')
 cdrive = os.environ.get('PROGRAMFILES')
 

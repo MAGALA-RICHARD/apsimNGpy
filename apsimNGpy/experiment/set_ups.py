@@ -163,7 +163,7 @@ def set_experiment(*, datastorage,
     meta_ = dict(tag=tag, wd=_path,
                  simulation_id=simulation_id,
                  datastorage=realpath(datastorage),
-                 work_space = _path,
+                 work_space=_path,
                  n_core=n_core, **kwargs)
 
     perms = define_parameters(factors_list=factors)
@@ -208,4 +208,3 @@ def set_experiment(*, datastorage,
     meta_['data size'] = size_in_mb
 
     return meta_
-

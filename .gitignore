@@ -186,4 +186,4 @@ fabric.properties
 .Rproj.user
 
 # configuration file
-config.ini
+*.ini

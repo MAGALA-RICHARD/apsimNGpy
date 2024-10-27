@@ -5,8 +5,9 @@ from pathlib import Path
 import logging
 current_path  = os.path.dirname(os.path.abspath(__file__))
 # Set up basic configuration for logging
-logger = logging.basicConfig(level=logging.INFO)
+logging.basicConfig(format='%(asctime)s :: %(message)s', level=logging.INFO)
 
+user_id = current_path
 # This will now print to the console
 
 sys.path.append(current_path)
@@ -51,8 +52,8 @@ def test():
             # print(model.results.mean(numeric_only=True))
 
             # print(model.results.mean(numeric_only=True))
-
-            print(perf_counter() - a, 'seconds, taken')
+            msg  =f"{perf_counter() - a} seconds, taken"
+            logging.info(msg=msg, )
 
         a = perf_counter()
 

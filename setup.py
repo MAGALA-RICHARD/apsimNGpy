@@ -5,12 +5,9 @@ from os.path import realpath
 
 from manager.in_pipeline import path
 
-
-
 VERSION = '0.0.27.9'
 DESCRIPTION = 'apsimx next generation package interface'
 LONG_DESCRIPTION = 'run, edit, download soils and weather and interact with the apsimx file'
-
 
 with open('README.rst') as readme_file:
     readme = readme_file.read()
@@ -58,4 +55,3 @@ setup(
 
     ]
 )
-

@@ -1,9 +1,7 @@
 from pathlib import Path
-from experiment_utils import _run_experiment, experiment_runner
-from apsimNGpy.experiment.set_ups import define_parameters as define_factor
-from set_ups import set_experiment
-from apsimNGpy.parallel.process import custom_parallel
+
 from apsimNGpy.experiment.main import Experiment
+
 if __name__ == '__main__':
     path = Path.home().joinpath('scratchT')
     path.mkdir(exist_ok=True)
@@ -20,14 +18,15 @@ if __name__ == '__main__':
                                      tag='th', base_file=model_path,
                                      wd=path,
                                      use_thread=False,
-                                     skip_completed= False,
+                                     skip_completed=False,
                                      verbose=False,
                                      test=False,
                                      n_core=6,
                                      reports={'Report'})
 
-    FactorialExperiment.add_factor(parameter='Carbon', param_values=[1.4,0.2, 0.4, 0.9, 2.4, 0.8], factor_type='soils',
+    FactorialExperiment.add_factor(parameter='Carbon', param_values=[1.4, 0.2, 0.4, 0.9, 2.4, 0.8], factor_type='soils',
                                    soil_node='Organic')
+
     FactorialExperiment.add_factor(parameter='FBiom', param_values=[0.045, 1.4, 2.4, 0.8], factor_type='soils',
                                    soil_node='Organic')
 
@@ -42,9 +41,5 @@ if __name__ == '__main__':
     sim_data = FactorialExperiment.get_simulated_data()[0]
     mn = sim_data.groupby(['FBiom', 'Carbon'])['Yield'].mean()
     "if we dont see any variation for each of the factors then it is not working configure again"
-    #print(mn)
+    # print(mn)
     print(len(FactorialExperiment.factors))
-
-
-
-

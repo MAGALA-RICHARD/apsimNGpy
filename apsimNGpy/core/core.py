@@ -279,7 +279,9 @@ class APSIMNG:
             clean=False,
             multithread=True,
             verbose=False,
-            get_dict=False, **kwargs):
+            get_dict=False,
+            init_only=False,
+            **kwargs):
         """Run apsim model in the simulations
 
         Parameters
@@ -299,6 +301,7 @@ class APSIMNG:
 
         :param verbose: bool prints diagnostic information such as false report name and simulation
         :param get_dict: bool, return a dictionary of data frame paired by the report table names default to False
+        :param init_only, runs without returning the result defaults to 'False'.
         returns
             instance of the class APSIMNG
         """
@@ -323,6 +326,8 @@ class APSIMNG:
             e = _run_model.Run()
             if len(e) > 0:
                 print(e[0].ToString())
+            if init_only:
+                return self
             if report_name is None:
                 report_name = get_db_table_names(self.datastore)
                 # issues with decoding '_Units' we remove it
@@ -767,7 +772,7 @@ class APSIMNG:
         return self.update_mgt(**_param_values)
 
     def init_model(self, *args, **kwargs):
-        self.run()
+        self.run(init_only=True)
 
     def update_mgt(self, *, management: [dict, tuple],
                    simulations: [list, tuple] = None,
@@ -1489,7 +1494,6 @@ class ApsiMet(APSIMNG):
 
 if __name__ == '__main__':
 
-
     from pathlib import Path
     from time import perf_counter
 
@@ -1499,8 +1503,10 @@ if __name__ == '__main__':
 
     al = LoadExampleFiles(Path.cwd())
     modelm = al.get_maize
-
+    a = perf_counter()
     model = load_default_simulations('maize')
+    b = perf_counter()
+    print(b - a, 'seconds for initialisation', )
     model.init_model()
     for _ in range(1):
 

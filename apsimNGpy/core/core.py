@@ -46,6 +46,17 @@ from apsimNGpy.utililies.utils import timer
 from apsimNGpy.core.runner import run_model
 import ast
 
+MultiThreaded = Models.Core.Run.Runner.RunTypeEnum.MultiThreaded
+SingleThreaded = Models.Core.Run.Runner.RunTypeEnum.SingleThreaded
+ModelRUNNER =  Models.Core.Run.Runner
+
+
+def select_threads(multithread):
+    if multithread:
+        return MultiThreaded
+    else:
+        return SingleThreaded
+
 
 # from settings import * This file is not ready and i wanted to do some test
 
@@ -105,7 +116,6 @@ class APSIMNG:
         self._DataStore = self.model_info.DataStore
         self.path = self.model_info.path
         self._met_file = kwargs.get('met_file')
-
 
     def run_simulations(self, results=None, reports=None, clean_up=False):
         """
@@ -293,18 +303,14 @@ class APSIMNG:
             instance of the class APSIMNG
         """
         try:
-            if multithread:
-                runtype = Models.Core.Run.Runner.RunTypeEnum.MultiThreaded
-            else:
-                runtype = Models.Core.Run.Runner.RunTypeEnum.SingleThreaded
-            # open the datastore
 
+            # open the datastore
+            runtype = select_threads(multithread=multithread)
             self._DataStore.Open()
             # Clear old data before running
             self.results = None
             if clean:
                 self._DataStore.Dispose()
-                pathlib.Path(self._DataStore.FileName).unlink(missing_ok=True)
             sims = self.find_simulations(simulations) if simulations else self.Simulations
             if simulations:
                 cs_sims = List[Models.Core.Simulation]()
@@ -313,7 +319,7 @@ class APSIMNG:
                 sim = cs_sims
             else:
                 sim = sims
-            _run_model = Models.Core.Run.Runner(sim, True, False, False, None, runtype)
+            _run_model = ModelRUNNER(sim, True, False, False, None, runtype)
             e = _run_model.Run()
             if len(e) > 0:
                 print(e[0].ToString())
@@ -1481,10 +1487,9 @@ class ApsiMet(APSIMNG):
 
 
 if __name__ == '__main__':
-    path = '/Applications/APSIM2024.5.7493.0.app/Contents/Resources/bin'
+
     from apsimNGpy.config import Config
 
-    Config.set_aPSim_bin_path(path)
     print(Config.get_aPSim_bin_path())
 
     # test
@@ -1507,10 +1512,8 @@ if __name__ == '__main__':
 
             print(model.extract_user_input('Simple Rotation'))
 
-
-
             model.run('Report')
-            print(model.results.mean(numeric_only=True))
+            #print(model.results.mean(numeric_only=True))
             b = perf_counter()
             print(b - a, 'seconds')
 

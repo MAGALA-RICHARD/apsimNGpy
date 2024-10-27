@@ -5,7 +5,7 @@ from os import listdir, walk, getcwd, mkdir
 from apsimNGpy.config import get_aPSim_bin_path
 import shutil
 from apsimNGpy import data as DATA
-
+from pathlib import Path
 
 from apsimNGpy.core.apsim import ApsimModel as SoilModel
 from pathlib import Path

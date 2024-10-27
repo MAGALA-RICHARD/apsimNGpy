@@ -1,21 +1,13 @@
 """
 Interface to APSIM simulation models using Python.NET 
 """
+import sqlite3
 from collections import namedtuple
 from os.path import exists
-from sqlite3 import connect
-from pandas import read_sql
-import numpy as np
-import time
-from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
-from functools import partial
-import pandas as pd
-from pandas import read_sql_query as rsq
-from pandas import errors
-from sqlalchemy import create_engine, inspect
-from os.path import exists
 
-import sqlite3
+from pandas import errors
+from pandas import read_sql_query as rsq
+from sqlalchemy import create_engine, inspect
 
 
 def read_with_query(db, query):

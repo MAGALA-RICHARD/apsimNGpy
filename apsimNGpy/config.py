@@ -95,7 +95,6 @@ if __name__ == '__main__':
     print(get_aPSim_bin_path(), 'after removing .config')
     from pathlib import Path
     print (get_aPSim_bin_path())
-    ax = auto_searched
 
 
 

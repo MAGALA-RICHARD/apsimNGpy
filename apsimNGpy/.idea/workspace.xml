@@ -5,20 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="5d471312-8496-4246-98d6-790439318160" name="Changes" comment="replacements">
-      <change afterPath="$PROJECT_DIR$/parallel/csp/obj/rider.project.model.nuget.info" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config.ini" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/parallel/csp/obj/Debug/net6.0/csp.AssemblyInfo.cs" beforeDir="false" afterPath="$PROJECT_DIR$/parallel/csp/obj/Debug/net6.0/csp.AssemblyInfo.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/parallel/csp/obj/Debug/net6.0/csp.AssemblyInfoInputs.cache" beforeDir="false" afterPath="$PROJECT_DIR$/parallel/csp/obj/Debug/net6.0/csp.AssemblyInfoInputs.cache" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/parallel/csp/obj/Debug/net6.0/csp.GeneratedMSBuildEditorConfig.editorconfig" beforeDir="false" afterPath="$PROJECT_DIR$/parallel/csp/obj/Debug/net6.0/csp.GeneratedMSBuildEditorConfig.editorconfig" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/parallel/csp/obj/Debug/net6.0/csp.RazorAssemblyInfo.cache" beforeDir="false" afterPath="$PROJECT_DIR$/parallel/csp/obj/Debug/net6.0/csp.RazorAssemblyInfo.cache" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/parallel/csp/obj/Debug/net6.0/csp.assets.cache" beforeDir="false" afterPath="$PROJECT_DIR$/parallel/csp/obj/Debug/net6.0/csp.assets.cache" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/parallel/csp/obj/Debug/net6.0/csp.csproj.AssemblyReference.cache" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/parallel/csp/obj/csp.csproj.nuget.dgspec.json" beforeDir="false" afterPath="$PROJECT_DIR$/parallel/csp/obj/csp.csproj.nuget.dgspec.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/parallel/csp/obj/csp.csproj.nuget.g.props" beforeDir="false" afterPath="$PROJECT_DIR$/parallel/csp/obj/csp.csproj.nuget.g.props" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/parallel/csp/obj/project.assets.json" beforeDir="false" afterPath="$PROJECT_DIR$/parallel/csp/obj/project.assets.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/parallel/csp/obj/project.nuget.cache" beforeDir="false" afterPath="$PROJECT_DIR$/parallel/csp/obj/project.nuget.cache" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/replacements/replacements.py" beforeDir="false" afterPath="$PROJECT_DIR$/replacements/replacements.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -35,6 +22,13 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
+  <component name="GithubProjectSettings">
+    <option name="branchProtectionPatterns">
+      <list>
+        <option value="main" />
+      </list>
+    </option>
+  </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 3
 }</component>
@@ -43,47 +37,47 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_ADD_EXTERNAL_FILES": "true",
-    "Python.__init__.executor": "Run",
-    "Python.api.executor": "Run",
-    "Python.apsim.executor": "Run",
-    "Python.base_data.executor": "Run",
-    "Python.config.executor": "Run",
-    "Python.core.executor": "Run",
-    "Python.glue.executor": "Run",
-    "Python.logger.executor": "Run",
-    "Python.met_functions.executor": "Run",
-    "Python.model_loader.executor": "Run",
-    "Python.problem.executor": "Run",
-    "Python.process.executor": "Run",
-    "Python.pythonet_config.executor": "Run",
-    "Python.replacements.executor": "Run",
-    "Python.runner.executor": "Run",
-    "Python.senstivity.executor": "Run",
-    "Python.settings.executor": "Run",
-    "Python.sobol.executor": "Run",
-    "Python.soilmanager.executor": "Run",
-    "Python.tools.executor": "Run",
-    "Python.utils.executor": "Run",
-    "Python.variable.executor": "Run",
-    "Python.weathermanager.executor": "Run",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "main",
-    "last_opened_file_path": "D:/package/apsimNGpy/setup.py",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "inlay.hints",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;Python.__init__.executor&quot;: &quot;Run&quot;,
+    &quot;Python.api.executor&quot;: &quot;Run&quot;,
+    &quot;Python.apsim.executor&quot;: &quot;Run&quot;,
+    &quot;Python.base_data.executor&quot;: &quot;Run&quot;,
+    &quot;Python.config.executor&quot;: &quot;Run&quot;,
+    &quot;Python.core.executor&quot;: &quot;Run&quot;,
+    &quot;Python.glue.executor&quot;: &quot;Run&quot;,
+    &quot;Python.logger.executor&quot;: &quot;Run&quot;,
+    &quot;Python.met_functions.executor&quot;: &quot;Run&quot;,
+    &quot;Python.model_loader.executor&quot;: &quot;Run&quot;,
+    &quot;Python.problem.executor&quot;: &quot;Run&quot;,
+    &quot;Python.process.executor&quot;: &quot;Run&quot;,
+    &quot;Python.pythonet_config.executor&quot;: &quot;Run&quot;,
+    &quot;Python.replacements.executor&quot;: &quot;Run&quot;,
+    &quot;Python.runner.executor&quot;: &quot;Run&quot;,
+    &quot;Python.senstivity.executor&quot;: &quot;Run&quot;,
+    &quot;Python.settings.executor&quot;: &quot;Run&quot;,
+    &quot;Python.sobol.executor&quot;: &quot;Run&quot;,
+    &quot;Python.soilmanager.executor&quot;: &quot;Run&quot;,
+    &quot;Python.tools.executor&quot;: &quot;Run&quot;,
+    &quot;Python.utils.executor&quot;: &quot;Run&quot;,
+    &quot;Python.variable.executor&quot;: &quot;Run&quot;,
+    &quot;Python.weathermanager.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/package/apsimNGpy/setup.py&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;inlay.hints&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="D:\package\apsimNGpy\apsimNGpy" />
@@ -214,6 +208,9 @@
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/replacements" />
       <option name="IS_MODULE_SDK" value="true" />

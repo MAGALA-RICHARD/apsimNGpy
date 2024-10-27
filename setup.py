@@ -1,5 +1,6 @@
 from setuptools import setup, find_packages
-
+from os.path import realpath
+config_path = realpath('config.ini')
 
 
 VERSION = '0.0.27.9'

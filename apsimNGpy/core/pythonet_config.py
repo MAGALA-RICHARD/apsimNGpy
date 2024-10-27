@@ -25,7 +25,6 @@ def start_pythonnet():
         return pythonnet.load()
 
 
-@cache
 def load_pythonnet():
     """
     A method for loading Python for .NET (pythonnet) and APSIM models.
@@ -53,13 +52,6 @@ def load_pythonnet():
     """
 
     _aPSim_Path = aPSim_PATH
-
-    # try:
-    #     if pythonnet.get_runtime_info() is None:
-    #         pythonnet.load("coreclr")
-    # except:
-    #     print("dotnet not found, trying alternate runtime")
-    #     pythonnet.load()
     start_pythonnet()
     # use get because it does not raise key error. it returns none if not found
     aPSim_path = aPSim_PATH

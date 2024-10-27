@@ -47,9 +47,6 @@ def set_aPSim_bin_path(path):
      >> Config.set_aPSim_bin_path(path = '/path/to/aPSimbinaryfolder/bin')
     """
     _path = realpath(path)
-    path_to_search = Path(_path)
-    model_files = list(path_to_search.glob('*Models.*'))
-    # we also don't want to send a path does not work
     if not _apsim_model_is_installed(_path):
         raise ValueError(f"files might have been uninstalled at this location{_path}")
     if _path != get_aPSim_bin_path():

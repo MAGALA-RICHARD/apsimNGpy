@@ -2,11 +2,11 @@ import os.path
 from importlib.resources import files
 from os.path import join, realpath, dirname, exists, split, basename
 from os import listdir, walk, getcwd, mkdir
-from apsimNGpy.core.pythonet_config import load_pythonnet, aPSim_PATH
+from apsimNGpy.config import get_aPSim_bin_path
 import shutil
 from apsimNGpy import data as DATA
 
-conf = load_pythonnet
+
 from apsimNGpy.core.apsim import ApsimModel as SoilModel
 from pathlib import Path
 from functools import cache
@@ -234,10 +234,7 @@ class LoadExampleFiles:
         return SoilModel(self.get_maize_no_till)
 
 
-try:
-    pat = aPSim_PATH
-except KeyError:
-    pat = aPSim_PATH
+pat = get_aPSim_bin_path()
 if pat:
     apsim = os.path.dirname(pat)
     examples = join(apsim, 'Examples')

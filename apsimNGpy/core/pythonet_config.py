@@ -1,14 +1,10 @@
-import glob
-import json
 import os
-import shutil
-from dataclasses import dataclass
 from functools import cache
-from pathlib import Path
-import platform
+
 import pythonnet
+
 from apsimNGpy.config import get_aPSim_bin_path
-from apsimNGpy.utililies.utils import (timer, find_models)
+
 
 @cache
 def collect_apsim_path():
@@ -97,5 +93,4 @@ load_pythonnet()
 if __name__ == '__main__':
     loader = load_pythonnet()
     loaded_models = loader
-    import Models
     # try importing the C# models and see if the process is successful

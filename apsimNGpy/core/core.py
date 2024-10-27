@@ -362,7 +362,6 @@ class APSIMNG:
             clone_sim.Name = target
             # clone_zone = clone_sim.FindChild[Models.Core.Zone]()
             # clone_zone.Name = target
-
             # self.Simulations.Children.Clear(clone_sim.Name)
             self.Simulations.Children.Add(clone_sim)
         self._reload_saved_file()

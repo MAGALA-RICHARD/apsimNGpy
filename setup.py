@@ -1,7 +1,14 @@
+import os
+
 from setuptools import setup, find_packages
 from os.path import realpath
+
+from manager.in_pipeline import path
+
 config_path = realpath('config.ini')
 
+if not path.exists(config_path):
+    os.remove(config_path)
 
 VERSION = '0.0.27.9'
 DESCRIPTION = 'apsimx next generation package interface'

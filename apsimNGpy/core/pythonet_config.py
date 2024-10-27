@@ -3,15 +3,14 @@ from functools import cache
 import configparser
 import pythonnet
 import sys as system
+from os.path import (realpath, join, dirname)
 
-
+config_path =join(dirname(dirname(__file__)), 'config.ini')
 @cache
 def get_pythonnet_config():
-    config_path = os.path.realpath('config.ini')
     CONFIG = configparser.ConfigParser()
     CONFIG.read(config_path)
     return CONFIG['Paths']['ApSIM_LOCATION']
-
 
 aPSim_PATH = get_pythonnet_config()
 

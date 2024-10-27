@@ -188,3 +188,6 @@ fabric.properties
 # configuration file
 *.ini
 apsimNGpy/core/*.apsimx
+apsimNGpy/core/*.db-shm
+apsimNGpy/core/*.db
+apsimNGpy/core/*.db-wal

@@ -4,12 +4,12 @@ import configparser
 import pythonnet
 import sys as system
 from os.path import (realpath, join, dirname)
+from apsimNGpy.core.path_finders import get_config_ini_path
 
-config_path =join(dirname(dirname(__file__)), 'config.ini')
 @cache
 def get_pythonnet_config():
     CONFIG = configparser.ConfigParser()
-    CONFIG.read(config_path)
+    CONFIG.read(get_config_ini_path())
     return CONFIG['Paths']['ApSIM_LOCATION']
 
 aPSim_PATH = get_pythonnet_config()

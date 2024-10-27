@@ -5,7 +5,12 @@ from functools import cache
 from os.path import (join, dirname)
 from pathlib import Path
 
-CONFIG_PATH = join(dirname(dirname(__file__)), 'config.ini')
+
+def get_config_ini_path():
+    # wanted to define it one place
+    return join(dirname(dirname(__file__)), 'config.ini')
+
+CONFIG_PATH = get_config_ini_path()
 HOME_DATA = Path.home().joinpath('AppData', 'Local', 'Programs')
 cdrive = os.environ.get('PROGRAMFILES')
 

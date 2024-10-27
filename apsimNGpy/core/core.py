@@ -48,7 +48,7 @@ import ast
 
 MultiThreaded = Models.Core.Run.Runner.RunTypeEnum.MultiThreaded
 SingleThreaded = Models.Core.Run.Runner.RunTypeEnum.SingleThreaded
-ModelRUNNER =  Models.Core.Run.Runner
+ModelRUNNER = Models.Core.Run.Runner
 
 
 def select_threads(multithread):
@@ -765,6 +765,9 @@ class APSIMNG:
         _param_values = dict(zip(parameters, _eval_params))
 
         return self.update_mgt(**_param_values)
+
+    def init_model(self, *args, **kwargs):
+        self.run()
 
     def update_mgt(self, *, management: [dict, tuple],
                    simulations: [list, tuple] = None,
@@ -1486,11 +1489,7 @@ class ApsiMet(APSIMNG):
 
 if __name__ == '__main__':
 
-    from apsimNGpy.config import Config
 
-    print(Config.get_aPSim_bin_path())
-
-    # test
     from pathlib import Path
     from time import perf_counter
 
@@ -1502,16 +1501,15 @@ if __name__ == '__main__':
     modelm = al.get_maize
 
     model = load_default_simulations('maize')
+    model.init_model()
     for _ in range(1):
 
         for rn in ['Maize, Soybean, Wheat', 'Maize', 'Soybean, Wheat']:
             a = perf_counter()
             # model.RevertCheckpoint()
 
-            print(model.extract_user_input('Simple Rotation'))
-
             model.run('Report')
-            #print(model.results.mean(numeric_only=True))
+            # print(model.results.mean(numeric_only=True))
             b = perf_counter()
             print(b - a, 'seconds')
 

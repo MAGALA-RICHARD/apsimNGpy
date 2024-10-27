@@ -1,13 +1,12 @@
 import glob
 import os
 import platform
-import shutil
 from functools import cache
 from pathlib import Path
 
 HOME_DATA = Path.home().joinpath('AppData', 'Local', 'Programs')
 cdrive = os.environ.get('PROGRAMFILES')
-WINDOWS_PROGRAM_FILES = Path(cdrive) if cdrive else None
+
 
 def _apsim_model_is_installed(_path):
     """
@@ -25,26 +24,32 @@ def _apsim_model_is_installed(_path):
         return True
     else:
         return False
+
+
 @cache
 def search_from_programs():
     # if the executable is not found, then most likely even if the bin path exists, apsim is uninstalled
     prog_path = glob.glob(f'{cdrive}/APSIM*/bin/Models.exe')
     if prog_path:
-      for path_fpath in prog_path:
+        for path_fpath in prog_path:
             return os.path.dirname(path_fpath)
     else:
-            return None
+        return None
+
+
 @cache
 def search_from_users():
     # if the executable is not found, then most likely even if the bin path exists, apsim is uninstalled
     home_path = os.path.realpath(Path.home())
     trial_search = glob.glob(f"{home_path}/AppData/Local/Programs/APSIM*/bin/Models.exe")
-    _path  = None
+    _path = None
     if trial_search:
         for paths in trial_search:
             return os.path.dirname(paths)
     else:
         return None
+
+
 @cache
 def _match_pattern_to_path(pattern):
     matching_paths = glob.glob(pattern)
@@ -53,22 +58,20 @@ def _match_pattern_to_path(pattern):
             return matching_path
         else:
             return None
+
+
 @cache
 def auto_detect_apsim_bin_path():
-        if platform.system() == 'Windows':
-            return  os.getenv("APSIM") or os.getenv("Models") or search_from_programs() or search_from_users() or ""
-        if platform.system() == 'Darwin':
-            # we search in applications and give up
-            pattern = '/Applications/APSIM*.app/Contents/Resources/bin'
-            return _match_pattern_to_path(pattern) or ""
+    if platform.system() == 'Windows':
+        return os.getenv("APSIM") or os.getenv("Models") or search_from_programs() or search_from_users() or ""
+    if platform.system() == 'Darwin':
+        # we search in applications and give up
+        pattern = '/Applications/APSIM*.app/Contents/Resources/bin'
+        return _match_pattern_to_path(pattern) or ""
 
-        if platform.system() == 'Linux':
-            pattern1  = '/usr/local/APSIM*/Contents/Resources/bin'
-            pattern2 = '~/.APSIM*/Contents/Resources/bin'
-            return _match_pattern_to_path(pattern1) or _match_pattern_to_path(pattern2) or ""
-        else:
-            return ""
-
-
-
-
+    if platform.system() == 'Linux':
+        pattern1 = '/usr/local/APSIM*/Contents/Resources/bin'
+        pattern2 = '~/.APSIM*/Contents/Resources/bin'
+        return _match_pattern_to_path(pattern1) or _match_pattern_to_path(pattern2) or ""
+    else:
+        return ""

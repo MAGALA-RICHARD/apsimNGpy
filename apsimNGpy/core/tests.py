@@ -2,51 +2,58 @@ import glob
 import os,sys
 import platform
 from pathlib import Path
-from apsimNGpy.config import Config
+import logging
 current_path  = os.path.dirname(os.path.abspath(__file__))
+# Set up basic configuration for logging
+logging.basicConfig(format='%(asctime)s :: %(message)s', level=logging.INFO)
+
+user_id = current_path
+# This will now print to the console
 
 sys.path.append(current_path)
 sys.path.append(os.path.dirname(current_path))
-from pythonet_config import GetAPSIMPath
-from core import APSIMNG
-from apsim import ApsimModel
-# auto detect
-loaded = GetAPSIMPath()
-auto = loaded.auto_detect()
+from path_finders import  auto_detect_apsim_bin_path
+from apsimNGpy.config import get_aPSim_bin_path
+
+try:
+    from core import APSIMNG
+    from apsim import ApsimModel
+    # auto-detect for some reasons when imported after compiling, with compiling i mean installing the package so we
+    # import directly from the package
+except ImportError:
+    logging.info("passed import error")
+    from apsimNGpy.core.core import APSIMNG
+    from apsimNGpy.core.apsim import ApsimModel
+
+auto = auto_detect_apsim_bin_path()
 
 
-dat = Path(current_path)
+def test():
+    # test auto detect;
+    if auto:
+        logging.info(f"apsim path detected automatically at: {auto}")
+    # test pythonnet
 
-
-
-if __name__ == '__main__':
-
-    # test
     from pathlib import Path
     from time import perf_counter
-
     # Model = FileFormat.ReadFromFile[Models.Core.Simulations](model, None, False)
     os.chdir(Path.home())
     from apsimNGpy.core.base_data import LoadExampleFiles, load_default_simulations
 
-    al = LoadExampleFiles(Path.cwd())
-    modelm = al.get_maize
+    model = load_default_simulations(crop='maize')
 
-    model = load_default_simulations(crop ='maize')
-    for _ in range(1):
+    for _ in range(2):
 
         for rn in ['Maize, Soybean, Wheat', 'Maize', 'Soybean, Wheat']:
             a = perf_counter()
             # model.RevertCheckpoint()
 
-            print(model.extract_user_input('Simple Rotation'))
-
             model.run('report')
             # print(model.results.mean(numeric_only=True))
 
             # print(model.results.mean(numeric_only=True))
-
-            print(perf_counter() - a, 'seconds, taken')
+            msg  =f"{perf_counter() - a} seconds, taken"
+            logging.info(msg=msg, )
 
         a = perf_counter()
 
@@ -54,14 +61,9 @@ if __name__ == '__main__':
         b = perf_counter()
         print(b - a, 'seconds')
         mod = model.Simulations
-        # xp = mod.FindAllInScope[Models.Manager]('Simple Rotation')
-        # a = [i for i in xp]
-        # for p in a:
-        #  for i in range(len(p.Parameters)):
-        #      kvp =p.Parameters[i]
-        #      if kvp.Key == "Crops":
-        #          updated_kvp = KeyValuePair[str, str](kvp.Key, "UpdatedValue")
-        #          p.Parameters[i] = updated_kvp
-        #      print(p.Parameters[i])
 
+
+
+if __name__ == '__main__':
+    test()
 

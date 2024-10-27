@@ -10,9 +10,9 @@ import sqlite3
 import sys
 import warnings
 import pythonnet
-from apsimNGpy.core.pythonet_config import LoadPythonnet, aPSim_PATH
-apsim_model = aPSim_PATH
-loader = LoadPythonnet()()
+from apsimNGpy.core import pythonet_config
+apsim_model = pythonet_config.aPSim_PATH
+
 from os.path import realpath
 import warnings
 from System.Collections.Generic import *

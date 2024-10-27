@@ -23,15 +23,13 @@ import datetime
 import apsimNGpy.manager.weathermanager as weather
 from functools import cache
 # prepare for the C# import
-from apsimNGpy.core.pythonet_config import LoadPythonnet
-
+from apsimNGpy.core import pythonet_config
 from apsimNGpy.utililies.database_utils import read_db_table, get_db_table_names
 import warnings
 from apsimNGpy.utililies.utils import timer
 # py_config = LoadPythonnet()()  # double brackets avoids calling it twice
-from apsimNGpy.config import Config
-if not bool(Config.get_aPSim_bin_path()):
-    raise ValueError('Please APSIM binary path not configured! ', UserWarning)
+from apsimNGpy.config import get_aPSim_bin_path
+
 # now we can safely import C# libraries
 from System.Collections.Generic import *
 from Models.Core import Simulations, ScriptCompiler, Simulation
@@ -47,6 +45,17 @@ from apsimNGpy.core.model_loader import (load_apx_model, save_model_to_file, rec
 from apsimNGpy.utililies.utils import timer
 from apsimNGpy.core.runner import run_model
 import ast
+
+MultiThreaded = Models.Core.Run.Runner.RunTypeEnum.MultiThreaded
+SingleThreaded = Models.Core.Run.Runner.RunTypeEnum.SingleThreaded
+ModelRUNNER = Models.Core.Run.Runner
+
+
+def select_threads(multithread):
+    if multithread:
+        return MultiThreaded
+    else:
+        return SingleThreaded
 
 
 # from settings import * This file is not ready and i wanted to do some test
@@ -107,7 +116,7 @@ class APSIMNG:
         self._DataStore = self.model_info.DataStore
         self.path = self.model_info.path
         self._met_file = kwargs.get('met_file')
-
+        self.init_model()
 
     def run_simulations(self, results=None, reports=None, clean_up=False):
         """
@@ -271,7 +280,9 @@ class APSIMNG:
             clean=False,
             multithread=True,
             verbose=False,
-            get_dict=False, **kwargs):
+            get_dict=False,
+            init_only=False,
+            **kwargs):
         """Run apsim model in the simulations
 
         Parameters
@@ -291,22 +302,19 @@ class APSIMNG:
 
         :param verbose: bool prints diagnostic information such as false report name and simulation
         :param get_dict: bool, return a dictionary of data frame paired by the report table names default to False
+        :param init_only, runs without returning the result defaults to 'False'.
         returns
             instance of the class APSIMNG
         """
         try:
-            if multithread:
-                runtype = Models.Core.Run.Runner.RunTypeEnum.MultiThreaded
-            else:
-                runtype = Models.Core.Run.Runner.RunTypeEnum.SingleThreaded
-            # open the datastore
 
+            # open the datastore
+            runtype = select_threads(multithread=multithread)
             self._DataStore.Open()
             # Clear old data before running
             self.results = None
             if clean:
                 self._DataStore.Dispose()
-                pathlib.Path(self._DataStore.FileName).unlink(missing_ok=True)
             sims = self.find_simulations(simulations) if simulations else self.Simulations
             if simulations:
                 cs_sims = List[Models.Core.Simulation]()
@@ -315,10 +323,12 @@ class APSIMNG:
                 sim = cs_sims
             else:
                 sim = sims
-            _run_model = Models.Core.Run.Runner(sim, True, False, False, None, runtype)
+            _run_model = ModelRUNNER(sim, True, False, False, None, runtype)
             e = _run_model.Run()
             if len(e) > 0:
                 print(e[0].ToString())
+            if init_only:
+                return self
             if report_name is None:
                 report_name = get_db_table_names(self.datastore)
                 # issues with decoding '_Units' we remove it
@@ -358,7 +368,6 @@ class APSIMNG:
             clone_sim.Name = target
             # clone_zone = clone_sim.FindChild[Models.Core.Zone]()
             # clone_zone.Name = target
-
             # self.Simulations.Children.Clear(clone_sim.Name)
             self.Simulations.Children.Add(clone_sim)
         self._reload_saved_file()
@@ -372,7 +381,6 @@ class APSIMNG:
             simulation
                 The name of the simulation to remove
         """
-
         sim = self._find_simulation(simulation)
         self.Simulations.Children.Remove(sim)
         self.save_edited_file()
@@ -763,6 +771,9 @@ class APSIMNG:
         _param_values = dict(zip(parameters, _eval_params))
 
         return self.update_mgt(**_param_values)
+
+    def init_model(self, *args, **kwargs):
+        self.run(init_only=True)
 
     def update_mgt(self, *, management: [dict, tuple],
                    simulations: [list, tuple] = None,
@@ -1483,13 +1494,7 @@ class ApsiMet(APSIMNG):
 
 
 if __name__ == '__main__':
-    path = '/Applications/APSIM2024.5.7493.0.app/Contents/Resources/bin'
-    from apsimNGpy.config import Config
 
-    Config.set_aPSim_bin_path(path)
-    print(Config.get_aPSim_bin_path())
-
-    # test
     from pathlib import Path
     from time import perf_counter
 
@@ -1501,18 +1506,19 @@ if __name__ == '__main__':
     modelm = al.get_maize
 
     model = load_default_simulations('maize')
+    a = perf_counter()
+    model.init_model()
+    b = perf_counter()
+    print(b - a, 'seconds for initialisation', )
+
     for _ in range(1):
 
         for rn in ['Maize, Soybean, Wheat', 'Maize', 'Soybean, Wheat']:
             a = perf_counter()
             # model.RevertCheckpoint()
 
-            print(model.extract_user_input('Simple Rotation'))
-
-
-
             model.run('Report')
-            print(model.results.mean(numeric_only=True))
+            # print(model.results.mean(numeric_only=True))
             b = perf_counter()
             print(b - a, 'seconds')
 

@@ -69,7 +69,6 @@ def auto_detect_apsim_bin_path():
         else:
             return ""
 
-auto_searched = auto_detect_apsim_bin_path()
 
 
 

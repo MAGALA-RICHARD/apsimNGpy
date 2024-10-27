@@ -1,7 +1,6 @@
 import configparser
-import os
 import warnings
-from os.path import (realpath, join, isfile, exists)
+from os.path import (realpath, exists)
 
 from apsimNGpy.core.path_finders import _apsim_model_is_installed, auto_detect_apsim_bin_path
 
@@ -11,11 +10,11 @@ CONFIG.read(config_path)
 
 
 def __create_config(apsim_path=""):
-    CONFIG = configparser.ConfigParser()
+    _CONFIG = configparser.ConfigParser()
     put_default_path = apsim_path
-    CONFIG['Paths'] = {'ApSIM_LOCATION': put_default_path}
+    _CONFIG['Paths'] = {'ApSIM_LOCATION': put_default_path}
     with open(config_path, 'w') as configured_file:
-        CONFIG.write(configured_file)
+        _CONFIG.write(configured_file)
 
 
 def get_aPSim_bin_path():
@@ -35,16 +34,15 @@ if not get_aPSim_bin_path():
 
 
 def set_aPSim_bin_path(path):
-    from pathlib import Path
     """ Send your desired path to the aPSim binary folder to the config module
-    the path should end with bin as the parent directory of the aPSim Model.exe
-    >> Please be careful with adding an uninstalled path, which do not have model.exe file.
+    the path should end with bin as the parent directory of the aPSim Model.
+    >> Please be careful with adding an uninstalled path, which does not have model.exe file or unix executable.
     It won't work and python with throw an error
     >> example from apsimNGpy.config import Config
     # check the current path
      config = Config.get_aPSim_bin_path()
      # set the desired path
-     >> Config.set_aPSim_bin_path(path = '/path/to/aPSimbinaryfolder/bin')
+     >> Config.set_aPSim_bin_path(path = '/path/to/APSIM*/bin')
     """
     _path = realpath(path)
     if not _apsim_model_is_installed(_path):
@@ -67,7 +65,8 @@ class Config:
     @classmethod
     def get_aPSim_bin_path(cls):
         warnings.warn(
-            f'apsimNGpy.config.Config.get_aPSim_bin_path for changing apsim binary path is deprecated> use:apsimNGpy.config.get_aPSim_bin_path ',
+            f'apsimNGpy.config.Config.get_aPSim_bin_path for changing apsim binary path is deprecated> '
+            f'use:apsimNGpy.config.get_aPSim_bin_path ',
             FutureWarning)
         """We can extract the current path from config.ini"""
         return get_aPSim_bin_path()
@@ -75,10 +74,10 @@ class Config:
     @classmethod
     def set_aPSim_bin_path(cls, path):
         warnings.warn(
-            f'apsimNGpy.config.Config.set_aPSim_bin_path . class for changing apsim binary path is deprecated> use:apsimNGpy.config.set_aPSim_bin_path ',
+            f'apsimNGpy.config.Config.set_aPSim_bin_path . class for changing apsim binary path is deprecated> '
+            f'use:apsimNGpy.config.set_aPSim_bin_path ',
             FutureWarning)
 
-        from pathlib import Path
         """ Send your desired path to the aPSim binary folder to the config module
         the path should end with bin as the parent directory of the aPSim Model.exe
         >> Please be careful with adding an uninstalled path, which do not have model.exe file.
@@ -96,8 +95,5 @@ class Config:
 if __name__ == '__main__':
     # example windows;
     print(get_aPSim_bin_path(), 'after removing .config')
-    from pathlib import Path
 
     print(get_aPSim_bin_path())
-
-

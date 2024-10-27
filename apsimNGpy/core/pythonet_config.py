@@ -4,8 +4,8 @@ import configparser
 import pythonnet
 import sys as system
 from os.path import (realpath, join, dirname)
-
-config_path =join(dirname(dirname(__file__)), 'config.ini')
+from apsimNGpy import CONFIG_PATH as config_path
+#config_path =join(dirname(dirname(__file__)), 'config.ini')
 @cache
 def get_pythonnet_config():
     CONFIG = configparser.ConfigParser()

@@ -41,7 +41,7 @@ if __name__ == '__main__':
     FactorialExperiment.start_experiment()
     sim_data = FactorialExperiment.get_simulated_data()[0]
     mn = sim_data.groupby(['FBiom', 'Carbon'])['Yield'].mean()
-    "if we dont see any variationa for each of the factors then it is not working configure again"
+    "if we dont see any variation for each of the factors then it is not working configure again"
     #print(mn)
     print(len(FactorialExperiment.factors))
 

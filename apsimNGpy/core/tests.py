@@ -20,7 +20,7 @@ try:
     # auto detect
     # for some reasons when imported after compiling, with compiling i mean installing the package so we import directly from the package
 except ImportError:
-    print("passed import error")
+    logging.info("passed import error")
     from apsimNGpy.core.core import APSIMNG
     from apsimNGpy.core.apsim import ApsimModel
 
@@ -38,8 +38,6 @@ def test():
     # Model = FileFormat.ReadFromFile[Models.Core.Simulations](model, None, False)
     os.chdir(Path.home())
     from apsimNGpy.core.base_data import LoadExampleFiles, load_default_simulations
-    al = LoadExampleFiles(Path.cwd())
-    modelm = al.get_maize
 
     model = load_default_simulations(crop='maize')
 

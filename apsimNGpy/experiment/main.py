@@ -13,7 +13,7 @@ from apsimNGpy.experiment.set_ups import track_completed, DeepChainMap, define_p
 import warnings
 import logging
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(format='%(asctime)s :: %(message)s', level=logging.INFO)
 
 class Experiment:
     """

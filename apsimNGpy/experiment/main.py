@@ -11,7 +11,9 @@ from apsimNGpy.experiment.experiment_utils import _run_experiment, experiment_ru
     copy_to_many, MetaInfo, Factor
 from apsimNGpy.experiment.set_ups import track_completed, DeepChainMap, define_parameters
 import warnings
+import logging
 
+logging.basicConfig(level=logging.INFO)
 
 class Experiment:
     """
@@ -160,8 +162,8 @@ class Experiment:
         perms = define_parameters(factors_list=self.factors)
         perms = track_completed(self.datastorage, perms, self.simulation_id) if self.skip_completed else perms
         self.total_sims = len(perms)
-        print(self.total_sims)
-        print(f"copying files to {_path}")
+        logging.info(self.total_sims)
+        logging.info(f"copying files to {_path}")
         # def _copy(i_d)
         ids = iter(perms)
         __path = _path.joinpath('apSimNGpy_experiment')
@@ -195,7 +197,7 @@ class Experiment:
 
         """
         t_data = []
-        print('debugging started....')
+        logging.info('debugging started....')
         from itertools import islice
         import random
         test_data = list(self.set_experiment())
@@ -208,7 +210,7 @@ class Experiment:
         size_in_bytes = os.path.getsize(self.meta_info.get('datastorage'))
         size_in_mb = size_in_bytes / (1024 * 1024)
         if data_size == size_in_mb:
-            print(f'data size is {size_in_mb} is the same as the initial data is not writing to the data base')
+           logging.info(f'data size is {size_in_mb} is the same as the initial data is not writing to the data base')
         return t_data
 
     def start_experiment(self):
@@ -218,7 +220,7 @@ class Experiment:
         It's advisable to use this class below the line
         """
         try:
-            print(f"running  '{self.total_sims}' simulations")
+            logging.info(f"running  '{self.total_sims}' simulations")
             list(custom_parallel(experiment_runner, self.set_experiment(), use_thread=self.use_thread,
                                  n_core=self.n_core))
 

@@ -375,7 +375,6 @@ class APSIMNG:
             simulation
                 The name of the simulation to remove
         """
-
         sim = self._find_simulation(simulation)
         self.Simulations.Children.Remove(sim)
         self.save_edited_file()

@@ -1,3 +1,3 @@
-from path_finders import CONFIG_PATH
+from apsimNGpy.core.path_finders import CONFIG_PATH
 
 __all__ = ['CONFIG_PATH']

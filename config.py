@@ -26,10 +26,11 @@ def get_aPSim_bin_path():
 
 
 if not exists(config_path):
-    auto_detect_apsim_bin_path()
+    auto_searched = auto_detect_apsim_bin_path()
     __create_config(apsim_path=auto_searched)
 
 if not get_aPSim_bin_path():
+    auto_searched = auto_detect_apsim_bin_path()
     __create_config(apsim_path=auto_searched)
 
 
@@ -101,7 +102,7 @@ if __name__ == '__main__':
     from pathlib import Path
 
     print(get_aPSim_bin_path())
-    ax = auto_searched
+
 
     # # This is an example if apsim is installed at the user's directory'
     # Home_aPSim = list(Path.home().joinpath('AppData', 'Local', 'Programs').rglob('*2022.12.7130.0'))[0].joinpath('bin')

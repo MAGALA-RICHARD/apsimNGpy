@@ -55,6 +55,7 @@ def load_python_net():
     """
     This function belongs to the config at the root. It will replace the need for the class
     """
+
     start_pythonnet()
     # use get because it does not raise key error. it returns none if not found
     APSIM_PATH = get_apsim_binary_path() or os.getenv('APSIM') or os.getenv('Models')
@@ -95,6 +96,6 @@ load_python_net()
 
 if __name__ == '__main__':
     start_pythonnet()
-    change_apsim_bin_path(r'C:\Program Files\APSIM2024.5.7493.0\bin')
+    change_apsim_bin_path(r'C:\\Users\\vanguard/AppData/Local/Programs\\APSIM2024.5.7493.0\\bin')
     x = get_apsim_binary_path()
     load_python_net()

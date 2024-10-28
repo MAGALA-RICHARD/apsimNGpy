@@ -1411,18 +1411,18 @@ if __name__ == '__main__':
 
     # Model = FileFormat.ReadFromFile[Models.Core.Simulations](model, None, False)
     os.chdir(Path.home())
-    from apsimNGpy.core.base_data import LoadExampleFiles
+    from apsimNGpy.core.base_data import LoadExampleFiles, load_default_simulations
 
     al = LoadExampleFiles(Path.cwd())
-    modelm = al.get_maize
+    model = load_default_simulations('maize', path='D:/', simulations_object=False)
 
-    model = APSIMNG(model=None, out_path='me.apsimx')
+    model = APSIMNG(model)
     a = perf_counter()
-    for _ in range(1):
-      adv = model.simulate()
+
+    adv = model.simulate()
     print(perf_counter() - a, 'seconds')
-    for _ in range(1):
-        print(_)
+    for _ in range(2):
+        print('===')
         for rn in ['Maize, Soybean, Wheat', 'Maize', 'Soybean, Wheat']:
             model.update_manager(Name="Simple Rotation", Crops=rn)
             print(model.extract_user_input('Simple Rotation'))
@@ -1432,11 +1432,11 @@ if __name__ == '__main__':
             b = perf_counter()
 
             print(b - a, 'seconds')
-            print(ad['MaizeR'].mean(numeric_only=True))
+
 
         a = perf_counter()
 
-        res = model.run_simulations(reports="MaizeR", clean_up=False, results=True)
+        res = model.run_simulations(reports="Report", clean_up=False, results=True)
         b = perf_counter()
         print(b - a, 'seconds')
         mod = model.Simulations

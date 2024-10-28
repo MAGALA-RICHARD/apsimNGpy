@@ -125,7 +125,7 @@ def set_apsim_bin_path(path):
     _path = realpath(path)
     path_to_search = Path(_path)
     model_files = list(path_to_search.glob('*Models.*'))
-    # we also dont want to send a path does not work
+    # we also don't want to send a path does not work
     if not _apsim_model_is_installed(_path):
         raise ValueError(f"files might have been uninstalled at this location{_path}")
     if _path != get_apsim_bin_path():

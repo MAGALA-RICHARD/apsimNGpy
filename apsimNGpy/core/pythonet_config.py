@@ -12,7 +12,7 @@ def get_pythonnet_config():
     CONFIG.read(get_config_ini_path())
     return CONFIG['Paths']['ApSIM_LOCATION']
 
-aPSim_PATH = get_pythonnet_config()
+aPSim_PATH = join(dirname(dirname(__file__)), 'config.ini')
 
 
 def start_pythonnet():

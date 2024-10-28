@@ -8,12 +8,9 @@ import platform
 from functools import cache
 from os.path import (join, dirname)
 from pathlib import Path
+from apsimNGpy.core.path_finders import get_config_ini_path
 
-def _get_config_ini_path():
-    # wanted to define it one place
-    return join(dirname(__file__), 'config.ini')
-
-CONFIG_PATH  = _get_config_ini_path()
+CONFIG_PATH  = get_config_ini_path()
 HOME_DATA = Path.home().joinpath('AppData', 'Local', 'Programs')
 cdrive = os.environ.get('PROGRAMFILES')
 

@@ -11,7 +11,7 @@ from pathlib import Path
 
 def _get_config_ini_path():
     # wanted to define it one place
-    return join(dirname(dirname(__file__)), 'config.ini')
+    return join(dirname(__file__), 'config.ini')
 
 CONFIG_PATH  = _get_config_ini_path()
 HOME_DATA = Path.home().joinpath('AppData', 'Local', 'Programs')

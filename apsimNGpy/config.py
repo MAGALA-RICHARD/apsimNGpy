@@ -10,16 +10,16 @@ from os.path import (join, dirname)
 from pathlib import Path
 from apsimNGpy.core.path_finders import get_config_ini_path
 
-CONFIG_PATH  = get_config_ini_path()
+CONFIG_PATH = get_config_ini_path()
 HOME_DATA = Path.home().joinpath('AppData', 'Local', 'Programs')
 cdrive = os.environ.get('PROGRAMFILES')
 
 
 def _apsim_model_is_installed(_path):
     """
-   Checks if the APSIM model is installed by verifying the presence of binaries, especially if they haven't been deleted. Sometimes, after uninstallation, the `bin` folder remains, so tracking it
-   may give a false indication that the binary path exists due to leftover files.
-   :param _path: path to APSIM model binaries
+    Checks if the APSIM model is installed by verifying the presence of binaries, especially if they haven't been
+    deleted. Sometimes, after uninstallation, the `bin` folder remains, so tracking it may give a false sign that the
+    binary path exists due to leftover files. :param _path: path to APSIM model binaries
     """
     model_files = False
     path_to_search = Path(_path)
@@ -84,18 +84,20 @@ def auto_detect_apsim_bin_path():
         return ""
 
 
-def __create_config(apsim_path = ""):
+def __create_config(apsim_path=""):
     c_config = configparser.ConfigParser()
-    put_default_path  = apsim_path
+    put_default_path = apsim_path
     c_config['Paths'] = {'ApSIM_LOCATION': put_default_path}
     with open(CONFIG_PATH, 'w') as configured_file:
         c_config.write(configured_file)
+
 
 def get_apsim_bin_path():
     """We can extract the current path from config.ini"""
     g_config = configparser.ConfigParser()
     g_config.read(CONFIG_PATH)
     return g_config['Paths']['ApSIM_LOCATION']
+
 
 if not exists(CONFIG_PATH):
     auto_searched = auto_detect_apsim_bin_path()
@@ -104,6 +106,7 @@ if not exists(CONFIG_PATH):
 if not get_apsim_bin_path():
     auto_searched = auto_detect_apsim_bin_path()
     __create_config(apsim_path=auto_searched)
+
 
 def set_apsim_bin_path(path):
     s_config = configparser.ConfigParser()
@@ -134,7 +137,6 @@ def set_apsim_bin_path(path):
             s_config.write(config_file)
 
 
-
 class Config:
     """
         The configuration class providing the leeway for the user to change the
@@ -143,13 +145,17 @@ class Config:
 
     @classmethod
     def get_aPSim_bin_path(cls):
-        warnings.warn(f'apsimNGpy.config.Config.get_aPSim_bin_path for changing apsim binary path is deprecated> use:apsimNGpy.config.get_aPSim_bin_path ', FutureWarning)
+        warnings.warn(
+            f'apsimNGpy.config.Config.get_aPSim_bin_path for changing apsim binary path is deprecated> use:apsimNGpy.config.get_aPSim_bin_path ',
+            FutureWarning)
         """We can extract the current path from config.ini"""
         return get_apsim_bin_path()
 
     @classmethod
     def set_aPSim_bin_path(cls, path):
-        warnings.warn(f'apsimNGpy.config.Config.set_aPSim_bin_path . class for changing apsim binary path is deprecated> use:apsimNGpy.config.set_aPSim_bin_path ', FutureWarning)
+        warnings.warn(
+            f'apsimNGpy.config.Config.set_aPSim_bin_path . class for changing apsim binary path is deprecated> use:apsimNGpy.config.set_aPSim_bin_path ',
+            FutureWarning)
 
         from pathlib import Path
         """ Send your desired path to the aPSim binary folder to the config module
@@ -166,16 +172,13 @@ class Config:
         return set_apsim_bin_path(_path)
 
 
-
-
 if __name__ == '__main__':
     # example windows;
     print(get_apsim_bin_path(), 'after removing .config')
     from pathlib import Path
-    print (get_apsim_bin_path())
+
+    print(get_apsim_bin_path())
     set_apsim_bin_path(get_apsim_bin_path())
-
-
 
     # # This is an example if apsim is installed at the user's directory'
     # Home_aPSim = list(Path.home().joinpath('AppData', 'Local', 'Programs').rglob('*2022.12.7130.0'))[0].joinpath('bin')

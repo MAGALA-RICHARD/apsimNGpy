@@ -2,7 +2,7 @@ import os.path
 from importlib.resources import files
 from os.path import join, realpath, dirname, exists, split, basename
 from os import listdir, walk, getcwd, mkdir
-from apsimNGpy.config import get_aPSim_bin_path
+from apsimNGpy.config import get_apsim_bin_path
 import shutil
 from apsimNGpy import data as DATA
 from pathlib import Path
@@ -234,7 +234,7 @@ class LoadExampleFiles:
         return SoilModel(self.get_maize_no_till)
 
 
-pat = get_aPSim_bin_path()
+pat = get_apsim_bin_path()
 if pat:
     apsim = os.path.dirname(pat)
     examples = join(apsim, 'Examples')
@@ -247,9 +247,6 @@ for i in dr:
         examples_files[name] = join(examples, i)
 
 weather_path = os.path.join(examples, "WeatherFiles")
-
-
-
 
 
 def __get_example(crop, path=None, simulations_object=True):
@@ -299,7 +296,7 @@ def get_all_examples():
 
 
 def load_default_simulations(crop: str, path: [str, Path] = None,
-                             simulations_object:bool = True):
+                             simulations_object: bool = True):
     """
     Load default simulation model from aPSim folder
     :param crop: string of the crop to load e.g. Maize, not case-sensitive
@@ -325,5 +322,3 @@ if __name__ == '__main__':
     pp = Path.home()
     os.chdir(pp)
     mn = load_default_simulations('Maize', simulations_object=True)
-
-

@@ -1,9 +1,10 @@
 import glob
-import os,sys
+import os, sys
 import platform
 from pathlib import Path
 import logging
-current_path  = os.path.dirname(os.path.abspath(__file__))
+
+current_path = os.path.dirname(os.path.abspath(__file__))
 # Set up basic configuration for logging
 logging.basicConfig(format='%(asctime)s :: %(message)s', level=logging.INFO)
 
@@ -12,7 +13,7 @@ user_id = current_path
 
 sys.path.append(current_path)
 sys.path.append(os.path.dirname(current_path))
-from apsimNGpy.config import  auto_detect_apsim_bin_path
+from apsimNGpy.config import auto_detect_apsim_bin_path
 from apsimNGpy.config import get_apsim_bin_path
 
 try:
@@ -41,29 +42,69 @@ def test():
     from apsimNGpy.core.base_data import LoadExampleFiles, load_default_simulations
 
     model = load_default_simulations(crop='maize')
-
+    logging.info(f"testing simulator time\n ______________________")
     for _ in range(2):
-
-        for rn in ['Maize, Soybean, Wheat', 'Maize', 'Soybean, Wheat']:
-            a = perf_counter()
-            # model.RevertCheckpoint()
-
-            model.run('report')
-            # print(model.results.mean(numeric_only=True))
-
-            # print(model.results.mean(numeric_only=True))
-            msg  =f"{perf_counter() - a} seconds, taken"
-            logging.info(msg=msg, )
-
         a = perf_counter()
+        # model.RevertCheckpoint()
 
-        res = model.run_simulations(reports="Report", clean_up=False, results=True)
-        b = perf_counter()
-        print(b - a, 'seconds')
-        mod = model.Simulations
+        model.run_simulations('report')
+        # print(model.results.mean(numeric_only=True))
 
+        # print(model.results.mean(numeric_only=True))
+        msg = f"{perf_counter() - a} seconds, taken"
+        logging.info(msg=msg, )
+
+
+from apsimNGpy.experiment.main import Experiment
+
+
+def test_experiment(use_tread = False):
+    try:
+        path = Path.home().joinpath('scratchT')
+        path.mkdir(exist_ok=True)
+        from apsimNGpy.core.base_data import load_default_simulations
+
+        # import the model from APSIM.
+        # if we simulations_object it,
+        # returns a simulation object of apsimNGpy, but we want the path only.
+        # model_path = load_default_simulations(crop='maize', simulations_object=False, path=path.parent)
+        model_path = load_default_simulations('maize').path
+        logging.info(f"testing experiment module\n ______________________")
+        FactorialExperiment = Experiment(database_name='test.db',
+                                         datastorage='test.db',
+                                         tag='th', base_file=model_path,
+                                         wd=path,
+                                         use_thread=use_tread,
+                                         skip_completed=False,
+                                         verbose=False,
+                                         test=False,
+                                         n_core=6,
+                                         reports={'Report'})
+
+        FactorialExperiment.add_factor(parameter='Carbon', param_values=[1.4, 0.2, 0.4, 0.9, 2.4, 0.8],
+                                       factor_type='soils',
+                                       soil_node='Organic')
+
+        FactorialExperiment.add_factor(parameter='FBiom', param_values=[0.045, 1.4, 2.4, 0.8], factor_type='soils',
+                                       soil_node='Organic')
+
+        # # cultivar is edited via the replacement module, any simulation file supplied without Replacements appended
+        # # to Simulations node, this method will fail quickly
+        # FactorialExperiment.add_factor(parameter='grain_filling', param_values=[300, 450, 650, 700, 500], cultivar_name='B_110',
+        #                                commands='[Phenology].GrainFilling.Target.FixedValue', factor_type='cultivar')
+
+        FactorialExperiment.clear_data_base()
+        # os.remove(FactorialExperiment.datastorage)
+        FactorialExperiment.start_experiment()
+        sim_data = FactorialExperiment.get_simulated_data()[0]
+        mn = sim_data.groupby(['FBiom', 'Carbon'])['Yield'].mean()
+        "if we dont see any variation for each of the factors then it is not working configure again"
+        # print(mn)
+        logging.info('experiment module test successful \n____________________________________')
+    except Exception as e:
+        logging.exception(f'experiment module test failed due to exception: {repr(e)}')
 
 
 if __name__ == '__main__':
     test()
-
+    test_experiment()

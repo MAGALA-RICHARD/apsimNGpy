@@ -118,9 +118,9 @@ def set_apsim_bin_path(path):
     It won't work and python with throw an error
     >> example from apsimNGpy.config import Config
     # check the current path
-     config = Config.get_aPSim_bin_path()
+     config = Config.get_apsim_bin_path()
      # set the desired path
-     >> Config.set_aPSim_bin_path(path = '/path/to/aPSimbinaryfolder/bin')
+     >> Config.set_apsim_bin_path(path = '/path/to/aPSimbinaryfolder/bin')
     """
     _path = realpath(path)
     path_to_search = Path(_path)
@@ -146,7 +146,7 @@ class Config:
     @classmethod
     def get_aPSim_bin_path(cls):
         warnings.warn(
-            f'apsimNGpy.config.Config.get_aPSim_bin_path for changing apsim binary path is deprecated> use:apsimNGpy.config.get_aPSim_bin_path ',
+            f'apsimNGpy.config.Config.get_apsim_bin_path for changing apsim binary path is deprecated> use:apsimNGpy.config.get_apsim_bin_path ',
             FutureWarning)
         """We can extract the current path from config.ini"""
         return get_apsim_bin_path()
@@ -154,7 +154,7 @@ class Config:
     @classmethod
     def set_aPSim_bin_path(cls, path):
         warnings.warn(
-            f'apsimNGpy.config.Config.set_aPSim_bin_path . class for changing apsim binary path is deprecated> use:apsimNGpy.config.set_aPSim_bin_path ',
+            f'apsimNGpy.config.Config.set_apsim_bin_path . class for changing apsim binary path is deprecated> use:apsimNGpy.config.set_apsim_bin_path ',
             FutureWarning)
 
         from pathlib import Path
@@ -164,9 +164,9 @@ class Config:
         It won't work and python with throw an error
         >> example from apsimNGpy.config import Config
         # check the current path
-         config = Config.get_aPSim_bin_path()
+         config = Config.get_apsim_bin_path()
          # set the desired path
-         >> Config.set_aPSim_bin_path(path = '/path/to/aPSimbinaryfolder/bin')
+         >> Config.set_apsim_bin_path(path = '/path/to/aPSimbinaryfolder/bin')
         """
         _path = realpath(path)
         return set_apsim_bin_path(_path)
@@ -182,5 +182,5 @@ if __name__ == '__main__':
 
     # # This is an example if apsim is installed at the user's directory'
     # Home_aPSim = list(Path.home().joinpath('AppData', 'Local', 'Programs').rglob('*2022.12.7130.0'))[0].joinpath('bin')
-    # Config.set_aPSim_bin_path(Home_aPSim)
-    # print(Config.get_aPSim_bin_path())
+    # Config.set_apsim_bin_path(Home_aPSim)
+    # print(Config.get_apsim_bin_path())

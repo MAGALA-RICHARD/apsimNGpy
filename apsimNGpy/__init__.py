@@ -5,10 +5,12 @@ from apsimNGpy.config import get_apsim_bin_path, auto_detect_apsim_bin_path, cre
 
 configured = get_apsim_bin_path() or auto_detect_apsim_bin_path() or ''
 if not configured:
-    warnings.warn('APSIM installation binary path not detected. Please use apsimNGpy.set_apsim_bin_path method to set '
+    warnings.warn('APSIM installation binary path nor automatically detected neither supplied.\n'
+                  'Please use apsimNGpy.set_apsim_bin_path method to set '
                   'it', UserWarning)
+else:
 
-create_config(apsim_path=configured)
+    create_config(apsim_path=configured)
 
 
 in_modules = ['get_apsim_bin_path', 'set_apsim_bin_path']

@@ -85,7 +85,7 @@ def auto_detect_apsim_bin_path():
         return ""
 
 
-def __create_config(apsim_path=""):
+def create_config(apsim_path=""):
     _CONFIG = configparser.ConfigParser()
     _CONFIG['Paths'] = {'ApSIM_LOCATION': apsim_path}
     with open(config_path, 'w') as configured_file:
@@ -100,10 +100,7 @@ def get_apsim_bin_path():
 
 
 if not exists(config_path):
-    __create_config(apsim_path='')
-
-configured = get_apsim_bin_path() or auto_detect_apsim_bin_path() or ''
-__create_config(apsim_path=configured)
+    create_config(apsim_path='')
 
 
 def set_apsim_bin_path(path):
@@ -119,14 +116,9 @@ def set_apsim_bin_path(path):
     """
     _path = realpath(path)
     if not _apsim_model_is_installed(_path):
-        raise ValueError(f"files might have been uninstalled at this location{_path}")
+        raise ValueError(f"files might have been uninstalled at this location '{_path}'")
     if _path != get_apsim_bin_path():
-        # if not, we raise assertion error because there is no point to
-        # send a non-working path to the pythonnet config module
-        # at this point the user may need to change to another path
-        CONFIG['Paths']['ApSIM_LOCATION'] = _path
-        with open('config.ini', 'w') as config_file:
-            CONFIG.write(config_file)
+        create_config(_path)
 
 
 class Config:

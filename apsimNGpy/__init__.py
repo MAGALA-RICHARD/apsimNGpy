@@ -1,17 +1,25 @@
-from apsimNGpy import config
+import warnings
 
-import logging
-if not config.get_apsim_bin_path:
-    logging.info('Failed to find APSIM binary path please add APSIM binary path before you proceed')
-in_modules = []
+from apsimNGpy import config
+from config import get_apsim_bin_path, auto_detect_apsim_bin_path, create_config, set_apsim_bin_path
+
+configured = get_apsim_bin_path() or auto_detect_apsim_bin_path() or ''
+if not configured:
+    warnings.warn('APSIM installation binary path not detected. Please use apsimNGpy.set_apsim_bin_path method to set '
+                  'it', UserWarning)
+
+create_config(apsim_path=configured)
+print('APSIMNGpy installation successfully created.')
+in_modules = ['get_apsim_bin_path', 'set_apsim_bin_path']
+
 try:
     from apsimNGpy import core, replacements, manager, utililies
     from apsimNGpy.core.core import APSIMNG
     from apsimNGpy.core.apsim import ApsimModel
 
-    in_modules= ['core', 'replacements', 'manager',
-               'ApsimModel',
-               'utililies', 'config','APSIMNG']
+    in_modules = ['core', 'replacements', 'manager',
+                  'ApsimModel',
+                  'utililies', 'config', 'APSIMNG']
 except Exception as e:
     # It's good practice to log the exception
     pass

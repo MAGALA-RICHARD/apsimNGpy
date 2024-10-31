@@ -58,7 +58,7 @@ def test():
 from apsimNGpy.experiment.main import Experiment
 
 
-def test_experiment(use_tread = False):
+def test_experiment(use_tread=False):
     try:
         path = Path.home().joinpath('scratchT')
         path.mkdir(exist_ok=True)

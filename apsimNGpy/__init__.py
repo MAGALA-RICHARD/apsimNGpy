@@ -10,6 +10,7 @@ if not configured:
 
 create_config(apsim_path=configured)
 
+
 in_modules = ['get_apsim_bin_path', 'set_apsim_bin_path']
 
 try:
@@ -17,11 +18,12 @@ try:
     from apsimNGpy.core.core import APSIMNG
     from apsimNGpy.core.apsim import ApsimModel
 
-    in_modules = ['core', 'replacements', 'manager',
+    in_modules.extend(['core', 'replacements', 'manager',
                   'ApsimModel',
-                  'utililies', 'config', 'APSIMNG']
+                  'utililies', 'config', 'APSIMNG'])
+
 except Exception as e:
     # It's good practice to log the exception
     pass
 
-__all__ = [*in_modules, 'config']
+__all__ = in_modules

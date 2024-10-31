@@ -7,4 +7,4 @@ if not configured:
                   'it', UserWarning)
 create_config(apsim_path=configured)
 
-__all__ = ['dirname', 'realpath', 'join']
+__all__ = ['get_apsim_bin_path', 'set_apsim_bin_path', 'join']

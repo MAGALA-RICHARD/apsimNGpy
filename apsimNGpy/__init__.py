@@ -9,7 +9,7 @@ if not configured:
                   'it', UserWarning)
 
 create_config(apsim_path=configured)
-print('APSIMNGpy installation successfully created.')
+
 in_modules = ['get_apsim_bin_path', 'set_apsim_bin_path']
 
 try:

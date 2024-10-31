@@ -13,7 +13,7 @@ config_path = join(dirname(__file__), 'config.ini')
 HOME_DATA = Path.home().joinpath('AppData', 'Local', 'Programs')
 cdrive = os.environ.get('PROGRAMFILES')
 CONFIG = configparser.ConfigParser()
-CONFIG.read(config_path)
+
 
 
 def _apsim_model_is_installed(_path):
@@ -87,6 +87,7 @@ def auto_detect_apsim_bin_path():
 
 def create_config(apsim_path=""):
     _CONFIG = configparser.ConfigParser()
+    _CONFIG.read(config_path)
     _CONFIG['Paths'] = {'ApSIM_LOCATION': apsim_path}
     with open(config_path, 'w') as configured_file:
         _CONFIG.write(configured_file)

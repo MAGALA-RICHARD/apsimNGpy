@@ -119,7 +119,9 @@ def set_apsim_bin_path(path):
     if not _apsim_model_is_installed(_path):
         raise ValueError(f"files might have been uninstalled at this location '{_path}'")
     if _path != get_apsim_bin_path():
+
         create_config(_path)
+        print(f"saved {_path} to '{config_path}'")
 
 
 class Config:

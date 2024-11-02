@@ -7,13 +7,11 @@ import glob
 from pathlib import Path
 from functools import lru_cache, cache
 from os.path import join, dirname
-
-config_path = join(dirname(__file__), 'config.ini')
+from settings import CONFIG_PATH
 
 HOME_DATA = Path.home().joinpath('AppData', 'Local', 'Programs')
 cdrive = os.environ.get('PROGRAMFILES')
 CONFIG = configparser.ConfigParser()
-
 
 
 def _apsim_model_is_installed(_path):
@@ -87,20 +85,20 @@ def auto_detect_apsim_bin_path():
 
 def create_config(apsim_path=""):
     _CONFIG = configparser.ConfigParser()
-    _CONFIG.read(config_path)
+    _CONFIG.read(CONFIG_PATH)
     _CONFIG['Paths'] = {'ApSIM_LOCATION': apsim_path}
-    with open(config_path, 'w') as configured_file:
+    with open(CONFIG_PATH, 'w') as configured_file:
         _CONFIG.write(configured_file)
 
 
 def get_apsim_bin_path():
     """We can extract the current path from config.ini"""
     g_CONFIG = configparser.ConfigParser()
-    g_CONFIG.read(config_path)
+    g_CONFIG.read(CONFIG_PATH)
     return g_CONFIG['Paths']['ApSIM_LOCATION']
 
 
-if not exists(config_path):
+if not exists(CONFIG_PATH):
     create_config(apsim_path='')
 
 
@@ -119,9 +117,8 @@ def set_apsim_bin_path(path):
     if not _apsim_model_is_installed(_path):
         raise ValueError(f"files might have been uninstalled at this location '{_path}'")
     if _path != get_apsim_bin_path():
-
         create_config(_path)
-        print(f"saved {_path} to '{config_path}'")
+        print(f"saved {_path} to '{CONFIG_PATH}'")
 
 
 class Config:
@@ -158,10 +155,3 @@ class Config:
         """
         _path = realpath(path)
         return set_apsim_bin_path(_path)
-
-
-if __name__ == '__main__':
-    # example windows;
-    print(get_apsim_bin_path(), 'after removing .config')
-
-    print(get_apsim_bin_path())

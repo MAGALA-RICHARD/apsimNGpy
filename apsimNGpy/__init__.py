@@ -1,7 +1,7 @@
 import warnings
 
-from apsimNGpy import config
-from apsimNGpy.config import get_apsim_bin_path, auto_detect_apsim_bin_path, create_config, set_apsim_bin_path
+import config
+from config import get_apsim_bin_path, auto_detect_apsim_bin_path, create_config, set_apsim_bin_path
 
 configured = get_apsim_bin_path() or auto_detect_apsim_bin_path() or ''
 if not configured:

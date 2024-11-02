@@ -7,7 +7,7 @@ import glob
 from pathlib import Path
 from functools import lru_cache, cache
 from os.path import join, dirname
-from settings import CONFIG_PATH
+from apsimNGpy.settings import CONFIG_PATH
 
 HOME_DATA = Path.home().joinpath('AppData', 'Local', 'Programs')
 cdrive = os.environ.get('PROGRAMFILES')

@@ -2,7 +2,7 @@ import os
 from concurrent.futures import ProcessPoolExecutor, as_completed, ThreadPoolExecutor
 from multiprocessing import cpu_count
 from time import perf_counter
-from apsimNGpy.settings import ConstantSettings
+from apsimNGpy.settings import NUM_CORES
 from apsimNGpy.utililies.run_utils import run_model
 from tqdm import tqdm
 
@@ -15,7 +15,7 @@ import multiprocessing as mp
 import types
 
 CPU = int(int(cpu_count()) * 0.5)
-CORES = ConstantSettings.CORES
+CORES = NUM_CORES
 
 
 # _______________________________________________________________

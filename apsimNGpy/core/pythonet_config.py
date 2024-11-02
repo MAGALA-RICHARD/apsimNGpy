@@ -4,7 +4,7 @@ import configparser
 import pythonnet
 import sys as system
 from os.path import (realpath, join, dirname)
-from apsimNGpy import config
+import config
 
 aPSim_PATH = config.get_apsim_bin_path()
 

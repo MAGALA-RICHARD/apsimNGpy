@@ -34,7 +34,8 @@ def test():
     if auto:
         logging.info(f"apsim path detected automatically at: {auto}")
     # test pythonnet
-
+    if get_apsim_bin_path():
+        logging.info('Added apsim path at: {}'.format(get_apsim_bin_path()))
     from pathlib import Path
     from time import perf_counter
     # Model = FileFormat.ReadFromFile[Models.Core.Simulations](model, None, False)

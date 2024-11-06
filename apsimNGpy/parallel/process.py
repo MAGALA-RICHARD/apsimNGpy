@@ -216,29 +216,26 @@ def custom_parallel(func, iterable, *args, **kwargs):
     """
 
     use_thread, cpu_cores = kwargs.get('use_thread', False), kwargs.get('ncores', CORES)
-    timeA = perf_counter()
-    verbose = kwargs.get('verbose', True)
     progress_message = kwargs.get('progress_message', f"Processing multiple jobs via '{func.__name__}' please wait!")
     selection = select_type(use_thread=use_thread,
                             n_cores=cpu_cores)
     with selection as pool:
         futures = [pool.submit(func, i, *args) for i in iterable]
 
-        progress = tqdm(total=len(futures), position=0, leave=True,
-                        bar_format=f'{progress_message}:' '{percentage:3.0f}% completed')
+        # progress = tqdm(total=len(futures), position=0, leave=True,
+        #                 bar_format=f'{progress_message} {|{bar}|}:' '{percentage:3.0f}% completed')
+        progress = tqdm(
+            total=len(futures),
+            position=0,
+            leave=True,
+            bar_format=f'{progress_message}: |{{bar}}| {{percentage:3.0f}}% completed | Elapsed time: {{elapsed}}'
+        )
         # Iterate over the futures as they complete
-        count = 0
         for future in as_completed(futures):
-            count += 1
             yield future.result()
             progress.update(1)
         progress.close()
-    timeB= perf_counter()
-    if verbose:
-        _seconds = timeB- timeA
-        msg = (f"""processing {count} took {_seconds}, seconds to run.'
-        Time per worker: {_seconds / cpu_cores}""")
-        settings.logger.info(msg)
+
 def simulate_in_chunks(w_d, iterable_generator, chunk_size, con_data_base=None, table_tag='t', save_to_csv=True):
     """
     Iterate through a generator by specifying the chunk size. vital if the data to be simulated is so large to fit into the computer memory
@@ -341,7 +338,7 @@ if __name__ == '__main__':
     lm = custom_parallel(fnn, range(100000), use_thread=True, ncores=4)
     # lm2 = custom_parallel(fnn, gen_d, use_thread=True, ncores=10)
    #with custom message
-    lm = custom_parallel(fnn, range(100000), use_thread=False, ncores=4, progress_message="running function A")
+    lm = custom_parallel(fnn, range(1000000), use_thread=True, ncores=4, progress_message="running function A")
     # simple example
 
     ap = [i for i in lm]

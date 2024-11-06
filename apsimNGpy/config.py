@@ -91,15 +91,17 @@ def create_config(apsim_path=""):
         _CONFIG.write(configured_file)
 
 
-def get_apsim_bin_path():
-    """We can extract the current path from config.ini"""
-    g_CONFIG = configparser.ConfigParser()
-    g_CONFIG.read(CONFIG_PATH)
-    return g_CONFIG['Paths']['ApSIM_LOCATION']
 
 
 if not exists(CONFIG_PATH):
     create_config(apsim_path='')
+
+
+def get_apsim_bin_path():
+        """We can extract the current path from config.ini"""
+        g_CONFIG = configparser.ConfigParser()
+        g_CONFIG.read(CONFIG_PATH)
+        return g_CONFIG['Paths']['ApSIM_LOCATION']
 
 
 def set_apsim_bin_path(path):

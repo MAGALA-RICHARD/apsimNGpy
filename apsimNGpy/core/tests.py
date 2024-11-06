@@ -4,6 +4,8 @@ import platform
 from pathlib import Path
 import logging
 
+from settings import logger, MSG
+
 current_path = os.path.dirname(os.path.abspath(__file__))
 # Set up basic configuration for logging
 logging.basicConfig(format='%(asctime)s :: %(message)s', level=logging.INFO)
@@ -29,13 +31,16 @@ except ImportError:
 auto = auto_detect_apsim_bin_path()
 
 
+
 def test():
     # test auto detect;
     if auto:
         logging.info(f"apsim path detected automatically at: {auto}")
     # test pythonnet
     if get_apsim_bin_path():
-        logging.info('Added apsim path at: {}'.format(get_apsim_bin_path()))
+        logging.info('Using apsim path at: {}'.format(get_apsim_bin_path()))
+    else:
+        logger.debug(MSG)
     from pathlib import Path
     from time import perf_counter
     # Model = FileFormat.ReadFromFile[Models.Core.Simulations](model, None, False)

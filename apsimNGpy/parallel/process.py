@@ -5,7 +5,7 @@ from time import perf_counter
 from apsimNGpy.settings import NUM_CORES
 from apsimNGpy.utililies.run_utils import run_model
 from tqdm import tqdm
-
+from apsimNGpy import settings
 from apsimNGpy.utililies.utils import select_process
 from apsimNGpy.utililies.database_utils import read_db_table
 from apsimNGpy.parallel.safe import download_soil_table
@@ -236,7 +236,8 @@ def custom_parallel(func, iterable, *args, **kwargs):
     timeB= perf_counter()
     if verbose:
         _seconds = timeB- timeA
-        print(f'processing {count} took', _seconds, f'seconds', f'to run. time per worker: {_seconds / cpu_cores}')
+        msg = f'processing {count} took {_seconds}, seconds to run. Time per worker: {_seconds / cpu_cores}'
+        settings.logger.info(msg)
 def simulate_in_chunks(w_d, iterable_generator, chunk_size, con_data_base=None, table_tag='t', save_to_csv=True):
     """
     Iterate through a generator by specifying the chunk size. vital if the data to be simulated is so large to fit into the computer memory
@@ -312,7 +313,7 @@ def starmap_executor(func, iterable, *args, **kwargs):
 def pool_imap_executor(func, iterable, *args, num_processes=None):
     if num_processes is None:
         num_processes = os.cpu_count()
-    print(f"Using {num_processes} cores")
+    settings.logger.info(f"Using {num_processes} cores")
 
     with mp.Pool(processes=num_processes) as pool:
         # Prepare the arguments for imap_unordered
@@ -339,7 +340,7 @@ if __name__ == '__main__':
     lm = custom_parallel(fnn, range(100000), use_thread=True, ncores=4)
     # lm2 = custom_parallel(fnn, gen_d, use_thread=True, ncores=10)
    #with custom message
-    lm = custom_parallel(fnn, range(100000), use_thread=True, ncores=4, progress_message="running function A")
+    lm = custom_parallel(fnn, range(100000), use_thread=False, ncores=4, progress_message="running function A")
     # simple example
 
     ap = [i for i in lm]

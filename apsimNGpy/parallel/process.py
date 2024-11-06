@@ -228,8 +228,9 @@ def custom_parallel(func, iterable, *args, **kwargs):
             total=len(futures),
             position=0,
             leave=True,
-            bar_format=f'{progress_message}: |{{bar}}| {{percentage:3.0f}}% completed | Elapsed time: {{elapsed}}'
+            bar_format='{l_bar}{bar}| {percentage:3.0f}% completed | Elapsed time: {elapsed} | {remaining} remaining',
         )
+
         # Iterate over the futures as they complete
         for future in as_completed(futures):
             yield future.result()
@@ -338,7 +339,7 @@ if __name__ == '__main__':
     lm = custom_parallel(fnn, range(100000), use_thread=True, ncores=4)
     # lm2 = custom_parallel(fnn, gen_d, use_thread=True, ncores=10)
    #with custom message
-    lm = custom_parallel(fnn, range(1000000), use_thread=True, ncores=4, progress_message="running function A")
+    lm = custom_parallel(fnn, range(10000000), use_thread=True, ncores=4, progress_message="running function A")
     # simple example
 
     ap = [i for i in lm]

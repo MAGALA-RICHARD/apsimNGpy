@@ -236,7 +236,8 @@ def custom_parallel(func, iterable, *args, **kwargs):
     timeB= perf_counter()
     if verbose:
         _seconds = timeB- timeA
-        msg = f'processing {count} took {_seconds}, seconds to run. Time per worker: {_seconds / cpu_cores}'
+        msg = (f"""processing {count} took {_seconds}, seconds to run.'
+        Time per worker: {_seconds / cpu_cores}""")
         settings.logger.info(msg)
 def simulate_in_chunks(w_d, iterable_generator, chunk_size, con_data_base=None, table_tag='t', save_to_csv=True):
     """

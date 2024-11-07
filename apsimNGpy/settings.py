@@ -55,8 +55,8 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 # Create console handler and set level
-
-log_file = 'apsimNGpy_sim.log'
+# am also sending this to the user, because logs maybe removed with removal of the package
+log_file = os.path.expanduser('apsimNGpy_sim.log')
 console_handler = logging.StreamHandler()
 console_handler.setLevel(logging.DEBUG)
 

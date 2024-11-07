@@ -1,29 +1,15 @@
-import warnings
-from os.path import (join)
+from settings import MSG, logger
+from config import get_apsim_bin_path,  create_config, set_apsim_bin_path
 
-from config import get_apsim_bin_path, auto_detect_apsim_bin_path, create_config, set_apsim_bin_path
-
-configured = get_apsim_bin_path() or auto_detect_apsim_bin_path() or ''
+configured = get_apsim_bin_path() or ''
 if not configured:
-    warnings.warn('APSIM installation binary path not detected. Please use apsimNGpy.set_apsim_bin_path method to set '
-                  'it', UserWarning)
+  logger.debug(MSG)
 
 create_config(apsim_path=configured)
 
-__all__ = ['get_apsim_bin_path', 'set_apsim_bin_path', 'join']
 
-from config import get_apsim_bin_path, auto_detect_apsim_bin_path, create_config
 
-configured = get_apsim_bin_path() or auto_detect_apsim_bin_path() or ''
-if not configured:
-    warnings.warn('APSIM installation binary path nor automatically detected neither supplied.\n'
-                  'Please use apsimNGpy.set_apsim_bin_path method to set '
-                  'it', UserWarning)
-else:
-
-    create_config(apsim_path=configured)
-
-in_modules = ['get_apsim_bin_path', 'set_apsim_bin_path']
+in_modules =  ['get_apsim_bin_path',  set_apsim_bin_path, 'auto_detect_apsim_bin_path']
 
 try:
     from apsimNGpy import core, replacements, manager, utililies
@@ -38,4 +24,4 @@ except Exception as e:
 
     pass
 
-__all__ = in_modules
+__all__ = [*in_modules, *pre_m]

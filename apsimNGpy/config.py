@@ -93,16 +93,22 @@ def create_config(apsim_path=""):
 
 
 
-if not exists(CONFIG_PATH):
-    create_config(apsim_path='')
-
-
 def get_apsim_bin_path():
-        """We can extract the current path from config.ini"""
+    """
+    Returns the path to the apsim bin folder from either auto detection or from the path already supplied by the user through the apsimNgpyconfig.ini file
+    The function is silent does not raise any exception but return empty string in all cases
+    :return:
+    """
+    # if it does not exist we create it and try to load from the auto detected pass
+    if not exists(CONFIG_PATH):
+        auto_path = auto_detect_apsim_bin_path()
+        create_config(apsim_path=auto_path)
+        return auto_path
+    else:
+        """We can extract the current path from apsimNgpyconfig.ini"""
         g_CONFIG = configparser.ConfigParser()
         g_CONFIG.read(CONFIG_PATH)
         return g_CONFIG['Paths']['ApSIM_LOCATION']
-
 
 def set_apsim_bin_path(path):
     """ Send your desired path to the aPSim binary folder to the config module

@@ -1,9 +1,27 @@
+import configparser
 from multiprocessing import cpu_count
 import logging
 import os
 
 BASE_DIR = os.path.dirname(__file__)
-CONFIG_PATH = os.path.join(BASE_DIR, 'config.ini')
+# no need to lof this path in the package directory,as it absolute path always seems abstract
+# so we send to the user home directory
+# IN THAT CASE NO NEED TO IMPORT IT
+CONFIG_PATH = os.path.expanduser('~/apsimNGpy_config.ini')
+if not os.path.exists(CONFIG_PATH):
+   # creating this ahead of time
+    _CONFIG = configparser.ConfigParser()
+
+    # Read the existing configuration file if it exists
+    _CONFIG.read(CONFIG_PATH)
+
+    # Add a new section and key-value pair if not already present
+    if 'Paths' not in _CONFIG:
+        _CONFIG['Paths'] = {'ApSIM_LOCATION': ''}
+
+    # Write the configuration object to the file
+    with open(CONFIG_PATH, 'w') as file_w:
+        _CONFIG.write(file_w)
 WGS84 = 'epsg:4326'
 NUM_CORES: int = int(cpu_count() * 0.6)
 SOIL_THICKNESS: list = [150, 150, 200, 200, 200, 250, 300, 300, 400, 500]

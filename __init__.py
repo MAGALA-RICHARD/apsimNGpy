@@ -5,10 +5,6 @@ configured = get_apsim_bin_path() or ''
 if not configured:
   logger.debug(MSG)
 
-create_config(apsim_path=configured)
-
-
-
 in_modules =  ['get_apsim_bin_path',  set_apsim_bin_path, 'auto_detect_apsim_bin_path']
 
 try:
@@ -24,4 +20,4 @@ except Exception as e:
 
     pass
 
-__all__ = [*in_modules, *pre_m]
+__all__ = in_modules

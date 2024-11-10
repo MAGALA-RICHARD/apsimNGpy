@@ -114,8 +114,8 @@ def get_apsim_bin_path():
         create_config(auto)
         return auto
     else:
-        # At this moment we need to stop and fix this error
-        raise FileNotFoundError(MSG)
+        # At this moment we need to stop and fix this error, but no let's provide a debugging message
+        logger.debug(MSG)
 
 def set_apsim_bin_path(path):
     """ Send your desired path to the aPSim binary folder to the config module

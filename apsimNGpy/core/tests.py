@@ -1,8 +1,11 @@
 import glob
 import os, sys
 import platform
+import shutil
+from contextlib import contextmanager
 from pathlib import Path
 import logging
+
 
 from settings import logger, MSG
 
@@ -20,13 +23,15 @@ from apsimNGpy.config import get_apsim_bin_path
 
 try:
     from core import APSIMNG
+    from core.base_data import load_default_simulations
     from apsim import ApsimModel
     # auto-detect for some reasons when imported after compiling, with compiling i mean installing the package so we
     # import directly from the package
-except ImportError:
-    logging.info("passed import error")
+except (ModuleNotFoundError, ImportError):
+    logging.info(" did not passed import error")
     from apsimNGpy.core.core import APSIMNG
     from apsimNGpy.core.apsim import ApsimModel
+    from apsimNGpy.core.base_data import load_default_simulations
 
 auto = auto_detect_apsim_bin_path()
 
@@ -64,53 +69,68 @@ def test():
 from apsimNGpy.experiment.main import Experiment
 
 
+@contextmanager
 def test_experiment(use_tread=False):
+    path = Path.home().joinpath('scratchT')
+    path.mkdir(exist_ok=True)
+
     try:
-        path = Path.home().joinpath('scratchT')
-        path.mkdir(exist_ok=True)
-        from apsimNGpy.core.base_data import load_default_simulations
-
-        # import the model from APSIM.
-        # if we simulations_object it,
-        # returns a simulation object of apsimNGpy, but we want the path only.
-        # model_path = load_default_simulations(crop='maize', simulations_object=False, path=path.parent)
+        # Import the model from APSIM and get the model path
         model_path = load_default_simulations('maize').path
-        logging.info(f"testing experiment module\n ______________________")
-        FactorialExperiment = Experiment(database_name='test.db',
-                                         datastorage='test.db',
-                                         tag='th', base_file=model_path,
-                                         wd=path,
-                                         use_thread=use_tread,
-                                         skip_completed=False,
-                                         verbose=False,
-                                         test=False,
-                                         n_core=6,
-                                         reports={'Report'})
+        logging.info("Testing experiment module\n ______________________")
 
-        FactorialExperiment.add_factor(parameter='Carbon', param_values=[1.4, 0.2, 0.4, 0.9, 2.4, 0.8],
-                                       factor_type='soils',
-                                       soil_node='Organic')
+        # Set up the experiment
+        FactorialExperiment = Experiment(
+            database_name='test.db',
+            datastorage='test.db',
+            tag='th',
+            base_file=model_path,
+            wd=path,
+            use_thread=use_tread,
+            skip_completed=False,
+            verbose=False,
+            test=False,
+            n_core=6,
+            reports={'Report'}
+        )
 
-        FactorialExperiment.add_factor(parameter='FBiom', param_values=[0.045, 1.4, 2.4, 0.8], factor_type='soils',
-                                       soil_node='Organic')
+        # Add factors
+        FactorialExperiment.add_factor(
+            parameter='Carbon',
+            param_values=[1.4, 0.2, 0.4, 0.9, 2.4, 0.6, 0.8],
+            factor_type='soils',
+            soil_node='Organic'
+        )
+        FactorialExperiment.add_factor(
+            parameter='FBiom',
+            param_values=[0.045, .4, 2.4, 0.8, 0.7],
+            factor_type='soils',
+            soil_node='Organic'
+        )
 
-        # # cultivar is edited via the replacement module, any simulation file supplied without Replacements appended
-        # # to Simulations node, this method will fail quickly
-        # FactorialExperiment.add_factor(parameter='grain_filling', param_values=[300, 450, 650, 700, 500], cultivar_name='B_110',
-        #                                commands='[Phenology].GrainFilling.Target.FixedValue', factor_type='cultivar')
-
+        # Clear the database and start the experiment
         FactorialExperiment.clear_data_base()
-        # os.remove(FactorialExperiment.datastorage)
         FactorialExperiment.start_experiment()
-        sim_data = FactorialExperiment.get_simulated_data()[0]
-        mn = sim_data.groupby(['FBiom', 'Carbon'])['Yield'].mean()
-        "if we dont see any variation for each of the factors then it is not working configure again"
-        # print(mn)
-        logging.info('experiment module test successful \n____________________________________')
+
+        # Yield control back to the block inside the `with` statement
+        yield FactorialExperiment
+
+        # Log successful test after the experiment block
+        logging.info("Experiment module test successful\n____________________________________")
+
     except Exception as e:
-        logging.exception(f'experiment module test failed due to exception: {repr(e)}')
+        # Log any exceptions encountered during the experiment
+        logging.exception(f"Experiment module test failed due to exception: {repr(e)}")
+
+    finally:
+        # Clean up by removing the temporary directory
+        shutil.rmtree(path)
 
 
+# Running the test
 if __name__ == '__main__':
-    test()
-    test_experiment()
+    logging.basicConfig(level=logging.INFO)
+    with test_experiment(use_tread=True) as experiment:
+        sim_data = experiment.get_simulated_data()[0]
+        mn = sim_data.groupby(['FBiom'])['Yield'].mean()
+        logging.info(f"Simulation results (mean yield by FBiom):\n{mn}")

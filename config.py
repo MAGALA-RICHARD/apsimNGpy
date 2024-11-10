@@ -68,8 +68,17 @@ def _match_pattern_to_path(pattern):
 
 @cache
 def auto_detect_apsim_bin_path():
+    """
+    This will search through a few suspected locations and give up
+    the best idea is to just add the installation path to APSIM PATH. Although it is possible to search the whole computer this
+    is computationally intensive, but there is a plan to do so through one single run automatically
+    @return: apsim bin installation path where.dll files resides or None if not found
+    """
+    common_t_all = os.getenv("APSIM")
+    if common_t_all:
+        return common_t_all
     if platform.system() == 'Windows':
-        return os.getenv("APSIM") or os.getenv("Models") or search_from_programs() or search_from_users() or ""
+        return  search_from_programs() or search_from_users() or ""
     if platform.system() == 'Darwin':
         # we search in applications and home and give up
         pattern = '/Applications/APSIM*.app/Contents/Resources/bin'
@@ -80,7 +89,7 @@ def auto_detect_apsim_bin_path():
     if platform.system() == 'Linux':
         pattern1 = '/usr/local/APSIM*/Contents/Resources/bin'
         pattern2 = '~/.APSIM*/Contents/Resources/bin'
-        return _match_pattern_to_path(pattern1) or _match_pattern_to_path(pattern2) or ""
+        return  _match_pattern_to_path(pattern1) or _match_pattern_to_path(pattern2) or ""
     else:
         return ""
 

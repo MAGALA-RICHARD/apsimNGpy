@@ -145,7 +145,7 @@ class Config:
     @classmethod
     def get_aPSim_bin_path(cls):
         warnings.warn(
-            f'apsimNGpy.config.Config.get_apsim_bin_path for changing apsim binary path is deprecated> '
+            f'Deprecation warning: apsimNGpy.config.Config.get_apsim_bin_path for changing apsim binary path is deprecated> '
             f'use:apsimNGpy.config.get_apsim_bin_path ',
             FutureWarning)
         """We can extract the current path from config.ini"""
@@ -154,7 +154,7 @@ class Config:
     @classmethod
     def set_aPSim_bin_path(cls, path):
         warnings.warn(
-            f'apsimNGpy.config.Config.set_apsim_bin_path . class for changing apsim binary path is deprecated> '
+            f'Deprecation warning: apsimNGpy.config.Config.set_apsim_bin_path for changing apsim binary path is deprecated> '
             f'use:apsimNGpy.config.set_apsim_bin_path ',
             FutureWarning)
 

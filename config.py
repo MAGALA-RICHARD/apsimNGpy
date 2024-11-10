@@ -104,17 +104,18 @@ def create_config(apsim_path=""):
 
 def get_apsim_bin_path():
     """We can extract the current path from config.ini"""
-    g_CONFIG = configparser.ConfigParser()
-    g_CONFIG.read(CONFIG_PATH)
+
     if exists(CONFIG_PATH):
+        g_CONFIG = configparser.ConfigParser()
+        g_CONFIG.read(CONFIG_PATH)
         return g_CONFIG['Paths']['ApSIM_LOCATION']
     auto =auto_detect_apsim_bin_path()
     if auto:
-        return auto_detect_apsim_bin_path()
+        create_config(auto)
+        return auto
     else:
-        logger.debug(MSG)
-
-
+        # At this moment we need to stop and fix this error
+        raise FileNotFoundError(MSG)
 
 def set_apsim_bin_path(path):
     """ Send your desired path to the aPSim binary folder to the config module
@@ -132,7 +133,7 @@ def set_apsim_bin_path(path):
         raise ValueError(f"files might have been uninstalled at this location '{_path}'")
     if _path != get_apsim_bin_path():
         create_config(_path)
-        print(f"saved {_path} to '{CONFIG_PATH}'")
+        logger.info(f"saved {_path} to '{CONFIG_PATH}'")
 
 
 class Config:

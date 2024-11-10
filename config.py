@@ -7,7 +7,7 @@ import glob
 from pathlib import Path
 from functools import lru_cache, cache
 from os.path import join, dirname
-from settings import CONFIG_PATH
+from settings import CONFIG_PATH, logger, MSG
 
 HOME_DATA = Path.home().joinpath('AppData', 'Local', 'Programs')
 cdrive = os.environ.get('PROGRAMFILES')
@@ -106,11 +106,14 @@ def get_apsim_bin_path():
     """We can extract the current path from config.ini"""
     g_CONFIG = configparser.ConfigParser()
     g_CONFIG.read(CONFIG_PATH)
-    return g_CONFIG['Paths']['ApSIM_LOCATION']
+    if exists(CONFIG_PATH):
+        return g_CONFIG['Paths']['ApSIM_LOCATION']
+    auto =auto_detect_apsim_bin_path()
+    if auto:
+        return auto_detect_apsim_bin_path()
+    else:
+        logger.debug(MSG)
 
-
-if not exists(CONFIG_PATH):
-    create_config(apsim_path='')
 
 
 def set_apsim_bin_path(path):

@@ -13,7 +13,7 @@ from functools import lru_cache
 HOME_DATA = Path.home().joinpath('AppData', 'Local', 'Programs')
 cdrive = os.environ.get('PROGRAMFILES')
 CONFIG = configparser.ConfigParser()
-
+EMPTY_PATH = ""
 
 def _apsim_model_is_installed(_path):
     """
@@ -79,23 +79,23 @@ def auto_detect_apsim_bin_path():
     if common_t_all:
         return common_t_all
     if platform.system() == 'Windows':
-        return search_from_programs() or search_from_users() or ""
+        return search_from_programs() or search_from_users() or EMPTY_PATH
     if platform.system() == 'Darwin':
         # we search in applications and home and give up
         pattern = '/Applications/APSIM*.app/Contents/Resources/bin'
         _home = os.path.expanduser('~')
         pattern2 = f"{_home}/APSIM*.app/Contents/Resources/bin"
-        return _match_pattern_to_path(pattern) or _match_pattern_to_path(pattern2) or ""
+        return _match_pattern_to_path(pattern) or _match_pattern_to_path(pattern2) or EMPTY_PATH
 
     if platform.system() == 'Linux':
         pattern1 = '/usr/local/APSIM*/Contents/Resources/bin'
         pattern2 = '~/.APSIM*/Contents/Resources/bin'
-        return _match_pattern_to_path(pattern1) or _match_pattern_to_path(pattern2) or ""
+        return _match_pattern_to_path(pattern1) or _match_pattern_to_path(pattern2) or EMPTY_PATH
     else:
-        return ""
+        return EMPTY_PATH
 
 
-def create_config(apsim_path=""):
+def create_config(apsim_path=EMPTY_PATH):
     _CONFIG = configparser.ConfigParser()
     _CONFIG.read(CONFIG_PATH)
     _CONFIG['Paths'] = {'ApSIM_LOCATION': apsim_path}
@@ -106,7 +106,7 @@ def create_config(apsim_path=""):
 @lru_cache(maxsize=None)
 def get_apsim_bin_path():
     """We can extract the current path from config.ini or from the automatic search:
-       @return str: path to the apsim binaries or empty string which evaluate to a boolean false
+       @return str: path to the apsim binaries or empty string which evaluate to a boolean: False or None
     """
     if exists(CONFIG_PATH):
         g_CONFIG = configparser.ConfigParser()

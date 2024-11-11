@@ -129,6 +129,12 @@ def set_apsim_bin_path(path):
      config = Config.get_apsim_bin_path()
      # set the desired path
      >> Config.set_apsim_bin_path(path = '/path/to/APSIM*/bin')
+
+    Here's a refined version of your note, incorporating your requested phrase for improved clarity:
+
+    **Note: ** Due to caching behaviors in `get_apsim_bin_path`, which is interacting with the configuration file,
+    errors may occur after changes—especially if the system attempts to access a path that has been uninstalled. If this
+     happens, please rerun the application or restart your IDE to refresh the cached results.
     """
     _path = realpath(path)
     if not _apsim_model_is_installed(_path):

@@ -9,6 +9,7 @@ from functools import lru_cache, cache
 from os.path import join, dirname
 from settings import CONFIG_PATH, logger, MSG
 from functools import lru_cache
+
 HOME_DATA = Path.home().joinpath('AppData', 'Local', 'Programs')
 cdrive = os.environ.get('PROGRAMFILES')
 CONFIG = configparser.ConfigParser()
@@ -104,23 +105,28 @@ def create_config(apsim_path=""):
 
 @lru_cache(maxsize=None)
 def get_apsim_bin_path():
-    """We can extract the current path from config.ini"""
-
+    """We can extract the current path from config.ini or from the automatic search:
+       @return str: path to the apsim binaries or empty string which evaluate to a boolean false
+    """
     if exists(CONFIG_PATH):
         g_CONFIG = configparser.ConfigParser()
         g_CONFIG.read(CONFIG_PATH)
         return g_CONFIG['Paths']['ApSIM_LOCATION']
     auto = auto_detect_apsim_bin_path()
     if auto:
+        # the config.ini has not received a path, yet we try to get it from the computer
+        # by the function above and then send it to the config.in using the create_config
         create_config(auto)
         return auto
+
     else:
         # At this moment we need to stop and fix this error, but no let's provide a debugging message
+        # because error will avoid importing the get_apsim_bin_path or set_apsim_bin_path to fix the problem
         logger.debug(MSG)
 
 
 def set_apsim_bin_path(path):
-    """ Send your desired path to the aPSim binary folder to the config module
+    """ Send your desired path to the aPSim binary folder to the config.in which is then accessed by the pythonet_config module
     the path should end with bin as the parent directory of the aPSim Model.
     >> Please be careful with adding an uninstalled path, which does not have model.exe file or unix executable.
     It won't work and python with throw an error

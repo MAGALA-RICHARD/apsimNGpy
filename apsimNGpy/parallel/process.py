@@ -119,10 +119,10 @@ def read_result_in_parallel(iterable_files, ncores=None, use_threads=False, repo
     Read APSIMX simulation databases results from multiple files in parallel.
 
     Args:
-    - iterable_files (list): A list of APSIMX db  files to be read in parallel.
+    - iterable_files (list): A list of APSIMX db files to be read in parallel.
     - ncores (int, optional): The number of CPU cores or threads to use for parallel processing. If not provided, it defaults to 50% of available CPU cores.
     - use_threads (bool, optional): If set to True, the function uses thread pool execution; otherwise, it uses process pool execution. Default is False.
-    -  report_name the name of the  report table defaults to "Report" you can use None to return all
+    -  report_name the name of the report table defaults to "Report" you can use None to return all
 
     Returns:
     - generator: A generator yielding the simulation data read from each file.
@@ -167,11 +167,11 @@ def download_soil_tables(iterable, use_threads=False, ncores=0, **kwargs):
 
     Downloads soil data from SSURGO (Soil Survey Geographic Database) based on lonlat coordinates.
 
-    Args:
-    - iterable (iterable): An iterable containing lonlat coordinates as tuples or lists.
-    - use_threads (bool, optional): If True, use thread pool execution. If False, use process pool execution. Default is False.
-    - ncores (int, optional): The number of CPU cores or threads to use for parallel processing. If not provided, it defaults to 40% of available CPU cores.
-    - soil_series (None, optional): [Insert description if applicable.]
+    Args: - iterable (iterable): An iterable containing lonlat coordinates as tuples or lists. Preferred is generator
+    - use_threads (bool, optional): If True, use thread pool execution. If False, use process pool execution. Default
+    is False. - Ncores (int, optional): The number of CPU cores or threads to use for parallel processing. If not
+    provided, it defaults to 40% of available CPU cores. - Soil_series (None, optional): [Insert description if
+    applicable.]
 
     Returns:
     - a generator: with dictionaries containing calculated soil profiles with the corresponding index positions based on lonlat coordinates.
@@ -181,7 +181,7 @@ def download_soil_tables(iterable, use_threads=False, ncores=0, **kwargs):
     # Example usage of download_soil_tables function
     from your_module import download_soil_tables
 
-    lonlat_coords = [(x1, y1), (x2, y2), ...]  # Replace with actual lonlat coordinates
+    Lonlat_coords = [(x1, y1), (x2, y2), ...]  # Replace with actual lonlat coordinates
 
     # Using threads for parallel processing
     soil_profiles = download_soil_tables(lonlat_coords, use_threads=True, ncores=4)
@@ -208,7 +208,6 @@ def download_soil_tables(iterable, use_threads=False, ncores=0, **kwargs):
 
     return custom_parallel(read_db_table, iterable, ncores=ncores_2use,
                            use_threads=use_threads)
-
 
 
 if __name__ == '__main__':

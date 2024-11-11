@@ -8,7 +8,7 @@ from pathlib import Path
 from functools import lru_cache, cache
 from os.path import join, dirname
 from settings import CONFIG_PATH, logger, MSG
-
+from functools import lru_cache
 HOME_DATA = Path.home().joinpath('AppData', 'Local', 'Programs')
 cdrive = os.environ.get('PROGRAMFILES')
 CONFIG = configparser.ConfigParser()
@@ -78,18 +78,18 @@ def auto_detect_apsim_bin_path():
     if common_t_all:
         return common_t_all
     if platform.system() == 'Windows':
-        return  search_from_programs() or search_from_users() or ""
+        return search_from_programs() or search_from_users() or ""
     if platform.system() == 'Darwin':
         # we search in applications and home and give up
         pattern = '/Applications/APSIM*.app/Contents/Resources/bin'
-        _home  =os.path.expanduser('~')
+        _home = os.path.expanduser('~')
         pattern2 = f"{_home}/APSIM*.app/Contents/Resources/bin"
-        return _match_pattern_to_path(pattern) or _match_pattern_to_path(pattern2)  or ""
+        return _match_pattern_to_path(pattern) or _match_pattern_to_path(pattern2) or ""
 
     if platform.system() == 'Linux':
         pattern1 = '/usr/local/APSIM*/Contents/Resources/bin'
         pattern2 = '~/.APSIM*/Contents/Resources/bin'
-        return  _match_pattern_to_path(pattern1) or _match_pattern_to_path(pattern2) or ""
+        return _match_pattern_to_path(pattern1) or _match_pattern_to_path(pattern2) or ""
     else:
         return ""
 
@@ -102,6 +102,7 @@ def create_config(apsim_path=""):
         _CONFIG.write(configured_file)
 
 
+@lru_cache(maxsize=None)
 def get_apsim_bin_path():
     """We can extract the current path from config.ini"""
 
@@ -109,13 +110,14 @@ def get_apsim_bin_path():
         g_CONFIG = configparser.ConfigParser()
         g_CONFIG.read(CONFIG_PATH)
         return g_CONFIG['Paths']['ApSIM_LOCATION']
-    auto =auto_detect_apsim_bin_path()
+    auto = auto_detect_apsim_bin_path()
     if auto:
         create_config(auto)
         return auto
     else:
         # At this moment we need to stop and fix this error, but no let's provide a debugging message
         logger.debug(MSG)
+
 
 def set_apsim_bin_path(path):
     """ Send your desired path to the aPSim binary folder to the config module

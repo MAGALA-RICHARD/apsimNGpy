@@ -56,7 +56,7 @@ def select_threads(multithread):
         return SingleThreaded
 
 
-# from settings import * This file is not ready and i wanted to do some test
+from apsimNGpy.settings import * #This file is not ready and i wanted to do some test
 
 
 def replace_variable_by_index(old_list: list, new_value: list, indices: list):
@@ -218,7 +218,7 @@ class APSIMNG:
             try:
                 models.OnCreated()
             except Exception as e:
-                print(e)
+                logger.info(e)
             finally:
                 for simulation in simulationList:
                     simulation.IsInitialising = False
@@ -298,7 +298,7 @@ class APSIMNG:
             If `True` APSIM uses multiple threads, by default `True`
             :param simulations:
 
-        :param verbose: bool prints diagnostic information such as false report name and simulation
+        :param verbose: bool logger.infos diagnostic information such as false report name and simulation
         :param get_dict: bool, return a dictionary of data frame paired by the report table names default to False
         :param init_only, runs without returning the result defaults to 'False'.
         returns
@@ -324,7 +324,7 @@ class APSIMNG:
             _run_model = ModelRUNNER(sim, True, False, False, None, runtype)
             e = _run_model.Run()
             if len(e) > 0:
-                print(e[0].ToString())
+                logger.info(e[0].ToString())
             if init_only:
                 return self
             if report_name is None:
@@ -387,7 +387,7 @@ class APSIMNG:
     def extract_simulation_name(self):
         warnings.warn(
             'extract_simulation_name is deprecated for future versions use simulation_names or get_simulation_names')
-        """print or extract a simulation name from the model
+        """logger.info or extract a simulation name from the model
 
             Parameters
             ----------
@@ -503,7 +503,7 @@ class APSIMNG:
         c_param = self._cultivar_params(cultivar)
         if verbose:
             for i in c_param:
-                print(f"{i} : {c_param[i]} \n")
+                logger.info(f"{i} : {c_param[i]} \n")
         return c_param
 
     def get_crop_replacement(self, Crop):
@@ -515,7 +515,7 @@ class APSIMNG:
         rep = self._find_replacement()
         crop_rep = rep.FindAllDescendants[Models.PMF.Plant](Crop)
         for i in crop_rep:
-            print(i.Name)
+            logger.info(i.Name)
             if i.Name == Crop:
                 return i
         return self
@@ -558,7 +558,7 @@ class APSIMNG:
             return ap
         except  KeyError:
             parameterName = 'CultivarName'
-            print(f"cultivar name: is not found")
+            logger.info(f"cultivar name: is not found")
 
     # summarise results by any statistical element
     @staticmethod
@@ -667,13 +667,13 @@ class APSIMNG:
         try:
             for sim in self.find_simulations(simulations):
                 zone = sim.FindChild[Models.Core.Zone]()
-                print("Zone:", zone.Name)
+                logger.info("Zone:", zone.Name)
                 for action in zone.FindAllChildren[Models.Manager]():
-                    print("\t", action.Name, ":")
+                    logger.info("\t", action.Name, ":")
                     for param in action.Parameters:
-                        print("\t\t", param.Key, ":", param.Value)
+                        logger.info("\t\t", param.Key, ":", param.Value)
         except Exception as e:
-            print(repr(e))
+            logger.info(repr(e))
             raise Exception(repr(e))
 
     @cache
@@ -962,7 +962,7 @@ class APSIMNG:
             return self
 
         except Exception as e:
-            print(repr(e))  # this error will be logged to the folder logs in the current working directory
+            logger.info(repr(e))  # this error will be logged to the folder logs in the current working directory
             raise
 
     def show_met_file_in_simulation(self, simulations: list = None):
@@ -1019,7 +1019,7 @@ class APSIMNG:
         sim = self._find_simulation(simulation)
         for si in sim:
             report = (si.FindAllDescendants[Models.Report]())
-            print(list(report))
+            logger.info(list(report))
 
     def extract_soil_physical(self, simulations: [tuple, list] = None):
         """Find physical soil
@@ -1310,7 +1310,7 @@ class APSIMNG:
             if s.Name in simulations:
                 sims.append(s)
         if len(sims) == 0:
-            print("Not found!")
+            logger.info("Not found!")
         else:
             return sims
 
@@ -1507,7 +1507,7 @@ if __name__ == '__main__':
     a = perf_counter()
     model.init_model()
     b = perf_counter()
-    print(b - a, 'seconds for initialisation', )
+    logger.info(f"{b - a}, 'seconds for initialisation", )
 
     for _ in range(1):
 
@@ -1516,15 +1516,15 @@ if __name__ == '__main__':
             # model.RevertCheckpoint()
 
             model.run('Report')
-            # print(model.results.mean(numeric_only=True))
+            # logger.info(model.results.mean(numeric_only=True))
             b = perf_counter()
-            print(b - a, 'seconds')
+            logger.info(f"{b - a}, 'seconds")
 
         a = perf_counter()
 
         res = model.run_simulations(reports="Report", clean_up=False, results=True)
         b = perf_counter()
-        print(b - a, 'seconds')
+        logger.info(f"{b - a}, seconds")
         mod = model.Simulations
         # xp = mod.FindAllInScope[Models.Manager]('Simple Rotation')
         # a = [i for i in xp]
@@ -1534,4 +1534,4 @@ if __name__ == '__main__':
         #      if kvp.Key == "Crops":
         #          updated_kvp = KeyValuePair[str, str](kvp.Key, "UpdatedValue")
         #          p.Parameters[i] = updated_kvp
-        #      print(p.Parameters[i])
+        #      logger.info(p.Parameters[i])

@@ -8,7 +8,7 @@ if os.path.exists(config_path):
     except:
         pass
 
-VERSION = '0.0.27.9'
+VERSION = '0.0.3.0'
 DESCRIPTION = 'apsimx next generation package interface'
 LONG_DESCRIPTION = 'run, edit, download soils and weather and interact with the apsimx file'
 

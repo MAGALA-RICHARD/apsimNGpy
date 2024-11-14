@@ -113,7 +113,7 @@ def run_apsimx_files_in_parallel(iterable_files, **kwargs):
     return custom_parallel(run_model, iterable_files, ncores=ncores_2use, use_threads=kwargs.get('use_threads'))
 
 
-def read_result_in_parallel(iterable_files, ncores=None, use_threads=False, report_name="Report"):
+def read_result_in_parallel(iterable_files, ncores=None, use_threads=False, report_name="Report", **kwargs):
     """
 
     Read APSIMX simulation databases results from multiple files in parallel.
@@ -141,6 +141,8 @@ def read_result_in_parallel(iterable_files, ncores=None, use_threads=False, repo
     for data in result_generator:
         print(data)
     it depends on the type of data but pd.concat could be a good option on the returned generator
+    Kwargs
+        func custom method for reading data
     ```
 
     Notes:
@@ -151,14 +153,15 @@ def read_result_in_parallel(iterable_files, ncores=None, use_threads=False, repo
     - Handle any exceptions that may occur during execution for robust processing.
     """
 
-    # remove duplicates. because duplicates will be susceptible to race conditioning in paralell computing
+    func = kwargs.get('func', None)
+    progress_msg = 'reading data from path'
     Ncores = ncores
     if Ncores:
         ncores_2use = Ncores
     else:
         ncores_2use = int(cpu_count() * 0.50)
-
-    return custom_parallel(read_db_table, iterable_files, report_name, ncores=ncores_2use,
+    worker  =  func or read_db_table
+    return custom_parallel(worker, iterable_files, report_name, ncores=ncores_2use,progress_message=progress_msg,
                            use_threads=use_threads)
 
 
@@ -189,6 +192,9 @@ def download_soil_tables(iterable, use_threads=False, ncores=0, **kwargs):
     # Iterate through the results
     for index, profile in soil_profiles.items():
         process_soil_profile(index, profile)
+
+        Kwargs
+        func custom method for downloading soils
     ```
 
     Notes:
@@ -199,14 +205,15 @@ def download_soil_tables(iterable, use_threads=False, ncores=0, **kwargs):
     - Handle any exceptions that may occur during execution to avoid aborting the whole download
 
     """
-
+    func = kwargs.get('func', None)
+    progress_msg = 'Downloading soil profile'
     Ncores = ncores
     if Ncores:
         ncores_2use = Ncores
     else:
         ncores_2use = int(cpu_count() * 0.50)
-
-    return custom_parallel(read_db_table, iterable, ncores=ncores_2use,
+    worker  = func or  download_soil_table
+    return custom_parallel(worker, iterable, ncores=ncores_2use,progress_message = progress_msg,
                            use_threads=use_threads)
 
 

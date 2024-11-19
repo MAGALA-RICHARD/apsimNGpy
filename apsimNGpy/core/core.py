@@ -1490,33 +1490,33 @@ if __name__ == '__main__':
 
     for _ in range(1):
 
-    adv = model.simulate()
-    print(perf_counter() - a, 'seconds')
-    for _ in range(2):
-        print('===')
-        for rn in ['Maize, Soybean, Wheat', 'Maize', 'Soybean, Wheat']:
-            model.update_manager(Name="Simple Rotation", Crops=rn)
-            print(model.extract_user_input('Simple Rotation'))
+        adv = model.simulate()
+        print(perf_counter() - a, 'seconds')
+        for _ in range(2):
+            print('===')
+            for rn in ['Maize, Soybean, Wheat', 'Maize', 'Soybean, Wheat']:
+                model.update_manager(Name="Simple Rotation", Crops=rn)
+                print(model.extract_user_input('Simple Rotation'))
+                a = perf_counter()
+                # model.RevertCheckpoint()
+
+                model.run('Report')
+                # logger.info(model.results.mean(numeric_only=True))
+                b = perf_counter()
+                logger.info(f"{b - a}, 'seconds")
+
             a = perf_counter()
-            # model.RevertCheckpoint()
 
-            model.run('Report')
-            # logger.info(model.results.mean(numeric_only=True))
+            res = model.run_simulations(reports="Report", clean_up=False, results=True)
             b = perf_counter()
-            logger.info(f"{b - a}, 'seconds")
-
-        a = perf_counter()
-
-        res = model.run_simulations(reports="Report", clean_up=False, results=True)
-        b = perf_counter()
-        logger.info(f"{b - a}, seconds")
-        mod = model.Simulations
-        # xp = mod.FindAllInScope[Models.Manager]('Simple Rotation')
-        # a = [i for i in xp]
-        # for p in a:
-        #  for i in range(len(p.Parameters)):
-        #      kvp =p.Parameters[i]
-        #      if kvp.Key == "Crops":
-        #          updated_kvp = KeyValuePair[str, str](kvp.Key, "UpdatedValue")
-        #          p.Parameters[i] = updated_kvp
-        #      logger.info(p.Parameters[i])
+            logger.info(f"{b - a}, seconds")
+            mod = model.Simulations
+            # xp = mod.FindAllInScope[Models.Manager]('Simple Rotation')
+            # a = [i for i in xp]
+            # for p in a:
+            #  for i in range(len(p.Parameters)):
+            #      kvp =p.Parameters[i]
+            #      if kvp.Key == "Crops":
+            #          updated_kvp = KeyValuePair[str, str](kvp.Key, "UpdatedValue")
+            #          p.Parameters[i] = updated_kvp
+            #      logger.info(p.Parameters[i])

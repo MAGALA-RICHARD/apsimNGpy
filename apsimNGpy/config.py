@@ -133,9 +133,9 @@ def load_python_net():
     """
     This function belongs to the config at the root. It will replace the need for the class
     """
-        The configuration class providing the leeway for the user to change the
-       global variables such as aPSim bin locations. it is deprecated
-        """
+    The configuration class providing the leeway for the user to change the
+   global variables such as aPSim bin locations. it is deprecated
+    """
 
     @classmethod
     def get_aPSim_bin_path(cls):

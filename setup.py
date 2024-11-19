@@ -1,8 +1,6 @@
 from setuptools import setup, find_packages
 
-
-
-VERSION = '0.0.27.8'
+VERSION = '0.0.27.6b'
 DESCRIPTION = 'apsimx next generation package interface'
 LONG_DESCRIPTION = 'run, edit, download soils and weather and interact with the apsimx file'
 
@@ -21,7 +19,7 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     package_data={'': ['./apsimNGpy/data/*.apsimx',
-                       './apsimNGpy/*.met',
+                       './apsimNGpy/data/WeatherFiles/*.met',
                        "./apsimNGpy/experiment/*.py",
                        './apsimNGpy/examples/*.png',
                        './apsimNGpy/*.ini', "./*.ini"]},
@@ -51,6 +49,12 @@ setup(
         'matplotlib',
         'tenacity'
 
-    ]
+    ],
+
+    entry_points={
+        'console_scripts': [
+            'apsim_python_shell = apsimNGpy.cli.shell:run_shell'
+        ]
+    }
 )
 

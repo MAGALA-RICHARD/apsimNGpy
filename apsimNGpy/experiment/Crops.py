@@ -6,10 +6,13 @@ crop_codes = {
     5: 'TropicalPasture'
 }
 from abc import ABC, abstractmethod
+
+
 class ConfigurationManager(ABC):
     def __init__(self, crop_code= None, report_names= None):
         self.crop_codes = crop_codes if not crop_code else crop_codes
         self.report_names = report_names
+
     @abstractmethod
     def get_config(self):
         pass

@@ -7,18 +7,19 @@ import socket
 import pandas as pd
 from time import sleep
 from ctypes import c_int32, c_double, c_char
+from .. import settings
 
 import os
 from pathlib import Path
-from apsimNGpy.core import pythonet_config
+from apsimNGpy.config import load_python_net
 from apsimNGpy.data.base_data import LoadExampleFiles
 import clr  # this should be import after importing pythonnet_config
 from System.Collections.Generic import *
 
-pat = pythonet_config.get_apsim_path()
+pat = settings.APSIM_PATH
 server_path = os.path.join(pat, 'apsim-server.dll')
 clr.AddReference(server_path)
-from APSIM.Server import Commands
+
 import APSIM
 
 maize = LoadExampleFiles(Path.home())
@@ -235,6 +236,7 @@ class ApsimClient:
 
 if __name__ == '__main__':
     # Example usage:
+    # JUST curious is there already a client someone can use. This seems to me to be an overkill.
     apsim_client = ApsimClient("10.24.22.192", 11)
     # You can now use apsim_client to interact with the Apsim server.
     lp= apsim_client.start_apsim_server()

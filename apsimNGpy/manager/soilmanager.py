@@ -1,54 +1,27 @@
-import json, os, sys
-from os.path import join as opj
 import numpy as np
 import numpy
 import requests
 import xmltodict
 import pandas as pd
-import time
-from numpy import array as npar
-import sys
 from scipy import interpolate
-import traceback
-from datetime import datetime
-import datetime
-import copy
 from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
 
 THICKNESS = [150, 150, 200, 200, 200, 250, 300, 300, 400, 500]
 hydro = {'A': 67, 'B': 78, 'C': 85, 'D': 89}
 
-
-def DownloadsurgoSoiltables(lonlat, select_componentname=None, summarytable=False):
-    '''
-    TODO this is a duplicate File. Duplicate of soils/soilmanager
-    Downloads SSURGO soil tables
-
-    parameters
-    ------------------
-    lon: longitude
-    lat: latitude
-    select_componentname: any componet name within the map unit e.g 'Clarion'. the default is None that mean sa ll the soil componets intersecting a given locationw il be returned
-      if specified only that soil component table will be returned. in case it is not found the dominant componet will be returned with a caveat meassage.
-        use select_componentname = 'domtcp' to return the dorminant component
-    summarytable: prints the component names, their percentages
-    '''
-
-    total_steps = 3
-    # lat = "37.54189"
-    # lon = "-120.96683"
-    lonLat = "{0} {1}".format(lonlat[0], lonlat[1])
-    url = "https://SDMDataAccess.nrcs.usda.gov/Tabular/SDMTabularService.asmx"
-    # headers = {'content-type': 'application/soap+xml'}
-    headers = {'content-type': 'text/xml'}
-    body = """<?xml version="1.0" encoding="utf-8"?>
+soap_template = """<?xml version="1.0" encoding="utf-8"?>
               <soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:sdm="http://SDMDataAccess.nrcs.usda.gov/Tabular/SDMTabularService.asmx">
        <soap:Header/>
        <soap:Body>
           <sdm:RunQuery>
-             <sdm:Query>SELECT co.cokey as cokey, ch.chkey as chkey, comppct_r as prcent, compkind as compkind_series, wsatiated_r as wat_r,partdensity as pd, dbthirdbar_h as bb, musym as musymbol, compname as componentname, muname as muname, slope_r, slope_h as slope, hzname, hzdept_r as topdepth, hzdepb_r as bottomdepth, awc_r as PAW, ksat_l as KSAT,
-                        claytotal_r as clay, silttotal_r as silt, sandtotal_r as sand, texcl, drainagecl, om_r as OM, iacornsr as CSR, dbthirdbar_r as BD, wfifteenbar_r as L15, wthirdbar_h as DUL, ph1to1h2o_r as pH, ksat_r as sat_hidric_cond,
+             <sdm:Query>SELECT co.cokey as cokey, ch.chkey as chkey, comppct_r as prcent, compkind as compkind_series, 
+                        wsatiated_r as wat_r,partdensity as pd, dbthirdbar_h as bb, musym as musymbol, 
+                        compname as componentname, muname as muname, slope_r, slope_h as slope, hzname,
+                         hzdept_r as topdepth, hzdepb_r as bottomdepth, awc_r as PAW, ksat_l as KSAT,
+                        claytotal_r as clay, silttotal_r as silt, sandtotal_r as sand, om_r as OM, iacornsr as CSR, 
+                        dbthirdbar_r as BD, wfifteenbar_r as L15, wthirdbar_h as DUL, ph1to1h2o_r as pH, 
+                        ksat_r as sat_hidric_cond,
                         (dbthirdbar_r-wthirdbar_r)/100 as bd FROM sacatalog sc
                         FULL OUTER JOIN legend lg  ON sc.areasymbol=lg.areasymbol
                         FULL OUTER JOIN mapunit mu ON lg.lkey=mu.lkey
@@ -58,8 +31,7 @@ def DownloadsurgoSoiltables(lonlat, select_componentname=None, summarytable=Fals
                         FULL OUTER JOIN chtexture ct ON ctg.chtgkey=ct.chtgkey
                         FULL OUTER JOIN copmgrp pmg ON co.cokey=pmg.cokey
                         FULL OUTER JOIN corestrictions rt ON co.cokey=rt.cokey
-                        WHERE mu.mukey IN (SELECT * from SDA_Get_Mukey_from_intersection_with_WktWgs84('point(""" + lonLat + """)')) 
-
+                        WHERE mu.mukey IN (SELECT * from SDA_Get_Mukey_from_intersection_with_WktWgs84('point({})')) 
                         AND sc.areasymbol != 'US' 
                         order by co.cokey, ch.chkey, prcent, topdepth, bottomdepth, muname
             </sdm:Query>
@@ -67,129 +39,124 @@ def DownloadsurgoSoiltables(lonlat, select_componentname=None, summarytable=Fals
        </soap:Body>
     </soap:Envelope>"""
 
+
+def get_surgo_soil_tables(gps_coord, select_componentname=None, print_summary_table=False):
+    """
+    Get SSURGO soil tables
+
+    parameters
+    ------------------
+    gps_coord: The GPS coordinate of the location, the longitude and latitude
+    select_componentname: any component name within the map unit e.g 'Clarion'.
+    None will return all the soil components intersecting a given location
+      if specified only that soil component table will be returned. 
+      in case it is not found the dominant component will be returned with a caveat message.
+      use select_componentname = 'domtcp' to return the dominant component
+    print_summary_table: prints the component names, their percentages if true
+    """
+
+    gps_str = "{0} {1}".format(gps_coord[0], gps_coord[1])
+    url = "https://SDMDataAccess.nrcs.usda.gov/Tabular/SDMTabularService.asmx"
+    # headers = {'content-type': 'application/soap+xml'}
+    headers = {'content-type': 'text/xml'}
+    body = soap_template.format(gps_str)
     response = requests.post(url, data=body, headers=headers, timeout=140)
-    # Put query results in dictionary format
     my_dict = xmltodict.parse(response.content)
 
     # Convert from dictionary to dataframe format
-    soil_df = None
-    try:
-        soil_df = pd.DataFrame.from_dict(
-            my_dict['soap:Envelope']['soap:Body']['RunQueryResponse']['RunQueryResult']['diffgr:diffgram'][
-                'NewDataSet'][
-                'Table'])
-    except ValueError as e:
-        pass
-    if isinstance(soil_df, pd.DataFrame):
-        if summarytable:
+    soil_df = pd.DataFrame.from_dict(
+        my_dict['soap:Envelope']['soap:Body']['RunQueryResponse']['RunQueryResult']['diffgr:diffgram'][
+            'NewDataSet'][
+            'Table'])
+    if not soil_df.empty:
+        if print_summary_table:
             df = soil_df.drop_duplicates(subset=['componentname'])
-            summarytable = df[["componentname", 'prcent', 'chkey']]
-            print("summary of the returned soil tables \n")
-            print(summarytable)
-        # select the dominat componet
-        dom_component = soil_df[soil_df.prcent == soil_df.prcent.max()]
+            summary_table = df[["componentname", 'prcent', 'chkey']]
+
         # select by component name
-        if select_componentname in soil_df.componentname.unique():
-            componentdf = soil_df[soil_df.componentname == select_componentname]
-            return componentdf
-        elif select_componentname == 'domtcp':
-            return dom_component
-            # print("the following{0} soil components were found". format(list(soil_df.componentname.unique())))
-        elif select_componentname is None:
-            # print("the following{0} soil components were found". format(list(soil_df.componentname.unique())))
+        if select_componentname is None:
             return soil_df
-        elif select_componentname != 'domtcp' and select_componentname not in soil_df.componentname.unique() or select_componentname != None:
-            print(
-                f'Ooops! we realised that your component request: {select_componentname} does not exists at the '
-                f'specified location. We have returned the dorminant component name')
-            return dom_component
+        elif select_componentname in soil_df.componentname.unique():
+            component_df = soil_df[soil_df.componentname == select_componentname]
+            return component_df
+        elif select_componentname == 'domtcp':
+            dominant_component = soil_df[soil_df.prcent == soil_df.prcent.max()]
+            return dominant_component
+        else:
+            available_components = set(list(soil_df.componentname))
+            msg = f"The requested component: {select_componentname} is not among the ones found. It should be one of" \
+                  f" {available_components}"
+            raise ValueError(msg)
+    else:
+        return None  # Make this explicit.
 
 
-# test the function
-# aa= DownloadsurgoSoiltables([-90.72704709, 40.93103233],'Osco', summarytable = True)
+def soilvar_perdep_cor(num_layers, soil_bottom=200, curve_param_a=0.5, curve_param_b=0.5):
+    # create a variable profile constructor
+    soil_depth = np.arange(1, num_layers + 1, 1)
+    len_layers = 10
+    assert curve_param_a > 0, "Target parameter must be positive"
 
-
-##Making APSIM soil profile starts here=============================
-len_layers = 10
-a = 1.35
-b = 1.4
-
-
-# create a variable profile constructor
-def soilvar_perdep_cor(nlayers, soil_bottom=200, a=0.5, b=0.5):  # has potential to cythonize
-    depthn = np.arange(1, nlayers + 1, 1)
-    if a < 0:
-        print("Target parameter can not be negative")  # a * e^(-b * x).
-    elif (a > 0 and b != 0):
-        ep = -b * depthn
-        term1 = (a * depthn) * np.exp(ep)
+    if curve_param_a > 0 and curve_param_b != 0:
+        ep = -curve_param_b * soil_depth
+        term1 = (curve_param_a * soil_depth) * np.exp(ep)
         result = term1 / term1.max()
-        return (result)
-    elif (a == 0 and b != 0):
-        ep = -b * depthn
-        result = np.exp(ep) / np.exp(-b)
         return result
-    elif (a == 0, b == 0):
+    elif curve_param_a == 0 and curve_param_b != 0:
+        ep = -curve_param_b * soil_depth
+        result = np.exp(ep) / np.exp(-curve_param_b)
+        return result
+    elif curve_param_a == 0 and curve_param_b == 0:
         ans = [1] * len_layers
         return ans
 
 
-def set_depth(depththickness):
+def set_depth(depth_thickness):
     """
-  parameters
-  depththickness (array):  an array specifying the thicknness for each layer
-  nlayers (int); number of layers just to remind you that you have to consider them
-  ------
-  return
-bottom depth and top depth in a turple
+    parameters
+    depth_thickness (array):  an array specifying the thicknness for each layer
+    ------
+    return
+    bottom depth and top depth in a turple
   """
     # thickness  = np.tile(thickness, 10
-    thickness_array = np.array(depththickness)
-    bottomdepth = np.cumsum(thickness_array)  # bottom depth should nothave zero
-    top_depth = bottomdepth - thickness_array
-    return bottomdepth, top_depth
+    thickness_array = np.array(depth_thickness)
+    bottom_depth = np.cumsum(thickness_array)  # bottom depth should nothave zero
+    top_depth = bottom_depth - thickness_array
+    return bottom_depth, top_depth
 
 
-distparms = {'a': 0, 'b': 0.2}
+class APSimSoilProfile:
 
-
-class OrganizeAPSIMsoil_profile:
-    # Iinitiate the soil object and covert all into numpy array and change them to floating values
-    def __init__(self, sdf, thickness, thickness_values=None, bottomdepth=200, state='Iowa'):
+    # Initiate the soil object and covert all into numpy array and change them to floating values
+    def __init__(self, sdf, thickness, thickness_values=None, bottomdepth=200):
         """_summary_
 
         Args:
             sdf (pandas data frame): soil table downloaded from SSURGO_
-            thickness double: _the thickness of the soil depth e.g 20cm_
+            thickness double: _the thickness of the soil depth in cm e.g 20cm_
             bottomdepth (int, optional): _description_. Defaults to 200.
             thickness_values (list or None) optional if provided extrapolation will be based on those vlue and should be the same length as the existing profile depth
          """
         sdf1 = sdf.drop_duplicates(subset=["topdepth"])
         surgodf = sdf1.sort_values('topdepth', ascending=True)
         csr = surgodf.get("CSR").dropna()
-        if state == 'Iowa':
-            if not csr.empty:
-                self.CSR = csr.astype("float")
-                
-            else:
-                self.CSR = None
-        else:
-            self.CSR = None
-        self.clay = npar(surgodf.clay).astype(np.float16)
-        self.sand = npar(surgodf.sand).astype(np.float16)
-        self.silt = npar(surgodf.silt).astype(np.float16)
-        self.OM = npar(surgodf.OM).astype(np.float16)
-        self.topdepth = npar(surgodf.topdepth).astype(np.float16)
-        self.bottomdepth = npar(surgodf.bottomdepth).astype(np.float16)
-        self.BD = npar(surgodf.bb).astype(np.float16)
-        self.DUL = npar(surgodf.DUL).astype(np.float64)
-        self.L15 = npar(surgodf.L15).astype(np.float64)
-        self.PH = npar(surgodf.pH).astype(np.float64)
-        self.PAW = npar(surgodf.PAW).astype(np.float16)
-        self.saturatedhudraulic_conductivity = npar(surgodf.sat_hidric_cond).astype(np.float16)
-        self.KSAT = npar(surgodf.KSAT).astype(np.float16)
-        self.K_SAT_r = npar(surgodf.sat_hidric_cond).astype(np.float16)
-        self.particledensity = npar(surgodf.pd).astype(np.float16)
+        self.CSR = csr.astype("float") if not csr.empty else None
+        self.clay = np.array(surgodf.clay).astype(np.float16)
+        self.sand = np.array(surgodf.sand).astype(np.float16)
+        self.silt = np.array(surgodf.silt).astype(np.float16)
+        self.OM = np.array(surgodf.OM).astype(np.float16)
+        self.topdepth = np.array(surgodf.topdepth).astype(np.float16)
+        self.bottomdepth = np.array(surgodf.bottomdepth).astype(np.float16)
+        self.BD = np.array(surgodf.bb).astype(np.float16)
+        self.DUL = np.array(surgodf.DUL).astype(np.float64)
+        self.L15 = np.array(surgodf.L15).astype(np.float64)
+        self.PH = np.array(surgodf.pH).astype(np.float64)
+        self.PAW = np.array(surgodf.PAW).astype(np.float16)
+        self.saturatedhudraulic_conductivity = np.array(surgodf.sat_hidric_cond).astype(np.float16)
+        self.KSAT = np.array(surgodf.KSAT).astype(np.float16)
+        self.K_SAT_r = np.array(surgodf.sat_hidric_cond).astype(np.float16)
+        self.particledensity = np.array(surgodf.pd).astype(np.float16)
         self.muname = surgodf.muname
         self.musymbol = surgodf.musymbol
         self.cokey = surgodf.cokey
@@ -205,63 +172,42 @@ class OrganizeAPSIMsoil_profile:
         # trial
         self.thickness_values = np.array(thickness_values)
 
-    # create a function that creates a variable profile of the provide variables
-    @staticmethod
-    def set_depth(depththickness):
-        """
-        parameters
-        depththickness (array):  an array specifying the thicknness for each layer
-        nlayers (int); number of layers just to remind you that you have to consider them
-        ------
-        return
-      bottom depth and top depth in a turple
-        """
-        # thickness  = np.tile(thickness, 10
-        thickness_array = np.array(depththickness)
-        bottomdepth = np.cumsum(thickness_array)  # bottom depth should not have zero
-        top_depth = bottomdepth - thickness_array
-        return bottomdepth, top_depth
-
     def variable_profile(self, y, kind='linear'):  # has potential to cythonize
         # use the lower depth boundary because divinding by zeros is nearly impossible
         x = self.bottomdepth
         # replace x with the anticipated value of the the new soil depth
-        nlayers = self.Nlayers
+        num_layers = self.Nlayers
         xranges = x.max() - x.min()
-        newthickness = xranges / nlayers
+        new_thickness = xranges / num_layers
         # new depth variable for interpolation
-        xnew = np.arange(x.min(), x.max(), newthickness)
+        xnew = np.arange(x.min(), x.max(), new_thickness)
         # create an interpolation function
         yinterpo = interpolate.interp1d(x, y, kind=kind, assume_sorted=False, fill_value='extrapolate')
-        if isinstance(self.thickness_values, str):  # just put a string to evaluate to false i will fix it later
+        if isinstance(self.thickness_values, str):  # just put a strign to evaluate to false i will fix it later
             tv = np.array(self.thickness_values)
             tv = tv.astype('float64')
-            xnew, top_dep = OrganizeAPSIMsoil_profile.set_depth(tv)
+            xnew, top_dep = set_depth(tv)
         apsimvar = yinterpo(xnew)
         return apsimvar
 
-    def decreasing_exponential_function(self, x, a, b):  # has potential to cythonize
+    @staticmethod
+    def exp_func(input_values, amplitude, rate):  # has potential to cythonize
         """
-          Compute the decreasing exponential function y = a * e^(-b * x).
-
+          Compute the decreasing exponential function y = amplitude * e^(-rate * input_values).
           Parameters:
-              x (array-like): Input values.
-              a (float): Amplitude or scaling factor.
-              b (float): Exponential rate.
-
+              input_values (array-like): Input values.
+              amplitude (float): Amplitude or scaling factor.
+              rate (float): Exponential rate.
           Returns:
               numpy.ndarray: The computed decreasing exponential values.
           """
-        func = a * np.exp(-b * x)
+        func = amplitude * np.exp(-rate * input_values)
         return func
 
-    def optimize_exponetial_data(self, x_data, y_data, initial_guess=[0.5, 0.5],
-                                 bounds=([0.1, 0.01], [np.inf, np.inf])):  # defaults for carbon
-
-        best_fit_params, _ = curve_fit(self.decreasing_exponential_function, x_data, y_data, p0=initial_guess,
-                                       bounds=bounds)
-        a_fit, b_fit = best_fit_params
-        predicted = self.decreasing_exponential_function(x_data, a_fit, b_fit)
+    def optimize_exponential_data(self, x_data, y_data, initial_guess=[0.5, 0.5],
+                                  bounds=([0.1, 0.01], [np.inf, np.inf])):  # defaults for carbon
+        amplitude_fit, rate_fit, _ = curve_fit(self.exp_func, x_data, y_data, p0=initial_guess, bounds=bounds)
+        predicted = self.exp_func(x_data, amplitude_fit, rate_fit)
         return predicted
 
     def interpolated_BD(self):
@@ -270,35 +216,32 @@ class OrganizeAPSIMsoil_profile:
         else:
             return np.array(self.BD)
 
-    def cal_satfromBD(self):  # has potential to cythonize
-        if any(elem is None for elem in self.particledensity):
-            pd = 2.65
+    def cal_sat_fromBD(self):  # has potential to cythonize
+        if all([elem is not None for elem in self.particledensity]):
+            # all particle density elements are truthy
             bd = self.interpolated_BD()
-
-            sat = ((2.65 - bd) / 2.65) - 0.02
+            sat = ((2.65 - bd) / self.particledensity) - 0.02
             sat = self.variable_profile(sat)
             return sat
         else:
-            pd = self.particledensity
+            particle_density = 2.65  # an arbitrary value
             bd = self.interpolated_BD()
-
-            sat = ((2.65 - bd) / pd) - 0.02
-
+            sat = ((2.65 - bd) / particle_density) - 0.02
             sat = self.variable_profile(sat)
             return sat
-            # Calculate DUL from sand OM and clay
 
-    def cal_dulFromsand_clay_OM(self):  # has potential to cythonize
+    def cal_dul_from_sand_clay_OM(self):  # has potential to cythonize
         clay = self.clay * 0.01
         sand = self.sand * 0.01
         om = self.OM * 0.01
-        ret1 = -0.251 * sand + 0.195 * clay + 0.011 * om + (0.006) * sand * om - 0.027 * clay * om + 0.452 * (
-                sand * clay) + 0.299
+        ret1 = -0.251 * sand + 0.195 * clay + 0.011 * om + 0.006 * sand * om \
+               - 0.027 * clay * om + 0.452 * sand * clay + 0.299
+
         dul = ret1 + 1.283 * np.float_power(ret1, 2) - 0.374 * ret1 - 0.015
         dulc = self.variable_profile(dul)
         return dulc
 
-    def cal_l15Fromsand_clay_OM(self):  # has potential to cythonize
+    def cal_l15_from_sand_clay_OM(self):  # has potential to cythonize
         clay = self.clay * 0.01
         sand = self.sand * 0.01
         om = self.OM * 0.01
@@ -309,16 +252,15 @@ class OrganizeAPSIMsoil_profile:
         return l151
 
     def calculateSATfromwat_r(self):  # has potential to cythonize
-        if not all(elem is None for elem in npar(self.particledensity)):
+        if all([elem is None for elem in np.array(self.particledensity)]) == False:
             wat = self.wat_r
             return self.variable_profile(wat)
 
     def cal_KS(self):  # has potential to cythonize
-        ks = self.variable_profile(self.saturatedhudraulic_conductivity)
-
-        ks = ks * (npar([1e-06]) * (60 * 60 * 24) * 1000)
-
-        return ks
+        ks = self.saturatedhudraulic_conductivity * np.array([1e-06]) * (60 * 60 * 24) * 1000
+        n = int(self.Nlayers)
+        KS = np.full(shape=n, fill_value=ks[1], dtype=np.float64)
+        return KS
 
     def cal_Carbon(self):  # has potential to cythonize
         ## Brady and Weil (2016)
@@ -352,7 +294,7 @@ class OrganizeAPSIMsoil_profile:
 
     def get_L15(self):
         if any(np.isnan(self.L15)):
-            L15 = self.cal_l15Fromsand_clay_OM()
+            L15 = self.cal_l15_from_sand_clay_OM()
             return L15
         else:
             l1 = self.L15 * 0.01
@@ -361,14 +303,14 @@ class OrganizeAPSIMsoil_profile:
 
     def get_DUL(self):
         if any(np.isnan(self.L15)):
-            L15i = self.cal_l15Fromsand_clay_OM()
+            L15i = self.cal_l15_from_sand_clay_OM()
 
         else:
             l1 = self.L15 * 0.01
             L15i = self.variable_profile(l1)
 
         if any(np.isnan(self.DUL)):
-            DUL = self.cal_dulFromsand_clay_OM()
+            DUL = self.cal_dul_from_sand_clay_OM()
             return DUL
         else:
             if not any(np.isnan(self.PAW)):
@@ -377,18 +319,23 @@ class OrganizeAPSIMsoil_profile:
                 return DUL
 
     def get_AirDry(self):
+        # this function needs some discussions.
         if any(np.isnan(self.L15)):
-            air = self.cal_l15Fromsand_clay_OM()
-
+            air = self.cal_l15_from_sand_clay_OM()
+            # air[:3] = air[:3] * 0.5 core.manager
             air[0] = air[0] * 0.5
             air[1] = air[1] * 0.9
             return air
         else:
+            # TODO commented code from core/soil manager
+            # air = self.L15 * 0.01
+            # airl = self.variable_profile(air)
+            # airl[:3] = airl[:3] * 0.5
             air = self.L15 / 100
             air[0] = air[0] * 0.5
             air[1] = air[1] * 0.9
             airl = self.variable_profile(air)
-
+            # airl[:3] = airl[:3] * 0.5
             return airl
 
     def getBD(self):
@@ -415,9 +362,9 @@ class OrganizeAPSIMsoil_profile:
         """
         # Iterate through each row in the array
         for counter, (sat, dul) in enumerate(zip(SAT, DUL)):
-            if dul>=sat:
-                diff = dul-sat
-                DUL[counter] = sat + diff +0.02
+            if dul >= sat:
+                diff = dul - sat
+                DUL[counter] = sat + diff + 0.02
         return SAT, BD, DUL
 
     def create_soilprofile(self):
@@ -426,11 +373,12 @@ class OrganizeAPSIMsoil_profile:
         for i in range(len(self.newbottomdepth)):
             Depth.append(str(self.newtopdepth[i]) + "-" + str(self.newbottomdepth[i]))
         Depth = Depth
+        # Thickness  = [self.thickness]*self.Nlayers
         Carbon = self.cal_Carbon()
         AirDry = self.get_AirDry()
         L15 = self.get_L15()
         DUL = self.get_DUL()
-        if not all(elem is None for elem in npar(self.wat_r)):
+        if not all(elem is None for elem in np.array(self.wat_r)):
 
             SAT = self.calculateSATfromwat_r() * 0.01
 
@@ -445,7 +393,7 @@ class OrganizeAPSIMsoil_profile:
                     SAT[i] = 0.381 - 0.001
                     # print(SAT[i])
         else:
-            SAT = self.cal_satfromBD()
+            SAT = self.cal_sat_fromBD()
             BD = self.getBD()
             for i in range(len(SAT)):
                 if SAT[i] < DUL[i]:
@@ -520,17 +468,17 @@ class OrganizeAPSIMsoil_profile:
 
         # Original thought
         # ad * soilvar_perdep_cor(nlayers, a = curveparam_a, b = curveparam_b)
-        cropKL = 0.08 * soilvar_perdep_cor(nlayers, a=curveparam_a, b=curveparam_b)
+        cropKL = 0.08 * soilvar_perdep_cor(nlayers, curve_param_a=curveparam_a, curve_param_b=curveparam_b)
 
-        cropXF = 1 * soilvar_perdep_cor(nlayers, a=curveparam_a, b=0)
+        cropXF = 1 * soilvar_perdep_cor(nlayers, curve_param_a=curveparam_a, curve_param_b=0)
 
         # create a data frame for these three variables
         dfs = pd.DataFrame({'kl': cropKL, 'll': cropLL, 'xf': cropXF})
-        SoilCNRatio = np.full(shape=nlayers, fill_value=12, dtype=np.int64)
-        FOM = 150 * soilvar_perdep_cor(nlayers, a=curveparam_a, b=curveparam_b)
+        SoilCNRatio = np.full(shape=nlayers, fill_value=12.2, dtype=np.int64)
+        FOM = 160 * soilvar_perdep_cor(nlayers, curve_param_a=curveparam_a, curve_param_b=curveparam_b)
         FOMCN = np.full(shape=nlayers, fill_value=40, dtype=np.int64)
-        FBiom = 0.045 * soilvar_perdep_cor(nlayers, a=curveparam_a, b=curveparam_b)
-        Fi = 0.83 * soilvar_perdep_cor(nlayers, a=curveparam_a, b=-0.01)
+        FBiom = 0.045 * soilvar_perdep_cor(nlayers, curve_param_a=curveparam_a, curve_param_b=curveparam_b)
+        Fi = 0.83 * soilvar_perdep_cor(nlayers, curve_param_a=curveparam_a, curve_param_b=-0.01)
         # to do later
         # try:
         #   predicted= self.optimize_exp_increasing_y_values(np.array(Fi))
@@ -539,8 +487,8 @@ class OrganizeAPSIMsoil_profile:
         #   print("error optiming FInert value encountered;", repr(e))
         FInert = Fi
 
-        NO3N = 0.5 * soilvar_perdep_cor(nlayers, a=curveparam_a, b=0.01)
-        NH4N = 0.05 * soilvar_perdep_cor(nlayers, a=curveparam_a, b=0.01)
+        NO3N = 0.5 * soilvar_perdep_cor(nlayers, curve_param_a=curveparam_a, curve_param_b=0.01)
+        NH4N = 0.05 * soilvar_perdep_cor(nlayers, curve_param_a=curveparam_a, curve_param_b=0.01)
         FInert[0] = 0.65
         FInert[1] = 0.668
         FBiom[0] = 0.0395
@@ -548,9 +496,6 @@ class OrganizeAPSIMsoil_profile:
         # from above
         Carbon = self.cal_Carbon()
         PH = self.interpolate_PH()
-
-        # vn = npar
-        # PH = 6.5 * soilvar_perdep_cor(nlayers, a = curveparam_a, b = 0)
 
         organic = pd.DataFrame(
             {'Carbon': Carbon, 'SoilCNRatio': SoilCNRatio, 'cropLL': cropLL, 'cropKL': cropKL, 'FOM': FOM,
@@ -587,19 +532,15 @@ class OrganizeAPSIMsoil_profile:
 
 
 if __name__ == '__main__':
-    lon = -93.097702, 41.8780025
-    dw = DownloadsurgoSoiltables(lon)
-    sop = OrganizeAPSIMsoil_profile(dw, 20)
+    gps_coord = -93.097702, 41.8780025
+    dw = get_surgo_soil_tables(gps_coord)
+    sop = APSimSoilProfile(dw, 20)
     data = sop.cal_missingFromSurgo()
     from apsimNGpy.core.apsim import ApsimModel
     from apsimNGpy.core.base_data import LoadExampleFiles
-    from pathlib import Path
     from apsimNGpy import settings
-
+    import os
     ap_sim = LoadExampleFiles(os.getcwd()).get_maize
-
     m = ApsimModel(ap_sim, thickness_values=settings.SOIL_THICKNESS)
     m.replace_downloaded_soils(data, m.extract_simulation_name)
-
-    m.run("MaizeR")
-
+    m.simulate("MaizeR")

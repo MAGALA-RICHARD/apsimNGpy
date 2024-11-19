@@ -52,7 +52,7 @@ def __get_example(crop, path=None, simulations_object=True):
     target_path = join(copy_path, crop) + '.apsimx'
     example_files_path = get_apsim_bin_path().replace('bin', 'Examples')
     target_location = glob.glob(
-        f"{example_files_path}*/{crop}.apsimx")  # crop need not to be capitalized only correct spelling is required
+        f"{example_files_path}*/{crop}.apsimx")  # no need to capitalize only correct spelling is required
     # unzip
 
     if target_location:
@@ -85,14 +85,18 @@ def load_default_simulations(crop: str, path: [str, Path] = None,
     >>> model.results.get('Report')
     # just return the path
     >>> model =load_default_simulations('Maize', simulations_object=False)
+    # let's to laod non existient crop marize, which does exists
+    >>> model.load_default_simulations('Marize')
+    # we get this warning
+    2024-11-19 16:18:55,798 - base-data - INFO - No crop named:' 'marize' found at 'C:/path/to/apsim/folder/Examples'
 
 
     """
-    # capitalize() no longer needed glob regex just matches words
+    # capitalize() no longer needed glob regex just matches crop if spelled correctly
     return __get_example(crop, path, simulations_object)
 
 
 if __name__ == '__main__':
     pp = Path.home()
     os.chdir(pp)
-    mn = load_default_simulations('Maize', simulations_object=True)
+    mn = load_default_simulations('maize', simulations_object=True)

@@ -129,13 +129,11 @@ def set_apsim_bin_path(path):
         print(f"saved {_path} to '{CONFIG_PATH}'")
 
 
-def load_python_net():
+class Config:
     """
-    This function belongs to the config at the root. It will replace the need for the class
-    """
-    The configuration class providing the leeway for the user to change the
-   global variables such as aPSim bin locations. it is deprecated
-    """
+        The configuration class providing the leeway for the user to change the
+       global variables such as aPSim bin locations. it is deprecated
+        """
 
     @classmethod
     def get_aPSim_bin_path(cls):

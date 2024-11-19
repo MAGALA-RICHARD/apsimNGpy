@@ -4,7 +4,7 @@ Interface to APSIM simulation models using Python.NET
 import sqlite3
 from collections import namedtuple
 from os.path import exists
-
+import logging
 from pandas import errors
 from pandas import read_sql_query as rsq
 from sqlalchemy import create_engine, inspect

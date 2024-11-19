@@ -10,14 +10,7 @@ import numpy as np
 from apsimNGpy.manager.soilmanager import get_surgo_soil_tables, APSimSoilProfile
 import apsimNGpy.manager.weathermanager as weather
 # prepare for the C# import
-git
-checkout - -theirs.
-git
-add.
-git
-checkout - -theirs.
-git
-add.
+
 #from apsimNGpy.core.pythonet_config import start_pythonnet
 
 from apsimNGpy.core.core import APSIMNG

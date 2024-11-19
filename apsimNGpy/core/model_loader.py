@@ -3,6 +3,7 @@ This module offers a procedural alternative other than object-oriented approach 
 """
 
 from functools import singledispatch
+from typing import Union
 
 from apsimNGpy.core import pythonet_config
 
@@ -18,7 +19,7 @@ from os import chdir
 import shutil
 from collections import namedtuple
 from pathlib import Path
-
+from dataclasses import dataclass
 
 @dataclass
 class ModelMetaData:

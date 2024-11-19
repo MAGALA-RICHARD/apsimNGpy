@@ -5,6 +5,7 @@ email: magalarich20@gmail.com
 
 """
 from apsimNGpy import config
+from apsimNGpy.core import pythonet_config
 import logging
 import Models
 from dataclasses import replace
@@ -1453,21 +1454,7 @@ class APSIMNG:
 
 
 # ap = dat.GetDataUsingSql("SELECT * FROM [MaizeR]")
-class ApsiMet(APSIMNG):
-    def __init__(self, model: Union[str, Simulations], copy=True, out_path=None, lonlat=None, simulation_names=None):
-        super().__init__(model, copy, out_path)
-        self.lonlat = lonlat
-        self.simulation_names = simulation_names
 
-    def insert_weather_file(self):
-        start, end = self.extract_start_end_years()
-        wp = weather.get_met_from_day_met(self.lonlat, start=start, end=end)
-        wp = os.path.join(os.getcwd(), wp)
-        if self.simulation_names:
-            sim_name = list(self.simulation_names)
-        else:
-            sim_name = self.extract_simulation_name  # because it is a property decorator
-        self.replace_met_file(wp, sim_name)
 
 
 if __name__ == '__main__':

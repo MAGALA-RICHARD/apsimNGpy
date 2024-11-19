@@ -1,20 +1,13 @@
 """
 Interface to APSIM simulation models using Python.NET 
 """
-import logging
+import sqlite3
 from collections import namedtuple
-
-try:
-    from collections import Iterable
-except ImportError:  # happens because Iterables moved to collections.abc
-    from collections.abc import Iterable
-
-from pandas import read_sql_query as rsq
-from pandas import errors
-from sqlalchemy import create_engine, inspect
 from os.path import exists
 
-import sqlite3
+from pandas import errors
+from pandas import read_sql_query as rsq
+from sqlalchemy import create_engine, inspect
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +52,7 @@ def read_db_table(db, report_name):
         The function establishes a connection to the specified SQLite database, constructs and executes a SQL query
         to select all records from the specified table, fetches the results into a DataFrame, then closes the database connection.
 
-        Example:
+        Examples:
             # Define the database and the table name
             database_path = 'your_database.sqlite'
             table_name = 'your_table'

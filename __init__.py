@@ -1,2 +1,3 @@
+from config import get_apsim_bin_path, set_apsim_bin_path, auto_detect_apsim_bin_path
 
-import os, sys; sys.path.append(os.path.dirname(os.path.realpath(__file__)))
+__all__ = ['get_apsim_bin_path', 'set_apsim_bin_path', 'auto_detect_apsim_bin_path']

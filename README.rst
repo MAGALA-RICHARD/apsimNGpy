@@ -100,7 +100,8 @@ Usage
 .. code:: python
 
     import apsimNGpy
-    from apsimNGpy.core.base_data import LoadExampleFiles
+   # use default modules in APSIM
+    from apsimNGpy.core.base_data import load_default_simulations
     from apsimNGpy.core.apsim  import ApsimModel as SoilModel
     from pathlib import Path
     import os
@@ -112,27 +113,28 @@ Usage
     # change directory
     os.chdir(wd)
     # Create the data
-    data = LoadExampleFiles(wd)
-    # Get maize model
-    maize = data.get_maize
-    # Alternatively, you can laod from the factory default modules 
-    soybean_model = load_default_simulations(crop = 'soybean') # don't worry it is not case senstive
-    #the load_default_simulation returns a prelloaded model ready to run the existing module
+    # you can specify any crop simulated by apsim
+    # Get soybean model
 
+    # Alternatively, you can load from the factory default modules
+    soybean_model = load_default_simulations(crop = 'soybean') # don't worry it is not case senstive
+    #the load_default_simulation returns a preloaded model ready to run the existing module
     # Initialize the simulation methods
-    apsim = SoilModel(maize, copy=True)
+    # however we can initialize by specifying get object = False
+    # pass the soybean_model.path but for what
+    apsim = SoilModel(soybean_model.path)
 
     # Run the file
-    apsim.run() # use run to print time taken to excute or run the model 
+    apsim.run() # use run to print time taken to execute or run the model
     # print the results
     print(apsim.results) # prints all data frames in the storage domain subset usign report names
     # check the manager modules in the apsim simulation file
-    # first get the simualtion names
+    # first get the simulation names
     sim_name = apsim.simulation_names
     apsim.examine_management_info(simulations=sim_name)
     # show current simulation in apsim GUI
     # plot the data
-    res = apsim.results['MaizeR']
+    res = apsim.results['MaizeR'] #specify your report name
     plot_data(res.Year, res.Yield, xlabel='Years', ylabel=" Maize Yield (kg/ha)")
     
 A graph should be able to appear like the ones below. Note that plot_data function just wraps matplotlib plot function
@@ -148,7 +150,7 @@ Change APSIM simulation dates
 .. code:: python
 
     import apsimNGpy
-    from apsimNGpy.core.base_data import LoadExampleFiles
+    from apsimNGpy.core.base_data import load_default_simulations
     from apsimNGpy.core.apsim  import ApsimModel as SoilModel
     from pathlib import Path
     import os
@@ -159,15 +161,10 @@ Change APSIM simulation dates
       os.mkdir(wd)
     # change directory
     os.chdir(wd)
-    # Create the data
-    data = LoadExampleFiles(wd)
-
     # Get maize model
-    maize = data.get_maize
+    maize_model = load_default_simulations(crop = 'maize')
 
-    # Initialize the simulation methods
-    apsim = SoilModel(maize, copy=True)
-    apsim.change_simulation_dates(start_date='01/01/1998', end_date='12/31/2010')
+    maize_model.change_simulation_dates(start_date='01/01/1998', end_date='12/31/2010')
 
 Change  APSIM model management decisions
 *********************************************************************************
@@ -178,12 +175,12 @@ Change  APSIM model management decisions
     # now create dictionary holding the parameters. the key to this is that the name of the script manage must be
     passed in the dictionary.
 
-    # in this node we have a script named the Simple Rotation,we want to change the rotation to maybe Maize, Wheat or
+    # in this node we if have a script named the Simple Rotation,we want to change the rotation to maybe Maize, Wheat or
     something else
     rotation  = {'Name': "Simple Rotation", "Crops": 'Maize, Wheat, Soybean'}, # the crops must be seperated my commas
-    apsim.update_mgt(management = rotation, reload=True)
-    # now you cans see we passed rotation as aturple. That means you can add other scripts as your needs suggest. They will all be changed at the 
-    same time
+    apsim.update_mgt(management = rotation)
+    # now you cans see we passed rotation as a tuple. That means you can add other scripts as your needs suggest. They will all be changed at the
+    #same time
 
 Populating the APSIM model with new weather data
 *********************************************************************************
@@ -197,9 +194,9 @@ Populating the APSIM model with new weather data
     mis = apsim.show_met_file_in_simulation()
     print(mis)
     # change
-    apsim.replace_met_file(weather_file=wf)
+    maize_model.replace_met_file(weather_file=wf)
     # check again if you want to
-    mis = apsim.show_met_file_in_simulation()
+    mis = maize_model.show_met_file_in_simulation()
     print(mis)
 
 Evaluate Predicted Variables

@@ -9,17 +9,14 @@ import logging
 import Models
 from dataclasses import replace
 import datetime
-import json
-import numpy as np
-import os
-import pandas as pd
-import pathlib
-import shutil
+import apsimNGpy.manager.weathermanager as weather
+from functools import cache
+# prepare for the C# import
+from apsimNGpy.core import pythonet_config
+from apsimNGpy.utililies.database_utils import read_db_table, get_db_table_names
 import warnings
-from Models.Climate import Weather
-from Models.Core import Simulations, ScriptCompiler, Simulation
-from Models.Soils import Soil, Physical, SoilCrop, Organic
-from System import *
+from apsimNGpy.utililies.utils import timer
+
 # now we can safely import C# libraries
 from System.Collections.Generic import *
 from functools import cache
@@ -34,8 +31,19 @@ from apsimNGpy.core.model_loader import (load_apx_model, save_model_to_file, rec
 from apsimNGpy.utililies.database_utils import get_db_table_names
 from apsimNGpy.utililies.utils import timer, generate_unique_name
 
+MultiThreaded = Models.Core.Run.Runner.RunTypeEnum.MultiThreaded
+SingleThreaded = Models.Core.Run.Runner.RunTypeEnum.SingleThreaded
+ModelRUNNER = Models.Core.Run.Runner
 
-logger = logging.getLogger(__name__)
+
+def select_threads(multithread):
+    if multithread:
+        return MultiThreaded
+    else:
+        return SingleThreaded
+
+
+from apsimNGpy.settings import * #This file is not ready and i wanted to do some test
 
 
 def _run_sim(simulation_model, DataStore, sql_db, read_result: bool = True, multithread: bool = True):
@@ -140,8 +148,7 @@ class APSIMNG:
         self._DataStore = self.model_info.DataStore
         self.path = self.model_info.path
         self._met_file = kwargs.get('met_file')
-        if self._met_file is not None:
-            self.replace_met_file(self._met_file)
+        #self.init_model() work in progress
 
     def run_simulations(self, results=None, reports=None, clean_up=False):
         """
@@ -240,7 +247,7 @@ class APSIMNG:
             try:
                 models.OnCreated()
             except Exception as e:
-                print(e)
+                logger.info(e)
             finally:
                 for simulation in simulationList:
                     simulation.IsInitialising = False
@@ -295,7 +302,14 @@ class APSIMNG:
             self.restart_model()
             return self
 
-    def simulate(self):
+    def run(self, report_name=None,
+            simulations=None,
+            clean=False,
+            multithread=True,
+            verbose=False,
+            get_dict=False,
+            init_only=False,
+            **kwargs):
         """Run apsim model in the simulations
 
         Parameters
@@ -311,14 +325,58 @@ class APSIMNG:
 
         multithread
             If `True` APSIM uses multiple threads, by default `True`
+            :param simulations:
+
+        :param verbose: bool logger.infos diagnostic information such as false report name and simulation
+        :param get_dict: bool, return a dictionary of data frame paired by the report table names default to False
+        :param init_only, runs without returning the result defaults to 'False'.
+        returns
+            instance of the class APSIMNG
         """
-        _sims = self.Simulations
-        if not _sims:
-            _sims_available = self.find_simulations()
-            _sims = List[Models.Core.Simulation]()
-            for s in _sims_available:
-                _sims.Add(s)
-        return _run_sim(_sims, self.model_info.DataStore, self.model_info.datastore)
+        try:
+
+            # open the datastore
+            runtype = select_threads(multithread=multithread)
+            self._DataStore.Open()
+            # Clear old data before running
+            self.results = None
+            if clean:
+                self._DataStore.Dispose()
+            sims = self.find_simulations(simulations) if simulations else self.Simulations
+            if simulations:
+                cs_sims = List[Models.Core.Simulation]()
+                for s in sims:
+                    cs_sims.Add(s)
+                sim = cs_sims
+            else:
+                sim = sims
+            _run_model = ModelRUNNER(sim, True, False, False, None, runtype)
+            e = _run_model.Run()
+            if len(e) > 0:
+                logger.info(e[0].ToString())
+            if init_only:
+                return self
+            if report_name is None:
+                report_name = get_db_table_names(self.datastore)
+                # issues with decoding '_Units' we remove it
+                if '_Units' in report_name: report_name.remove('_Units')
+                warnings.warn(
+                    'No tables were specified, retrieved tables includes:: {}'.format(report_name)) if verbose else None
+            if isinstance(report_name, (tuple, list)):
+                if not get_dict:
+                    self.results = [read_db_table(self.datastore, report_name=rep) for rep in report_name]
+                else:
+                    self.results = {rep: read_db_table(self.datastore, report_name=rep) for rep in report_name}
+
+            else:
+                if not get_dict:
+                    self.results = read_db_table(self.datastore, report_name=report_name)
+                else:
+                    self.results = {report_name: read_db_table(self.datastore, report_name=report_name)}
+        finally:
+            # close the datastore
+            self._DataStore.Close()
+        return self
 
     def clone_simulation(self, target, simulation=None):
         """Clone a simulation and add it to Model
@@ -337,7 +395,6 @@ class APSIMNG:
             clone_sim.Name = target
             # clone_zone = clone_sim.FindChild[Models.Core.Zone]()
             # clone_zone.Name = target
-
             # self.Simulations.Children.Clear(clone_sim.Name)
             self.Simulations.Children.Add(clone_sim)
         self._reload_saved_file()
@@ -351,7 +408,6 @@ class APSIMNG:
             simulation
                 The name of the simulation to remove
         """
-
         sim = self._find_simulation(simulation)
         self.Simulations.Children.Remove(sim)
         self.save_edited_file()
@@ -360,7 +416,7 @@ class APSIMNG:
     def extract_simulation_name(self):
         warnings.warn(
             'extract_simulation_name is deprecated for future versions use simulation_names or get_simulation_names')
-        """print or extract a simulation name from the model
+        """logger.info or extract a simulation name from the model
 
             Parameters
             ----------
@@ -475,7 +531,7 @@ class APSIMNG:
         c_param = self._cultivar_params(cultvar)
         if verbose:
             for i in c_param:
-                print(f"{i} : {c_param[i]} \n")
+                logger.info(f"{i} : {c_param[i]} \n")
         return c_param
 
     def get_crop_replacement(self, Crop):
@@ -487,7 +543,7 @@ class APSIMNG:
         rep = self._find_replacement()
         crop_rep = rep.FindAllDescendants[Models.PMF.Plant](Crop)
         for i in crop_rep:
-            print(i.Name)
+            logger.info(i.Name)
             if i.Name == Crop:
                 return i
         return self
@@ -529,7 +585,7 @@ class APSIMNG:
             return ap
         except  KeyError:
             parameterName = 'CultivarName'
-            print(f"cultivar name: is not found")
+            logger.info(f"cultivar name: is not found")
 
     # summarise results by any statistical element
     @staticmethod
@@ -638,13 +694,13 @@ class APSIMNG:
         try:
             for sim in self.find_simulations(simulations):
                 zone = sim.FindChild[Models.Core.Zone]()
-                print("Zone:", zone.Name)
+                logger.info("Zone:", zone.Name)
                 for action in zone.FindAllChildren[Models.Manager]():
-                    print("\t", action.Name, ":")
+                    logger.info("\t", action.Name, ":")
                     for param in action.Parameters:
-                        print("\t\t", param.Key, ":", param.Value)
+                        logger.info("\t\t", param.Key, ":", param.Value)
         except Exception as e:
-            print(repr(e))
+            logger.info(repr(e))
             raise Exception(repr(e))
 
     @cache
@@ -782,6 +838,9 @@ class APSIMNG:
         self.Simulations = self.convert_to_IModel()
         return self
 
+    def init_model(self, *args, **kwargs):
+        self.run(init_only=True)
+
     def update_mgt(self, *, management: [dict, tuple],
                    simulations: [list, tuple] = None,
                    out: [Path, str] = None,
@@ -837,8 +896,18 @@ class APSIMNG:
         return self
 
     # immediately open the file in GUI
-    def show_file_in_APSIM_GUI(self):
-        os.startfile(self.path)
+    def preview_simulation_file_in_gui(self):
+        filepath = self.path
+        import platform
+        import subprocess
+        if platform.system() == 'Darwin':  # macOS
+            subprocess.call(['open', filepath])
+        elif platform.system() == 'Windows':  # Windows
+            os.startfile(filepath)
+        elif platform.system() == 'Linux':  # Linux
+            subprocess.call(['xdg-open', filepath])
+        else:
+            raise OSError('Unsupported operating system')
 
     def _kvtodict(self, kv):
         return {kv[i].Key: kv[i].Value for i in range(kv.Count)}
@@ -960,7 +1029,7 @@ class APSIMNG:
             return self
 
         except Exception as e:
-            print(repr(e))  # this error will be logged to the folder logs in the current working directory
+            logger.info(repr(e))  # this error will be logged to the folder logs in the current working directory
             raise
 
     def show_met_file_in_simulation(self):
@@ -1013,8 +1082,8 @@ class APSIMNG:
         """
         sim = self._find_simulation(simulation)
         for si in sim:
-            report = si.FindAllDescendants[Models.Report]()
-            print(list(report))
+            report = (si.FindAllDescendants[Models.Report]())
+            logger.info(list(report))
 
     def extract_soil_physical(self, simulation=None):
         """Find physical soil
@@ -1214,9 +1283,7 @@ class APSIMNG:
             if s.Name in simulations:
                 sims.append(s)
         if len(sims) == 0:
-            # print("Not found!") Never do this, it gets lost in places you cant track
-            # should be a NotFoundError, Always fail Fast, Fail Early.
-            raise Exception('Simulations not found in APSIM model')
+            logger.info("Not found!")
         else:
             return sims
 
@@ -1405,7 +1472,6 @@ class ApsiMet(APSIMNG):
 
 if __name__ == '__main__':
 
-    # test
     from pathlib import Path
     from time import perf_counter
 
@@ -1416,8 +1482,13 @@ if __name__ == '__main__':
     al = LoadExampleFiles(Path.cwd())
     model = load_default_simulations('maize', path='D:/', simulations_object=False)
 
-    model = APSIMNG(model)
+    model = load_default_simulations('maize')
     a = perf_counter()
+    model.init_model()
+    b = perf_counter()
+    logger.info(f"{b - a}, 'seconds for initialisation", )
+
+    for _ in range(1):
 
     adv = model.simulate()
     print(perf_counter() - a, 'seconds')
@@ -1428,17 +1499,17 @@ if __name__ == '__main__':
             print(model.extract_user_input('Simple Rotation'))
             a = perf_counter()
             # model.RevertCheckpoint()
-            ad = model.simulate()
+
+            model.run('Report')
+            # logger.info(model.results.mean(numeric_only=True))
             b = perf_counter()
-
-            print(b - a, 'seconds')
-
+            logger.info(f"{b - a}, 'seconds")
 
         a = perf_counter()
 
         res = model.run_simulations(reports="Report", clean_up=False, results=True)
         b = perf_counter()
-        print(b - a, 'seconds')
+        logger.info(f"{b - a}, seconds")
         mod = model.Simulations
         # xp = mod.FindAllInScope[Models.Manager]('Simple Rotation')
         # a = [i for i in xp]
@@ -1448,4 +1519,4 @@ if __name__ == '__main__':
         #      if kvp.Key == "Crops":
         #          updated_kvp = KeyValuePair[str, str](kvp.Key, "UpdatedValue")
         #          p.Parameters[i] = updated_kvp
-        #      print(p.Parameters[i])
+        #      logger.info(p.Parameters[i])

@@ -1,9 +1,16 @@
-from setuptools import setup, find_packages
+import os
 
-VERSION = '0.0.27.6b'
+from setuptools import setup, find_packages
+config_path = os.path.realpath('config.ini')
+if os.path.exists(config_path):
+    try:
+       os.remove(config_path)
+    except:
+        pass
+
+VERSION = '0.0.3.0'
 DESCRIPTION = 'apsimx next generation package interface'
 LONG_DESCRIPTION = 'run, edit, download soils and weather and interact with the apsimx file'
-
 
 with open('README.rst') as readme_file:
     readme = readme_file.read()
@@ -57,4 +64,3 @@ setup(
         ]
     }
 )
-

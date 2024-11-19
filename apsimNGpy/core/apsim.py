@@ -10,7 +10,17 @@ import numpy as np
 from apsimNGpy.manager.soilmanager import get_surgo_soil_tables, APSimSoilProfile
 import apsimNGpy.manager.weathermanager as weather
 # prepare for the C# import
+git
+checkout - -theirs.
+git
+add.
+git
+checkout - -theirs.
+git
+add.
+#from apsimNGpy.core.pythonet_config import start_pythonnet
 
+from apsimNGpy.core.core import APSIMNG
 # now we can safely import any c# related libraries
 from System.Collections.Generic import *
 from Models.Core import Simulations
@@ -19,7 +29,7 @@ from Models.Soils import Solute, Water, Chemical
 from Models.Soils import Soil, Physical, SoilCrop, Organic, LayerStructure
 import Models
 
-from apsimNGpy.core.core import APSIMNG
+
 
 # constants
 REPORT_PATH = {

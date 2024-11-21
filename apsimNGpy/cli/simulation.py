@@ -6,18 +6,10 @@ import click
 
 
 @click.command()
-@click.option('--location', type=str)
-@click.option('--model', type=str)
-def run_simulation():
+@click.option('--location', type=str, prompt='The location for which the simulation is being run')
+@click.option('--model', type=str, prompt='The crop/model for which the simulation is run')
+def run_simulation(location, model):
     from apsimNGpy.core.simulation import simulate
-    parser = argparse.ArgumentParser(description='Run a simulation of a given crop.')
-
-    args = parser.parse_args()
-
-    # Convert args to dictionary and unpack for the simulate function
-    kwargs = vars(args)
-    location = kwargs.pop('location')
-    model = kwargs.pop('model')
     simulate(model, location, **kwargs)
 
 

@@ -7,8 +7,10 @@ import click
 
 
 def _python(options):
+    """
+    This code is adapted from the implementation of the python shell in the django code base.
+    """
     import code
-
     # Set up a dictionary to serve as the environment for the shell.
     imported_objects = {}
 

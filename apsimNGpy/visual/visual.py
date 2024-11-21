@@ -19,6 +19,11 @@ def open_file_in_window(filepath):
     else:
         raise OSError('Unsupported operating system')
 
+# TODO not a good idea to put a single file in a folder. If its just a single function
+# its wiser to put it in the base and solve problems later.
+# The trick with developing good software is to keep to current needs. Unless you completely know
+# what you are doing, DONT plan too much into the future.
+
 
 
 print("loading data")

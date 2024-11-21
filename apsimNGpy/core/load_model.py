@@ -32332,7 +32332,19 @@ l_model ={
         },
         {
           "$type": "Models.Memo, Models",
-          "Text": "When working with perennial crops that are harvested or grazed frequently, often an output that plots the accumulation of growth during a year is wanted. That output should be zeroed between years. If simulating a site in the Southern Hemisphere, usually the end of the year will be in June or July (winter). Here this is achieved as \"CumulativeAnnualNetGrowth\" using reporting at the end of the month (see in MonthlyReporting) and:\n\n\t\tSum of ([Ryegrass].NetGrowthWt + [WhiteClover].NetGrowthWt) \n\t\t\tfrom 1-Jul to [Clock].Today as CumulativeAnnualNetGrowth\n\nwith the output shown as the orange line below. Note that here it is necessary to calculate the output summing ryegrass and white clover. For comparison, the pattern of accumulation is plotted against the annual total (green line) and that was specified in AnnualReporting using:\n\n\t\tSum of ([Ryegrass].NetGrowthWt + [WhiteClover].NetGrowthWt) \n\t\t\tfrom [AnnualReporting].DayAfterLastOutput to [Clock].Today \n\t\t\tas SumYearlyNetGrowth\n",
+          "Text": "When working with perennial crops that are harvested or grazed frequently, "
+                  " often an output that plots the accumulation of growth during a year is wanted. "
+                  "That output should be zeroed between years. If simulating a site in the "
+                  "Southern Hemisphere, usually the end of the year will be in June or July (winter). "
+                  "Here this is achieved as \"CumulativeAnnualNetGrowth\" using reporting at the end "
+                  "of the month (see in MonthlyReporting) and:\n\n\t\tSum of ([Ryegrass].NetGrowthWt"
+                  " + [WhiteClover].NetGrowthWt) \n\t\t\tfrom 1-Jul to [Clock].Today as "
+                  "CumulativeAnnualNetGrowth\n\nwith the output shown as the orange line below. "
+                  "Note that here it is necessary to calculate the output summing ryegrass and white"
+                  " clover. For comparison, the pattern of accumulation is plotted against the annual "
+                  "total (green line) and that was specified in AnnualReporting using:\n\n\t\tSum of "
+                  "([Ryegrass].NetGrowthWt + [WhiteClover].NetGrowthWt) \n\t\t\tfrom [AnnualReporting]."
+                  "DayAfterLastOutput to [Clock].Today \n\t\t\tas SumYearlyNetGrowth\n",
           "Name": "Memo",
           "ResourceName": None,
           "Children": [],

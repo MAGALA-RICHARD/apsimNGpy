@@ -14,6 +14,8 @@ import pandas as pd
 import multiprocessing as mp
 import types
 
+from .. import settings
+
 CPU = int(int(cpu_count()) * 0.5)
 CORES = NUM_CORES
 
@@ -80,7 +82,8 @@ def run_apsimx_files_in_parallel(iterable_files, **kwargs):
     Args:
     - iterable_files (list): A list of APSIMX  files to be run in parallel.
     - ncores (int, optional): The number of CPU cores or threads to use for parallel processing. If not provided, it defaults to 50% of available CPU cores.
-    - use_threads (bool, optional): If set to True, the function uses thread pool execution; otherwise, it uses process pool execution. Default is False.
+    - use_threads (bool, optional): If set to True, the function uses thread pool execution; otherwise,
+    it uses process pool execution. Default is False.
 
     Returns:
     - returns a generator object containing the path to the datastore or sql databases

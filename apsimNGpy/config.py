@@ -91,8 +91,6 @@ def create_config(apsim_path=""):
         _CONFIG.write(configured_file)
 
 
-
-
 def get_apsim_bin_path():
     """
     Returns the path to the apsim bin folder from either auto detection or from the path already supplied by the user through the apsimNgpyconfig.ini file
@@ -109,6 +107,7 @@ def get_apsim_bin_path():
         g_CONFIG = configparser.ConfigParser()
         g_CONFIG.read(CONFIG_PATH)
         return g_CONFIG['Paths']['ApSIM_LOCATION']
+
 
 def set_apsim_bin_path(path):
     """ Send your desired path to the aPSim binary folder to the config module

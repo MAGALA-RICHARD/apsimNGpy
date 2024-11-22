@@ -116,6 +116,7 @@ def _match_pattern_to_path(pattern):
 
 @cache
 def auto_detect_apsim_bin_path():
+    """ first, we get from Env, which is common for all platforms"""
     common_to_all = os.getenv("APSIM")
     if platform.system() == 'Windows':
         return common_to_all or scan_drive_for_bin() or ""

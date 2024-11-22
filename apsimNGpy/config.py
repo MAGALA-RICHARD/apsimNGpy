@@ -43,7 +43,8 @@ def scan_dir(path):
             if entry.is_dir():
                 if entry.name == 'bin' and 'APSIM' in entry.path:
                     # Return the path of the 'bin' directory
-                    return entry.path
+                    if _apsim_model_is_installed(entry.path):
+                        return entry.path
 
                 else:
                     # Recursively scan other directories
@@ -51,7 +52,7 @@ def scan_dir(path):
                         result = scan_dir(entry.path)
                         if result:  # If 'bin' is found in the recursion, stop further scanning
                             return result
-                    except PermissionError as pe:
+                    except PermissionError:
                         ...
 
     return None  # Return None if 'bin' is not found

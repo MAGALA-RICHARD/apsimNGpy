@@ -1,10 +1,11 @@
 import os
 
 from setuptools import setup, find_packages
+
 config_path = os.path.realpath('config.ini')
 if os.path.exists(config_path):
     try:
-       os.remove(config_path)
+        os.remove(config_path)
     except:
         pass
 
@@ -53,6 +54,7 @@ setup(
         'progressbar >= 2.5',
         'joblib >= 1.3.2',
         'sqlalchemy >=2.0',
+        'psutil' >= '6.0.0',
         'matplotlib',
         'tenacity'
 

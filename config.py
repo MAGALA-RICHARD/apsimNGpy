@@ -123,7 +123,7 @@ def auto_detect_apsim_bin_path():
     home_ = os.path.expanduser("~")
     if platform.system() == 'Darwin':
         # we search in a few directories home and applications and give up
-        apps = '/Applications/APSIM*.app/Contents/Resources/bin'
+        apps = '/Applications'
 
         return common_to_all or scan_dir_for_bin(apps) or scan_dir_for_bin(home_) or ""
 

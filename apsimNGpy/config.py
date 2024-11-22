@@ -7,6 +7,9 @@ import glob
 from pathlib import Path
 from functools import lru_cache, cache
 from os.path import join, dirname
+
+import psutil
+
 from apsimNGpy.settings import CONFIG_PATH
 
 HOME_DATA = Path.home().joinpath('AppData', 'Local', 'Programs')
@@ -31,9 +34,15 @@ def _apsim_model_is_installed(_path):
     else:
         return False
 
-
+def list_drives():
+    drives = []
+    for part in psutil.disk_partitions():
+        # This checks if there's a filesystem type, which indicates a mounted and accessible partition
+        if part.fstype:
+            drives.append(f"{part.device}")
+    return drives
 @lru_cache(maxsize=3)
-def scan_dir(path):
+def scan_dir_for_bin(path):
     """
     Recursively scans directories starting at the given path.
     Stops scanning as soon as a directory named 'bin' is encountered and returns its path.
@@ -49,13 +58,13 @@ def scan_dir(path):
                 else:
                     # Recursively scan other directories
                     try:
-                        result = scan_dir(entry.path)
+                        result = scan_dir_for_bin(entry.path)
                         if result:  # If 'bin' is found in the recursion, stop further scanning
                             return result
                     except PermissionError:
                         ...
 
-    return None  # Return None if 'bin' is not found
+    return None  # Return None if 'bin' and 'APSIM' is not found
 
 
 @cache

@@ -66,7 +66,7 @@ def scan_dir_for_bin(path):
                         result = scan_dir_for_bin(entry.path)
                         if result:  # If 'bin' is found in the recursion, stop further scanning
                             return result
-                    except PermissionError:
+                    except (PermissionError, OSError):
                         ...
 
     return None  # Return None if 'bin' and 'APSIM' is not found

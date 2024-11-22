@@ -1,4 +1,4 @@
-from apsimNGpy.core.pythonet_config import LoadPythonnet
+from apsimNGpy.core.pythonet_config import load_pythonnet
 from Models.Soils import Soil, Physical, SoilCrop, Organic, Solute, Chemical
 
 

@@ -1,3 +1,4 @@
+import glob
 import os
 from concurrent.futures import ProcessPoolExecutor, as_completed, ThreadPoolExecutor
 from multiprocessing import cpu_count
@@ -13,6 +14,8 @@ from itertools import islice
 import pandas as pd
 import multiprocessing as mp
 import types
+
+from .. import settings
 
 CPU = int(int(cpu_count()) * 0.5)
 CORES = NUM_CORES
@@ -73,14 +76,17 @@ def custom_parallel(func, iterable, *args, **kwargs):
 
 
 # _______________________________________________________________
-def run_apsimx_files_in_parallel(iterable_files, **kwargs):
+def run_apsimx_files_in_parallel(iterable_files =None, ws=None, pattern='', **kwargs):
+    def fetch_files():
+        return glob.glob(f"{ws}*/{pattern}")
     """
     Run APSIMX simulation from multiple files in parallel.
 
     Args:
     - iterable_files (list): A list of APSIMX  files to be run in parallel.
     - ncores (int, optional): The number of CPU cores or threads to use for parallel processing. If not provided, it defaults to 50% of available CPU cores.
-    - use_threads (bool, optional): If set to True, the function uses thread pool execution; otherwise, it uses process pool execution. Default is False.
+    - use_threads (bool, optional): If set to True, the function uses thread pool execution; otherwise,
+    it uses process pool execution. Default is False.
 
     Returns:
     - returns a generator object containing the path to the datastore or sql databases
@@ -109,8 +115,8 @@ def run_apsimx_files_in_parallel(iterable_files, **kwargs):
         ncores_2use = Ncores
     else:
         ncores_2use = int(cpu_count() * 0.50)
-
-    return custom_parallel(run_model, iterable_files, ncores=ncores_2use, use_threads=kwargs.get('use_threads'))
+    iterable_fil = iterable_files or fetch_files()
+    return custom_parallel(run_model, iterable_fil, ncores=ncores_2use, use_threads=kwargs.get('use_threads'))
 
 
 def read_result_in_parallel(iterable_files, ncores=None, use_threads=False, report_name="Report", **kwargs):
@@ -160,8 +166,8 @@ def read_result_in_parallel(iterable_files, ncores=None, use_threads=False, repo
         ncores_2use = Ncores
     else:
         ncores_2use = int(cpu_count() * 0.50)
-    worker  =  func or read_db_table
-    return custom_parallel(worker, iterable_files, report_name, ncores=ncores_2use,progress_message=progress_msg,
+    worker = func or read_db_table
+    return custom_parallel(worker, iterable_files, report_name, ncores=ncores_2use, progress_message=progress_msg,
                            use_threads=use_threads)
 
 
@@ -212,8 +218,8 @@ def download_soil_tables(iterable, use_threads=False, ncores=0, **kwargs):
         ncores_2use = Ncores
     else:
         ncores_2use = int(cpu_count() * 0.50)
-    worker  = func or  download_soil_table
-    return custom_parallel(worker, iterable, ncores=ncores_2use,progress_message = progress_msg,
+    worker = func or download_soil_table
+    return custom_parallel(worker, iterable, ncores=ncores_2use, progress_message=progress_msg,
                            use_threads=use_threads)
 
 

@@ -32,6 +32,31 @@ def _apsim_model_is_installed(_path):
         return False
 
 
+@lru_cache(maxsize=3)
+def scan_dir(path):
+    """
+    Recursively scans directories starting at the given path.
+    Stops scanning as soon as a directory named 'bin' is encountered and returns its path.
+    """
+    with os.scandir(path) as entries:
+        for entry in entries:
+            if entry.is_dir() and '$' not in entry.name:
+                if entry.name == 'bin' and 'APSIM' in entry.path:
+                    # Return the path of the 'bin' directory
+                    return entry.path
+
+                else:
+                    # Recursively scan other directories
+                    try:
+                        result = scan_dir(entry.path)
+                        if result:  # If 'bin' is found in the recursion, stop further scanning
+                            return result
+                    except PermissionError as pe:
+                        ...
+
+    return None  # Return None if 'bin' is not found
+
+
 @cache
 def search_from_programs():
     # if the executable is not found, then most likely even if the bin path exists, apsim is uninstalled
@@ -91,8 +116,6 @@ def create_config(apsim_path=""):
         _CONFIG.write(configured_file)
 
 
-
-
 def get_apsim_bin_path():
     """
     Returns the path to the apsim bin folder from either auto detection or from the path already supplied by the user through the apsimNgpyconfig.ini file
@@ -109,6 +132,7 @@ def get_apsim_bin_path():
         g_CONFIG = configparser.ConfigParser()
         g_CONFIG.read(CONFIG_PATH)
         return g_CONFIG['Paths']['ApSIM_LOCATION']
+
 
 def set_apsim_bin_path(path):
     """ Send your desired path to the aPSim binary folder to the config module

@@ -132,7 +132,7 @@ def get_apsim_bin_path():
     The function is silent does not raise any exception but return empty string in all cases
     :return:
     """
-    # if it does not exist we create it and try to load from the auto-detected pass
+    # if it does not exist, we create it and try to load from the auto-detected pass
     if not exists(CONFIG_PATH):
         auto_path = auto_detect_apsim_bin_path()
         create_config(apsim_path=auto_path)

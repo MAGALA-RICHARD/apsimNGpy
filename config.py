@@ -7,13 +7,15 @@ import glob
 from pathlib import Path
 from functools import lru_cache, cache
 from os.path import join, dirname
-from settings import CONFIG_PATH, logger, MSG
-from functools import lru_cache
+
+import psutil
+
+from apsimNGpy.settings import CONFIG_PATH
 
 HOME_DATA = Path.home().joinpath('AppData', 'Local', 'Programs')
 cdrive = os.environ.get('PROGRAMFILES')
 CONFIG = configparser.ConfigParser()
-EMPTY_PATH = ""
+
 
 def _apsim_model_is_installed(_path):
     """
@@ -31,6 +33,51 @@ def _apsim_model_is_installed(_path):
         return True
     else:
         return False
+
+
+def list_drives():
+    drives = []
+    for part in psutil.disk_partitions():
+        # This checks if there's a filesystem type, which indicates a mounted and accessible partition
+        if part.fstype:
+            drives.append(f"{part.device}")
+    return drives
+
+
+@lru_cache(maxsize=3)
+def scan_dir_for_bin(path):
+    """
+    Recursively scans directories starting at the given path.
+    Stops scanning as soon as a directory named 'bin' is encountered and returns its path.
+    """
+    with os.scandir(path) as entries:
+        for entry in entries:
+            if entry.is_dir():
+                if entry.name == 'bin' and 'APSIM20' in entry.path:
+                    # we don't want to call _apsim_model_is_installed on every directory,
+                    # so we call it below after the first condition is met
+                    if _apsim_model_is_installed(entry.path):
+                        # Return the path of the 'bin' directory
+                        return entry.path
+
+                else:
+                    # Recursively scan other directories
+                    try:
+                        result = scan_dir_for_bin(entry.path)
+                        if result:  # If 'bin' is found in the recursion, stop further scanning
+                            return result
+                    except PermissionError:
+                        ...
+
+    return None  # Return None if 'bin' and 'APSIM' is not found
+
+
+def scan_drive_for_bin():
+    """this function uses scan_dir_for_bin to scan all drive directories"""
+    for d in list_drives():
+        pp = scan_dir_for_bin(d)
+        if pp:
+            return pp
 
 
 @cache
@@ -69,33 +116,22 @@ def _match_pattern_to_path(pattern):
 
 @cache
 def auto_detect_apsim_bin_path():
-    """
-    This will search through a few suspected locations and give up
-    the best idea is to just add the installation path to APSIM PATH. Although it is possible to search the whole computer this
-    is computationally intensive, but there is a plan to do so through one single run automatically
-    @return: apsim bin installation path where.dll files resides or None if not found
-    """
-    common_t_all = os.getenv("APSIM")
-    if common_t_all:
-        return common_t_all
     if platform.system() == 'Windows':
-        return search_from_programs() or search_from_users() or EMPTY_PATH
+        return os.getenv("APSIM") or scan_drive_for_bin() or ""
     if platform.system() == 'Darwin':
-        # we search in applications and home and give up
+        # we search in applications and give up
         pattern = '/Applications/APSIM*.app/Contents/Resources/bin'
-        _home = os.path.expanduser('~')
-        pattern2 = f"{_home}/APSIM*.app/Contents/Resources/bin"
-        return _match_pattern_to_path(pattern) or _match_pattern_to_path(pattern2) or EMPTY_PATH
+        return _match_pattern_to_path(pattern) or ""
 
     if platform.system() == 'Linux':
         pattern1 = '/usr/local/APSIM*/Contents/Resources/bin'
         pattern2 = '~/.APSIM*/Contents/Resources/bin'
-        return _match_pattern_to_path(pattern1) or _match_pattern_to_path(pattern2) or EMPTY_PATH
+        return _match_pattern_to_path(pattern1) or _match_pattern_to_path(pattern2) or ""
     else:
-        return EMPTY_PATH
+        return ""
 
 
-def create_config(apsim_path=EMPTY_PATH):
+def create_config(apsim_path=""):
     _CONFIG = configparser.ConfigParser()
     _CONFIG.read(CONFIG_PATH)
     _CONFIG['Paths'] = {'ApSIM_LOCATION': apsim_path}
@@ -103,30 +139,26 @@ def create_config(apsim_path=EMPTY_PATH):
         _CONFIG.write(configured_file)
 
 
-@lru_cache(maxsize=None)
 def get_apsim_bin_path():
-    """We can extract the current path from config.ini or from the automatic search:
-       @return str: path to the apsim binaries or empty string which evaluate to a boolean: False or None
     """
-    if exists(CONFIG_PATH):
+    Returns the path to the apsim bin folder from either auto-detection or from the path already supplied by the user through the apsimNgpyconfig.ini file
+    The function is silent does not raise any exception but return empty string in all cases
+    :return:
+    """
+    # if it does not exist, we create it and try to load from the auto-detected pass
+    if not exists(CONFIG_PATH):
+        auto_path = auto_detect_apsim_bin_path()
+        create_config(apsim_path=auto_path)
+        return auto_path
+    else:
+        """We can extract the current path from apsimNGpyconfig.ini"""
         g_CONFIG = configparser.ConfigParser()
         g_CONFIG.read(CONFIG_PATH)
         return g_CONFIG['Paths']['ApSIM_LOCATION']
-    auto = auto_detect_apsim_bin_path()
-    if auto:
-        # the config.ini has not received a path, yet we try to get it from the computer
-        # by the function above and then send it to the config.in using the create_config
-        create_config(auto)
-        return auto
-
-    else:
-        # At this moment we need to stop and fix this error, but no let's provide a debugging message
-        # because error will avoid importing the get_apsim_bin_path or set_apsim_bin_path to fix the problem
-        logger.debug(MSG)
 
 
 def set_apsim_bin_path(path):
-    """ Send your desired path to the aPSim binary folder to the config.in which is then accessed by the pythonet_config module
+    """ Send your desired path to the aPSim binary folder to the config module
     the path should end with bin as the parent directory of the aPSim Model.
     >> Please be careful with adding an uninstalled path, which does not have model.exe file or unix executable.
     It won't work and python with throw an error
@@ -135,19 +167,13 @@ def set_apsim_bin_path(path):
      config = Config.get_apsim_bin_path()
      # set the desired path
      >> Config.set_apsim_bin_path(path = '/path/to/APSIM*/bin')
-
-    Here's a refined version of your note, incorporating your requested phrase for improved clarity:
-
-    **Note: ** Due to caching behaviors in `get_apsim_bin_path`, which is interacting with the configuration file,
-    errors may occur after changes—especially if the system attempts to access a path that has been uninstalled. If this
-     happens, please rerun the application or restart your IDE to refresh the cached results.
     """
     _path = realpath(path)
     if not _apsim_model_is_installed(_path):
         raise ValueError(f"files might have been uninstalled at this location '{_path}'")
     if _path != get_apsim_bin_path():
         create_config(_path)
-        logger.info(f"saved {_path} to '{CONFIG_PATH}'")
+        print(f"saved {_path} to '{CONFIG_PATH}'")
 
 
 class Config:
@@ -159,7 +185,7 @@ class Config:
     @classmethod
     def get_aPSim_bin_path(cls):
         warnings.warn(
-            f'Deprecation warning: apsimNGpy.config.Config.get_apsim_bin_path for changing apsim binary path is deprecated> '
+            f'apsimNGpy.config.Config.get_apsim_bin_path for changing apsim binary path is deprecated> '
             f'use:apsimNGpy.config.get_apsim_bin_path ',
             FutureWarning)
         """We can extract the current path from config.ini"""
@@ -168,7 +194,7 @@ class Config:
     @classmethod
     def set_aPSim_bin_path(cls, path):
         warnings.warn(
-            f'Deprecation warning: apsimNGpy.config.Config.set_apsim_bin_path for changing apsim binary path is deprecated> '
+            f'apsimNGpy.config.Config.set_apsim_bin_path . class for changing apsim binary path is deprecated> '
             f'use:apsimNGpy.config.set_apsim_bin_path ',
             FutureWarning)
 

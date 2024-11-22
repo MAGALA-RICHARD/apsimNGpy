@@ -116,17 +116,19 @@ def _match_pattern_to_path(pattern):
 
 @cache
 def auto_detect_apsim_bin_path():
+    common_to_all = os.getenv("APSIM")
     if platform.system() == 'Windows':
-        return os.getenv("APSIM") or scan_drive_for_bin() or ""
+        return common_to_all or scan_drive_for_bin() or ""
     if platform.system() == 'Darwin':
         # we search in applications and give up
-        pattern = '/Applications/APSIM*.app/Contents/Resources/bin'
-        return _match_pattern_to_path(pattern) or ""
+        apps = '/Applications/APSIM*.app/Contents/Resources/bin'
+        home_ = os.path.expanduser("~")
+        return common_to_all or scan_dir_for_bin(apps) or scan_dir_for_bin(home_) or ""
 
     if platform.system() == 'Linux':
         pattern1 = '/usr/local/APSIM*/Contents/Resources/bin'
         pattern2 = '~/.APSIM*/Contents/Resources/bin'
-        return _match_pattern_to_path(pattern1) or _match_pattern_to_path(pattern2) or ""
+        return common_to_all or _match_pattern_to_path(pattern1) or _match_pattern_to_path(pattern2) or ""
     else:
         return ""
 

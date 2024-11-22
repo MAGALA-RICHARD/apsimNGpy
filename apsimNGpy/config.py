@@ -34,6 +34,7 @@ def _apsim_model_is_installed(_path):
     else:
         return False
 
+
 def list_drives():
     drives = []
     for part in psutil.disk_partitions():
@@ -41,6 +42,8 @@ def list_drives():
         if part.fstype:
             drives.append(f"{part.device}")
     return drives
+
+
 @lru_cache(maxsize=3)
 def scan_dir_for_bin(path):
     """
@@ -50,9 +53,11 @@ def scan_dir_for_bin(path):
     with os.scandir(path) as entries:
         for entry in entries:
             if entry.is_dir():
-                if entry.name == 'bin' and 'APSIM' in entry.path:
-                    # Return the path of the 'bin' directory
+                if entry.name == 'bin' and 'APSIM20' in entry.path:
+                    # we don't want to call _apsim_model_is_installed on every directory,
+                    # so we call it below after the first condition is met
                     if _apsim_model_is_installed(entry.path):
+                        # Return the path of the 'bin' directory
                         return entry.path
 
                 else:
@@ -65,6 +70,14 @@ def scan_dir_for_bin(path):
                         ...
 
     return None  # Return None if 'bin' and 'APSIM' is not found
+
+
+def scan_drive_for_bin():
+    """this function uses scan_dir_for_bin to scan all drive directories"""
+    for d in list_drives():
+        pp = scan_dir_for_bin(d)
+        if pp:
+            return pp
 
 
 @cache
@@ -104,7 +117,7 @@ def _match_pattern_to_path(pattern):
 @cache
 def auto_detect_apsim_bin_path():
     if platform.system() == 'Windows':
-        return os.getenv("APSIM") or os.getenv("Models") or search_from_programs() or search_from_users() or ""
+        return os.getenv("APSIM") or scan_drive_for_bin() or ""
     if platform.system() == 'Darwin':
         # we search in applications and give up
         pattern = '/Applications/APSIM*.app/Contents/Resources/bin'

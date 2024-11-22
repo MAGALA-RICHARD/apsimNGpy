@@ -40,7 +40,7 @@ def scan_dir(path):
     """
     with os.scandir(path) as entries:
         for entry in entries:
-            if entry.is_dir() and '$' not in entry.name:
+            if entry.is_dir():
                 if entry.name == 'bin' and 'APSIM' in entry.path:
                     # Return the path of the 'bin' directory
                     return entry.path

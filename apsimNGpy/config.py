@@ -126,10 +126,8 @@ def auto_detect_apsim_bin_path():
         return common_to_all or scan_dir_for_bin(apps) or scan_dir_for_bin(home_) or ""
 
     if platform.system() == 'Linux':
-        pattern1 = '/usr/local/APSIM*/Contents/Resources/bin'
-        pattern2 = '~/.APSIM*/Contents/Resources/bin'
-        home_li  =os.path.expanduser("~")
-        return common_to_all or scan_dir_for_bin('/usr/local') or _match_pattern_to_path(pattern1) or scan_dir_for_bin(home_li) or ""
+        home_li = os.path.expanduser("~")
+        return common_to_all or scan_dir_for_bin('/usr/local') or scan_dir_for_bin(home_li) or ""
     else:
         return ""
 

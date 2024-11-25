@@ -29,11 +29,11 @@ All versions are currently in development, phase and they can be installed as fo
 
     pip install apsimNGpy
 
-- Method 1. clone the current development repositry    
+- Method 1. clone the current development repository
 
 .. code:: bash
 
-    git clone https://github.com/MAGALA-RICHARD/apsimNGpy.git@dev
+    git clone https://github.com/MAGALA-RICHARD/apsimNGpy.git
     cd apsimNGpy
     pip install .
 
@@ -44,8 +44,36 @@ All versions are currently in development, phase and they can be installed as fo
      pip install git+https://github.com/MAGALA-RICHARD/apsimNGpy.git@dev
 
 
+Locating the APSIM Binaries
+***************************************************************
+The APSIM binaries are located automatically when using `apsimNGpy`. However, for the best experience, it is recommended to add the APSIM installation path to your Python path before running `apsimNGpy`.
+
+Alternatively, you can manually configure the APSIM binary path. To do this:
+1. Locate the folder named `APSIMNGpy_meta_info` in your home directory (e.g., `./APSIMNGpy_meta_data`).
+2. Open the file `apsimNGpy_config.ini` within this folder.
+3. Modify the `apsim_location` entry to reflect your desired APSIM binary path.
+
+### Path Detection Order
+****************************************
+
+When `apsimNGpy` is used, the process for determining the APSIM binary path follows this priority:
+
+1. **User-Specified Path:** If the user has explicitly provided a path, it will be used.
+2. **Automatic Detection:** If no path is supplied by the user, automatic detection is invoked. The detection process prioritizes:
+   - Checking the `PYTHONPATH` environment variable for the APSIM path.
+   - Scanning drives on the system if no path is found in the environment variables.
+
+By following this approach, `apsimNGpy` ensures a flexible and user-friendly way to locate the APSIM binaries.
+
+This implies that you can switch between apsim versions easily if you have more than one versions installed on your computer
+
 Debugging import error due to improper SYSTEM APSIM path configuration
 *********************************************************************************
+The path to APSIM binaries is located automatically
+The best thing to before running apsimNGpy is to add the installation path to your python path
+in your home folder you could look for folder named apsimNGpy_meta_info './APSIMNGpy_meta_data'
+
+The pecking order for using any APSIM application installed on your machine is the one at the python path
 
 If you have apsim installed and the program refuses to load run the following code at the top of your python script
 before importing any apsimNGpy class, especially class from ApsimNGpy.core modules The classes are  CamelCased.

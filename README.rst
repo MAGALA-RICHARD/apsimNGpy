@@ -115,11 +115,23 @@ Required Dependencies:
 - tqdm
 - requests
 
-Please note that apsimNGpy is tested on Python 3. We are not aware of its performance in Python 2 because it utilizes some of the new libraries like pathlib and f-strings.
-
+Please note that apsimNGpy is tested on Python 3. We are not aware of its performance in Python 2 because it utilizes some of the new libraries
 Usage
 
 *********************************************************************************
+
+Test before use:
+*****************************
+If you are facing trouble running APSIM please test using our default test
+test the package. This will show the apsim binary path being used and we try a few simulations, while displaying the time taken. incase there is anything
+wrong, a debugging message ith instructions will appear in your console as well asin the simulation logs in the apsim_meta_info folder in the user directory
+
+.. code:: python
+    from apsimNGpy.core.test import test
+    if __name__ == '__main__':
+          test()
+
+
 
 .. code:: python
 

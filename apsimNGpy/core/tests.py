@@ -24,21 +24,21 @@ try:
     from core import APSIMNG
     from core.base_data import load_default_simulations
     from apsim import ApsimModel
-    # auto-detect for some reasons when imported after compiling, with compiling i mean installing the package so we
+    # auto-detect for some reason when imported after compiling, with compiling i mean installing the package so we
     # import directly from the package
 except (ModuleNotFoundError, ImportError):
-    #logging.info(" did not passed import error")
+    # logging.info(" did not passed import error")
     from apsimNGpy.core.core import APSIMNG
     from apsimNGpy.core.apsim import ApsimModel
     from apsimNGpy.core.base_data import load_default_simulations
 
-auto = auto_detect_apsim_bin_path()
+auto = auto_detect_apsim_bin_path() or os.getenv('APSIM')
 
 
 def test():
     # test auto detect;
     if auto:
-        logging.info(f"apsim path detected automatically at: {auto}")
+        logging.info(f"apsim path detected at: {auto}")
     # test pythonnet
     if get_apsim_bin_path():
         logging.info('Using apsim path at: {}'.format(get_apsim_bin_path()))

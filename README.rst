@@ -122,10 +122,10 @@ Usage
 
 Test before use:
 *****************************
-If you are facing trouble running APSIM please test using our default test
-test the package. This will show the apsim binary path being used and we try a few simulations, while displaying the time taken. incase there is anything
-wrong, a debugging message ith instructions will appear in your console as well asin the simulation logs in the apsim_meta_info folder in the user directory
-
+If you are experiencing issues running APSIM, please test the package using our default test function.
+This will display the APSIM binary path being used and run a few simulations, showing the time taken for each.
+In case of any errors, a debugging message with instructions will appear in your console, as well as in the simulation
+logs located in the apsim_meta_info folder in your user directory.
 .. code:: python
     from apsimNGpy.core.test import test
     if __name__ == '__main__':

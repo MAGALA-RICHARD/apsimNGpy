@@ -136,53 +136,107 @@ In case of any errors, a debugging message with instructions will appear in your
 
 
 Examples
-****************
+********
+
+This example demonstrates how to use `apsimNGpy` to load a default simulation, run it, retrieve results, and visualize the output.
 
 .. code:: python
 
+    # Import necessary modules
     import apsimNGpy
-   # use default modules in APSIM
     from apsimNGpy.core.base_data import load_default_simulations
-    from apsimNGpy.core.apsim  import ApsimModel as SoilModel
+    from apsimNGpy.core.apsim import ApsimModel as SoilModel
     from pathlib import Path
     import os
     from apsimNGpy.validation.visual import plot_data
-    cwd = Path.cwd().home() # sending this to your home folder
-    wd = cwd.joinpath("apsimNGpy_demo")
+
+The above code imports the necessary modules for running APSIM simulations. This includes `apsimNGpy` modules for loading default simulations and managing results, as well as standard Python libraries for file handling and visualization.
+
+.. code:: python
+
+    # Set up the working directory
+    cwd = Path.cwd().home()  # Use the home directory
+    wd = cwd.joinpath("apsimNGpy_demo")  # Create a subdirectory for the demo
     if not wd.exists():
-       os.mkdir(wd)
-    # change directory
-    os.chdir(wd)
-    # Create the data
-    # you can specify any crop simulated by apsim
-    # Get soybean model
-    soybean_model = load_default_simulations(crop = 'soybean') # don't worry it is not case sensitive
-    # the load_default_simulation returns a preloaded model ready to run the existing crop model
-    # Initialize the simulation methods
-    # however we can initialize by specifying get object = False
-    soybean_path_model  = load_default_simulations(crop = 'soybean', simulation_object = False)
-    # pass the soybean_model.path but for what
+        os.mkdir(wd)  # Create the directory if it doesn't exist
+    os.chdir(wd)  # Change to the working directory
+
+This code sets up the working directory. It creates a folder named `apsimNGpy_demo` in the user's home directory if it doesn't already exist and then changes the current working directory to this new folder.
+
+.. code:: python
+
+    # Load the default simulation
+    soybean_model = load_default_simulations(crop='soybean')  # Case-insensitive crop specification
+
+The `load_default_simulations` function loads a default APSIM simulation for the specified crop. In this example, the crop is set to soybean, but you can specify other crops as needed.
+
+.. code:: python
+
+    # Load the simulation path without initializing the object
+    soybean_path_model = load_default_simulations(crop='soybean', simulation_object=False)
+
+If you prefer not to initialize the simulation object immediately, you can load only the simulation path by setting `simulation_object=False`.
+
+.. code:: python
+
+    # Initialize the APSIM model with the simulation file path
     apsim = SoilModel(soybean_path_model)
-    # Run the file
-    apsim.run(report_name = 'Report') # report_name specifies the data table in the simulation
-    # print the results
-    # retrieve the results
+
+This code initializes the APSIM model using the previously loaded simulation file path.
+
+.. code:: python
+
+    # Run the simulation
+    apsim.run(report_name='Report')
+
+The `run` method executes the simulation. The `report_name` parameter specifies which data table from the simulation will be used for results.
+
+.. note::
+   report_name accepts a list of simulation data tables and hence can return a list of pandas data frame for each data table and get_dict = True, a dictionary is returned
+   with each data name as the key and data frame as the values
+
+.. code:: python
+
+    # Retrieve and save the results
     df = apsim.results
-    # save the results to csv
-    df.to_csv('apsim_df_res.csv')
-    print(apsim.results) # prints all data frames in the storage domain subset using report names
-    # check the manager modules in the apsim simulation file
-    # first get the simulation names
-    sim_name = apsim.simulation_names
+    df.to_csv('apsim_df_res.csv')  # Save the results to a CSV file
+    print(apsim.results)  # Print all DataFrames in the storage domain
+
+After the simulation runs, results are stored in the `apsim.results` attribute as pandas DataFrames. Please see note above. These results can be saved to a CSV file or printed to the console.
+
+The code below retrieves the names of simulations from the APSIM model and examines the management modules used in the specified simulations.
+
+.. code:: python
+
+    # Examine management modules in the simulation
+    sim_name = apsim.simulation_names  # Retrieve simulation names
     apsim.examine_management_info(simulations=sim_name)
-    # show current simulation in apsim GUI
+
+
+You can preview the current simulation in the APSIM graphical user interface (GUI) using the `preview_simulation` method.
+
+
+.. code:: python
+
+    # Preview the current simulation in the APSIM GUI
     apsim.preview_simulation()
-    # plot the data
-    res = apsim.results['MaizeR'] #specify your report name
-    plot_data(df['Clock.Today'], df.Yield, xlabel='Date', ylabel=" Soybean Yield (kg/ha)")
-    
-A graph should be able to appear like the ones below. Note that plot_data function just wraps matplotlib plot function
-for quick visualisation
+
+.. note::
+   apsimNGpy clones a every simulation file before passing it it dotnet runner, however, when you open it in GUI, take note of the version it will be difficult to re-open
+   it in the lower versions after opening it in the higher versions of apsim
+
+Visualise the results. please note that python provide very many plotting libraries below is just a basic description of your results
+
+.. code:: python
+
+    # Visualize the simulation results
+    res = apsim.results['MaizeR']  # Replace with the appropriate report name
+    plot_data(df['Clock.Today'], df.Yield, xlabel='Date', ylabel='Soybean Yield (kg/ha)')
+
+Finally, the `plot_data` function is used to visualize the simulation results. Replace 'df['Clock.Today']' and `df.Yield` with the appropriate report name and column from your simulation results.
+
+A graph similar to the example below should appear
+
 
 Congratulations you have successfully used apsimNGpy package
 *********************************************************************************

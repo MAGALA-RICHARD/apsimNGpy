@@ -135,6 +135,8 @@ In case of any errors, a debugging message with instructions will appear in your
         test()
 
 
+Examples
+****************
 
 .. code:: python
 

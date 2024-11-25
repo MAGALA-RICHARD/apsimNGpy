@@ -4,7 +4,6 @@ import pythonnet
 from apsimNGpy import config
 aPSim_PATH = config.get_apsim_bin_path()
 
-
 def start_pythonnet():
     try:
         if pythonnet.get_runtime_info() is None:

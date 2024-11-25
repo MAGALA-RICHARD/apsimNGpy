@@ -10,7 +10,7 @@ from os.path import join, dirname
 
 import psutil
 
-from apsimNGpy.settings import CONFIG_PATH
+from apsimNGpy.settings import CONFIG_PATH, create_config
 
 HOME_DATA = Path.home().joinpath('AppData', 'Local', 'Programs')
 cdrive = os.environ.get('PROGRAMFILES')
@@ -73,7 +73,8 @@ def scan_dir_for_bin(path):
 
 
 def scan_drive_for_bin():
-    """this function uses scan_dir_for_bin to scan all drive directories"""
+    """This function uses scan_dir_for_bin to scan all drive directories.
+    for Windows only"""
     for d in list_drives():
         pp = scan_dir_for_bin(d)
         if pp:
@@ -116,47 +117,41 @@ def _match_pattern_to_path(pattern):
 
 @cache
 def auto_detect_apsim_bin_path():
-    """ first, we get from Env, which is common for all platforms"""
-    common_to_all = os.getenv("APSIM")
+    """ For Windows, we scan all drives. On macOS, we check the Applications folder, while on Linux, we look in `/usr/local`.
+     Additionally, we search the home directory, though it is unlikely to be a reliable source.
+    """
     if platform.system() == 'Windows':
-        return common_to_all or scan_drive_for_bin() or ""
+        return  scan_drive_for_bin() or ""
     home_ = os.path.expanduser("~")
     if platform.system() == 'Darwin':
         # we search in a few directories home and applications and give up
         apps = '/Applications'
 
-        return common_to_all or scan_dir_for_bin(apps) or scan_dir_for_bin(home_) or ""
+        return scan_dir_for_bin(apps) or scan_dir_for_bin(home_) or ""
 
     if platform.system() == 'Linux':
-        return common_to_all or scan_dir_for_bin(home_) or scan_dir_for_bin('/usr/local') or ""
+        return scan_dir_for_bin('/usr/local') or scan_dir_for_bin(home_) or ""
     else:
         return ""
 
 
-def create_config(apsim_path=""):
-    _CONFIG = configparser.ConfigParser()
-    _CONFIG.read(CONFIG_PATH)
-    _CONFIG['Paths'] = {'ApSIM_LOCATION': apsim_path}
-    with open(CONFIG_PATH, 'w') as configured_file:
-        _CONFIG.write(configured_file)
-
-
 def get_apsim_bin_path():
     """
-    Returns the path to the apsim bin folder from either auto-detection or from the path already supplied by the user through the apsimNgpyconfig.ini file
+    Returns the path to the apsim bin folder from either auto-detection or from the path already supplied by the user
+    through the apsimNgpyconfig.ini file in the user home directory. the location folder is called
     The function is silent does not raise any exception but return empty string in all cases
     :return:
     """
     # if it does not exist, we create it and try to load from the auto-detected pass
-    if not exists(CONFIG_PATH):
+    g_CONFIG = configparser.ConfigParser()
+    g_CONFIG.read(CONFIG_PATH)
+    """We can extract the current path from apsimNGpyconfig.ini"""
+    apsim_bin_path = g_CONFIG['Paths']['APSIM_LOCATION']
+    if not exists(apsim_bin_path):
         auto_path = auto_detect_apsim_bin_path()
-        create_config(apsim_path=auto_path)
+        create_config(CONFIG_PATH, apsim_path=auto_path)
         return auto_path
-    else:
-        """We can extract the current path from apsimNGpyconfig.ini"""
-        g_CONFIG = configparser.ConfigParser()
-        g_CONFIG.read(CONFIG_PATH)
-        return g_CONFIG['Paths']['ApSIM_LOCATION']
+    return apsim_bin_path
 
 
 def set_apsim_bin_path(path):
@@ -174,7 +169,7 @@ def set_apsim_bin_path(path):
     if not _apsim_model_is_installed(_path):
         raise ValueError(f"files might have been uninstalled at this location '{_path}'")
     if _path != get_apsim_bin_path():
-        create_config(_path)
+        create_config(CONFIG_PATH, _path)
         print(f"saved {_path} to '{CONFIG_PATH}'")
 
 

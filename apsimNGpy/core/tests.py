@@ -6,7 +6,6 @@ from contextlib import contextmanager
 from pathlib import Path
 import logging
 
-
 from settings import logger, MSG
 
 current_path = os.path.dirname(os.path.abspath(__file__))
@@ -28,13 +27,12 @@ try:
     # auto-detect for some reasons when imported after compiling, with compiling i mean installing the package so we
     # import directly from the package
 except (ModuleNotFoundError, ImportError):
-    logging.info(" did not passed import error")
+    #logging.info(" did not passed import error")
     from apsimNGpy.core.core import APSIMNG
     from apsimNGpy.core.apsim import ApsimModel
     from apsimNGpy.core.base_data import load_default_simulations
 
 auto = auto_detect_apsim_bin_path()
-
 
 
 def test():
@@ -120,11 +118,17 @@ def test_experiment(use_tread=False):
 
     except Exception as e:
         # Log any exceptions encountered during the experiment
-        logging.exception(f"Experiment module test failed due to exception: {repr(e)}")
+        try:
+            logging.exception(f"Experiment module test failed due to exception: {repr(e)}")
+        except PermissionError as e:
+            ...
 
     finally:
         # Clean up by removing the temporary directory
-        shutil.rmtree(path)
+        try:
+            shutil.rmtree(path)
+        except PermissionError as e:
+            ...
 
 
 # Running the test

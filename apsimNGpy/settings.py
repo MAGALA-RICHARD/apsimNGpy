@@ -2,17 +2,33 @@ import configparser
 from multiprocessing import cpu_count
 import logging
 import os
+from pathlib import Path
 
+
+def create_config(config_path, apsim_path=""):
+    _CONFIG = configparser.ConfigParser()
+    _CONFIG.read(config_path)
+    _CONFIG['Paths'] = {'APSIM_LOCATION': apsim_path}
+    with open(config_path, 'w') as configured_file:
+        _CONFIG.write(configured_file)
+
+
+META_Dir = Path.home().joinpath('APSIMNGpy_meta_data')  # the path that will store config.ini and any logs for the user
+META_Dir.mkdir(parents=True, exist_ok=True)
+CONFIG_path = META_Dir.joinpath('apsimNGpy_config.ini')
+CONFIG_PATH = os.path.realpath(CONFIG_path)
 BASE_DIR = os.path.dirname(__file__)
-# no need to lof this path in the package directory,as it absolute path always seems abstract
-# so we send to the user home directory
-# IN THAT CASE NO NEED TO IMPORT IT
-CONFIG_PATH = os.path.expanduser('~/apsimNGpy_config.ini')
+
+if not CONFIG_path.exists():
+    # let try and check if a path exists on a path and send it to the config.ini file
+    apsim_bin_path = os.getenv('APSIM') or ''  # None file will not serialize
+    create_config(CONFIG_PATH, apsim_bin_path)
+
 WGS84 = 'epsg:4326'
 NUM_CORES: int = int(cpu_count() * 0.6)
 SOIL_THICKNESS: list = [150, 150, 200, 200, 200, 250, 300, 300, 400, 500]
 CRS: str = 'EPSG:26915'
-MSG  = """
+MSG = """
 ERROR: APSIM Path Not Found
 
 It seems that the APSIM path is either not installed or not added to your environment variables.
@@ -63,5 +79,3 @@ logger.addHandler(console_handler)
 logger.addHandler(file_handler)
 
 APSIM_LOCATION = os.environ.get('APSIM_LOCATION')
-
-

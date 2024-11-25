@@ -69,39 +69,41 @@ This implies that you can switch between apsim versions easily if you have more 
 
 Debugging import error due to improper SYSTEM APSIM path configuration
 *********************************************************************************
-The path to APSIM binaries is located automatically
-The best thing to before running apsimNGpy is to add the installation path to your python path
+
+The first thing to do before running apsimNGpy is to add the installation path to your python path
 in your home folder you could look for folder named apsimNGpy_meta_info './APSIMNGpy_meta_data'
-
-The pecking order for using any APSIM application installed on your machine is the one at the python path
-
-If you have apsim installed and the program refuses to load run the following code at the top of your python script
-before importing any apsimNGpy class, especially class from ApsimNGpy.core modules The classes are  CamelCased.
+Alternatively, you can use the code at the top of your script as follows
 
 .. code:: python
 
-    # search for the program binary installation path and add to os.environ as follows
+    # Search for the APSIM binary installation path and add it to os.environ as follows:
     import os
-    # A more intuitive way is to use apsimNGpy config Module
-    from apsimNGpy.config import Config
-    # now set the path to ASPIMX binaries
-    Config.set_aPSim_bin_path(path = r'path/toyourapsimbinaryfolder/bin)
-    # in the pythonnet_config module, priority is first given to the user supplied binary path, we also search through the python global env using the os module,
-    # if that fail it searches through other sources such as the user program installation folders.
-    # Not sure whether this can work all the time but you can try changing through os.environ as follows:
-    os.environ['APSIM'] =r'path/toyourapsimbinaryfolder/bin
-    # or
-    os.environ['Models'] =r'path/toyourapsimbinaryfolder/bin
-    # alternatively, you can add the path to the system environmental variables. if this is the case the shutil.which method is used to retrieve that path
-    # if all approaches have been tried and nothing has been returned, I assure you that a value errors will be raised
-    # now we are than we can import any module attached to pythonnet
-    # try importing SoilModel class
-    from apsimNGpy.core.apsim import ApsimModel
+    os.environ['APSIM'] = r'path/to/your/apsim/binary/folder/bin'
+    # Note: This approach may not work consistently in all scenarios, but you can try it.
+    # The above script line should always be placed at the beginning of your simulation script.
+    # However, why follow this approach when you can achieve the same result more efficiently?
+    # See the approach below:
 
+    # A more intuitive way is to use the apsimNGpy config module:
+    from apsimNGpy.config import set_apsim_bin_path
+
+    # Set the path to the APSIM binaries:
+    set_apsim_bin_path(path=r'path/to/your/apsim/binary/folder/bin')
+
+    # In the pythonnet_config module, priority is first given to the user-supplied binary path.
+    # If no path is supplied, the module searches through the Python global environment
+    # using the os module. If that fails, it searches through other sources as described above.
+    # If all approaches are exhausted and no valid path is found, a ValueError will be raised.
+
+    # Now that the path is set, you can import any module attached to pythonnet.
+    # For example, try importing the SoilModel class:
+    from apsimNGpy.core.apsim import ApsimModel
 
 .. _Usage:
 
-The above code is also applicable for running different versions of APSIM models. Please note that if your APSIM installation hasn't been added to the system path, this script line should always be placed at the beginning of your simulation script.
+The above code is also applicable for running different versions of APSIM models.
+The `set_apsim_bin_path` function can be called once and retained unless you uninstall `apsimNGpy`
+or the APSIM application itself.
 
 Required Dependencies:
 *****************************

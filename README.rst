@@ -156,27 +156,30 @@ Examples
     # Create the data
     # you can specify any crop simulated by apsim
     # Get soybean model
-
-    # Alternatively, you can load from the factory default modules
-    soybean_model = load_default_simulations(crop = 'soybean') # don't worry it is not case senstive
-    #the load_default_simulation returns a preloaded model ready to run the existing module
+    soybean_model = load_default_simulations(crop = 'soybean') # don't worry it is not case sensitive
+    # the load_default_simulation returns a preloaded model ready to run the existing crop model
     # Initialize the simulation methods
     # however we can initialize by specifying get object = False
+    soybean_path_model  = load_default_simulations(crop = 'soybean', simulation_object = False)
     # pass the soybean_model.path but for what
-    apsim = SoilModel(soybean_model.path)
-
+    apsim = SoilModel(soybean_path_model)
     # Run the file
-    apsim.run() # use run to print time taken to execute or run the model
+    apsim.run(report_name = 'Report') # report_name specifies the data table in the simulation
     # print the results
-    print(apsim.results) # prints all data frames in the storage domain subset usign report names
+    # retrieve the results
+    df = apsim.results
+    # save the results to csv
+    df.to_csv('apsim_df_res.csv')
+    print(apsim.results) # prints all data frames in the storage domain subset using report names
     # check the manager modules in the apsim simulation file
     # first get the simulation names
     sim_name = apsim.simulation_names
     apsim.examine_management_info(simulations=sim_name)
     # show current simulation in apsim GUI
+    apsim.preview_simulation()
     # plot the data
     res = apsim.results['MaizeR'] #specify your report name
-    plot_data(res.Year, res.Yield, xlabel='Years', ylabel=" Maize Yield (kg/ha)")
+    plot_data(df['Clock.Today'], df.Yield, xlabel='Date', ylabel=" Soybean Yield (kg/ha)")
     
 A graph should be able to appear like the ones below. Note that plot_data function just wraps matplotlib plot function
 for quick visualisation

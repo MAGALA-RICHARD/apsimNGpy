@@ -828,7 +828,7 @@ class APSIMNG:
         return self
 
     # immediately open the file in GUI
-    def preview_simulation_file_in_gui(self):
+    def preview_simulation(self):
         filepath = self.path
         import platform
         import subprocess

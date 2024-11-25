@@ -192,8 +192,8 @@ This code initializes the APSIM model using the previously loaded simulation fil
 The `run` method executes the simulation. The `report_name` parameter specifies which data table from the simulation will be used for results.
 
 .. note::
-   report_name accepts a list of simulation data tables and hence can return a list of pandas data frame for each data table and get_dict = True, a dictionary is returned
-   with each data name as the key and data frame as the values
+   report_name accepts a list of simulation data tables and hence can return a list of pandas data frame for each data table and if get_dict = True, a dictionary is returned
+   with each data table name as the key and data frame as the values
 
 .. code:: python
 

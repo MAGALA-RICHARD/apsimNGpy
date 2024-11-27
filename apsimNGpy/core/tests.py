@@ -6,7 +6,7 @@ from contextlib import contextmanager
 from pathlib import Path
 import logging
 
-from settings import logger, MSG
+from apsimNGpy.settings import logger, MSG
 
 current_path = os.path.dirname(os.path.abspath(__file__))
 # Set up basic configuration for logging
@@ -127,6 +127,7 @@ def test_experiment(use_tread=False):
         # Clean up by removing the temporary directory
         try:
             shutil.rmtree(path)
+            logging.info("files removed successfully")
         except PermissionError as e:
             ...
 

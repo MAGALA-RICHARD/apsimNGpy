@@ -3,6 +3,8 @@ from os.path import join as opj
 from datetime import datetime
 import datetime
 import urllib
+from typing import Union
+
 import requests
 import random
 import json
@@ -17,7 +19,7 @@ import io
 import threading
 
 
-def generate_unique_name(base_name, length=6):
+def generate_unique_name(base_name:str, length=6):
     # TODO this function has 4 duplicates
     random_suffix = ''.join(random.choices(string.ascii_lowercase, k=length))
     unique_name = base_name + '_' + random_suffix
@@ -25,7 +27,7 @@ def generate_unique_name(base_name, length=6):
 
 
 # from US_states_abbreviation import getabreviation
-def get_iem_bystation(dates, station, path, mettag):
+def get_iem_bystation(dates:Union[tuple, list], station:str, path:os.PathLike, mettag:str):
     '''
       Dates is a tupple/list of strings with date ranges
       
@@ -165,7 +167,7 @@ def isleapyear(year):
 
 
 # download radiation data for replacement
-def get_nasarad(lonlat, start, end):
+def get_nasarad(lonlat:Union[tuple, list], start:int, end:int):
     lon = lonlat[0]
     lat = lonlat[1]
     pars = "ALLSKY_SFC_SW_DWN"
@@ -179,7 +181,7 @@ def get_nasarad(lonlat, start, end):
     # fucntion to download data from daymet
 
 
-def daymet_bylocation(lonlat, start, end, cleanup=True, filename=None):
+def daymet_bylocation(lonlat:Union[tuple, list], start:int, end:int, cleanup:bool=True, filename:str=None):
     '''collect weather from daymet solar radiation is replaced with that of nasapower
    ------------
    parameters
@@ -318,7 +320,7 @@ def daymet_bylocation(lonlat, start, end, cleanup=True, filename=None):
                 return fname  # fname
 
 
-def daymet_bylocation_nocsv(lonlat, start, end, cleanup=True, filename=None):
+def daymet_bylocation_nocsv(lonlat:Union[tuple, list], start:int, end:int, cleanup:bool=True, filename:str=None):
     '''collect weather from daymet solar radiation is replaced with that of nasapower
     ------------
     parameters
@@ -332,7 +334,7 @@ def daymet_bylocation_nocsv(lonlat, start, end, cleanup=True, filename=None):
     Cleanup:  A bolean True or False default is true: deletes the excel file generated during the file write up
 
     ------------
-    returns complete path to the new met file but also write the met file to the disk in the working directory
+    returns a complete path to the new met file but also write the met file to the disk in the working directory
     '''
     # import pdb
     # pdb.set_trace()
@@ -459,7 +461,7 @@ def daymet_bylocation_nocsv(lonlat, start, end, cleanup=True, filename=None):
 
 
 # dowload weather data from nasapower
-def getnasa(lonlat, start, end):
+def getnasa(lonlat:Union[tuple, list], start:int, end:int):
     lon = lonlat[0]
     lat = lonlat[1]
     param = ["T2M_MAX", "T2M_MIN", "ALLSKY_SFC_SW_DWN", "PRECTOTCORR", "RH2M", "WS2M"]

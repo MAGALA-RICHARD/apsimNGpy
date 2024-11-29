@@ -4,7 +4,7 @@
 
 # Module: base_data
 
-## Function: _get_maize_NF_experiment
+## base_data._get_maize_NF_experime
 
 ```python
 _get_maize_NF_experiment(file_path: unknown)
@@ -13,7 +13,7 @@ copies the apsimx data from 'EXPERIMENT.apsimx' file
 returns the path
 ```
 
-## Function: __init__
+## base_data.__init__
 
 ```python
 __init__(self: unknown, path: unknown)
@@ -27,7 +27,7 @@ Raises:
 NameError: If the specified path does not exist.
 ```
 
-## Function: get_maize_with_cover_crop
+## base_data.get_maize_with_cover_crop
 
 ```python
 get_maize_with_cover_crop(self: unknown)
@@ -39,7 +39,7 @@ path (str): The example data for maize with a cover crop.
         
 ```
 
-## Function: get_experiment_nitrogen_residue
+## base_data.get_experiment_nitrogen_residue
 
 ```python
 get_experiment_nitrogen_residue(self: unknown)
@@ -50,7 +50,7 @@ Returns:
 path (str): The example data for the nitrogen residue experiment.
 ```
 
-## Function: get_get_experiment_nitrogen_residue_NT
+## base_data.get_get_experiment_nitrogen_residue_NT
 
 ```python
 get_get_experiment_nitrogen_residue_NT(self: unknown)
@@ -61,7 +61,7 @@ Returns:
 path (str): The example data for the nitrogen residue experiment with no-till.
 ```
 
-## Function: get_swim
+## base_data.get_swim
 
 ```python
 get_swim(self: unknown)
@@ -72,7 +72,7 @@ Returns:
 path (str): The example data for the SWIM model.
 ```
 
-## Function: get_maize
+## base_data.get_maize
 
 ```python
 get_maize(self: unknown)
@@ -83,7 +83,7 @@ Returns:
 path (str): The example data for the maize model.
 ```
 
-## Function: get_maize_no_till
+## base_data.get_maize_no_till
 
 ```python
 get_maize_no_till(self: unknown)
@@ -94,7 +94,7 @@ Returns:
 path (str): The example data for the maize model with no-till.
 ```
 
-## Function: get_maize_model
+## base_data.get_maize_model
 
 ```python
 get_maize_model(self: unknown)
@@ -105,7 +105,7 @@ Returns: SoilModel: An instance of the SoilModel class for the maize model. Grea
 where you wat a model always in memory to reducing laoding overload
 ```
 
-## Function: get_maize_model_no_till
+## base_data.get_maize_model_no_till
 
 ```python
 get_maize_model_no_till(self: unknown)
@@ -116,7 +116,7 @@ Returns: SoilModel: An instance of the SoilModel class for the maize model with 
 optimisation, where you wat a model always in memory to reducing laoding overload
 ```
 
-## Function: get_example
+## base_data.get_example
 
 ```python
 get_example(self: unknown, crop: unknown)
@@ -137,7 +137,7 @@ Raises:
 OSError: If there are issues with copying or replacing files.
 ```
 
-## Function: get_all
+## base_data.get_all
 
 ```python
 get_all(self: unknown)
@@ -147,7 +147,7 @@ This return all files from APSIM default examples in the example folder. But for
 
 # Module: apsim
 
-## Modul: Module
+## apsim.Modul: Module
 
 ```python
 Interface to APSIM simulation models using Python.NET
@@ -155,7 +155,7 @@ author: Richard Magala
 email: magalarich20@gmail.com
 ```
 
-## Function: _replace_initial_chemical_values
+## apsim._replace_initial_chemical_values
 
 ```python
 _replace_initial_chemical_values(self: unknown, name: unknown, values: unknown, simulations: unknown)
@@ -168,7 +168,7 @@ Args:
     simulations (str): simulation name in the root folder
 ```
 
-## Function: get_initial_no3
+## apsim.get_initial_no3
 
 ```python
 get_initial_no3(self: unknown, simulation: unknown)
@@ -176,7 +176,7 @@ get_initial_no3(self: unknown, simulation: unknown)
 Get soil initial NO3 content
 ```
 
-## Function: get_unique_soil_series
+## apsim.get_unique_soil_series
 
 ```python
 get_unique_soil_series(self: unknown)
@@ -187,7 +187,7 @@ Args:
     lonlat (_tuple_): longitude and latitude of the target location
 ```
 
-## Function: relace_initial_carbon
+## apsim.relace_initial_carb
 
 ```python
 relace_initial_carbon(self: unknown, values: unknown, simulation_names: unknown)
@@ -199,7 +199,7 @@ Args:
     simulation_names (_str_): Name of the simulation in the APSIM  file
 ```
 
-## Function: _change_met_file
+## apsim._change_met_file
 
 ```python
 _change_met_file(self: unknown, lonlatmet: unknown, simulation_names: unknown)
@@ -208,7 +208,7 @@ _similar to class weather management but just in case we want to change the weat
 # uses exisitng start and end years to download the weather data
 ```
 
-## Function: run_edited_file
+## apsim.run_edited_file
 
 ```python
 run_edited_file(self: unknown, simulations: unknown, clean: unknown, multithread: unknown)
@@ -227,7 +227,7 @@ multithread, optional
     If `True` APSIM uses multiple threads, by default `True`
 ```
 
-## Function: spin_up
+## apsim.spin_up
 
 ```python
 spin_up(self: unknown, report_name: str, start: unknown, end: unknown, spin_var: unknown)
@@ -256,7 +256,7 @@ self : ApsimModel
 
 # Module: core
 
-## Modul: Module
+## core.Modul: Module
 
 ```python
 Interface to APSIM simulation models using Python.NET
@@ -264,13 +264,13 @@ author: Richard Magala
 email: magalarich20@gmail.com
 ```
 
-## Class: APSIMNG
+## core.Class: APSIMNG
 
 ```python
 Modify and run Apsim next generation simulation models.
 ```
 
-## Function: __init__
+## core.__init__
 
 ```python
 __init__(self: unknown, model: Union[str, Simulations], copy: unknown, out_path: unknown, read_from_string: unknown)
@@ -287,7 +287,7 @@ out_path, optional
 read_from_string (boolean) if True file will be uploaded to memory through json module most preffered, otherwise we can read from file
 ```
 
-## Function: save_edited_file
+## core.save_edited_file
 
 ```python
 save_edited_file(self: unknown, outpath: unknown)
@@ -300,7 +300,7 @@ out_path, optional
     Path of output .apsimx file, by default `None`
 ```
 
-## Function: run
+## core.r
 
 ```python
 run(self: unknown, simulations: unknown, clean: unknown, multithread: unknown)
@@ -317,7 +317,7 @@ multithread, optional
     If `True` APSIM uses multiple threads, by default `True`
 ```
 
-## Function: clone_simulation
+## core.lone_simula
 
 ```python
 clone_simulation(self: unknown, target: unknown, simulation: unknown)
@@ -332,7 +332,7 @@ simulation, optional
     Simulation name to be cloned, of None clone the first simulation in model
 ```
 
-## Function: remove_simulation
+## core.remove_simula
 
 ```python
 remove_simulation(self: unknown, simulation: unknown)
@@ -345,7 +345,7 @@ simulation
     The name of the simulation to remove
 ```
 
-## Function: extract_simulation_name
+## core.extract_simulation_name
 
 ```python
 extract_simulation_name(self: unknown)
@@ -358,7 +358,7 @@ simulation
     The name of the simulation to remove
 ```
 
-## Function: clone_zone
+## core.lone_zone
 
 ```python
 clone_zone(self: unknown, target: unknown, zone: unknown, simulation: unknown)
@@ -375,7 +375,7 @@ simulation, optional
     Simulation name to be cloned, of None clone the first simulation in model
 ```
 
-## Function: find_zones
+## core.find_zones
 
 ```python
 find_zones(self: unknown, simulation: unknown)
@@ -392,7 +392,7 @@ Returns
     list of zones as APSIM Models.Core.Zone objects
 ```
 
-## Function: extract_report_names
+## core.extract_report_names
 
 ```python
 extract_report_names(self: unknown)
@@ -400,7 +400,7 @@ extract_report_names(self: unknown)
 returns all data frame the available report tables
 ```
 
-## Function: _read_simulation
+## core._read_simula
 
 ```python
 _read_simulation(self: unknown, report_name: unknown)
@@ -408,7 +408,7 @@ _read_simulation(self: unknown, report_name: unknown)
 returns all data frame the available report tables
 ```
 
-## Function: _read_external_simulation
+## core._read_external_simula
 
 ```python
 _read_external_simulation(datastore: unknown, report_name: unknown)
@@ -416,7 +416,7 @@ _read_external_simulation(datastore: unknown, report_name: unknown)
 returns all data frame the available report tables
 ```
 
-## Function: _cultivar_params
+## core._cultivar_params
 
 ```python
 _cultivar_params(self: unknown, cultivar: unknown)
@@ -424,7 +424,7 @@ _cultivar_params(self: unknown, cultivar: unknown)
 returns all params in a cultivar
 ```
 
-## Function: get_crop_replacement
+## core.get_crop_replaceme
 
 ```python
 get_crop_replacement(self: unknown, Crop: unknown)
@@ -433,7 +433,7 @@ get_crop_replacement(self: unknown, Crop: unknown)
 :return: System.Collections.Generic.IEnumerable APSIM plant object
 ```
 
-## Function: edit_cultivar
+## core.edit_cultivar
 
 ```python
 edit_cultivar(self: unknown, CultvarName: unknown, commands: tuple, values: tuple)
@@ -446,7 +446,7 @@ values: corresponding values for each command e.g ( 721, 760)
 :return:
 ```
 
-## Function: collect_specificreport
+## core.llect_specificrepor
 
 ```python
 collect_specificreport(results: unknown, report_names: unknown, var_names: unknown, stat: unknown)
@@ -461,7 +461,7 @@ Args:
     statistics and var names should be the order ['yield', 'carbon'] and ['mean', 'diff'], where mean for yield and diff for carbon, respectively
 ```
 
-## Function: update_cultivar
+## core.pdate_cultivar
 
 ```python
 update_cultivar(self: unknown, parameters: unknown, simulations: unknown, clear: unknown)
@@ -478,7 +478,7 @@ clear, optional
     If `True` remove all existing parameters, by default `False`.
 ```
 
-## Function: examine_management_info
+## core.examine_management_inf
 
 ```python
 examine_management_info(self: unknown, simulations: unknown)
@@ -493,7 +493,7 @@ simulations, optional
     use the property decorator 'extract_simulation_name
 ```
 
-## Function: change_som
+## core.hange_som
 
 ```python
 change_som(self: unknown, simulations: unknown, inrm: int, icnr: int)
@@ -510,7 +510,7 @@ Returns:
     
 ```
 
-## Function: update_management_decissions
+## core.pdate_management_decissions
 
 ```python
 update_management_decissions(self: unknown, management: unknown, simulations: unknown, reload: unknown)
@@ -527,7 +527,7 @@ reload, optional
     _description_ defaults to True
 ```
 
-## Function: update_mgt
+## core.pdate_mg
 
 ```python
 update_mgt(self: unknown, management: unknown, simulations: unknown)
@@ -544,7 +544,7 @@ simulations, optional
     List of simulation names to update, if `None` update all simulations not recommended.
 ```
 
-## Function: extract_user_input
+## core.extract_user_inp
 
 ```python
 extract_user_input(self: unknown, manager_name: unknown)
@@ -553,7 +553,7 @@ Get user_input of a given model manager script
 returns;  a dictionary
 ```
 
-## Function: change_simulation_dates
+## core.hange_simulation_dates
 
 ```python
 change_simulation_dates(self: unknown, start_date: unknown, end_date: unknown, simulations: unknown)
@@ -571,7 +571,7 @@ simulations, optional
     List of simulation names to update, if `None` update all simulations
 ```
 
-## Function: extract_dates
+## core.extract_dates
 
 ```python
 extract_dates(self: unknown, simulations: unknown)
@@ -587,7 +587,7 @@ Returns
     Dictionary of simulation names with dates
 ```
 
-## Function: extract_start_end_years
+## core.extract_start_end_years
 
 ```python
 extract_start_end_years(self: unknown, simulations: unknown)
@@ -603,7 +603,7 @@ Returns
     Dictionary of simulation names with dates
 ```
 
-## Function: show_met_file_in_simulation
+## core.show_met_file_in_simula
 
 ```python
 show_met_file_in_simulation(self: unknown)
@@ -611,7 +611,7 @@ show_met_file_in_simulation(self: unknown)
 Show weather file for all simulations
 ```
 
-## Function: change_report
+## core.hange_repor
 
 ```python
 change_report(self: unknown, command: str, report_name: unknown, simulations: unknown, set_DayAfterLastOutput: unknown)
@@ -636,7 +636,7 @@ Returns
 None
 ```
 
-## Function: get_report
+## core.get_repor
 
 ```python
 get_report(self: unknown, simulation: unknown)
@@ -652,7 +652,7 @@ Returns
     List of report lines.
 ```
 
-## Function: extract_soil_physical
+## core.extract_soil_physical
 
 ```python
 extract_soil_physical(self: unknown, simulation: unknown)
@@ -668,7 +668,7 @@ Returns
     APSIM Models.Soils.Physical object
 ```
 
-## Function: extract_any_soil_physical
+## core.extract_any_soil_physical
 
 ```python
 extract_any_soil_physical(self: unknown, parameter: unknown, simulation: unknown)
@@ -682,7 +682,7 @@ Args:
 returns an array of the parameter values
 ```
 
-## Function: replace_any_soil_physical
+## core.replace_any_soil_physical
 
 ```python
 replace_any_soil_physical(self: unknown, parameter: str, param_values: unknown, simulation: str)
@@ -696,7 +696,7 @@ Args:
     param_values (array, required): arrays or list of values for the specified parameter to replace
 ```
 
-## Function: extract_soil_organic
+## core.extract_soil_orga
 
 ```python
 extract_soil_organic(self: unknown, simulation: unknown)
@@ -712,7 +712,7 @@ Returns
     APSIM Models.Soils.Physical object
 ```
 
-## Function: extract_any_solute
+## core.extract_any_solute
 
 ```python
 extract_any_solute(self: unknown, parameter: str, simulation: unknown)
@@ -727,7 +727,7 @@ ___________________
 the solute array or list
 ```
 
-## Function: replace_any_solute
+## core.replace_any_solute
 
 ```python
 replace_any_solute(self: unknown, parameter: str, values: list, simulation: unknown)
@@ -742,7 +742,7 @@ simulation, optional
     Simulation name, if `None` use the first simulation.
 ```
 
-## Function: extract_any_soil_organic
+## core.extract_any_soil_orga
 
 ```python
 extract_any_soil_organic(self: unknown, parameter: unknown, simulation: unknown)
@@ -755,7 +755,7 @@ Args:
     param_values (array, required): arrays or list of values for the specified parameter to replace
 ```
 
-## Function: replace_any_soil_organic
+## core.replace_any_soil_orga
 
 ```python
 replace_any_soil_organic(self: unknown, parameter: unknown, param_values: unknown, simulation: unknown)
@@ -768,7 +768,7 @@ Args:
     param_values (array, required): arrays or list of values for the specified parameter to replace
 ```
 
-## Function: extract_crop_soil_water
+## core.extract_crop_soil_water
 
 ```python
 extract_crop_soil_water(self: unknown, parameter: unknown, crop: unknown, simulation: unknown)
@@ -784,7 +784,7 @@ Returns:
     _type_: _description_
 ```
 
-## Function: replace_crop_soil_water
+## core.replace_crop_soil_water
 
 ```python
 replace_crop_soil_water(self: unknown, parameter: unknown, param_values: unknown, crop: unknown, simulation: unknown)
@@ -801,7 +801,7 @@ Returns:
     doesn't return anything it mutates the specified value in the soil simulation object
 ```
 
-## Function: find_simulations
+## core.find_simulations
 
 ```python
 find_simulations(self: unknown, simulations: unknown)
@@ -817,7 +817,7 @@ Returns
     list of APSIM Models.Core.Simulation objects
 ```
 
-## Function: set_swcon
+## core.set_sw
 
 ```python
 set_swcon(self: unknown, swcon: unknown, simulations: unknown)
@@ -832,7 +832,7 @@ simulations, optional
     List of simulation names to update, if `None` update all simulations
 ```
 
-## Function: get_swcon
+## core.get_sw
 
 ```python
 get_swcon(self: unknown, simulation: unknown)
@@ -848,7 +848,7 @@ Returns
     Array of SWCON values
 ```
 
-## Function: plot_objectives
+## core.plot_objectives
 
 ```python
 plot_objectives(self: unknown, x: unknown)
@@ -859,7 +859,7 @@ plot_objectives(self: unknown, x: unknown)
 :return: graph
 ```
 
-## Function: extract_soil_profile
+## core.extract_soil_profile
 
 ```python
 extract_soil_profile(self: unknown, simulation: unknown)
@@ -875,7 +875,7 @@ Returns
     Dataframe with soil definition
 ```
 
-## Function: replace_soil_organic
+## core.replace_soil_orga
 
 ```python
 replace_soil_organic(self: unknown, organic_name: unknown, simulation_name: unknown)
@@ -887,7 +887,7 @@ Args:
     simulation (_str_, optional): _description_. Defaults to None.
 ```
 
-## Function: set_initial_nh4
+## core.set_initial_nh4
 
 ```python
 set_initial_nh4(self: unknown, values: unknown, simulations: unknown)
@@ -902,7 +902,7 @@ simulations, optional
     List of simulation names to update, if `None` update all simulations
 ```
 
-## Function: get_initial_urea
+## core.get_initial_urea
 
 ```python
 get_initial_urea(self: unknown, simulation: unknown)
@@ -910,7 +910,7 @@ get_initial_urea(self: unknown, simulation: unknown)
 Get soil initial urea content
 ```
 
-## Function: set_initial_urea
+## core.set_initial_urea
 
 ```python
 set_initial_urea(self: unknown, values: unknown, simulations: unknown)
@@ -927,7 +927,7 @@ simulations, optional
 
 # Module: weather
 
-## Function: get_iem_bystation
+## weather.get_iem_bysta
 
 ```python
 get_iem_bystation(dates: unknown, station: unknown, path: unknown, mettag: unknown)
@@ -941,13 +941,13 @@ if station is given data will be downloaded directly from the station the defaul
 mettag: your prefered tag to save on filee
 ```
 
-## Class: _MetDate
+## weather.Class: _MetDate
 
 ```python
 This class organises the data for IEM weather download
 ```
 
-## Function: daterange
+## weather.daterange
 
 ```python
 daterange(start: unknown, end: unknown)
@@ -957,7 +957,7 @@ start: the starting year to download the weather data
 end: the year under which download should stop
 ```
 
-## Function: daymet_bylocation
+## weather.daymet_byloca
 
 ```python
 daymet_bylocation(lonlat: unknown, start: unknown, end: unknown, cleanup: unknown, filename: unknown)
@@ -978,7 +978,7 @@ Cleanup:  A bolean True or False default is true: deletes the excel file generat
 returns complete path to the new met file but also write the met file to the disk in the working directory
 ```
 
-## Function: daymet_bylocation_nocsv
+## weather.daymet_bylocation_nocsv
 
 ```python
 daymet_bylocation_nocsv(lonlat: unknown, start: unknown, end: unknown, cleanup: unknown, filename: unknown)
@@ -1000,13 +1000,13 @@ Cleanup:  A bolean True or False default is true: deletes the excel file generat
 returns complete path to the new met file but also write the met file to the disk in the working directory
 ```
 
-## Class: EditMet
+## weather.Class: EditMe
 
 ```python
 This class edits the weather files
 ```
 
-## Function: merge_columns
+## weather.merge_columns
 
 ```python
 merge_columns(df1_main: unknown, common_column: unknown, df2: unknown, fill_column: unknown, df2_colummn: unknown)
@@ -1022,7 +1022,7 @@ Returns:
 pd.DataFrame: A new DataFrame resulting from the merge and update operations.
 ```
 
-## Function: _edit_apsim_met
+## weather._edit_apsim_me
 
 ```python
 _edit_apsim_met(self: unknown)
@@ -1036,7 +1036,7 @@ Returns:
 Example:
 ```
 
-## Function: write_edited_met
+## weather.write_edited_me
 
 ```python
 write_edited_met(self: unknown, old: unknown, daf: unknown, filename: unknown)
@@ -1076,7 +1076,7 @@ Notes:
 - The function returns the path to the newly created weather file.
 ```
 
-## Function: met_replace_var
+## weather.met_replace_var
 
 ```python
 met_replace_var(self: unknown, parameter: unknown, values: unknown)
@@ -1097,7 +1097,7 @@ Returns:
 
 # Module: soilmanager
 
-## Function: DownloadsurgoSoiltables
+## soilmanager.DownloadsurgoSoiltables
 
 ```python
 DownloadsurgoSoiltables(lonlat: unknown, select_componentname: unknown, summarytable: unknown)
@@ -1115,7 +1115,7 @@ select_componentname: any componet name within the map unit e.g 'Clarion'. the d
 summarytable: prints the component names, their percentages
 ```
 
-## Function: set_depth
+## soilmanager.set_depth
 
 ```python
 set_depth(depththickness: unknown)
@@ -1129,7 +1129,7 @@ bottom depth and top depth in a turple
   
 ```
 
-## Function: Replace_Soilprofile
+## soilmanager.Replace_Soilprofile
 
 ```python
 Replace_Soilprofile(apsimxfile: unknown, path2apsimx: unknown, series: unknown, lonlat: unknown, crop: unknown)
@@ -1143,7 +1143,7 @@ path2apsimx: path string to apsimx file
 lonlat a tupple or a list with the longitude and latitude in the order as the name
 ```
 
-## Function: Replace_Soilprofile2
+## soilmanager.Replace_Soilprofile2
 
 ```python
 Replace_Soilprofile2(path2apsimx: unknown, series: unknown, lonlat: unknown, filename: unknown, gridcode: unknown, Objectid: unknown, crop: unknown)
@@ -1157,7 +1157,7 @@ path2apsimx: path string to apsimx file
 lonlat a tupple or a list with the longitude and latitude in the order as the name
 ```
 
-## Function: __init__
+## soilmanager.__init__
 
 ```python
 __init__(self: unknown, sdf: unknown, thickness: unknown, thickness_values: unknown, bottomdepth: unknown)
@@ -1172,7 +1172,7 @@ Args:
  
 ```
 
-## Function: decreasing_exponential_function
+## soilmanager.decreasing_exponential_f
 
 ```python
 decreasing_exponential_function(self: unknown, x: unknown, a: unknown, b: unknown)
@@ -1190,7 +1190,7 @@ Returns:
 
 # Module: weathermanager
 
-## Function: get_iem_bystation
+## weathermanager.get_iem_bysta
 
 ```python
 get_iem_bystation(dates: unknown, station: unknown, path: unknown, mettag: unknown)
@@ -1204,7 +1204,7 @@ if station is given data will be downloaded directly from the station the defaul
 mettag: your prefered tag to save on filee
 ```
 
-## Function: daterange
+## weathermanager.daterange
 
 ```python
 daterange(start: unknown, end: unknown)
@@ -1214,7 +1214,7 @@ start: the starting year to download the weather data
 end: the year under which download should stop
 ```
 
-## Function: daymet_bylocation
+## weathermanager.daymet_byloca
 
 ```python
 daymet_bylocation(lonlat: unknown, start: unknown, end: unknown, cleanup: unknown, filename: unknown)
@@ -1235,7 +1235,7 @@ Cleanup:  A bolean True or False default is true: deletes the excel file generat
 returns complete path to the new met file but also write the met file to the disk in the working directory
 ```
 
-## Function: daymet_bylocation_nocsv
+## weathermanager.daymet_bylocation_nocsv
 
 ```python
 daymet_bylocation_nocsv(lonlat: unknown, start: unknown, end: unknown, cleanup: unknown, filename: unknown)

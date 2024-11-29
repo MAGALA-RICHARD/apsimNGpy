@@ -6,17 +6,17 @@ from apsimNGpy.parallel.process import run_apsimx_files_in_parallel, read_result
 from apsimNGpy.utililies.utils import collect_runfiles
 from pathlib import Path
 
-hd = Path.home()
+hd = Path.home()/'scart'
+hd.mkdir(parents=True, exist_ok=True)
 os.chdir(hd)
-from apsimNGpy.core.base_data import LoadExampleFiles
+from apsimNGpy.core.base_data import load_default_simulations
 from apsimNGpy.utililies.utils import make_apsimx_clones
 
 # let's duplicate some files
 
 # let's copy two files here
-data = LoadExampleFiles(hd)
-maize = data.get_maize
-nt_maize = data.get_maize_no_till
+maize= load_default_simulations(crop='maize', simulations_object= False)
+
 ap = make_apsimx_clones(maize, 20)
 
 
@@ -30,14 +30,14 @@ files = collect_runfiles(path2files=hd, pattern=["*.apsimx"])  # change path as 
 if __name__ == "__main__":
     # copy all examples to our workig directory
     # ex = apsim_example.get_all_examples()
-    run_apsimx_files_in_parallel(ap, ncores=10, use_threads=False)
+    xp =[i for i in run_apsimx_files_in_parallel(ap, ncores=10, use_threads=False)]
     # files is an iterable or a generator
-    # ncores is the numbe rof process or threads to use and use_threads will determine wthere we use threads or not
+    # ncores is the number of process or threads to use and use_threads will determine wthere we use threads or not
     # returns nothing
-    rpath = os.path.realpath(hd)
+    rpath = os.path.realpath(hd.joinpath('apsimx_cloned'))
     # we can now read the results using the .db path as follow
-    files_db = collect_runfiles(path2files=rpath, pattern=["*.db"])
-    dat = read_result_in_parallel(files_db, ncores=2, use_threads=True, report_name='MaizeR')
+    files_db = [i for i in collect_runfiles(path2files=rpath, pattern=["*.db"])]
+    dat = read_result_in_parallel(files_db, ncores=2, use_threads=True, report_name='report')
     # return a generator object
     dl = list(dat)
     # df = pd.concat(dat)

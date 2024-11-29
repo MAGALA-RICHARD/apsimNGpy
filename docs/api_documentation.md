@@ -1,3 +1,5 @@
+# This API documentation is generated automatically. The official documentation has not been released by apsimNGpy team
+
 # apsimNGpy API documentation
 
 # Module: api_generator

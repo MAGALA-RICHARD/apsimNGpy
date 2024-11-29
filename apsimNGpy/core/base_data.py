@@ -20,9 +20,9 @@ WEA = 'Iem_IA0200.met'
 APSIM_DATA = 'apsim'
 WEATHER = 'weather'
 
-
 # removed all other functions loading apsim files from the local repository only default apsim simulations
-EXAMPLES_DATA =  example_files_path = get_apsim_bin_path().replace('bin', 'Examples')
+EXAMPLES_DATA = example_files_path = get_apsim_bin_path().replace('bin', 'Examples')
+
 
 def __get_example(crop, path=None, simulations_object=True):
     """
@@ -52,7 +52,7 @@ def __get_example(crop, path=None, simulations_object=True):
     target_path = join(copy_path, crop) + '.apsimx'
 
     target_location = glob.glob(
-        f"{example_files_path}*/{crop}.apsimx")  # no need to capitalize only correct spelling is required
+        f"{EXAMPLES_DATA}*/{crop}.apsimx")  # no need to capitalize only correct spelling is required
     # unzip
 
     if target_location:
@@ -95,8 +95,58 @@ def load_default_simulations(crop: str, path: [str, Path] = None,
     # capitalize() no longer needed glob regex just matches crop if spelled correctly
     return __get_example(crop, path, simulations_object)
 
-def load_default
+
+def load_default_sensitivity_model(method, path=None, simulations_object=False):
+    """
+     Load default simulation model from aPSim folder
+    :@param method: string of the sentitivity type to load e.g. "Morris" or Sobol, not case-sensitive
+    :@param path: string of the path to copy the model
+    :@param simulations_object: bool to specify whether to return apsimNGp.core simulation object defaults to True
+    :@return: apsimNGpy.core.APSIMNG simulation objects
+    >>># Example
+    # load apsimNG object directly
+    >>> model = load_default_simulations('Maize', simulations_object=True)
+    # try running
+    >>> model.run(report_name='Report', get_dict=True)
+    # collect the results
+    >>> model.results.get('Report')
+    # just return the path
+    >>> model =load_default_simulations('Maize', simulations_object=False)
+    # let's to laod non existient crop marize, which does exists
+    >>> model.load_default_simulations('Marize')
+    # we get this warning
+    2024-11-19 16:18:55,798 - base-data - INFO - No crop named:' 'marize' found at 'C:/path/to/apsim/folder/Examples'
+
+
+    @param method:
+    @param path:
+    @param simulations_object:
+    @return:
+    """
+    dir_path = os.path.join(EXAMPLES_DATA, 'Sensitivity')
+    if not path:
+        copy_path = realpath(Path.home())
+    else:
+        copy_path = path
+    target_location = glob.glob(
+        f"{dir_path}*/{method}.apsimx")  # no need to capitalize only correct spelling is required
+    # unzip
+    target_path = join(copy_path, method) + '.apsimx'
+    if target_location:
+        file_path = str(target_location[0])
+        copied_file = shutil.copy(file_path, target_path)
+
+        if not simulations_object:
+            return copied_file
+
+        aPSim = SoilModel(copied_file)
+        return aPSim
+    else:
+        logger.info(f"No sensitivity model for method:' '{method}' found at '{dir_path}'")
+
+
 if __name__ == '__main__':
     pp = Path.home()
     os.chdir(pp)
     mn = load_default_simulations('maize', simulations_object=True)
+    load_default_sensitivity_model(method='morris')

@@ -85,7 +85,7 @@ def load_default_simulations(crop: str, path: [str, Path] = None,
     >>> model.results.get('Report')
     # just return the path
     >>> model =load_default_simulations('Maize', simulations_object=False)
-    # let's to laod non existient crop marize, which does exists
+    # let's try to laod non existient crop marize, which does exists
     >>> model.load_default_simulations('Marize')
     # we get this warning
     2024-11-19 16:18:55,798 - base-data - INFO - No crop named:' 'marize' found at 'C:/path/to/apsim/folder/Examples'
@@ -111,17 +111,12 @@ def load_default_sensitivity_model(method, path=None, simulations_object=False):
     # collect the results
     >>> model.results.get('Report')
     # just return the path
-    >>> model =load_default_simulations('Maize', simulations_object=False)
-    # let's to laod non existient crop marize, which does exists
-    >>> model.load_default_simulations('Marize')
+    >>> model = load_default_sensitivity_model(method = 'Morris', simulations_object=False)
+    # let's try to laod non existient senstitivity model, which does exists
+    >>> load_default_sensitivity_model('Mmoxee')
     # we get this warning
-    2024-11-19 16:18:55,798 - base-data - INFO - No crop named:' 'marize' found at 'C:/path/to/apsim/folder/Examples'
+   # 2024-11-29 13:30:51,757 - settings - INFO - No sensitivity model for method:' 'morrirs' found at '~//APSIM2024.5.7493.0//Examples//Sensitivity'
 
-
-    @param method:
-    @param path:
-    @param simulations_object:
-    @return:
     """
     dir_path = os.path.join(EXAMPLES_DATA, 'Sensitivity')
     if not path:
@@ -149,4 +144,4 @@ if __name__ == '__main__':
     pp = Path.home()
     os.chdir(pp)
     mn = load_default_simulations('maize', simulations_object=True)
-    load_default_sensitivity_model(method='morris')
+    load_default_sensitivity_model(method='sobol')

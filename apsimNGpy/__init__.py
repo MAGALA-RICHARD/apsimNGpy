@@ -1,6 +1,8 @@
-
-in_modules = []
-
+import os.path
+import sys
+sys.path.append(os.path.realpath(".."))
+import config
+in_modules = ['config']
 try:
     from apsimNGpy import core, replacements, manager, utililies
     from apsimNGpy.core.core import APSIMNG

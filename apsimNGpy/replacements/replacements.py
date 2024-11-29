@@ -1,6 +1,8 @@
 """
 This module attempts to provide abstract methods for paramters replacement to various nodes or childs in apsim simulations model
 """
+from typing import Union
+import os
 import numpy as np
 from apsimNGpy.core.core import APSIMNG
 from abc import ABC, abstractmethod
@@ -50,7 +52,7 @@ Nodes = [
 
 class Replacements(ReplacementHolder):
 
-    def __init__(self, model, out_path=None, **kwargs):
+    def __init__(self, model:Union[os.PathLike, dict, str], out_path=None, **kwargs):
         super().__init__(model, out_path, **kwargs)
         # Map action types to method names
         # this will hold lower key
@@ -70,7 +72,7 @@ class Replacements(ReplacementHolder):
 
         # define them with human-readable formats
 
-    def replacement_methods(self, child):
+    def replacement_methods(self, child:str):
 
         if child in self._methods:
             return getattr(self, self._methods[child])
@@ -79,7 +81,7 @@ class Replacements(ReplacementHolder):
 
     def replace_soil_properties_by_path(self, path: str,
                                         param_values: list,
-                                        str_fmt=".",
+                                        str_fmt:str=".",
                                         **kwargs):
         # TODO I know there is a better way to implement this
         """
@@ -142,7 +144,7 @@ class Replacements(ReplacementHolder):
         fpt['param_values'] = param_values
         return self.replace_soil_property_values(**fpt)
 
-    def replace_cultivar_params(self, *, path, param_values: tuple, fmt="/", **kwargs):
+    def replace_cultivar_params(self, *, path:str, param_values: tuple, fmt: str="/", **kwargs):
         """
         the expected path is 'Cultivar/cultivar_name/commands' Note cultivars are best edited in the replacement folder, so,
         make sure it exists in your simulation and the respective crop has been added

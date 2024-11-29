@@ -17,9 +17,9 @@ cdrive = os.environ.get('PROGRAMFILES')
 CONFIG = configparser.ConfigParser()
 
 
-def _apsim_model_is_installed(_path):
+def _apsim_model_is_installed(_path: str):
     """
-    Checks if the APSIM model is installed by verifying the presence of binaries, especially if they haven't been
+    This private function checks if the APSIM model is installed by verifying the presence of binaries, especially if they haven't been
     deleted. Sometimes, after uninstallation, the `bin` folder remains, so tracking it may give a false sign that the
     binary path exists due to leftover files. :param _path: path to APSIM model binaries
     """
@@ -45,7 +45,7 @@ def list_drives():
 
 
 @lru_cache(maxsize=3)
-def scan_dir_for_bin(path):
+def scan_dir_for_bin(path: str):
     """
     Recursively scans directories starting at the given path.
     Stops scanning as soon as a directory named 'bin' is encountered and returns its path.
@@ -121,7 +121,7 @@ def auto_detect_apsim_bin_path():
      Additionally, we search the home directory, though it is unlikely to be a reliable source.
     """
     if platform.system() == 'Windows':
-        return  scan_drive_for_bin() or ""
+        return scan_drive_for_bin() or ""
     home_ = os.path.expanduser("~")
     if platform.system() == 'Darwin':
         # we search in a few directories home and applications and give up

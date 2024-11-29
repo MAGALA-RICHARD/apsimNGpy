@@ -981,7 +981,7 @@ class APSIMNG:
             dates[sim.Name]["end"] = datetime.date(et.Year, et.Month, et.Day)
         return dates
 
-    def extract_start_end_years(self, simulations:str=None):
+    def extract_start_end_years(self, simulations: str = None):
         """Get simulation dates
 
         Parameters
@@ -1336,7 +1336,7 @@ class APSIMNG:
         return get_organic
 
     # Find a list of simulations by name
-    def extract_crop_soil_water(self, parameter, crop="Maize", simulation=None):
+    def extract_crop_soil_water(self, parameter: str, crop: str = "Maize", simulation: Union[list, tuple] = None):
         """_summary_
 
         Args:
@@ -1359,7 +1359,7 @@ class APSIMNG:
                     param_values = getattr(crops, parameter)
                     return list(param_values)
 
-    def find_simulations(self, simulations=None):
+    def find_simulations(self, simulations: Union[list, tuple] = None):
         """Find simulations by name
 
         Parameters
@@ -1385,7 +1385,7 @@ class APSIMNG:
             return sims
 
     # Find a single simulation by name
-    def _find_simulation(self, simulations: [tuple, list] = None):
+    def _find_simulation(self, simulations: Union[tuple, list] = None):
         if simulations is None:
             return self.simulations
 
@@ -1393,7 +1393,7 @@ class APSIMNG:
             return [self.Simulations.FindDescendant(i) for i in simulations if i in self.simulation_names]
 
     @staticmethod
-    def adjustSatDul(sat_, dul_):
+    def adjustSatDul(sat_: list, dul_: list):
         for enum, (s, d) in enumerate(zip(sat_, dul_)):
             # first check if they are equal
             # if d is greater than s, then by what value?, we need this value to add it to 0.02
@@ -1410,7 +1410,7 @@ class APSIMNG:
                 dul_[enum] = d
         return dul_
 
-    def set_swcon(self, swcon, simulations=None, thickness_values=None, **kwargs):
+    def set_swcon(self, swcon:list, simulations:Union[list, tuple]=None, thickness_values:list=None, **kwargs):
         """Set soil water conductivity (SWCON) constant for each soil layer.
 
         Parameters
@@ -1442,7 +1442,7 @@ class APSIMNG:
         wb = sim.FindDescendant[Models.WaterModel.WaterBalance]()
         return np.array(wb.SWCON)
 
-    def _find_solute(self, solute, simulations=None):
+    def _find_solute(self, solute:str, simulations: Union[list, tuple]=None):
         # values should be returned tagged by their simulation  names
         solutes = [sim.FindAllDescendants[Models.Soils.Solute](solute) for sim in self._find_simulation(simulations)]
         return solutes

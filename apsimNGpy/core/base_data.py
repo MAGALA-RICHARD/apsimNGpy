@@ -96,7 +96,7 @@ def load_default_simulations(crop: str, path: [str, Path] = None,
     return __get_example(crop, path, simulations_object)
 
 
-def load_default_sensitivity_model(method, path=None, simulations_object=False):
+def load_default_sensitivity_model(method:str, path:str=None, simulations_object:bool=True):
     """
      Load default simulation model from aPSim folder
     :@param method: string of the sentitivity type to load e.g. "Morris" or Sobol, not case-sensitive
@@ -105,13 +105,7 @@ def load_default_sensitivity_model(method, path=None, simulations_object=False):
     :@return: apsimNGpy.core.APSIMNG simulation objects
     >>># Example
     # load apsimNG object directly
-    >>> model = load_default_simulations('Maize', simulations_object=True)
-    # try running
-    >>> model.run(report_name='Report', get_dict=True)
-    # collect the results
-    >>> model.results.get('Report')
-    # just return the path
-    >>> model = load_default_sensitivity_model(method = 'Morris', simulations_object=False)
+    >>> morris_model = load_default_sensitivity_model(method:str = 'Morris', simulations_object:bool=True)
     # let's try to laod non existient senstitivity model, which does exists
     >>> load_default_sensitivity_model('Mmoxee')
     # we get this warning
@@ -144,4 +138,5 @@ if __name__ == '__main__':
     pp = Path.home()
     os.chdir(pp)
     mn = load_default_simulations('maize', simulations_object=True)
-    load_default_sensitivity_model(method='sobol')
+    sobol = load_default_sensitivity_model(method='sobol')
+    sobol.run()

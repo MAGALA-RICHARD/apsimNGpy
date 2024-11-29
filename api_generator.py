@@ -1,5 +1,50 @@
 import os
 import ast
+from pathlib import Path
+
+
+def format_type(annotation):
+    """Converts AST type annotation into a human-readable format."""
+
+    # Handle 'os.PathLike' explicitly
+    if isinstance(annotation, ast.Name) and annotation.id == "PathLike":
+        return "os.PathLike"
+
+    # Handle 'Path' from pathlib explicitly
+    elif isinstance(annotation, ast.Attribute) and annotation.attr == "Path":
+        return "pathlib.Path"
+
+    # Handle basic name types like 'bool', 'str', etc.
+    elif isinstance(annotation, ast.Name):
+        return annotation.id
+
+    # Handle subscript types like List[Type] or Union[Type1, Type2]
+    elif isinstance(annotation, ast.Subscript):
+        value = format_type(annotation.value)  # the base type (like 'List', 'Union', etc.)
+        slice_ = format_type(annotation.slice)  # the argument inside the brackets
+
+        # Handle special cases like Union, List, Dict
+        if value == "Union":
+            # Handle Union[Type1, Type2]
+            elements = [format_type(e) for e in annotation.slice.elts]
+            return f"Union[{', '.join(elements)}]"
+        elif value == "List":
+            # Handle List[Type]
+            return f"List[{slice_}]"
+        elif value == "Dict":
+            # Handle Dict[KeyType, ValueType]
+            return f"Dict[{slice_[0]}, {slice_[1]}]"
+        else:
+            return f"{value}[{slice_}]"
+
+    # Handle tuple type annotations
+    elif isinstance(annotation, ast.Tuple):
+        elements = [format_type(e) for e in annotation.elts]
+        return f"tuple[{', '.join(elements)}]"
+
+    # If the type is unknown, return 'unknown'
+    else:
+        return "unknown"
 
 
 def extract_docstrings(file_path):
@@ -27,8 +72,21 @@ def extract_docstrings(file_path):
                     name = node.__class__.__name__.strip("Def")
                     key = f"{name}: {node.name if hasattr(node, 'name') else 'Module'}"
 
-                    doc = docstring.replace('FunctionDef', 'Function: ')
-                    docstrings[key] = doc.strip('"').strip("'''").strip("```")
+                    # Extracting arguments (if available)
+                    arguments = []
+                    if isinstance(node, ast.FunctionDef):
+                        for arg in node.args.args:
+                            # Check if there's a type annotation, otherwise set it to 'unknown'
+                            arg_type = 'unknown'
+                            if arg.annotation:
+                                arg_type = format_type(arg.annotation)
+                            arguments.append(f"{arg.arg}: {arg_type}")
+
+                    # Formatting the docstring to include function signature
+                    if arguments:
+                        docstrings[key] = f"{node.name}({', '.join(arguments)})\n\n{docstring.strip('\"\'')}"
+                    else:
+                        docstrings[key] = docstring.strip('\"\'')
         return docstrings
 
     except (PermissionError, FileNotFoundError, OSError) as e:
@@ -76,26 +134,14 @@ def main(title, in_dir, out):
                 md_file.write(f"# Module: {file.strip('.py')}\n\n")
 
                 for key, doc in docs.items():
-                    if 'Arguments' in doc:
-                        md_file.write(f"**Arguments:** {', '.join(doc)}\n\n")
                     md_file.write(f"## {key}\n\n")
                     md_file.write(f"```\n{doc}\n```\n\n")
 
     print(f"Docstrings have been written to {out}.")
 
 
-def _main(title, in_dir, output):
-    docstrings = extract_docstrings_recursive(in_dir)
-    with open(output, "w", encoding="utf-8") as md_file:
-        md_file.write("# Docstrings Documentation\n\n")
-        for key, value in docstrings.items():
-            md_file.write(f"## {key}\n\n")
-            md_file.write(f"**Docstring:**\n\n{value['docstring']}\n\n")
-            if value["Arguments"]:
-                md_file.write(f"**Arguments:** {', '.join(value['Arguments'])}\n\n")
-
-
 if __name__ == "__main__":
     root_directory = r'apsimNGpy'
-    output_file = 'api.md'
+    doc = Path('docs')
+    output_file = doc / 'api_documentation.md'
     main('apsimNGpy API documentation', root_directory, output_file)

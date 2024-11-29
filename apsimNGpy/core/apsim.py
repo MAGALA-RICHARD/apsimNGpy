@@ -23,6 +23,7 @@ from System import *
 from Models.Soils import Solute, Water, Chemical
 from Models.Soils import Soil, Physical, SoilCrop, Organic, LayerStructure
 import Models
+from typing import Union
 
 
 
@@ -45,8 +46,8 @@ def timing_decorator(func):
 
 
 class ApsimModel(APSIMNG):
-    def __init__(self, model, out_path: str = None, out=None,
-                 lonlat=None, soil_series: str = 'domtcp', thickness: int = 20, bottomdepth: int = 200,
+    def __init__(self, model:Union[os.PathLike, dict, str], out_path: os.PathLike = None, out:os.PathLike=None,
+                 lonlat:tuple=None, soil_series: str = 'domtcp', thickness: int = 20, bottomdepth: int = 200,
                  thickness_values: list = None, run_all_soils: bool = False, load=True, **kwargs):
         super().__init__(model, out_path, **kwargs)
         self.SWICON = None
@@ -69,7 +70,7 @@ class ApsimModel(APSIMNG):
         else:
             self.thickness_values = thickness_values
 
-    def _find_soil_solute(self, solute, simulation=None):
+    def _find_soil_solute(self, solute:str, simulation:Union[tuple, list]=None):
         sim = self._find_simulation(simulation)
         solutes = sim.FindAllDescendants[Models.Soils.Solute]()
         return [s for s in solutes if s.Name == solute][0]
@@ -112,7 +113,7 @@ class ApsimModel(APSIMNG):
         """Get soil initial NO3 content"""
         return self._get_initial_values("NO3", simulation)
 
-    def adjust_dul(self, simulations=None):
+    def adjust_dul(self, simulations:Union[tuple, list]=None):
         """
         - This method checks whether the soil SAT is above or below DUL and decreases DUL  values accordingly
         - Need to cal this method everytime SAT is changed, or DUL is changed accordingly
@@ -134,7 +135,7 @@ class ApsimModel(APSIMNG):
         self.replace_any_soil_physical('DUL', simulations, duL)
         return self
 
-    def _get_SSURGO_soil_profile(self, lonlat, run_all_soils=False):
+    def _get_SSURGO_soil_profile(self, lonlat:tuple, run_all_soils:bool=False):
         self.lonlat = None
         self.lonlat = lonlat
         self.dict_of_soils_tables = {}
@@ -163,7 +164,7 @@ class ApsimModel(APSIMNG):
         return self
 
     @staticmethod
-    def get_weather_online(lonlat, start, end):
+    def get_weather_online(lonlat:tuple, start:int, end:int):
         wp =  weather.get_met_from_day_met(lonlat, start=start, end=end)
         wpath = os.path.join(os.getcwd(), wp)
         return wpath
@@ -186,7 +187,7 @@ class ApsimModel(APSIMNG):
         except Exception as e:
             raise
 
-    def replace_soils(self, lonlat, simulation_names, verbose=False):
+    def replace_soils(self, lonlat:tuple, simulation_names:Union[tuple, list], verbose=False):
         self.thickness_replace = None
         if isinstance(self.thickness_values, np.ndarray):  # since it is alreaduy converted to an array
             self.thickness_replace = self.thickness_values
@@ -256,7 +257,7 @@ class ApsimModel(APSIMNG):
         return self
         # print(self.results)
 
-    def replace_downloaded_soils(self, soil_tables, simulation_names, **kwargs):
+    def replace_downloaded_soils(self, soil_tables:Union[dict, list], simulation_names:Union[tuple, list], **kwargs):
         """
             Updates soil parameters and configurations for downloaded soil data in simulation models.
 
@@ -265,7 +266,7 @@ class ApsimModel(APSIMNG):
             based on a Carbon to Sulfur ratio (CSR) sampled from the provided soil tables.
 
             Parameters: - soil_tables (list): A list containing soil data tables. Expected to contain: see the naming
-            convetion in the for APSIM - [0]: DataFrame with physical soil parameters. - [1]: DataFrame with organic
+            convention in the for APSIM - [0]: DataFrame with physical soil parameters. - [1]: DataFrame with organic
             soil parameters. - [2]: DataFrame with crop-specific soil parameters. - [3]: Series/DataFrame with CSR
             values for RUE adjustment. - simulation_names (list of str): Names or identifiers for the simulations to
             be updated. - **kwargs: - adjust_rue (bool): Flag to indicate whether RUE should be adjusted based on
@@ -369,18 +370,8 @@ class ApsimModel(APSIMNG):
         return self
 
     # print(self.results)
-    def relace_initial_carbon(self, values, simulation_names):
-        """Replaces initial carbon content of the organic module
 
-        Args:
-            values (_list_): liss of initial vlaues with length as the soil profile in the simulation file_
-            simulation_names (_str_): Name of the simulation in the APSIM  file
-        """
-        for simu in self.find_simulations(simulation_names):
-            organic = simu.FindDescendant[Organic]()
-            organic.Carbon = np.array(values)
-
-    def _change_met_file(self, lonlatmet=None, simulation_names=None):  # to be accessed only in this class
+    def _change_met_file(self, lonlatmet:tuple=None, simulation_names:Union[tuple, list]=None):  # to be accessed only in this class
         """_similar to class weather management but just in case we want to change the weather within the subclass
         # uses exisitng start and end years to download the weather data
         """
@@ -401,7 +392,7 @@ class ApsimModel(APSIMNG):
         self.replace_met_file(wpath, sim_name)
         return self
 
-    def run_edited_file(self, simulations=None, clean=False, multithread=True):
+    def run_edited_file(self, simulations:Union[tuple, list]=None, clean:bool=False, multithread=True):
         """Run simulations in this subclass if we want to clean the database, we need to
          spawn the path with one process to avoid os access permission errors
 

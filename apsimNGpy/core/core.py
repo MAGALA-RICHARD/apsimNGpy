@@ -56,7 +56,7 @@ def select_threads(multithread):
         return SingleThreaded
 
 
-from apsimNGpy.settings import * #This file is not ready and i wanted to do some test
+from apsimNGpy.settings import *  # This file is not ready and i wanted to do some test
 
 
 def replace_variable_by_index(old_list: list, new_value: list, indices: list):
@@ -77,9 +77,25 @@ def soil_components(component):
 
 
 class APSIMNG:
-    """Modify and run APSIM next generation simulation models."""
+    """
+    Modify and run APSIM Next Generation (APSIM NG) simulation models.
 
-    def __init__(self, model=None, out_path=None, out=None, **kwargs):
+    This class serves as the entry point for all apsimNGpy simulations and is inherited by the `ApsimModel` class.
+    It is designed to be used when you do not intend to replace soil profiles.
+
+    Parameters:
+        model (os.PathLike): The file path to the APSIM NG model. This parameter specifies the model file to be used in the simulation.
+        out_path (str, optional): The path where the output file should be saved. If not provided, the output will be saved with the same name as the model file in the current directory.
+        out (str, optional): Alternative path for the output file. If both `out_path` and `out` are specified, `out` takes precedence. Defaults to `None`.
+
+    Keyword parameters:
+        'copy' (bool, deprecated): Specify whether to clone the simulation file. This argument is deprecated as the simulation file is automatically cloned without requiring this parameter.
+
+    Note:
+        The 'copy' keyword is no longer necessary and will be ignored in future versions.
+    """
+
+    def __init__(self, model: os.PathLike = None, out_path: os.PathLike = None, out: os.PathLike = None, **kwargs):
 
         self.others = kwargs.copy()
         if kwargs.get('copy'):
@@ -114,9 +130,9 @@ class APSIMNG:
         self._DataStore = self.model_info.DataStore
         self.path = self.model_info.path
         self._met_file = kwargs.get('met_file')
-        #self.init_model() work in progress
+        # self.init_model() work in progress
 
-    def run_simulations(self, results=None, reports=None, clean_up=False):
+    def run_simulations(self, results: bool = None, reports: Union[tuple, list] = None, clean_up: bool = False):
         """
         Run the simulation. here we are using the self.model_info named tuple from model loader
         :results : bool, optional if True, we return the results of the simulation
@@ -202,6 +218,10 @@ class APSIMNG:
 
     @property
     def simulation_names(self):
+        """
+        retrieves the name of the simulations in the APSIMx `Model.Core
+        @return: list of simulation names
+        """
         return [s.Name for s in self.simulations]
 
     @property
@@ -273,13 +293,13 @@ class APSIMNG:
             self.restart_model()
             return self
 
-    def run(self, report_name=None,
-            simulations=None,
-            clean=False,
-            multithread=True,
-            verbose=False,
-            get_dict=False,
-            init_only=False,
+    def run(self, report_name: Union[tuple, list] = None,
+            simulations: Union[tuple, list] = None,
+            clean: bool = False,
+            multithread: bool = True,
+            verbose: bool = False,
+            get_dict: bool = False,
+            init_only: bool = False,
             **kwargs):
         """Run apsim model in the simulations
 
@@ -288,7 +308,7 @@ class APSIMNG:
          :param report_name: str. defaults to APSIM defaults Report Name, and if not specified or Report Name not in the simulation tables, the simulator will
             execute the model and save the outcomes in a database file, accessible through alternative retrieval methods.
 
-        simulations (__str_), optional
+        simulations (__list_), optional
             List of simulation names to run, if `None` runs all simulations, by default `None`.
 
         :param clean (_-boolean_), optional
@@ -371,7 +391,7 @@ class APSIMNG:
         self._reload_saved_file()
         return self
 
-    def remove_simulation(self, simulation):
+    def remove_simulation(self, simulation: Union[tuple, list]):
         """Remove a simulation from the model
 
             Parameters
@@ -397,7 +417,7 @@ class APSIMNG:
         # this is a repetition because I want to deprecate it and maintain simulation_name or use get_simulation_name
         return self.simulation_names
 
-    def clone_zone(self, target, zone, simulation=None):
+    def clone_zone(self, target: str, zone: str, simulation: Union[tuple, list] = None):
         """Clone a zone and add it to Model
 
             Parameters
@@ -419,7 +439,7 @@ class APSIMNG:
         self.save_edited_file(reload=True)
         return self
 
-    def find_zones(self, simulation):
+    def find_zones(self, simulation: Union[tuple, list]):
         """Find zones from a simulation
 
             Parameters
@@ -438,14 +458,15 @@ class APSIMNG:
 
     @property  #
     def extract_report_names(self):
-        ''' returns all data frame the available report tables'''
+        """ returns all data frames the available report tables
+        @return: list of table names in the simulation"""
         table_list = get_db_table_names(self.datastore)
         rm = ['_InitialConditions', '_Messages', '_Checkpoints', '_Units']
         return [im for im in table_list if im not in rm]
 
     # perhaps a good a example of how to edit cultvar
 
-    def replicate_file(self, k, path=None, tag="replica"):
+    def replicate_file(self, k: int, path: os.PathLike = None, tag: str = "replica"):
         """
         Replicates a file 'k' times.
 
@@ -471,7 +492,7 @@ class APSIMNG:
             return [shutil.copy(self.model_info.path, os.path.join(path, f"{b_name}_{tag}_{i}.apsimx")) for i in
                     range(k)]
 
-    def _cultivar_params(self, cultivar):
+    def _cultivar_params(self, cultivar: str):
         """
          returns all params in a cultivar
         """
@@ -488,7 +509,7 @@ class APSIMNG:
         rep = self.Simulations.FindChild[Models.Core.Folder]()
         return rep
 
-    def _find_cultivar(self, cultivar_name):
+    def _find_cultivar(self, cultivar_name: str):
 
         rep = self._find_replacement().FindAllDescendants[Models.PMF.Cultivar]()
         xp = [i for i in rep]
@@ -498,7 +519,7 @@ class APSIMNG:
                 break
         return rep
 
-    def read_cultivar_params(self, name, verbose=None):
+    def read_cultivar_params(self, name: str, verbose: bool = None):
         cultivar = self._find_cultivar(name)
         c_param = self._cultivar_params(cultivar)
         if verbose:
@@ -520,7 +541,7 @@ class APSIMNG:
                 return i
         return self
 
-    def edit_cultivar(self, *, CultivarName, commands: tuple, values: tuple, **kwargs):
+    def edit_cultivar(self, *, CultivarName: str, commands: tuple, values: tuple, **kwargs):
         """
         Edits the parameters of a given cultivar. we don't need a simulation name for this unless if you are defining it in the
         manager section, if that it is the case, see update_mgt
@@ -552,7 +573,13 @@ class APSIMNG:
 
         return self
 
-    def get_current_cultivar_name(self, ManagerName):
+    def get_current_cultivar_name(self, ManagerName: str):
+        """
+
+        @param ManagerName: script manager module in the zone
+        @return: returns the current cultivar name in the manager script 'ManagerName'
+        """
+
         try:
             ap = self.extract_user_input(ManagerName)['CultivarName']
             return ap
@@ -562,7 +589,7 @@ class APSIMNG:
 
     # summarise results by any statistical element
     @staticmethod
-    def get_result_stat(df, column, statistic):
+    def get_result_stat(df: pd.DataFrame, column: str, statistic: str):
 
         # Define a dictionary mapping statistic names to corresponding functions
         stat_functions = {
@@ -594,17 +621,6 @@ class APSIMNG:
         file_path = opj(path, self.generate_unique_name("clones")) + ".apsimx"
         shutil.copy(self.path, file_path)
 
-    def summarize_output_variable(self, var_name, table_name='Report'):
-        data = self.results[table_name]
-
-        dic = {}
-        index = ['stat']
-        for i in ['mean', 'max', 'min', 'first', 'last', 'std', 'diff']:
-            varname = f"{var_name}_" + i
-            dic[varname] = APSIMNG.get_result_stat(data, var_name, i)
-        output_variable_statistics = pd.DataFrame(dic, index=index)
-        return output_variable_statistics
-
     @timer
     def collect_data_for_specific_crop(self, crop, rotation, variable, report_name, statistic):
         assert isinstance(crop, str), "crop name must be a string"
@@ -630,17 +646,18 @@ class APSIMNG:
         data = results[report_names]
         return data
 
-    def update_cultivar(self, *, parameters, simulations=None, clear=False, **kwargs):
+    def update_cultivar(self, *, parameters: dict, simulations: Union[list, tuple] = None, clear=False, **kwargs):
         """Update cultivar parameters
 
         Parameters
         ----------
-        parameters
-            Parameter = value dictionary of cultivar paramaters to update.
-        simulations, optional
-            List of simulation names to update, if `None` update all simulations.
-        clear, optional
+        @param:parameters (__dict__) dictionary of cultivar parameters to update.
+        @param: simulations, optional
+            List or tuples of simulation names to update if `None` update all simulations.
+        @param: clear, optional
             If `True` remove all existing parameters, by default `False`.
+
+
         """
         for sim in self.find_simulations(simulations):
             zone = sim.FindChild[Models.Core.Zone]()
@@ -654,13 +671,13 @@ class APSIMNG:
 
             self.cultivar_command = params
 
-    def examine_management_info(self, simulations=None):
+    def examine_management_info(self, simulations: Union[list, tuple] = None):
         """this will show the current management scripts in the simulation root
 
         Parameters
         ----------
         simulations, optional
-            List of simulation names to update, if `None` show all simulations. if you are not sure,
+            List or tuple of simulation names to update, if `None` show all simulations. if you are not sure,
 
             use the property decorator 'extract_simulation_name'
         """
@@ -692,12 +709,12 @@ class APSIMNG:
             som_path = f'{zone.FullPath}.SurfaceOrganicMatter'
             if som_path:
                 som = zone.FindByPath(som_path)
-            if som:
-                return som.Value.InitialResidueMass, som.Value.InitialCNR
+                if som:
+                    return som.Value.InitialResidueMass, som.Value.InitialCNR
             else:
                 raise Exception("File node structure is not supported at a moment")
 
-    def change_som(self, *, simulations=None, inrm: int = 1250, icnr: int = 27, **kwargs):
+    def change_som(self, *, simulations: Union[tuple, list] = None, inrm: int = 1250, icnr: int = 27, **kwargs):
         """
          Change Surface Organic Matter (SOM) properties in specified simulations.
 
@@ -745,7 +762,12 @@ class APSIMNG:
             return self.Simulations
 
     # experimental
-    def recompile_edited_model(self, out_path):
+    def recompile_edited_model(self, out_path: os.PathLike):
+        """
+
+        @param out_path: os.PathLike object this method is called to convert the simulation object from ConverterReturnType to model like object
+        @return: self
+        """
 
         try:
             if isinstance(self.Simulations, Models.Core.ApsimFile.Models.Core.ApsimFile.ConverterReturnType):
@@ -773,7 +795,7 @@ class APSIMNG:
     def init_model(self, *args, **kwargs):
         self.run(init_only=True)
 
-    def update_mgt(self, *, management: [dict, tuple],
+    def update_mgt(self, *, management: Union[dict, tuple],
                    simulations: [list, tuple] = None,
                    out: [Path, str] = None,
                    **kwargs):
@@ -829,6 +851,10 @@ class APSIMNG:
 
     # immediately open the file in GUI
     def preview_simulation(self):
+        """
+        Preview the simulation file in the apsimNGpy object in the APSIM graphical user interface
+        @return: opens the simulation file
+        """
         filepath = self.path
         import platform
         import subprocess
@@ -844,9 +870,17 @@ class APSIMNG:
     def _kvtodict(self, kv):
         return {kv[i].Key: kv[i].Value for i in range(kv.Count)}
 
-    def extract_user_input(self, manager_name):
+    def extract_user_input(self, manager_name: str):
         """Get user_input of a given model manager script
-        returns;  a dictionary
+        returns;  a dictionary of user input with the key as the script parameters and values as the inputs
+        Example
+        _____________________________________________________
+        from apsimNGpy.core.base_data import load_default_simulations
+        model = load_default_simulations(crop = 'maize')
+        ui = model.extract_user_input(manager_name='Fertilise at sowing')
+        print(ui)
+        # output
+        {'Crop': 'Maize', 'FertiliserType': 'NO3N', 'Amount': '160.0'}
         """
 
         for sim in self.simulations:
@@ -863,9 +897,10 @@ class APSIMNG:
         formatted_date_string = date_object.strftime("%Y-%m-%dT%H:%M:%S")
         return formatted_date_string  # Output: 2010-01-01T00:00:00
 
-    def change_simulation_dates(self, start_date=None, end_date=None, simulations=None):
+    def change_simulation_dates(self, start_date: str = None, end_date: str = None,
+                                simulations: Union[tuple, list] = None):
         """Set simulation dates. this is important to run this method before run the weather replacement method as
-        the date needs to be alligned into weather
+        the date needs to be allowed into weather
 
         Parameters
         -----------------------------------
@@ -875,7 +910,30 @@ class APSIMNG:
             End date as string, by default `None`
         simulations, optional
             List of simulation names to update, if `None` update all simulations
+        @note
+        one of the start_date or end_date parameters should at least no be None
+
+        @raise assertion error if all dates are None
+
+        @return None
+        # Example:
+            from apsimNGpy.core.base_data import load_default_simulations
+
+            model = load_default_simulations(crop='maize')
+
+            model.change_simulation_dates(start_date='2021-01-01', end_date='2021-01-12')
+             #check if it was successful
+             changed_dates = model.extract_dates
+             print(changed_dates)
+             # OUTPUT
+               {'Simulation': {'start': datetime.date(2021, 1, 1),
+                'end': datetime.date(2021, 1, 12)}}
+            @note
+            It is possible to target a specific simulation by specifying simulation name for this case the name is Simulations, so, it could appear as follows
+             model.change_simulation_dates(start_date='2021-01-01', end_date='2021-01-12', simulation = 'Simulation')
         """
+        check = start_date or end_date
+        assert check is not None, "One of the start_date or end_date parameters should not be None"
         for sim in self.find_simulations(simulations):
             clock = sim.FindChild[Models.Clock]()
 
@@ -900,6 +958,18 @@ class APSIMNG:
         Returns
         -------
             Dictionary of simulation names with dates
+        # Example
+           from apsimNGpy.core.base_data import load_default_simulations
+
+            model = load_default_simulations(crop='maize')
+             changed_dates = model.extract_dates
+             print(changed_dates)
+             # OUTPUT
+               {'Simulation': {'start': datetime.date(2021, 1, 1),
+                'end': datetime.date(2021, 1, 12)}}
+            @note
+            It is possible to target a specific simulation by specifying simulation name for this case the name is Simulations, so, it could appear as follows
+             model.change_simulation_dates(start_date='2021-01-01', end_date='2021-01-12', simulation = 'Simulation')
         """
         dates = {}
         for sim in self.find_simulations(simulations):
@@ -911,7 +981,7 @@ class APSIMNG:
             dates[sim.Name]["end"] = datetime.date(et.Year, et.Month, et.Day)
         return dates
 
-    def extract_start_end_years(self, simulations=None):
+    def extract_start_end_years(self, simulations:str=None):
         """Get simulation dates
 
         Parameters

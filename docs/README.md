@@ -771,9 +771,13 @@ returns an array of the parameter values
 
 ## Method: APSIMNG.replace_any_soil_physical
 
+```python
+replace_any_soil_physical(*, parameter: str,
+                                  param_values: [tuple, list],
+                                  simulations: str = None,
+                                  indices=None, **kwargs):
 ```
 replaces specified soil physical parameters in the simulation
-
 ______________________________________________________ Args: parameter (_string_, required): string e.g. DUL,
 SAT. open APSIMX file in the GUI and examine the physical node for clues on the parameter names simulation (        string, optional): Targeted simulation name. Defaults to None. param_values (array, required): arrays or list
 of values for the specified parameter to replace index (int, optional):
@@ -782,9 +786,9 @@ if indices is None replacement is done with corresponding indices of the param v
 
 ## Method: APSIMNG.extract_soil_organic
 
-```
+```python
 extract_soil_organic(simulation: tuple)
-
+```
 Find physical soil
 
 Parameters
@@ -794,13 +798,13 @@ simulation, optional
 Returns
 -------
     APSIM Models.Soils.Physical object
-```
+
 
 ## Method: APSIMNG.extract_any_solute
 
-```
+```python
 extract_any_solute(parameter: str, simulation: unknown)
-
+```
 Parameters
 ____________________________________
 parameter: parameter name e.g NO3
@@ -808,8 +812,7 @@ simulation, optional
     Simulation name, if `None` use the first simulation.
 returns
 ___________________
-the solute array or list
-```
+
 
 ## Method: APSIMNG.replace_any_solute
 
@@ -822,7 +825,7 @@ parameter: parameter name e.g NO3
 param_values: new values as a list to replace the old ones
 simulation, optional
     Simulation name, if `None` use the first simulation.
-```
+
 
 ## Method: APSIMNG.replace_soil_properties_by_path
 
@@ -862,17 +865,25 @@ with the ability to replace parameter values at various levels.
 :return:
     Returns the instance of `self` after processing the path and applying the parameter value replacements.
 
-    Example f
-
-    from apsimNGpy.core.base_data import load_default_simulations
-    model = load_default_simulations(crop = 'maize')
-    model.replace_soil_properties_by_path(path = 'None.Soil.Organic.None.None.Carbon', param_values= [1.23])
-    if we want to replace carbon at the bottom of the soil profile, we use a negative index  -1
-    model.replace_soil_properties_by_path(path = 'None.Soil.Organic.None.[-1].Carbon', param_values= [1.23])
+- Example 
+```python
+from apsimNGpy.core.base_data import load_default_simulations
+model = load_default_simulations(crop = 'maize')
+model.replace_soil_properties_by_path(path = 'None.Soil.Organic.None.None.Carbon', param_values= [1.23])
+# if we want to replace carbon at the bottom of the soil profile, we use a negative index  -1
+model.replace_soil_properties_by_path(path = 'None.Soil.Organic.None.[-1].Carbon', param_values= [1.23])
 ```
 
-## Method: APSIMNG.replace_soil_property_values
+### Method: APSIMNG.replace_soil_property_values
 
+```python
+replace_soil_property_values(*, parameter: str,
+                                     param_values: list,
+                                     soil_child: str,
+                                     simulations: list = None,
+                                     indices: list = None,
+                                     crop=None,
+                                     **kwargs):
 ```
 Replaces values in any soil property array. The soil property array
 :param parameter: str: parameter name e.g., NO3, 'BD'
@@ -882,26 +893,26 @@ Replaces values in any soil property array. The soil property array
 not found, all current simulations will receive the new values, thus defaults to None
 :param indices: list. Positions in the array which will be replaced. Please note that unlike C#, python satrt counting from 0
 :crop (str, optional): string for soil water replacement. Default is None
-```
 
-## Method: APSIMNG.extract_any_soil_organic
 
-```
+### Method: APSIMNG.extract_any_soil_organic
+
+```python
 extract_any_soil_organic(parameter: str, simulation: tuple)
-
-extracts any specified soil  parameters in the simulation
+```
+extracts any specified soil parameters in the simulation
 
 Args:
-    parameter (_string_, required): string e.g Carbon, FBiom. open APSIMX file in the GUI and examne the phyicals node for clues on the parameter names
-    simulation (string, optional): Targeted simulation name. Defaults to None.
-    param_values (array, required): arrays or list of values for the specified parameter to replace
-```
+   - parameter (_string_, required): string e.g Carbon, FBiom. open APSIMX file in the GUI and examne the phyicals node for clues on the parameter names
+   - simulation (string, optional): Targeted simulation name. Defaults to None.
+   - param_values (array, required): arrays or list of values for the specified parameter to replace
 
-## Method: APSIMNG.extract_crop_soil_water
 
-```
+### Method: APSIMNG.extract_crop_soil_water
+
+```python
 extract_crop_soil_water(parameter: str, crop: str, simulation: Union[list, tuple])
-
+```
 _summary_
 
 Args:
@@ -911,13 +922,13 @@ Args:
 
 Returns:
     _type_: _description_
-```
 
-## Method: APSIMNG.find_simulations
 
-```
+### Method: APSIMNG.find_simulations
+
+```python
 find_simulations(simulations: Union[list, tuple])
-
+```
 Find simulations by name
 
 Parameters

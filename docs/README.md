@@ -759,9 +759,10 @@ simulations, optional
     use the property decorator 'extract_simulation_name
 
 
-## Method: APSIMNG.change_som
+### Method: APSIMNG.change_som
 
 ```python
+core.APSIMNG.change_som(*, simulations: Union[tuple, list] = None, inrm: int = 1250, icnr: int = 27, **kwargs):
 
 ````
      Change Surface Organic Matter (SOM) properties in specified simulations.
@@ -774,19 +775,22 @@ Parameters:
 Returns:
     self: The current instance of the class.
     
+
+
+### Method: APSIMNG.recompile_edited_model
+
+```python
+
+core.core.APSIMNG.recompile_edited_model(out_path: [str, os.PathLike])
 ```
-
-## Method: APSIMNG.recompile_edited_model
-
-```
-recompile_edited_model(out_path:  )
-
 @param out_path: os.PathLike object this method is called to convert the simulation object from ConverterReturnType to model like object
 @return: self
-```
+
 
 ## Method: APSIMNG.update_mgt
 
+```python
+core.APSIMNG.update_mgt(*, management: Union[dict, tuple],  simulations: [list, tuple] = None, out: [Path, str] = None, **kwargs)
 ```
 Update management settings in the model. This method handles one management parameter at a time.
 
@@ -814,20 +818,19 @@ Notes ----- - Ensure that the `management` parameter is provided in the correct 
 This method does not perform validation on the provided `management` dictionary beyond checking for key
 existence. - If the specified management script or parameters do not exist, they will be ignored.
 using a tuple for a specifying management script, paramters is recommended if you are going to pass the function to  a multi-processing class fucntion
-```
+
 
 ## Method: APSIMNG.preview_simulation
 
-```
 Preview the simulation file in the apsimNGpy object in the APSIM graphical user interface
 @return: opens the simulation file
-```
+
 
 ## Method: APSIMNG.extract_user_input
 
+```python
+core.APSIMNG.extract_user_input(manager_name: str)
 ```
-extract_user_input(manager_name: str)
-
 Get user_input of a given model manager script
 returns;  a dictionary of user input with the key as the script parameters and values as the inputs
 Example
@@ -838,13 +841,13 @@ ui = model.extract_user_input(manager_name='Fertilise at sowing')
 print(ui)
 # output
 {'Crop': 'Maize', 'FertiliserType': 'NO3N', 'Amount': '160.0'}
-```
+
 
 ## Method: APSIMNG.change_simulation_dates
 
-```
+```python
 change_simulation_dates(start_date: str, end_date: str, simulations: Union[tuple, list])
-
+```
 Set simulation dates. this is important to run this method before run the weather replacement method as
 the date needs to be allowed into weather
 
@@ -881,9 +884,9 @@ one of the start_date or end_date parameters should at least no be None
 
 ## Method: APSIMNG.extract_dates
 
-```
+```python
 extract_dates(simulations: unknown)
-
+```
 Get simulation dates in the model
 
 Parameters
@@ -905,13 +908,13 @@ Returns
     @note
     It is possible to target a specific simulation by specifying simulation name for this case the name is Simulations, so, it could appear as follows
      model.change_simulation_dates(start_date='2021-01-01', end_date='2021-01-12', simulation = 'Simulation')
-```
+
 
 ## Method: APSIMNG.extract_start_end_years
 
-```
+```python
 extract_start_end_years(simulations: str)
-
+```
 Get simulation dates
 
 Parameters
@@ -921,18 +924,19 @@ simulations, optional
 Returns
 -------
     Dictionary of simulation names with dates
-```
+
 
 ## Method: APSIMNG.show_met_file_in_simulation
 
-```
+```python
 show_met_file_in_simulation(simulations: list)
-
-Show weather file for all simulations
 ```
+Show weather file for all simulations
+
 
 ## Method: APSIMNG.change_report
 
+```python
 ```
     Set APSIM report variables for specified simulations.
 
@@ -952,13 +956,13 @@ simulations : list of str, optional
 Returns
 -------
 None
-```
+
 
 ## Method: APSIMNG.get_report
 
-```
+```python
 get_report(simulation: unknown)
-
+```
 Get current report string
 
 Parameters
@@ -968,13 +972,13 @@ simulation, optional
 Returns
 -------
     List of report lines.
-```
+
 
 ## Method: APSIMNG.extract_soil_physical
 
-```
+```python
 extract_soil_physical(simulations:  )
-
+```
 Find physical soil
 
 Parameters
@@ -984,13 +988,13 @@ simulation, optional
 Returns
 -------
     APSIM Models.Soils.Physical object
-```
+
 
 ## Method: APSIMNG.extract_any_soil_physical
 
-```
+```python
 extract_any_soil_physical(parameter: unknown, simulations:  )
-
+```
 extracts soil physical parameters in the simulation
 
 Args:
@@ -998,7 +1002,7 @@ Args:
     simulations (string, optional): Targeted simulation name. Defaults to None.
 ---------------------------------------------------------------------------
 returns an array of the parameter values
-```
+
 
 ## Method: APSIMNG.replace_any_soil_physical
 

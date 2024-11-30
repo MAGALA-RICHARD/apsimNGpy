@@ -777,7 +777,7 @@ class APSIMNG:
             pass
         return self
 
-    def update_mgt_by_path(self, *, path, param_values, fmt='.'):
+    def update_mgt_by_path(self, *, path:str, param_values:str, fmt='.'):
         parameters_guide = ['simulations_name', 'Manager', 'manager_name', 'out_path_name', 'parameter_name']
         parameters = ['simulations', 'Manager', 'Name', 'out']
         args = path.split(fmt)

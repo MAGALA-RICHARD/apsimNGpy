@@ -2,17 +2,11 @@
 
 # Module: config
 
-
-## Function: scan_dir_for_bin
-
 ```python
 config.scan_dir_for_bin(path: str)
 ```
 Recursively scans directories starting at the given path.
 Stops scanning as soon as a directory named 'bin' is encountered and returns its path.
-
-
-## Function: scan_drive_for_bin
 
 ```python
 config.scan_drive_for_bin()
@@ -20,26 +14,28 @@ config.scan_drive_for_bin()
 This function uses scan_dir_for_bin to scan all drive directories.
 for Windows only
 
-## Function: auto_detect_apsim_bin_path
-
+```python
+config.auto_detect_apsim_bin_path()
 ```
-For Windows, we scan all drives. On macOS, we check the Applications folder, while on Linux, we look in `/usr/local`.
+For Windows, this function scans all the drives. 
+On macOS, we check the Applications folder, while on Linux, we look in `/usr/local`.
 Additionally, we search the home directory, though it is unlikely to be a reliable source.
-```
 
-## Function: get_apsim_bin_path
 
+
+```python
+config.get_apsim_bin_path()
 ```
 Returns the path to the apsim bin folder from either auto-detection or from the path already supplied by the user
-through the apsimNgpyconfig.ini file in the user home directory. the location folder is called
+through the ```python apsimNgpyconfig.ini``` file in the user home directory. the location folder is called
 The function is silent does not raise any exception but return empty string in all cases
 :return:
-```
+string path for the apsim bin path
 
-## Function: set_apsim_bin_path
 
+```python
+config.set_apsim_bin_path(path: [os.Pathlike, str])
 ```
-set_apsim_bin_path(path: unknown)
 
 Send your desired path to the aPSim binary folder to the config module
 the path should end with bin as the parent directory of the aPSim Model.
@@ -50,15 +46,15 @@ It won't work and python with throw an error
  config = Config.get_apsim_bin_path()
  # set the desired path
  >> Config.set_apsim_bin_path(path = '/path/to/APSIM*/bin')
-```
 
 ## Class: Config
-
+```python
+config.Config
 ```
  The configuration class providing the leeway for the user to change the
 global variables such as aPSim bin locations. it is deprecated
  
-```
+
 
 # Module: weather
 

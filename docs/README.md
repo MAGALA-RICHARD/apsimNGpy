@@ -837,7 +837,7 @@ with the ability to replace parameter values at various levels.
     'simulations.Soil.soil_child.crop.indices.parameter'. Soil here is a constant
 
 - The components 'simulations', 'crop', and 'indices' can be `None`.
-- Example of a `None`-inclusive path: ```python `'None.Soil.physical.None.None.BD'`
+- Example of a `None`-inclusive path: `None.Soil.physical.None.None.BD`
 - If `indices` is a list, it is expected to be wrapped in square brackets.
 - Example when `indices` are not `None`: 'None.Soil.physical.None.[1].BD'
 - if simulations please use square blocks

@@ -459,14 +459,11 @@ load_default_sensitivity_model(method: str, path: str, simulations_object: bool)
  # we get this warning
 # 2024-11-29 13:30:51,757 - settings - INFO - No sensitivity model for method:' 'morrirs' found at '~//APSIM2024.5.7493.0//Examples//Sensitivity'
 
- 
-```
-
 # Module: core
 
 ## Class: APSIMNG
 
-```
+
 Modify and run APSIM Next Generation (APSIM NG) simulation models.
 
 This class serves as the entry point for all apsimNGpy simulations and is inherited by the `ApsimModel` class.
@@ -482,63 +479,58 @@ Keyword parameters:
 
 Note:
     The 'copy' keyword is no longer necessary and will be ignored in future versions.
+
+# Method: APSIMNG.run_simulations
+
+```python
+core.APSIMNG.run_simulations(results: bool, reports: Union[tuple, list], clean_up: bool)
 ```
-
-## Method: ApsiMet.run_simulations
-
-```
-run_simulations(results: bool, reports: Union[tuple, list], clean_up: bool)
-
-Run the simulation. here we are using the self.model_info named tuple from model loader
+Run the simulation. Here we are using the self.model_info named tuple from model loader
 :results : bool, optional if True, we return the results of the simulation
    else we just run, and the user can retrieve he results from the database using the data store path
 reports: str, array like for returning the reports
 clean_up : bool deletes the file on disk, by default False
 returns results if results is True else None
+
+# property APSIMNG.simulation_object
+```python
+core.APSIMNG.simulation_object(value: unknown)
 ```
-
-## Method: ApsiMet.simulation_object
-
-```
-simulation_object(value: unknown)
-
 Set the model if you don't want to initialize again
 :param value:
-# A value in this context is:
-# A path to apsimx file, a str or pathlib Path object
-# A dictionary (apsimx json file converted to a dictionary using the json module)
-# apsimx simulation object already in memory
-```
+- A value in this context is:
+- A path to apsimx file, a str or pathlib Path object
+- A dictionary (apsimx json file converted to a dictionary using the json module)
+- apsimx simulation object already in memory
 
-## Method: ApsiMet._remove_related_files
 
-```
-_remove_related_files(_name: unknown)
 
-Remove related database files.
-```
+## property: APSIMNG.simulations
 
-## Method: ApsiMet.simulations
-
+```python
+core.APSIMNG.simulations
 ```
 Retrieve simulation nodes in the APSIMx `Model.Core.Simulations` object.
 
 We search all Models.Core.Simulation in the scope of Model.Core.Simulations. Please note the difference
 Simulations is the whole json object Simulation is the node with the field zones, crops, soils and managers
 any structure of apsimx file any structure can be handled
-```
 
-## Method: ApsiMet.simulation_names
+## property: APSIMNG.simulation_names
 
+```python
+core.APSIMNG.simulations_names
 ```
 retrieves the name of the simulations in the APSIMx `Model.Core
 @return: list of simulation names
+
+
+## Method: APSIMNG.restart_model
+
+```python
+core.APSIMNG.restart_model(model_info:named_tuple)
 ```
 
-## Method: ApsiMet.restart_model
-
-```
-restart_model(model_info: unknown)
 
  :param model_info: A named tuple object returned by `load_apx_model` from the `model_loader` module.
 
@@ -549,16 +541,17 @@ Notes:
 
 This function is called by `save_edited_file` and `update_mgt`.
 
-:return: self
-```
+:return: APSIMNG object
 
-## Method: ApsiMet.save_edited_file
 
+## Method: APSIMNG.save_edited_file
+
+```python
+core.APSIMNG.save_edited_file(out_path:[os.Pathlike, str], relaod:bool)
 ```
 save_edited_file(out_path: unknown, reload: unknown)
 
 Saves the model to the local drive.
-
 Notes: - If `out_path` is None, the `save_model_to_file` function extracts the filename from the
 `Model.Core.Simulation` object. - `out_path`, however, is given high priority. Therefore,
 we first evaluate if it is not None before extracting from the file. - This is crucial if you want to
@@ -567,13 +560,13 @@ give the file a new name different from the original one while saving.
 Parameters
 - out_path (str): Desired path for the .apsimx file, by default, None.
 - reload (bool): Whether to load the file using the `out_path` or the model's original file name.
+
+
+## Method: APSIMNG.run
+
+```python
+core.APSIMNG.run(report_name: Union[tuple, list], simulations: Union[tuple, list], clean: bool, multithread: bool, verbose: bool, get_dict: bool, init_only: bool)
 ```
-
-## Method: ApsiMet.run
-
-```
-run(report_name: Union[tuple, list], simulations: Union[tuple, list], clean: bool, multithread: bool, verbose: bool, get_dict: bool, init_only: bool)
-
 Run apsim model in the simulations
 
 Parameters
@@ -596,41 +589,39 @@ simulations (__list_), optional
 :param init_only, runs without returning the result defaults to 'False'.
 returns
     instance of the class APSIMNG
+
+
+## Method: APSIMNG.clone_simulation
+
+```python
+APSIMNG.clone_simulation.clone_simulation(target: str, simulation: Union[list, tuple])
 ```
-
-## Method: ApsiMet.clone_simulation
-
-```
-clone_simulation(target: str, simulation: Union[list, tuple])
-
 Clone a simulation and add it to Model
-
 Parameters
 ----------
 target
      simulation name
 simulation, optional
     Simulation name to be cloned, of None clone the first simulation in model
-```
 
-## Method: ApsiMet.remove_simulation
 
-```
+## Method: APSIMNG.remove_simulation
+
+```python
 remove_simulation(simulation: Union[tuple, list])
-
+```
 Remove a simulation from the model
 
 Parameters
 ----------
 simulation
     The name of the simulation to remove
+
+## Method: APSIMNG.clone_zone
+
+```python
+core.APSIMNG.clone_zone(target: str, zone: str, simulation: Union[tuple, list])
 ```
-
-## Method: ApsiMet.clone_zone
-
-```
-clone_zone(target: str, zone: str, simulation: Union[tuple, list])
-
 Clone a zone and add it to Model
 
 Parameters
@@ -641,12 +632,12 @@ zone
     Name of the zone to clone
 simulation, optional
     Simulation name to be cloned, of None clone the first simulation in model
-```
 
-## Method: ApsiMet.find_zones
+
+## Method: APSIMNG.find_zones
 
 ```
-find_zones(simulation: Union[tuple, list])
+core.APSIMNG.find_zones(simulation: Union[tuple, list])
 
 Find zones from a simulation
 

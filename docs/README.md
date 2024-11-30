@@ -79,51 +79,43 @@ apsimNGpy model object
 ```python
 replace_downloaded_soils(soil_tables: Union[dict, list], simulation_names: Union[tuple, list])
 ```
-        Updates soil parameters and configurations for downloaded soil data in simulation models.
+Updates soil parameters and configurations for downloaded soil data in simulation models.
 
-        This method adjusts soil physical and organic parameters based on provided soil tables and applies these
-        adjustments to specified simulation models. Optionally, it can adjust the Radiation Use Efficiency (RUE)
-        based on a Carbon to Sulfur ratio (CSR) sampled from the provided soil tables.
+This method adjusts soil physical and organic parameters based on provided soil tables and applies these
+adjustments to specified simulation models. Optionally, it can adjust the Radiation Use Efficiency (RUE)
+based on a Carbon to Sulfur ratio (CSR) sampled from the provided soil tables.
 
-        Parameters: - soil_tables (list): A list containing soil data tables. Expected to contain: see the naming
-        convention in the for APSIM - [0]: DataFrame with physical soil parameters. - [1]: DataFrame with organic
-        soil parameters. - [2]: DataFrame with crop-specific soil parameters. - [3]: Series/DataFrame with CSR
-        values for RUE adjustment. - simulation_names (list of str): Names or identifiers for the simulations to
-        be updated. - **kwargs: - adjust_rue (bool): Flag to indicate whether RUE should be adjusted based on
-        CSR. - Base_RUE (float): The base RUE value to be adjusted. - CultivarName (str, optional): The name of
-        the cultivar for which RUE should be adjusted. Defaults to "B_110" if not specified.
+Parameters: - soil_tables (list): A list containing soil data tables. Expected to contain: see the naming
+convention in the for APSIM - [0]: DataFrame with physical soil parameters. - [1]: DataFrame with organic
+soil parameters. - [2]: DataFrame with crop-specific soil parameters. - [3]: Series/DataFrame with CSR
+values for RUE adjustment. - simulation_names (list of str): Names or identifiers for the simulations to
+be updated. - **kwargs: - adjust_rue (bool): Flag to indicate whether RUE should be adjusted based on
+CSR. - Base_RUE (float): The base RUE value to be adjusted. - CultivarName (str, optional): The name of
+the cultivar for which RUE should be adjusted. Defaults to "B_110" if not specified.
 
-        Returns:
-        - self: Returns an instance of the class for chaining methods.
+Returns:
+- self: Returns an instance of the class for chaining methods.
 
-        This method directly modifies the simulation instances found by `find_simulations` method calls,
-        updating physical and organic soil properties, as well as crop-specific parameters like lower limit (LL),
-        drain upper limit (DUL), saturation (SAT), bulk density (BD), hydraulic conductivity at saturation (KS),
-        and more based on the provided soil tables.
+This method directly modifies the simulation instances found by `find_simulations` method calls,
+updating physical and organic soil properties, as well as crop-specific parameters like lower limit (LL),
+drain upper limit (DUL), saturation (SAT), bulk density (BD), hydraulic conductivity at saturation (KS),
+and more based on the provided soil tables.
 
 ->> key-word argument
-        adjust_rue: Boolean, adjust the radiation use efficiency
-        'set_sw_con': Boolean, set the drainage coefficient for each layer
-        adJust_kl:: Bollean, adjust, kl based on productivity index
-        'CultvarName': cultivar name which is in the sowing module for adjusting the rue
-        tillage: specify whether you will be carried to adjust some physical parameters
-    
-```
+adjust_rue: Boolean, adjust the radiation use efficiency
+'set_sw_con': Boolean, set the drainage coefficient for each layer
+adJust_kl:: Bollean, adjust, kl based on productivity index
+'CultvarName': cultivar name which is in the sowing module for adjusting the rue
+tillage: specify whether you will be carried to adjust some physical parameters
 
-## Method: ApsimModel._change_met_file
 
-```
-_change_met_file(lonlatmet: tuple, simulation_names: Union[tuple, list])
 
-_similar to class weather management but just in case we want to change the weather within the subclass
-# uses exisitng start and end years to download the weather data
-```
 
-## Method: ApsimModel.run_edited_file
+### Method: ApsimModel.run_edited_file
 
-```
+```python
 run_edited_file(simulations: Union[tuple, list], clean: bool, multithread: unknown)
-
+```
 Run simulations in this subclass if we want to clean the database, we need to
  spawn the path with one process to avoid os access permission errors
 
@@ -136,13 +128,13 @@ clean, optional
     If `True` remove existing database for the file before running, by default `True`
 multithread, optional
     If `True` APSIM uses multiple threads, by default `True`
+
+
+### Method: ApsimModel.spin_up
+
+```python
+spin_up(report_name: str, start: int, end: int, spin_var: str, simulations: list)
 ```
-
-## Method: ApsimModel.spin_up
-
-```
-spin_up(report_name: str, start: unknown, end: unknown, spin_var: unknown, simulations: unknown)
-
 Perform a spin-up operation on the aPSim model.
 
 This method is used to simulate a spin-up operation in an aPSim model. During a spin-up, various soil properties or
@@ -161,84 +153,73 @@ spin_var : str, optional (default: 'Carbon'). the difference between the start a
 
 Returns:
 -------
-self : ApsimModel
+ ApsimModel object
     The modified ApsimModel object after the spin-up operation.
     you could call save_edited file and save it to your specified location, but you can also proceed with the simulation
 ```
 
 # Module: base_data
-
-## Function: __get_example
-
-```
-__get_example(crop: unknown, path: unknown, simulations_object: unknown)
-
-Get an APSIM example file path for a specific crop model.
-
-This function copies the APSIM example file for the specified crop model to the target path,
-creates a SoilModel instance from the copied file, replaces its weather file with the
-corresponding weather file, and returns the SoilModel instance.
-
-Args:
-crop (str): The name of the crop model for which to retrieve the APSIM example.
-path (str, optional): The target path where the example file will be copied. Defaults to the current working directory.
-simulations_object (bool): Flag indicating whether to return a SoilModel instance or just the copied file path.
-
-Returns:
-SoilModel or str: An instance of the SoilModel class representing the APSIM example for the specified crop model
-                  or the path to the copied file if `simulations_object` is False.
-
-Raises:
-OSError: If there are issues with copying or replacing files.
-```
+The module for accessing the default dataset from APSIM model
 
 ## Function: load_default_simulations
 
-```
+```python
 load_default_simulations(crop: str, path:  , simulations_object: bool)
-
+```
 Load default simulation model from aPSim folder
 :param crop: string of the crop to load e.g. Maize, not case-sensitive
 :param path: string of the path to copy the model
 :param simulations_object: bool to specify whether to return apsimNGp.core simulation object defaults to True
 :return: apsimNGpy.core.APSIMNG simulation objects
->>># Example
-# load apsimNG object directly
->>> model = load_default_simulations('Maize', simulations_object=True)
-# try running
->>> model.run(report_name='Report', get_dict=True)
-# collect the results
->>> model.results.get('Report')
-# just return the path
->>> model =load_default_simulations('Maize', simulations_object=False)
-# let's try to laod non existient crop marize, which does exists
->>> model.load_default_simulations('Marize')
-# we get this warning
+# Example
+ load apsimNG object directly
+```python
+model = load_default_simulations('Maize', simulations_object=True)
+```
+ try running
+```python
+model.run(report_name='Report', get_dict=True)
+```
+ collect the results
+```python
+model.results.get('Report')
+```
+ Return the path only
+```python
+model =load_default_simulations('Maize', simulations_object=False)
+```
+#let's try to load non exisistent crop marize, which does exists
+```python
+model.load_default_simulations('Marize')
+```
+we get this warning
 2024-11-19 16:18:55,798 - base-data - INFO - No crop named:' 'marize' found at 'C:/path/to/apsim/folder/Examples
-```
 
-## Function: load_default_sensitivity_model
+### Function: load_default_sensitivity_model
 
-```
+```python
 load_default_sensitivity_model(method: str, path: str, simulations_object: bool)
-
+```
   Load default simulation model from aPSim folder
  :@param method: string of the sentitivity type to load e.g. "Morris" or Sobol, not case-sensitive
  :@param path: string of the path to copy the model
  :@param simulations_object: bool to specify whether to return apsimNGp.core simulation object defaults to True
  :@return: apsimNGpy.core.APSIMNG simulation objects
- >>># Example
+ # Example
  # load apsimNG object directly
+```python
  >>> morris_model = load_default_sensitivity_model(method:str = 'Morris', simulations_object:bool=True)
+```
  # let's try to laod non existient senstitivity model, which does exists
+```python
  >>> load_default_sensitivity_model('Mmoxee')
- # we get this warning
-# 2024-11-29 13:30:51,757 - settings - INFO - No sensitivity model for method:' 'morrirs' found at '~//APSIM2024.5.7493.0//Examples//Sensitivity'
+```
+we get this warning
+2024-11-29 13:30:51,757 - settings - INFO - No sensitivity model for method:' 'morrirs' found at '~//APSIM2024.5.7493.0//Examples//Sensitivity'
 
 # Module: core
-
-## Class: APSIMNG
-
+The primary class for all apsim related simulations
+### Class: APSIMNG
 
 Modify and run APSIM Next Generation (APSIM NG) simulation models.
 
@@ -256,7 +237,7 @@ Keyword parameters:
 Note:
     The 'copy' keyword is no longer necessary and will be ignored in future versions.
 
-# Method: APSIMNG.run_simulations
+## Method: APSIMNG.run_simulations
 
 ```python
 core.APSIMNG.run_simulations(results: bool, reports: Union[tuple, list], clean_up: bool)
@@ -268,7 +249,7 @@ reports: str, array like for returning the reports
 clean_up : bool deletes the file on disk, by default False
 returns results if results is True else None
 
-# property APSIMNG.simulation_object
+## property APSIMNG.simulation_object
 ```python
 core.APSIMNG.simulation_object(value: unknown)
 ```
@@ -281,7 +262,7 @@ Set the model if you don't want to initialize again
 
 
 
-## property: APSIMNG.simulations
+### property: APSIMNG.simulations
 
 ```python
 core.APSIMNG.simulations
@@ -292,7 +273,7 @@ We search all Models.Core.Simulation in the scope of Model.Core.Simulations. Ple
 Simulations is the whole json object Simulation is the node with the field zones, crops, soils and managers
 any structure of apsimx file any structure can be handled
 
-## property: APSIMNG.simulation_names
+### property: APSIMNG.simulation_names
 
 ```python
 core.APSIMNG.simulations_names
@@ -301,7 +282,7 @@ retrieves the name of the simulations in the APSIMx `Model.Core
 @return: list of simulation names
 
 
-## Method: APSIMNG.restart_model
+### Method: APSIMNG.restart_model
 
 ```python
 core.APSIMNG.restart_model(model_info:named_tuple)
@@ -320,7 +301,7 @@ This function is called by `save_edited_file` and `update_mgt`.
 :return: APSIMNG object
 
 
-## Method: APSIMNG.save_edited_file
+### Method: APSIMNG.save_edited_file
 
 ```python
 core.APSIMNG.save_edited_file(out_path:[os.Pathlike, str], relaod:bool)
@@ -338,7 +319,7 @@ Parameters
 - reload (bool): Whether to load the file using the `out_path` or the model's original file name.
 
 
-## Method: APSIMNG.run
+### Method: APSIMNG.run
 
 ```python
 core.APSIMNG.run(report_name: Union[tuple, list], simulations: Union[tuple, list], clean: bool, multithread: bool, verbose: bool, get_dict: bool, init_only: bool)
@@ -367,7 +348,7 @@ returns
     instance of the class APSIMNG
 
 
-## Method: APSIMNG.clone_simulation
+### Method: APSIMNG.clone_simulation
 
 ```python
 APSIMNG.clone_simulation.clone_simulation(target: str, simulation: Union[list, tuple])
@@ -393,7 +374,7 @@ Parameters
 simulation
     The name of the simulation to remove
 
-## Method: APSIMNG.clone_zone
+### Method: APSIMNG.clone_zone
 
 ```python
 core.APSIMNG.clone_zone(target: str, zone: str, simulation: Union[tuple, list])
@@ -427,14 +408,14 @@ Returns
     list of zones as APSIM Models.Core.Zone objects
 ```
 
-## Method: APSIMNG.extract_report_names
+### Method: APSIMNG.extract_report_names
 
 ```
 returns all data frames the available report tables
 @return: list of table names in the simulation
 ```
 
-## Method: APSIMNG.replicate_file
+### Method: APSIMNG.replicate_file
 
 ```python
 core.APSIMNG.replicate_file(k: int, path:  , tag: str)
@@ -453,7 +434,7 @@ Returns:
 - A list of paths to the newly created files if get_back_list is True else a generator is returned.
 
 
-## Method: APSIMNG.get_crop_replacement
+### Method: APSIMNG.get_crop_replacement
 
 ```python
 core.APSIMNG.get_crop_replacement(Crop: unknown)
@@ -462,7 +443,7 @@ core.APSIMNG.get_crop_replacement(Crop: unknown)
 :return: System.Collections.Generic.IEnumerable APSIM plant object
 
 
-## Method: APSIMNG.edit_cultivar
+### Method: APSIMNG.edit_cultivar
 
 ```python
 core. APSIMNG.edit_cultivar(CultivarName:str, commands:tuple, values:tuple)
@@ -480,7 +461,7 @@ Example: ('[Grain].MaximumGrainsPerCob.FixedValue', '[Phenology].GrainFilling.Ta
 :return: None
 
 
-## Method: APSIMNG.get_current_cultivar_name
+### Method: APSIMNG.get_current_cultivar_name
 
 ```python
 APSIMNG.get_current_cultivar_name(ManagerName: str)
@@ -504,7 +485,7 @@ Args:
     statistics and var names should be the order ['yield', 'carbon'] and ['mean', 'diff'], where mean for yield and diff for carbon, respectively
 
 
-## Method: APSIMNG.update_cultivar
+### Method: APSIMNG.update_cultivar
 
 ```python
 core.APSIMNG.update_cultivar(parameters: dict, simulations: Union[list, tuple] = None, clear=False, **kwargs):
@@ -520,7 +501,7 @@ Parameters
     If `True` remove all existing parameters, by default `False`.
 
 
-## Method: APSIMNG.examine_management_info
+### Method: APSIMNG.examine_management_info
 
 ```python
 core.APSIMNG.examine_management_info(simulations: Union[list, tuple])
@@ -563,7 +544,7 @@ core.core.APSIMNG.recompile_edited_model(out_path: [str, os.PathLike])
 @return: self
 
 
-## Method: APSIMNG.update_mgt
+### Method: APSIMNG.update_mgt
 
 ```python
 core.APSIMNG.update_mgt(*, management: Union[dict, tuple],  simulations: [list, tuple] = None, out: [Path, str] = None, **kwargs)
@@ -596,30 +577,30 @@ existence. - If the specified management script or parameters do not exist, they
 using a tuple for a specifying management script, paramters is recommended if you are going to pass the function to  a multi-processing class fucntion
 
 
-## Method: APSIMNG.preview_simulation
+### Method: APSIMNG.preview_simulation
 
 Preview the simulation file in the apsimNGpy object in the APSIM graphical user interface
 @return: opens the simulation file
 
 
-## Method: APSIMNG.extract_user_input
+### Method: APSIMNG.extract_user_input
 
 ```python
 core.APSIMNG.extract_user_input(manager_name: str)
 ```
 Get user_input of a given model manager script
 returns;  a dictionary of user input with the key as the script parameters and values as the inputs
-Example
+- Example
 _____________________________________________________
 from apsimNGpy.core.base_data import load_default_simulations
 model = load_default_simulations(crop = 'maize')
 ui = model.extract_user_input(manager_name='Fertilise at sowing')
 print(ui)
-# output
+### output
 {'Crop': 'Maize', 'FertiliserType': 'NO3N', 'Amount': '160.0'}
 
 
-## Method: APSIMNG.change_simulation_dates
+### Method: APSIMNG.change_simulation_dates
 
 ```python
 change_simulation_dates(start_date: str, end_date: str, simulations: Union[tuple, list])
@@ -641,27 +622,29 @@ one of the start_date or end_date parameters should at least no be None
 @raise assertion error if all dates are None
 
 @return None
-# Example:
-    from apsimNGpy.core.base_data import load_default_simulations
+### Example:
+```python
+from apsimNGpy.core.base_data import load_default_simulations
 
-    model = load_default_simulations(crop='maize')
+model = load_default_simulations(crop='maize')
 
-    model.change_simulation_dates(start_date='2021-01-01', end_date='2021-01-12')
-     #check if it was successful
-     changed_dates = model.extract_dates
-     print(changed_dates)
-     # OUTPUT
-       {'Simulation': {'start': datetime.date(2021, 1, 1),
-        'end': datetime.date(2021, 1, 12)}}
-    @note
-    It is possible to target a specific simulation by specifying simulation name for this case the name is Simulations, so, it could appear as follows
-     model.change_simulation_dates(start_date='2021-01-01', end_date='2021-01-12', simulation = 'Simulation')
+model.change_simulation_dates(start_date='2021-01-01', end_date='2021-01-12')
+#check if it was successful
+changed_dates = model.extract_dates
+print(changed_dates)
 ```
+ # OUTPUT
+   {'Simulation': {'start': datetime.date(2021, 1, 1),
+    'end': datetime.date(2021, 1, 12)}}
+@note
+It is possible to target a specific simulation by specifying simulation name for this case the name is Simulations, so, it could appear as follows
+ model.change_simulation_dates(start_date='2021-01-01', end_date='2021-01-12', simulation = 'Simulation')
+
 
 ## Method: APSIMNG.extract_dates
 
 ```python
-extract_dates(simulations: unknown)
+extract_dates(simulations: list)
 ```
 Get simulation dates in the model
 
@@ -672,18 +655,22 @@ simulations, optional
 Returns
 -------
     Dictionary of simulation names with dates
-# Example
-   from apsimNGpy.core.base_data import load_default_simulations
+### Example
+```python
+from apsimNGpy.core.base_data import load_default_simulations
 
-    model = load_default_simulations(crop='maize')
-     changed_dates = model.extract_dates
-     print(changed_dates)
-     # OUTPUT
-       {'Simulation': {'start': datetime.date(2021, 1, 1),
-        'end': datetime.date(2021, 1, 12)}}
-    @note
-    It is possible to target a specific simulation by specifying simulation name for this case the name is Simulations, so, it could appear as follows
-     model.change_simulation_dates(start_date='2021-01-01', end_date='2021-01-12', simulation = 'Simulation')
+model = load_default_simulations(crop='maize')
+changed_dates = model.extract_dates
+print(changed_dates)
+```
+** OUTPUT
+```python
+   {'Simulation': {'start': datetime.date(2021, 1, 1),
+    'end': datetime.date(2021, 1, 12)}}
+```
+@note
+It is possible to target a specific simulation by specifying simulation name for this case the name is Simulations, so, it could appear as follows
+model.change_simulation_dates(start_date='2021-01-01', end_date='2021-01-12', simulation = 'Simulation')
 
 
 ## Method: APSIMNG.extract_start_end_years
@@ -705,9 +692,11 @@ Returns
 ## Method: APSIMNG.show_met_file_in_simulation
 
 ```python
-show_met_file_in_simulation(simulations: list)
+show_met_file_in_simulation(simulations: list) -> str
 ```
 Show weather file for all simulations
+@return
+str 
 
 
 ## Method: APSIMNG.change_report
@@ -837,9 +826,9 @@ simulation, optional
 
 ## Method: APSIMNG.replace_soil_properties_by_path
 
+```python
+replace_soil_properties_by_path(path: str, param_values: list, str_fmt: str)
 ```
-replace_soil_properties_by_path(path: str, param_values: list, str_fmt: unknown)
-
 This function processes a path where each component represents different nodes in a hierarchy,
 with the ability to replace parameter values at various levels.
 
@@ -847,19 +836,19 @@ with the ability to replace parameter values at various levels.
     A string representing the hierarchical path of nodes in the order:
     'simulations.Soil.soil_child.crop.indices.parameter'. Soil here is a constant
 
-    - The components 'simulations', 'crop', and 'indices' can be `None`.
-    - Example of a `None`-inclusive path: 'None.Soil.physical.None.None.BD'
-    - If `indices` is a list, it is expected to be wrapped in square brackets.
-    - Example when `indices` are not `None`: 'None.Soil.physical.None.[1].BD'
-    - if simulations please use square blocks
-       Example when `indices` are not `None`: '[maize_simulation].physical.None.[1].BD'
+- The components 'simulations', 'crop', and 'indices' can be `None`.
+- Example of a `None`-inclusive path: **Inline Code**: `'None.Soil.physical.None.None.BD'`
+- If `indices` is a list, it is expected to be wrapped in square brackets.
+- Example when `indices` are not `None`: 'None.Soil.physical.None.[1].BD'
+- if simulations please use square blocks
+   Example when `indices` are not `None`: '[maize_simulation].physical.None.[1].BD'
 
-    **Note: **
-    - The `soil_child` node might be replaced in a non-systematic manner, which is why indices
-      are used to handle this complexity.
-    - When a component is `None`, default values are used for that part of the path. See the
-      documentation for the `replace_soil_property_values` function for more information on
-      default values.
+**Note: **
+- The `soil_child` node might be replaced in a non-systematic manner, which is why indices
+  are used to handle this complexity.
+- When a component is `None`, default values are used for that part of the path. See the
+  documentation for the `replace_soil_property_values` function for more information on
+  default values.
 
 :param param_values:
     A list of parameter values that will replace the existing values in the specified path.

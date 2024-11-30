@@ -651,18 +651,18 @@ Returns
     list of zones as APSIM Models.Core.Zone objects
 ```
 
-## Method: ApsiMet.extract_report_names
+## Method: APSIMNG.extract_report_names
 
 ```
 returns all data frames the available report tables
 @return: list of table names in the simulation
 ```
 
-## Method: ApsiMet.replicate_file
+## Method: APSIMNG.replicate_file
 
+```python
+core.APSIMNG.replicate_file(k: int, path:  , tag: str)
 ```
-replicate_file(k: int, path:  , tag: str)
-
 Replicates a file 'k' times.
 
 If a path is specified, the copies will be placed in that directory with incremented filenames.
@@ -673,56 +673,51 @@ Parameters:
 - k (int): The number of copies to create.
 - path (str, optional): The directory where the replicated files will be saved. Defaults to None, meaning the same directory as the source file.
 - tag (str, optional): a tag to attached with the copies. Defaults to "replicate"
-
-
 Returns:
 - A list of paths to the newly created files if get_back_list is True else a generator is returned.
+
+
+## Method: APSIMNG.get_crop_replacement
+
+```python
+core.APSIMNG.get_crop_replacement(Crop: unknown)
 ```
-
-## Method: ApsiMet._cultivar_params
-
-```
-_cultivar_params(cultivar: str)
-
-returns all params in a cultivar
-```
-
-## Method: ApsiMet.get_crop_replacement
-
-```
-get_crop_replacement(Crop: unknown)
-
 :param Crop: crop to get the replacement
 :return: System.Collections.Generic.IEnumerable APSIM plant object
-```
 
-## Method: ApsiMet.edit_cultivar
 
+## Method: APSIMNG.edit_cultivar
+
+```python
+core. APSIMNG.edit_cultivar(CultivarName:str, commands:tuple, values:tuple)
 ```
 Edits the parameters of a given cultivar. we don't need a simulation name for this unless if you are defining it in the
 manager section, if that it is the case, see update_mgt
 
 :param CultivarName: Name of the cultivar (e.g., 'laila').
+
 :param commands: A tuple of strings representing the parameter paths to be edited.
-                 Example: ('[Grain].MaximumGrainsPerCob.FixedValue', '[Phenology].GrainFilling.Target.FixedValue')
+
+Example: ('[Grain].MaximumGrainsPerCob.FixedValue', '[Phenology].GrainFilling.Target.FixedValue')
+
 :param values: A tuple containing the corresponding values for each command (e.g., (721, 760)).
 :return: None
+
+
+## Method: APSIMNG.get_current_cultivar_name
+
+```python
+APSIMNG.get_current_cultivar_name(ManagerName: str)
 ```
-
-## Method: ApsiMet.get_current_cultivar_name
-
-```
-get_current_cultivar_name(ManagerName: str)
-
 @param ManagerName: script manager module in the zone
 @return: returns the current cultivar name in the manager script 'ManagerName
+
+
+## Method: APSIMNG.collect_specific_report
+
+```python
+core.APSIMNG.collect_specific_report(results: dict, report_names: str, var_names: str, stat:str)
 ```
-
-## Method: ApsiMet.collect_specific_report
-
-```
-collect_specific_report(results: unknown, report_names: unknown, var_names: unknown, stat: unknown)
-
 _summary_
 
 Args:
@@ -731,10 +726,12 @@ Args:
     var_names (_list_): _description_
     Statistic (_list_): how to summary the data supported versions are mean, median, last ,start standard deviation
     statistics and var names should be the order ['yield', 'carbon'] and ['mean', 'diff'], where mean for yield and diff for carbon, respectively
-```
 
-## Method: ApsiMet.update_cultivar
 
+## Method: APSIMNG.update_cultivar
+
+```python
+core.APSIMNG.update_cultivar(parameters: dict, simulations: Union[list, tuple] = None, clear=False, **kwargs):
 ```
 Update cultivar parameters
 
@@ -745,13 +742,13 @@ Parameters
     List or tuples of simulation names to update if `None` update all simulations.
 @param: clear, optional
     If `True` remove all existing parameters, by default `False`.
+
+
+## Method: APSIMNG.examine_management_info
+
+```python
+core.APSIMNG.examine_management_info(simulations: Union[list, tuple])
 ```
-
-## Method: ApsiMet.examine_management_info
-
-```
-examine_management_info(simulations: Union[list, tuple])
-
 this will show the current management scripts in the simulation root
 
 Parameters
@@ -760,11 +757,13 @@ simulations, optional
     List or tuple of simulation names to update, if `None` show all simulations. if you are not sure,
 
     use the property decorator 'extract_simulation_name
-```
 
-## Method: ApsiMet.change_som
 
-```
+## Method: APSIMNG.change_som
+
+```python
+
+````
      Change Surface Organic Matter (SOM) properties in specified simulations.
 
 Parameters:
@@ -777,7 +776,7 @@ Returns:
     
 ```
 
-## Method: ApsiMet.recompile_edited_model
+## Method: APSIMNG.recompile_edited_model
 
 ```
 recompile_edited_model(out_path:  )
@@ -786,7 +785,7 @@ recompile_edited_model(out_path:  )
 @return: self
 ```
 
-## Method: ApsiMet.update_mgt
+## Method: APSIMNG.update_mgt
 
 ```
 Update management settings in the model. This method handles one management parameter at a time.
@@ -817,14 +816,14 @@ existence. - If the specified management script or parameters do not exist, they
 using a tuple for a specifying management script, paramters is recommended if you are going to pass the function to  a multi-processing class fucntion
 ```
 
-## Method: ApsiMet.preview_simulation
+## Method: APSIMNG.preview_simulation
 
 ```
 Preview the simulation file in the apsimNGpy object in the APSIM graphical user interface
 @return: opens the simulation file
 ```
 
-## Method: ApsiMet.extract_user_input
+## Method: APSIMNG.extract_user_input
 
 ```
 extract_user_input(manager_name: str)
@@ -841,7 +840,7 @@ print(ui)
 {'Crop': 'Maize', 'FertiliserType': 'NO3N', 'Amount': '160.0'}
 ```
 
-## Method: ApsiMet.change_simulation_dates
+## Method: APSIMNG.change_simulation_dates
 
 ```
 change_simulation_dates(start_date: str, end_date: str, simulations: Union[tuple, list])
@@ -880,7 +879,7 @@ one of the start_date or end_date parameters should at least no be None
      model.change_simulation_dates(start_date='2021-01-01', end_date='2021-01-12', simulation = 'Simulation')
 ```
 
-## Method: ApsiMet.extract_dates
+## Method: APSIMNG.extract_dates
 
 ```
 extract_dates(simulations: unknown)
@@ -908,7 +907,7 @@ Returns
      model.change_simulation_dates(start_date='2021-01-01', end_date='2021-01-12', simulation = 'Simulation')
 ```
 
-## Method: ApsiMet.extract_start_end_years
+## Method: APSIMNG.extract_start_end_years
 
 ```
 extract_start_end_years(simulations: str)
@@ -924,7 +923,7 @@ Returns
     Dictionary of simulation names with dates
 ```
 
-## Method: ApsiMet.show_met_file_in_simulation
+## Method: APSIMNG.show_met_file_in_simulation
 
 ```
 show_met_file_in_simulation(simulations: list)
@@ -932,7 +931,7 @@ show_met_file_in_simulation(simulations: list)
 Show weather file for all simulations
 ```
 
-## Method: ApsiMet.change_report
+## Method: APSIMNG.change_report
 
 ```
     Set APSIM report variables for specified simulations.
@@ -955,7 +954,7 @@ Returns
 None
 ```
 
-## Method: ApsiMet.get_report
+## Method: APSIMNG.get_report
 
 ```
 get_report(simulation: unknown)
@@ -971,7 +970,7 @@ Returns
     List of report lines.
 ```
 
-## Method: ApsiMet.extract_soil_physical
+## Method: APSIMNG.extract_soil_physical
 
 ```
 extract_soil_physical(simulations:  )
@@ -987,7 +986,7 @@ Returns
     APSIM Models.Soils.Physical object
 ```
 
-## Method: ApsiMet.extract_any_soil_physical
+## Method: APSIMNG.extract_any_soil_physical
 
 ```
 extract_any_soil_physical(parameter: unknown, simulations:  )
@@ -1001,7 +1000,7 @@ Args:
 returns an array of the parameter values
 ```
 
-## Method: ApsiMet.replace_any_soil_physical
+## Method: APSIMNG.replace_any_soil_physical
 
 ```
 replaces specified soil physical parameters in the simulation
@@ -1012,7 +1011,7 @@ of values for the specified parameter to replace index (int, optional):
 if indices is None replacement is done with corresponding indices of the param values
 ```
 
-## Method: ApsiMet.extract_soil_organic
+## Method: APSIMNG.extract_soil_organic
 
 ```
 extract_soil_organic(simulation: tuple)
@@ -1028,7 +1027,7 @@ Returns
     APSIM Models.Soils.Physical object
 ```
 
-## Method: ApsiMet.extract_any_solute
+## Method: APSIMNG.extract_any_solute
 
 ```
 extract_any_solute(parameter: str, simulation: unknown)
@@ -1043,7 +1042,7 @@ ___________________
 the solute array or list
 ```
 
-## Method: ApsiMet.replace_any_solute
+## Method: APSIMNG.replace_any_solute
 
 ```
 # replaces with new solute
@@ -1056,7 +1055,7 @@ simulation, optional
     Simulation name, if `None` use the first simulation.
 ```
 
-## Method: ApsiMet.replace_soil_properties_by_path
+## Method: APSIMNG.replace_soil_properties_by_path
 
 ```
 replace_soil_properties_by_path(path: str, param_values: list, str_fmt: unknown)
@@ -1103,7 +1102,7 @@ with the ability to replace parameter values at various levels.
     model.replace_soil_properties_by_path(path = 'None.Soil.Organic.None.[-1].Carbon', param_values= [1.23])
 ```
 
-## Method: ApsiMet.replace_soil_property_values
+## Method: APSIMNG.replace_soil_property_values
 
 ```
 Replaces values in any soil property array. The soil property array
@@ -1116,7 +1115,7 @@ not found, all current simulations will receive the new values, thus defaults to
 :crop (str, optional): string for soil water replacement. Default is None
 ```
 
-## Method: ApsiMet.extract_any_soil_organic
+## Method: APSIMNG.extract_any_soil_organic
 
 ```
 extract_any_soil_organic(parameter: str, simulation: tuple)
@@ -1129,7 +1128,7 @@ Args:
     param_values (array, required): arrays or list of values for the specified parameter to replace
 ```
 
-## Method: ApsiMet.extract_crop_soil_water
+## Method: APSIMNG.extract_crop_soil_water
 
 ```
 extract_crop_soil_water(parameter: str, crop: str, simulation: Union[list, tuple])
@@ -1145,7 +1144,7 @@ Returns:
     _type_: _description_
 ```
 
-## Method: ApsiMet.find_simulations
+## Method: APSIMNG.find_simulations
 
 ```
 find_simulations(simulations: Union[list, tuple])
@@ -1161,7 +1160,7 @@ Returns
     list of APSIM Models.Core.Simulation objects
 ```
 
-## Method: ApsiMet.set_swcon
+## Method: APSIMNG.set_swcon
 
 ```
 set_swcon(swcon: list, simulations: Union[list, tuple], thickness_values: list)
@@ -1177,7 +1176,7 @@ simulations, optional
     :param thickness_values: the soil profile thickness values
 ```
 
-## Method: ApsiMet.get_swcon
+## Method: APSIMNG.get_swcon
 
 ```
 get_swcon(simulation: unknown)
@@ -1193,7 +1192,7 @@ Returns
     Array of SWCON values
 ```
 
-## Method: ApsiMet.clear_db
+## Method: APSIMNG.clear_db
 
 ```
 Clears the attributes of the object and optionally deletes associated files.
@@ -1208,7 +1207,7 @@ Returns:
    but by making copy compulsory, then, we are clearing the edited files
 ```
 
-## Method: ApsiMet.clear
+## Method: APSIMNG.clear
 
 ```
 Clears the attributes of the object and optionally deletes associated files.
@@ -1223,7 +1222,7 @@ Returns:
    but by making copy compulsory, then, we are clearing the edited files
 ```
 
-## Method: ApsiMet.replace_soil_organic
+## Method: APSIMNG.replace_soil_organic
 
 ```
 replace the organic module comprising Carbon , FBIOm, FInert/ C/N
@@ -1233,7 +1232,7 @@ Args:
     simulation (_str_, optional): _description_. Defaults to None.
 ```
 
-## Method: ApsiMet.set_initial_nh4
+## Method: APSIMNG.set_initial_nh4
 
 ```
 set_initial_nh4(values: unknown, simulations: unknown)
@@ -1248,7 +1247,7 @@ simulations, optional
     List of simulation names to update, if `None` update all simulations
 ```
 
-## Method: ApsiMet.get_initial_urea
+## Method: APSIMNG.get_initial_urea
 
 ```
 get_initial_urea(simulation: unknown)
@@ -1256,7 +1255,7 @@ get_initial_urea(simulation: unknown)
 Get soil initial urea content
 ```
 
-## Method: ApsiMet.set_initial_urea
+## Method: APSIMNG.set_initial_urea
 
 ```
 set_initial_urea(values: unknown, simulations: unknown)

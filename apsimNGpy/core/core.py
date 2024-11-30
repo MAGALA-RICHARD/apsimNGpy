@@ -369,7 +369,7 @@ class APSIMNG:
             self._DataStore.Close()
         return self
 
-    def clone_simulation(self, target, simulation=None):
+    def clone_simulation(self, target:str, simulation:Union[list, tuple]=None):
         """Clone a simulation and add it to Model
 
         Parameters
@@ -795,10 +795,7 @@ class APSIMNG:
     def init_model(self, *args, **kwargs):
         self.run(init_only=True)
 
-    def update_mgt(self, *, management: Union[dict, tuple],
-                   simulations: [list, tuple] = None,
-                   out: [Path, str] = None,
-                   **kwargs):
+    def update_mgt(self, *, management: Union[dict, tuple],  simulations: [list, tuple] = None, out: [Path, str] = None, **kwargs):
         """
             Update management settings in the model. This method handles one management parameter at a time.
 

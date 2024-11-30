@@ -27,10 +27,10 @@ Additionally, we search the home directory, though it is unlikely to be a reliab
 config.get_apsim_bin_path()
 ```
 Returns the path to the apsim bin folder from either auto-detection or from the path already supplied by the user
-through the ```python apsimNgpyconfig.ini``` file in the user home directory. the location folder is called
-The function is silent does not raise any exception but return empty string in all cases
+through the ```python apsimNgpyconfig.ini``` file in the user home directory. the location folder is called `APSIMNGpy_meta_data`.
+This function is silent does not raise any exception but return empty string in all cases if the bin folder is not detected
 :return:
-string path for the apsim bin path
+a string path for the apsim bin path
 
 
 ```python

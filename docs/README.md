@@ -723,7 +723,7 @@ Returns
 None
 
 
-## Method: APSIMNG.get_report
+### Method: APSIMNG.get_report
 
 ```python
 get_report(simulation: unknown)
@@ -739,7 +739,7 @@ Returns
     List of report lines.
 
 
-## Method: APSIMNG.extract_soil_physical
+### Method: APSIMNG.extract_soil_physical
 
 ```python
 extract_soil_physical(simulations:  )
@@ -755,7 +755,7 @@ Returns
     APSIM Models.Soils.Physical object
 
 
-## Method: APSIMNG.extract_any_soil_physical
+### Method: APSIMNG.extract_any_soil_physical
 
 ```python
 extract_any_soil_physical(parameter: unknown, simulations:  )
@@ -769,7 +769,7 @@ Args:
 returns an array of the parameter values
 
 
-## Method: APSIMNG.replace_any_soil_physical
+### Method: APSIMNG.replace_any_soil_physical
 
 ```python
 replace_any_soil_physical(*, parameter: str,
@@ -782,9 +782,9 @@ ______________________________________________________ Args: parameter (_string_
 SAT. open APSIMX file in the GUI and examine the physical node for clues on the parameter names simulation (        string, optional): Targeted simulation name. Defaults to None. param_values (array, required): arrays or list
 of values for the specified parameter to replace index (int, optional):
 if indices is None replacement is done with corresponding indices of the param values
-```
 
-## Method: APSIMNG.extract_soil_organic
+
+### Method: APSIMNG.extract_soil_organic
 
 ```python
 extract_soil_organic(simulation: tuple)
@@ -800,7 +800,7 @@ Returns
     APSIM Models.Soils.Physical object
 
 
-## Method: APSIMNG.extract_any_solute
+### Method: APSIMNG.extract_any_solute
 
 ```python
 extract_any_solute(parameter: str, simulation: unknown)
@@ -814,7 +814,7 @@ returns
 ___________________
 
 
-## Method: APSIMNG.replace_any_solute
+### Method: APSIMNG.replace_any_solute
 
 ```
 # replaces with new solute
@@ -1048,73 +1048,37 @@ values
     Collection of values, has to be the same length as existing values.
 simulations, optional
     List of simulation names to update, if `None` update all simulations
+
+### method APSIMNG.update_mgt
+
+```python
+
+update_mgt(self, *, management: Union[dict, tuple],  simulations: [list, tuple] = None, out: [Path, str] = None, **kwargs):
 ```
-
-# Module: general
-
-## Function: load_model_from_dict
-
-```
-load_model_from_dict(dict_model: unknown, out: unknown, met_file: unknown)
-
-useful for spawning many simulation files
-```
-
-## Function: load_apx_model
-
-```
-load_apx_model(model: unknown, out: unknown)
-
->> we are loading apsimx model from file, dict, or in memory.
->> if model is none, we will return a pre - reloaded one from memory.
->> if out parameter is none, the new file will have a suffix _copy at the end
->> if model is none, the name is ngpy_model
-returns a named tuple with an out path, datastore path, and IModel in memory
-```
-
-## Function: save_model_to_file
-
-```
-save_model_to_file(model: unknown, out: unknown)
-
-Save the model
+- Update management settings in the model. This method handles one management parameter at a time.
 
 Parameters
 ----------
-out : str, optional path to save the model to
-    reload: bool to load the file using the outpath
-    :param model:APSIM  Models.Core.Simulations object
-    :param reload:
-    returns the filename or the specified out name
-```
+- management : dict or tuple
+A dictionary or tuple of management parameters to update. The dictionary should have 'Name' as the key
+for the management script's name and corresponding values to update. Lists are not allowed as they are mutable
+and may cause issues with parallel processing. If a tuple is provided, it should be in the form (param_name, param_value).
 
-## Function: look_up_simulations
+- simulations : list of str, optional
+List of simulation names to update. If `None`, updates all simulations. This is not recommended for large
+numbers of simulations as it may result in a high computational load.
 
-```
-look_up_simulations(model: unknown, simulations: unknown)
+- out : str or pathlike, optional
+Path to save the edited model. If `None`, uses the default output path specified in `self.out_path` or
+`self.model_info.path`. No need to call `save_edited_file` after updating, as this method handles saving.
 
-TODO
-        
-```
+- returns
+Notes ----- - Ensure that the `management` parameter is provided in the correct format to avoid errors. -
+This method does not perform validation on the provided `management` dictionary beyond checking for key
+existence. - If the specified management script or parameters do not exist, they will be ignored.
+using a tuple for a specifying management script, paramters is recommended if you are going to pass the function to  a multi-processing class fucntion
 
-## Function: update_mgt
-
-```
-update_mgt(model: unknown, management: unknown, reload: unknown, out: unknown)
-
-Update management, handles one manager at a time
-
-Parameters
-----------
-management
-
-    Parameter = value dictionary of management paramaters to update. examine_management_info` to see current values.
-    make a dictionary with 'Name' as the for the of  management script
-simulations, optional
-    List of simulation names to update, if `None` update all simulations not recommended.
-    :param out: to save the file after editing
-    :param reload:
-```
+  
 
 # Module: met_functions
 

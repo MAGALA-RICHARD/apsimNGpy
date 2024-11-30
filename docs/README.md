@@ -1181,30 +1181,30 @@ out : str, optional path to save the model to
     returns named tuple with a recompiled model
 ```
 
-# Module: thonet_config
+# Module: pythonet_config
 
 ## Function: load_pythonnet
 
-```
+
 A method for loading Python for .NET (pythonnet) and APSIM models.
 
 This class provides a callable method for initializing the Python for .NET (pythonnet) runtime and loading APSIM models.
 Initialize the Python for .NET (pythonnet) runtime and load APSIM models.
 
-    This method attempts to load the 'coreclr' runtime, and if not found, falls back to an alternate runtime.
-    It also sets the APSIM binary path, adds necessary references, and returns a reference to the loaded APSIM models.
+This method attempts to load the 'coreclr' runtime, and if not found, falls back to an alternate runtime.
+It also sets the APSIM binary path, adds necessary references, and returns a reference to the loaded APSIM models.
 
-    Returns:
-    -------
-    lm: Reference to the loaded APSIM models
+Returns:
+-------
+lm: Reference to the loaded APSIM models
 
-    Raises:
-    ------
-    KeyError: If APSIM path is not found in the system environmental variable.
-    ValueError: If the provided APSIM path is invalid.
+Raises:
+------
+KeyError: If APSIM path is not found in the system environmental variable.
+ValueError: If the provided APSIM path is invalid.
 
-    Notes:
-    It raises a KeyError if APSIM path is not found. Please edit the system environmental variable on your computer.
+Notes:
+It raises a KeyError if APSIM path is not found. Please edit the system environmental variable on your computer.
 Attributes:
 ----------
 None

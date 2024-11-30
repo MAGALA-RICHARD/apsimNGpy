@@ -1673,14 +1673,16 @@ replacing method
 
 ```
 Creates and manages a factorial experiment
-# example
-path = Path(r'G:/').joinpath('scratchT')
+## example
+```python
+path = Path.home().joinpath('scratchT')
+
 from apsimNGpy.core.base_data import load_default_simulations
 
 # import the model from APSIM.
 
 # returns a simulation object of apsimNGpy, but we want the path only. so we pass simulations_object=False
-# model_path = load_default_simulations(crop='maize', simulations_object=False, path=path.parent)
+model_path = load_default_simulations(crop='maize', simulations_object=False, path=path.parent)
 model_path = path.joinpath('m.apsimx')
 
 # define the factors

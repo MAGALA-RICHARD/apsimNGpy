@@ -1725,17 +1725,18 @@ print(len(FactorialExperiment.factors))
 
 ## Method: Experiment.add_factor
 
-```
+```python
 add_factor(factor_type: unknown)
-
-factor_types can be: management, som, cultivar or soils
 ```
+factor_types can be: management, som, cultivar or soils
+
 
 ## Method: Experiment.set_experiment
 
-```
-    # example
-path = Path(r'G:/').joinpath('scratchT')
+
+## example
+```python
+path = Path.home().joinpath('scratchT')
 from apsimNGpy.core.base_data import load_default_simulations
 
 # import the model from APSIM.
@@ -1782,47 +1783,45 @@ sim_data.groupby('grain_filling').agg({"Yield": 'mean'})
 print(len(FactorialExperiment.factors))
 ```
 
-## Method: Experiment.test_experiment
+### Method: Experiment.test_experiment
 
-```
+```python
 test_experiment(test_size: int)
-
+```
 this function will test the experiment set up to be called by the user before running start a few things to
 check reports supplied really exist in the simulations, and the data tables are serializable into the sql
 database
-```
 
-## Method: Experiment.start_experiment
 
-```
+### Method: Experiment.start_experiment
+
 This will run the experiment
 The method may fail miserably if you call it without a guard like if __name__ == '__main__':
 It's advisable to use this class below the line
-```
 
-## Method: Experiment.end_experiment
 
-```
+### Method: Experiment.end_experiment
+
 cleans up stuff
-```
+
 
 ## Method: Experiment.clear_data_base
 
-```
+```python
 clear_data_base(all_tables: unknown, report_name: unknown)
-
+```
 for clearing database before the start of the simulation, is by_pass completed is true, the process won't continue
 :param all_tables:(bool) all existing tables will be cleared proceed with caution defaults to true
 :param report_name: (str) if specified a specific table will be cleared proceed with caution
-```
 
-# Module: ermutations
+
+# Module: permutations
 
 ## Function: create_permutations
 
-```
+```python
 create_permutations(factors: list, factor_names: list)
-
+```
 _summary_
 
 The create_permutations function is designed to generate a dictionary of permutations from
@@ -1846,17 +1845,17 @@ and its value in the permutation.
 Raises
 ValueError: If the length of factor_names does not match the length of factors, indicating a mismatch between the number of
  provided factor names and the number of factors. The error message is: "Unacceptable - factor names should have the same length as the factor list.
-```
+
 
 ## Method: GenerateCombinations.mgt_updater
 
+```python
+mgt_updater(simId: str, perms: dict, old_list: list)
 ```
-mgt_updater(simId: unknown, perms: unknown, old_list: unknown)
-
 old_list (list) is a list of ALL MANAGEMENT scripts dictionary with key value pairs
 perms (dict) is the dictionary returned by the permutation methods,
 simId (int) is the target id of the simulation
-```
+
 
 # Module: set_ups
 
@@ -1868,36 +1867,19 @@ Variant of ChainMap that allows direct updates to inner scopes from collection m
 
 # Module: variable
 
-## Class: BoundedVariable
+### Class: BoundedVariable
 
-```
 for setting components for continuous variables
 manager and parameters can be set after initialization of the class or keywords argument parameter =? manager = /
-```
 
-## Class: DiscreteVariable
 
-```
+### Class: DiscreteVariable
+
 for setting components for discrete variables
 manager and parameters can be set after initialization of the class or keywords argument parameter =? manager = /
-```
 
-## Method: DiscreteVariable.__init__
 
-```
-__init__(options: unknown, place_holder_name: unknown)
 
-place_holder_name: str, could be the name of your variable; preferred to be without spaces
-options (list) of variables to consider
-```
-
-## Method: DiscreteVariable.sigma
-
-```
-sigma(value: unknown)
-
-sets the standard deviation of the distribution
-```
 
 ## Method: DiscreteVariable.mean
 

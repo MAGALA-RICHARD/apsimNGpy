@@ -2,38 +2,23 @@
 
 # Module: config
 
-## Function: _apsim_model_is_installed
-
-```
-_apsim_model_is_installed(_path: str)
-
-This private function checks if the APSIM model is installed by verifying the presence of binaries, especially if they haven't been
-deleted. Sometimes, after uninstallation, the `bin` folder remains, so tracking it may give a false sign that the
-binary path exists due to leftover files. :param _path: path to APSIM model binaries
-```
-
-## Function: list_drives
-
-```
-for windows-only
-@return: list of available drives on windows pc
-```
 
 ## Function: scan_dir_for_bin
 
+```python
+config.scan_dir_for_bin(path: str)
 ```
-scan_dir_for_bin(path: str)
-
 Recursively scans directories starting at the given path.
 Stops scanning as soon as a directory named 'bin' is encountered and returns its path.
-```
+
 
 ## Function: scan_drive_for_bin
 
+```python
+config.scan_drive_for_bin()
 ```
 This function uses scan_dir_for_bin to scan all drive directories.
 for Windows only
-```
 
 ## Function: auto_detect_apsim_bin_path
 

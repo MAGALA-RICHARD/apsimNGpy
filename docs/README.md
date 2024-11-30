@@ -1,5 +1,5 @@
 # apsimNGpy API documentation
-
+This apsimNGpy is generated automatically. The official documentation has not been released
 # Module: config
 
 ```python
@@ -56,253 +56,29 @@ global variables such as aPSim bin locations. it is deprecated
  
 
 
-# Module: weather
-
-## Function: get_iem_bystation
-
-```
-get_iem_bystation(dates: unknown, station: unknown, path: unknown, mettag: unknown)
-
-Dates is a tupple/list of strings with date ranges
-
-an example date string should look like this: dates = ["01-01-2012","12-31-2012"]
-
-if station is given data will be downloaded directly from the station the default is false.
-
-mettag: your prefered tag to save on filee
-```
-
-## Class: _MetDate
-
-```
-This class organises the data for IEM weather download
-```
-
-## Method: _MetDate.daterange
-
-```
-daterange(start: unknown, end: unknown)
-
-start: the starting year to download the weather data
------------------
-end: the year under which download should stop
-```
-
-## Method: _MetDate.daymet_bylocation
-
-```
-daymet_bylocation(lonlat: unknown, start: unknown, end: unknown, cleanup: unknown, filename: unknown)
-
-collect weather from daymet solar radiation is replaced with that of nasapower
-------------
-parameters
----------------
-start: Starting year
-
-end: Ending year
-
-lonlat: A tuple of xy cordnates
-
-Cleanup:  A bolean True or False default is true: deletes the excel file generated during the file write up
-
-------------
-returns complete path to the new met file but also write the met file to the disk in the working directory
-```
-
-## Method: _MetDate.daymet_bylocation_nocsv
-
-```
-daymet_bylocation_nocsv(lonlat: unknown, start: unknown, end: unknown, cleanup: unknown, filename: unknown)
-
-collect weather from daymet. doesnt store data to csv
- solar radiation is replaced with that of nasapower
-------------
-parameters
----------------
-start: Starting year
-
-end: Ending year
-
-lonlat: A tuple of xy cordnates
-
-Cleanup:  A bolean True or False default is true: deletes the excel file generated during the file write up
-
-------------
-returns complete path to the new met file but also write the met file to the disk in the working directory
-```
-
-## Class: EditMet
-
-```
-This class edits the weather files
-```
-
-## Method: EditMet.merge_columns
-
-```
-merge_columns(df1_main: unknown, common_column: unknown, df2: unknown, fill_column: unknown, df2_colummn: unknown)
-
-Parameters:
-df_main (pd.DataFrame): The first DataFrame to be merged and updated.
-common_column (str): The name of the common column used for merging.
-df2 (pd.DataFrame): The second DataFrame to be merged with 'df_main'.
-fill_column (str): The column in 'edit' to be updated with values from 'df2_column'.
-df2_column (str): The column in 'df2' that provides replacement values for 'fill_column'.
-
-Returns:
-pd.DataFrame: A new DataFrame resulting from the merge and update operations.
-```
-
-## Method: EditMet.impute_data
-
-```
-impute_data(met: unknown, method: unknown, verbose: unknown)
-
-Handles missing data in a pandas DataFrame by imputing missing values based on the specified method.
-
-Parameters:
-- met (pd.DataFrame): The DataFrame containing data with missing values.
-- method (str, optional): Method used for imputing missing values. Options: "approx", "spline", "mean". Default is "mean".
-- verbose (bool, optional): If True, prints information about the imputation process. Default is False.
-- **kwargs (dict, optional): Additional keyword arguments. Currently supports:
-    - copy (bool): If True, makes a deep copy of the DataFrame before imputation. Default is False.
-
-Behavior and Methods:
-- Deep Copy: Creates a deep copy of the DataFrame if 'copy=True' to prevent changes to the original data.
-- Input Validation: Checks if the input is a pandas DataFrame and if the specified method is valid.
-- Missing Value Imputation: Imputes missing values in the DataFrame based on the specified method:
-    - "approx": Linear interpolation.
-    - "spline": Spline interpolation, useful for non-linear data.
-    - "mean": Fills missing values with the mean of the column.
-- Verbose Output: Provides detailed information about the imputation process if 'verbose=True'.
-
-Returns:
-- pd.DataFrame: The DataFrame with missing values imputed.
-
-Usage:
-df = pd.read_csv('your_file.csv')  # Load your data
-imputed_df = impute_data(df, method="mean", verbose=True, copy=True)
-```
-
-## Method: EditMet._edit_apsim_met
-
-```
-converts the weather file into a pandas dataframe by removing specified rows.
-It is easier to edit  a pandas data frame than a text file
-
-Returns:
-- pandas.DataFrame: A DataFrame containing the modified APSIM weather data.
-
-Example:
-```
-
-## Method: EditMet.write_edited_met
-
-write_edited_met(old: unknown, daf: unknown, filename: unknown)
-
-Write an edited APSIM weather file using an existing file as a template.
-
-This function takes an existing APSIM weather file ('old'), replaces specific data rows with data from a DataFrame ('daf'),
-and writes the modified data to a new weather file ('filename').
-
-Args:
-- old (str): The path to the existing APSIM weather file used as a template.
-- daf (pandas.DataFrame): A DataFrame containing the edited weather data to be inserted.
-- filename (str, optional): The name of the new weather file to be created. Default is 'edited_met.met'.
-
-Returns:
-- str: The path to the newly created APSIM weather file.
-
-Example:
-```python
-    from apsimNGpy.manager.weathermanager import write_edited_met
-    
-    # Specify the paths to the existing weather file and the edited data DataFrame
-    existing_weather_file = "original_met.met"
-    edited_data = pd.DataFrame(...)  # Replace with your edited data
-    
-    # Call the write_edited_met function to create a new weather file with edited data
-    new_weather_file = write_edited_met(existing_weather_file, edited_data)
-    
-    # Use the new_weather_file path for further purposes
-```
-
-Notes:
-- This function reads the existing APSIM weather file, identifies the location to insert the edited data,
-  and then creates a new weather file containing the combined data.
-- The edited data is expected to be in the 'daf' DataFrame with specific columns ('year', 'day', 'radn', 'maxt', 'mint', 'rain', 'vp', 'swe').
-- The 'filename' parameter specifies the name of the new weather file to be created.
-- The function returns the path to the newly created weather file.
-```
-
-## Method: EditMet.met_replace_var
-
-```
-met_replace_var(parameter: unknown, values: unknown)
-
-in case we want to change some columns or rows in the APSIM met file
-this function replace specific data in the APSIM weather file with new values.
-
-This method allows for the replacement of specific columns or rows in the APSIM weather file by providing a
-'parameter' (column name) and a list of 'values' to replace the existing data.
-
-Args:
-- parameter (str): The name of the column (parameter) to be replaced.
-- values (list, array or pandas series):  values to replace the existing data in the specified column.
-
-Returns:
-- str: The path to the newly created APSIM weather file with the replaced data.
-```
 
 # Module: apsim
+# Class ApsimModel
+This class inherits all methods from APSIMNG class
 
-## Method: ApsimModel._replace_initial_chemical_values
 
-```
-_replace_initial_chemical_values(name: unknown, values: unknown, simulations: unknown)
+### Method: ApsimModel.adjust_dul
 
-_summary_
-
-Args:
-    name (str): of the solutes e.g  NH4
-    values (array): _values with equal lengths as the existing other variable
-    simulations (str): simulation name in the root folder
-```
-
-## Method: ApsimModel.get_initial_no3
-
-```
-get_initial_no3(simulation: unknown)
-
-Get soil initial NO3 content
-```
-
-## Method: ApsimModel.adjust_dul
-
-```
+```python
 adjust_dul(simulations: Union[tuple, list])
-
-- This method checks whether the soil SAT is above or below DUL and decreases DUL  values accordingly
-- Need to cal this method everytime SAT is changed, or DUL is changed accordingly
+```
+- This method checks whether the soil SAT is above or below DUL and decreases DUL values accordingly
+- Need to call this method everytime SAT is changed, or DUL is changed accordingly
 :param simulations: str, name of the simulation where we want to adjust DUL and SAT according
 :return:
-model object
-```
+apsimNGpy model object
 
-## Method: ApsimModel.get_unique_soil_series
-
-```
-this function collects the unique soil types
-
-Args:
-    lonlat (_tuple_): longitude and latitude of the target location
-```
 
 ## Method: ApsimModel.replace_downloaded_soils
 
-```
+```python
 replace_downloaded_soils(soil_tables: Union[dict, list], simulation_names: Union[tuple, list])
-
+```
         Updates soil parameters and configurations for downloaded soil data in simulation models.
 
         This method adjusts soil physical and organic parameters based on provided soil tables and applies these

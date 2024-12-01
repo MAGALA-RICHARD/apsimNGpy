@@ -381,68 +381,6 @@ Out[6]: dict
 ```
 
 
-_Method: APSIMNG.clone_simulation_
-
-```python
-APSIMNG.clone_simulation.clone_simulation(target: str, simulation: Union[list, tuple])
-```
-Clone a simulation and add it to Model
-Parameters
-----------
-target
-     simulation name
-simulation, optional
-    Simulation name to be cloned, of None clone the first simulation in model
-
-
-## Method: APSIMNG.remove_simulation
-
-```python
-remove_simulation(simulation: Union[tuple, list])
-```
-Remove a simulation from the model
-
-Parameters
-----------
-simulation
-    The name of the simulation to remove
-
-### Method: APSIMNG.clone_zone
-
-```python
-core.APSIMNG.clone_zone(target: str, zone: str, simulation: Union[tuple, list])
-```
-Clone a zone and add it to Model
-
-Parameters
-----------
-target
-     simulation name
-zone
-    Name of the zone to clone
-simulation, optional
-    Simulation name to be cloned, of None clone the first simulation in model
-
-
-_Method: APSIMNG.find_zones_
-
-
-core.APSIMNG.find_zones(simulation: Union[tuple, list])
-
-Find zones from a simulation
-
-**Parameters**
-simulation: str name of the simulation
-
-*Returns*
-list of zones as APSIM Models.Core.Zone objects
-
-_Method: APSIMNG.extract_report_names_
-
-returns all data frames the available report tables
-_return:_ list of table names in the simulation
-
-
 _Method: APSIMNG.replicate_file_
 
 ```python
@@ -460,7 +398,19 @@ Parameters:
 - tag (str, optional): a tag to attached with the copies. Defaults to "replicate"
 Returns:
 - A list of paths to the newly created files if get_back_list is True else a generator is returned.
-
+**example**
+```python
+from apsimNGpy.core.base_data import load_default_simulations
+model = load_default_simulations('Maize', simulations_object=True)
+#replicate the file 5 times
+model.replicate_file(k =5, path= Path.home())
+# output 
+['C:\\Users\\ID\\Maize_copy_replica_0.apsimx',
+ 'C:\\Users\\ID\\Maize_copy_replica_1.apsimx',
+ 'C:\\Users\\ID\\Maize_copy_replica_2.apsimx',
+ 'C:\\Users\\ID\\Maize_copy_replica_3.apsimx',
+ 'C:\\Users\\ID\\Maize_copy_replica_4.apsimx']
+```
 
 ### Method: APSIMNG.get_crop_replacement
 

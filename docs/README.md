@@ -35,7 +35,6 @@ This function is silent does not raise any exception but return empty string in 
 :return:
 a string path for the apsim bin path
 
-
 ```python
 config.set_apsim_bin_path(path: [os.Pathlike, str])
 ```
@@ -44,15 +43,13 @@ Send your desired path to the aPSim binary folder to the config module
 the path should end with bin as the parent directory of the aPSim Model.
 - Please be careful with adding an uninstalled path, which does not have model.exe file or unix executable.
    It won't work and python with throw an error
-
 **Example**
 ```python
 from apsimNGpy.config import Config
 # - check the current path
-
 config = Config.get_apsim_bin_path()
  # set the desired path
->> Config.set_apsim_bin_path(path = '/path/to/APSIM*/bin')
+Config.set_apsim_bin_path(path = '/path/to/APSIM*/bin')
 ```
 ## Class: Config
 
@@ -81,7 +78,6 @@ ApsimModel model object
 
 _Method: apsimNGpy.core.apsim.ApsimModel.replace_downloaded_soils_
 ```python
-
 
 replace_downloaded_soils(soil_tables: Union[dict, list], simulation_names: Union[tuple, list])
 ```
@@ -171,11 +167,10 @@ Load default simulation model from aPSim folder
 :param path: string of the path to copy the model
 :param simulations_object: bool to specify whether to return apsimNGp.core simulation object defaults to True
 :return: apsimNGpy.core.APSIMNG simulation objects
-
 **Example**
-
  load apsimNG object directly
 ```python
+from apsimNGpy.core.base_data import load_default_simulations
 model = load_default_simulations('Maize', simulations_object=True)
 ```
  try running
@@ -326,7 +321,7 @@ _Method: APSIMNG.run_
 ```python
 apsimNgpy.core.core.APSIMNG.run(report_name: [tuple, list], simulations: Union[tuple, list], clean: bool, multithread: bool, verbose: bool, get_dict: bool, init_only: bool)
 ```
-Run apsim model in the simulations
+Run apsim model in the simulations. The method is called when we want to execute the simulations and collect the results
 
 Parameters
 ----------
@@ -348,6 +343,30 @@ simulations (__list_), optional
 :param init_only, runs without returning the result defaults to 'False'.
 returns
     instance of the class APSIMNG
+     before `run` method is called the results is None
+**example**
+```python
+from apsimNGpy.core.base_data import load_default_simulations
+model = load_default_simulations('Maize', simulations_object=True)
+# run the model directly
+model.run(report_name='report')
+#collect the results
+df = model.results
+print(df)
+# output
+  CheckpointID  SimulationID  ... Maize.Grain.N Maize.Total.Wt
+0             1             1  ...     11.178291    1728.427114
+1             1             1  ...      6.218690     920.854399
+2             1             1  ...      0.752392     204.117680
+3             1             1  ...      4.886440     869.179823
+4             1             1  ...     10.463799    1665.475413
+5             1             1  ...     11.253917    2124.740077
+6             1             1  ...      4.761095    1235.469238
+7             1             1  ...      3.945233     951.807933
+8             1             1  ...     11.080238    1986.968346
+9             1             1  ...      9.720136    1689.966187
+[10 rows x 14 columns]
+```
 
 
 _Method: APSIMNG.clone_simulation_
@@ -393,34 +412,29 @@ simulation, optional
     Simulation name to be cloned, of None clone the first simulation in model
 
 
-## Method: APSIMNG.find_zones
+_Method: APSIMNG.find_zones_
 
-```
+
 core.APSIMNG.find_zones(simulation: Union[tuple, list])
 
 Find zones from a simulation
 
-Parameters
-----------
-simulation
-     name
+**Parameters**
+simulation: str name of the simulation
 
-Returns
--------
-    list of zones as APSIM Models.Core.Zone objects
-```
+*Returns*
+list of zones as APSIM Models.Core.Zone objects
 
-### Method: APSIMNG.extract_report_names
+_Method: APSIMNG.extract_report_names_
 
-```
 returns all data frames the available report tables
-@return: list of table names in the simulation
-```
+_return:_ list of table names in the simulation
 
-### Method: APSIMNG.replicate_file
+
+_Method: APSIMNG.replicate_file_
 
 ```python
-core.APSIMNG.replicate_file(k: int, path:  , tag: str)
+core.APSIMNG.replicate_file(k: int, path:str  , tag: str)
 ```
 Replicates a file 'k' times.
 

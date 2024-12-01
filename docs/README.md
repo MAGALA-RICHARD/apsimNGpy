@@ -63,9 +63,8 @@ get_apsim_bin_path()
 ### Class ApsimModel
 This class inherits all methods from APSIMNG class
 
-### Method: ApsimModel.adjust_dul
-
 ```python
+### Method: ApsimModel.adjust_dul
 adjust_dul(simulations: Union[tuple, list])
 ```
 - This method checks whether the soil SAT is above or below DUL and decreases DUL values accordingly
@@ -85,13 +84,13 @@ This method adjusts soil physical and organic parameters based on provided soil 
 adjustments to specified simulation models. Optionally, it can adjust the Radiation Use Efficiency (RUE)
 based on a Carbon to Sulfur ratio (CSR) sampled from the provided soil tables.
 
-Parameters: - soil_tables (list): A list containing soil data tables. Expected to contain: see the naming
-convention in the for APSIM - [0]: DataFrame with physical soil parameters. - [1]: DataFrame with organic
-soil parameters. - [2]: DataFrame with crop-specific soil parameters. - [3]: Series/DataFrame with CSR
-values for RUE adjustment. - simulation_names (list of str): Names or identifiers for the simulations to
-be updated. - **kwargs: - adjust_rue (bool): Flag to indicate whether RUE should be adjusted based on
-CSR. - Base_RUE (float): The base RUE value to be adjusted. - CultivarName (str, optional): The name of
-the cultivar for which RUE should be adjusted. Defaults to "B_110" if not specified.
+Parameters: 
+- soil_tables (list): A list containing soil data tables. Expected to contain: 
+- [0]: DataFrame with physical soil parameters.
+- [1]: DataFrame with organic
+soil parameters.
+- [2]: DataFrame with crop-specific soil parameters.
+
 
 Returns:
 - self: Returns an instance of the class for chaining methods.
@@ -100,13 +99,15 @@ This method directly modifies the simulation instances found by `find_simulation
 updating physical and organic soil properties, as well as crop-specific parameters like lower limit (LL),
 drain upper limit (DUL), saturation (SAT), bulk density (BD), hydraulic conductivity at saturation (KS),
 and more based on the provided soil tables.
+- **kwargs: 
 
-->> key-word argument
-adjust_rue: Boolean, adjust the radiation use efficiency
-'set_sw_con': Boolean, set the drainage coefficient for each layer
-adJust_kl:: Bollean, adjust, kl based on productivity index
-'CultvarName': cultivar name which is in the sowing module for adjusting the rue
-tillage: specify whether you will be carried to adjust some physical parameters
+`set_sw_con`: Boolean, set the drainage coefficient for each layer
+
+`adJust_kl`:: Bolean, adjust, kl based on productivity index
+
+`CultvarName`: cultivar name which is in the sowing module for adjusting the rue
+
+`tillage`: specify whether you will be carried to adjust some physical parameters
 
 
 

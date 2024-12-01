@@ -319,7 +319,7 @@ Parameters
 _Method: APSIMNG.run_
 
 ```python
-apsimNgpy.core.core.APSIMNG.run(report_name: [tuple, list], simulations: Union[tuple, list], clean: bool, multithread: bool, verbose: bool, get_dict: bool, init_only: bool)
+apsimNgpy.core.core.APSIMNG.run(report_name: [tuple, str, list], simulations: Union[tuple, list], clean: bool, multithread: bool, verbose: bool, get_dict: bool, init_only: bool)
 ```
 Run apsim model in the simulations. The method is called when we want to execute the simulations and collect the results
 
@@ -338,12 +338,13 @@ simulations (__list_), optional
     If `True` APSIM uses multiple threads, by default `True`
     :param simulations:
 
-:param verbose: bool logger.infos diagnostic information such as false report name and simulation
+:param verbose: bool logs diagnostic information such as false report name and simulation
 :param get_dict: bool, return a dictionary of data frame paired by the report table names default to False
 :param init_only, runs without returning the result defaults to 'False'.
 returns
     instance of the class APSIMNG
      before `run` method is called the results is None
+
 **example**
 ```python
 from apsimNGpy.core.base_data import load_default_simulations
@@ -366,6 +367,14 @@ print(df)
 8             1             1  ...     11.080238    1986.968346
 9             1             1  ...      9.720136    1689.966187
 [10 rows x 14 columns]
+
+# try returning dictionary
+model.run('report', get_dict=True)
+# this is important if e have many report files in the simulation. in that case report names can be supplied as a list
+print(type(model.results))
+# the output is dictionary with report as the key
+Out[6]: dict
+
 ```
 
 

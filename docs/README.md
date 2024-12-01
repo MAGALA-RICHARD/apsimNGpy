@@ -111,10 +111,9 @@ tillage: specify whether you will be carried to adjust some physical parameters
 
 
 
-
-### Method: ApsimModel.run_edited_file
-
 ```python
+Method: ApsimModel.run_edited_file
+
 run_edited_file(simulations: Union[tuple, list], clean: bool, multithread: unknown)
 ```
 Run simulations in this subclass if we want to clean the database, we need to

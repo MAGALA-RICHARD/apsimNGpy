@@ -168,25 +168,27 @@ Load default simulation model from aPSim folder
 :param simulations_object: bool to specify whether to return apsimNGp.core simulation object defaults to True
 :return: apsimNGpy.core.APSIMNG simulation objects
 **Example**
- load apsimNG object directly
+ 
 ```python
+#load apsimNG object directly
 from apsimNGpy.core.base_data import load_default_simulations
 model = load_default_simulations('Maize', simulations_object=True)
 ```
- try running
 ```python
+#load apsimNG object directly
 model.run(report_name='Report', get_dict=True)
 ```
- collect the results
 ```python
+# load apsimNG object directly
 model.results.get('Report')
-```
- Return the path only
-```python
+
+ #Return the path only
+
 model =load_default_simulations('Maize', simulations_object=False)
 ```
-#let's try to load non exisistent crop marize, which does exists
+
 ```python
+#let's try to load non exisistent crop marize, which does exists
 model.load_default_simulations('Marize')
 ```
 `we get this warning`

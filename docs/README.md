@@ -50,9 +50,7 @@ config = Config.get_apsim_bin_path()
 >> Config.set_apsim_bin_path(path = '/path/to/APSIM*/bin')
 ```
 ## Class: Config
-```python
-config.Config
-```
+
  The configuration class providing the leeway for the user to change the
 global variables such as aPSim bin locations. it is deprecated. it has the following method similar as above
 ```python

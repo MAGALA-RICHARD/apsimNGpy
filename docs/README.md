@@ -101,14 +101,10 @@ drain upper limit (DUL), saturation (SAT), bulk density (BD), hydraulic conducti
 and more based on the provided soil tables.
 - **kwargs: 
 
-`set_sw_con`: Boolean, set the drainage coefficient for each layer
-
-`adJust_kl`:: Bolean, adjust, kl based on productivity index
-
-`CultvarName`: cultivar name which is in the sowing module for adjusting the rue
-
-`tillage`: specify whether you will be carried to adjust some physical parameters
-
+*`set_sw_con`*: Boolean, set the drainage coefficient for each layer  
+*`adJust_kl`*: Boolean, adjust, kl based on productivity index  
+*`CultvarName`*: cultivar name which is in the sowing module for adjusting the rue  
+*`tillage`*: specify whether you will be carried to adjust some physical parameters
 
 
 ```python

@@ -339,13 +339,17 @@ simulations (__list_), optional
     :param simulations:
 
 :param verbose: bool logs diagnostic information such as false report name and simulation
+
 :param get_dict: bool, return a dictionary of data frame paired by the report table names default to False
+
 :param init_only, runs without returning the result defaults to 'False'.
-returns
+
+_returns_
     instance of the class APSIMNG
      before `run` method is called the results is None
 
 **example**
+
 ```python
 from apsimNGpy.core.base_data import load_default_simulations
 model = load_default_simulations('Maize', simulations_object=True)

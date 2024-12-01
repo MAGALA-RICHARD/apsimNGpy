@@ -349,7 +349,6 @@ _returns_
      before `run` method is called the results is None
 
 **example**
-
 ```python
 from apsimNGpy.core.base_data import load_default_simulations
 model = load_default_simulations('Maize', simulations_object=True)

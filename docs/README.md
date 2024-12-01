@@ -1,6 +1,9 @@
 # apsimNGpy API documentation
 This apsimNGpy API documentation is generated automatically. The official documentation has not been released
+
+___________________________________________________________________________
 # Module: config
+_______________________________________________________
 
 ```python
 config.scan_dir_for_bin(path: str)
@@ -41,8 +44,10 @@ Send your desired path to the aPSim binary folder to the config module
 the path should end with bin as the parent directory of the aPSim Model.
 - Please be careful with adding an uninstalled path, which does not have model.exe file or unix executable.
    It won't work and python with throw an error
+
+**Example**
 ```python
->> example from apsimNGpy.config import Config
+from apsimNGpy.config import Config
 # - check the current path
 
 config = Config.get_apsim_bin_path()
@@ -51,15 +56,16 @@ config = Config.get_apsim_bin_path()
 ```
 ## Class: Config
 
- The configuration class providing the leeway for the user to change the
+The configuration class providing the leeway for the user to change the
 global variables such as aPSim bin locations. it is deprecated. it has the following method similar as above
+
 ```python
 set_apsim_bin_path(path: [os.Pathlike, str])
 get_apsim_bin_path()
 ```
 
 ## Module: apsim
-
+__________________________________________________________
 ### Class ApsimModel
 This class inherits all methods from APSIMNG class
 
@@ -152,6 +158,7 @@ _Parameters_
 
 
 # Module: base_data
+_____________________________________________________________
 The module for accessing the default dataset from APSIM model
 
 _Function: apsimNGpy.core.base_data.load_default_simulations_
@@ -164,8 +171,9 @@ Load default simulation model from aPSim folder
 :param path: string of the path to copy the model
 :param simulations_object: bool to specify whether to return apsimNGp.core simulation object defaults to True
 :return: apsimNGpy.core.APSIMNG simulation objects
-#### Example
-________________
+
+**Example**
+
  load apsimNG object directly
 ```python
 model = load_default_simulations('Maize', simulations_object=True)
@@ -199,8 +207,9 @@ load_default_sensitivity_model(method: str, path: str, simulations_object: bool)
  :@param path: string of the path to copy the model
  :@param simulations_object: bool to specify whether to return apsimNGp.core simulation object defaults to True
  :@return: apsimNGpy.core.APSIMNG simulation objects
- ### Example
-__________________________________
+
+**Example**
+
  # load apsimNG object directly
 ```python
  >>> morris_model = load_default_sensitivity_model(method:str = 'Morris', simulations_object:bool=True)

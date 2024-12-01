@@ -412,16 +412,17 @@ model.replicate_file(k =5, path= Path.home())
  'C:\\Users\\ID\\Maize_copy_replica_4.apsimx']
 ```
 
-### Method: APSIMNG.get_crop_replacement
+_Method: APSIMNG.get_crop_replacement_
 
 ```python
-core.APSIMNG.get_crop_replacement(Crop: unknown)
+core.APSIMNG.get_crop_replacement(Crop: str)
 ```
 :param Crop: crop to get the replacement
+
 :return: System.Collections.Generic.IEnumerable APSIM plant object
 
 
-### Method: APSIMNG.edit_cultivar
+_Method: APSIMNG.edit_cultivar_
 
 ```python
 core. APSIMNG.edit_cultivar(CultivarName:str, commands:tuple, values:tuple)
@@ -439,7 +440,7 @@ Example: ('[Grain].MaximumGrainsPerCob.FixedValue', '[Phenology].GrainFilling.Ta
 :return: None
 
 
-### Method: APSIMNG.get_current_cultivar_name
+_Method: APSIMNG.get_current_cultivar_name_
 
 ```python
 APSIMNG.get_current_cultivar_name(ManagerName: str)
@@ -448,7 +449,7 @@ APSIMNG.get_current_cultivar_name(ManagerName: str)
 @return: returns the current cultivar name in the manager script 'ManagerName
 
 
-## Method: APSIMNG.collect_specific_report
+_Method: APSIMNG.collect_specific_report_
 
 ```python
 core.APSIMNG.collect_specific_report(results: dict, report_names: str, var_names: str, stat:str)
@@ -463,7 +464,7 @@ Args:
     statistics and var names should be the order ['yield', 'carbon'] and ['mean', 'diff'], where mean for yield and diff for carbon, respectively
 
 
-### Method: APSIMNG.update_cultivar
+_Method: APSIMNG.update_cultivar_
 
 ```python
 core.APSIMNG.update_cultivar(parameters: dict, simulations: Union[list, tuple] = None, clear=False, **kwargs):
@@ -479,7 +480,7 @@ Parameters
     If `True` remove all existing parameters, by default `False`.
 
 
-### Method: APSIMNG.examine_management_info
+_Method: APSIMNG.examine_management_info_
 
 ```python
 core.APSIMNG.examine_management_info(simulations: Union[list, tuple])
@@ -494,7 +495,7 @@ simulations, optional
     use the property decorator 'extract_simulation_name
 
 
-### Method: APSIMNG.change_som
+_Method: APSIMNG.change_som_
 
 ```python
 core.APSIMNG.change_som(*, simulations: Union[tuple, list] = None, inrm: int = 1250, icnr: int = 27, **kwargs):
@@ -512,7 +513,7 @@ Returns:
     
 
 
-### Method: APSIMNG.recompile_edited_model
+_Method: APSIMNG.recompile_edited_model_
 
 ```python
 
@@ -522,63 +523,62 @@ core.core.APSIMNG.recompile_edited_model(out_path: [str, os.PathLike])
 @return: self
 
 
-### Method: APSIMNG.update_mgt
+_Method: APSIMNG.update_mgt_
 
 ```python
 core.APSIMNG.update_mgt(*, management: Union[dict, tuple],  simulations: [list, tuple] = None, out: [Path, str] = None, **kwargs)
 ```
 Update management settings in the model. This method handles one management parameter at a time.
 
-Parameters
-----------
-management : dict or tuple
+**Parameters**
+- management : dict or tuple
     A dictionary or tuple of management parameters to update. The dictionary should have 'Name' as the key
     for the management script's name and corresponding values to update. Lists are not allowed as they are mutable
     and may cause issues with parallel processing. If a tuple is provided, it should be in the form (param_name, param_value).
 
-simulations : list of str, optional
+- simulations : list of str, optional
     List of simulation names to update. If `None`, updates all simulations. This is not recommended for large
     numbers of simulations as it may result in a high computational load.
 
-out : str or pathlike, optional
+- out : str or pathlike, optional
     Path to save the edited model. If `None`, uses the default output path specified in `self.out_path` or
     `self.model_info.path`. No need to call `save_edited_file` after updating, as this method handles saving.
 
-Returns
--------
+_Returns_
 self : Editor
     Returns the instance of the `Editor` class for method chaining.
 
-Notes ----- - Ensure that the `management` parameter is provided in the correct format to avoid errors. -
-This method does not perform validation on the provided `management` dictionary beyond checking for key
-existence. - If the specified management script or parameters do not exist, they will be ignored.
-using a tuple for a specifying management script, paramters is recommended if you are going to pass the function to  a multi-processing class fucntion
+**Notes**
+- Ensure that the `management` parameter is provided in the correct format to avoid errors. -
+- This method does not perform validation on the provided `management` dictionary beyond checking for key
+ existence. - If the specified management script or parameters do not exist, they will be ignored.
+- using a tuple for a specifying management script, paramters is recommended if you are going to pass the function to  a multi-processing class fucntion
 
-
-### Method: APSIMNG.preview_simulation
+_Method: APSIMNG.preview_simulation_
 
 Preview the simulation file in the apsimNGpy object in the APSIM graphical user interface
-@return: opens the simulation file
+*return:*
+opens the simulation file
 
 
-### Method: APSIMNG.extract_user_input
+_Method: APSIMNG.extract_user_input_
 
 ```python
 core.APSIMNG.extract_user_input(manager_name: str)
 ```
 Get user_input of a given model manager script
 returns;  a dictionary of user input with the key as the script parameters and values as the inputs
-- Example
-_____________________________________________________
+**Example**
+```python
 from apsimNGpy.core.base_data import load_default_simulations
 model = load_default_simulations(crop = 'maize')
 ui = model.extract_user_input(manager_name='Fertilise at sowing')
 print(ui)
 ### output
 {'Crop': 'Maize', 'FertiliserType': 'NO3N', 'Amount': '160.0'}
+```
 
-
-### Method: APSIMNG.change_simulation_dates
+_Method: APSIMNG.change_simulation_dates_
 
 ```python
 change_simulation_dates(start_date: str, end_date: str, simulations: Union[tuple, list])
@@ -586,21 +586,20 @@ change_simulation_dates(start_date: str, end_date: str, simulations: Union[tuple
 Set simulation dates. this is important to run this method before run the weather replacement method as
 the date needs to be allowed into weather
 
-Parameters
------------------------------------
-start_date, optional
+**Parameters**
+- start_date, optional
     Start date as string, by default `None`
-end_date, optional
+- end_date, optional
     End date as string, by default `None`
-simulations, optional
+- simulations, optional
     List of simulation names to update, if `None` update all simulations
-@note
+**note**
 one of the start_date or end_date parameters should at least no be None
 
-@raise assertion error if all dates are None
+**raise** assertion error if all dates are None
 
-@return None
-### Example:
+*return:* None
+**Example:**
 ```python
 from apsimNGpy.core.base_data import load_default_simulations
 
@@ -611,29 +610,32 @@ model.change_simulation_dates(start_date='2021-01-01', end_date='2021-01-12')
 changed_dates = model.extract_dates
 print(changed_dates)
 ```
- # OUTPUT
+**Output**
+```python
    {'Simulation': {'start': datetime.date(2021, 1, 1),
     'end': datetime.date(2021, 1, 12)}}
-@note
-It is possible to target a specific simulation by specifying simulation name for this case the name is Simulations, so, it could appear as follows
- model.change_simulation_dates(start_date='2021-01-01', end_date='2021-01-12', simulation = 'Simulation')
+```
+**Note**
+- It is possible to target a specific simulation by specifying simulation name for this case the name is Simulations, so, it could appear as follows
+```python
+model.change_simulation_dates(start_date='2021-01-01', end_date='2021-01-12', simulation = 'Simulation')
+```
 
 
-## Method: APSIMNG.extract_dates
+_Method: APSIMNG.extract_dates_
 
 ```python
 extract_dates(simulations: list)
 ```
 Get simulation dates in the model
 
-Parameters
-----------
-simulations, optional
+**Parameters**
+- simulations, optional
     List of simulation names to get, if `None` get all simulations
-Returns
--------
-    Dictionary of simulation names with dates
-### Example
+*Returns*
+Dictionary of simulation names with dates
+
+**Example:**
 ```python
 from apsimNGpy.core.base_data import load_default_simulations
 
@@ -641,40 +643,39 @@ model = load_default_simulations(crop='maize')
 changed_dates = model.extract_dates
 print(changed_dates)
 ```
-** OUTPUT
+** Output
 ```python
    {'Simulation': {'start': datetime.date(2021, 1, 1),
     'end': datetime.date(2021, 1, 12)}}
 ```
-@note
+**Note**
 It is possible to target a specific simulation by specifying simulation name for this case the name is Simulations, so, it could appear as follows
 model.change_simulation_dates(start_date='2021-01-01', end_date='2021-01-12', simulation = 'Simulation')
 
-
-## Method: APSIMNG.extract_start_end_years
+_Method: APSIMNG.extract_start_end_years_
 
 ```python
 extract_start_end_years(simulations: str)
 ```
 Get simulation dates
 
-Parameters
-----------
-simulations, optional
+**Parameters**
+- simulations, optional
     List of simulation names to get, if `None` get all simulations
-Returns
--------
-    Dictionary of simulation names with dates
-
-
-## Method: APSIMNG.show_met_file_in_simulation
+**Returns:**
+```python
+dict
+```
+_Method: APSIMNG.show_met_file_in_simulation_
 
 ```python
 show_met_file_in_simulation(simulations: list) -> str
 ```
 Show weather file for all simulations
-@return
-str 
+**Returns**
+```python
+str
+```
 
 
 ## Method: APSIMNG.change_report

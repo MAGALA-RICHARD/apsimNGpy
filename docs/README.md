@@ -687,38 +687,36 @@ str
 This function allows you to set the variable names for an APSIM report
 in one or more simulations.
 
-Parameters
-----------
-command : str
+**Parameters**
+
+- command : str
     The new report string that contains variable names.
-report_name : str
+- report_name : str
     The name of the APSIM report to update defaults to Report.
-simulations : list of str, optional
+- simulations : list of str, optional
     A list of simulation names to update. If `None`, the function will
     update the report for all simulations.
 
-Returns
--------
+**Returns**
+```python
 None
-
-
-### Method: APSIMNG.get_report
+```
+_Method: APSIMNG.get_report_
 
 ```python
 get_report(simulation: unknown)
 ```
 Get current report string
 
-Parameters
-----------
-simulation, optional
+**Parameters**
+
+- simulation, optional
     Simulation name, if `None` use the first simulation.
-Returns
--------
-    List of report lines.
-
-
-### Method: APSIMNG.extract_soil_physical
+*Returns*
+```python
+list
+```
+_Method: APSIMNG.extract_soil_physical_
 
 ```python
 extract_soil_physical(simulations:  )
@@ -729,12 +727,11 @@ Parameters
 ----------
 simulation, optional
     Simulation name, if `None` use the first simulation.
-Returns
--------
-    APSIM Models.Soils.Physical object
-
-
-### Method: APSIMNG.extract_any_soil_physical
+*Returns*
+```python
+Models.Soils.Physical 
+```
+_Method: APSIMNG.extract_any_soil_physical_
 
 ```python
 extract_any_soil_physical(parameter: unknown, simulations:  )
@@ -742,13 +739,12 @@ extract_any_soil_physical(parameter: unknown, simulations:  )
 extracts soil physical parameters in the simulation
 
 Args:
-    parameter (_string_): string e.g DUL, SAT
-    simulations (string, optional): Targeted simulation name. Defaults to None.
----------------------------------------------------------------------------
-returns an array of the parameter values
-
-
-### Method: APSIMNG.replace_any_soil_physical
+   -  parameter (_string_): string e.g DUL, SAT
+   - simulations (string, optional): Targeted simulation name. Defaults to None.
+```python
+list
+```
+_Method: APSIMNG.replace_any_soil_physical_
 
 ```python
 replace_any_soil_physical(*, parameter: str,
@@ -762,16 +758,15 @@ SAT. open APSIMX file in the GUI and examine the physical node for clues on the 
 of values for the specified parameter to replace index (int, optional):
 if indices is None replacement is done with corresponding indices of the param values
 
-
-### Method: APSIMNG.extract_soil_organic
+_Method: APSIMNG.extract_soil_organic_
 
 ```python
 extract_soil_organic(simulation: tuple)
 ```
 Find physical soil
 
-Parameters
-----------
+**Parameters**
+
 simulation, optional
     Simulation name, if `None` use the first simulation.
 Returns

@@ -57,14 +57,11 @@ global variables such as aPSim bin locations. it is deprecated. it has the follo
 set_apsim_bin_path(path: [os.Pathlike, str])
 get_apsim_bin_path()
 ```
- 
 
+## Module: apsim
 
-
-# Module: apsim
-# Class ApsimModel
+### Class ApsimModel
 This class inherits all methods from APSIMNG class
-
 
 ### Method: ApsimModel.adjust_dul
 
@@ -75,7 +72,7 @@ adjust_dul(simulations: Union[tuple, list])
 - Need to call this method everytime SAT is changed, or DUL is changed accordingly
 :param simulations: str, name of the simulation where we want to adjust DUL and SAT according
 :return:
-apsimNGpy model object
+ApsimModel model object
 
 
 ## Method: ApsimModel.replace_downloaded_soils

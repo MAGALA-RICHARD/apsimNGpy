@@ -2696,9 +2696,9 @@ Note:
 
 ## Function: create_apsimx_sim_files
 
+```python
+create_apsimx_sim_files(wd: str, model: APSIMNG, iterable: list)
 ```
-create_apsimx_sim_files(wd: unknown, model: unknown, iterable: unknown)
-
 Creates copies of a specified APSIM model file for each element in the provided iterable,
 renaming the files to have unique identifiers based on their index in the iterable.
 The new files are saved in the specified working directory.
@@ -2722,6 +2722,7 @@ Example:
 >> model = '/path/to/original/model.apsimx'
 >> file_paths = create_apsimx_files(wd, model, range(5))
 >> print(file_paths)
+```python
 {0: '/path/to/working/directory/model_0.apsimx', 1: '/path/to/working/directory/model_1.apsimx', ...}
 ```
 

@@ -796,7 +796,7 @@ simulation, optional
     Simulation name, if `None` use the first simulation.
 
 
-## Method: APSIMNG.replace_soil_properties_by_path
+_Method: APSIMNG.replace_soil_properties_by_path_
 
 ```python
 replace_soil_properties_by_path(path: str, param_values: list, str_fmt: str)
@@ -833,8 +833,7 @@ with the ability to replace parameter values at various levels.
 
 :return:
     Returns the instance of `self` after processing the path and applying the parameter value replacements.
-
-- Example 
+**Example**
 ```python
 from apsimNGpy.core.base_data import load_default_simulations
 model = load_default_simulations(crop = 'maize')
@@ -843,7 +842,7 @@ model.replace_soil_properties_by_path(path = 'None.Soil.Organic.None.None.Carbon
 model.replace_soil_properties_by_path(path = 'None.Soil.Organic.None.[-1].Carbon', param_values= [1.23])
 ```
 
-### Method: APSIMNG.replace_soil_property_values
+_Method: APSIMNG.replace_soil_property_values_
 
 ```python
 replace_soil_property_values(*, parameter: str,
@@ -855,16 +854,16 @@ replace_soil_property_values(*, parameter: str,
                                      **kwargs):
 ```
 Replaces values in any soil property array. The soil property array
-:param parameter: str: parameter name e.g., NO3, 'BD'
-:param param_values:list or tuple: values of the specified soil property name to replace
-:param soil_child: str: sub child of the soil component e.g., organic, physical etc.
-:param simulations: list: list of simulations to where the node is found if
-not found, all current simulations will receive the new values, thus defaults to None
-:param indices: list. Positions in the array which will be replaced. Please note that unlike C#, python satrt counting from 0
-:crop (str, optional): string for soil water replacement. Default is None
+- :param parameter: str: parameter name e.g., NO3, 'BD'
+- :param param_values:list or tuple: values of the specified soil property name to replace
+- :param soil_child: str: sub child of the soil component e.g., organic, physical etc.
+- :param simulations: list: list of simulations to where the node is found if
+   not found, all current simulations will receive the new values, thus defaults to None
+- :param indices: list. Positions in the array which will be replaced. Please note that unlike C#, python satrt counting from 0
+- param:crop (str, optional): string for soil water replacement. Default is None
 
 
-### Method: APSIMNG.extract_any_soil_organic
+_Method: APSIMNG.extract_any_soil_organic_
 
 ```python
 extract_any_soil_organic(parameter: str, simulation: tuple)
@@ -877,7 +876,7 @@ Args:
    - param_values (array, required): arrays or list of values for the specified parameter to replace
 
 
-### Method: APSIMNG.extract_crop_soil_water
+_Method: APSIMNG.extract_crop_soil_water_
 
 ```python
 extract_crop_soil_water(parameter: str, crop: str, simulation: Union[list, tuple])
@@ -893,7 +892,7 @@ Returns:
     _type_: _description_
 
 
-### Method: APSIMNG.find_simulations
+_Method: APSIMNG.find_simulations_
 
 ```python
 find_simulations(simulations: Union[list, tuple])
@@ -904,44 +903,43 @@ Parameters
 ----------
 simulations, optional
     List of simulation names to find, if `None` return all simulations
-Returns
--------
-    list of APSIM Models.Core.Simulation objects
-```
+*Returns*
+list of APSIM Models.Core.Simulation objects
 
-## Method: APSIMNG.set_swcon
 
-```
+_Method: APSIMNG.set_swcon_
+
+```python
 set_swcon(swcon: list, simulations: Union[list, tuple], thickness_values: list)
-
+```
 Set soil water conductivity (SWCON) constant for each soil layer.
 
-Parameters
-----------
+**Parameters**
 swcon
     Collection of values, has to be the same length as existing values.
 simulations, optional
     List of simulation names to update, if `None` update all simulations
     :param thickness_values: the soil profile thickness values
+
+
+_Method: APSIMNG.get_swcon_
+
+```python
+get_swcon(simulation:str)
 ```
-
-## Method: APSIMNG.get_swcon
-
-```
-get_swcon(simulation: unknown)
-
 Get soil water conductivity (SWCON) constant for each soil layer.
 
-Parameters
-----------
+**Parameters**
+
 simulation, optional
     Simulation name.
-Returns
--------
-    Array of SWCON values
+*Returns*
+```python
+list
 ```
 
-## Method: APSIMNG.clear_db
+
+_Method: APSIMNG.clear_db_
 
 ```
 Clears the attributes of the object and optionally deletes associated files.

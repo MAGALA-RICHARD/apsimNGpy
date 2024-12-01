@@ -1,5 +1,5 @@
 # apsimNGpy API documentation
-This apsimNGpy is generated automatically. The official documentation has not been released
+This apsimNGpy API documentation is generated automatically. The official documentation has not been released
 # Module: config
 
 ```python
@@ -39,20 +39,26 @@ config.set_apsim_bin_path(path: [os.Pathlike, str])
 
 Send your desired path to the aPSim binary folder to the config module
 the path should end with bin as the parent directory of the aPSim Model.
->> Please be careful with adding an uninstalled path, which does not have model.exe file or unix executable.
-It won't work and python with throw an error
+- Please be careful with adding an uninstalled path, which does not have model.exe file or unix executable.
+   It won't work and python with throw an error
+```python
 >> example from apsimNGpy.config import Config
-# check the current path
- config = Config.get_apsim_bin_path()
- # set the desired path
- >> Config.set_apsim_bin_path(path = '/path/to/APSIM*/bin')
+# - check the current path
 
+config = Config.get_apsim_bin_path()
+ # set the desired path
+>> Config.set_apsim_bin_path(path = '/path/to/APSIM*/bin')
+```
 ## Class: Config
 ```python
 config.Config
 ```
  The configuration class providing the leeway for the user to change the
-global variables such as aPSim bin locations. it is deprecated
+global variables such as aPSim bin locations. it is deprecated. it has the following method similar as above
+```python
+set_apsim_bin_path(path: [os.Pathlike, str])
+get_apsim_bin_path()
+```
  
 
 

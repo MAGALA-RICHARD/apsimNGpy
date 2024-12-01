@@ -164,7 +164,7 @@ Load default simulation model from aPSim folder
 :param path: string of the path to copy the model
 :param simulations_object: bool to specify whether to return apsimNGp.core simulation object defaults to True
 :return: apsimNGpy.core.APSIMNG simulation objects
-### Example
+#### Example
 ________________
  load apsimNG object directly
 ```python
@@ -199,7 +199,7 @@ load_default_sensitivity_model(method: str, path: str, simulations_object: bool)
  :@param path: string of the path to copy the model
  :@param simulations_object: bool to specify whether to return apsimNGp.core simulation object defaults to True
  :@return: apsimNGpy.core.APSIMNG simulation objects
- ## Example
+ ### Example
 __________________________________
  # load apsimNG object directly
 ```python

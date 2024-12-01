@@ -73,8 +73,9 @@ adjust_dul(simulations: Union[tuple, list])
 :return:
 ApsimModel model object
 
+_Method: ApsimModel.replace_downloaded_soils_
 ```python
-Method: ApsimModel.replace_downloaded_soils
+
 
 replace_downloaded_soils(soil_tables: Union[dict, list], simulation_names: Union[tuple, list])
 ```

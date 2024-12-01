@@ -769,32 +769,27 @@ Find physical soil
 
 simulation, optional
     Simulation name, if `None` use the first simulation.
-Returns
--------
-    APSIM Models.Soils.Physical object
-
-
-### Method: APSIMNG.extract_any_solute
+*Returns*
+```python
+Models.Soils.Physical 
+```
+_Method: APSIMNG.extract_any_solute_
 
 ```python
-extract_any_solute(parameter: str, simulation: unknown)
+extract_any_solute(parameter: str, simulation: str)
 ```
-Parameters
-____________________________________
-parameter: parameter name e.g NO3
-simulation, optional
+**Parameters**
+- parameter:str parameter name e.g NO3
+- simulation:str, optional
     Simulation name, if `None` use the first simulation.
-returns
-___________________
+
+_Method: APSIMNG.replace_any_solute_
 
 
-### Method: APSIMNG.replace_any_solute
+replaces with new solute
 
-```
-# replaces with new solute
+**Parameters**
 
-Parameters
-____________________________________
 parameter: parameter name e.g NO3
 param_values: new values as a list to replace the old ones
 simulation, optional

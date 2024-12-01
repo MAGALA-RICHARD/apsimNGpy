@@ -73,7 +73,7 @@ adjust_dul(simulations: Union[tuple, list])
 :return:
 ApsimModel model object
 
-_Method: ApsimModel.replace_downloaded_soils_
+_Method: apsimNGpy.core.apsim.ApsimModel.replace_downloaded_soils_
 ```python
 
 
@@ -107,27 +107,24 @@ and more based on the provided soil tables.
 *`CultvarName`*: cultivar name which is in the sowing module for adjusting the rue  
 *`tillage`*: specify whether you will be carried to adjust some physical parameters
 
-
+_apsimNGpy.core.apsim.ApsimModel.run_edited_file_
 ```python
-Method: ApsimModel.run_edited_file
-
 run_edited_file(simulations: Union[tuple, list], clean: bool, multithread: unknown)
 ```
 Run simulations in this subclass if we want to clean the database, we need to
  spawn the path with one process to avoid os access permission errors
 
 
-Parameters
-----------
+*Parameters*
 simulations, optional
-    List of simulation names to run, if `None` runs all simulations, by default `None`.
+    List of simulation names to run, if *`None`* runs all simulations, by default `None`.
 clean, optional
-    If `True` remove existing database for the file before running, by default `True`
+    If *`True`* remove existing database for the file before running, by default `True`
 multithread, optional
     If `True` APSIM uses multiple threads, by default `True`
 
 
-### Method: ApsimModel.spin_up
+_Method: apsimNgpy.core.apsim.ApsimModel.spin_up_
 
 ```python
 spin_up(report_name: str, start: int, end: int, spin_var: str, simulations: list)
@@ -137,28 +134,27 @@ Perform a spin-up operation on the aPSim model.
 This method is used to simulate a spin-up operation in an aPSim model. During a spin-up, various soil properties or
 variables may be adjusted based on the simulation results.
 
-Parameters:
-----------
-report_name : str, optional (default: 'Report')
+_Parameters_
+- report_name : str, optional (default: 'Report')
     The name of the aPSim report to be used for simulation results.
-start : str, optional
+- start : str, optional
     The start date for the simulation (e.g., '01-01-2023'). If provided, it will change the simulation start date.
-end : str, optional
+- end : str, optional
     The end date for the simulation (e.g., '3-12-2023'). If provided, it will change the simulation end date.
-spin_var : str, optional (default: 'Carbon'). the difference between the start and end date will determine the spin-up period
+- spin_var : str, optional (default: 'Carbon'). the difference between the start and end date will determine the spin-up period
     The variable representing the type of spin-up operation. Supported values are 'Carbon' or 'DUL'.
 
-Returns:
--------
+*Returns:*
+
  ApsimModel object
     The modified ApsimModel object after the spin-up operation.
     you could call save_edited file and save it to your specified location, but you can also proceed with the simulation
-```
+
 
 # Module: base_data
 The module for accessing the default dataset from APSIM model
 
-## Function: load_default_simulations
+_Function: apsimNGpy.core.base_data.load_default_simulations_
 
 ```python
 load_default_simulations(crop: str, path:  , simulations_object: bool)
@@ -168,7 +164,8 @@ Load default simulation model from aPSim folder
 :param path: string of the path to copy the model
 :param simulations_object: bool to specify whether to return apsimNGp.core simulation object defaults to True
 :return: apsimNGpy.core.APSIMNG simulation objects
-# Example
+### Example
+________________
  load apsimNG object directly
 ```python
 model = load_default_simulations('Maize', simulations_object=True)
@@ -189,10 +186,10 @@ model =load_default_simulations('Maize', simulations_object=False)
 ```python
 model.load_default_simulations('Marize')
 ```
-we get this warning
+`we get this warning`
 2024-11-19 16:18:55,798 - base-data - INFO - No crop named:' 'marize' found at 'C:/path/to/apsim/folder/Examples
 
-### Function: load_default_sensitivity_model
+_Function: apsimNGpy.core.base_data.load_default_sensitivity_model_
 
 ```python
 load_default_sensitivity_model(method: str, path: str, simulations_object: bool)
@@ -202,19 +199,21 @@ load_default_sensitivity_model(method: str, path: str, simulations_object: bool)
  :@param path: string of the path to copy the model
  :@param simulations_object: bool to specify whether to return apsimNGp.core simulation object defaults to True
  :@return: apsimNGpy.core.APSIMNG simulation objects
- # Example
+ ## Example
+__________________________________
  # load apsimNG object directly
 ```python
  >>> morris_model = load_default_sensitivity_model(method:str = 'Morris', simulations_object:bool=True)
 ```
  # let's try to laod non existient senstitivity model, which does exists
 ```python
- >>> load_default_sensitivity_model('Mmoxee')
+load_default_sensitivity_model('Mmoxee')
 ```
 we get this warning
 2024-11-29 13:30:51,757 - settings - INFO - No sensitivity model for method:' 'morrirs' found at '~//APSIM2024.5.7493.0//Examples//Sensitivity'
 
 # Module: core
+_________________________________________
 The primary class for all apsim related simulations
 ### Class: APSIMNG
 
@@ -246,7 +245,7 @@ reports: str, array like for returning the reports
 clean_up : bool deletes the file on disk, by default False
 returns results if results is True else None
 
-## property APSIMNG.simulation_object
+_property APSIMNG.simulation_object_
 ```python
 core.APSIMNG.simulation_object(value: unknown)
 ```
@@ -259,7 +258,7 @@ Set the model if you don't want to initialize again
 
 
 
-### property: APSIMNG.simulations
+_property: APSIMNG.simulations_
 
 ```python
 core.APSIMNG.simulations
@@ -270,7 +269,7 @@ We search all Models.Core.Simulation in the scope of Model.Core.Simulations. Ple
 Simulations is the whole json object Simulation is the node with the field zones, crops, soils and managers
 any structure of apsimx file any structure can be handled
 
-### property: APSIMNG.simulation_names
+_property: APSIMNG.simulation_names_
 
 ```python
 core.APSIMNG.simulations_names
@@ -285,8 +284,7 @@ retrieves the name of the simulations in the APSIMx `Model.Core
 core.APSIMNG.restart_model(model_info:named_tuple)
 ```
 
-
- :param model_info: A named tuple object returned by `load_apx_model` from the `model_loader` module.
+:param model_info: A named tuple object returned by `load_apx_model` from the `model_loader` module.
 
 Notes:
 - This parameter is crucial whenever we need to reinitialize the model, especially after updating management practices or editing the file.
@@ -301,10 +299,8 @@ This function is called by `save_edited_file` and `update_mgt`.
 ### Method: APSIMNG.save_edited_file
 
 ```python
-core.APSIMNG.save_edited_file(out_path:[os.Pathlike, str], relaod:bool)
+apsimNGpy.core.APSIMNG.save_edited_file(out_path:[os.Pathlike, str], relaod:bool)
 ```
-save_edited_file(out_path: unknown, reload: unknown)
-
 Saves the model to the local drive.
 Notes: - If `out_path` is None, the `save_model_to_file` function extracts the filename from the
 `Model.Core.Simulation` object. - `out_path`, however, is given high priority. Therefore,
@@ -316,10 +312,10 @@ Parameters
 - reload (bool): Whether to load the file using the `out_path` or the model's original file name.
 
 
-### Method: APSIMNG.run
+_Method: APSIMNG.run_
 
 ```python
-core.APSIMNG.run(report_name: Union[tuple, list], simulations: Union[tuple, list], clean: bool, multithread: bool, verbose: bool, get_dict: bool, init_only: bool)
+apsimNgpy.core.core.APSIMNG.run(report_name: [tuple, list], simulations: Union[tuple, list], clean: bool, multithread: bool, verbose: bool, get_dict: bool, init_only: bool)
 ```
 Run apsim model in the simulations
 
@@ -345,7 +341,7 @@ returns
     instance of the class APSIMNG
 
 
-### Method: APSIMNG.clone_simulation
+_Method: APSIMNG.clone_simulation_
 
 ```python
 APSIMNG.clone_simulation.clone_simulation(target: str, simulation: Union[list, tuple])

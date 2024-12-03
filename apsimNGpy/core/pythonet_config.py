@@ -1,7 +1,7 @@
 import os
 import sys as system
 import pythonnet
-from apsimNGpy import config
+from apsimNGpy.core import config
 aPSim_PATH = config.get_apsim_bin_path()
 
 def start_pythonnet():

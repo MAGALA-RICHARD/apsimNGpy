@@ -54,6 +54,7 @@ setup(
         'joblib >= 1.3.2',
         'sqlalchemy >=2.0',
         'matplotlib',
+        'psutil >=6.0.0',
         'tenacity'
 
     ]

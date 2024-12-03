@@ -59,7 +59,6 @@ class ApsimClient:
         self.ip_address = ip_address
         self.port = port
 
-
     def connect_to_remote_server(self):
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
@@ -67,7 +66,6 @@ class ApsimClient:
             return client
         except ConnectionRefusedError as e:
            print("connection denied-----------/")
-
 
     def _disconnect_from_server(self, socket):
         socket.close()

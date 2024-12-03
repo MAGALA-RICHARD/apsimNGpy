@@ -25,7 +25,8 @@ Register, download and install the Apsim Binary from https://apsim.info Its impo
 of the location of installation of APSIM binary files. We shall shall use in step 3.
 This location of this folder will depend on the operating System.
 
-In windows it will be located in /
+In windows it will be located in C:\\Program Files\APSIM{APSIM VERSION}\bin e.g.
+C:\\Users\\vanguard/AppData/Local/Programs\\APSIM2024.5.7493.0\\bin
 
 In linux it usually is in /usr/local/lib/apsim/{APSIM VERSION}/bin e.g.
 /usr/local/lib/apsim/2024.8.7571.0/bin

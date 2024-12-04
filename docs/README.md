@@ -1,6 +1,6 @@
 # apsimNGpy API documentation
 This apsimNGpy API documentation is generated automatically. The official documentation has not been released
-
+At this point, apsimNGpy is a prototype and should not be considered production-ready.
 ___________________________________________________________________________
 # Module: config
 _______________________________________________________

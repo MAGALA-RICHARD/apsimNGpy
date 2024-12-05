@@ -3,7 +3,7 @@ import os.path
 from importlib.resources import files
 from os.path import join, realpath, dirname, exists, split, basename
 from os import listdir, walk, getcwd, mkdir
-from apsimNGpy.config import get_apsim_bin_path
+from apsimNGpy.core.config import get_apsim_bin_path
 import shutil
 from apsimNGpy import data as DATA
 from pathlib import Path

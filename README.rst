@@ -11,7 +11,7 @@ Requirements
 1. Dotnet, install from https://learn.microsoft.com/en-us/dotnet/core/install/
 2. Python3
 3. APSIM Binary from https://apsim.info
-6. Minimum; 4GB RAM,
+4. At least 8GB of RAM and CPU Corei7
 
 .. _Installation:
 
@@ -20,22 +20,23 @@ Installation
 ********************************************************************************
 
 All versions are currently in development, phase and they can be installed as follows:
-- Step 1:
+
+#. Step 1:
 Register, download and install the Apsim Binary from https://apsim.info Its important to keep track
 of the location of installation of APSIM binary files. We shall shall use in step 3.
 This location of this folder will depend on the operating System.
 
-In windows it will be located in C:\\Program Files\APSIM{APSIM VERSION}\bin e.g.
-C:\\Users\\vanguard/AppData/Local/Programs\\APSIM2024.5.7493.0\\bin
+    * In windows it will be located in C:\\Program Files\APSIM{APSIM VERSION}\bin
+    e.g. C:\\Users\\vanguard/AppData/Local/Programs\\APSIM2024.5.7493.0\\bin
 
-In linux it usually is in /usr/local/lib/apsim/{APSIM VERSION}/bin e.g.
-/usr/local/lib/apsim/2024.8.7571.0/bin
+    * In linux it usually is in /usr/local/lib/apsim/{APSIM VERSION}/bin
+    e.g. /usr/local/lib/apsim/2024.8.7571.0/bin
 
 We will need this value for later usage before running the APSIM File Successfully.
 
--STEP 2:
+#. -STEP 2:
 
--- Either install from PyPI
+    -- Either install from PyPI
 
 .. code:: bash
 
@@ -56,10 +57,10 @@ You could also install using pip directly from github.
      pip install git+https://github.com/MAGALA-RICHARD/apsimNGpy.git@dev
 
 
-- STEP 3:
+#. - STEP 3:
 Set APSIM Binary File Path you stored in step 1
 
-In the file /apsimNGpy/apsimNGpyconfig.ini
+In the file /apsimNGpy/config.ini
  Add the following entry:
 .. code:: ini
     [Paths]
@@ -68,8 +69,12 @@ In the file /apsimNGpy/apsimNGpyconfig.ini
 
 .. _Usage:
 
+USAGE
+********************************************************************************
+
 If you installed from pip into a virtual environment;
 With the virtual environment you can jump straight to the python shell by running apsim_python_shell in terminal
+
 .. code:: python
     from apsimNGpy.core.base_data import load_default_simulations
     crop_model = load_default_simulations(crop='soybean')

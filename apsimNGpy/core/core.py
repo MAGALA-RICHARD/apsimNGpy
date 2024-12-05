@@ -102,6 +102,12 @@ def run_simulation_from_path(path: str):
     return run_simulation(model_meta_data)
 
 
+def run_simulation_from_string(crop, **kwargs):
+    from .model_loader import load_apx_model
+    model_meta_data = load_apx_model(model=crop,**kwargs)
+    return run_simulation(model_meta_data)
+
+
 class APSIMNG:
 
     def __init__(self, model=None, out_path=None, out=None, **kwargs):

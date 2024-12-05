@@ -72,18 +72,99 @@ In the file /apsimNGpy/config.ini
 USAGE
 ********************************************************************************
 
-If you installed from pip into a virtual environment;
-With the virtual environment you can jump straight to the python shell by running apsim_python_shell in terminal
+The modules are configured to automatically detect and load dotnet configurations.
 
 .. code:: python
     from apsimNGpy.core.base_data import load_default_simulations
     crop_model = load_default_simulations(crop='soybean')
     # default supported crops include, soybean, maize, wheat.
     # initialize the simulation
-    model_simulation = SoilModel(crop_model)
-    result = model_simulation.simulate()
+    result = crop_model.simulate()
     print(results)
     print(model_simulation.simulation_names)
+
+After the simulation runs, results are stored in the apsim.results attribute as pandas DataFrames.
+These results can be saved to a CSV file or printed to the console.
+.. code:: python
+    # Retrieve and save the results.
+    data_frame = crop_model.results
+    data_frame.to_csv('my_sample_result.csv')
+    print(data_frame.results
+
+You can retrieve the names of the simulations from the APSIM model and examine the management
+modules ued in the specified simulations.
+
+.. code:: python
+    sim_name = crop_model.simulation_names  # Retrieve simulation names
+    crop_model.examine_management_info(simulations=sim_name)
+
+Manipulating Simulation Parameters
+*************************************************************************************
+You can manipulate (change) simulation parameters i.e date range, management decisions,
+location.
+
+To change simulation dates call change_simulation_dates with a start_date and end_date
+..code:: python
+    ...
+    ...
+    sim = load_default_simulations(crop='MyCrop')
+    sim.change_simulation_dates(start_date='01/01/2018', end_date='12/31/2020')
+    ...
+    sim.simulate()
+
+To change simulation management decisions
+..code:: python
+    ...
+    ...
+    sim = load_default_simulations(crop='AvailableCrop')
+    rotation_decision = {'Name': "Simple Rotation", "Crops": 'Maize, Wheat, Soybean'}
+    sim.update_mgt(management=rotation_decision)
+    # you can view management decisions by calling
+    sim.examine_management_info()
+
+You can also change/populate new weather data into the simulation
+..code:: python
+    from apsimNGpy.core.weather import daymet_bylocation_nocsv
+    lonlat = -93.08, 42.014
+    start_year, end_year = 2018, 2020
+    wf = daymet_bylocation_nocsv(lonlat, start_year, end_year, filename='samplemet.met')
+    sim = load_default_simulation(crop='mycrop')
+    # to change weather data.
+    sim.replace_met_file(weather_file=wf)
+    mis = sim.show_met_file_in_simulation()  # to see the weather information
+
+Evaluating Predicted Variables
+***************************************************************************************
+You can also validate your simulations against measured data.
+
+..code:: python
+    from apsimNGpy.validation.evaluator import validate
+    import pandas as pd
+    ...
+    ...
+    predicted_results = sim.results
+    actual_results = pd.read_csv(actual_results.csv)
+    measured = actual_results['Measured']
+    predicted = predicted_results['MaizeR'].Yield  # Note here Maize{R}
+    val = validate(measured, predicted)
+
+    # Both variables should be the same length, and here we are assuming that they are sorted in
+    # the corresponding order
+    # There are two options:
+    # 1. Evaluate all
+    metrics = val.evaluate_all(verbose=True)
+    # Setting verbose=True prints all the results on the go; otherwise, a dictionary is returned
+    # with the value for each metric
+
+    # 2. Select or pass your desired metric
+    RMSE = val.evaluate("RMSE")
+    print(RMSE)
+
+# If you want to see the available metrics, use the code below
+available_metrics = metrics.keys()
+print(available_metrics)
+# Then select your choice from the list
+
 
 
 Required Dependencies:

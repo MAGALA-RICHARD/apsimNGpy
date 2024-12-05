@@ -234,17 +234,19 @@ from ..import settings
 
 
 def read_examples_dir():
-    if settings.BASE_DIR:
-        apsim = os.path.dirname(settings.BASE_DIR)
-        examples_folder = join(settings.BASE_DIR, 'data')
-        example_file_paths = listdir(examples_folder)
+    from apsimNGpy.config import get_apsim_binary_path
+    apsim_path = get_apsim_binary_path()
+    if not apsim_path:
+        apsim_path = os.getenv('APSIM_BIN_LOCATION')
 
-        example_files = {}
-        for file_path in example_file_paths:
-            if file_path.endswith(".apsimx"):
-                name, ext = file_path.split(".")
-                example_files[name] = file_path
-        return example_files
+    examples_dir = apsim_path.replace('bin', 'Examples')
+    all_files = os.listdir(examples_dir)
+    example_files = {}
+    for file_path in all_files:
+        if file_path.endswith(".apsimx"):
+            name, ext = file_path.split(".")
+            example_files[name] = os.path.join(examples_dir, file_path)
+    return example_files
 
 
 class __DetectApsimExamples:
@@ -304,7 +306,6 @@ class __DetectApsimExamples:
         return [self.get_example(i) for i in self.all]
 
 
-
 def __get_example(crop, path=None, simulations_object=True):
     """
     Get an APSIM example file path for a specific crop model.
@@ -331,6 +332,7 @@ def __get_example(crop, path=None, simulations_object=True):
         copy_path = path
 
     target_path = join(copy_path, crop) + '.apsimx'
+    examples_files = read_examples_dir()
     copied_file = shutil.copy(examples_files[crop], target_path)
 
     if not simulations_object:

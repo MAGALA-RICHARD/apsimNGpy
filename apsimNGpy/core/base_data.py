@@ -1,4 +1,5 @@
 import glob
+import logging
 import os.path
 from importlib.resources import files
 from os.path import join, realpath, dirname, exists, split, basename
@@ -12,7 +13,7 @@ from apsimNGpy.core.apsim import ApsimModel as SoilModel
 from pathlib import Path
 import os
 
-from settings import logger
+from apsimNGpy.settings import logger
 
 WEATHER_CO = 'NewMetrrr.met'
 # DATA = 'data' after tests, this did not work
@@ -96,7 +97,7 @@ def load_default_simulations(crop: str, path: [str, Path] = None,
     return __get_example(crop, path, simulations_object)
 
 
-def load_default_sensitivity_model(method:str, path:str=None, simulations_object:bool=True):
+def load_default_sensitivity_model(method: str, path: str = None, simulations_object: bool = True):
     """
      Load default simulation model from aPSim folder
     :@param method: string of the sentitivity type to load e.g. "Morris" or Sobol, not case-sensitive
@@ -139,4 +140,5 @@ if __name__ == '__main__':
     os.chdir(pp)
     mn = load_default_simulations('maize', simulations_object=True)
     sobol = load_default_sensitivity_model(method='sobol')
+    logging.info('running sobol')
     sobol.run()

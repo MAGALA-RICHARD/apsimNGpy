@@ -52,7 +52,7 @@ Nodes = [
 
 class Replacements(ReplacementHolder):
 
-    def __init__(self, model:Union[os.PathLike, dict, str], out_path=None, **kwargs):
+    def __init__(self, model: Union[os.PathLike, dict, str, 'APSIMNG'], out_path=None, **kwargs):
         super().__init__(model, out_path, **kwargs)
         # Map action types to method names
         # this will hold lower key
@@ -72,7 +72,7 @@ class Replacements(ReplacementHolder):
 
         # define them with human-readable formats
 
-    def replacement_methods(self, child:str):
+    def replacement_methods(self, child: str):
 
         if child in self._methods:
             return getattr(self, self._methods[child])
@@ -81,7 +81,7 @@ class Replacements(ReplacementHolder):
 
     def replace_soil_properties_by_path(self, path: str,
                                         param_values: list,
-                                        str_fmt:str=".",
+                                        str_fmt: str = ".",
                                         **kwargs):
         # TODO I know there is a better way to implement this
         """
@@ -144,7 +144,7 @@ class Replacements(ReplacementHolder):
         fpt['param_values'] = param_values
         return self.replace_soil_property_values(**fpt)
 
-    def replace_cultivar_params(self, *, path:str, param_values: tuple, fmt: str="/", **kwargs):
+    def replace_cultivar_params(self, *, path: str, param_values: tuple, fmt: str = "/", **kwargs):
         """
         the expected path is 'Cultivar/cultivar_name/commands' Note cultivars are best edited in the replacement folder, so,
         make sure it exists in your simulation and the respective crop has been added
@@ -212,6 +212,7 @@ class Replacements(ReplacementHolder):
 
         _eval_params[1] = {'Name': _eval_params[2], _eval_params[-1]: param_values},
         parameters[1] = 'management'
+        _eval_params[0] = _eval_params[0],
 
         _param_values = dict(zip(parameters, _eval_params))
 
@@ -246,3 +247,11 @@ class Replacements(ReplacementHolder):
         return self
 
 
+if __name__ == "__main__":
+    from apsimNGpy.core.base_data import load_default_simulations
+
+    maize = load_default_simulations(crop='maize')
+    #maize.preview_simulation()
+    maizee = Replacements(maize.path, )
+    mod = maizee.update_mgt_by_path(path='Simulation.Manager.Fertilise at sowing.Amount.out', param_values=100)
+    print(mod.extract_user_input('Fertilise at sowing'))

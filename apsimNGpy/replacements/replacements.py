@@ -209,12 +209,13 @@ class Replacements(ReplacementHolder):
             raise ValueError(f"Invalid path '{path}' expected path should follow {join_p}")
         args = [(p := f"'{arg}'") if " " in arg and fmt != " " and '[' not in arg else arg for arg in args]
         _eval_params = [self._try_literal_eval(arg) for arg in args]
-
-        _eval_params[1] = {'Name': _eval_params[2], _eval_params[-1]: param_values},
+        print(_eval_params)
+        _eval_params[1] = {'Name': _eval_params[2], _eval_params[3]: param_values},
         parameters[1] = 'management'
         _eval_params[0] = _eval_params[0],
 
         _param_values = dict(zip(parameters, _eval_params))
+        print(_param_values)
 
         return self.update_mgt(**_param_values)
 

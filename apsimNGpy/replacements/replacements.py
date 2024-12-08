@@ -246,34 +246,3 @@ class Replacements(ReplacementHolder):
         return self
 
 
-if __name__ == '__main__':
-    from pathlib import Path
-
-    import os
-
-    os.chdir(Path.home())
-    from apsimNGpy.core.base_data import load_default_simulations, weather_path
-    from apsimNGpy.core.base_data import LoadExampleFiles
-
-    mat = LoadExampleFiles().get_maize_model.path
-    mn = load_default_simulations(crop='Maize')
-    ce = Replacements(mn.path, out_path='a.apsimx')
-    mets = list(Path(weather_path).glob('*.met'))
-    met = os.path.realpath(list(mets)[0])
-    met2 = os.path.realpath(list(mets)[5])
-
-    # the method make_replacements can be chained with several other action types
-    mgt = {'Name': 'Sow using a variable rule', 'Population': 8.5},
-
-    chilredren = 'Manager', 'weather', 'SoilOrganicMatter'
-    ce.update_children_params(children=chilredren, icnr=148, weather_file=met2, management=mgt)
-    xi = ce.extract_user_input('Sow using a variable rule')
-
-    ce.show_met_file_in_simulation()
-    from apsimNGpy.core.base_data import load_default_simulations
-
-    soybean_model = load_default_simulations(crop='soybean')
-    soybean_model.run("Report")
-    res = soybean_model.results
-    print(res)
-    rep = Replacements(mat, out='me.apsimx')

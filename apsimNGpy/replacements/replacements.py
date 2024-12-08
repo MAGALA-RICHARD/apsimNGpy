@@ -202,7 +202,7 @@ class Replacements(ReplacementHolder):
                 print(model.extract_user_input('Sow using a variable rule'))
             """
         parameters_guide = ['simulations_name', 'Manager', 'manager_name', 'out_path_name', 'parameter_name']
-        parameters = ['simulations', 'Manager', 'Name', 'out']
+        parameters = ['simulations', 'Manager',  'out']
         args = path.split(fmt)
         if len(args) != len(parameters_guide):
             join_p = ".".join(parameters_guide)
@@ -213,8 +213,10 @@ class Replacements(ReplacementHolder):
         _eval_params[1] = {'Name': _eval_params[2], _eval_params[3]: param_values},
         parameters[1] = 'management'
         _eval_params[0] = _eval_params[0],
+        _eval_params[-1] = _eval_params[-1]
 
         _param_values = dict(zip(parameters, _eval_params))
+        _param_values['out'] =_eval_params[-1]
         print(_param_values)
 
         return self.update_mgt(**_param_values)

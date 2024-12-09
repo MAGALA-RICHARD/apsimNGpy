@@ -14,16 +14,17 @@ from itertools import islice
 import pandas as pd
 import multiprocessing as mp
 import types
+from typing import Iterable
 
 CPU = int(int(cpu_count()) * 0.5)
 CORES = NUM_CORES
 
 
-def select_type(use_thread:bool, n_cores:int):
+def select_type(use_thread: bool, n_cores: int):
     return ThreadPoolExecutor(n_cores) if use_thread else ProcessPoolExecutor(n_cores)
 
 
-def custom_parallel(func, iterable:list, *args, **kwargs):
+def custom_parallel(func, iterable: Iterable, *args, **kwargs):
     """
     Run a function in parallel using threads or processes.
 
@@ -74,7 +75,7 @@ def custom_parallel(func, iterable:list, *args, **kwargs):
 
 
 # _______________________________________________________________
-def run_apsimx_files_in_parallel(iterable_files:list, **kwargs):
+def run_apsimx_files_in_parallel(iterable_files: Iterable, **kwargs):
     """
     Run APSIMX simulation from multiple files in parallel.
 
@@ -114,7 +115,8 @@ def run_apsimx_files_in_parallel(iterable_files:list, **kwargs):
     return custom_parallel(run_model, iterable_files, ncores=ncores_2use, use_threads=kwargs.get('use_threads'))
 
 
-def read_result_in_parallel(iterable_files:list, ncores:int=None, use_threads:bool=False, report_name:str="Report", **kwargs):
+def read_result_in_parallel(iterable_files: Iterable, ncores: int = None, use_threads: bool = False,
+                            report_name: str = "Report", **kwargs):
     """
 
     Read APSIMX simulation databases results from multiple files in parallel.
@@ -161,12 +163,12 @@ def read_result_in_parallel(iterable_files:list, ncores:int=None, use_threads:bo
         ncores_2use = Ncores
     else:
         ncores_2use = int(cpu_count() * 0.50)
-    worker  =  func or read_db_table
-    return custom_parallel(worker, iterable_files, report_name, ncores=ncores_2use,progress_message=progress_msg,
+    worker = func or read_db_table
+    return custom_parallel(worker, iterable_files, report_name, ncores=ncores_2use, progress_message=progress_msg,
                            use_threads=use_threads)
 
 
-def download_soil_tables(iterable:list, use_threads:bool=False, ncores:int=2, **kwargs):
+def download_soil_tables(iterable: Iterable, use_threads: bool = False, ncores: int = 2, **kwargs):
     """
 
     Downloads soil data from SSURGO (Soil Survey Geographic Database) based on lonlat coordinates.
@@ -213,8 +215,8 @@ def download_soil_tables(iterable:list, use_threads:bool=False, ncores:int=2, **
         ncores_2use = Ncores
     else:
         ncores_2use = int(cpu_count() * 0.50)
-    worker  = func or  download_soil_table
-    return custom_parallel(worker, iterable, ncores=ncores_2use,progress_message = progress_msg,
+    worker = func or download_soil_table
+    return custom_parallel(worker, iterable, ncores=ncores_2use, progress_message=progress_msg,
                            use_threads=use_threads)
 
 

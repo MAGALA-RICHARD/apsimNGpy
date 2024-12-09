@@ -369,7 +369,7 @@ class APSIMNG:
             self._DataStore.Close()
         return self
 
-    def clone_simulation(self, target:str, simulation:Union[list, tuple]=None):
+    def clone_simulation(self, target: str, simulation: Union[list, tuple] = None):
         """Clone a simulation and add it to Model
 
         Parameters
@@ -777,7 +777,7 @@ class APSIMNG:
             pass
         return self
 
-    def update_mgt_by_path(self, *, path:str, param_values:str, fmt='.'):
+    def update_mgt_by_path(self, *, path: str, param_values: str, fmt='.'):
         parameters_guide = ['simulations_name', 'Manager', 'manager_name', 'out_path_name', 'parameter_name']
         parameters = ['simulations', 'Manager', 'Name', 'out']
         args = path.split(fmt)
@@ -795,7 +795,8 @@ class APSIMNG:
     def init_model(self, *args, **kwargs):
         self.run(init_only=True)
 
-    def update_mgt(self, *, management: Union[dict, tuple],  simulations: [list, tuple] = None, out: [Path, str] = None, **kwargs):
+    def update_mgt(self, *, management: Union[dict, tuple], simulations: [list, tuple] = None, out: [Path, str] = None,
+                   **kwargs):
         """
             Update management settings in the model. This method handles one management parameter at a time.
 
@@ -888,8 +889,9 @@ class APSIMNG:
                 if action.Name == manager_name:
                     params = self._kvtodict(action.Parameters)
                     # return params
-            if params is not None:
-              param_dict[sim.Name] = params
+
+                if params is not None and action.Name == manager_name:
+                    param_dict[sim.Name] = params
         return param_dict
 
     @staticmethod
@@ -1411,7 +1413,7 @@ class APSIMNG:
                 dul_[enum] = d
         return dul_
 
-    def set_swcon(self, swcon:list, simulations:Union[list, tuple]=None, thickness_values:list=None, **kwargs):
+    def set_swcon(self, swcon: list, simulations: Union[list, tuple] = None, thickness_values: list = None, **kwargs):
         """Set soil water conductivity (SWCON) constant for each soil layer.
 
         Parameters
@@ -1443,7 +1445,7 @@ class APSIMNG:
         wb = sim.FindDescendant[Models.WaterModel.WaterBalance]()
         return np.array(wb.SWCON)
 
-    def _find_solute(self, solute:str, simulations: Union[list, tuple]=None):
+    def _find_solute(self, solute: str, simulations: Union[list, tuple] = None):
         # values should be returned tagged by their simulation  names
         solutes = [sim.FindAllDescendants[Models.Soils.Solute](solute) for sim in self._find_simulation(simulations)]
         return solutes
@@ -1571,8 +1573,8 @@ if __name__ == '__main__':
     os.chdir(Path.home())
     from apsimNGpy.core.base_data import LoadExampleFiles, load_default_simulations
 
-    al = LoadExampleFiles(Path.cwd())
-    modelm = al.get_maize
+    al = load_default_simulations(crop ='maize', simulations_object=False)
+    modelm = al
 
     model = load_default_simulations('maize')
     a = perf_counter()

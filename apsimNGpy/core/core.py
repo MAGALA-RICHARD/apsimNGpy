@@ -879,14 +879,15 @@ class APSIMNG:
         # output
         {'Crop': 'Maize', 'FertiliserType': 'NO3N', 'Amount': '160.0'}
         """
-
+        param_dict = {}
         for sim in self.simulations:
             actions = sim.FindAllDescendants[Models.Manager]()
             out = {"simulation": sim.Name}
             for action in actions:
                 if action.Name == manager_name:
                     params = self._kvtodict(action.Parameters)
-                    return params
+                    # return params
+                    param_dict[sim.Name] = params
 
     @staticmethod
     def strip_time(date_string):

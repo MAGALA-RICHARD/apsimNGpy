@@ -698,6 +698,7 @@ class APSIMNG:
         self.find_simulations(simulations)
 
     def check_som(self, simulations=None):
+        simus = {}
         for sim in self.find_simulations(simulations):
             zone = sim.FindChild[Models.Core.Zone]()
 
@@ -710,9 +711,10 @@ class APSIMNG:
             if som_path:
                 som = zone.FindByPath(som_path)
                 if som:
-                    return som.Value.InitialResidueMass, som.Value.InitialCNR
+                    simus[sim.Name] = som.Value.InitialResidueMass, som.Value.InitialCNR
             else:
-                raise Exception("File node structure is not supported at a moment")
+                raise ValueError("File node structure is not supported at a moment")
+        return simus
 
     def change_som(self, *, simulations: Union[tuple, list] = None, inrm: int = 1250, icnr: int = 27, **kwargs):
         """
@@ -853,6 +855,8 @@ class APSIMNG:
         Preview the simulation file in the apsimNGpy object in the APSIM graphical user interface
         @return: opens the simulation file
         """
+        # TODO this need to be connected to the apsim installation path to make
+        #  sure that file are opened in their corresponding versions
         filepath = self.path
         import platform
         import subprocess

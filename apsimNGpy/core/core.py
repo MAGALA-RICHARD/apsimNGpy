@@ -888,6 +888,7 @@ class APSIMNG:
                     params = self._kvtodict(action.Parameters)
                     # return params
                     param_dict[sim.Name] = params
+        return param_dict
 
     @staticmethod
     def strip_time(date_string):

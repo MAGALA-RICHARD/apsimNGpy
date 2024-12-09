@@ -881,13 +881,15 @@ class APSIMNG:
         """
         param_dict = {}
         for sim in self.simulations:
+            params =None
             actions = sim.FindAllDescendants[Models.Manager]()
             out = {"simulation": sim.Name}
             for action in actions:
                 if action.Name == manager_name:
                     params = self._kvtodict(action.Parameters)
                     # return params
-                    param_dict[sim.Name] = params
+
+            param_dict[sim.Name] = params
         return param_dict
 
     @staticmethod

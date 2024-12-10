@@ -716,7 +716,7 @@ class APSIMNG:
                 raise ValueError("File node structure is not supported at a moment")
         return simus
 
-    def change_som(self, *, simulations: Union[tuple, list] = None, inrm: int = 1250, icnr: int = 27, **kwargs):
+    def change_som(self, *, simulations: Union[tuple, list] = None, inrm: int = None, icnr: int = None, surface_om_name ='SurfaceOrganicMatter', **kwargs):
         """
          Change Surface Organic Matter (SOM) properties in specified simulations.
 
@@ -724,14 +724,14 @@ class APSIMNG:
         simulations (str ort list): List of simulation names to target (default: None).
         inrm (int): New value for Initial Residue Mass (default: 1250).
         icnr (int): New value for Initial Carbon to Nitrogen Ratio (default: 27).
-
+        surface_om_name (str, optional): name of the surface organic matter node defaults to ='SurfaceOrganicMatter'
     Returns:
         self: The current instance of the class.
         """
         som = None
         for sim in self.find_simulations(simulations):
             zone = sim.FindChild[Models.Core.Zone]()
-            som1 = zone.FindChild('SurfaceOrganicMatter')
+            som1 = zone.FindChild( surface_om_name)
             field = zone.Name
             sname = sim.Name
 
@@ -739,11 +739,14 @@ class APSIMNG:
             if som_path:
                 som = zone.FindByPath(som_path)
             if som:
-                som.Value.InitialResidueMass = inrm
-                som.Value.InitialCNR = icnr
+                if inrm is not None:
+                    som.Value.InitialResidueMass = inrm
+                if icnr is not None:
+                    som.Value.InitialCNR = icnr
             else:
                 raise NotImplementedError(
-                    "File node structure is not supported at a moment. please rename your SOM module to "
+                    f"File node structure is not supported at a moment. or {surface_om_name} not found in the file "
+                    f"rename your SOM module to"
                     "SurfaceOrganicMatter")
             # mp.Value.InitialResidueMass
 

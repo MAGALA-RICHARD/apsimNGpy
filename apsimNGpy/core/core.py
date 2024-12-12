@@ -132,23 +132,7 @@ class APSIMNG:
         self._met_file = kwargs.get('met_file')
         # self.init_model() work in progress
 
-    def run_simulations(self, results: bool = None, reports: Union[tuple, list] = None, clean_up: bool = False):
-        """
-        Run the simulation. here we are using the self.model_info named tuple from model loader
-        :results : bool, optional if True, we return the results of the simulation
-           else we just run, and the user can retrieve he results from the database using the data store path
-        reports: str, array like for returning the reports
-        clean_up : bool deletes the file on disk, by default False
-        returns results if results is True else None
-        """
-        self.check_model()
-        self.model_info = self.model_info._replace(IModel=self.Simulations)
-        resu = run_model(self.model_info, results=results, clean_up=clean_up)
 
-        if reports:
-            return [resu[repo] for repo in reports] if isinstance(reports, (list, tuple, set)) else resu[reports]
-        else:
-            return resu
 
     @property
     def simulation_object(self):
@@ -1578,7 +1562,7 @@ if __name__ == '__main__':
 
     # Model = FileFormat.ReadFromFile[Models.Core.Simulations](model, None, False)
     os.chdir(Path.home())
-    from apsimNGpy.core.base_data import LoadExampleFiles, load_default_simulations
+    from apsimNGpy.core.base_data import  load_default_simulations
 
     al = load_default_simulations(crop ='maize', simulations_object=False)
     modelm = al
@@ -1602,16 +1586,3 @@ if __name__ == '__main__':
 
         a = perf_counter()
 
-        res = model.run_simulations(reports="Report", clean_up=False, results=True)
-        b = perf_counter()
-        logger.info(f"{b - a}, seconds")
-        mod = model.Simulations
-        # xp = mod.FindAllInScope[Models.Manager]('Simple Rotation')
-        # a = [i for i in xp]
-        # for p in a:
-        #  for i in range(len(p.Parameters)):
-        #      kvp =p.Parameters[i]
-        #      if kvp.Key == "Crops":
-        #          updated_kvp = KeyValuePair[str, str](kvp.Key, "UpdatedValue")
-        #          p.Parameters[i] = updated_kvp
-        #      logger.info(p.Parameters[i])

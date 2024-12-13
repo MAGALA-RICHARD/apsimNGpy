@@ -48,7 +48,7 @@ def test():
     from time import perf_counter
     # Model = FileFormat.ReadFromFile[Models.Core.Simulations](model, None, False)
     os.chdir(Path.home())
-    from apsimNGpy.core.base_data import LoadExampleFiles, load_default_simulations
+    from apsimNGpy.core.base_data import load_default_simulations
 
     model = load_default_simulations(crop='maize')
     logging.info(f"testing simulator time\n ______________________")

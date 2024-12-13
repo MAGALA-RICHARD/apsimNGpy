@@ -135,6 +135,7 @@ def test_experiment(use_tread=False):
 # Running the test
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
+    test()
     with test_experiment(use_tread=True) as experiment:
         sim_data = experiment.get_simulated_data()[0]
         mn = sim_data.groupby(['FBiom'])['Yield'].mean()

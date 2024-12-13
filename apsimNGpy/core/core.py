@@ -255,7 +255,7 @@ class APSIMNG:
         self.path = self.model_info.path
         return self
 
-    def save_edited_file(self, out_path=None, reload=False):
+    def save_edited_file(self, out_path: os.PathLike = None, reload:bool=False) -> Union['APSIMNG', None]:
         """ Saves the model to the local drive.
 
             Notes: - If `out_path` is None, the `save_model_to_file` function extracts the filename from the
@@ -284,7 +284,7 @@ class APSIMNG:
             verbose: bool = False,
             get_dict: bool = False,
             init_only: bool = False,
-            **kwargs):
+            **kwargs) -> 'APSIMNG':
         """Run apsim model in the simulations
 
         Parameters

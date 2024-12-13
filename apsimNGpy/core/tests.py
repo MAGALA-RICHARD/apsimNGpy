@@ -56,7 +56,7 @@ def test():
         a = perf_counter()
         # model.RevertCheckpoint()
 
-        model.run_simulations('report')
+        model.run('report')
         # print(model.results.mean(numeric_only=True))
 
         # print(model.results.mean(numeric_only=True))

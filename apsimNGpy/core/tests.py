@@ -17,8 +17,8 @@ user_id = current_path
 
 sys.path.append(current_path)
 sys.path.append(os.path.dirname(current_path))
-from apsimNGpy.config import auto_detect_apsim_bin_path
-from apsimNGpy.config import get_apsim_bin_path
+from apsimNGpy.core.config import auto_detect_apsim_bin_path
+from apsimNGpy.core.config import get_apsim_bin_path
 
 try:
     from core import APSIMNG

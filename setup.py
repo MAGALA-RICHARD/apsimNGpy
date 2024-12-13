@@ -1,12 +1,6 @@
 import os
 
 from setuptools import setup, find_packages
-config_path = os.path.realpath('config.ini')
-if os.path.exists(config_path):
-    try:
-       os.remove(config_path)
-    except:
-        pass
 
 VERSION = '0.0.3.0'
 DESCRIPTION = 'apsimx next generation package interface'

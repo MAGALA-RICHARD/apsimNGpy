@@ -1,12 +1,13 @@
 import itertools
 import os, sys
+
 sys.path.append(os.path.dirname(os.path.realpath(__file__)))
 import shutil
 from os.path import realpath
 from pathlib import Path
 from apsimNGpy.utililies.database_utils import clear_all_tables, clear_table
 from apsimNGpy.parallel.process import custom_parallel
-from apsimNGpy.utililies.database_utils import read_db_table
+from apsimNGpy.utililies.database_utils import read_db_table, check_column_value_exists
 from apsimNGpy.experiment.experiment_utils import _run_experiment, experiment_runner, define_factor, define_cultivar, \
     copy_to_many, MetaInfo, Factor
 from apsimNGpy.experiment.set_ups import track_completed, DeepChainMap, define_parameters
@@ -14,6 +15,7 @@ import warnings
 import logging
 
 logging.basicConfig(format='%(asctime)s :: %(message)s', level=logging.INFO)
+
 
 class Experiment:
     """
@@ -66,6 +68,7 @@ class Experiment:
     print(len(FactorialExperiment.factors))
 
     """
+
     def __init__(self, *, datastorage,
                  tag,
                  base_file,
@@ -210,7 +213,7 @@ class Experiment:
         size_in_bytes = os.path.getsize(self.meta_info.get('datastorage'))
         size_in_mb = size_in_bytes / (1024 * 1024)
         if data_size == size_in_mb:
-           logging.info(f'data size is {size_in_mb} is the same as the initial data is not writing to the data base')
+            logging.info(f'data size is {size_in_mb} is the same as the initial data is not writing to the data base')
         return t_data
 
     def start_experiment(self):
@@ -286,16 +289,18 @@ if __name__ == '__main__':
                                      n_core=6,
                                      reports={'Report'})
 
-    FactorialExperiment.add_factor(parameter='Carbon', param_values=[1.4, 2.4, 0.8], factor_type='soils', soil_node='Organic')
-    FactorialExperiment.add_factor(parameter='Crops', param_values=['Maize', "Wheat"], factor_type='management', manager_name='Simple '
-                                                                                                              'Rotation')
+    FactorialExperiment.add_factor(parameter='Carbon', param_values=[1.4, 2.4, 0.8], factor_type='soils',
+                                   soil_node='Organic')
+    FactorialExperiment.add_factor(parameter='Crops', param_values=['Maize', "Wheat"], factor_type='management',
+                                   manager_name='Simple '
+                                                'Rotation')
     # # cultivar is edited via the replacement module, any simulation file supplied without Replacements appended
     # # to Simulations node, this method will fail quickly
     # FactorialExperiment.add_factor(parameter='grain_filling', param_values=[300, 450, 650, 700, 500], cultivar_name='B_110',
     #                                commands='[Phenology].GrainFilling.Target.FixedValue', factor_type='cultivar')
 
     FactorialExperiment.clear_data_base()
-    #os.remove(FactorialExperiment.datastorage)
+    # os.remove(FactorialExperiment.datastorage)
     FactorialExperiment.start_experiment()
     sim_data = FactorialExperiment.get_simulated_data()[0]
 

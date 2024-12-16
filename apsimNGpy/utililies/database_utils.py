@@ -1,9 +1,11 @@
 """
 Interface to APSIM simulation models using Python.NET 
 """
+import os
 import sqlite3
 from collections import namedtuple
 from os.path import exists
+from pathlib import Path
 
 from pandas import errors
 from pandas import read_sql_query as rsq
@@ -148,3 +150,24 @@ def clear_all_tables(db):
             cursor.execute(f"DELETE FROM {table[0]}")
 
         conn.commit()
+
+
+def check_column_value_exists(_db: os.PathLike, table_name: str, value_to_check: str, column_name: str, exists) -> bool:
+    db = Path(_db)
+    if db.is_file() and db.suffix == '.db':
+        with sqlite3.connect(_db) as conn:
+            cursor = conn.cursor()
+            query = f"SELECT EXISTS(SELECT 1 FROM {table_name} WHERE {column_name} = ?)"
+
+            # Execute the query
+            try:
+                cursor.execute(query, (value_to_check,))
+                ans_exists = cursor.fetchone()[0]
+                if ans_exists:
+                    return True
+            except sqlite3.OperationalError as e:
+                if 'no such table' in str(e):
+                    # expect this error to occur when the database is not yet created,
+                    return False
+                else:
+                    raise

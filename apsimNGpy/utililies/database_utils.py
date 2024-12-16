@@ -10,6 +10,7 @@ from pathlib import Path
 from pandas import errors
 from pandas import read_sql_query as rsq
 from sqlalchemy import create_engine, inspect
+from apsimNGpy.utililies.exceptions import TableNotFoundError
 
 
 def read_with_query(db, query):
@@ -165,9 +166,6 @@ def check_column_value_exists(_db: os.PathLike, table_name: str, value_to_check:
                 ans_exists = cursor.fetchone()[0]
                 if ans_exists:
                     return True
-            except sqlite3.OperationalError as e:
-                if 'no such table' in str(e):
-                    # expect this error to occur when the database is not yet created,
-                    return False
-                else:
-                    raise
+            except TableNotFoundError as e:
+                # expect this error to occur when the database is not yet created,
+                return False

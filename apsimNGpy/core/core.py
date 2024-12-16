@@ -43,7 +43,7 @@ from apsimNGpy.core.model_loader import (load_apx_model, save_model_to_file, rec
 from apsimNGpy.utililies.utils import timer
 from apsimNGpy.core.runner import run_model
 import ast
-
+from typing import Iterable
 MultiThreaded = Models.Core.Run.Runner.RunTypeEnum.MultiThreaded
 SingleThreaded = Models.Core.Run.Runner.RunTypeEnum.SingleThreaded
 ModelRUNNER = Models.Core.Run.Runner
@@ -277,7 +277,7 @@ class APSIMNG:
             self.restart_model()
             return self
 
-    def run(self, report_name: Union[tuple, list] = None,
+    def run(self, report_name: Union[tuple, list, str] = None,
             simulations: Union[tuple, list] = None,
             clean: bool = False,
             multithread: bool = True,
@@ -289,8 +289,11 @@ class APSIMNG:
 
         Parameters
         ----------
-         :param report_name: str. defaults to APSIM defaults Report Name, and if not specified or Report Name not in the simulation tables, the simulator will
-            execute the model and save the outcomes in a database file, accessible through alternative retrieval methods.
+         :param report_name: (iterable, str). defaults to APSIM defaults Report Name if not specified,
+        --Notes
+          if `report_name` is iterable and not get_dict a list is return
+          if `report_name` is iterable and get_dict a dictionary is returned
+          if report name is string e.g report a panda data frame is returned
 
         simulations (__list_), optional
             List of simulation names to run, if `None` runs all simulations, by default `None`.
@@ -337,7 +340,7 @@ class APSIMNG:
                 if '_Units' in report_name: report_name.remove('_Units')
                 warnings.warn(
                     'No tables were specified, retrieved tables includes:: {}'.format(report_name)) if verbose else None
-            if isinstance(report_name, (tuple, list)):
+            if isinstance(report_name, Iterable):
                 if not get_dict:
                     self.results = [read_db_table(self.datastore, report_name=rep) for rep in report_name]
                 else:

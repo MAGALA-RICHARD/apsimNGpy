@@ -202,22 +202,33 @@ class Replacements(ReplacementHolder):
                 print(model.extract_user_input('Sow using a variable rule'))
             """
         parameters_guide = ['simulations_name', 'Manager', 'manager_name', 'out_path_name', 'parameter_name']
-        parameters = ['simulations', 'Manager',  'out']
+        parameters = ['simulations', 'Manager', 'out']
         args = path.split(fmt)
         if len(args) != len(parameters_guide):
             join_p = ".".join(parameters_guide)
+
             raise ValueError(f"Invalid path '{path}' expected path should follow {join_p}")
         args = [(p := f"'{arg}'") if " " in arg and fmt != " " and '[' not in arg else arg for arg in args]
         _eval_params = [self._try_literal_eval(arg) for arg in args]
-        print(_eval_params)
+
+        if _eval_params[0]:  # this ensures that the list is not converted to tuple in the next step
+            if not isinstance(_eval_params[0], (tuple, list, np.ndarray)):
+                # convert to tuple
+                _eval_params[0] = _eval_params[0],
+        else:
+            # None is not needed in a tuple
+            _eval_params[0] = None
+            ...
+            # _eval_params[0] = [_eval_params[0]]
+        #print(_eval_params, '---')
         _eval_params[1] = {'Name': _eval_params[2], _eval_params[3]: param_values},
         parameters[1] = 'management'
-        _eval_params[0] = _eval_params[0],
+
         _eval_params[-1] = _eval_params[-1]
 
         _param_values = dict(zip(parameters, _eval_params))
-        _param_values['out'] =_eval_params[-1]
-        print(_param_values)
+        _param_values['out'] = _eval_params[-1]
+       # print(_param_values)
 
         return self.update_mgt(**_param_values)
 
@@ -254,7 +265,7 @@ if __name__ == "__main__":
     from apsimNGpy.core.base_data import load_default_simulations
 
     maize = load_default_simulations(crop='maize')
-    #maize.preview_simulation()
+    # maize.preview_simulation()
     maizee = Replacements(maize.path, )
-    mod = maizee.update_mgt_by_path(path='Simulation.Manager.Fertilise at sowing.Amount.out', param_values=100)
+    mod = maizee.update_mgt_by_path(path='Simulation.Manager.Fertilise at sowing.Amount.out', param_values=101)
     print(mod.extract_user_input('Fertilise at sowing'))

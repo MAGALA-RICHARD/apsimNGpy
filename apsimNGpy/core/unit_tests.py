@@ -51,8 +51,6 @@ class TestAPSIMNG(unittest.TestCase):
             self.assertTrue(mock_datastore.Open.called)
             self.assertTrue(mock_datastore.Close.called)
 
-
-
     def test_save_edited_file(self, ):
         # Setup mocks
 
@@ -62,7 +60,7 @@ class TestAPSIMNG(unittest.TestCase):
             os.remove(out)
         result_path = save_model_to_file(self.test_ap_sim2.Simulations, out=out)
         isfile = os.path.isfile(result_path)
-        self.assertTrue(result_path, isfile)  # Ensure the returned path is as expected
+        self.assertEqual(isfile, True)  # Ensure the returned path is as expected
 
     def test_clear_links(self):
         """ Test clear_links method ensures that Simulations.ClearLinks is called. """
@@ -76,6 +74,4 @@ class TestAPSIMNG(unittest.TestCase):
 
 
 if __name__ == '__main__':
-
     unittest.main()
-

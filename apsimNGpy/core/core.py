@@ -340,7 +340,7 @@ class APSIMNG:
                 if '_Units' in report_name: report_name.remove('_Units')
                 warnings.warn(
                     'No tables were specified, retrieved tables includes:: {}'.format(report_name)) if verbose else None
-            if isinstance(report_name, Iterable):
+            if isinstance(report_name, (tuple, list, np.ndarray)):
                 if not get_dict:
                     self.results = [read_db_table(self.datastore, report_name=rep) for rep in report_name]
                 else:

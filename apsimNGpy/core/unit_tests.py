@@ -76,7 +76,6 @@ class TestAPSIMNG(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    from typing import Iterable
 
-
+    unittest.main()
 

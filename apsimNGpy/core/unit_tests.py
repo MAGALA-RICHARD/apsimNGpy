@@ -2,10 +2,10 @@ import os
 import unittest
 from unittest.mock import MagicMock, patch, mock_open
 from pathlib import Path
-
+import shutil
 import pandas as pd
 
-# Import the module where APSIMNG class is define
+# Import the module where APSIMNG class is defined
 from apsimNGpy.core.core import APSIMNG, save_model_to_file
 from apsimNGpy.core.model_loader import save_model_to_file
 
@@ -66,7 +66,7 @@ class TestAPSIMNG(unittest.TestCase):
 
     def test_check_som(self):
         som = self.test_ap_sim.check_som()
-        self.assertIsInstance(som, dict)
+        self.assertIsInstance(som, dict,'check_som should return a dictionary')
 
     def test_change_som(self):
         inrm = 105
@@ -75,8 +75,8 @@ class TestAPSIMNG(unittest.TestCase):
         som = self.test_ap_sim.check_som()
         self.assertIsInstance(som, dict)
         inrmOut, icnrOut = int(som['Simulation'][0]), int(som['Simulation'][1])
-        self.assertEqual(inrm, inrmOut)
-        self.assertEqual(icnr, icnrOut)
+        self.assertEqual(inrm, inrmOut, msg='inrm are not equal possibly change_som was not successful')
+        self.assertEqual(icnr, icnrOut, msg='icnr are not equal possibly change_som was not successful')
 
     def test_clear_links(self):
         """ Test clear_links method ensures that Simulations.ClearLinks is called. """
@@ -89,7 +89,6 @@ class TestAPSIMNG(unittest.TestCase):
         if os.path.exists(self.out):
             os.remove(self.out)
         del self.test_ap_sim
-        pass
 
 
 if __name__ == '__main__':

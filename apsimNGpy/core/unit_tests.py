@@ -26,6 +26,7 @@ class TestAPSIMNG(unittest.TestCase):
         # self.out_path.mkdir(parents=True, exist_ok=True)
         self.test_ap_sim = APSIMNG(model=self.model_path)
         self.test_ap_sim2 = APSIMNG(model=self.model_path2)
+        self.out = os.path.realpath('test_save_output.apsimx')
 
     def test_run(self):
         """ Test the run method's behavior under normal conditions. """
@@ -34,15 +35,12 @@ class TestAPSIMNG(unittest.TestCase):
             mock_datastore.Close = MagicMock()
             # test if dictionary is returned
             self.test_ap_sim.run(get_dict=True)
-            # test if pd is return
-            tp = type(self.test_ap_sim.results) == dict
-            self.assertIsInstance(tp, bool)
             self.assertIsInstance(self.test_ap_sim.results, dict)
             # check is a list is returned if a user passes a tuple or  alist of report names
             self.test_ap_sim.run(report_name=['Report'], get_dict=False)  # false is the default
             self.assertIsInstance(self.test_ap_sim.results, list)
             # one more test
-            # check if the use pass  report name as a strict a pandas.core.frame.DataFrame' is returned
+            # check if the use pass  report name as str a strict a pandas.core.frame.DataFrame' is returned
             self.test_ap_sim.run(report_name='Report', get_dict=False)
             df = self.test_ap_sim.results
             self.assertIsInstance(df, pd.DataFrame)
@@ -52,15 +50,33 @@ class TestAPSIMNG(unittest.TestCase):
             self.assertTrue(mock_datastore.Close.called)
 
     def test_save_edited_file(self, ):
-        # Setup mocks
-
-        # Call the method
-        out = os.path.realpath('test_save_output.apsimx')
-        if os.path.exists(out):
-            os.remove(out)
-        result_path = save_model_to_file(self.test_ap_sim2.Simulations, out=out)
+        result_path = save_model_to_file(self.test_ap_sim2.Simulations, out=self.out)
         isfile = os.path.isfile(result_path)
-        self.assertEqual(isfile, True)  # Ensure the returned path is as expected
+        self.assertEqual(isfile, True)
+
+    def test_update_mgt(self):
+        """ Test the update method's behavior under"""
+        Amount = 23.557777
+        script_name = 'Fertilise at sowing'
+        mgt_script = {'Name': script_name, 'Amount': Amount},
+        self.test_ap_sim.update_mgt(management=mgt_script)
+        # extract user infor
+        amountIn = float(self.test_ap_sim.extract_user_input(script_name)['Simulation']['Amount'])
+        self.assertEqual(amountIn, Amount)
+
+    def test_check_som(self):
+        som = self.test_ap_sim.check_som()
+        self.assertIsInstance(som, dict)
+
+    def test_change_som(self):
+        inrm = 105
+        icnr = 29
+        self.test_ap_sim.change_som(inrm=inrm, icnr=icnr)
+        som = self.test_ap_sim.check_som()
+        self.assertIsInstance(som, dict)
+        inrmOut, icnrOut = int(som['Simulation'][0]), int(som['Simulation'][1])
+        self.assertEqual(inrm, inrmOut)
+        self.assertEqual(icnr, icnrOut)
 
     def test_clear_links(self):
         """ Test clear_links method ensures that Simulations.ClearLinks is called. """
@@ -70,6 +86,9 @@ class TestAPSIMNG(unittest.TestCase):
             mock_simulations.ClearLinks.assert_called_once()
 
     def tearDown(self):
+        if os.path.exists(self.out):
+            os.remove(self.out)
+        del self.test_ap_sim
         pass
 
 

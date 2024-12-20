@@ -339,8 +339,10 @@ class APSIMNG:
 
             elif isinstance(report_name, str):
                 self.results = self.load_simulated_results()[report_name]
-            if get_dict:
-                self.results = self.load_simulated_results()
+            elif get_dict and isinstance(report_name, (list, dict)):
+                self.results = {i:self.load_simulated_results()[i] for i in report_name}
+            elif not get_dict and isinstance(report_name, (list, dict)):
+                self.results = [self.load_simulated_results()[i] for i in report_name]
             #     # issues with decoding '_Units' we remove it
             #     if '_Units' in report_name: report_name.remove('_Units')
             #     warnings.warn(

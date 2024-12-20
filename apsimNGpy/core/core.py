@@ -44,6 +44,7 @@ from apsimNGpy.utililies.utils import timer
 from apsimNGpy.core.runner import run_model
 import ast
 from typing import Iterable
+
 logging.basicConfig(level=logging.INFO)
 MultiThreaded = Models.Core.Run.Runner.RunTypeEnum.MultiThreaded
 SingleThreaded = Models.Core.Run.Runner.RunTypeEnum.SingleThreaded
@@ -330,30 +331,42 @@ class APSIMNG:
             _run_model = ModelRUNNER(sim, True, False, False, None, runtype)
             e = _run_model.Run()
             if len(e) > 0:
-                logger.info(e[0].ToString())
+                logging.info(e[0].ToString())
             if init_only:
                 return self
-            if report_name is None:
-                report_name = get_db_table_names(self.datastore)
-                # issues with decoding '_Units' we remove it
-                if '_Units' in report_name: report_name.remove('_Units')
-                warnings.warn(
-                    'No tables were specified, retrieved tables includes:: {}'.format(report_name)) if verbose else None
-            if isinstance(report_name, (tuple, list, np.ndarray)):
-                if not get_dict:
-                    self.results = [read_db_table(self.datastore, report_name=rep) for rep in report_name]
-                else:
-                    self.results = {rep: read_db_table(self.datastore, report_name=rep) for rep in report_name}
+            if report_name is None and not init_only:
+                self.load_simulated_results()
 
-            else:
-                if not get_dict:
-                    self.results = read_db_table(self.datastore, report_name=report_name)
-                else:
-                    self.results = {report_name: read_db_table(self.datastore, report_name=report_name)}
+            elif isinstance(report_name, str):
+                self.results = self.load_simulated_results()[report_name]
+            if get_dict:
+                self.results = self.load_simulated_results()
+            #     # issues with decoding '_Units' we remove it
+            #     if '_Units' in report_name: report_name.remove('_Units')
+            #     warnings.warn(
+            #         'No tables were specified, retrieved tables includes:: {}'.format(report_name)) if verbose else None
+            # if isinstance(report_name, (tuple, list, np.ndarray)):
+            #     if not get_dict:
+            #         self.results = [read_db_table(self.datastore, report_name=rep) for rep in report_name]
+            #     else:
+            #         self.results = {rep: read_db_table(self.datastore, report_name=rep) for rep in report_name}
+            #
+            # else:
+            #     if not get_dict:
+            #         self.results = read_db_table(self.datastore, report_name=report_name)
+            #     else:
+            #         self.results = {report_name: read_db_table(self.datastore, report_name=report_name)}
         finally:
             # close the datastore
             self._DataStore.Close()
         return self
+
+    def load_simulated_results(self):
+        in_reports = []
+        reports = self.get_report(names_only=True).values()
+        for i in reports:
+            in_reports.extend(i)
+        return {rep: read_db_table(self.datastore, report_name=rep) for rep in in_reports}
 
     def clone_simulation(self, target: str, simulation: Union[list, tuple] = None):
         """Clone a simulation and add it to Model

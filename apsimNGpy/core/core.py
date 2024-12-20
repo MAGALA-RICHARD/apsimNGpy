@@ -1360,6 +1360,7 @@ class APSIMNG:
                     return list(param_values)
 
     def find_simulations(self, simulations: Union[list, tuple] = None):
+        simulations_names = simulations
         """Find simulations by name
 
         Parameters
@@ -1371,16 +1372,18 @@ class APSIMNG:
             list of APSIM Models.Core.Simulation objects
         """
 
-        if simulations is None:
+        if simulations_names is None:
             return self.simulations
-        if isinstance(simulations, str):
-            sims = Simulations, #CREATE A TUPLE
+        if isinstance(simulations_names, str):
+            simulations_names = {simulations_names}
+        elif isinstance(simulations, (list, tuple)):
+            simulations_names = set(simulations)
         sims = []
-        for s in self.simulations:
-            if s.Name in simulations:
+        for s, name in zip(self.simulations, simulations_names):
+            if s.Name == name:
                 sims.append(s)
         if len(sims) == 0:
-            logging.info(f"{simulations}: Not found!")
+            logging.info(f"{simulations_names}: Not found!")
         else:
             return sims
 

@@ -66,7 +66,7 @@ class TestAPSIMNG(unittest.TestCase):
 
     def test_check_som(self):
         som = self.test_ap_sim.check_som()
-        self.assertIsInstance(som, dict,'check_som should return a dictionary')
+        self.assertIsInstance(som, dict, 'check_som should return a dictionary')
 
     def test_change_som(self):
         inrm = 105
@@ -84,6 +84,16 @@ class TestAPSIMNG(unittest.TestCase):
             mock_simulations.ClearLinks = MagicMock()
             self.test_ap_sim.clear_links()
             mock_simulations.ClearLinks.assert_called_once()
+
+    def test_find_simulations(self):
+        """ Test find_simulations based on three input None, lists and string"""
+        # test None
+        self.assertTrue(self.test_ap_sim.find_simulations(simulations=None))
+        # test str
+        self.assertTrue(self.test_ap_sim.find_simulations(simulations='Simulation'))
+        # test tuple
+        self.assertTrue(self.test_ap_sim.find_simulations(simulations=['Simulation']))
+
 
     def tearDown(self):
         if os.path.exists(self.out):

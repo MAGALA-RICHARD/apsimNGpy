@@ -38,12 +38,13 @@ from Models.Soils import Soil, Physical, SoilCrop, Organic, Solute, Chemical
 
 import Models
 from Models.PMF import Cultivar
-from apsimNGpy.core.apsim_file import XFile as load_model
+
 from apsimNGpy.core.model_loader import (load_apx_model, save_model_to_file, recompile)
 from apsimNGpy.utililies.utils import timer
 from apsimNGpy.core.runner import run_model
 import ast
 from typing import Iterable
+
 MultiThreaded = Models.Core.Run.Runner.RunTypeEnum.MultiThreaded
 SingleThreaded = Models.Core.Run.Runner.RunTypeEnum.SingleThreaded
 ModelRUNNER = Models.Core.Run.Runner
@@ -131,8 +132,6 @@ class APSIMNG:
         self.path = self.model_info.path
         self._met_file = kwargs.get('met_file')
         # self.init_model() work in progress
-
-
 
     @property
     def simulation_object(self):
@@ -255,7 +254,7 @@ class APSIMNG:
         self.path = self.model_info.path
         return self
 
-    def save_edited_file(self, out_path: os.PathLike = None, reload:bool=False) -> Union['APSIMNG', None]:
+    def save_edited_file(self, out_path: os.PathLike = None, reload: bool = False) -> Union['APSIMNG', None]:
         """ Saves the model to the local drive.
 
             Notes: - If `out_path` is None, the `save_model_to_file` function extracts the filename from the
@@ -362,7 +361,7 @@ class APSIMNG:
         Parameters
         ----------
         target
-             simulation name
+      simulation name
         simulation, optional
             Simulation name to be cloned, of None clone the first simulation in model
         """
@@ -703,7 +702,8 @@ class APSIMNG:
                 raise ValueError("File node structure is not supported at a moment")
         return simus
 
-    def change_som(self, *, simulations: Union[tuple, list] = None, inrm: int = None, icnr: int = None, surface_om_name ='SurfaceOrganicMatter', **kwargs):
+    def change_som(self, *, simulations: Union[tuple, list] = None, inrm: int = None, icnr: int = None,
+                   surface_om_name='SurfaceOrganicMatter', **kwargs):
         """
          Change Surface Organic Matter (SOM) properties in specified simulations.
 
@@ -718,7 +718,7 @@ class APSIMNG:
         som = None
         for sim in self.find_simulations(simulations):
             zone = sim.FindChild[Models.Core.Zone]()
-            som1 = zone.FindChild( surface_om_name)
+            som1 = zone.FindChild(surface_om_name)
             field = zone.Name
             sname = sim.Name
 
@@ -1072,7 +1072,7 @@ class APSIMNG:
                     rep.set_DayAfterLastOutput = set_DayAfterLastOutput
         return rep
 
-    def get_report(self, simulation=None):
+    def get_report(self, simulation=None, names_only=False):
         """Get current report string
 
         Parameters
@@ -1082,11 +1082,14 @@ class APSIMNG:
         Returns
         -------
             List of report lines.
+            @param names_only: return the names of the reports as a list if names_only is True
         """
-        sim = self._find_simulation(simulation)
+        sim = self.find_simulations(simulation)
+        REPORTS = {}
         for si in sim:
-            report = (si.FindAllDescendants[Models.Report]())
-            logger.info(list(report))
+            REPORTS[si.Name] = [i.Name for i in (si.FindAllDescendants[Models.Report]())] if names_only else \
+                si.FindAllDescendants[Models.Report]()
+        return REPORTS
 
     def extract_soil_physical(self, simulations: [tuple, list] = None):
         """Find physical soil
@@ -1565,9 +1568,9 @@ if __name__ == '__main__':
 
     # Model = FileFormat.ReadFromFile[Models.Core.Simulations](model, None, False)
     os.chdir(Path.home())
-    from apsimNGpy.core.base_data import  load_default_simulations
+    from apsimNGpy.core.base_data import load_default_simulations
 
-    al = load_default_simulations(crop ='maize', simulations_object=False)
+    al = load_default_simulations(crop='maize', simulations_object=False)
     modelm = al
 
     model = load_default_simulations('maize')
@@ -1588,4 +1591,3 @@ if __name__ == '__main__':
             logger.info(f"{b - a}, 'seconds")
 
         a = perf_counter()
-

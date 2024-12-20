@@ -11,7 +11,6 @@ pyth = pythonet_config
 from System.Collections.Generic import *
 from System import *
 import Models
-from apsimNGpy.core.apsim_file import XFile as load_model
 import json
 from os.path import (realpath)
 from os import chdir
@@ -37,7 +36,7 @@ def covert_to_IModel(object_to_convert):
 def load_model_from_dict(dict_model, out, met_file):
     """useful for spawning many simulation files"""
     met_file = realpath(met_file)
-    in_model = dict_model or load_model
+    in_model = dict_model
     memo = load_from_dict(dict_data=in_model, out=out)
     return memo
 

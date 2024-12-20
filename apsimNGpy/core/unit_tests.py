@@ -88,11 +88,13 @@ class TestAPSIMNG(unittest.TestCase):
     def test_find_simulations(self):
         """ Test find_simulations based on three input None, lists and string"""
         # test None
-        self.assertTrue(self.test_ap_sim.find_simulations(simulations=None))
+        sim = 'Simulation'
+        MSG = f'test_find_simulations failed to return requested simulation{sim}'
+        self.assertTrue(self.test_ap_sim.find_simulations(simulations=None), msg = MSG)
         # test str
-        self.assertTrue(self.test_ap_sim.find_simulations(simulations='Simulation'))
+        self.assertTrue(self.test_ap_sim.find_simulations(simulations=sim), msg= MSG)
         # test tuple
-        self.assertTrue(self.test_ap_sim.find_simulations(simulations=['Simulation']))
+        self.assertTrue(self.test_ap_sim.find_simulations(simulations=[sim]), msg= MSG)
 
 
     def tearDown(self):

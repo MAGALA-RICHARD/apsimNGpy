@@ -44,7 +44,7 @@ from apsimNGpy.utililies.utils import timer
 from apsimNGpy.core.runner import run_model
 import ast
 from typing import Iterable
-
+logging.basicConfig(level=logging.INFO)
 MultiThreaded = Models.Core.Run.Runner.RunTypeEnum.MultiThreaded
 SingleThreaded = Models.Core.Run.Runner.RunTypeEnum.SingleThreaded
 ModelRUNNER = Models.Core.Run.Runner
@@ -1373,14 +1373,14 @@ class APSIMNG:
 
         if simulations is None:
             return self.simulations
-        if type(simulations) == str:
-            simulations = tuple(simulations)
+        if isinstance(simulations, str):
+            sims = Simulations, #CREATE A TUPLE
         sims = []
         for s in self.simulations:
             if s.Name in simulations:
                 sims.append(s)
         if len(sims) == 0:
-            logger.info("Not found!")
+            logging.info(f"{simulations}: Not found!")
         else:
             return sims
 

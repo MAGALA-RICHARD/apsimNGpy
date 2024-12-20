@@ -90,12 +90,11 @@ class TestAPSIMNG(unittest.TestCase):
         # test None
         sim = 'Simulation'
         MSG = f'test_find_simulations failed to return requested simulation{sim}'
-        self.assertTrue(self.test_ap_sim.find_simulations(simulations=None), msg = MSG)
+        self.assertTrue(self.test_ap_sim.find_simulations(simulations=None), msg=MSG)
         # test str
-        self.assertTrue(self.test_ap_sim.find_simulations(simulations=sim), msg= MSG)
+        self.assertTrue(self.test_ap_sim.find_simulations(simulations=sim), msg=MSG)
         # test tuple
-        self.assertTrue(self.test_ap_sim.find_simulations(simulations=[sim]), msg= MSG)
-
+        self.assertTrue(self.test_ap_sim.find_simulations(simulations=[sim]), msg=MSG)
 
     def tearDown(self):
         if os.path.exists(self.out):

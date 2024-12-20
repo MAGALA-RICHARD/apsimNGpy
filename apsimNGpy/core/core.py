@@ -334,8 +334,8 @@ class APSIMNG:
                 logging.info(e[0].ToString())
             if init_only:
                 return self
-            if report_name is None and not init_only:
-                self.load_simulated_results()
+            if report_name is None:
+                self.results = self.load_simulated_results()
 
             elif isinstance(report_name, str):
                 self.results = self.load_simulated_results()[report_name]

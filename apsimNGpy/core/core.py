@@ -1126,6 +1126,24 @@ class APSIMNG:
             soil_organics[simu.Name] = organic_soil
         return soil_organics
 
+    def extract_soil_property_by_path(self, path, str_fmt='.', index = None):
+        """
+        path to the soil property should be Simulation.soil_child.parameter_name e.g., = 'Simulation.Organic.Carbon.
+        @param: index(list), optional position of the soil property to a return
+        @return: list
+        """
+        list_of_soil_nones = dict(organic=Organic, physical=Physical, Chemical=Chemical)
+        parameters = path.split(str_fmt)
+        if len(parameters) != 3:
+            raise ValueError('path incomplete')
+        # find the simulation
+        find_simu = self.find_simulations(parameters[0])[0]  # because it returns a list
+        soil_child = list_of_soil_nones[parameters[1].lower()]
+        soil_object = find_simu.FindDescendant[Soil]().FindDescendant[soil_child]()
+        attribute = list(getattr(soil_object, parameters[2]))
+        return attribute
+
+
     def _extract_solute(self, simulation=None):
         # find the solute node in the simulation
         sims = self._find_simulation(simulation)
@@ -1317,7 +1335,7 @@ class APSIMNG:
                     param_values = getattr(crops, parameter)
                     return list(param_values)
 
-    def find_simulations(self, simulations: Union[list, tuple] = None):
+    def find_simulations(self, simulations: Union[list, tuple, str] = None):
         simulations_names = simulations
         """Find simulations by name
 

@@ -103,10 +103,22 @@ class TestAPSIMNG(unittest.TestCase):
         self.assertIsInstance(repos, dict, msg=msG)
         # test if dict not empty
         msG = 'expected dict is empty'
-        self.assertTrue(self.test_ap_sim.load_simulated_results(),msg=msG)
+        self.assertTrue(self.test_ap_sim.load_simulated_results(), msg=msG)
 
     def test_get_reports(self):
         self.assertIsInstance(self.test_ap_sim.get_report(names_only=True), dict)
+
+    def test_replace_soil_property_values(self):
+        parameter = 'Carbon'
+        param_values = [2.4, 1.4]
+        self.test_ap_sim.replace_soil_property_values(parameter=parameter, param_values=param_values,
+                                                      soil_child='Organic', )
+
+    def test_replace_soil_properties_by_path(self):
+        path = 'None.Soil.physical.None.None.BD'
+        param_values = [1.45, 1.95]
+        self.test_ap_sim.replace_soil_properties_by_path(path=path, param_values=param_values)
+
 
     def tearDown(self):
         if os.path.exists(self.out):

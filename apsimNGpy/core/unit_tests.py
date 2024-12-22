@@ -96,6 +96,18 @@ class TestAPSIMNG(unittest.TestCase):
         # test tuple
         self.assertTrue(self.test_ap_sim.find_simulations(simulations=[sim]), msg=MSG)
 
+    def test_load_simulated_results(self):
+        """ Test load_simulated_results"""
+        repos = self.test_ap_sim.load_simulated_results()
+        msG = f"expected dictionary but received {type(repos)}"
+        self.assertIsInstance(repos, dict, msg=msG)
+        # test if dict not empty
+        msG = 'expected dict is empty'
+        self.assertTrue(self.test_ap_sim.load_simulated_results(),msg=msG)
+
+    def test_get_reports(self):
+        self.assertIsInstance(self.test_ap_sim.get_report(names_only=True), dict)
+
     def tearDown(self):
         if os.path.exists(self.out):
             os.remove(self.out)

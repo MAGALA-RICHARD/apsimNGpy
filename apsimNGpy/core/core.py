@@ -458,14 +458,12 @@ class APSIMNG:
         return [*zip(*zones)]
 
     @property  #
-    def extract_report_names(self):
+    def extract_report_names(self) -> dict:
         """ returns all data frames the available report tables
-        @return: list of table names in the simulation"""
-        table_list = get_db_table_names(self.datastore)
-        rm = ['_InitialConditions', '_Messages', '_Checkpoints', '_Units']
-        return [im for im in table_list if im not in rm]
+        @return: dict of  table names in alist in the simulation"""
+        table_dict = self.get_report(names_only=True)
+        return table_dict
 
-    # perhaps a good a example of how to edit cultvar
 
     def replicate_file(self, k: int, path: os.PathLike = None, tag: str = "replica"):
         """

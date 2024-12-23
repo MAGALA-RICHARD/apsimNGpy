@@ -113,12 +113,19 @@ class TestAPSIMNG(unittest.TestCase):
         param_values = [2.4, 1.4]
         self.test_ap_sim.replace_soil_property_values(parameter=parameter, param_values=param_values,
                                                       soil_child='Organic', )
+        # if it was successful
+        testP = self.test_ap_sim.extract_soil_property_by_path(path = 'Simulation.Organic.Carbon', index=[0,1])
+        self.assertEqual(testP, param_values, msg = f'replace_soil_property_values was not successful returned {testP}\n got {param_values}')
 
     def test_replace_soil_properties_by_path(self):
         path = 'None.Soil.physical.None.None.BD'
         param_values = [1.45, 1.95]
         self.test_ap_sim.replace_soil_properties_by_path(path=path, param_values=param_values)
 
+    def test_extract_soil_property_by_path(self):
+        lisT = self.test_ap_sim.extract_soil_property_by_path(path='Simulation.Physical.BD')
+        self.assertIsInstance(lisT, list, msg='expected a list got {}'.format(type(lisT)))
+        self.assertTrue(lisT)
 
     def tearDown(self):
         if os.path.exists(self.out):

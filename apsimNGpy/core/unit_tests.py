@@ -25,7 +25,7 @@ class TestAPSIMNG(unittest.TestCase):
         # self.out_path.mkdir(parents=True, exist_ok=True)
         # self.out_path.mkdir(parents=True, exist_ok=True)
         self.test_ap_sim = APSIMNG(model=self.model_path)
-        self.test_ap_sim2 = APSIMNG(model=self.model_path2)
+
         self.out = os.path.realpath('test_save_output.apsimx')
 
     def test_run(self):
@@ -50,7 +50,7 @@ class TestAPSIMNG(unittest.TestCase):
             self.assertTrue(mock_datastore.Close.called)
 
     def test_save_edited_file(self, ):
-        result_path = save_model_to_file(self.test_ap_sim2.Simulations, out=self.out)
+        result_path = save_model_to_file(self.test_ap_sim.Simulations, out=self.out)
         isfile = os.path.isfile(result_path)
         self.assertEqual(isfile, True)
 
@@ -89,11 +89,14 @@ class TestAPSIMNG(unittest.TestCase):
         """ Test find_simulations based on three input None, lists and string"""
         # test None
         sim = 'Simulation'
-        MSG = f'test_find_simulations failed to return requested simulation{sim}'
+        MSG = f'test_find_simulations failed to return requested simulation object: {sim}'
         self.assertTrue(self.test_ap_sim.find_simulations(simulations=None), msg=MSG)
         # test str
         self.assertTrue(self.test_ap_sim.find_simulations(simulations=sim), msg=MSG)
         # test tuple
+
+        self.assertTrue(self.test_ap_sim.find_simulations(simulations=(sim,)), msg=MSG)
+        # test list input
         self.assertTrue(self.test_ap_sim.find_simulations(simulations=[sim]), msg=MSG)
 
     def test_load_simulated_results(self):
@@ -113,9 +116,14 @@ class TestAPSIMNG(unittest.TestCase):
         param_values = [2.4, 1.4]
         self.test_ap_sim.replace_soil_property_values(parameter=parameter, param_values=param_values,
                                                       soil_child='Organic', )
+        lisT = self.test_ap_sim.extract_soil_property_by_path(path='Simulation.Organic.Carbon', index =[0,1])
+        self.assertIsInstance(lisT, list, msg='expected a list got {}'.format(type(lisT)))
+        self.assertTrue(lisT)
+        self.assertIsInstance(lisT, list, msg='expected a list got {}'.format(type(lisT)))
+        self.assertTrue(lisT)
         # if it was successful
         testP = self.test_ap_sim.extract_soil_property_by_path(path = 'Simulation.Organic.Carbon', index=[0,1])
-        self.assertEqual(testP, param_values, msg = f'replace_soil_property_values was not successful returned {testP}\n got {param_values}')
+        self.assertEqual(lisT, param_values, msg = f'replace_soil_property_values was not successful returned {testP}\n got {param_values}')
 
     def test_replace_soil_properties_by_path(self):
         path = 'None.Soil.physical.None.None.BD'

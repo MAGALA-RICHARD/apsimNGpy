@@ -1,50 +1,9 @@
-from copy import deepcopy, copy
 from pathlib import Path
-from functools import partial, cache
-import pandas as pd
-import time
 
-from attr import dataclass
-from past.builtins import reload
-from scipy.optimize import minimize, least_squares
-from apsimNGpy.utililies.utils import delete_simulation_files, timer
+from dataclasses import dataclass
+from scipy.optimize import minimize
 
-import numpy as np
 from apsimNGpy.core.apsim import ApsimModel
-from apsimNGpy.replacements.replacements import Replacements
-from enum import Enum
-
-from abc import ABC, abstractmethod
-
-
-class AbstractExecutor(ABC):
-
-    def __init__(self, func):
-        self.func = func
-
-    @abstractmethod
-    def execute(self, *args, **kwargs):
-        pass
-
-
-class FunctionExecutor(AbstractExecutor):
-
-    def execute(self, *args, **kwargs):
-        result = self.func(*args, **kwargs)
-        return result
-
-
-# Define a sample function
-def sample_function(x, y):
-    return x + y
-
-
-# Create an instance of FunctionExecutor with the sample_function
-executor = FunctionExecutor(sample_function)
-
-# Execute the function with arguments
-result = executor.execute(5, 3)
-print(result)  # Output: 8
 
 
 @dataclass
@@ -66,6 +25,7 @@ class Problem:
         self.params = []
         self.func = func
         self.observed = observed_values
+        self.predictor_names = []
 
         """
        model: APSIM model file, apsimNGpy object, apsim file str or dict we want to use in the minimization
@@ -110,18 +70,21 @@ class Problem:
         self.params.append(params)
 
     def update_params(self, x):
+
+        print(x)
         """This updates the parameters of the model during the optimization"""
         model = ApsimModel(self.model)
-        for counter, param in enumerate(self.params):
+        for x_var, param in zip(x, self.params):
+            self.predictor_names.append(param['param_name'])
             if param['param_class'].lower() == 'manager':
                 # create a new dictionary
                 mgt_info = param['manager_info']
-                mgt_info.update({mgt_info['param_description']: x[counter]})
-                model.update_mgt(management=mgt_info, **self.params[counter])
+                mgt_info.update({mgt_info['param_description']: x_var})
+                model.update_mgt(management=mgt_info, **param)
             if param['param_class'].lower() == 'cultivar':
-                model.edit_cultivar(**param['cultivar_info'], values=x[counter])
+                model.edit_cultivar(**param['cultivar_info'], values=x_var)
             if param['param_class'].lower() == 'soil':
-                model.replace_soil_property_values(**param['soil_info'], param_values=x[counter])
+                model.replace_soil_property_values(**param['soil_info'], param_values=[x_var,])
         # now time to run
         model.run(report_name='Report')
         ans = self.func(model, self.observed)
@@ -134,8 +97,11 @@ class Problem:
         see scipy manual for each method https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html
         """
 
-        return minimize(self.update_params,
-                        **kwargs)
+        minim = minimize(self.update_params,
+                         **kwargs)
+        ap = dict(zip(self.predictor_names, minim.x))
+        setattr(minim, 'x_vars', ap)
+        return minim
 
 
 if __name__ == '__main__':
@@ -143,8 +109,6 @@ if __name__ == '__main__':
     from apsimNGpy.core.base_data import load_default_simulations
 
     mode = Path.home() / 'Maize.apsimx'
-
-    from apsimNGpy.core.core import APSIMNG
 
     maize = load_default_simulations(crop='maize', simulations_object=False)
 
@@ -156,7 +120,12 @@ if __name__ == '__main__':
     prob = Problem(model=r'Maize.apsimx', out_path='out.apsimx', func=func)
     prob.add_param(simulation_name='Simulation', param_name='Nitrogen',
                    manager_info={'Name': 'Fertilise at sowing', 'param_description': 'Amount'}, param_class='Manager')
+    si = {'parameter': 'Carbon',
+          'soil_child': 'Organic',
+          'simulations': 'Simulation',
+          'indices': [0], }
+    prob.add_param(simulation_name='Simulation', param_name='carbon', param_class='soil', soil_info=si)
     options = {'maxiter': 10000}
 
     prob.update_params([100])
-    mn = prob.minimize_problem(bounds=[(100, 400)], x0=[100], method=Solvers.Nelder_Mead)
+    mn = prob.minimize_problem(bounds=[(100, 300), (0, 3)], x0=[100, 0.8], method=Solvers.Nelder_Mead)

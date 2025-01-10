@@ -58,20 +58,71 @@ class Solvers:
     SLSQP = 'SLSQP'
 
 
-class Problem(ApsimModel):
+class Problem:
 
-    def __init__(self, model, out_path=None):
-        super().__init__(model, out_path)
+    def __init__(self, model, func, out_path=None, observed_values=None):
+        self.model = model
+        self.out_path = out_path
+        self.params = []
+        self.func = func
+        self.observed = observed_values
+
         """
-        APSIM model file, apsimNGpy object, apsim file str or dict we want to use in the minimization
+       model: APSIM model file, apsimNGpy object, apsim file str or dict we want to use in the minimization
+       func: is the callable that takes in apsimNGpy object and return the desired loss function. we will use it to extract 
+       the result meaning the user can create a callable object to manipulate the results objects
         """
+
+    def add_param(self, simulation_name: str, param_class: str,
+                  param_name: str,
+                  cultivar_info: dict = None,
+                  manager_info: dict = None, **kwargs):
+        """
+        it is one factor at a time
+        @param cultivar_info:
+        @param param_class: parameters belong to classes like manager, Soil, Cultivar, this is useful for determining the replacement method
+        @param manager_info: info accompanying the parameters of the manager params e.g.,
+        {'Name': 'Fertilise at sowing', 'param_description': 'Amount'} script name and paramters going to it
+         @param simulation_name: e.g. Simulation which is the default for apsim files @param param_class: includes, Manager, soil, cultivar @param param_name: kwargs contains
+        extra arguments needed, @return:
+        """
+        params = dict(simulations=simulation_name, param_class=param_class,
+                      param_name=param_name, manager_info=manager_info, cultivar_info=cultivar_info)
+        self.params.append(params)
+
+    def update_params(self, x):
+        """This updates the parameters of the model during the optimization"""
+        model = ApsimModel(self.model)
+        for counter, param in enumerate(self.params):
+            if param['param_class'].lower() == 'manager':
+                # create a new dictionary
+                mgt_info = param['manager_info']
+                mgt_info.update({mgt_info['param_description']: x[counter]})
+                model.update_mgt(management=mgt_info, **self.params[counter])
+            if param['param_class'].lower() == 'cultivar':
+                model.edit_cultivar(**param['cultivar_info'], values=x[counter])
+        # now time to run
+        model.run(report_name='Report')
+        ans = self.func(model, self.observed)
+        print(ans)
+        return ans
+
+    def minimize_problem(self, **kwargs):
+        """
+        kwargs: key word arguments as defined by the scipy minimize method
+        see scipy manual for each method https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html
+        """
+
+        return minimize(self.update_params,
+                        **kwargs)
 
     def function(self, *args):
         """
-        Ths class is  holder for the problem function
+        Ths class is holder for the problem function
          use the replacement module to define the functional call for the methods
-         once initiated, we have access to all the methods from the replacements module
-         args must  correspond to the bounds deployed while initializing this class
+         once initiated.
+         we have access to all the methods from the replacements module
+         args must correspond to the bounds deployed while initializing this class
         """
         pass
 
@@ -96,59 +147,21 @@ if __name__ == '__main__':
 
     from apsimNGpy.core.core import APSIMNG
 
-
-    class MyProblem(Replacements):
-        def __init__(self, model, out):
-            # Call to the parent class constructor
-            super().__init__(model)
-            self.Mpath = model
-
-            # Instance attributes
-            self.bounds = [(100, 400)]  # Example bound for value
-
-            # self.run()
-
-        def function(self, x):
-            """
-            Class method to run the APSIM simulation with a given fertilization value.
-i
-
-
-            Returns:
-                float: The negative mean yield (for minimization).
-            """
-
-            def evaluate_function(yu):
-                # Define the management action based on the input value
-                management_action = {"Name": 'Fertilise at sowing', "Amount": yu[0]},
-
-                # Update management actions in the simulation
-                model = ApsimModel(self.Mpath)
-
-                self.update_mgt(simulations=['Simulation'], management=management_action)
-
-                # print(model.extract_user_input('Fertilise at sowing'))
-
-                # Run the simulation with the specified report name
-                self.run(report_name='Report', )
-                print(self.extract_user_input('Fertilise at sowing'))
-                # Process the results from the simulation
-                df = self.results
-
-                if df is not None and 'Yield' in df.columns:
-                    # Compute the mean yield, and negate it for minimization
-                    mean_yield = df['Yield'].mean()
-                    print(f"Mean Yield: {mean_yield}")
-                    return -mean_yield
-
-            my = evaluate_function(x)
-            return my
-
-
     maize = load_default_simulations(crop='maize', simulations_object=False)
 
-    prob = MyProblem(model=r'Maize.apsimx', out='out.apsimx')
-    options = {'maxiter': 10000}
-    res = minimize_problem(prob, x0=(100,), method=Solvers.SLSQP, options=options, tol=5)
 
-    print(res)
+    def func(model, ob):
+        return model.results.Yield.mean() * -1
+
+
+    prob = Problem(model=r'Maize.apsimx', out_path='out.apsimx', func =func)
+    prob.add_param(simulation_name='Simulation', param_name='Nitrogen',
+                   manager_info={'Name': 'Fertilise at sowing', 'param_description': 'Amount'}, param_class='Manager')
+    options = {'maxiter': 10000}
+
+    prob.update_params([100])
+    mn = prob.minimize_problem(bounds=[(100, 400)], x0=[100], method=Solvers.Nelder_Mead)
+
+    # res = minimize_problem(prob, x0=(100,), method=Solvers.SLSQP, options=options, tol=5)
+    #
+    # print(res)

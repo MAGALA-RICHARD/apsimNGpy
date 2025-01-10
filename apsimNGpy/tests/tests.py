@@ -1,13 +1,12 @@
-import glob
-import os, sys
-import platform
+import logging
+import os
 import shutil
 from contextlib import contextmanager
 from pathlib import Path
-import logging
-from apsimNGpy.settings import logger, MSG
+
 from apsimNGpy.core.config import auto_detect_apsim_bin_path
 from apsimNGpy.core.config import get_apsim_bin_path
+from apsimNGpy.settings import logger, MSG
 
 try:
     from apsimNGpy.core.core import APSIMNG

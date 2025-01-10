@@ -76,9 +76,17 @@ class Problem:
     def add_param(self, simulation_name: str, param_class: str,
                   param_name: str,
                   cultivar_info: dict = None,
+                  soil_info: dict = None,
                   manager_info: dict = None, **kwargs):
         """
         it is one factor at a time
+        @param soil_info (dict): corresponding parameters for soil parameter. Accepted values:
+                                     parameter: str,
+                                     soil_child: str,
+                                     simulations: list = None,
+                                     indices: list = None,
+                                     crop=None,
+        also see replace_soil_property_values, param_values argument is not allowed in this dictionary
         @param cultivar_info:
         @param param_class: parameters belong to classes like manager, Soil, Cultivar, this is useful for determining the replacement method
         @param manager_info: info accompanying the parameters of the manager params e.g.,
@@ -87,7 +95,9 @@ class Problem:
         extra arguments needed, @return:
         """
         params = dict(simulations=simulation_name, param_class=param_class,
-                      param_name=param_name, manager_info=manager_info, cultivar_info=cultivar_info)
+                      param_name=param_name, manager_info=manager_info,
+                      soil_info=soil_info,
+                      cultivar_info=cultivar_info)
         self.params.append(params)
 
     def update_params(self, x):
@@ -101,6 +111,8 @@ class Problem:
                 model.update_mgt(management=mgt_info, **self.params[counter])
             if param['param_class'].lower() == 'cultivar':
                 model.edit_cultivar(**param['cultivar_info'], values=x[counter])
+            if param['param_class'].lower() == 'soil':
+                model.replace_soil_property_values(**param['soil_info'],param_values= x[counter] )
         # now time to run
         model.run(report_name='Report')
         ans = self.func(model, self.observed)
@@ -127,18 +139,6 @@ class Problem:
         pass
 
 
-def minimize_problem(problem, **kwargs):
-    """problem class inherited from Problem class
-    kwargs: key word arguments as defined by the scipy minimize method
-    see scipy manual for each method https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html
-    """
-    if 'bounds' in kwargs:
-        kwargs.pop('bounds')
-
-    return minimize(problem.function, bounds=problem.bounds,
-                    **kwargs)
-
-
 if __name__ == '__main__':
     # define the problem
     from apsimNGpy.core.base_data import load_default_simulations
@@ -154,14 +154,10 @@ if __name__ == '__main__':
         return model.results.Yield.mean() * -1
 
 
-    prob = Problem(model=r'Maize.apsimx', out_path='out.apsimx', func =func)
+    prob = Problem(model=r'Maize.apsimx', out_path='out.apsimx', func=func)
     prob.add_param(simulation_name='Simulation', param_name='Nitrogen',
                    manager_info={'Name': 'Fertilise at sowing', 'param_description': 'Amount'}, param_class='Manager')
     options = {'maxiter': 10000}
 
     prob.update_params([100])
     mn = prob.minimize_problem(bounds=[(100, 400)], x0=[100], method=Solvers.Nelder_Mead)
-
-    # res = minimize_problem(prob, x0=(100,), method=Solvers.SLSQP, options=options, tol=5)
-    #
-    # print(res)

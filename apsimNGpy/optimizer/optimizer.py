@@ -1,5 +1,6 @@
-from copy import deepcopy
-
+from copy import deepcopy, copy
+from pathlib import Path
+from functools import partial, cache
 import pandas as pd
 import time
 
@@ -14,7 +15,6 @@ from apsimNGpy.replacements.replacements import Replacements
 from enum import Enum
 
 from abc import ABC, abstractmethod
-
 
 
 class AbstractExecutor(ABC):
@@ -46,6 +46,7 @@ executor = FunctionExecutor(sample_function)
 result = executor.execute(5, 3)
 print(result)  # Output: 8
 
+
 @dataclass
 class Solvers:
     L_BFGS_B = 'L-BFGS-B'
@@ -53,17 +54,17 @@ class Solvers:
     Powell = 'Powell'
     Newton_CG = 'Newton-CG'
     lm = 'lm'
+    Nelder_Mead = 'Nelder-Mead'
+    SLSQP = 'SLSQP'
 
 
 class Problem(ApsimModel):
 
-    def __init__(self, model, out_path = None, bounds =None):
+    def __init__(self, model, out_path=None):
         super().__init__(model, out_path)
         """
         APSIM model file, apsimNGpy object, apsim file str or dict we want to use in the minimization
         """
-        # wrap the replacement methods here for easy access in the execution function below
-        self.bounds = bounds # note that the bounds is a tuple for each variable we want to optimize
 
     def function(self, *args):
         """
@@ -75,53 +76,79 @@ class Problem(ApsimModel):
         pass
 
 
-def minimize_problem(problem,**kwargs):
+def minimize_problem(problem, **kwargs):
     """problem class inherited from Problem class
     kwargs: key word arguments as defined by the scipy minimize method
+    see scipy manual for each method https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html
     """
     if 'bounds' in kwargs:
-         kwargs.pop('bounds')
-    return minimize(problem.function, bounds= problem.bounds,
+        kwargs.pop('bounds')
+
+    return minimize(problem.function, bounds=problem.bounds,
                     **kwargs)
 
-@timer
-class Minimize():
-    def __init__(self, func, init_params: tuple, bounds: tuple, options: dict = None, method='L-BFGS-B',
-                 *args):
-
-        self.method = method
-        print(f"Using: {self.method} solver")
-        if options:
-            self.result = minimize(func, x0=init_params, bounds=bounds,
-                                   options=options, method=self.method)
-        else:
-            self.result = minimize(func, x0=init_params, bounds=bounds,
-                                   method=self.method)
-        optimized_parameters = self.result.x
-        print("Optimized Parameters:", optimized_parameters)
 
 if __name__ == '__main__':
     # define the problem
     from apsimNGpy.core.base_data import load_default_simulations
 
-    class MyProblem(Problem):
-        def __init__(self, model):
-              super().__init__(model)
-              self.bounds = [(0, 100)]
+    mode = Path.home() / 'Maize.apsimx'
 
-        def function(self, value):
+    from apsimNGpy.core.core import APSIMNG
 
-            #mgt ='None.Manager.Fertilise at sowing.e.Amount'
-            mgt = ({"Name": 'Fertilise at sowing', "Amount":value},)
-            self.update_mgt(simulations= ['Simulation'], management=mgt,out ='op.apsimx')
-            self.run(report_name='Report')
-            df = self.results
 
-            ans = df.Yield.mean()
-            print(ans)
-            return ans * -1
+    class MyProblem(Replacements):
+        def __init__(self, model, out):
+            # Call to the parent class constructor
+            super().__init__(model)
+            self.Mpath = model
+
+            # Instance attributes
+            self.bounds = [(100, 400)]  # Example bound for value
+
+            # self.run()
+
+        def function(self, x):
+            """
+            Class method to run the APSIM simulation with a given fertilization value.
+i
+
+
+            Returns:
+                float: The negative mean yield (for minimization).
+            """
+
+            def evaluate_function(yu):
+                # Define the management action based on the input value
+                management_action = {"Name": 'Fertilise at sowing', "Amount": yu[0]},
+
+                # Update management actions in the simulation
+                model = ApsimModel(self.Mpath)
+
+                self.update_mgt(simulations=['Simulation'], management=management_action)
+
+                # print(model.extract_user_input('Fertilise at sowing'))
+
+                # Run the simulation with the specified report name
+                self.run(report_name='Report', )
+                print(self.extract_user_input('Fertilise at sowing'))
+                # Process the results from the simulation
+                df = self.results
+
+                if df is not None and 'Yield' in df.columns:
+                    # Compute the mean yield, and negate it for minimization
+                    mean_yield = df['Yield'].mean()
+                    print(f"Mean Yield: {mean_yield}")
+                    return -mean_yield
+
+            my = evaluate_function(x)
+            return my
 
 
     maize = load_default_simulations(crop='maize', simulations_object=False)
-    prob = MyProblem(maize)
-    res = minimize_problem(prob, x0 =[0], method='L-BFGS-B')
+
+    prob = MyProblem(model=r'Maize.apsimx', out='out.apsimx')
+    options = {'maxiter': 10000}
+    res = minimize_problem(prob, x0=(100,), method=Solvers.SLSQP, options=options, tol=5)
+
+    print(res)

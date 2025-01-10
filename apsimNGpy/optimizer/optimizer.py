@@ -87,12 +87,21 @@ class Problem:
                                      indices: list = None,
                                      crop=None,
         also see replace_soil_property_values, param_values argument is not allowed in this dictionary
-        @param cultivar_info:
-        @param param_class: parameters belong to classes like manager, Soil, Cultivar, this is useful for determining the replacement method
-        @param manager_info: info accompanying the parameters of the manager params e.g.,
-        {'Name': 'Fertilise at sowing', 'param_description': 'Amount'} script name and paramters going to it
-         @param simulation_name: e.g. Simulation which is the default for apsim files @param param_class: includes, Manager, soil, cultivar @param param_name: kwargs contains
-        extra arguments needed, @return:
+
+        @param cultivar_info: corresponding functional paramters for edit_cultivar method from APSIMNG object.
+        Accepted values are CultivarName: str, commands: tuple, value arguments are not allowed here.
+
+        @param param_class: parameters belong to classes like manager, Soil, Cultivar, this is useful for determining
+        the replacement method.
+
+        @param manager_info: info accompanying the parameters of the manager params, e.g.,
+        {'Name': 'Fertilise at sowing', 'param_description': 'Amount'} script name and parameters going to it.
+
+         @param simulation_name: e.g. Simulation, which is the default for apsim files @param param_class: includes, Manager,
+        soil, cultivar
+         @param param_name: name to hold in place the params, to optimize
+         kwargs, contains extra arguments needed,
+         @return: None
         """
         params = dict(simulations=simulation_name, param_class=param_class,
                       param_name=param_name, manager_info=manager_info,
@@ -112,7 +121,7 @@ class Problem:
             if param['param_class'].lower() == 'cultivar':
                 model.edit_cultivar(**param['cultivar_info'], values=x[counter])
             if param['param_class'].lower() == 'soil':
-                model.replace_soil_property_values(**param['soil_info'],param_values= x[counter] )
+                model.replace_soil_property_values(**param['soil_info'], param_values=x[counter])
         # now time to run
         model.run(report_name='Report')
         ans = self.func(model, self.observed)
@@ -127,16 +136,6 @@ class Problem:
 
         return minimize(self.update_params,
                         **kwargs)
-
-    def function(self, *args):
-        """
-        Ths class is holder for the problem function
-         use the replacement module to define the functional call for the methods
-         once initiated.
-         we have access to all the methods from the replacements module
-         args must correspond to the bounds deployed while initializing this class
-        """
-        pass
 
 
 if __name__ == '__main__':

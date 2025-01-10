@@ -5,32 +5,21 @@ import shutil
 from contextlib import contextmanager
 from pathlib import Path
 import logging
-
 from apsimNGpy.settings import logger, MSG
+from apsimNGpy.core.config import auto_detect_apsim_bin_path
+from apsimNGpy.core.config import get_apsim_bin_path
 
+try:
+    from apsimNGpy.core.core import APSIMNG
+    from apsimNGpy.core.apsim import ApsimModel
+    from apsimNGpy.core.base_data import load_default_simulations
+except (ModuleNotFoundError, ImportError):
+    ...
 current_path = os.path.dirname(os.path.abspath(__file__))
 # Set up basic configuration for logging
 logging.basicConfig(format='%(asctime)s :: %(message)s', level=logging.INFO)
 
 user_id = current_path
-# This will now print to the console
-
-sys.path.append(current_path)
-sys.path.append(os.path.dirname(current_path))
-from apsimNGpy.core.config import auto_detect_apsim_bin_path
-from apsimNGpy.core.config import get_apsim_bin_path
-
-try:
-    from core import APSIMNG
-    from core.base_data import load_default_simulations
-    from apsim import ApsimModel
-    # auto-detect for some reason when imported after compiling, with compiling i mean installing the package so we
-    # import directly from the package
-except (ModuleNotFoundError, ImportError):
-    # logging.info(" did not passed import error")
-    from apsimNGpy.core.core import APSIMNG
-    from apsimNGpy.core.apsim import ApsimModel
-    from apsimNGpy.core.base_data import load_default_simulations
 
 auto = auto_detect_apsim_bin_path() or os.getenv('APSIM')
 
@@ -56,7 +45,7 @@ def test():
         a = perf_counter()
         # model.RevertCheckpoint()
 
-        model.run('report')
+        model.run(report_name='Report')
         # print(model.results.mean(numeric_only=True))
 
         # print(model.results.mean(numeric_only=True))

@@ -40,7 +40,7 @@ class Problem:
                   manager_info: dict = None, **kwargs):
         """
         it is one factor at a time
-        @param soil_info (dict): corresponding parameters for soil parameter. Accepted values:
+        @param soil_info dict: corresponding parameters for soil parameter. Accepted values:
                                      parameter: str,
                                      soil_child: str,
                                      simulations: list = None,
@@ -57,7 +57,7 @@ class Problem:
         @param manager_info: info accompanying the parameters of the manager params, e.g.,
         {'Name': 'Fertilise at sowing', 'param_description': 'Amount'} script name and parameters going to it.
 
-         @param simulation_name: e.g. Simulation, which is the default for apsim files @param param_class: includes, Manager,
+         @param simulation_name: e.g., Simulation, which is the default for apsim files @param param_class: includes, Manager,
         soil, cultivar
          @param param_name: name to hold in place the params, to optimize
          kwargs, contains extra arguments needed,
@@ -71,11 +71,11 @@ class Problem:
 
     def update_params(self, x):
 
-        print(x)
         """This updates the parameters of the model during the optimization"""
         model = ApsimModel(self.model)
+
         for x_var, param in zip(x, self.params):
-            self.predictor_names.append(param['param_name'])
+
             if param['param_class'].lower() == 'manager':
                 # create a new dictionary
                 mgt_info = param['manager_info']
@@ -84,14 +84,16 @@ class Problem:
             if param['param_class'].lower() == 'cultivar':
                 model.edit_cultivar(**param['cultivar_info'], values=x_var)
             if param['param_class'].lower() == 'soil':
-                model.replace_soil_property_values(**param['soil_info'], param_values=[x_var,])
+                model.replace_soil_property_values(**param['soil_info'], param_values=[x_var ])
         # now time to run
         model.run(report_name='Report')
         ans = self.func(model, self.observed)
-        print(ans)
+        print(ans, end='\r')
         return ans
 
     def minimize_problem(self, **kwargs):
+        for pp in self.params:
+            self.predictor_names.append(pp['param_name'])
         """
         kwargs: key word arguments as defined by the scipy minimize method
         see scipy manual for each method https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html
@@ -128,4 +130,4 @@ if __name__ == '__main__':
     options = {'maxiter': 10000}
 
     prob.update_params([100])
-    mn = prob.minimize_problem(bounds=[(100, 300), (0, 3)], x0=[100, 0.8], method=Solvers.Nelder_Mead)
+    mn = prob.minimize_problem(bounds=[(180, 280), (0, 1.8)], x0=[180, 0.8], method=Solvers.Nelder_Mead)

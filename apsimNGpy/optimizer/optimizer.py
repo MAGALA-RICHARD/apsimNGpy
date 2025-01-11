@@ -63,10 +63,15 @@ class Problem:
          kwargs, contains extra arguments needed,
          @return: None
         """
-        params = dict(simulations=simulation_name, param_class=param_class,
-                      param_name=param_name, manager_info=manager_info,
-                      soil_info=soil_info,
-                      cultivar_info=cultivar_info)
+        params = {
+            'simulations': simulation_name,
+            'param_class': param_class,
+            'param_name': param_name,
+            'manager_info': manager_info,
+            'soil_info': soil_info,
+            'cultivar_info': cultivar_info
+        }
+
         self.params.append(params)
 
     def update_params(self, x):

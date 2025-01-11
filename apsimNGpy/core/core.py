@@ -728,6 +728,8 @@ class APSIMNG:
         return self
 
     def update_mgt_by_path(self, *, path: str, param_values: str, fmt='.'):
+        # reject space in fmt
+        assert fmt.split(), 'white or empty space not supported'
         parameters_guide = ['simulations_name', 'Manager', 'manager_name', 'out_path_name', 'parameter_name']
         parameters = ['simulations', 'Manager', 'Name', 'out']
         args = path.split(fmt)

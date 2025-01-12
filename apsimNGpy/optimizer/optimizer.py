@@ -93,23 +93,22 @@ class Problem:
         Returns:
             None
         """
+        parm = copy.deepcopy(params)
+        self.updaters.add(updater)
+        self.params.append(parm)
+        self.main_params.add(main_param)
+        self.predictor_names.add(label)
 
-        self.updaters.append(updater)
-        self.params.append(params)
-        self.main_params.append(main_param)
-
-        np.append(self.predictor_names, label)
-        self.predictor_names.append(label)
         print(f"existing vars are: {self.predictor_names}")
 
     def update_params(self, x):
 
         """This updates the parameters of the model during the optimization"""
         model = ApsimModel(self.model)
-        if len(x) != len(self.params):
-            ve = ValueError('Data set up not complete \n'
-                            'params must have the same length as the suggested predictors')
-            raise ve
+        # if len(x) != len(self.params):
+        #     ve = ValueError('Data set up not complete \n'
+        #                     'params must have the same length as the suggested predictors')
+        #     raise ve
 
         for x_var, method, param, x_holder in zip(x, self.updaters, self.params, self.main_params):
             if 'soil' in method:
@@ -138,6 +137,8 @@ class Problem:
         Optimization result.
         
         """
+        # freeze the data before optimization to make it immutable
+        self._freeze_data()
         initial_guess = kwargs.get('x0') or np.zeros(len(self.params))
         if kwargs.get('x0'):
             kwargs.pop('x0')
@@ -153,10 +154,17 @@ class Problem:
         @return:
         """
         self.params = []
-        self.updaters = []
-        self.main_params = []
-        self.predictor_names = []
+        self.updaters = set()
+        self.main_params = set()
+        self.predictor_names = set()
         return self
+
+    def _freeze_data(self):
+        # make the data unchangeable after editing
+        self.params = tuple([i for i in self.params])
+        self.updaters = tuple([i for i in self.updaters])
+        self.main_params = tuple([i for i in self.main_params])
+        self.predictor_names = tuple([i for i in self.predictor_names])
 
 
 # initialized before it is needed
@@ -187,7 +195,7 @@ if __name__ == '__main__':
           'simulations': 'Simulation',
           'indices': [0], }
     prob.add_control_var(params=si, updater='replace_soil_property_values', main_param='param_values', label='carbon')
-    options = {'maxiter': 800, 'disp': True}
+    options = {'maxiter': 1000, 'disp': True}
 
     mn = prob.minimize_problem(bounds=[(100, 320), (0, 1)], x0=[100, 0.1], method=Solvers.Nelder_Mead, options=options)
 

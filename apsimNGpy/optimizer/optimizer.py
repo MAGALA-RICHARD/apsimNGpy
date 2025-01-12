@@ -55,10 +55,8 @@ class Problem:
         passed via options e.g., options ={args: None}
          @return: an instance of problem class object.
         """
-        self.params = []
-        self.updaters = []
-        self.main_params = []
-        self.predictor_names = []
+        # re-initialize all lists carrying the data
+        self.reset_data()
         self.options = options
         self.model = model
         self.model = model
@@ -104,12 +102,13 @@ class Problem:
         self.predictor_names.append(label)
         print(f"existing vars are: {self.predictor_names}")
 
-    def update_params(self, x, *args):
+    def update_params(self, x):
 
         """This updates the parameters of the model during the optimization"""
         model = ApsimModel(self.model)
         if len(x) != len(self.params):
-            ve = ValueError('params must have the same length as the suggested predictors')
+            ve = ValueError('Data set up not complete \n'
+                            'params must have the same length as the suggested predictors')
             raise ve
 
         for x_var, method, param, x_holder in zip(x, self.updaters, self.params, self.main_params):
@@ -147,6 +146,18 @@ class Problem:
         setattr(minim, 'x_vars', ap)
         return minim
 
+    def reset_data(self):
+        """
+        Resets the data for the optimizer. You don't need to call set up in the data again by calling the
+        set_up_data_method in case your setup does need to change. After resting, you have to add the control vars
+        @return:
+        """
+        self.params = []
+        self.updaters = []
+        self.main_params = []
+        self.predictor_names = []
+        return self
+
 
 # initialized before it is needed
 SingleProblem = Problem()
@@ -179,4 +190,5 @@ if __name__ == '__main__':
     options = {'maxiter': 800, 'disp': True}
 
     mn = prob.minimize_problem(bounds=[(100, 320), (0, 1)], x0=[100, 0.1], method=Solvers.Nelder_Mead, options=options)
+
     prob.update_params([300, 3.3283740839260843e-09])

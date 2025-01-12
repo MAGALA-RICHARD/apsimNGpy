@@ -13,7 +13,7 @@ if __name__ == '__main__':
     # here we use a simple function which will take in apsimNG object class
     # in kost cases we compare predicted to the observed for lack of data this
     # example is simple just maximizing the yield based on N input
-    def func(model, ob):
+    def func(model):
         sm = model.results.Yield.sum()
         mn = model.results.Yield.mean()
         ans = sm * sm / mn
@@ -30,8 +30,7 @@ if __name__ == '__main__':
           'soil_child': 'Organic',
           'simulations': 'Simulation',
           'indices': [0], }
-    #prob.add_control_var(params=si, updater='replace_soil_property_values', main_param='param_values', label='carbon')
+    # prob.add_control_var(params=si, updater='replace_soil_property_values', main_param='param_values', label='carbon')
     options = {'maxiter': 8000, 'disp': True}
 
     mn = prob.minimize_problem(bounds=[(100, 320)], x0=[100], method=Solvers.L_BFGS_B, options=options)
-

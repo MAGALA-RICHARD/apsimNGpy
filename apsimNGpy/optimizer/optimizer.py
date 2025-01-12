@@ -1,5 +1,5 @@
 from pathlib import Path
-
+import copy
 from dataclasses import dataclass
 
 import numpy as np
@@ -21,23 +21,37 @@ class Solvers:
 
 class Problem:
 
-    def __init__(self, model, func, out_path=None, observed_values=None):
-        self.model = model
-        self.out_path = out_path
+    def __init__(self):
+
+        self.out_path = None
+        self.model = None
+        self.options = None
+        self.params = None
+        self.func = None
+        self.observed = None
+        self.predictor_names = None
+        self.updaters = None
+        self.main_params = None
+
+    def set_up_data(self, model, func, out_path=None, observed_values=None, options=None):
+        """
+              model: APSIM model file, apsimNGpy object, apsim file str or dict we want to use in the minimization
+              func: is the callable that takes in apsimNGpy object and return the desired loss function. we will use it to extract
+              the result, meaning the user can create a callable object to manipulate the result objects
+               """
         self.params = []
-        self.func = func
-        self.observed = observed_values
-        self.predictor_names = []
         self.updaters = []
         self.main_params = []
+        self.predictor_names = []
+        self.options = options
+        self.model = model
+        self.model = model
+        self.observed = observed_values
+        self.out_path = out_path
+        self.func = func
+        return self
 
-        """
-       model: APSIM model file, apsimNGpy object, apsim file str or dict we want to use in the minimization
-       func: is the callable that takes in apsimNGpy object and return the desired loss function. we will use it to extract 
-       the result meaning the user can create a callable object to manipulate the results objects
-        """
-
-    def add_param(self, updater: str, main_param, params: dict, label: str, **kwargs):
+    def add_control_var(self, updater: str, main_param, params: dict, label: str, **kwargs):
         """
         Updater: Specifies the name of the APSIMNG method used to update values from the optimizer.
         Params: A dictionary containing arguments for the updater method, excluding the value to be optimized.
@@ -68,14 +82,15 @@ class Problem:
 
         np.append(self.predictor_names, label)
         self.predictor_names.append(label)
+        print(f"existing vars are: {self.predictor_names}")
 
-    def update_params(self, x):
+    def update_params(self, x, *args):
 
         """This updates the parameters of the model during the optimization"""
         model = ApsimModel(self.model)
         if len(x) != len(self.params):
             ve = ValueError('params must have the same length as the suggested predictors')
-            print(ve)
+            raise ve
 
         for x_var, method, param, x_holder in zip(x, self.updaters, self.params, self.main_params):
             if 'soil' in method:
@@ -104,12 +119,14 @@ class Problem:
         initial_guess = kwargs.get('x0') or np.zeros(len(self.params))
         if kwargs.get('x0'):
             kwargs.pop('x0')
-        minim = minimize(self.update_params, initial_guess,
-                         **kwargs)
+        minim = minimize(self.update_params, initial_guess, **kwargs)
         ap = dict(zip(self.predictor_names, minim.x))
         setattr(minim, 'x_vars', ap)
         return minim
 
+
+# initialized before it is needed
+SingleProblem = Problem()
 
 if __name__ == '__main__':
     # define the problem
@@ -121,19 +138,22 @@ if __name__ == '__main__':
 
 
     def func(model, ob):
-        return model.results.Yield.mean() * -1
+        sm = model.results.Yield.sum()
+        mn = model.results.Yield.mean()
+        ans = sm * sm / mn
+        return -ans
 
 
-    prob = Problem(model=r'Maize.apsimx', out_path='out.apsimx', func=func)
+    prob = SingleProblem.set_up_data(model=r'Maize.apsimx', out_path='out.apsimx', func=func)
     man = {'path': "Simulation.Manager.Fertilise at sowing.None.Amount"}
-    prob.add_param(updater='update_mgt_by_path', params=man, main_param='param_values',
-                   label='nitrogen_fertilizer')
+    prob.add_control_var(updater='update_mgt_by_path', params=man, main_param='param_values',
+                         label='nitrogen_fertilizer')
     si = {'parameter': 'Carbon',
           'soil_child': 'Organic',
           'simulations': 'Simulation',
           'indices': [0], }
-    #prob.add_param(params=si, updater='replace_soil_property_values', main_param='param_values', label='carbon')
-    options = {'maxiter': 100}
+    prob.add_control_var(params=si, updater='replace_soil_property_values', main_param='param_values', label='carbon')
+    options = {'maxiter': 800, 'disp': True}
 
-    prob.update_params([100])
-    mn = prob.minimize_problem(bounds=[(100, 300)], x0=[100], method=Solvers.Powell)
+    mn = prob.minimize_problem(bounds=[(100, 320), (0, 1)], x0=[100, 0.1], method=Solvers.Nelder_Mead, options=options)
+    prob.update_params([300, 3.3283740839260843e-09])

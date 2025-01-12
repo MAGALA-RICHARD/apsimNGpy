@@ -1,7 +1,7 @@
 from pathlib import Path
 import copy
 from dataclasses import dataclass
-
+import inspect
 import numpy as np
 from scipy.optimize import minimize
 
@@ -19,10 +19,18 @@ class Solvers:
     SLSQP = 'SLSQP'
 
 
+def _fun_inspector(fun):
+    assert callable(fun), 'method supplied is not a callable object'
+    sign = inspect.signature(fun)
+    params = [i.name for i in sign.parameters.values()]
+    return params
+
+
 class Problem:
 
     def __init__(self):
 
+        self.evaluation_sign = None
         self.out_path = None
         self.model = None
         self.options = None
@@ -33,12 +41,20 @@ class Problem:
         self.updaters = None
         self.main_params = None
 
-    def set_up_data(self, model, func, out_path=None, observed_values=None, options=None):
+    def set_up_data(self, model: str, func: callable, out_path: str = None, observed_values: np.ndarray = None,
+                    options: dict = None):
         """
-              model: APSIM model file, apsimNGpy object, apsim file str or dict we want to use in the minimization
-              func: is the callable that takes in apsimNGpy object and return the desired loss function. we will use it to extract
-              the result, meaning the user can create a callable object to manipulate the result objects
-               """
+        model: APSIM model file, apsimNGpy object, apsim file str or dict we want to use in the minimization func: an
+        evaluation function, which is callable.
+        This is something you should write for your self.
+        A typical evaluation function takes on the functional signature func(apsimNGpy.APSIMNG.model, *args) Additional
+        arguments can be passed as a tuple.
+        Example of this could be observed variables to be compared with the
+        predicted, where a loss function like rmse errors can be computed.
+        In case of extra argument, these should be
+        passed via options e.g., options ={args: None}
+         @return: an instance of problem class object.
+        """
         self.params = []
         self.updaters = []
         self.main_params = []
@@ -48,6 +64,10 @@ class Problem:
         self.model = model
         self.observed = observed_values
         self.out_path = out_path
+        self.evaluation_sign = _fun_inspector(func)
+        # make sure the user is consistent with extra argument
+        if 'args' in self.evaluation_sign and not self.options.get('args'):
+            raise ValueError("function evaluator has extra arguments not specified")
         self.func = func
         return self
 
@@ -66,9 +86,9 @@ class Problem:
         Note that this main_param = 'param_values', which is excluded here.
 
         To optimize variables defined via the manager module, use `update_mgt_by_path` and define params as: {
-        'path': "Simulation.Manager.script_name.None.parameter_name" } and main_parm  = 'param_values', Here, 'None' represents the path to recompile
-        the model to, and 'Simulation' is typically the name used in the simulation, though it can vary.
-        For further information, refer to the APSIMNG API documentation.
+        'path': "Simulation.Manager.script_name.None.parameter_name" } and main_parm  = 'param_values', Here,
+        'None' represents the path to recompile the model to, and 'Simulation' is typically the name used in the
+        simulation, though it can vary. For further information, refer to the APSIMNG API documentation.
 
         Kwargs: Contains additional arguments needed.
 
@@ -100,7 +120,10 @@ class Problem:
             getattr(model, method)(**param)
         # # now time to run
         model.run(report_name='Report')
-        ans = self.func(model, self.observed)
+        if 'args' in self.evaluation_sign:
+            ans = self.func(model, *self.options['args'])
+        else:
+            ans = self.func(model)
         print(ans, end='\r')
         return ans
 
@@ -137,7 +160,7 @@ if __name__ == '__main__':
     maize = load_default_simulations(crop='maize', simulations_object=False)
 
 
-    def func(model, ob):
+    def func(model):
         sm = model.results.Yield.sum()
         mn = model.results.Yield.mean()
         ans = sm * sm / mn

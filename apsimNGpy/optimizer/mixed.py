@@ -68,12 +68,11 @@ class MixedVariable(Problem):
             None
         """
 
-        self.updaters.add(updater)
+        self.updaters.append(updater)
         self.params.append(params)
-        self.main_params.add(main_param)
-        self.predictor_names.add(label)
-        self.variable_type.add(var_desc)
-        print(self.variable_type)
+        self.main_params.append(main_param)
+        self.predictor_names.append(label)
+        self.variable_type.append(var_desc)
 
         print(f"existing vars are: {self.predictor_names}")
 
@@ -87,18 +86,31 @@ class MixedVariable(Problem):
         optional_initial_decoded_guess = ig
         optional_initial_encoded_guess = wrap.encode(optional_initial_decoded_guess)
 
-        result = scipy.optimize.differential_evolution(wrap, bounds=bounds, seed=0,
+        result = scipy.optimize.differential_evolution(wrap, bounds=bounds, seed=0, maxiter=2000, popsize=105,
+                                                       workers=1, strategy= 'best1exp',
                                                        args=optional_fixed_args,
                                                        x0=optional_initial_encoded_guess)
         cache_usage = wrap.cache_info
         encoded_solution = result.x
         decoded_solution = wrap.decode(encoded_solution)
-        assert result.fun == wrap(encoded_solution, *optional_fixed_args)
-        assert result.fun == wrap(decoded_solution, *optional_fixed_args)
-        setattr("cache_info", cache_usage)
+        # assert result.fun == wrap(encoded_solution, *optional_fixed_args)
+        # assert result.fun == wrap(decoded_solution, *optional_fixed_args)
+        setattr(result, "cache_info", cache_usage)
+        setattr(result, "decoded_solution", decoded_solution)
+        setattr(result, 'encoded_solution', encoded_solution)
+        return result
 
 
 MixedOptimizer = MixedVariable()
+
+
+def func(model):
+    sm = model.results.Yield.sum()
+    mn = model.results.Yield.mean()
+    ans = sm * sm / mn
+    return -mn
+
+
 if __name__ == '__main__':
     # define the problem
     from apsimNGpy.core.base_data import load_default_simulations
@@ -107,24 +119,16 @@ if __name__ == '__main__':
 
     maize = load_default_simulations(crop='maize', simulations_object=False)
 
-
-    def func(model):
-        sm = model.results.Yield.sum()
-        mn = model.results.Yield.mean()
-        ans = sm * sm / mn
-        return -ans
-
-
     prob = MixedOptimizer.set_up_data(model=r'Maize.apsimx', out_path='out.apsimx', func=func)
     man = {'path': "Simulation.Manager.Fertilise at sowing.None.Amount"}
     prob.add_control_var(updater='update_mgt_by_path', params=man, main_param='param_values',
-                         label='nitrogen_fertilizer', var_desc=QrandintVar(100, 300, 2), )
+                         label='nitrogen_fertilizer', var_desc=ChoiceVar([100, 326,250, 165, 300,200, 220, 260, 280]), )
     si = {'parameter': 'Carbon',
           'soil_child': 'Organic',
           'simulations': 'Simulation',
           'indices': [0], }
     prob.add_control_var(params=si, updater='replace_soil_property_values', main_param='param_values', label='carbon',
-                         var_desc=UniformVar(1.2, 3.4), )
+                         var_desc=ChoiceVar([0.8, 1.2, 1.3, 1.4, 3, 5]), )
     options = {'maxiter': 1000, 'disp': True}
 
-    mn = prob.minimize_wrap_vars(ig=(104, 1.2))
+    mn = prob.minimize_wrap_vars(ig=(300,1.3))

@@ -15,9 +15,10 @@ class Solvers:
 
 
 def create_data(fields: list, values: list):
-    assert len(fields) == len(values), 'length not equal'
-    int_set = namedtuple('data', [i for i in fields])
-    return int_set(*values)
+    if len(fields) != len(values):
+        raise ValueError('length not equal')
+    init_data = namedtuple('data', [i for i in fields])
+    return init_data(*values)
 
 
 def fun_inspector(fun):
@@ -25,3 +26,5 @@ def fun_inspector(fun):
     sign = inspect.signature(fun)
     params = [i.name for i in sign.parameters.values()]
     return params
+
+

@@ -3,6 +3,8 @@ This allows for mixed variable optimization by encoding the categorical variable
 """
 from pathlib import Path
 
+from apsimNGpy.utililies.utils import timer
+
 from optimizer import Problem, Solvers
 
 import subprocess
@@ -76,7 +78,8 @@ class MixedVariable(Problem):
 
         print(f"existing vars are: {self.predictor_names}")
 
-    def minimize_wrap_vars(self, ig: list):
+    @timer
+    def minimize_wrap_vars(self, ig: list, **kwargs):
         wrap = Objective(
             self.update_params,
             variables=list(self.variable_type)
@@ -86,10 +89,9 @@ class MixedVariable(Problem):
         optional_initial_decoded_guess = ig
         optional_initial_encoded_guess = wrap.encode(optional_initial_decoded_guess)
 
-        result = scipy.optimize.differential_evolution(wrap, bounds=bounds, seed=0, maxiter=2000, popsize=105,
-                                                       workers=1, strategy= 'best1exp',
+        result = scipy.optimize.differential_evolution(wrap, bounds=bounds, seed=0,
                                                        args=optional_fixed_args,
-                                                       x0=optional_initial_encoded_guess)
+                                                       x0=optional_initial_encoded_guess, **kwargs)
         cache_usage = wrap.cache_info
         encoded_solution = result.x
         decoded_solution = wrap.decode(encoded_solution)
@@ -131,4 +133,5 @@ if __name__ == '__main__':
                          var_desc=ChoiceVar([0.8, 1.2, 1.3, 1.4, 3, 5]), )
     options = {'maxiter': 1000, 'disp': True}
 
-    mn = prob.minimize_wrap_vars(ig=(300,1.3))
+    mn = prob.minimize_wrap_vars(ig=(300,1.3), maxiter=2500, popsize=200,
+                                                       workers=1, strategy= 'best1exp',)

@@ -1,5 +1,5 @@
 from collections import namedtuple
-
+from utils import fun_inspector
 # Define the named tuple for function arguments
 ARGS = namedtuple('Args', ['updater', 'main_param', 'params', 'label', 'var_type'])
 

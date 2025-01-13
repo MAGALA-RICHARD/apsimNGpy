@@ -2,6 +2,8 @@ from pathlib import Path
 import copy
 from dataclasses import dataclass
 import inspect
+from typing import Any
+
 import numpy as np
 from scipy.optimize import minimize
 
@@ -30,6 +32,7 @@ class Problem:
 
     def __init__(self):
 
+        self.var_desc = None
         self.evaluation_sign = None
         self.out_path = None
         self.model = None
@@ -40,6 +43,7 @@ class Problem:
         self.predictor_names = None
         self.updaters = None
         self.main_params = None
+        self.variable_type = None
 
     def set_up_data(self, model: str, func: callable, out_path: str = None, observed_values: np.ndarray = None,
                     options: dict = None):
@@ -63,13 +67,14 @@ class Problem:
         self.observed = observed_values
         self.out_path = out_path
         self.evaluation_sign = _fun_inspector(func)
+        self.var_desc = None
         # make sure the user is consistent with extra argument
         if 'args' in self.evaluation_sign and not self.options.get('args'):
             raise ValueError("function evaluator has extra arguments not specified")
         self.func = func
         return self
 
-    def add_control_var(self, updater: str, main_param, params: dict, label: str, **kwargs):
+    def add_control_var(self, updater: str, main_param, params: dict, label: str, var_desc=None, **kwargs):
         """
         Updater: Specifies the name of the APSIMNG method used to update values from the optimizer.
         Params: A dictionary containing arguments for the updater method, excluding the value to be optimized.
@@ -93,15 +98,15 @@ class Problem:
         Returns:
             None
         """
-        parm = copy.deepcopy(params)
-        self.updaters.add(updater)
-        self.params.append(parm)
-        self.main_params.add(main_param)
-        self.predictor_names.add(label)
+
+        self.updaters.append(updater)
+        self.params.append(params)
+        self.main_params.append(main_param)
+        self.predictor_names.append(label)
 
         print(f"existing vars are: {self.predictor_names}")
 
-    def update_params(self, x):
+    def update_params(self, x: tuple, *args: Any):
 
         """This updates the parameters of the model during the optimization"""
         model = ApsimModel(self.model)
@@ -154,9 +159,11 @@ class Problem:
         @return:
         """
         self.params = []
-        self.updaters = set()
-        self.main_params = set()
-        self.predictor_names = set()
+        self.updaters = []
+        self.main_params = []
+        self.predictor_names = []
+        self.variable_type = []
+        self.var_desc = []
         return self
 
     def _freeze_data(self):
@@ -165,6 +172,7 @@ class Problem:
         self.updaters = tuple([i for i in self.updaters])
         self.main_params = tuple([i for i in self.main_params])
         self.predictor_names = tuple([i for i in self.predictor_names])
+        self.variable_type = type([i for i in self.variable_type])
 
 
 # initialized before it is needed
@@ -183,7 +191,7 @@ if __name__ == '__main__':
         sm = model.results.Yield.sum()
         mn = model.results.Yield.mean()
         ans = sm * sm / mn
-        return -ans
+        return -mn
 
 
     prob = SingleProblem.set_up_data(model=r'Maize.apsimx', out_path='out.apsimx', func=func)
@@ -197,6 +205,6 @@ if __name__ == '__main__':
     prob.add_control_var(params=si, updater='replace_soil_property_values', main_param='param_values', label='carbon')
     options = {'maxiter': 1000, 'disp': True}
 
-    mn = prob.minimize_problem(bounds=[(100, 320), (0, 1)], x0=[100, 0.1], method=Solvers.Nelder_Mead, options=options)
-
+    mn = prob.minimize_problem(bounds=[(100, 320), (0, 1)], x0=[100, 0.1], method=Solvers.BFGS, options=options)
+    print(mn)
     prob.update_params([300, 3.3283740839260843e-09])

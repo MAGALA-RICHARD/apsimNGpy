@@ -1276,7 +1276,8 @@ class APSIMNG:
         :crop (str, optional): string for soil water replacement. Default is None
 
         """
-
+        if isinstance(param_values, (int, float)):
+            param_values = [param_values]
         if indices is None:
             indices = [param_values.index(i) for i in param_values]
         for simu in self.find_simulations(simulations):

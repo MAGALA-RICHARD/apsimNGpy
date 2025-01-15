@@ -1,3 +1,6 @@
+import logging
+from collections import deque
+
 import numpy as np
 import glob
 import os
@@ -23,7 +26,7 @@ import functools
 import traceback
 import sys
 
-
+logging.basicConfig(level=logging.INFO)
 def select_process(use_thread, ncores):
     return ThreadPoolExecutor(ncores) if use_thread else ProcessPoolExecutor(ncores)
 
@@ -512,7 +515,7 @@ def timer(func):
         result = func(*args, **kwargs)
         end_time = perf_counter()
         elapsed_time = end_time - start_time
-        print(f"{func.__name__} took {elapsed_time:.4f} seconds to execute.")
+        logging.info(f"{func.__name__} took {elapsed_time:.4f} seconds to execute.")
         return result
 
     return wrapper

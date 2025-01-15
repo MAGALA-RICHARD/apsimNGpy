@@ -124,14 +124,15 @@ if __name__ == '__main__':
     prob = MixedOptimizer.set_up_data(model=r'Maize.apsimx', out_path='out.apsimx', func=func)
     man = {'path': "Simulation.Manager.Fertilise at sowing.None.Amount"}
     prob.add_control_var(updater='update_mgt_by_path', params=man, main_param='param_values',
-                         label='nitrogen_fertilizer', var_desc=ChoiceVar([100, 326,250, 165, 300,200, 220, 260, 280]), )
+                         label='nitrogen_fertilizer',
+                         var_desc=ChoiceVar([100, 326, 250, 165, 300, 200, 220, 260, 280]), )
     si = {'parameter': 'Carbon',
           'soil_child': 'Organic',
           'simulations': 'Simulation',
           'indices': [0], }
     prob.add_control_var(params=si, updater='replace_soil_property_values', main_param='param_values', label='carbon',
-                         var_desc=ChoiceVar([0.8, 1.2, 1.3, 1.4, 3, 5]), )
+                         var_desc=ChoiceVar([1.3, 1.5]), )
     options = {'maxiter': 1000, 'disp': True}
 
-    mn = prob.minimize_wrap_vars(ig=(300,1.3), maxiter=2500, popsize=200,
-                                                       workers=1, strategy= 'best1exp',)
+    mn = prob.minimize_wrap_vars(ig=(300, 1.3), maxiter=100, popsize=30,
+                                 workers=1, strategy='best1exp', )

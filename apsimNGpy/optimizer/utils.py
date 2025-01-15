@@ -21,10 +21,14 @@ def create_data(fields: list, values: list):
     return init_data(*values)
 
 
-def fun_inspector(fun):
+def fun_inspector(fun, values =True):
     assert callable(fun), 'method supplied is not a callable object'
     sign = inspect.signature(fun)
-    params = [i.name for i in sign.parameters.values()]
+    if values:
+        params = [i.name for i in sign.parameters.values()]
+    else:
+        params = [i for i in sign.parameters.keys()]
+
     return params
 
 

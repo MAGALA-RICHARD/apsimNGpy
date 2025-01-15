@@ -31,6 +31,7 @@ if __name__ == '__main__':
           'simulations': 'Simulation',
           'indices': [0], }
     # prob.add_control_var(params=si, updater='replace_soil_property_values', main_param='param_values', label='carbon')
-    options = {'maxiter': 8000, 'disp': True}
+    options = {'maxiter': 80000, 'disp': True}
 
-    mn = prob.minimize_problem(bounds=[(100, 320)], x0=[100], method=Solvers.L_BFGS_B, options=options)
+    mn = prob.minimize_problem(bounds=[(100, 320)], x0=[100], method=Solvers.SLSQP, options=options)
+    print(mn)

@@ -1,8 +1,10 @@
 from collections import namedtuple
 from utils import fun_inspector, create_data
 from apsimNGpy.utililies.utils import timer
+
 # Define the named tuple for function arguments
 ARGS = namedtuple('Args', ['updater', 'main_param', 'params', 'label', 'var_type'])
+
 
 @timer
 def manager(main_param, params: dict, label: str, var_desc, updater=None):
@@ -33,4 +35,4 @@ def dates(main_param, params: dict, label: str, var_desc, updater=None):
 
 if __name__ == '__main__':
     xp = manager('param_values', 'nitrogen', 'choice', 'ba')
-    ap =  soil('param_values', 'nitrogen', 'choice', 'ba')
+    ap = soil('param_values', 'nitrogen', 'choice', 'ba')

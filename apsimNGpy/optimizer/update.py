@@ -23,7 +23,7 @@ def _evaluate_args(updater, main_param, params, label, var_desc):
     assert isinstance(label, str), 'label must be a string'
     assert isinstance(main_param, str), 'main param must be defined as a string'
     try:
-        method = getattr(ApsimModel, updater)
+        getattr(ApsimModel, updater)
     except AttributeError as e:
         logging.error(e)
         raise AttributeError(f'{updater} is not a valid method for updating parameters')

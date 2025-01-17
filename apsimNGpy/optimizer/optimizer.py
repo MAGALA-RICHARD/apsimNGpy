@@ -1,3 +1,5 @@
+import os
+import shutil
 from pathlib import Path
 import copy
 from dataclasses import dataclass
@@ -32,6 +34,9 @@ class Problem:
 
     def __init__(self):
 
+        self.WS = None
+        self.user_ws = None
+        self.controls = None
         self.var_desc = None
         self.evaluation_sign = None
         self.out_path = None
@@ -45,7 +50,7 @@ class Problem:
         self.main_params = None
         self.variable_type = None
 
-    def set_up_data(self, model: str, func: callable, out_path: str = None, observed_values: np.ndarray = None,
+    def set_up_data(self, model: str, func: callable, ws: os.PathLike, observed_values: np.ndarray = None,
                     options: dict = None):
         """
         model: APSIM model file, apsimNGpy object, apsim file str or dict we want to use in the minimization func: an
@@ -61,74 +66,50 @@ class Problem:
         """
         # re-initialize all lists carrying the data
         self.reset_data()
+        self.set_ws(ws)
         self.options = options
         self.model = model
         self.model = model
         self.observed = observed_values
-        self.out_path = out_path
+        self.user_ws = ws
+
         self.evaluation_sign = _fun_inspector(func)
         self.var_desc = None
         # make sure the user is consistent with extra argument
         if 'args' in self.evaluation_sign and not self.options.get('args'):
             raise ValueError("function evaluator has extra arguments not specified")
         self.func = func
+
         return self
 
-    def add_control_var(self, updater: str, main_param, params: dict, label: str, var_desc=None, **kwargs):
-        """
-        Updater: Specifies the name of the APSIMNG method used to update values from the optimizer.
-        Params: A dictionary containing arguments for the updater method, excluding the value to be optimized.
-        For example, with `replace_soil_property_values`, params could be defined as:
-            {
-                'parameter': 'Carbon',
-                'soil_child': 'Organic',
-                'simulations': None,
-                'indices': [1],
-                'crop': None
-            }
-        Note that this main_param = 'param_values', which is excluded here.
+    def add_control_variable(self, control: Any):
+        self.controls.append(control)
 
-        To optimize variables defined via the manager module, use `update_mgt_by_path` and define params as: {
-        'path': "Simulation.Manager.script_name.None.parameter_name" } and main_parm  = 'param_values', Here,
-        'None' represents the path to recompile the model to, and 'Simulation' is typically the name used in the
-        simulation, though it can vary. For further information, refer to the APSIMNG API documentation.
+    def update_predictors(self, x: tuple, *args: Any):
+        vals = '_'.join(str(v) for v in x)
+        # we want a unique out_path name for parallel processing
+        new_path = self.WS.joinpath(f"{vals}.apsimx")
+        try:
 
-        Kwargs: Contains additional arguments needed.
+            model = ApsimModel(self.model, out_path=new_path)
+            for predictor, x_to_fill in zip(self.controls, x):
+                # update main param for the function updator
+                predictor.params[predictor.main_param] = x_to_fill
+                getattr(model, predictor.updater)(**predictor.params)
+            # xit loop and run
+            # model.run(report_name='MaizeR')
+            if 'args' in self.evaluation_sign:
+                ans = self.func(model, *self.options['args'])
+            else:
+                ans = self.func(model)
+            print(ans, end='\r')
 
-        Returns:
-            None
-        """
-
-        self.updaters.append(updater)
-        self.params.append(params)
-        self.main_params.append(main_param)
-        self.predictor_names.append(label)
-
-        print(f"existing vars are: {self.predictor_names}")
-
-    def update_params(self, x: tuple, *args: Any):
-
-        """This updates the parameters of the model during the optimization"""
-        model = ApsimModel(self.model)
-        # if len(x) != len(self.params):
-        #     ve = ValueError('Data set up not complete \n'
-        #                     'params must have the same length as the suggested predictors')
-        #     raise ve
-
-        for x_var, method, param, x_holder in zip(x, self.updaters, self.params, self.main_params):
-            if 'soil' in method:
-                x_var = x_var,
-            # update the params
-            param[x_holder] = x_var
-            getattr(model, method)(**param)
-        # # now time to run
-        model.run(report_name='Report')
-        if 'args' in self.evaluation_sign:
-            ans = self.func(model, *self.options['args'])
-        else:
-            ans = self.func(model)
-        print(ans, end='\r')
-        return ans
+            return ans
+        finally:
+            try:
+                os.remove(new_path)
+            except (FileNotFoundError, PermissionError):
+                pass
 
     def minimize_problem(self, **kwargs):
 
@@ -147,8 +128,9 @@ class Problem:
         initial_guess = kwargs.get('x0') or np.zeros(len(self.params))
         if kwargs.get('x0'):
             kwargs.pop('x0')
-        minim = minimize(self.update_params, initial_guess, **kwargs)
-        ap = dict(zip(self.predictor_names, minim.x))
+        minim = minimize(self.update_predictors, initial_guess, **kwargs)
+        labels = [i.label for i in self.controls]
+        ap = dict(zip(labels, minim.x))
         setattr(minim, 'x_vars', ap)
         return minim
 
@@ -158,6 +140,7 @@ class Problem:
         set_up_data_method in case your setup does need to change. After resting, you have to add the control vars
         @return:
         """
+        self.controls = []
         self.params = []
         self.updaters = []
         self.main_params = []
@@ -166,9 +149,16 @@ class Problem:
         self.var_desc = []
         return self
 
+    def set_ws(self, ws):
+        self.WS = Path(ws).joinpath('out_files')
+        if self.WS.exists():
+            shutil.rmtree(self.WS)
+        self.WS.mkdir()
+
     def _freeze_data(self):
         # make the data unchangeable after editing
         self.params = tuple([i for i in self.params])
+        self.controls = tuple([i for i in self.controls])
         self.updaters = tuple([i for i in self.updaters])
         self.main_params = tuple([i for i in self.main_params])
         self.predictor_names = tuple([i for i in self.predictor_names])
@@ -177,34 +167,3 @@ class Problem:
 
 # initialized before it is needed
 SingleProblem = Problem()
-
-if __name__ == '__main__':
-    # define the problem
-    from apsimNGpy.core.base_data import load_default_simulations
-
-    mode = Path.home() / 'Maize.apsimx'
-
-    maize = load_default_simulations(crop='maize', simulations_object=False)
-
-
-    def func(model):
-        sm = model.results.Yield.sum()
-        mn = model.results.Yield.mean()
-        ans = sm * sm / mn
-        return -mn
-
-
-    prob = SingleProblem.set_up_data(model=r'Maize.apsimx', out_path='out.apsimx', func=func)
-    man = {'path': "Simulation.Manager.Fertilise at sowing.None.Amount"}
-    prob.add_control_var(updater='update_mgt_by_path', params=man, main_param='param_values',
-                         label='nitrogen_fertilizer')
-    si = {'parameter': 'Carbon',
-          'soil_child': 'Organic',
-          'simulations': 'Simulation',
-          'indices': [0], }
-    prob.add_control_var(params=si, updater='replace_soil_property_values', main_param='param_values', label='carbon')
-    options = {'maxiter': 1000, 'disp': True}
-
-    mn = prob.minimize_problem(bounds=[(100, 320), (0, 1)], x0=[100, 0.1], method=Solvers.BFGS, options=options)
-    print(mn)
-    prob.update_params([300, 3.3283740839260843e-09])

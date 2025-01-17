@@ -334,30 +334,10 @@ class APSIMNG:
                 logging.info(e[0].ToString())
             if init_only:
                 return self
-            if report_name is None:
-                self.results = self.load_simulated_results()
-
-            elif isinstance(report_name, str):
-                self.results = self.load_simulated_results()[report_name]
-            elif get_dict and isinstance(report_name, (list, dict)):
-                self.results = {i: self.load_simulated_results()[i] for i in report_name}
-            elif not get_dict and isinstance(report_name, (list, dict)):
-                self.results = [self.load_simulated_results()[i] for i in report_name]
-            #     # issues with decoding '_Units' we remove it
-            #     if '_Units' in report_name: report_name.remove('_Units')
-            #     warnings.warn(
-            #         'No tables were specified, retrieved tables includes:: {}'.format(report_name)) if verbose else None
-            # if isinstance(report_name, (tuple, list, np.ndarray)):
-            #     if not get_dict:
-            #         self.results = [read_db_table(self.datastore, report_name=rep) for rep in report_name]
-            #     else:
-            #         self.results = {rep: read_db_table(self.datastore, report_name=rep) for rep in report_name}
-            #
-            # else:
-            #     if not get_dict:
-            #         self.results = read_db_table(self.datastore, report_name=report_name)
-            #     else:
-            #         self.results = {report_name: read_db_table(self.datastore, report_name=report_name)}
+            if isinstance(report_name, str):
+                 self.results = read_db_table(self.datastore, report_name=report_name)
+            elif isinstance(report_name, (list, tuple)):
+                self.results = {rn:read_db_table(self.datastore, report_name=rn) for rn in report_name}
         finally:
             # close the datastore
             self._DataStore.Close()
@@ -365,7 +345,8 @@ class APSIMNG:
 
     def load_simulated_results(self):
         in_reports = []
-        reports = self.get_report(names_only=True).values()
+        reports = get_db_table_names(self.datastore)
+        print(reports)
         for i in reports:
             in_reports.extend(i)
         return {rep: read_db_table(self.datastore, report_name=rep) for rep in in_reports}

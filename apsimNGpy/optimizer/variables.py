@@ -46,7 +46,7 @@ def _initial_guess(data):
     return sample_set
 
 
-@dataclass
+@dataclass(slots=True)
 class CropVar:
     updater: str
     main_param: str
@@ -97,9 +97,6 @@ def soil(params: dict, label: str, var_desc, main_param=None, updater=None):
         main_param = "param_values"
     _evaluate_args(updater, main_param, params, label, var_desc)
     return CropVar(updater, main_param, params, label, var_desc)
-
-
-
 
 
 def cultivar(params: dict, label: str, var_desc, main_param=None, updater=None):

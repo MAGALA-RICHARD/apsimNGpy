@@ -12,7 +12,7 @@ from variables import _initial_guess
 from apsimNGpy.core.apsim import ApsimModel
 
 
-@dataclass
+@dataclass(slots=True)
 class Solvers:
     L_BFGS_B = 'L-BFGS-B'
     BFGS = 'BFGS'

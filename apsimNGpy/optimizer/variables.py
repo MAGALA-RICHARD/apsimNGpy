@@ -12,7 +12,7 @@ from apsimNGpy.utililies.utils import timer
 from apsimNGpy.core.apsim import ApsimModel
 import wrapdisc
 from wrapdisc.var import ChoiceVar, GridVar, QrandintVar, QuniformVar, RandintVar, UniformVar
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 def _doc(section_desc):

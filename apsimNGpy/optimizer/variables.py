@@ -15,6 +15,19 @@ from wrapdisc.var import ChoiceVar, GridVar, QrandintVar, QuniformVar, RandintVa
 from dataclasses import dataclass
 
 
+def _doc(section_desc):
+    return f"""
+    Any parameters that is in the {section_desc} of apsim model can be optimized by calling this function
+    @param params:is a dictionary that could hold extra argument for each function.
+    @param label: name tag for the control variable being optimized
+    @param var_desc: instance of wrapdisc.var big up to the authors of this package we wrap around their
+     variable description to facilitate mixed variable optimization.
+    @param main_param: is main_param arguments
+    @param updater: method of ApsimModel class to update the parameters during the optimization
+    @return:  instance of CropVar
+    """
+
+
 def _initial_guess(data):
     if isinstance(data, ChoiceVar):
         sample_set = np.random.choice(data.categories, size=1)[0]
@@ -51,13 +64,23 @@ def _evaluate_args(updater, main_param, params, label, var_desc):
     if not isinstance(main_param, str):
         raise ValueError('main param must be defined as a string')
     try:
+        # CHECK IF UPDATOR IS A valid attribute from ApsimModel
         getattr(ApsimModel, updater)
     except AttributeError as e:
-        logging.error(e)
         raise AttributeError(f'{updater} is not a valid method for updating parameters')
 
 
-def manager(params: dict, label: str, var_desc, main_param=None, updater=None):
+def manager(params: dict, label: str, var_desc, main_param=None, updater=None) -> CropVar:
+    """
+    Any parameters that is in the manager script of apsim model can be optimized by calling this function
+    @param params:is a dictionary that could hold extra argument for each function.
+    @param label: name tag for the control variable being optimized
+    @param var_desc: instance of wrapdisc.var big up to the authors of this package we wrap around their
+     variable description to facilitate mixed variable optimization.
+    @param main_param: is function updator  arguments which will hold the trial values during optimization
+    @param updater: method of ApsimModel class to update the parameters during the optimization
+    @return:  instance of CropVar
+    """
     if updater is None:
         updater = 'update_mgt_by_path'
         main_param = 'param_values'
@@ -67,13 +90,16 @@ def manager(params: dict, label: str, var_desc, main_param=None, updater=None):
     return CropVar(updater, main_param, params, label, var_desc)
 
 
-@timer
 def soil(params: dict, label: str, var_desc, main_param=None, updater=None):
+    soil.__doc__ += _doc
     if updater is None:
         updater = 'replace_soil_properties_by_path'  # example path 'None.Soil.physical.None.None.BD'
         main_param = "param_values"
     _evaluate_args(updater, main_param, params, label, var_desc)
     return CropVar(updater, main_param, params, label, var_desc)
+
+
+
 
 
 def cultivar(params: dict, label: str, var_desc, main_param=None, updater=None):
@@ -92,3 +118,7 @@ def dates(params: dict, label: str, var_desc, main_param=None, updater=None):
     return CropVar(updater, main_param, params, label, var_desc)
 
 
+soil.__doc__ = _doc('soil node')
+manager.__doc__ = _doc('manager script')
+cultivar.__doc__ = _doc('cultivar node')
+dates.__doc__ = _doc('dates or clock node')

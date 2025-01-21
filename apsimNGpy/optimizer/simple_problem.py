@@ -5,10 +5,10 @@ import copy
 from dataclasses import dataclass
 import inspect
 from typing import Any
-
+from abc import ABC, abstractmethod
 import numpy as np
 from scipy.optimize import minimize
-
+from variables import _initial_guess
 from apsimNGpy.core.apsim import ApsimModel
 
 
@@ -30,7 +30,7 @@ def _fun_inspector(fun):
     return params
 
 
-class Problem:
+class Problem(ABC):
 
     def __init__(self):
 
@@ -156,7 +156,10 @@ class Problem:
     def set_ws(self, ws):
         self.WS = Path(ws).joinpath('out_files')
         if self.WS.exists():
-            shutil.rmtree(self.WS)
+            try:
+                shutil.rmtree(self.WS)
+            except (FileNotFoundError, PermissionError):
+                ...
         self.WS.mkdir()
 
     def _freeze_data(self):

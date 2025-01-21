@@ -5,7 +5,7 @@ from pathlib import Path
 
 from apsimNGpy.utililies.utils import timer
 
-from optimizer import Problem, Solvers
+from simple_problem import Problem, Solvers, _initial_guess
 
 import subprocess
 
@@ -41,6 +41,7 @@ def _variable_type(type_name: str) -> str:
 
 class MixedVariable(Problem):
     def __init__(self):
+
         self.reset_data()
 
     def add_control_var(self, updater: str, main_param, params: dict, label: str, var_desc: str,
@@ -79,14 +80,21 @@ class MixedVariable(Problem):
         print(f"existing vars are: {self.predictor_names}")
 
     @timer
-    def minimize_wrap_vars(self, ig: list, **kwargs):
+    def minimize_wrap_vars(self, ig: list = None, **kwargs):
+        self._freeze_data()
+
         wrap = Objective(
-            self.update_params,
-            variables=list(self.variable_type)
+            self.update_predictors,
+            variables=[i.var_type for i in self.controls]
         )
         bounds = wrap.bounds
         optional_fixed_args = ("arg1", 2, 3.0)
-        optional_initial_decoded_guess = ig
+        if not ig:
+            auto_ig = [_initial_guess(data.var_type) for data in self.controls]
+            optional_initial_decoded_guess = auto_ig
+        else:
+            optional_initial_decoded_guess = ig
+
         optional_initial_encoded_guess = wrap.encode(optional_initial_decoded_guess)
 
         result = scipy.optimize.differential_evolution(wrap, bounds=bounds, seed=0,
@@ -100,39 +108,12 @@ class MixedVariable(Problem):
         setattr(result, "cache_info", cache_usage)
         setattr(result, "decoded_solution", decoded_solution)
         setattr(result, 'encoded_solution', encoded_solution)
+        att_lab = dict(zip([va.label for va in self.controls], result.decoded_solution))
+        setattr(result, 'decoded_solution', att_lab)
         return result
 
 
 MixedOptimizer = MixedVariable()
 
 
-def func(model):
-    sm = model.results.Yield.sum()
-    mn = model.results.Yield.mean()
-    ans = sm * sm / mn
-    return -mn
 
-
-if __name__ == '__main__':
-    # define the problem
-    from apsimNGpy.core.base_data import load_default_simulations
-
-    mode = Path.home() / 'Maize.apsimx'
-
-    maize = load_default_simulations(crop='maize', simulations_object=False)
-
-    prob = MixedOptimizer.set_up_data(model=r'Maize.apsimx', out_path='out.apsimx', func=func)
-    man = {'path': "Simulation.Manager.Fertilise at sowing.None.Amount"}
-    prob.add_control_var(updater='update_mgt_by_path', params=man, main_param='param_values',
-                         label='nitrogen_fertilizer',
-                         var_desc=ChoiceVar([100, 326, 250, 165, 300, 200, 220, 260, 280]), )
-    si = {'parameter': 'Carbon',
-          'soil_child': 'Organic',
-          'simulations': 'Simulation',
-          'indices': [0], }
-    prob.add_control_var(params=si, updater='replace_soil_property_values', main_param='param_values', label='carbon',
-                         var_desc=ChoiceVar([1.3, 1.5]), )
-    options = {'maxiter': 1000, 'disp': True}
-
-    mn = prob.minimize_wrap_vars(ig=(300, 1.3), maxiter=100, popsize=30,
-                                 workers=1, strategy='best1exp', )

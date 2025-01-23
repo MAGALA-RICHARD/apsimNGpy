@@ -46,7 +46,7 @@ def _initial_guess(data):
     return sample_set
 
 
-@dataclass(slots=True)
+@dataclass(slots=True, frozen=True)
 class CropVar:
     updater: str
     main_param: str
@@ -93,7 +93,7 @@ def manager(params: dict, label: str, var_desc, main_param=None, updater=None) -
 def soil(params: dict, label: str, var_desc, main_param=None, updater=None):
     soil.__doc__ += _doc
     if updater is None:
-        updater = 'replace_soil_properties_by_path'  # example path 'None.Soil.physical.None.None.BD'
+        updater = 'replace_soil_properties_by_path'  # example path 'Simulation.Soil.physical.None.None.BD'
         main_param = "param_values"
     _evaluate_args(updater, main_param, params, label, var_desc)
     return CropVar(updater, main_param, params, label, var_desc)

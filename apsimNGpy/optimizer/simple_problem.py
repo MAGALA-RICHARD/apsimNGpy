@@ -37,21 +37,16 @@ class Problem(ABC):
         self.WS = None
         self.user_ws = None
         self.controls = None
-        self.var_desc = None
+        self.n_workers = 1
         self.evaluation_sign = None
         self.out_path = None
         self.model = None
         self.options = None
-        self.params = None
         self.func = None
         self.observed = None
-        self.predictor_names = None
-        self.updaters = None
-        self.main_params = None
-        self.variable_type = None
 
     def set_up_data(self, model: str, func: callable, ws: os.PathLike, observed_values: np.ndarray = None,
-                    options: dict = None):
+                    options: dict = None, n_workers=1):
         """
         model: APSIM model file, apsimNGpy object, apsim file str or dict we want to use in the minimization func: an
         evaluation function, which is callable.
@@ -69,12 +64,12 @@ class Problem(ABC):
         self.set_ws(ws)
         self.options = options
         self.model = model
-        self.model = model
+        self.n_workers = n_workers
         self.observed = observed_values
         self.user_ws = ws
 
         self.evaluation_sign = _fun_inspector(func)
-        self.var_desc = None
+
         # make sure the user is consistent with extra argument
         if 'args' in self.evaluation_sign and not self.options.get('args'):
             raise ValueError("function evaluator has extra arguments not specified")
@@ -88,7 +83,10 @@ class Problem(ABC):
     def update_predictors(self, x: tuple, *args: Any):
         vals = '_'.join(str(v) for v in x)
         # we want a unique out_path name for parallel processing
-        new_path = self.WS.joinpath(f"{vals}.apsimx")
+        if self.n_workers > 1:
+            new_path = self.WS.joinpath(f"{vals}.apsimx")
+        else:
+            new_path = 'out.apsimx'
         model = ApsimModel(self.model, out_path=new_path)
         try:
 
@@ -129,10 +127,8 @@ class Problem(ABC):
         """
         # freeze the data before optimization to make it immutable
         self._freeze_data()
-        initial_guess = kwargs.get('x0') or np.zeros(len(self.params))
-        if kwargs.get('x0'):
-            kwargs.pop('x0')
-        minim = minimize(self.update_predictors, initial_guess, **kwargs)
+
+        minim = minimize(self.update_predictors, **kwargs)
         labels = [i.label for i in self.controls]
         ap = dict(zip(labels, minim.x))
         setattr(minim, 'x_vars', ap)
@@ -145,12 +141,7 @@ class Problem(ABC):
         @return:
         """
         self.controls = []
-        self.params = []
-        self.updaters = []
-        self.main_params = []
-        self.predictor_names = []
-        self.variable_type = []
-        self.var_desc = []
+
         return self
 
     def set_ws(self, ws):
@@ -160,16 +151,12 @@ class Problem(ABC):
                 shutil.rmtree(self.WS)
             except (FileNotFoundError, PermissionError):
                 ...
-        self.WS.mkdir()
+        self.WS.mkdir(exist_ok=True)
 
     def _freeze_data(self):
         # make the data unchangeable after editing
-        self.params = tuple([i for i in self.params])
+
         self.controls = tuple([i for i in self.controls])
-        self.updaters = tuple([i for i in self.updaters])
-        self.main_params = tuple([i for i in self.main_params])
-        self.predictor_names = tuple([i for i in self.predictor_names])
-        self.variable_type = type([i for i in self.variable_type])
 
 
 # initialized before it is needed

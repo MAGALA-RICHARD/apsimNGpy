@@ -41,43 +41,8 @@ def _variable_type(type_name: str) -> str:
 
 class MixedVariable(Problem):
     def __init__(self):
-
+        super().__init__()
         self.reset_data()
-
-    def add_control_var(self, updater: str, main_param, params: dict, label: str, var_desc: str,
-
-                        **kwargs):
-        """
-        Updater: Specifies the name of the APSIMNG method used to update values from the optimizer.
-        Params: A dictionary containing arguments for the updater method, excluding the value to be optimized.
-        For example, with `replace_soil_property_values`, params could be defined as:
-            {
-                'parameter': 'Carbon',
-                'soil_child': 'Organic',
-                'simulations': None,
-                'indices': [1],
-                'crop': None
-            }
-        Note that this main_param = 'param_values', which is excluded here.
-
-        To optimize variables defined via the manager module, use `update_mgt_by_path` and define params as: {
-        'path': "Simulation.Manager.script_name.None.parameter_name" } and main_parm  = 'param_values', Here,
-        'None' represents the path to recompile the model to, and 'Simulation' is typically the name used in the
-        simulation, though it can vary. For further information, refer to the APSIMNG API documentation.
-
-        Kwargs: Contains additional arguments needed.
-
-        Returns:
-            None
-        """
-
-        self.updaters.append(updater)
-        self.params.append(params)
-        self.main_params.append(main_param)
-        self.predictor_names.append(label)
-        self.variable_type.append(var_desc)
-
-        print(f"existing vars are: {self.predictor_names}")
 
     @timer
     def minimize_wrap_vars(self, ig: list = None, **kwargs):

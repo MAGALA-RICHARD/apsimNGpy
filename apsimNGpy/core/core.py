@@ -45,6 +45,7 @@ from apsimNGpy.core.runner import run_model
 import ast
 from typing import Iterable
 from collections.abc import Iterable
+
 logging.basicConfig(level=logging.INFO)
 MultiThreaded = Models.Core.Run.Runner.RunTypeEnum.MultiThreaded
 SingleThreaded = Models.Core.Run.Runner.RunTypeEnum.SingleThreaded
@@ -330,23 +331,23 @@ class APSIMNG:
             if len(e) > 0:
                 logging.info(e[0].ToString())
             if isinstance(report_name, str):
-                 self.results = read_db_table(self.datastore, report_name=report_name)
+                self.results = read_db_table(self.datastore, report_name=report_name)
             elif isinstance(report_name, Iterable):
                 data = []
                 for rpn in report_name:
                     df = read_db_table(self.datastore, report_name=rpn)
                     df['report_name'] = rpn
                     data.append(df)
-                    self.results = pd.concat(data, ignore_index=True, axis =0)
+                    self.results = pd.concat(data, ignore_index=True, axis=0)
 
         finally:
             # close the datastore
             self._DataStore.Close()
         return self
 
-    def load_simulated_results(self) -> pd.DataFrame:
+    @property
+    def simulated_results(self) -> pd.DataFrame:
         reports = get_db_table_names(self.datastore)
-
         return pd.concat({rep: read_db_table(self.datastore, report_name=rep) for rep in reports})
 
     def clone_simulation(self, target: str, simulation: Union[list, tuple] = None):

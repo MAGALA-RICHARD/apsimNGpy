@@ -8,7 +8,7 @@ import pandas as pd
 # Import the module where APSIMNG class is defined
 from apsimNGpy.core.core import APSIMNG, save_model_to_file
 from apsimNGpy.core.model_loader import save_model_to_file
-
+from apsimNGpy.core.base_data import load_default_simulations
 wd = Path.cwd() / 'apsimNGpy_tests'
 wd.mkdir(exist_ok=True)
 os.chdir(wd)
@@ -17,7 +17,8 @@ os.chdir(wd)
 class TestAPSIMNG(unittest.TestCase):
 
     def setUp(self):
-        from apsimNGpy.core.base_data import load_default_simulations
+
+        test_path  = load_default_simulations(crop ='maize', simulations_object=False)
         # Mock the model path and other attributes
         self.model_path = Path(load_default_simulations(crop='maize', simulations_object=False))
         self.model_path2 = Path(load_default_simulations(crop='soybean', simulations_object=False))
@@ -33,11 +34,9 @@ class TestAPSIMNG(unittest.TestCase):
         with patch.object(self.test_ap_sim, '_DataStore', create=True) as mock_datastore:
             mock_datastore.Open = MagicMock()
             mock_datastore.Close = MagicMock()
-            # test if dictionary is returned
-            self.test_ap_sim.run(get_dict=True)
-            self.assertIsInstance(self.test_ap_sim.results, dict)
-            # check is a list is returned if a user passes a tuple or  alist of report names
-            self.test_ap_sim.run(report_name=['Report'], get_dict=False)  # false is the default
+            # if we just run without
+
+            self.test_ap_sim.run(report_name='Report', get_dict=False)  # false is the default
             self.assertIsInstance(self.test_ap_sim.results, list)
             # one more test
             # check if the use pass  report name as str a strict a pandas.core.frame.DataFrame' is returned
@@ -102,11 +101,11 @@ class TestAPSIMNG(unittest.TestCase):
     def test_load_simulated_results(self):
         """ Test load_simulated_results"""
         repos = self.test_ap_sim.load_simulated_results()
-        msG = f"expected dictionary but received {type(repos)}"
-        self.assertIsInstance(repos, dict, msg=msG)
+        msg = f"expected dictionary but received {type(repos)}"
+        self.assertIsInstance(repos, dict, msg=msg)
         # test if dict not empty
-        msG = 'expected dict is empty'
-        self.assertTrue(self.test_ap_sim.load_simulated_results(), msg=msG)
+        msg = 'expected dict is empty'
+        self.assertTrue(self.test_ap_sim.load_simulated_results(), msg=msg)
 
     def test_get_reports(self):
         self.assertIsInstance(self.test_ap_sim.get_report(names_only=True), dict)

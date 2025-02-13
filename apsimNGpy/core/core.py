@@ -44,7 +44,7 @@ from apsimNGpy.utililies.utils import timer
 from apsimNGpy.core.runner import run_model
 import ast
 from typing import Iterable
-
+from collections.abc import Iterable
 logging.basicConfig(level=logging.INFO)
 MultiThreaded = Models.Core.Run.Runner.RunTypeEnum.MultiThreaded
 SingleThreaded = Models.Core.Run.Runner.RunTypeEnum.SingleThreaded
@@ -281,9 +281,6 @@ class APSIMNG:
             simulations: Union[tuple, list] = None,
             clean: bool = False,
             multithread: bool = True,
-            verbose: bool = False,
-            get_dict: bool = False,
-            init_only: bool = False,
             **kwargs) -> 'APSIMNG':
         """Run apsim model in the simulations
 
@@ -332,11 +329,10 @@ class APSIMNG:
             e = _run_model.Run()
             if len(e) > 0:
                 logging.info(e[0].ToString())
-            if init_only:
-                return self
             if isinstance(report_name, str):
                  self.results = read_db_table(self.datastore, report_name=report_name)
-            elif isinstance(report_name, (list, tuple)):
+            elif isinstance(report_name, Iterable):
+
                 self.results = {rn:read_db_table(self.datastore, report_name=rn) for rn in report_name}
         finally:
             # close the datastore
@@ -346,6 +342,7 @@ class APSIMNG:
     def load_simulated_results(self):
         in_reports = []
         reports = get_db_table_names(self.datastore)
+
         print(reports)
         for i in reports:
             in_reports.extend(i)

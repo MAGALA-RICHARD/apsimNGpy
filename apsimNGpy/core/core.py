@@ -344,11 +344,10 @@ class APSIMNG:
             self._DataStore.Close()
         return self
 
-    def load_simulated_results(self):
-        in_reports = []
+    def load_simulated_results(self) -> pd.DataFrame:
         reports = get_db_table_names(self.datastore)
 
-        return {rep: read_db_table(self.datastore, report_name=rep) for rep in reports}
+        return pd.concat({rep: read_db_table(self.datastore, report_name=rep) for rep in reports})
 
     def clone_simulation(self, target: str, simulation: Union[list, tuple] = None):
         """Clone a simulation and add it to Model

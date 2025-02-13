@@ -37,10 +37,10 @@ class TestAPSIMNG(unittest.TestCase):
             # if we just run without
 
             self.test_ap_sim.run(report_name='Report', get_dict=False)  # false is the default
-            self.assertIsInstance(self.test_ap_sim.results, list)
+            self.assertIsInstance(self.test_ap_sim.results, pd.DataFrame)
             # one more test
             # check if the use pass  report name as str a strict a pandas.core.frame.DataFrame' is returned
-            self.test_ap_sim.run(report_name='Report', get_dict=False)
+            self.test_ap_sim.run(report_name='Report')
             df = self.test_ap_sim.results
             self.assertIsInstance(df, pd.DataFrame)
             # check if it is not empty

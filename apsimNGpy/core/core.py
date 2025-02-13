@@ -348,10 +348,7 @@ class APSIMNG:
         in_reports = []
         reports = get_db_table_names(self.datastore)
 
-        print(reports)
-        for i in reports:
-            in_reports.extend(i)
-        return {rep: read_db_table(self.datastore, report_name=rep) for rep in in_reports}
+        return {rep: read_db_table(self.datastore, report_name=rep) for rep in reports}
 
     def clone_simulation(self, target: str, simulation: Union[list, tuple] = None):
         """Clone a simulation and add it to Model

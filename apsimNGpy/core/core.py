@@ -332,8 +332,13 @@ class APSIMNG:
             if isinstance(report_name, str):
                  self.results = read_db_table(self.datastore, report_name=report_name)
             elif isinstance(report_name, Iterable):
+                data = []
+                for rpn in report_name:
+                    df = read_db_table(self.datastore, report_name=rpn)
+                    df['report_name'] = rpn
+                    data.append(df)
+                    self.results = pd.concat(data, ignore_index=True, axis =0)
 
-                self.results = {rn:read_db_table(self.datastore, report_name=rn) for rn in report_name}
         finally:
             # close the datastore
             self._DataStore.Close()

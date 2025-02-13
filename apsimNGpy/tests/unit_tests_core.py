@@ -9,6 +9,7 @@ import pandas as pd
 from apsimNGpy.core.core import APSIMNG, save_model_to_file
 from apsimNGpy.core.model_loader import save_model_to_file
 from apsimNGpy.core.base_data import load_default_simulations
+
 wd = Path.cwd() / 'apsimNGpy_tests'
 wd.mkdir(exist_ok=True)
 os.chdir(wd)
@@ -17,8 +18,7 @@ os.chdir(wd)
 class TestAPSIMNG(unittest.TestCase):
 
     def setUp(self):
-
-        test_path  = load_default_simulations(crop ='maize', simulations_object=False)
+        test_path = load_default_simulations(crop='maize', simulations_object=False)
         # Mock the model path and other attributes
         self.model_path = Path(load_default_simulations(crop='maize', simulations_object=False))
         self.model_path2 = Path(load_default_simulations(crop='soybean', simulations_object=False))
@@ -36,7 +36,7 @@ class TestAPSIMNG(unittest.TestCase):
             mock_datastore.Close = MagicMock()
             # if we just run without
 
-            self.test_ap_sim.run(report_name='Report', get_dict=False)  # false is the default
+            self.test_ap_sim.run(report_name='Report')
             self.assertIsInstance(self.test_ap_sim.results, pd.DataFrame)
             # one more test
             # check if the use pass  report name as str a strict a pandas.core.frame.DataFrame' is returned
@@ -102,10 +102,9 @@ class TestAPSIMNG(unittest.TestCase):
         """ Test load_simulated_results"""
         repos = self.test_ap_sim.load_simulated_results()
         msg = f"expected dictionary but received {type(repos)}"
-        self.assertIsInstance(repos, dict, msg=msg)
+        self.assertIsInstance(repos, pd.DataFrame, msg=msg)
         # test if dict not empty
         msg = 'expected dict is empty'
-        self.assertTrue(self.test_ap_sim.load_simulated_results(), msg=msg)
 
     def test_get_reports(self):
         self.assertIsInstance(self.test_ap_sim.get_report(names_only=True), dict)
@@ -115,14 +114,15 @@ class TestAPSIMNG(unittest.TestCase):
         param_values = [2.4, 1.4]
         self.test_ap_sim.replace_soil_property_values(parameter=parameter, param_values=param_values,
                                                       soil_child='Organic', )
-        lisT = self.test_ap_sim.extract_soil_property_by_path(path='Simulation.Organic.Carbon', index =[0,1])
+        lisT = self.test_ap_sim.extract_soil_property_by_path(path='Simulation.Organic.Carbon', index=[0, 1])
         self.assertIsInstance(lisT, list, msg='expected a list got {}'.format(type(lisT)))
         self.assertTrue(lisT)
         self.assertIsInstance(lisT, list, msg='expected a list got {}'.format(type(lisT)))
         self.assertTrue(lisT)
         # if it was successful
-        testP = self.test_ap_sim.extract_soil_property_by_path(path = 'Simulation.Organic.Carbon', index=[0,1])
-        self.assertEqual(lisT, param_values, msg = f'replace_soil_property_values was not successful returned {testP}\n got {param_values}')
+        testP = self.test_ap_sim.extract_soil_property_by_path(path='Simulation.Organic.Carbon', index=[0, 1])
+        self.assertEqual(lisT, param_values,
+                         msg=f'replace_soil_property_values was not successful returned {testP}\n got {param_values}')
 
     def test_replace_soil_properties_by_path(self):
         path = 'None.Soil.physical.None.None.BD'

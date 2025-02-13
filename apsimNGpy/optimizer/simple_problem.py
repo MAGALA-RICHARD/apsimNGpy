@@ -8,7 +8,7 @@ from typing import Any
 from abc import ABC, abstractmethod
 import numpy as np
 from scipy.optimize import minimize
-from variables import _initial_guess
+from variables import auto_guess
 from apsimNGpy.core.apsim import ApsimModel
 
 
@@ -154,8 +154,11 @@ class Problem(ABC):
         self.WS.mkdir(exist_ok=True)
 
     def _freeze_data(self):
-        # make the data unchangeable after editing
-
+        """
+        # make the data unchangeable after editing.
+        # Please note that this only works if it minimizes function has been called.
+        # I expect some leakages before
+         """
         self.controls = tuple([i for i in self.controls])
 
 

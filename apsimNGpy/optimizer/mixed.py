@@ -5,7 +5,7 @@ from pathlib import Path
 
 from apsimNGpy.utililies.utils import timer
 
-from simple_problem import Problem, Solvers, _initial_guess
+from simple_problem import Problem, Solvers, auto_guess
 
 import subprocess
 
@@ -55,7 +55,7 @@ class MixedVariable(Problem):
         bounds = wrap.bounds
         optional_fixed_args = ("arg1", 2, 3.0)
         if not ig:
-            auto_ig = [_initial_guess(data.var_type) for data in self.controls]
+            auto_ig = [auto_guess(data.var_type) for data in self.controls]
             optional_initial_decoded_guess = auto_ig
         else:
             optional_initial_decoded_guess = ig

@@ -104,7 +104,7 @@ def read_db_table(db, report_name):
         # print(f" Seems like the specified table name: {report_name} does not exists in {db} data base")
         if exists(db):
             print(f"report_name(s) should be any of the following:: {get_db_table_names(db)}")
-        raise errors.DatabaseError(f"{str(ed)} occurred")
+        #raise errors.DatabaseError(f"{str(ed)} occurred")
 
 
 def load_database(path):

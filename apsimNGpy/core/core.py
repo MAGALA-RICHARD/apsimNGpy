@@ -44,7 +44,7 @@ from apsimNGpy.utililies.utils import timer
 from apsimNGpy.core.runner import run_model
 import ast
 from typing import Iterable
-
+from collections.abc import Iterable
 logging.basicConfig(level=logging.INFO)
 MultiThreaded = Models.Core.Run.Runner.RunTypeEnum.MultiThreaded
 SingleThreaded = Models.Core.Run.Runner.RunTypeEnum.SingleThreaded
@@ -281,9 +281,6 @@ class APSIMNG:
             simulations: Union[tuple, list] = None,
             clean: bool = False,
             multithread: bool = True,
-            verbose: bool = False,
-            get_dict: bool = False,
-            init_only: bool = False,
             **kwargs) -> 'APSIMNG':
         """Run apsim model in the simulations
 
@@ -332,24 +329,25 @@ class APSIMNG:
             e = _run_model.Run()
             if len(e) > 0:
                 logging.info(e[0].ToString())
-            if init_only:
-                return self
             if isinstance(report_name, str):
                  self.results = read_db_table(self.datastore, report_name=report_name)
-            elif isinstance(report_name, (list, tuple)):
-                self.results = {rn:read_db_table(self.datastore, report_name=rn) for rn in report_name}
+            elif isinstance(report_name, Iterable):
+                data = []
+                for rpn in report_name:
+                    df = read_db_table(self.datastore, report_name=rpn)
+                    df['report_name'] = rpn
+                    data.append(df)
+                    self.results = pd.concat(data, ignore_index=True, axis =0)
+
         finally:
             # close the datastore
             self._DataStore.Close()
         return self
 
-    def load_simulated_results(self):
-        in_reports = []
+    def load_simulated_results(self) -> pd.DataFrame:
         reports = get_db_table_names(self.datastore)
-        print(reports)
-        for i in reports:
-            in_reports.extend(i)
-        return {rep: read_db_table(self.datastore, report_name=rep) for rep in in_reports}
+
+        return pd.concat({rep: read_db_table(self.datastore, report_name=rep) for rep in reports})
 
     def clone_simulation(self, target: str, simulation: Union[list, tuple] = None):
         """Clone a simulation and add it to Model

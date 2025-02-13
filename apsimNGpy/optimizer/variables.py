@@ -28,19 +28,15 @@ def _doc(section_desc):
     """
 
 
-def _initial_guess(data):
+def auto_guess(data):
     if isinstance(data, ChoiceVar):
         sample_set = np.random.choice(data.categories, size=1)[0]
     elif isinstance(data, GridVar):
         sample_set = np.random.choice(data.values, size=1)[0]
-    elif isinstance(data, QrandintVar):
+    elif isinstance(data, (QrandintVar,RandintVar, QuniformVar)):
         sample_set = data.lower
     elif isinstance(data, UniformVar):
         sample_set = np.random.uniform(data.bounds[0], data.bounds[1], size=1)[0]
-    elif isinstance(data, RandintVar):
-        sample_set = data.lower
-    elif isinstance(data, QuniformVar):
-        sample_set = data.lower
     else:
         raise ValueError(f'data: {type(data)} not supported')
     return sample_set
@@ -91,7 +87,6 @@ def manager(params: dict, label: str, var_desc, main_param=None, updater=None) -
 
 
 def soil(params: dict, label: str, var_desc, main_param=None, updater=None):
-    soil.__doc__ += _doc
     if updater is None:
         updater = 'replace_soil_properties_by_path'  # example path 'Simulation.Soil.physical.None.None.BD'
         main_param = "param_values"

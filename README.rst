@@ -160,7 +160,7 @@ Examples
 
 This example demonstrates how to use `apsimNGpy` to load a default simulation, run it, retrieve results, and visualize the output.
 
-.. code:: python
+.. code-block:: python
 
     # Import necessary modules
     import apsimNGpy
@@ -172,18 +172,8 @@ This example demonstrates how to use `apsimNGpy` to load a default simulation, r
 
 The above code imports the necessary modules for running APSIM simulations. This includes `apsimNGpy` modules for loading default simulations and managing results, as well as standard Python libraries for file handling and visualization.
 
-.. code:: python
 
-    # Set up the working directory
-    cwd = Path.cwd().home()  # Use the home directory
-    wd = cwd.joinpath("apsimNGpy_demo")  # Create a subdirectory for the demo
-    if not wd.exists():
-        os.mkdir(wd)  # Create the directory if it doesn't exist
-    os.chdir(wd)  # Change to the working directory
-
-This code sets up the working directory. It creates a folder named `apsimNGpy_demo` in the user's home directory if it doesn't already exist and then changes the current working directory to this new folder.
-
-.. code:: python
+.. code-block:: python
 
     # Load the default simulation
     soybean_model = load_default_simulations(crop='soybean')  # Case-insensitive crop specification
@@ -197,14 +187,14 @@ The `load_default_simulations` function loads a default APSIM simulation for the
 
 If you prefer not to initialize the simulation object immediately, you can load only the simulation path by setting `simulation_object=False`.
 
-.. code:: python
+.. code-block:: python
 
     # Initialize the APSIM model with the simulation file path
     apsim = SoilModel(soybean_path_model)
 
 This code initializes the APSIM model using the previously loaded simulation file path.
 
-.. code:: python
+.. code-block:: python
 
     # Run the simulation
     apsim.run(report_name='Report')
@@ -215,7 +205,7 @@ The `run` method executes the simulation. The `report_name` parameter specifies 
    report_name accepts a list of simulation data tables and hence can return a list of pandas data frame for each data table and if get_dict = True, a dictionary is returned
    with each data table name as the key and data frame as the values
 
-.. code:: python
+.. code-block:: python
 
     # Retrieve and save the results
     df = apsim.results
@@ -226,7 +216,7 @@ After the simulation runs, results are stored in the `apsim.results` attribute a
 
 The code below retrieves the names of simulations from the APSIM model and examines the management modules used in the specified simulations.
 
-.. code:: python
+.. code-block:: python
 
     # Examine management modules in the simulation
     sim_name = apsim.simulation_names  # Retrieve simulation names
@@ -236,7 +226,7 @@ The code below retrieves the names of simulations from the APSIM model and exami
 You can preview the current simulation in the APSIM graphical user interface (GUI) using the `preview_simulation` method.
 
 
-.. code:: python
+.. code-block:: python
 
     # Preview the current simulation in the APSIM GUI
     apsim.preview_simulation()
@@ -247,7 +237,7 @@ You can preview the current simulation in the APSIM graphical user interface (GU
 
 Visualise the results. please note that python provide very many plotting libraries below is just a basic description of your results
 
-.. code:: python
+.. code-block:: python
 
     # Visualize the simulation results
     res = apsim.results['MaizeR']  # Replace with the appropriate report name
@@ -265,7 +255,7 @@ Congratulations you have successfully used apsimNGpy package
 
 Change APSIM simulation dates 
 *********************************************************************************
-.. code:: python
+.. code-block:: python
 
     import apsimNGpy
     from apsimNGpy.core.base_data import load_default_simulations
@@ -286,7 +276,7 @@ Change APSIM simulation dates
 
 Change  APSIM model management decisions
 *********************************************************************************
-.. code:: python
+.. code-block:: python
 
     # First, examine the manager scripts in the simulation node
     apsim.examine_management_info()
@@ -302,7 +292,7 @@ Change  APSIM model management decisions
 
 Populating the APSIM model with new weather data
 *********************************************************************************
-.. code:: python
+.. code-block:: python
 
     from apsimNGpy.core.weather import daymet_bylocation_nocsv
     lonlat = -93.08, 42.014
@@ -322,7 +312,7 @@ Evaluate Predicted Variables
 The apsimNGpy Python package provides a convenient way to validate model simulations against measured data. Below 
 is a step-by-step guide on how to use the validation.evaluator module from apsimNGpy.
 
-.. code:: python
+.. code-block:: python
 
     # Start by importing the required libraries
     from apsimNGpy.validation.evaluator import validate
@@ -363,11 +353,14 @@ We welcome contributions from the community, whether they are bug fixes, enhance
 
 Reporting Issues
 ----------------
+.. note::
+  apsimNGpy is developed and maintained by a dedicated team of volunteers. We kindly ask that you adhere to our community standards when engaging with the project. Please maintain a respectful tone when reporting issues or interacting with community members.
 
 If you find a bug or have a suggestion for improving ``apsimNGpy``, please first check the `Issue Tracker <https://github.com/MAGALA-RICHARD/apsimNGpy/issues>`_ to see if it has already been reported. If it hasn't, feel free to submit a new issue. Please provide as much detail as possible, including steps to reproduce the issue, the expected outcome, and the actual outcome.
 
 Contributing Code
 -----------------
+
 
 We accept code contributions via Pull Requests (PRs). Here are the steps to contribute:
 

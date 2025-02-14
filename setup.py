@@ -22,8 +22,8 @@ setup(
     entry_points={
         'console_scripts': [
             'commands=apsimNGpy.cli.cli:main',
-            'defaults=apsimNGpy.cli.default:main',
-            'apsimNGpy=apsimNGpy.cli.set_ups:set_bin_path',
+            'apsim_defaults=apsimNGpy.cli.cli:defaults_model',
+            'apsim_set_up=apsimNGpy.cli.set_ups:set_bin_path',
         ],
     },
 

@@ -152,14 +152,6 @@ Usage
 
 *********************************************************************************
 
-Test Before Use
-****************
-
-If you are experiencing issues running APSIM, please test the package using our default test function.
-This will display the APSIM binary path being used and run a few simulations, showing the time taken for each.
-In case of any errors, a debugging message with instructions will appear in your console, as well as in the simulation logs located in the `apsim_meta_info` folder in your user directory.
-if you are developer, we have unit tests in apsimNGpy/tests try running these tests, if you fail log the issue, we will come to your help
-
 
 Examples
 ********

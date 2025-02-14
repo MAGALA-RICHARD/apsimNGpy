@@ -9,20 +9,17 @@ def main():
 
     # Add arguments
     parser.add_argument('-m', '--model', type=str, required=True, help='Path to the APSIM model file')
-    parser.add_argument('-l', '--location', type=str, required=True,
-                        help='Longitude and latitude as a comma-separated string')
+    parser.add_argument('-o', '--out', type=str, required=False,
+                        help='out path')
+    parser.add_argument('-t', 'table', type = str, required=False)
 
     # Parse arguments
     args = parser.parse_args()
 
-    # Split the location into longitude and latitude
-    lon, lat = map(float, args.location.split(','))
-
     # Run the simulation using the provided model and location
-    model = ApsimModel(args.model, lonlat=(lon, lat))
+    model = ApsimModel(args.model, out=args.out)
 
-    # Assuming the ApsimModel class has a method to run, which you will need to call
-    model.run()  # Make sure the ApsimModel has this method or adapt accordingly
+    model.run(report_name=args.table)
     print(model.results)
 
 

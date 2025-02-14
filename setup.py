@@ -19,6 +19,13 @@ setup(
     long_description=readme,
     packages=find_packages(),
     include_package_data=True,
+    entry_points={
+        'console_scripts': [
+            'commands=apsimNGpy.cli:main',
+            'defaults=apsimNGpy.default:main'
+        ],
+    },
+
     package_data={'': ['./apsimNGpy/data/*.apsimx',
                        './apsimNGpy/*.met',
                        "./apsimNGpy/experiment/*.py",

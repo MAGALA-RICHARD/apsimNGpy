@@ -21,8 +21,8 @@ setup(
     include_package_data=True,
     entry_points={
         'console_scripts': [
-            'commands=apsimNGpy.cli:main',
-            'defaults=apsimNGpy.default:main'
+            'commands=apsimNGpy.cli.cli:main',
+            'defaults=apsimNGpy.cli.default:main'
         ],
     },
 

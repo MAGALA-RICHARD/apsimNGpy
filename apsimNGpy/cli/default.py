@@ -26,8 +26,9 @@ def main():
 
     # Run the simulation using the provided model and location
     model = load_default_simulations(crop=args.crop, simulations_object=True)
-    print(f'RUNNING {model}')
-    model.run(report_name=args.table)
+    print(f'RUNNING: {model}')
+    table_name = args.table
+    model.run(report_name=table_name)
     res = model.results
     logger.info(res.describe())
 

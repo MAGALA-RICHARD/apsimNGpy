@@ -11,7 +11,7 @@ def main():
     parser.add_argument('-m', '--model', type=str, required=True, help='Path to the APSIM model file')
     parser.add_argument('-o', '--out', type=str, required=False,
                         help='out path')
-    parser.add_argument('-t', 'table', type = str, required=False)
+    parser.add_argument('-t', '--table', type=str, required=False)
 
     # Parse arguments
     args = parser.parse_args()

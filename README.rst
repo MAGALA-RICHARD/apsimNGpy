@@ -47,7 +47,9 @@ All versions are currently in development, phase and they can be installed as fo
 GETTING STARTED
 *****************************
 
-BEFORE USING apsimNGpy, make sure that the APSIM installation binaries folder is added to the system path. 
+Before using apsimNGpy, it is necessary to install APSIM. Please follow the instructions provided at the following link to complete the installation: https://www.apsim.info/download-apsim/downloads/
+
+In addition, make sure that the APSIM installation binaries folder is added to the system path.
 if you run the following code and returns None you need to do something as explained below.
 
 - 1. Use command line interface

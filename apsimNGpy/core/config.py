@@ -7,7 +7,7 @@ import glob
 from pathlib import Path
 from functools import lru_cache, cache
 from os.path import join, dirname
-
+import logging
 import psutil
 
 from apsimNGpy.settings import CONFIG_PATH, create_config
@@ -158,7 +158,7 @@ def get_apsim_bin_path():
     return apsim_bin_path
 
 
-def set_apsim_bin_path(path):
+def set_apsim_bin_path(path, raise_errors=True):
     """ Send your desired path to the aPSim binary folder to the config module
     the path should end with bin as the parent directory of the aPSim Model.
     >> Please be careful with adding an uninstalled path, which does not have model.exe file or unix executable.
@@ -171,10 +171,20 @@ def set_apsim_bin_path(path):
     """
     _path = realpath(path)
     if not _apsim_model_is_installed(_path):
-        raise ValueError(f"files might have been uninstalled at this location '{_path}'")
-    if _path != get_apsim_bin_path():
+        if raise_errors:
+            raise ValueError(f"files might have been uninstalled at this location '{_path}'")
+        else:
+            logging.warning(f"Attempted to set an invalid path: {_path}")
+            return  # Optionally, you could return False here to indicate failure
+    current_path = get_apsim_bin_path()
+    if _path != current_path:
         create_config(CONFIG_PATH, _path)
-        print(f"saved {_path} to '{CONFIG_PATH}'")
+
+        logging.info(f"APSIM binary path successfully updated from '{current_path}' to '{_path}'")
+
+    else:
+
+        logging.warning(f"{_path} is similar to exising APSIM binary at this location: '{current_path}'")
 
 
 class Config:

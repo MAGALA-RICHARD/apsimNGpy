@@ -56,6 +56,7 @@ In addition, make sure that the APSIM installation binaries folder is added to t
 if you run the following code and returns None you need to do something as explained below.
 
 - 1. Use command line interface
+
 .. code:: bash
 
      apsim_set_up -cbp True
@@ -82,7 +83,7 @@ Changing/setting the APSIM installation binaries path
 If the automatic search fails, please follow one of the steps below to resolve the issue:
 
 1. Manually configure the APSIM binary path. To do this:
-****************************************************
+*************************************************************************************
 
 In your home folder you could look for folder named apsimNGpy_meta_info './APSIMNGpy_meta_data'
      1. Locate the folder named `APSIMNGpy_meta_info` in your home directory (e.g., `./APSIMNGpy_meta_data`).
@@ -100,9 +101,11 @@ Alternatively, you can use the code at the top of your script as follows
     import os
     os.environ['APSIM'] = r'path/to/your/apsim/binary/folder/bin'
 
-- Note: This approach may not work consistently in all scenarios, but you can try it.
+- Note:
+
+This approach may not work consistently in all scenarios, but you can try it.
 The above script line should always be placed at the beginning of your simulation script.
- However, why follow this approach when you can achieve the same result more efficiently? See the approach below:
+However, why follow this approach when you can achieve the same result more efficiently? See the approach below:
 
 3. Use the apsimNGpy config module:
 *****************************************************************
@@ -115,7 +118,6 @@ The above script line should always be placed at the beginning of your simulatio
     set_apsim_bin_path(path=r'path/to/your/apsim/binary/folder/bin')
 
 
-
 4. Use command line interface
 *********************************************************************
 
@@ -125,15 +127,14 @@ After installing apsimNGpy, navigate to your terminal and run the following
 
     apsim_set_up -bp 'path/to/your/apsim/binary/folder/bin'
 
-Or 
-
+Or
 .. code-block:: bash
 
     apsim_set_up --bin_path 'path/to/your/apsim/binary/folder/bin'
 
 
 # Now that the path is set, you can import any module attached to pythonnet.
-************************************************************
+*********************************************************************************************
 
 .. code-block:: python
     
@@ -150,7 +151,6 @@ or the APSIM application itself. This implies that you can switch between apsim 
 Please note that apsimNGpy is tested on Python 3. We are not aware of its performance in Python 2 because it utilizes some of the new libraries
 Usage
 
-*********************************************************************************
 
 
 Examples

@@ -116,20 +116,20 @@ The above script line should always be placed at the beginning of your simulatio
 
 After installing apsimNGpy, navigate to your terminal and run the following
 
-.. code::bash
+.. code:: bash
 
     apsim_set_up -bp 'path/to/your/apsim/binary/folder/bin'
 
 Or 
 
-.. code::bash
+.. code:: bash
     apsim_set_up --bin_path 'path/to/your/apsim/binary/folder/bin'
 
 
 # Now that the path is set, you can import any module attached to pythonnet.
 ************************************************************
 
-.. code::python
+.. code:: python
     
     # For example, try importing the ApsimModel class:
     from apsimNGpy.core.apsim import ApsimModel

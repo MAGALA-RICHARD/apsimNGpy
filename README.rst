@@ -94,7 +94,7 @@ In your home folder you could look for folder named apsimNGpy_meta_info './APSIM
 
 Alternatively, you can use the code at the top of your script as follows
 
-.. code:: python
+.. code-block:: python
 
     # Search for the APSIM binary installation path and add it to os.environ as follows:
     import os
@@ -107,7 +107,7 @@ The above script line should always be placed at the beginning of your simulatio
 3. Use the apsimNGpy config module:
 *****************************************************************
 
-.. code::python
+.. code-block:: python
     
     from apsimNGpy.config import set_apsim_bin_path
 

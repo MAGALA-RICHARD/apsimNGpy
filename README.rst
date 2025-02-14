@@ -48,6 +48,7 @@ GETTING STARTED
 *****************************
 
 Before using apsimNGpy, it is necessary to install APSIM. Please follow the instructions provided at the following link to complete the installation: https://www.apsim.info/download-apsim/downloads/
+for MAcOS or Linux users see: https://apsimnextgeneration.netlify.app/install/
 model documentation and tutorial are also available via; https://docs.apsim.info/
 we expect that by accepting to use apsimNGpy, you have a basic understanding of APSIM process-based model
 

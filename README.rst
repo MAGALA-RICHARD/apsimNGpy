@@ -44,34 +44,49 @@ All versions are currently in development, phase and they can be installed as fo
      pip install git+https://github.com/MAGALA-RICHARD/apsimNGpy.git@dev
 
 
+GETTING STARTED
+*****************************
+
+BEFORE USING apsimNGpy, make sure that the APSIM installation binaries folder is added to the system path. 
+if you run the following code and returns None you need to do something as explained below.
+
+- 1. Use command line interface
+.. code:: bash
+
+     apsim_set_up -cbp True
+
+- 2. Use apsimNGpy config module
+
+.. code:: python
+
+   from apsimNGpy.core import config
+      print(config.get_apsim_bin_path())
+
 Locating the APSIM Binaries
 ***************************************************************
-The APSIM binaries are located automatically when using `apsimNGpy`. However, for the best experience, it is recommended to add the APSIM installation path to your Python path before running `apsimNGpy`.
+By default the APSIM binaries are located automatically. The process for determining the APSIM binary path is as follows:
 
-Alternatively, you can manually configure the APSIM binary path. To do this:
-1. Locate the folder named `APSIMNGpy_meta_info` in your home directory (e.g., `./APSIMNGpy_meta_data`).
-2. Open the file `apsimNGpy_config.ini` within this folder.
-3. Modify the `apsim_location` entry to reflect your desired APSIM binary path.
+In apsimNGpy, priority is first given to the user-supplied binary path.
+If no path is supplied, the module searches through the Python global environment
+using the os module. If that fails, it searches through other folders.
+If all approaches are exhausted and no valid path is found, a ValueError will be raised.
 
-### Path Detection Order
-****************************************
 
-When `apsimNGpy` is used, the process for determining the APSIM binary path follows this priority:
-
-1. **User-Specified Path:** If the user has explicitly provided a path, it will be used.
-2. **Automatic Detection:** If no path is supplied by the user, automatic detection is invoked. The detection process prioritizes:
-   - Checking the `PYTHONPATH` environment variable for the APSIM path.
-   - Scanning drives on the system if no path is found in the environment variables.
-
-By following this approach, `apsimNGpy` ensures a flexible and user-friendly way to locate the APSIM binaries.
-
-This implies that you can switch between apsim versions easily if you have more than one versions installed on your computer
-
-Debugging import error due to improper SYSTEM APSIM path configuration
+Changing/setting the APSIM installation binaries path
 *********************************************************************************
+If the automatic search fails, please follow one of the steps below to resolve the issue:
 
-The first thing to do before running apsimNGpy is to add the installation path to your python path
-in your home folder you could look for folder named apsimNGpy_meta_info './APSIMNGpy_meta_data'
+1. Manually configure the APSIM binary path. To do this:
+****************************************************
+
+In your home folder you could look for folder named apsimNGpy_meta_info './APSIMNGpy_meta_data'
+     1. Locate the folder named `APSIMNGpy_meta_info` in your home directory (e.g., `./APSIMNGpy_meta_data`).
+     2. Open the file `apsimNGpy_config.ini` within this folder.
+     3. Modify the `apsim_location` entry to reflect your desired APSIM binary path.
+
+2. change based os.environ module
+************************************
+
 Alternatively, you can use the code at the top of your script as follows
 
 .. code:: python
@@ -79,41 +94,52 @@ Alternatively, you can use the code at the top of your script as follows
     # Search for the APSIM binary installation path and add it to os.environ as follows:
     import os
     os.environ['APSIM'] = r'path/to/your/apsim/binary/folder/bin'
-    # Note: This approach may not work consistently in all scenarios, but you can try it.
-    # The above script line should always be placed at the beginning of your simulation script.
-    # However, why follow this approach when you can achieve the same result more efficiently?
-    # See the approach below:
 
-    # A more intuitive way is to use the apsimNGpy config module:
+- Note: This approach may not work consistently in all scenarios, but you can try it.
+The above script line should always be placed at the beginning of your simulation script.
+ However, why follow this approach when you can achieve the same result more efficiently? See the approach below:
+
+3. Use the apsimNGpy config module:
+*****************************************************************
+
+.. code::python
+    
     from apsimNGpy.config import set_apsim_bin_path
 
     # Set the path to the APSIM binaries:
     set_apsim_bin_path(path=r'path/to/your/apsim/binary/folder/bin')
 
-    # In the pythonnet_config module, priority is first given to the user-supplied binary path.
-    # If no path is supplied, the module searches through the Python global environment
-    # using the os module. If that fails, it searches through other sources as described above.
-    # If all approaches are exhausted and no valid path is found, a ValueError will be raised.
 
-    # Now that the path is set, you can import any module attached to pythonnet.
-    # For example, try importing the SoilModel class:
+
+4. Use command line interface
+*********************************************************************
+
+After installing apsimNGpy, navigate to your terminal and run the following
+
+.. code::bash
+
+    apsim_set_up -bp 'path/to/your/apsim/binary/folder/bin'
+
+Or 
+
+.. code::bash
+    apsim_set_up --bin_path 'path/to/your/apsim/binary/folder/bin'
+
+
+# Now that the path is set, you can import any module attached to pythonnet.
+************************************************************
+
+.. code::python
+    
+    # For example, try importing the ApsimModel class:
     from apsimNGpy.core.apsim import ApsimModel
 
 .. _Usage:
 
 The above code is also applicable for running different versions of APSIM models.
 The `set_apsim_bin_path` function can be called once and retained unless you uninstall `apsimNGpy`
-or the APSIM application itself.
+or the APSIM application itself. This implies that you can switch between apsim versions easily if you have more than one versions installed on your computer
 
-Required Dependencies:
-*****************************
-
-- numpy
-- pandas
-- pythonnet
-- xmltodict
-- tqdm
-- requests
 
 Please note that apsimNGpy is tested on Python 3. We are not aware of its performance in Python 2 because it utilizes some of the new libraries
 Usage
@@ -126,13 +152,7 @@ Test Before Use
 If you are experiencing issues running APSIM, please test the package using our default test function.
 This will display the APSIM binary path being used and run a few simulations, showing the time taken for each.
 In case of any errors, a debugging message with instructions will appear in your console, as well as in the simulation logs located in the `apsim_meta_info` folder in your user directory.
-
-.. code:: python
-
-    from apsimNGpy.core.test import test
-
-    if __name__ == '__main__':
-        test()
+if you are developer, we have unit tests in apsimNGpy/tests try running these tests, if you fail log the issue, we will come to your help
 
 
 Examples

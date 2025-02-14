@@ -9,25 +9,10 @@ import pandas as pd
 from apsimNGpy.core.core import APSIMNG, save_model_to_file
 from apsimNGpy.core.model_loader import save_model_to_file
 from apsimNGpy.core.base_data import load_default_simulations
-
-wd = Path.cwd() / 'apsimNGpy_tests'
-wd.mkdir(exist_ok=True)
-os.chdir(wd)
+from apsimNGpy.tests.base_test import BaseTester
 
 
-class TestAPSIMNG(unittest.TestCase):
-
-    def setUp(self):
-        test_path = load_default_simulations(crop='maize', simulations_object=False)
-        # Mock the model path and other attributes
-        self.model_path = Path(load_default_simulations(crop='maize', simulations_object=False))
-        self.model_path2 = Path(load_default_simulations(crop='soybean', simulations_object=False))
-        self.out_path = Path.cwd() / 'test_output.apsimx'
-        # self.out_path.mkdir(parents=True, exist_ok=True)
-        # self.out_path.mkdir(parents=True, exist_ok=True)
-        self.test_ap_sim = APSIMNG(model=self.model_path)
-
-        self.out = os.path.realpath('test_save_output.apsimx')
+class TestAPSIMNG(BaseTester):
 
     def test_run(self):
         """ Test the run method's behavior under normal conditions. """
@@ -133,11 +118,6 @@ class TestAPSIMNG(unittest.TestCase):
         lisT = self.test_ap_sim.extract_soil_property_by_path(path='Simulation.Physical.BD')
         self.assertIsInstance(lisT, list, msg='expected a list got {}'.format(type(lisT)))
         self.assertTrue(lisT)
-
-    def tearDown(self):
-        if os.path.exists(self.out):
-            os.remove(self.out)
-        del self.test_ap_sim
 
 
 if __name__ == '__main__':

@@ -11,22 +11,26 @@ from apsimNGpy.settings import logger
 
 
 @utils.timer
-def main():
+def my_model():
     """"
     default crop is maize"""
     # Create argument parser
 
     # Add arguments
-    parser.add_argument('-m', '--crop', type=str, required=False, help='Path to the APSIM model file', default='Maize')
+    parser.add_argument('-m', '--model', type=str, required=False, help='Path to the APSIM model file', default=None)
     parser.add_argument('-o', '--out', type=str, required=False,
-                        help='out path')
-    parser.add_argument('-t', '--table', type=str, required=False, default='Report')
+                        help='out path for the new model')
+    parser.add_argument('-t', '--table', type=str, required=False, default='Report', help= 'table or report name in '
+                                                                                           'the apsim simulations')
 
     # Parse arguments
     args = parser.parse_args()
 
     # Run the simulation using the provided model and location
-    model = load_default_simulations(crop=args.crop, simulations_object=True)
+    model_file = args.model
+    if model_file is None:
+        model_file = load_default_simulations(crop = 'Maize',simulations_object=False)
+    model = ApsimModel(model_file)
     print(f'RUNNING: {model}')
     table_name = args.table
     model.run(report_name=table_name)
@@ -35,4 +39,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    my_model()

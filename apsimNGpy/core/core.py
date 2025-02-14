@@ -355,10 +355,6 @@ class APSIMNG:
             bag.append(data)
         return pd.concat(bag)
 
-
-
-
-
     def clone_simulation(self, target: str, simulation: Union[list, tuple] = None):
         """Clone a simulation and add it to Model
 

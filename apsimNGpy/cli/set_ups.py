@@ -8,7 +8,7 @@ def set_bin_path():
     parser.add_argument('-bp', '--bin_path', type=str, default= None,
                         help=f'set ups path using apsimNGPy config module see: set_apsim_bin_path')
 
-    parser.add_argument('-cbp', '--current_bin_path', type=str, default= False)
+    parser.add_argument('-cbp', '--current_bin_path', type=bool, default= False)
 
     args = parser.parse_args()
     bp = args.bin_path

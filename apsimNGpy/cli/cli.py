@@ -45,7 +45,7 @@ def defaults_model():
     # Run the simulation using the provided model and location
     model_file = args.crop
 
-    model_file = load_default_simulations(crop='Maize', simulations_object=False)
+    model_file = load_default_simulations(crop=args.crop, simulations_object=False)
     model = ApsimModel(model_file)
     logger.info(f'RUNNING: {model}')
     table_name = args.table

@@ -5,15 +5,16 @@ from apsimNGpy.core.apsim import ApsimModel
 from apsimNGpy.core.base_data import load_default_simulations
 import logging
 from apsimNGpy.utililies import utils
+
 parser = argparse.ArgumentParser(description='Run a simulation of a given crop.')
 from apsimNGpy.settings import logger
+
 
 @utils.timer
 def main():
     """"
     default crop is maize"""
     # Create argument parser
-
 
     # Add arguments
     parser.add_argument('-m', '--crop', type=str, required=False, help='Path to the APSIM model file', default='Maize')

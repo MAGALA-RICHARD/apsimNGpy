@@ -1,4 +1,5 @@
 import argparse
+from os import path
 
 from apsimNGpy.core.config import set_apsim_bin_path, get_apsim_bin_path
 
@@ -13,6 +14,8 @@ def set_bin_path():
     args = parser.parse_args()
     bp = args.bin_path
     if bp:
+        if not path.exists(bp):
+            raise FileNotFoundError(f"-bp {bp} does not exist")
         set_apsim_bin_path(args.bin_path)
     cbp = args.current_bin_path
     if cbp:

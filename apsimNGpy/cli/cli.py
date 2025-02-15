@@ -31,7 +31,7 @@ def defaults_model():
     # Create argument parser
     parser = argparse.ArgumentParser(description='Run a simulation of a given crop.')
     # Add arguments
-    parser.add_argument('-m', '--crop', type=str, required=False, help='name of the crop', default='Maize')
+    parser.add_argument('-c', '--crop', type=str, required=False, help='name of the crop', default='Maize')
     parser.add_argument('-o', '--out', type=str, required=False,
                         help='out path for the new model')
     parser.add_argument('-t', '--table', type=str, required=False, default='Report', help='table or report name in '

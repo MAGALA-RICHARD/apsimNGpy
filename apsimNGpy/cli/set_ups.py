@@ -11,13 +11,13 @@ def set_bin_path():
 
     parser.add_argument(
         "-s", "--show_bin_path",
-        action="store_true",  # Makes it a flag
+        action="store_true",
         help="Set this flag to show current bin path."
     )
 
     parser.add_argument(
         "-a", "--auto_search",
-        action="store_true",  # Makes it a flag
+        action="store_true",
         help="Set this flag to show current bin path."
     )
 

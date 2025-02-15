@@ -59,7 +59,7 @@ if you run the following code and returns None you need to do something as expla
 
 .. code:: bash
 
-     apsim_set_up -cbp True
+     apsim_bin_path -s
 
 - 2. Use apsimNGpy config module
 
@@ -125,12 +125,12 @@ After installing apsimNGpy, navigate to your terminal and run the following
 
 .. code-block:: bash
 
-    apsim_set_up -bp 'path/to/your/apsim/binary/folder/bin'
+    apsim_set_up -u 'path/to/your/apsim/binary/folder/bin'
 
 Or
 .. code-block:: bash
 
-    apsim_set_up --bin_path 'path/to/your/apsim/binary/folder/bin'
+    apsim_bin_path --update 'path/to/your/apsim/binary/folder/bin'
 
 
 # Now that the path is set, you can import any module attached to pythonnet.

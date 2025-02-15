@@ -13,7 +13,7 @@ import apsimNGpy.manager.weathermanager as weather
 import pandas as pd
 import sys
 # prepare for the C# import
-#from apsimNGpy.core.pythonet_config import start_pythonnet
+# from apsimNGpy.core.pythonet_config import start_pythonnet
 
 from apsimNGpy.core.core import APSIMNG
 # now we can safely import any c# related libraries
@@ -24,8 +24,6 @@ from Models.Soils import Solute, Water, Chemical
 from Models.Soils import Soil, Physical, SoilCrop, Organic, LayerStructure
 import Models
 from typing import Union
-
-
 
 # constants
 REPORT_PATH = {'Carbon': '[Soil].Nutrient.TotalC/1000 as dyn', 'DUL': '[Soil].SoilWater.PAW as paw', 'N03':
@@ -46,8 +44,8 @@ def timing_decorator(func):
 
 
 class ApsimModel(APSIMNG):
-    def __init__(self, model:Union[os.PathLike, dict, str], out_path: os.PathLike = None, out:os.PathLike=None,
-                 lonlat:tuple=None, soil_series: str = 'domtcp', thickness: int = 20, bottomdepth: int = 200,
+    def __init__(self, model: Union[os.PathLike, dict, str], out_path: os.PathLike = None, out: os.PathLike = None,
+                 lonlat: tuple = None, soil_series: str = 'domtcp', thickness: int = 20, bottomdepth: int = 200,
                  thickness_values: list = None, run_all_soils: bool = False, load=True, **kwargs):
         super().__init__(model, out_path, **kwargs)
         self.SWICON = None
@@ -58,11 +56,11 @@ class ApsimModel(APSIMNG):
         parameter soil series model is a path of aPSim file or aPSIMNG object"""
         self.lonlat = lonlat
         self.Nlayers = bottomdepth / thickness
-       
+
         self.soil_series = soil_series
         self.thickness = thickness
         self.out_path = out_path or out
-        
+
         self.copy = True
         self.run_all_soils = run_all_soils
         if not isinstance(thickness_values, np.ndarray):
@@ -70,7 +68,7 @@ class ApsimModel(APSIMNG):
         else:
             self.thickness_values = thickness_values
 
-    def _find_soil_solute(self, solute:str, simulation:Union[tuple, list]=None):
+    def _find_soil_solute(self, solute: str, simulation: Union[tuple, list] = None):
         sim = self._find_simulation(simulation)
         solutes = sim.FindAllDescendants[Models.Soils.Solute]()
         return [s for s in solutes if s.Name == solute][0]
@@ -113,7 +111,7 @@ class ApsimModel(APSIMNG):
         """Get soil initial NO3 content"""
         return self._get_initial_values("NO3", simulation)
 
-    def adjust_dul(self, simulations:Union[tuple, list]=None):
+    def adjust_dul(self, simulations: Union[tuple, list] = None):
         """
         - This method checks whether the soil SAT is above or below DUL and decreases DUL  values accordingly
         - Need to cal this method everytime SAT is changed, or DUL is changed accordingly
@@ -135,7 +133,7 @@ class ApsimModel(APSIMNG):
         self.replace_any_soil_physical('DUL', simulations, duL)
         return self
 
-    def _get_SSURGO_soil_profile(self, lonlat:tuple, run_all_soils:bool=False):
+    def _get_SSURGO_soil_profile(self, lonlat: tuple, run_all_soils: bool = False):
         self.lonlat = None
         self.lonlat = lonlat
         self.dict_of_soils_tables = {}
@@ -164,8 +162,8 @@ class ApsimModel(APSIMNG):
         return self
 
     @staticmethod
-    def get_weather_online(lonlat:tuple, start:int, end:int):
-        wp =  weather.get_met_from_day_met(lonlat, start=start, end=end)
+    def get_weather_online(lonlat: tuple, start: int, end: int):
+        wp = weather.get_met_from_day_met(lonlat, start=start, end=end)
         wpath = os.path.join(os.getcwd(), wp)
         return wpath
 
@@ -187,7 +185,7 @@ class ApsimModel(APSIMNG):
         except Exception as e:
             raise
 
-    def replace_soils(self, lonlat:tuple, simulation_names:Union[tuple, list], verbose=False):
+    def replace_soils(self, lonlat: tuple, simulation_names: Union[tuple, list], verbose=False):
         self.thickness_replace = None
         if isinstance(self.thickness_values, np.ndarray):  # since it is alreaduy converted to an array
             self.thickness_replace = self.thickness_values
@@ -257,7 +255,7 @@ class ApsimModel(APSIMNG):
         return self
         # print(self.results)
 
-    def replace_downloaded_soils(self, soil_tables:Union[dict, list], simulation_names:Union[tuple, list], **kwargs):
+    def replace_downloaded_soils(self, soil_tables: Union[dict, list], simulation_names: Union[tuple, list], **kwargs):
         """
             Updates soil parameters and configurations for downloaded soil data in simulation models.
 
@@ -371,7 +369,8 @@ class ApsimModel(APSIMNG):
 
     # print(self.results)
 
-    def _change_met_file(self, lonlatmet:tuple=None, simulation_names:Union[tuple, list]=None):  # to be accessed only in this class
+    def _change_met_file(self, lonlatmet: tuple = None,
+                         simulation_names: Union[tuple, list] = None):  # to be accessed only in this class
         """_similar to class weather management but just in case we want to change the weather within the subclass
         # uses exisitng start and end years to download the weather data
         """
@@ -379,7 +378,6 @@ class ApsimModel(APSIMNG):
             self.lonlat = self.lonlat
         else:
             self.lonlat = lonlatmet
-
 
         start, end = self.extract_start_end_years()
         wp = weather.get_met_from_day_met(self.lonlat, start, end)
@@ -392,7 +390,7 @@ class ApsimModel(APSIMNG):
         self.replace_met_file(wpath, sim_name)
         return self
 
-    def run_edited_file(self, simulations:Union[tuple, list]=None, clean:bool=False, multithread=True):
+    def run_edited_file(self, simulations: Union[tuple, list] = None, clean: bool = False, multithread=True):
         """Run simulations in this subclass if we want to clean the database, we need to
          spawn the path with one process to avoid os access permission errors
 
@@ -476,7 +474,7 @@ class ApsimModel(APSIMNG):
         if spin_var == 'Carbon':
             if 'TotalC' not in insert_var:
                 raise ValueError("wrong report variable path: '{0}' supplied according to requested spin up " \
-                                           "var".format(insert_var))
+                                 "var".format(insert_var))
 
             bd = list(pysoil.DUL)
             print(bd)
@@ -491,7 +489,7 @@ class ApsimModel(APSIMNG):
         if spin_var == 'DUL':
             if 'PAW' not in insert_var:
                 raise ValueError("wrong report variable path: '{0}' supplied according to requested spin up var" \
-                .format(insert_var))
+                                 .format(insert_var))
             l_15 = pysoil.LL15
             ll = np.array(l_15)
             dul = ll + df_sel

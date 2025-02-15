@@ -22,7 +22,7 @@ setup(
     entry_points={
         'console_scripts': [
             'commands=apsimNGpy.cli.cli:main',
-            'apsim_defaults=apsimNGpy.cli.cli:defaults_model',
+            'crop=apsimNGpy.cli.cli:defaults_model',
             'apsim_bin_path=apsimNGpy.cli.set_ups:apsim_bin_path',
         ],
     },

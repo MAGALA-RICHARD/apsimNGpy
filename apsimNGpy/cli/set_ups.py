@@ -26,7 +26,7 @@ def apsim_bin_path():
     if bp:
         if not path.exists(bp):
             raise FileNotFoundError(f"-bp {bp} does not exist")
-        set_apsim_bin_path(args.bin_path)
+        set_apsim_bin_path(bp)
 
     if args.show_bin_path:
         cbp = get_apsim_bin_path()

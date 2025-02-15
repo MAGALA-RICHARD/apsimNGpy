@@ -12,18 +12,23 @@ def set_bin_path():
     parser.add_argument(
         "-s", "--show_bin_path",
         action="store_true",  # Makes it a flag
-        help="Set this flag to enable the use of the current bin path."
+        help="Set this flag to show current bin path."
+    )
+
+    parser.add_argument(
+        "-a", "--auto_search",
+        action="store_true",  # Makes it a flag
+        help="Set this flag to show current bin path."
     )
 
     args = parser.parse_args()
-    bp = args.bin_path
+    bp = args.update
     if bp:
         if not path.exists(bp):
             raise FileNotFoundError(f"-bp {bp} does not exist")
         set_apsim_bin_path(args.bin_path)
-    cbp = args.current_bin_path
-    if cbp:
-        # call get_apsim_bin_path
+
+    if args.show_bin_path:
         cbp = get_apsim_bin_path()
         print(f"Current APSIM binary installed path: {cbp}")
 

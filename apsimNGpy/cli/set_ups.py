@@ -6,10 +6,14 @@ from apsimNGpy.core.config import set_apsim_bin_path, get_apsim_bin_path
 
 def set_bin_path():
     parser = argparse.ArgumentParser(description='set ups')
-    parser.add_argument('-bp', '--bin_path', type=str, default= None,
+    parser.add_argument('-u', '--update', type=str, default= None,
                         help=f'set ups path using apsimNGPy config module see: set_apsim_bin_path')
 
-    parser.add_argument('-cbp', '--current_bin_path', type=bool, default= False)
+    parser.add_argument(
+        "-s", "--show_bin_path",
+        action="store_true",  # Makes it a flag
+        help="Set this flag to enable the use of the current bin path."
+    )
 
     args = parser.parse_args()
     bp = args.bin_path

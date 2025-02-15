@@ -1,3 +1,6 @@
 recursive-include apsimNGpy/data *
 recursive-include images *.png
 recursive incldue files *.apsimx, *.met,
+include apsimNGpy/cli.py
+include apsimNGpy/set_ups.py
+recursive-include apsimNGpy *

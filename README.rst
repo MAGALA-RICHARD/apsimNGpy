@@ -57,16 +57,28 @@ if you run the following code and returns None you need to do something as expla
 
 - 1. Use command line interface
 
-.. code:: bash
+.. code-block:: bash
 
      apsim_bin_path -s
 
 - 2. Use apsimNGpy config module
 
-.. code:: python
+.. code-block:: python
 
    from apsimNGpy.core import config
       print(config.get_apsim_bin_path())
+
+You can also try to check if automatic search will be successful as follows
+
+.. code-block:: bash
+
+    apsim_bin_path --auto_search
+
+The short cut
+
+.. code-block:: bash
+    apsim_bin_path -a
+
 
 Locating the APSIM Binaries
 ***************************************************************

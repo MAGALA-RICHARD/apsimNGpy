@@ -2,12 +2,13 @@ import os
 
 from setuptools import setup, find_packages
 
-VERSION = '0.0.4'
+VERSION = '1.0'
 DESCRIPTION = 'apsimx next generation package interface'
 LONG_DESCRIPTION = 'run, edit, download soils and weather and interact with the apsimx file'
 
 with open('README.rst') as readme_file:
     readme = readme_file.read()
+
 setup(
     name='apsimNGpy',
     version=VERSION,

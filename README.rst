@@ -77,6 +77,7 @@ You can also try to check if automatic search will be successful as follows
 The short cut
 
 .. code-block:: bash
+
     apsim_bin_path -a
 
 
@@ -137,9 +138,10 @@ After installing apsimNGpy, navigate to your terminal and run the following
 
 .. code-block:: bash
 
-    apsim_set_up -u 'path/to/your/apsim/binary/folder/bin'
+    apsim_bin_path -u 'path/to/your/apsim/binary/folder/bin'
 
 Or
+
 .. code-block:: bash
 
     apsim_bin_path --update 'path/to/your/apsim/binary/folder/bin'

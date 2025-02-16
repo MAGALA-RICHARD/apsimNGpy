@@ -1,0 +1,15 @@
+# Changelog
+The earlier versions of apsimNGpy were too experimental with a lot of bugs. Therefore tracking started with version 1.0
+## [1.0] - 2025-01-15
+
+### Added
+___________________________________________________
+- New logging feature for better debug capability.
+- command line interface to run models faster using the command and crop module
+- command line interface to change the apsim binary path using the apsim_bin_path module
+- more detailed installation documentation
+_________________________________________________________
+### Fixed
+- config module to run all operating systems
+- import of load_default simulations
+- 

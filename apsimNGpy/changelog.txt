@@ -1,6 +1,6 @@
 # Changelog
-The earlier versions of apsimNGpy were too experimental with a lot of bugs. Therefore tracking started with version 1.0
-## [1.0] - 2025-01-15
+The earlier versions of apsimNGpy were too experimental with a lot of bugs. Therefore tracking started with version 0.28
+## [0.28] - 2025-01-15
 
 ### Added
 ___________________________________________________

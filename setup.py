@@ -22,8 +22,8 @@ setup(
     include_package_data=True,
     entry_points={
         'console_scripts': [
-            'commands=apsimNGpy.cli.cli:main',
-            'crop=apsimNGpy.cli.cli:defaults_model',
+            'my_apsim=apsimNGpy.cli.cli:main',
+            'apsim=apsimNGpy.cli.cli:defaults_model',
             'apsim_bin_path=apsimNGpy.cli.set_ups:apsim_bin_path',
         ],
     },

@@ -24,27 +24,34 @@ def main():
 
     # Parse arguments
     args = parser.parse_args()
-    met_form_loc = False
-    if args.lonlat:
-        _loc = tuple(map(float, args.lonlat.split(',')))
-        if _is_within_USA_mainland(_loc):
-            source = 'daymet'
-        else:
-            source = 'nasa'
-        met_form_loc = get_weather(lonlat=_loc, source=source)
-        print(met_form_loc)
+    print(args)
     wd = args.wd or os.getcwd()
     if wd != os.getcwd():
         os.makedirs(wd, exist_ok=True)
+    met_form_loc = False
+    _loc = False
+    _source = False
+    if args.lonlat:
+        _loc = tuple(map(float, args.lonlat.split(',')))
+        if _is_within_USA_mainland(_loc):
+            _source = 'daymet'
+        else:
+            _source = 'nasa'
+        met_form_loc = get_weather(lonlat=_loc, source=_source)
+        print(met_form_loc)
+
     if args.model.endswith('.apsimx'):
         model = ApsimModel(args.model, args.out)
     else:
         model = load_default_simulations(crop=args.model, simulations_object=True, path=wd)
     met_data = args.met_file or met_form_loc
 
-    if met_data is not None:
+    if met_data:
         model.replace_met_file(weather_file=met_data, simulations=args.simulation)
         print(f'successfully updated weather file with {met_data}')
+    if _loc:
+        ...
+        # model.replace_soils(_loc, simulation_names=None)
     model.run(report_name=args.table)
     print(model.results)
 

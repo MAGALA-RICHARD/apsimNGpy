@@ -1,18 +1,13 @@
 import glob
 import logging
+import os
 import os.path
-from importlib.resources import files
-from os.path import join, realpath, dirname, exists, split, basename
-from os import listdir, walk, getcwd, mkdir
-from apsimNGpy.core.config import get_apsim_bin_path
 import shutil
-from apsimNGpy import data as DATA
+from os.path import join, realpath
 from pathlib import Path
 
 from apsimNGpy.core.apsim import ApsimModel as SoilModel
-from pathlib import Path
-import os
-
+from apsimNGpy.core.config import get_apsim_bin_path
 from apsimNGpy.settings import logger
 
 WEATHER_CO = 'NewMetrrr.met'

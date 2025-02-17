@@ -170,6 +170,8 @@ def set_apsim_bin_path(path, raise_errors=True):
      >> Config.set_apsim_bin_path(path = '/path/to/APSIM*/bin')
     """
     _path = realpath(path)
+    if not _path.endswith('bin'):
+        _path = os.path.join(_path, 'bin')
     if not _apsim_model_is_installed(_path):
         if raise_errors:
             raise ValueError(f"files might have been uninstalled at this location '{_path}'")

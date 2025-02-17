@@ -48,6 +48,7 @@ class ApsimModel(APSIMNG):
                  lonlat: tuple = None, soil_series: str = 'domtcp', thickness: int = 20, bottomdepth: int = 200,
                  thickness_values: list = None, run_all_soils: bool = False, load=True, **kwargs):
         super().__init__(model, out_path, **kwargs)
+        self.soiltype = None
         self.SWICON = None
         """get SSURG soil tables and organise it to aPSim soil profiles -------------------- parameters soil_series (
         _str_) specifying the soils series default is domcp meaning dominant soil series, users can specify any 

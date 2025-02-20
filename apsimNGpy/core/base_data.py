@@ -19,6 +19,8 @@ WEATHER = 'weather'
 BIN_path = get_apsim_bin_path()
 # removed all other functions loading apsim files from the local repository only default apsim simulations
 EXAMPLES_DATA = example_files_path = BIN_path.replace('bin', 'Examples')
+version_number = apsim_version()
+useVn = version_number.replace(".", "_")
 
 
 def __get_example(crop, path=None, simulations_object=True):
@@ -46,7 +48,7 @@ def __get_example(crop, path=None, simulations_object=True):
     else:
         copy_path = path
 
-    target_path = join(copy_path, crop) +  apsim_version() + '.apsimx'
+    target_path = join(copy_path, crop) + useVn + '.apsimx'
 
     target_location = glob.glob(
         f"{EXAMPLES_DATA}*/{crop}.apsimx")  # no need to capitalize only correct spelling is required
@@ -59,7 +61,7 @@ def __get_example(crop, path=None, simulations_object=True):
         if not simulations_object:
             return copied_file
 
-        aPSim = SoilModel(copied_file)
+        aPSim = SoilModel(file_path, out_path=target_path)
         return aPSim
     else:
         logger.info(f"No crop named:' '{crop}' found at '{example_files_path}'")
@@ -117,10 +119,10 @@ def load_default_sensitivity_model(method: str, path: str = None, simulations_ob
     target_location = glob.glob(
         f"{dir_path}*/{method}.apsimx")  # no need to capitalize only correct spelling is required
     # unzip
-    target_path = join(copy_path, method) + apsim_version() + '.apsimx'
+    target_path = join(copy_path, method) + useVn + '.apsimx'
     if target_location:
         file_path = str(target_location[0])
-        copied_file = shutil.copy2(file_path, target_path)
+        copied_file = shutil.copyfile(file_path, target_path)
 
         if not simulations_object:
             return copied_file
@@ -132,10 +134,11 @@ def load_default_sensitivity_model(method: str, path: str = None, simulations_ob
 
 
 if __name__ == '__main__':
-    pp = Path.home()
+    pp = Path('G:/ndata')
+    pp.mkdir(exist_ok=True)
     os.chdir(pp)
-    mn = load_default_simulations('Maize', simulations_object=True, path = 'D:/')
-    mn.update_mgt(management=({"Name": 'Fertilise at sowing', 'Amount':200}))
+    mn = load_default_simulations('Maize', simulations_object=True)
+    mn.update_mgt(management=({"Name": 'Fertilise at sowing', 'Amount': 200}))
     sobol = load_default_sensitivity_model(method='sobol')
     logging.info('running sobol')
     sobol.run('Report')

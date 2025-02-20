@@ -15,6 +15,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 def read_with_query(db, query):
     """
         Executes an SQL query on a specified database and returns the result as a Pandas DataFrame.
@@ -106,7 +107,6 @@ def read_db_table(db, report_name):
         # print(f" Seems like the specified table name: {report_name} does not exists in {db} data base")
         if exists(db):
             logger.warning(f"report_name(s) should be any of the following:: {get_db_table_names(db)}")
-
 
 
 def load_database(path):

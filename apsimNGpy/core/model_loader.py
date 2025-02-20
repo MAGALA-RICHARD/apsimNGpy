@@ -163,7 +163,7 @@ def load_apx_model(model=None, out=None, file_load_method='string', met_file=Non
                       met_path=met_file)
 
 
-def recompile(_model, out=None, met_path=None):
+def recompile(_model, out=None, met_path=None,):
     """ recompile without saving to disk useful for recombiling the same model on the go after updating management scripts
 
             Parameters
@@ -197,12 +197,12 @@ def recompile(_model, out=None, met_path=None):
 
 
 @timer
-def run_model_externally(model, table):
+def run_model_externally(model, table, datastore):
     # Define the APSIM executable path (adjust if needed)
     apsim_exe = Path(get_apsim_bin_path()) / 'Models.exe'
 
     # Define the APSIMX file path
-    apsim_file = model.path
+    apsim_file = model
 
     # Run APSIM with the specified file
     try:
@@ -210,8 +210,8 @@ def run_model_externally(model, table):
         print(result)
         print("APSIM Run Successful!")
         print(result.stdout)  # Print APSIM output
-        df = read_db_table(model.datastore, table)
-        print(df)
+        df = read_db_table(datastore, table)
+        return df
     except subprocess.CalledProcessError as e:
         print("Error running APSIM:")
         print(e.stderr)  # Print APSIM error message if execution fails
@@ -243,5 +243,12 @@ if __name__ == '__main__':
     from apsimNGpy.core.apsim import ApsimModel
 
     maze.results = None
+    maze.update_mgt(management=({"Name": 'Fertilise at sowing', 'Amount': 10},))
     maze.run(report_name='Report')
-    run_model_externally(maze.model_info, 'report')
+    me1 = maze.results['Maize.Total.Wt'].mean()
+    maze.update_mgt(management=({"Name": 'Fertilise at sowing', 'Amount': 300},))
+    maze.extract_user_input('Fertilise at sowing')
+    maze.run(report_name='Report')
+    me2 = maze.results['Maize.Total.Wt'].mean()
+    print(me2)
+    dd = run_model_externally(maze.path, 'report', maze.datastore)

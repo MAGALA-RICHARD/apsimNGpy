@@ -57,16 +57,26 @@ def load_from_path(path2file, method='string'):
         __model = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](string_name, None,
                                                                                            True,
                                                                                            fileName=f_name)
+        __model = __model.NewModel
     else:
         __model = Models.Core.ApsimFile.FileFormat.ReadFromFile[Models.Core.Simulations](f_name, None, True)
+
     if isinstance(__model, Models.Core.ApsimFile.ConverterReturnType):
 
-        return __model.get_NewModel()
+        # return __model.get_NewModel()
+        new_model = __model.NewModel
+        did_convert = __model.DidConvert
+        print(f"{method}: {did_convert}")
+        if not did_convert:
+            print(did_convert)
+            #raise ValueError('conversion to the newest version failed')
+
+        return new_model
     else:
         return __model
 
 
-def load_apx_model(model=None, out=None, file_load_method='string', met_file=None, **kwargs):
+def load_apx_model(model=None, out=None, file_load_method='file', met_file=None, **kwargs):
     """
        >> we are loading apsimx model from file, dict, or in memory.
        >> if model is none, we will return a pre - reloaded one from memory.
@@ -108,19 +118,12 @@ def load_apx_model(model=None, out=None, file_load_method='string', met_file=Non
     def _(_model: Path):
         # same as the string one, the difference is that this is a pathlib path object
         shutil.copy(_model, _out)
-        return load_from_path(_out)
-
-    @loader.register(type(None))
-    def _(_model):
-        # whenever the model is none, we return a preloaded dictionary in memory from the package
-        return load_from_dict(load_model, out=_out)
+        return load_from_path(_out, file_load_method)
 
     @loader.register(Models.Core.Simulations)
     def _(_model: Models.Core.Simulations):
         # it is already a model.core.Simulation object so we just return it
         return _model
-
-
 
     Model = loader(model)
     _Model = False
@@ -210,3 +213,11 @@ if __name__ == '__main__':
     aa = time.perf_counter()
     model = load_from_path(soy.path, method='string')
     print(time.perf_counter() - aa, 'seconds', 'loading from string')
+
+    sv = save_model_to_file(maze.model_info.IModel)
+    from apsimNGpy.core.core import APSIMNG
+
+    model = APSIMNG('_saved_model.apsimx', )
+    model.recompile_edited_model(out_path='_saved_model.apsimx')
+    model.restart_model()
+    model.run()

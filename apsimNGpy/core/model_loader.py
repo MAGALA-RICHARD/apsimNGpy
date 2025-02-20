@@ -26,6 +26,16 @@ def load_from_dict(dict_data, out):
                                                                                     fileName=out)
 
 
+def copy_file(source, destination):
+    from pathlib import Path
+
+    source = Path(source)
+    destination = Path(destination)
+
+    destination.write_bytes(source.read_bytes())
+    return destination
+
+
 def save_model_to_file(_model, out=None):
     """Save the model
 
@@ -93,7 +103,7 @@ def load_from_path(path2file, method='file'):
     return new_model
 
 
-def load_apx_model(model=None, out=None, file_load_method='file', met_file=None, **kwargs):
+def load_apx_model(model=None, out=None, file_load_method='string', met_file=None, **kwargs):
     """
        >> we are loading apsimx model from file, dict, or in memory.
        >> if model is none, we will return a pre - reloaded one from memory.
@@ -127,15 +137,15 @@ def load_apx_model(model=None, out=None, file_load_method='file', met_file=None,
     @loader.register(str)
     def _(_model: str):
         # we first copy the file before loading it
-        shutil.copy(_model, _out)
+        cop = copy_file(_model, _out)
 
-        return load_from_path(_out, file_load_method)
+        return load_from_path(cop, file_load_method)
 
     @loader.register(Path)
     def _(_model: Path):
         # same as the string one, the difference is that this is a pathlib path object
-        shutil.copy(_model, _out)
-        return load_from_path(_out, file_load_method)
+        copy = copy_file(_model, _out)
+        return load_from_path(copy, file_load_method)
 
     @loader.register(Models.Core.Simulations)
     def _(_model: Models.Core.Simulations):
@@ -191,6 +201,7 @@ if __name__ == '__main__':
     import time
     from pathlib import Path
     from apsimNGpy.core.base_data import load_default_simulations
+
     tt = Path("test_folder")
     tt.mkdir(parents=True, exist_ok=True)
     os.chdir(tt)
@@ -210,6 +221,7 @@ if __name__ == '__main__':
     sv = save_model_to_file(maze.model_info.IModel)
     from apsimNGpy.core.core import APSIMNG
     from apsimNGpy.core.apsim import ApsimModel
+
     maze.results = None
     maze.run(report_name='Report')
     print(maze.results)

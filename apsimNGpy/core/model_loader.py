@@ -1,7 +1,7 @@
 """
 This module offers a procedural alternative other than object-oriented approach provided in api and ApsimModel classes
 """
-
+import os
 from functools import singledispatch
 
 from apsimNGpy.core import pythonet_config
@@ -53,8 +53,8 @@ def save_model_to_file(_model, out=None):
 def covert_to_model(object_to_convert):
     if isinstance(object_to_convert, Models.Core.ApsimFile.ConverterReturnType):
         did_convert = object_to_convert.DidConvert
-        if not did_convert:
-            raise ValueError('conversion to the newest version failed')
+        # if not did_convert:
+        #     raise ValueError('conversion to the newest version failed')
         return object_to_convert.get_NewModel()
     else:
         return object_to_convert
@@ -102,7 +102,7 @@ def load_apx_model(model=None, out=None, file_load_method='file', met_file=None,
        returns a named tuple with an out path, datastore path, and IModel in memory
        """
     # name according to the order of preference
-    if model is not None and isinstance(model, (str, Path)):
+    if model is not None:
         out2 = f"{Path(model).parent}/{Path(model).stem}_copy.apsimx"
     else:
         out2 = None
@@ -191,8 +191,10 @@ if __name__ == '__main__':
     import time
     from pathlib import Path
     from apsimNGpy.core.base_data import load_default_simulations
-
-    maze = load_default_simulations('maize', path=r'D:/p')
+    tt = Path("test_folder")
+    tt.mkdir(parents=True, exist_ok=True)
+    os.chdir(tt)
+    maze = load_default_simulations('Maize', path=r'D:/p')
     soy = load_default_simulations('soybean', path=r'D:')
 
     # maze.initialise_model()
@@ -207,5 +209,8 @@ if __name__ == '__main__':
 
     sv = save_model_to_file(maze.model_info.IModel)
     from apsimNGpy.core.core import APSIMNG
-
+    from apsimNGpy.core.apsim import ApsimModel
+    maze.results = None
     maze.run(report_name='Report')
+    print(maze.results)
+    mn = ApsimModel(r"C:\Users\rmagala\AppData\Local\Programs\APSIM2025.2.7670.0\Examples\Maize.apsimx")

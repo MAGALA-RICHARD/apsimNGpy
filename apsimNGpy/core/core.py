@@ -803,6 +803,14 @@ class APSIMNG:
     def _kvtodict(self, kv):
         return {kv[i].Key: kv[i].Value for i in range(kv.Count)}
 
+    def compile_scripts(self):
+        for sim in self.simulations:
+            managers = sim.FindAllDescendants[Models.Manager]()
+            for manager in list(managers):
+                print(manager.SuccessfullyCompiledLast)
+                # if not manager.SuccessfullyCompiledLast:
+                #     manager.RebuildScriptModel(allowDuplicateClassName=False)
+
     def extract_user_input(self, manager_name: str):
         """Get user_input of a given model manager script
         returns;  a dictionary of user input with the key as the script parameters and values as the inputs

@@ -54,7 +54,7 @@ def __get_example(crop, path=None, simulations_object=True):
 
     if target_location:
         file_path = str(target_location[0])
-        copied_file = shutil.copy(file_path, target_path)
+        copied_file = shutil.copy2(file_path, target_path)
 
         if not simulations_object:
             return copied_file
@@ -120,7 +120,7 @@ def load_default_sensitivity_model(method: str, path: str = None, simulations_ob
     target_path = join(copy_path, method) + apsim_version() + '.apsimx'
     if target_location:
         file_path = str(target_location[0])
-        copied_file = shutil.copy(file_path, target_path)
+        copied_file = shutil.copy2(file_path, target_path)
 
         if not simulations_object:
             return copied_file
@@ -134,7 +134,9 @@ def load_default_sensitivity_model(method: str, path: str = None, simulations_ob
 if __name__ == '__main__':
     pp = Path.home()
     os.chdir(pp)
-    mn = load_default_simulations('maize', simulations_object=True, path = 'G:/')
+    mn = load_default_simulations('Maize', simulations_object=True, path = 'D:/')
+    mn.update_mgt(management=({"Name": 'Fertilise at sowing', 'Amount':200}))
     sobol = load_default_sensitivity_model(method='sobol')
     logging.info('running sobol')
-    sobol.run()
+    sobol.run('Report')
+    mn.run("Report")

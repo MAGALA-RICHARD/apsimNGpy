@@ -171,7 +171,7 @@ def set_apsim_bin_path(path, raise_errors=True):
     """
     _path = realpath(path)
     if os.path.basename(_path) != 'bin':
-        _path = os.path.join(_path, 'bin') # this will work only if base path is valid
+        _path = os.path.join(_path, 'bin')  # this will work only if base path is valid
     if not _apsim_model_is_installed(_path):
         if raise_errors:
             raise ValueError(f"files might have been uninstalled at this location '{_path}'")
@@ -223,3 +223,9 @@ class Config:
         """
         _path = realpath(path)
         return set_apsim_bin_path(_path)
+
+
+def apsim_version():
+    _path = get_apsim_bin_path()
+    dPath = os.path.dirname(_path)
+    return os.path.basename(dPath)

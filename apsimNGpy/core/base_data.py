@@ -7,7 +7,7 @@ from os.path import join, realpath
 from pathlib import Path
 
 from apsimNGpy.core.apsim import ApsimModel as SoilModel
-from apsimNGpy.core.config import get_apsim_bin_path
+from apsimNGpy.core.config import get_apsim_bin_path, apsim_version
 from apsimNGpy.settings import logger
 
 WEATHER_CO = 'NewMetrrr.met'
@@ -16,8 +16,9 @@ WEA = 'Iem_IA0200.met'
 APSIM_DATA = 'apsim'
 WEATHER = 'weather'
 
+BIN_path = get_apsim_bin_path()
 # removed all other functions loading apsim files from the local repository only default apsim simulations
-EXAMPLES_DATA = example_files_path = get_apsim_bin_path().replace('bin', 'Examples')
+EXAMPLES_DATA = example_files_path = BIN_path.replace('bin', 'Examples')
 
 
 def __get_example(crop, path=None, simulations_object=True):
@@ -110,13 +111,13 @@ def load_default_sensitivity_model(method: str, path: str = None, simulations_ob
     """
     dir_path = os.path.join(EXAMPLES_DATA, 'Sensitivity')
     if not path:
-        copy_path = realpath(Path.home())
+        copy_path = os.getcwd()
     else:
         copy_path = path
     target_location = glob.glob(
         f"{dir_path}*/{method}.apsimx")  # no need to capitalize only correct spelling is required
     # unzip
-    target_path = join(copy_path, method) + '.apsimx'
+    target_path = join(copy_path, method) + apsim_version() + '.apsimx'
     if target_location:
         file_path = str(target_location[0])
         copied_file = shutil.copy(file_path, target_path)

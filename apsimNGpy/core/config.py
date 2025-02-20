@@ -9,7 +9,7 @@ from functools import lru_cache, cache
 from os.path import join, dirname
 import logging
 import psutil
-
+logger = logging.getLogger(__name__)
 from apsimNGpy.settings import CONFIG_PATH, create_config
 
 HOME_DATA = Path.home().joinpath('AppData', 'Local', 'Programs')
@@ -176,17 +176,17 @@ def set_apsim_bin_path(path, raise_errors=True):
         if raise_errors:
             raise ValueError(f"files might have been uninstalled at this location '{_path}'")
         else:
-            logging.warning(f"Attempted to set an invalid path: {_path}")
+            logger.warning(f"Attempted to set an invalid path: {_path}")
             return  # Optionally, you could return False here to indicate failure
     current_path = get_apsim_bin_path()
     if _path != current_path:
         create_config(CONFIG_PATH, _path)
 
-        logging.info(f"APSIM binary path successfully updated from '{current_path}' to '{_path}'")
+        logger.info(f"APSIM binary path successfully updated from '{current_path}' to '{_path}'")
 
     else:
 
-        logging.warning(f"{_path} is similar to exising APSIM binary at this location: '{current_path}'")
+        logger.warning(f"{_path} is similar to exising APSIM binary at this location: '{current_path}'")
 
 
 class Config:

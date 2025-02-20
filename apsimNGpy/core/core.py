@@ -38,7 +38,7 @@ from Models.Soils import Soil, Physical, SoilCrop, Organic, Solute, Chemical
 
 import Models
 from Models.PMF import Cultivar
-
+from apsimNGpy.core._runner import run_model_externally
 from apsimNGpy.core.model_loader import (load_apx_model, save_model_to_file, recompile)
 from apsimNGpy.utililies.utils import timer
 from apsimNGpy.core.runner import run_model
@@ -278,6 +278,7 @@ class APSIMNG:
             self.restart_model()
             return self
 
+    @timer
     def run(self, report_name: Union[tuple, list, str] = None,
             simulations: Union[tuple, list] = None,
             clean: bool = False,
@@ -311,34 +312,41 @@ class APSIMNG:
         """
         try:
 
-            # open the datastore
-            runtype = select_threads(multithread=multithread)
-            self._DataStore.Open()
-            # Clear old data before running
-            self.results = None
-            if clean:
-                self._DataStore.Dispose()
-            sims = self.find_simulations(simulations) if simulations else self.Simulations
-            if simulations:
-                cs_sims = List[Models.Core.Simulation]()
-                for s in sims:
-                    cs_sims.Add(s)
-                sim = cs_sims
-            else:
-                sim = sims
-            _run_model = ModelRUNNER(sim, True, False, False, None, runtype)
-            e = _run_model.Run()
-            if len(e) > 0:
-                logging.info(e[0].ToString())
-            if isinstance(report_name, str):
-                self.results = read_db_table(self.datastore, report_name=report_name)
-            elif isinstance(report_name, Iterable):
-                data = []
-                for rpn in report_name:
-                    df = read_db_table(self.datastore, report_name=rpn)
-                    df['report_name'] = rpn
-                    data.append(df)
-                    self.results = pd.concat(data, ignore_index=True, axis=0)
+            # # open the datastore
+            # runtype = select_threads(multithread=multithread)
+            # self._DataStore.Open()
+            # # Clear old data before running
+            # self.results = None
+            # if clean:
+            #     self._DataStore.Dispose()
+            # sims = self.find_simulations(simulations) if simulations else self.Simulations
+            # if simulations:
+            #     cs_sims = List[Models.Core.Simulation]()
+            #     for s in sims:
+            #         cs_sims.Add(s)
+            #     sim = cs_sims
+            # else:
+            #     sim = sims
+            # _run_model = ModelRUNNER(sim, True, True, False, runTests=True, runType = runtype)
+            # e = _run_model.Run()
+            # if len(e) > 0:
+            #     logging.info(e[0].ToString())
+            def _read_data(reports):
+                if isinstance(reports, str):
+                    return read_db_table(self.datastore, report_name=reports)
+                elif isinstance(reports, Iterable):
+                    data = []
+                    for rpn in report_name:
+                        df = read_db_table(self.datastore, report_name=rpn)
+                        df['report_name'] = rpn
+                        data.append(df)
+                    out_df = pd.concat(data, ignore_index=True, axis=0)
+                    out_df.reset_index(drop=True, inplace=True)
+                    return out_df
+
+            res = run_model_externally(self.model_info.path)
+            if res.returncode == 0:
+                self.results = _read_data(report_name)
 
         finally:
             # close the datastore

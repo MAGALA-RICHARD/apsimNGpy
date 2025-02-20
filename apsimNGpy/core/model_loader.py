@@ -5,6 +5,7 @@ import os
 from functools import singledispatch
 
 from apsimNGpy.core import pythonet_config
+from apsimNGpy.utililies.utils import timer
 
 pyth = pythonet_config
 # now we can safely import C# libraries
@@ -17,6 +18,9 @@ from os import chdir
 import shutil
 from collections import namedtuple
 from pathlib import Path
+from apsimNGpy.core.config import get_apsim_bin_path
+import subprocess
+from apsimNGpy.utililies.database_utils import read_db_table
 
 
 def load_from_dict(dict_data, out):
@@ -27,12 +31,7 @@ def load_from_dict(dict_data, out):
 
 
 def copy_file(source, destination):
-    from pathlib import Path
-
-    source = Path(source)
-    destination = Path(destination)
-
-    destination.write_bytes(source.read_bytes())
+    shutil.copy2(source, destination)
     return destination
 
 
@@ -197,6 +196,27 @@ def recompile(_model, out=None, met_path=None):
                      met_path=met_path)
 
 
+@timer
+def run_model_externally(model, table):
+    # Define the APSIM executable path (adjust if needed)
+    apsim_exe = Path(get_apsim_bin_path()) / 'Models.exe'
+
+    # Define the APSIMX file path
+    apsim_file = model.path
+
+    # Run APSIM with the specified file
+    try:
+        result = subprocess.run([apsim_exe, apsim_file])
+        print(result)
+        print("APSIM Run Successful!")
+        print(result.stdout)  # Print APSIM output
+        df = read_db_table(model.datastore, table)
+        print(df)
+    except subprocess.CalledProcessError as e:
+        print("Error running APSIM:")
+        print(e.stderr)  # Print APSIM error message if execution fails
+
+
 if __name__ == '__main__':
     import time
     from pathlib import Path
@@ -205,7 +225,7 @@ if __name__ == '__main__':
     tt = Path("test_folder")
     tt.mkdir(parents=True, exist_ok=True)
     os.chdir(tt)
-    maze = load_default_simulations('Maize', path=r'D:/p')
+    maze = load_default_simulations('Maize', )
     soy = load_default_simulations('soybean', path=r'D:')
 
     # maze.initialise_model()
@@ -224,5 +244,4 @@ if __name__ == '__main__':
 
     maze.results = None
     maze.run(report_name='Report')
-    print(maze.results)
-    mn = ApsimModel(r"C:\Users\rmagala\AppData\Local\Programs\APSIM2025.2.7670.0\Examples\Maize.apsimx")
+    run_model_externally(maze.model_info, 'report')

@@ -11,7 +11,9 @@ from pandas import errors
 from pandas import read_sql_query as rsq
 from sqlalchemy import create_engine, inspect
 from apsimNGpy.utililies.exceptions import TableNotFoundError
+import logging
 
+logger = logging.getLogger(__name__)
 
 def read_with_query(db, query):
     """
@@ -94,17 +96,17 @@ def read_db_table(db, report_name):
         """
     # table = kwargs.get("table")
     try:
-        conn = sqlite3.connect(db)
-        query = f"SELECT * FROM {report_name}"
-        df = rsq(query, conn)
-        conn.close()
+        with sqlite3.connect(db) as conn:
+            query = f"SELECT * FROM {report_name}"
+            df = rsq(query, conn)
+
         return df
     except errors.DatabaseError as ed:
         # print(repr(ed))
         # print(f" Seems like the specified table name: {report_name} does not exists in {db} data base")
         if exists(db):
-            print(f"report_name(s) should be any of the following:: {get_db_table_names(db)}")
-        #raise errors.DatabaseError(f"{str(ed)} occurred")
+            logger.warning(f"report_name(s) should be any of the following:: {get_db_table_names(db)}")
+
 
 
 def load_database(path):

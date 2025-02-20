@@ -26,7 +26,7 @@ from System import *
 from collections import namedtuple
 import json
 from System.Collections.Generic import *
-
+import subprocess
 #from settings import * not needed in this module
 
 FAILED_RUNS = []
@@ -189,3 +189,25 @@ def read_simulation(datastore, report_name='MaizeR'):
             return dataframe_dict
     except Exception as e:
         print(repr(e))
+
+@timer
+def run_model_externally(model, table):
+
+    # Define the APSIM executable path (adjust if needed)
+    apsim_exe =  Path(get_apsim_bin_path())/'Models.exe'
+
+    # Define the APSIMX file path
+    apsim_file = model.path
+
+    # Run APSIM with the specified file
+    try:
+        result = subprocess.run([apsim_exe, apsim_file])
+        print(result)
+        print("APSIM Run Successful!")
+        print(result.stdout)  # Print APSIM output
+        df = read_db_table(maze.datastore, table)
+        print(df)
+    except subprocess.CalledProcessError as e:
+        print("Error running APSIM:")
+        print(e.stderr)  # Print APSIM error message if execution fails
+

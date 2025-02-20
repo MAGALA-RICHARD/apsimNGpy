@@ -42,11 +42,11 @@ def __get_example(crop, path=None, simulations_object=True):
     OSError: If there are issues with copying or replacing files.
     """
     if not path:
-        copy_path = realpath(Path.home())
+        copy_path = os.getcwd()
     else:
         copy_path = path
 
-    target_path = join(copy_path, crop) +  apsim_version()+ '.apsimx'
+    target_path = join(copy_path, crop) +  apsim_version() + '.apsimx'
 
     target_location = glob.glob(
         f"{EXAMPLES_DATA}*/{crop}.apsimx")  # no need to capitalize only correct spelling is required
@@ -134,7 +134,7 @@ def load_default_sensitivity_model(method: str, path: str = None, simulations_ob
 if __name__ == '__main__':
     pp = Path.home()
     os.chdir(pp)
-    mn = load_default_simulations('maize', simulations_object=True)
+    mn = load_default_simulations('maize', simulations_object=True, path = 'G:/')
     sobol = load_default_sensitivity_model(method='sobol')
     logging.info('running sobol')
     sobol.run()

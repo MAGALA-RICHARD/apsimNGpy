@@ -686,10 +686,6 @@ class APSIMNG:
     def FindAllReferencedFiles(self):
         return self.Simulations.FindAllReferencedFiles()
 
-    def RevertCheckpoint(self):
-        self.Simulations = self.Simulations.RevertCheckpoint('new_model')
-        return self
-
     def convert_to_IModel(self):
         if isinstance(self.Simulations, Models.Core.ApsimFile.ConverterReturnType):
             return self.Simulations.get_NewModel()

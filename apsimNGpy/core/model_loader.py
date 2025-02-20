@@ -26,8 +26,35 @@ def load_from_dict(dict_data, out):
                                                                                     fileName=out)
 
 
-def covert_to_IModel(object_to_convert):
+def save_model_to_file(_model, out=None):
+    """Save the model
+
+        Parameters
+        ----------
+        out : str, optional path to save the model to
+            reload: bool to load the file using the out path
+            :param out: out path
+            :param _model:APSIM Models.Core.Simulations object
+            returns the filename or the specified out name
+        """
+    # Determine the output path
+    _model = covert_to_model(object_to_convert=_model)
+    final_out_path = out or '_saved_model.apsimx'
+
+    # Serialize the model to JSON string
+    json_string = Models.Core.ApsimFile.FileFormat.WriteToString(_model)
+
+    # Save the JSON string to the determined output path
+    with open(final_out_path, "w", encoding='utf-8') as f:
+        f.write(json_string)
+    return final_out_path
+
+
+def covert_to_model(object_to_convert):
     if isinstance(object_to_convert, Models.Core.ApsimFile.ConverterReturnType):
+        did_convert = object_to_convert.DidConvert
+        if not did_convert:
+            raise ValueError('conversion to the newest version failed')
         return object_to_convert.get_NewModel()
     else:
         return object_to_convert
@@ -41,7 +68,7 @@ def load_model_from_dict(dict_model, out, met_file):
     return memo
 
 
-def load_from_path(path2file, method='string'):
+def load_from_path(path2file, method='file'):
     """"
 
     :param path2file: path to apsimx file
@@ -50,7 +77,7 @@ def load_from_path(path2file, method='string'):
     the file path. This is slower than the former.
     """
     f_name = realpath(path2file)
-    with open(path2file, "r+", encoding='utf-8') as apsimx:
+    with open(f_name, "r+", encoding='utf-8') as apsimx:
         app_ap = json.load(apsimx)
     string_name = json.dumps(app_ap)
     if method == 'string':
@@ -61,19 +88,9 @@ def load_from_path(path2file, method='string'):
     else:
         __model = Models.Core.ApsimFile.FileFormat.ReadFromFile[Models.Core.Simulations](f_name, None, True)
 
-    if isinstance(__model, Models.Core.ApsimFile.ConverterReturnType):
+    new_model = covert_to_model(__model)
 
-        # return __model.get_NewModel()
-        new_model = __model.NewModel
-        did_convert = __model.DidConvert
-        print(f"{method}: {did_convert}")
-        if not did_convert:
-            print(did_convert)
-            #raise ValueError('conversion to the newest version failed')
-
-        return new_model
-    else:
-        return __model
+    return new_model
 
 
 def load_apx_model(model=None, out=None, file_load_method='file', met_file=None, **kwargs):
@@ -90,8 +107,8 @@ def load_apx_model(model=None, out=None, file_load_method='file', met_file=None,
     else:
         out2 = None
     out1 = realpath(out) if out is not None else None
-    out3 = realpath('ngpy_model.apsimx')
-    _out = out1 or out2 or out3
+
+    _out = out1 or out2
     Model_data = namedtuple('model_data',
                             ['IModel', 'path', 'datastore', "DataStore", 'results', 'met_path'])
 
@@ -137,30 +154,6 @@ def load_apx_model(model=None, out=None, file_load_method='file', met_file=None,
                       met_path=met_file)
 
 
-def save_model_to_file(_model, out=None):
-    """Save the model
-
-        Parameters
-        ----------
-        out : str, optional path to save the model to
-            reload: bool to load the file using the out path
-            :param out: out path
-            :param _model:APSIM Models.Core.Simulations object
-            returns the filename or the specified out name
-        """
-    # Determine the output path
-    _model = covert_to_IModel(object_to_convert=_model)
-    final_out_path = out or '_saved_model.apsimx'
-
-    # Serialize the model to JSON string
-    json_string = Models.Core.ApsimFile.FileFormat.WriteToString(_model)
-
-    # Save the JSON string to the determined output path
-    with open(final_out_path, "w", encoding='utf-8') as f:
-        f.write(json_string)
-    return final_out_path
-
-
 def recompile(_model, out=None, met_path=None):
     """ recompile without saving to disk useful for recombiling the same model on the go after updating management scripts
 
@@ -183,10 +176,8 @@ def recompile(_model, out=None, met_path=None):
     Model = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](json_string, None, True,
                                                                                      fileName=final_out_path)
     _Model = False
-    if isinstance(Model, Models.Core.ApsimFile.ConverterReturnType):
-        _Model = Model.get_NewModel()
-    else:
-        _Model = Model
+    _Model = covert_to_model(Model)
+
     datastore = _Model.FindChild[Models.Storage.DataStore]().FileName
     DataStore = _Model.FindChild[Models.Storage.DataStore]()
     # need to make ModelData a constant and named outside the script for consistency across scripts
@@ -211,13 +202,10 @@ if __name__ == '__main__':
     b = time.perf_counter()
     print(b - a, 'seconds', 'loading from file')
     aa = time.perf_counter()
-    model = load_from_path(soy.path, method='string')
+    model1 = load_from_path(soy.path, method='string')
     print(time.perf_counter() - aa, 'seconds', 'loading from string')
 
     sv = save_model_to_file(maze.model_info.IModel)
     from apsimNGpy.core.core import APSIMNG
 
-    model = APSIMNG('_saved_model.apsimx', )
-    model.recompile_edited_model(out_path='_saved_model.apsimx')
-    model.restart_model()
-    model.run()
+    maze.run(report_name='Report')

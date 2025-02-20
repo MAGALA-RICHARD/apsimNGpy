@@ -173,10 +173,6 @@ We have identified that certain versions may not function as expected. While we 
 We will continue to update this list as we verify additional stable versions. If you encounter any issues, please report them so we can address them promptly.
 
 
-Please note that apsimNGpy is tested on Python 3. We are not aware of its performance in Python 2 because it utilizes some of the new libraries
-Usage
-
-
 
 Examples
 ********

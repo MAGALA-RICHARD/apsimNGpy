@@ -46,7 +46,7 @@ def __get_example(crop, path=None, simulations_object=True):
     else:
         copy_path = path
 
-    target_path = join(copy_path, crop) + '.apsimx'
+    target_path = join(copy_path, crop) +  apsim_version()+ '.apsimx'
 
     target_location = glob.glob(
         f"{EXAMPLES_DATA}*/{crop}.apsimx")  # no need to capitalize only correct spelling is required

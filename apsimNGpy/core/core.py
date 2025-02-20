@@ -294,6 +294,7 @@ class APSIMNG:
         try:
             # open the datastore
             runtype = select_threads(multithread=multithread)
+            self.save()
             self._DataStore.Open()
             # Clear old data before running
             self.results = None
@@ -1608,7 +1609,7 @@ if __name__ == '__main__':
         model.replace_soil_properties_by_path(path='None.Soil.Organic.None.None.Carbon', param_values=[N])
         # model.replace_any_soil_physical(parameter='BD', param_values=[1.23],)
         # model.save_edited_file(reload=True)
-        model.run('Report')
+        model.run_in_python('Report')
         df = model.results
         ui = model.extract_user_input('Sow using a variable rule')
         print(ui)

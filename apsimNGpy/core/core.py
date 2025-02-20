@@ -256,6 +256,13 @@ class APSIMNG:
         self.path = self.model_info.path
         return self
 
+    def save(self):
+        _path = self.path
+        save_model_to_file(self.Simulations, out=_path)
+        model_info = load_apx_model(_path)
+        self.restart_model(model_info)
+        return self
+
     def save_edited_file(self, out_path: os.PathLike = None, reload: bool = False) -> Union['APSIMNG', None]:
         """ Saves the model to the local drive.
 
@@ -277,6 +284,56 @@ class APSIMNG:
 
             self.restart_model()
             return self
+
+    def run_in_python(self, report_name: Union[tuple, list, str] = None,
+                      simulations: Union[tuple, list] = None,
+                      clean: bool = False,
+                      multithread: bool = True,
+                      **kwargs) -> 'APSIMNG':
+
+        try:
+            # open the datastore
+            runtype = select_threads(multithread=multithread)
+            self._DataStore.Open()
+            # Clear old data before running
+            self.results = None
+            if clean:
+                self._DataStore.Dispose()
+            sims = self.find_simulations(simulations) if simulations else self.Simulations
+            if simulations:
+                cs_sims = List[Models.Core.Simulation]()
+                for s in sims:
+                    cs_sims.Add(s)
+                sim = cs_sims
+            else:
+                sim = sims
+            _run_model = ModelRUNNER(sim, True, True, False, runTests=True, runType=runtype)
+            e = _run_model.Run()
+            if len(e) > 0:
+                logging.info(e[0].ToString())
+
+            def _read_data(reports):
+                print(self.datastore)
+                if isinstance(reports, str):
+                    return read_db_table(self.datastore, report_name=reports)
+                elif isinstance(reports, Iterable):
+                    data = []
+                    for rpn in report_name:
+                        df = read_db_table(self.datastore, report_name=rpn)
+                        df['report_name'] = rpn
+                        data.append(df)
+                    out_df = pd.concat(data, ignore_index=True, axis=0)
+                    out_df.reset_index(drop=True, inplace=True)
+                    return out_df
+
+            res = run_model_externally(self.model_info.path)
+            if res.returncode == 0:
+                self.results = _read_data(report_name)
+
+        finally:
+            # close the datastore
+            self._DataStore.Close()
+        return self
 
     @timer
     def run(self, report_name: Union[tuple, list, str] = None,
@@ -311,26 +368,9 @@ class APSIMNG:
             instance of the class APSIMNG
         """
         try:
+            # we could cut the chase and run apsim faster but unfortunately some versions
+            # are not working properly, so we run the model externally
 
-            # # open the datastore
-            # runtype = select_threads(multithread=multithread)
-            # self._DataStore.Open()
-            # # Clear old data before running
-            # self.results = None
-            # if clean:
-            #     self._DataStore.Dispose()
-            # sims = self.find_simulations(simulations) if simulations else self.Simulations
-            # if simulations:
-            #     cs_sims = List[Models.Core.Simulation]()
-            #     for s in sims:
-            #         cs_sims.Add(s)
-            #     sim = cs_sims
-            # else:
-            #     sim = sims
-            # _run_model = ModelRUNNER(sim, True, True, False, runTests=True, runType = runtype)
-            # e = _run_model.Run()
-            # if len(e) > 0:
-            #     logging.info(e[0].ToString())
             def _read_data(reports):
                 if isinstance(reports, str):
                     return read_db_table(self.datastore, report_name=reports)
@@ -343,7 +383,8 @@ class APSIMNG:
                     out_df = pd.concat(data, ignore_index=True, axis=0)
                     out_df.reset_index(drop=True, inplace=True)
                     return out_df
-
+            # before running
+            self.save()
             res = run_model_externally(self.model_info.path)
             if res.returncode == 0:
                 self.results = _read_data(report_name)
@@ -712,6 +753,8 @@ class APSIMNG:
             if isinstance(self.Simulations, Models.Core.ApsimFile.Models.Core.ApsimFile.ConverterReturnType):
                 self.Simulations = self.Simulations.get_NewModel()
                 self.path = out_path or self.path
+                self.datastore = self.path.replace("apsimx", 'db')
+                self._DataStore = self.Simulations.FindChild[Models.Storage.DataStore]()
         except AttributeError as e:
             pass
         return self
@@ -737,6 +780,7 @@ class APSIMNG:
         self.run(init_only=True)
 
     def update_mgt(self, *, management: Union[dict, tuple], simulations: [list, tuple] = None, out: [Path, str] = None,
+                   reload: bool = True,
                    **kwargs):
         """
             Update management settings in the model. This method handles one management parameter at a time.
@@ -783,7 +827,7 @@ class APSIMNG:
                         param = fp.Value.Parameters[i].Key
                         if param in values.keys():
                             fp.Value.Parameters[i] = KeyValuePair[String, String](param, f"{values[param]}")
-            out_mgt_path = out or self.out_path or self.model_info.path
+        out_mgt_path = out or self.out_path or self.model_info.path
         self.recompile_edited_model(out_path=out_mgt_path)
 
         return self
@@ -1553,21 +1597,26 @@ if __name__ == '__main__':
     al = load_default_simulations(crop='maize', simulations_object=False)
     modelm = al
 
-    model = load_default_simulations('maize')
-    a = perf_counter()
-    model.init_model()
-    b = perf_counter()
-    logger.info(f"{b - a}, 'seconds for initialisation", )
+    # model = load_default_simulations('maize')
+    model = APSIMNG(al)
 
-    for _ in range(1):
-
-        for rn in ['Maize, Soybean, Wheat', 'Maize', 'Soybean, Wheat']:
-            a = perf_counter()
-            # model.RevertCheckpoint()
-
-            model.run('Report')
-            # logger.info(model.results.mean(numeric_only=True))
-            b = perf_counter()
-            logger.info(f"{b - a}, 'seconds")
+    for N in [3, 8]:
+        # for rn in ['Maize, Soybean, Wheat', 'Maize', 'Soybean, Wheat']:
+        a = perf_counter()
+        # model.RevertCheckpoint()
+        # model.update_mgt(management=({"Name": 'Sow using a variable rule', 'Population': N},))
+        model.replace_soil_properties_by_path(path='None.Soil.Organic.None.None.Carbon', param_values=[N])
+        # model.replace_any_soil_physical(parameter='BD', param_values=[1.23],)
+        # model.save_edited_file(reload=True)
+        model.run('Report')
+        df = model.results
+        ui = model.extract_user_input('Sow using a variable rule')
+        print(ui)
+        print()
+        print(df['Maize.Total.Wt'].mean())
+        print(df.describe())
+        # logger.info(model.results.mean(numeric_only=True))
+        b = perf_counter()
+        logger.info(f"{b - a}, 'seconds")
 
         a = perf_counter()

@@ -161,6 +161,16 @@ The above code is also applicable for running different versions of APSIM models
 The `set_apsim_bin_path` function can be called once and retained unless you uninstall `apsimNGpy`
 or the APSIM application itself. This implies that you can switch between apsim versions easily if you have more than one versions installed on your computer
 
+# some versions of APSIM do not work especially the new ones
+***************************************************************************************
+
+We have identified that certain versions may not function as expected. While we are actively working to resolve these issues, we recommend using the following stable versions of **APSIM** with **apsimNGpy** for optimal performance:
+
+#### **Stable Versions:**
+- **APSIM 2024.5.7493.0**
+
+We will continue to update this list as we verify additional stable versions. If you encounter any issues, please report them so we can address them promptly.
+
 
 Please note that apsimNGpy is tested on Python 3. We are not aware of its performance in Python 2 because it utilizes some of the new libraries
 Usage

@@ -26,7 +26,7 @@ def main():
 
     # Parse arguments
     args = parser.parse_args()
-    logger.info(f"summary of your: {args}")
+    logger.info(f"commands summary: '{args}'")
     wd = args.wd or os.getcwd()
     if wd != os.getcwd():
         os.makedirs(wd, exist_ok=True)

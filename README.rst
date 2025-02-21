@@ -445,26 +445,35 @@ Lastly but not least, ApsimNGpy is not created in isolation but draws inspiratio
 
 
 # Changelog
+******************************************************************************************************
+
 The earlier versions of apsimNGpy were too experimental with a lot of bugs. Therefore tracking started with version 0..29
 ## [0.29.0] - 2025-01-15
 
 ### Added
-___________________________________________________
+************************************************************************************
+
 - New logging feature for better debug capability.
 - command line interface to run models faster using the command and crop module
 - command line interface to change the apsim binary path using the apsim_bin_path module
 - more detailed installation documentation
-_________________________________________________________
-### Fixed
+
+## Fixed
+**************************************************************************************
+
 - config module to run on all operating systems
-- import of load_default simulations____________________________________________________________________
+- import of load_default simulations
+
 
 ## [0.3.0] - 2025-01-20
-### Fixed
-- fixed package to run all latest versions
-- handle multiple reports tables in run method, return a concated results as a data frame
-_________________________________________________________________
+## Fixed
+**************************************************************************************
 
-### Added
+- fixed package to run all latest versions
+- handle multiple reports tables in run method, return a concat of the different  data frame
+
+## Added
+*****************************************************************************
+
 - APSIMNG.run now return pandas data frame consistently
 - files named by default are tagged by the corresponding APSIM installed version

@@ -1,9 +1,11 @@
 import argparse
 from os import path
 import logging
+from apsimNGpy.utililies.utils import timer
 from apsimNGpy.core.config import set_apsim_bin_path, get_apsim_bin_path, auto_detect_apsim_bin_path
 logger = logging.getLogger('')
 
+@timer
 def apsim_bin_path():
     parser = argparse.ArgumentParser(description='set ups')
     parser.add_argument('-u', '--update', type=str, default= None,

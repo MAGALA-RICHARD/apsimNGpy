@@ -41,7 +41,7 @@ All versions are currently in development, phase and they can be installed as fo
 
 .. code:: bash
 
-     pip install git+https://github.com/MAGALA-RICHARD/apsimNGpy.git@dev
+     pip install git+https://github.com/MAGALA-RICHARD/apsimNGpy.git
 
 
 GETTING STARTED

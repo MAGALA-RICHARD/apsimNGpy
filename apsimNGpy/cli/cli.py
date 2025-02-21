@@ -3,8 +3,9 @@ import json
 import os.path
 import logging
 
+import numpy as np
 import pandas as pd
-
+from apsimNGpy.utililies.utils import timer
 from apsimNGpy.core.apsim import ApsimModel
 from apsimNGpy.core.base_data import load_default_simulations
 # from apsimNGpy.settings import logger
@@ -12,7 +13,7 @@ from apsimNGpy.manager.weathermanager import get_weather, _is_within_USA_mainlan
 
 logger = logging.getLogger(__name__)
 
-
+@timer
 def main():
     # Create argument parser
     parser = argparse.ArgumentParser(description='Run a simulation of a given crop.')
@@ -27,6 +28,8 @@ def main():
     parser.add_argument('-ws', '--wd', type=str, required=False)
     parser.add_argument('-l', '--lonlat', type=str, required=False)
     parser.add_argument('-sf', '--save', type=str, required=False)
+    parser.add_argument('-s', '--aggfunc', type=str, required=False, default='mean',
+                        help='statistical summary to summarize the data')
 
     # Parse arguments
     args = parser.parse_args()
@@ -54,16 +57,28 @@ def main():
 
     if met_data:
         model.replace_met_file(weather_file=met_data, simulations=args.simulation)
-        logger.info(f'successfully updated weather file with {met_data}')
+        sms = f'successfully updated weather file with {met_data}'
+        if args.lonlat:
+            sms = f'successfully updated weather file with {met_data} from location: {args.lonlat}'
+        logger.info(sms)
     if _loc:
         ...
         # model.replace_soils(_loc, simulation_names=None)
     model.run(report_name=args.table)
-    if isinstance(model.results, pd.DataFrame):
+    df = model.results
+    if isinstance(df, pd.DataFrame):
         model.results.to_csv(file_name)
-    logger.info(model.results)
+        numeric_df = df.select_dtypes(include=np.number)
+        stati = getattr(numeric_df, args.aggfunc)()
+
+        logger.info(stati)
 
 
 if __name__ == "__main__":
     ...
     main()
+    import subprocess
+    from apsimNGpy.core.config import get_apsim_bin_path
+    import sys
+
+

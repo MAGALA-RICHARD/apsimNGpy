@@ -76,6 +76,7 @@ def _run_experiment(*, meta_info, SID, parameters):
     Model = Replacements(fModel)
     # replace management-related factors
     manager_params = mgt_parameters.get('management')
+    #TODO need to impliment this the way i did for optimization
     if manager_params is not None:
         print(manager_params) if meta_info.test else None
         [Model.update_mgt_by_path(**man_params) for man_params in manager_params]
@@ -88,30 +89,27 @@ def _run_experiment(*, meta_info, SID, parameters):
     if cultivar_params:
         [Model.replace_cultivar_params(**cp) for cp in cultivar_params]
     report_tables = meta_info.reports
-    Model.run(simulations=meta_info.simulations, multithread=meta_info.mult_threads, get_dict=True)
+    Model.run(report_name=meta_info.reports)
     # wait a minute here,
     # we have to check if at least a specified report exists before we proceed
     # in a rotation some reports are tied to a specific crop, hence the need for the code below
-    if not check_report(report_tables, Model.results.keys()):
-        raise ValueError(f"any of the report table here '{report_tables}' "
-                         f"are not found, existing reports include {list(Model.results.keys())}")
-    res = {tb: Model.results.get(tb) for tb in report_tables if tb in Model.results.keys()}
-    for table, data in res.items():
-        df = data
 
-        df_no_dupS = df.loc[:, ~df.columns.duplicated()].copy()
+    df= Model.results
+    df_no_dupS = df.loc[:, ~df.columns.duplicated()].copy()
 
-        df_no_dupS[meta_info.simulation_id] = idi
-        for i in mf.columns:
-            if i in df_no_dupS.columns and i != meta_info.simulation_id:
-                df_no_dupS.rename(columns={i: f"sim_{i}"}, inplace=True)
-        ans = df_no_dupS.merge(mf, on=meta_info.simulation_id, how='inner').reset_index()
-        ans_nodup = ans.loc[:, ~ans.columns.duplicated()].copy()
-        if not meta_info.test:
-            ans_nodup.to_sql(table, con=data_base_CONN, if_exists='append', index=False)
-        else:
-            print(ans_nodup)
-            return ans_nodup
+    df_no_dupS[meta_info.simulation_id] = idi
+
+    for i in df.columns:
+        if i in df_no_dupS.columns and i != meta_info.simulation_id:
+            df_no_dupS.rename(columns={i: f"sim_{i}"}, inplace=True)
+    ans = df_no_dupS.merge(mf, on=meta_info.simulation_id, how='inner').reset_index()
+    ans_nodup = ans.loc[:, ~ans.columns.duplicated()].copy()
+    if not meta_info.test:
+        tables = "_".join(meta_info.reports)
+        ans_nodup.to_sql(tables, con=data_base_CONN, if_exists='append', index=False)
+    else:
+        print(ans_nodup)
+        return ans_nodup
     if meta_info.verbose:
         print(f"\n '{idi}' : completed", end='\r')
     ...
@@ -190,7 +188,7 @@ def define_cultivar(cultivar_name, commands, param_values, parameter):
      Example
      ...
          from apsimNGpy.core.base_data import LoadExampleFiles
-         from apsimNGpy.replacements import Replacements
+         from apsimNGpy. Replacements import Replacements
         maize_path = LoadExampleFiles().get_maize_model.path
         model_replacements  = Replacements(maize_path)
         define the cultivar paramters as follows;

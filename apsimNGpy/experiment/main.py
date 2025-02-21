@@ -179,8 +179,10 @@ class Experiment:
                             ids,
                             self.base_file,
                             __path, self.tag,
+                            progress_message='Coping data..',
                             use_thread=self.use_thread,
                             n_core=self.n_core,
+
                             **kwargs))
 
         def _data_generator():

@@ -11,9 +11,9 @@ if __name__ == '__main__':
     # if we simulations_object it,
     # returns a simulation object of apsimNGpy, but we want the path only.
     # model_path = load_default_simulations(crop='maize', simulations_object=False, path=path.parent)
-    model_path = load_default_simulations('maize').path
+    model_path = load_default_simulations('maize', simulations_object=False)
 
-    FactorialExperiment = Experiment(database_name='test.db',
+    FactorialExperiment = Experiment(database_name='testy.db',
                                      datastorage='test.db',
                                      tag='th', base_file=model_path,
                                      wd=path,
@@ -39,7 +39,7 @@ if __name__ == '__main__':
     # os.remove(FactorialExperiment.datastorage)
     FactorialExperiment.start_experiment()
     sim_data = FactorialExperiment.get_simulated_data()[0]
-    mn = sim_data.groupby(['FBiom', 'Carbon'])['Yield'].mean()
+    mn = sim_data.groupby(['FBiom', 'Carbon'])['sim_Yield'].mean()
     "if we dont see any variation for each of the factors then it is not working configure again"
     # print(mn)
     print(len(FactorialExperiment.factors))

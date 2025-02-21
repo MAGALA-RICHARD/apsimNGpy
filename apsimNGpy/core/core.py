@@ -336,7 +336,6 @@ class APSIMNG:
             self._DataStore.Close()
         return self
 
-    @timer
     def run(self, report_name: Union[tuple, list, str] = None,
             simulations: Union[tuple, list] = None,
             clean: bool = False,
@@ -348,9 +347,9 @@ class APSIMNG:
         ----------
          :param report_name: (iterable, str). defaults to APSIM defaults Report Name if not specified,
         --Notes
-          if `report_name` is iterable and not get_dict a list is return
-          if `report_name` is iterable and get_dict a dictionary is returned
-          if report name is string e.g report a panda data frame is returned
+          if `report_name` is iterable, all tables are read and aggregated not one data frame, returned one pandas data frame
+          if `report_name` is nOne we run but do not collect the results from the data base
+          if report name is string e.g.,  report a panda data frame is returned
 
         simulations (__list_), optional
             List of simulation names to run, if `None` runs all simulations, by default `None`.
@@ -359,18 +358,16 @@ class APSIMNG:
             If `True` remove an existing database for the file before running, deafults to False`
 
         :param multithread: bool
-            If `True` APSIM uses multiple threads, by default `True`
+            If `True` APSIM uses multiple threads, by default, `True`
             :param simulations:
 
-        :param verbose: bool logger.infos diagnostic information such as false report name and simulation
-        :param get_dict: bool, return a dictionary of data frame paired by the report table names default to False
-        :param init_only, runs without returning the result defaults to 'False'.
         returns
             instance of the class APSIMNG
         """
         try:
-            # we could cut the chase and run apsim faster but unfortunately some versions
-            # are not working properly, so we run the model externally
+            # we could cut the chase and run apsim faster, but unfortunately some versions are not working properly,
+            # so we run the model externally the previous function allowed to run specific simulations in the file,
+            # it has been renamed to run_in_python.
 
             def _read_data(reports):
                 if isinstance(reports, str):
@@ -384,8 +381,11 @@ class APSIMNG:
                     out_df = pd.concat(data, ignore_index=True, axis=0)
                     out_df.reset_index(drop=True, inplace=True)
                     return out_df
+
             # before running
             self.save()
+            if clean:
+                self._DataStore.Dispose()
             res = run_model_externally(self.model_info.path)
             if res.returncode == 0:
                 self.results = _read_data(report_name)

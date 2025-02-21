@@ -1,11 +1,13 @@
 import argparse
 import json
 import os.path
-
+import logging
 from apsimNGpy.core.apsim import ApsimModel
 from apsimNGpy.core.base_data import load_default_simulations
-from apsimNGpy.settings import logger
+# from apsimNGpy.settings import logger
 from apsimNGpy.manager.weathermanager import get_weather, _is_within_USA_mainland
+
+logger = logging.getLogger(__name__)
 
 
 def main():
@@ -24,7 +26,7 @@ def main():
 
     # Parse arguments
     args = parser.parse_args()
-    print(args)
+    logger.info(f"summary of your: {args}")
     wd = args.wd or os.getcwd()
     if wd != os.getcwd():
         os.makedirs(wd, exist_ok=True)
@@ -38,7 +40,6 @@ def main():
         else:
             _source = 'nasa'
         met_form_loc = get_weather(lonlat=_loc, source=_source)
-        print(met_form_loc)
 
     if args.model.endswith('.apsimx'):
         model = ApsimModel(args.model, args.out)
@@ -48,12 +49,12 @@ def main():
 
     if met_data:
         model.replace_met_file(weather_file=met_data, simulations=args.simulation)
-        print(f'successfully updated weather file with {met_data}')
+        logger.info(f'successfully updated weather file with {met_data}')
     if _loc:
         ...
         # model.replace_soils(_loc, simulation_names=None)
     model.run(report_name=args.table)
-    print(model.results)
+    logger.info(model.results)
 
 
 if __name__ == "__main__":

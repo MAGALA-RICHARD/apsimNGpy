@@ -10,7 +10,7 @@ from apsimNGpy.utililies.utils import timer
 
 logger = logging.getLogger(__name__)
 
-@timer
+
 def run_model_externally(model, verbose: bool = False) -> CompletedProcess[str]:
     """Runs an APSIM model externally, ensuring cross-platform compatibility."""
 

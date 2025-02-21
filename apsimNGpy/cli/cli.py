@@ -2,6 +2,9 @@ import argparse
 import json
 import os.path
 import logging
+
+import pandas as pd
+
 from apsimNGpy.core.apsim import ApsimModel
 from apsimNGpy.core.base_data import load_default_simulations
 # from apsimNGpy.settings import logger
@@ -23,9 +26,11 @@ def main():
     parser.add_argument('-sim', '--simulation', type=str, required=False)
     parser.add_argument('-ws', '--wd', type=str, required=False)
     parser.add_argument('-l', '--lonlat', type=str, required=False)
+    parser.add_argument('-sf', '--save', type=str, required=False)
 
     # Parse arguments
     args = parser.parse_args()
+
     logger.info(f"commands summary: '{args}'")
     wd = args.wd or os.getcwd()
     if wd != os.getcwd():
@@ -40,7 +45,7 @@ def main():
         else:
             _source = 'nasa'
         met_form_loc = get_weather(lonlat=_loc, source=_source)
-
+    file_name = args.save or 'out_' + args.model.strip('a.apsimx') + ".csv"
     if args.model.endswith('.apsimx'):
         model = ApsimModel(args.model, args.out)
     else:
@@ -54,6 +59,8 @@ def main():
         ...
         # model.replace_soils(_loc, simulation_names=None)
     model.run(report_name=args.table)
+    if isinstance(model.results, pd.DataFrame):
+        model.results.to_csv(file_name)
     logger.info(model.results)
 
 

@@ -442,3 +442,29 @@ We would also like to express our sincere thanks to the APSIM Initiative. Their 
 Our project stands on the shoulders of these partnerships and support systems, and we are deeply thankful for their contribution to advancing agricultural research and development. Please not that that this library is designed as a bridge to APSIM software, and we hope that by using this library, you have the appropriate APSIM license to do so whether free or commercial.
 
 Lastly but not least, ApsimNGpy is not created in isolation but draws inspiration from apsimx, an R package (https://cran.r-project.org/web/packages/apsimx/vignettes/apsimx.html). We acknowledge and appreciate the writers and contributors of apsimx for their foundational work. ApsimNGpy is designed to complement apsimx by offering similar functionalities and capabilities in the Python ecosystem.
+
+
+# Changelog
+The earlier versions of apsimNGpy were too experimental with a lot of bugs. Therefore tracking started with version 0..29
+## [0.29.0] - 2025-01-15
+
+### Added
+___________________________________________________
+- New logging feature for better debug capability.
+- command line interface to run models faster using the command and crop module
+- command line interface to change the apsim binary path using the apsim_bin_path module
+- more detailed installation documentation
+_________________________________________________________
+### Fixed
+- config module to run on all operating systems
+- import of load_default simulations____________________________________________________________________
+
+## [0.3.0] - 2025-01-20
+### Fixed
+- fixed package to run all latest versions
+- handle multiple reports tables in run method, return a concated results as a data frame
+_________________________________________________________________
+
+### Added
+- APSIMNG.run now return pandas data frame consistently
+- files named by default are tagged by the corresponding APSIM installed version

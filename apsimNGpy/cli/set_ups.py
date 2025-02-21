@@ -1,8 +1,8 @@
 import argparse
 from os import path
-
+import logging
 from apsimNGpy.core.config import set_apsim_bin_path, get_apsim_bin_path, auto_detect_apsim_bin_path
-
+logger = logging.getLogger('')
 
 def apsim_bin_path():
     parser = argparse.ArgumentParser(description='set ups')

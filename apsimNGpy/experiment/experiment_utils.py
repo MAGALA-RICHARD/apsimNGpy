@@ -3,16 +3,19 @@ import shutil
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Union
-
+from apsimNGpy.experiment._variables import (ContinuousVar, ChoiceVar, CropVar, soil, manager, cultivar, dates)
 import numpy as np
 from sqlalchemy import create_engine
 from apsimNGpy.replacements.replacements import Replacements
+from core.apsim import ApsimModel
+
+utilx = (ContinuousVar, ChoiceVar, CropVar, soil, manager, cultivar, dates)
 
 
 ################################################################################
 # MetaInfo
 ################################################################################
-@dataclass
+@dataclass(slots=False)
 class MetaInfo:
     """
     Meta info provides meta_infor for each experiment. Here it is initialized with defaults, They can be changed via
@@ -24,6 +27,7 @@ class MetaInfo:
     test: bool = None
     mult_threads: bool = True
     data_schema = None,
+
     ...
 
 
@@ -54,6 +58,32 @@ def check_report(my_set, my_list):
 ################################################################################
 # run experiment
 ################################################################################
+def _update_vars(model: ApsimModel, controls: list, combinations):
+    try:
+
+        for counter, predictor in enumerate(controls):
+            # update main param for the function updator
+            predictor.params[predictor.main_param] = x_to_fill
+            getattr(model, predictor.updater)(**predictor.params)
+        # xit loop and run
+        # model.run(report_name='MaizeR')
+        if 'args' in self.evaluation_sign:
+            ans = self.func(model, *self.options['args'])
+        else:
+            ans = self.func(model)
+        print(ans, end='\r')
+
+        return ans
+    finally:
+        try:
+            datastore = model.datastore
+            del model
+            os.remove(new_path)
+            # os.remove(datastore)
+        except (FileNotFoundError, PermissionError) as e:
+
+            pass
+
 
 def _run_experiment(*, meta_info, SID, parameters):
     """
@@ -66,6 +96,7 @@ def _run_experiment(*, meta_info, SID, parameters):
     idi = SID
 
     mgt_parameters = parameters.merge()
+    print(mgt_parameters)
     mgt_df = parameters.control_variables(mgt_parameters)
     mgt_df['SID'] = idi
     mf = mgt_df.loc[:, ~mgt_df.columns.duplicated()].copy()
@@ -76,7 +107,7 @@ def _run_experiment(*, meta_info, SID, parameters):
     Model = Replacements(fModel)
     # replace management-related factors
     manager_params = mgt_parameters.get('management')
-    #TODO need to impliment this the way i did for optimization
+    # TODO need to impliment this the way i did for optimization
     if manager_params is not None:
         print(manager_params) if meta_info.test else None
         [Model.update_mgt_by_path(**man_params) for man_params in manager_params]
@@ -94,7 +125,7 @@ def _run_experiment(*, meta_info, SID, parameters):
     # we have to check if at least a specified report exists before we proceed
     # in a rotation some reports are tied to a specific crop, hence the need for the code below
 
-    df= Model.results
+    df = Model.results
     df_no_dupS = df.loc[:, ~df.columns.duplicated()].copy()
 
     df_no_dupS[meta_info.simulation_id] = idi

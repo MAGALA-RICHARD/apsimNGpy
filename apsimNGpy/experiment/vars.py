@@ -8,6 +8,20 @@ import numpy as np
 
 from apsimNGpy.core.apsim import ApsimModel
 
+
+def _doc(section_desc):
+    return f"""
+    Any parameters that is in the {section_desc} of apsim model can be optimized by calling this function
+    @param params:is a dictionary that could hold extra argument for each function.
+    @param label: name tag for the control variable being optimized
+    @param var_desc: instance of wrapdisc.var big up to the authors of this package we wrap around their
+     variable description to facilitate mixed variable optimization.
+    @param main_param: is main_param arguments
+    @param updater: method of ApsimModel class to update the parameters during the optimization
+    @return:  instance of CropVar
+    """
+
+
 Var_types = ['int', 'float', 'choice_var', 'grid_var']
 
 
@@ -47,18 +61,6 @@ class CropVar:
     params: dict
     label: str
     var_desc: Union[ContinuousVar, ChoiceVar]
-
-
-def _doc(section_desc):
-    return f"""
-    Any parameters that is in the `{section_desc}` of apsim model can be optimized by calling this function
-    @param params:is a dictionary that could hold extra argument for each function.
-    @param label: name tag for the control variable being optimized
-    @param var_desc: instance of `{ContinuousVar}` or `{ChoiceVar}` for categorical variables. Big up to the authors of this 
-    package we wrap around their variable description to facilitate mixed variable optimization. @param main_param: 
-    is main_param arguments @param updater: method of ApsimModel class to update the parameters during the 
-    optimization @return:  instance of `{CropVar}`
-    """
 
 
 def _evaluate_args(updater, main_param, params, label, var_desc):

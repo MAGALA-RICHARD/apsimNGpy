@@ -69,6 +69,12 @@ class Experiment:
 
     """
 
+    __slots__ = [
+        'values', 'data_generator', 'total_sims', 'define_cultivar', 'define_factor',
+        'factors', 'meta_info', 'skip_completed', 'n_core', 'simulation_id',
+        'use_thread', 'datastorage', 'tag', 'base_file', 'wd', '_others', 'labels'
+    ]
+
     def __init__(self, *, datastorage,
                  tag,
                  base_file,
@@ -78,6 +84,8 @@ class Experiment:
                  n_core=4,
                  skip_completed=True,
                  **kwargs):
+        self.labels = []
+        self.values = []
         self.data_generator = None
         self.total_sims = None
         self.define_cultivar = define_cultivar
@@ -102,6 +110,11 @@ class Experiment:
             self.factors.append(self.define_factor(factor_type=factor_type, **kwargs))
         else:
             self.factors.append(self.define_cultivar(**kwargs))
+
+    def add_vars(self, control):
+        self.values.append(control.var_desc)
+        self.labels.append(control.label)
+        self.factors.append(control)
 
     def set_experiment(self, **kwargs):
         """
@@ -162,7 +175,10 @@ class Experiment:
                               work_space=self.wd,
                               n_core=self.n_core, **self._others)
 
-        perms = define_parameters(factors_list=self.factors)
+        perms = define_parameters(factors_list=self.factors, hints =  {'factors': 'variables', 'factor_names': 'variable_name'})
+        # def define_parameters(factors_list, factor_labels:list):
+        #     ...
+        print(perms)
         perms = track_completed(self.datastorage, perms, self.simulation_id) if self.skip_completed else perms
         self.total_sims = len(perms)
         logging.info(self.total_sims)

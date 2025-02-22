@@ -16,6 +16,7 @@ def func_wheat(model):
 
 
 if __name__ == '__main__':
+    # DO  not try this wholeheartedly just follow along
     mode = Path.home() / 'Maize.apsimx'
     from variables import manager, cultivar
 

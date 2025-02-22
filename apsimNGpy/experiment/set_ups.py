@@ -104,9 +104,12 @@ class DeepChainMap(ChainMap):
 ################################################################################
 # define_parameters
 ################################################################################
-def define_parameters(factors_list):
-    permutations = create_permutations([factor.variables for factor in factors_list],
-                                       [factor.variable_name for factor in factors_list])
+def define_parameters(factors_list, hints=None):
+    if hints is None:
+        hints = {'factors': 'values', 'factor_names': 'labels'}
+
+    permutations = create_permutations([getattr(factor, hints['factors']) for factor in factors_list],
+                                       [getattr(factor, hints['factor_names']) for factor in factors_list])
     return permutations
 
 

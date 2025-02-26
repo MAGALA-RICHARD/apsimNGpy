@@ -25,8 +25,8 @@ from geopy.distance import geodesic
 import functools
 import traceback
 import sys
+from apsimNGpy.settings import logger
 
-logging.basicConfig(level=logging.INFO)
 def select_process(use_thread, ncores):
     return ThreadPoolExecutor(ncores) if use_thread else ProcessPoolExecutor(ncores)
 
@@ -71,7 +71,7 @@ def upload_weather(path, specific_number):
     pattern = f'daymet_wf_{specific_number}.met'
     localfiles = glob.glob1(path, pattern)
     if len(localfiles) == 0:
-        print(f"weather file for: {specific_number} not found")
+        logger.info(f"weather file for: {specific_number} not found")
     else:
         absolute_paths = [opj(path, file) for file in localfiles]
         return absolute_paths[0]
@@ -81,7 +81,7 @@ def upload_apsimx_file(path, specific_number):
     pattern = f'spatial_ap_{specific_number}.apsimx'
     localfiles = glob.glob1(path, pattern)
     if len(localfiles) == 0:
-        print(f"apsimx file for: {specific_number} not found")
+        logger.info(f"apsimx file for: {specific_number} not found")
     else:
         absolute_paths = [opj(path, file) for file in localfiles]
         return absolute_paths[0]
@@ -515,7 +515,7 @@ def timer(func):
         result = func(*args, **kwargs)
         end_time = perf_counter()
         elapsed_time = end_time - start_time
-        logging.info(f"{func.__name__} took {elapsed_time:.4f} seconds to execute.")
+        logger.info(f"{func.__name__} took {elapsed_time:.4f} seconds to execute.")
         return result
 
     return wrapper
@@ -655,7 +655,7 @@ class WDir:
         if os.getcwd() != wd:
             os.chdir(os.path.realpath(self.initial_path))
         else:
-            print(f"this path: {wd} is already the current working directory")
+            logger.warning(f"this path: {wd} is already the current working directory")
 
 
 def exception_handler(re_raise=False):
@@ -682,9 +682,9 @@ def exception_handler(re_raise=False):
                     stack_trace.append("File : %s , Line : %d, Func.Name : %s, Message : %s" % (
                         trace[0], trace[1], trace[2], trace[3]))
 
-                print(f"Exception occurred in {func.__name__}: {e}")
+                logger.error(f"Exception occurred in {func.__name__}: {e}")
                 print("Error details : ")
-                print("\n".join(stack_trace))
+                logger.info("\n".join(stack_trace))
 
                 if re_raise:
                     raise

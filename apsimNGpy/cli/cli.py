@@ -8,10 +8,10 @@ import pandas as pd
 from apsimNGpy.utililies.utils import timer
 from apsimNGpy.core.apsim import ApsimModel
 from apsimNGpy.core.base_data import load_default_simulations
-# from apsimNGpy.settings import logger
+from apsimNGpy.settings import logger
 from apsimNGpy.manager.weathermanager import get_weather, _is_within_USA_mainland
 
-logger = logging.getLogger(__name__)
+
 
 @timer
 def main():

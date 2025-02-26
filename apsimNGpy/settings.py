@@ -54,11 +54,23 @@ Please follow these steps to resolve the issue:
 """
 # configure the logger
 logger = logging.getLogger(__name__)
+
+def setup_logger(name: str, level: int = logging.INFO) -> logging.Logger:
+    logger = logging.getLogger(name)
+    if not logger.handlers:
+        handler = logging.StreamHandler()
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)
+    logger.setLevel(level)
+    return logger
+
 logger.setLevel(logging.DEBUG)
 
 # Create console handler and set level
 # am also sending this to the user, because logs maybe removed with removal of the package
 log_file = os.path.expanduser('~/apsimNGpy_sim.log')
+logger = setup_logger(log_file)
 console_handler = logging.StreamHandler()
 console_handler.setLevel(logging.DEBUG)
 

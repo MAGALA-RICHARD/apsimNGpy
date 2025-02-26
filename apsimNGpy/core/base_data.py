@@ -5,7 +5,7 @@ import os.path
 import shutil
 from os.path import join, realpath
 from pathlib import Path
-
+import uuid
 from apsimNGpy.core.apsim import ApsimModel as SoilModel
 from apsimNGpy.core.config import get_apsim_bin_path, apsim_version
 from apsimNGpy.settings import logger
@@ -44,12 +44,12 @@ def __get_example(crop, path=None, simulations_object=True):
     OSError: If there are issues with copying or replacing files.
     """
     if not path:
-        copy_path = os.getcwd()
+        copy_path = Path(os.getcwd())
     else:
-        copy_path = path
+        copy_path = Path(path)
 
-    target_path = join(copy_path, crop) + useVn + '.apsimx'
-
+    target_path = join(copy_path, crop)# + useVn + '.apsimx'
+    target_path = copy_path/ f"temp_{uuid.uuid1()}_{crop}.apsimx"
     target_location = glob.glob(
         f"{EXAMPLES_DATA}*/{crop}.apsimx")  # no need to capitalize only correct spelling is required
     # unzip
@@ -122,7 +122,7 @@ def load_default_sensitivity_model(method: str, path: str = None, simulations_ob
     target_path = join(copy_path, method) + useVn + '.apsimx'
     if target_location:
         file_path = str(target_location[0])
-        copied_file = shutil.copyfile(file_path, target_path)
+        copied_file = shutil.copy2(file_path, target_path)
 
         if not simulations_object:
             return copied_file
@@ -141,5 +141,5 @@ if __name__ == '__main__':
     mn.update_mgt(management=({"Name": 'Fertilise at sowing', 'Amount': 200}))
     sobol = load_default_sensitivity_model(method='sobol')
     logging.info('running sobol')
-    sobol.run('Report')
-    mn.run("Report")
+    # sobol.run('Report')
+    # mn.run("Report")

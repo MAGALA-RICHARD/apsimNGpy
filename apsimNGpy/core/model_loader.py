@@ -36,7 +36,6 @@ def load_from_dict(dict_data, out):
 
 def copy_file(source, destination=None):
     destine_path = destination if destination else os.path.join(SCRATCH, f"temp_{uuid.uuid1()}.apsimx")
-    print(destine_path, '||||')
     shutil.copy2(source, destine_path)
     return destine_path
 

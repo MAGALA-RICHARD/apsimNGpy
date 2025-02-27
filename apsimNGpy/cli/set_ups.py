@@ -35,7 +35,7 @@ def apsim_bin_path():
         cbp = get_apsim_bin_path()
         logger.info(f"Current APSIM binary installed path: '{cbp}'")
     if args.auto_search:
-        logger.info("searching apsim bin path.................", end='\r')
+        logger.info("searching apsim bin path.................")
         print()
         auto = auto_detect_apsim_bin_path()
         if not auto:

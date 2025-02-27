@@ -2,6 +2,7 @@
 This module offers a procedural alternative other than object-oriented approach provided in api and ApsimModel classes
 """
 import os
+import uuid
 from functools import singledispatch
 
 from apsimNGpy.core import pythonet_config
@@ -22,6 +23,9 @@ from apsimNGpy.core.config import get_apsim_bin_path
 import subprocess
 from apsimNGpy.utililies.database_utils import read_db_table
 
+SCRATCH = Path(os.getcwd()) / 'scratch'
+SCRATCH.mkdir(parents=True, exist_ok=True)
+
 
 def load_from_dict(dict_data, out):
     str_ = json.dumps(dict_data)
@@ -30,9 +34,11 @@ def load_from_dict(dict_data, out):
                                                                                     fileName=out)
 
 
-def copy_file(source, destination):
-    shutil.copy2(source, destination)
-    return destination
+def copy_file(source, destination=None):
+    destine_path = destination if destination else os.path.join(SCRATCH, f"temp_{uuid.uuid1()}.apsimx")
+    print(destine_path, '||||')
+    shutil.copy2(source, destine_path)
+    return destine_path
 
 
 def save_model_to_file(_model, out=None):
@@ -85,6 +91,7 @@ def load_from_path(path2file, method='file'):
     into a string using json and then use the APSIM in-built method to load the file with file, we read directly from
     the file path. This is slower than the former.
     """
+
     f_name = realpath(path2file)
     with open(f_name, "r+", encoding='utf-8') as apsimx:
         app_ap = json.load(apsimx)
@@ -111,13 +118,11 @@ def load_apx_model(model=None, out=None, file_load_method='string', met_file=Non
        returns a named tuple with an out path, datastore path, and IModel in memory
        """
     # name according to the order of preference
-    if model is not None:
-        out2 = f"{Path(model).parent}/{Path(model).stem}_copy.apsimx"
-    else:
-        out2 = None
-    out1 = realpath(out) if out is not None else None
+    COPY_PATH = None
+    if isinstance(model, (str, Path)):
+        COPY_PATH = copy_file(model, out)
+    _out = COPY_PATH
 
-    _out = out1 or out2
     Model_data = namedtuple('model_data',
                             ['IModel', 'path', 'datastore', "DataStore", 'results', 'met_path'])
 
@@ -136,9 +141,8 @@ def load_apx_model(model=None, out=None, file_load_method='string', met_file=Non
     @loader.register(str)
     def _(_model: str):
         # we first copy the file before loading it
-        cop = copy_file(_model, _out)
 
-        return load_from_path(cop, file_load_method)
+        return load_from_path(COPY_PATH, file_load_method)
 
     @loader.register(Path)
     def _(_model: Path):
@@ -163,7 +167,7 @@ def load_apx_model(model=None, out=None, file_load_method='string', met_file=Non
                       met_path=met_file)
 
 
-def recompile(_model, out=None, met_path=None,):
+def recompile(_model, out=None, met_path=None, ):
     """ recompile without saving to disk useful for recombiling the same model on the go after updating management scripts
 
             Parameters
@@ -242,6 +246,7 @@ if __name__ == '__main__':
     from apsimNGpy.core.core import APSIMNG
     from apsimNGpy.core.apsim import ApsimModel
 
+    #
     maze.results = None
     maze.update_mgt(management=({"Name": 'Fertilise at sowing', 'Amount': 10},))
     maze.run(report_name='Report')

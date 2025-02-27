@@ -258,6 +258,7 @@ class APSIMNG:
 
     def save(self):
         _path = self.path
+        print(_path)
         save_model_to_file(self.Simulations, out=_path)
         model_info = load_apx_model(_path)
         self.restart_model(model_info)

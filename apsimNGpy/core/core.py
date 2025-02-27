@@ -258,7 +258,7 @@ class APSIMNG:
 
     def save(self):
         _path = self.path
-        print(_path)
+
         save_model_to_file(self.Simulations, out=_path)
         model_info = load_apx_model(_path)
         self.restart_model(model_info)
@@ -315,7 +315,7 @@ class APSIMNG:
                 logging.info(e[0].ToString())
 
             def _read_data(reports):
-                print(self.datastore)
+
                 if isinstance(reports, str):
                     return read_db_table(self.datastore, report_name=reports)
                 elif isinstance(reports, Iterable):
@@ -328,9 +328,6 @@ class APSIMNG:
                     out_df.reset_index(drop=True, inplace=True)
                     return out_df
 
-            res = run_model_externally(self.model_info.path)
-            if res.returncode == 0:
-                self.results = _read_data(report_name)
 
         finally:
             # close the datastore

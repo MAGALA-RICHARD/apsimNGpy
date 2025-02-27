@@ -809,7 +809,7 @@ class APSIMNG:
             existence. - If the specified management script or parameters do not exist, they will be ignored.
             using a tuple for a specifying management script, paramters is recommended if you are going to pass the function to  a multi-processing class fucntion
         """
-        if not isinstance(management, tuple):
+        if not isinstance(management, Iterable):
             # note the coma creates a tuple
             management = management,
 

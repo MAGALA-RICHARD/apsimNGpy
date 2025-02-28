@@ -7,7 +7,6 @@ from collections import namedtuple
 
 import numpy as np
 
-
 from apsimNGpy.utililies.utils import timer
 from apsimNGpy.core.apsim import ApsimModel
 import wrapdisc
@@ -33,10 +32,14 @@ def auto_guess(data):
         sample_set = np.random.choice(data.categories, size=1)[0]
     elif isinstance(data, GridVar):
         sample_set = np.random.choice(data.values, size=1)[0]
-    elif isinstance(data, (QrandintVar,RandintVar, QuniformVar)):
+    elif isinstance(data, (QrandintVar, RandintVar, QuniformVar)):
         sample_set = data.lower
     elif isinstance(data, UniformVar):
-        sample_set = np.random.uniform(data.bounds[0], data.bounds[1], size=1)[0]
+        if len(data.bounds) == 1:
+            bounds = data.bounds[0]
+        else:
+            bounds = data.bounds
+        sample_set = np.random.uniform(bounds[0], bounds[1], size=1)[0]
     else:
         raise ValueError(f'data: {type(data)} not supported')
     return sample_set

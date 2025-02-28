@@ -7,7 +7,7 @@ from collections import namedtuple
 
 import numpy as np
 
-from utils import fun_inspector, create_data
+
 from apsimNGpy.utililies.utils import timer
 from apsimNGpy.core.apsim import ApsimModel
 import wrapdisc

@@ -329,7 +329,7 @@ class APSIMNG:
                     out_df.reset_index(drop=True, inplace=True)
                     return out_df
 
-            model.results = _read_data(report_name)
+            self.results = _read_data(report_name)
 
 
         finally:

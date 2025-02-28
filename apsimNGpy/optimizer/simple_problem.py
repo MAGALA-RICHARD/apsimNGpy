@@ -114,16 +114,17 @@ class Problem(ABC):
                 ans = self.func(MODELs, *self.options['args'])
             else:
                 ans = self.func(MODELs)
-            print(ans, end='\r')
 
             return ans
         finally:
             for model in MODELs:
                 try:
                     datastore = model.datastore
-                    del model
 
-                    # os.remove(datastore)
+                    os.remove(model.path)
+                    print(f"Removed: {datastore}")
+                    os.remove(datastore)
+                    del model
                 except (FileNotFoundError, PermissionError) as e:
 
                     pass

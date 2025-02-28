@@ -8,9 +8,9 @@ from typing import Any
 from abc import ABC, abstractmethod
 import numpy as np
 from scipy.optimize import minimize
-from variables import auto_guess
+from apsimNGpy.optimizer.variables import auto_guess
 from apsimNGpy.core.apsim import ApsimModel
-
+from apsimNGpy.optimizer.utils import fun_inspector, create_data
 
 @dataclass(slots=True)
 class Solvers:

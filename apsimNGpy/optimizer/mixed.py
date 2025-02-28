@@ -47,7 +47,7 @@ class MixedVariable(Problem):
         self.reset_data()
 
     @timer
-    def minimize_wrap_vars(self, ig: list = None, de=True, **kwargs):
+    def minimize_wrap_vars(self, de=True, **kwargs):
         self._freeze_data()
 
         wrap = Objective(
@@ -79,11 +79,19 @@ class MixedVariable(Problem):
             return result
         else:
 
-            minim = minimize(self.update_predictors, x0= optional_initial_encoded_guess, **kwargs)
-            labels = [i.label for i in self.controls]
-            ap = dict(zip(labels, minim.x))
-            setattr(minim, 'x_vars', ap)
-            return minim
+            result = minimize(wrap, bounds=bounds, x0=optional_initial_encoded_guess, **kwargs)
+
+        cache_usage = wrap.cache_info
+        encoded_solution = result.x
+        decoded_solution = wrap.decode(encoded_solution)
+        # assert result.fun == wrap(encoded_solution, *optional_fixed_args)
+        # assert result.fun == wrap(decoded_solution, *optional_fixed_args)
+        setattr(result, "cache_info", cache_usage)
+        setattr(result, "decoded_solution", decoded_solution)
+        setattr(result, 'encoded_solution', encoded_solution)
+        att_lab = dict(zip([va.label for va in self.controls], result.decoded_solution))
+        setattr(result, 'decoded_solution', att_lab)
+        return result
 
 
 MixedOptimizer = MixedVariable()

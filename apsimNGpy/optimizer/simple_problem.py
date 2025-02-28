@@ -81,7 +81,9 @@ class Problem(ABC):
     def add_control_variable(self, control: Any):
         self.controls.append(control)
 
-    def update_predictors(self, x: tuple, *args: Any):
+    def update_predictors(self, x: tuple):
+        if len(self.controls) < 1:
+            raise ValueError("No control variables added yet")
         vals = '_'.join(str(v) for v in x)
         # we want a unique out_path name for parallel processing
         if self.n_workers > 1:

@@ -10,7 +10,8 @@ import numpy as np
 from scipy.optimize import minimize
 from apsimNGpy.optimizer.variables import auto_guess
 from apsimNGpy.core.apsim import ApsimModel
-from apsimNGpy.optimizer.utils import fun_inspector, create_data
+from typing import Iterable
+
 
 @dataclass(slots=True)
 class Solvers:
@@ -85,45 +86,59 @@ class Problem(ABC):
         # we want a unique out_path name for parallel processing
         if self.n_workers > 1:
             new_path = self.WS.joinpath(f"{vals}.apsimx")
-        else:
-            new_path = 'out.apsimx'
-        model = ApsimModel(self.model, out_path=new_path)
-        try:
 
-            for predictor, x_to_fill in zip(self.controls, x):
-                # update main param for the function updator
-                predictor.params[predictor.main_param] = x_to_fill
-                getattr(model, predictor.updater)(**predictor.params)
-            # xit loop and run
-            # model.run(report_name='MaizeR')
+        if not isinstance(self.model, Iterable):
+            model_s = [self.model]
+        else:
+            model_s = self.model
+        MODELs = []
+        for model_x in model_s:
+            model = ApsimModel(model_x)
+            try:
+
+                for predictor, x_to_fill in zip(self.controls, x):
+                    # update main param for the function updator
+                    predictor.params[predictor.main_param] = x_to_fill
+
+                    getattr(model, predictor.updater)(**predictor.params)
+                    ui = model.extract_user_input('SowMaize')
+
+                    # xit loop and run
+                    # model.run(report_name='MaizeR')
+                    MODELs.append(model)
+            finally:
+                pass
+
+        try:
             if 'args' in self.evaluation_sign:
-                ans = self.func(model, *self.options['args'])
+                ans = self.func(MODELs, *self.options['args'])
             else:
-                ans = self.func(model)
+                ans = self.func(MODELs)
             print(ans, end='\r')
 
             return ans
         finally:
-            try:
-                datastore = model.datastore
-                del model
-                os.remove(new_path)
-                # os.remove(datastore)
-            except (FileNotFoundError, PermissionError) as e:
+            for model in MODELs:
+                try:
+                    datastore = model.datastore
+                    del model
 
-                pass
+                    # os.remove(datastore)
+                except (FileNotFoundError, PermissionError) as e:
+
+                    pass
 
     def minimize_problem(self, **kwargs):
 
         """
-       
+
         Minimizes the defined problem using scipy.optimize.minimize.
         kwargs: key word arguments as defined by the scipy minimize method
         see scipy manual for each method https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html
-        
+
         Returns:
         Optimization result.
-        
+
         """
         # freeze the data before optimization to make it immutable
         self._freeze_data()

@@ -45,6 +45,7 @@ from apsimNGpy.core.runner import run_model
 import ast
 from typing import Iterable
 from collections.abc import Iterable
+from typing import Any
 
 logging.basicConfig(level=logging.INFO)
 MultiThreaded = Models.Core.Run.Runner.RunTypeEnum.MultiThreaded
@@ -574,31 +575,27 @@ class APSIMNG:
                 return i
         return self
 
-    def edit_cultivar(self, *, CultivarName: str, commands: tuple, values: tuple, **kwargs):
+    def edit_cultivar(self, *, CultivarName: str, commands: str, values: Any, **kwargs):
         """
         Edits the parameters of a given cultivar. we don't need a simulation name for this unless if you are defining it in the
         manager section, if that it is the case, see update_mgt
 
         :param CultivarName: Name of the cultivar (e.g., 'laila').
-        :param commands: A tuple of strings representing the parameter paths to be edited.
+        :param commands: A strings representing the parameter paths to be edited.
                          Example: ('[Grain].MaximumGrainsPerCob.FixedValue', '[Phenology].GrainFilling.Target.FixedValue')
-        :param values: A tuple containing the corresponding values for each command (e.g., (721, 760)).
+        :param values: values for each command (e.g., (721, 760)).
         :return: None
         """
         if not isinstance(CultivarName, str):
             raise ValueError("Cultivar name must be a string")
-        if not (isinstance(commands, (tuple, list)) and isinstance(values, (tuple, list))):
-            raise ValueError("Commands and values must be presented as a tuple or a list")
-        if len(commands) != len(values):
-            raise ValueError("The length of values and commands must be equal")
 
         cultvar = self._find_cultivar(CultivarName)
         if cultvar is None:
             raise ValueError(f"Cultivar '{CultivarName}' not found")
 
         params = self._cultivar_params(cultvar)
-        for command, value in zip(commands, values):
-            params[command] = value  # Update or add the command with its new value
+
+        params[commands] = values  # Update or add the command with its new value
 
         # Prepare the command strings for setting the updated parameters
         updated_commands = [f"{k}={v}" for k, v in params.items()]

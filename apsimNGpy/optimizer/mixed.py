@@ -5,7 +5,7 @@ from pathlib import Path
 
 from apsimNGpy.utililies.utils import timer
 
-from simple_problem import Problem, Solvers, auto_guess
+from apsimNGpy.optimizer.simple_problem import Problem, Solvers, auto_guess
 
 import subprocess
 

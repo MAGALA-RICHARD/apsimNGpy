@@ -1469,7 +1469,7 @@ class APSIMNG:
         solutes = [sim.FindAllDescendants[Models.Soils.Solute](solute) for sim in self._find_simulation(simulations)]
         return solutes
 
-    def clear_db(self):
+    def clean_up(self):
         """
         Clears the attributes of the object and optionally deletes associated files.
 
@@ -1482,12 +1482,17 @@ class APSIMNG:
            >> Please proceed with caution, we assume that if you want to clear the model objects, then you don't need them,
            but by making copy compulsory, then, we are clearing the edited files
         """
-        self._DataStore.Close()
-        Path(self.path).unlink(missing_ok=True)
-        Path(self.path.strip('apsimx') + "db-wal").unlink(missing_ok=True)
-        Path(self.path.strip('apsimx') + "bak").unlink(missing_ok=True)
-        self._DataStore.Dispose()
-        Path(self.datastore).unlink(missing_ok=True)
+        try:
+            self._DataStore.Close()
+            Path(self.path).unlink(missing_ok=True)
+            Path(self.path.strip('apsimx') + "db-wal").unlink(missing_ok=True)
+            Path(self.path.strip('apsimx') + "bak").unlink(missing_ok=True)
+            self._DataStore.Dispose()
+            Path(self.datastore).unlink(missing_ok=True)
+            logger.info(f"Deleted {self.path}")
+        except (FileNotFoundError, PermissionError) as e:
+            logger.warning(f"{e} encountered while cleaning data")
+            pass
 
         return self
 
@@ -1618,3 +1623,4 @@ if __name__ == '__main__':
         logger.info(f"{b - a}, 'seconds")
 
         a = perf_counter()
+    model.clean_up()

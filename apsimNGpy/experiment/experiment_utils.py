@@ -1,3 +1,4 @@
+# This si awork in progress
 import os
 import shutil
 from dataclasses import dataclass
@@ -7,7 +8,7 @@ from apsimNGpy.experiment._variables import (ContinuousVar, ChoiceVar, CropVar, 
 import numpy as np
 from sqlalchemy import create_engine
 from apsimNGpy.replacements.replacements import Replacements
-from core.apsim import ApsimModel
+from apsimNGpy.core.apsim import ApsimModel
 
 utilx = (ContinuousVar, ChoiceVar, CropVar, soil, manager, cultivar, dates)
 

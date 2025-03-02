@@ -810,7 +810,7 @@ class APSIMNG:
         """
         if not isinstance(management, (tuple, dict, list, np.ndarray)):
             raise ValueError(f'management can not be of type {type(management)}')
-        if not isinstance(management, dict): # we want to provide support for multiple scripts
+        if isinstance(management, dict): # we want to provide support for multiple scripts
             # note the coma creates a tuple
             management = management,
 
@@ -818,6 +818,7 @@ class APSIMNG:
             zone = sim.FindChild[Models.Core.Zone]()
             zone_path = zone.FullPath
             for mgt in management:
+
                 action_path = f'{zone_path}.{mgt.get("Name")}'
                 fp = zone.FindByPath(action_path)
                 # before proceeding, we need to check if fp is not None, that is if that script name does not exist

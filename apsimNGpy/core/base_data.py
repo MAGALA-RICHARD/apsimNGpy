@@ -9,7 +9,7 @@ import uuid
 from apsimNGpy.core.apsim import ApsimModel as SoilModel
 from apsimNGpy.core.config import get_apsim_bin_path, apsim_version
 from apsimNGpy.settings import logger
-
+from apsimNGpy.settings import SCRATCH
 WEATHER_CO = 'NewMetrrr.met'
 # DATA = 'data' after tests, this did not work
 WEA = 'Iem_IA0200.met'
@@ -44,7 +44,7 @@ def __get_example(crop, path=None, simulations_object=True):
     OSError: If there are issues with copying or replacing files.
     """
     if not path:
-        copy_path = Path(os.getcwd())
+        copy_path = SCRATCH
     else:
         copy_path = Path(path)
 
@@ -112,7 +112,7 @@ def load_default_sensitivity_model(method: str, path: str = None, simulations_ob
     """
     dir_path = os.path.join(EXAMPLES_DATA, 'Sensitivity')
     if not path:
-        copy_path = os.getcwd()
+        copy_path = SCRATCH
     else:
         copy_path = path
     target_location = glob.glob(

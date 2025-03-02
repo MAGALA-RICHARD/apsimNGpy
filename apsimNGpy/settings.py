@@ -96,7 +96,7 @@ logger.addHandler(file_handler)
 APSIM_LOCATION = os.environ.get('APSIM_LOCATION')
 
 SCRATCH = os.environ.get('WS', Path(os.getcwd()) / 'scratch')
-print(SCRATCH)
+
 try:
     rmtree(SCRATCH)
 except (FileNotFoundError, PermissionError) as fp:

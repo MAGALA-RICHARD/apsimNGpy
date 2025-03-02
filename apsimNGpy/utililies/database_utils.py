@@ -11,9 +11,7 @@ from pandas import errors
 from pandas import read_sql_query as rsq
 from sqlalchemy import create_engine, inspect
 from apsimNGpy.utililies.exceptions import TableNotFoundError
-import logging
-
-logger = logging.getLogger(__name__)
+from apsimNGpy.settings import logger
 
 
 def read_with_query(db, query):
@@ -46,9 +44,11 @@ def read_with_query(db, query):
         """
     # table = kwargs.get("table")
     conn = sqlite3.connect(db)
-    df = rsq(query, conn)
-    conn.close()
-    return df
+    try:
+        df = rsq(query, conn)
+        return df
+    finally:
+        conn.close()
 
 
 def get_db_table_names(d_b):
@@ -96,17 +96,25 @@ def read_db_table(db, report_name):
             
         """
     # table = kwargs.get("table")
+    DB = f'sqlite:///{db}'
+    ENGINE = create_engine(DB)
+    query = f"SELECT * FROM {report_name}"
     try:
-        with sqlite3.connect(db) as conn:
-            query = f"SELECT * FROM {report_name}"
-            df = rsq(query, conn)
+
+        df = rsq(query, ENGINE)
 
         return df
-    except errors.DatabaseError as ed:
-        # print(repr(ed))
-        # print(f" Seems like the specified table name: {report_name} does not exists in {db} data base")
-        if exists(db):
-            logger.warning(f"report_name(s) should be any of the following:: {get_db_table_names(db)}")
+    except sqlite3.OperationalError as e:
+        if "no such table" in str(e):
+            logger.error(f"Table '{report_name}' not found in the database.")
+            available_tables = get_db_table_names(db)  # Assuming this function exists
+            logger.warning(f"Available tables: {available_tables}")
+        else:
+            logger.error(f"Database error: {e}")
+    except Exception as e:
+        logger.error(f"Unexpected error while reading table '{report_name}': {e}")
+    finally:
+        ENGINE.dispose(close=True)
 
 
 def load_database(path):

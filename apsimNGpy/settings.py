@@ -3,6 +3,7 @@ from multiprocessing import cpu_count
 import logging
 import os
 from pathlib import Path
+from shutil import rmtree
 
 
 def create_config(config_path, apsim_path=""):
@@ -55,6 +56,7 @@ Please follow these steps to resolve the issue:
 # configure the logger
 logger = logging.getLogger(__name__)
 
+
 def setup_logger(name: str, level: int = logging.INFO) -> logging.Logger:
     logger = logging.getLogger(name)
     if not logger.handlers:
@@ -64,6 +66,7 @@ def setup_logger(name: str, level: int = logging.INFO) -> logging.Logger:
         logger.addHandler(handler)
     logger.setLevel(level)
     return logger
+
 
 logger.setLevel(logging.DEBUG)
 
@@ -91,3 +94,11 @@ logger.addHandler(console_handler)
 logger.addHandler(file_handler)
 
 APSIM_LOCATION = os.environ.get('APSIM_LOCATION')
+
+SCRATCH = os.environ.get('WS', Path(os.getcwd()) / 'scratch')
+print(SCRATCH)
+try:
+    rmtree(SCRATCH)
+except (FileNotFoundError, PermissionError) as fp:
+    ...
+SCRATCH.mkdir(parents=True, exist_ok=True)

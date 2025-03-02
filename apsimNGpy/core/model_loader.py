@@ -22,9 +22,7 @@ from pathlib import Path
 from apsimNGpy.core.config import get_apsim_bin_path
 import subprocess
 from apsimNGpy.utililies.database_utils import read_db_table
-
-SCRATCH = Path(os.getcwd()) / 'scratch'
-SCRATCH.mkdir(parents=True, exist_ok=True)
+from apsimNGpy.settings import SCRATCH
 
 
 def load_from_dict(dict_data, out):
@@ -108,7 +106,7 @@ def load_from_path(path2file, method='file'):
     return new_model
 
 
-def load_apx_model(model=None, out=None, file_load_method='string', met_file=None, **kwargs):
+def load_apsim_model(model=None, file_load_method='string', met_file=None, copy=False, **kwargs):
     """
        >> we are loading apsimx model from file, dict, or in memory.
        >> if model is none, we will return a pre - reloaded one from memory.
@@ -117,11 +115,11 @@ def load_apx_model(model=None, out=None, file_load_method='string', met_file=Non
        returns a named tuple with an out path, datastore path, and IModel in memory
        """
     # name according to the order of preference
-    COPY_PATH = None
-    if isinstance(model, (str, Path)):
-        COPY_PATH = copy_file(model, out)
-    _out = COPY_PATH
-
+    # COPY_PATH = None
+    # if isinstance(model, (str, Path)):
+    #     COPY_PATH = copy_file(model, destination=None)  # no out path specified, therefore, temp file is being created
+    # _out = COPY_PATH
+    out = {}
     Model_data = namedtuple('model_data',
                             ['IModel', 'path', 'datastore', "DataStore", 'results', 'met_path'])
 
@@ -134,25 +132,23 @@ def load_apx_model(model=None, out=None, file_load_method='string', met_file=Non
     @loader.register(dict)
     def _(_model: dict):
         # no need to copy the file
-        assert _out, "out can not be none for dictionary data"
+        _out = f"{uuid.uuid1()}.apsimx"
+        out['path'] = _out
         return load_from_dict(_model, _out)
 
     @loader.register(str)
     def _(_model: str):
-        # we first copy the file before loading it
 
-        return load_from_path(COPY_PATH, file_load_method)
+        copy_to = copy_file(_model, destination=None)
+        out['path'] = copy_to
+        return load_from_path(copy_to, file_load_method)
 
     @loader.register(Path)
     def _(_model: Path):
         # same as the string one, the difference is that this is a pathlib path object
-        copy = copy_file(_model, _out)
-        return load_from_path(copy, file_load_method)
-
-    @loader.register(Models.Core.Simulations)
-    def _(_model: Models.Core.Simulations):
-        # it is already a model.core.Simulation object so we just return it
-        return _model
+        copy_to = copy_file(_model, destination=None)
+        out['path'] = copy_to
+        return load_from_path(copy_to, file_load_method)
 
     Model = loader(model)
     _Model = False
@@ -162,7 +158,7 @@ def load_apx_model(model=None, out=None, file_load_method='string', met_file=Non
         _Model = Model
     datastore = _Model.FindChild[Models.Storage.DataStore]().FileName
     DataStore = _Model.FindChild[Models.Storage.DataStore]()
-    return Model_data(IModel=_Model, path=_out, datastore=datastore, DataStore=DataStore, results=None,
+    return Model_data(IModel=_Model, path=out['path'], datastore=datastore, DataStore=DataStore, results=None,
                       met_path=met_file)
 
 

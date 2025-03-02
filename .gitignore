@@ -192,6 +192,11 @@ apsimNGpy/core/*.db-shm
 apsimNGpy/core/*.db
 apsimNGpy/core/*.db-wal
 
+apsimNGpy/core/scratch/*.apsimx
+apsimNGpy/core/scratch/*.db-shm
+apsimNGpy/core/scratch/*.db
+apsimNGpy/core/scratch/*.db-wal
+
 apsimNGpy/experiment/*.apsimx
 apsimNGpy/experiment/*.db-shm
 apsimNGpy/experiment/*.db
@@ -204,3 +209,9 @@ apsimNGpy/manager/*.db-wal
 
 apsimNGpy/manager/*.met
 apsimNGpy/manager/weatherdata
+
+apsimNGpy/scratch/*.apsimx
+apsimNGpy/scratch/*.db-shm
+apsimNGpy/scratch/*.db
+apsimNGpy/scratch/*.db-wal
+/scratch

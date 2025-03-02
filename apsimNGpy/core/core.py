@@ -39,7 +39,7 @@ from Models.Soils import Soil, Physical, SoilCrop, Organic, Solute, Chemical
 import Models
 from Models.PMF import Cultivar
 from apsimNGpy.core._runner import run_model_externally
-from apsimNGpy.core.model_loader import (load_apx_model, save_model_to_file, recompile)
+from apsimNGpy.core.model_loader import (load_apsim_model, save_model_to_file, recompile)
 from apsimNGpy.utililies.utils import timer
 from apsimNGpy.core.runner import run_model
 import ast
@@ -126,7 +126,7 @@ class APSIMNG:
         self._model = model
         self.out_path = out_path or out
         # model_info is named tuple safe for parallel simulations as named tuples are immutable
-        self.model_info = load_apx_model(self._model, out=self.out_path, met_file=kwargs.get('met_file'))
+        self.model_info = load_apsim_model(self._model, out=self.out_path, met_file=kwargs.get('met_file'))
         self.Simulations = self.model_info.IModel
 
         self.datastore = self.model_info.datastore
@@ -236,7 +236,7 @@ class APSIMNG:
 
     def restart_model(self, model_info=None):
         """
-         :param model_info: A named tuple object returned by `load_apx_model` from the `model_loader` module.
+         :param model_info: A named tuple object returned by `load_apsim_model` from the `model_loader` module.
 
         Notes:
         - This parameter is crucial whenever we need to reinitialize the model, especially after updating management practices or editing the file.
@@ -261,7 +261,7 @@ class APSIMNG:
         _path = self.path
 
         save_model_to_file(self.Simulations, out=_path)
-        model_info = load_apx_model(_path)
+        model_info = load_apsim_model(_path)
         self.restart_model(model_info)
         return self
 
@@ -282,7 +282,7 @@ class APSIMNG:
         _out_path = out_path or self.model_info.path
         save_model_to_file(self.Simulations, out=_out_path)
         if reload:
-            self.model_info = load_apx_model(_out_path)
+            self.model_info = load_apsim_model(_out_path)
 
             self.restart_model()
             return self

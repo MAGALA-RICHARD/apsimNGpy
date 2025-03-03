@@ -5,6 +5,7 @@ import Models
 from apsimNGpy.settings import logger
 
 ADD = Models.Core.ApsimFile.Structure.Add
+DELETE = Models.Core.ApsimFile.Structure.Delete
 FOLDER = Models.Core.Folder()
 model = load_default_simulations(crop='maize')
 from apsimNGpy.utililies.utils import timer
@@ -31,12 +32,14 @@ def add_replacement_folder(_model):
 
 
 def add_model(_model, model_name, where):
+    where = where.capitalize()
     parent = _model.Simulations.FindInScope(where)
     return parent
 
 
+def remove_model(_model, model_name):
+    DELETE(_model.Simulations.FindInScope(model_name))
 
-def remove_model(_model, parent, model_name):
     ...
 
 

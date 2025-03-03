@@ -252,3 +252,6 @@ if __name__ == '__main__':
     me2 = maze.results['Maize.Total.Wt'].mean()
     print(me2)
     dd = run_model_externally(maze.path, 'report', maze.datastore)
+
+
+

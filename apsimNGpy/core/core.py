@@ -382,7 +382,7 @@ class APSIMNG:
 
     @property
     def results(self) -> pd.DataFrame:
-        reports = self.report_names or "Report" # 'Report' #is the apsim default name
+        reports = self.report_names or "Report" # 'Report' # is the apsim default name
         if self.processed and reports:
             if not os.path.exists(self.datastore):
                 raise FileNotFoundError(self.datastore, f'{self.datastore} is not found have you recently cleaned up '

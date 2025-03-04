@@ -379,7 +379,7 @@ class APSIMNG:
                 raise FileNotFoundError(self.datastore, f'{self.datastore} is not found have you recently cleaned up '
                                                         f'the data')
             reports = self.report_names
-            print(reports)
+
             if isinstance(reports, str):
                 reports = [self.report_names]
             datas = [dataview_to_dataframe(self, i) for i in reports]

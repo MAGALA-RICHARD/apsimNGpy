@@ -46,11 +46,40 @@ import ast
 from typing import Iterable
 from collections.abc import Iterable
 from typing import Any
+from System.Data import DataView
 
 logging.basicConfig(level=logging.INFO)
 MultiThreaded = Models.Core.Run.Runner.RunTypeEnum.MultiThreaded
 SingleThreaded = Models.Core.Run.Runner.RunTypeEnum.SingleThreaded
 ModelRUNNER = Models.Core.Run.Runner
+
+
+@timer
+def dataview_to_dataframe(_model, reports):
+    """
+    Convert .NET System.Data.DataView to Pandas DataFrame.
+    :param dataview: System.Data.DataView object
+    :return: Pandas DataFrame
+    """
+    try:
+        _model._DataStore.Open()
+        pred = _model._DataStore.Reader.GetData(reports)
+        dataview = DataView(pred)
+
+        # Extract column names
+        column_names = [col.ColumnName for col in dataview.Table.Columns]
+
+        # Extract data from rows
+        data = []
+        for row in dataview:
+            data.append([row[col] for col in column_names])  # Extract row values
+
+        # Convert to Pandas DataFrame
+        df = pd.DataFrame(data, columns=column_names)
+    finally:
+        _model._DataStore.Close()
+
+    return df
 
 
 def select_threads(multithread):
@@ -101,6 +130,7 @@ class APSIMNG:
 
     def __init__(self, model: os.PathLike = None, out_path: os.PathLike = None, out: os.PathLike = None, **kwargs):
 
+        self.report_names = None
         self.others = kwargs.copy()
         if kwargs.get('copy'):
             warnings.warn(
@@ -121,7 +151,7 @@ class APSIMNG:
         out_path = out_path if isinstance(out_path, str) or isinstance(out_path, Path) else None
         self.copy = kwargs.get('copy')  # Mandatory to conserve the original file
         # all these can be changed after initialization
-        self.results = None
+
         self._str_model = None
         self._model = model
         self.out_path = out_path or out
@@ -134,6 +164,7 @@ class APSIMNG:
         self._DataStore = self.model_info.DataStore
         self.path = self.model_info.path
         self._met_file = kwargs.get('met_file')
+        self.processed = False
         # self.init_model() work in progress
 
     @property
@@ -314,28 +345,47 @@ class APSIMNG:
             e = _run_model.Run()
             if len(e) > 0:
                 logging.info(e[0].ToString())
+            self.processed = True
+            self.report_names = report_name  # to avoid breaking those with old code
 
-            def _read_data(reports):
-
-                if isinstance(reports, str):
-                    return read_db_table(self.datastore, report_name=reports)
-                elif isinstance(reports, Iterable):
-                    data = []
-                    for rpn in report_name:
-                        df = read_db_table(self.datastore, report_name=rpn)
-                        df['report_name'] = rpn
-                        data.append(df)
-                    out_df = pd.concat(data, ignore_index=True, axis=0)
-                    out_df.reset_index(drop=True, inplace=True)
-                    return out_df
-
-            self.results = _read_data(report_name)
+            # def _read_data(reports):
+            #
+            #     if isinstance(reports, str):
+            #         return read_db_table(self.datastore, report_name=reports)
+            #     elif isinstance(reports, Iterable):
+            #         data = []
+            #         for rpn in report_name:
+            #             df = read_db_table(self.datastore, report_name=rpn)
+            #             df['report_name'] = rpn
+            #             data.append(df)
+            #         out_df = pd.concat(data, ignore_index=True, axis=0)
+            #         out_df.reset_index(drop=True, inplace=True)
+            #         return out_df
+            #
+            # if self.processed:
+            #     self.results = _read_data(report_name)
 
 
         finally:
             # close the datastore
             self._DataStore.Close()
         return self
+
+    @property
+    def results(self) -> pd.DataFrame:
+
+        if self.processed:
+            if not os.path.exists(self.datastore):
+                raise FileNotFoundError(self.datastore, f'{self.datastore} is not found have you recently cleaned up '
+                                                        f'the data')
+            reports = self.report_names
+            print(reports)
+            if isinstance(reports, str):
+                reports = [self.report_names]
+            datas = [dataview_to_dataframe(self, i) for i in reports]
+            return pd.concat(datas)
+        else:
+            logging.warning("attempting to get results before running the model")
 
     def run(self, report_name: Union[tuple, list, str] = None,
             simulations: Union[tuple, list] = None,
@@ -388,8 +438,11 @@ class APSIMNG:
             if clean:
                 self._DataStore.Dispose()
             res = run_model_externally(self.model_info.path)
+
             if res.returncode == 0:
-                self.results = _read_data(report_name)
+                self.processed = True
+                self.report_names = report_name
+                # self.results = _read_data(report_name)
 
         finally:
             # close the datastore
@@ -808,7 +861,7 @@ class APSIMNG:
             existence. - If the specified management script or parameters do not exist, they will be ignored.
             using a tuple for a specifying management script, paramters is recommended if you are going to pass the function to  a multi-processing class fucntion
         """
-        if isinstance(management, dict): # we want to provide support for multiple scripts
+        if isinstance(management, dict):  # we want to provide support for multiple scripts
             # note the coma creates a tuple
             management = management,
 
@@ -1477,7 +1530,7 @@ class APSIMNG:
         If the `copy` attribute is set to True, this method will also attempt to delete
         files at `self.path` and `self.datastore`. This is a destructive operation and
         should be used with caution.
-
+        proceed with caution with this method otherwise results may not load
         Returns:
            >>None: This method does not return a value.
            >> Please proceed with caution, we assume that if you want to clear the model objects, then you don't need them,
@@ -1490,7 +1543,6 @@ class APSIMNG:
             Path(self.path.strip('apsimx') + "bak").unlink(missing_ok=True)
             self._DataStore.Dispose()
             Path(self.datastore).unlink(missing_ok=True)
-            logger.info(f"Deleted {self.path}")
         except (FileNotFoundError, PermissionError) as e:
             logger.warning(f"{e} encountered while cleaning data")
             pass

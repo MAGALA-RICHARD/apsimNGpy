@@ -31,7 +31,7 @@ class TestAPSIMNG(BaseTester):
             # check if it is not empty
             self.assertEqual(df.empty, False)
 
-#            self.assertTrue(mock_datastore.Close.called)
+    #            self.assertTrue(mock_datastore.Close.called)
 
     def test_save_edited_file(self, ):
         result_path = save_model_to_file(self.test_ap_sim.Simulations, out=self.out)
@@ -108,6 +108,11 @@ class TestAPSIMNG(BaseTester):
         testP = self.test_ap_sim.extract_soil_property_by_path(path='Simulation.Organic.Carbon', index=[0, 1])
         self.assertEqual(lisT, param_values,
                          msg=f'replace_soil_property_values was not successful returned {testP}\n got {param_values}')
+
+    def test_run_in_python(self):
+        self.test_ap_sim.run_in_python("Report")
+        self.assertTrue(self.test_ap_sim.processed, 'simulation was not processed perhaps')
+        self.assertIsInstance(self.test_ap_sim.results, pd.DataFrame, msg='not a pandas dataframe')
 
     def test_replace_soil_properties_by_path(self):
         path = 'None.Soil.physical.None.None.BD'

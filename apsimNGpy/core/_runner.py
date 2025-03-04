@@ -1,7 +1,7 @@
 from pathlib import Path
 import logging
 from pathlib import Path
-from subprocess import run, CalledProcessError, CompletedProcess
+from subprocess import run, CalledProcessError, CompletedProcess, PIPE
 import platform
 from apsimNGpy.core.config import get_apsim_bin_path
 from typing import NamedTuple
@@ -28,13 +28,15 @@ def run_model_externally(model, verbose: bool = False) -> CompletedProcess[str]:
 
     # Run APSIM with the specified file
     try:
-        result = run([str(apsim_exe), str(apsim_file)], capture_output=True, text=True, check=True)
+        result = run([str(apsim_exe), str(apsim_file)], stdout=PIPE, stderr=PIPE,)
 
         if verbose:
             logger.info("APSIM Run Successful!")
             logger.info(result.stdout)  # Print APSIM output
+        #logger.info("Errors:", result.stderr)
         return result
     except CalledProcessError as e:
         logger.error("Error running APSIM:")
         logger.error(e.stderr)
+
         raise

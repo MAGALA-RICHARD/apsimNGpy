@@ -176,10 +176,10 @@ def recompile(_model, out=None, met_path=None, ):
             """
     # Determine the output path
 
-    final_out_path = out or _model.FileName
+    final_out_path = out or _model.path
 
     # Serialize the model to JSON string
-    json_string = Models.Core.ApsimFile.FileFormat.WriteToString(_model)
+    json_string = Models.Core.ApsimFile.FileFormat.WriteToString(_model.Simulations)
 
     Model = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](json_string, None, True,
                                                                                      fileName=final_out_path)
@@ -241,8 +241,6 @@ if __name__ == '__main__':
     from apsimNGpy.core.core import APSIMNG
     from apsimNGpy.core.apsim import ApsimModel
 
-    #
-    maze.results = None
     maze.update_mgt(management=({"Name": 'Fertilise at sowing', 'Amount': 10},))
     maze.run(report_name='Report')
     me1 = maze.results['Maize.Total.Wt'].mean()
@@ -252,6 +250,3 @@ if __name__ == '__main__':
     me2 = maze.results['Maize.Total.Wt'].mean()
     print(me2)
     dd = run_model_externally(maze.path, 'report', maze.datastore)
-
-
-

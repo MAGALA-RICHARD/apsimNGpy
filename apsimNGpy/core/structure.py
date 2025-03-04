@@ -3,6 +3,7 @@ from apsimNGpy.core.base_data import load_default_simulations
 import Models
 
 from apsimNGpy.settings import logger
+from apsimNGpy.core.apsim import ApsimModel
 
 # manipulation methods
 ADD = Models.Core.ApsimFile.Structure.Add
@@ -122,3 +123,5 @@ df = dataview_to_dataframe(model, reports='Report')
 #df2 =read_db_table(model.datastore, 'Report')
 model.clean_up()
 print(df)
+path = r"D:\My_BOX\Box\PhD thesis\CHAPTER FOUR\source_files\split_single_test.apsimx"
+test_model  = ApsimModel(path)

@@ -331,7 +331,7 @@ class APSIMNG:
             self.save()
             self._DataStore.Open()
             # Clear old data before running
-            self.results = None
+
             if clean:
                 self._DataStore.Dispose()
             sims = self.find_simulations(simulations) if simulations else self.Simulations

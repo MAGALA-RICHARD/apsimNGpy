@@ -54,11 +54,12 @@ SingleThreaded = Models.Core.Run.Runner.RunTypeEnum.SingleThreaded
 ModelRUNNER = Models.Core.Run.Runner
 
 
-@timer
+
 def dataview_to_dataframe(_model, reports):
     """
     Convert .NET System.Data.DataView to Pandas DataFrame.
-    :param dataview: System.Data.DataView object
+    report (str, list, tuple) of the report to be displayed. these should be in the simulations
+    :param apsimng model: APSIMNG object or instance
     :return: Pandas DataFrame
     """
     try:

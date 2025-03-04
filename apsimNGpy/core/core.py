@@ -66,21 +66,24 @@ def dataview_to_dataframe(_model, reports):
         _model._DataStore.Open()
         pred = _model._DataStore.Reader.GetData(reports)
         dataview = DataView(pred)
-
+        if dataview.Table:
         # Extract column names
-        column_names = [col.ColumnName for col in dataview.Table.Columns]
+            column_names = [col.ColumnName for col in dataview.Table.Columns]
 
-        # Extract data from rows
-        data = []
-        for row in dataview:
-            data.append([row[col] for col in column_names])  # Extract row values
+            # Extract data from rows
+            data = []
+            for row in dataview:
+                data.append([row[col] for col in column_names])  # Extract row values
 
-        # Convert to Pandas DataFrame
-        df = pd.DataFrame(data, columns=column_names)
+            # Convert to Pandas DataFrame
+            df = pd.DataFrame(data, columns=column_names)
+            return df
+        else:
+            logger.error("No DataView was found")
     finally:
-        _model._DataStore.Close()
+            _model._DataStore.Close()
 
-    return df
+
 
 
 def select_threads(multithread):
@@ -332,8 +335,12 @@ class APSIMNG:
             self._DataStore.Open()
             # Clear old data before running
 
-            if clean:
-                self._DataStore.Dispose()
+
+            self._DataStore.Dispose()
+            try:
+               Path(self.datastore).unlink(missing_ok=True)
+            except PermissionError as pe:
+                ...
             sims = self.find_simulations(simulations) if simulations else self.Simulations
             if simulations:
                 cs_sims = List[Models.Core.Simulation]()
@@ -374,19 +381,18 @@ class APSIMNG:
 
     @property
     def results(self) -> pd.DataFrame:
-
-        if self.processed:
+        reports = self.report_names or "Report" # 'Report' #is the apsim default name
+        if self.processed and reports:
             if not os.path.exists(self.datastore):
                 raise FileNotFoundError(self.datastore, f'{self.datastore} is not found have you recently cleaned up '
                                                         f'the data')
-            reports = self.report_names
 
             if isinstance(reports, str):
-                reports = [self.report_names]
+                reports = [reports]
             datas = [dataview_to_dataframe(self, i) for i in reports]
             return pd.concat(datas)
         else:
-            logging.warning("attempting to get results before running the model")
+            logging.warning("attempting to get results before running the model or providing the report name")
 
     def run(self, report_name: Union[tuple, list, str] = None,
             simulations: Union[tuple, list] = None,
@@ -420,24 +426,10 @@ class APSIMNG:
             # we could cut the chase and run apsim faster, but unfortunately some versions are not working properly,
             # so we run the model externally the previous function allowed to run specific simulations in the file,
             # it has been renamed to run_in_python.
-
-            def _read_data(reports):
-                if isinstance(reports, str):
-                    return read_db_table(self.datastore, report_name=reports)
-                elif isinstance(reports, Iterable):
-                    data = []
-                    for rpn in report_name:
-                        df = read_db_table(self.datastore, report_name=rpn)
-                        df['report_name'] = rpn
-                        data.append(df)
-                    out_df = pd.concat(data, ignore_index=True, axis=0)
-                    out_df.reset_index(drop=True, inplace=True)
-                    return out_df
+            self._DataStore.Dispose()
 
             # before running
             self.save()
-            if clean:
-                self._DataStore.Dispose()
             res = run_model_externally(self.model_info.path)
 
             if res.returncode == 0:

@@ -292,12 +292,13 @@ class APSIMNG:
         self.path = self.model_info.path
         return self
 
-    def save(self):
-        _path = self.path
+    def save(self, file_name = None):
+        _path = file_name or self.path
 
         save_model_to_file(self.Simulations, out=_path)
-        model_info = load_apsim_model(_path)
+        model_info = recompile(self)# load_apsim_model(_path)
         self.restart_model(model_info)
+
         return self
 
     def save_edited_file(self, out_path: os.PathLike = None, reload: bool = False) -> Union['APSIMNG', None]:
@@ -1649,12 +1650,12 @@ if __name__ == '__main__':
     # model = load_default_simulations('maize')
     model = APSIMNG(al)
 
-    for N in [3, 8]:
+    for N in [3, 300]:
         # for rn in ['Maize, Soybean, Wheat', 'Maize', 'Soybean, Wheat']:
         a = perf_counter()
         # model.RevertCheckpoint()
-        # model.update_mgt(management=({"Name": 'Sow using a variable rule', 'Population': N},))
-        model.replace_soil_properties_by_path(path='None.Soil.Organic.None.None.Carbon', param_values=[N])
+        model.update_mgt(management=({"Name": 'Sow using a variable rule', 'Population': N},))
+        #model.replace_soil_properties_by_path(path='None.Soil.Organic.None.None.Carbon', param_values=[N])
         # model.replace_any_soil_physical(parameter='BD', param_values=[1.23],)
         # model.save_edited_file(reload=True)
         model.run('Report')

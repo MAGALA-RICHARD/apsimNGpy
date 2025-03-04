@@ -6,7 +6,7 @@ import sqlite3
 from collections import namedtuple
 from os.path import exists
 from pathlib import Path
-
+from apsimNGpy.utililies.utils import timer
 from pandas import errors
 from pandas import read_sql_query as rsq
 from sqlalchemy import create_engine, inspect
@@ -63,7 +63,7 @@ def get_db_table_names(d_b):
     insp = inspect(engine)
     return insp.get_table_names()
 
-
+@timer
 def read_db_table(db, report_name):
     """
         Connects to a specified database, retrieves the entire contents of a specified table,

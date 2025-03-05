@@ -1670,4 +1670,4 @@ if __name__ == '__main__':
         logger.info(f"{b - a}, 'seconds")
 
         a = perf_counter()
-    model.clean_up()
+   # model.clean_up()

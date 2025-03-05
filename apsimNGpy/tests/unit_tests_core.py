@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch, mock_open
 from pathlib import Path
 import shutil
 import pandas as pd
-
+from apsimNGpy.settings import SCRATCH
 # Import the module where APSIMNG class is defined
 from apsimNGpy.core.core import APSIMNG, save_model_to_file
 from apsimNGpy.core.model_loader import save_model_to_file
@@ -128,6 +128,7 @@ class TestAPSIMNG(BaseTester):
 
     def tearDown(self):
         self.test_ap_sim.clean_up()
+        #shutil.rmtree(SCRATCH, ignore_errors=True)
 
 
 if __name__ == '__main__':

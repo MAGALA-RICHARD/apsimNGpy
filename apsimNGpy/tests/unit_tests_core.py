@@ -126,9 +126,34 @@ class TestAPSIMNG(BaseTester):
         self.assertIsInstance(lisT, list, msg='expected a list got {}'.format(type(lisT)))
         self.assertTrue(lisT)
 
+    def test_edit_cultivar(self):
+        """
+        Test the edit_cultivar requires that we have replacements in place
+        @return:
+        """
+        from apsimNGpy.core.structure import add_crop_replacements
+        add_crop_replacements(self.test_ap_sim, _crop='Maize')
+        in_cul = self.test_ap_sim.extract_user_input('Sow using a variable rule')
+
+        in_cultivar = in_cul['Simulation'].get('CultivarName')
+        if not in_cultivar:
+            raise unittest.SkipTest('skipping test edit cultivar because cultivar not found')
+        # first we check the current '[Phenology].Juvenile.Target.FixedValue': '211'
+        cp = self.test_ap_sim.read_cultivar_params(name= in_cultivar)
+        com_path  = '[Phenology].Juvenile.Target.FixedValue'
+        juvenile_original = float(cp.get(com_path))
+        new_juvenile = 289.77
+        self.test_ap_sim.edit_cultivar(commands= com_path, values=new_juvenile, CultivarName=in_cultivar)
+        # read again
+        juvenile_replacements = self.test_ap_sim.read_cultivar_params(name= in_cultivar)[com_path]
+        if juvenile_replacements:
+            juvenile_replacements = float(juvenile_replacements)
+        self.assertEqual(new_juvenile, juvenile_replacements)
+        self.assertGreater(juvenile_replacements, juvenile_original, msg= 'Juvenile target value was not replaced')
+
     def tearDown(self):
         self.test_ap_sim.clean_up()
-        #shutil.rmtree(SCRATCH, ignore_errors=True)
+        # shutil.rmtree(SCRATCH, ignore_errors=True)
 
 
 if __name__ == '__main__':

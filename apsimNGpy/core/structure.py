@@ -18,16 +18,16 @@ from apsimNGpy.utililies.utils import timer
 
 
 @timer
-def add_replacements(_model):
-    FOLDER = Models.Core.Folder()
+def add_crop_replacements(_model, _crop):
+    _FOLDER = Models.Core.Folder()
     "everything is edited in place"
-    CROP = 'maize'
-    FOLDER.Name = "Replacements"
+    CROP = _crop
+    _FOLDER.Name = "Replacements"
     PARENT = _model.Simulations
-    ADD(FOLDER, PARENT)
+    ADD(_FOLDER, PARENT)
     _crop = PARENT.FindInScope[Models.PMF.Plant](CROP)
     if _crop is not None:
-        ADD(_crop, FOLDER)
+        ADD(_crop, _FOLDER)
     else:
         logger.error(f"No plants of crop{CROP} found")
 
@@ -60,7 +60,7 @@ import System
 DataView = System.Data
 if __name__ == '__main__':
     # test
-    add_replacements(model)
+    add_crop_replacements(model, _crop='Maize')
     # sims.FindByPath(modelToCheck.Parent.FullPath + "." + newName)
 
     crop = model.Simulations.FindInScope[Models.PMF.Plant]('Soybean')

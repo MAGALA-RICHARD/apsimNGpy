@@ -35,9 +35,10 @@ def run_model_externally(model, verbose: bool = False) -> Popen[str]:
         # logger.info("Errors:", result.stderr)
         result.communicate()
         res, err = result.communicate()
-        logger.info(res.strip())
+
         if err:
             logger.error(err.strip)
+        logger.info(res.strip())
         return result
     finally:
         if not result.poll():

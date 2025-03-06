@@ -397,7 +397,7 @@ class APSIMNG:
 
     def run(self, report_name: Union[tuple, list, str] = None,
             simulations: Union[tuple, list] = None,
-            clean: bool = False,
+            clean_up: bool = False,
             multithread: bool = True,
             **kwargs) -> 'APSIMNG':
         """Run apsim model in the simulations
@@ -432,7 +432,8 @@ class APSIMNG:
             # before running
             self.save()
             res = run_model_externally(self.model_info.path)
-
+            if clean_up:
+                self.clean_up()
             if res.returncode == 0:
                 self.processed = True
                 self.report_names = report_name
@@ -1533,10 +1534,10 @@ class APSIMNG:
         try:
             self._DataStore.Close()
             Path(self.path).unlink(missing_ok=True)
-            Path(self.path.strip('apsimx') + "db-wal").unlink(missing_ok=True)
+
             Path(self.path.strip('apsimx') + "bak").unlink(missing_ok=True)
-            self._DataStore.Dispose()
-            Path(self.datastore).unlink(missing_ok=True)
+            #self._DataStore.Dispose()
+            #Path(self.datastore).unlink(missing_ok=True)
         except (FileNotFoundError, PermissionError) as e:
             logger.warning(f"{e} encountered while cleaning data")
             pass
@@ -1670,4 +1671,4 @@ if __name__ == '__main__':
         logger.info(f"{b - a}, 'seconds")
 
         a = perf_counter()
-   # model.clean_up()
+    model.clean_up()

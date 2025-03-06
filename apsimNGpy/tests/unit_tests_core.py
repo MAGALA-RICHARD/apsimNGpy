@@ -159,3 +159,5 @@ class TestAPSIMNG(BaseTester):
 
 if __name__ == '__main__':
     unittest.main()
+    pp= Path(r'D:\package\apsimNGpy\apsimNGpy\core\test_folder')
+    at=

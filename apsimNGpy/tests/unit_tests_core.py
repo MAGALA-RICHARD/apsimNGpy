@@ -149,6 +149,7 @@ class TestAPSIMNG(BaseTester):
         if juvenile_replacements:
             juvenile_replacements = float(juvenile_replacements)
         self.assertEqual(new_juvenile, juvenile_replacements)
+        self.test_ap_sim.run()
         #self.assertGreater(juvenile_replacements, juvenile_original, msg= 'Juvenile target value was not replaced')
 
     def tearDown(self):

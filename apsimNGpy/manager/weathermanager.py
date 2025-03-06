@@ -231,7 +231,7 @@ def get_met_from_day_met(lonlat: Union[tuple, list, np.ndarray], start: int,
     :fill_method (str, optional): fills the missing data based pandas fillna method arguments may be bfill, ffill defaults to ffill
     :keyword timeout specifies the waiting time
     :keyword wait: the time in secods to try for every retry in case of network errors
-    returns a complete path to the new met file but also write the met file to the disk in the working directory
+    returns a complete path to the new met file but also write the met file to the disk in the working dir_path
 
     Example:
       # Assuming the function is imported as :

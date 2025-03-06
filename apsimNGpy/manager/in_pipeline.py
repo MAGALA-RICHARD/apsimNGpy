@@ -151,7 +151,7 @@ path = Path('D:\ACPd\Onion creek watershed')
 
 class WDir:
     def __init__(self, path_dir=None):
-        assert path_dir, "path directory is required"
+        assert path_dir, "path dir_path is required"
         self.ROOT_path =Path(path)
     def path(self, name = None):
         """
@@ -171,7 +171,7 @@ class WDir:
         wd = os.path.realpath(self.ROOT_path)
         if os.getcwd() != wd:
           os.chdir(os.path.realpath(self.ROOT_path))
-        else: print(f"this path: {wd} is already the current working directory")
+        else: print(f"this path: {wd} is already the current working dir_path")
 
 gis_data = WDir(path)
 

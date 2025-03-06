@@ -141,10 +141,10 @@ def create_apsimx_sim_files(wd, model, iterable):
     """
     Creates copies of a specified APSIM model file for each element in the provided iterable,
     renaming the files to have unique identifiers based on their index in the iterable.
-    The new files are saved in the specified working directory.
+    The new files are saved in the specified working dir_path.
 
     Args:
-    wd (str): The working directory where the new .apsimx files will be stored.
+    wd (str): The working dir_path where the new .apsimx files will be stored.
     model (str): The path to the .apsimx model file that will be copied.
     iterable (iterable): An iterable (e.g., list or range) whose length determines the number of copies made.
 
@@ -154,15 +154,15 @@ def create_apsimx_sim_files(wd, model, iterable):
     The function performs the following steps:
     1. Extracts the basename of the model file, removing the '.apsimx' extension to create a model suffix.
     2. Iterates over the `iterable`, creating a unique file name for each element by appending an index and '.apsimx' to the model suffix.
-    3. Copies the original model file to the new file name in the specified working directory.
+    3. Copies the original model file to the new file name in the specified working dir_path.
     4. Returns a dictionary mapping each index to the file path of the created .apsimx file.
 
     Example:
-    >>wd = '/path/to/working/directory'
+    >>wd = '/path/to/working/dir_path'
     >> model = '/path/to/original/model.apsimx'
     >> file_paths = create_apsimx_files(wd, model, range(5))
     >> print(file_paths)
-    {0: '/path/to/working/directory/model_0.apsimx', 1: '/path/to/working/directory/model_1.apsimx', ...}
+    {0: '/path/to/working/dir_path/model_0.apsimx', 1: '/path/to/working/dir_path/model_1.apsimx', ...}
     """
 
     mod = model.strip('.apsimx')
@@ -246,7 +246,7 @@ def create_and_run_sim_objects(wd, shp_file, resolution, num_points, model_file,
     """
 
     Args:
-        wd: working directory
+        wd: working dir_path
         shp_file: shape file of the target area
         model_file: APSIM model string path
         reports_names:str or list names of the data in the simulation model

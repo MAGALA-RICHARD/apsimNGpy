@@ -204,7 +204,7 @@ def update_mgt(model, management, reload=True, out=None):
                     met.FileName = weather_file
             return self
         except Exception as e:
-            print(repr(e))  # this error will be logged to the folder logs in the current working directory
+            print(repr(e))  # this error will be logged to the folder logs in the current working dir_path
             raise
 
 

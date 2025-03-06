@@ -112,7 +112,7 @@ def test_experiment(use_tread=False):
             ...
 
     finally:
-        # Clean up by removing the temporary directory
+        # Clean up by removing the temporary dir_path
         try:
             shutil.rmtree(path)
             logging.info("files removed successfully")

@@ -633,7 +633,7 @@ def bounding_box_corners(center_point, radius):
 
 class WDir:
     def __init__(self, path_dir=None):
-        assert path_dir, "path directory is required"
+        assert path_dir, "path dir_path is required"
         self.initial_path = Path(path_dir)
 
     def path(self, name=None):
@@ -655,7 +655,7 @@ class WDir:
         if os.getcwd() != wd:
             os.chdir(os.path.realpath(self.initial_path))
         else:
-            logger.warning(f"this path: {wd} is already the current working directory")
+            logger.warning(f"this path: {wd} is already the current working dir_path")
 
 
 def exception_handler(re_raise=False):

@@ -152,15 +152,8 @@ class TestAPSIMNG(BaseTester):
         self.test_ap_sim.run()
         #self.assertGreater(juvenile_replacements, juvenile_original, msg= 'Juvenile target value was not replaced')
 
-    def tearDown(self):
-        self.test_ap_sim.clean_up()
-        # shutil.rmtree(SCRATCH, ignore_errors=True)
 
 
 if __name__ == '__main__':
     unittest.main()
-    pp= Path(r'D:\package\apsimNGpy\apsimNGpy\core\test_folder')
-    at= pp.rglob("*.apsimx")
-    for i in at:
-        if i:
-            os.remove(i)
+

@@ -45,7 +45,7 @@ def run_model_externally(model, verbose: bool = False) -> Popen[str]:
         return result
     finally:
         if not result.poll():
-            result.terminate()
+            result.kill()
 
 
 def collect_csv_from_dir(dir_path, pattern):

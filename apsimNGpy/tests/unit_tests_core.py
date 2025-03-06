@@ -160,4 +160,7 @@ class TestAPSIMNG(BaseTester):
 if __name__ == '__main__':
     unittest.main()
     pp= Path(r'D:\package\apsimNGpy\apsimNGpy\core\test_folder')
-    at=
+    at= pp.rglob("*.apsimx")
+    for i in at:
+        if i:
+            os.remove(i)

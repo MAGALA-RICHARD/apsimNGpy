@@ -2693,7 +2693,7 @@ Example:
 >> file_paths = create_apsimx_files(wd, model, range(5))
 >> print(file_paths)
 ```python
-{0: '/path/to/working/directory/model_0.apsimx', 1: '/path/to/working/directory/model_1.apsimx', ...}
+{0: '/path/to/working/dir_path/model_0.apsimx', 1: '/path/to/working/dir_path/model_1.apsimx', ...}
 ```
 
 ## Function: download_weather

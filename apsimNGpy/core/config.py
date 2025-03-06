@@ -52,16 +52,16 @@ def list_drives():
 def scan_dir_for_bin(path: str):
     """
     Recursively scans directories starting at the given path.
-    Stops scanning as soon as a directory named 'bin' is encountered and returns its path.
+    Stops scanning as soon as a dir_path named 'bin' is encountered and returns its path.
     """
     with os.scandir(path) as entries:
         for entry in entries:
             if entry.is_dir():
                 if entry.name == 'bin' and 'APSIM20' in entry.path:
-                    # we don't want to call _apsim_model_is_installed on every directory,
+                    # we don't want to call _apsim_model_is_installed on every dir_path,
                     # so we call it below after the first condition is met
                     if _apsim_model_is_installed(entry.path):
-                        # Return the path of the 'bin' directory
+                        # Return the path of the 'bin' dir_path
                         return entry.path
 
                 else:
@@ -122,7 +122,7 @@ def _match_pattern_to_path(pattern):
 @cache
 def auto_detect_apsim_bin_path():
     """ For Windows, we scan all drives. On macOS, we check the Applications folder, while on Linux, we look in `/usr/local`.
-     Additionally, we search the home directory, though it is unlikely to be a reliable source.
+     Additionally, we search the home dir_path, though it is unlikely to be a reliable source.
     """
     if platform.system() == 'Windows':
         return scan_drive_for_bin() or ""
@@ -142,7 +142,7 @@ def auto_detect_apsim_bin_path():
 def get_apsim_bin_path():
     """
     Returns the path to the apsim bin folder from either auto-detection or from the path already supplied by the user
-    through the apsimNgpyconfig.ini file in the user home directory. the location folder is called
+    through the apsimNgpyconfig.ini file in the user home dir_path. the location folder is called
     The function is silent does not raise any exception but return empty string in all cases
     :return:
     """
@@ -160,7 +160,7 @@ def get_apsim_bin_path():
 
 def set_apsim_bin_path(path, raise_errors=True):
     """ Send your desired path to the aPSim binary folder to the config module
-    the path should end with bin as the parent directory of the aPSim Model.
+    the path should end with bin as the parent dir_path of the aPSim Model.
     >> Please be careful with adding an uninstalled path, which does not have model.exe file or unix executable.
     It won't work and python with throw an error
     >> example from apsimNGpy.config import Config
@@ -212,7 +212,7 @@ class Config:
             FutureWarning)
 
         """ Send your desired path to the aPSim binary folder to the config module
-        the path should end with bin as the parent directory of the aPSim Model.exe
+        the path should end with bin as the parent dir_path of the aPSim Model.exe
         >> Please be careful with adding an uninstalled path, which do not have model.exe file.
         It won't work and python with throw an error
         >> example from apsimNGpy.config import Config

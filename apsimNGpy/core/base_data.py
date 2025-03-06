@@ -33,7 +33,7 @@ def __get_example(crop, path=None, simulations_object=True):
 
     Args:
     crop (str): The name of the crop model for which to retrieve the APSIM example.
-    path (str, optional): The target path where the example file will be copied. Defaults to the current working directory.
+    path (str, optional): The target path where the example file will be copied. Defaults to the current working dir_path.
     simulations_object (bool): Flag indicating whether to return a SoilModel instance or just the copied file path.
 
     Returns:

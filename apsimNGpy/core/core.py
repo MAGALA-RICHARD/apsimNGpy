@@ -122,7 +122,7 @@ class APSIMNG:
 
     Parameters:
         model (os.PathLike): The file path to the APSIM NG model. This parameter specifies the model file to be used in the simulation.
-        out_path (str, optional): The path where the output file should be saved. If not provided, the output will be saved with the same name as the model file in the current directory.
+        out_path (str, optional): The path where the output file should be saved. If not provided, the output will be saved with the same name as the model file in the current dir_path.
         out (str, optional): Alternative path for the output file. If both `out_path` and `out` are specified, `out` takes precedence. Defaults to `None`.
 
     Keyword parameters:
@@ -551,13 +551,13 @@ class APSIMNG:
         """
         Replicates a file 'k' times.
 
-        If a path is specified, the copies will be placed in that directory with incremented filenames.
-        If no path is specified, copies are created in the same directory as the original file, also with incremented filenames.
+        If a path is specified, the copies will be placed in that dir_path with incremented filenames.
+        If no path is specified, copies are created in the same dir_path as the original file, also with incremented filenames.
 
         Parameters:
         - self: The core.api.APSIMNG object instance containing 'path' attribute pointing to the file to be replicated.
         - k (int): The number of copies to create.
-        - path (str, optional): The directory where the replicated files will be saved. Defaults to None, meaning the same directory as the source file.
+        - path (str, optional): The dir_path where the replicated files will be saved. Defaults to None, meaning the same dir_path as the source file.
         - tag (str, optional): a tag to attached with the copies. Defaults to "replicate"
 
 
@@ -1076,7 +1076,7 @@ class APSIMNG:
             return self
 
         except Exception as e:
-            logger.info(repr(e))  # this error will be logged to the folder logs in the current working directory
+            logger.info(repr(e))  # this error will be logged to the folder logs in the current working dir_path
             raise
 
     def show_met_file_in_simulation(self, simulations: list = None):

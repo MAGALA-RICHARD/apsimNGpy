@@ -121,10 +121,10 @@ def extract_docstrings(file_path):
 
 def extract_docstrings_recursive(directory):
     """
-    Recursively extracts docstrings from Python files in a directory and its subdirectories.
+    Recursively extracts docstrings from Python files in a dir_path and its subdirectories.
 
     Args:
-        directory (str): Path to the root directory.
+        directory (str): Path to the root dir_path.
 
     Returns:
         dict: A nested dictionary of directories and their respective Python files with extracted docstrings.
@@ -144,7 +144,7 @@ def extract_docstrings_recursive(directory):
                 relative_path = os.path.relpath(root, directory)
                 docstrings_by_dir[relative_path] = docstrings_by_file
     except Exception as e:
-        print(f"Error processing directory {directory}: {e}")
+        print(f"Error processing dir_path {directory}: {e}")
 
     return docstrings_by_dir
 
@@ -154,7 +154,7 @@ def main(title, in_dir, out):
     with open(out, "w", encoding="utf-8") as md_file:
         md_file.write(f"# {title}\n\n")
         for directory, files in docstrings.items():
-            # md_file.write(f"## Directory: {directory}\n\n")
+            # md_file.write(f"## Directory: {dir_path}\n\n")
             for file, docs in files.items():
                 md_file.write(f"# Module: {file.strip('.py')}\n\n")
 

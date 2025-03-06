@@ -193,7 +193,7 @@ def daymet_bylocation(lonlat, start, end, cleanup=True, filename=None):
    Cleanup:  A bolean True or False default is true: deletes the excel file generated during the file write up
    
    ------------
-   returns complete path to the new met file but also write the met file to the disk in the working directory
+   returns complete path to the new met file but also write the met file to the disk in the working dir_path
    '''
     # import pdb
     # pdb.set_trace()
@@ -334,7 +334,7 @@ def daymet_bylocation_nocsv(lonlat, start, end, cleanup=True, filename='daymet')
     Cleanup:  A bolean True or False default is true: deletes the excel file generated during the file write up
 
     ------------
-    returns complete path to the new met file but also write the met file to the disk in the working directory
+    returns complete path to the new met file but also write the met file to the disk in the working dir_path
     """
     # import pdb
     # pdb.set_trace()

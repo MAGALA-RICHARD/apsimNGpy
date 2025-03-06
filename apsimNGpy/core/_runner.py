@@ -64,6 +64,8 @@ def collect_csv_from_dir(dir_path, pattern):
                     df = pd.read_csv(file)
                     if isinstance(df, pd.DataFrame) and not df.empty:
                         yield df
+                    else: # notify potential issue
+                        logger.warning(f"{base_name} is not a csv file or itis empty")
 
 
 @timer
@@ -106,7 +108,7 @@ def run_from_dir(dir_path, pattern, verbose=False) -> [pd.DataFrame]:
     dir_path = str(dir_path)
     dir_patern = f"{dir_path}/{pattern}"
 
-    verbose_flag = {True: '--verbose', False: 'null'}[verbose]
+    verbose_flag = {True: '--verbose', False: 'None'}.get(verbose, 'None')
 
     process = Popen([str(apsim_exe), dir_patern, '--recursive', verbose_flag, '--csv'])
 

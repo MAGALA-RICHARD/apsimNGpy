@@ -67,7 +67,7 @@ def collect_csv_from_dir(dir_path, pattern):
 
 
 @timer
-def run_from_dir(dir_path, pattern, verbose=False, load_in_memory=True) -> [pd.DataFrame]:
+def run_from_dir(dir_path, pattern, verbose=False) -> [pd.DataFrame]:
     """
        This function acts as a wrapper around the APSIM command line recursive tool, automating
        the execution of APSIM simulations on all files matching a given pattern in a specified
@@ -106,17 +106,20 @@ def run_from_dir(dir_path, pattern, verbose=False, load_in_memory=True) -> [pd.D
     dir_path = str(dir_path)
     dir_patern = f"{dir_path}/{pattern}"
     print(dir_patern)
-    if verbose:
-        process = Popen([str(apsim_exe), dir_patern, '--recursive', '--verbose', '--csv', 'False'])
-    else:
-        process = Popen([str(apsim_exe), dir_patern, '--recursive', '--csv', 'false'])
+    verbose_flag = {True: '--verbose', False: 'null'}[verbose]
+
+    process = Popen([str(apsim_exe), dir_patern, '--recursive', verbose_flag, '--csv'])
+
     try:
         process.wait()
         print(process.poll())
     finally:
         if process.poll() is None:
             process.terminate()
-    ap= collect_csv_from_dir(dir_path, pattern)
-    return ap
+
+    out = collect_csv_from_dir(dir_path, pattern)
+    return out
 
 
+if __name__ == "__main__":
+    ap = list(run_from_dir(r'D:\package\apsimNGpy\apsimNGpy\core\test_folder', '*.apsimx', verbose=True))

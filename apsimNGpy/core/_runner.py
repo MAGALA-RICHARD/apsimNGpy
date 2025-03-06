@@ -6,7 +6,7 @@ from subprocess import run, CalledProcessError, CompletedProcess, PIPE
 import platform
 
 import pandas as pd
-
+from apsimNGpy.settings import logger
 from apsimNGpy.core.config import get_apsim_bin_path
 from typing import NamedTuple
 from apsimNGpy.core.model_loader import load_model_from_dict
@@ -105,21 +105,20 @@ def run_from_dir(dir_path, pattern, verbose=False) -> [pd.DataFrame]:
        """
     dir_path = str(dir_path)
     dir_patern = f"{dir_path}/{pattern}"
-    print(dir_patern)
+
     verbose_flag = {True: '--verbose', False: 'null'}[verbose]
 
     process = Popen([str(apsim_exe), dir_patern, '--recursive', verbose_flag, '--csv'])
 
     try:
+        logger.info('waiting for APSIM simulations to complete')
         process.wait()
-        print(process.poll())
     finally:
         if process.poll() is None:
             process.terminate()
-
+    logger.info(f"Loading data into memory.")
     out = collect_csv_from_dir(dir_path, pattern)
     return out
 
 
-if __name__ == "__main__":
-    ap = list(run_from_dir(r'D:\package\apsimNGpy\apsimNGpy\core\test_folder', '*.apsimx', verbose=True))
+

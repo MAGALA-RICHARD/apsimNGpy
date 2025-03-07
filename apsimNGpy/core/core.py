@@ -426,7 +426,7 @@ class APSIMNG:
 
             # before running
             self.save()
-            res = run_model_externally(self.model_info.path, verbose=verbose)
+            res = run_model_externally(self.model_info.path, verbose=verbose, to_csv=kwargs.get('to_csv', False))
             if clean_up:
                 self.clean_up()
             if res.returncode == 0:

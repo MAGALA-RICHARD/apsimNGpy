@@ -13,7 +13,6 @@ from apsimNGpy.core.model_loader import load_model_from_dict
 from apsimNGpy.utililies.utils import timer
 from subprocess import *
 
-logger = logging.getLogger(__name__)
 apsim_bin_path = Path(get_apsim_bin_path())
 
 # Determine executable based on OS
@@ -23,25 +22,26 @@ else:  # Linux or macOS
     apsim_exe = apsim_bin_path / "Models"
 
 
-def run_model_externally(model, verbose: bool = False) -> Popen[str]:
+def run_model_externally(model, verbose: bool = False, to_csv=False) -> Popen[str]:
     """Runs an APSIM model externally, ensuring cross-platform compatibility."""
 
     # Get the APSIM binary path
 
     # Define the APSIMX file path
     apsim_file = model
-    result = Popen([str(apsim_exe), str(apsim_file), '--verbose'], stdout=PIPE, stderr=PIPE, text=True)
+    if not to_csv:
+        result = Popen([str(apsim_exe), str(apsim_file), '--verbose'], stdout=PIPE, stderr=PIPE, text=True)
+    else:
+        result = Popen([str(apsim_exe), str(apsim_file), '--verbose', '--csv'], stdout=PIPE, stderr=PIPE, text=True)
     try:
-        if verbose:
-            logger.info("APSIM Run Successful!")
-            logger.info(result.stdout)  # Print APSIM output
-        # logger.info("Errors:", result.stderr)
-        result.communicate()
-        res, err = result.communicate()
+
+        out, err = result.communicate()
 
         if err:
             logger.error(err.strip)
-        logger.info(res.strip())
+        if verbose:
+            logger.info(out.strip())
+
         return result
     finally:
         if not result.poll():
@@ -64,7 +64,7 @@ def collect_csv_from_dir(dir_path, pattern):
                     df = pd.read_csv(file)
                     if isinstance(df, pd.DataFrame) and not df.empty:
                         yield df
-                    else: # notify potential issue
+                    else:  # notify potential issue
                         logger.warning(f"{base_name} is not a csv file or itis empty")
 
 
@@ -121,6 +121,3 @@ def run_from_dir(dir_path, pattern, verbose=False) -> [pd.DataFrame]:
     logger.info(f"Loading data into memory.")
     out = collect_csv_from_dir(dir_path, pattern)
     return out
-
-
-

@@ -54,10 +54,13 @@ Please follow these steps to resolve the issue:
    set_apsim_bin_path('~/your/path/to/bin')
 """
 # configure the logger
-logger = logging.getLogger(__name__)
+#logger = logging.getLogger(__name__)
 
+log_file = os.path.expanduser('~/apsimNGpy_sim.log')
 
-def setup_logger(name: str, level: int = logging.INFO) -> logging.Logger:
+def setup_logger(name: str =None, level: int = logging.INFO) -> logging.Logger:
+    if name is None:
+        name=  log_file
     logger = logging.getLogger(name)
     if not logger.handlers:
         handler = logging.StreamHandler()
@@ -68,35 +71,12 @@ def setup_logger(name: str, level: int = logging.INFO) -> logging.Logger:
     return logger
 
 
-logger.setLevel(logging.DEBUG)
-
-# Create console handler and set level
-# am also sending this to the user, because logs maybe removed with removal of the package
-log_file = os.path.expanduser('~/apsimNGpy_sim.log')
-logger = setup_logger(log_file)
-console_handler = logging.StreamHandler()
-console_handler.setLevel(logging.DEBUG)
-
-console_handler = logging.StreamHandler()
-console_handler.setLevel(logging.DEBUG)
-
-# Create file handler and set level
-file_handler = logging.FileHandler(log_file)
-file_handler.setLevel(logging.INFO)
-
-# Create formatter and set it for both handlers
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-console_handler.setFormatter(formatter)
-file_handler.setFormatter(formatter)
-
-# Add handlers to the logger
-logger.addHandler(console_handler)
-logger.addHandler(file_handler)
+logger = setup_logger()
 
 APSIM_LOCATION = os.environ.get('APSIM_LOCATION')
 
 SCRATCH = os.environ.get('WS', Path(os.getcwd()) / 'scratch')
-
+# need to clean up perioduically if wcan
 try:
     rmtree(SCRATCH)
 except (FileNotFoundError, PermissionError) as fp:

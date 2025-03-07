@@ -48,11 +48,9 @@ from collections.abc import Iterable
 from typing import Any
 from System.Data import DataView
 
-logging.basicConfig(level=logging.INFO)
 MultiThreaded = Models.Core.Run.Runner.RunTypeEnum.MultiThreaded
 SingleThreaded = Models.Core.Run.Runner.RunTypeEnum.SingleThreaded
 ModelRUNNER = Models.Core.Run.Runner
-
 
 
 def dataview_to_dataframe(_model, reports):
@@ -67,7 +65,7 @@ def dataview_to_dataframe(_model, reports):
         pred = _model._DataStore.Reader.GetData(reports)
         dataview = DataView(pred)
         if dataview.Table:
-        # Extract column names
+            # Extract column names
             column_names = [col.ColumnName for col in dataview.Table.Columns]
 
             # Extract data from rows
@@ -81,9 +79,7 @@ def dataview_to_dataframe(_model, reports):
         else:
             logger.error("No DataView was found")
     finally:
-            _model._DataStore.Close()
-
-
+        _model._DataStore.Close()
 
 
 def select_threads(multithread):
@@ -292,11 +288,11 @@ class APSIMNG:
         self.path = self.model_info.path
         return self
 
-    def save(self, file_name = None):
+    def save(self, file_name=None):
         _path = file_name or self.path
 
         save_model_to_file(self.Simulations, out=_path)
-        model_info = recompile(self)# load_apsim_model(_path)
+        model_info = recompile(self)  # load_apsim_model(_path)
         self.restart_model(model_info)
 
         return self
@@ -336,10 +332,9 @@ class APSIMNG:
             self._DataStore.Open()
             # Clear old data before running
 
-
             self._DataStore.Dispose()
             try:
-               Path(self.datastore).unlink(missing_ok=True)
+                Path(self.datastore).unlink(missing_ok=True)
             except PermissionError as pe:
                 ...
             sims = self.find_simulations(simulations) if simulations else self.Simulations
@@ -382,7 +377,7 @@ class APSIMNG:
 
     @property
     def results(self) -> pd.DataFrame:
-        reports = self.report_names or "Report" # 'Report' # is the apsim default name
+        reports = self.report_names or "Report"  # 'Report' # is the apsim default name
         if self.processed and reports:
             if not os.path.exists(self.datastore):
                 raise FileNotFoundError(self.datastore, f'{self.datastore} is not found have you recently cleaned up '
@@ -1536,34 +1531,13 @@ class APSIMNG:
             Path(self.path).unlink(missing_ok=True)
 
             Path(self.path.strip('apsimx') + "bak").unlink(missing_ok=True)
-            #self._DataStore.Dispose()
-            #Path(self.datastore).unlink(missing_ok=True)
+            # self._DataStore.Dispose()
+            # Path(self.datastore).unlink(missing_ok=True)
         except (FileNotFoundError, PermissionError) as e:
             logger.warning(f"{e} encountered while cleaning data")
             pass
 
         return self
-
-    def clear(self):
-        """
-        Clears the attributes of the object and optionally deletes associated files.
-
-        If the `copy` attribute is set to True, this method will also attempt to delete
-        files at `self.path` and `self.datastore`. This is a destructive operation and
-        should be used with caution.
-
-        Returns:
-           >>None: This method does not return a value.
-           >> Please proceed with caution, we assume that if you want to clear the model objects, then you don't need them
-           but by making copy compulsory, then, we are clearing the edited files
-        """
-        Path(self.path.strip('apsimx') + "db-shm").unlink(missing_ok=True)
-        Path(self.path).unlink(missing_ok=True)
-        Path(self.path.strip('apsimx') + "db-wal").unlink(missing_ok=True)
-        Path(self.path.strip('apsimx') + "bak").unlink(missing_ok=True)
-        Path(self.datastore).unlink(missing_ok=True)
-        self.Simulations = None
-        self._DataStore = None
 
     def replace_soil_organic(self, *, organic_name, simulation_name=None, **kwargs):
         """replace the organic module comprising Carbon , FBIOm, FInert/ C/N
@@ -1656,7 +1630,7 @@ if __name__ == '__main__':
         a = perf_counter()
         # model.RevertCheckpoint()
         model.update_mgt(management=({"Name": 'Sow using a variable rule', 'Population': N},))
-        #model.replace_soil_properties_by_path(path='None.Soil.Organic.None.None.Carbon', param_values=[N])
+        # model.replace_soil_properties_by_path(path='None.Soil.Organic.None.None.Carbon', param_values=[N])
         # model.replace_any_soil_physical(parameter='BD', param_values=[1.23],)
         # model.save_edited_file(reload=True)
         model.run('Report')

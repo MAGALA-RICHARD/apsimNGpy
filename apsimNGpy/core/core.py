@@ -290,7 +290,7 @@ class APSIMNG:
 
     def save(self, file_name=None):
         _path = file_name or self.path
-
+        self.path = _path
         save_model_to_file(self.Simulations, out=_path)
         model_info = recompile(self)  # load_apsim_model(_path)
         self.restart_model(model_info)

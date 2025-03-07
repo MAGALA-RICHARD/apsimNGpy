@@ -6,15 +6,16 @@ from apsimNGpy.core.base_data import load_default_simulations
 from apsimNGpy.core.apsim import ApsimModel as SoilModel
 from pathlib import Path
 import os
+
 # set the working path
 cwd = Path.cwd().home()
 os.chdir(cwd)
 CROP = "Maize"
 # download weather from daymet
 # sample lonlat
-lonlat  = -3.01183333, 42.08333333
-weather  = weathermanager.get_weather(lonlat, start  =1990, end =2020, filename="somewhere.met", source='nasa')
-data = load_default_simulations(crop= CROP,simulations_object=True )
+lonlat = -3.01183333, 42.08333333
+weather = weathermanager.get_weather(lonlat, start=1990, end=2020, filename="somewhere.met", source='nasa')
+data = load_default_simulations(crop=CROP, simulations_object=True)
 
 # initialise
 apsim = SoilModel(data.path)
@@ -28,6 +29,6 @@ apsim.run()
 res = apsim.results
 print(res)
 # save your model
-apsim.save(file_name = 'changed_met.apsimx')
+apsim.save(file_name='changed_met.apsimx')
 # check the saved path
 print(apsim.path)

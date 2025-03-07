@@ -128,5 +128,5 @@ def run_model(named_tuple_model, results=False, clean_up =False):
         print(f"apsimNGpy had issues running file {named_tuple_model.path} : because of {repr(e)}")
 
 
-if __name__ == "__main__":
-    pp = r'D:\ndata/sw.apsimx'
+
+

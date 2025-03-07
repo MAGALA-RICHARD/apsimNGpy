@@ -393,7 +393,7 @@ class APSIMNG:
     def run(self, report_name: Union[tuple, list, str] = None,
             simulations: Union[tuple, list] = None,
             clean_up: bool = False,
-            multithread: bool = True,
+            verbose=False,
             **kwargs) -> 'APSIMNG':
         """Run apsim model in the simulations
 
@@ -426,7 +426,7 @@ class APSIMNG:
 
             # before running
             self.save()
-            res = run_model_externally(self.model_info.path)
+            res = run_model_externally(self.model_info.path, verbose=verbose)
             if clean_up:
                 self.clean_up()
             if res.returncode == 0:
@@ -1633,7 +1633,7 @@ if __name__ == '__main__':
         # model.replace_soil_properties_by_path(path='None.Soil.Organic.None.None.Carbon', param_values=[N])
         # model.replace_any_soil_physical(parameter='BD', param_values=[1.23],)
         # model.save_edited_file(reload=True)
-        model.run('Report')
+        model.run('Report', verbose=True)
         df = model.results
         ui = model.extract_user_input('Sow using a variable rule')
         print(ui)

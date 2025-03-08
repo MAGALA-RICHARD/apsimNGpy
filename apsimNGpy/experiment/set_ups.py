@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from pathlib import Path
 import pandas as pd
 from apsimNGpy.experiment.permutations import create_permutations
-from apsimNGpy.utililies.database_utils import get_db_table_names, read_db_table
+from apsimNGpy.core_utils.database_utils import get_db_table_names, read_db_table
 from pandas import DataFrame, concat
 from apsimNGpy.parallel.process import custom_parallel
 import warnings

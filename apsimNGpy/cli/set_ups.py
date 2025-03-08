@@ -1,7 +1,7 @@
 import argparse
 from os import path
 import logging
-from apsimNGpy.utililies.utils import timer
+from apsimNGpy.core_utils.utils import timer
 from apsimNGpy.core.config import set_apsim_bin_path, get_apsim_bin_path, auto_detect_apsim_bin_path
 from apsimNGpy.settings import logger
 

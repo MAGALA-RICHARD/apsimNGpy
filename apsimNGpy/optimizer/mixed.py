@@ -5,7 +5,7 @@ from pathlib import Path
 
 import numpy as np
 
-from apsimNGpy.utililies.utils import timer
+from apsimNGpy.core_utils.utils import timer
 
 from apsimNGpy.optimizer.simple_problem import Problem, Solvers, auto_guess
 from scipy.optimize import minimize, differential_evolution

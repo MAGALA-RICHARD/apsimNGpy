@@ -4,11 +4,11 @@ from concurrent.futures import ProcessPoolExecutor, as_completed, ThreadPoolExec
 from multiprocessing import cpu_count
 from time import perf_counter
 from apsimNGpy.settings import NUM_CORES
-from apsimNGpy.utililies.run_utils import run_model
+from apsimNGpy.core_utils.run_utils import run_model
 from tqdm import tqdm
 from apsimNGpy import settings
-from apsimNGpy.utililies.utils import select_process
-from apsimNGpy.utililies.database_utils import read_db_table
+from apsimNGpy.core_utils.utils import select_process
+from apsimNGpy.core_utils.database_utils import read_db_table
 from apsimNGpy.parallel.safe import download_soil_table
 from itertools import islice
 import pandas as pd
@@ -31,7 +31,7 @@ def custom_parallel(func, iterable: Iterable, *args, **kwargs):
     *Args:
         func (callable): The function to run in parallel.
 
-        iterable (iterable): An iterable of items that will be processed by the function.
+        iterable (iterable): An iterable of items that will be ran_ok by the function.
 
         *args: Additional arguments to pass to the `func` function.
 

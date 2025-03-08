@@ -3,14 +3,14 @@ import os
 import pandas as pd
 
 from apsimNGpy.parallel.process import run_apsimx_files_in_parallel, read_result_in_parallel
-from apsimNGpy.utililies.utils import collect_runfiles
+from apsimNGpy.core_utils.utils import collect_runfiles
 from pathlib import Path
 
 hd = Path.home()/'scart'
 hd.mkdir(parents=True, exist_ok=True)
 os.chdir(hd)
 from apsimNGpy.core.base_data import load_default_simulations
-from apsimNGpy.utililies.utils import make_apsimx_clones
+from apsimNGpy.core_utils.utils import make_apsimx_clones
 
 # let's duplicate some files
 

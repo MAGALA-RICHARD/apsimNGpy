@@ -113,7 +113,7 @@ class TestAPSIMNG(BaseTester):
         # you may test this by removing the first  before test but running apsim internally is not working wth some
         # versions
         self.test_ap_sim.run_in_python("Report")
-        self.assertTrue(self.test_ap_sim.processed, 'simulation was not processed perhaps')
+        self.assertTrue(self.test_ap_sim.ran_ok, 'simulation was not ran_ok perhaps')
         self.assertIsInstance(self.test_ap_sim.results, pd.DataFrame, msg='not a pandas dataframe')
 
     def test_replace_soil_properties_by_path(self):

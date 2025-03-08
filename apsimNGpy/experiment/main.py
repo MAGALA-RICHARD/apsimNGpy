@@ -5,9 +5,9 @@ sys.path.append(os.path.dirname(os.path.realpath(__file__)))
 import shutil
 from os.path import realpath
 from pathlib import Path
-from apsimNGpy.utililies.database_utils import clear_all_tables, clear_table
+from apsimNGpy.core_utils.database_utils import clear_all_tables, clear_table
 from apsimNGpy.parallel.process import custom_parallel
-from apsimNGpy.utililies.database_utils import read_db_table, check_column_value_exists
+from apsimNGpy.core_utils.database_utils import read_db_table, check_column_value_exists
 from apsimNGpy.experiment.experiment_utils import _run_experiment, experiment_runner, define_factor, define_cultivar, \
     copy_to_many, MetaInfo, Factor
 from apsimNGpy.experiment.set_ups import track_completed, DeepChainMap, define_parameters

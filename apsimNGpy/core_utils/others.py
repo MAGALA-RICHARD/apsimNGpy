@@ -82,7 +82,7 @@ def match_crop(abb, add_wheat=None):
     ```
 
     Note:
-    - The function returns None for special case abbreviations 'TTTTTT' and 'UUUUUUU' as an indication of non-standard sequences that should not be processed.
+    - The function returns None for special case abbreviations 'TTTTTT' and 'UUUUUUU' as an indication of non-standard sequences that should not be ran_ok.
     - The insertion of 'Wheat' at specified positions assumes the sequence is long enough to accommodate these insertions. If the sequence is shorter, 'Wheat' will only be inserted up to the length of the sequence.
     """
     # Reserve the original abbreviation

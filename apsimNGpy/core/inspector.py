@@ -26,7 +26,7 @@ class Inspector(APSIMNG):
 
         managers = self.Simulations.FindAllDescendants[Models.Manager]()
         if full_path:
-            list_managers= [i.FullPath for i in managers]
+            list_managers = [i.FullPath for i in managers]
         else:
             list_managers = [i.Name for i in managers]
         if verbose:
@@ -44,10 +44,17 @@ class Inspector(APSIMNG):
             pprint(params, indent=4)
         return params
 
+    def report_ids(self):
+        datastorage= self.Simulations.FindAllDescendants[Models.Report]()
+        print(datastorage)
+
 
 if __name__ == '__main__':
+    from pathlib import Path
     from apsimNGpy.core.base_data import load_default_simulations
 
+    xp = Path(r"D:\package\ApsimX\Models").rglob('*.cs')
+    models = []
     mod = Inspector(load_default_simulations(crop="maize", simulations_object=False))
     xt = mod.get_manager_ids(True, verbose=True)
     print(xt)

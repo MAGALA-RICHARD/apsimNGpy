@@ -84,9 +84,14 @@ class TestAPSIMNG(BaseTester):
         self.assertTrue(self.test_ap_sim.find_simulations(simulations=[sim]), msg=MSG)
 
     def test_simulated_results(self):
-        """ Test load_simulated_results"""
+        """ Test load_simulated_results
+        requires that the models are ran first"""
+        self.test_ap_sim.run()
+        if not self.test_ap_sim.ran_ok:
+            raise unittest.SkipTest(f'skipping test_simualted results because model did '
+                                    f'not run successffuly or db was deletted')
         repos = self.test_ap_sim.simulated_results
-        msg = f"expected dictionary but received {type(repos)}"
+        msg = f"expected pd.dataframe but received {type(repos)}"
         self.assertIsInstance(repos, pd.DataFrame, msg=msg)
         # test if dict not empty
         msg = 'expected dict is empty'

@@ -4,7 +4,7 @@ import geopandas as gpd
 import pandas as pd
 import numpy as np
 from apsimNGpy.core import ApsimModel
-from apsimNGpy.utililies.utils import select_process
+from apsimNGpy.core_utils.utils import select_process
 from shapely.geometry import Polygon
 import random
 from shapely.geometry import Point

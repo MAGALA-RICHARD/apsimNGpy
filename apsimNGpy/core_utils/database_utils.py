@@ -6,11 +6,11 @@ import sqlite3
 from collections import namedtuple
 from os.path import exists
 from pathlib import Path
-from apsimNGpy.utililies.utils import timer
+from apsimNGpy.core_utils.utils import timer
 from pandas import errors
 from pandas import read_sql_query as rsq
 from sqlalchemy import create_engine, inspect
-from apsimNGpy.utililies.exceptions import TableNotFoundError
+from apsimNGpy.core_utils.exceptions import TableNotFoundError
 from apsimNGpy.settings import logger
 
 

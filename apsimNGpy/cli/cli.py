@@ -5,7 +5,7 @@ import logging
 
 import numpy as np
 import pandas as pd
-from apsimNGpy.utililies.utils import timer
+from apsimNGpy.core_utils.utils import timer
 from apsimNGpy.core.apsim import ApsimModel
 from apsimNGpy.core.base_data import load_default_simulations
 from apsimNGpy.settings import logger

@@ -1,132 +1,140 @@
-"""
-Interface to APSIM simulation models using Python.NET build on top of a Matti Pastell farmingpy framework.
-"""
-import os
-import sqlite3
-import sys
-import pandas as pd
-from apsimNGpy.core.pythonet_config import load_pythonnet, aPSim_PATH
-apsim_model = aPSim_PATH
-loader = load_pythonnet
-from System.Collections.Generic import *
-from System import *
+import os.path
+import platform
 from pathlib import Path
-import Models
-from System import *
-from System.Collections.Generic import *
+from subprocess import *
+from typing import Dict, Any
 
-FAILED_RUNS = []
-sys.path.append(os.path.realpath(apsim_model))
+import pandas as pd
 
+from apsimNGpy.core.config import get_apsim_bin_path
+from apsimNGpy.settings import logger
+from apsimNGpy.core_utils.utils import timer
 
-def _read_simulation(datastore, report_name=None):
-    """ returns all data frame the available report tables"""
-    conn = sqlite3.connect(datastore)
-    try:
-        cursor = conn.cursor()
+apsim_bin_path = Path(get_apsim_bin_path())
 
-        # reading all table names
-
-        table_names = [a for a in cursor.execute("SELECT name FROM sqlite_master WHERE type = 'table'")]
-
-        table_list = []
-        for i in table_names:
-            table_list.append(i[0])
-            # remove these
-        rm = ['_InitialConditions', '_Messages', '_Checkpoints', '_Units']
-        for i in rm:
-            if i in table_list:
-                table_list.remove(i)
-                # start selecting tables
-        select_template = 'SELECT * FROM {table_list}'
-
-        # create data fram dictionary to keep all the tables
-        dataframe_dict = {}
-
-        for tname in table_list:
-            query = select_template.format(table_list=tname)
-            dataframe_dict[tname] = pd.read_sql(query, conn)
-        # close the connection cursor
-
-        dfl = len(dataframe_dict)
-        if len(dataframe_dict) == 0:
-            print("the data dictionary is empty. no data has been returned")
-            # else:
-            # remove elements
-            # print(f"{dfl} data frames has been returned")
-
-        if report_name:
-            return dataframe_dict[report_name]
-        else:
-            return dataframe_dict
-    finally:
-        conn.close()
+# Determine executable based on OS
+if platform.system() == "Windows":
+    apsim_exe = apsim_bin_path / "Models.exe"
+else:  # Linux or macOS
+    apsim_exe = apsim_bin_path / "Models"
 
 
-def run(named_tuple_data, results=True, multithread=True, simulations =None):
-    """Run apsimx model in the simulations. the method first cleans the existing database.
+def run_model_externally(model, verbose: bool = False, to_csv=False) -> Popen[str]:
+    """Runs an APSIM model externally, ensuring cross-platform compatibility."""
 
-     This is the safest way to run apsimx files in parallel
-     as named tuples are immutable so the chances of race conditioning are very low
+    # Get the APSIM binary path
 
-        Parameters
-        ----------
-        simulations (__str_), optional
-            List of simulation names to run, if `None` runs all simulations, by default `None`.
-
-        :multithread (bool), optional
-            If `True` APSIM uses multiple threads, by default `True`
-
-        results (bool), optional: if True, the results will be returned else the function execute without returning anything
-        """
-    if multithread:
-        runtype = Models.Core.Run.Runner.RunTypeEnum.MultiThreaded
+    # Define the APSIMX file path
+    apsim_file = model
+    if not to_csv:
+        result = Popen([str(apsim_exe), str(apsim_file), '--verbose', ], stdout=PIPE, stderr=PIPE, text=True)
     else:
-        runtype = Models.Core.Run.Runner.RunTypeEnum.SingleThreaded
+        result = Popen([str(apsim_exe), str(apsim_file), '--verbose', '--csv', ], stdout=PIPE, stderr=PIPE, text=True)
     try:
-        named_tuple_data.DataStore.Dispose()
-        named_tuple_data.DataStore.Open()
-        if simulations is None:
-            runmodel = Models.Core.Run.Runner(named_tuple_data.IModel, True, False, False, None, runtype)
-            e = runmodel.Run()
-        else:
-            sims = named_tuple_data.IModel.FindAllInScope[Models.Core.Simulation]()
-            # Runner needs C# list
-            cs_sims = List[Models.Core.Simulation]()
-            for s in sims:
-                cs_sims.Add(s)
-                runmodel = Models.Core.Run.Runner(cs_sims, True, False, False, None, runtype)
-                e = runmodel.Run()
-        if len(e) > 0:
-            print(e[0].ToString())
-        if results:
-            data = _read_simulation(named_tuple_data.datastore)
 
-            return data
-    except Exception as e:
-        raise
+        out, err = result.communicate()
+
+        if err:
+            logger.error(err.strip)
+        if verbose:
+            logger.info(out.strip())
+
+        return result
     finally:
-        named_tuple_data.DataStore.Close()
+        if not result.poll():
+            result.kill()
 
 
-def run_model(named_tuple_model, results=False, clean_up =False):
+@timer
+def collect_csv_by_model_path(model_path) -> dict[Any, Any]:
+    """Collects the
     """
+    ab_path = Path(os.path.abspath(model_path))
 
-    :param results (bool) for return results
-    :param named_tuple_model: named tuple from model_loader
-    :param clean_up (bool), deletes the files associated with the Apsim model. there is no need to worry about this
-    because everything is compiled in the model_loader
-    :return: a named tuple objects populated with the results if results is True
+    dirname = ab_path.parent
+    name = ab_path.stem
+
+    csv_files = list(dirname.glob(f"*{name}*.csv"))
+    if csv_files:
+        stems = [s.stem.split('.')[-1] for s in csv_files]
+        report_paths = {k: v for k, v in zip(stems, csv_files)}
+
+    else:
+        report_paths = {}
+    return report_paths
+
+
+def collect_csv_from_dir(dir_path, pattern):
+    global_path = Path(dir_path)
+    matching_apsimx_patterns = global_path.rglob(pattern)
+    if matching_apsimx_patterns:
+        for file_path in matching_apsimx_patterns:
+
+            # Strip the '.apsimx' extension and prepare to match CSV files
+            base_name = str(file_path.stem)
+
+            # Search for CSV files in the same directory as the original file
+            for csv_file in global_path.rglob(f"*{base_name}*.csv"):
+                file = csv_file.with_suffix('.csv')
+                if file.is_file():
+                    df = pd.read_csv(file)
+                    if isinstance(df, pd.DataFrame) and not df.empty:
+                        yield df
+                    else:  # notify potential issue
+                        logger.warning(f"{base_name} is not a csv file or itis empty")
+
+
+@timer
+def run_from_dir(dir_path, pattern, verbose=False) -> [pd.DataFrame]:
     """
+       This function acts as a wrapper around the APSIM command line recursive tool, automating
+       the execution of APSIM simulations on all files matching a given pattern in a specified
+       directory. It facilitates running simulations recursively across directories and outputs
+       the results for each file are stored to a csv file in the same directory as the file'.
+
+       What this situation does is that it makes it easy to retrieve the simulated files, returning a generator that
+       yields data frames
+
+       @Parameters:
+       __________________________________________________________________
+       - dir_path (str or Path): The path to the directory where the simulation files are located.
+       - pattern (str): The file pattern to match for simulation files (e.g., "*.apsimx").
+
+       The function constructs a command to execute APSIM simulations using the provided directory
+       path and file pattern. It adds flags for recursive search, verbosity, and output formatting.
+       The results of the simulations are directed to csf files in the directory
+       where the command is executed.
+
+       It then waits for the process to complete and checks the process status. If the process
+       is still running due to any interruptions or errors, it terminates the process to avoid
+       hanging or resource leakage.
+
+       Example:
+           _____________________________________________
+       ```python
+       run_from_dir(dir_path = r"/path/to/apsim/files",  pattern ="*.apsimx")
+
+       @returns
+        --a generator that yields data frames knitted by pandas
+       ```
+
+
+
+       """
+    dir_path = str(dir_path)
+    dir_patern = f"{dir_path}/{pattern}"
+
+    process = Popen([str(apsim_exe), dir_patern, '--recursive', '--verbose', '--csv'], stdout=PIPE, stderr=PIPE,
+                    text=True)
+
     try:
-        res = run(named_tuple_model, results=results)
-        if clean_up:
-            Path(named_tuple_model.path).unlink(missing_ok=True)
-        return res
-    except Exception as e:
-        print(f"{type(e)} has occured::::")
-        print(f"apsimNGpy had issues running file {named_tuple_model.path} : because of {repr(e)}")
-
-
-
-
+        logger.info('waiting for APSIM simulations to complete')
+        out, st_err = process.communicate()
+        if verbose:
+            logger.info(f'{out.strip()}')
+    finally:
+        if process.poll() is None:
+            process.terminate()
+    logger.info(f"Loading data into memory.")
+    out = collect_csv_from_dir(dir_path, pattern)
+    return out

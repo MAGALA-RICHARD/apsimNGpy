@@ -1,9 +1,7 @@
-from apsimNGpy.core import pythonet_config
 from apsimNGpy.core.base_data import load_default_simulations
-import Models
-import os
-from apsimNGpy.settings import logger
 from apsimNGpy.core.apsim import ApsimModel
+import Models
+from apsimNGpy.settings import logger
 
 # manipulation methods
 ADD = Models.Core.ApsimFile.Structure.Add
@@ -14,7 +12,7 @@ REPLACE = Models.Core.ApsimFile.Structure.Replace
 
 FOLDER = Models.Core.Folder()
 model = load_default_simulations(crop='maize')
-from apsimNGpy.utililies.utils import timer
+from apsimNGpy.core_utils.utils import timer
 
 
 @timer
@@ -116,7 +114,8 @@ def dataview_to_dataframe(_model, reports):
     df = pd.DataFrame(data, columns=column_names)
 
     return df
-from apsimNGpy.utililies.database_utils import read_db_table
+
+
 model.run()
 
 df = dataview_to_dataframe(model, reports='Report')

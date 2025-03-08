@@ -11,7 +11,7 @@ import os
 cwd = Path.cwd().home()
 os.chdir(cwd)
 CROP = "Maize"
-# download weather from daymet
+# download weather from nasa
 # sample lonlat
 lonlat = -3.01183333, 42.08333333
 weather = weathermanager.get_weather(lonlat, start=1990, end=2020, filename="somewhere.met", source='nasa')
@@ -32,3 +32,5 @@ print(res)
 apsim.save(file_name='changed_met.apsimx')
 # check the saved path
 print(apsim.path)
+# in other cases, you don't need to collect results to show that things are. you can check through ran_ok property
+print(apsim.ran_ok)

@@ -15,14 +15,15 @@ import sys
 # prepare for the C# import
 # from apsimNGpy.core.pythonet_config import start_pythonnet
 
-from apsimNGpy.core.core import APSIMNG
+from apsimNGpy.core.core import APSIMNG, Models
+from apsimNGpy.core.inspector import Inspector
 # now we can safely import any c# related libraries
 from System.Collections.Generic import *
 from Models.Core import Simulations
 from System import *
 from Models.Soils import Solute, Water, Chemical
 from Models.Soils import Soil, Physical, SoilCrop, Organic, LayerStructure
-import Models
+
 from typing import Union
 
 # constants
@@ -43,7 +44,7 @@ def timing_decorator(func):
     return wrapper
 
 
-class ApsimModel(APSIMNG):
+class ApsimModel(Inspector):
     def __init__(self, model: Union[os.PathLike, dict, str], out_path: os.PathLike = None, out: os.PathLike = None,
                  lonlat: tuple = None, soil_series: str = 'domtcp', thickness: int = 20, bottomdepth: int = 200,
                  thickness_values: list = None, run_all_soils: bool = False, load=True, **kwargs):

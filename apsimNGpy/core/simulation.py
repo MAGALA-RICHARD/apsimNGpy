@@ -6,10 +6,10 @@ from apsimNGpy.core.apsim import ApsimModel
 from apsimNGpy.core.base_data import LoadExampleFiles
 from pathlib import Path
 
-from apsimNGpy.utililies.utils import select_process
+from apsimNGpy.core_utils.utils import select_process
 from apsimNGpy.weather import daymet_bylocation_nocsv, daymet_bylocation
 from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganizeAPSIMsoil_profile
-from apsimNGpy.utililies.spatial import create_fishnet1, create_apsimx_sim_files, generate_random_points
+from apsimNGpy.core_utils.spatial import create_fishnet1, create_apsimx_sim_files, generate_random_points
 from tqdm import tqdm
 
 wd = Path.home()

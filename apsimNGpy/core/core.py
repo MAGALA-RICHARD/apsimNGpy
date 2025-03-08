@@ -5,28 +5,21 @@ email: magalarich20@gmail.com
 
 """
 
-from functools import singledispatch
-import matplotlib.pyplot as plt
-import random, logging, pathlib
+import random, pathlib
 import string
 from typing import Union
-import os, sys, datetime, shutil
+import os, shutil
 import numpy as np
 import pandas as pd
 from os.path import join as opj
-import sqlite3
 import json
-from pathlib import Path
-import threading
-import time
 import datetime
 import apsimNGpy.manager.weathermanager as weather
 from functools import cache
 # prepare for the C# import
 from apsimNGpy.core import pythonet_config
-from apsimNGpy.utililies.database_utils import read_db_table, get_db_table_names
 import warnings
-from apsimNGpy.utililies.utils import timer
+from apsimNGpy.core_utils.utils import timer
 
 # now we can safely import C# libraries
 from System.Collections.Generic import *
@@ -38,10 +31,8 @@ from Models.Soils import Soil, Physical, SoilCrop, Organic, Solute, Chemical
 
 import Models
 from Models.PMF import Cultivar
-from apsimNGpy.core._runner import run_model_externally
+from apsimNGpy.core.runner import run_model_externally, collect_csv_by_model_path
 from apsimNGpy.core.model_loader import (load_apsim_model, save_model_to_file, recompile)
-from apsimNGpy.utililies.utils import timer
-from apsimNGpy.core.runner import run_model
 import ast
 from typing import Iterable
 from collections.abc import Iterable
@@ -164,7 +155,7 @@ class APSIMNG:
         self._DataStore = self.model_info.DataStore
         self.path = self.model_info.path
         self._met_file = kwargs.get('met_file')
-        self.processed = False
+        self.ran_ok = False
         # self.init_model() work in progress
 
     @property
@@ -349,7 +340,7 @@ class APSIMNG:
             e = _run_model.Run()
             if len(e) > 0:
                 logging.info(e[0].ToString())
-            self.processed = True
+            self.ran_ok = True
             self.report_names = report_name  # to avoid breaking those with old code
 
             # def _read_data(reports):
@@ -366,7 +357,7 @@ class APSIMNG:
             #         out_df.reset_index(drop=True, inplace=True)
             #         return out_df
             #
-            # if self.processed:
+            # if self.ran_ok:
             #     self.results = _read_data(report_name)
 
 
@@ -378,17 +369,15 @@ class APSIMNG:
     @property
     def results(self) -> pd.DataFrame:
         reports = self.report_names or "Report"  # 'Report' # is the apsim default name
-        if self.processed and reports:
-            if not os.path.exists(self.datastore):
-                raise FileNotFoundError(self.datastore, f'{self.datastore} is not found have you recently cleaned up '
-                                                        f'the data')
+        if self.ran_ok and reports:
+            data_tables = collect_csv_by_model_path(self.path)
 
             if isinstance(reports, str):
                 reports = [reports]
-            datas = [dataview_to_dataframe(self, i) for i in reports]
+            datas = [pd.read_csv(data_tables[i]) for i in reports]
             return pd.concat(datas)
         else:
-            logging.warning("attempting to get results before running the model or providing the report name")
+            logging.error("attempting to get results before running the model or providing the report name")
 
     def run(self, report_name: Union[tuple, list, str] = None,
             simulations: Union[tuple, list] = None,
@@ -426,11 +415,11 @@ class APSIMNG:
 
             # before running
             self.save()
-            res = run_model_externally(self.model_info.path, verbose=verbose, to_csv=kwargs.get('to_csv', False))
+            res = run_model_externally(self.model_info.path, verbose=verbose, to_csv=kwargs.get('to_csv', True))
             if clean_up:
                 self.clean_up()
             if res.returncode == 0:
-                self.processed = True
+                self.ran_ok = True
                 self.report_names = report_name
                 # self.results = _read_data(report_name)
 
@@ -441,13 +430,18 @@ class APSIMNG:
 
     @property
     def simulated_results(self) -> pd.DataFrame:
-        reports = get_db_table_names(self.datastore)
-        bag = []
-        for rep in reports:
-            data = read_db_table(self.datastore, report_name=rep)
-            data['report_name'] = rep
-            bag.append(data)
-        return pd.concat(bag)
+        if self.ran_ok:
+            data_tables = collect_csv_by_model_path(self.path)
+            # reports = get_db_table_names(self.datastore)
+            bag = []
+            for tab, path in data_tables.items():
+                _df = pd.read_csv(path)
+                _df['TableName'] = tab
+                print(_df)
+                bag.append(_df)
+            return pd.concat(bag)
+        else:
+            logger.error("you cant load data before run please call model.run() first")
 
     def clone_simulation(self, target: str, simulation: Union[list, tuple] = None):
         """Clone a simulation and add it to Model
@@ -800,22 +794,23 @@ class APSIMNG:
             pass
         return self
 
-    def update_mgt_by_path(self, *, path: str, param_values: str, fmt='.'):
+    def update_mgt_by_path(self, *, path: str, fmt='.', **kwargs):
         # reject space in fmt
-        assert fmt.split(), 'white or empty space not supported'
-        parameters_guide = ['simulations_name', 'Manager', 'manager_name', 'out_path_name', 'parameter_name']
-        parameters = ['simulations', 'Manager', 'Name', 'out']
-        args = path.split(fmt)
-        if len(args) != len(parameters_guide):
-            join_p = ".".join(parameters_guide)
-            raise ValueError(f"Invalid path '{path}' expected path should follow {join_p}")
-        args = [(p := f"'{arg}'") if " " in arg and fmt != " " and '[' not in arg else arg for arg in args]
-        _eval_params = [APSIMNG._try_literal_eval(arg) for arg in args]
-        _eval_params[1] = {'Name': _eval_params[2], _eval_params[-1]: param_values},
-        parameters[1] = 'management'
-        _param_values = dict(zip(parameters, _eval_params))
+        if fmt != '.':
+            path = path.replace(fmt, ".")
 
-        return self.update_mgt(**_param_values)
+        manager = self.Simulations.FindByPath(path)
+        for i in range(len(manager.Value.Parameters)):
+            _param = manager.Value.Parameters[i].Key
+            if _param in kwargs:
+                manager.Value.Parameters[i] = KeyValuePair[String, String](_param, f"{kwargs[_param]}")
+                kwargs.pop(_param)
+        if len(kwargs.keys())>0:
+            logger.error(f"The following {kwargs} were not found in {path}")
+        out_mgt_path = self.path
+        self.recompile_edited_model(out_path=out_mgt_path)
+
+        return self
 
     def init_model(self, *args, **kwargs):
         self.run(init_only=True)
@@ -873,6 +868,8 @@ class APSIMNG:
         self.recompile_edited_model(out_path=out_mgt_path)
 
         return self
+
+
 
     # immediately open the file in GUI
     def preview_simulation(self):
@@ -1513,14 +1510,10 @@ class APSIMNG:
         solutes = [sim.FindAllDescendants[Models.Soils.Solute](solute) for sim in self._find_simulation(simulations)]
         return solutes
 
-    def clean_up(self):
+    def clean_up(self, db=True):
         """
-        Clears the attributes of the object and optionally deletes associated files.
+        Clears the file cloned the datastore and associated csv files are not deleted if db is set to False defaults to True.
 
-        If the `copy` attribute is set to True, this method will also attempt to delete
-        files at `self.path` and `self.datastore`. This is a destructive operation and
-        should be used with caution.
-        proceed with caution with this method otherwise results may not load
         Returns:
            >>None: This method does not return a value.
            >> Please proceed with caution, we assume that if you want to clear the model objects, then you don't need them,
@@ -1528,13 +1521,15 @@ class APSIMNG:
         """
         try:
             self._DataStore.Close()
+            self._DataStore.Dispose()
             Path(self.path).unlink(missing_ok=True)
-
             Path(self.path.strip('apsimx') + "bak").unlink(missing_ok=True)
-            # self._DataStore.Dispose()
-            # Path(self.datastore).unlink(missing_ok=True)
+            if db:
+                Path(self.datastore).unlink(missing_ok=True)
+                Path(self.path.strip('apsimx') + "db-wal").unlink(missing_ok=True)
+                Path(self.path.strip('apsimx') + "db-shm").unlink(missing_ok=True)
         except (FileNotFoundError, PermissionError) as e:
-            logger.warning(f"{e} encountered while cleaning data")
+
             pass
 
         return self

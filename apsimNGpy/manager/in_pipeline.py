@@ -135,7 +135,7 @@ def DownloadsurgoSoilTables(_coordinates):
     return soil_df
     
 
-from apsimNGpy.utililies.utils import bounding_box_corners
+from apsimNGpy.core_utils.utils import bounding_box_corners
 
 am =   42.060650, -93.885490
 bounds = bounding_box_corners(am, 500)
@@ -219,7 +219,7 @@ def get_polygon_bounds(gdf_):
     #print(f"coordinate system changed from: {crs} to: {gdf.crs}")
     return gdf.apply(get_polygon_points, axis=1)
 DF['points'] = get_polygon_bounds(DF)
-from apsimNGpy.utililies.utils import exception_handler
+from apsimNGpy.core_utils.utils import exception_handler
 
 def is_soil_profile(row):
     points= get_polygon_points(row)

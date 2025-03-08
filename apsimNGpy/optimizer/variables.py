@@ -7,7 +7,7 @@ from collections import namedtuple
 
 import numpy as np
 
-from apsimNGpy.utililies.utils import timer
+from apsimNGpy.core_utils.utils import timer
 from apsimNGpy.core.apsim import ApsimModel
 import wrapdisc
 from wrapdisc.var import ChoiceVar, GridVar, QrandintVar, QuniformVar, RandintVar, UniformVar

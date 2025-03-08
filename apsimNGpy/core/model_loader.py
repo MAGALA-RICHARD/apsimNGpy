@@ -6,7 +6,7 @@ import uuid
 from functools import singledispatch
 
 from apsimNGpy.core import pythonet_config
-from apsimNGpy.utililies.utils import timer
+from apsimNGpy.core_utils.utils import timer
 
 pyth = pythonet_config
 # now we can safely import C# libraries
@@ -21,7 +21,7 @@ from collections import namedtuple
 from pathlib import Path
 from apsimNGpy.core.config import get_apsim_bin_path
 import subprocess
-from apsimNGpy.utililies.database_utils import read_db_table
+from apsimNGpy.core_utils.database_utils import read_db_table
 from apsimNGpy.settings import SCRATCH
 
 

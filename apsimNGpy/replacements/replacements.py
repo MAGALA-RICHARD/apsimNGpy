@@ -7,7 +7,7 @@ import numpy as np
 from apsimNGpy.core.core import APSIMNG
 from abc import ABC, abstractmethod
 import copy
-from apsimNGpy.utililies.utils import timer
+from apsimNGpy.core_utils.utils import timer
 import inspect
 
 

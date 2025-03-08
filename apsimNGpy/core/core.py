@@ -805,7 +805,7 @@ class APSIMNG:
             if _param in kwargs:
                 manager.Value.Parameters[i] = KeyValuePair[String, String](_param, f"{kwargs[_param]}")
                 kwargs.pop(_param)
-        if len(kwargs.keys())>0:
+        if len(kwargs.keys()) > 0:
             logger.error(f"The following {kwargs} were not found in {path}")
         out_mgt_path = self.path
         self.recompile_edited_model(out_path=out_mgt_path)
@@ -868,8 +868,6 @@ class APSIMNG:
         self.recompile_edited_model(out_path=out_mgt_path)
 
         return self
-
-
 
     # immediately open the file in GUI
     def preview_simulation(self):
@@ -1208,6 +1206,45 @@ class APSIMNG:
             soil_organics[simu.Name] = organic_soil
         return soil_organics
 
+    def replace_soils_path(self, node_path: str, indices: list = None, **kwargs):
+        """
+        unfortunately, it handles one soil node at a time e.g., Physical at a go
+        @param node_path: complete path to the soil node relative the Simulations e.g.,Simulations.Simulation.Field.Soil.Organic. use`copy node to apth fucntion in the gui
+        @param indices: defaults to none but could be the position of the replacement values for arrays
+        @param kwargs: this carries the parameter and the values e.g., BD = 1.23 or BD = [1.23, 1.75] if the node is Physical
+        @return:
+        """
+        _soil_child = self.Simulations.FindByPath(node_path)
+        if _soil_child is None:
+            raise ValueError(f"No such node: {node_path} exist in the simulation file {self.path}")
+        if not kwargs:
+            logger.error('no parameters and values are supplied')
+            return self
+        for k, v in kwargs.items():
+            parameter = k
+            if isinstance(v, (int, float)):
+                v = [v]
+            if indices is None:
+                indices = [v.index(i) for i in v]
+
+            param_values_new = list(getattr(_soil_child.Value, parameter))
+            _param_new = replace_variable_by_index(param_values_new, v, indices)
+            setattr(_soil_child.Value, parameter, _param_new)
+
+    def get_soil_values(self, node_path, *args):
+
+        var_out = {}
+        _soil_child_obj = self.Simulations.FindByPath(node_path)
+
+        if args:
+            for arg in args:
+
+                gv = getattr(_soil_child_obj.Value, arg, None)
+                if gv:
+                    gv = list(gv)
+                var_out[arg] = gv
+        return var_out
+
     def extract_soil_property_by_path(self, path: str, str_fmt='.', index: list = None):
         """
         path to the soil property should be Simulation.soil_child.parameter_name e.g., = 'Simulation.Organic.Carbon.
@@ -1270,6 +1307,7 @@ class APSIMNG:
                                         str_fmt=".",
                                         **kwargs):
         # TODO I know there is a better way to implement this
+        warnings.warn()
         """
         This function processes a path where each component represents different nodes in a hierarchy,
         with the ability to replace parameter values at various levels.

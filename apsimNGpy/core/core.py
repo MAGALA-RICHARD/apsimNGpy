@@ -310,61 +310,6 @@ class APSIMNG:
             self.restart_model()
             return self
 
-    def run_in_python(self, report_name: Union[tuple, list, str] = None,
-                      simulations: Union[tuple, list] = None,
-                      clean: bool = False,
-                      multithread: bool = True,
-                      **kwargs) -> 'APSIMNG':
-
-        try:
-            # open the datastore
-            runtype = select_threads(multithread=multithread)
-            self.save()
-            self._DataStore.Open()
-            # Clear old data before running
-
-            self._DataStore.Dispose()
-            try:
-                Path(self.datastore).unlink(missing_ok=True)
-            except PermissionError as pe:
-                ...
-            sims = self.find_simulations(simulations) if simulations else self.Simulations
-            if simulations:
-                cs_sims = List[Models.Core.Simulation]()
-                for s in sims:
-                    cs_sims.Add(s)
-                sim = cs_sims
-            else:
-                sim = sims
-            _run_model = ModelRUNNER(sim, True, True, False, runTests=True, runType=runtype)
-            e = _run_model.Run()
-            if len(e) > 0:
-                logging.info(e[0].ToString())
-            self.ran_ok = True
-            self.report_names = report_name  # to avoid breaking those with old code
-
-            # def _read_data(reports):
-            #
-            #     if isinstance(reports, str):
-            #         return read_db_table(self.datastore, report_name=reports)
-            #     elif isinstance(reports, Iterable):
-            #         data = []
-            #         for rpn in report_name:
-            #             df = read_db_table(self.datastore, report_name=rpn)
-            #             df['report_name'] = rpn
-            #             data.append(df)
-            #         out_df = pd.concat(data, ignore_index=True, axis=0)
-            #         out_df.reset_index(drop=True, inplace=True)
-            #         return out_df
-            #
-            # if self.ran_ok:
-            #     self.results = _read_data(report_name)
-
-
-        finally:
-            # close the datastore
-            self._DataStore.Close()
-        return self
 
     @property
     def results(self) -> pd.DataFrame:
@@ -1308,7 +1253,7 @@ class APSIMNG:
                                         str_fmt=".",
                                         **kwargs):
         # TODO I know there is a better way to implement this
-        warnings.warn()
+
         """
         This function processes a path where each component represents different nodes in a hierarchy,
         with the ability to replace parameter values at various levels.

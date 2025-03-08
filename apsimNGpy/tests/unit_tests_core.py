@@ -88,8 +88,8 @@ class TestAPSIMNG(BaseTester):
         requires that the models are ran first"""
         self.test_ap_sim.run()
         if not self.test_ap_sim.ran_ok:
-            raise unittest.SkipTest(f'skipping test_simualted results because model did '
-                                    f'not run successffuly or db was deletted')
+            raise unittest.SkipTest(f'skipping test_simulated_results because model did '
+                                    f'not run successfully or db was deleted')
         repos = self.test_ap_sim.simulated_results
         msg = f"expected pd.dataframe but received {type(repos)}"
         self.assertIsInstance(repos, pd.DataFrame, msg=msg)

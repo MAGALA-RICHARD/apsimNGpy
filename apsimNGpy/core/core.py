@@ -1242,6 +1242,7 @@ class APSIMNG:
                 gv = getattr(_soil_child_obj.Value, arg, None)
                 if gv:
                     gv = list(gv)
+                else: logger.error(f"{arg} is not a valid parameter for node {node_path}")
                 var_out[arg] = gv
         return var_out
 

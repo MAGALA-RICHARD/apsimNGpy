@@ -23,15 +23,15 @@ class Inspector(APSIMNG):
             return managers
 
     def get_manager_ids(self, full_path: bool = True, verbose=False) -> list[str]:
-        ids = []
-        for sim_name, manager in self.managers.items():
-            if full_path:
-                ids.extend([i.FullPath for i in manager])
-            elif not full_path:
-                ids.extend([i.Name for i in manager])
-            if verbose:
-                pprint(ids, indent=4)
-            return ids
+
+        managers = self.Simulations.FindAllDescendants[Models.Manager]()
+        if full_path:
+            list_managers= [i.FullPath for i in managers]
+        else:
+            list_managers = [i.Name for i in managers]
+        if verbose:
+            pprint(list_managers, indent=4)
+        return list_managers
 
     def get_manager_parameters(self, full_path, verbose=False) -> dict:
         params = {}
@@ -49,5 +49,5 @@ if __name__ == '__main__':
     from apsimNGpy.core.base_data import load_default_simulations
 
     mod = Inspector(load_default_simulations(crop="maize", simulations_object=False))
-    xt = mod.get_manager_ids(False)
+    xt = mod.get_manager_ids(True, verbose=True)
     print(xt)

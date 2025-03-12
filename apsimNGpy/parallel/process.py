@@ -143,7 +143,7 @@ def read_result_in_parallel(iterable_files: Iterable, ncores: int = None, use_th
     # Iterate through the generator to process results
     for data in result_generator:
         print(data)
-    it depends on the type of data but pd.concat could be a good option on the returned generator
+    it depends on the child of data but pd.concat could be a good option on the returned generator
     Kwargs
         func custom method for reading data
     ```

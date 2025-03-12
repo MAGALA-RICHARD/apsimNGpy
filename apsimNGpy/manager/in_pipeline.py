@@ -27,7 +27,7 @@ def DownloadsurgoSoiltables(lonlat, select_componentname=None, summarytable=Fals
     import requests
 
     url = "https://SDMDataAccess.nrcs.usda.gov/Tabular/SDMTabularService.asmx"
-    headers = {'content-type': 'application/soap+xml'}
+    headers = {'content-child': 'application/soap+xml'}
 
     body = """<?xml version="1.0" encoding="utf-8"?>
                  <soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:sdm="http://SDMDataAccess.nrcs.usda.gov/Tabular/SDMTabularService.asmx">
@@ -91,7 +91,7 @@ coordinates = (
 def DownloadsurgoSoilTables(_coordinates):
     formatted_coordinates = ",".join([f"{lon} {lat}" for lon, lat in _coordinates])
     url = "https://SDMDataAccess.nrcs.usda.gov/Tabular/SDMTabularService.asmx"
-    headers = {'content-type': 'application/soap+xml'}
+    headers = {'content-child': 'application/soap+xml'}
     body = f"""<?xml version="1.0" encoding="utf-8"?>
                     <soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:sdm="http://SDMDataAccess.nrcs.usda.gov/Tabular/SDMTabularService.asmx">
              <soap:Header/>
@@ -301,7 +301,7 @@ def simulate_in_pipeline(id):
 #           daf.append(sim)
 #       print(f"{i} : completed",end = '\r')
 #     except Exception as e:
-#       print(type(e).__name__, e)
+#       print(child(e).__name__, e)
 #       exc_type, exc_value, exc_traceback = sys.exc_info()
 #       # Extract the line number
 #       line_number = exc_traceback.tb_lineno

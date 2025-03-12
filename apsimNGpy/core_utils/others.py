@@ -120,7 +120,7 @@ from functools import singledispatch
 
 @singledispatch
 def append(obj, x):
-    print("Unsupported type")
+    print("Unsupported child")
 
 
 @append.register

@@ -216,7 +216,7 @@ class APSIMNG:
         Retrieve simulation nodes in the APSIMx `Model.Core.Simulations` object.
 
         We search all Models.Core.Simulation in the scope of Model.Core.Simulations. Please note the difference
-        Simulations is the whole json object Simulation is the node with the field zones, crops, soils and managers
+        Simulations is the whole json object Simulation is the child with the field zones, crops, soils and managers
         any structure of apsimx file any structure can be handled
         """
         # fixed
@@ -310,7 +310,6 @@ class APSIMNG:
             self.restart_model()
             return self
 
-
     @property
     def results(self) -> pd.DataFrame:
         reports = self.report_names or "Report"  # 'Report' # is the apsim default name
@@ -386,7 +385,7 @@ class APSIMNG:
                 bag.append(_df)
             return pd.concat(bag)
         else:
-            logger.error("you cant load data before run please call model.run() first")
+            raise ValueError("you cant load data before running the model please call model.run() first")
 
     def clone_simulation(self, target: str, simulation: Union[list, tuple] = None):
         """Clone a simulation and add it to Model
@@ -671,7 +670,7 @@ class APSIMNG:
                 if som:
                     simus[sim.Name] = som.Value.InitialResidueMass, som.Value.InitialCNR
             else:
-                raise ValueError("File node structure is not supported at a moment")
+                raise ValueError("File child structure is not supported at a moment")
         return simus
 
     def change_som(self, *, simulations: Union[tuple, list] = None, inrm: int = None, icnr: int = None,
@@ -683,7 +682,7 @@ class APSIMNG:
         simulations (str ort list): List of simulation names to target (default: None).
         inrm (int): New value for Initial Residue Mass (default: 1250).
         icnr (int): New value for Initial Carbon to Nitrogen Ratio (default: 27).
-        surface_om_name (str, optional): name of the surface organic matter node defaults to ='SurfaceOrganicMatter'
+        surface_om_name (str, optional): name of the surface organic matter child defaults to ='SurfaceOrganicMatter'
     Returns:
         self: The current instance of the class.
         """
@@ -704,7 +703,7 @@ class APSIMNG:
                     som.Value.InitialCNR = icnr
             else:
                 raise NotImplementedError(
-                    f"File node structure is not supported at a moment. or {surface_om_name} not found in the file "
+                    f"File child structure is not supported at a moment. or {surface_om_name} not found in the file "
                     f"rename your SOM module to"
                     "SurfaceOrganicMatter")
             # mp.Value.InitialResidueMass
@@ -740,6 +739,17 @@ class APSIMNG:
         return self
 
     def update_mgt_by_path(self, *, path: str, fmt='.', **kwargs):
+        """
+
+        @param path: complete node path to the script manager e.g. '.Simulations.Simulation.Field.Sow using a
+        variable rule' @param fmt: seperator for formatting the path e.g., ".". Other characters can be used with
+        caution, e.g., / and clearly declared in fmt argument for the above path if we want to use the forward slash
+        it will '/Simulations/Simulation/Field/Sow using a variable rule', fmt = '/' @param kwargs: Corresponding
+        keyword arguments representing the paramters in the script manager and their values. Values is what you want
+        to change to; Example here Population =8.2, values should be entered with their corresponding data types e.t
+        int, float, bool,str etc.
+         @return: self
+        """
         # reject space in fmt
         if fmt != '.':
             path = path.replace(fmt, ".")
@@ -749,6 +759,7 @@ class APSIMNG:
             _param = manager.Value.Parameters[i].Key
             if _param in kwargs:
                 manager.Value.Parameters[i] = KeyValuePair[String, String](_param, f"{kwargs[_param]}")
+                # remove the successfully processed keys
                 kwargs.pop(_param)
         if len(kwargs.keys()) > 0:
             logger.error(f"The following {kwargs} were not found in {path}")
@@ -993,7 +1004,7 @@ class APSIMNG:
 
     def replace_met_file(self, *, weather_file, simulations=None, **kwargs):
         try:
-            """searched the weather node and replaces it with a new one
+            """searched the weather child and replaces it with a new one
 
             Parameters
             ----------
@@ -1118,7 +1129,7 @@ class APSIMNG:
         """replaces specified soil physical parameters in the simulation
 
         ______________________________________________________ Args: parameter (_string_, required): string e.g. DUL,
-        SAT. open APSIMX file in the GUI and examine the physical node for clues on the parameter names simulation (        string, optional): Targeted simulation name. Defaults to None. param_values (array, required): arrays or list
+        SAT. open APSIMX file in the GUI and examine the physical child for clues on the parameter names simulation (        string, optional): Targeted simulation name. Defaults to None. param_values (array, required): arrays or list
         of values for the specified parameter to replace index (int, optional):
         if indices is None replacement is done with corresponding indices of the param values
         """
@@ -1153,15 +1164,15 @@ class APSIMNG:
 
     def replace_soils_path(self, node_path: str, indices: list = None, **kwargs):
         """
-        unfortunately, it handles one soil node at a time e.g., Physical at a go
-        @param node_path: complete path to the soil node relative the Simulations e.g.,Simulations.Simulation.Field.Soil.Organic. use`copy node to apth fucntion in the gui
+        unfortunately, it handles one soil child at a time e.g., Physical at a go
+        @param node_path: complete path to the soil child relative the Simulations e.g.,Simulations.Simulation.Field.Soil.Organic. use`copy child to apth fucntion in the gui
         @param indices: defaults to none but could be the position of the replacement values for arrays
-        @param kwargs: this carries the parameter and the values e.g., BD = 1.23 or BD = [1.23, 1.75] if the node is Physical
+        @param kwargs: this carries the parameter and the values e.g., BD = 1.23 or BD = [1.23, 1.75] if the child is Physical
         @return:
         """
         _soil_child = self.Simulations.FindByPath(node_path)
         if _soil_child is None:
-            raise ValueError(f"No such node: {node_path} exist in the simulation file {self.path}")
+            raise ValueError(f"No such child: {node_path} exist in the simulation file {self.path}")
         if not kwargs:
             logger.error('no parameters and values are supplied')
             return self
@@ -1187,7 +1198,8 @@ class APSIMNG:
                 gv = getattr(_soil_child_obj.Value, arg, None)
                 if gv:
                     gv = list(gv)
-                else: logger.error(f"{arg} is not a valid parameter for node {node_path}")
+                else:
+                    logger.error(f"{arg} is not a valid parameter for child {node_path}")
                 var_out[arg] = gv
         return var_out
 
@@ -1211,7 +1223,7 @@ class APSIMNG:
         return [attribute[i] for i in index]
 
     def _extract_solute(self, simulation=None):
-        # find the solute node in the simulation
+        # find the solute child in the simulation
         sims = self._find_simulation(simulation)
         solute = {}
         for sim in sims:
@@ -1270,7 +1282,7 @@ class APSIMNG:
                Example when `indices` are not `None`: '[maize_simulation].physical.None.[1].BD'
 
             **Note: **
-            - The `soil_child` node might be replaced in a non-systematic manner, which is why indices
+            - The `soil_child` child might be replaced in a non-systematic manner, which is why indices
               are used to handle this complexity.
             - When a component is `None`, default values are used for that part of the path. See the
               documentation for the `replace_soil_property_values` function for more information on
@@ -1334,7 +1346,7 @@ class APSIMNG:
         :param parameter: str: parameter name e.g., NO3, 'BD'
         :param param_values:list or tuple: values of the specified soil property name to replace
         :param soil_child: str: sub child of the soil component e.g., organic, physical etc.
-        :param simulations: list: list of simulations to where the node is found if
+        :param simulations: list: list of simulations to where the child is found if
         not found, all current simulations will receive the new values, thus defaults to None
         :param indices: list. Positions in the array which will be replaced. Please note that unlike C#, python satrt counting from 0
         :crop (str, optional): string for soil water replacement. Default is None
@@ -1366,7 +1378,7 @@ class APSIMNG:
         """extracts any specified soil  parameters in the simulation
 
         Args:
-            parameter (_string_, required): string e.g Carbon, FBiom. open APSIMX file in the GUI and examne the phyicals node for clues on the parameter names
+            parameter (_string_, required): string e.g Carbon, FBiom. open APSIMX file in the GUI and examne the phyicals child for clues on the parameter names
             simulation (string, optional): Targeted simulation name. Defaults to None.
             param_values (array, required): arrays or list of values for the specified parameter to replace
         """

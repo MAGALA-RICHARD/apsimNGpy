@@ -153,7 +153,7 @@ def clear_all_tables(db):
         cursor = conn.cursor()
 
         # Fetch all table names
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+        cursor.execute("SELECT name FROM sqlite_master WHERE child='table';")
         tables = cursor.fetchall()
 
         # Clear all tables

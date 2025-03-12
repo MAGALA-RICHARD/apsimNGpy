@@ -24,7 +24,7 @@ class ReplacementHolder(APSIMNG, ABC):
 
     @abstractmethod
     def update_children_params(self, children: tuple, **kwargs):
-        """Abstract method to replace parameters for more than one child node"""
+        """Abstract method to replace parameters for more than one child child"""
         pass
 
     def replace_soil_properties_by_path(self, **kwargs):
@@ -77,7 +77,7 @@ class Replacements(ReplacementHolder):
         if child in self._methods:
             return getattr(self, self._methods[child])
         else:
-            raise TypeError(f"Unknown node: {child}, children should be any of {self._methods.keys()}")
+            raise TypeError(f"Unknown child: {child}, children should be any of {self._methods.keys()}")
 
     def replace_soil_properties_by_path(self, path: str,
                                         param_values: list,
@@ -100,7 +100,7 @@ class Replacements(ReplacementHolder):
                Example when `indices` are not `None`: '[maize_simulation].physical.None.[1].BD'
 
             **Note: **
-            - The `soil_child` node might be replaced in a non-systematic manner, which is why indices
+            - The `soil_child` child might be replaced in a non-systematic manner, which is why indices
               are used to handle this complexity.
             - When a component is `None`, default values are used for that part of the path. See the
               documentation for the `replace_soil_property_values` function for more information on
@@ -235,7 +235,7 @@ class Replacements(ReplacementHolder):
     def update_children_params(self, children: tuple, **kwargs):
         """Method to perform various parameters replacements in apSim model.
         :param children: (str): name of e.g., weather space is allowed for more descriptive one such a soil organic not case-sensitive
-        :keyword kwargs: these correspond to each node you are editing see the corresponding methods for each node
+        :keyword kwargs: these correspond to each child you are editing see the corresponding methods for each child
         the following are available for each child passed to children
         'cultivar': ('simulations','CultivarName', 'commands', 'values'),
         'manager': ('management', 'simulations', 'out'),

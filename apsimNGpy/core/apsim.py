@@ -211,7 +211,7 @@ class ApsimModel(Inspector):
 
             # self.thickness_replace = list(np.full(shape=int(self.Nlayers,), fill_value=self.thickness*10,  dtype=np.float64))
             for simu in self.find_simulations(simulation_names):
-                pysoil = simu.FindDescendant[Physical]()  # meaning physical soil node
+                pysoil = simu.FindDescendant[Physical]()  # meaning physical soil child
                 soil_crop = pysoil.FindChild[SoilCrop]()
                 water = simu.FindDescendant[Water]()  # for the crop water parameters
                 soil_crop.LL = physical_calculated.AirDry
@@ -297,7 +297,7 @@ class ApsimModel(Inspector):
         self.cropdf = soil_tables[2]
         self.SWICON = soil_tables[6]  # TODO To put these tables in the dictionary isn't soilmanager module
         for simu in self.find_simulations(simulation_names):
-            pysoil = simu.FindDescendant[Physical]()  # meaning physical soil node
+            pysoil = simu.FindDescendant[Physical]()  # meaning physical soil child
 
             soil_crop = pysoil.FindChild[SoilCrop]()
             water = simu.FindDescendant[Water]()  # for the crop water parameters
@@ -450,7 +450,7 @@ class ApsimModel(Inspector):
         end : str, optional
             The end date for the simulation (e.g., '3-12-2023'). If provided, it will change the simulation end date.
         spin_var : str, optional (default: 'Carbon'). the difference between the start and end date will determine the spin-up period
-            The variable representing the type of spin-up operation. Supported values are 'Carbon' or 'DUL'.
+            The variable representing the child of spin-up operation. Supported values are 'Carbon' or 'DUL'.
 
         Returns:
         -------

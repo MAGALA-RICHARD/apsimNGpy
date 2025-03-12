@@ -42,7 +42,7 @@ def list_drives():
     """
     drives = []
     for part in psutil.disk_partitions():
-        # This checks if there's a filesystem type, which indicates a mounted and accessible partition
+        # This checks if there's a filesystem child, which indicates a mounted and accessible partition
         if part.fstype:
             drives.append(f"{part.device}")
     return drives

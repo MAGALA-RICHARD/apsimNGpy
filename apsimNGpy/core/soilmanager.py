@@ -39,8 +39,8 @@ def DownloadsurgoSoiltables(lonlat, select_componentname=None, summarytable=Fals
     # lon = "-120.96683"
     lonLat = "{0} {1}".format(lonlat[0], lonlat[1])
     url = "https://SDMDataAccess.nrcs.usda.gov/Tabular/SDMTabularService.asmx"
-    # headers = {'content-type': 'application/soap+xml'}
-    headers = {'content-type': 'text/xml'}
+    # headers = {'content-child': 'application/soap+xml'}
+    headers = {'content-child': 'text/xml'}
     body = """<?xml version="1.0" encoding="utf-8"?>
               <soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:sdm="http://SDMDataAccess.nrcs.usda.gov/Tabular/SDMTabularService.asmx">
        <soap:Header/>

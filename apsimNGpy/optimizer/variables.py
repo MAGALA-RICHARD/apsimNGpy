@@ -113,7 +113,7 @@ def dates(params: dict, label: str, var_desc, main_param=None, updater=None):
     return CropVar(updater, main_param, params, label, var_desc)
 
 
-soil.__doc__ = _doc('soil node')
+soil.__doc__ = _doc('soil child')
 manager.__doc__ = _doc('manager script')
-cultivar.__doc__ = _doc('cultivar node')
-dates.__doc__ = _doc('dates or clock node')
+cultivar.__doc__ = _doc('cultivar child')
+dates.__doc__ = _doc('dates or clock child')

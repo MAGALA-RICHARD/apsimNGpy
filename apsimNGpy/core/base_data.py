@@ -97,7 +97,7 @@ def load_default_simulations(crop: str, path: [str, Path] = None,
 def load_default_sensitivity_model(method: str, path: str = None, simulations_object: bool = True):
     """
      Load default simulation model from aPSim folder
-    :@param method: string of the sentitivity type to load e.g. "Morris" or Sobol, not case-sensitive
+    :@param method: string of the sentitivity child to load e.g. "Morris" or Sobol, not case-sensitive
     :@param path: string of the path to copy the model
     :@param simulations_object: bool to specify whether to return apsimNGp.core simulation object defaults to True
     :@return: apsimNGpy.core.APSIMNG simulation objects

@@ -269,7 +269,7 @@ def get_met_from_day_met(lonlat: Union[tuple, list, np.ndarray], start: int,
             try:
                 _conn = requests.get(url, timeout=kwa.get('timeout', 50))
                 return _conn
-            # We want to retry only if the network exceptions defined above occur not value errors or type errors and
+            # We want to retry only if the network exceptions defined above occur not value errors or child errors and
             # so forth
             except NETWORK_EXCEPTIONS:
                 raise

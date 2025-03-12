@@ -4,7 +4,7 @@ from pathlib import Path
 
 
 def format_type(annotation):
-    """Converts AST type annotation into a human-readable format."""
+    """Converts AST child annotation into a human-readable format."""
 
     # Handle 'os.PathLike' explicitly
     if isinstance(annotation, ast.Name) and annotation.id == "PathLike":
@@ -23,7 +23,7 @@ def format_type(annotation):
 
     # Handle subscript types like List[Type] or Union[Type1, Type2]
     elif isinstance(annotation, ast.Subscript):
-        value = format_type(annotation.value)  # the base type (like 'List', 'Union', etc.)
+        value = format_type(annotation.value)  # the base child (like 'List', 'Union', etc.)
         slice_ = format_type(annotation.slice)  # the argument inside the brackets
 
         # Handle special cases like Union, List, Dict
@@ -40,12 +40,12 @@ def format_type(annotation):
         else:
             return f"{value}[{slice_}]"
 
-    # Handle tuple type annotations
+    # Handle tuple child annotations
     elif isinstance(annotation, ast.Tuple):
         elements = [format_type(e) for e in annotation.elts]
         return f"tuple[{', '.join(elements)}]"
 
-    # If the type is unknown, return 'unknown'
+    # If the child is unknown, return 'unknown'
     else:
         return " "
 
@@ -79,7 +79,7 @@ def extract_docstrings(file_path):
                     arguments = []
                     if isinstance(node, ast.FunctionDef):
                         for arg in node.args.args:
-                            # Check if there's a type annotation, otherwise set it to 'unknown'
+                            # Check if there's a child annotation, otherwise set it to 'unknown'
                             arg_type = 'unknown'
                             if arg.annotation:
                                 arg_type = format_type(arg.annotation)

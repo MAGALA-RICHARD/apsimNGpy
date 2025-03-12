@@ -178,14 +178,14 @@ def define_factor(parameter: str, param_values: list, factor_type: str,
                   simulations: list = None, out_path_name: str = None,
                   crop: str = None, indices: list = None) -> Factor:
     """
-    Define a management or soil factor based on the specified type.
+    Define a management or soil factor based on the specified child.
 
     Args:
         parameter (str): The parameter name.
         param_values (list): A list of parameter values.
-        factor_type (str): Either 'management' or 'soils' to define the type of factor.
+        factor_type (str): Either 'management' or 'soils' to define the child of factor.
         manager_name (str, optional): The manager name (for a management factor).
-        soil_node (str, optional): The soil node (for a soil factor).
+        soil_node (str, optional): The soil child (for a soil factor).
         simulations (list, optional): The list of simulations.
         out_path_name (str, optional): The output path name (for a management factor).
         crop (str, optional): The crop name (for a soil factor).
@@ -204,7 +204,7 @@ def define_factor(parameter: str, param_values: list, factor_type: str,
             variables=[dict(path=f'{simulations}.Soil.{soil_node}.{crop}.{indices}.{parameter}', param_values=[i])
                        for i in param_values], variable_name=parameter)
     else:
-        raise ValueError(f'Invalid factor type: {factor_type} and {manager_name or soil_node}')
+        raise ValueError(f'Invalid factor child: {factor_type} and {manager_name or soil_node}')
 
 
 def define_cultivar(cultivar_name, commands, param_values, parameter):

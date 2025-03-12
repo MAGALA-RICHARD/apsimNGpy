@@ -2,6 +2,14 @@ from pprint import pprint
 
 from apsimNGpy.core.core import APSIMNG, Models
 
+NODES = dict(manager=Models.Manager, simulation=Models.Core.Simulation,
+             plant=Models.PMF.Plant,
+             clock=Models.Clock,
+             weather=Models.Climate.Weather,
+             soil=Models.Soils.Soil,
+             physical=Models.Soils.Physical,
+             replacements=Models.Core.Folder)
+
 
 class Inspector(APSIMNG):
     def __init__(self, model, out_path=None, **kwargs):
@@ -11,16 +19,58 @@ class Inspector(APSIMNG):
     def in_simulations(self):
         return self.find_simulations()
 
+    def inspect(self, of_class):
+        of_class = NODES[of_class]
+        descendants = self.Simulations.FindAllDescendants[of_class]()
+        return [i.FullPath for i in descendants]
+
     @property
-    def managers(self):
+    def path_to_managers(self):
         """
-        Returns a list of managers by simulations
+       Returns a list of node path in the class Manager
         @return:
         """
-        managers = {}
-        for sim in self.in_simulations:
-            managers[sim.Name] = sim.FindAllDescendants[Models.Manager]()
-            return managers
+        return self.inspect(of_class='manager')
+
+    @property
+    def path_to_soil(self):
+        """
+        Returns a list of node path in the class Soil
+        @return:
+        """
+        return self.inspect(of_class='soil')
+
+    @property
+    def path_to_plants(self):
+        """
+        RReturns a list of node path in the class Clock
+        @return:
+        """
+        return self.inspect(of_class='plant')
+
+    @property
+    def path_to_clock(self):
+        """
+        RReturns a list of node path in the class Clock
+        @return:
+        """
+        return self.inspect(of_class='clock')
+
+    @property
+    def path_to_weather(self):
+        """
+        RReturns a list of node path in the class Weather
+        @return:
+        """
+        return self.inspect(of_class='weather')
+
+    @property
+    def path_to_simulation(self):
+        """
+        RReturns a list of node path in the class Simulation
+        @return:
+        """
+        return self.inspect(of_class='simulation')
 
     def get_manager_ids(self, full_path: bool = True, verbose=False) -> list[str]:
 
@@ -45,7 +95,7 @@ class Inspector(APSIMNG):
         return params
 
     def report_ids(self):
-        datastorage= self.Simulations.FindAllDescendants[Models.Report]()
+        datastorage = self.Simulations.FindAllDescendants[Models.Report]()
         print(datastorage)
 
 

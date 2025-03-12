@@ -23,7 +23,7 @@ def plot_data(x, y, plot_type='line', xlabel = 'X-axis', ylabel = "Y-axis"):
     elif plot_type == 'pie':
         plt.pie(y, labels=x, autopct='%1.1f%%', startangle=90)
     else:
-        print("Invalid plot type. Available types: 'line', 'scatter', 'bar', 'hist', 'box', 'pie'")
+        print("Invalid plot child. Available types: 'line', 'scatter', 'bar', 'hist', 'box', 'pie'")
         return
 
     plt.xlabel(xlabel)
@@ -38,5 +38,5 @@ if __name__ == "__main__":
     # Example usage:
     x_data = [1, 2, 3, 4, 5]
     y_data = [10, 7, 5, 2, 8]
-    plot_type = 'line'  # Change this to the desired plot type
+    plot_type = 'line'  # Change this to the desired plot child
     plot_data(x_data, y_data, plot_type)

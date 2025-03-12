@@ -13,7 +13,7 @@ Var_types = ['int', 'float', 'choice_var', 'grid_var']
 
 def _auto_data(data_type, bounds: tuple, step=None):
     if data_type not in ['int', 'float', int, float, np.int8, np.int32, np.int16, np.float32, np.float64]:
-        raise ValueError('data-type not supported')
+        raise ValueError('data-child not supported')
     if isinstance(data_type, str):
         data_type = eval(data_type)
     data = np.arange(bounds[0], bounds[1], step=step).astype(data_type)
@@ -122,7 +122,7 @@ def dates(params: dict, label: str, var_desc, main_param=None, updater=None):
     return CropVar(updater, main_param, params, label, var_desc)
 
 
-soil.__doc__ = _doc('soil node')
+soil.__doc__ = _doc('soil child')
 manager.__doc__ = _doc('manager script')
-cultivar.__doc__ = _doc('cultivar node')
-dates.__doc__ = _doc('dates or clock node')
+cultivar.__doc__ = _doc('cultivar child')
+dates.__doc__ = _doc('dates or clock child')

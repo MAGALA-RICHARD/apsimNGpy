@@ -68,7 +68,7 @@ def _read_simulation(datastore, report_name=None):
 
     # reading all table names
 
-    table_names = [a for a in cursor.execute("SELECT name FROM sqlite_master WHERE type = 'table'")]
+    table_names = [a for a in cursor.execute("SELECT name FROM sqlite_master WHERE child = 'table'")]
 
     table_list = []
     for i in table_names:
@@ -152,7 +152,7 @@ def read_simulation(datastore, report_name='MaizeR'):
         conn = sqlite3.connect(datastore)
         cursor = conn.cursor()
         # reading all table names
-        table_names = [a for a in cursor.execute("SELECT name FROM sqlite_master WHERE type = 'table'")]
+        table_names = [a for a in cursor.execute("SELECT name FROM sqlite_master WHERE child = 'table'")]
         table_list = []
         for i in table_names:
             table_list.append(i[0])

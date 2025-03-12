@@ -57,7 +57,7 @@ class Experiment:
     FactorialExperiment.add_factor(parameter='Crops', param_values=['Maize', "Wheat"], factor_type='management', manager_name='Simple '
                                                                                                               'Rotation')
     # cultivar is edited via the replacement module, any simulation file supplied without Replacements appended
-    # to Simulations node, this method will fail quickly
+    # to Simulations child, this method will fail quickly
     FactorialExperiment.add_factor(parameter='grain_filling', param_values=[300, 450, 650, 700, 500], cultivar_name='B_110',
                                    commands='[Phenology].GrainFilling.Target.FixedValue', factor_type='cultivar')
 
@@ -155,7 +155,7 @@ class Experiment:
             FactorialExperiment.add_factor(parameter='Crops', param_values=['Maize', "Wheat"], factor_type='management', manager_name='Simple '
                                                                                                                       'Rotation')
             # cultivar is edited via the replacement module, any simulation file supplied without Replacements appended
-            # to Simulations node, this method will fail quickly
+            # to Simulations child, this method will fail quickly
             FactorialExperiment.add_factor(parameter='grain_filling', param_values=[300, 450, 650, 700, 500], cultivar_name='B_110',
                                            commands='[Phenology].GrainFilling.Target.FixedValue', factor_type='cultivar')
 
@@ -313,7 +313,7 @@ if __name__ == '__main__':
                                    manager_name='Simple '
                                                 'Rotation')
     # # cultivar is edited via the replacement module, any simulation file supplied without Replacements appended
-    # # to Simulations node, this method will fail quickly
+    # # to Simulations child, this method will fail quickly
     # FactorialExperiment.add_factor(parameter='grain_filling', param_values=[300, 450, 650, 700, 500], cultivar_name='B_110',
     #                                commands='[Phenology].GrainFilling.Target.FixedValue', factor_type='cultivar')
 

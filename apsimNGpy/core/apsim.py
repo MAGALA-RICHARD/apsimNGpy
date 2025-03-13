@@ -47,8 +47,8 @@ def timing_decorator(func):
 class ApsimModel(Inspector):
     def __init__(self, model: Union[os.PathLike, dict, str], out_path: os.PathLike = None, out: os.PathLike = None,
                  lonlat: tuple = None, soil_series: str = 'domtcp', thickness: int = 20, bottomdepth: int = 200,
-                 thickness_values: list = None, run_all_soils: bool = False, load=True, **kwargs):
-        super().__init__(model, out_path, **kwargs)
+                 thickness_values: list = None, run_all_soils: bool = False, set_wd=None, **kwargs):
+        super().__init__(model, out_path, set_wd, **kwargs)
         self.soiltype = None
         self.SWICON = None
         """get SSURG soil tables and organise it to aPSim soil profiles -------------------- parameters soil_series (
@@ -392,47 +392,14 @@ class ApsimModel(Inspector):
         self.replace_met_file(wpath, sim_name)
         return self
 
-    def run_edited_file(self, simulations: Union[tuple, list] = None, clean: bool = False, multithread=True):
+    def run_edited_file(self, table_name=None):
+        # to be deprecated
         """Run simulations in this subclass if we want to clean the database, we need to
          spawn the path with one process to avoid os access permission errors
 
-
-        Parameters
-        ----------
-        simulations, optional
-            List of simulation names to run, if `None` runs all simulations, by default `None`.
-        clean, optional
-            If `True` remove existing database for the file before running, by default `True`
-        multithread, optional
-            If `True` APSIM uses multiple threads, by default `True`
+            @param table_name: repot table name in the database
         """
-        runa, runb = Models.Core.Run.Runner.RunTypeEnum.MultiThreaded, Models.Core.Run.Runner.RunTypeEnum.SingleThreaded
-        if multithread:
-            runspeed = runa
-        else:
-            runspeed = runb
-        self.results = None
-        if clean:
-            self._DataStore.Dispose()
-            pathlib.Path(self._DataStore.FileName).unlink(missing_ok=True)
-            self._DataStore.Open()
-        if simulations is None:
-            runmodel = Models.Core.Run.Runner(self.Simulations, True, False, False, None, runspeed)
-            data_run = runmodel.Run()
-        else:
-            sims = self.find_simulations(simulations)
-            # Runner needs C# list
-            cs_sims = List[Models.Core.Simulation]()
-            for s in sims:
-                cs_sims.Add(s)
-                runmodel = Models.Core.Run.Runner(cs_sims, True, False, False, None, runspeed)
-                data_run = runmodel.Run()
-
-        if (len(data_run) > 0):
-            print(data_run[0].ToString())
-        self.results = self._read_simulation()  # still wondering if this should be a static method
-        self._DataStore.Close()
-        return self.results
+        return self.run(report_name=table_name).results
 
     def spin_up(self, report_name: str = 'Report', start=None, end=None, spin_var="Carbon", simulations=None):
         """

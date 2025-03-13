@@ -54,13 +54,14 @@ Please follow these steps to resolve the issue:
    set_apsim_bin_path('~/your/path/to/bin')
 """
 # configure the logger
-#logger = logging.getLogger(__name__)
+# logger = logging.getLogger(__name__)
 
 log_file = os.path.expanduser('~/apsimNGpy_sim.log')
 
-def setup_logger(name: str =None, level: int = logging.INFO) -> logging.Logger:
+
+def setup_logger(name: str = None, level: int = logging.INFO) -> logging.Logger:
     if name is None:
-        name=  log_file
+        name = log_file
     logger = logging.getLogger(name)
     if not logger.handlers:
         handler = logging.StreamHandler()

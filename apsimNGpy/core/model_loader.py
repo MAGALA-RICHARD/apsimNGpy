@@ -4,6 +4,7 @@ This module offers a procedural alternative other than object-oriented approach 
 import os
 import uuid
 from functools import singledispatch
+from typing import Union
 
 from apsimNGpy.core import pythonet_config
 from apsimNGpy.core_utils.utils import timer
@@ -32,8 +33,11 @@ def load_from_dict(dict_data, out):
                                                                                     fileName=out)
 
 
-def copy_file(source, destination=None):
-    destine_path = destination if destination else os.path.join(SCRATCH, f"temp_{uuid.uuid1()}.apsimx")
+def copy_file(source: Union[str, Path], destination: Union[str, Path] = None,
+              wd: Union[str, Path] = None) -> Union[str, Path]:
+    if not wd:
+        wd = SCRATCH
+    destine_path = destination if destination else os.path.join(wd, f"temp_{uuid.uuid1()}.apsimx")
     shutil.copy2(source, destine_path)
     return destine_path
 
@@ -106,7 +110,7 @@ def load_from_path(path2file, method='file'):
     return new_model
 
 
-def load_apsim_model(model=None, file_load_method='string', met_file=None, copy=False, **kwargs):
+def load_apsim_model(model=None, file_load_method='string', met_file=None, wd=None, **kwargs):
     """
        >> we are loading apsimx model from file, dict, or in memory.
        >> if model is none, we will return a pre - reloaded one from memory.
@@ -139,14 +143,14 @@ def load_apsim_model(model=None, file_load_method='string', met_file=None, copy=
     @loader.register(str)
     def _(_model: str):
 
-        copy_to = copy_file(_model, destination=None)
+        copy_to = copy_file(_model, destination=None, wd =wd)
         out['path'] = copy_to
         return load_from_path(copy_to, file_load_method)
 
     @loader.register(Path)
     def _(_model: Path):
         # same as the string one, the difference is that this is a pathlib path object
-        copy_to = copy_file(_model, destination=None)
+        copy_to = copy_file(_model, destination=None, wd = wd)
         out['path'] = copy_to
         return load_from_path(copy_to, file_load_method)
 
@@ -206,9 +210,9 @@ def run_model_externally(model, table, datastore):
     # Run APSIM with the specified file
     try:
         result = subprocess.run([apsim_exe, apsim_file])
-        print(result)
+
         print("APSIM Run Successful!")
-        print(result.stdout)  # Print APSIM output
+
         df = read_db_table(datastore, table)
         return df
     except subprocess.CalledProcessError as e:

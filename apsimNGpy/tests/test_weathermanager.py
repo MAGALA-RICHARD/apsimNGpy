@@ -27,3 +27,4 @@ class test_weatherManager(BaseTester):
 
 if __name__ == '__main__':
     unittest.main()
+

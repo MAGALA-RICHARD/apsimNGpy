@@ -37,7 +37,7 @@ def run_model_externally(model, verbose: bool = False, to_csv=False) -> Popen[st
         if err:
             logger.error(err.strip)
         if verbose:
-            logger.info(out.strip())
+            logger.info(f"{out.strip()}, output from {apsim_file}")
 
         return result
     finally:

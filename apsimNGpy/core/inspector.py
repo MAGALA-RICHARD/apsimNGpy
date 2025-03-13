@@ -1,8 +1,8 @@
 import doctest
+from pathlib import Path
 from pprint import pprint
 
 from apsimNGpy.core.core import APSIMNG, Models
-
 
 NODES = dict(manager=Models.Manager, simulation=Models.Core.Simulation,
              plant=Models.PMF.Plant,
@@ -14,8 +14,22 @@ NODES = dict(manager=Models.Manager, simulation=Models.Core.Simulation,
 
 
 class Inspector(APSIMNG):
-    def __init__(self, model, out_path=None, set_wd = None, **kwargs):
-        super().__init__(model, out_path,  set_wd, **kwargs)
+    """
+    Inspector class for APSIMNGPY modules. It inherits from the APSIMNG class and
+    therefore has access to a repertoire of methods from that class.
+
+    This implies that you can still run the model and modify parameters as needed.
+
+    Example:
+        >>> from apsimNGpy.core.inspector import Inspector
+        >>> from apsimNGpy.core.base_data import load_default_simulations
+        >>> path_model = load_default_simulations(crop='Maize', simulations_object=False)
+        >>> model = Inspector(path_model, set_wd=Path.home())
+    """
+
+
+    def __init__(self, model, out_path=None, set_wd=None, **kwargs):
+        super().__init__(model, out_path, set_wd, **kwargs)
 
     @property
     def in_simulations(self):
@@ -44,8 +58,6 @@ class Inspector(APSIMNG):
              '.Simulations.Simulation.Field.Harvest']
         """
         return self.inspect(of_class='manager')
-
-
 
     @property
     def path_to_soil(self):
@@ -143,4 +155,5 @@ class Inspector(APSIMNG):
 
 if __name__ == '__main__':
     import doctest
+
     doctest.testmod()

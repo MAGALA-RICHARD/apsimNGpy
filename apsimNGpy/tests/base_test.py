@@ -1,4 +1,8 @@
 import os
+import shutil
+
+import psutil
+
 from apsimNGpy.settings import logger
 from apsimNGpy.core.base_data import load_default_simulations
 from unittest import TestCase
@@ -15,11 +19,34 @@ wd = Path.cwd() / 'apsimNGpy_tests'
 TEMPS_DIR = []
 wd.mkdir(exist_ok=True)
 _chdir(wd)
-# temp_dir = tempfile.TemporaryDirectory()
-# TEMPS_DIR.append(temp_dir)
-# os.chdir(temp_dir.name)
-#
-# joblib.dump(TEMPS_DIR, './temps', )
+temp_dir = tempfile.TemporaryDirectory()
+TEMPS_DIR.append(temp_dir)
+os.chdir(temp_dir.name)
+
+joblib.dump(TEMPS_DIR, './temps', )
+from apsimNGpy.settings import SCRATCH
+
+
+def get_files(pattern):
+    return list(Path(SCRATCH).rglob(pattern))
+
+
+def release_file_locks(_dir):
+    procs = psutil.process_iter()
+    fd = get_files("*.apsimx")
+    files = [str(i) for i in fd]
+    print(files, "|||||||||||||")
+    if not files:
+        return None
+    for proc in procs:
+        try:
+            for file in proc.open_files():
+
+                if file.path in files:
+                    print("Releasing file {}".format(file.path))
+                    proc.terminate()
+        except Exception:
+            pass
 
 
 class BaseTester(TestCase):

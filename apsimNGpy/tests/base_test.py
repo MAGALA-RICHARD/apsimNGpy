@@ -52,9 +52,10 @@ def release_file_locks(_dir):
 class BaseTester(TestCase):
     try:
         def setUp(self):
+            _chdir(wd)
             # Mock the model path and other attributes
-            self.model_path = Path(load_default_simulations(crop='maize', simulations_object=False))
-            self.model_path2 = Path(load_default_simulations(crop='soybean', simulations_object=False))
+            self.model_path = Path(load_default_simulations(crop='maize', simulations_object=False), )
+            self.model_path2 = Path(load_default_simulations(crop='soybean', simulations_object=False), )
             self.logger = logger
             self.out_path = Path.cwd() / 'test_output.apsimx'
             self.test_ap_sim = APSIMNG(model=self.model_path)
@@ -64,6 +65,30 @@ class BaseTester(TestCase):
         def tearDown(self):
             if path.exists(self.out):
                 remove(self.out)
+
+        @classmethod
+        def setUpClass(cls):
+
+            cls.temp_dir = temp_dir
+
+        @classmethod
+        def tearDownClass(cls):
+
+            try:
+
+                cls.temp_dir.cleanup()
+                shutil.rmtree(SCRATCH)
+                print('Clean up completed...')
+            except PermissionError:
+                base = Path(wd)
+                p = list(base.rglob('*.apsimx')) + list(base.rglob('*.db')) + list(base.rglob('*.db-shm'))
+                for i in p:
+                    try:
+                        os.remove(i)
+                    except PermissionError:
+                        print(f'Could not remove `{i}`')
+
+                ...
     finally:
         for temp_dir in TEMPS_DIR:
             print(temp_dir)

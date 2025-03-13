@@ -119,10 +119,11 @@ class APSIMNG:
         The 'copy' keyword is no longer necessary and will be ignored in future versions.
     """
 
-    def __init__(self, model: os.PathLike = None, out_path: os.PathLike = None, out: os.PathLike = None, **kwargs):
+    def __init__(self, model: os.PathLike = None, out_path: os.PathLike = None, out: os.PathLike = None, set_wd= None, **kwargs):
 
         self.report_names = None
         self.others = kwargs.copy()
+        self.set_wd = set_wd
         if kwargs.get('copy'):
             warnings.warn(
                 'copy argument is deprecated, it is now mandatory to copy the model in order to conserve the original '
@@ -147,7 +148,7 @@ class APSIMNG:
         self._model = model
         self.out_path = out_path or out
         # model_info is named tuple safe for parallel simulations as named tuples are immutable
-        self.model_info = load_apsim_model(self._model, out=self.out_path, met_file=kwargs.get('met_file'))
+        self.model_info = load_apsim_model(self._model, out=self.out_path, met_file=kwargs.get('met_file'), wd=set_wd)
         self.Simulations = self.model_info.IModel
 
         self.datastore = self.model_info.datastore
@@ -381,7 +382,7 @@ class APSIMNG:
             for tab, path in data_tables.items():
                 _df = pd.read_csv(path)
                 _df['TableName'] = tab
-                print(_df)
+
                 bag.append(_df)
             return pd.concat(bag)
         else:

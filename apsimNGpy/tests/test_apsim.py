@@ -8,4 +8,3 @@ model = ApsimModel(model)
 sobol = load_default_sensitivity_model(method='sobol')
 # run the model
 model.run(report_name="Report")
-print(model.results)

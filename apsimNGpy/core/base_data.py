@@ -25,26 +25,27 @@ useVn = version_number.replace(".", "_")
 
 def __get_example(crop, path=None, simulations_object=True):
     """
-    Get an APSIM example file path for a specific crop model.
+    Get an APSIM example file set_wd for a specific crop model.
 
-    This function copies the APSIM example file for the specified crop model to the target path,
+    This function copies the APSIM example file for the specified crop model to the target set_wd,
     creates a SoilModel instance from the copied file, replaces its weather file with the
     corresponding weather file, and returns the SoilModel instance.
 
     Args:
     crop (str): The name of the crop model for which to retrieve the APSIM example.
-    path (str, optional): The target path where the example file will be copied. Defaults to the current working dir_path.
-    simulations_object (bool): Flag indicating whether to return a SoilModel instance or just the copied file path.
+    set_wd (str, optional): The target set_wd where the example file will be copied. Defaults to the current working dir_path.
+    simulations_object (bool): Flag indicating whether to return a SoilModel instance or just the copied file set_wd.
 
     Returns:
     SoilModel or str: An instance of the SoilModel class representing the APSIM example for the specified crop model
-                      or the path to the copied file if `simulations_object` is False.
+                      or the set_wd to the copied file if `simulations_object` is False.
 
     Raises:
     OSError: If there are issues with copying or replacing files.
     """
+
     if not path:
-        copy_path = SCRATCH
+        copy_path = Path(os.getcwd())
     else:
         copy_path = Path(path)
 
@@ -66,55 +67,49 @@ def __get_example(crop, path=None, simulations_object=True):
         logger.info(f"No crop named:' '{crop}' found at '{example_files_path}'")
 
 
-def load_default_simulations(crop: str, path: [str, Path] = None,
+def load_default_simulations(crop: str, set_wd: [str, Path] = None,
                              simulations_object: bool = True):
     """
     Load default simulation model from aPSim folder
     :param crop: string of the crop to load e.g. Maize, not case-sensitive
-    :param path: string of the path to copy the model
+    :param set_wd: string of the set_wd to copy the model
     :param simulations_object: bool to specify whether to return apsimNGp.core simulation object defaults to True
     :return: apsimNGpy.core.APSIMNG simulation objects
-    >>># Example
+    #>>># Example
     # load apsimNG object directly
     >>> model = load_default_simulations('Maize', simulations_object=True)
     # try running
-    >>> model.run(report_name='Report', get_dict=True)
+    >>> model.run()
     # collect the results
-    >>> model.results.get('Report')
-    # just return the path
+    >>> df = model.results
+    >>> print(df)
+    # just return the set_wd
     >>> model =load_default_simulations('Maize', simulations_object=False)
-    # let's try to laod non existient crop marize, which does exists
-    >>> model.load_default_simulations('Marize')
-    # we get this warning
-    2024-11-19 16:18:55,798 - base-data - INFO - No crop named:' 'marize' found at 'C:/path/to/apsim/folder/Examples'
-
-
+    >>> print(model)
     """
     # capitalize() no longer needed glob regex just matches crop if spelled correctly
-    return __get_example(crop, path, simulations_object)
+    return __get_example(crop, set_wd, simulations_object)
 
 
-def load_default_sensitivity_model(method: str, path: str = None, simulations_object: bool = True):
+def load_default_sensitivity_model(method: str, set_wd: str = None, simulations_object: bool = True):
     """
      Load default simulation model from aPSim folder
     :@param method: string of the sentitivity child to load e.g. "Morris" or Sobol, not case-sensitive
-    :@param path: string of the path to copy the model
+    :@param set_wd: string of the set_wd to copy the model
     :@param simulations_object: bool to specify whether to return apsimNGp.core simulation object defaults to True
     :@return: apsimNGpy.core.APSIMNG simulation objects
-    >>># Example
+     Example
     # load apsimNG object directly
-    >>> morris_model = load_default_sensitivity_model(method:str = 'Morris', simulations_object:bool=True)
-    # let's try to laod non existient senstitivity model, which does exists
-    >>> load_default_sensitivity_model('Mmoxee')
-    # we get this warning
-   # 2024-11-29 13:30:51,757 - settings - INFO - No sensitivity model for method:' 'morrirs' found at '~//APSIM2024.5.7493.0//Examples//Sensitivity'
+    >>> morris_model = load_default_sensitivity_model(method = 'Morris', simulations_object=True)
+
+    # >>> morris_model.run()
 
     """
     dir_path = os.path.join(EXAMPLES_DATA, 'Sensitivity')
-    if not path:
-        copy_path = SCRATCH
+    if not set_wd:
+        copy_path = Path(os.getcwd())
     else:
-        copy_path = path
+        copy_path = set_wd
     target_location = glob.glob(
         f"{dir_path}*/{method}.apsimx")  # no need to capitalize only correct spelling is required
     # unzip
@@ -126,19 +121,23 @@ def load_default_sensitivity_model(method: str, path: str = None, simulations_ob
         if not simulations_object:
             return copied_file
 
-        aPSim = SoilModel(copied_file)
+        aPSim = SoilModel(copied_file, set_wd=set_wd)
         return aPSim
     else:
         logger.info(f"No sensitivity model for method:' '{method}' found at '{dir_path}'")
 
 
 if __name__ == '__main__':
-    pp = Path('G:/ndata')
-    pp.mkdir(exist_ok=True)
-    os.chdir(pp)
-    mn = load_default_simulations('Maize', simulations_object=True)
-    mn.update_mgt(management=({"Name": 'Fertilise at sowing', 'Amount': 200}))
-    sobol = load_default_sensitivity_model(method='sobol')
-    logging.info('running sobol')
+    ...
+    # pp = Path('G:/ndata')
+    # pp.mkdir(exist_ok=True)
+    # os.chdir(pp)
+    # mn = load_default_simulations('Maize', simulations_object=True)
+    # mn.update_mgt(management=({"Name": 'Fertilise at sowing', 'Amount': 200}))
+    # sobol = load_default_sensitivity_model(method='sobol')
+    # logging.info('running sobol')
     # sobol.run('Report')
     # mn.run("Report")
+if __name__ == "__main__":
+        import doctest
+        doctest.testmod()

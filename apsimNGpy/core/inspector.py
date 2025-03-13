@@ -1,6 +1,8 @@
+import doctest
 from pprint import pprint
 
 from apsimNGpy.core.core import APSIMNG, Models
+
 
 NODES = dict(manager=Models.Manager, simulation=Models.Core.Simulation,
              plant=Models.PMF.Plant,
@@ -12,8 +14,8 @@ NODES = dict(manager=Models.Manager, simulation=Models.Core.Simulation,
 
 
 class Inspector(APSIMNG):
-    def __init__(self, model, out_path=None, **kwargs):
-        super().__init__(model, out_path, **kwargs)
+    def __init__(self, model, out_path=None, set_wd = None, **kwargs):
+        super().__init__(model, out_path,  set_wd, **kwargs)
 
     @property
     def in_simulations(self):
@@ -27,32 +29,72 @@ class Inspector(APSIMNG):
     @property
     def path_to_managers(self):
         """
-       Returns a list of node path in the class Manager
-        @return:
+        Returns a list of node paths in the class Manager.
+
+        @return: A list of node paths in the class Manager.
+
+        Example:
+            >>> from apsimNGpy.core.base_data import load_default_simulations
+            >>> model_path = load_default_simulations(crop="Maize", simulations_object=False)
+            >>> model = Inspector(model_path)
+            >>> pm = model.path_to_managers
+            >>> pprint(pm)
+            ['.Simulations.Simulation.Field.Sow using a variable rule',
+             '.Simulations.Simulation.Field.Fertilise at sowing',
+             '.Simulations.Simulation.Field.Harvest']
         """
         return self.inspect(of_class='manager')
+
+
 
     @property
     def path_to_soil(self):
         """
-        Returns a list of node path in the class Soil
-        @return:
+        Returns a list of node paths in the class Soil.
+
+        @return: A list of node paths in the class Soil.
+
+        Example:
+            >>> from apsimNGpy.core.base_data import load_default_simulations
+            >>> model_path = load_default_simulations(crop="Maize", simulations_object=False)
+            >>> model = Inspector(model_path)
+            >>> ps = model.path_to_soil
+            >>> print(ps)
+            ['.Simulations.Simulation.Field.Soil']
         """
         return self.inspect(of_class='soil')
 
     @property
     def path_to_plants(self):
         """
-        RReturns a list of node path in the class Clock
-        @return:
+        Returns a list of node paths in the class Plants.
+
+        @return: A list of node paths in the class Plants.
+
+        Example:
+            >>> from apsimNGpy.core.base_data import load_default_simulations
+            >>> model_path = load_default_simulations(crop="Maize", simulations_object=False)
+            >>> model = Inspector(model_path)
+            >>> pp = model.path_to_plants
+            >>> print(pp)
+            ['.Simulations.Simulation.Field.Maize']
         """
         return self.inspect(of_class='plant')
 
     @property
     def path_to_clock(self):
         """
-        RReturns a list of node path in the class Clock
-        @return:
+        Returns a list of node paths in the class Clock.
+
+        @return: A list of node paths in the class Clock.
+
+        Example:
+            >>> from apsimNGpy.core.base_data import load_default_simulations
+            >>> model_path = load_default_simulations(crop="Maize", simulations_object=False)
+            >>> model = Inspector(model_path)
+            >>> pc = model.path_to_clock
+            >>> print(pc)
+            ['.Simulations.Simulation.Clock']
         """
         return self.inspect(of_class='clock')
 
@@ -100,11 +142,5 @@ class Inspector(APSIMNG):
 
 
 if __name__ == '__main__':
-    from pathlib import Path
-    from apsimNGpy.core.base_data import load_default_simulations
-
-    xp = Path(r"D:\package\ApsimX\Models").rglob('*.cs')
-    models = []
-    mod = Inspector(load_default_simulations(crop="maize", simulations_object=False))
-    xt = mod.get_manager_ids(True, verbose=True)
-    print(xt)
+    import doctest
+    doctest.testmod()

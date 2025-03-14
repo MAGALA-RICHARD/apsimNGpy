@@ -1166,15 +1166,21 @@ class APSIMNG:
     def replace_soils_values_by_path(self, node_path: str, indices: list = None, **kwargs):
         """
         unfortunately, it handles one soil child at a time e.g., Physical at a go
-        @param node_path: complete path to the soil child relative the Simulations e.g.,Simulations.Simulation.Field.Soil.Organic. use`copy child to apth fucntion in the gui
+        @param node_path: complete path to the soil child relative the Simulations e.g.,Simulations.Simulation.Field.Soil.Organic. use`copy node to path fucntion in the gui
         @param indices: defaults to none but could be the position of the replacement values for arrays
         @param kwargs: this carries the parameter and the values e.g., BD = 1.23 or BD = [1.23, 1.75] if the child is Physical
-        @return:
+        @return: a list of soil values corresponding to the parmaters passed as arguments
         Example:
               >>> from apsimNGpy.core.base_data import load_default_simulations
               >>> from apsimNGpy.core.inspector import Inspector
               >>> model  = load_default_simulations(crop ='Maize', simulations_object=False)
+              # initiate model
+              >>> model = APSIMNG(model)
+              >>> model.replace_soils_values_by_path(node_path='.Simulations.Simulation.Field.Soil.Organic', indices=[0], Carbon =1.2)
+              # check if it was successfully replaced
+              >>> sv= model.get_soil_values_by_path('.Simulations.Simulation.Field.Soil.Organic', 'Carbon')
 
+               {'Carbon': [1.2, 0.96, 0.6, 0.3, 0.18, 0.12, 0.12]}
         """
         _soil_child = self.Simulations.FindByPath(node_path)
         if _soil_child is None:
@@ -1193,7 +1199,7 @@ class APSIMNG:
             _param_new = replace_variable_by_index(param_values_new, v, indices)
             setattr(_soil_child.Value, parameter, _param_new)
 
-    def get_soil_values(self, node_path, *args):
+    def get_soil_values_by_path(self, node_path, *args):
 
         var_out = {}
         _soil_child_obj = self.Simulations.FindByPath(node_path)

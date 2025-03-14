@@ -72,7 +72,7 @@ def load_default_simulations(crop: str = "Maize", set_wd: [str, Path] = None,
     """
     Load default simulation model from the aPSim folder.
 
-    :param crop: Crop to load (e.g., "Maize"). Not case-sensitive.
+    :param crop: Crop to load (e.g., "Maize"). Not case-sensitive. defaults to maize
     :param set_wd: Working directory to which the model should be copied.
     :param simulations_object: If True, returns an APSIMNGpy.core simulation object;
                                if False, returns the path to the simulation file.

@@ -67,25 +67,42 @@ def __get_example(crop, path=None, simulations_object=True):
         logger.info(f"No crop named:' '{crop}' found at '{example_files_path}'")
 
 
-def load_default_simulations(crop: str, set_wd: [str, Path] = None,
+def load_default_simulations(crop: str = "Maize", set_wd: [str, Path] = None,
                              simulations_object: bool = True):
     """
-    Load default simulation model from aPSim folder
-    :param crop: string of the crop to load e.g. Maize, not case-sensitive
-    :param set_wd: string of the set_wd to copy the model
-    :param simulations_object: bool to specify whether to return apsimNGp.core simulation object defaults to True
-    :return: apsimNGpy.core.APSIMNG simulation objects
-    #>>># Example
-    # load apsimNG object directly
-    >>> model = load_default_simulations('Maize', simulations_object=True)
-    # try running
-    >>> model.run()
-    # collect the results
-    >>> df = model.results
-    >>> print(df)
-    # just return the set_wd
-    >>> model =load_default_simulations('Maize', simulations_object=False)
-    >>> print(model)
+    Load default simulation model from the aPSim folder.
+
+    :param crop: Crop to load (e.g., "Maize"). Not case-sensitive.
+    :param set_wd: Working directory to which the model should be copied.
+    :param simulations_object: If True, returns an APSIMNGpy.core simulation object;
+                               if False, returns the set_wd (defaults to True).
+    :return: An APSIMNGpy.core simulation object or the file path (str or Path) if simulation_object is False
+
+    Examples:
+        >>> # Load the APSIMNG object directly
+        >>> model = load_default_simulations('Maize', simulations_object=True)
+        >>> # Run the model
+        >>> model.run()
+        >>> # Collect and print the results
+        >>> df = model.results
+        >>> print(df)
+             SimulationName  SimulationID  CheckpointID  ... Maize.Total.Wt     Yield   Zone
+        0     Simulation             1             1  ...       1728.427  8469.616  Field
+        1     Simulation             1             1  ...        920.854  4668.505  Field
+        2     Simulation             1             1  ...        204.118   555.047  Field
+        3     Simulation             1             1  ...        869.180  3504.000  Field
+        4     Simulation             1             1  ...       1665.475  7820.075  Field
+        5     Simulation             1             1  ...       2124.740  8823.517  Field
+        6     Simulation             1             1  ...       1235.469  3587.101  Field
+        7     Simulation             1             1  ...        951.808  2939.152  Field
+        8     Simulation             1             1  ...       1986.968  8379.435  Field
+        9     Simulation             1             1  ...       1689.966  7370.301  Field
+        [10 rows x 16 columns]
+
+        # Return only the set_wd
+        >>> model = load_default_simulations(crop='Maize', simulations_object=False)
+        >>> print(isinstance(model, (str, Path)))
+        True
     """
     # capitalize() no longer needed glob regex just matches crop if spelled correctly
     return __get_example(crop, set_wd, simulations_object)

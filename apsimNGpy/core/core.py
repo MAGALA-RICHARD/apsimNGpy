@@ -1173,14 +1173,14 @@ class APSIMNG:
         Example:
               >>> from apsimNGpy.core.base_data import load_default_simulations
               >>> from apsimNGpy.core.inspector import Inspector
+              >>> from pprint import pprint
               >>> model  = load_default_simulations(crop ='Maize', simulations_object=False)
               # initiate model
               >>> model = APSIMNG(model)
-              >>> model.replace_soils_values_by_path(node_path='.Simulations.Simulation.Field.Soil.Organic', indices=[0], Carbon =1.2)
-              # check if it was successfully replaced
+              >>> model.replace_soils_values_by_path(node_path='.Simulations.Simulation.Field.Soil.Organic', indices=[0], Carbon =1.3)
+
               >>> sv= model.get_soil_values_by_path('.Simulations.Simulation.Field.Soil.Organic', 'Carbon')
 
-               {'Carbon': [1.2, 0.96, 0.6, 0.3, 0.18, 0.12, 0.12]}
         """
         _soil_child = self.Simulations.FindByPath(node_path)
         if _soil_child is None:

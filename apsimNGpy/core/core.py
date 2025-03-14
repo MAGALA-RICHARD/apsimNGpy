@@ -1163,13 +1163,18 @@ class APSIMNG:
             soil_organics[simu.Name] = organic_soil
         return soil_organics
 
-    def replace_soils_path(self, node_path: str, indices: list = None, **kwargs):
+    def replace_soils_values_by_path(self, node_path: str, indices: list = None, **kwargs):
         """
         unfortunately, it handles one soil child at a time e.g., Physical at a go
         @param node_path: complete path to the soil child relative the Simulations e.g.,Simulations.Simulation.Field.Soil.Organic. use`copy child to apth fucntion in the gui
         @param indices: defaults to none but could be the position of the replacement values for arrays
         @param kwargs: this carries the parameter and the values e.g., BD = 1.23 or BD = [1.23, 1.75] if the child is Physical
         @return:
+        Example:
+              >>> from apsimNGpy.core.base_data import load_default_simulations
+              >>> from apsimNGpy.core.inspector import Inspector
+              >>> model  = load_default_simulations(crop ='Maize', simulations_object=False)
+
         """
         _soil_child = self.Simulations.FindByPath(node_path)
         if _soil_child is None:
@@ -1266,6 +1271,7 @@ class APSIMNG:
                                         str_fmt=".",
                                         **kwargs):
         # TODO I know there is a better way to implement this
+        warnings.warn(f"replace_soil_properties_by_path is deprecated use self.replace_soils_values_by_path instead", DeprecationWarning)
 
         """
         This function processes a path where each component represents different nodes in a hierarchy,
@@ -1525,6 +1531,7 @@ class APSIMNG:
                 Path(self.datastore).unlink(missing_ok=True)
                 Path(self.path.strip('apsimx') + "db-wal").unlink(missing_ok=True)
                 Path(self.path.strip('apsimx') + "db-shm").unlink(missing_ok=True)
+                logger.info('database cleaned successfully')
         except (FileNotFoundError, PermissionError) as e:
 
             pass
@@ -1584,22 +1591,6 @@ class APSIMNG:
         # inherit properties from the ancestors apsimng object
 
 
-# ap = dat.GetDataUsingSql("SELECT * FROM [MaizeR]")
-class ApsiMet(APSIMNG):
-    def __init__(self, model: Union[str, Simulations], copy=True, out_path=None, lonlat=None, simulation_names=None):
-        super().__init__(model, copy, out_path)
-        self.lonlat = lonlat
-        self.simulation_names = simulation_names
-
-    def insert_weather_file(self):
-        start, end = self.extract_start_end_years()
-        wp = weather.daymet_bylocation(self.lonlat, start=start, end=end)
-        wp = os.path.join(os.getcwd(), wp)
-        if self.simulation_names:
-            sim_name = list(self.simulation_names)
-        else:
-            sim_name = self.extract_simulation_name  # because it is a property decorator
-        self.replace_met_file(wp, sim_name)
 
 
 if __name__ == '__main__':
@@ -1637,4 +1628,6 @@ if __name__ == '__main__':
         logger.info(f"{b - a}, 'seconds")
 
         a = perf_counter()
-    model.clean_up()
+    model.clean_up(db=True)
+    import doctest
+    doctest.testmod()

@@ -75,7 +75,7 @@ def load_default_simulations(crop: str = "Maize", set_wd: [str, Path] = None,
     :param crop: Crop to load (e.g., "Maize"). Not case-sensitive.
     :param set_wd: Working directory to which the model should be copied.
     :param simulations_object: If True, returns an APSIMNGpy.core simulation object;
-                               if False, returns the set_wd (defaults to True).
+                               if False, returns the path to the simulation file.
     :return: An APSIMNGpy.core simulation object or the file path (str or Path) if simulation_object is False
 
     Examples:

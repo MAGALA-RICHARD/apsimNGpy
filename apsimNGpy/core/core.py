@@ -482,7 +482,7 @@ class APSIMNG:
         table_dict = self.get_report(names_only=True)
         return table_dict
 
-    def replicate_file(self, k: int, path: os.PathLike = None, tag: str = "replica"):
+    def replicate_file(self, k: int, path: os.PathLike = None, suffix: str = "replica"):
         """
         Replicates a file 'k' times.
 
@@ -493,7 +493,7 @@ class APSIMNG:
         - self: The core.api.APSIMNG object instance containing 'path' attribute pointing to the file to be replicated.
         - k (int): The number of copies to create.
         - path (str, optional): The dir_path where the replicated files will be saved. Defaults to None, meaning the same dir_path as the source file.
-        - tag (str, optional): a tag to attached with the copies. Defaults to "replicate"
+        - suffix (str, optional): a suffix to attached with the copies. Defaults to "replicate"
 
 
         Returns:
@@ -501,11 +501,11 @@ class APSIMNG:
         """
         if path is None:
             file_name = self.path.rsplit('.apsimx', 1)[0]
-            return [shutil.copy(self.model_info.path, f"{file_name}_{tag}_{i}_.apsimx") for i in range(k)]
+            return [shutil.copy(self.model_info.path, f"{file_name}_{i}_{suffix}.apsimx") for i in range(k)]
 
         else:
             b_name = os.path.basename(self.path).rsplit('.apsimx', 1)[0]
-            return [shutil.copy(self.model_info.path, os.path.join(path, f"{b_name}_{tag}_{i}.apsimx")) for i in
+            return [shutil.copy(self.model_info.path, os.path.join(path, f"{b_name}_{suffix}_{i}.apsimx")) for i in
                     range(k)]
 
     def _cultivar_params(self, cultivar: str):
@@ -1162,6 +1162,13 @@ class APSIMNG:
             organic_soil = soil_object.FindDescendant[Organic]()
             soil_organics[simu.Name] = organic_soil
         return soil_organics
+    def journal(self):
+        """records activities that have been done on the modle including changes to the file
+        """
+        return {
+            # check is model has been ran yet
+            'model_has_been_ran': self.ran_ok
+        }
 
     def replace_soils_values_by_path(self, node_path: str, indices: list = None, **kwargs):
         """
@@ -1169,17 +1176,20 @@ class APSIMNG:
         @param node_path: complete path to the soil child relative the Simulations e.g.,Simulations.Simulation.Field.Soil.Organic. use`copy node to path fucntion in the gui
         @param indices: defaults to none but could be the position of the replacement values for arrays
         @param kwargs: this carries the parameter and the values e.g., BD = 1.23 or BD = [1.23, 1.75] if the child is Physical
-        @return: a list of soil values corresponding to the parmaters passed as arguments
+        @return: a dict of soil values corresponding to the parmaters passed as arguments
         Example:
               >>> from apsimNGpy.core.base_data import load_default_simulations
               >>> from apsimNGpy.core.inspector import Inspector
               >>> from pprint import pprint
-              >>> model  = load_default_simulations(crop ='Maize', simulations_object=False)
-              # initiate model
+              >>> model  = load_default_simulations(crop ='Maize', simulations_object=False)# initiate model
+
               >>> model = APSIMNG(model)
               >>> model.replace_soils_values_by_path(node_path='.Simulations.Simulation.Field.Soil.Organic', indices=[0], Carbon =1.3)
 
               >>> sv= model.get_soil_values_by_path('.Simulations.Simulation.Field.Soil.Organic', 'Carbon')
+
+               output # {'Carbon': [1.3, 0.96, 0.6, 0.3, 0.18, 0.12, 0.12]}
+
 
         """
         _soil_child = self.Simulations.FindByPath(node_path)
@@ -1276,7 +1286,7 @@ class APSIMNG:
                                         param_values: list,
                                         str_fmt=".",
                                         **kwargs):
-        # TODO I know there is a better way to implement this
+        # TODO I know there is a better way to implement this, to be duplicated
         warnings.warn(f"replace_soil_properties_by_path is deprecated use self.replace_soils_values_by_path instead", DeprecationWarning)
 
         """

@@ -9,7 +9,7 @@ import pandas as pd
 from apsimNGpy.core.config import get_apsim_bin_path
 from apsimNGpy.settings import logger
 from apsimNGpy.core_utils.utils import timer
-
+import contextlib
 apsim_bin_path = Path(get_apsim_bin_path())
 
 # Determine executable based on OS
@@ -18,31 +18,43 @@ if platform.system() == "Windows":
 else:  # Linux or macOS
     apsim_exe = apsim_bin_path / "Models"
 
+import subprocess
+import contextlib
+from subprocess import Popen, PIPE
+
 
 def run_model_externally(model, verbose: bool = False, to_csv=False) -> Popen[str]:
-    """Runs an APSIM model externally, ensuring cross-platform compatibility."""
+    """Runs an APSIM model externally, ensuring cross-platform compatibility.
+    returns a Popen object
+    Example:
 
-    # Get the APSIM binary path
+        >>> from apsimNGpy.core.base_data import load_default_simulations
+        >>> path_to_model = load_default_simulations(crop ='maize', simulations_object =False)
+        >>> pop = run_model_externally(path_to_model, verbose=False)
+        >>> pop = run_model_externally(path_to_model, verbose=True)# when verbose is true, will print the time taken
+    """
 
-    # Define the APSIMX file path
-    apsim_file = model
-    if not to_csv:
-        result = Popen([str(apsim_exe), str(apsim_file), '--verbose', ], stdout=PIPE, stderr=PIPE, text=True)
-    else:
-        result = Popen([str(apsim_exe), str(apsim_file), '--verbose', '--csv', ], stdout=PIPE, stderr=PIPE, text=True)
-    try:
+    apsim_file = model  # Define the APSIMX file path
+    cmd = [str(apsim_exe), str(apsim_file), '--verbose']
 
-        out, err = result.communicate()
+    if to_csv:
+        cmd.append('--csv')
 
-        if err:
-            logger.error(err.strip)
-        if verbose:
-            logger.info(f"{out.strip()}, output from {apsim_file}")
+    with contextlib.ExitStack() as stack:
+        result = stack.enter_context(Popen(cmd, stdout=PIPE, stderr=PIPE, text=True))
 
-        return result
-    finally:
-        if not result.poll():
-            result.kill()
+        try:
+            out, err = result.communicate()
+
+            if err:
+                logger.error(err.strip())
+            if verbose:
+                logger.info(f"{out.strip()}, output from {apsim_file}")
+
+            return result
+        finally:
+            if result.poll() is None:  # Ensures the process is properly killed
+                result.kill()
 
 
 @timer
@@ -84,8 +96,8 @@ def collect_csv_from_dir(dir_path, pattern):
                         logger.warning(f"{base_name} is not a csv file or itis empty")
 
 
-@timer
-def run_from_dir(dir_path, pattern, verbose=False) -> [pd.DataFrame]:
+
+def run_from_dir(dir_path, pattern, verbose=False, write_tocsv=True) -> [pd.DataFrame]:
     """
        This function acts as a wrapper around the APSIM command line recursive tool, automating
        the execution of APSIM simulations on all files matching a given pattern in a specified
@@ -109,32 +121,50 @@ def run_from_dir(dir_path, pattern, verbose=False) -> [pd.DataFrame]:
        is still running due to any interruptions or errors, it terminates the process to avoid
        hanging or resource leakage.
 
-       Example:
-           _____________________________________________
-       ```python
-       run_from_dir(dir_path = r"/path/to/apsim/files",  pattern ="*.apsimx")
 
        @returns
         --a generator that yields data frames knitted by pandas
-       ```
 
+
+       Example:
+          >>> mock_data = Path.home() / 'mock_data'# As an example let's mock some data
+          >>> mock_data.mkdir(parents=True, exist_ok=True)
+          >>> from apsimNGpy.core.base_data import load_default_simulations
+          >>> path_to_model = load_default_simulations(crop ='maize', simulations_object =False) # get base model
+          >>> import shutil
+
+          >>> df = run_from_dir(str(mock_data), pattern="*.apsimx", verbose=True)# all files that matches that pattern
 
 
        """
     dir_path = str(dir_path)
+
     dir_patern = f"{dir_path}/{pattern}"
+    base_cmd = [str(apsim_exe), str(dir_patern),  '--recursive']
+    if verbose:
+        base_cmd.append('--verbose')
+    if write_tocsv:
+        base_cmd.append('--csv')
+    ran_ok =False
+    with  contextlib.ExitStack() as stack:
+        process = stack.enter_context(Popen(base_cmd, stdout=PIPE, stderr=PIPE,
+                        text=True))
 
-    process = Popen([str(apsim_exe), dir_patern, '--recursive', '--verbose', '--csv'], stdout=PIPE, stderr=PIPE,
-                    text=True)
+        try:
+            logger.info('waiting for APSIM simulations to complete')
+            out, st_err = process.communicate()
+            if verbose:
+                logger.info(f'{out.strip()}')
+            ran_ok = True
+        finally:
+            if process.poll() is None:
+                process.kill()
 
-    try:
-        logger.info('waiting for APSIM simulations to complete')
-        out, st_err = process.communicate()
-        if verbose:
-            logger.info(f'{out.strip()}')
-    finally:
-        if process.poll() is None:
-            process.terminate()
-    logger.info(f"Loading data into memory.")
-    out = collect_csv_from_dir(dir_path, pattern)
-    return out
+    if write_tocsv and ran_ok:
+        logger.info(f"Loading data into memory.")
+        out = collect_csv_from_dir(dir_path, pattern)
+        return out
+
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()

@@ -53,7 +53,7 @@ def _doc(section_desc):
     return f"""
     Any parameters that is in the `{section_desc}` of apsim model can be optimized by calling this function
     @param params:is a dictionary that could hold extra argument for each function.
-    @param label: name tag for the control variable being optimized
+    @param label: name suffix for the control variable being optimized
     @param var_desc: instance of `{ContinuousVar}` or `{ChoiceVar}` for categorical variables. Big up to the authors of this 
     package we wrap around their variable description to facilitate mixed variable optimization. @param main_param: 
     is main_param arguments @param updater: method of ApsimModel class to update the parameters during the 
@@ -82,7 +82,7 @@ def manager(params: dict, label: str, var_desc, main_param=None, updater=None) -
     """
     Any parameters that is in the manager script of apsim model can be optimized by calling this function
     @param params:is a dictionary that could hold extra argument for each function.
-    @param label: name tag for the control variable being optimized
+    @param label: name suffix for the control variable being optimized
     @param var_desc: instance of wrapdisc.var big up to the authors of this package we wrap around their
      variable description to facilitate mixed variable optimization.
     @param main_param: is function updator  arguments which will hold the trial values during optimization

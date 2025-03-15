@@ -255,7 +255,7 @@ def simulate_in_pipeline(id):
             dom = OrganizeAPSIMsoil_profile(cok, 20)
             grand = dom.cal_missingFromSurgo()
             aps = gis_data.mkdir('apsim')
-            files = model.replicate_file( path = aps, k= 1, tag = 'testt')
+            files = model.replicate_file(path = aps, k= 1, suffix='testt')
             file_m = files.copy()
             soils = grand.copy()
 

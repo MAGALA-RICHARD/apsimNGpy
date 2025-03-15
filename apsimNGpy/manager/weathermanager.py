@@ -66,7 +66,7 @@ def get_iem_by_station(dates_tuple, station, path, met_tag):
       
       if station is given data will be downloaded directly from the station the default is false.
       
-      mettag: your prefered tag to save on filee
+      mettag: your prefered suffix to save on filee
       '''
     # access the elements in the metdate class above
     weather_dates = MetDate(dates_tuple)

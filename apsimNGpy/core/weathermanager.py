@@ -35,7 +35,7 @@ def get_iem_bystation(dates:Union[tuple, list], station:str, path:os.PathLike, m
       
       if station is given data will be downloaded directly from the station the default is false.
       
-      mettag: your prefered tag to save on filee
+      mettag: your prefered suffix to save on filee
       '''
     # access the elements in the metdate class above
     wdates = metdate(dates)

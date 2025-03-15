@@ -44,7 +44,7 @@ class Experiment:
 
     FactorialExperiment = Experiment(database_name='test.db',
                                      datastorage='test.db',
-                                     tag='th', base_file=model_path,
+                                     suffix='th', base_file=model_path,
                                      wd=path,
                                      use_thread=True,
                                      by_pass_completed=True,
@@ -142,7 +142,7 @@ class Experiment:
 
             FactorialExperiment = Experiment(database_name='test.db',
                                              datastorage='test.db',
-                                             tag='th', base_file=model_path,
+                                             suffix='th', base_file=model_path,
                                              wd=path,
                                              use_thread=True,
                                              by_pass_completed=True,

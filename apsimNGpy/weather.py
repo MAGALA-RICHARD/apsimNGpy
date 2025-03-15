@@ -34,7 +34,7 @@ def get_iem_bystation(dates, station, path, mettag):
       
       if station is given data will be downloaded directly from the station the default is false.
       
-      mettag: your prefered tag to save on filee
+      mettag: your prefered suffix to save on filee
       '''
     # access the elements in the metdate class above
     wdates = _MetDate(dates)

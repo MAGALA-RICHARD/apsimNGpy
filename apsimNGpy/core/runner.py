@@ -59,7 +59,7 @@ def run_model_externally(model, verbose: bool = False, to_csv=False) -> Popen[st
 
 @timer
 def collect_csv_by_model_path(model_path) -> dict[Any, Any]:
-    """Collects the
+    """Collects the data from the simulated model after run
     """
     ab_path = Path(os.path.abspath(model_path))
 
@@ -76,7 +76,17 @@ def collect_csv_by_model_path(model_path) -> dict[Any, Any]:
     return report_paths
 
 
-def collect_csv_from_dir(dir_path, pattern):
+def collect_csv_from_dir(dir_path, pattern)-> (pd.DataFrame):
+    """Collects the the csf files in a directory
+    @param dir_path: path where to look for csv files
+    @param pattern: pattern of the apsim files that produced the csv files through simulations
+    @ returnsa generator object with pandas data frames
+    Example:
+     >>> mock_data = Path.home() / 'mock_data' # this a mock directory substitute accordingly
+     >>> df= list(collect_csv_from_dir(mock_data, '*.apsimx')) # collects all csf file produced by apsimx
+
+
+    """
     global_path = Path(dir_path)
     matching_apsimx_patterns = global_path.rglob(pattern)
     if matching_apsimx_patterns:
@@ -127,11 +137,11 @@ def run_from_dir(dir_path, pattern, verbose=False, write_tocsv=True) -> [pd.Data
 
 
        Example:
-          >>> mock_data = Path.home() / 'mock_data'# As an example let's mock some data
+          >>> mock_data = Path.home() / 'mock_data'# As an example let's mock some data move the apsim files to this directory before runnning
           >>> mock_data.mkdir(parents=True, exist_ok=True)
           >>> from apsimNGpy.core.base_data import load_default_simulations
           >>> path_to_model = load_default_simulations(crop ='maize', simulations_object =False) # get base model
-          >>> import shutil
+          >>> ap =path_to_model.replicate_file(k=10, path= mock_data)  if not list(mock_data.rglob("*.apsimx")) else None
 
           >>> df = run_from_dir(str(mock_data), pattern="*.apsimx", verbose=True)# all files that matches that pattern
 

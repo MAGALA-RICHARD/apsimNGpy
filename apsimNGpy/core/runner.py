@@ -18,9 +18,16 @@ if platform.system() == "Windows":
 else:  # Linux or macOS
     APSIM_EXEC = apsim_bin_path / "Models"
 
-def get_apsim_version():
-    """ Display version information of the apsim model currently in the apsimNGpy config environment."""
-    res= Popen([APSIM_EXEC, '--version'], stdout=PIPE, stderr=PIPE, text=True)
+def get_apsim_version(verbose=False):
+    """ Display version information of the apsim model currently in the apsimNGpy config environment.
+    Example:
+            >>> apsim_version = get_apsim_version()
+
+    """
+    cmd = [APSIM_EXEC, '--version']
+    if verbose:
+        cmd.append("--verbose")
+    res= Popen(cmd, stdout=PIPE, stderr=PIPE, text=True)
     res.wait()
     return res.stdout.readlines()[0].strip()
 
@@ -29,17 +36,24 @@ def upgrade_apsim_file(file, verbose=True):
     Upgrade a file to the latest version of the .apsimx file format without running the file.
     @param file: file to be upgraded
     @param verbose: Write detailed messages to stdout when a conversion starts/finishes.
-    @return: the latest version of the .apsimx file with the same name the input file
+    @return: the latest version of the .apsimx file with the same name as the input file
+    Example:
+    >>> from apsimNGpy.core.base_data import load_default_simulations
+    >>> file =load_default_simulations(simulations_object= False)# this is just an example perhaps you need to pass a lower verion file because this one is extracted from thecurrent model as the excutor
+    >>> upgrade_file =upgrade_apsim_file(file, verbose=False)
+
     """
     file= str(file)
     assert os.path.isfile(file) and file.endswith(".apsimx"),  f"{file} does not exists a supported apsim file"
-    cmd = [APSIM_EXEC, '--upgrade', file]
+    cmd = [APSIM_EXEC,  file, '--upgrade']
     if verbose:
         cmd.append('--verbose')
     res= Popen(cmd, stdout=PIPE, stderr=PIPE, text=True)
     outp, err = res.communicate()
-    print(outp)
-    return file
+    if verbose:
+        print(outp)
+    if res.returncode==0:
+       return file
 
 def run_model_externally(model, verbose: bool = False, to_csv=False) -> Popen[str]:
     """Runs an APSIM model externally, ensuring cross-platform compatibility.

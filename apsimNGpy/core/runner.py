@@ -128,9 +128,10 @@ def run_from_dir(dir_path, pattern, verbose=False,
        __________________________________________________________________
        - dir_path (str or Path, required): The path to the directory where the simulation files are located.
        - pattern (str, required): The file pattern to match for simulation files (e.g., "*.apsimx").
-       - recursive (bool, optional): specifies whether or not to recursively serch sub directories
+       - recursive (bool, optional):  Recursively search through subdirectories for files matching
+                                            the file specification.
        - write_tocsv (bool, optional): specifies whether or not to to write the simulation results to a csv. if true, the
-        csf files bear the same name as the input apsimx file name with suffix reportname.csv. if it false, this function return None
+        exported csv files bear the same name as the input apsimx file name with suffix reportname.csv. if it false, this function return None
         - if verbose, the progress is printed as the elapsed time and the successfully saved csv
 
        The function constructs a command to execute APSIM simulations using the provided directory
@@ -154,7 +155,7 @@ def run_from_dir(dir_path, pattern, verbose=False,
           >>> path_to_model = load_default_simulations(crop ='maize', simulations_object =False) # get base model
           >>> ap =path_to_model.replicate_file(k=10, path= mock_data)  if not list(mock_data.rglob("*.apsimx")) else None
 
-          >>> df = run_from_dir(str(mock_data), pattern="*.apsimx", verbose=True)# all files that matches that pattern
+          >>> df = run_from_dir(str(mock_data), pattern="*.apsimx", verbose=True, recursive=True)# all files that matches that pattern
 
 
        """

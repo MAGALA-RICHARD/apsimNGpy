@@ -76,19 +76,24 @@ def collect_csv_by_model_path(model_path) -> dict[Any, Any]:
     return report_paths
 
 
-def collect_csv_from_dir(dir_path, pattern)-> (pd.DataFrame):
+def collect_csv_from_dir(dir_path, pattern, recursive=False)-> (pd.DataFrame):
     """Collects the the csf files in a directory
     @param dir_path: path where to look for csv files
+    @param recursive: whether to recursively search through the directory defaults to false:
     @param pattern: pattern of the apsim files that produced the csv files through simulations
     @ returnsa generator object with pandas data frames
     Example:
      >>> mock_data = Path.home() / 'mock_data' # this a mock directory substitute accordingly
-     >>> df= list(collect_csv_from_dir(mock_data, '*.apsimx')) # collects all csf file produced by apsimx
+     >>> df= list(collect_csv_from_dir(mock_data, '*.apsimx', recursive=True)) # collects all csf file produced by apsimx recursively
+     >>> df= list(collect_csv_from_dir(mock_data, '*.apsimx',  recursive=False)) # collects all csf file produced by apsimx only in the specified directory directory
 
 
     """
     global_path = Path(dir_path)
-    matching_apsimx_patterns = global_path.rglob(pattern)
+    if recursive:
+        matching_apsimx_patterns = global_path.rglob(pattern)
+    else:
+        matching_apsimx_patterns = global_path.glob(pattern)
     if matching_apsimx_patterns:
         for file_path in matching_apsimx_patterns:
 
@@ -107,7 +112,9 @@ def collect_csv_from_dir(dir_path, pattern)-> (pd.DataFrame):
 
 
 
-def run_from_dir(dir_path, pattern, verbose=False, write_tocsv=True) -> [pd.DataFrame]:
+def run_from_dir(dir_path, pattern, verbose=False,
+                 recursive=False,# set to false because the data collector is also set to false
+                 write_tocsv=True) -> [pd.DataFrame]:
     """
        This function acts as a wrapper around the APSIM command line recursive tool, automating
        the execution of APSIM simulations on all files matching a given pattern in a specified
@@ -119,8 +126,12 @@ def run_from_dir(dir_path, pattern, verbose=False, write_tocsv=True) -> [pd.Data
 
        @Parameters:
        __________________________________________________________________
-       - dir_path (str or Path): The path to the directory where the simulation files are located.
-       - pattern (str): The file pattern to match for simulation files (e.g., "*.apsimx").
+       - dir_path (str or Path, required): The path to the directory where the simulation files are located.
+       - pattern (str, required): The file pattern to match for simulation files (e.g., "*.apsimx").
+       - recursive (bool, optional): specifies whether or not to recursively serch sub directories
+       - write_tocsv (bool, optional): specifies whether or not to to write the simulation results to a csv. if true, the
+        csf files bear the same name as the input apsimx file name with suffix reportname.csv. if it false, this function return None
+        - if verbose, the progress is printed as the elapsed time and the successfully saved csv
 
        The function constructs a command to execute APSIM simulations using the provided directory
        path and file pattern. It adds flags for recursive search, verbosity, and output formatting.
@@ -150,7 +161,9 @@ def run_from_dir(dir_path, pattern, verbose=False, write_tocsv=True) -> [pd.Data
     dir_path = str(dir_path)
 
     dir_patern = f"{dir_path}/{pattern}"
-    base_cmd = [str(apsim_exe), str(dir_patern),  '--recursive']
+    base_cmd = [str(apsim_exe), str(dir_patern)]
+    if recursive:
+        base_cmd.append('--recursive')
     if verbose:
         base_cmd.append('--verbose')
     if write_tocsv:

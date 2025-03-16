@@ -375,6 +375,17 @@ class APSIMNG:
 
     @property
     def simulated_results(self) -> pd.DataFrame:
+        """
+
+        @return: pandas data frame containing the data
+        Example:
+         >>> from apsimNGpy.core.base_data import load_default_simulations
+         >>> fmodel = load_default_simulations(crop ='Maize', simulations_object=False) # get path only
+         >>> model = APSIMNG(fmodel)
+         >>> mn=model.run() #3 run the model before colelcting the results
+         >>> sr = model.simulated_results
+
+        """
         if self.ran_ok:
             data_tables = collect_csv_by_model_path(self.path)
             # reports = get_db_table_names(self.datastore)
@@ -386,7 +397,7 @@ class APSIMNG:
                 bag.append(_df)
             return pd.concat(bag)
         else:
-            raise ValueError("you cant load data before running the model please call model.run() first")
+            raise ValueError("you cant load data before running the model please call run() first")
 
     def clone_simulation(self, target: str, simulation: Union[list, tuple] = None):
         """Clone a simulation and add it to Model

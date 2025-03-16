@@ -14,14 +14,25 @@ apsim_bin_path = Path(get_apsim_bin_path())
 
 # Determine executable based on OS
 if platform.system() == "Windows":
-    apsim_exe = apsim_bin_path / "Models.exe"
+    APSIM_EXEC = apsim_bin_path / "Models.exe"
 else:  # Linux or macOS
-    apsim_exe = apsim_bin_path / "Models"
+    APSIM_EXEC = apsim_bin_path / "Models"
 
+def get_apsim_version():
+    res= Popen([APSIM_EXEC, '--version'], stdout=PIPE, stderr=PIPE, text=True)
+    res.wait()
+    return res.stdout.readlines()[0].strip()
 
-
-
-
+def upgrade_apsim_file(file, verbose=True):
+    file= str(file)
+    assert os.path.isfile(file) and file.endswith(".apsimx"),  f"{file} does not exists a supported apsim file"
+    cmd = [APSIM_EXEC, '--upgrade', file]
+    if verbose:
+        cmd.append('--verbose')
+    res= Popen(cmd, stdout=PIPE, stderr=PIPE, text=True)
+    outp, err = res.communicate()
+    print(outp)
+    return file
 
 def run_model_externally(model, verbose: bool = False, to_csv=False) -> Popen[str]:
     """Runs an APSIM model externally, ensuring cross-platform compatibility.
@@ -35,7 +46,7 @@ def run_model_externally(model, verbose: bool = False, to_csv=False) -> Popen[st
     """
 
     apsim_file = model  # Define the APSIMX file path
-    cmd = [str(apsim_exe), str(apsim_file), '--verbose']
+    cmd = [str(APSIM_EXEC), str(apsim_file), '--verbose']
 
     if to_csv:
         cmd.append('--csv')
@@ -57,7 +68,7 @@ def run_model_externally(model, verbose: bool = False, to_csv=False) -> Popen[st
                 result.kill()
 
 
-@timer
+
 def collect_csv_by_model_path(model_path) -> dict[Any, Any]:
     """Collects the data from the simulated model after run
     """
@@ -162,7 +173,7 @@ def run_from_dir(dir_path, pattern, verbose=False,
     dir_path = str(dir_path)
 
     dir_patern = f"{dir_path}/{pattern}"
-    base_cmd = [str(apsim_exe), str(dir_patern)]
+    base_cmd = [str(APSIM_EXEC), str(dir_patern)]
     if recursive:
         base_cmd.append('--recursive')
     if verbose:

@@ -3,7 +3,7 @@ import platform
 from pathlib import Path
 from subprocess import *
 from typing import Dict, Any
-
+import contextlib
 import pandas as pd
 
 from apsimNGpy.core.config import get_apsim_bin_path
@@ -18,9 +18,9 @@ if platform.system() == "Windows":
 else:  # Linux or macOS
     apsim_exe = apsim_bin_path / "Models"
 
-import subprocess
-import contextlib
-from subprocess import Popen, PIPE
+
+
+
 
 
 def run_model_externally(model, verbose: bool = False, to_csv=False) -> Popen[str]:

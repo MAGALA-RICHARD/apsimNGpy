@@ -19,11 +19,18 @@ else:  # Linux or macOS
     APSIM_EXEC = apsim_bin_path / "Models"
 
 def get_apsim_version():
+    """ Display version information of the apsim model currently in the apsimNGpy config environment."""
     res= Popen([APSIM_EXEC, '--version'], stdout=PIPE, stderr=PIPE, text=True)
     res.wait()
     return res.stdout.readlines()[0].strip()
 
 def upgrade_apsim_file(file, verbose=True):
+    """
+    Upgrade a file to the latest version of the .apsimx file format without running the file.
+    @param file: file to be upgraded
+    @param verbose: Write detailed messages to stdout when a conversion starts/finishes.
+    @return: the latest version of the .apsimx file with the same name the input file
+    """
     file= str(file)
     assert os.path.isfile(file) and file.endswith(".apsimx"),  f"{file} does not exists a supported apsim file"
     cmd = [APSIM_EXEC, '--upgrade', file]

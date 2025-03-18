@@ -50,6 +50,8 @@ def upgrade_apsim_file(file, verbose=True):
         cmd.append('--verbose')
     res= Popen(cmd, stdout=PIPE, stderr=PIPE, text=True)
     outp, err = res.communicate()
+    if err:
+        print(err)
     if verbose:
         print(outp)
     if res.returncode==0:
@@ -220,7 +222,39 @@ def run_from_dir(dir_path, pattern, verbose=False,
         logger.info(f"Loading data into memory.")
         out = collect_csv_from_dir(dir_path, pattern)
         return out
+def run_n(file, in_m= False):
+    """ this function is a work in progres, testing storing data in-memory"""
+    import sqlite3
+    cmd = [APSIM_EXEC, file]
+    if in_m:
+        ...
+        cmd.append('--in-memory-db')
+
+
+    # Run the command and capture output
+    process = run(cmd)
+    conn = sqlite3.connect(":memory:")
+   # stdout, stderr = process.communicate()  # Waits and gets output
+    #conn = sqlite3.connect(":memory:")
+    if process.returncode != 0:
+        #print(f"Error running command: {stderr}")
+        return
+
+    #print(stdout)  # Print version info
+
+    # Connect to the shared in-memory database
+    try:
+
+        cursor = conn.cursor()
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+        tables = [row[0] for row in cursor.fetchall()]
+
+        print(tables)
+    except sqlite3.Error as e:
+        print(f"Database error: {e}")
+    finally:
+        conn.close()
 
 if __name__ == "__main__":
     import doctest
-    doctest.testmod()
+   # doctest.testmod()

@@ -131,44 +131,7 @@ if __name__ == '__main__':
         return view
 
 
-def process():
-    row = get_data(model).get_Rows()
-    ar = [i.ItemArray for i in row]
-    return ar
 
-
-import clr
-import pandas as pd
-
-# Load .NET assemblies (ensure System.Data.dll is available)
-clr.AddReference("System.Data")
-
-from System.Data import DataView
-
-
-@timer
-def dataview_to_dataframe(_model, reports):
-    """
-    Convert .NET System.Data.DataView to Pandas DataFrame.
-    :param dataview: System.Data.DataView object
-    :return: Pandas DataFrame
-    """
-    _model._DataStore.Open()
-    pred = model._DataStore.Reader.GetData(reports)
-    dataview = DataView(pred)
-
-    # Extract column names
-    column_names = [col.ColumnName for col in dataview.Table.Columns]
-
-    # Extract data from rows
-    data = []
-    for row in dataview:
-        data.append([row[col] for col in column_names])  # Extract row values
-
-    # Convert to Pandas DataFrame
-    df = pd.DataFrame(data, columns=column_names)
-
-    return df
 
 
 

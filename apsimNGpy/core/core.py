@@ -859,6 +859,19 @@ class APSIMNG:
 
     def _kvtodict(self, kv):
         return {kv[i].Key: kv[i].Value for i in range(kv.Count)}
+    def add_model(self, model_path, loc):
+
+        """
+
+        @param model_path: path to the model to be added, eng Models.Climate.Weather.
+        @param loc: '.Simulations.Simulation'
+        @return: self
+        """
+
+        loc = self.Simulations.FindByPath(loc)
+        if loc is None:
+            raise ValueError(f"{loc} not in the node")
+
 
     def compile_scripts(self):
         for sim in self.simulations:

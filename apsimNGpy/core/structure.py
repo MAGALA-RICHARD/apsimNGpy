@@ -46,7 +46,62 @@ def add_model(_model, model_name, where):
     return parent
 
 
+
+def find_model(model_name)-> Models:
+    """"
+    Find a model from the Models NameSpace
+    returns a path to the Models NameSpace
+    Example:
+        >>> find_model("Weather")
+         Models.Climate.Weather
+        >>> find_model("Clock")
+          Models.Clock
+
+
+    """
+    model =Models
+    att = model_name
+    if not hasattr(model, "__dict__"):
+        return None  # Base case: Not an object with attributes
+
+    mds = model.__dict__
+
+    if att in mds:
+
+      obj = mds[att]
+      if isinstance(obj, type(Models.Clock)):# we are looking for models in this type; modules and fields no
+         return mds[att]
+    # Recursively check nested objects
+    for attr, value in mds.items():
+        if hasattr(value, "__dict__"):  # Ensure it's an object
+            result = extract(value, att)
+            if result is not None:
+                return result
+
+    return None  # Attribute not found
+def add(_model, model_name, where, **kwargs):
+    """
+    Add a model to the Models Simulations NameSpace. some models are tied to specific models, so they can only be added
+    to that models an example, we cant add Clock model to Soil Model
+    @param _model: apsimNGpy.core.apsim object
+    @param model_name: string name of the model
+    @param where: loction along the Models Simulations nodes or children to add the model e.g at Simulation,
+    @return: none, model are modified in place, so the modified object has the same reference pointer as the _model
+    """
+    sims = _model.Simulations
+    # find where to add the model
+    parent = _model.Simulations.FindInScope(where)
+    which = find_model(model_name)
+    if which is not None:
+        ADD(which(), parent)
+        logger.info(f"Added {which().Name} to {parent.Name}")
 def remove_model(_model, model_name):
+    """
+    Remove a model from the Models Simulations NameSpace
+    @param _model: apsimNgpy.core.model model object
+    @param model_name: name of the model e.g Clock
+    @return: None
+    """
     imodel = _model.Simulations.Parent.FullPath + model_name
     DELETE(_model.Simulations.FindInScope(model_name))
 
@@ -116,13 +171,5 @@ def dataview_to_dataframe(_model, reports):
     return df
 
 
-model.run()
-
-df = dataview_to_dataframe(model, reports='Report')
-#df2 =read_db_table(model.datastore, 'Report')
-model.clean_up()
-print(df)
-path = r"D:\My_BOX\Box\PhD thesis\CHAPTER FOUR\source_files\split_single_test.apsimx"
 
 
-test_model  = ApsimModel(path)

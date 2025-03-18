@@ -83,7 +83,7 @@ def add(_model, model_name, where, **kwargs):
     """
     Add a model to the Models Simulations NameSpace. some models are tied to specific models, so they can only be added
     to that models an example, we cant add Clock model to Soil Model
-    @param _model: apsimNGpy.core.apsim object
+    @param _model: apsimNGpy.core.apsim.ApsimModel object
     @param model_name: string name of the model
     @param where: loction along the Models Simulations nodes or children to add the model e.g at Simulation,
     @return: none, model are modified in place, so the modified object has the same reference pointer as the _model
@@ -117,22 +117,6 @@ if __name__ == '__main__':
     # sims.FindByPath(modelToCheck.Parent.FullPath + "." + newName)
 
     crop = model.Simulations.FindInScope[Models.PMF.Plant]('Soybean')
-
-
-    # model.preview_simulation()
-    # DataTable predictedData = dataStore.Reader.GetData(TableName);
-    def get_data(_model):
-        # _model.run()
-        _model._DataStore.Open()
-        pred = model._DataStore.Reader.GetData("Report")
-        view = DataView(pred)
-        # for i  in view:
-        #    ...# print(i)
-        return view
-
-
-
-
 
 
 

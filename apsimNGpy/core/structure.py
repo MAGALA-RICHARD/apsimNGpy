@@ -79,7 +79,10 @@ def find_model(model_name)-> Models:
                 return result
 
     return None  # Attribute not found
-def add(_model, model_name, where, **kwargs):
+def check_if_str_path(model_name):
+    if isinstance(model_name,type(Models.Clock)): #need this kind of objects from Models namespace
+        return True
+def add(_model, model_name, where, rename=None, **kwargs):
     """
     Add a model to the Models Simulations NameSpace. some models are tied to specific models, so they can only be added
     to that models an example, we cant add Clock model to Soil Model
@@ -91,10 +94,19 @@ def add(_model, model_name, where, **kwargs):
     sims = _model.Simulations
     # find where to add the model
     parent = _model.Simulations.FindInScope(where)
-    which = find_model(model_name)
-    if which is not None:
-        ADD(which(), parent)
-        logger.info(f"Added {which().Name} to {parent.Name}")
+    if isinstance(model_name, type(Models.Clock)):
+        which = model_name
+    else:
+        which = find_model(model_name)
+    if which:
+        loc = which()
+        if rename:
+             loc.Name = rename
+
+        ADD(loc, parent)
+        logger.info(f"Added {loc.Name} to {parent.Name}")
+        # we need to put the changes into effect
+        model.save()
 def remove_model(_model, model_name):
     """
     Remove a model from the Models Simulations NameSpace
@@ -102,15 +114,13 @@ def remove_model(_model, model_name):
     @param model_name: name of the model e.g Clock
     @return: None
     """
-    imodel = _model.Simulations.Parent.FullPath + model_name
+   # imodel = _model.Simulations.Parent.FullPath + model_name
     DELETE(_model.Simulations.FindInScope(model_name))
 
-    ...
 
 
-import System
 
-DataView = System.Data
+
 if __name__ == '__main__':
     # test
     add_crop_replacements(model, _crop='Maize')

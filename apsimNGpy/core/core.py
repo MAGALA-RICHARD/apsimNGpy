@@ -840,12 +840,14 @@ class APSIMNG:
 
     # immediately open the file in GUI
     def preview_simulation(self):
+
         """
         Preview the simulation file in the apsimNGpy object in the APSIM graphical user interface
         @return: opens the simulation file
         """
         # TODO this need to be connected to the apsim installation path to make
         #  sure that file are opened in their corresponding versions
+        self.save()
         filepath = self.path
         import platform
         import subprocess

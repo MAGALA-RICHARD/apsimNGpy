@@ -82,8 +82,8 @@ def find_model(model_name)-> Models:
 def check_if_str_path(model_name):
     if isinstance(model_name,type(Models.Clock)): #need this kind of objects from Models namespace
         return True
-def add_model(_model, model_name, where, rename=None,
-              loc_child_name = None, verbose=True, **kwargs):
+def add_model(_model, model_type, adoptive_parent, rename=None,
+              adoptive_parent_name = None, verbose=True, **kwargs):
 
     """
     Add a model to the Models Simulations NameSpace. some models are tied to specific models, so they can only be added
@@ -91,37 +91,34 @@ def add_model(_model, model_name, where, rename=None,
     @param _model: apsimNGpy.core.apsim.ApsimModel object
     @param model_name: string name of the model
     @param where: loction along the Models Simulations nodes or children to add the model e.g at Models.Core.Simulation,
-    @param loc_child_name: importatn to specified the actual final destination, if there are more than one simulations
+    @param adoptive_parent_name: importatn to specified the actual final destination, if there are more than one simulations
     @return: none, model are modified in place, so the modified object has the same reference pointer as the _model
         Example:
      >>> from apsimNGpy import core
      >>> model =core.base_data.load_default_simulations(crop = "Maize")
      >>> remove_model(model,Models.Clock) # first delete model
-     >>> add_model(model, Models.Clock, where = Models.Core.Simulation, rename = 'Clock_replaced', verbose=False)
+     >>> add_model(model, Models.Clock, adoptive_parent = Models.Core.Simulation, rename = 'Clock_replaced', verbose=False)
 
     """
 
     replacer = {'Clock': 'change_simulation_dates', 'Weather': 'replace_met_file'}
     sims = _model.Simulations
     # find where to add the model
-    if where== Models.Core.Simulations:
+    if adoptive_parent== Models.Core.Simulations:
         parent = _model.Simulations
     else:
-        if isinstance(where, type(Models.Clock)):
+        if isinstance(adoptive_parent, type(Models.Clock)):
 
-            if loc_child_name:
-                parent = list(_model.Simulations.FindAllDescendants[where](loc_child_name))
-                if len(parent) > 0:
-                    parent = parent[0]
-            else:
-             parent  = _model.Simulations.FindInScope[where]()
+            if not adoptive_parent_name:
+                adoptive_parent_name =adoptive_parent().Name
+        parent  = _model.Simulations.FindInScope[adoptive_parent](adoptive_parent_name)
 
        # parent = _model.Simulations.FindChild(where)
 
-    if isinstance(model_name, type(Models.Clock)):
-        which = model_name
-    else:
-        which = find_model(model_name)
+    if isinstance(model_type, type(Models.Clock)):
+        which =model_type
+    elif isinstance(model_type, str):
+        which = find_model(model_type)
     if which and parent:
         loc = which()
         if rename:
@@ -176,12 +173,12 @@ if __name__ == '__main__':
     import ApsimNG
     nexp  = load_default_simulations(crop='Maize')
     # add experiment
-    add_model(nexp, model_name=Models.Factorial.Experiment, where = Models.Core.Simulations)
+    add_model(nexp, model_type=Models.Factorial.Experiment, adoptive_parent = Models.Core.Simulations)
     # add factor holder
-    add_model(nexp, model_name=Models.Factorial.Factors, where = Models.Factorial.Experiment)
+    add_model(nexp, model_type=Models.Factorial.Factors, adoptive_parent = Models.Factorial.Experiment)
     # now add individual factorst
-    add_model(nexp, model_name=Models.Factorial.Factor, where=Models.Factorial.Factors)
-    add_model(model, model_name=Models.Clock, where = Models.Core.Simulation, rename='sim5', loc_child_name='Simulation')
+    add_model(nexp, model_type=Models.Factorial.Factor, adoptive_parent=Models.Factorial.Factors)
+    add_model(model, model_type=Models.Clock,adoptive_parent = Models.Core.Simulation, rename='sim5', adoptive_parent_name='Simulation')
     # final step is to move the base simulation
     move_model(nexp, Models.Core.Simulation,  Models.Factorial.Experiment, None,None)
     pp = nexp.Simulations.FindInScope[Models.Factorial.Factor]()

@@ -43,6 +43,11 @@ MultiThreaded = Models.Core.Run.Runner.RunTypeEnum.MultiThreaded
 SingleThreaded = Models.Core.Run.Runner.RunTypeEnum.SingleThreaded
 ModelRUNNER = Models.Core.Run.Runner
 
+ADD = Models.Core.ApsimFile.Structure.Add
+DELETE = Models.Core.ApsimFile.Structure.Delete
+MOVE = Models.Core.ApsimFile.Structure.Move
+RENAME = Models.Core.ApsimFile.Structure.Rename
+REPLACE = Models.Core.ApsimFile.Structure.Replace
 
 def dataview_to_dataframe(_model, reports):
     """
@@ -422,17 +427,90 @@ class APSIMNG:
         self._reload_saved_file()
         return self
 
-    def remove_simulation(self, simulation: Union[tuple, list]):
-        """Remove a simulation from the model
+    def find_model(self, model_name) -> Models:
+        """"
+        Find a model from the Models NameSpace
+        returns a path to the Models NameSpace not strings
 
-            Parameters
-            ----------
-            simulation
-                The name of the simulation to remove
+        Example:
+            >>> find_model("Weather") # doctest: +SKIP
+             Models.Climate.Weather
+            >>> find_model("Clock") # doctest: +SKIP
+              Models.Clock
+
+
         """
-        sim = self._find_simulation(simulation)
-        self.Simulations.Children.Remove(sim)
-        self.save_edited_file()
+        model = Models
+        att = model_name
+        if not hasattr(model, "__dict__"):
+            return None  # Base case: Not an object with attributes
+
+        mds = model.__dict__
+
+        if att in mds:
+
+            obj = mds[att]
+            if isinstance(obj, type(Models.Clock)):  # we are looking for models in this type; modules and fields no
+                return mds[att]
+        # Recursively check nested objects
+        for attr, value in mds.items():
+            if hasattr(value, "__dict__"):  # Ensure it's an object
+                result = extract(value, att)
+                if result is not None:
+                    return result
+
+        return None  # Attribute not found
+    def add_model(self, model_type, adoptive_parent, rename=None,
+                  adoptive_parent_name=None, verbose=True, **kwargs):
+
+        """
+        Add a model to the Models Simulations NameSpace. some models are tied to specific models, so they can only be added
+        to that models an example, we cant add Clock model to Soil Model
+        @param _model: apsimNGpy.core.apsim.ApsimModel object
+        @param model_name: string name of the model
+        @param where: loction along the Models Simulations nodes or children to add the model e.g at Models.Core.Simulation,
+        @param adoptive_parent_name: importatn to specified the actual final destination, if there are more than one simulations
+        @return: none, model are modified in place, so the modified object has the same reference pointer as the _model
+            Example:
+         >>> from apsimNGpy import core
+         >>> model =core.base_data.load_default_simulations(crop = "Maize")
+         >>> model.remove_model(Models.Clock) # first delete model
+         >>> model.add_model(Models.Clock, adoptive_parent = Models.Core.Simulation, rename = 'Clock_replaced', verbose=False)
+
+        """
+
+        replacer = {'Clock': 'change_simulation_dates', 'Weather': 'replace_met_file'}
+        sims = self.Simulations
+        # find where to add the model
+        if adoptive_parent == Models.Core.Simulations:
+            parent = _model.Simulations
+        else:
+            if isinstance(adoptive_parent, type(Models.Clock)):
+
+                if not adoptive_parent_name:
+                    adoptive_parent_name = adoptive_parent().Name
+            parent = sims.FindInScope[adoptive_parent](adoptive_parent_name)
+
+        # parent = _model.Simulations.FindChild(where)
+
+        if isinstance(model_type, type(Models.Clock)):
+            which = model_type
+        elif isinstance(model_type, str):
+            which = find_model(model_type)
+        if which and parent:
+            loc = which()
+            if rename:
+                loc.Name = rename
+
+            ADD(loc, parent)
+            if verbose:
+                logger.info(f"Added {loc.Name} to {parent.Name}")
+            # we need to put the changes into effect
+            self.save()
+            logger.info(f'successfuly saved to {self.path}')
+
+        else:
+            logger.debug(f"Adding {model_name} to {parent.Name} failed, perhaps models was not found")
 
     @property
     def extract_simulation_name(self):
@@ -447,6 +525,32 @@ class APSIMNG:
         """
         # this is a repetition because I want to deprecate it and maintain simulation_name or use get_simulation_name
         return self.simulation_names
+
+    def remove_model(self, model_type, model_name=None):
+        """
+        Remove a model from the Models Simulations NameSpace
+        @param _model: apsimNgpy.core.model model object
+        @param model_name: name of the model e.g Clock
+        @return: None
+        """
+        # imodel = _model.Simulations.Parent.FullPath + model_name
+        if not model_name:
+            model_name = model_type().Name
+        DELETE(self.Simulations.FindInScope[model_type](model_name))
+    def move_model(self, model_type, new_parent_type, model_name=None, new_parent_name=None):
+        sims = self.Simulations
+        if not model_name:
+            model_name = model_type().Name
+        child_to_move = sims.FindInScope[model_type](model_name)
+        if not new_parent_name:
+            new_parent_name = new_parent_type().Name
+            print(new_parent_name)
+        new_parent = sims.FindInScope[new_parent_type](new_parent_name)
+        print(new_parent.Name)
+        print(child_to_move.Name)
+        MOVE(child_to_move, new_parent)
+        logger.info(f"Moved {child_to_move.Name} to {new_parent.Name}")
+        self.save()
 
     def clone_zone(self, target: str, zone: str, simulation: Union[tuple, list] = None):
         """Clone a zone and add it to Model
@@ -862,18 +966,8 @@ class APSIMNG:
 
     def _kvtodict(self, kv):
         return {kv[i].Key: kv[i].Value for i in range(kv.Count)}
-    def add_model(self, model_path, loc):
 
-        """
 
-        @param model_path: path to the model to be added, eng Models.Climate.Weather.
-        @param loc: '.Simulations.Simulation'
-        @return: self
-        """
-
-        loc = self.Simulations.FindByPath(loc)
-        if loc is None:
-            raise ValueError(f"{loc} not in the node")
 
 
     def compile_scripts(self):

@@ -53,6 +53,7 @@ def load_pythonnet():
     SYSTEM = clr.AddReference("System")
 
     MMODELSS = clr.AddReference("Models")
+    apsimNG = clr.AddReference('ApsimNG')
 
     # return lm, sys, pythonnet.get_runtime_info()
 

@@ -538,16 +538,23 @@ class APSIMNG:
             model_name = model_type().Name
         DELETE(self.Simulations.FindInScope[model_type](model_name))
     def move_model(self, model_type, new_parent_type, model_name=None, new_parent_name=None):
+        """
+
+        @param model_type (Models): type of model tied to Models Namespace
+        @param new_parent_type: new model parent (Models)
+        @param model_name:name of the model e.g Clock, or Clock2whaterver name that was given to the model
+        @param new_parent_name: what is the new parent names =Field2, this fiedl is optional but important if you have nested simulations
+        @return: None everything is edited in place
+        """
         sims = self.Simulations
         if not model_name:
             model_name = model_type().Name
         child_to_move = sims.FindInScope[model_type](model_name)
         if not new_parent_name:
             new_parent_name = new_parent_type().Name
-            print(new_parent_name)
+
         new_parent = sims.FindInScope[new_parent_type](new_parent_name)
-        print(new_parent.Name)
-        print(child_to_move.Name)
+
         MOVE(child_to_move, new_parent)
         logger.info(f"Moved {child_to_move.Name} to {new_parent.Name}")
         self.save()

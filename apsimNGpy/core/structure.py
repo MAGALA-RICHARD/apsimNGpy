@@ -96,7 +96,7 @@ def add_model(_model, model_name, where, rename=None,
         Example:
      >>> from apsimNGpy import core
      >>> model =core.base_data.load_default_simulations(crop = "Maize")
-     >>> remove_model(model,'Clock') # first delete model
+     >>> remove_model(model,Models.Clock) # first delete model
      >>> add_model(model, Models.Clock, where = Models.Core.Simulation, rename = 'Clock_replaced', verbose=False)
 
     """
@@ -136,7 +136,7 @@ def add_model(_model, model_name, where, rename=None,
 
     else:
       logger.debug(f"Adding {model_name} to {parent.Name} failed, perhaps models was not found")
-def remove_model(_model, model_name):
+def remove_model(_model, model_type, model_name =None):
     """
     Remove a model from the Models Simulations NameSpace
     @param _model: apsimNgpy.core.model model object
@@ -144,7 +144,9 @@ def remove_model(_model, model_name):
     @return: None
     """
    # imodel = _model.Simulations.Parent.FullPath + model_name
-    DELETE(_model.Simulations.FindInScope(model_name))
+    if not model_name:
+        model_name = model_type().Name
+    DELETE(_model.Simulations.FindInScope[model_type](model_name))
 
 def move_model(_model, model_type, new_parent_type, model_name =None, new_parent_name=None):
     sims = _model.Simulations

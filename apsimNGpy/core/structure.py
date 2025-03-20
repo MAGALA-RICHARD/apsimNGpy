@@ -130,9 +130,17 @@ def add_model(_model, model_type, adoptive_parent, rename=None,
 
 def remove_model(_model, model_type, model_name=None):
     """
-    Remove a model from the Models Simulations NameSpace @param _model: apsimNgpy.core.model model object @param
-    model_name: name of the model e.g., Clock2. If we are sure that only one clock exists or then we dont need to
+    Remove a model from the Models Simulations NameSpace
+    @param model_type: e.g., Models.Clock, Models
+    @param _model: apsimNgpy.core.model model object
+    @param model_name: name of the model e.g., Clock2. If we are sure that only one clock exists or then we dont need to
     specify the name @return: None
+    Example:
+       >>> from apsimNGpy import core
+       >>> from apsimNGpy.core.core import Models
+       >>> model = core.base_data.load_default_simulations(crop = 'Maize')
+       >>> model.remove_model(Models.Clock) #deletes the clock node
+       >>> model.remove_model(Models.Climate.Weather) #deletes the weather node
     """
     # imodel = _model.Simulations.Parent.FullPath + model_name
     if not model_name:

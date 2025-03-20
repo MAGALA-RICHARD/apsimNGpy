@@ -546,6 +546,12 @@ class APSIMNG:
         @param _model: apsimNgpy.core.model model object
         @param model_name: name of the model e.g Clock
         @return: None
+        Example:
+               >>> from apsimNGpy import core
+               >>> from apsimNGpy.core.core import Models
+               >>> model = core.base_data.load_default_simulations(crop = 'Maize')
+               >>> model.remove_model(Models.Clock) #deletes the clock node
+               >>> model.remove_model(Models.Climate.Weather) #deletes the weather node
         """
         # imodel = _model.Simulations.Parent.FullPath + model_name
         if not model_name:

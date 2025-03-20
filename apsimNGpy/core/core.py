@@ -522,12 +522,32 @@ class APSIMNG:
                 logger.info(f"Added {loc.Name} to {parent.Name}")
             # we need to put the changes into effect
             self.save()
-            if verbose:
-                logger.info(f'successfully saved to {self.path}')
+            # if verbose:
+            #     logger.info(f'successfully saved to {self.path}')
 
         else:
             logger.debug(f"Adding {model_type} to {parent.Name} failed, perhaps models was not found")
-
+    def add_report_variable(self, command, report_name=None):
+        """
+        This adds a report variable to the end of other variables, if you want to change the whole report use change report
+        @param command: for the report variables e.g., '[Clock].Today as Date'
+        @param report_name: name of the report variable if not specified the first accessed report object will be altered
+        @return: None
+           raises an erros if report is not found
+        Example:
+        >>> from apsimNGpy import core
+        >>> model = core.base_data.load_default_simulations()
+        >>> model.add_report_variable(command = '[Clock].Today as Date', report_name = 'Report')
+        """
+        if report_name:
+            get_report = self.Simulations.FindInScope[Models.Report](report_name)
+        else:
+            get_report = self.Simulations.FindInScope[Models.Report]()
+        get_cur_variables = list(get_report.VariableNames)
+        get_cur_variables.append(command)
+        final_command ="\n".join(get_cur_variables)
+        get_report.set_VariableNames(final_command.strip().splitlines())
+        self.save()
     @property
     def extract_simulation_name(self):
         warnings.warn(

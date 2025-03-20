@@ -58,5 +58,13 @@ if __name__ == "__main__":
     experiment = Experiment(path, permutation=True)
     experiment.add_factor(specification="[Fertilise at sowing].Script.Amount = 0 to 200 step 20",
                           factor_name='Nitrogen')
-    experiment.preview_simulation()
+
     experiment.run()
+    experiment.add_model(model_type=Models.Report, adoptive_parent=Models.Core.Simulation, rename = 'date')
+    report = experiment.Simulations.FindInScope[Models.Report]('Report')
+    Clock = Models.Clock()
+    #report.set_VariableNames(Clock.Today)
+
+    experiment.add_report_variable(command='[Clock].Today as Date')
+    experiment.preview_simulation()
+

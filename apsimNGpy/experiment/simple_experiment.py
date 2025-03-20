@@ -65,6 +65,6 @@ if __name__ == "__main__":
     Clock = Models.Clock()
     #report.set_VariableNames(Clock.Today)
 
-    experiment.add_report_variable(command='[Clock].Today as Date')
+    experiment.add_report_variable(commands='[Clock].Today as Date')
     experiment.preview_simulation()
 

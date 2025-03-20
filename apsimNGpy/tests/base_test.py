@@ -32,6 +32,7 @@ def get_files(pattern):
 
 
 def release_file_locks(_dir):
+    '''it is too computationaly expensive'''
     procs = psutil.process_iter()
     fd = get_files("*.apsimx")
     files = [str(i) for i in fd]

@@ -46,45 +46,49 @@ def add_model(_model, model_name, where):
     return parent
 
 
-
-def find_model(model_name)-> Models:
-    """"
-    Find a model from the Models NameSpace
-    returns a path to the Models NameSpace
-    Example:
-        >>> find_model("Weather") # doctest: +SKIP
-         Models.Climate.Weather
-        >>> find_model("Clock") # doctest: +SKIP
-          Models.Clock
-
-
+def find_model(model_name: str, model_namespace=None):
     """
-    model =Models
-    att = model_name
-    if not hasattr(model, "__dict__"):
-        return None  # Base case: Not an object with attributes
+    Find a model from the Models namespace and return its path.
 
-    mds = model.__dict__
+    Args:
+        model_name (str): The name of the model to find.
+        model_namespace (object, optional): The root namespace (defaults to Models).
+        path (str, optional): The accumulated path to the model.
 
-    if att in mds:
+    Returns:
+        str: The full path to the model if found, otherwise None.
 
-      obj = mds[att]
-      if isinstance(obj, type(Models.Clock)):# we are looking for models in this type; modules and fields no
-         return mds[att]
-    # Recursively check nested objects
-    for attr, value in mds.items():
-        if hasattr(value, "__dict__"):  # Ensure it's an object
-            result = extract(value, att)
-            if result is not None:
+    Example:
+        >>> find_model("Weather")  # doctest: +SKIP
+        'Models.Climate.Weather'
+        >>> find_model("Clock")  # doctest: +SKIP
+        'Models.Clock'
+    """
+    if model_namespace is None:
+        model_namespace = Models  # Default to Models namespace
+
+    if not hasattr(model_namespace, "__dict__"):
+        return None  # Base case: Not a valid namespace
+
+    for attr, value in model_namespace.__dict__.items():
+        if attr == model_name and isinstance(value, type(getattr(Models, "Clock", object))):
+            return value
+
+        if hasattr(value, "__dict__"):  # Recursively search nested namespaces
+            result = find_model(model_name, value)
+            if result:
                 return result
 
-    return None  # Attribute not found
-def check_if_str_path(model_name):
-    if isinstance(model_name,type(Models.Clock)): #need this kind of objects from Models namespace
-        return True
-def add_model(_model, model_type, adoptive_parent, rename=None,
-              adoptive_parent_name = None, verbose=True, **kwargs):
+    return None  # Model not found
 
+
+def check_if_str_path(model_name):
+    if isinstance(model_name, type(Models.Clock)):  # need this kind of objects from Models namespace
+        return True
+
+
+def add_model(_model, model_type, adoptive_parent, rename=None,
+              adoptive_parent_name=None, verbose=True, **kwargs):
     """
     Add a model to the Models Simulations NameSpace. some models are tied to specific models, so they can only be added
     to that models an example, we cant add Clock model to Soil Model
@@ -104,48 +108,51 @@ def add_model(_model, model_type, adoptive_parent, rename=None,
     replacer = {'Clock': 'change_simulation_dates', 'Weather': 'replace_met_file'}
     sims = _model.Simulations
     # find where to add the model
-    if adoptive_parent== Models.Core.Simulations:
+    if adoptive_parent == Models.Core.Simulations:
         parent = _model.Simulations
     else:
         if isinstance(adoptive_parent, type(Models.Clock)):
 
             if not adoptive_parent_name:
-                adoptive_parent_name =adoptive_parent().Name
-        parent  = _model.Simulations.FindInScope[adoptive_parent](adoptive_parent_name)
+                adoptive_parent_name = adoptive_parent().Name
+        parent = _model.Simulations.FindInScope[adoptive_parent](adoptive_parent_name)
 
-       # parent = _model.Simulations.FindChild(where)
+    # parent = _model.Simulations.FindChild(where)
 
     if isinstance(model_type, type(Models.Clock)):
-        which =model_type
+        which = model_type
     elif isinstance(model_type, str):
         which = find_model(model_type)
     if which and parent:
         loc = which()
         if rename:
-             loc.Name = rename
+            loc.Name = rename
 
         ADD(loc, parent)
         if verbose:
-           logger.info(f"Added {loc.Name} to {parent.Name}")
+            logger.info(f"Added {loc.Name} to {parent.Name}")
         # we need to put the changes into effect
         _model.save()
         logger.info(f'successfuly saved to {_model.path}')
 
     else:
-      logger.debug(f"Adding {model_name} to {parent.Name} failed, perhaps models was not found")
-def remove_model(_model, model_type, model_name =None):
+        logger.debug(f"Adding {model_type} to {parent.Name} failed, perhaps models was not found")
+
+
+def remove_model(_model, model_type, model_name=None):
     """
     Remove a model from the Models Simulations NameSpace
     @param _model: apsimNgpy.core.model model object
     @param model_name: name of the model e.g Clock
     @return: None
     """
-   # imodel = _model.Simulations.Parent.FullPath + model_name
+    # imodel = _model.Simulations.Parent.FullPath + model_name
     if not model_name:
         model_name = model_type().Name
     DELETE(_model.Simulations.FindInScope[model_type](model_name))
 
-def move_model(_model, model_type, new_parent_type, model_name =None, new_parent_name=None):
+
+def move_model(_model, model_type, new_parent_type, model_name=None, new_parent_name=None):
     sims = _model.Simulations
     if not model_name:
         model_name = model_type().Name
@@ -161,31 +168,28 @@ def move_model(_model, model_type, new_parent_type, model_name =None, new_parent
     _model.save()
 
 
-
-
-
 if __name__ == '__main__':
     import doctest
+
     doctest.testmod()
     # test
     add_crop_replacements(model, _crop='Maize')
     # sims.FindByPath(modelToCheck.Parent.FullPath + "." + newName)
     import ApsimNG
-    nexp  = load_default_simulations(crop='Maize')
+
+    nexp = load_default_simulations(crop='Maize')
     # add experiment
-    add_model(nexp, model_type=Models.Factorial.Experiment, adoptive_parent = Models.Core.Simulations)
+    add_model(nexp, model_type=Models.Factorial.Experiment, adoptive_parent=Models.Core.Simulations)
     # add factor holder
-    add_model(nexp, model_type=Models.Factorial.Factors, adoptive_parent = Models.Factorial.Experiment)
+    add_model(nexp, model_type=Models.Factorial.Factors, adoptive_parent=Models.Factorial.Experiment)
     # now add individual factorst
     add_model(nexp, model_type=Models.Factorial.Factor, adoptive_parent=Models.Factorial.Factors)
-    add_model(model, model_type=Models.Clock,adoptive_parent = Models.Core.Simulation, rename='sim5', adoptive_parent_name='Simulation')
+    add_model(model, model_type=Models.Clock, adoptive_parent=Models.Core.Simulation, rename='sim5',
+              adoptive_parent_name='Simulation')
     # final step is to move the base simulation
-    move_model(nexp, Models.Core.Simulation,  Models.Factorial.Experiment, None,None)
+    move_model(nexp, Models.Core.Simulation, Models.Factorial.Experiment, None, None)
     pp = nexp.Simulations.FindInScope[Models.Factorial.Factor]()
     pp.set_Specification("[Fertilise at sowing].Script.Amount = 0 to 100 step 20")
     nexp.save()
     nexp.run()
     crop = model.Simulations.FindInScope[Models.PMF.Plant]('Soybean')
-
-
-

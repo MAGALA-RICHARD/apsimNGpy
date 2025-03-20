@@ -2,13 +2,13 @@
 """
 This module will replace all other modules they are too complicated for nothing
 """
-from apsimNGpy.core.core import APSIMNG, Models
+from apsimNGpy.core.core import APSIMNG, Models, RENAME
 
 
 class Experiment(APSIMNG):
-    def __init__(self, model, out_path=None, permutation=None, **kwargs):
+    def __init__(self, model, out_path=None, permutation:bool=True, base_model_simulation:str=None, **kwargs):
         """
-        Initialize an Experiment instance, adding necessary models and factors.
+        Initialize an Experiment instance, adding the necessary models and factors.
 
         Args:
             model: The base model.
@@ -31,7 +31,7 @@ class Experiment(APSIMNG):
         # self.add_model(model_type=Models.Factorial.Factor, adoptive_parent=Models.Factorial.Factors)
 
         # Move base simulation under the factorial experiment
-        self.move_model(Models.Core.Simulation, Models.Factorial.Experiment, None, None)
+        self.move_model(Models.Core.Simulation, Models.Factorial.Experiment, base_model_simulation, None)
         # pp = nexp.Simulations.FindInScope[Models.Factorial.Factor]()
         # pp.set_Specification("[Fertilise at sowing].Script.Amount = 0 to 100 step 20")
         self.save()
@@ -56,6 +56,7 @@ if __name__ == "__main__":
 
     path = load_default_simulations(simulations_object=False)
     experiment = Experiment(path, permutation=True)
-    experiment.add_factor(specification="[Fertilise at sowing].Script.Amount = 0 to 100 step 20",
+    experiment.add_factor(specification="[Fertilise at sowing].Script.Amount = 0 to 200 step 20",
                           factor_name='Nitrogen')
     experiment.preview_simulation()
+    experiment.run()

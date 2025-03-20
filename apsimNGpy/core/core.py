@@ -521,7 +521,8 @@ class APSIMNG:
                 logger.info(f"Added {loc.Name} to {parent.Name}")
             # we need to put the changes into effect
             self.save()
-            logger.info(f'successfuly saved to {self.path}')
+            if verbose:
+                logger.info(f'successfully saved to {self.path}')
 
         else:
             logger.debug(f"Adding {model_type} to {parent.Name} failed, perhaps models was not found")

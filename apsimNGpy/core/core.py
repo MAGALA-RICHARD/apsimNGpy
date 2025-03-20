@@ -49,6 +49,7 @@ MOVE = Models.Core.ApsimFile.Structure.Move
 RENAME = Models.Core.ApsimFile.Structure.Rename
 REPLACE = Models.Core.ApsimFile.Structure.Replace
 
+
 def dataview_to_dataframe(_model, reports):
     """
     Convert .NET System.Data.DataView to Pandas DataFrame.
@@ -124,7 +125,8 @@ class APSIMNG:
         The 'copy' keyword is no longer necessary and will be ignored in future versions.
     """
 
-    def __init__(self, model: os.PathLike = None, out_path: os.PathLike = None, out: os.PathLike = None, set_wd= None, **kwargs):
+    def __init__(self, model: os.PathLike = None, out_path: os.PathLike = None, out: os.PathLike = None, set_wd=None,
+                 **kwargs):
 
         self.report_names = None
         self.others = kwargs.copy()
@@ -289,7 +291,7 @@ class APSIMNG:
         _path = file_name or self.path
         self.path = _path
         save_model_to_file(self.Simulations, out=_path)
-        #logger.info(f"Saved model to {_path} {os.path.isfile(_path)}")
+        # logger.info(f"Saved model to {_path} {os.path.isfile(_path)}")
         model_info = recompile(self)  # load_apsim_model(_path)
         self.restart_model(model_info)
 
@@ -427,39 +429,44 @@ class APSIMNG:
         self._reload_saved_file()
         return self
 
-    def find_model(self, model_name) -> Models:
-        """"
-        Find a model from the Models NameSpace
-        returns a path to the Models NameSpace not strings
+    def find_model(self, model_name: str, model_namespace=None):
+        """
+        Find a model from the Models namespace and return its path.
+
+        Args:
+            model_name (str): The name of the model to find.
+            model_namespace (object, optional): The root namespace (defaults to Models).
+            path (str, optional): The accumulated path to the model.
+
+        Returns:
+            str: The full path to the model if found, otherwise None.
 
         Example:
-            >>> find_model("Weather") # doctest: +SKIP
-             Models.Climate.Weather
-            >>> find_model("Clock") # doctest: +SKIP
-              Models.Clock
-
-
+            >>> from apsimNGpy import core  # doctest: +SKIP
+             >>> from apsimNGpy.core.core import Models  # doctest: +SKIP
+             >>> model =core.base_data.load_default_simulations(crop = "Maize")  # doctest: +SKIP
+             >>> model.find_model("Weather")  # doctest: +SKIP
+             'Models.Climate.Weather'
+             >>> model.find_model("Clock")  # doctest: +SKIP
+              'Models.Clock'
         """
-        model = Models
-        att = model_name
-        if not hasattr(model, "__dict__"):
-            return None  # Base case: Not an object with attributes
+        if model_namespace is None:
+            model_namespace = Models  # Default to Models namespace
 
-        mds = model.__dict__
+        if not hasattr(model_namespace, "__dict__"):
+            return None  # Base case: Not a valid namespace
 
-        if att in mds:
+        for attr, value in model_namespace.__dict__.items():
+            if attr == model_name and isinstance(value, type(getattr(Models, "Clock", object))):
+                return value
 
-            obj = mds[att]
-            if isinstance(obj, type(Models.Clock)):  # we are looking for models in this type; modules and fields no
-                return mds[att]
-        # Recursively check nested objects
-        for attr, value in mds.items():
-            if hasattr(value, "__dict__"):  # Ensure it's an object
-                result = extract(value, att)
-                if result is not None:
+            if hasattr(value, "__dict__"):  # Recursively search nested namespaces
+                result = self.find_model(model_name, value)
+                if result:
                     return result
 
-        return None  # Attribute not found
+        return None  # Model not found
+
     def add_model(self, model_type, adoptive_parent, rename=None,
                   adoptive_parent_name=None, verbose=True, **kwargs):
 
@@ -467,15 +474,20 @@ class APSIMNG:
         Add a model to the Models Simulations NameSpace. some models are tied to specific models, so they can only be added
         to that models an example, we cant add Clock model to Soil Model
         @param _model: apsimNGpy.core.apsim.ApsimModel object
-        @param model_name: string name of the model
+        @param model_type (str, Models objects): type of the model e.g., Models.Clock, Just 'Clock'
         @param where: loction along the Models Simulations nodes or children to add the model e.g at Models.Core.Simulation,
-        @param adoptive_parent_name: importatn to specified the actual final destination, if there are more than one simulations
+        @param adoptive_parent_name (Models Object): important to specify the actual final destination, if there are more than one simulations
         @return: none, model are modified in place, so the modified object has the same reference pointer as the _model
+        Note; that added models are empty you need to do more work to fill their parameters, if you add aclock module you have to change the start date and end date
             Example:
          >>> from apsimNGpy import core
+         >>> from apsimNGpy.core.core import Models
          >>> model =core.base_data.load_default_simulations(crop = "Maize")
          >>> model.remove_model(Models.Clock) # first delete model
          >>> model.add_model(Models.Clock, adoptive_parent = Models.Core.Simulation, rename = 'Clock_replaced', verbose=False)
+
+         >>> model.add_model(model_type=Models.Core.Simulation, adoptive_parent=Models.Core.Simulations, rename='Iowa')
+         >>> model.preview_simulation()
 
         """
 
@@ -483,7 +495,7 @@ class APSIMNG:
         sims = self.Simulations
         # find where to add the model
         if adoptive_parent == Models.Core.Simulations:
-            parent = _model.Simulations
+            parent = self.Simulations
         else:
             if isinstance(adoptive_parent, type(Models.Clock)):
 
@@ -496,7 +508,9 @@ class APSIMNG:
         if isinstance(model_type, type(Models.Clock)):
             which = model_type
         elif isinstance(model_type, str):
-            which = find_model(model_type)
+            which = self.find_model(model_type)
+        else:
+            raise ValueError(f'Invalid model type description expected str or {type(Models.Clock)}')
         if which and parent:
             loc = which()
             if rename:
@@ -510,7 +524,7 @@ class APSIMNG:
             logger.info(f'successfuly saved to {self.path}')
 
         else:
-            logger.debug(f"Adding {model_name} to {parent.Name} failed, perhaps models was not found")
+            logger.debug(f"Adding {model_type} to {parent.Name} failed, perhaps models was not found")
 
     @property
     def extract_simulation_name(self):
@@ -537,6 +551,8 @@ class APSIMNG:
         if not model_name:
             model_name = model_type().Name
         DELETE(self.Simulations.FindInScope[model_type](model_name))
+        self.save()
+
     def move_model(self, model_type, new_parent_type, model_name=None, new_parent_name=None):
         """
 
@@ -581,22 +597,6 @@ class APSIMNG:
         self.save_edited_file(reload=True)
         return self
 
-    def find_zones(self, simulation: Union[tuple, list]):
-        """Find zones from a simulation
-
-            Parameters
-            ----------
-            simulation
-                 name
-
-            Returns
-            -------
-                list of zones as APSIM Models.Core.Zone objects
-        """
-
-        sims = self._find_simulation(simulation)
-        zones = [sim.FindAllDescendants[Models.Core.Zone]() for sim in sims]
-        return [*zip(*zones)]
 
     @property  #
     def extract_report_names(self) -> dict:
@@ -974,9 +974,6 @@ class APSIMNG:
     def _kvtodict(self, kv):
         return {kv[i].Key: kv[i].Value for i in range(kv.Count)}
 
-
-
-
     def compile_scripts(self):
         for sim in self.simulations:
             managers = sim.FindAllDescendants[Models.Manager]()
@@ -1290,6 +1287,7 @@ class APSIMNG:
             organic_soil = soil_object.FindDescendant[Organic]()
             soil_organics[simu.Name] = organic_soil
         return soil_organics
+
     def journal(self):
         """records activities that have been done on the modle including changes to the file
         """
@@ -1415,7 +1413,8 @@ class APSIMNG:
                                         str_fmt=".",
                                         **kwargs):
         # TODO I know there is a better way to implement this, to be duplicated
-        warnings.warn(f"replace_soil_properties_by_path is deprecated use self.replace_soils_values_by_path instead", DeprecationWarning)
+        warnings.warn(f"replace_soil_properties_by_path is deprecated use self.replace_soils_values_by_path instead",
+                      DeprecationWarning)
 
         """
         This function processes a path where each component represents different nodes in a hierarchy,
@@ -1735,8 +1734,6 @@ class APSIMNG:
         # inherit properties from the ancestors apsimng object
 
 
-
-
 if __name__ == '__main__':
 
     from pathlib import Path
@@ -1774,4 +1771,5 @@ if __name__ == '__main__':
         a = perf_counter()
     model.clean_up(db=True)
     import doctest
+
     doctest.testmod()

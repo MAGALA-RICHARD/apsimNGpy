@@ -60,7 +60,7 @@ def find_model(model_name: str, model_namespace=None):
         return None  # Base case: Not a valid namespace
 
     for attr, value in model_namespace.__dict__.items():
-        if attr == model_name and isinstance(value, type(getattr(Models, "Clock", object))):
+        if attr == model_name and isinstance(value, type(Models.Clock)):
             return value
 
         if hasattr(value, "__dict__"):  # Recursively search nested namespaces
@@ -122,7 +122,8 @@ def add_model(_model, model_type, adoptive_parent, rename=None,
             logger.info(f"Added {loc.Name} to {parent.Name}")
         # we need to put the changes into effect
         _model.save()
-        logger.info(f'successfuly saved to {_model.path}')
+        if verbose:
+           logger.info(f'successfuly saved to {_model.path}')
 
     else:
         logger.debug(f"Adding {model_type} to {parent.Name} failed, perhaps models was not found")

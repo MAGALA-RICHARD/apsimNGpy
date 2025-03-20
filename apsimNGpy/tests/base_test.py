@@ -14,7 +14,7 @@ from os import chdir as _chdir
 from os import remove
 import tempfile
 import joblib
-
+from apsimNGpy.experiment.simple_experiment import Experiment
 wd = Path.cwd() / 'apsimNGpy_tests'
 TEMPS_DIR = []
 wd.mkdir(exist_ok=True)
@@ -60,7 +60,7 @@ class BaseTester(TestCase):
             self.logger = logger
             self.out_path = Path.cwd() / 'test_output.apsimx'
             self.test_ap_sim = APSIMNG(model=self.model_path)
-
+            self.experiment = Experiment(self.test_ap_sim.path, permutation=True)
             self.out = path.realpath('test_save_output.apsimx')
 
         def tearDown(self):

@@ -35,17 +35,6 @@ def add_replacement_folder(_model):
     ADD(FOLDER, PARENT)
 
 
-def add_model(_model, model_name, where):
-    sims = _model.Simulations
-    # sims.FindByPath(modelToCheck.Parent.FullPath + "." + newName)
-    where = where.capitalize()
-    parent = _model.Simulations.FindInScope(where)
-    if parent is not None:
-        ADD(Models.Core.Clock(), sims)
-        logger.info(f"Added {where} to {parent.Name}")
-    return parent
-
-
 def find_model(model_name: str, model_namespace=None):
     """
     Find a model from the Models namespace and return its path.

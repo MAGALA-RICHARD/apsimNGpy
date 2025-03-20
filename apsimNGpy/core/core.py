@@ -473,8 +473,9 @@ class APSIMNG:
         """
         Add a model to the Models Simulations NameSpace. some models are tied to specific models, so they can only be added
         to that models an example, we cant add Clock model to Soil Model
+        @param model_type: type of the model e.g., Models.Clock, Just 'Clock'
+        @param rename: new name of the model
         @param _model: apsimNGpy.core.apsim.ApsimModel object
-        @param model_type (str, Models objects): type of the model e.g., Models.Clock, Just 'Clock'
         @param where: loction along the Models Simulations nodes or children to add the model e.g at Models.Core.Simulation,
         @param adoptive_parent_name (Models Object): important to specify the actual final destination, if there are more than one simulations
         @return: none, model are modified in place, so the modified object has the same reference pointer as the _model

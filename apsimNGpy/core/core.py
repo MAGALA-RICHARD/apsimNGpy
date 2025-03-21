@@ -456,11 +456,12 @@ class APSIMNG:
             clone = cloner(clone_parent)
 
             # Assign a new name to the cloned model
-            new_name =  rename if rename else f"{clone.Name}_clone"
+            new_name = rename if rename else f"{clone.Name}_clone"
             clone.Name = new_name
             check_exists = self.Simulations.FindInScope[model_type](new_name)
             if check_exists:
-                raise ValueError(f"adding the same model with the same name and type as the previous one is not allowed")
+                raise ValueError(
+                    f"adding the same model with the same name and type as the previous one is not allowed")
 
             # Find the adoptive parent where the cloned model should be placed
             parent = (self.Simulations.FindInScope[adoptive_parent_type](adoptive_parent_name) if adoptive_parent_name
@@ -472,7 +473,7 @@ class APSIMNG:
             # Save the changes to the simulation structure
             self.save()
         else:
-           raise TypeError(f'{model_type} is not supported by clone_model at the moment')
+            raise TypeError(f'{model_type} is not supported by clone_model at the moment')
 
     def clone_simulation(self, target: str, simulation: Union[list, tuple] = None):
         """Clone a simulation and add it to Model

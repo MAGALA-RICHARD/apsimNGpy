@@ -407,6 +407,73 @@ class APSIMNG:
         else:
             raise ValueError("you cant load data before running the model please call run() first")
 
+    def clone_model(self, model_type, model_name, adoptive_parent_type, rename=None, adoptive_parent_name=None,
+                    in_place=False):
+        """
+        Clone an existing model and move it to a specified parent within the simulation structure.
+
+        This function is useful when a model instance needs to be duplicated and repositioned in the APSIM simulation
+        hierarchy without manually redefining its structure.
+
+        Parameters:
+        ----------
+        model_type : Models
+            The type of the model to be cloned, e.g., `Models.Simulation` or `Models.Clock`.
+        model_name : str
+            The unique identification name of the model instance to be cloned, e.g., `"clock1"`.
+        adoptive_parent_type : Models
+            The type of the new parent model where the cloned model will be placed.
+        rename : str, optional
+            The new name for the cloned model. If not provided, the clone will be renamed using
+            the original name with a `_clone` suffix.
+        adoptive_parent_name : str, optional
+            The name of the parent model where the cloned model should be moved. If not provided,
+            the model will be placed under the default parent of the specified type.
+        in_place : bool, optional
+            If True, the cloned model remains in the same location but is duplicated. Defaults to False.
+
+        Returns:
+        -------
+        None
+            The function modifies the simulation structure by adding the cloned model to the designated parent.
+
+        Example:
+        -------
+        ```python
+        self.clone_model(Models.Clock, "clock1", Models.Simulation, rename="new_clock",adoptive_parent_type= Models.Core.Simulations, adoptive_parent_name="Simulation")
+        ```
+        This will create a cloned version of `"clock1"` and place it under `"Simulation"` with the new name `"new_clock"`.
+        """
+        cloner = Models.Core.Apsim.Clone  # Reference to the APSIM cloning function
+
+        # Ensure the model type is valid before proceeding
+        if isinstance(model_type, type(Models.Clock)):
+            # Locate the model to be cloned within the simulation scope
+            clone_parent = (self.Simulations.FindInScope[model_type](model_name) if model_name
+                            else self.Simulations.FindInScope[model_type]())
+
+            # Create a clone of the model
+            clone = cloner(clone_parent)
+
+            # Assign a new name to the cloned model
+            new_name =  rename if rename else f"{clone.Name}_clone"
+            clone.Name = new_name
+            check_exists = self.Simulations.FindInScope[model_type](new_name)
+            if check_exists:
+                raise ValueError(f"adding the same model with the same name and type as the previous one is not allowed")
+
+            # Find the adoptive parent where the cloned model should be placed
+            parent = (self.Simulations.FindInScope[adoptive_parent_type](adoptive_parent_name) if adoptive_parent_name
+                      else self.Simulations.FindInScope[adoptive_parent_type]())
+
+            # Add the cloned model to the new parent
+            parent.Children.Add(clone)
+
+            # Save the changes to the simulation structure
+            self.save()
+        else:
+           raise TypeError(f'{model_type} is not supported by clone_model at the moment')
+
     def clone_simulation(self, target: str, simulation: Union[list, tuple] = None):
         """Clone a simulation and add it to Model
 
@@ -527,7 +594,8 @@ class APSIMNG:
 
         else:
             logger.debug(f"Adding {model_type} to {parent.Name} failed, perhaps models was not found")
-    def add_report_variable(self, commands:list, report_name=None):
+
+    def add_report_variable(self, commands: list, report_name=None):
         """
         This adds a report variable to the end of other variables, if you want to change the whole report use change report
         @param command: list of text commands for the report variables e.g., '[Clock].Today as Date'
@@ -537,7 +605,7 @@ class APSIMNG:
         Example:
         >>> from apsimNGpy import core
         >>> model = core.base_data.load_default_simulations()
-        >>> model.add_report_variable(command = '[Clock].Today as Date', report_name = 'Report')
+        >>> model.add_report_variable(commands = '[Clock].Today as Date', report_name = 'Report')
         """
         if isinstance(commands, str):
             commands = [commands]
@@ -547,9 +615,10 @@ class APSIMNG:
             get_report = self.Simulations.FindInScope[Models.Report]()
         get_cur_variables = list(get_report.VariableNames)
         get_cur_variables.extend(commands)
-        final_command ="\n".join(get_cur_variables)
+        final_command = "\n".join(get_cur_variables)
         get_report.set_VariableNames(final_command.strip().splitlines())
         self.save()
+
     @property
     def extract_simulation_name(self):
         warnings.warn(
@@ -626,7 +695,6 @@ class APSIMNG:
             sim.Children.Add(clone_zone)
         self.save_edited_file(reload=True)
         return self
-
 
     @property  #
     def extract_report_names(self) -> dict:

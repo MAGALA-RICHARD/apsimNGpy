@@ -6,7 +6,7 @@ from apsimNGpy.core.core import APSIMNG, Models, RENAME
 
 
 class Experiment(APSIMNG):
-    def __init__(self, model, out_path=None, permutation:bool=True, base_model_simulation:str=None, **kwargs):
+    def __init__(self, model, out_path=None, permutation: bool = True, base_model_simulation: str = None, **kwargs):
         """
         Initialize an Experiment instance, adding the necessary models and factors.
 
@@ -36,12 +36,12 @@ class Experiment(APSIMNG):
         # pp.set_Specification("[Fertilise at sowing].Script.Amount = 0 to 100 step 20")
         self.save()
 
-    def add_factor(self, specification, factor_name):
+    def add_factor(self, specification: str, factor_name: str):
         # Add individual factors
         if factor_name in self.factor_names:
             raise ValueError(f"Factor {factor_name} already used")
         if self.permutation:
-            parent_factor =Models.Factorial.Permutation
+            parent_factor = Models.Factorial.Permutation
         else:
             parent_factor = Models.Factorial.Factors
         self.add_model(model_type=Models.Factorial.Factor, adoptive_parent=parent_factor, rename=factor_name)
@@ -60,11 +60,10 @@ if __name__ == "__main__":
                           factor_name='Nitrogen')
 
     experiment.run()
-    experiment.add_model(model_type=Models.Report, adoptive_parent=Models.Core.Simulation, rename = 'date')
+    experiment.add_model(model_type=Models.Report, adoptive_parent=Models.Core.Simulation, rename='date')
     report = experiment.Simulations.FindInScope[Models.Report]('Report')
     Clock = Models.Clock()
-    #report.set_VariableNames(Clock.Today)
+    # report.set_VariableNames(Clock.Today)
 
     experiment.add_report_variable(commands='[Clock].Today as Date')
     experiment.preview_simulation()
-

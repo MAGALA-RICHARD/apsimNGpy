@@ -1711,7 +1711,7 @@ class APSIMNG:
         """
 
         if not self.experiment_status:
-            raise ValueError("experiment not yet created")
+            raise ValueError("experiment not yet created cal your model_name.create_experiment()")
         # Add individual factors
         if factor_name in self.factor_names:
             raise ValueError(f"Factor {factor_name} already used")

@@ -505,7 +505,7 @@ class APSIMNG:
          >>> model.add_model(Models.Clock, adoptive_parent = Models.Core.Simulation, rename = 'Clock_replaced', verbose=False)
 
          >>> model.add_model(model_type=Models.Core.Simulation, adoptive_parent=Models.Core.Simulations, rename='Iowa')
-         >>> model.preview_simulation()
+         >>> model.preview_simulation() # doctest: +SKIP
 
         """
 
@@ -622,6 +622,24 @@ class APSIMNG:
 
         MOVE(child_to_move, new_parent)
         logger.info(f"Moved {child_to_move.Name} to {new_parent.Name}")
+        self.save()
+
+    def rename_model(self, model_type: Models, old_model_name: str, new_model_name: str):
+        """
+        give new name to a model in the simulations
+        @param model_type: (Models) Models types e.g., Models.Clock
+        @param old_model_name: (str) current model name
+        @param new_model_name: (str) new model name
+        @return: None
+        Example;
+               >>> from apsimNGpy import core
+               >>> from apsimNGpy.core.core import Models
+               >>> apsim = core.base_data.load_default_simulations(crop = 'Maize')
+               >>> apsim = apsim.rename_model(Models.Clock, 'Clock', 'clock')
+
+        """
+        __model = self.Simulations.FindInScope[model_type](old_model_name)
+        __model.Name = new_model_name
         self.save()
 
     @property  #

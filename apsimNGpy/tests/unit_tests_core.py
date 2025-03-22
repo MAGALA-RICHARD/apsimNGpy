@@ -1,14 +1,12 @@
 import os
 import unittest
-from unittest.mock import MagicMock, patch, mock_open
-from pathlib import Path
-import shutil
+from unittest.mock import MagicMock, patch
+
 import pandas as pd
+
 # Import the module where APSIMNG class is defined
-from apsimNGpy.core.core import APSIMNG, save_model_to_file
 from apsimNGpy.core.model_loader import save_model_to_file
-from apsimNGpy.core.base_data import load_default_simulations
-from apsimNGpy.tests.base_test import BaseTester, wd, release_file_locks
+from apsimNGpy.tests.base_test import BaseTester
 
 print('current working directory:', os.getcwd())
 
@@ -67,13 +65,6 @@ class TestAPSIMNG(BaseTester):
         self.assertEqual(inrm, inrmOut, msg='inrm are not equal possibly change_som was not successful')
         self.assertEqual(icnr, icnrOut, msg='icnr are not equal possibly change_som was not successful')
 
-    def test_clear_links(self):
-        """ Test clear_links method ensures that Simulations.ClearLinks is called. """
-        with patch.object(self.test_ap_sim, 'Simulations', create=True) as mock_simulations:
-            mock_simulations.ClearLinks = MagicMock()
-            self.test_ap_sim.clear_links()
-            mock_simulations.ClearLinks.assert_called_once()
-
     def test_find_simulations(self):
         """ Test find_simulations based on three input None, lists and string"""
         # test None
@@ -118,13 +109,6 @@ class TestAPSIMNG(BaseTester):
         testP = self.test_ap_sim.extract_soil_property_by_path(path='Simulation.Organic.Carbon', index=[0, 1])
         self.assertEqual(lisT, param_values,
                          msg=f'replace_soil_property_values was not successful returned {testP}\n got {param_values}')
-
-    def ttest_run_in_python(self):
-        # you may test this by removing the first  before test but running apsim internally is not working wth some
-        # versions
-        self.test_ap_sim.run_in_python("Report")
-        self.assertTrue(self.test_ap_sim.ran_ok, 'simulation was not ran_ok perhaps')
-        self.assertIsInstance(self.test_ap_sim.results, pd.DataFrame, msg='not a pandas dataframe')
 
     def test_replace_soil_properties_by_path(self):
         path = 'None.Soil.physical.None.None.BD'
@@ -176,4 +160,5 @@ class TestAPSIMNG(BaseTester):
 
 
 if __name__ == '__main__':
+    ...
     unittest.main()

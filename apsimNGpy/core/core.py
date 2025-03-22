@@ -128,6 +128,9 @@ class APSIMNG:
     def __init__(self, model: os.PathLike = None, out_path: os.PathLike = None, out: os.PathLike = None, set_wd=None,
                  **kwargs):
 
+        self.experiment_status = None
+        self.permutation = None
+        self.factor_names = []
         self.report_names = None
         self.others = kwargs.copy()
         self.set_wd = set_wd
@@ -165,38 +168,6 @@ class APSIMNG:
         self._met_file = kwargs.get('met_file')
         self.ran_ok = False
         # self.init_model() work in progress
-
-    @property
-    def simulation_object(self):
-        """
-        # A simulation_object in this context is:
-        # A path to apsimx file, a str or pathlib Path object
-        # A dictionary (apsimx json file converted to a dictionary using the json module)
-        # apsimx simulation object already in memory
-        """
-        return self._model
-
-    @simulation_object.setter
-    def simulation_object(self, value):
-        """
-        Set the model if you don't want to initialize again
-        :param value:
-        # A value in this context is:
-        # A path to apsimx file, a str or pathlib Path object
-        # A dictionary (apsimx json file converted to a dictionary using the json module)
-        # apsimx simulation object already in memory
-
-
-        """
-        self._model = value
-
-    def clear_links(self):
-        self.Simulations.ClearLinks()
-        return self
-
-    def ClearSimulationReferences(self):
-        self.Simulations.ClearSimulationReferences()
-        return self
 
     def check_model(self):
         if isinstance(self.Simulations, Models.Core.ApsimFile.ConverterReturnType):
@@ -475,28 +446,6 @@ class APSIMNG:
         else:
             raise TypeError(f'{model_type} is not supported by clone_model at the moment')
 
-    def clone_simulation(self, target: str, simulation: Union[list, tuple] = None):
-        """Clone a simulation and add it to Model
-
-        Parameters
-        ----------
-        target
-      simulation name
-        simulation, optional
-            Simulation name to be cloned, of None clone the first simulation in model
-        """
-
-        sims = self._find_simulation(simulation)
-        for sim in sims:
-            clone_sim = Models.Core.Apsim.Clone(sim)
-            clone_sim.Name = target
-            # clone_zone = clone_sim.FindChild[Models.Core.Zone]()
-            # clone_zone.Name = target
-            # self.Simulations.Children.Clear(clone_sim.Name)
-            self.Simulations.Children.Add(clone_sim)
-        self._reload_saved_file()
-        return self
-
     def find_model(self, model_name: str, model_namespace=None):
         """
         Find a model from the Models namespace and return its path.
@@ -675,28 +624,6 @@ class APSIMNG:
         logger.info(f"Moved {child_to_move.Name} to {new_parent.Name}")
         self.save()
 
-    def clone_zone(self, target: str, zone: str, simulation: Union[tuple, list] = None):
-        """Clone a zone and add it to Model
-
-            Parameters
-            ----------
-            target
-                 simulation name
-            zone
-                Name of the zone to clone
-            simulation, optional
-                Simulation name to be cloned, of None clone the first simulation in model
-        """
-
-        sims = self._find_simulation(simulation)
-        for sim in sims:
-            zone = sim.FindChild[Models.Core.Zone](zone)
-            clone_zone = Models.Core.Apsim.Clone(zone)
-            clone_zone.Name = target
-            sim.Children.Add(clone_zone)
-        self.save_edited_file(reload=True)
-        return self
-
     @property  #
     def extract_report_names(self) -> dict:
         """ returns all data frames the available report tables
@@ -770,7 +697,6 @@ class APSIMNG:
         :param Crop: crop to get the replacement
         :return: System.Collections.Generic.IEnumerable APSIM plant object
         """
-        replace_attrib = Crop + '_Replacement'
         rep = self._find_replacement()
         crop_rep = rep.FindAllDescendants[Models.PMF.Plant](Crop)
         for i in crop_rep:
@@ -778,6 +704,14 @@ class APSIMNG:
             if i.Name == Crop:
                 return i
         return self
+
+    @timer
+    def clone(self, new_file_name):
+        """this clones all simulations and returns a path to the néw clone simulations"""
+        assert Path(new_file_name).suffix == '.apsimx', 'wrong file extension'
+        __simulations__ = Models.Core.Apsim.Clone(self.Simulations)
+        save_model_to_file(__simulations__, out=new_file_name)
+        return new_file_name
 
     def edit_cultivar(self, *, CultivarName: str, commands: str, values: Any, **kwargs):
         """
@@ -820,11 +754,6 @@ class APSIMNG:
         except  KeyError:
             parameterName = 'CultivarName'
             logger.info(f"cultivar name: is not found")
-
-    def copy_apsim_file(self):
-        path = os.getcwd()
-        file_path = opj(path, self.generate_unique_name("clones")) + ".apsimx"
-        shutil.copy(self.path, file_path)
 
     def update_cultivar(self, *, parameters: dict, simulations: Union[list, tuple] = None, clear=False, **kwargs):
         """Update cultivar parameters
@@ -872,10 +801,6 @@ class APSIMNG:
         except Exception as e:
             logger.info(repr(e))
             raise Exception(repr(e))
-
-    @cache
-    def return_zone(self, simulations=None):
-        self.find_simulations(simulations)
 
     def check_som(self, simulations=None):
         simus = {}
@@ -933,10 +858,6 @@ class APSIMNG:
 
             return self
 
-    @property
-    def FindAllReferencedFiles(self):
-        return self.Simulations.FindAllReferencedFiles()
-
     def convert_to_IModel(self):
         if isinstance(self.Simulations, Models.Core.ApsimFile.ConverterReturnType):
             return self.Simulations.get_NewModel()
@@ -990,9 +911,6 @@ class APSIMNG:
         self.recompile_edited_model(out_path=out_mgt_path)
 
         return self
-
-    def init_model(self, *args, **kwargs):
-        self.run(init_only=True)
 
     def update_mgt(self, *, management: Union[dict, tuple], simulations: [list, tuple] = None, out: [Path, str] = None,
                    reload: bool = True,
@@ -1478,35 +1396,6 @@ class APSIMNG:
 
         return solute
 
-    def extract_any_solute(self, parameter: str, simulation=None):
-        """
-        Parameters
-        ____________________________________
-        parameter: parameter name e.g NO3
-        simulation, optional
-            Simulation name, if `None` use the first simulation.
-        returns
-        ___________________
-        the solute array or list
-        """
-        _simulation = simulation if simulation else self.simulation_names
-        solutes = self._extract_solute(simulation)
-        sol = {k: getattr(v, parameter) for k, v in solutes.items()}
-        return sol
-
-    def replace_any_solute(self, *, parameter: str, param_values: list, simulation=None, **kwargs):
-        """# replaces with new solute
-
-        Parameters
-        ____________________________________
-        parameter: parameter name e.g NO3
-        param_values: new values as a list to replace the old ones
-        simulation, optional
-            Simulation name, if `None` use the first simulation.
-        """
-        solutes = self._extract_solute(simulation)
-        setattr(solutes, parameter, param_values)
-
     def replace_soil_properties_by_path(self, path: str,
                                         param_values: list,
                                         str_fmt=".",
@@ -1780,57 +1669,61 @@ class APSIMNG:
 
         return self
 
-    def replace_soil_organic(self, *, organic_name, simulation_name=None, **kwargs):
-        """replace the organic module comprising Carbon , FBIOm, FInert/ C/N
+    def create_experiment(self, permutation: bool = True, base_model_simulation: str = None, **kwargs):
+        """
+        Initialize an Experiment instance, adding the necessary models and factors.
 
         Args:
-            organic_name (_str_): _description_
-            simulation (_str_, optional): _description_. Defaults to None.
+            model: The base model.
+            out_path: Output path for the APSIMNG simulation.
+            **kwargs: Additional parameters for APSIMNG.
+            @param permutation:
+            @param base_model_simulation:
         """
-        # sim = self._find_simulation(simulation_name)
-        # organic = sim.FindAllDescendants[Models.Soils.Organic]()
-        # if organic.name  = organic_name:
-        #     organic.
+        self.factor_names = []
+        self.permutation = permutation
+        # Add core experiment structure
 
-    def _get_initial_values(self, name, simulation):
-        s = self._find_solute(name, simulation)
-        return np.array(s.InitialValues)
+        self.add_model(model_type=Models.Factorial.Experiment, adoptive_parent=Models.Core.Simulations)
 
-    def _set_initial_solute_values(self, name, values, simulations):
-        sims = self.find_simulations(simulations)
-        for sim in sims:
-            s = self._find_solute(name, sim.Name)
-            s.InitialValues = values
+        self.add_model(model_type=Models.Factorial.Factors, adoptive_parent=Models.Factorial.Experiment)
 
-    def set_initial_nh4(self, values, simulations=None):
-        """Set soil initial NH4 content
+        if permutation:
+            self.add_model(model_type=Models.Factorial.Permutation, adoptive_parent=Models.Factorial.Factors)
 
-        Parameters
-        ----------
-        values
-            Collection of values, has to be the same length as existing values.
-        simulations, optional
-            List of simulation names to update, if `None` update all simulations
+        # Move base simulation under the factorial experiment
+        self.move_model(Models.Core.Simulation, Models.Factorial.Experiment, base_model_simulation, None)
+
+        self.save()
+        # update the experiment_status
+        self.experiment_status = True
+
+    def add_factor(self, specification: str, factor_name: str):
+        """Add a factor to the created experiment
+        raises a value error if experiment is not yet created
+        Example:
+            >>> from apsimNGpy.core import base_data
+            >>> apsim = base_data.load_default_simulations(crop='Maize')
+            >>> apsim.create_experiment(permutation=False)
+            >>> apsim.add_factor(specification="[Fertilise at sowing].Script.Amount = 0 to 200 step 20", factor_name='Nitrogen')
+            >>> apsim.run() # doctest: +SKIP
+
         """
 
-        self._set_initial_values("NH4", values, simulations)
-
-    def get_initial_urea(self, simulation=None):
-        """Get soil initial urea content"""
-        return self._get_initial_values("Urea", simulation)
-
-    def set_initial_urea(self, values, simulations=None):
-        """Set soil initial urea content
-
-        Parameters
-        ----------
-        values
-            Collection of values, has to be the same length as existing values.
-        simulations, optional
-            List of simulation names to update, if `None` update all simulations
-        """
-        self._set_initial_values("Urea", values, simulations)
-        # inherit properties from the ancestors apsimng object
+        if not self.experiment_status:
+            raise ValueError("experiment not yet created")
+        # Add individual factors
+        if factor_name in self.factor_names:
+            raise ValueError(f"Factor {factor_name} already used")
+        if self.permutation:
+            parent_factor = Models.Factorial.Permutation
+        else:
+            parent_factor = Models.Factorial.Factors
+        self.add_model(model_type=Models.Factorial.Factor, adoptive_parent=parent_factor, rename=factor_name)
+        _added = self.Simulations.FindInScope[Models.Factorial.Factor](factor_name)
+        _added.set_Specification(specification)
+        self.save()
+        self.factor_names.append(factor_name)
 
 
 if __name__ == '__main__':

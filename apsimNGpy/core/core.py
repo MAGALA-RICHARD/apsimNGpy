@@ -79,9 +79,6 @@ def dataview_to_dataframe(_model, reports):
         _model._DataStore.Close()
 
 
-
-
-
 from apsimNGpy.settings import *  # This file is not ready and i wanted to do some test
 
 
@@ -122,8 +119,9 @@ class APSIMNG:
     """
 
     def __init__(self, model: os.PathLike = None, out_path: os.PathLike = None, out: os.PathLike = None, set_wd=None,
-                 experiment= False, **kwargs):
+                 experiment=False, **kwargs):
 
+        self.experiment_created = None
         self.experiment = experiment
         self.permutation = None
         self.factor_names = []
@@ -154,7 +152,8 @@ class APSIMNG:
         self._model = model
         self.out_path = out_path or out
         # model_info is named tuple safe for parallel simulations as named tuples are immutable
-        self.model_info = load_apsim_model(self._model, out=self.out_path, met_file=kwargs.get('met_file'), wd=set_wd)
+        self.model_info = load_apsim_model(self._model, out_path=self.out_path, met_file=kwargs.get('met_file'),
+                                           wd=set_wd)
         self.Simulations = self.model_info.IModel
 
         self.datastore = self.model_info.datastore
@@ -163,9 +162,10 @@ class APSIMNG:
         self.path = self.model_info.path
         self._met_file = kwargs.get('met_file')
         self.ran_ok = False
+        permutation = kwargs.get('permutation', True)
         if experiment:
             # we create an experiment here immediately if the user wants to dive in right away
-            self.create_experiment()
+            self.create_experiment(permutation=permutation)
 
     def check_model(self):
         if isinstance(self.Simulations, Models.Core.ApsimFile.ConverterReturnType):
@@ -529,15 +529,17 @@ class APSIMNG:
             raise ValueError(f'Invalid model type description expected str or {type(Models.Clock)}')
         if which and parent:
             loc = which()
+            loc_name = loc.Name
             if rename:
                 loc.Name = rename
-            target_child = parent.FindInScope(loc.Name)
+
+            target_child = parent.FindChild[self.find_model(loc_name)](loc.Name)
             if target_child:
                 # not raising the error still studying the behaviors of adding a child that already exists
-                va= ValueError(f'Child node `{loc.Name}` already exist at the target parent name`{parent.Name}`')
+                raise ValueError(f'Child node `{loc.Name}` already exist at the target parent name`{parent.Name}`')
 
             ADD(loc, parent)
-            #parent.Children.Add(loc)
+            # parent.Children.Add(loc)
             if verbose:
                 logger.info(f"Added {loc.Name} to {parent.Name}")
             # we need to put the changes into effect
@@ -1702,6 +1704,8 @@ class APSIMNG:
             @param permutation:
             @param base_model_simulation:
         """
+        if self.experiment_created:
+            return self
         self.factor_names = []
         self.permutation = permutation
         # Add core experiment structure
@@ -1717,8 +1721,9 @@ class APSIMNG:
         self.move_model(Models.Core.Simulation, Models.Factorial.Experiment, base_model_simulation, None)
 
         self.save()
-        # update the experiment
+        # update the experiment status
         self.experiment = True
+        self.experiment_created = True
 
     def add_factor(self, specification: str, factor_name: str):
         """Add a factor to the created experiment
@@ -1786,4 +1791,4 @@ if __name__ == '__main__':
     model.clean_up(db=True)
     import doctest
 
-    #doctest.testmod()
+    # doctest.testmod()

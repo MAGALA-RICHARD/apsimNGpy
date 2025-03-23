@@ -531,8 +531,11 @@ class APSIMNG:
                 loc.Name = rename
             target_child = parent.FindInScope(loc.Name)
             if target_child:
-                raise ValueError(f'Child node {loc.Name} already exist at the `{parent.Name}`')
+                # not raising the error still studying the behaviors of adding a child that already exists
+                va= ValueError(f'Child node `{loc.Name}` already exist at the target parent name`{parent.Name}`')
+
             ADD(loc, parent)
+            #parent.Children.Add(loc)
             if verbose:
                 logger.info(f"Added {loc.Name} to {parent.Name}")
             # we need to put the changes into effect

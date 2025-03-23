@@ -107,24 +107,24 @@ class APSIMNG:
     Modify and run APSIM Next Generation (APSIM NG) simulation models.
 
     This class serves as the entry point for all apsimNGpy simulations and is inherited by the `ApsimModel` class.
-    It is designed to be used when you do not intend to replace soil profiles.
+    It is designed to be base class for all apsimNGpy models.
 
     Parameters:
         model (os.PathLike): The file path to the APSIM NG model. This parameter specifies the model file to be used in the simulation.
         out_path (str, optional): The path where the output file should be saved. If not provided, the output will be saved with the same name as the model file in the current dir_path.
         out (str, optional): Alternative path for the output file. If both `out_path` and `out` are specified, `out` takes precedence. Defaults to `None`.
-
+        experiment (bool, optional): Specifies whether to initiate your model as an experiment defaults to false
+        bY default, the experiment is created with permutation but permutation can be passed as a kewy word argument to change
     Keyword parameters:
-        'copy' (bool, deprecated): Specify whether to clone the simulation file. This argument is deprecated as the simulation file is automatically cloned without requiring this parameter.
+      **`copy` (bool, deprecated)**: Specifies whether to clone the simulation file. This parameter is deprecated because the simulation file is now automatically cloned by default.
 
-    Note:
-        The 'copy' keyword is no longer necessary and will be ignored in future versions.
+    When an APSIM file is loaded, it is automatically copied to ensure a fallback to the original file in case of any issues during operations.
     """
 
     def __init__(self, model: os.PathLike = None, out_path: os.PathLike = None, out: os.PathLike = None, set_wd=None,
-                 **kwargs):
+                 experiment= False, **kwargs):
 
-        self.experiment_status = None
+        self.experiment = experiment
         self.permutation = None
         self.factor_names = []
         self.report_names = None
@@ -163,7 +163,9 @@ class APSIMNG:
         self.path = self.model_info.path
         self._met_file = kwargs.get('met_file')
         self.ran_ok = False
-        # self.init_model() work in progress
+        if experiment:
+            # we create an experiment here immediately if the user wants to dive in right away
+            self.create_experiment()
 
     def check_model(self):
         if isinstance(self.Simulations, Models.Core.ApsimFile.ConverterReturnType):
@@ -1715,8 +1717,8 @@ class APSIMNG:
         self.move_model(Models.Core.Simulation, Models.Factorial.Experiment, base_model_simulation, None)
 
         self.save()
-        # update the experiment_status
-        self.experiment_status = True
+        # update the experiment
+        self.experiment = True
 
     def add_factor(self, specification: str, factor_name: str):
         """Add a factor to the created experiment
@@ -1730,7 +1732,7 @@ class APSIMNG:
 
         """
 
-        if not self.experiment_status:
+        if not self.experiment:
             raise ValueError("experiment not yet created cal your model_name.create_experiment()")
         # Add individual factors
         if factor_name in self.factor_names:

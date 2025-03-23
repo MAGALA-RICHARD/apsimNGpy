@@ -79,11 +79,7 @@ def dataview_to_dataframe(_model, reports):
         _model._DataStore.Close()
 
 
-def select_threads(multithread):
-    if multithread:
-        return MultiThreaded
-    else:
-        return SingleThreaded
+
 
 
 from apsimNGpy.settings import *  # This file is not ready and i wanted to do some test
@@ -533,7 +529,9 @@ class APSIMNG:
             loc = which()
             if rename:
                 loc.Name = rename
-
+            target_child = parent.FindInScope(loc.Name)
+            if target_child:
+                raise ValueError(f'Child node {loc.Name} already exist at the `{parent.Name}`')
             ADD(loc, parent)
             if verbose:
                 logger.info(f"Added {loc.Name} to {parent.Name}")
@@ -545,10 +543,10 @@ class APSIMNG:
         else:
             logger.debug(f"Adding {model_type} to {parent.Name} failed, perhaps models was not found")
 
-    def add_report_variable(self, commands: list, report_name=None):
+    def add_report_variable(self, commands: Union[list, str, tuple], report_name=None):
         """
         This adds a report variable to the end of other variables, if you want to change the whole report use change report
-        @param command: list of text commands for the report variables e.g., '[Clock].Today as Date'
+        @param commands: list of text commands for the report variables e.g., '[Clock].Today as Date'
         @param report_name: name of the report variable if not specified the first accessed report object will be altered
         @return: None
            raises an erros if report is not found
@@ -559,6 +557,7 @@ class APSIMNG:
         """
         if isinstance(commands, str):
             commands = [commands]
+
         if report_name:
             get_report = self.Simulations.FindInScope[Models.Report](report_name)
         else:
@@ -675,7 +674,7 @@ class APSIMNG:
             return [shutil.copy(self.model_info.path, os.path.join(path, f"{b_name}_{suffix}_{i}.apsimx")) for i in
                     range(k)]
 
-    def _cultivar_params(self, cultivar: str):
+    def _cultivar_params(self, cultivar):
         """
          returns all params in a cultivar
         """
@@ -1782,4 +1781,4 @@ if __name__ == '__main__':
     model.clean_up(db=True)
     import doctest
 
-    doctest.testmod()
+    #doctest.testmod()

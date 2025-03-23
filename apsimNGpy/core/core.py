@@ -162,10 +162,10 @@ class APSIMNG:
         self.path = self.model_info.path
         self._met_file = kwargs.get('met_file')
         self.ran_ok = False
-        permutation = kwargs.get('permutation', True)
+        permutation, base = kwargs.get('permutation', True), kwargs.get('base_name')
         if experiment:
             # we create an experiment here immediately if the user wants to dive in right away
-            self.create_experiment(permutation=permutation)
+            self.create_experiment(permutation=permutation, base_name=base)
 
     def check_model(self):
         if isinstance(self.Simulations, Models.Core.ApsimFile.ConverterReturnType):
@@ -1693,7 +1693,7 @@ class APSIMNG:
 
         return self
 
-    def create_experiment(self, permutation: bool = True, base_model_simulation: str = None, **kwargs):
+    def create_experiment(self, permutation: bool = True, base_name: str = None, **kwargs):
         """
         Initialize an Experiment instance, adding the necessary models and factors.
 
@@ -1702,7 +1702,7 @@ class APSIMNG:
             out_path: Output path for the APSIMNG simulation.
             **kwargs: Additional parameters for APSIMNG.
             @param permutation:
-            @param base_model_simulation:
+            @param base_name:
         """
         if self.experiment_created:
             return self
@@ -1718,7 +1718,7 @@ class APSIMNG:
             self.add_model(model_type=Models.Factorial.Permutation, adoptive_parent=Models.Factorial.Factors)
 
         # Move base simulation under the factorial experiment
-        self.move_model(Models.Core.Simulation, Models.Factorial.Experiment, base_model_simulation, None)
+        self.move_model(Models.Core.Simulation, Models.Factorial.Experiment, base_name, None)
 
         self.save()
         # update the experiment status

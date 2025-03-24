@@ -117,11 +117,11 @@ class APSIMNG:
 
     When an APSIM file is loaded, it is automatically copied to ensure a fallback to the original file in case of any issues during operations.
     """
-    # __slots__ = ['model', 'out_path', 'experiment', 'copy', 'base_name', 'others', 'report_names',
-    #              'factor_names', 'permutation', 'experiment_created', 'set_wd', '_str_model',
-    #              '_model', 'model_info', 'datastore', 'Simulations', 'Datastore', '_DataStore', 'path',
-    #              '_met_file', 'ran_ok',
-    #              ]
+    __slots__ = ['model', 'out_path', 'experiment', 'copy', 'base_name', 'others', 'report_names',
+                 'factor_names', 'permutation', 'experiment_created', 'set_wd', '_str_model',
+                 '_model', 'model_info', 'datastore', 'Simulations', 'Datastore', '_DataStore', 'path',
+                 '_met_file', 'ran_ok',
+                 ]
 
     def __init__(self, model: os.PathLike = None, out_path: os.PathLike = None, out: os.PathLike = None, set_wd=None,
                  experiment=False, **kwargs):

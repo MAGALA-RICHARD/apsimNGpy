@@ -251,6 +251,11 @@ class APSIMNG:
         return self
 
     def save(self, file_name=None):
+        """
+        Save the simulation models to file
+        @param file_name:    The name of the file to save the defaults to none, taking the exising filename
+        @return: model object
+        """
         _path = file_name or self.path
         self.path = _path
         save_model_to_file(self.Simulations, out=_path)
@@ -273,6 +278,7 @@ class APSIMNG:
             - reload (bool): Whether to load the file using the `out_path` or the model's original file name.
 
         """
+        warnings.warn('The `save_edited_file` method is deprecated use save().', DeprecationWarning)
         # Determine the output path
         _out_path = out_path or self.model_info.path
         save_model_to_file(self.Simulations, out=_out_path)
@@ -330,12 +336,14 @@ class APSIMNG:
             self._DataStore.Dispose()
 
             # before running
-            self.save()
+            self.save() # this compiles any modification to the model, sending it to the disk
             res = run_model_externally(self.model_info.path, verbose=verbose, to_csv=kwargs.get('to_csv', True))
             if clean_up:
                 self.clean_up()
             if res.returncode == 0:
+                # update run satus
                 self.ran_ok = True
+                # update report names
                 self.report_names = report_name
                 # self.results = _read_data(report_name)
 

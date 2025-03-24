@@ -117,6 +117,11 @@ class APSIMNG:
 
     When an APSIM file is loaded, it is automatically copied to ensure a fallback to the original file in case of any issues during operations.
     """
+    __slots__ = ['model', 'out_path', 'experiment', 'copy', 'base_name', 'others', 'report_names',
+                 'factor_names', 'permutation', 'experiment_created', 'set_wd', '_str_model',
+                 '_model', 'model_info', 'datastore', 'Simulations', 'Datastore', '_DataStore', 'path',
+                 '_met_file', 'ran_ok',
+                 ]
 
     def __init__(self, model: os.PathLike = None, out_path: os.PathLike = None, out: os.PathLike = None, set_wd=None,
                  experiment=False, **kwargs):
@@ -132,18 +137,7 @@ class APSIMNG:
             warnings.warn(
                 'copy argument is deprecated, it is now mandatory to copy the model in order to conserve the original '
                 'model.', UserWarning)
-        """
-            Parameters
-            ----------
-            model : str or Simulations
-                Path to .apsimx file or a Simulations object.
-            copy : bool, optional
-                If True, a copy of the original simulation will be created on init to conserve the original file, by default True.
-            out_path : str, optional
-                Path of the modified simulation; if None, it will be set automatically.
-            read_from_string : bool, optional
-                If True, file is uploaded to memory through json module (preferred); otherwise, we read from file.
-            """
+
         out_path = out_path if isinstance(out_path, str) or isinstance(out_path, Path) else None
         self.copy = kwargs.get('copy')  # Mandatory to conserve the original file
         # all these can be changed after initialization
@@ -162,7 +156,7 @@ class APSIMNG:
         self.path = self.model_info.path
         self._met_file = kwargs.get('met_file')
         self.ran_ok = False
-        permutation, base = kwargs.get('permutation', True), kwargs.get('base_name')
+        permutation, base = kwargs.get('permutation', True), kwargs.get('base_name', None)
         if experiment:
             # we create an experiment here immediately if the user wants to dive in right away
             self.create_experiment(permutation=permutation, base_name=base)
@@ -1705,6 +1699,8 @@ class APSIMNG:
             @param base_name:
         """
         if self.experiment_created:
+            logger.info('Experiment was already created. If you want to amend experiment, '
+                        'use add_model(), remove_model()')
             return self
         self.factor_names = []
         self.permutation = permutation

@@ -477,7 +477,7 @@ class APSIMNG:
         return None  # Model not found
 
     def add_model(self, model_type, adoptive_parent, rename=None,
-                  adoptive_parent_name=None, verbose=True, **kwargs):
+                  adoptive_parent_name=None, verbose=False, **kwargs):
 
         """
         Add a model to the Models Simulations NameSpace. some models are tied to specific models, so they can only be added
@@ -602,7 +602,7 @@ class APSIMNG:
         DELETE(self.Simulations.FindInScope[model_type](model_name))
         self.save()
 
-    def move_model(self, model_type, new_parent_type, model_name=None, new_parent_name=None):
+    def move_model(self, model_type, new_parent_type, model_name=None, new_parent_name=None, verbose=False):
         """
 
         @param model_type (Models): type of model tied to Models Namespace
@@ -621,7 +621,8 @@ class APSIMNG:
         new_parent = sims.FindInScope[new_parent_type](new_parent_name)
 
         MOVE(child_to_move, new_parent)
-        logger.info(f"Moved {child_to_move.Name} to {new_parent.Name}")
+        if verbose:
+            logger.info(f"Moved {child_to_move.Name} to {new_parent.Name}")
         self.save()
 
     def rename_model(self, model_type: Models, old_model_name: str, new_model_name: str):
@@ -1706,12 +1707,12 @@ class APSIMNG:
         self.permutation = permutation
         # Add core experiment structure
 
-        self.add_model(model_type=Models.Factorial.Experiment, adoptive_parent=Models.Core.Simulations)
+        self.add_model(model_type=Models.Factorial.Experiment, adoptive_parent=Models.Core.Simulations, **kwargs)
 
-        self.add_model(model_type=Models.Factorial.Factors, adoptive_parent=Models.Factorial.Experiment)
+        self.add_model(model_type=Models.Factorial.Factors, adoptive_parent=Models.Factorial.Experiment, **kwargs)
 
         if permutation:
-            self.add_model(model_type=Models.Factorial.Permutation, adoptive_parent=Models.Factorial.Factors)
+            self.add_model(model_type=Models.Factorial.Permutation, adoptive_parent=Models.Factorial.Factors, **kwargs)
 
         # Move base simulation under the factorial experiment
         self.move_model(Models.Core.Simulation, Models.Factorial.Experiment, base_name, None)

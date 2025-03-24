@@ -47,6 +47,7 @@ def timing_decorator(func):
 class ApsimModel(Inspector):
     def __init__(self, model: Union[os.PathLike, dict, str], out_path: os.PathLike = None, out: os.PathLike = None,
                  lonlat: tuple = None, soil_series: str = 'domtcp', thickness: int = 20, bottomdepth: int = 200,
+
                  thickness_values: list = None, run_all_soils: bool = False, set_wd=None, **kwargs):
         super().__init__(model, out_path, set_wd, **kwargs)
         self.soiltype = None
@@ -69,6 +70,8 @@ class ApsimModel(Inspector):
             self.thickness_values = np.array(thickness_values, dtype=np.float64)  # apsim uses floating digit number
         else:
             self.thickness_values = thickness_values
+        if kwargs.get('experiment', False):
+            self.create_experiment()
 
     def _find_soil_solute(self, solute: str, simulation: Union[tuple, list] = None):
         sim = self._find_simulation(simulation)
@@ -493,17 +496,17 @@ if __name__ == '__main__':
 
     # Model = FileFormat.ReadFromFile[Models.Core.Simulations](model, None, False)
     os.chdir(Path.home())
-    from apsimNGpy.core.base_data import LoadExampleFiles
+    from apsimNGpy.core.base_data import load_default_simulations
 
     try:
         lonlat = -91.7738, 41.0204
-        al = LoadExampleFiles(Path.cwd())
-        model = al.get_maize
+        al =load_default_simulations(simulations_object=False)
+        model = al
         print(model)
         from apsimNGpy import settings
 
         model = ApsimModel(model, out_path=None, read_from_string=True,
-                           thickness_values=settings.ConstantSettings.SOIL_THICKNESS)
+                           thickness_values=settings.SOIL_THICKNESS)
         model.replace_met_from_web(lonlat=lonlat, start_year=2001, end_year=2020)
         from apsimNGpy.manager import soilmanager as sm
 

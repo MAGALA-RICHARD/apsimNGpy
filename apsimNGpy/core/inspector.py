@@ -28,7 +28,7 @@ class Inspector(APSIMNG):
     """
 
 
-    def __init__(self, model, out_path=None, set_wd=None, **kwargs):
+    def __init__(self, model, out_path=None, set_wd=None,**kwargs):
         super().__init__(model, out_path, set_wd, **kwargs)
 
     @property

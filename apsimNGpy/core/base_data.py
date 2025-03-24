@@ -23,7 +23,7 @@ version_number = apsim_version()
 useVn = version_number.replace(".", "_")
 
 
-def __get_example(crop, path=None, simulations_object=True):
+def __get_example(crop, path=None, simulations_object=True, **kwargs):
     """
     Get an APSIM example file set_wd for a specific crop model.
 
@@ -47,6 +47,7 @@ def __get_example(crop, path=None, simulations_object=True):
     if not path:
         copy_path = Path(os.getcwd())
     else:
+        print(path)
         copy_path = Path(path)
 
     target_path = copy_path / f"temp_{uuid.uuid1()}_{crop}.apsimx"
@@ -61,14 +62,15 @@ def __get_example(crop, path=None, simulations_object=True):
         if not simulations_object:
             return copied_file
 
-        aPSim = SoilModel(file_path, out_path=target_path)
+        aPSim = SoilModel(model =file_path, out_path=target_path, **kwargs)
+
         return aPSim
     else:
         logger.info(f"No crop named:' '{crop}' found at '{example_files_path}'")
 
 
 def load_default_simulations(crop: str = "Maize", set_wd: [str, Path] = None,
-                             simulations_object: bool = True):
+                             simulations_object: bool = True, **kwargs) :
     """
     Load default simulation model from the aPSim folder.
 
@@ -103,9 +105,10 @@ def load_default_simulations(crop: str = "Maize", set_wd: [str, Path] = None,
         >>> model = load_default_simulations(crop='Maize', simulations_object=False)
         >>> print(isinstance(model, (str, Path)))
         True
+        @param experiment:
     """
     # capitalize() no longer needed glob regex just matches crop if spelled correctly
-    return __get_example(crop, set_wd, simulations_object)
+    return __get_example(crop, set_wd, simulations_object, **kwargs)
 
 
 def load_default_sensitivity_model(method: str, set_wd: str = None, simulations_object: bool = True):

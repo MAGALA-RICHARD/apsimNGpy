@@ -27,8 +27,7 @@ class Inspector(APSIMNG):
         >>> model = Inspector(path_model, set_wd=Path.home())
     """
 
-
-    def __init__(self, model, out_path=None, set_wd=None,**kwargs):
+    def __init__(self, model, out_path=None, set_wd=None, **kwargs):
         super().__init__(model, out_path, set_wd, **kwargs)
 
     @property
@@ -155,5 +154,21 @@ class Inspector(APSIMNG):
 
 if __name__ == '__main__':
     import doctest
+    from apsimNGpy.core.base_data import load_default_simulations, load_default_sensitivity_model
 
-    doctest.testmod()
+    mod = load_default_sensitivity_model(method='sobol')
+    sob = mod.Simulations.FindInScope[Models.Sobol]()
+
+    model = load_default_simulations(crop='Maize')
+
+
+    def create_sensitivity_model(method='Sobol', **kwargs):
+        ses_model = model.find_model(method)
+        model.add_model(model_type=ses_model, adoptive_parent=Models.Core.Simulations)
+        model.move_model(model_type=Models.Core.Simulation, new_parent_type=ses_model)
+        model.save()
+
+
+
+    sob.get_BaseSimulation
+    # doctest.testmod()

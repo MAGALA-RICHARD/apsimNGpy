@@ -110,7 +110,7 @@ def load_from_path(path2file, method='file'):
     return new_model
 
 
-def load_apsim_model(model=None,out_path=None, file_load_method='string', met_file=None, wd=None, **kwargs):
+def load_apsim_model(model=None, out_path=None, file_load_method='string', met_file=None, wd=None, **kwargs):
     """
        >> we are loading apsimx model from file, dict, or in memory.
        >> if model is none, we will return a pre - reloaded one from memory.
@@ -118,7 +118,7 @@ def load_apsim_model(model=None,out_path=None, file_load_method='string', met_fi
        >> if model is none, the name is ngpy_model
        returns a named tuple with an out path, datastore path, and IModel in memory
        """
-    out = {} # stores the path to be attached to model_info object
+    out = {}  # stores the path to be attached to model_info object
     Model_data = namedtuple('model_data',
                             ['IModel', 'path', 'datastore', "DataStore", 'results', 'met_path'])
 
@@ -139,7 +139,7 @@ def load_apsim_model(model=None,out_path=None, file_load_method='string', met_fi
     @loader.register(str)
     def _(_model: str):
         """loads apsimx model from a string path"""
-        copy_to = copy_file(_model, destination=out_path, wd =wd)
+        copy_to = copy_file(_model, destination=out_path, wd=wd)
         out['path'] = copy_to
         return load_from_path(copy_to, file_load_method)
 
@@ -147,7 +147,7 @@ def load_apsim_model(model=None,out_path=None, file_load_method='string', met_fi
     def _(_model: Path):
         """loads apsimx model from a pathlib.Path object"""
         # same as the string one, the difference is that this is a pathlib path object
-        copy_to = copy_file(_model, destination=out_path, wd = wd)
+        copy_to = copy_file(_model, destination=out_path, wd=wd)
         out['path'] = copy_to
         return load_from_path(copy_to, file_load_method)
 
@@ -182,8 +182,11 @@ def recompile(_model, out=None, met_path=None, ):
     # Serialize the model to JSON string
     json_string = Models.Core.ApsimFile.FileFormat.WriteToString(_model.Simulations)
 
-    Model = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](json_string, None, True,
-                                                                                     fileName=final_out_path)
+    Model = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](json_string, None,
+                                                                                     True,
+                                                                                     fileName=str(final_out_path))
+    # Model = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](json_string, None, True,
+    #                                                                                  fileName=final_out_path)
     _Model = False
     _Model = covert_to_model(Model)
 

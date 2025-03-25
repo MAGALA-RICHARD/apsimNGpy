@@ -47,7 +47,7 @@ def __get_example(crop, path=None, simulations_object=True, **kwargs):
     if not path:
         copy_path = Path(os.getcwd())
     else:
-        print(path)
+
         copy_path = Path(path)
 
     target_path = copy_path / f"temp_{uuid.uuid1()}_{crop}.apsimx"
@@ -66,7 +66,7 @@ def __get_example(crop, path=None, simulations_object=True, **kwargs):
 
         return aPSim
     else:
-        logger.info(f"No crop named:' '{crop}' found at '{example_files_path}'")
+        raise ValueError(f"No crop named:' '{crop}' found at '{example_files_path}'")
 
 
 def load_default_simulations(crop: str = "Maize", set_wd: [str, Path] = None,

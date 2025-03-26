@@ -162,13 +162,44 @@ if __name__ == '__main__':
     model = load_default_simulations(crop='Maize')
 
 
+    def set_sensitivity_factor(name, path, LowerBound, UpperBound):
+        parameter = Models.Sensitivity.Parameter()
+        parameter.Name = name
+        parameter.LowerBound = LowerBound
+        parameter.UpperBound = UpperBound
+        parameter.Path = path
+        return parameter
+
+
     def create_sensitivity_model(method='Sobol', **kwargs):
         ses_model = model.find_model(method)
-        model.add_model(model_type=ses_model, adoptive_parent=Models.Core.Simulations)
+        parameter = set_sensitivity_factor(name="CN2", path="Field.Soil.SoilWater.CN2Bare", LowerBound=70.0,
+                                           UpperBound=85.0)
+        sens = ses_model()
+        sens.Children.Add(sens)
+        model.add_model(model_type=sens, adoptive_parent=Models.Core.Simulations)
+        #sens = model.Simulations.FindInScope[ses_model](method)
+
         model.move_model(model_type=Models.Core.Simulation, new_parent_type=ses_model)
         model.save()
 
 
-
     sob.get_BaseSimulation
     # doctest.testmod()
+    for i in dir(sob):
+        if 'get' in i:
+            print(i)
+            att = getattr(sob, i)
+            if callable(att):
+                try:
+                    print(att())
+                except Exception as e:
+                    ...
+            else:
+                print(att)
+        else:
+            print(i, '__')
+    mo = create_sensitivity_model()
+
+
+

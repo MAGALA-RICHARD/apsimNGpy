@@ -4,7 +4,7 @@ author: Richard Magala
 email: magalarich20@gmail.com
 
 """
-
+import inspect
 import random, pathlib
 import string
 from typing import Union
@@ -524,10 +524,13 @@ class APSIMNG:
 
         # parent = _model.Simulations.FindChild(where)
 
-        if isinstance(model_type, type(Models.Clock)):
+        cla = model_type.__class__
+        if inspect.isclass(model_type):
             which = model_type
         elif isinstance(model_type, str):
             which = self.find_model(model_type)
+        elif isinstance(cla, type(Models.Clock)):
+            which  = cla
         else:
             raise ValueError(f'Invalid model type description expected str or {type(Models.Clock)}')
         if which and parent:

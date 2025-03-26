@@ -337,7 +337,7 @@ class APSIMNG:
             self._DataStore.Dispose()
 
             # before running
-            self.save() # this compiles any modification to the model, sending it to the disk
+            self.save()  # this compiles any modification to the model, sending it to the disk
             res = run_model_externally(self.model_info.path, verbose=verbose, to_csv=kwargs.get('to_csv', True))
             if clean_up:
                 self.clean_up()
@@ -530,7 +530,7 @@ class APSIMNG:
         elif isinstance(model_type, str):
             which = self.find_model(model_type)
         elif isinstance(cla, type(Models.Clock)):
-            which  = cla
+            which = cla
         else:
             raise ValueError(f'Invalid model type description expected str or {type(Models.Clock)}')
         if which and parent:
@@ -1761,6 +1761,27 @@ class APSIMNG:
         _added.set_Specification(specification)
         self.save()
         self.factor_names.append(factor_name)
+
+    def add_crop_replacements(self, _crop):
+            """
+             Adds a replacement folder as a child of the simulations. Useful when you inted to edit cultivar paramters
+             @param _crop: (str) name of the crop to be added the replacement folder
+             @return: none
+             raises an error if crop is not found
+          """
+
+            _FOLDER = Models.Core.Folder()
+            "everything is edited in place"
+            CROP = _crop
+            _FOLDER.Name = "Replacements"
+            PARENT = self.Simulations
+            ADD(_FOLDER, PARENT)
+            # assumes that the crop already exists in the simulation
+            _crop = PARENT.FindInScope[Models.PMF.Plant](CROP)
+            if _crop is not None:
+                ADD(_crop, _FOLDER)
+            else:
+                logger.error(f"No plants of crop{CROP} found")
 
 
 if __name__ == '__main__':

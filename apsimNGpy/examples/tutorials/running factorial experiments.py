@@ -1,7 +1,9 @@
 # Quick and simple way to run factorial experiments
 
 import pandas as pd
-
+import seaborn as sns
+sns.set_style('whitegrid')
+from matplotlib import pyplot as plt
 from apsimNGpy.core.base_data import load_default_simulations
 from apsimNGpy.core.core import APSIMNG
 
@@ -18,18 +20,15 @@ apsim.add_factor(specification="[Sow using a variable rule].Script.Population =4
 # %%
 apsim.run(report_name='Report')
 
-import seaborn as sns
 
-sns.set_style('whitegrid')
-from matplotlib import pyplot as plt
 
 df = apsim.results
 df[['population']] = pd.Categorical(['Population'])
 sns.catplot(x='Nitrogen', y='Yield', hue='Population', data=df, kind='box', )
 plt.show()
-# runninf factorial experiment that involves editing the cultiva requiresa replacment
+# running a factorial experiment that involves editing the cultivar requires a replacement
 
-# first add a crop replacement at the top of Models.Core.Simulations
+# Add a crop replacement at the top of Models.Core.Simulations
 
 _apsim = load_default_simulations(crop='Maize', simulations_object=False)
 apsimC = APSIMNG(_apsim)

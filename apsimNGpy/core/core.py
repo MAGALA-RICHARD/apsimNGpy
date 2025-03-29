@@ -1717,31 +1717,76 @@ class APSIMNG:
             >>> apsim.run() # doctest: +SKIP
 
         """
+        if factor_name is None:
+            get_name = specification.split("=")[0].strip()
+            # split again by
+            factor_name = get_name.split(".")[-1]
 
         if not self.experiment:
-            self.create_experiment(permutation=True) # create experiment with default parameters of permutation
-            ValueError("experiment not yet created cal your model_name.create_experiment()")
+            msg = 'experiment was not defined, it has been created with default settings'
+            self.create_experiment(permutation=True)  # create experiment with default parameters of permutation
+
         # Add individual factors
         if self.permutation:
             parent_factor = Models.Factorial.Permutation
         else:
             parent_factor = Models.Factorial.Factors
 
+        # find if a suggested factor exists
         factor_in = self.Simulations.FindInScope[Models.Factorial.Factor](factor_name)
         if factor_in:
 
-            # if already in_just update the specifications
+            # if already exists, update the specifications
             factor_in.set_Specification(specification)
 
         else:
             # if new factor, add it to the Simulations
             self.add_model(model_type=Models.Factorial.Factor, adoptive_parent=parent_factor, rename=factor_name)
-            # update with specification
+
             _added = self.Simulations.FindInScope[Models.Factorial.Factor](factor_name)
+            # update with specification
             _added.set_Specification(specification)
         self.save()
         self.factor_names.append(factor_name)
         self.factors[factor_name] = specification
+
+    def set_continuous_factor(self, factor_path, lower_bound, upper_bound, interval, factor_name=None):
+        """
+        wraps around add_factor() to add a continuous factor, but also for simplicity and readability
+
+        @param factor_path: path of the factor definition relative to its child node "[Fertilise at sowing].Script.Amount"
+        @param factor_name: (str) name of the factor.
+        @param lower_bound: (int, float), representing the lower bound of the factor.
+        @param upper_bound: (int, float), representing the upper bound of the factor.
+          @param interval: (int, float) represents the distance between the factor levels
+        @return:
+        Example:
+            >>> from apsimNGpy.core import base_data
+            >>> apsim = base_data.load_default_simulations(crop='Maize')
+            >>> apsim.create_experiment(permutation=False)
+            >>> apsim.set_continuous_factor(factor_path = "[Fertilise at sowing].Script.Amount", lower_bound=100, upper_bound=300, interval=10)
+
+        """
+        format_factor = f"{factor_path} = {lower_bound} to {upper_bound} step {interval}"
+        self.add_factor(specification=format_factor,factor_name=factor_name)
+
+    def set_categorical_factor(self, factor_path, categories, factor_name=None):
+        """
+        wraps around add_factor() to add a continuous factor, but also for simplicity and readability
+
+        @param factor_path: path of the factor definition relative to its child node "[Fertilise at sowing].Script.Amount"
+        @param factor_name: (str) name of the factor.
+        @param categories: (tuple, list) multiple values of a factor
+        @return:
+        Example:
+            >>> from apsimNGpy.core import base_data
+            >>> apsim = base_data.load_default_simulations(crop='Maize')
+            >>> apsim.create_experiment(permutation=False)
+            >>> apsim.set_continuous_factor(factor_path = "[Fertilise at sowing].Script.Amount", lower_bound=100, upper_bound=300, interval=10)
+
+        """
+        format_factor = f"{factor_path} = {','.join(map(str, categories))}"
+        self.add_factor(specification=format_factor, factor_name=factor_name)
 
     def add_crop_replacements(self, _crop):
         """

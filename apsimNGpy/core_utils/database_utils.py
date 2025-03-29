@@ -55,8 +55,8 @@ def clear_dir(pat):
     files = []
     patterns = ['*.apsimx', "*.db", '*.db-shm', '*.db-wal', '*.csv', '*.bak']
     for pattern in patterns:
-       dr = list(Path(pat).rglob(pattern))
-       files.extend(dr)
+        fi = list(Path(pat).rglob(pattern))
+        files.extend(fi)
     for i in files:
         try:
             i.unlink(missing_ok=True)

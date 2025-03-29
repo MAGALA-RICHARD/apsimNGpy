@@ -19,9 +19,6 @@ apsim.add_factor(specification="[Sow using a variable rule].Script.Population =4
 
 # %%
 apsim.run(report_name='Report')
-
-
-
 df = apsim.results
 df[['population']] = pd.Categorical(['Population'])
 sns.catplot(x='Nitrogen', y='Yield', hue='Population', data=df, kind='box', )

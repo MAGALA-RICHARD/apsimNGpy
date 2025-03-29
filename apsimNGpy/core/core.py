@@ -120,7 +120,7 @@ class APSIMNG:
     __slots__ = ['model', 'out_path', 'experiment', 'copy', 'base_name', 'others', 'report_names',
                  'factor_names', 'permutation', 'experiment_created', 'set_wd', '_str_model',
                  '_model', 'model_info', 'datastore', 'Simulations', 'Datastore', '_DataStore', 'path',
-                 '_met_file', 'ran_ok',
+                 '_met_file', 'ran_ok', 'factors'
                  ]
 
     def __init__(self, model: os.PathLike = None, out_path: os.PathLike = None, out: os.PathLike = None, set_wd=None,
@@ -133,6 +133,7 @@ class APSIMNG:
         self.report_names = None
         self.others = kwargs.copy()
         self.set_wd = set_wd
+        self.factors = {}
         if kwargs.get('copy'):
             warnings.warn(
                 'copy argument is deprecated, it is now mandatory to copy the model in order to conserve the original '
@@ -542,7 +543,8 @@ class APSIMNG:
                 target_child = parent.FindChild[self.find_model(loc_name)](loc.Name)
                 if target_child:
                     # not raising the error still studying the behaviors of adding a child that already exists
-                    raise ValueError(f'Child node `{model_type}` already exist at the target parent name`{parent.Name}`')
+                    raise ValueError(
+                        f'Child node `{model_type}` already exist at the target parent name`{parent.Name}`')
 
             ADD(loc, parent)
             # parent.Children.Add(loc)
@@ -1638,8 +1640,6 @@ class APSIMNG:
                 dul_[enum] = d
         return dul_
 
-
-
     def clean_up(self, db=True):
         """
         Clears the file cloned the datastore and associated csv files are not deleted if db is set to False defaults to True.
@@ -1699,9 +1699,10 @@ class APSIMNG:
         self.experiment = True
         self.experiment_created = True
 
-    def add_factor(self, specification: str, factor_name: str):
+    def add_factor(self, specification: str, factor_name: str, **kwargs):
         """Add a factor to the created experiment
-        raises a value error if experiment is not yet created
+        could  raise a value error if the experiment is not yet created.
+        under some circumstances, epxeriment will be created automatically as a permutation experiment
         parameters
 
         specification (str) a specification can be multiple values or categories e.g., "[Sow using a variable rule].Script.Population =4, 66, 9, 10"
@@ -1718,22 +1719,32 @@ class APSIMNG:
         """
 
         if not self.experiment:
-            raise ValueError("experiment not yet created cal your model_name.create_experiment()")
+            self.create_experiment(permutation=True) # create experiment with default parameters of permutation
+            ValueError("experiment not yet created cal your model_name.create_experiment()")
         # Add individual factors
-        if factor_name in self.factor_names:
-            raise ValueError(f"Factor {factor_name} already used")
         if self.permutation:
             parent_factor = Models.Factorial.Permutation
         else:
             parent_factor = Models.Factorial.Factors
-        self.add_model(model_type=Models.Factorial.Factor, adoptive_parent=parent_factor, rename=factor_name)
-        _added = self.Simulations.FindInScope[Models.Factorial.Factor](factor_name)
-        _added.set_Specification(specification)
+
+        factor_in = self.Simulations.FindInScope[Models.Factorial.Factor](factor_name)
+        if factor_in:
+
+            # if already in_just update the specifications
+            factor_in.set_Specification(specification)
+
+        else:
+            # if new factor, add it to the Simulations
+            self.add_model(model_type=Models.Factorial.Factor, adoptive_parent=parent_factor, rename=factor_name)
+            # update with specification
+            _added = self.Simulations.FindInScope[Models.Factorial.Factor](factor_name)
+            _added.set_Specification(specification)
         self.save()
         self.factor_names.append(factor_name)
+        self.factors[factor_name] = specification
 
     def add_crop_replacements(self, _crop):
-            """
+        """
              Adds a replacement folder as a child of the simulations. Useful when you inted to edit cultivar paramters
              @param _crop: (str) name of the crop to be added the replacement folder
              @return: none
@@ -1741,18 +1752,18 @@ class APSIMNG:
 
           """
 
-            _FOLDER = Models.Core.Folder()
-            "everything is edited in place"
-            CROP = _crop
-            _FOLDER.Name = "Replacements"
-            PARENT = self.Simulations
-            ADD(_FOLDER, PARENT)
-            # assumes that the crop already exists in the simulation
-            _crop = PARENT.FindInScope[Models.PMF.Plant](CROP)
-            if _crop is not None:
-                ADD(_crop, _FOLDER)
-            else:
-                logger.error(f"No plants of crop{CROP} found")
+        _FOLDER = Models.Core.Folder()
+        "everything is edited in place"
+        CROP = _crop
+        _FOLDER.Name = "Replacements"
+        PARENT = self.Simulations
+        ADD(_FOLDER, PARENT)
+        # assumes that the crop already exists in the simulation
+        _crop = PARENT.FindInScope[Models.PMF.Plant](CROP)
+        if _crop is not None:
+            ADD(_crop, _FOLDER)
+        else:
+            logger.error(f"No plants of crop{CROP} found")
 
 
 if __name__ == '__main__':

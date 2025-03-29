@@ -535,14 +535,14 @@ class APSIMNG:
             raise ValueError(f'Invalid model type description expected str or {type(Models.Clock)}')
         if which and parent:
             loc = which()
-            loc_name = loc.Name
-            if rename:
+            loc_name = loc.Name if hasattr(loc, 'Name') else None
+            if rename and hasattr(loc, 'Name'):
                 loc.Name = rename
-
-            target_child = parent.FindChild[self.find_model(loc_name)](loc.Name)
-            if target_child:
-                # not raising the error still studying the behaviors of adding a child that already exists
-                raise ValueError(f'Child node `{loc.Name}` already exist at the target parent name`{parent.Name}`')
+            if hasattr(loc, 'Name'):
+                target_child = parent.FindChild[self.find_model(loc_name)](loc.Name)
+                if target_child:
+                    # not raising the error still studying the behaviors of adding a child that already exists
+                    raise ValueError(f'Child node `{model_type}` already exist at the target parent name`{parent.Name}`')
 
             ADD(loc, parent)
             # parent.Children.Add(loc)
@@ -1638,42 +1638,7 @@ class APSIMNG:
                 dul_[enum] = d
         return dul_
 
-    def set_swcon(self, swcon: list, simulations: Union[list, tuple] = None, thickness_values: list = None, **kwargs):
-        """Set soil water conductivity (SWCON) constant for each soil layer.
 
-        Parameters
-        ----------
-        swcon
-            Collection of values, has to be the same length as existing values.
-        simulations, optional
-            List of simulation names to update, if `None` update all simulations
-            :param thickness_values: the soil profile thickness values
-        """
-        for sim in self.find_simulations(simulations):
-            wb = sim.FindDescendant[Models.WaterModel.WaterBalance]()
-            assert len(wb.Thickness) == len(
-                thickness_values), "trying to set different thickness values to the existing ones"
-            wb.SWCON = swcon
-
-    def get_swcon(self, simulation=None):
-        """Get soil water conductivity (SWCON) constant for each soil layer.
-
-        Parameters
-        ----------
-        simulation, optional
-            Simulation name.
-        Returns
-        -------
-            Array of SWCON values
-        """
-        sim = self._find_simulation(simulation)
-        wb = sim.FindDescendant[Models.WaterModel.WaterBalance]()
-        return np.array(wb.SWCON)
-
-    def _find_solute(self, solute: str, simulations: Union[list, tuple] = None):
-        # values should be returned tagged by their simulation  names
-        solutes = [sim.FindAllDescendants[Models.Soils.Solute](solute) for sim in self._find_simulation(simulations)]
-        return solutes
 
     def clean_up(self, db=True):
         """
@@ -1737,6 +1702,11 @@ class APSIMNG:
     def add_factor(self, specification: str, factor_name: str):
         """Add a factor to the created experiment
         raises a value error if experiment is not yet created
+        parameters
+
+        specification (str) a specification can be multiple values or categories e.g., "[Sow using a variable rule].Script.Population =4, 66, 9, 10"
+        range if values e.g, "[Fertilise at sowing].Script.Amount = 0 to 200 step 20",
+        factor_name: (str) can be the name of the factor being specified e.g., population
         Example:
             >>> from apsimNGpy.core import base_data
             >>> apsim = base_data.load_default_simulations(crop='Maize')
@@ -1768,6 +1738,7 @@ class APSIMNG:
              @param _crop: (str) name of the crop to be added the replacement folder
              @return: none
              raises an error if crop is not found
+
           """
 
             _FOLDER = Models.Core.Folder()

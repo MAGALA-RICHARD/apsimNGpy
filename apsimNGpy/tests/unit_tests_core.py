@@ -132,6 +132,31 @@ class TestAPSIMNG(BaseTester):
         self.test_ap_sim.run()
         self.assertTrue(self.test_ap_sim.ran_ok, msg='simulation was not ran when fmt was /')
 
+    def test_create_experiment(self):
+        """creates a factorial experiment adds a factor, then test if it runs successfully"""
+        self.test_ap_sim.create_experiment()
+        # add factor
+        self.test_ap_sim.add_factor(specification="[Fertilise at sowing].Script.Amount = 0 to 200 step 20",
+                                    factor_name='Nitrogen')
+        self.test_ap_sim.run()
+        self.assertTrue(self.test_ap_sim.ran_ok, msg='after adding the experiment and factor running apsim failed')
+
+    def test_add_crop_replacements(self):
+        self.test_ap_sim.add_crop_replacements(_crop='Maize')
+        xp = self.test_ap_sim.Simulations.FindInScope('Replacements')
+        if xp:
+            rep = True
+        else:
+            rep = False
+        self.assertTrue(rep, msg='replacement was not successful')
+
+    def test_replace_soils_values_by_path(self):
+        node= '.Simulations.Simulation.Field.Soil.Organic'
+        self.test_ap_sim.replace_soils_values_by_path(node_path= node,
+                                                      indices=[0], Carbon=1.3)
+        v = self.test_ap_sim.get_soil_values_by_path(node, 'Carbon')['Carbon'][0]
+        self.assertEqual(v, 1.3)
+
     def test_edit_cultivar(self):
         """
         Test the edit_cultivar requires that we have replacements in place

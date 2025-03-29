@@ -175,13 +175,21 @@ if __name__ == '__main__':
         ses_model = model.find_model(method)
         parameter = set_sensitivity_factor(name="CN2", path="Field.Soil.SoilWater.CN2Bare", LowerBound=70.0,
                                            UpperBound=85.0)
-        sens = ses_model()
-        sens.Children.Add(sens)
-        model.add_model(model_type=sens, adoptive_parent=Models.Core.Simulations)
-        #sens = model.Simulations.FindInScope[ses_model](method)
+        parameter2 = set_sensitivity_factor(name="CN2", path="Field.Soil.SoilWater.SummerCona", LowerBound=4.0,
+                                           UpperBound=9)
 
+        sens = ses_model()
+
+
+        model.add_model(model_type=sens, adoptive_parent=Models.Core.Simulations)
+        sens = model.Simulations.FindInScope[ses_model](method)
+        sens.set_TableName("Report")
+        sens.set_AggregationVariableName('[Clock].Today')
+        sens.Parameters.Add(parameter2)
+        sens.Parameters.Add(parameter)
         model.move_model(model_type=Models.Core.Simulation, new_parent_type=ses_model)
         model.save()
+        return model
 
 
     sob.get_BaseSimulation

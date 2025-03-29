@@ -229,7 +229,7 @@ if __name__ == '__main__':
     tt.mkdir(parents=True, exist_ok=True)
     os.chdir(tt)
     maze = load_default_simulations('Maize', )
-    soy = load_default_simulations('soybean', path=r'D:')
+    soy = load_default_simulations('soybean', )
 
     # maze.initialise_model()
     chdir(Path.home())

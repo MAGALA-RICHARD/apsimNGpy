@@ -51,6 +51,19 @@ def read_with_query(db, query):
         conn.close()
 
 
+def clear_dir(pat):
+    files = []
+    patterns = ['*.apsimx', "*.db", '*.db-shm', '*.db-wal', '*.csv', '*.bak']
+    for pattern in patterns:
+       dr = list(Path(pat).rglob(pattern))
+       files.extend(dr)
+    for i in files:
+        try:
+            i.unlink(missing_ok=True)
+        except PermissionError:
+            ...
+
+
 def get_db_table_names(d_b):
     """
 
@@ -62,6 +75,7 @@ def get_db_table_names(d_b):
     engine = create_engine(d_b)
     insp = inspect(engine)
     return insp.get_table_names()
+
 
 @timer
 def read_db_table(db, report_name):

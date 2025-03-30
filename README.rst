@@ -351,7 +351,7 @@ is a step-by-step guide on how to use the validation.evaluator module from apsim
     print(available_metrics)
     # Then select your choice from the list
 
-Run factorial experiments faster and efficienttly
+Run factorial experiments faster and efficiently
 *********************************************************************************
 The apsimNGpy Python package provides a convenient way to run factorial experiments as follows.
 
@@ -371,8 +371,6 @@ It is possible to specify factors related to crop cultivars, all you need is to 
     # add factor and name  it rue
     apsim.add_factor(specification='[Maize].Leaf.Photosynthesis.RUE.FixedValue =1.0, 1.23, 4.3', factor_name='RUE')
     apsim.run()
-
-
 
 How to Contribute to apsimNGpy
 *********************************************************************************

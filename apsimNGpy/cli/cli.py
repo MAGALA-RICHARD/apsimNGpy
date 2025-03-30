@@ -86,7 +86,7 @@ async def main():
         await save_results(df, file_name)
         numeric_df = df.select_dtypes(include=np.number)
         stati = getattr(numeric_df, args.aggfunc)()
-        print(stati)
+
         logger.info(stati)
 
 

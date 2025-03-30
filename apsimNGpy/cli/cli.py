@@ -94,11 +94,3 @@ async def main():
 if __name__ == "__main__":
     asyncio.run(main())
 
-#
-# if __name__ == "__main__":
-#     ...
-#     main()
-#     import subprocess
-#     from apsimNGpy.core.config import get_apsim_bin_path
-#     import sys
-#

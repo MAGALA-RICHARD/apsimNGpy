@@ -376,6 +376,24 @@ It is possible to specify factors related to crop cultivars; all you need is to 
     apsim.run() # assumes that the database table Name is the default of the Report
     # results can be retrieved in the same way
     df = apsim.results
+    
+Example output:
+
+.. code-block:: text
+
+    SimulationName  SimulationID  ...     Yield   Zone
+    0     ExperimentNitrogen0Population10RUE1.0             8  ...  1379.137  Field
+    1     ExperimentNitrogen0Population10RUE1.0             8  ...  1084.340  Field
+    2     ExperimentNitrogen0Population10RUE1.0             8  ...     0.000  Field
+    3     ExperimentNitrogen0Population10RUE1.0             8  ...   797.680  Field
+    4     ExperimentNitrogen0Population10RUE1.0             8  ...  3682.210  Field
+                                         ...           ...  ...       ...    ...
+    1645  ExperimentNitrogen80Population7RUE4.3           148  ...  4538.774  Field
+    1646  ExperimentNitrogen80Population7RUE4.3           148  ...  7549.985  Field
+    1647  ExperimentNitrogen80Population7RUE4.3           148  ...  4535.009  Field
+    1648  ExperimentNitrogen80Population7RUE4.3           148  ...  8798.415  Field
+    1649  ExperimentNitrogen80Population7RUE4.3           148  ...  3236.126  Field
+    [1650 rows x 20 columns]
 
 
 How to Contribute to apsimNGpy

@@ -364,6 +364,7 @@ The apsimNGpy Python package provides a convenient way to run factorial experime
      apsim.add_factor(specification="[Sow using a variable rule].Script.Population = 4, 6, 8, 10", factor_name='Population')
      apsim.run()
 
+
 It is possible to specify factors related to crop cultivars, all you need is to add a repalcement folder and add the crop as a replacements as follows
 
 .. code-block:: python

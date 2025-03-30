@@ -380,7 +380,9 @@ class APSIMNG:
         else:
             raise ValueError("you cant load data before running the model please call run() first")
 
+    @timer
     def clone_model(self, model_type, model_name, adoptive_parent_type, rename=None, adoptive_parent_name=None,
+
                     in_place=False):
         """
         Clone an existing model and move it to a specified parent within the simulation structure.

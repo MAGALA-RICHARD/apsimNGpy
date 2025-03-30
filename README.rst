@@ -207,10 +207,8 @@ This code initializes the APSIM model using the previously loaded simulation fil
 
 The `run` method executes the simulation. The `report_name` parameter specifies which data table from the simulation will be used for results.
 
-.. note::
-   report_name accepts a list of simulation data tables and hence can return a list of pandas data frame for each data table and if get_dict = True, a dictionary is returned
-   with each data table name as the key and data frame as the values
-
+.. note:
+   report_name accepts a list of simulation data tables and hence can return a concatenated pandas data frame for all the data tables
 .. code-block:: python
 
     # Retrieve and save the results
@@ -352,6 +350,29 @@ is a step-by-step guide on how to use the validation.evaluator module from apsim
     available_metrics = metrics.keys()
     print(available_metrics)
     # Then select your choice from the list
+
+Run factorial experiments faster and efficienttly
+*********************************************************************************
+The apsimNGpy Python package provides a convenient way to run factorial experiments as follows.
+
+.. code-block:: python
+     from apsimNGpy.core import base_data
+     apsim = base_data.load_default_simulations(crop='Maize')
+     apsim.create_experiment(permutation=True)
+     apsim.add_factor(specification="[Fertilise at sowing].Script.Amount = 0 to 200 step 20", factor_name='Nitrogen')
+     # use categories
+     apsim.add_factor(specification="[Sow using a variable rule].Script.Population = 4, 6, 8, 10", factor_name='Population')
+     apsim.run()
+
+It is possible to specify factors related to crop cultivars, all you need is to add a repalcement folder and add the crop as a replacements as follows
+
+.. code-block:: python
+    apsim.add_crop_replacements(_crop='Maize') # assumes that maize is already present in the simulation
+    # add factor and name  it rue
+    apsim.add_factor(specification='[Maize].Leaf.Photosynthesis.RUE.FixedValue =1.0, 1.23, 4.3', factor_name='RUE')
+    apsim.run()
+
+
 
 How to Contribute to apsimNGpy
 *********************************************************************************

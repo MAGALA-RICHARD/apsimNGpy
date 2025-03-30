@@ -373,7 +373,9 @@ It is possible to specify factors related to crop cultivars; all you need is to 
     apsim.add_crop_replacements(_crop='Maize')  # Assumes that maize is already present in the simulation
     # Add factor and name it RUE
     apsim.add_factor(specification='[Maize].Leaf.Photosynthesis.RUE.FixedValue = 1.0, 1.23, 4.3', factor_name='RUE')
-    apsim.run()
+    apsim.run() # assumes that the database table Name is the default of the Report
+    # results can be retrieved in the same way
+    df = apsim.results
 
 
 How to Contribute to apsimNGpy

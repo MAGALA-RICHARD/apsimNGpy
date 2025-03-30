@@ -2,7 +2,7 @@ import argparse
 import json
 import os.path
 import logging
-
+import time
 import numpy as np
 import pandas as pd
 from apsimNGpy.core_utils.utils import timer
@@ -12,10 +12,6 @@ from apsimNGpy.settings import logger
 from apsimNGpy.manager.weathermanager import get_weather, _is_within_USA_mainland
 import os
 import asyncio
-
-import logging
-
-logger = logging.getLogger(__name__)
 
 
 async def fetch_weather_data(lonlat):
@@ -35,6 +31,7 @@ async def run_apsim_model(model, report_name):
 async def save_results(df, file_name):
     """Save results asynchronously."""
     await asyncio.to_thread(df.to_csv, file_name)
+
 
 @timer
 async def main():
@@ -86,7 +83,6 @@ async def main():
     df = model.results
 
     if isinstance(df, pd.DataFrame):
-
         await save_results(df, file_name)
         numeric_df = df.select_dtypes(include=np.number)
         stati = getattr(numeric_df, args.aggfunc)()

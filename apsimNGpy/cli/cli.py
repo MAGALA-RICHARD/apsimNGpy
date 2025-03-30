@@ -39,16 +39,20 @@ async def main():
     parser = argparse.ArgumentParser(description='Run a simulation of a given crop.')
 
     # Add arguments
-    parser.add_argument('-m', '--model', type=str, required=False, help='Path to the APSIM model file', default='Maize')
-    parser.add_argument('-o', '--out', type=str, required=False, help='Out path')
-    parser.add_argument('-t', '--table', type=str, required=False, default='Report')
-    parser.add_argument('-w', '--met_file', type=str, required=False)
-    parser.add_argument('-sim', '--simulation', type=str, required=False)
-    parser.add_argument('-ws', '--wd', type=str, required=False)
-    parser.add_argument('-l', '--lonlat', type=str, required=False)
-    parser.add_argument('-sf', '--save', type=str, required=False)
+    parser.add_argument('-m', '--model', type=str, required=False, help='Path  or name of the APSIM model file if path it should ends with .apsimx'
+                                                                        'defaults to maize from the default '
+                                                                        'simulations ', default='Maize')
+    parser.add_argument('-o', '--out', type=str, required=False, help='Out path for apsim file')
+    parser.add_argument('-t', '--table', type=str, required=False, default='Report', help ='Report table name. '
+                                                                                           'Defaults to "Report"')
+    parser.add_argument('-w', '--met_file', type=str, required=False, help ="Path to the weather data file.")
+    parser.add_argument('-sim', '--simulation', type=str, required=False, help = 'Name of the APSIM simulation to run')
+    parser.add_argument('-ws', '--wd', type=str, required=False, help ='Working directory')
+    parser.add_argument('-l', '--lonlat', type=str, required=False, help = 'longitude and Latitude (comma-separated) '
+                                                                           'for fetching weather data.')
+    parser.add_argument('-sf', '--save', type=str, required=False, help = 'File name for saving output data.')
     parser.add_argument('-s', '--aggfunc', type=str, required=False, default='mean',
-                        help='Statistical summary to summarize the data')
+                        help='Statistical summary function (e.g., mean, median). Defaults to "mean".')
 
     # Parse arguments
     args = parser.parse_args()

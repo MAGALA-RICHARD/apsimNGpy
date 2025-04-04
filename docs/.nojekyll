@@ -1,7 +1,7 @@
 
 lsi: false
 safe: true
-source: [src]
+source: [apsimNGpy]
 incremental: false
 highlighter: rouge
 gist:

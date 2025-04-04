@@ -1374,11 +1374,16 @@ class APSIMNG:
         return data
 
     def inspect_model(self, model_type, fullpath=True):
-        """ Inspects the model types and returns the model paths or names. usefull if you want ot identify the path
+        """
+        Inspects the model types and returns the model paths or names. usefull if you want ot identify the path
         to the model for editing the model.
-        :param model_type: Models e.g. Models.Clock will return all fullpath or names of models in the type Clock
-        :param  fullpath: return the full path of the model relative to the parent simulations node. please note the
-        difference between simulations and simulation.
+        :param model_type: (Models) e.g. Models.Clock will return all fullpath or names of models in the type Clock
+        -Models.Manager returns information about the manager scripts in simulations
+        -Models.Core.Simulation returns information about the simulation
+        -Models.Climate.Weather returns a list of paths or names pertaining to weather models
+        -Models.Core.IPlant  returns a list of paths or names pertaining to all crops models available in the simulation
+        :param  fullpath: (bool) return the full path of the model relative to the parent simulations node. please note the
+            difference between simulations and simulation.
         :return:
          list[str]: list of all full paths or names of the model relative to the parent simulations node
          Example:

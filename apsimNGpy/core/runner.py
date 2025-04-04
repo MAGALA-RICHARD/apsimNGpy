@@ -172,7 +172,7 @@ def run_from_dir(dir_path, pattern, verbose=False,
        directory. It facilitates running simulations recursively across directories and outputs
        the results for each file are stored to a csv file in the same directory as the file'.
 
-       What this situation does is that it makes it easy to retrieve the simulated files, returning a generator that
+       What this function does is that it makes it easy to retrieve the simulated files, returning a generator that
        yields data frames
 
        :Parameters:

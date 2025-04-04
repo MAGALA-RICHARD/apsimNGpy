@@ -1395,6 +1395,14 @@ class APSIMNG:
             ['.Simulations.Simulation.Field.Sow using a variable rule',
              '.Simulations.Simulation.Field.Fertilise at sowing',
              '.Simulations.Simulation.Field.Harvest']
+            >>> model.inspect_model(Models.Clock) # gets you the path to the Clock models
+             ['.Simulations.Simulation.Clock']
+            >>> model.inspect_model(Models.Core.IPlant) # gets you the path to the crop model
+            ['.Simulations.Simulation.Field.Maize']
+            >>> model.inspect_model(Models.Core.IPlant, fullpath=False) # gets you the name of the crop Models
+            ['Maize']
+            >>> model.inspect_model(Models.Fertiliser, fullpath=True)
+            ['.Simulations.Simulation.Field.Fertiliser']
 
         """
         if isinstance(model_type, type(Models.Clock)):

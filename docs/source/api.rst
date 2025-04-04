@@ -1,16 +1,16 @@
 ApsimModel Class: API Reference
 -------------------------
 
-Inspector class for APSIMNGPY modules. It inherits from the APSIMNG class and
-therefore has access to a repertoire of methods from that class.
+Main class for AapsimNGpy modules.
+It inherits from the APSIMNG class and therefore has access to a repertoire of methods from it.
 
 This implies that you can still run the model and modify parameters as needed.
-
 Example:
-    >>> from apsimNGpy.core.inspector import Inspector
+    >>> from apsimNGpy.core.apsim import ApsimModel
     >>> from apsimNGpy.core.base_data import load_default_simulations
     >>> path_model = load_default_simulations(crop='Maize', simulations_object=False)
-    >>> model = Inspector(path_model, set_wd=Path.home())
+    >>> model = ApsimModel(path_model, set_wd=Path.home())# replace with your path
+    >>> model.run(report_name='Report') # report is the default replace as needed
 .. function:: add_crop_replacements(self, _crop: str)
 
    Adds a replacement folder as a child of the simulations. Useful when you intend to edit cultivar paramters
@@ -98,10 +98,6 @@ Example:
         >>> model = core.base_data.load_default_simulations()
         >>> model.add_report_variable(commands = '[Clock].Today as Date', report_name = 'Report')
 
-.. function:: adjustSatDul(sat_: list, dul_: list)
-
-   No documentation available.
-
 .. function:: adjust_dul(self, simulations: Union[tuple, list] = None)
 
    - This method checks whether the soil SAT is above or below DUL and decreases DUL  values accordingly
@@ -109,10 +105,6 @@ Example:
         :param simulations: str, name of the simulation where we want to adjust DUL and SAT according
         :return:
         model object
-
-.. function:: change_met(self)
-
-   No documentation available.
 
 .. function:: change_report(self, *, command: str, report_name='Report', simulations=None, set_DayAfterLastOutput=None, **kwargs)
 
@@ -186,14 +178,6 @@ Example:
     Returns:
         self: The current instance of the class.
 
-.. function:: check_model(self)
-
-   No documentation available.
-
-.. function:: check_som(self, simulations=None)
-
-   No documentation available.
-
 .. function:: clean_up(self, db=True)
 
    Clears the file cloned the datastore and associated csv files are not deleted if db is set to False defaults to True.
@@ -203,25 +187,9 @@ Example:
            >> Please proceed with caution, we assume that if you want to clear the model objects, then you don't need them,
            but by making copy compulsory, then, we are clearing the edited files
 
-.. function:: clone(*args, **kwargs)
-
-   No documentation available.
-
-.. function:: clone_model(*args, **kwargs)
-
-   No documentation available.
-
-.. function:: compile_scripts(self)
-
-   No documentation available.
-
 .. function:: configs(self)
 
    records activities that have been done on the model including changes to the file
-
-.. function:: convert_to_IModel(self)
-
-   No documentation available.
 
 .. function:: create_experiment(self, permutation: bool = True, base_name: str = None, **kwargs)
 
@@ -365,14 +333,6 @@ Example:
              >>> model.find_model("Clock")  # doctest: +SKIP
               'Models.Clock'
 
-.. function:: find_simulations(self, simulations: Union[list, tuple, str] = None)
-
-   No documentation available.
-
-.. function:: generate_unique_name(base_name, length=6)
-
-   No documentation available.
-
 .. function:: get_crop_replacement(self, Crop)
 
    :param Crop: crop to get the replacement
@@ -390,14 +350,6 @@ Example:
 
    Get soil initial NO3 content
 
-.. function:: get_manager_ids(self, full_path: bool = True, verbose=False) -> list[str]
-
-   No documentation available.
-
-.. function:: get_manager_parameters(self, full_path, verbose=False) -> dict
-
-   No documentation available.
-
 .. function:: get_report(self, simulation=None, names_only=False)
 
    Get current report string
@@ -411,26 +363,9 @@ Example:
             List of report lines.
             @param names_only: return the names of the reports as a list if names_only is True
 
-.. function:: get_soil_values_by_path(self, node_path, *args)
-
-   No documentation available.
-
-.. function:: get_weather_online(lonlat: tuple, start: int, end: int)
-
-   No documentation available.
-
-.. function:: initialise_model(self)
-
-   No documentation available.
-
-.. function:: inspect(self, of_class)
-
-   No documentation available.
-
 .. function:: inspect_model(self, model_type, fullpath=True)
 
-   Inspects the model types and returns the model paths or names. usefull if you want ot identify the path
-        to the model for editing the model.
+   Inspects the model types and returns the model paths or names. usefull if you want to identify the path to the model for editing the model.
         :param model_type: (Models) e.g. Models.Clock will return all fullpath or names of models in the type Clock
         -Models.Manager returns information about the manager scripts in simulations
         -Models.Core.Simulation returns information about the simulation
@@ -473,10 +408,6 @@ Example:
 
    Preview the simulation file in the apsimNGpy object in the APSIM graphical user interface
         @return: opens the simulation file
-
-.. function:: read_cultivar_params(self, name: str, verbose: bool = None)
-
-   No documentation available.
 
 .. function:: recompile_edited_model(self, out_path: os.PathLike)
 
@@ -547,22 +478,6 @@ Example:
             'CultvarName': cultivar name which is in the sowing module for adjusting the rue
             tillage: specify whether you will be carried to adjust some physical parameters
 
-.. function:: replace_met_file(self, *, weather_file: Union[pathlib.Path, str], simulations=None, **kwargs)
-
-   No documentation available.
-
-.. function:: replace_met_from_web(self, lonlat, start_year, end_year, file_name=None)
-
-   No documentation available.
-
-.. function:: replace_soil_profile_from_web(self, **kwargs)
-
-   No documentation available.
-
-.. function:: replace_soil_properties_by_path(self, path: str, param_values: list, str_fmt='.', **kwargs)
-
-   No documentation available.
-
 .. function:: replace_soil_property_values(self, *, parameter: str, param_values: list, soil_child: str, simulations: list = None, indices: list = None, crop=None, **kwargs)
 
    Replaces values in any soil property array. The soil property array
@@ -578,10 +493,6 @@ Example:
         :param indices: list. Positions in the array which will be replaced. Please note that unlike C#, python satrt counting from 0
 
         :crop (str, optional): string for soil water replacement. Default is None
-
-.. function:: replace_soils(self, lonlat: tuple, simulation_names: Union[tuple, list], verbose=False)
-
-   No documentation available.
 
 .. function:: replace_soils_values_by_path(self, node_path: str, indices: list = None, **kwargs)
 
@@ -636,10 +547,6 @@ Example:
 
         Returns:
         - A list of paths to the newly created files if get_back_list is True else a generator is returned.
-
-.. function:: report_ids(self)
-
-   No documentation available.
 
 .. function:: restart_model(self, model_info=None)
 
@@ -740,10 +647,6 @@ Example:
             >>> apsim.create_experiment(permutation=False)
             >>> apsim.set_continuous_factor(factor_path = "[Fertilise at sowing].Script.Amount", lower_bound=100, upper_bound=300, interval=10)
 
-.. function:: show_cropsoil_names(self, simulations)
-
-   No documentation available.
-
 .. function:: show_met_file_in_simulation(self, simulations: list = None)
 
    Show weather file for all simulations
@@ -771,10 +674,6 @@ Example:
         self : ApsimModel
             The modified ApsimModel object after the spin-up operation.
             you could call save_edited file and save it to your specified location, but you can also proceed with the simulation
-
-.. function:: strip_time(date_string)
-
-   No documentation available.
 
 .. function:: update_cultivar(self, *, parameters: dict, simulations: Union[list, tuple] = None, clear=False, **kwargs)
 

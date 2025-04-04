@@ -46,7 +46,7 @@ def timing_decorator(func):
 
 class ApsimModel(Inspector):
     """
-    Main class for AapsimNGpy modules.
+    Main class for apsimNGpy modules.
     It inherits from the APSIMNG class and therefore has access to a repertoire of methods from it.
 
     This implies that you can still run the model and modify parameters as needed.

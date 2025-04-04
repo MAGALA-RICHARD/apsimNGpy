@@ -1376,8 +1376,7 @@ class APSIMNG:
 
     def inspect_model(self, model_type, fullpath=True):
         """
-        Inspects the model types and returns the model paths or names. usefull if you want ot identify the path
-        to the model for editing the model.
+        Inspects the model types and returns the model paths or names. usefull if you want to identify the path to the model for editing the model.
         :param model_type: (Models) e.g. Models.Clock will return all fullpath or names of models in the type Clock
         -Models.Manager returns information about the manager scripts in simulations
         -Models.Core.Simulation returns information about the simulation

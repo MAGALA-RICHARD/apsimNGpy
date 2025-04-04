@@ -45,6 +45,18 @@ def timing_decorator(func):
 
 
 class ApsimModel(Inspector):
+    """
+    Main class for AapsimNGpy modules.
+    It inherits from the APSIMNG class and therefore has access to a repertoire of methods from it.
+
+    This implies that you can still run the model and modify parameters as needed.
+    Example:
+        >>> from apsimNGpy.core.apsim import ApsimModel
+        >>> from apsimNGpy.core.base_data import load_default_simulations
+        >>> path_model = load_default_simulations(crop='Maize', simulations_object=False)
+        >>> model = ApsimModel(path_model, set_wd=Path.home())# replace with your path
+        >>> model.run(report_name='Report') # report is the default replace as needed
+    """
     def __init__(self, model: Union[os.PathLike, dict, str], out_path: os.PathLike = None, out: os.PathLike = None,
                  lonlat: tuple = None, soil_series: str = 'domtcp', thickness: int = 20, bottomdepth: int = 200,
 

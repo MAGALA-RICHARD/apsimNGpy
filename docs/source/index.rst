@@ -28,6 +28,7 @@ Built on object-oriented principles, it provides:
    Home <self>
    getting started
    Usage
+   model inspection
    cli
    factorial_experiments
    api

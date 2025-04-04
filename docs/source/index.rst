@@ -18,8 +18,6 @@ Built on object-oriented principles, it provides:
 - Weather data retrieval
 - Efficient soil profile development
 
-.. automodule:: apsimNGpy
-    :members:
 
 .. toctree::
    :maxdepth: 4
@@ -32,6 +30,9 @@ Built on object-oriented principles, it provides:
    cli
    factorial_experiments
    api
+   modules
+
+
 
 
 

@@ -69,6 +69,7 @@ def DownloadsurgoSoiltables(lonlat, select_componentname=None, summarytable=Fals
 
     response = requests.post(url, data=body, headers=headers, timeout=140)
     # Put query results in dictionary format
+    print(response)
     my_dict = xmltodict.parse(response.content)
 
     # Convert from dictionary to dataframe format

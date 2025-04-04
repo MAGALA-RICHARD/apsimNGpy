@@ -51,9 +51,13 @@ def read_with_query(db, query):
         conn.close()
 
 
-def clear_dir(pat):
+def clear_dir(pat, exclude=None):
+    if exclude is None:
+        exclude = []
     files = []
-    patterns = ['*.apsimx', "*.db", '*.db-shm', '*.db-wal', '*.csv', '*.bak']
+    parts = ['apsimx', "db", 'db-shm', 'db-wal', 'csv', 'bak', 'met']
+    patterns = [f'*.{i}' for i in parts if i not in exclude]
+
     for pattern in patterns:
         fi = list(Path(pat).rglob(pattern))
         files.extend(fi)
@@ -193,3 +197,7 @@ def check_column_value_exists(_db: os.PathLike, table_name: str, value_to_check:
             except TableNotFoundError as e:
                 # expect this error to occur when the database is not yet created,
                 return False
+
+
+if __name__ == "__main__":
+    clear_dir(r'D:\package\apsimNGpy')

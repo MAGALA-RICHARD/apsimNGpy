@@ -499,10 +499,10 @@ if __name__ == '__main__':
     from apsimNGpy.core.base_data import load_default_simulations
 
     try:
-        lonlat = -91.7738, 41.0204
+        lonlat = -93.7738, 42.0204
         al =load_default_simulations(simulations_object=False)
         model = al
-        print(model)
+
         from apsimNGpy import settings
 
         model = ApsimModel(model, out_path=None, read_from_string=True,

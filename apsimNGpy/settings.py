@@ -77,7 +77,7 @@ logger = setup_logger()
 APSIM_LOCATION = os.environ.get('APSIM_LOCATION')
 
 SCRATCH = os.environ.get('WS', Path(os.getcwd()) / 'scratch')
-# need to clean up perioduically if wcan
+# need to clean up periodically if can
 try:
     rmtree(SCRATCH)
 except (FileNotFoundError, PermissionError) as fp:

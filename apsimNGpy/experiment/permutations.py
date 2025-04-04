@@ -82,23 +82,4 @@ def mgt_updater(simId, perms, old_list):
 
 
 if __name__ == "__main__":
-    def generateFactors():
-        mn = {'Name': "Simple Rotation", 'Parameters': ["Crops", "Cropb"],
-              'Variables': ['Maize, Soybean', 'Maize, Wheat']}
-        org = {i: m for i in mn.get('Parameters') for m in mn.get('Variables')}
-        org['Name'] = mn.get('Name')
-        return org
-
-
-    print(generateFactors())
-    from variable import DiscreteVariable, BoundedVariable
-
-    N = DiscreteVariable(options=[100, 200], place_holder_name='Nitrogen', parameter='Amount', manager='NitrogenManger')
-    Dep = BoundedVariable(bounds=(0, 350), place_holder_name='depth', manager='Tillage', parameter='Depth')
-    comb = GenerateCombinations([N, Dep])
-    ap = comb.management_combination
-    from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables
-
-    lon = -119.72330, 36.92204
-    xp = DownloadsurgoSoiltables(lon)
-    print(xp)
+   ...

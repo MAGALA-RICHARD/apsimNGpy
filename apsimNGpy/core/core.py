@@ -224,10 +224,6 @@ class APSIMNG:
                     simulation.IsInitialising = False
         return self
 
-    def _reload_saved_file(self):
-        self.save_edited_file(self.path)
-        return self
-
     def restart_model(self, model_info=None):
         """
          :param model_info: A named tuple object returned by `load_apsim_model` from the `model_loader` module.
@@ -419,6 +415,7 @@ class APSIMNG:
         self.clone_model(Models.Clock, "clock1", Models.Simulation, rename="new_clock",adoptive_parent_type= Models.Core.Simulations, adoptive_parent_name="Simulation")
         ```
         This will create a cloned version of `"clock1"` and place it under `"Simulation"` with the new name `"new_clock"`.
+
         """
         cloner = Models.Core.Apsim.Clone  # Reference to the APSIM cloning function
 
@@ -471,6 +468,7 @@ class APSIMNG:
              'Models.Climate.Weather'
              >>> model.find_model("Clock")  # doctest: +SKIP
               'Models.Clock'
+
         """
         if model_namespace is None:
             model_namespace = Models  # Default to Models namespace
@@ -574,7 +572,7 @@ class APSIMNG:
         else:
             logger.debug(f"Adding {model_type} to {parent.Name} failed, perhaps models was not found")
 
-    def add_report_variable(self, commands: Union[list, str, tuple], report_name:str=None):
+    def add_report_variable(self, commands: Union[list, str, tuple], report_name: str = None):
         """
         This adds a report variable to the end of other variables, if you want to change the whole report use change_report
         Args:
@@ -612,11 +610,12 @@ class APSIMNG:
             ----------
             simulation
                 The name of the simulation to remove
+                
         """
         # this is a repetition because I want to deprecate it and maintain simulation_name or use get_simulation_name
         return self.simulation_names
 
-    def remove_model(self, model_type: Models, model_name: str=None):
+    def remove_model(self, model_type: Models, model_name: str = None):
         """
         Removes a model from the Models Simulations NameSpace
 
@@ -640,7 +639,8 @@ class APSIMNG:
         DELETE(self.Simulations.FindInScope[model_type](model_name))
         self.save()
 
-    def move_model(self, model_type: Models, new_parent_type:Models, model_name:str=None, new_parent_name:str=None, verbose:bool=False):
+    def move_model(self, model_type: Models, new_parent_type: Models, model_name: str = None,
+                   new_parent_name: str = None, verbose: bool = False):
         """
         Args:
 
@@ -651,6 +651,7 @@ class APSIMNG:
         Returns:
 
           returns instance of apsimNGpy.core.core.apsim.ApsimModel or apsimNGpy.core.core.apsim.APSIMNG
+
         """
         sims = self.Simulations
         if not model_name:
@@ -687,7 +688,9 @@ class APSIMNG:
     @property  #
     def extract_report_names(self) -> dict:
         """ returns all data frames the available report tables
-        @return: dict of  table names in alist in the simulation"""
+        @return: dict of  table names in alist in the simulation
+
+        """
         table_dict = self.get_report(names_only=True)
         return table_dict
 
@@ -796,6 +799,7 @@ class APSIMNG:
           - values: values for each command (e.g., (721, 760)).
 
         Returns: instance of the class APSIMNG or ApsimModel
+
         """
         if not isinstance(CultivarName, str):
             raise ValueError("Cultivar name must be a string")
@@ -866,6 +870,7 @@ class APSIMNG:
             List or tuple of simulation names to update, if `None` show all simulations. if you are not sure,
 
             use the property decorator 'extract_simulation_name'
+
         """
         try:
             for sim in self.find_simulations(simulations):
@@ -913,6 +918,7 @@ class APSIMNG:
         surface_om_name (str, optional): name of the surface organic matter child defaults to ='SurfaceOrganicMatter'
     Returns:
         self: The current instance of the class.
+
         """
         som = None
         for sim in self.find_simulations(simulations):
@@ -952,6 +958,7 @@ class APSIMNG:
         out_path: os.PathLike object this method is called to convert the simulation object from ConverterReturnType to model like object
 
         return: self
+
         """
 
         try:
@@ -980,6 +987,7 @@ class APSIMNG:
         int, float, bool,str etc.
 
         return: self
+
         """
         # reject space in fmt
         if fmt != '.':
@@ -1029,6 +1037,7 @@ class APSIMNG:
             This method does not perform validation on the provided `management` dictionary beyond checking for key
             existence. - If the specified management script or parameters do not exist, they will be ignored.
             using a tuple for a specifying management script, paramters is recommended if you are going to pass the function to  a multi-processing class fucntion
+
         """
         if isinstance(management, dict):  # we want to provide support for multiple scripts
             # note the coma creates a tuple
@@ -1059,6 +1068,7 @@ class APSIMNG:
         """
         Preview the simulation file in the apsimNGpy object in the APSIM graphical user interface
         @return: opens the simulation file
+
         """
         # TODO this need to be connected to the apsim installation path to make
         #  sure that file are opened in their corresponding versions
@@ -1097,6 +1107,7 @@ class APSIMNG:
         print(ui)
         # output
         {'Crop': 'Maize', 'FertiliserType': 'NO3N', 'Amount': '160.0'}
+
         """
         param_dict = {}
         for sim in self.simulations:
@@ -1153,6 +1164,7 @@ class APSIMNG:
             @note
             It is possible to target a specific simulation by specifying simulation name for this case the name is Simulations, so, it could appear as follows
              model.change_simulation_dates(start_date='2021-01-01', end_date='2021-01-12', simulation = 'Simulation')
+
         """
         check = start_date or end_date
         assert check is not None, "One of the start_date or end_date parameters should not be None"
@@ -1192,6 +1204,7 @@ class APSIMNG:
             @note
             It is possible to target a specific simulation by specifying simulation name for this case the name is Simulations, so, it could appear as follows
              model.change_simulation_dates(start_date='2021-01-01', end_date='2021-01-12', simulation = 'Simulation')
+
         """
         dates = {}
         for sim in self.find_simulations(simulations):
@@ -1213,6 +1226,7 @@ class APSIMNG:
         Returns
         -------
             Dictionary of simulation names with dates
+
         """
         dates = {}
         for sim in self.find_simulations(simulations):
@@ -1233,7 +1247,7 @@ class APSIMNG:
         self.replace_met_file(self.met)
         return self
 
-    def replace_met_file(self, *, weather_file:Union[Path, str], simulations=None, **kwargs):
+    def replace_met_file(self, *, weather_file: Union[Path, str], simulations=None, **kwargs):
         try:
             """
             Searches the weather child and replaces it with a new one
@@ -1244,6 +1258,7 @@ class APSIMNG:
                 Weather file name, path should be relative to simulation or absolute.
             simulations, (str, optional)
                 List of simulation names to update, if `None` update all simulations
+                
             """
             # we need to catch file not found errors before it becomes a problem
             if not os.path.isfile(weather_file):
@@ -1288,6 +1303,7 @@ class APSIMNG:
         Returns
         -------
         None
+
         """
         simulations = self.find_simulations(simulations)
         for sim in simulations:
@@ -1309,6 +1325,7 @@ class APSIMNG:
         -------
             List of report lines.
             @param names_only: return the names of the reports as a list if names_only is True
+
         """
         sim = self.find_simulations(simulation)
         REPORTS = {}
@@ -1327,6 +1344,7 @@ class APSIMNG:
         Returns
         -------
             APSIM Models.Soils.Physical object
+
         """
         sim_physical = {}
         for nn, simu in enumerate(self._find_simulation(simulations)):
@@ -1343,6 +1361,7 @@ class APSIMNG:
             simulations (string, optional): Targeted simulation name. Defaults to None.
         ---------------------------------------------------------------------------
         returns an array of the parameter values
+
         """
         assert isinstance(parameter, str) == True, "Soil parameter name must be a string"
         data = {}
@@ -1354,13 +1373,43 @@ class APSIMNG:
             data[sim] = list(soil_p_param)
         return data
 
+    def inspect_model(self, model_type, fullpath=True):
+        """ Inspects the model types and returns the model paths or names. usefull if you want ot identify the path
+        to the model for editing the model.
+        :param model_type: Models e.g. Models.Clock will return all fullpath or names of models in the type Clock
+        :param  fullpath: return the full path of the model relative to the parent simulations node. please note the
+        difference between simulations and simulation.
+        :return:
+         list[str]: list of all full paths or names of the model relative to the parent simulations node
+         Example:
+            >>> from apsimNGpy.core import base_data
+            >>> from apsimNGpy.core.core import Models
+            >>> model = base_data.load_default_simulations(crop ='maize')
+            >>> model.inspect_model(Models.Manager, fullpath=True)
+            ['.Simulations.Simulation.Field.Sow using a variable rule',
+             '.Simulations.Simulation.Field.Fertilise at sowing',
+             '.Simulations.Simulation.Field.Harvest']
 
-    def journal(self):
-        """records activities that have been done on the modle including changes to the file
+
+        """
+        if isinstance(model_type, type(Models.Clock)):
+            obj = self.Simulations.FindAllDescendants[model_type]()
+            if fullpath:
+                return [i.FullPath for i in obj]
+            else:
+                return [i.Name for i in obj]
+        logging.error(f"Invalid model type '{model_type}'")
+
+    def configs(self):
+        """records activities that have been done on the model including changes to the file
+
         """
         return {
             # check is model has been ran yet
-            'model_has_been_ran': self.ran_ok
+            'model_has_been_ran': self.ran_ok,
+            'experiment': self.experiment,
+            'experiment_created': self.experiment_created,
+            'reports': self.report_names
         }
 
     def replace_soils_values_by_path(self, node_path: str, indices: list = None, **kwargs):
@@ -1437,6 +1486,7 @@ class APSIMNG:
         path to the soil property should be Simulation.soil_child.parameter_name e.g., = 'Simulation.Organic.Carbon.
         @param: index(list), optional position of the soil property to a return
         @return: list
+
         """
         list_of_soil_nones = dict(organic=Organic, physical=Physical, Chemical=Chemical)
         parameters = path.split(str_fmt)
@@ -1509,6 +1559,7 @@ class APSIMNG:
             model.replace_soil_properties_by_path(path = 'None.Soil.Organic.None.None.Carbon', param_values= [1.23])
             if we want to replace carbon at the bottom of the soil profile, we use a negative index  -1
             model.replace_soil_properties_by_path(path = 'None.Soil.Organic.None.[-1].Carbon', param_values= [1.23])
+            
         """
 
         function_parameters = ['simulations', 'Soil', 'soil_child', 'crop', 'indices', 'parameter']
@@ -1585,11 +1636,12 @@ class APSIMNG:
         """extracts any specified soil  parameters in the simulation
 
         Args:
-            parameter (string, required): string e.g., Carbon, FBiom.
+            :param parameter (string, required): string e.g., Carbon, FBiom.
             open APSIMX file in the GUI and examne the phyicals child for clues on the parameter names
-            simulation (string, optional): Targeted simulation name.
+            :param simulation (string, optional): Targeted simulation name.
             Defaults to None.
-            param_values (array, required): arrays or list of values for the specified parameter to replace
+           :param  param_values (array, required): arrays or list of values for the specified parameter to replace
+
         """
 
         soil_organic = self.extract_soil_organic(simulation)
@@ -1602,15 +1654,16 @@ class APSIMNG:
 
     # Find a list of simulations by name
     def extract_crop_soil_water(self, parameter: str, crop: str = "Maize", simulation: Union[list, tuple] = None):
-        """_summary_ deprecated
+        """ deprecated
 
         Args:
-            parameter (_str_): crop soil water parameter names e.g. LL, XF etc
-            crop (str, optional): crop name. Defaults to "Maize".
+           :param parameter (str): crop soil water parameter names e.g. LL, XF etc
+           :param crop (str, optional): crop name. Defaults to "Maize".
             simulation (_str_, optional): _target simulation name . Defaults to None.
 
         Returns:
-            _type_: _description_
+            _type_: list[int, float]
+
         """
         assert isinstance(parameter, str), 'Parameter name should be a string'
         assert isinstance(crop, str), "Crop name should be a string"
@@ -1630,7 +1683,7 @@ class APSIMNG:
 
         Parameters
         ----------
-        simulations, str, optional
+        :param simulations, str, optional
             List of simulation names to find, if `None` return all simulations
         Returns
         -------
@@ -1686,6 +1739,7 @@ class APSIMNG:
            >>None: This method does not return a value.
            >> Please proceed with caution, we assume that if you want to clear the model objects, then you don't need them,
            but by making copy compulsory, then, we are clearing the edited files
+
         """
         try:
             self._DataStore.Close()
@@ -1711,11 +1765,11 @@ class APSIMNG:
 
             **kwargs: Additional parameters for APSIMNG.
 
-            permutation (bool). If True, the experiment uses a permutation node to run unique combinations of the specified
+            :param permutation (bool). If True, the experiment uses a permutation node to run unique combinations of the specified
             factors for the simulation. For example, if planting population and nitrogen fertilizers are provided,
             each combination of planting population level and fertilizer amount is run as an individual treatment.
 
-            base_name (str, optional): The name of the base simulation to be moved into the experiment setup. if not
+           :param  base_name (str, optional): The name of the base simulation to be moved into the experiment setup. if not
             provided, it is expected to be Simulation as the default
 
         """
@@ -1827,7 +1881,7 @@ class APSIMNG:
         format_factor = f"{factor_path} = {lower_bound} to {upper_bound} step {interval}"
         self.add_factor(specification=format_factor, factor_name=factor_name)
 
-    def set_categorical_factor(self, factor_path:str, categories:Union[list, tuple], factor_name:str=None):
+    def set_categorical_factor(self, factor_path: str, categories: Union[list, tuple], factor_name: str = None):
         """
         wraps around add_factor() to add a continuous factor, just for clarity
 
@@ -1846,7 +1900,7 @@ class APSIMNG:
         format_factor = f"{factor_path} = {','.join(map(str, categories))}"
         self.add_factor(specification=format_factor, factor_name=factor_name)
 
-    def add_crop_replacements(self, _crop:str):
+    def add_crop_replacements(self, _crop: str):
         """
              Adds a replacement folder as a child of the simulations. Useful when you intend to edit cultivar paramters
 

@@ -178,6 +178,7 @@ class ApsimModel(Inspector):
 
         Args:
             lonlat (_tuple_): longitude and latitude of the target location
+
         """
         try:
             soil_tables = DownloadsurgoSoiltables(self.lonlat)
@@ -272,7 +273,7 @@ class ApsimModel(Inspector):
                  :param soil_tables (list): A list containing soil data tables. Expected to contain: see the naming
             convention in the for APSIM - [0]: DataFrame with physical soil parameters. - [1]: DataFrame with organic
             soil parameters. - [2]: DataFrame with crop-specific soil parameters. - RUE adjustment. - simulation_names (list of str): Names or identifiers for the simulations to
-            be updated.
+            be updated.s
 
 
             Returns:

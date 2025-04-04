@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import scipy.stats as ss
 
+
 def open_file_in_window(filepath):
     if platform.system() == 'Darwin':  # macOS
         subprocess.call(['open', filepath])
@@ -21,8 +22,6 @@ def open_file_in_window(filepath):
 
 
 
-print("loading data")
-data = pd.read_csv('kpi.csv')
 def conditional_entropy(
         x: List[Union[int, float]],
         y: List[Union[int, float]]
@@ -49,6 +48,8 @@ def conditional_entropy(
         entropy += p_xy * math.log(p_x_given_y, 2)  # Use base 2 instead of natural (base e)
 
     return -entropy
+
+
 def theil_u(
         x: List[Union[int, float]],
         y: List[Union[int, float]]
@@ -72,6 +73,7 @@ def theil_u(
 
     return (H_x - H_xy) / H_x if H_x != 0 else 0
 
+
 def get_theils_u_for_df(df: pd.DataFrame) -> pd.DataFrame:
     """ Compute Theil's U for every feature combination in the input df """
 
@@ -80,14 +82,15 @@ def get_theils_u_for_df(df: pd.DataFrame) -> pd.DataFrame:
 
     # Insert Theil U values into empty dataframe
     for var1, var2 in itertools.combinations(df.columns, 2):
-       #if pd.api.types.is_numeric_dtype(df[var1]) and not pd.api.types.is_numeric_dtype(df[var2]) or not pd.api.types.is_numeric_dtype(df[var1]) and pd.api.types.is_numeric_dtype(df[var2]):
-            u = theil_u(df[var1],df[var2])
-            theilu[var1][var2] = round(u, 2) # fill lower diagonal
+        # if pd.api.types.is_numeric_dtype(df[var1]) and not pd.api.types.is_numeric_dtype(df[var2]) or not
+        # pd.api.types.is_numeric_dtype(df[var1]) and pd.api.types.is_numeric_dtype(df[var2]):
+        u = theil_u(df[var1], df[var2])
+        theilu[var1][var2] = round(u, 2)  # fill lower diagonal
 
-            u = theil_u(df[var2],df[var1])
-            theilu[var2][var1] = round(u, 2) # fill upper diagonal
+        u = theil_u(df[var2], df[var1])
+        theilu[var2][var1] = round(u, 2)  # fill upper diagonal
 
-            # Set 1s to diagonal where row index + column index == n - 1
+        # Set 1s to diagonal where row index + column index == n - 1
     for i in range(0, len(theilu.columns)):
         for j in range(0, len(theilu.columns)):
             if i == j:
@@ -96,31 +99,6 @@ def get_theils_u_for_df(df: pd.DataFrame) -> pd.DataFrame:
     # Convert all values in the DataFrame to float
     return theilu.map(float)
 
-
-# Load the Iris dataset from seaborn
-# df = sns.load_dataset('iris')
-
-# # Compute Theil's U for every feature combination in the input df
-# print(data.columns)
-# data= data[~data['land_use_code'].isin([10, 11])].copy()
-# dat = data[['TopN2O', 'kpi', 'to_carb', 'precipitation_level', 'Land use', 'soil_type']].copy(deep = True)
-# dat['precipitation_level'] = pd.Categorical(dat['precipitation_level'])
-# df = dat.rename(columns={'kpi': "CO${_2}$-e", 'TopN2O': 'N${_2}$O', 'precipitation_level': 'Precipitation', 'soil_type': 'Soil types', 'to_carb':'SOC' })
-#
-# theilu = get_theils_u_for_df(df)
-# theilu= theilu.drop(['Precipitation', 'Soil types', 'Land use'], axis=0)
-#
-# # # Create a heatmap of the Theil's V values
-# plt.figure(figsize=(17, 14))
-# sns.heatmap(theilu, annot=True, cmap='Reds', fmt='.2f')
-# plt.title('Heatmap of Theil\'s U for all variable pairs')
-# plt.xticks(size=18)
-# plt.yticks(size=18)
-# fig_name = 'theil.png'
-# plt.savefig(fig_name)
-# # open_file_in_window(fig_name)
-# cache_dir = os.path.expanduser("~/.cache/seaborn-data")
-# sns.load_dataset('iris')
 
 def quick_plot(**kwargs):
     x = kwargs.get('x')
@@ -139,7 +117,7 @@ def quick_plot(**kwargs):
     plt.close()
 
 
-def contour_plot(preview_in_window =True, **kwargs):
+def contour_plot(preview_in_window=True, **kwargs):
     x = kwargs.get('x')
     y = kwargs.get('y')
     z = kwargs.get('z')
@@ -172,7 +150,7 @@ def contour_plot(preview_in_window =True, **kwargs):
     plt.grid(False)
     plt.savefig(fig_name, dpi=450)
     if preview_in_window:
-         open_file_in_window(fig_name)
+        open_file_in_window(fig_name)
     else:
         plt.show()
     return contour

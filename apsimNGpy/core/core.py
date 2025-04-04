@@ -386,6 +386,7 @@ class APSIMNG:
                     in_place=False):
         """
         Clone an existing model and move it to a specified parent within the simulation structure.
+        The function modifies the simulation structure by adding the cloned model to the designated parent.
 
         This function is useful when a model instance needs to be duplicated and repositioned in the APSIM simulation
         hierarchy without manually redefining its structure.
@@ -410,7 +411,7 @@ class APSIMNG:
         Returns:
         -------
         None
-            The function modifies the simulation structure by adding the cloned model to the designated parent.
+
 
         Example:
         -------
@@ -492,16 +493,28 @@ class APSIMNG:
                   adoptive_parent_name=None, verbose=False, **kwargs):
 
         """
-        Add a model to the Models Simulations NameSpace. some models are tied to specific models, so they can only be added
-        to that models an example, we cant add Clock model to Soil Model
-        @param model_type: type of the model e.g., Models.Clock, Just 'Clock'
-        @param rename: new name of the model
-        @param _model: apsimNGpy.core.apsim.ApsimModel object
-        @param where: loction along the Models Simulations nodes or children to add the model e.g at Models.Core.Simulation,
-        @param adoptive_parent_name (Models Object): important to specify the actual final destination, if there are more than one simulations
-        @return: none, model are modified in place, so the modified object has the same reference pointer as the _model
-        Note; that added models are empty you need to do more work to fill their parameters, if you add aclock module you have to change the start date and end date
-            Example:
+    Adds a model to the Models Simulations namespace.
+
+    Some models are restricted to specific parent models, meaning they can only be added to compatible models.
+    For example, a Clock model cannot be added to a Soil model.
+
+    Args:
+        model_type (str or Models object): The type of model to add, e.g., `Models.Clock` or just `"Clock"`.
+        rename (str): The new name for the model.
+
+        adoptive_parent (Models object): The target parent where the model will be added or moved
+
+        adoptive_parent_name (Models object, optional): Specifies the parent name for precise location.
+
+    Returns:
+        None: Models are modified in place, so models retains the same reference.
+
+    Note:
+        Added models are initially empty. Additional configuration is required to set parameters.
+        For example, after adding a Clock module, you must set the start and end dates.
+
+    Example:
+
          >>> from apsimNGpy import core
          >>> from apsimNGpy.core.core import Models
          >>> model =core.base_data.load_default_simulations(crop = "Maize")
@@ -510,6 +523,7 @@ class APSIMNG:
 
          >>> model.add_model(model_type=Models.Core.Simulation, adoptive_parent=Models.Core.Simulations, rename='Iowa')
          >>> model.preview_simulation() # doctest: +SKIP
+         @param adoptive_parent:
 
         """
 
@@ -560,13 +574,16 @@ class APSIMNG:
         else:
             logger.debug(f"Adding {model_type} to {parent.Name} failed, perhaps models was not found")
 
-    def add_report_variable(self, commands: Union[list, str, tuple], report_name=None):
+    def add_report_variable(self, commands: Union[list, str, tuple], report_name:str=None):
         """
-        This adds a report variable to the end of other variables, if you want to change the whole report use change report
-        @param commands: list of text commands for the report variables e.g., '[Clock].Today as Date'
-        @param report_name: name of the report variable if not specified the first accessed report object will be altered
-        @return: None
-           raises an erros if report is not found
+        This adds a report variable to the end of other variables, if you want to change the whole report use change_report
+        Args:
+
+        -commands (str, required): list of text commands for the report variables e.g., '[Clock].Today as Date'
+        -report_name (str, optional): name of the report variable if not specified the first accessed report object will be altered
+        Returns:
+            returns instance of apsimNGpy.core.core.apsim.ApsimModel or apsimNGpy.core.core.apsim.APSIMNG
+           raises an erros if a report is not found
         Example:
         >>> from apsimNGpy import core
         >>> model = core.base_data.load_default_simulations()
@@ -599,12 +616,17 @@ class APSIMNG:
         # this is a repetition because I want to deprecate it and maintain simulation_name or use get_simulation_name
         return self.simulation_names
 
-    def remove_model(self, model_type, model_name=None):
+    def remove_model(self, model_type: Models, model_name: str=None):
         """
-        Remove a model from the Models Simulations NameSpace
-        @param _model: apsimNgpy.core.model model object
-        @param model_name: name of the model e.g Clock
-        @return: None
+        Removes a model from the Models Simulations NameSpace
+
+        Args:
+        -model_type (Models, required): type of the model e.g., Models.Clock
+
+        -model_name (str): name of the model e.g, Clock
+
+        Returns: None
+
         Example:
                >>> from apsimNGpy import core
                >>> from apsimNGpy.core.core import Models
@@ -612,20 +634,23 @@ class APSIMNG:
                >>> model.remove_model(Models.Clock) #deletes the clock node
                >>> model.remove_model(Models.Climate.Weather) #deletes the weather node
         """
-        # imodel = _model.Simulations.Parent.FullPath + model_name
+
         if not model_name:
             model_name = model_type().Name
         DELETE(self.Simulations.FindInScope[model_type](model_name))
         self.save()
 
-    def move_model(self, model_type, new_parent_type, model_name=None, new_parent_name=None, verbose=False):
+    def move_model(self, model_type: Models, new_parent_type:Models, model_name:str=None, new_parent_name:str=None, verbose:bool=False):
         """
+        Args:
 
-        @param model_type (Models): type of model tied to Models Namespace
-        @param new_parent_type: new model parent (Models)
-        @param model_name:name of the model e.g Clock, or Clock2whaterver name that was given to the model
-        @param new_parent_name: what is the new parent names =Field2, this fiedl is optional but important if you have nested simulations
-        @return: None everything is edited in place
+        - model_type (Models): type of model tied to Models Namespace
+        - new_parent_type: new model parent (Models)
+        - model_name:name of the model e.g., Clock, or Clock2, whatever name that was given to the model
+        -  new_parent_name: what is the new parent names =Field2, this fiedl is optional but important if you have nested simulations
+        Returns:
+
+          returns instance of apsimNGpy.core.core.apsim.ApsimModel or apsimNGpy.core.core.apsim.APSIMNG
         """
         sims = self.Simulations
         if not model_name:
@@ -671,12 +696,17 @@ class APSIMNG:
         Replicates a file 'k' times.
 
         If a path is specified, the copies will be placed in that dir_path with incremented filenames.
+
         If no path is specified, copies are created in the same dir_path as the original file, also with incremented filenames.
 
         Parameters:
         - self: The core.api.APSIMNG object instance containing 'path' attribute pointing to the file to be replicated.
+
         - k (int): The number of copies to create.
-        - path (str, optional): The dir_path where the replicated files will be saved. Defaults to None, meaning the same dir_path as the source file.
+
+        - path (str, optional): The dir_path where the replicated files will be saved. Defaults to None, meaning the
+        same dir_path as the source file.
+
         - suffix (str, optional): a suffix to attached with the copies. Defaults to "replicate"
 
 
@@ -751,13 +781,21 @@ class APSIMNG:
     def edit_cultivar(self, *, CultivarName: str, commands: str, values: Any, **kwargs):
         """
         Edits the parameters of a given cultivar. we don't need a simulation name for this unless if you are defining it in the
-        manager section, if that it is the case, see update_mgt
+        manager section, if that it is the case, see update_mgt.
 
-        :param CultivarName: Name of the cultivar (e.g., 'laila').
-        :param commands: A strings representing the parameter paths to be edited.
+        Requires:
+           required a replacement for the crops
+
+        Args:
+
+          - CultivarName (str, required): Name of the cultivar (e.g., 'laila').
+
+          - commands (str, required): A strings representing the parameter paths to be edited.
                          Example: ('[Grain].MaximumGrainsPerCob.FixedValue', '[Phenology].GrainFilling.Target.FixedValue')
-        :param values: values for each command (e.g., (721, 760)).
-        :return: None
+
+          - values: values for each command (e.g., (721, 760)).
+
+        Returns: instance of the class APSIMNG or ApsimModel
         """
         if not isinstance(CultivarName, str):
             raise ValueError("Cultivar name must be a string")
@@ -778,9 +816,11 @@ class APSIMNG:
 
     def get_current_cultivar_name(self, ManagerName: str):
         """
+        Args:
+       - ManagerName: script manager module in the zone
 
-        @param ManagerName: script manager module in the zone
-        @return: returns the current cultivar name in the manager script 'ManagerName'
+       Returns:
+           returns the current cultivar name in the manager script 'ManagerName'
         """
 
         try:
@@ -795,10 +835,11 @@ class APSIMNG:
 
         Parameters
         ----------
-        @param:parameters (__dict__) dictionary of cultivar parameters to update.
-        @param: simulations, optional
+       - parameters (dict, required) dictionary of cultivar parameters to update.
+
+       - simulations, optional
             List or tuples of simulation names to update if `None` update all simulations.
-        @param: clear, optional
+       - clear (bool, optional)
             If `True` remove all existing parameters, by default `False`.
 
 
@@ -816,7 +857,8 @@ class APSIMNG:
             self.cultivar_command = params
 
     def examine_management_info(self, simulations: Union[list, tuple] = None):
-        """this will show the current management scripts in the simulation root
+        """
+        This will show the current management scripts in the simulation root
 
         Parameters
         ----------
@@ -863,8 +905,11 @@ class APSIMNG:
 
     Parameters:
         simulations (str ort list): List of simulation names to target (default: None).
+
         inrm (int): New value for Initial Residue Mass (default: 1250).
+
         icnr (int): New value for Initial Carbon to Nitrogen Ratio (default: 27).
+
         surface_om_name (str, optional): name of the surface organic matter child defaults to ='SurfaceOrganicMatter'
     Returns:
         self: The current instance of the class.
@@ -902,9 +947,11 @@ class APSIMNG:
     # experimental
     def recompile_edited_model(self, out_path: os.PathLike):
         """
+        Args:
+        ______________
+        out_path: os.PathLike object this method is called to convert the simulation object from ConverterReturnType to model like object
 
-        @param out_path: os.PathLike object this method is called to convert the simulation object from ConverterReturnType to model like object
-        @return: self
+        return: self
         """
 
         try:
@@ -919,15 +966,20 @@ class APSIMNG:
 
     def update_mgt_by_path(self, *, path: str, fmt='.', **kwargs):
         """
+        Args:
+        _________________
+        path: complete node path to the script manager e.g. '.Simulations.Simulation.Field.Sow using a
+        variable rule'
 
-        @param path: complete node path to the script manager e.g. '.Simulations.Simulation.Field.Sow using a
-        variable rule' @param fmt: seperator for formatting the path e.g., ".". Other characters can be used with
-        caution, e.g., / and clearly declared in fmt argument for the above path if we want to use the forward slash
-        it will '/Simulations/Simulation/Field/Sow using a variable rule', fmt = '/' @param kwargs: Corresponding
-        keyword arguments representing the paramters in the script manager and their values. Values is what you want
-        to change to; Example here Population =8.2, values should be entered with their corresponding data types e.t
+        fmt: seperator for formatting the path e.g., ".". Other characters can be used with
+        caution, e.g., / and clearly declared in fmt argument.
+         For the above path if we want to use the forward slash, it will be '/Simulations/Simulation/Field/Sow using a variable rule', fmt = '/'
+
+        kwargs: Corresponding keyword arguments representing the paramters in the script manager and their values. Values is what you want
+        to change to; Example here Population =8.2, values should be entered with their corresponding data types e.g.,
         int, float, bool,str etc.
-         @return: self
+
+        return: self
         """
         # reject space in fmt
         if fmt != '.':
@@ -1079,10 +1131,11 @@ class APSIMNG:
             End date as string, by default `None`
         simulations, optional
             List of simulation names to update, if `None` update all simulations
-        @note
-        one of the start_date or end_date parameters should at least no be None
+        note
+        ________
+        one of the start_date or end_date parameters should at least not be None
 
-        @raise assertion error if all dates are None
+        raises assertion error if all dates are None
 
         @return None
         # Example:
@@ -1180,15 +1233,16 @@ class APSIMNG:
         self.replace_met_file(self.met)
         return self
 
-    def replace_met_file(self, *, weather_file, simulations=None, **kwargs):
+    def replace_met_file(self, *, weather_file:Union[Path, str], simulations=None, **kwargs):
         try:
-            """searched the weather child and replaces it with a new one
+            """
+            Searches the weather child and replaces it with a new one
 
             Parameters
             ----------
-            weather_file
+            weather_file (Union[Path, str], required):
                 Weather file name, path should be relative to simulation or absolute.
-            simulations, optional
+            simulations, (str, optional)
                 List of simulation names to update, if `None` update all simulations
             """
             # we need to catch file not found errors before it becomes a problem
@@ -1300,45 +1354,6 @@ class APSIMNG:
             data[sim] = list(soil_p_param)
         return data
 
-    def replace_any_soil_physical(self, *, parameter: str,
-                                  param_values: [tuple, list],
-                                  simulations: str = None,
-                                  indices=None, **kwargs):
-        """replaces specified soil physical parameters in the simulation
-
-        ______________________________________________________ Args: parameter (_string_, required): string e.g. DUL,
-        SAT. open APSIMX file in the GUI and examine the physical child for clues on the parameter names simulation (        string, optional): Targeted simulation name. Defaults to None. param_values (array, required): arrays or list
-        of values for the specified parameter to replace index (int, optional):
-        if indices is None replacement is done with corresponding indices of the param values
-        """
-        _simulations = simulations if simulations else self.simulation_names
-        if indices is None:
-            indices = [param_values.index(i) for i in param_values]
-        sop = self.extract_soil_physical(_simulations)
-        for sim in _simulations:
-            soil_physical = sop[sim]
-            soil_p_param = list(getattr(soil_physical, parameter))
-            param_news = replace_variable_by_index(soil_p_param, param_values, indices)
-            setattr(soil_physical, parameter, param_news)
-
-    # find organic paramters
-    def extract_soil_organic(self, simulation: tuple = None):
-        """Find physical soil
-
-        Parameters
-        ----------
-        simulation, optional
-            Simulation name, if `None` use the first simulation.
-        Returns
-        -------
-            APSIM Models.Soils.Physical object
-        """
-        soil_organics = {}
-        for simu in self.find_simulations(simulation):
-            soil_object = simu.FindDescendant[Soil]()
-            organic_soil = soil_object.FindDescendant[Organic]()
-            soil_organics[simu.Name] = organic_soil
-        return soil_organics
 
     def journal(self):
         """records activities that have been done on the modle including changes to the file
@@ -1350,18 +1365,30 @@ class APSIMNG:
 
     def replace_soils_values_by_path(self, node_path: str, indices: list = None, **kwargs):
         """
-        unfortunately, it handles one soil child at a time e.g., Physical at a go
-        @param node_path: complete path to the soil child relative the Simulations e.g.,Simulations.Simulation.Field.Soil.Organic. use`copy node to path fucntion in the gui
-        @param indices: defaults to none but could be the position of the replacement values for arrays
-        @param kwargs: this carries the parameter and the values e.g., BD = 1.23 or BD = [1.23, 1.75] if the child is Physical
-        @return: a dict of soil values corresponding to the parmaters passed as arguments
-        Example:
-              >>> from apsimNGpy.core.base_data import load_default_simulations
-              >>> from apsimNGpy.core.inspector import Inspector
-              >>> from pprint import pprint
-              >>> model  = load_default_simulations(crop ='Maize', simulations_object=False)# initiate model
+        set the new values of the specified soil object by path
 
-              >>> model = APSIMNG(model)
+        unfortunately, it handles one soil child at a time e.g., Physical at a go
+        Args:
+
+        node_path (str, required): complete path to the soil child of the Simulations e.g.,Simulations.Simulation.Field.Soil.Organic.
+         Use`copy path to node fucntion in the GUI to get the real path of the soil node.
+
+        indices (list, optional): defaults to none but could be the position of the replacement values for arrays
+
+        kwargs (key word arguments): This carries the parameter and the values e.g., BD = 1.23 or BD = [1.23, 1.75]
+         if the child is Physical, or Carbon if the child is Organic
+
+         raises raise value error if none of the key word arguments, representing the paramters are specified
+         returns:
+            - apsimNGpy.core.APSIMNG object and if the path specified does not translate to the child object in
+         the simulation
+
+         Example:
+              >>> from apsimNGpy.core.base_data import load_default_simulations
+
+             >>> model = load_default_simulations(crop ='Maize', simulations_object=False)# initiate model
+
+              >>> model = APSIMNG(model)# replace with your intended file path
               >>> model.replace_soils_values_by_path(node_path='.Simulations.Simulation.Field.Soil.Organic', indices=[0], Carbon =1.3)
 
               >>> sv= model.get_soil_values_by_path('.Simulations.Simulation.Field.Soil.Organic', 'Carbon')
@@ -1370,6 +1397,8 @@ class APSIMNG:
 
 
         """
+        if not kwargs:
+            raise ValueError('No parameters are specified')
         _soil_child = self.Simulations.FindByPath(node_path)
         if _soil_child is None:
             raise ValueError(f"No such child: {node_path} exist in the simulation file {self.path}")
@@ -1517,11 +1546,16 @@ class APSIMNG:
         """
         Replaces values in any soil property array. The soil property array
         :param parameter: str: parameter name e.g., NO3, 'BD'
-        :param param_values:list or tuple: values of the specified soil property name to replace
+
+        :param param_values: list or tuple: values of the specified soil property name to replace
+
         :param soil_child: str: sub child of the soil component e.g., organic, physical etc.
+
         :param simulations: list: list of simulations to where the child is found if
         not found, all current simulations will receive the new values, thus defaults to None
+
         :param indices: list. Positions in the array which will be replaced. Please note that unlike C#, python satrt counting from 0
+
         :crop (str, optional): string for soil water replacement. Default is None
 
         """
@@ -1551,8 +1585,10 @@ class APSIMNG:
         """extracts any specified soil  parameters in the simulation
 
         Args:
-            parameter (_string_, required): string e.g Carbon, FBiom. open APSIMX file in the GUI and examne the phyicals child for clues on the parameter names
-            simulation (string, optional): Targeted simulation name. Defaults to None.
+            parameter (string, required): string e.g., Carbon, FBiom.
+            open APSIMX file in the GUI and examne the phyicals child for clues on the parameter names
+            simulation (string, optional): Targeted simulation name.
+            Defaults to None.
             param_values (array, required): arrays or list of values for the specified parameter to replace
         """
 
@@ -1566,7 +1602,7 @@ class APSIMNG:
 
     # Find a list of simulations by name
     def extract_crop_soil_water(self, parameter: str, crop: str = "Maize", simulation: Union[list, tuple] = None):
-        """_summary_
+        """_summary_ deprecated
 
         Args:
             parameter (_str_): crop soil water parameter names e.g. LL, XF etc
@@ -1594,7 +1630,7 @@ class APSIMNG:
 
         Parameters
         ----------
-        simulations, optional
+        simulations, str, optional
             List of simulation names to find, if `None` return all simulations
         Returns
         -------
@@ -1672,11 +1708,16 @@ class APSIMNG:
         Initialize an Experiment instance, adding the necessary models and factors.
 
         Args:
-            model: The base model.
-            out_path: Output path for the APSIMNG simulation.
+
             **kwargs: Additional parameters for APSIMNG.
-            @param permutation:
-            @param base_name:
+
+            permutation (bool). If True, the experiment uses a permutation node to run unique combinations of the specified
+            factors for the simulation. For example, if planting population and nitrogen fertilizers are provided,
+            each combination of planting population level and fertilizer amount is run as an individual treatment.
+
+            base_name (str, optional): The name of the base simulation to be moved into the experiment setup. if not
+            provided, it is expected to be Simulation as the default
+
         """
         if self.experiment_created:
             logger.info('Experiment was already created. If you want to amend experiment, '
@@ -1702,14 +1743,24 @@ class APSIMNG:
         self.experiment_created = True
 
     def add_factor(self, specification: str, factor_name: str, **kwargs):
-        """Add a factor to the created experiment
-        could  raise a value error if the experiment is not yet created.
-        under some circumstances, epxeriment will be created automatically as a permutation experiment
-        parameters
+        """
+        Adds a factor to the created experiment. Thus, this method only works on factorial experiments
 
-        specification (str) a specification can be multiple values or categories e.g., "[Sow using a variable rule].Script.Population =4, 66, 9, 10"
-        range if values e.g, "[Fertilise at sowing].Script.Amount = 0 to 200 step 20",
-        factor_name: (str) can be the name of the factor being specified e.g., population
+        It Could raise a value error if the experiment is not yet created.
+
+        Under some circumstances, epxeriment will be created automatically as a permutation experiment.
+
+        Parameters:
+        ----------
+
+        specification str, required
+             A specification can be:
+                - multiple values or categories e.g., "[Sow using a variable rule].Script.Population =4, 66, 9, 10"
+                - Range of values e.g, "[Fertilise at sowing].Script.Amount = 0 to 200 step 20",
+        factor_name: str, required
+           - expected to be the user desired name of the factor being specified e.g., population
+
+
         Example:
             >>> from apsimNGpy.core import base_data
             >>> apsim = base_data.load_default_simulations(crop='Maize')
@@ -1754,14 +1805,18 @@ class APSIMNG:
 
     def set_continuous_factor(self, factor_path, lower_bound, upper_bound, interval, factor_name=None):
         """
-        wraps around add_factor() to add a continuous factor, but also for simplicity and readability
+        Wraps around `add_factor()` to add a continuous factor, just for clarity
 
-        @param factor_path: path of the factor definition relative to its child node "[Fertilise at sowing].Script.Amount"
-        @param factor_name: (str) name of the factor.
-        @param lower_bound: (int, float), representing the lower bound of the factor.
-        @param upper_bound: (int, float), representing the upper bound of the factor.
-          @param interval: (int, float) represents the distance between the factor levels
-        @return:
+        Args:
+            factor_path (str): The path of the factor definition relative to its child node,
+                e.g., `"[Fertilise at sowing].Script.Amount"`.
+            factor_name (str): The name of the factor.
+            lower_bound (int or float): The lower bound of the factor.
+            upper_bound (int or float): The upper bound of the factor.
+            interval (int or float): The distance between the factor levels.
+
+        Returns:
+            ApsimModel or APSIMNG: An instance of `apsimNGpy.core.core.apsim.ApsimModel` or `APSIMNG`.
         Example:
             >>> from apsimNGpy.core import base_data
             >>> apsim = base_data.load_default_simulations(crop='Maize')
@@ -1770,16 +1825,17 @@ class APSIMNG:
 
         """
         format_factor = f"{factor_path} = {lower_bound} to {upper_bound} step {interval}"
-        self.add_factor(specification=format_factor,factor_name=factor_name)
+        self.add_factor(specification=format_factor, factor_name=factor_name)
 
-    def set_categorical_factor(self, factor_path, categories, factor_name=None):
+    def set_categorical_factor(self, factor_path:str, categories:Union[list, tuple], factor_name:str=None):
         """
-        wraps around add_factor() to add a continuous factor, but also for simplicity and readability
+        wraps around add_factor() to add a continuous factor, just for clarity
 
-        @param factor_path: path of the factor definition relative to its child node "[Fertilise at sowing].Script.Amount"
-        @param factor_name: (str) name of the factor.
-        @param categories: (tuple, list) multiple values of a factor
-        @return:
+        factor_path (str, required): path of the factor definition relative to its child node "[Fertilise at sowing].Script.Amount"
+        factor_name: (str) name of the factor.
+        categories (tuple, list, required): multiple values of a factor
+        return:
+         self
         Example:
             >>> from apsimNGpy.core import base_data
             >>> apsim = base_data.load_default_simulations(crop='Maize')
@@ -1790,11 +1846,15 @@ class APSIMNG:
         format_factor = f"{factor_path} = {','.join(map(str, categories))}"
         self.add_factor(specification=format_factor, factor_name=factor_name)
 
-    def add_crop_replacements(self, _crop):
+    def add_crop_replacements(self, _crop:str):
         """
-             Adds a replacement folder as a child of the simulations. Useful when you inted to edit cultivar paramters
-             @param _crop: (str) name of the crop to be added the replacement folder
-             @return: none
+             Adds a replacement folder as a child of the simulations. Useful when you intend to edit cultivar paramters
+
+             Args:
+               _crop: (str) name of the crop to be added the replacement folder
+             return:
+                instance of apsimNGpy.core.core.apsim.ApsimModel or APSIMNG
+
              raises an error if crop is not found
 
           """

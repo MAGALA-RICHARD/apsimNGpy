@@ -43,3 +43,4 @@ apsimC.run()
 
 sns.catplot(x='Nitrogen', y='Yield', hue='RUE', data=apsimC.results, kind='bar', )
 plt.show()
+

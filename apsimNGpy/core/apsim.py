@@ -268,13 +268,12 @@ class ApsimModel(Inspector):
             adjustments to specified simulation models. Optionally, it can adjust the Radiation Use Efficiency (RUE)
             based on a Carbon to Sulfur ratio (CSR) sampled from the provided soil tables.
 
-            Parameters: - soil_tables (list): A list containing soil data tables. Expected to contain: see the naming
+            Parameters:
+                 :param soil_tables (list): A list containing soil data tables. Expected to contain: see the naming
             convention in the for APSIM - [0]: DataFrame with physical soil parameters. - [1]: DataFrame with organic
-            soil parameters. - [2]: DataFrame with crop-specific soil parameters. - [3]: Series/DataFrame with CSR
-            values for RUE adjustment. - simulation_names (list of str): Names or identifiers for the simulations to
-            be updated. - **kwargs: - adjust_rue (bool): Flag to indicate whether RUE should be adjusted based on
-            CSR. - Base_RUE (float): The base RUE value to be adjusted. - CultivarName (str, optional): The name of
-            the cultivar for which RUE should be adjusted. Defaults to "B_110" if not specified.
+            soil parameters. - [2]: DataFrame with crop-specific soil parameters. - RUE adjustment. - simulation_names (list of str): Names or identifiers for the simulations to
+            be updated.
+
 
             Returns:
             - self: Returns an instance of the class for chaining methods.
@@ -285,11 +284,12 @@ class ApsimModel(Inspector):
             and more based on the provided soil tables.
 
     ->> key-word argument
-            adjust_rue: Boolean, adjust the radiation use efficiency
+             adjust_rue: Boolean, adjust the radiation use efficiency
             'set_sw_con': Boolean, set the drainage coefficient for each layer
             adJust_kl:: Bollean, adjust, kl based on productivity index
             'CultvarName': cultivar name which is in the sowing module for adjusting the rue
             tillage: specify whether you will be carried to adjust some physical parameters
+
         """
         adjust_rue = kwargs.get('adjust_rue')
         adjust_kl = kwargs.get("adJust_kl")
@@ -377,7 +377,8 @@ class ApsimModel(Inspector):
     def _change_met_file(self, lonlatmet: tuple = None,
                          simulation_names: Union[tuple, list] = None):  # to be accessed only in this class
         """_similar to class weather management but just in case we want to change the weather within the subclass
-        # uses exisitng start and end years to download the weather data
+        # uses existing start and end years to download the weather data
+
         """
         if lonlatmet == None:
             self.lonlat = self.lonlat
@@ -400,7 +401,8 @@ class ApsimModel(Inspector):
         """Run simulations in this subclass if we want to clean the database, we need to
          spawn the path with one process to avoid os access permission errors
 
-            @param table_name: repot table name in the database
+            :param table_name (str): repot table name in the database
+
         """
         return self.run(report_name=table_name).results
 
@@ -427,7 +429,9 @@ class ApsimModel(Inspector):
         self : ApsimModel
             The modified ApsimModel object after the spin-up operation.
             you could call save_edited file and save it to your specified location, but you can also proceed with the simulation
+
         """
+
         insert_var = REPORT_PATH.get(spin_var)
         if start and end:
             self.change_simulation_dates(start, end)

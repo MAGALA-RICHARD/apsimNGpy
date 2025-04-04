@@ -1354,10 +1354,11 @@ class APSIMNG:
         return sim_physical
 
     def extract_any_soil_physical(self, parameter, simulations: [list, tuple] = None):
-        """extracts soil physical parameters in the simulation
+        """
+        Extracts soil physical parameters in the simulation
 
         Args:
-            parameter (_string_): string e.g DUL, SAT
+            parameter (_string_): string e.g. DUL, SAT
             simulations (string, optional): Targeted simulation name. Defaults to None.
         ---------------------------------------------------------------------------
         returns an array of the parameter values

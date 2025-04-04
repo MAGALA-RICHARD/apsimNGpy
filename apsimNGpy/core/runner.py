@@ -2,7 +2,7 @@ import os.path
 import platform
 from pathlib import Path
 from subprocess import *
-from typing import Dict, Any
+from typing import Dict, Any, Union
 import contextlib
 import pandas as pd
 
@@ -20,9 +20,9 @@ else:  # Linux or macOS
     APSIM_EXEC = apsim_bin_path / "Models"
 
 
-def get_apsim_version(verbose=False):
+def get_apsim_version(verbose:bool=False):
     """ Display version information of the apsim model currently in the apsimNGpy config environment.
-    :param verbose: Prints the version information instantly
+    :param verbose: (bool) Prints the version information instantly
     Example:
             >>> apsim_version = get_apsim_version()
 
@@ -35,7 +35,7 @@ def get_apsim_version(verbose=False):
     return res.stdout.readlines()[0].strip()
 
 
-def upgrade_apsim_file(file, verbose=True):
+def upgrade_apsim_file(file: str, verbose:bool=True):
     """
     Upgrade a file to the latest version of the .apsimx file format without running the file.
 
@@ -44,11 +44,11 @@ def upgrade_apsim_file(file, verbose=True):
     :param file: file to be upgraded to the newest version
     :param verbose: Write detailed messages to stdout when a conversion starts/finishes.
     :return:
-       the latest version of the .apsimx file with the same name as the input file
+       The latest version of the .apsimx file with the same name as the input file
     Example:
-    >>> from apsimNGpy.core.base_data import load_default_simulations
-    >>> filep =load_default_simulations(simulations_object= False)# this is just an example perhaps you need to pass a lower verion file because this one is extracted from thecurrent model as the excutor
-    >>> upgrade_file =upgrade_apsim_file(filep, verbose=False)
+        >>> from apsimNGpy.core.base_data import load_default_simulations
+        >>> filep =load_default_simulations(simulations_object= False)# this is just an example perhaps you need to pass a lower verion file because this one is extracted from thecurrent model as the excutor
+        >>> upgrade_file =upgrade_apsim_file(filep, verbose=False)
 
     """
     file = str(file)
@@ -66,7 +66,7 @@ def upgrade_apsim_file(file, verbose=True):
         return file
 
 
-def run_model_externally(model, verbose: bool = False, to_csv=False) -> Popen[str]:
+def run_model_externally(model: Union[Path, str], verbose: bool = False, to_csv:bool=False) -> Popen[str]:
     """
     Runs an APSIM model externally, ensuring cross-platform compatibility.
 
@@ -79,9 +79,7 @@ def run_model_externally(model, verbose: bool = False, to_csv=False) -> Popen[st
     :returns: A subprocess.Popen object.
 
     Example:
-        result = run_apsim("path/to/model.apsimx", verbose=True, to_csv=True)
-
-
+        >>> result =run_model_externally("path/to/model.apsimx", verbose=True, to_csv=True)
         >>> from apsimNGpy.core.base_data import load_default_simulations
         >>> path_to_model = load_default_simulations(crop ='maize', simulations_object =False)
         >>> pop_obj = run_model_externally(path_to_model, verbose=False)
@@ -177,27 +175,21 @@ def run_from_dir(dir_path, pattern, verbose=False,
        What this situation does is that it makes it easy to retrieve the simulated files, returning a generator that
        yields data frames
 
-       :Parameters: __________________ :param dir_path: (str or Path, required). The path to the directory where the
-           simulation files are located. :param pattern: (str, required): The file pattern to match for simulation files
-           (e.g., "*.apsimx"). :param recursive: (bool, optional):  Recursively search through subdirectories for files
+       :Parameters:
+       __________________
+       :param dir_path: (str or Path, required). The path to the directory where the
+           simulation files are located.
+       :param pattern: (str, required): The file pattern to match for simulation files
+           (e.g., "*.apsimx").
+       :param recursive: (bool, optional):  Recursively search through subdirectories for files
            matching the file specification.
-       :param write_tocsv: (bool, optional): specifies whether or not to to write the
+       :param write_tocsv: (bool, optional): specify whether to write the
            simulation results to a csv. if true, the exported csv files bear the same name as the input apsimx file name
-           with suffix reportname.csv. if it false, this function return None - if verbose, the progress is printed as
-           the elapsed time and the successfully saved csv
-
-       The function constructs a command to execute APSIM simulations using the provided directory
-       path and file pattern. It adds flags for recursive search, verbosity, and output formatting.
-       The results of the simulations are directed to csv files in the directory
-       where the command is executed.
-
-       It then waits for the process to complete and checks the process status. If the process
-       is still running due to any interruptions or errors, it terminates the process to avoid
-       hanging or resource leakage.
-
+           with suffix reportname.csv. if it is false,
+          - if verbose, the progress is printed as the elapsed time and the successfully saved csv
 
        :returns
-        --a generator that yields data frames knitted by pandas
+        -- a generator that yields data frames knitted by pandas
 
 
        Example:

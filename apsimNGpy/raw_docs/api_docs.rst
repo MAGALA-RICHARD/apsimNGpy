@@ -1,20 +1,51 @@
-ApsimModel Class: API Reference
--------------------------
+ApsimModel API Documentation
+==============================
 
-.. function:: ApsimModel(model: Union[os.PathLike, dict, str], out_path: os.PathLike = None, out: os.PathLike = None, lonlat: tuple = None, soil_series: str = 'domtcp', thickness: int = 20, bottomdepth: int = 200, thickness_values: list = None, run_all_soils: bool = False, set_wd=None, **kwargs)
+.. function:: __init__
 
-   Main class for apsimNGpy modules.
-    It inherits from the APSIMNG class and therefore has access to a repertoire of methods from it.
+.. function:: _change_met_file
 
-    This implies that you can still run the model and modify parameters as needed.
-    Example:
-        >>> from apsimNGpy.core.apsim import ApsimModel
-        >>> from apsimNGpy.core.base_data import load_default_simulations
-        >>> path_model = load_default_simulations(crop='Maize', simulations_object=False)
-        >>> model = ApsimModel(path_model, set_wd=Path.home())# replace with your path
-        >>> model.run(report_name='Report') # report is the default replace as needed
+   _similar to class weather management but just in case we want to change the weather within the subclass
+        # uses existing start and end years to download the weather data
 
-.. function:: add_crop_replacements(self, _crop: str)
+.. function:: _cultivar_params
+
+   returns all params in a cultivar
+
+.. function:: _extract_solute
+
+.. function:: _find_cultivar
+
+.. function:: _find_replacement
+
+.. function:: _find_simulation
+
+.. function:: _find_soil_solute
+
+.. function:: _get_SSURGO_soil_profile
+
+.. function:: _get_initial_chemical_values
+
+.. function:: _kvtodict
+
+.. function:: _remove_related_files
+
+   Remove related database files.
+
+.. function:: _replace_cropsoil_names
+
+.. function:: _replace_initial_chemical_values
+
+   _summary_
+
+        Args:
+            name (str): of the solutes e.g  NH4
+            values (array): _values with equal lengths as the existing other variable
+            simulations (str): simulation name in the root folder
+
+.. function:: _try_literal_eval
+
+.. function:: add_crop_replacements
 
    Adds a replacement folder as a child of the simulations. Useful when you intend to edit cultivar paramters
 
@@ -25,7 +56,7 @@ ApsimModel Class: API Reference
 
              raises an error if crop is not found
 
-.. function:: add_factor(self, specification: str, factor_name: str, **kwargs)
+.. function:: add_factor
 
    Adds a factor to the created experiment. Thus, this method only works on factorial experiments
 
@@ -52,7 +83,7 @@ ApsimModel Class: API Reference
             >>> apsim.add_factor(specification="[Sow using a variable rule].Script.Population =4 to 8 step 2", factor_name='Population')
             >>> apsim.run() # doctest: +SKIP
 
-.. function:: add_model(self, model_type, adoptive_parent, rename=None, adoptive_parent_name=None, verbose=False, **kwargs)
+.. function:: add_model
 
    Adds a model to the Models Simulations namespace.
 
@@ -86,7 +117,7 @@ ApsimModel Class: API Reference
          >>> model.preview_simulation() # doctest: +SKIP
          @param adoptive_parent:
 
-.. function:: add_report_variable(self, commands: Union[list, str, tuple], report_name: str = None)
+.. function:: add_report_variable
 
    This adds a report variable to the end of other variables, if you want to change the whole report use change_report
         Args:
@@ -101,7 +132,9 @@ ApsimModel Class: API Reference
         >>> model = core.base_data.load_default_simulations()
         >>> model.add_report_variable(commands = '[Clock].Today as Date', report_name = 'Report')
 
-.. function:: adjust_dul(self, simulations: Union[tuple, list] = None)
+.. function:: adjustSatDul
+
+.. function:: adjust_dul
 
    - This method checks whether the soil SAT is above or below DUL and decreases DUL  values accordingly
         - Need to cal this method everytime SAT is changed, or DUL is changed accordingly
@@ -109,7 +142,9 @@ ApsimModel Class: API Reference
         :return:
         model object
 
-.. function:: change_report(self, *, command: str, report_name='Report', simulations=None, set_DayAfterLastOutput=None, **kwargs)
+.. function:: change_met
+
+.. function:: change_report
 
    Set APSIM report variables for specified simulations.
 
@@ -130,7 +165,7 @@ ApsimModel Class: API Reference
         -------
         None
 
-.. function:: change_simulation_dates(self, start_date: str = None, end_date: str = None, simulations: Union[tuple, list] = None)
+.. function:: change_simulation_dates
 
    Set simulation dates. this is important to run this method before run the weather replacement method as
         the date needs to be allowed into weather
@@ -166,7 +201,7 @@ ApsimModel Class: API Reference
             It is possible to target a specific simulation by specifying simulation name for this case the name is Simulations, so, it could appear as follows
              model.change_simulation_dates(start_date='2021-01-01', end_date='2021-01-12', simulation = 'Simulation')
 
-.. function:: change_som(self, *, simulations: Union[tuple, list] = None, inrm: int = None, icnr: int = None, surface_om_name='SurfaceOrganicMatter', **kwargs)
+.. function:: change_som
 
    Change Surface Organic Matter (SOM) properties in specified simulations.
 
@@ -181,7 +216,11 @@ ApsimModel Class: API Reference
     Returns:
         self: The current instance of the class.
 
-.. function:: clean_up(self, db=True)
+.. function:: check_model
+
+.. function:: check_som
+
+.. function:: clean_up
 
    Clears the file cloned the datastore and associated csv files are not deleted if db is set to False defaults to True.
 
@@ -190,11 +229,19 @@ ApsimModel Class: API Reference
            >> Please proceed with caution, we assume that if you want to clear the model objects, then you don't need them,
            but by making copy compulsory, then, we are clearing the edited files
 
-.. function:: configs(self)
+.. function:: clone
+
+.. function:: clone_model
+
+.. function:: compile_scripts
+
+.. function:: configs
 
    records activities that have been done on the model including changes to the file
 
-.. function:: create_experiment(self, permutation: bool = True, base_name: str = None, **kwargs)
+.. function:: convert_to_IModel
+
+.. function:: create_experiment
 
    Initialize an Experiment instance, adding the necessary models and factors.
 
@@ -209,7 +256,7 @@ ApsimModel Class: API Reference
            :param  base_name (str, optional): The name of the base simulation to be moved into the experiment setup. if not
             provided, it is expected to be Simulation as the default
 
-.. function:: edit_cultivar(self, *, CultivarName: str, commands: str, values: Any, **kwargs)
+.. function:: edit_cultivar
 
    Edits the parameters of a given cultivar. we don't need a simulation name for this unless if you are defining it in the
         manager section, if that it is the case, see update_mgt.
@@ -228,7 +275,7 @@ ApsimModel Class: API Reference
 
         Returns: instance of the class APSIMNG or ApsimModel
 
-.. function:: examine_management_info(self, simulations: Union[list, tuple] = None)
+.. function:: examine_management_info
 
    This will show the current management scripts in the simulation root
 
@@ -239,7 +286,7 @@ ApsimModel Class: API Reference
 
             use the property decorator 'extract_simulation_name'
 
-.. function:: extract_any_soil_organic(self, parameter: str, simulation: tuple = None)
+.. function:: extract_any_soil_organic
 
    extracts any specified soil  parameters in the simulation
 
@@ -250,7 +297,7 @@ ApsimModel Class: API Reference
             Defaults to None.
            :param  param_values (array, required): arrays or list of values for the specified parameter to replace
 
-.. function:: extract_any_soil_physical(self, parameter, simulations: [<class 'list'>, <class 'tuple'>] = None)
+.. function:: extract_any_soil_physical
 
    Extracts soil physical parameters in the simulation
 
@@ -260,7 +307,7 @@ ApsimModel Class: API Reference
         ---------------------------------------------------------------------------
         returns an array of the parameter values
 
-.. function:: extract_crop_soil_water(self, parameter: str, crop: str = 'Maize', simulation: Union[list, tuple] = None)
+.. function:: extract_crop_soil_water
 
    deprecated
 
@@ -272,7 +319,7 @@ ApsimModel Class: API Reference
         Returns:
             _type_: list[int, float]
 
-.. function:: extract_soil_physical(self, simulations: [<class 'tuple'>, <class 'list'>] = None)
+.. function:: extract_soil_physical
 
    Find physical soil
 
@@ -284,13 +331,13 @@ ApsimModel Class: API Reference
         -------
             APSIM Models.Soils.Physical object
 
-.. function:: extract_soil_property_by_path(self, path: str, str_fmt='.', index: list = None)
+.. function:: extract_soil_property_by_path
 
    path to the soil property should be Simulation.soil_child.parameter_name e.g., = 'Simulation.Organic.Carbon.
         @param: index(list), optional position of the soil property to a return
         @return: list
 
-.. function:: extract_start_end_years(self, simulations: str = None)
+.. function:: extract_start_end_years
 
    Get simulation dates
 
@@ -302,7 +349,7 @@ ApsimModel Class: API Reference
         -------
             Dictionary of simulation names with dates
 
-.. function:: extract_user_input(self, manager_name: str)
+.. function:: extract_user_input
 
    Get user_input of a given model manager script
         returns;  a dictionary of user input with the key as the script parameters and values as the inputs
@@ -315,7 +362,7 @@ ApsimModel Class: API Reference
         # output
         {'Crop': 'Maize', 'FertiliserType': 'NO3N', 'Amount': '160.0'}
 
-.. function:: find_model(self, model_name: str, model_namespace=None)
+.. function:: find_model
 
    Find a model from the Models namespace and return its path.
 
@@ -336,12 +383,16 @@ ApsimModel Class: API Reference
              >>> model.find_model("Clock")  # doctest: +SKIP
               'Models.Clock'
 
-.. function:: get_crop_replacement(self, Crop)
+.. function:: find_simulations
+
+.. function:: generate_unique_name
+
+.. function:: get_crop_replacement
 
    :param Crop: crop to get the replacement
         :return: System.Collections.Generic.IEnumerable APSIM plant object
 
-.. function:: get_current_cultivar_name(self, ManagerName: str)
+.. function:: get_current_cultivar_name
 
    Args:
        - ManagerName: script manager module in the zone
@@ -349,11 +400,15 @@ ApsimModel Class: API Reference
        Returns:
            returns the current cultivar name in the manager script 'ManagerName'
 
-.. function:: get_initial_no3(self, simulation=None)
+.. function:: get_initial_no3
 
    Get soil initial NO3 content
 
-.. function:: get_report(self, simulation=None, names_only=False)
+.. function:: get_manager_ids
+
+.. function:: get_manager_parameters
+
+.. function:: get_report
 
    Get current report string
 
@@ -366,9 +421,18 @@ ApsimModel Class: API Reference
             List of report lines.
             @param names_only: return the names of the reports as a list if names_only is True
 
-.. function:: inspect_model(self, model_type, fullpath=True)
+.. function:: get_soil_values_by_path
 
-   Inspects the model types and returns the model paths or names. usefull if you want to identify the path to the model for editing the model.
+.. function:: get_weather_online
+
+.. function:: initialise_model
+
+.. function:: inspect
+
+.. function:: inspect_model
+
+   Inspects the model types and returns the model paths or names. usefull if you want ot identify the path
+        to the model for editing the model.
         :param model_type: (Models) e.g. Models.Clock will return all fullpath or names of models in the type Clock
         -Models.Manager returns information about the manager scripts in simulations
         -Models.Core.Simulation returns information about the simulation
@@ -395,7 +459,7 @@ ApsimModel Class: API Reference
             >>> model.inspect_model(Models.Fertiliser, fullpath=True)
             ['.Simulations.Simulation.Field.Fertiliser']
 
-.. function:: move_model(self, model_type: <module 'Models'>, new_parent_type: <module 'Models'>, model_name: str = None, new_parent_name: str = None, verbose: bool = False)
+.. function:: move_model
 
    Args:
 
@@ -407,12 +471,14 @@ ApsimModel Class: API Reference
 
           returns instance of apsimNGpy.core.core.apsim.ApsimModel or apsimNGpy.core.core.apsim.APSIMNG
 
-.. function:: preview_simulation(self)
+.. function:: preview_simulation
 
    Preview the simulation file in the apsimNGpy object in the APSIM graphical user interface
         @return: opens the simulation file
 
-.. function:: recompile_edited_model(self, out_path: os.PathLike)
+.. function:: read_cultivar_params
+
+.. function:: recompile_edited_model
 
    Args:
         ______________
@@ -420,7 +486,7 @@ ApsimModel Class: API Reference
 
         return: self
 
-.. function:: remove_model(self, model_type: <module 'Models'>, model_name: str = None)
+.. function:: remove_model
 
    Removes a model from the Models Simulations NameSpace
 
@@ -438,7 +504,7 @@ ApsimModel Class: API Reference
                >>> model.remove_model(Models.Clock) #deletes the clock node
                >>> model.remove_model(Models.Climate.Weather) #deletes the weather node
 
-.. function:: rename_model(self, model_type: <module 'Models'>, old_model_name: str, new_model_name: str)
+.. function:: rename_model
 
    give new name to a model in the simulations
         @param model_type: (Models) Models types e.g., Models.Clock
@@ -451,7 +517,7 @@ ApsimModel Class: API Reference
                >>> apsim = core.base_data.load_default_simulations(crop = 'Maize')
                >>> apsim = apsim.rename_model(Models.Clock, 'Clock', 'clock')
 
-.. function:: replace_downloaded_soils(self, soil_tables: Union[dict, list], simulation_names: Union[tuple, list], **kwargs)
+.. function:: replace_downloaded_soils
 
    Updates soil parameters and configurations for downloaded soil data in simulation models.
 
@@ -481,7 +547,15 @@ ApsimModel Class: API Reference
             'CultvarName': cultivar name which is in the sowing module for adjusting the rue
             tillage: specify whether you will be carried to adjust some physical parameters
 
-.. function:: replace_soil_property_values(self, *, parameter: str, param_values: list, soil_child: str, simulations: list = None, indices: list = None, crop=None, **kwargs)
+.. function:: replace_met_file
+
+.. function:: replace_met_from_web
+
+.. function:: replace_soil_profile_from_web
+
+.. function:: replace_soil_properties_by_path
+
+.. function:: replace_soil_property_values
 
    Replaces values in any soil property array. The soil property array
         :param parameter: str: parameter name e.g., NO3, 'BD'
@@ -497,7 +571,9 @@ ApsimModel Class: API Reference
 
         :crop (str, optional): string for soil water replacement. Default is None
 
-.. function:: replace_soils_values_by_path(self, node_path: str, indices: list = None, **kwargs)
+.. function:: replace_soils
+
+.. function:: replace_soils_values_by_path
 
    set the new values of the specified soil object by path
 
@@ -529,7 +605,7 @@ ApsimModel Class: API Reference
 
                output # {'Carbon': [1.3, 0.96, 0.6, 0.3, 0.18, 0.12, 0.12]}
 
-.. function:: replicate_file(self, k: int, path: os.PathLike = None, suffix: str = 'replica')
+.. function:: replicate_file
 
    Replicates a file 'k' times.
 
@@ -551,7 +627,9 @@ ApsimModel Class: API Reference
         Returns:
         - A list of paths to the newly created files if get_back_list is True else a generator is returned.
 
-.. function:: restart_model(self, model_info=None)
+.. function:: report_ids
+
+.. function:: restart_model
 
    :param model_info: A named tuple object returned by `load_apsim_model` from the `model_loader` module.
 
@@ -564,7 +642,7 @@ ApsimModel Class: API Reference
 
         :return: self
 
-.. function:: run(self, report_name: Union[tuple, list, str] = None, simulations: Union[tuple, list] = None, clean_up: bool = False, verbose=False, **kwargs) -> 'APSIMNG'
+.. function:: run
 
    Run apsim model in the simulations
 
@@ -589,20 +667,20 @@ ApsimModel Class: API Reference
         returns
             instance of the class APSIMNG
 
-.. function:: run_edited_file(self, table_name=None)
+.. function:: run_edited_file
 
    Run simulations in this subclass if we want to clean the database, we need to
          spawn the path with one process to avoid os access permission errors
 
             :param table_name (str): repot table name in the database
 
-.. function:: save(self, file_name=None)
+.. function:: save
 
    Save the simulation models to file
         @param file_name:    The name of the file to save the defaults to none, taking the exising filename
         @return: model object
 
-.. function:: save_edited_file(self, out_path: os.PathLike = None, reload: bool = False) -> Optional[ForwardRef('APSIMNG')]
+.. function:: save_edited_file
 
    Saves the model to the local drive.
 
@@ -615,7 +693,7 @@ ApsimModel Class: API Reference
             - out_path (str): Desired path for the .apsimx file, by default, None.
             - reload (bool): Whether to load the file using the `out_path` or the model's original file name.
 
-.. function:: set_categorical_factor(self, factor_path: str, categories: Union[list, tuple], factor_name: str = None)
+.. function:: set_categorical_factor
 
    wraps around add_factor() to add a continuous factor, just for clarity
 
@@ -630,7 +708,7 @@ ApsimModel Class: API Reference
             >>> apsim.create_experiment(permutation=False)
             >>> apsim.set_continuous_factor(factor_path = "[Fertilise at sowing].Script.Amount", lower_bound=100, upper_bound=300, interval=10)
 
-.. function:: set_continuous_factor(self, factor_path, lower_bound, upper_bound, interval, factor_name=None)
+.. function:: set_continuous_factor
 
    Wraps around `add_factor()` to add a continuous factor, just for clarity
 
@@ -650,11 +728,13 @@ ApsimModel Class: API Reference
             >>> apsim.create_experiment(permutation=False)
             >>> apsim.set_continuous_factor(factor_path = "[Fertilise at sowing].Script.Amount", lower_bound=100, upper_bound=300, interval=10)
 
-.. function:: show_met_file_in_simulation(self, simulations: list = None)
+.. function:: show_cropsoil_names
+
+.. function:: show_met_file_in_simulation
 
    Show weather file for all simulations
 
-.. function:: spin_up(self, report_name: str = 'Report', start=None, end=None, spin_var='Carbon', simulations=None)
+.. function:: spin_up
 
    Perform a spin-up operation on the aPSim model.
 
@@ -678,7 +758,9 @@ ApsimModel Class: API Reference
             The modified ApsimModel object after the spin-up operation.
             you could call save_edited file and save it to your specified location, but you can also proceed with the simulation
 
-.. function:: update_cultivar(self, *, parameters: dict, simulations: Union[list, tuple] = None, clear=False, **kwargs)
+.. function:: strip_time
+
+.. function:: update_cultivar
 
    Update cultivar parameters
 
@@ -691,7 +773,7 @@ ApsimModel Class: API Reference
        - clear (bool, optional)
             If `True` remove all existing parameters, by default `False`.
 
-.. function:: update_mgt(self, *, management: Union[dict, tuple], simulations: [<class 'list'>, <class 'tuple'>] = None, out: [<class 'pathlib.Path'>, <class 'str'>] = None, reload: bool = True, **kwargs)
+.. function:: update_mgt
 
    Update management settings in the model. This method handles one management parameter at a time.
 
@@ -720,7 +802,7 @@ ApsimModel Class: API Reference
             existence. - If the specified management script or parameters do not exist, they will be ignored.
             using a tuple for a specifying management script, paramters is recommended if you are going to pass the function to  a multi-processing class fucntion
 
-.. function:: update_mgt_by_path(self, *, path: str, fmt='.', **kwargs)
+.. function:: update_mgt_by_path
 
    Args:
         _________________
@@ -736,78 +818,4 @@ ApsimModel Class: API Reference
         int, float, bool,str etc.
 
         return: self
-
-.. function:: upgrade_apsim_file(file: str, verbose: bool = True)
-
-   Upgrade a file to the latest version of the .apsimx file format without running the file.
-
-    Parameters
-    ---------------
-    :param file: file to be upgraded to the newest version
-    :param verbose: Write detailed messages to stdout when a conversion starts/finishes.
-    :return:
-       The latest version of the .apsimx file with the same name as the input file
-    Example:
-        >>> from apsimNGpy.core.base_data import load_default_simulations
-        >>> filep =load_default_simulations(simulations_object= False)# this is just an example perhaps you need to pass a lower verion file because this one is extracted from thecurrent model as the excutor
-        >>> upgrade_file =upgrade_apsim_file(filep, verbose=False)
-
-.. function:: collect_csv_by_model_path(model_path) -> dict[typing.Any, typing.Any]
-
-   Collects the data from the simulated model after run
-
-.. function:: run_model_externally(model: Union[pathlib.Path, str], verbose: bool = False, to_csv: bool = False) -> subprocess.Popen[str]
-
-   Runs an APSIM model externally, ensuring cross-platform compatibility.
-
-    Although APSIM models can be run internally, compatibility issues across different APSIM versions—
-    particularly with compiling manager scripts—led to the introduction of this method.
-
-    :param model: (str) Path to the APSIM model file or a filename pattern.
-    :param verbose: (bool) If True, prints stdout output during execution.
-    :param to_csv: (bool) If True, write the results to a CSV file in the same directory.
-    :returns: A subprocess.Popen object.
-
-    Example:
-        >>> result =run_model_externally("path/to/model.apsimx", verbose=True, to_csv=True)
-        >>> from apsimNGpy.core.base_data import load_default_simulations
-        >>> path_to_model = load_default_simulations(crop ='maize', simulations_object =False)
-        >>> pop_obj = run_model_externally(path_to_model, verbose=False)
-        >>> pop_obj1 = run_model_externally(path_to_model, verbose=True)# when verbose is true, will print the time taken
-
-.. function:: run_from_dir(dir_path, pattern, verbose=False, recursive=False, write_tocsv=True) -> [<class 'pandas.core.frame.DataFrame'>]
-
-   This function acts as a wrapper around the APSIM command line recursive tool, automating
-       the execution of APSIM simulations on all files matching a given pattern in a specified
-       directory. It facilitates running simulations recursively across directories and outputs
-       the results for each file are stored to a csv file in the same directory as the file'.
-
-       What this function does is that it makes it easy to retrieve the simulated files, returning a generator that
-       yields data frames
-
-       :Parameters:
-       __________________
-       :param dir_path: (str or Path, required). The path to the directory where the
-           simulation files are located.
-       :param pattern: (str, required): The file pattern to match for simulation files
-           (e.g., "*.apsimx").
-       :param recursive: (bool, optional):  Recursively search through subdirectories for files
-           matching the file specification.
-       :param write_tocsv: (bool, optional): specify whether to write the
-           simulation results to a csv. if true, the exported csv files bear the same name as the input apsimx file name
-           with suffix reportname.csv. if it is false,
-          - if verbose, the progress is printed as the elapsed time and the successfully saved csv
-
-       :returns
-        -- a generator that yields data frames knitted by pandas
-
-
-       Example:
-          >>> mock_data = Path.home() / 'mock_data'# As an example let's mock some data move the apsim files to this directory before runnning
-          >>> mock_data.mkdir(parents=True, exist_ok=True)
-          >>> from apsimNGpy.core.base_data import load_default_simulations
-          >>> path_to_model = load_default_simulations(crop ='maize', simulations_object =False) # get base model
-          >>> ap =path_to_model.replicate_file(k=10, path= mock_data)  if not list(mock_data.rglob("*.apsimx")) else None
-
-          >>> df = run_from_dir(str(mock_data), pattern="*.apsimx", verbose=True, recursive=True)# all files that matches that pattern
 

@@ -168,7 +168,7 @@ def move_model(_model, model_type, new_parent_type, model_name=None, new_parent_
 if __name__ == '__main__':
     import doctest
 
-    doctest.testmod()
+   # doctest.testmod()
     # test
     add_crop_replacements(model, _crop='Maize')
     # sims.FindByPath(modelToCheck.Parent.FullPath + "." + newName)

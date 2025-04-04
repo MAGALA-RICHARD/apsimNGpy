@@ -10,6 +10,7 @@ from apsimNGpy.core.config import get_apsim_bin_path
 from apsimNGpy.settings import logger
 from apsimNGpy.core_utils.utils import timer
 import contextlib
+
 apsim_bin_path = Path(get_apsim_bin_path())
 
 # Determine executable based on OS
@@ -18,8 +19,10 @@ if platform.system() == "Windows":
 else:  # Linux or macOS
     APSIM_EXEC = apsim_bin_path / "Models"
 
+
 def get_apsim_version(verbose=False):
     """ Display version information of the apsim model currently in the apsimNGpy config environment.
+    :param verbose: Prints the version information instantly
     Example:
             >>> apsim_version = get_apsim_version()
 
@@ -27,45 +30,62 @@ def get_apsim_version(verbose=False):
     cmd = [APSIM_EXEC, '--version']
     if verbose:
         cmd.append("--verbose")
-    res= Popen(cmd, stdout=PIPE, stderr=PIPE, text=True)
+    res = Popen(cmd, stdout=PIPE, stderr=PIPE, text=True)
     res.wait()
     return res.stdout.readlines()[0].strip()
+
 
 def upgrade_apsim_file(file, verbose=True):
     """
     Upgrade a file to the latest version of the .apsimx file format without running the file.
-    @param file: file to be upgraded
-    @param verbose: Write detailed messages to stdout when a conversion starts/finishes.
-    @return: the latest version of the .apsimx file with the same name as the input file
+
+    Parameters
+    ---------------
+    :param file: file to be upgraded to the newest version
+    :param verbose: Write detailed messages to stdout when a conversion starts/finishes.
+    :return:
+       the latest version of the .apsimx file with the same name as the input file
     Example:
     >>> from apsimNGpy.core.base_data import load_default_simulations
-    >>> file =load_default_simulations(simulations_object= False)# this is just an example perhaps you need to pass a lower verion file because this one is extracted from thecurrent model as the excutor
-    >>> upgrade_file =upgrade_apsim_file(file, verbose=False)
+    >>> filep =load_default_simulations(simulations_object= False)# this is just an example perhaps you need to pass a lower verion file because this one is extracted from thecurrent model as the excutor
+    >>> upgrade_file =upgrade_apsim_file(filep, verbose=False)
 
     """
-    file= str(file)
-    assert os.path.isfile(file) and file.endswith(".apsimx"),  f"{file} does not exists a supported apsim file"
-    cmd = [APSIM_EXEC,  file, '--upgrade']
+    file = str(file)
+    assert os.path.isfile(file) and file.endswith(".apsimx"), f"{file} does not exists a supported apsim file"
+    cmd = [APSIM_EXEC, file, '--upgrade']
     if verbose:
         cmd.append('--verbose')
-    res= Popen(cmd, stdout=PIPE, stderr=PIPE, text=True)
+    res = Popen(cmd, stdout=PIPE, stderr=PIPE, text=True)
     outp, err = res.communicate()
     if err:
         print(err)
     if verbose:
         print(outp)
-    if res.returncode==0:
-       return file
+    if res.returncode == 0:
+        return file
+
 
 def run_model_externally(model, verbose: bool = False, to_csv=False) -> Popen[str]:
-    """Runs an APSIM model externally, ensuring cross-platform compatibility.
-    returns a Popen object
+    """
+    Runs an APSIM model externally, ensuring cross-platform compatibility.
+
+    Although APSIM models can be run internally, compatibility issues across different APSIM versions—
+    particularly with compiling manager scripts—led to the introduction of this method.
+
+    :param model: (str) Path to the APSIM model file or a filename pattern.
+    :param verbose: (bool) If True, prints stdout output during execution.
+    :param to_csv: (bool) If True, write the results to a CSV file in the same directory.
+    :returns: A subprocess.Popen object.
+
     Example:
+        result = run_apsim("path/to/model.apsimx", verbose=True, to_csv=True)
+
 
         >>> from apsimNGpy.core.base_data import load_default_simulations
         >>> path_to_model = load_default_simulations(crop ='maize', simulations_object =False)
-        >>> pop = run_model_externally(path_to_model, verbose=False)
-        >>> pop = run_model_externally(path_to_model, verbose=True)# when verbose is true, will print the time taken
+        >>> pop_obj = run_model_externally(path_to_model, verbose=False)
+        >>> pop_obj1 = run_model_externally(path_to_model, verbose=True)# when verbose is true, will print the time taken
     """
 
     apsim_file = model  # Define the APSIMX file path
@@ -91,7 +111,6 @@ def run_model_externally(model, verbose: bool = False, to_csv=False) -> Popen[st
                 result.kill()
 
 
-
 def collect_csv_by_model_path(model_path) -> dict[Any, Any]:
     """Collects the data from the simulated model after run
     """
@@ -110,16 +129,17 @@ def collect_csv_by_model_path(model_path) -> dict[Any, Any]:
     return report_paths
 
 
-def collect_csv_from_dir(dir_path, pattern, recursive=False)-> (pd.DataFrame):
-    """Collects the the csf files in a directory
-    @param dir_path: path where to look for csv files
-    @param recursive: whether to recursively search through the directory defaults to false:
-    @param pattern: pattern of the apsim files that produced the csv files through simulations
-    @ returnsa generator object with pandas data frames
+def collect_csv_from_dir(dir_path, pattern, recursive=False) -> (pd.DataFrame):
+    """Collects the csf=v files in a directory using a pattern, usually the pattern resembling the one of the simulations used to generate those csv files
+    :param dir_path: (str) path where to look for csv files
+    :param recursive: (bool) whether to recursively search through the directory defaults to false:
+    :param pattern:(str) pattern of the apsim files that produced the csv files through simulations
+    :returns
+        a generator object with pandas data frames
     Example:
      >>> mock_data = Path.home() / 'mock_data' # this a mock directory substitute accordingly
-     >>> df= list(collect_csv_from_dir(mock_data, '*.apsimx', recursive=True)) # collects all csf file produced by apsimx recursively
-     >>> df= list(collect_csv_from_dir(mock_data, '*.apsimx',  recursive=False)) # collects all csf file produced by apsimx only in the specified directory directory
+     >>> df1= list(collect_csv_from_dir(mock_data, '*.apsimx', recursive=True)) # collects all csf file produced by apsimx recursively
+     >>> df2= list(collect_csv_from_dir(mock_data, '*.apsimx',  recursive=False)) # collects all csf file produced by apsimx only in the specified directory directory
 
 
     """
@@ -145,9 +165,8 @@ def collect_csv_from_dir(dir_path, pattern, recursive=False)-> (pd.DataFrame):
                         logger.warning(f"{base_name} is not a csv file or itis empty")
 
 
-
 def run_from_dir(dir_path, pattern, verbose=False,
-                 recursive=False,# set to false because the data collector is also set to false
+                 recursive=False,  # set to false because the data collector is also set to false
                  write_tocsv=True) -> [pd.DataFrame]:
     """
        This function acts as a wrapper around the APSIM command line recursive tool, automating
@@ -158,19 +177,18 @@ def run_from_dir(dir_path, pattern, verbose=False,
        What this situation does is that it makes it easy to retrieve the simulated files, returning a generator that
        yields data frames
 
-       @Parameters:
-       __________________________________________________________________
-       - dir_path (str or Path, required): The path to the directory where the simulation files are located.
-       - pattern (str, required): The file pattern to match for simulation files (e.g., "*.apsimx").
-       - recursive (bool, optional):  Recursively search through subdirectories for files matching
-                                            the file specification.
-       - write_tocsv (bool, optional): specifies whether or not to to write the simulation results to a csv. if true, the
-        exported csv files bear the same name as the input apsimx file name with suffix reportname.csv. if it false, this function return None
-        - if verbose, the progress is printed as the elapsed time and the successfully saved csv
+       :Parameters: __________________ :param dir_path: (str or Path, required). The path to the directory where the
+           simulation files are located. :param pattern: (str, required): The file pattern to match for simulation files
+           (e.g., "*.apsimx"). :param recursive: (bool, optional):  Recursively search through subdirectories for files
+           matching the file specification.
+       :param write_tocsv: (bool, optional): specifies whether or not to to write the
+           simulation results to a csv. if true, the exported csv files bear the same name as the input apsimx file name
+           with suffix reportname.csv. if it false, this function return None - if verbose, the progress is printed as
+           the elapsed time and the successfully saved csv
 
        The function constructs a command to execute APSIM simulations using the provided directory
        path and file pattern. It adds flags for recursive search, verbosity, and output formatting.
-       The results of the simulations are directed to csf files in the directory
+       The results of the simulations are directed to csv files in the directory
        where the command is executed.
 
        It then waits for the process to complete and checks the process status. If the process
@@ -178,7 +196,7 @@ def run_from_dir(dir_path, pattern, verbose=False,
        hanging or resource leakage.
 
 
-       @returns
+       :returns
         --a generator that yields data frames knitted by pandas
 
 
@@ -203,10 +221,10 @@ def run_from_dir(dir_path, pattern, verbose=False,
         base_cmd.append('--verbose')
     if write_tocsv:
         base_cmd.append('--csv')
-    ran_ok =False
+    ran_ok = False
     with  contextlib.ExitStack() as stack:
         process = stack.enter_context(Popen(base_cmd, stdout=PIPE, stderr=PIPE,
-                        text=True))
+                                            text=True))
 
         try:
             logger.info('waiting for APSIM simulations to complete')
@@ -222,39 +240,10 @@ def run_from_dir(dir_path, pattern, verbose=False,
         logger.info(f"Loading data into memory.")
         out = collect_csv_from_dir(dir_path, pattern)
         return out
-def run_n(file, in_m= False):
-    """ this function is a work in progres, testing storing data in-memory"""
-    import sqlite3
-    cmd = [APSIM_EXEC, file]
-    if in_m:
-        ...
-        cmd.append('--in-memory-db')
 
 
-    # Run the command and capture output
-    process = run(cmd)
-    conn = sqlite3.connect(":memory:")
-   # stdout, stderr = process.communicate()  # Waits and gets output
-    #conn = sqlite3.connect(":memory:")
-    if process.returncode != 0:
-        #print(f"Error running command: {stderr}")
-        return
 
-    #print(stdout)  # Print version info
-
-    # Connect to the shared in-memory database
-    try:
-
-        cursor = conn.cursor()
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
-        tables = [row[0] for row in cursor.fetchall()]
-
-        print(tables)
-    except sqlite3.Error as e:
-        print(f"Database error: {e}")
-    finally:
-        conn.close()
 
 if __name__ == "__main__":
     import doctest
-   # doctest.testmod()
+# doctest.testmod()

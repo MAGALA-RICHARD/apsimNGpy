@@ -1390,14 +1390,16 @@ class APSIMNG:
              '.Simulations.Simulation.Field.Fertilise at sowing',
              '.Simulations.Simulation.Field.Harvest']
 
-
         """
         if isinstance(model_type, type(Models.Clock)):
             obj = self.Simulations.FindAllDescendants[model_type]()
-            if fullpath:
-                return [i.FullPath for i in obj]
-            else:
-                return [i.Name for i in obj]
+            if obj:
+                if fullpath:
+                    return [i.FullPath for i in obj]
+                else:
+                    return [i.Name for i in obj]
+
+            logging.info(f"{model_type.__name__} does not exists")
         logging.error(f"Invalid model type '{model_type}'")
 
     def configs(self):

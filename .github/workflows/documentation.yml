@@ -25,7 +25,7 @@ jobs:
         uses: peaceiris/actions-gh-pages@v3
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/gh-pages' }}
         with:
-          publish_branch: docs-deploy  # You can change this to 'main' or any other branch
+          publish_branch: gh-pages  # You can change this to 'main' or any other branch
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: _build/
           force_orphan: true

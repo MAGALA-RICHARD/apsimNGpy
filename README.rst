@@ -396,9 +396,9 @@ Example output:
     [1650 rows x 20 columns]
 
 
-apsimNGpy package documentation live at; https://magala-richard.github.io/apsimNGpy-documentations/index.html
+Access the live documentation for the apsimNGpy package here; https://magala-richard.github.io/apsimNGpy-documentations/index.html
 
-apsimNGpy package api documentation live at: https://magala-richard.github.io/apsimNGpy-documentations/api.html
+Access the live documentation for the apsimNGpy package API here: https://magala-richard.github.io/apsimNGpy-documentations/api.html
 
 How to Contribute to apsimNGpy
 *********************************************************************************

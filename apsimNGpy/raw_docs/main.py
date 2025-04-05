@@ -28,8 +28,6 @@ def sort_modules(modules):
     return [names[name] for name in sorted_names]  # Return modules in sorted order
 
 
-
-
 def docs(modules: Union[list, object], output_file: Union[str, Path] = "api.rst", skip_undocumented: bool = True,
          main_package="apsimNGpy"):
     """

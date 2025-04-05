@@ -1661,12 +1661,11 @@ apsimNGpy.manager.soilmanager
 
     parameters
     ------------------
-    lon: longitude
-    lat: latitude
-    select_componentname: any componet name within the map unit e.g 'Clarion'. the default is None that mean sa ll the soil componets intersecting a given locationw il be returned
+    :param lonlat: longitude and latitude
+    :param select_componentname: any componet name within the map unit e.g 'Clarion'. the default is None that mean sa ll the soil componets intersecting a given locationw il be returned
       if specified only that soil component table will be returned. in case it is not found the dominant componet will be returned with a caveat meassage.
         use select_componentname = 'domtcp' to return the dorminant component
-    summarytable: prints the component names, their percentages
+    :param summarytable: prints the component names, their percentages
 
 .. function:: apsimNGpy.manager.soilmanager.set_depth(depththickness)
 
@@ -1682,9 +1681,9 @@ apsimNGpy.manager.weathermanager
 
 .. function:: apsimNGpy.manager.weathermanager.daterange(start, end)
 
-   start: the starting year to download the weather data
+   :param start: (int) the starting year to download the weather data
   -----------------
-  end: the year under which download should stop
+  :param end: (int) the year under which download should stop
 
 .. function:: apsimNGpy.manager.weathermanager.day_of_year_to_date(year, day_of_year)
 
@@ -1704,65 +1703,89 @@ apsimNGpy.manager.weathermanager
 
 .. function:: apsimNGpy.manager.weathermanager.get_iem_by_station(dates_tuple, station, path, met_tag)
 
-   Dates is a tupple/list of strings with date ranges
+   :param dates_tuple: (tuple, list) is a tupple/list of strings with date ranges
       
-      an example date string should look like this: dates = ["01-01-2012","12-31-2012"]
+      - an example date string should look like this: dates = ["01-01-2012","12-31-2012"]
+      :param station: (str) is the station where toe xtract the data from
+      -If station is given data will be downloaded directly from the station the default is false.
       
-      if station is given data will be downloaded directly from the station the default is false.
-      
-      mettag: your prefered suffix to save on filee
+      :param met_tag: your preferred suffix to save on file
 
 .. function:: apsimNGpy.manager.weathermanager.get_met_from_day_met(lonlat: Union[tuple, list, numpy.ndarray], start: int, end: int, filename: str, fill_method: str = 'ffill', retry_number: Optional[int] = 1, **kwa: None) -> str
 
-   collect weather from daymet solar radiation is replaced with that of nasapower API
-    ------------
-    parameters
-    ---------------:
+   Collect weather from daymet solar radiation is replaced with that of nasapower API
 
-    retry_number (int): retry number of times in case of network errors
-    :filename. met file name to save on disk
-    start: Starting year of the met data
-    end: Ending year of the met data
-    lonlat (tuple, list, array): A tuple of XY cordnates, longitude first, then latitude second
-    :fill_method (str, optional): fills the missing data based pandas fillna method arguments may be bfill, ffill defaults to ffill
-    :keyword timeout specifies the waiting time
-    :keyword wait: the time in secods to try for every retry in case of network errors
-    returns a complete path to the new met file but also write the met file to the disk in the working dir_path
+
+    parameters
+    ---------------
+    :param lonlat:
+         tuple, list, np.ndarray
+    :param retry_number:
+        (int): retry number of times in case of network errors
+    :param filename.
+         met file name to save on disk
+    :param start.
+         Starting year of the met data
+    :param end.
+         Ending year of the met data
+    :param lonlat.
+         (tuple, list, array): A tuple of XY cordnates, longitude first, then latitude second
+    :param fill_method.
+         (str, optional): fills the missing data based pandas fillna method arguments may be bfill, ffill defaults to ffill
+    :param keyword.
+         timeout specifies the waiting time
+
+    :keyword.
+        -wait: the time in secods to try for every retry in case of network errors
+    @returns
+     a complete path to the new met file but also write the met file to the disk in the working dir_path
 
     Example:
-      # Assuming the function is imported as :
           >>> from apsimNGpy.manager.weathermanager import get_met_from_day_met
           >>> wf = get_met_from_day_met(lonlat=(-93.04, 42.01247),
-              >>> start=2000, end=2020,timeout = 30, wait =2, retry_number=3, filename='daymet.met')
+          >>> start=2000, end=2020,timeout = 30, wait =2, retry_number=3, filename='daymet.met')
 
-.. function:: apsimNGpy.manager.weathermanager.get_weather(lonlat, start=1990, end=2000, source='daymet', filename='__met_.met')
+.. function:: apsimNGpy.manager.weathermanager.get_weather(lonlat: Union[tuple, list], start: int = 1990, end: int = 2000, source: str = 'daymet', filename: str = '__met_.met')
 
-   collects data from various sources
-    only nasapower and dayment are currently supported sources,so it will raise an error if mesonnet is suggested
-    Note if you not in mainland USA, please don't pass source = 'dayment' as it will raise an error due to geographical scope
-    >> example
-    >>> from apsimNGpy.manager.weathermanager import get_weather
-    >>> from apsimNGpy.core.base_data import load_default_simulations
-    We are going to collect data from my hometown Kampala
-    >>> kampala_loc = 35.582520, 0.347596
-    # Notice it return a path to the downloaded weather file
-    >>> met_file = get_weather(kampala_loc, start=1990, end=2020, source='nasa', filename='kampala_new.met')
-    >>> print(met_file)
-    # next we can pass this weather file to apsim model
-    >>> maize_model = load_default_simulations(crop = 'maize')
-    >>> maize_model.replace_met_file(weather_file = met_file)
+   Collects data from various sources.
+
+        Only nasapower and dayment are currently supported sources, so it will raise an error if mesonnet is suggested.
+
+        -Note if you are not in mainland USA, please don't pass source = 'dayment' as it will raise an error due to geographical
+             scope
+         Paramters
+         -----------------------
+         :param lonlat: (tuple) lonlat values
+         :param start: (int) start year
+         :param end: (int) end year
+         :param source: (str) source API for weather data
+         :param filename: (str) filename for saving on disk
+
+        >> Example
+            >>> from apsimNGpy.manager.weathermanager import get_weather
+            >>> from apsimNGpy.core.base_data import load_default_simulations
+            We are going to collect data from my hometown Kampala
+            >>> kampala_loc = 35.582520, 0.347596
+            # Notice it return a path to the downloaded weather file
+            >>> met_file = get_weather(kampala_loc, start=1990, end=2020, source='nasa', filename='kampala_new.met')
+            >>> print(met_file)
+            # next we can pass this weather file to apsim model
+            >>> maize_model = load_default_simulations(crop = 'maize')
+            >>> maize_model.replace_met_file(weather_file = met_file)
 
 .. function:: apsimNGpy.manager.weathermanager.impute_data(met, method='mean', verbose=False, **kwargs)
 
    Imputes missing data in a pandas DataFrame using specified interpolation or mean value.
 
     Parameters:
-    - met (pd.DataFrame): DataFrame with missing values.
-    - method (str, optional): Method for imputing missing values ("approx", "spline", "mean"). Default is "mean".
-    - verbose (bool, optional): If True, prints detailed information about the imputation. Default is False.
+    _______________________
+    :param met: (pd.DataFrame): DataFrame with missing values.
+    :param method: (str, optional): Method for imputing missing values ("approx", "spline", "mean"). Default is "mean".
+    :param verbose: (bool, optional): If True, prints detailed information about the imputation. Default is False.
+
     - **kwargs (dict, optional): Additional keyword arguments including 'copy' (bool) to deep copy the DataFrame.
 
-    Returns:
+    @Returns:
     - pd.DataFrame: DataFrame with imputed missing values.
 
 .. function:: apsimNGpy.manager.weathermanager.merge_columns(df1_main, common_column, df2, fill_column, df2_colummn)
@@ -1776,18 +1799,4 @@ apsimNGpy.manager.weathermanager
 
     Returns:
     pd.DataFrame: A new DataFrame resulting from the merge and update operations.
-
-.. function:: apsimNGpy.manager.weathermanager.write_edited_met(old: Union[str, pathlib.Path], daf: pandas.core.frame.DataFrame, filename: str = 'edited_met.met') -> str
-
-   Parameters
-    ----------
-    old; pathlinke to original met file
-
-    old
-    daf: new data in the form of a pandas dataframe
-    filename; file name to save defaults to edited_met.met
-
-    Returns
-    -------
-    new path to the saved file
 

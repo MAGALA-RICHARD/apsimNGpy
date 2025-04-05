@@ -395,6 +395,8 @@ Example output:
     1649  ExperimentNitrogen80Population7RUE4.3           148  ...  3236.126  Field
     [1650 rows x 20 columns]
 
+package documentation live at; https://magala-richard.github.io/apsimNGpy-documentations/index.html
+package api documentation live at:
 
 How to Contribute to apsimNGpy
 *********************************************************************************

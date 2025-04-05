@@ -59,15 +59,16 @@ def generate_unique_name(base_name, length=6):
 # let us manage network issues more gracefully
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(0.5), retry=retry_if_exception_type(NETWORK_EXCEPTIONS))
 def get_iem_by_station(dates_tuple, station, path, met_tag):
-    '''
+    """
       :param dates_tuple: (tuple, list) is a tupple/list of strings with date ranges
       
       - an example date string should look like this: dates = ["01-01-2012","12-31-2012"]
       :param station: (str) is the station where toe xtract the data from
-      - If station is given data will be downloaded directly from the station the default is false.
+      -If station is given data will be downloaded directly from the station the default is false.
       
-      :param met_tag: your prefered suffix to save on filee
-      '''
+      :param met_tag: your preferred suffix to save on file
+
+      """
     # access the elements in the metdate class above
     weather_dates = MetDate(dates_tuple)
     stationX = station[:2]
@@ -177,11 +178,11 @@ def get_abbreviation(x):
 
 # function to define the date ranges
 def daterange(start, end):
-    '''
-  start: the starting year to download the weather data
+    """
+  :param start: (int) the starting year to download the weather data
   -----------------
-  end: the year under which download should stop
-  '''
+  :param end: (int) the year under which download should stop
+  """
     startdates = '01-01'
     enddates = '12-31'
     end = str(end) + "-" + enddates
@@ -218,26 +219,27 @@ def get_met_from_day_met(lonlat: Union[tuple, list, np.ndarray], start: int,
                          end: int, filename: str,
                          fill_method: str = 'ffill',
                          retry_number: Union[int, None] = 1, **kwa: None) -> str:
-    """collect weather from daymet solar radiation is replaced with that of nasapower API
+    """
+    Collect weather from daymet solar radiation is replaced with that of nasapower API
     ------------
     parameters
     ---------------:
-
-    retry_number (int): retry number of times in case of network errors
-    :filename. met file name to save on disk
-    start: Starting year of the met data
-    end: Ending year of the met data
-    lonlat (tuple, list, array): A tuple of XY cordnates, longitude first, then latitude second
-    :fill_method (str, optional): fills the missing data based pandas fillna method arguments may be bfill, ffill defaults to ffill
-    :keyword timeout specifies the waiting time
-    :keyword wait: the time in secods to try for every retry in case of network errors
-    returns a complete path to the new met file but also write the met file to the disk in the working dir_path
+    :param lonlat: tuple, list, np.ndarray
+    :param retry_number: (int): retry number of times in case of network errors
+    :param filename. met file name to save on disk
+    :param start: Starting year of the met data
+    :param end: Ending year of the met data
+    :param lonlat: (tuple, list, array): A tuple of XY cordnates, longitude first, then latitude second
+    :param fill_method: (str, optional): fills the missing data based pandas fillna method arguments may be bfill, ffill defaults to ffill
+    :param keyword timeout specifies the waiting time
+       :keyword wait: the time in secods to try for every retry in case of network errors
+    @returns
+     a complete path to the new met file but also write the met file to the disk in the working dir_path
 
     Example:
-      # Assuming the function is imported as :
           >>> from apsimNGpy.manager.weathermanager import get_met_from_day_met
           >>> wf = get_met_from_day_met(lonlat=(-93.04, 42.01247),
-              >>> start=2000, end=2020,timeout = 30, wait =2, retry_number=3, filename='daymet.met')
+          >>> start=2000, end=2020,timeout = 30, wait =2, retry_number=3, filename='daymet.met')
 
     """
     _start = f"{start}-01-01"
@@ -392,12 +394,13 @@ def impute_data(met, method="mean", verbose=False, **kwargs):
     Imputes missing data in a pandas DataFrame using specified interpolation or mean value.
 
     Parameters:
-    - met (pd.DataFrame): DataFrame with missing values.
-    - method (str, optional): Method for imputing missing values ("approx", "spline", "mean"). Default is "mean".
-    - verbose (bool, optional): If True, prints detailed information about the imputation. Default is False.
+    :param met: (pd.DataFrame): DataFrame with missing values.
+    :param method: (str, optional): Method for imputing missing values ("approx", "spline", "mean"). Default is "mean".
+    :param verbose: (bool, optional): If True, prints detailed information about the imputation. Default is False.
+
     - **kwargs (dict, optional): Additional keyword arguments including 'copy' (bool) to deep copy the DataFrame.
 
-    Returns:
+    @Returns:
     - pd.DataFrame: DataFrame with imputed missing values.
     """
 
@@ -507,10 +510,21 @@ def _is_within_USA_mainland(lonlat):
         return False
 
 
-def get_weather(lonlat, start=1990, end=2000, source='daymet', filename='__met_.met'):
-    """collects data from various sources
-    only nasapower and dayment are currently supported sources,so it will raise an error if mesonnet is suggested
-    Note if you not in mainland USA, please don't pass source = 'dayment' as it will raise an error due to geographical scope
+def get_weather(lonlat:Union[tuple, list], start:int=1990, end:int=2000, source:str='daymet', filename:str='__met_.met'):
+    """
+    Collects data from various sources.
+    Only nasapower and dayment are currently supported sources, so it will raise an error if mesonnet is suggested.
+
+    Note if you are not in mainland USA, please don't pass source = 'dayment' as it will raise an error due to geographical
+     scope
+     Paramters
+     -----------------------
+     :param lonlat: (tuple) lonlat values
+     :param start: (int) start year
+     :param end: (int) end year
+     :param source: (str) source API for weather data
+     :param filename: (str) filename for saving on disk
+
     >> example
     >>> from apsimNGpy.manager.weathermanager import get_weather
     >>> from apsimNGpy.core.base_data import load_default_simulations
@@ -546,20 +560,7 @@ def read_apsim_met(met_path, skip=5, index_drop=0, separator=' '):
 
 
 def write_edited_met(old: Union[str, Path], daf: pd.DataFrame, filename: str = "edited_met.met") -> str:
-    """
 
-    Parameters
-    ----------
-    old; pathlinke to original met file
-
-    old
-    daf: new data in the form of a pandas dataframe
-    filename; file name to save defaults to edited_met.met
-
-    Returns
-    -------
-    new path to the saved file
-    """
     existing_lines = []
     with open(old, 'r+') as file:
         for i, line in enumerate(file):

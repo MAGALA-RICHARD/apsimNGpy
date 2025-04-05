@@ -142,7 +142,7 @@ def auto_detect_apsim_bin_path():
 def get_apsim_bin_path():
     """
     Returns the path to the apsim bin folder from either auto-detection or from the path already supplied by the user
-    through the apsimNgpyconfig.ini file in the user home dir_path. the location folder is called
+    through the apsimNgp config.ini file in the user home dir_path. the location folder is called
     The function is silent does not raise any exception but return empty string in all cases
     :return:
     """
@@ -163,11 +163,13 @@ def set_apsim_bin_path(path, raise_errors=True):
     the path should end with bin as the parent dir_path of the aPSim Model.
     >> Please be careful with adding an uninstalled path, which does not have model.exe file or unix executable.
     It won't work and python with throw an error
-    >> example from apsimNGpy.config import Config
+    Example:
+
+    >>> from apsimNGpy.core import config
     # check the current path
-     config = Config.get_apsim_bin_path()
+     >>>config = config.get_apsim_bin_path()
      # set the desired path
-     >> Config.set_apsim_bin_path(path = '/path/to/APSIM*/bin')
+     >>> config.set_apsim_bin_path(path = '/path/to/APSIM*/bin')
     """
     _path = realpath(path)
     if os.path.basename(_path) != 'bin':

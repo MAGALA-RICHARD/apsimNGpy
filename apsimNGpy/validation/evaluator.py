@@ -1,5 +1,5 @@
 """
-This script evaluates the predicted and observed data, based on both statistical and mathematical index. for complete decription of the
+This script evaluates the predicted and observed data, based on both statistical and mathematical index. For complete definition of the
 metrics see Archountoulis et al., (2015) and
 """
 __all__ = ['validate', 'mets', 'Metrics']
@@ -11,8 +11,7 @@ from scipy.stats import norm, linregress
 
 class Metrics:
     """
-    This class is redundant.
-    These functions can be implemented without the class.
+    This class is holds the evaluation metrics or the loss functions used in evaluating the model performance
     """
     def __init__(self):
         pass
@@ -61,11 +60,11 @@ class Metrics:
         Calculate the Mean Squared Error (MSE) between actual and predicted values.
 
         Args:
-        actual (array-like): Array of actual values.
-        predicted (array-like): Array of predicted values.
+        :param actual: (array-like): Array of actual values.
+        :param predicted: (array-like): Array of predicted values.
 
-        Returns:
-        float: The Mean Squared Error (MSE).
+        :Returns:
+          float: The Mean Squared Error (MSE).
         """
         squared_errors = (np.array(actual) - np.array(predicted)) ** 2
         mse = np.mean(squared_errors)
@@ -75,8 +74,8 @@ class Metrics:
         """Calculate the moving average
 
         Args:
-            data: list or array-like
-            window: moving window e.g 2
+            :param data: list or array-like
+            :param window: moving window e.g., 5 year period
 
         Returns:
 
@@ -141,11 +140,11 @@ class Metrics:
         Calculate Modeling Efficiency (MEF) between observed and predicted values.
 
         Parameters:
-        observed (array-like): Array or list of observed values.
-        predicted (array-like): Array or list of predicted values.
+        :param observed: (array-like): Array or list of observed values.
+        :param predicted: (array-like): Array or list of predicted values.
 
-        Returns:
-        float: The Modeling Efficiency (MEF) between observed and predicted values.
+        :Returns:
+           float: The Modeling Efficiency (MEF) between observed and predicted values.
         """
         # Convert input data to NumPy arrays for consistent handling
         observed = np.array(actual)
@@ -205,7 +204,7 @@ class validate(Metrics):
 
     def evaluate(self, metric: str=mets.RMSE):
         """
-        :param metric (str): metric to use default is RMSE
+        :param metric: (str): metric to use default is RMSE
         :return: returns an index
         """
         assert isinstance(metric, str), "target metric should be a string"

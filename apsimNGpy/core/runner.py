@@ -198,9 +198,7 @@ def run_from_dir(dir_path, pattern, verbose=False,
           >>> from apsimNGpy.core.base_data import load_default_simulations
           >>> path_to_model = load_default_simulations(crop ='maize', simulations_object =False) # get base model
           >>> ap =path_to_model.replicate_file(k=10, path= mock_data)  if not list(mock_data.rglob("*.apsimx")) else None
-
           >>> df = run_from_dir(str(mock_data), pattern="*.apsimx", verbose=True, recursive=True)# all files that matches that pattern
-
 
        """
     dir_path = str(dir_path)

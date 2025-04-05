@@ -221,18 +221,29 @@ def get_met_from_day_met(lonlat: Union[tuple, list, np.ndarray], start: int,
                          retry_number: Union[int, None] = 1, **kwa: None) -> str:
     """
     Collect weather from daymet solar radiation is replaced with that of nasapower API
-    ------------
+
+
     parameters
-    ---------------:
-    :param lonlat: tuple, list, np.ndarray
-    :param retry_number: (int): retry number of times in case of network errors
-    :param filename. met file name to save on disk
-    :param start: Starting year of the met data
-    :param end: Ending year of the met data
-    :param lonlat: (tuple, list, array): A tuple of XY cordnates, longitude first, then latitude second
-    :param fill_method: (str, optional): fills the missing data based pandas fillna method arguments may be bfill, ffill defaults to ffill
-    :param keyword timeout specifies the waiting time
-       :keyword wait: the time in secods to try for every retry in case of network errors
+    ---------------
+    :param lonlat:
+         tuple, list, np.ndarray
+    :param retry_number:
+        (int): retry number of times in case of network errors
+    :param filename.
+         met file name to save on disk
+    :param start.
+         Starting year of the met data
+    :param end.
+         Ending year of the met data
+    :param lonlat.
+         (tuple, list, array): A tuple of XY cordnates, longitude first, then latitude second
+    :param fill_method.
+         (str, optional): fills the missing data based pandas fillna method arguments may be bfill, ffill defaults to ffill
+    :param keyword.
+         timeout specifies the waiting time
+
+    :keyword.
+        -wait: the time in secods to try for every retry in case of network errors
     @returns
      a complete path to the new met file but also write the met file to the disk in the working dir_path
 
@@ -394,6 +405,7 @@ def impute_data(met, method="mean", verbose=False, **kwargs):
     Imputes missing data in a pandas DataFrame using specified interpolation or mean value.
 
     Parameters:
+    _______________________
     :param met: (pd.DataFrame): DataFrame with missing values.
     :param method: (str, optional): Method for imputing missing values ("approx", "spline", "mean"). Default is "mean".
     :param verbose: (bool, optional): If True, prints detailed information about the imputation. Default is False.
@@ -512,30 +524,31 @@ def _is_within_USA_mainland(lonlat):
 
 def get_weather(lonlat:Union[tuple, list], start:int=1990, end:int=2000, source:str='daymet', filename:str='__met_.met'):
     """
-    Collects data from various sources.
-    Only nasapower and dayment are currently supported sources, so it will raise an error if mesonnet is suggested.
+        Collects data from various sources.
 
-    Note if you are not in mainland USA, please don't pass source = 'dayment' as it will raise an error due to geographical
-     scope
-     Paramters
-     -----------------------
-     :param lonlat: (tuple) lonlat values
-     :param start: (int) start year
-     :param end: (int) end year
-     :param source: (str) source API for weather data
-     :param filename: (str) filename for saving on disk
+        Only nasapower and dayment are currently supported sources, so it will raise an error if mesonnet is suggested.
 
-    >> example
-    >>> from apsimNGpy.manager.weathermanager import get_weather
-    >>> from apsimNGpy.core.base_data import load_default_simulations
-    We are going to collect data from my hometown Kampala
-    >>> kampala_loc = 35.582520, 0.347596
-    # Notice it return a path to the downloaded weather file
-    >>> met_file = get_weather(kampala_loc, start=1990, end=2020, source='nasa', filename='kampala_new.met')
-    >>> print(met_file)
-    # next we can pass this weather file to apsim model
-    >>> maize_model = load_default_simulations(crop = 'maize')
-    >>> maize_model.replace_met_file(weather_file = met_file)
+        -Note if you are not in mainland USA, please don't pass source = 'dayment' as it will raise an error due to geographical
+             scope
+         Paramters
+         -----------------------
+         :param lonlat: (tuple) lonlat values
+         :param start: (int) start year
+         :param end: (int) end year
+         :param source: (str) source API for weather data
+         :param filename: (str) filename for saving on disk
+
+        >> Example
+            >>> from apsimNGpy.manager.weathermanager import get_weather
+            >>> from apsimNGpy.core.base_data import load_default_simulations
+            We are going to collect data from my hometown Kampala
+            >>> kampala_loc = 35.582520, 0.347596
+            # Notice it return a path to the downloaded weather file
+            >>> met_file = get_weather(kampala_loc, start=1990, end=2020, source='nasa', filename='kampala_new.met')
+            >>> print(met_file)
+            # next we can pass this weather file to apsim model
+            >>> maize_model = load_default_simulations(crop = 'maize')
+            >>> maize_model.replace_met_file(weather_file = met_file)
 
     """
 

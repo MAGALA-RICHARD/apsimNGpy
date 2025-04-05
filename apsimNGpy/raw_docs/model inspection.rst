@@ -1,5 +1,5 @@
 Inspect Model
-=============
+=============================
 
 Most of the time, when modifying model parameters and values, you need the full path to the specified APSIM model.  
 This is where the `inspect_model` method becomes useful—it allows you to inspect the model without opening the file in the APSIM GUI.
@@ -36,7 +36,7 @@ Let's take a look at how it works.
     ['.Simulations.Simulation.Field.Fertiliser']
 
 Model Types
-"""""""""""""
+""""""""""""""""""""""""""
 
 `model_type` can be any of the following classes from the `Models` namespace:
 
@@ -47,7 +47,7 @@ Model Types
 - *(Additional model types may be available based on APSIM simulation requirements.)*
 
 Finding the Model Type
-"""""""""""""""""""""
+""""""""""""""""""""""""""""""""""""""
 
 In some cases, determining the model type can be challenging. Fortunately, **apsimNGpy** provides a recursive function to simplify this process—the `find_model` method.  
 This method helps identify the model type efficiently. However, you need to know the name of the model, such as **Clock** or **Weather**, to use it effectively.

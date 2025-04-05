@@ -60,13 +60,13 @@ def generate_unique_name(base_name, length=6):
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(0.5), retry=retry_if_exception_type(NETWORK_EXCEPTIONS))
 def get_iem_by_station(dates_tuple, station, path, met_tag):
     '''
-      Dates is a tupple/list of strings with date ranges
+      :param dates_tuple: (tuple, list) is a tupple/list of strings with date ranges
       
-      an example date string should look like this: dates = ["01-01-2012","12-31-2012"]
+      - an example date string should look like this: dates = ["01-01-2012","12-31-2012"]
+      :param station: (str) is the station where toe xtract the data from
+      - If station is given data will be downloaded directly from the station the default is false.
       
-      if station is given data will be downloaded directly from the station the default is false.
-      
-      mettag: your prefered suffix to save on filee
+      :param met_tag: your prefered suffix to save on filee
       '''
     # access the elements in the metdate class above
     weather_dates = MetDate(dates_tuple)

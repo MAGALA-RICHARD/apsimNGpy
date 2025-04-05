@@ -27,12 +27,11 @@ def DownloadsurgoSoiltables(lonlat, select_componentname=None, summarytable=Fals
 
     parameters
     ------------------
-    lon: longitude
-    lat: latitude
-    select_componentname: any componet name within the map unit e.g 'Clarion'. the default is None that mean sa ll the soil componets intersecting a given locationw il be returned
+    :param lonlat: longitude and latitude
+    :param select_componentname: any componet name within the map unit e.g 'Clarion'. the default is None that mean sa ll the soil componets intersecting a given locationw il be returned
       if specified only that soil component table will be returned. in case it is not found the dominant componet will be returned with a caveat meassage.
         use select_componentname = 'domtcp' to return the dorminant component
-    summarytable: prints the component names, their percentages
+    :param summarytable: prints the component names, their percentages
     '''
 
     total_steps = 3
@@ -160,10 +159,10 @@ class OrganizeAPSIMsoil_profile:
         """_summary_
 
         Args:
-            sdf (pandas data frame): soil table downloaded from SSURGO_
-            thickness double: _the thickness of the soil depth e.g 20cm_
-            bottomdepth (int, optional): _description_. Defaults to 200.
-            thickness_values (list or None) optional if provided extrapolation will be based on those vlue and should be the same length as the existing profile depth
+            :param sdf (pandas data frame): soil table downloaded from SSURGO_
+            :param thickness double: _the thickness of the soil depth e.g 20cm_
+            :param bottomdepth (int, optional): _description_. Defaults to 200.
+            :param thickness_values: (list or None) optional if provided extrapolation will be based on those vlue and should be the same length as the existing profile depth
          """
         sdf1 = sdf.drop_duplicates(subset=["topdepth"])
         surgodf = sdf1.sort_values('topdepth', ascending=True)

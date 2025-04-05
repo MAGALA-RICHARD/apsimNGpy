@@ -1,7 +1,7 @@
 .. _Installation:
 
 Installation
-------------
+----------------------------
 
 All versions are currently in development, phase and they can be installed as follows:
 
@@ -26,7 +26,7 @@ All versions are currently in development, phase and they can be installed as fo
      pip install git+https://github.com/MAGALA-RICHARD/apsimNGpy.git
 
 Quick guides
-----------------
+-----------------------------------------
 
 Before using apsimNGpy, it is necessary to install APSIM. Please follow the instructions provided at the following link to complete the installation: https://www.apsim.info/download-apsim/downloads/
 for MAcOS or Linux users see: https://apsimnextgeneration.netlify.app/install/
@@ -63,7 +63,7 @@ The short cut
 
 
 Locating the APSIM Binaries
----------------------------
+-------------------------------------
 By default the APSIM binaries are located automatically. The process for determining the APSIM binary path is as follows:
 
 In apsimNGpy, priority is first given to the user-supplied binary path.
@@ -85,7 +85,7 @@ In your home folder you could look for folder named apsimNGpy_meta_info './APSIM
      3. Modify the `apsim_location` entry to reflect your desired APSIM binary path.
 
 2. Change based os.environ module
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Alternatively, you can use the code at the top of your script as follows
 
@@ -102,7 +102,7 @@ The above script line should always be placed at the beginning of your simulatio
 However, why follow this approach when you can achieve the same result more efficiently? See the approach below:
 
 3. Use the apsimNGpy config module:
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: python
 
@@ -113,7 +113,7 @@ However, why follow this approach when you can achieve the same result more effi
 
 
 4. Use command line interface
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 After installing apsimNGpy, navigate to your terminal and run the following
 

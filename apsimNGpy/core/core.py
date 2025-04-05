@@ -491,27 +491,27 @@ class APSIMNG:
                   adoptive_parent_name=None, verbose=False, **kwargs):
 
         """
-    Adds a model to the Models Simulations namespace.
+        Adds a model to the Models Simulations namespace.
 
-    Some models are restricted to specific parent models, meaning they can only be added to compatible models.
-    For example, a Clock model cannot be added to a Soil model.
+        Some models are restricted to specific parent models, meaning they can only be added to compatible models.
+        For example, a Clock model cannot be added to a Soil model.
 
-    Args:
-        model_type (str or Models object): The type of model to add, e.g., `Models.Clock` or just `"Clock"`.
-        rename (str): The new name for the model.
+        Args:
+            model_type (str or Models object): The type of model to add, e.g., `Models.Clock` or just `"Clock"`.
+            rename (str): The new name for the model.
 
-        adoptive_parent (Models object): The target parent where the model will be added or moved
+            adoptive_parent (Models object): The target parent where the model will be added or moved
 
-        adoptive_parent_name (Models object, optional): Specifies the parent name for precise location.
+            adoptive_parent_name (Models object, optional): Specifies the parent name for precise location.
 
-    Returns:
-        None: Models are modified in place, so models retains the same reference.
+        Returns:
+            None: Models are modified in place, so models retains the same reference.
 
-    Note:
-        Added models are initially empty. Additional configuration is required to set parameters.
-        For example, after adding a Clock module, you must set the start and end dates.
+        Note:
+            Added models are initially empty. Additional configuration is required to set parameters.
+            For example, after adding a Clock module, you must set the start and end dates.
 
-    Example:
+        Example:
 
          >>> from apsimNGpy import core
          >>> from apsimNGpy.core.core import Models
@@ -575,11 +575,13 @@ class APSIMNG:
     def add_report_variable(self, commands: Union[list, str, tuple], report_name: str = None):
         """
         This adds a report variable to the end of other variables, if you want to change the whole report use change_report
-        Args:
 
-        -commands (str, required): list of text commands for the report variables e.g., '[Clock].Today as Date'
-        -report_name (str, optional): name of the report variable if not specified the first accessed report object will be altered
-        Returns:
+        Parameters
+        -------------------
+
+        :param commands: (str, required): list of text commands for the report variables e.g., '[Clock].Today as Date'
+        :param report_name: (str, optional): name of the report variable if not specified the first accessed report object will be altered
+        :Returns:
             returns instance of apsimNGpy.core.core.apsim.ApsimModel or apsimNGpy.core.core.apsim.APSIMNG
            raises an erros if a report is not found
         Example:
@@ -617,15 +619,18 @@ class APSIMNG:
 
     def remove_model(self, model_type: Models, model_name: str = None):
         """
-        Removes a model from the Models Simulations NameSpace
+       Removes a model from the APSIM Models.Simulations namespace.
 
-        Args:
-        -model_type (Models, required): type of the model e.g., Models.Clock
+        Parameters
+        ----------
+        model_type : Models
+            The type of the model to remove (e.g., `Models.Clock`). This parameter is required.
 
-        -model_name (str): name of the model e.g, Clock
-
-        Returns: None
-
+        model_name : str, optional
+            The name of the specific model instance to remove (e.g., `"Clock"`). If not provided, all models of the
+            specified type may be removed.
+        @Returns:
+           None
         Example:
                >>> from apsimNGpy import core
                >>> from apsimNGpy.core.core import Models
@@ -1097,15 +1102,21 @@ class APSIMNG:
                 #     manager.RebuildScriptModel(allowDuplicateClassName=False)
 
     def extract_user_input(self, manager_name: str):
-        """Get user_input of a given model manager script
-        returns;  a dictionary of user input with the key as the script parameters and values as the inputs
-        Example
-        _____________________________________________________
-        from apsimNGpy.core.base_data import load_default_simulations
-        model = load_default_simulations(crop = 'maize')
-        ui = model.extract_user_input(manager_name='Fertilise at sowing')
-        print(ui)
-        # output
+        """
+        Get user_input of a given model manager script.
+
+        Args:
+            manager_name (str): name of the Models.Manager script
+        returns:  a dictionary of user input with the key as the script parameters and values as the inputs
+
+        Example:
+        ____________________
+
+        >>> from apsimNGpy.core.base_data import load_default_simulations
+        >>> model = load_default_simulations(crop = 'maize')
+        >>> ui = model.extract_user_input(manager_name='Fertilise at sowing')
+        >>> print(ui)
+
         {'Crop': 'Maize', 'FertiliserType': 'NO3N', 'Amount': '160.0'}
 
         """
@@ -1136,29 +1147,27 @@ class APSIMNG:
 
         Parameters
         -----------------------------------
-        start_date, optional
+
+        :param: start_date: (str) optional
             Start date as string, by default `None`
-        end_date, optional
+        :param end_date: str (str) optional
             End date as string, by default `None`
-        simulations, optional
+        :param simulations (str), optional
             List of simulation names to update, if `None` update all simulations
-        note
+        Note
         ________
         one of the start_date or end_date parameters should at least not be None
 
         raises assertion error if all dates are None
 
         @return None
-        # Example:
-            from apsimNGpy.core.base_data import load_default_simulations
-
-            model = load_default_simulations(crop='maize')
-
-            model.change_simulation_dates(start_date='2021-01-01', end_date='2021-01-12')
-             #check if it was successful
-             changed_dates = model.extract_dates
-             print(changed_dates)
-             # OUTPUT
+        Example:
+        ---------
+            >>> from apsimNGpy.core.base_data import load_default_simulations
+            >>> model = load_default_simulations(crop='maize')
+            >>> model.change_simulation_dates(start_date='2021-01-01', end_date='2021-01-12')
+            >>> changed_dates = model.extract_dates #check if it was successful
+            >>> print(changed_dates)
                {'Simulation': {'start': datetime.date(2021, 1, 1),
                 'end': datetime.date(2021, 1, 12)}}
             @note
@@ -1193,16 +1202,15 @@ class APSIMNG:
         -------
             Dictionary of simulation names with dates
         # Example
-           from apsimNGpy.core.base_data import load_default_simulations
-
-            model = load_default_simulations(crop='maize')
-             changed_dates = model.extract_dates
-             print(changed_dates)
-             # OUTPUT
+            >>> from apsimNGpy.core.base_data import load_default_simulations
+            >>> model = load_default_simulations(crop='maize')
+            >>> changed_dates = model.extract_dates
+            >>> print(changed_dates)
                {'Simulation': {'start': datetime.date(2021, 1, 1),
                 'end': datetime.date(2021, 1, 12)}}
             @note
-            It is possible to target a specific simulation by specifying simulation name for this case the name is Simulations, so, it could appear as follows
+            It is possible to target a specific simulation by specifying simulation name for this case the name is Simulations,
+             so, it could appear as follows
              model.change_simulation_dates(start_date='2021-01-01', end_date='2021-01-12', simulation = 'Simulation')
 
         """
@@ -1221,9 +1229,9 @@ class APSIMNG:
 
         Parameters
         ----------
-        simulations, optional
-            List of simulation names to get, if `None` get all simulations
-        Returns
+        @param simulations: (str) optional
+            List of simulation names to use if `None` get all simulations
+        @Returns
         -------
             Dictionary of simulation names with dates
 
@@ -1254,9 +1262,10 @@ class APSIMNG:
 
             Parameters
             ----------
-            weather_file (Union[Path, str], required):
+            @param weather_file: Union[Path, str], required):
                 Weather file name, path should be relative to simulation or absolute.
-            simulations, (str, optional)
+                
+            @param simulations (str, optional)
                 List of simulation names to update, if `None` update all simulations
                 
             """
@@ -1376,32 +1385,30 @@ class APSIMNG:
 
     def inspect_model(self, model_type, fullpath=True):
         """
-        Inspects the model types and returns the model paths or names. usefull if you want to identify the path to the model for editing the model.
-        :param model_type: (Models) e.g. Models.Clock will return all fullpath or names of models in the type Clock
-        -Models.Manager returns information about the manager scripts in simulations
-        -Models.Core.Simulation returns information about the simulation
-        -Models.Climate.Weather returns a list of paths or names pertaining to weather models
-        -Models.Core.IPlant  returns a list of paths or names pertaining to all crops models available in the simulation
-        :param  fullpath: (bool) return the full path of the model relative to the parent simulations node. please note the
-            difference between simulations and simulation.
-        :return:
-         list[str]: list of all full paths or names of the model relative to the parent simulations node
-         Example:
-            >>> from apsimNGpy.core import base_data
-            >>> from apsimNGpy.core.core import Models
-            >>> model = base_data.load_default_simulations(crop ='maize')
-            >>> model.inspect_model(Models.Manager, fullpath=True)
-            ['.Simulations.Simulation.Field.Sow using a variable rule',
-             '.Simulations.Simulation.Field.Fertilise at sowing',
-             '.Simulations.Simulation.Field.Harvest']
-            >>> model.inspect_model(Models.Clock) # gets you the path to the Clock models
-             ['.Simulations.Simulation.Clock']
-            >>> model.inspect_model(Models.Core.IPlant) # gets you the path to the crop model
-            ['.Simulations.Simulation.Field.Maize']
-            >>> model.inspect_model(Models.Core.IPlant, fullpath=False) # gets you the name of the crop Models
-            ['Maize']
-            >>> model.inspect_model(Models.Fertiliser, fullpath=True)
-            ['.Simulations.Simulation.Field.Fertiliser']
+        Inspect the model types and returns the model paths or names. usefull if you want to identify the path to the
+        model for editing the model.
+        :param model_type: (Models) e.g. Models.Clock will return all fullpath or names
+        of models in the type Clock -Models.Manager returns information about the manager scripts in simulations
+        -Models.Core.Simulation returns information about the simulation -Models.Climate.Weather returns a list of
+        paths or names pertaining to weather models -Models.Core.IPlant  returns a list of paths or names pertaining
+        to all crops models available in the simulation :param  fullpath: (bool) return the full path of the model
+        relative to the parent simulations node. please note the difference between simulations and simulation.
+        :return: list[str]: list of all full paths or names of the model relative to the parent simulations node
+        Example:
+        >>> from apsimNGpy.core import base_data
+        >>> from apsimNGpy.core.core import Models
+        >>> model = base_data.load_default_simulations(crop ='maize')
+        >>> model.inspect_model(Models.Manager, fullpath=True)
+         [.Simulations.Simulation.Field.Sow using a variable rule', '.Simulations.Simulation.Field.Fertilise at
+        sowing', '.Simulations.Simulation.Field.Harvest']
+         >>> model.inspect_model(Models.Clock) # gets the path to the Clock models
+         ['.Simulations.Simulation.Clock']
+         >>> model.inspect_model(Models.Core.IPlant) # gets the path to the crop model
+         ['.Simulations.Simulation.Field.Maize']
+         >>> model.inspect_model(Models.Core.IPlant, fullpath=False) # gets you the name of the crop Models
+         ['Maize']
+         >>> model.inspect_model(Models.Fertiliser, fullpath=True)
+         ['.Simulations.Simulation.Field.Fertiliser']
 
         """
         if isinstance(model_type, type(Models.Clock)):
@@ -1815,20 +1822,19 @@ class APSIMNG:
         """
         Adds a factor to the created experiment. Thus, this method only works on factorial experiments
 
-        It Could raise a value error if the experiment is not yet created.
+        It could raise a value error if the experiment is not yet created.
 
-        Under some circumstances, epxeriment will be created automatically as a permutation experiment.
+        Under some circumstances, experiment will be created automatically as a permutation experiment.
 
         Parameters:
         ----------
 
-        specification str, required
+        :param specification: (str), required
              A specification can be:
                 - multiple values or categories e.g., "[Sow using a variable rule].Script.Population =4, 66, 9, 10"
                 - Range of values e.g, "[Fertilise at sowing].Script.Amount = 0 to 200 step 20",
-        factor_name: str, required
+        :param factor_name: (str), required
            - expected to be the user desired name of the factor being specified e.g., population
-
 
         Example:
             >>> from apsimNGpy.core import base_data
@@ -1837,7 +1843,6 @@ class APSIMNG:
             >>> apsim.add_factor(specification="[Fertilise at sowing].Script.Amount = 0 to 200 step 20", factor_name='Nitrogen')
             >>> apsim.add_factor(specification="[Sow using a variable rule].Script.Population =4 to 8 step 2", factor_name='Population')
             >>> apsim.run() # doctest: +SKIP
-
         """
         if factor_name is None:
             get_name = specification.split("=")[0].strip()
@@ -1874,15 +1879,15 @@ class APSIMNG:
 
     def set_continuous_factor(self, factor_path, lower_bound, upper_bound, interval, factor_name=None):
         """
-        Wraps around `add_factor()` to add a continuous factor, just for clarity
+        Wraps around `add_factor` to add a continuous factor, just for clarity
 
         Args:
-            factor_path (str): The path of the factor definition relative to its child node,
+            :param factor_path: (str): The path of the factor definition relative to its child node,
                 e.g., `"[Fertilise at sowing].Script.Amount"`.
-            factor_name (str): The name of the factor.
-            lower_bound (int or float): The lower bound of the factor.
-            upper_bound (int or float): The upper bound of the factor.
-            interval (int or float): The distance between the factor levels.
+            :param factor_name: (str): The name of the factor.
+            :param lower_bound: (int or float): The lower bound of the factor.
+            :param upper_bound: (int or float): The upper bound of the factor.
+            :param interval: (int or float): The distance between the factor levels.
 
         Returns:
             ApsimModel or APSIMNG: An instance of `apsimNGpy.core.core.apsim.ApsimModel` or `APSIMNG`.
@@ -1899,12 +1904,13 @@ class APSIMNG:
     def set_categorical_factor(self, factor_path: str, categories: Union[list, tuple], factor_name: str = None):
         """
         wraps around add_factor() to add a continuous factor, just for clarity
-
-        factor_path (str, required): path of the factor definition relative to its child node "[Fertilise at sowing].Script.Amount"
-        factor_name: (str) name of the factor.
-        categories (tuple, list, required): multiple values of a factor
-        return:
-         self
+         parameters
+         __________________________
+        :param factor_path: (str, required): path of the factor definition relative to its child node "[Fertilise at sowing].Script.Amount"
+        :param factor_name: (str) name of the factor.
+        :param categories: (tuple, list, required): multiple values of a factor
+        :returns:
+          ApsimModel or APSIMNG: An instance of `apsimNGpy.core.core.apsim.ApsimModel` or `APSIMNG`.
         Example:
             >>> from apsimNGpy.core import base_data
             >>> apsim = base_data.load_default_simulations(crop='Maize')
@@ -1924,7 +1930,7 @@ class APSIMNG:
              return:
                 instance of apsimNGpy.core.core.apsim.ApsimModel or APSIMNG
 
-             raises an error if crop is not found
+             :raises an error if crop is not found
 
           """
 

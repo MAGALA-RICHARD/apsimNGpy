@@ -6,7 +6,7 @@ import apsimNGpy
 import inspect
 from apsimNGpy.core.apsim import ApsimModel
 from apsimNGpy.core import runner
-from apsimNGpy.core import (config, base_data, apsim)
+from apsimNGpy.core import (config, base_data, apsim, load_model, structure)
 from apsimNGpy.manager import soilmanager, weathermanager
 
 modules = list((config, base_data, apsim))
@@ -117,7 +117,7 @@ if __name__ == '__main__':
         runner.run_model_externally,
         runner.run_from_dir,
         runner.upgrade_apsim_file, ]
-    docs([ApsimModel, runner, base_data, weathermanager, soilmanager], output_file="api.rst")
+    docs([ApsimModel, runner, base_data, weathermanager, soilmanager, structure, load_model], output_file="api.rst")
 
     rsts = list(Path.cwd().rglob("*.rst")) + list(Path.cwd().rglob("*conf.py"))
     for rst in rsts:

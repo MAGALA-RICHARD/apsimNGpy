@@ -2,7 +2,7 @@ import doctest
 from pathlib import Path
 from pprint import pprint
 
-from apsimNGpy.core.core import APSIMNG, Models
+from apsimNGpy.core.core import CoreModel, Models
 
 NODES = dict(manager=Models.Manager, simulation=Models.Core.Simulation,
              plant=Models.PMF.Plant,
@@ -13,9 +13,9 @@ NODES = dict(manager=Models.Manager, simulation=Models.Core.Simulation,
              replacements=Models.Core.Folder)
 
 
-class Inspector(APSIMNG):
+class Inspector(CoreModel):
     """
-    Inspector class for APSIMNGPY modules. It inherits from the APSIMNG class and
+    Inspector class for APSIMNGPY modules. It inherits from the CoreModel class and
     therefore has access to a repertoire of methods from that class.
 
     This implies that you can still run the model and modify parameters as needed.

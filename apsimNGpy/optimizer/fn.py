@@ -40,7 +40,7 @@ def set_up_data(model: str, func: callable, out_path: str = None, observed_value
     model: APSIM model file, apsimNGpy object, apsim file str or dict we want to use in the minimization func: an
     evaluation function, which is callable.
     This is something you should write for your self.
-    A typical evaluation function takes on the functional signature func(apsimNGpy.APSIMNG.model, *args) Additional
+    A typical evaluation function takes on the functional signature func(apsimNGpy.CoreModel.model, *args) Additional
     arguments can be passed as a tuple.
     Example of this could be observed variables to be compared with the
     predicted, where a loss function like rmse errors can be computed.
@@ -63,7 +63,7 @@ def set_up_data(model: str, func: callable, out_path: str = None, observed_value
 
 def add_control_var(self, updater: str, main_param, params: dict, label: str, **kwargs):
     """
-    Updater: Specifies the name of the APSIMNG method used to update values from the optimizer.
+    Updater: Specifies the name of the CoreModel method used to update values from the optimizer.
     Params: A dictionary containing arguments for the updater method, excluding the value to be optimized.
     For example, with `replace_soil_property_values`, params could be defined as:
         {
@@ -78,7 +78,7 @@ def add_control_var(self, updater: str, main_param, params: dict, label: str, **
     To optimize variables defined via the manager module, use `update_mgt_by_path` and define params as: {
     'path': "Simulation.Manager.script_name.None.parameter_name" } and main_parm  = 'param_values', Here,
     'None' represents the path to recompile the model to, and 'Simulation' is typically the name used in the
-    simulation, though it can vary. For further information, refer to the APSIMNG API documentation.
+    simulation, though it can vary. For further information, refer to the CoreModel API documentation.
 
     Kwargs: Contains additional arguments needed.
 

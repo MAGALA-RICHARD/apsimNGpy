@@ -2,7 +2,7 @@ import os
 
 from setuptools import setup, find_packages
 
-VERSION = '0.32'
+VERSION = '0.33'
 DESCRIPTION = 'apsimx next generation package interface'
 LONG_DESCRIPTION = 'run, edit, download soils and weather and interact with the apsimx file'
 
@@ -22,7 +22,7 @@ setup(
     include_package_data=True,
     entry_points={
         'console_scripts': [
-            'apsim=apsimNGpy.cli.cli:main',
+            'apsim=apsimNGpy.cli.cli:main_entry_point',
 
             'apsim_bin_path=apsimNGpy.cli.set_ups:apsim_bin_path',
         ],

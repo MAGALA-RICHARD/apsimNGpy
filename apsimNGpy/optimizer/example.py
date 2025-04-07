@@ -78,7 +78,7 @@ if __name__ == '__main__':
         prob.add_control_variable(control=EndDate)
         prob.add_control_variable(control=ew)
         init_guess = ('Yecora', '27-sep', '5-oct', 150,)
-        mn = prob.minimize_wrap_vars(ig=None, maxiter=150, popsize=30,
+        mn = prob.minimize_wrap_vars(maxiter=150, popsize=30,
                                      workers=1, strategy='best1exp', )
         from joblib import Parallel, delayed, dump
         del mn.cache_info

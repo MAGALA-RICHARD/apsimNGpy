@@ -5,10 +5,10 @@ import seaborn as sns
 sns.set_style('whitegrid')
 from matplotlib import pyplot as plt
 from apsimNGpy.core.base_data import load_default_simulations
-from apsimNGpy.core.core import APSIMNG
+from apsimNGpy.core.core import CoreModel
 
 _apsim = load_default_simulations(crop='Maize', simulations_object=False)
-apsim = APSIMNG(_apsim)
+apsim = CoreModel(_apsim)
 # create experiment initiate the experiment
 apsim.create_experiment(permutation=True, verbose=False)  # by default it is a permutation experiment
 
@@ -28,7 +28,7 @@ plt.show()
 # Add a crop replacement at the top of Models.Core.Simulations
 
 _apsim = load_default_simulations(crop='Maize', simulations_object=False)
-apsimC = APSIMNG(_apsim)
+apsimC = CoreModel(_apsim)
 # create experiment initiate the experiment
 apsimC.create_experiment(permutation=True, verbose=False)  # by default it is a permutation experiment
 apsimC.add_factor(specification="[Fertilise at sowing].Script.Amount = 0 to 200 step 20", factor_name='Nitrogen')

@@ -5,8 +5,8 @@ from pathlib import Path
 import shutil
 import pandas as pd
 from apsimNGpy.tests.base_test import BaseTester, path
-# Import the module where APSIMNG class is defined
-from apsimNGpy.core.core import APSIMNG, save_model_to_file
+# Import the module where CoreModel class is defined
+from apsimNGpy.core.core import CoreModel, save_model_to_file
 from apsimNGpy.core.model_loader import save_model_to_file
 from apsimNGpy.core.base_data import load_default_simulations
 import config

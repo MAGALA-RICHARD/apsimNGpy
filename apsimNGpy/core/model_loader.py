@@ -242,7 +242,7 @@ if __name__ == '__main__':
     print(time.perf_counter() - aa, 'seconds', 'loading from string')
 
     sv = save_model_to_file(maze.model_info.IModel)
-    from apsimNGpy.core.core import APSIMNG
+    from apsimNGpy.core.core import CoreModel
     from apsimNGpy.core.apsim import ApsimModel
 
     maze.update_mgt(management=({"Name": 'Fertilise at sowing', 'Amount': 10},))

@@ -52,7 +52,7 @@ class Problem(ABC):
         model: APSIM model file, apsimNGpy object, apsim file str or dict we want to use in the minimization func: an
         evaluation function, which is callable.
         This is something you should write for your self.
-        A typical evaluation function takes on the functional signature func(apsimNGpy.APSIMNG.model, *args) Additional
+        A typical evaluation function takes on the functional signature func(apsimNGpy.CoreModel.model, *args) Additional
         arguments can be passed as a tuple.
         Example of this could be observed variables to be compared with the
         predicted, where a loss function like rmse errors can be computed.

@@ -8,7 +8,7 @@ from apsimNGpy.core.base_data import load_default_simulations
 from unittest import TestCase
 from os import path
 from pathlib import Path
-from apsimNGpy.core.core import APSIMNG
+from apsimNGpy.core.core import CoreModel
 from abc import ABC, abstractmethod
 from os import chdir as _chdir
 from os import remove
@@ -59,7 +59,7 @@ class BaseTester(TestCase):
             self.model_path2 = Path(load_default_simulations(crop='soybean', simulations_object=False), )
             self.logger = logger
             self.out_path = Path.cwd() / 'test_output.apsimx'
-            self.test_ap_sim = APSIMNG(model=self.model_path)
+            self.test_ap_sim = CoreModel(model=self.model_path)
 
             self.out = path.realpath('test_save_output.apsimx')
 

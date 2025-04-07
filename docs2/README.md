@@ -243,7 +243,7 @@ Note:
 ## Method: APSIMNG.run_simulations
 
 ```python
-core.APSIMNG.run_simulations(results: bool, reports: Union[tuple, list], clean_up: bool)
+core.CoreModel.run_simulations(results: bool, reports: Union[tuple, list], clean_up: bool)
 ```
 Run the simulation. Here we are using the self.model_info named tuple from model loader
 :results : bool, optional if True, we return the results of the simulation
@@ -253,8 +253,9 @@ clean_up : bool deletes the file on disk, by default False
 returns results if results is True else None
 
 _property APSIMNG.simulation_object_
+
 ```python
-core.APSIMNG.simulation_object(value: unknown)
+core.CoreModel.simulation_object(value: unknown)
 ```
 Set the model if you don't want to initialize again
 :param value:
@@ -268,7 +269,7 @@ Set the model if you don't want to initialize again
 _property: APSIMNG.simulations_
 
 ```python
-core.APSIMNG.simulations
+core.CoreModel.simulations
 ```
 Retrieve simulation nodes in the APSIMx `Model.Core.Simulations` object.
 
@@ -279,7 +280,7 @@ any structure of apsimx file any structure can be handled
 _property: APSIMNG.simulation_names_
 
 ```python
-core.APSIMNG.simulations_names
+core.CoreModel.simulations_names
 ```
 retrieves the name of the simulations in the APSIMx `Model.Core
 @return: list of simulation names
@@ -288,7 +289,7 @@ retrieves the name of the simulations in the APSIMx `Model.Core
 ### Method: APSIMNG.restart_model
 
 ```python
-core.APSIMNG.restart_model(model_info:named_tuple)
+core.CoreModel.restart_model(model_info: named_tuple)
 ```
 
 :param model_info: A named tuple object returned by `load_apx_model` from the `model_loader` module.
@@ -306,7 +307,7 @@ This function is called by `save_edited_file` and `update_mgt`.
 ### Method: APSIMNG.save_edited_file
 
 ```python
-apsimNGpy.core.APSIMNG.save_edited_file(out_path:[os.Pathlike, str], relaod:bool)
+apsimNGpy.core.CoreModel.save_edited_file(out_path: [os.Pathlike, str], relaod: bool)
 ```
 Saves the model to the local drive.
 Notes: - If `out_path` is None, the `save_model_to_file` function extracts the filename from the
@@ -322,7 +323,8 @@ Parameters
 _Method: APSIMNG.run_
 
 ```python
-apsimNgpy.core.core.APSIMNG.run(report_name: [tuple, str, list], simulations: Union[tuple, list], clean: bool, multithread: bool, verbose: bool, get_dict: bool, init_only: bool)
+apsimNgpy.core.core.CoreModel.run(report_name: [tuple, str, list], simulations: Union[
+    tuple, list], clean: bool, multithread: bool, verbose: bool, get_dict: bool, init_only: bool)
 ```
 Run apsim model in the simulations. The method is called when we want to execute the simulations and collect the results
 
@@ -387,7 +389,7 @@ Out[6]: dict
 _Method: APSIMNG.replicate_file_
 
 ```python
-core.APSIMNG.replicate_file(k: int, path:str  , tag: str)
+core.CoreModel.replicate_file(k: int, path: str, tag: str)
 ```
 Replicates a file 'k' times.
 
@@ -418,7 +420,7 @@ model.replicate_file(k =5, path= Path.home())
 _Method: APSIMNG.get_crop_replacement_
 
 ```python
-core.APSIMNG.get_crop_replacement(Crop: str)
+core.CoreModel.get_crop_replacement(Crop: str)
 ```
 :param Crop: crop to get the replacement
 
@@ -428,7 +430,7 @@ core.APSIMNG.get_crop_replacement(Crop: str)
 _Method: APSIMNG.edit_cultivar_
 
 ```python
-core. APSIMNG.edit_cultivar(CultivarName:str, commands:tuple, values:tuple)
+core.CoreModel.edit_cultivar(CultivarName: str, commands: tuple, values: tuple)
 ```
 Edits the parameters of a given cultivar. we don't need a simulation name for this unless if you are defining it in the
 manager section, if that it is the case, see update_mgt
@@ -455,7 +457,7 @@ APSIMNG.get_current_cultivar_name(ManagerName: str)
 _Method: APSIMNG.collect_specific_report_
 
 ```python
-core.APSIMNG.collect_specific_report(results: dict, report_names: str, var_names: str, stat:str)
+core.CoreModel.collect_specific_report(results: dict, report_names: str, var_names: str, stat: str)
 ```
 _summary_
 
@@ -470,7 +472,7 @@ Args:
 _Method: APSIMNG.update_cultivar_
 
 ```python
-core.APSIMNG.update_cultivar(parameters: dict, simulations: Union[list, tuple] = None, clear=False, **kwargs):
+core.CoreModel.update_cultivar(parameters: dict, simulations: Union[list, tuple] = None, clear = False, ** kwargs):
 ```
 Update cultivar parameters
 
@@ -486,7 +488,7 @@ Parameters
 _Method: APSIMNG.examine_management_info_
 
 ```python
-core.APSIMNG.examine_management_info(simulations: Union[list, tuple])
+core.CoreModel.examine_management_info(simulations: Union[list, tuple])
 ```
 this will show the current management scripts in the simulation root
 
@@ -501,7 +503,7 @@ simulations, optional
 _Method: APSIMNG.change_som_
 
 ```python
-core.APSIMNG.change_som(*, simulations: Union[tuple, list] = None, inrm: int = 1250, icnr: int = 27, **kwargs):
+core.CoreModel.change_som(*, simulations: Union[tuple, list] = None, inrm: int = 1250, icnr: int = 27, ** kwargs):
 
 ````
      Change Surface Organic Matter (SOM) properties in specified simulations.
@@ -520,7 +522,7 @@ _Method: APSIMNG.recompile_edited_model_
 
 ```python
 
-core.core.APSIMNG.recompile_edited_model(out_path: [str, os.PathLike])
+core.core.CoreModel.recompile_edited_model(out_path: [str, os.PathLike])
 ```
 @param out_path: os.PathLike object this method is called to convert the simulation object from ConverterReturnType to model like object
 @return: self
@@ -529,7 +531,8 @@ core.core.APSIMNG.recompile_edited_model(out_path: [str, os.PathLike])
 _Method: APSIMNG.update_mgt_
 
 ```python
-core.APSIMNG.update_mgt(*, management: Union[dict, tuple],  simulations: [list, tuple] = None, out: [Path, str] = None, **kwargs)
+core.CoreModel.update_mgt(*, management: Union[dict, tuple], simulations: [list, tuple] = None, out: [Path,
+                                                                                                      str] = None, ** kwargs)
 ```
 Update management settings in the model. This method handles one management parameter at a time.
 
@@ -567,7 +570,7 @@ opens the simulation file
 _Method: APSIMNG.extract_user_input_
 
 ```python
-core.APSIMNG.extract_user_input(manager_name: str)
+core.CoreModel.extract_user_input(manager_name: str)
 ```
 Get user_input of a given model manager script
 returns;  a dictionary of user input with the key as the script parameters and values as the inputs

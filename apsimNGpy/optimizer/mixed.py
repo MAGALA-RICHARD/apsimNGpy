@@ -59,12 +59,12 @@ class MixedVariable(Problem):
 
         auto_ig = [auto_guess(data.var_type) for data in self.controls]
         optional_initial_decoded_guess = kwargs.get('x0', auto_ig)
-        kwargs.pop('x0') if 'x0' in kwargs else None
+        kwargs['x0'] =   optional_initial_decoded_guess
         optional_initial_encoded_guess = wrap.encode(optional_initial_decoded_guess)
         if de:
             result = differential_evolution(wrap, bounds=bounds, seed=0,
                                             args=optional_fixed_args,
-                                            x0=optional_initial_encoded_guess, **kwargs)
+                                             **kwargs)
 
             cache_usage = wrap.cache_info
             encoded_solution = result.x

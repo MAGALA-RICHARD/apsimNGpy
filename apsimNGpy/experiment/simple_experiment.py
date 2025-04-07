@@ -2,18 +2,18 @@
 """
 This module will replace all other modules they are too complicated for nothing
 """
-from apsimNGpy.core.core import APSIMNG, Models, RENAME
+from apsimNGpy.core.core import CoreModel, Models, RENAME
 
 
-class Experiment(APSIMNG):
+class Experiment(CoreModel):
     def __init__(self, model, out_path=None, permutation: bool = True, base_model_simulation: str = None, **kwargs):
         """
         Initialize an Experiment instance, adding the necessary models and factors.
 
         Args:
             model: The base model.
-            out_path: Output path for the APSIMNG simulation.
-            **kwargs: Additional parameters for APSIMNG.
+            out_path: Output path for the CoreModel simulation.
+            **kwargs: Additional parameters for CoreModel.
         """
         super().__init__(model, out_path, **kwargs)
         self.factor_names = []

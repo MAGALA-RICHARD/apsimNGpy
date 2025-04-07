@@ -5,9 +5,11 @@ from typing import Union
 import apsimNGpy
 import inspect
 from apsimNGpy.core.apsim import ApsimModel
+from apsimNGpy.core.core import CoreModel
 from apsimNGpy.core import runner
 from apsimNGpy.core import (config, base_data, apsim, load_model, structure)
 from apsimNGpy.manager import soilmanager, weathermanager
+from apsimNGpy.validation import evaluator
 
 modules = list((config, base_data, apsim))
 SENDTO = Path.cwd().parent.parent / 'docs/source'
@@ -40,7 +42,9 @@ def docs(modules: Union[list, object], output_file: Union[str, Path] = "api.rst"
     """
     if not isinstance(modules, list):
         modules = [modules]
-    modules = sort_modules(modules)
+    module_set = list(set(modules))
+    modules = sort_modules(module_set)
+
     with open(output_file, "w", encoding="utf-8") as file:
         title = ''
         file.write(f"{main_package}: API Reference\n")
@@ -70,6 +74,9 @@ def docs(modules: Union[list, object], output_file: Union[str, Path] = "api.rst"
 
             # Extract public functions
             for name, func in inspect.getmembers(module, inspect.isfunction):
+                is_class = inspect.isclass(module)
+                if is_class and func.__module__ != module.__module__:
+                    continue
                 if 'apsimNGpy' not in func.__module__.split("."):
                     continue
                 if name.startswith("_"):
@@ -77,13 +84,18 @@ def docs(modules: Union[list, object], output_file: Union[str, Path] = "api.rst"
                 if not inspect.getdoc(func) and skip_undocumented:  # Skip undocumented funcs
                     continue
                 sig = inspect.signature(func)
-                file.write(f".. function:: {func.__module__}.{name}{sig}\n\n")
+                if is_class:
+                    file.write(f".. function:: {module.__module__}.{module.__name__}.{name}{sig}\n\n")
+                else:
+                    file.write(f".. function:: {func.__module__}.{name}{sig}\n\n")
 
                 doc = func.__doc__ or "No documentation available."
                 file.write(f"   {doc.strip()}\n\n")
 
             # Extract public classes and their public methods
             for name, cls in inspect.getmembers(module, inspect.isclass):
+                cls_name = cls.__name__
+
                 if 'apsimNGpy' not in cls.__module__.split("."):
                     continue
                 if name.startswith("_"):
@@ -99,8 +111,10 @@ def docs(modules: Union[list, object], output_file: Union[str, Path] = "api.rst"
                         continue  # Skip private methods
                     if not inspect.getdoc(method) and skip_undocumented:
                         continue
+                    if method.__module__ != cls.__module__:
+                        continue
                     sig = inspect.signature(method)
-                    file.write(f"   .. method::{method.__module__}.{method_name}{sig}\n\n")
+                    file.write(f"   .. method::{method.__module__}.{cls_name}.{method_name}{sig}\n\n")
                     method_doc = method.__doc__ or "No documentation available."
                     file.write(f"      {method_doc.strip()}\n\n")
 
@@ -117,7 +131,10 @@ if __name__ == '__main__':
         runner.run_model_externally,
         runner.run_from_dir,
         runner.upgrade_apsim_file, ]
-    docs([ApsimModel, runner, base_data, weathermanager, soilmanager, structure, load_model], output_file="api.rst")
+    from apsimNGpy.core import core
+
+    docs([apsim.ApsimModel, core.CoreModel, evaluator, runner, base_data, weathermanager, soilmanager, structure, load_model],
+         output_file="api.rst")
 
     rsts = list(Path.cwd().rglob("*.rst")) + list(Path.cwd().rglob("*conf.py"))
     for rst in rsts:

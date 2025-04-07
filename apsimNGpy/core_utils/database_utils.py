@@ -200,4 +200,4 @@ def check_column_value_exists(_db: os.PathLike, table_name: str, value_to_check:
 
 
 if __name__ == "__main__":
-    clear_dir(r'D:\package\apsimNGpy')
+    clear_dir(r'D:\package\src')

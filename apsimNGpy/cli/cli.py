@@ -23,6 +23,15 @@ async def fetch_weather_data(lonlat):
     return await asyncio.to_thread(get_weather, lonlat=lonlat, source=source)
 
 
+def fetch_soil_data(lonlat):
+    """
+    Fetch soil data asynchronously
+    @param lonlat:
+    @return:
+    """
+    pass
+
+
 async def run_apsim_model(model, report_name):
     """Run APSIM model asynchronously."""
     await asyncio.to_thread(model.run, report_name=report_name)
@@ -31,7 +40,6 @@ async def run_apsim_model(model, report_name):
 async def save_results(df, file_name):
     """Save results asynchronously."""
     await asyncio.to_thread(df.to_csv, file_name)
-
 
 
 async def main():

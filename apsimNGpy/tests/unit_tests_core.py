@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch
 
 import pandas as pd
 
-# Import the module where APSIMNG class is defined
+# Import the module where CoreModel class is defined
 from apsimNGpy.core.model_loader import save_model_to_file
 from apsimNGpy.tests.base_test import BaseTester
 

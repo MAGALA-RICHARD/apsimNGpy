@@ -54,7 +54,7 @@ def dataview_to_dataframe(_model, reports):
     """
     Convert .NET System.Data.DataView to Pandas DataFrame.
     report (str, list, tuple) of the report to be displayed. these should be in the simulations
-    :param apsimng model: APSIMNG object or instance
+    :param apsimng model: CoreModel object or instance
     :return: Pandas DataFrame
     """
     try:
@@ -99,7 +99,7 @@ def soil_components(component):
     return comps[_comp]
 
 
-class APSIMNG:
+class CoreModel:
     """
     Modify and run APSIM Next Generation (APSIM NG) simulation models.
 
@@ -263,7 +263,7 @@ class APSIMNG:
 
         return self
 
-    def save_edited_file(self, out_path: os.PathLike = None, reload: bool = False) -> Union['APSIMNG', None]:
+    def save_edited_file(self, out_path: os.PathLike = None, reload: bool = False) -> Union['CoreModel', None]:
         """ Saves the model to the local drive.
 
             Notes: - If `out_path` is None, the `save_model_to_file` function extracts the filename from the
@@ -303,7 +303,7 @@ class APSIMNG:
             simulations: Union[tuple, list] = None,
             clean_up: bool = False,
             verbose=False,
-            **kwargs) -> 'APSIMNG':
+            **kwargs) -> 'CoreModel':
         """Run apsim model in the simulations
 
         Parameters
@@ -325,7 +325,7 @@ class APSIMNG:
             :param simulations:
 
         returns
-            instance of the class APSIMNG
+            instance of the class CoreModel
         """
         try:
             # we could cut the chase and run apsim faster, but unfortunately some versions are not working properly,
@@ -358,7 +358,7 @@ class APSIMNG:
         Example:
          >>> from apsimNGpy.core.base_data import load_default_simulations
          >>> fmodel = load_default_simulations(crop ='Maize', simulations_object=False) # get path only
-         >>> model = APSIMNG(fmodel)
+         >>> model = CoreModel(fmodel)
          >>> mn=model.run() #3 run the model before colelcting the results
          >>> sr = model.simulated_results
 
@@ -582,7 +582,7 @@ class APSIMNG:
         :param commands: (str, required): list of text commands for the report variables e.g., '[Clock].Today as Date'
         :param report_name: (str, optional): name of the report variable if not specified the first accessed report object will be altered
         :Returns:
-            returns instance of apsimNGpy.core.core.apsim.ApsimModel or apsimNGpy.core.core.apsim.APSIMNG
+            returns instance of apsimNGpy.core.core.apsim.ApsimModel or apsimNGpy.core.core.apsim.CoreModel
            raises an erros if a report is not found
         Example:
         >>> from apsimNGpy import core
@@ -655,7 +655,7 @@ class APSIMNG:
         -  new_parent_name: what is the new parent names =Field2, this fiedl is optional but important if you have nested simulations
         Returns:
 
-          returns instance of apsimNGpy.core.core.apsim.ApsimModel or apsimNGpy.core.core.apsim.APSIMNG
+          returns instance of apsimNGpy.core.core.apsim.ApsimModel or apsimNGpy.core.core.apsim.CoreModel
 
         """
         sims = self.Simulations
@@ -708,7 +708,7 @@ class APSIMNG:
         If no path is specified, copies are created in the same dir_path as the original file, also with incremented filenames.
 
         Parameters:
-        - self: The core.api.APSIMNG object instance containing 'path' attribute pointing to the file to be replicated.
+        - self: The core.api.CoreModel object instance containing 'path' attribute pointing to the file to be replicated.
 
         - k (int): The number of copies to create.
 
@@ -803,7 +803,7 @@ class APSIMNG:
 
           - values: values for each command (e.g., (721, 760)).
 
-        Returns: instance of the class APSIMNG or ApsimModel
+        Returns: instance of the class CoreModel or ApsimModel
 
         """
         if not isinstance(CultivarName, str):
@@ -1348,7 +1348,7 @@ class APSIMNG:
 
         Parameters
         ----------
-        simulation, optional
+        :simulation, optional
             Simulation name, if `None` use the first simulation.
         Returns
         -------
@@ -1459,7 +1459,7 @@ class APSIMNG:
 
              >>> model = load_default_simulations(crop ='Maize', simulations_object=False)# initiate model
 
-              >>> model = APSIMNG(model)# replace with your intended file path
+              >>> model = CoreModel(model)# replace with your intended file path
               >>> model.replace_soils_values_by_path(node_path='.Simulations.Simulation.Field.Soil.Organic', indices=[0], Carbon =1.3)
 
               >>> sv= model.get_soil_values_by_path('.Simulations.Simulation.Field.Soil.Organic', 'Carbon')
@@ -1595,7 +1595,7 @@ class APSIMNG:
 
         # by all means, we want indices to be evaluated
 
-        fpt = {k: (p := APSIMNG._try_literal_eval(v)) if (k in expected_nones) else (p := v)
+        fpt = {k: (p := CoreModel._try_literal_eval(v)) if (k in expected_nones) else (p := v)
                for k, v in fpv.items()}
         # we can now call the method below. First, we update param_values
         fpt['param_values'] = param_values
@@ -1785,7 +1785,7 @@ class APSIMNG:
 
         Args:
 
-            **kwargs: Additional parameters for APSIMNG.
+            **kwargs: Additional parameters for CoreModel.
 
             :param permutation (bool). If True, the experiment uses a permutation node to run unique combinations of the specified
             factors for the simulation. For example, if planting population and nitrogen fertilizers are provided,
@@ -1829,12 +1829,14 @@ class APSIMNG:
         Parameters:
         ----------
 
-        :param specification: (str), required
-             A specification can be:
-                - multiple values or categories e.g., "[Sow using a variable rule].Script.Population =4, 66, 9, 10"
-                - Range of values e.g, "[Fertilise at sowing].Script.Amount = 0 to 200 step 20",
-        :param factor_name: (str), required
-           - expected to be the user desired name of the factor being specified e.g., population
+        :specification: *(str), required*
+
+        A specification can be:
+                - 1. multiple values or categories e.g., "[Sow using a variable rule].Script.Population =4, 66, 9, 10"
+                - 2. Range of values e.g, "[Fertilise at sowing].Script.Amount = 0 to 200 step 20",
+        :factor_name: *(str), required*
+
+        - expected to be the user-desired name of the factor being specified e.g., population
 
         Example:
             >>> from apsimNGpy.core import base_data
@@ -1890,7 +1892,7 @@ class APSIMNG:
             :param interval: (int or float): The distance between the factor levels.
 
         Returns:
-            ApsimModel or APSIMNG: An instance of `apsimNGpy.core.core.apsim.ApsimModel` or `APSIMNG`.
+            ApsimModel or CoreModel: An instance of `apsimNGpy.core.core.apsim.ApsimModel` or `CoreModel`.
         Example:
             >>> from apsimNGpy.core import base_data
             >>> apsim = base_data.load_default_simulations(crop='Maize')
@@ -1910,7 +1912,7 @@ class APSIMNG:
         :param factor_name: (str) name of the factor.
         :param categories: (tuple, list, required): multiple values of a factor
         :returns:
-          ApsimModel or APSIMNG: An instance of `apsimNGpy.core.core.apsim.ApsimModel` or `APSIMNG`.
+          ApsimModel or CoreModel: An instance of `apsimNGpy.core.core.apsim.ApsimModel` or `CoreModel`.
         Example:
             >>> from apsimNGpy.core import base_data
             >>> apsim = base_data.load_default_simulations(crop='Maize')
@@ -1923,16 +1925,18 @@ class APSIMNG:
 
     def add_crop_replacements(self, _crop: str):
         """
-             Adds a replacement folder as a child of the simulations. Useful when you intend to edit cultivar paramters
+        Adds a replacement folder as a child of the simulations.
+        Useful when you intend to edit cultivar **parameters**.
 
-             Args:
-               _crop: (str) name of the crop to be added the replacement folder
-             return:
-                instance of apsimNGpy.core.core.apsim.ApsimModel or APSIMNG
+        **Args:**
+            - **_crop** (*str*): Name of the crop to be added to the replacement folder.
 
-             :raises an error if crop is not found
+        **Returns:**
+            - *ApsimModel*: An instance of `apsimNGpy.core.core.apsim.ApsimModel` or `CoreModel`.
 
-          """
+        **Raises:**
+            - *ValueError*: If the specified crop is not found.
+        """
 
         _FOLDER = Models.Core.Folder()
         "everything is edited in place"
@@ -1961,7 +1965,7 @@ if __name__ == '__main__':
     modelm = al
 
     # model = load_default_simulations('maize')
-    model = APSIMNG(al)
+    model = CoreModel(al)
 
     for N in [3, 300]:
         # for rn in ['Maize, Soybean, Wheat', 'Maize', 'Soybean, Wheat']:

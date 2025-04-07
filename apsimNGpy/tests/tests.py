@@ -9,7 +9,7 @@ from apsimNGpy.core.config import get_apsim_bin_path
 from apsimNGpy.settings import logger, MSG
 
 try:
-    from apsimNGpy.core.core import APSIMNG
+    from apsimNGpy.core.core import CoreModel
     from apsimNGpy.core.apsim import ApsimModel
     from apsimNGpy.core.base_data import load_default_simulations
 except (ModuleNotFoundError, ImportError):

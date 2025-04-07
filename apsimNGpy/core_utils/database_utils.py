@@ -19,8 +19,8 @@ def read_with_query(db, query):
         Executes an SQL query on a specified database and returns the result as a Pandas DataFrame.
 
         Args:
-        db (str): The database file path or identifier to connect to.
-        query (str): The SQL query string to be executed. The query should be a valid SQL SELECT statement.
+        :db (str): The database file path or identifier to connect to.
+        :query (str): The SQL query string to be executed. The query should be a valid SQL SELECT statement.
 
         Returns:
         pandas.DataFrame: A DataFrame containing the results of the SQL query.

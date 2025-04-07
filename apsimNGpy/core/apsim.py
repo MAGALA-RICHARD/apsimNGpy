@@ -15,7 +15,7 @@ import sys
 # prepare for the C# import
 # from apsimNGpy.core.pythonet_config import start_pythonnet
 
-from apsimNGpy.core.core import APSIMNG, Models
+from apsimNGpy.core.core import CoreModel, Models
 from apsimNGpy.core.inspector import Inspector
 # now we can safely import any c# related libraries
 from System.Collections.Generic import *
@@ -47,7 +47,7 @@ def timing_decorator(func):
 class ApsimModel(Inspector):
     """
     Main class for apsimNGpy modules.
-    It inherits from the APSIMNG class and therefore has access to a repertoire of methods from it.
+    It inherits from the CoreModel class and therefore has access to a repertoire of methods from it.
 
     This implies that you can still run the model and modify parameters as needed.
     Example:

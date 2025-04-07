@@ -13,6 +13,7 @@ class Metrics:
     """
     This class is holds the evaluation metrics or the loss functions used in evaluating the model performance
     """
+
     def __init__(self):
         pass
 
@@ -22,8 +23,8 @@ class Metrics:
         Calculate the root-mean-square error (RRMSE) between actual and predicted values.
 
         Parameters:
-        - actual: list or numpy array of actual values
-        - predicted: list or numpy array of predicted values
+        :actual: *list or numpy array* of actual values.
+        :predicted: *list or numpy array* of predicted values.
 
         Returns:
         - float: relative root-mean-square error value
@@ -40,8 +41,8 @@ class Metrics:
         Calculate the Willmott's index of agreement.
 
         Parameters:
-        - obs: array-like, observed values.
-        - pred: array-like, predicted values.
+        :obs: *array-like*, observed values.
+        :pred: *array-like*, predicted values.
 
         Returns:
         - d: Willmott's index of agreement.
@@ -54,14 +55,14 @@ class Metrics:
         d = 1 - numerator / denominator
         return d
 
-
     def MSE(self, actual, predicted):
         """
         Calculate the Mean Squared Error (MSE) between actual and predicted values.
 
         Args:
-        :param actual: (array-like): Array of actual values.
-        :param predicted: (array-like): Array of predicted values.
+
+        :actual: (*array-like*): Array of actual values.
+        :predicted: (*array-like*): Array of predicted values.
 
         :Returns:
           float: The Mean Squared Error (MSE).
@@ -81,6 +82,7 @@ class Metrics:
 
         """
         return np.convolve(data, np.ones(window), 'valid') / window
+
     def rho_ci(self, x, y, ci="z-transform", conf_level=0.95, na_rm=False):
         dat = pd.DataFrame({'x': x, 'y': y})
         if na_rm:
@@ -140,11 +142,11 @@ class Metrics:
         Calculate Modeling Efficiency (MEF) between observed and predicted values.
 
         Parameters:
-        :param observed: (array-like): Array or list of observed values.
-        :param predicted: (array-like): Array or list of predicted values.
+        :observed: (*array-like*): Array or list of observed values.
+        :predicted: (*array-like*): Array or list of predicted values.
 
         :Returns:
-           float: The Modeling Efficiency (MEF) between observed and predicted values.
+           float: The Modeling Efficiency (ME) between observed and predicted values.
         """
         # Convert input data to NumPy arrays for consistent handling
         observed = np.array(actual)
@@ -193,34 +195,34 @@ class validate(Metrics):
     def __init__(self, actual, predicted):
         """
 
-        :param actual (Array): observed values
-        :param predicted (Array): predicted values
-        :param metric (str): metric to use default is RMSE
-         tip: for metrics use the intellisence on mets class e.g metric = mets.RMSE
+        :actual (*Array*): observed values
+        :predicted (*Array*): predicted values
+        :metric (*str*): metric to use default is RMSE
+         tip: for metrics use the IntelliSense on mets class e.g., metric = mets.RMSE
         """
         assert len(actual) == len(predicted), "Target values are of different length please try again===="
         self.actual = actual
         self.predicted = predicted
 
-    def evaluate(self, metric: str=mets.RMSE):
+    def evaluate(self, metric: str = mets.RMSE):
         """
-        :param metric: (str): metric to use default is RMSE
-        :return: returns an index
+        :metric: (str): metric to use default is RMSE
+        :return: an evaluation index
         """
         assert isinstance(metric, str), "target metric should be a string"
         return getattr(self, metric)(self.actual, self.predicted)
 
-
-    def evaluate_all(self, verbose: bool =False):
+    def evaluate_all(self, verbose: bool = False):
         """
-        verbose (bool) will print all the metrics
+        verbose (*bool*) will print all the metrics
         """
-        attribs = ['RMSE', 'RRMSE', "ME", "WIA", "bias", 'R2', "CCC", 'slope' ]
-        all=  {atbs: getattr(self, atbs)(self.actual, self.predicted) for atbs in attribs}
+        attribs = ['RMSE', 'RRMSE', "ME", "WIA", "bias", 'R2', "CCC", 'slope']
+        all = {atbs: getattr(self, atbs)(self.actual, self.predicted) for atbs in attribs}
         if verbose:
             for k, v in all.items():
                 print(k, ":", v)
         return all
+
 
 if __name__ == "__main__":
     x_data = np.array([1.2, 2.4, 3.6, 4.8, 5.0])

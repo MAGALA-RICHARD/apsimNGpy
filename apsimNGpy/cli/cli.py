@@ -33,7 +33,7 @@ async def save_results(df, file_name):
     await asyncio.to_thread(df.to_csv, file_name)
 
 
-@timer
+
 async def main():
     # Create argument parser
     parser = argparse.ArgumentParser(description='Run a simulation of a given crop.')
@@ -95,6 +95,7 @@ async def main():
         logger.info(stati)
 
 
+@timer
 def main_entry_point() -> None:
     asyncio.run(main())
 

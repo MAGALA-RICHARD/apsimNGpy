@@ -10,6 +10,7 @@ from apsimNGpy.core.apsim import ApsimModel, Models
 from apsimNGpy.core.base_data import load_default_simulations
 from apsimNGpy.settings import logger
 from apsimNGpy.manager.weathermanager import get_weather, _is_within_USA_mainland
+from apsimNGpy.cli.model_desc import extract_models
 import os
 import asyncio
 
@@ -85,7 +86,7 @@ async def main():
     parser.add_argument('-t', '--table', type=str, required=False, default='Report', help='Report table name. '
                                                                                           'Defaults to "Report"')
     parser.add_argument('-w', '--met_file', type=str, required=False, help="Path to the weather data file.")
-    parser.add_argument('-i', '--inspect', type=str, required=False, help="inspect your model to get the model paths")
+    parser.add_argument('-i', '--inspect', type=str, required=False, help=f"inspect your model to get the model paths. List of supported models {extract_models()}")
     parser.add_argument('-sim', '--simulation', type=str, required=False, help='Name of the APSIM simulation to run')
     parser.add_argument('-ws', '--wd', type=str, required=False, help='Working directory')
     parser.add_argument('-l', '--lonlat', type=str, required=False, help='longitude and Latitude (comma-separated) '
@@ -126,7 +127,7 @@ async def main():
         model = load_default_simulations(crop=args.model, simulations_object=True, set_wd=wd)
 
     if args.inspect:
-        # inspect returns after excetions
+        # inspect returns after excecutions
         model_type = eval(args.inspect)
         print(model.inspect_model(model_type=model_type))
         return

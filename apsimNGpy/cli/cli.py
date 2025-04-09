@@ -129,6 +129,7 @@ async def main():
         model = load_default_simulations(crop=args.model, simulations_object=True, set_wd=wd)
 
     if args.inspect:
+        print()
         # inspect returns after excecutions
         if args.inspect != 'file':
             model_type = eval(args.inspect)
@@ -136,6 +137,7 @@ async def main():
 
         else:
             model.inspect_file()
+        print()
         return
 
     await asyncio.to_thread(replace_soil_data, model, args)

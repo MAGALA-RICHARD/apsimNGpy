@@ -522,7 +522,7 @@ def _is_within_USA_mainland(lonlat):
         return False
 
 
-def get_weather(lonlat:Union[tuple, list], start:int=1990, end:int=2000, source:str='daymet', filename:str='__met_.met'):
+def get_weather(lonlat:Union[tuple, list], start:int=1990, end:int=2020, source:str='daymet', filename:str='__met_.met'):
     """
         Collects data from various sources.
 

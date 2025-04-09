@@ -1459,7 +1459,7 @@ class CoreModel:
 
              >>> model = load_default_simulations(crop ='Maize', simulations_object=False)# initiate model
 
-              >>> model = CoreModel(model)# replace with your intended file path
+              >>> model = CoreModel(model) # replace with your intended file path
               >>> model.replace_soils_values_by_path(node_path='.Simulations.Simulation.Field.Soil.Organic', indices=[0], Carbon =1.3)
 
               >>> sv= model.get_soil_values_by_path('.Simulations.Simulation.Field.Soil.Organic', 'Carbon')

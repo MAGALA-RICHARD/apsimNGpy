@@ -3,13 +3,13 @@ import sys
 
 sys.path.append(os.path.realpath(".."))
 
-in_modules = []
+__all__= []
 try:
-    from apsimNGpy import core, replacements, manager, core_utils
+    from apsimNGpy import core, manager, core_utils
     from apsimNGpy.core.core import CoreModel
     from apsimNGpy.core.apsim import ApsimModel
 
-    in_modules.extend(['core', 'replacements', 'manager',
+    __all__.extend(['core', 'replacements', 'manager',
                        'ApsimModel',
                        'core_utils', 'config', 'CoreModel'])
 
@@ -17,4 +17,4 @@ except Exception as e:
 
     pass
 
-__all__ = in_modules
+

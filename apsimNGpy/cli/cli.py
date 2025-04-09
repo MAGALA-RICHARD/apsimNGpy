@@ -2,6 +2,8 @@ import argparse
 import json
 import os.path
 import logging
+import pprint
+
 import time
 import numpy as np
 import pandas as pd
@@ -86,7 +88,7 @@ async def main():
     parser.add_argument('-t', '--table', type=str, required=False, default='Report', help='Report table name. '
                                                                                           'Defaults to "Report"')
     parser.add_argument('-w', '--met_file', type=str, required=False, help="Path to the weather data file.")
-    parser.add_argument('-i', '--inspect', type=str, required=False, help=f"inspect your model to get the model paths. List of supported models {extract_models()}")
+    parser.add_argument('-i', '--inspect',choices=['file', *extract_models()], type=str, required=False, help=f"inspect your model to get the model paths.")
     parser.add_argument('-sim', '--simulation', type=str, required=False, help='Name of the APSIM simulation to run')
     parser.add_argument('-ws', '--wd', type=str, required=False, help='Working directory')
     parser.add_argument('-l', '--lonlat', type=str, required=False, help='longitude and Latitude (comma-separated) '
@@ -128,8 +130,12 @@ async def main():
 
     if args.inspect:
         # inspect returns after excecutions
-        model_type = eval(args.inspect)
-        print(model.inspect_model(model_type=model_type))
+        if args.inspect != 'file':
+            model_type = eval(args.inspect)
+            print(model.inspect_model(model_type=model_type))
+
+        else:
+            model.inspect_file()
         return
 
     await asyncio.to_thread(replace_soil_data, model, args)

@@ -1974,13 +1974,13 @@ class CoreModel:
                 if not 'Replacements' in ans and 'Folder' in i:
                     continue
                 data.extend(ans)
-            del Models
+            del Models, model_types
             return data
         return filter_out()
     def inspect_file(self, indent=0, display_full_path = True):
         """
         Inspect the file by calling inspect_model() through get_model_paths.
-        This method is import in isnpecting the whole file and also getting the scripts paths
+        This method is important in inspecting the whole file and also getting the scripts paths
         """
 
         def build_tree(paths):

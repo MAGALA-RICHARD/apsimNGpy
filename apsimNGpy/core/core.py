@@ -1950,6 +1950,62 @@ class CoreModel:
             ADD(_crop, _FOLDER)
         else:
             logger.error(f"No plants of crop{CROP} found")
+    def get_model_paths(self) -> list[str]:
+        """
+        select out a few model types to use for building the APSIM file inspections
+        """
+        def filter_out():
+            import Models
+            data = []
+            model_types = ['Models.Core.Simulation', 'Models.Soils.Soil', 'Models.PMF.Plant', 'Models.Manager',
+                  'Models.Climate.Weather', 'Models.Report', 'Models.Clock', 'Models.Core.Folder',
+                  'Models.Soils.Solute',
+                  'Models.Soils.Swim3', 'Models.Soils.SoilCrop', 'Models.Soils.Water', 'Models.Summary',
+                  'Models.Core.Zone',
+                  'Models.Soils.CERESSoilTemperature', 'Models.Series', 'Models.Factorial.Experiment',
+                  'Models.Factorial.Permutation',
+                  'Models.Factorial.Factors',
+                  'Models.Sobol', 'Models.Operations', 'Models.Morris', 'Models.Fertiliser', 'Models.Core.Events',
+                  'Models.Core.VariableComposite',
+                  'Models.Soils.Physical', 'Models.Soils.Chemical', 'Models.Soils.Organic']
+            for i in model_types:
+
+                ans = self.inspect_model(eval(i))
+                if not 'Replacements' in ans and 'Folder' in i:
+                    continue
+                data.extend(ans)
+            del Models
+            return data
+        return filter_out()
+    def inspect_file(self, indent=0, display_full_path = True):
+        """
+        Inspect the file by calling inspect_model() through get_model_paths.
+        This method is import in isnpecting the whole file and also getting the scripts paths
+        """
+
+        def build_tree(paths):
+            from collections import defaultdict
+            tree = lambda: defaultdict(tree)
+            root = tree()
+            for path in paths:
+                parts = path.strip('.').split('.')
+                current = root
+                for part in parts:
+                    current = current[part]
+            return root
+
+        def print_tree(node, indent=indent, full_path="", dis_full_path=display_full_path):
+            for key in sorted(node.keys()):
+                current_path = f"{full_path}.{key}" if full_path else key
+                if dis_full_path:
+                   print("    " * indent + f"- {key}: .{current_path}")
+                   print_tree(node[key], indent + 1, current_path)
+                else:
+                    print("    " * indent + f"- {key}")
+                    print_tree(node[key], indent + 1, current_path)
+
+        tree = build_tree(self.get_model_paths())
+        print_tree(tree)
 
 
 if __name__ == '__main__':

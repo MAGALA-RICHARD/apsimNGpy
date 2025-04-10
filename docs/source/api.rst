@@ -447,6 +447,10 @@ CoreModel
        Returns:
            returns the current cultivar name in the manager script 'ManagerName'
 
+.. function:: apsimNGpy.core.core.CoreModel.get_model_paths(self) -> list[str]
+
+   select out a few model types to use for building the APSIM file inspections
+
 .. function:: apsimNGpy.core.core.CoreModel.get_report(self, simulation=None, names_only=False)
 
    Get current report string
@@ -459,6 +463,11 @@ CoreModel
         -------
             List of report lines.
             @param names_only: return the names of the reports as a list if names_only is True
+
+.. function:: apsimNGpy.core.core.CoreModel.inspect_file(self, indent=0, display_full_path=True)
+
+   Inspect the file by calling inspect_model() through get_model_paths.
+        This method is important in inspecting the whole file and also getting the scripts paths
 
 .. function:: apsimNGpy.core.core.CoreModel.inspect_model(self, model_type, fullpath=True)
 
@@ -587,7 +596,7 @@ CoreModel
 
              >>> model = load_default_simulations(crop ='Maize', simulations_object=False)# initiate model
 
-              >>> model = CoreModel(model)# replace with your intended file path
+              >>> model = CoreModel(model) # replace with your intended file path
               >>> model.replace_soils_values_by_path(node_path='.Simulations.Simulation.Field.Soil.Organic', indices=[0], Carbon =1.3)
 
               >>> sv= model.get_soil_values_by_path('.Simulations.Simulation.Field.Soil.Organic', 'Carbon')
@@ -1291,7 +1300,7 @@ apsimNGpy.manager.weathermanager
           >>> wf = get_met_from_day_met(lonlat=(-93.04, 42.01247),
           >>> start=2000, end=2020,timeout = 30, wait =2, retry_number=3, filename='daymet.met')
 
-.. function:: apsimNGpy.manager.weathermanager.get_weather(lonlat: Union[tuple, list], start: int = 1990, end: int = 2000, source: str = 'daymet', filename: str = '__met_.met')
+.. function:: apsimNGpy.manager.weathermanager.get_weather(lonlat: Union[tuple, list], start: int = 1990, end: int = 2020, source: str = 'daymet', filename: str = '__met_.met')
 
    Collects data from various sources.
 

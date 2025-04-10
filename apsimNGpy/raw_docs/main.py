@@ -13,6 +13,7 @@ from apsimNGpy.validation import evaluator
 
 modules = list((config, base_data, apsim))
 SENDTO = Path.cwd().parent.parent / 'docs/source'
+SENDTO2 = Path.cwd().parent.parent.parent/'apsimNGpy-documentations/doc'
 
 
 def sort_modules(modules):
@@ -137,6 +138,18 @@ if __name__ == '__main__':
          output_file="api.rst")
 
     rsts = list(Path.cwd().rglob("*.rst")) + list(Path.cwd().rglob("*conf.py"))
+    if SENDTO2.exists():
+        sd2 = SENDTO2
+        for rst in rsts:
+
+            copy = shutil.copy2(rst, SENDTO2.joinpath(rst.name))
+            print(copy)
+    else:
+        print(f"{SENDTO2} not present")
+
     for rst in rsts:
+
         copy = shutil.copy2(rst, SENDTO.joinpath(rst.name))
         print(copy)
+
+    # sphinx-build -b html docs/source docs/build/html

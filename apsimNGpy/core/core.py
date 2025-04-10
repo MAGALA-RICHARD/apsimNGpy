@@ -1383,17 +1383,19 @@ class CoreModel:
             data[sim] = list(soil_p_param)
         return data
 
-    def inspect_model(self, model_type, fullpath=True):
+    def inspect_model(self, model_type: Union[str, Models], fullpath=True):
         """
         Inspect the model types and returns the model paths or names. usefull if you want to identify the path to the
         model for editing the model.
         :param model_type: (Models) e.g. Models.Clock will return all fullpath or names
-        of models in the type Clock -Models.Manager returns information about the manager scripts in simulations
+        of models in the type Clock -Models.Manager returns information about the manager scripts in simulations. strings are allowed
+        to, in the case you may not need to import the global namespace, Models. e.g 'Models.Clock' will still work well.
+
         -Models.Core.Simulation returns information about the simulation -Models.Climate.Weather returns a list of
         paths or names pertaining to weather models -Models.Core.IPlant  returns a list of paths or names pertaining
         to all crops models available in the simulation :param  fullpath: (bool) return the full path of the model
         relative to the parent simulations node. please note the difference between simulations and simulation.
-        :return: list[str]: list of all full paths or names of the model relative to the parent simulations node
+        :return: list[str]: list of all full paths or names of the model relative to the parent simulations node \n
         Example:
         >>> from apsimNGpy.core import base_data
         >>> from apsimNGpy.core.core import Models
@@ -1409,8 +1411,16 @@ class CoreModel:
          ['Maize']
          >>> model.inspect_model(Models.Fertiliser, fullpath=True)
          ['.Simulations.Simulation.Field.Fertiliser']
+         >>> model.inspect_model('Models.Fertiliser', fullpath=False) # strings are allowed to
 
         """
+        import Models
+        if isinstance(model_type, str):
+            attr_model = model_type.strip("Models.")
+            # for security purpose we have to evaluate the string
+            if "_" in model_type or not getattr(Models, attr_model, None):
+                raise ValueError(f"Invalid model name: {model_type}")
+            model_type = eval(model_type, {'Models': Models})
         if isinstance(model_type, type(Models.Clock)):
             obj = self.Simulations.FindAllDescendants[model_type]()
             if obj:

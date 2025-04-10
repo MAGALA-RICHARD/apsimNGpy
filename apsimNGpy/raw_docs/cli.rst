@@ -53,6 +53,7 @@ The following options are available:
 
 - ``-m, --model`` (str, optional): Path to the APSIM model file. Defaults to "Maize". If path, it should end with .apsimx and should be absolute is not in the current directory
 - ``-o, --out`` (str, optional): Output directory.
+- ``-i, --inspect`` (str, optional): inspect file or specific model type within the file.
 - ``-t, --table`` (str, optional): Report table name. Defaults to "Report".
 - ``-w, --met_file`` (str, optional): Path to the weather data file.
 - ``-sim, --simulation`` (str, optional): Name of the APSIM simulation to run.
@@ -84,6 +85,20 @@ Specify an alternative aggregation function:
 
    apsim -m "Maize" -s "max"
 
+inspect a model:
+
+.. code-block:: bash
+
+   apsim -m "Maize" --inspect Models.Manager
+
+inspect the whole file in the APSIM simulation:
+
+.. code-block:: bash
+
+   apsim -m "Maize" --inspect file
+
+other arguments can not be passed successfuly when inspecting, because the execution ends on model inspection.
+
 Logging
 -------
 
@@ -99,7 +114,7 @@ Troubleshooting
 
 - Ensure APSIM is installed and accessible.
 - Verify input file paths are correct.
-- If weather data is not downloading, check the API source and internet connectivity.
+- If weather data is not downloading, check the API source and internet connectivity, the start and end dates in the model.
 - Use ``--help`` to see available options:
 
   .. code-block:: bash

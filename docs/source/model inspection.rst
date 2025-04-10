@@ -54,10 +54,98 @@ This method helps identify the model type efficiently. However, you need to know
 
 .. code-block:: python
 
-   from apsimNGpy import core
-   from apsimNGpy.core.core import Models
-   model =core.base_data.load_default_simulations(crop = "Maize")
-   model.find_model("Weather")
-   Models.Climate.Weather
-   model.find_model("Clock")
-   Models.Clock
+    from apsimNGpy import core
+    from apsimNGpy.core.core import Models
+
+    # Load the default maize simulation
+    model = core.base_data.load_default_simulations(crop="Maize")
+
+    # Inspect or find specific components
+    model.find_model("Weather")
+    Models.Climate.Weather
+
+    model.find_model("Clock")
+    Models.Clock
+
+Whole Model inspection
+=====================================
+Display Model Names Only
+""""""""""""""""""""""""""""""""""""""
+
+Use the following to inspect the model with names only:
+
+.. code-block:: python
+
+    model.inspect_file(display_full_path=False)
+
+    # Output:
+    - Simulations
+        - Simulation
+            - Clock
+            - Field
+                - Fertilise at sowing
+                - Fertiliser
+                - Harvest
+                - Maize
+                - Report
+                - Soil
+                    - Chemical
+                    - NH4
+                    - NO3
+                    - Organic
+                    - Physical
+                        - MaizeSoil
+                    - Temperature
+                    - Urea
+                    - Water
+                - Sow using a variable rule
+            - Graph
+                - Series
+            - Summary
+            - Weather
+
+
+Display Model Full Paths
+"""""""""""""""""""""""""""""""""""""
+
+To include full model paths in the output:
+
+.. code-block:: python
+
+    model.inspect_file(display_full_path=True)
+
+    # Output:
+    - Simulations: .Simulations
+        - Simulation: .Simulations.Simulation
+            - Clock: .Simulations.Simulation.Clock
+            - Field: .Simulations.Simulation.Field
+                - Fertilise at sowing: .Simulations.Simulation.Field.Fertilise at sowing
+                - Fertiliser: .Simulations.Simulation.Field.Fertiliser
+                - Harvest: .Simulations.Simulation.Field.Harvest
+                - Maize: .Simulations.Simulation.Field.Maize
+                - Report: .Simulations.Simulation.Field.Report
+                - Soil: .Simulations.Simulation.Field.Soil
+                    - Chemical: .Simulations.Simulation.Field.Soil.Chemical
+                    - NH4: .Simulations.Simulation.Field.Soil.NH4
+                    - NO3: .Simulations.Simulation.Field.Soil.NO3
+                    - Organic: .Simulations.Simulation.Field.Soil.Organic
+                    - Physical: .Simulations.Simulation.Field.Soil.Physical
+                        - MaizeSoil: .Simulations.Simulation.Field.Soil.Physical.MaizeSoil
+                    - Temperature: .Simulations.Simulation.Field.Soil.Temperature
+                    - Urea: .Simulations.Simulation.Field.Soil.Urea
+                    - Water: .Simulations.Simulation.Field.Soil.Water
+                - Sow using a variable rule: .Simulations.Simulation.Field.Sow using a variable rule
+            - Graph: .Simulations.Simulation.Graph
+                - Series: .Simulations.Simulation.Graph.Series
+            - Summary: .Simulations.Simulation.Summary
+            - Weather: .Simulations.Simulation.Weather
+
+
+Note on Model Inspection:
+"""""""""""""""""""""""""""""""""""""""""""""""
+
+Only a few key model types are inspected using model.inspect_model under the hood. Inspecting the entire simulation file can produce a large volume of data, much of which may not be relevant or necessary in most use cases.
+
+If certain models do not appear in the inspection output, this is intentional — the tool selectively inspects components to keep results concise and focused.
+
+For a complete view of the entire model structure, we recommend opening the simulation file in the APSIM GUI.

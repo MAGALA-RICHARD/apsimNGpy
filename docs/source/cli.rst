@@ -84,6 +84,20 @@ Specify an alternative aggregation function:
 
    apsim -m "Maize" -s "max"
 
+inspect a model:
+
+.. code-block:: bash
+
+   apsim -m "Maize" --inspect Models.Manager
+
+inspect the whole file in the APSIM simulation:
+
+.. code-block:: bash
+
+   apsim -m "Maize" --inspect file
+
+other arguments can not be passed successfuly when inspecting, because the execution ends on model inspection.
+
 Logging
 -------
 
@@ -99,7 +113,7 @@ Troubleshooting
 
 - Ensure APSIM is installed and accessible.
 - Verify input file paths are correct.
-- If weather data is not downloading, check the API source and internet connectivity.
+- If weather data is not downloading, check the API source and internet connectivity, the start and end dates in the model.
 - Use ``--help`` to see available options:
 
   .. code-block:: bash

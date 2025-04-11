@@ -17,6 +17,51 @@ import os
 import asyncio
 
 
+def change_mgt(model, args):
+    """
+    Update management parameters in the model using a string specification of various parameters.
+
+    The `args.management` string should contain one or more manager specifications in the form:
+        'path=path_to_manager, param1=value, param2=value'
+
+    To update multiple managers, separate them using a colon (`:`):
+        'path=manager1, rate=20 : path=manager2, rate=30, start_day="2023-01-01"'
+
+    Notes:
+        - The 'path' key is required for each manager block.
+
+    """
+
+    if not args.management:
+        return model
+
+    def parse_management_args(management_str):
+        parsed = []
+
+        specs = management_str.split(':')
+        for spec in specs:
+            if ',' not in spec:
+                raise argparse.ArgumentTypeError(f'invalide management specification {spec} detected')
+            parts = [s.strip() for s in spec.split(',') if s.strip()]
+            param_dict = {}
+            for part in parts:
+                if '__' in part:
+                    raise argparse.ArgumentTypeError(f'invalid specification path `{part}` detected')
+                if '=' not in part:
+                    continue
+                key, value = map(str.strip, part.split('=', 1))
+
+                    # Evaluate non-path values (assumes they’re Python literals)
+                param_dict[key] = value if key == 'path' else eval(value)
+            if 'path' in param_dict:
+                parsed.append(param_dict)
+        return parsed
+
+    for mgt_params in parse_management_args(args.management):
+        print(mgt_params)
+        model.update_mgt_by_path(**mgt_params)
+
+    return model
 
 
 async def fetch_weather_data(lonlat):
@@ -88,6 +133,7 @@ async def main():
                              'defaults to maize from the default '
                              'simulations ', default='Maize')
     parser.add_argument('-o', '--out', type=str, required=False, help='Out path for apsim file')
+    parser.add_argument('-mg', '--management', type=str, required=False, help=f'{change_mgt.__doc__}')
     parser.add_argument('-p', '--preview', type=str, required=False, choices=('yes', 'no'), default='no', help='Preview or start model in GUI')
     parser.add_argument('-sv', '--save', type=str, required=False, help='Out path for apsim file to save after making changes')
     parser.add_argument('-t', '--table', type=str, required=False, default='Report', help='Report table name. '
@@ -145,7 +191,7 @@ async def main():
             model.inspect_file()
         print()
         return
-
+    model = await asyncio.to_thread(change_mgt, model, args)
     await asyncio.to_thread(replace_soil_data, model, args)
     met_data = args.met_file or met_form_loc
     if met_data:

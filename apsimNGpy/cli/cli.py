@@ -17,6 +17,8 @@ import os
 import asyncio
 
 
+
+
 async def fetch_weather_data(lonlat):
     """Fetch weather data asynchronously."""
     if _is_within_USA_mainland(lonlat):
@@ -169,5 +171,6 @@ def main_entry_point() -> None:
 
 # Run asyncio event loop
 if __name__ == "__main__":
+
     main_entry_point()
     #-m maize -sf 'm.csv' --organic "node_path=.Simulations.Simulation.Field.Soil, Carbon=[1.2]"

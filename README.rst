@@ -44,6 +44,9 @@ All versions are currently in development, phase and they can be installed as fo
      pip install git+https://github.com/MAGALA-RICHARD/apsimNGpy.git
 
 
+Full documentation can be found here; https://magala-richard.github.io/apsimNGpy-documentations/index.html
+
+
 GETTING STARTED
 *****************************
 

@@ -15,7 +15,7 @@ from apsimNGpy.core.base_data import LoadExampleFiles
 from apsimNGpy.parallel.process import download_soil_tables
 from tqdm import tqdm
 import random
-from apsimNGpy.manager.soilmanager import OrganizeAPSIMsoil_profile, DownloadsurgoSoiltables
+from apsimNGpy.manager.soilmanager import OrganiseSoilProfile, DownloadsurgoSoiltables
 from apsimNGpy.core.weather import daymet_bylocation_nocsv
 from apsimNGpy.parallel.process import custom_parallel
 from apsimNGpy.parallel.safe import initialise
@@ -214,7 +214,7 @@ def download_weather(df, start, end, use_thread=True, ncores=10, replace_soils=T
         if replace_soils:
             table = DownloadsurgoSoiltables(location)
             if isinstance(table, pd.DataFrame):
-                sp = OrganizeAPSIMsoil_profile(table, thickness=20, thickness_values=th)
+                sp = OrganiseSoilProfile(table, thickness=20, thickness_values=th)
                 sp = sp.cal_missingFromSurgo()
                 if sp[0].isna().any().any() or sp[1].isna().any().any() or sp[2].isna().any().any():
                     print(f"soils not replaced at {location}")

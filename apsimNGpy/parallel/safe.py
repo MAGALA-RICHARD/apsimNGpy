@@ -1,4 +1,4 @@
-from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganizeAPSIMsoil_profile
+from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganiseSoilProfile
 from apsimNGpy.manager.weathermanager import get_met_from_day_met
 from apsimNGpy.core.apsim import ApsimModel
 
@@ -14,7 +14,7 @@ def download_soil_table(x):
         cod = x
         table = DownloadsurgoSoiltables(cod)
         th = [150, 150, 200, 200, 200, 250, 300, 300, 400, 500]
-        sp = OrganizeAPSIMsoil_profile(table, thickness=20, thickness_values=th).cal_missingFromSurgo()
+        sp = OrganiseSoilProfile(table, thickness=20, thickness_values=th).cal_missingFromSurgo()
         return {x: sp}
     except Exception as e:
         print("Exception Type:", type(e), "has occured")
@@ -40,7 +40,7 @@ def simulator_worker(row, dictio):
 
     if kwargs.get("replace_soil", False):
         table = DownloadsurgoSoiltables(location)
-        sp = OrganizeAPSIMsoil_profile(table, thickness=20, thickness_values=th)
+        sp = OrganiseSoilProfile(table, thickness=20, thickness_values=th)
         sp = sp.cal_missingFromSurgo()
         simulator_model.replace_downloaded_soils(sp, sim_names)
 

@@ -165,7 +165,7 @@ bottom depth and top depth in a turple
 distparms = {'a': 0, 'b': 0.2}
 
 
-class OrganizeAPSIMsoil_profile:
+class OrganiseSoilProfile:
     # Iinitiate the soil object and covert all into numpy array and change them to floating values
     def __init__(self, sdf, thickness, thickness_values=None, bottomdepth=200, state='Iowa'):
         """_summary_
@@ -248,7 +248,7 @@ class OrganizeAPSIMsoil_profile:
         if isinstance(self.thickness_values, str):  # just put a string to evaluate to false i will fix it later
             tv = np.array(self.thickness_values)
             tv = tv.astype('float64')
-            xnew, top_dep = OrganizeAPSIMsoil_profile.set_depth(tv)
+            xnew, top_dep = OrganiseSoilProfile.set_depth(tv)
         apsimvar = yinterpo(xnew)
         return apsimvar
 
@@ -601,7 +601,7 @@ class OrganizeAPSIMsoil_profile:
 if __name__ == '__main__':
     lonlat = -92.097702, 41.8780025
     dw = DownloadsurgoSoiltables(lonlat)
-    sop = OrganizeAPSIMsoil_profile(dw, 20)
+    sop = OrganiseSoilProfile(dw, 20)
     data = sop.cal_missingFromSurgo()
     from apsimNGpy.core.apsim import ApsimModel
     from apsimNGpy.core.base_data import load_default_simulations

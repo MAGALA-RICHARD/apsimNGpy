@@ -8,7 +8,7 @@ from typing import Union
 import os
 import numpy as np
 import time
-from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganizeAPSIMsoil_profile
+from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganiseSoilProfile
 import apsimNGpy.manager.weathermanager as weather
 import pandas as pd
 import sys
@@ -216,9 +216,9 @@ class ApsimModel(Inspector):
             self.soiltype = keys
             if verbose:
                 print("Padding variabales for:", keys)
-            self.soil_profile = OrganizeAPSIMsoil_profile(self.dict_of_soils_tables[keys],
-                                                          thickness_values=self.thickness_values,
-                                                          thickness=self.thickness)
+            self.soil_profile = OrganiseSoilProfile(self.dict_of_soils_tables[keys],
+                                                    thickness_values=self.thickness_values,
+                                                    thickness=self.thickness)
             missing_properties = self.soil_profile.cal_missingFromSurgo()  # returns a list of physical, organic and cropdf each in a data frame
             physical_calculated = missing_properties[0]
             self.organic_calcualted = missing_properties[1]
@@ -502,7 +502,7 @@ class ApsimModel(Inspector):
         sim_name = kwargs.get('sim_name', self.simulation_names)
         assert lon_lat, 'Please supply the lonlat'
         sp = DownloadsurgoSoiltables(lon_lat)
-        sop = OrganizeAPSIMsoil_profile(sp, thickness, thickness_values=self.thickness_values).cal_missingFromSurgo()
+        sop = OrganiseSoilProfile(sp, thickness, thickness_values=self.thickness_values).cal_missingFromSurgo()
         self.replace_downloaded_soils(sop, simulation_names=sim_name)
         return self
 
@@ -528,7 +528,7 @@ if __name__ == '__main__':
         from apsimNGpy.manager import soilmanager as sm
 
         st = sm.DownloadsurgoSoiltables(lonlat)
-        sp = sm.OrganizeAPSIMsoil_profile(st, 20)
+        sp = sm.OrganiseSoilProfile(st, 20)
         sop = sp.cal_missingFromSurgo()
         model.replace_downloaded_soils(sop, model.simulation_names, No_till=True)
         bd = model.extract_any_soil_physical("BD")

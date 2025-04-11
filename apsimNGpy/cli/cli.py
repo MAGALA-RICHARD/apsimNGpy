@@ -73,13 +73,18 @@ async def fetch_weather_data(lonlat):
     return await asyncio.to_thread(get_weather, lonlat=lonlat, source=source, start=1985, end=2020)
 
 
-def fetch_soil_data(lonlat):
+def replace_soil_from_web(model, args, lonlat):
     """
     Fetch soil data asynchronously
     @param lonlat:
     @return:
     """
-    pass
+    if  args.get_web_data !='no' and not args.lonlat:
+        raise ValueError("attempting to fetch soil without supplying lonlat values")
+    if args.lonlat and args.get_web_data != 'no':
+       model.replace_soil_profile_from_web(lonlat = lonlat)
+
+    return model
 
 
 async def run_apsim_model(model, report_name):
@@ -160,6 +165,8 @@ async def main():
                         help="Replace any soil data through a soil chemical parameters and path specification"
                              " e.g, 'node_path=.Simulations.Simulation.Field.Soil, NH4=[2.2]'")
 
+    parser.add_argument('-fw', '--get_web_data', type=str, required=False, choices=['both', 's', 'w', 'no'], default='no', help='get soil or web data')
+
 
     # Parse arguments
     args = parser.parse_args()
@@ -169,8 +176,15 @@ async def main():
     os.makedirs(wd, exist_ok=True)
 
     met_form_loc = None
-    if args.lonlat:
+
+    if args.lonlat is not None:
         lonlat_tuple = tuple(map(float, args.lonlat.split(',')))
+    else:
+        lonlat_tuple = None
+
+    if args.get_web_data == 'both' or args.get_web_data == 'w':
+        print('fetching weather data')
+
         met_form_loc = await fetch_weather_data(lonlat_tuple)
 
     file_name = args.save or f"out_{args.model.strip('.apsimx')}.csv"
@@ -191,7 +205,8 @@ async def main():
             model.inspect_file()
         print()
         return
-    model = await asyncio.to_thread(change_mgt, model, args)
+    model = await asyncio.to_thread(change_mgt, model, args,  lonlat_tuple)
+    model = await asyncio.to_thread(replace_soil_from_web, model, args)
     await asyncio.to_thread(replace_soil_data, model, args)
     met_data = args.met_file or met_form_loc
     if met_data:

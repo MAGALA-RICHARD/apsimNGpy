@@ -8,7 +8,7 @@ from pathlib import Path
 
 from apsimNGpy.core_utils.utils import select_process
 from apsimNGpy.weather import daymet_bylocation_nocsv, daymet_bylocation
-from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganizeAPSIMsoil_profile
+from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganiseSoilProfile
 from apsimNGpy.core_utils.spatial import create_fishnet1, create_apsimx_sim_files, generate_random_points
 from tqdm import tqdm
 
@@ -57,7 +57,7 @@ def simulate_single_point(model: Any, location: Tuple[float, float], report, rea
     # replace soil is true
     if kwargs.get("replace_soil", False):
         table = DownloadsurgoSoiltables(location)
-        sp = OrganizeAPSIMsoil_profile(table, thickness=20, thickness_values=th)
+        sp = OrganiseSoilProfile(table, thickness=20, thickness_values=th)
         sp = sp.cal_missingFromSurgo()
         simulator_model.replace_downloaded_soils(sp, sim_name)
     # if replace management practices
@@ -123,7 +123,7 @@ def simulate_single_from_shape_file(wd, shape_file, model: Any, resolution, repo
 
         if kwargs.get("replace_soil", False):
             table = DownloadsurgoSoiltables(location)
-            sp = OrganizeAPSIMsoil_profile(table, thickness=20, thickness_values=th)
+            sp = OrganiseSoilProfile(table, thickness=20, thickness_values=th)
             sp = sp.cal_missingFromSurgo()
             simulator_model.replace_downloaded_soils(sp, sim_names)
 

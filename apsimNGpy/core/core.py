@@ -1416,7 +1416,8 @@ class CoreModel:
         """
         import Models
         if isinstance(model_type, str):
-            attr_model = model_type.strip("Models.")
+            l_model = len('Models.')
+            attr_model = model_type[l_model:]
             # for security purpose we have to evaluate the string
             if "_" in model_type or not getattr(Models, attr_model, None):
                 raise ValueError(f"Invalid model name: {model_type}")

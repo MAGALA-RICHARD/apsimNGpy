@@ -405,7 +405,7 @@ class ApsimModel(Inspector):
         if self.simulation_names:
             sim_name = list(self.simulation_names)
         else:
-            sim_name = self.extract_simulation_name  # because it is a property decorator
+            sim_name = self.simulation_names  # because it is a property decorator
         self.replace_met_file(wpath, sim_name)
         return self
 

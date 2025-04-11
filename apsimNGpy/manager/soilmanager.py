@@ -19,57 +19,69 @@ import matplotlib.pyplot as plt
 THICKNESS = [150, 150, 200, 200, 200, 250, 300, 300, 400, 500]
 hydro = {'A': 67, 'B': 78, 'C': 85, 'D': 89}
 
+import requests
+import xmltodict
+
 
 def DownloadsurgoSoiltables(lonlat, select_componentname=None, summarytable=False):
     '''
-    TODO this is a duplicate File. Duplicate of soils/soilmanager
     Downloads SSURGO soil tables
 
-    parameters
+    Parameters
     ------------------
-    :param lonlat: longitude and latitude
-    :param select_componentname: any componet name within the map unit e.g 'Clarion'. the default is None that mean sa ll the soil componets intersecting a given locationw il be returned
-      if specified only that soil component table will be returned. in case it is not found the dominant componet will be returned with a caveat meassage.
-        use select_componentname = 'domtcp' to return the dorminant component
-    :param summarytable: prints the component names, their percentages
+    :param lonlat: tuple of (longitude, latitude)
+    :param select_componentname: specific component name within the map unit, default None
+    :param summarytable: if True, prints summary table of component names and their percentages
     '''
 
-    total_steps = 3
-    # lat = "37.54189"
-    # lon = "-120.96683"
-    lonLat = "{0} {1}".format(lonlat[0], lonlat[1])
+    lonLat = f"{lonlat[0]} {lonlat[1]}"
     url = "https://SDMDataAccess.nrcs.usda.gov/Tabular/SDMTabularService.asmx"
-    # headers = {'content-child': 'application/soap+xml'}
-    headers = {'content-child': 'text/xml'}
-    body = """<?xml version="1.0" encoding="utf-8"?>
-              <soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:sdm="http://SDMDataAccess.nrcs.usda.gov/Tabular/SDMTabularService.asmx">
+
+    # FIXED: Correct header name and value
+    headers = {
+        'Content-Type': 'text/xml; charset=utf-8',
+        'SOAPAction': 'http://SDMDataAccess.nrcs.usda.gov/Tabular/SDMTabularService.asmx/RunQuery'
+    }
+
+    body = f"""<?xml version="1.0" encoding="utf-8"?>
+    <soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:sdm="http://SDMDataAccess.nrcs.usda.gov/Tabular/SDMTabularService.asmx">
        <soap:Header/>
        <soap:Body>
           <sdm:RunQuery>
-             <sdm:Query>SELECT co.cokey as cokey, ch.chkey as chkey, comppct_r as prcent, compkind as compkind_series, wsatiated_r as wat_r,partdensity as pd, dbthirdbar_h as bb, musym as musymbol, compname as componentname, muname as muname, slope_r, slope_h as slope, hzname, hzdept_r as topdepth, hzdepb_r as bottomdepth, awc_r as PAW, ksat_l as KSAT,
-                        claytotal_r as clay, silttotal_r as silt, sandtotal_r as sand, texcl, drainagecl, om_r as OM, iacornsr as CSR, dbthirdbar_r as BD, wfifteenbar_r as L15, wthirdbar_h as DUL, ph1to1h2o_r as pH, ksat_r as sat_hidric_cond,
-                        (dbthirdbar_r-wthirdbar_r)/100 as bd FROM sacatalog sc
-                        FULL OUTER JOIN legend lg  ON sc.areasymbol=lg.areasymbol
-                        FULL OUTER JOIN mapunit mu ON lg.lkey=mu.lkey
-                        FULL OUTER JOIN component co ON mu.mukey=co.mukey
-                        FULL OUTER JOIN chorizon ch ON co.cokey=ch.cokey
-                        FULL OUTER JOIN chtexturegrp ctg ON ch.chkey=ctg.chkey
-                        FULL OUTER JOIN chtexture ct ON ctg.chtgkey=ct.chtgkey
-                        FULL OUTER JOIN copmgrp pmg ON co.cokey=pmg.cokey
-                        FULL OUTER JOIN corestrictions rt ON co.cokey=rt.cokey
-                        WHERE mu.mukey IN (SELECT * from SDA_Get_Mukey_from_intersection_with_WktWgs84('point(""" + lonLat + """)')) 
-
-                        AND sc.areasymbol != 'US' 
-                        order by co.cokey, ch.chkey, prcent, topdepth, bottomdepth, muname
-            </sdm:Query>
+             <sdm:Query>
+             SELECT co.cokey as cokey, ch.chkey as chkey, comppct_r as prcent, compkind as compkind_series, 
+             wsatiated_r as wat_r,partdensity as pd, dbthirdbar_h as bb, musym as musymbol, compname as componentname, 
+             muname as muname, slope_r, slope_h as slope, hzname, hzdept_r as topdepth, hzdepb_r as bottomdepth, 
+             awc_r as PAW, ksat_l as KSAT, claytotal_r as clay, silttotal_r as silt, sandtotal_r as sand, texcl, 
+             drainagecl, om_r as OM, iacornsr as CSR, dbthirdbar_r as BD, wfifteenbar_r as L15, wthirdbar_h as DUL, 
+             ph1to1h2o_r as pH, ksat_r as sat_hidric_cond, (dbthirdbar_r-wthirdbar_r)/100 as bd 
+             FROM sacatalog sc
+             FULL OUTER JOIN legend lg  ON sc.areasymbol=lg.areasymbol
+             FULL OUTER JOIN mapunit mu ON lg.lkey=mu.lkey
+             FULL OUTER JOIN component co ON mu.mukey=co.mukey
+             FULL OUTER JOIN chorizon ch ON co.cokey=ch.cokey
+             FULL OUTER JOIN chtexturegrp ctg ON ch.chkey=ctg.chkey
+             FULL OUTER JOIN chtexture ct ON ctg.chtgkey=ct.chtgkey
+             FULL OUTER JOIN copmgrp pmg ON co.cokey=pmg.cokey
+             FULL OUTER JOIN corestrictions rt ON co.cokey=rt.cokey
+             WHERE mu.mukey IN (
+                 SELECT * from SDA_Get_Mukey_from_intersection_with_WktWgs84('point({lonLat})')
+             ) 
+             AND sc.areasymbol != 'US' 
+             ORDER BY co.cokey, ch.chkey, prcent, topdepth, bottomdepth, muname
+             </sdm:Query>
           </sdm:RunQuery>
        </soap:Body>
     </soap:Envelope>"""
 
     response = requests.post(url, data=body, headers=headers, timeout=140)
-    # Put query results in dictionary format
-    print(response)
+
+    if not response.ok:
+        print(f"Request unsuccessful: {response.text}, response code: {response.status_code}")
+        return None
+
     my_dict = xmltodict.parse(response.content)
+
 
     # Convert from dictionary to dataframe format
     soil_df = None
@@ -587,16 +599,16 @@ class OrganizeAPSIMsoil_profile:
 
 
 if __name__ == '__main__':
-    lon = -93.097702, 41.8780025
-    dw = DownloadsurgoSoiltables(lon)
+    lonlat = -92.097702, 41.8780025
+    dw = DownloadsurgoSoiltables(lonlat)
     sop = OrganizeAPSIMsoil_profile(dw, 20)
     data = sop.cal_missingFromSurgo()
     from apsimNGpy.core.apsim import ApsimModel
-    from apsimNGpy.core.base_data import LoadExampleFiles
+    from apsimNGpy.core.base_data import load_default_simulations
     from pathlib import Path
     from apsimNGpy import settings
 
-    ap_sim = LoadExampleFiles(os.getcwd()).get_maize
+    ap_sim = load_default_simulations(simulations_object=False)
 
     m = ApsimModel(ap_sim, thickness_values=settings.SOIL_THICKNESS)
     m.replace_downloaded_soils(data, m.extract_simulation_name)

@@ -75,16 +75,21 @@ class ApsimModel(Inspector):
         self.soil_series = soil_series
         self.thickness = thickness
         self.out_path = out_path or out
-
+        self._thickness_values = thickness_values
         self.copy = True
         self.run_all_soils = run_all_soils
         if not isinstance(thickness_values, np.ndarray):
-            self.thickness_values = np.array(thickness_values, dtype=np.float64)  # apsim uses floating digit number
+            self.thickness_values = np.array(self._thickness_values, dtype=np.float64)  # apsim uses floating digit number
         else:
-            self.thickness_values = thickness_values
+            self.thickness_values = self._thickness_values
         if kwargs.get('experiment', False):
             self.create_experiment()
-
+    @property
+    def thickness_values(self):
+        return self._thickness_values
+    @thickness_values.setter
+    def thickness_values(self, values):
+        self._thickness_values = values
     def _find_soil_solute(self, solute: str, simulation: Union[tuple, list] = None):
         sim = self._find_simulation(simulation)
         solutes = sim.FindAllDescendants[Models.Soils.Solute]()
@@ -339,7 +344,9 @@ class ApsimModel(Inspector):
             pysoil.ParticleSizeSand = physical_calculated.ParticleSizeSand
             pysoil.ParticleSizeSilt = physical_calculated.ParticleSizeSilt
             water.InitialValues = physical_calculated.DUL
-            water.Thickness = None
+            print(self.thickness_replace)
+            print()
+            print()
             water.Thickness = self.thickness_replace
             pysoil.AirDry = soil_crop.LL
             pysoil.Thickness = self.thickness_replace
@@ -478,14 +485,13 @@ class ApsimModel(Inspector):
                                  "var".format(insert_var))
 
             bd = list(pysoil.DUL)
-            print(bd)
+
             bd = np.array(bd)
             cf = np.array(bd) * np.array(th)
             cf = np.divide(cf, 1)  # this convert to percentage
             per = np.array(df_sel) / cf
             new_carbon = [i for i in np.array(per).flatten()]
-            print(new_carbon)
-            print(len(new_carbon))
+
             self.replace_any_soil_organic(spin_var, new_carbon)
         if spin_var == 'DUL':
             if 'PAW' not in insert_var:
@@ -495,7 +501,7 @@ class ApsimModel(Inspector):
             ll = np.array(l_15)
             dul = ll + df_sel
             dul = list(np.array(dul).flatten())
-            print(len(dul))
+
             pysoil.DUL = dul
 
             return self
@@ -508,6 +514,72 @@ class ApsimModel(Inspector):
         self.replace_met_file(weather_file=wf)
         return self
 
+    def auto_gen_thickness_layers(self,
+            max_depth, n_layers=10, thin_layers=3, thin_thickness=100,
+            growth_type="linear", thick_growth_rate=1.5
+    ):
+        """
+        Generate layer thicknesses from surface to depth, starting with thin layers and increasing thickness.
+
+        Args:
+            max_depth (float): Total depth in mm.
+            n_layers (int): Total number of layers.
+            thin_layers (int): Number of initial thin layers.
+            thin_thickness (float): Thickness of each thin layer.
+            growth_type (str): 'linear' or 'exponential'.
+            thick_growth_rate (float): Growth factor for thick layers (e.g., +50% each layer if exponential).
+
+        Returns:
+            List[float]: List of layer thicknesses summing to max_depth.
+        """
+        from math import pow
+
+        assert 0 < thin_layers < n_layers, "thin_layers must be less than total layers"
+        assert thin_thickness > 0, "thin_thickness must be positive"
+        assert growth_type in ['linear', 'exponential'], "Invalid growth_type"
+
+        thick_layers = n_layers - thin_layers
+        thin_total = thin_layers * thin_thickness
+        remaining_depth = max_depth - thin_total
+
+        if remaining_depth <= 0:
+            raise ValueError("Thin layers consume more than total depth.")
+
+        # --- Step 1: Thin layers ---
+        thin_parts = [thin_thickness] * thin_layers
+
+        # --- Step 2: Thick layers ---
+        if growth_type == "linear":
+            # We'll solve an arithmetic series: a + (a + d) + ... = remaining_depth
+            # Assume a = base_thick, d = constant increment
+            # So: total = thick_layers * a + d * (0 + 1 + ... + thick_layers-1)
+            increments = list(range(thick_layers))
+            sum_increments = sum(increments)
+            base_thick = (remaining_depth - sum_increments * thick_growth_rate) / thick_layers
+            thick_parts = [base_thick + i * thick_growth_rate for i in increments]
+
+        elif growth_type == "exponential":
+            # Geometric series: a*r^0 + a*r^1 + ... = remaining_depth
+            r = thick_growth_rate
+            denom = sum([pow(r, i) for i in range(thick_layers)])
+            a = remaining_depth / denom
+            thick_parts = [a * pow(r, i) for i in range(thick_layers)]
+
+        # Final result
+        layers = thin_parts + thick_parts
+
+        # Precision check
+        total = sum(layers)
+        if abs(total - max_depth) > 1e-6:
+            # Final adjustment to fix floating point error
+            layers[-1] += max_depth - total
+        layers.sort()
+        layers = [int(i) for i in layers]
+
+        return layers
+
+
+
     def replace_soil_profile_from_web(self, **kwargs):
         from apsimNGpy.manager.weathermanager import get_weather, _is_within_USA_mainland
         lon_lat = kwargs.get('lonlat', self.lonlat)
@@ -518,7 +590,14 @@ class ApsimModel(Inspector):
         assert lon_lat, 'Please supply the lonlat'
         sp = DownloadsurgoSoiltables(lon_lat)
         sop = OrganiseSoilProfile(sp, thickness, thickness_values=self.thickness_values).cal_missingFromSurgo()
+
+        if self.thickness_values is None:
+            self.thickness_values = self.auto_gen_thickness_layers(max_depth=2200, n_layers=int(self.Nlayers),
+                                                    thin_layers=3, thin_thickness=100,
+                                                    growth_type='linear', thick_growth_rate=50)
+        self.thickness_replace =self.thickness_values.copy()
         self.replace_downloaded_soils(sop, simulation_names=sim_name)
+        self.save()
         return self
 
 
@@ -547,9 +626,14 @@ if __name__ == '__main__':
         sop = sp.cal_missingFromSurgo()
         model.replace_downloaded_soils(sop, model.simulation_names, No_till=True)
         bd = model.extract_any_soil_physical("BD")
+
     except Exception as e:
         print(type(e).__name__, repr(e))
         exc_type, exc_value, exc_traceback = sys.exc_info()
         # Extract the line number from the traceback object
         line_number = exc_traceback.tb_lineno
         print(f"Error: {type(e).__name__} occurred on line: {line_number} execution value: {exc_value}")
+
+
+
+

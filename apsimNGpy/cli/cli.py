@@ -3,7 +3,7 @@ import json
 import os.path
 import logging
 import pprint
-
+from apsimNGpy import settings
 import time
 import numpy as np
 import pandas as pd
@@ -15,6 +15,7 @@ from apsimNGpy.manager.weathermanager import get_weather, _is_within_USA_mainlan
 from apsimNGpy.cli.model_desc import extract_models
 import os
 import asyncio
+from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganiseSoilProfile
 
 
 def change_mgt(model, args):
@@ -73,18 +74,16 @@ async def fetch_weather_data(lonlat):
     return await asyncio.to_thread(get_weather, lonlat=lonlat, source=source, start=1985, end=2020)
 
 
-def replace_soil_from_web(model, args, lonlat):
+def replace_soil_from_web(lonlat):
     """
     Fetch soil data asynchronously
     @param lonlat:
     @return:
     """
-    if  args.get_web_data !='no' and not args.lonlat:
-        raise ValueError("attempting to fetch soil without supplying lonlat values")
-    if args.lonlat and args.get_web_data != 'no':
-       model.replace_soil_profile_from_web(lonlat = lonlat)
 
-    return model
+    sp = DownloadsurgoSoiltables(lonlat)
+    sop = OrganiseSoilProfile(sp, thickness=20, thickness_values=settings.SOIL_THICKNESS).cal_missingFromSurgo()
+    return sop
 
 
 async def run_apsim_model(model, report_name):
@@ -171,6 +170,8 @@ async def main():
     # Parse arguments
     args = parser.parse_args()
     logger.info(f"Commands summary: '{args}'")
+    if  args.get_web_data !='no' and not args.lonlat:
+        raise ValueError("attempting to fetch soil without supplying lonlat values")
 
     wd = args.wd or os.getcwd()
     os.makedirs(wd, exist_ok=True)
@@ -183,16 +184,20 @@ async def main():
         lonlat_tuple = None
 
     if args.get_web_data == 'both' or args.get_web_data == 'w':
-        print('fetching weather data')
 
         met_form_loc = await fetch_weather_data(lonlat_tuple)
 
+
+
+
     file_name = args.save or f"out_{args.model.strip('.apsimx')}.csv"
+    if args.lonlat and args.get_web_data == 's' or args.get_web_data == 'both':
+        soilP = replace_soil_from_web(lonlat_tuple)
 
     if args.model.endswith('.apsimx'):
-        model = ApsimModel(args.model, args.out)
+        model = ApsimModel(args.model, args.out, thickness_values=settings.SOIL_THICKNESS)
     else:
-        model = load_default_simulations(crop=args.model, simulations_object=True, set_wd=wd)
+        model = load_default_simulations(crop=args.model, simulations_object=True, set_wd=wd, thickness_values=settings.SOIL_THICKNESS)
 
     if args.inspect:
         print()
@@ -205,16 +210,21 @@ async def main():
             model.inspect_file()
         print()
         return
-    model = await asyncio.to_thread(change_mgt, model, args,  lonlat_tuple)
-    model = await asyncio.to_thread(replace_soil_from_web, model, args)
+
+    model = await asyncio.to_thread(change_mgt, model, args)
+
     await asyncio.to_thread(replace_soil_data, model, args)
     met_data = args.met_file or met_form_loc
     if met_data:
+        print('Weather')
         await asyncio.to_thread(model.replace_met_file, weather_file=met_data, simulations=args.simulation)
         msg = f'Successfully updated weather file with {met_data}'
         if args.lonlat:
             msg += f' from location: {args.lonlat}'
         logger.info(msg)
+
+    if args.lonlat and args.get_web_data == 's' or args.get_web_data == 'both':
+        await asyncio.to_thread(model.replace_downloaded_soils,soilP, model.simulation_names)
 
     # Run APSIM asynchronously
     model = await run_apsim_model(model, report_name=args.table)

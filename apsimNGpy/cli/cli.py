@@ -81,21 +81,24 @@ async def main():
     # Create argument parser
     parser = argparse.ArgumentParser(description='Run a simulation of a given crop.')
 
+
     # Add arguments
     parser.add_argument('-m', '--model', type=str, required=False,
                         help='Path  or name of the APSIM model file if path it should ends with .apsimx'
                              'defaults to maize from the default '
                              'simulations ', default='Maize')
     parser.add_argument('-o', '--out', type=str, required=False, help='Out path for apsim file')
+    parser.add_argument('-p', '--preview', type=str, required=False, choices=('yes', 'no'), default='no', help='Preview or start model in GUI')
+    parser.add_argument('-sv', '--save', type=str, required=False, help='Out path for apsim file to save after making changes')
     parser.add_argument('-t', '--table', type=str, required=False, default='Report', help='Report table name. '
                                                                                           'Defaults to "Report"')
     parser.add_argument('-w', '--met_file', type=str, required=False, help="Path to the weather data file.")
-    parser.add_argument('-i', '--inspect',choices=['file', *extract_models()], type=str, required=False, help=f"inspect your model to get the model paths.")
+    parser.add_argument('-i', '--inspect', type=str, required=False, help=f"inspect your model to get the model paths.")
     parser.add_argument('-sim', '--simulation', type=str, required=False, help='Name of the APSIM simulation to run')
     parser.add_argument('-ws', '--wd', type=str, required=False, help='Working directory')
     parser.add_argument('-l', '--lonlat', type=str, required=False, help='longitude and Latitude (comma-separated) '
                                                                          'for fetching weather data.')
-    parser.add_argument('-sf', '--save', type=str, required=False, help='File name for saving output data.')
+    parser.add_argument('-sm', '--save_model', type=str, required=False, help='File name for saving output data.')
     parser.add_argument('-s', '--aggfunc', type=str, required=False, default='mean',
                         help='Statistical summary function (e.g., mean, median). Defaults to "mean".')
     parser.add_argument('-og', '--organic', type=str,
@@ -110,6 +113,7 @@ async def main():
                         required=False,
                         help="Replace any soil data through a soil chemical parameters and path specification"
                              " e.g, 'node_path=.Simulations.Simulation.Field.Soil, NH4=[2.2]'")
+
 
     # Parse arguments
     args = parser.parse_args()
@@ -134,7 +138,7 @@ async def main():
         print()
         # inspect returns after excecutions
         if args.inspect != 'file':
-            model_type = eval(args.inspect)
+            model_type = args.inspect
             print(model.inspect_model(model_type=model_type))
 
         else:
@@ -162,6 +166,10 @@ async def main():
         stati = getattr(numeric_df, args.aggfunc)()
 
         logger.info(stati)
+    if args.save_model:
+        model.save(args.save_model)
+    if args.preview =='yes':
+        model.preview_simulation()
 
 
 @timer

@@ -137,17 +137,29 @@ class ApsimModel(Inspector):
         model object
         """
         duL = self.extract_any_soil_physical('DUL', simulations)
+        print(duL)
         saT = self.extract_any_soil_physical('SAT', simulations)
-        for enum, (s, d) in enumerate(zip(saT, duL)):
-            # first check if they are equal
-            if d >= s:
-                # if d is greater than s, then by what value, we need this value to add it to 0.02
-                #  to be certain all the time that dul is less than s we subtract the summed value
-                diff = d - s
-                duL[enum] = d - (diff + 0.02)
-            else:
-                duL[enum] = d
-        self.replace_any_soil_physical('DUL', simulations, duL)
+        for sim in duL:
+            duls = duL[sim]
+
+            sats = saT[sim]
+            for enum, (s, d) in enumerate(zip(sats, duls)):
+                # first check if they are equal
+                if d >= s:
+                    # if d is greater than s, then by what value, we need this value to add it to 0.02
+                    #  to be certain all the time that dul is less than s we subtract the summed value
+                    diff = d - s
+                    duls[enum] = d - (diff + 0.02)
+                    print(d)
+                else:
+                    duls[enum] = d
+            if not simulations:
+                soil_object = self.Simulations.FindDescendant[Soil]()
+
+                soilsy = soil_object.FindDescendant[Physical]()
+                soilsy.DUL =duls
+        self.save()
+            #self.replace_any_soil_physical('DUL', simulations, duL)
         return self
 
     def _get_SSURGO_soil_profile(self, lonlat: tuple, run_all_soils: bool = False):

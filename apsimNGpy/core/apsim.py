@@ -509,7 +509,10 @@ class ApsimModel(Inspector):
         return self
 
     def replace_soil_profile_from_web(self, **kwargs):
+        from apsimNGpy.manager.weathermanager import get_weather, _is_within_USA_mainland
         lon_lat = kwargs.get('lonlat', self.lonlat)
+        if not _is_within_USA_mainland(lon_lat):
+            raise ValueError(f"{lon_lat} is not within USA. coordnates outside USA are not supported yet")
         thickness = kwargs.get('thickness', 20)
         sim_name = kwargs.get('sim_name', self.simulation_names)
         assert lon_lat, 'Please supply the lonlat'

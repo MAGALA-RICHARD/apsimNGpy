@@ -218,7 +218,7 @@ async def main():
     await asyncio.to_thread(replace_soil_data, model, args)
     met_data = args.met_file or met_form_loc
     if met_data:
-        print('Weather')
+
         await asyncio.to_thread(model.replace_met_file, weather_file=met_data, simulations=args.simulation)
         msg = f'Successfully updated weather file with {met_data}'
         if args.lonlat:

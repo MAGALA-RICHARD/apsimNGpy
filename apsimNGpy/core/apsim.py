@@ -71,7 +71,9 @@ class ApsimModel(Inspector):
         parameter soil series model is a path of aPSim file or aPSIMNG object"""
         self.lonlat = lonlat
         self.Nlayers = bottomdepth / thickness
-
+        bm = bottomdepth * 10
+        if thickness_values is None:
+            thickness_values = self.auto_gen_thickness_layers(max_depth=bm, n_layers=int(self.Nlayers))
         self.soil_series = soil_series
         self.thickness = thickness
         self.out_path = out_path or out

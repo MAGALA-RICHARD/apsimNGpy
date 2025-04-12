@@ -89,6 +89,8 @@ def replace_soil_from_web(lonlat):
 async def run_apsim_model(model, report_name):
     """Run APSIM model asynchronously."""
     # model.run(report_name)
+    if report_name is None:
+        report_name = model.inspect_model(Models.Report, fullpath=False)
     return await asyncio.to_thread(model.run, report_name=report_name)
     # return await asyncio.to_thread(model,)
 
@@ -140,7 +142,7 @@ async def main():
     parser.add_argument('-mg', '--management', type=str, required=False, help=f'{change_mgt.__doc__}')
     parser.add_argument('-p', '--preview', type=str, required=False, choices=('yes', 'no'), default='no', help='Preview or start model in GUI')
     parser.add_argument('-sv', '--save', type=str, required=False, help='Out path for apsim file to save after making changes')
-    parser.add_argument('-t', '--table', type=str, required=False, default='Report', help='Report table name. '
+    parser.add_argument('-t', '--table', type=str, required=False, help='Report table name. '
                                                                                           'Defaults to "Report"')
     parser.add_argument('-w', '--met_file', type=str, required=False, help="Path to the weather data file.")
     parser.add_argument('-i', '--inspect', type=str, required=False, help=f"inspect your model to get the model paths.")
@@ -197,7 +199,7 @@ async def main():
     if args.model.endswith('.apsimx'):
         model = ApsimModel(args.model, args.out, thickness_values=settings.SOIL_THICKNESS)
     else:
-        model = load_default_simulations(crop=args.model, simulations_object=True, set_wd=wd, thickness_values=settings.SOIL_THICKNESS)
+        model = load_default_simulations(crop=args.model, simulations_object=True, set_wd=wd)
 
     if args.inspect:
         print()

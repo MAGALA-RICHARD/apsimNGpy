@@ -95,7 +95,7 @@
       <recent name="D:\ACPd\Bear creek simulations" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.database_utils">
+  <component name="RunManager" selected="Python.apsim">
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
       <module name="apsimNGpy" />
       <option name="ENV_FILES" value="" />
@@ -230,8 +230,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.database_utils" />
         <item itemvalue="Python.apsim" />
+        <item itemvalue="Python.database_utils" />
         <item itemvalue="Python.model_desc" />
         <item itemvalue="Python.core" />
         <item itemvalue="Python.main" />
@@ -319,15 +319,7 @@
       <workItem from="1744212235400" duration="1476000" />
       <workItem from="1744218981837" duration="52000" />
       <workItem from="1744219675851" duration="22303000" />
-      <workItem from="1744396275524" duration="5676000" />
-    </task>
-    <task id="LOCAL-00336" summary="config apsim. users can set the apsim bin folder path">
-      <option name="closed" value="true" />
-      <created>1721075895401</created>
-      <option name="number" value="00336" />
-      <option name="presentableId" value="LOCAL-00336" />
-      <option name="project" value="LOCAL" />
-      <updated>1721075895401</updated>
+      <workItem from="1744396275524" duration="9373000" />
     </task>
     <task id="LOCAL-00337" summary="config apsim. users can set the apsim bin folder path">
       <option name="closed" value="true" />
@@ -713,7 +705,15 @@
       <option name="project" value="LOCAL" />
       <updated>1744326795033</updated>
     </task>
-    <option name="localTasksCounter" value="385" />
+    <task id="LOCAL-00385" summary="one">
+      <option name="closed" value="true" />
+      <created>1744402287134</created>
+      <option name="number" value="00385" />
+      <option name="presentableId" value="LOCAL-00385" />
+      <option name="project" value="LOCAL" />
+      <updated>1744402287134</updated>
+    </task>
+    <option name="localTasksCounter" value="386" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

@@ -294,7 +294,7 @@ class CoreModel:
 
             if isinstance(reports, str):
                 reports = [reports]
-            datas = [pd.read_csv(data_tables[i]) for i in reports]
+            datas = [pd.read_csv(data_tables[i]) for i in reports if i in data_tables]
             return pd.concat(datas)
         else:
             logging.error("attempting to get results before running the model or providing the report name")

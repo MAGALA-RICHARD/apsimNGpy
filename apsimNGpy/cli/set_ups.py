@@ -4,13 +4,14 @@ import logging
 from apsimNGpy.core_utils.utils import timer
 from apsimNGpy.core.config import set_apsim_bin_path, get_apsim_bin_path, auto_detect_apsim_bin_path
 from apsimNGpy.settings import logger
-
+import sys
+from apsimNGpy.core.runner import get_apsim_version
 
 @timer
 def apsim_bin_path():
     parser = argparse.ArgumentParser(description='set ups')
     parser.add_argument('-u', '--update', type=str, default=None,
-                        help=f'set ups path using apsimNGPy config module see: set_apsim_bin_path')
+                        help=f'Updates apsim bin path using apsimNGPy config module see: set_apsim_bin_path')
 
     parser.add_argument(
         "-s", "--show_bin_path",
@@ -19,11 +20,19 @@ def apsim_bin_path():
     )
 
     parser.add_argument(
+        "-v", "--version",
+        action="store_true",
+        help="Set this flag to show current apsim version."
+    )
+
+    parser.add_argument(
         "-a", "--auto_search",
         action="store_true",
         help="Set this flag to search and display any existing apsim bin path."
     )
-
+    if len(sys.argv) == 1:
+        parser.print_help(sys.stderr)
+        sys.exit(1)
     args = parser.parse_args()
     bp = args.update
     if bp:
@@ -42,8 +51,10 @@ def apsim_bin_path():
             logger.info("No apsim bin was found")
         else:
 
-            logger.info(f"apsim bin path detected at: '{auto}'")
+            logger.info(f"Detected: '{auto}'")
             print()
+    if args.version:
+        print(get_apsim_version())
 
 
 if __name__ == '__main__':

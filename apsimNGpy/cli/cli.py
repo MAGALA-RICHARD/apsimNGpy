@@ -13,7 +13,7 @@ from apsimNGpy.core.base_data import load_default_simulations
 from apsimNGpy.settings import logger
 from apsimNGpy.manager.weathermanager import get_weather, _is_within_USA_mainland
 from apsimNGpy.cli.model_desc import extract_models
-import os
+import os, sys
 import asyncio
 from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganiseSoilProfile
 
@@ -152,7 +152,8 @@ async def main():
                                                                          'for fetching weather data.')
     parser.add_argument('-sm', '--save_model', type=str, required=False, help='File name for saving output data.')
     parser.add_argument('-s', '--aggfunc', type=str, required=False, default='mean',
-                        help='Statistical summary function (e.g., mean, median). Defaults to "mean".')
+                        help='Statistical summary function (e.g., mean, median). Defaults to "mean". Useful for quick diagnostics,'
+                             'but real data is stored in csf file')
     parser.add_argument('-og', '--organic', type=str,
                         required=False,
                         help="Replace any soil data through a soil organic parameters and path specification"
@@ -166,9 +167,13 @@ async def main():
                         help="Replace any soil data through a soil chemical parameters and path specification"
                              " e.g, 'node_path=.Simulations.Simulation.Field.Soil, NH4=[2.2]'")
 
-    parser.add_argument('-fw', '--get_web_data', type=str, required=False, choices=['both', 's', 'w', 'no'], default='no', help='get soil or web data')
+    parser.add_argument('-fw', '--get_web_data', type=str, required=False, choices=['both', 's', 'w', 'no'],
+                        default='no', help=' if lonlat arguments is provided, get soil or weather data'
+                                           ' w flag get weather and s flag gets soil data while both will download both')
 
-
+    if len(sys.argv) == 1:
+        parser.print_help(sys.stderr)
+        sys.exit(1)
     # Parse arguments
     args = parser.parse_args()
     logger.info(f"Commands summary: '{args}'")

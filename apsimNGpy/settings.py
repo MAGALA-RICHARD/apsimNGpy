@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 from shutil import rmtree
 
-
+VERSION = 0.34
 def create_config(config_path, apsim_path=""):
     _CONFIG = configparser.ConfigParser()
     _CONFIG.read(config_path)
@@ -13,6 +13,13 @@ def create_config(config_path, apsim_path=""):
     with open(config_path, 'w') as configured_file:
         _CONFIG.write(configured_file)
 
+def config_internal(key:str, value:str) -> None:
+    """Stores the apsim version and many others to be used by the app"""
+    ci  = configparser.ConfigParser()
+    ci.read('./configs.ini')
+    ci[key] = {key:value}
+    with open('./configs.ini', 'w') as configured_file:
+        ci.write(configured_file)
 
 META_Dir = Path.home().joinpath('APSIMNGpy_meta_data')  # the path that will store config.ini and any logs for the user
 META_Dir.mkdir(parents=True, exist_ok=True)
@@ -83,3 +90,5 @@ try:
 except (FileNotFoundError, PermissionError) as fp:
     ...
 SCRATCH.mkdir(parents=True, exist_ok=True)
+
+config_internal('version', f"{VERSION}")

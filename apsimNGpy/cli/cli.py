@@ -15,6 +15,7 @@ from apsimNGpy.manager.weathermanager import get_weather, _is_within_USA_mainlan
 from apsimNGpy.cli.model_desc import extract_models
 import os, sys
 import asyncio
+from apsimNGpy.cli.set_ups import print_msg, ColoredHelpFormatter
 from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganiseSoilProfile
 
 
@@ -130,7 +131,7 @@ def replace_soil_data(model: ApsimModel, args):
 
 async def main():
     # Create argument parser
-    parser = argparse.ArgumentParser(description='Run a simulation of a given crop.')
+    parser = argparse.ArgumentParser(description='\033[91mRun a simulation of a given crop.\033[0m', formatter_class=ColoredHelpFormatter)
 
 
     # Add arguments
@@ -211,7 +212,7 @@ async def main():
         # inspect returns after excecutions
         if args.inspect != 'file':
             model_type = args.inspect
-            print(model.inspect_model(model_type=model_type))
+            print_msg(model.inspect_model(model_type=model_type))
 
         else:
             model.inspect_file()
@@ -228,7 +229,7 @@ async def main():
         msg = f'Successfully updated weather file with {met_data}'
         if args.lonlat:
             msg += f' from location: {args.lonlat}'
-        logger.info(msg)
+        print_msg(msg)
 
     if args.lonlat and args.get_web_data == 's' or args.get_web_data == 'both':
         await asyncio.to_thread(model.replace_downloaded_soils,soilP, model.simulation_names)
@@ -243,7 +244,7 @@ async def main():
         numeric_df = df.select_dtypes(include=np.number)
         stati = getattr(numeric_df, args.aggfunc)()
 
-        logger.info(stati)
+        print_msg(stati)
     if args.save_model:
         model.save(args.save_model)
     if args.preview =='yes':

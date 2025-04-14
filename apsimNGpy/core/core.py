@@ -1988,11 +1988,14 @@ class CoreModel:
             del Models, model_types
             return data
         return filter_out()
-    def inspect_file(self, indent=0, display_full_path = True):
+    def inspect_file(self, **kwargs):
         """
         Inspect the file by calling inspect_model() through get_model_paths.
         This method is important in inspecting the whole file and also getting the scripts paths
         """
+        if kwargs.get('indent', None) or kwargs.get('display_full_path', None):
+            logger.info(f"Inspecting file with key word indent or display_full_path is \ndeprecated, the inspect_file now print "
+                        f"the inspection as a tree with names and corresponding model \nfull paths combined")
 
         def build_tree(paths):
             from collections import defaultdict
@@ -2005,18 +2008,32 @@ class CoreModel:
                     current = current[part]
             return root
 
-        def print_tree(node, indent=indent, full_path="", dis_full_path=display_full_path):
-            for key in sorted(node.keys()):
+
+        def print_tree_branches(node, prefix="", is_last=True, full_path="", display_full_path=False):
+            keys = sorted(node.keys())
+            for index, key in enumerate(keys):
+                is_last_key = index == (len(keys) - 1)
+                branch = "└── " if is_last_key else "├── "
+                child_prefix = "    " if is_last_key else "│   "
                 current_path = f"{full_path}.{key}" if full_path else key
-                if dis_full_path:
-                   print("    " * indent + f"- {key}: .{current_path}")
-                   print_tree(node[key], indent + 1, current_path)
-                else:
-                    print("    " * indent + f"- {key}")
-                    print_tree(node[key], indent + 1, current_path)
+
+
+                print(f"{prefix}{branch}\033[95m{key}\033[0m: .{current_path}")
+
+                # else:
+                #     print(f"{prefix}{branch}{key}")
+
+                print_tree_branches(
+                    node[key],
+                    prefix + child_prefix,
+                    is_last=is_last_key,
+                    full_path=current_path,
+                    display_full_path=display_full_path
+                )
 
         tree = build_tree(self.get_model_paths())
-        print_tree(tree)
+
+        print_tree_branches(tree)
 
 
 if __name__ == '__main__':

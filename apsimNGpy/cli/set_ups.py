@@ -10,9 +10,9 @@ from pprint import pprint
 
 def print_msg(msg, normal = True):
     if normal:
-       print(f'\033[96m{msg}\033[0m')
+       print(f'  \033[96m{msg}\033[0m')
     else:
-        print(f'\033[91m{msg}\033[0m')
+        print(f'  \033[91m{msg}\033[0m')
 
 
 class ColoredHelpFormatter(argparse.HelpFormatter):

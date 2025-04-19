@@ -25,6 +25,21 @@ ApsimModel
         :return:
         model object
 
+.. function:: apsimNGpy.core.apsim.ApsimModel.auto_gen_thickness_layers(self, max_depth, n_layers=10, thin_layers=3, thin_thickness=100, growth_type='linear', thick_growth_rate=1.5)
+
+   Generate layer thicknesses from surface to depth, starting with thin layers and increasing thickness.
+
+        Args:
+            max_depth (float): Total depth in mm.
+            n_layers (int): Total number of layers.
+            thin_layers (int): Number of initial thin layers.
+            thin_thickness (float): Thickness of each thin layer.
+            growth_type (str): 'linear' or 'exponential'.
+            thick_growth_rate (float): Growth factor for thick layers (e.g., +50% each layer if exponential).
+
+        Returns:
+            List[float]: List of layer thicknesses summing to max_depth.
+
 .. function:: apsimNGpy.core.apsim.ApsimModel.get_initial_no3(self, simulation=None)
 
    Get soil initial NO3 content
@@ -469,17 +484,20 @@ CoreModel
    Inspect the file by calling inspect_model() through get_model_paths.
         This method is important in inspecting the whole file and also getting the scripts paths
 
-.. function:: apsimNGpy.core.core.CoreModel.inspect_model(self, model_type, fullpath=True)
+.. function:: apsimNGpy.core.core.CoreModel.inspect_model(self, model_type: Union[str, <module 'Models'>], fullpath=True)
 
    Inspect the model types and returns the model paths or names. usefull if you want to identify the path to the
         model for editing the model.
         :param model_type: (Models) e.g. Models.Clock will return all fullpath or names
-        of models in the type Clock -Models.Manager returns information about the manager scripts in simulations
+        of models in the type Clock -Models.Manager returns information about the manager scripts in simulations. strings are allowed
+        to, in the case you may not need to import the global namespace, Models. e.g 'Models.Clock' will still work well.
+
         -Models.Core.Simulation returns information about the simulation -Models.Climate.Weather returns a list of
         paths or names pertaining to weather models -Models.Core.IPlant  returns a list of paths or names pertaining
         to all crops models available in the simulation :param  fullpath: (bool) return the full path of the model
         relative to the parent simulations node. please note the difference between simulations and simulation.
-        :return: list[str]: list of all full paths or names of the model relative to the parent simulations node
+        :return: list[str]: list of all full paths or names of the model relative to the parent simulations node 
+
         Example:
         >>> from apsimNGpy.core import base_data
         >>> from apsimNGpy.core.core import Models
@@ -495,6 +513,7 @@ CoreModel
          ['Maize']
          >>> model.inspect_model(Models.Fertiliser, fullpath=True)
          ['.Simulations.Simulation.Field.Fertiliser']
+         >>> model.inspect_model('Models.Fertiliser', fullpath=False) # strings are allowed to
 
 .. function:: apsimNGpy.core.core.CoreModel.move_model(self, model_type: <module 'Models'>, new_parent_type: <module 'Models'>, model_name: str = None, new_parent_name: str = None, verbose: bool = False)
 
@@ -862,6 +881,21 @@ apsimNGpy.core.base_data
         :return:
         model object
 
+   .. method::apsimNGpy.core.apsim.ApsimModel.auto_gen_thickness_layers(self, max_depth, n_layers=10, thin_layers=3, thin_thickness=100, growth_type='linear', thick_growth_rate=1.5)
+
+      Generate layer thicknesses from surface to depth, starting with thin layers and increasing thickness.
+
+        Args:
+            max_depth (float): Total depth in mm.
+            n_layers (int): Total number of layers.
+            thin_layers (int): Number of initial thin layers.
+            thin_thickness (float): Thickness of each thin layer.
+            growth_type (str): 'linear' or 'exponential'.
+            thick_growth_rate (float): Growth factor for thick layers (e.g., +50% each layer if exponential).
+
+        Returns:
+            List[float]: List of layer thicknesses summing to max_depth.
+
    .. method::apsimNGpy.core.apsim.ApsimModel.get_initial_no3(self, simulation=None)
 
       Get soil initial NO3 content
@@ -1141,6 +1175,21 @@ apsimNGpy.core.structure
         :return:
         model object
 
+   .. method::apsimNGpy.core.apsim.ApsimModel.auto_gen_thickness_layers(self, max_depth, n_layers=10, thin_layers=3, thin_thickness=100, growth_type='linear', thick_growth_rate=1.5)
+
+      Generate layer thicknesses from surface to depth, starting with thin layers and increasing thickness.
+
+        Args:
+            max_depth (float): Total depth in mm.
+            n_layers (int): Total number of layers.
+            thin_layers (int): Number of initial thin layers.
+            thin_thickness (float): Thickness of each thin layer.
+            growth_type (str): 'linear' or 'exponential'.
+            thick_growth_rate (float): Growth factor for thick layers (e.g., +50% each layer if exponential).
+
+        Returns:
+            List[float]: List of layer thicknesses summing to max_depth.
+
    .. method::apsimNGpy.core.apsim.ApsimModel.get_initial_no3(self, simulation=None)
 
       Get soil initial NO3 content
@@ -1211,16 +1260,13 @@ apsimNGpy.manager.soilmanager
 
 .. function:: apsimNGpy.manager.soilmanager.DownloadsurgoSoiltables(lonlat, select_componentname=None, summarytable=False)
 
-   TODO this is a duplicate File. Duplicate of soils/soilmanager
-    Downloads SSURGO soil tables
+   Downloads SSURGO soil tables
 
-    parameters
+    Parameters
     ------------------
-    :param lonlat: longitude and latitude
-    :param select_componentname: any componet name within the map unit e.g 'Clarion'. the default is None that mean sa ll the soil componets intersecting a given locationw il be returned
-      if specified only that soil component table will be returned. in case it is not found the dominant componet will be returned with a caveat meassage.
-        use select_componentname = 'domtcp' to return the dorminant component
-    :param summarytable: prints the component names, their percentages
+    :param lonlat: tuple of (longitude, latitude)
+    :param select_componentname: specific component name within the map unit, default None
+    :param summarytable: if True, prints summary table of component names and their percentages
 
 .. function:: apsimNGpy.manager.soilmanager.set_depth(depththickness)
 

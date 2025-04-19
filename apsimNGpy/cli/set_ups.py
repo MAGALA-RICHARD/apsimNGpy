@@ -5,6 +5,7 @@ from apsimNGpy.core_utils.utils import timer
 from apsimNGpy.core.config import set_apsim_bin_path, get_apsim_bin_path, auto_detect_apsim_bin_path
 from apsimNGpy.settings import logger
 import sys
+
 from apsimNGpy.core.runner import get_apsim_version
 from pprint import pprint
 
@@ -17,8 +18,9 @@ def print_msg(msg, normal = True):
 
 class ColoredHelpFormatter(argparse.HelpFormatter):
     def start_section(self, heading):
-        heading = f"\033[95m{heading}\033[0m"  # Purple color
+        heading = f"\033[91m{heading}\033[0m"  # Purple color
         super().start_section(heading)
+
 def apsim_bin_path():
     parser = argparse.ArgumentParser(description='Investigating apsimNGpy APSIM bin path', formatter_class=ColoredHelpFormatter)
     parser.add_argument('-u', '--update', type=str, default=None,
@@ -27,7 +29,9 @@ def apsim_bin_path():
     parser.add_argument(
         "-s", "--show_bin_path",
         action="store_true",
-        help='\033[93mSet this flag to show current bin path.\033[0m'
+        help='\033[93mSet this flag to show current bin path.\033[0m',
+
+
     )
 
     parser.add_argument(
@@ -54,7 +58,7 @@ def apsim_bin_path():
 
     if args.show_bin_path:
         cbp = get_apsim_bin_path()
-        print(cbp)
+
         print_msg(msg = cbp, normal=True)
         sys.exit(1)
     if args.auto_search:

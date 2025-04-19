@@ -528,6 +528,10 @@ class CoreModel:
         replacer = {'Clock': 'change_simulation_dates', 'Weather': 'replace_met_file'}
         sims = self.Simulations
         # find where to add the model
+        if 'Models.' in adoptive_parent and isinstance(adoptive_parent, str):
+            adoptive_parent = eval(adoptive_parent)
+        if 'Models.' in model_type and isinstance(model_type, str):
+            model_type = eval(model_type)
         if adoptive_parent == Models.Core.Simulations:
             parent = self.Simulations
         else:

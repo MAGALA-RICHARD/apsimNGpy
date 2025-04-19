@@ -609,7 +609,7 @@ class CoreModel:
         if set_event_names:
             if isinstance(set_event_names, str):
                 set_event_names = [set_event_names]
-            get_report.set_EventNames = list(set(set_event_names))
+            get_report.set_EventNames(list(set(set_event_names)))
         self.save()
 
     @property
@@ -2095,7 +2095,7 @@ class CoreModel:
 
         # Assign variables and events to the report object
         report.VariableNames = variable_spec
-        report.set_EventNames = set_event_names
+        report.set_EventNames(set_event_names)
         # Try to find a Zone in scope and attach the report to it
         sims = self.find_simulations(simulation_name)
         for sim in sims:

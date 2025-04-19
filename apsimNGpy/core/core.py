@@ -2046,7 +2046,7 @@ class CoreModel:
         print_tree_branches(tree)
 
     @timer
-    def add_db_table(self, variable_spec: list = None, set_event_names: list = None, rename: str = 'my_table', simulation_name=None):
+    def add_db_table(self, variable_spec: list = None, set_event_names: list = None, rename: str = 'my_table', simulation_name:Union[str, list, tuple]=None):
         """
         Adds a new data base table, which APSIM calls Report (Models.Report) to the Simulation under a Simulation Zone.
 
@@ -2057,9 +2057,11 @@ class CoreModel:
             variable_spec (list or str): A list of APSIM variable paths to include in the report table.
                                          If a string is passed, it will be converted to a list.
             set_event_names (list or str, optional): A list of APSIM events that trigger the recording of variables.
-                                                     Defaults to ['[Clock].EndOfYear'] if not provided.
+                                                     Defaults to ['[Clock].EndOfYear'] if not provided. other examples include '[Clock].StartOfYear', '[Clock].EndOfsimulation',
+                                                     '[crop_name].Harvesting' etc.,,
             rename (str): The name of the report table to be added. Defaults to 'my_table'.
-            simulation_name (str, Optional): if specified, the name of the simulation will be search and will become the parent candidate for the report table.
+
+            simulation_name (str,tuple, or list, Optional): if specified, the name of the simulation will be searched and will become the parent candidate for the report table.
                             If it is none, all Simulations in the file will be updated with the new db_table
 
         :Raises:

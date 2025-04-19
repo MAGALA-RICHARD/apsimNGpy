@@ -609,7 +609,10 @@ class CoreModel:
         if set_event_names:
             if isinstance(set_event_names, str):
                 set_event_names = [set_event_names]
-            get_report.set_EventNames(list(set(set_event_names)))
+            set_event_names = list(set(set_event_names))
+            final_command = "\n".join(set_event_names)
+            get_report.set_EventNames(final_command.strip().splitlines())
+
         self.save()
 
     @property
@@ -2071,6 +2074,7 @@ class CoreModel:
                >>> from apsimNGpy import core
                >>> model = core.base_data.load_default_simulations(crop = 'Maize')
                >>> model.add_db_table(variable_spec=['[Clock].Today', '[Soil].Nutrient.TotalC[1]/1000 as SOC1'], rename='report2')
+               >>> model.add_db_table(variable_spec=['[Clock].Today', '[Soil].Nutrient.TotalC[1]/1000 as SOC1', '[Maize].Grain.Total.Wt*10 as Yield'], rename='report2', set_event_names=['[Maize].Harvesting','[Clock].EndOfYear' ])
         """
         report = Models.Report()
         report.Name = rename
@@ -2095,7 +2099,10 @@ class CoreModel:
 
         # Assign variables and events to the report object
         report.VariableNames = variable_spec
-        report.set_EventNames(set_event_names)
+
+        set_event_names = list(set(set_event_names))
+        final_command = "\n".join(set_event_names)
+        report.set_EventNames(final_command.strip().splitlines())
         # Try to find a Zone in scope and attach the report to it
         sims = self.find_simulations(simulation_name)
         for sim in sims:

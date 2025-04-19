@@ -576,34 +576,40 @@ class CoreModel:
         else:
             logger.debug(f"Adding {model_type} to {parent.Name} failed, perhaps models was not found")
 
-    def add_report_variable(self, commands: Union[list, str, tuple], report_name: str = None):
+    def add_report_variable(self, variable_spec: Union[list, str, tuple], report_name: str = None, set_event_names:Union[str,list]=None):
         """
         This adds a report variable to the end of other variables, if you want to change the whole report use change_report
 
         Parameters
         -------------------
 
-        :param commands: (str, required): list of text commands for the report variables e.g., '[Clock].Today as Date'
+        :param variable_spec: (str, required): list of text commands for the report variables e.g., '[Clock].Today as Date'
         :param report_name: (str, optional): name of the report variable if not specified the first accessed report object will be altered
+        :set_event_names (list or str, optional): A list of APSIM events that trigger the recording of variables.
+                                                     Defaults to ['[Clock].EndOfYear'] if not provided.
         :Returns:
             returns instance of apsimNGpy.core.core.apsim.ApsimModel or apsimNGpy.core.core.apsim.CoreModel
            raises an erros if a report is not found
         Example:
         >>> from apsimNGpy import core
         >>> model = core.base_data.load_default_simulations()
-        >>> model.add_report_variable(commands = '[Clock].Today as Date', report_name = 'Report')
+        >>> model.add_report_variable(variable_spec = '[Clock].Today as Date', report_name = 'Report')
         """
-        if isinstance(commands, str):
-            commands = [commands]
+        if isinstance(variable_spec, str):
+            variable_spec = [variable_spec]
 
         if report_name:
             get_report = self.Simulations.FindInScope[Models.Report](report_name)
         else:
             get_report = self.Simulations.FindInScope[Models.Report]()
         get_cur_variables = list(get_report.VariableNames)
-        get_cur_variables.extend(commands)
+        get_cur_variables.extend(variable_spec)
         final_command = "\n".join(get_cur_variables)
         get_report.set_VariableNames(final_command.strip().splitlines())
+        if set_event_names:
+            if isinstance(set_event_names, str):
+                set_event_names = [set_event_names]
+            get_report.set_EventNames = list(set(set_event_names))
         self.save()
 
     @property
@@ -802,7 +808,7 @@ class CoreModel:
 
           - CultivarName (str, required): Name of the cultivar (e.g., 'laila').
 
-          - commands (str, required): A strings representing the parameter paths to be edited.
+          - variable_spec (str, required): A strings representing the parameter paths to be edited.
                          Example: ('[Grain].MaximumGrainsPerCob.FixedValue', '[Phenology].GrainFilling.Target.FixedValue')
 
           - values: values for each command (e.g., (721, 760)).

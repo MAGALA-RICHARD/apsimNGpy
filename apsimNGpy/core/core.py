@@ -2039,21 +2039,22 @@ class CoreModel:
 
         print_tree_branches(tree)
 
-    def add_report_table(self, variable_spec: list = None, set_event_names: list = None, rename: str = 'my_table'):
+    @timer
+    def add_db_table(self, variable_spec: list = None, set_event_names: list = None, rename: str = 'my_table'):
         """
-        Adds a new report table (Models.Report) to the simulation under a Zone.
+        Adds a new data base table, which APSIM calls Report (Models.Report) to the Simulation under a Simulation Zone.
 
         This is different from `add_report_variable` in that it creates a new, named report
         table that collects data based on a given list of variables and events.
 
-        Args:
+        :Args:
             variable_spec (list or str): A list of APSIM variable paths to include in the report table.
                                          If a string is passed, it will be converted to a list.
             set_event_names (list or str, optional): A list of APSIM events that trigger the recording of variables.
                                                      Defaults to ['[Clock].EndOfYear'] if not provided.
             rename (str): The name of the report table to be added. Defaults to 'my_table'.
 
-        Raises:
+        :Raises:
             ValueError: If no variable_spec is provided.
             RuntimeError: If no Zone is found in the current simulation scope.
         """
@@ -2080,18 +2081,16 @@ class CoreModel:
 
         # Assign variables and events to the report object
         report.VariableNames = variable_spec
-        report.setEventNames = set_event_names
+        report.set_EventNames = set_event_names
 
         # Try to find a Zone in scope and attach the report to it
         zone = self.Simulations.FindInScope[Models.Core.Zone]()
         if zone is None:
-            raise RuntimeError("No Zone found in the simulation scope to attach the report table.")
+            raise RuntimeError("No Zone found in the Simulation scope to attach the report table.")
 
         zone.Children.Add(report)
-
-        # Optional: Retrieve and confirm the report was added (e.g. for debugging or further modification)
-        created_report = self.Simulations.FindInScope[Models.Report](rename)
-        created_report.setEventNames(set_event_names)
+        # save the results to recompile
+        self.save()
 
 
 if __name__ == '__main__':

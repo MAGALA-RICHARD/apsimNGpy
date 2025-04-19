@@ -2046,7 +2046,7 @@ class CoreModel:
         print_tree_branches(tree)
 
     @timer
-    def add_db_table(self, variable_spec: list = None, set_event_names: list = None, rename: str = 'my_table'):
+    def add_db_table(self, variable_spec: list = None, set_event_names: list = None, rename: str = 'my_table', simulation_name=None):
         """
         Adds a new data base table, which APSIM calls Report (Models.Report) to the Simulation under a Simulation Zone.
 
@@ -2059,10 +2059,16 @@ class CoreModel:
             set_event_names (list or str, optional): A list of APSIM events that trigger the recording of variables.
                                                      Defaults to ['[Clock].EndOfYear'] if not provided.
             rename (str): The name of the report table to be added. Defaults to 'my_table'.
+            simulation_name (str, Optional): if specified, the name of the simulation will be search and will become the parent candidate for the report table.
+                            If it is none, all Simulations in the file will be updated with the new db_table
 
         :Raises:
             ValueError: If no variable_spec is provided.
             RuntimeError: If no Zone is found in the current simulation scope.
+        : Example:
+               >>> from apsimNGpy import core
+               >>> model = core.base_data.load_default_simulations(crop = 'Maize')
+               >>> model.add_db_table(variable_spec=['[Clock].Today', '[Soil].Nutrient.TotalC[1]/1000 as SOC1'], rename='report2')
         """
         report = Models.Report()
         report.Name = rename
@@ -2088,13 +2094,14 @@ class CoreModel:
         # Assign variables and events to the report object
         report.VariableNames = variable_spec
         report.set_EventNames = set_event_names
-
         # Try to find a Zone in scope and attach the report to it
-        zone = self.Simulations.FindInScope[Models.Core.Zone]()
-        if zone is None:
-            raise RuntimeError("No Zone found in the Simulation scope to attach the report table.")
+        sims = self.find_simulations(simulation_name)
+        for sim in sims:
+            zone = sim.FindInScope[Models.Core.Zone]()
+            if zone is None:
+                raise RuntimeError("No Zone found in the Simulation scope to attach the report table.")
 
-        zone.Children.Add(report)
+            zone.Children.Add(report)
         # save the results to recompile
         self.save()
 

@@ -249,6 +249,7 @@ async def main():
         model.save(args.save_model)
     if args.preview =='yes':
         model.preview_simulation()
+    sys.exit(1)
 
 
 @timer

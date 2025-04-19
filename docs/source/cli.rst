@@ -53,6 +53,7 @@ The following options are available:
 
 - ``-m, --model`` (str, optional): Path to the APSIM model file. Defaults to "Maize". If path, it should end with .apsimx and should be absolute is not in the current directory
 - ``-o, --out`` (str, optional): Output directory.
+- ``-i, --inspect`` (str, optional): inspect file or specific model type within the file.
 - ``-t, --table`` (str, optional): Report table name. Defaults to "Report".
 - ``-w, --met_file`` (str, optional): Path to the weather data file.
 - ``-sim, --simulation`` (str, optional): Name of the APSIM simulation to run.

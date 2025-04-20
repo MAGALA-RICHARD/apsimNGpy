@@ -418,7 +418,10 @@ class CoreModel:
 
         """
         cloner = Models.Core.Apsim.Clone  # Reference to the APSIM cloning function
-
+        if isinstance(model_type, str) and 'Models.' in model_type:
+            model_type = eval(model_type)
+        if isinstance(adoptive_parent_type, str) and 'Models.' in adoptive_parent_type:
+            adoptive_parent_type = eval(adoptive_parent_type)
         # Ensure the model type is valid before proceeding
         if isinstance(model_type, type(Models.Clock)):
             # Locate the model to be cloned within the simulation scope

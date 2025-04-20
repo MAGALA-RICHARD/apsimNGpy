@@ -65,7 +65,7 @@ class Diagnostics(ApsimModel):
     def plot_time_series(self, y, x=None, time='Year',table_name='Report', **kwargs):
         """Plot time series of a variable against a time field."""
         var_name = time.capitalize()
-        self.add_report_variable(f'[Clock].Today.{var_name} as {var_name}', 'Report')
+        self.add_report_variable(f'[Clock].Today.{var_name} as {var_name}', table_name)
 
         if x is None:
             self.run(report_name=table_name)
@@ -120,11 +120,12 @@ class Diagnostics(ApsimModel):
 
 if __name__ == '__main__':
     from apsimNGpy.core.base_data import load_default_simulations
-
-    apsim = load_default_simulations(crop='Maize', simulations_object=False)
+    scrach =Path.home()/'testss'
+    scrach.mkdir(exist_ok=True)
+    apsim = load_default_simulations(crop='Maize', simulations_object=False, set_wd= scrach)
     model = Diagnostics(apsim)
-    model.add_report_variable(commands='[Soil].Nutrient.TotalC[1]/1000 as SOC1', report_name='Report')
-    model.create_report_table(variable_specs=['[Soil].Nutrient.TotalC[1]/1000 as SOC1', ])
+    model.add_report_variable(variable_spec='[Soil].Nutrient.TotalC[1]/1000 as SOC1', report_name='Report', set_event_names=['[Clock].EndOfYear'])
+    model.add_db_table(variable_spec=['[Soil].Nutrient.TotalC[1]/1000 as SOC1', '[Clock].Today.Year as Year'])
     model.update_mgt(management=({"Name": 'Sow using a variable rule', 'Population': 8},))
     model.run(report_name='my_table')
 

@@ -3,6 +3,7 @@ import shutil
 
 import psutil
 
+
 from apsimNGpy.settings import logger
 from apsimNGpy.core.base_data import load_default_simulations
 from unittest import TestCase
@@ -14,11 +15,15 @@ from os import chdir as _chdir
 from os import remove
 import tempfile
 import joblib
+def set_wd(_wd=None):
+    if _wd is None:
+      wd = Path.cwd() / 'apsimNGpy_tests'
+    else: wd = _wd
+    wd.mkdir(exist_ok=True)
+    _chdir(wd)
 
-wd = Path.cwd() / 'apsimNGpy_tests'
+set_wd()
 TEMPS_DIR = []
-wd.mkdir(exist_ok=True)
-_chdir(wd)
 temp_dir = tempfile.TemporaryDirectory()
 TEMPS_DIR.append(temp_dir)
 os.chdir(temp_dir.name)
@@ -32,7 +37,7 @@ def get_files(pattern):
 
 
 def release_file_locks(_dir):
-    '''it is too computationaly expensive'''
+    '''it is too computationally expensive'''
     procs = psutil.process_iter()
     fd = get_files("*.apsimx")
     files = [str(i) for i in fd]
@@ -53,7 +58,7 @@ def release_file_locks(_dir):
 class BaseTester(TestCase):
     try:
         def setUp(self):
-            _chdir(wd)
+
             # Mock the model path and other attributes
             self.model_path = Path(load_default_simulations(crop='maize', simulations_object=False), )
             self.model_path2 = Path(load_default_simulations(crop='soybean', simulations_object=False), )

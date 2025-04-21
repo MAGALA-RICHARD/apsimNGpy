@@ -1845,7 +1845,7 @@ class CoreModel:
         self.experiment = True
         self.experiment_created = True
 
-    def add_factor(self, specification: str, factor_name: str, **kwargs):
+    def add_factor(self, specification: str, factor_name:str=None, **kwargs):
         """
         Adds a factor to the created experiment. Thus, this method only works on factorial experiments
 
@@ -2116,6 +2116,7 @@ class CoreModel:
             zone.Children.Add(report)
         # save the results to recompile
         self.save()
+
 
 
 if __name__ == '__main__':

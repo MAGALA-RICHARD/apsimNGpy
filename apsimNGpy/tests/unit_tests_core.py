@@ -6,11 +6,11 @@ import pandas as pd
 
 # Import the module where CoreModel class is defined
 from apsimNGpy.core.model_loader import save_model_to_file
-from apsimNGpy.tests.base_test import BaseTester
-
+from apsimNGpy.tests.base_test import BaseTester, set_wd
+set_wd()
 print('current working directory:', os.getcwd())
 
-
+set_wd()
 class TestAPSIMNG(BaseTester):
 
     def test_run(self):

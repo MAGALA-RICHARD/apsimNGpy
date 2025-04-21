@@ -27,7 +27,7 @@ class TestAPSIMNG(BaseTester):
                                       "of report names")
             # one more test
             # check if the use pass  report name as str a strict a pandas.core.frame.DataFrame' is returned
-            self.test_ap_sim.run(report_name='Report', verbose=True)
+            self.test_ap_sim.run(report_name='Report', verbose=False)
             df = self.test_ap_sim.results
             self.assertIsInstance(df, pd.DataFrame)
             # check if it is not empty

@@ -4,17 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5d471312-8496-4246-98d6-790439318160" name="Changes" comment="one">
-      <change afterPath="$PROJECT_DIR$/core/diagnostics.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cli/cli.py" beforeDir="false" afterPath="$PROJECT_DIR$/cli/cli.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cli/set_ups.py" beforeDir="false" afterPath="$PROJECT_DIR$/cli/set_ups.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/core.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/core.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/raw_docs/api.rst" beforeDir="false" afterPath="$PROJECT_DIR$/raw_docs/api.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/raw_docs/model inspection.rst" beforeDir="false" afterPath="$PROJECT_DIR$/raw_docs/model inspection.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../docs/source/api.rst" beforeDir="false" afterPath="$PROJECT_DIR$/../docs/source/api.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../docs/source/cli.rst" beforeDir="false" afterPath="$PROJECT_DIR$/../docs/source/cli.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../docs/source/model inspection.rst" beforeDir="false" afterPath="$PROJECT_DIR$/../docs/source/model inspection.rst" afterDir="false" />
-    </list>
+    <list default="true" id="5d471312-8496-4246-98d6-790439318160" name="Changes" comment="ad_db_table" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -46,54 +36,54 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_ADD_EXTERNAL_FILES": "true",
-    "Python.__init__.executor": "Run",
-    "Python.api.executor": "Run",
-    "Python.apsim.executor": "Run",
-    "Python.base_data.executor": "Run",
-    "Python.cli.executor": "Run",
-    "Python.config.executor": "Run",
-    "Python.core.executor": "Run",
-    "Python.database_utils.executor": "Run",
-    "Python.diagnostics.executor": "Run",
-    "Python.glue.executor": "Run",
-    "Python.logger.executor": "Run",
-    "Python.main.executor": "Run",
-    "Python.met_functions.executor": "Run",
-    "Python.model_desc.executor": "Run",
-    "Python.model_loader.executor": "Run",
-    "Python.path_finders.executor": "Run",
-    "Python.problem.executor": "Run",
-    "Python.process.executor": "Run",
-    "Python.pythonet_config.executor": "Run",
-    "Python.replacements.executor": "Run",
-    "Python.runner.executor": "Run",
-    "Python.senstivity.executor": "Run",
-    "Python.set_ups.executor": "Run",
-    "Python.settings.executor": "Run",
-    "Python.sobol.executor": "Run",
-    "Python.soilmanager.executor": "Run",
-    "Python.tools.executor": "Run",
-    "Python.utils.executor": "Run",
-    "Python.variable.executor": "Run",
-    "Python.weathermanager.executor": "Run",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "main",
-    "last_opened_file_path": "D:/package/apsimNGpy/setup.py",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "inlay.hints",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;Python.__init__.executor&quot;: &quot;Run&quot;,
+    &quot;Python.api.executor&quot;: &quot;Run&quot;,
+    &quot;Python.apsim.executor&quot;: &quot;Run&quot;,
+    &quot;Python.base_data.executor&quot;: &quot;Run&quot;,
+    &quot;Python.cli.executor&quot;: &quot;Run&quot;,
+    &quot;Python.config.executor&quot;: &quot;Run&quot;,
+    &quot;Python.core.executor&quot;: &quot;Run&quot;,
+    &quot;Python.database_utils.executor&quot;: &quot;Run&quot;,
+    &quot;Python.diagnostics.executor&quot;: &quot;Run&quot;,
+    &quot;Python.glue.executor&quot;: &quot;Run&quot;,
+    &quot;Python.logger.executor&quot;: &quot;Run&quot;,
+    &quot;Python.main.executor&quot;: &quot;Run&quot;,
+    &quot;Python.met_functions.executor&quot;: &quot;Run&quot;,
+    &quot;Python.model_desc.executor&quot;: &quot;Run&quot;,
+    &quot;Python.model_loader.executor&quot;: &quot;Run&quot;,
+    &quot;Python.path_finders.executor&quot;: &quot;Run&quot;,
+    &quot;Python.problem.executor&quot;: &quot;Run&quot;,
+    &quot;Python.process.executor&quot;: &quot;Run&quot;,
+    &quot;Python.pythonet_config.executor&quot;: &quot;Run&quot;,
+    &quot;Python.replacements.executor&quot;: &quot;Run&quot;,
+    &quot;Python.runner.executor&quot;: &quot;Run&quot;,
+    &quot;Python.senstivity.executor&quot;: &quot;Run&quot;,
+    &quot;Python.set_ups.executor&quot;: &quot;Run&quot;,
+    &quot;Python.settings.executor&quot;: &quot;Run&quot;,
+    &quot;Python.sobol.executor&quot;: &quot;Run&quot;,
+    &quot;Python.soilmanager.executor&quot;: &quot;Run&quot;,
+    &quot;Python.tools.executor&quot;: &quot;Run&quot;,
+    &quot;Python.utils.executor&quot;: &quot;Run&quot;,
+    &quot;Python.variable.executor&quot;: &quot;Run&quot;,
+    &quot;Python.weathermanager.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/package/apsimNGpy/setup.py&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;inlay.hints&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="D:\package\apsimNGpy\apsimNGpy" />
@@ -127,29 +117,6 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="apsim" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="apsimNGpy" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/core" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/core/apsim.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="true" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
     <configuration name="core" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="apsimNGpy" />
       <option name="ENV_FILES" value="" />
@@ -162,6 +129,26 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/core/core.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="database_utils" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="apsimNGpy" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/core_utils" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/core_utils/database_utils.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="true" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -195,6 +182,9 @@
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/raw_docs" />
       <option name="IS_MODULE_SDK" value="true" />
@@ -215,6 +205,9 @@
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/cli" />
       <option name="IS_MODULE_SDK" value="true" />
@@ -234,9 +227,9 @@
       <list>
         <item itemvalue="Python.core" />
         <item itemvalue="Python.diagnostics" />
+        <item itemvalue="Python.database_utils" />
         <item itemvalue="Python.main" />
         <item itemvalue="Python.set_ups" />
-        <item itemvalue="Python.apsim" />
       </list>
     </recent_temporary>
   </component>
@@ -322,95 +315,7 @@
       <workItem from="1744218981837" duration="52000" />
       <workItem from="1744219675851" duration="22303000" />
       <workItem from="1744396275524" duration="9373000" />
-      <workItem from="1744422067150" duration="29846000" />
-    </task>
-    <task id="LOCAL-00343" summary="config apsim. users can set the apsim bin folder path">
-      <option name="closed" value="true" />
-      <created>1721098129719</created>
-      <option name="number" value="00343" />
-      <option name="presentableId" value="LOCAL-00343" />
-      <option name="project" value="LOCAL" />
-      <updated>1721098129719</updated>
-    </task>
-    <task id="LOCAL-00344" summary="config apsim. users can set the apsim bin folder path">
-      <option name="closed" value="true" />
-      <created>1721098214541</created>
-      <option name="number" value="00344" />
-      <option name="presentableId" value="LOCAL-00344" />
-      <option name="project" value="LOCAL" />
-      <updated>1721098214541</updated>
-    </task>
-    <task id="LOCAL-00345" summary="config apsim. users can set the apsim bin folder path">
-      <option name="closed" value="true" />
-      <created>1721098314558</created>
-      <option name="number" value="00345" />
-      <option name="presentableId" value="LOCAL-00345" />
-      <option name="project" value="LOCAL" />
-      <updated>1721098314558</updated>
-    </task>
-    <task id="LOCAL-00346" summary="config apsim. users can set the apsim bin folder path">
-      <option name="closed" value="true" />
-      <created>1721098418409</created>
-      <option name="number" value="00346" />
-      <option name="presentableId" value="LOCAL-00346" />
-      <option name="project" value="LOCAL" />
-      <updated>1721098418409</updated>
-    </task>
-    <task id="LOCAL-00347" summary="config apsim. users can set the apsim bin folder path">
-      <option name="closed" value="true" />
-      <created>1721098454911</created>
-      <option name="number" value="00347" />
-      <option name="presentableId" value="LOCAL-00347" />
-      <option name="project" value="LOCAL" />
-      <updated>1721098454911</updated>
-    </task>
-    <task id="LOCAL-00348" summary="config apsim. users can set the apsim bin folder path">
-      <option name="closed" value="true" />
-      <created>1721098524431</created>
-      <option name="number" value="00348" />
-      <option name="presentableId" value="LOCAL-00348" />
-      <option name="project" value="LOCAL" />
-      <updated>1721098524431</updated>
-    </task>
-    <task id="LOCAL-00349" summary="config apsim. users can set the apsim bin folder path">
-      <option name="closed" value="true" />
-      <created>1721098634241</created>
-      <option name="number" value="00349" />
-      <option name="presentableId" value="LOCAL-00349" />
-      <option name="project" value="LOCAL" />
-      <updated>1721098634241</updated>
-    </task>
-    <task id="LOCAL-00350" summary="config apsim. users can set the apsim bin folder path">
-      <option name="closed" value="true" />
-      <created>1721698010932</created>
-      <option name="number" value="00350" />
-      <option name="presentableId" value="LOCAL-00350" />
-      <option name="project" value="LOCAL" />
-      <updated>1721698010932</updated>
-    </task>
-    <task id="LOCAL-00351" summary="config apsim. users can set the apsim bin folder path">
-      <option name="closed" value="true" />
-      <created>1721698245673</created>
-      <option name="number" value="00351" />
-      <option name="presentableId" value="LOCAL-00351" />
-      <option name="project" value="LOCAL" />
-      <updated>1721698245675</updated>
-    </task>
-    <task id="LOCAL-00352" summary="import">
-      <option name="closed" value="true" />
-      <created>1722393037701</created>
-      <option name="number" value="00352" />
-      <option name="presentableId" value="LOCAL-00352" />
-      <option name="project" value="LOCAL" />
-      <updated>1722393037701</updated>
-    </task>
-    <task id="LOCAL-00353" summary="import">
-      <option name="closed" value="true" />
-      <created>1722393167769</created>
-      <option name="number" value="00353" />
-      <option name="presentableId" value="LOCAL-00353" />
-      <option name="project" value="LOCAL" />
-      <updated>1722393167769</updated>
+      <workItem from="1744422067150" duration="41192000" />
     </task>
     <task id="LOCAL-00354" summary="import">
       <option name="closed" value="true" />
@@ -716,7 +621,95 @@
       <option name="project" value="LOCAL" />
       <updated>1744557244701</updated>
     </task>
-    <option name="localTasksCounter" value="392" />
+    <task id="LOCAL-00392" summary="one">
+      <option name="closed" value="true" />
+      <created>1745079479932</created>
+      <option name="number" value="00392" />
+      <option name="presentableId" value="LOCAL-00392" />
+      <option name="project" value="LOCAL" />
+      <updated>1745079479932</updated>
+    </task>
+    <task id="LOCAL-00393" summary="one">
+      <option name="closed" value="true" />
+      <created>1745079846370</created>
+      <option name="number" value="00393" />
+      <option name="presentableId" value="LOCAL-00393" />
+      <option name="project" value="LOCAL" />
+      <updated>1745079846370</updated>
+    </task>
+    <task id="LOCAL-00394" summary="one">
+      <option name="closed" value="true" />
+      <created>1745080989150</created>
+      <option name="number" value="00394" />
+      <option name="presentableId" value="LOCAL-00394" />
+      <option name="project" value="LOCAL" />
+      <updated>1745080989150</updated>
+    </task>
+    <task id="LOCAL-00395" summary="one">
+      <option name="closed" value="true" />
+      <created>1745081661931</created>
+      <option name="number" value="00395" />
+      <option name="presentableId" value="LOCAL-00395" />
+      <option name="project" value="LOCAL" />
+      <updated>1745081661931</updated>
+    </task>
+    <task id="LOCAL-00396" summary="one">
+      <option name="closed" value="true" />
+      <created>1745082114947</created>
+      <option name="number" value="00396" />
+      <option name="presentableId" value="LOCAL-00396" />
+      <option name="project" value="LOCAL" />
+      <updated>1745082114947</updated>
+    </task>
+    <task id="LOCAL-00397" summary="one">
+      <option name="closed" value="true" />
+      <created>1745082975646</created>
+      <option name="number" value="00397" />
+      <option name="presentableId" value="LOCAL-00397" />
+      <option name="project" value="LOCAL" />
+      <updated>1745082975647</updated>
+    </task>
+    <task id="LOCAL-00398" summary="one">
+      <option name="closed" value="true" />
+      <created>1745083359905</created>
+      <option name="number" value="00398" />
+      <option name="presentableId" value="LOCAL-00398" />
+      <option name="project" value="LOCAL" />
+      <updated>1745083359905</updated>
+    </task>
+    <task id="LOCAL-00399" summary="one">
+      <option name="closed" value="true" />
+      <created>1745105078757</created>
+      <option name="number" value="00399" />
+      <option name="presentableId" value="LOCAL-00399" />
+      <option name="project" value="LOCAL" />
+      <updated>1745105078757</updated>
+    </task>
+    <task id="LOCAL-00400" summary="ad_db_table">
+      <option name="closed" value="true" />
+      <created>1745106325905</created>
+      <option name="number" value="00400" />
+      <option name="presentableId" value="LOCAL-00400" />
+      <option name="project" value="LOCAL" />
+      <updated>1745106325905</updated>
+    </task>
+    <task id="LOCAL-00401" summary="ad_db_table">
+      <option name="closed" value="true" />
+      <created>1745107907408</created>
+      <option name="number" value="00401" />
+      <option name="presentableId" value="LOCAL-00401" />
+      <option name="project" value="LOCAL" />
+      <updated>1745107907408</updated>
+    </task>
+    <task id="LOCAL-00402" summary="ad_db_table">
+      <option name="closed" value="true" />
+      <created>1745278665686</created>
+      <option name="number" value="00402" />
+      <option name="presentableId" value="LOCAL-00402" />
+      <option name="project" value="LOCAL" />
+      <updated>1745278665686</updated>
+    </task>
+    <option name="localTasksCounter" value="403" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -734,7 +727,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="dev version" />
     <MESSAGE value="dev______version" />
     <MESSAGE value="data" />
     <MESSAGE value="core_changes" />
@@ -759,7 +751,8 @@
     <MESSAGE value="no import of modules calling pythonnet api" />
     <MESSAGE value="replacements" />
     <MESSAGE value="one" />
-    <option name="LAST_COMMIT_MESSAGE" value="one" />
+    <MESSAGE value="ad_db_table" />
+    <option name="LAST_COMMIT_MESSAGE" value="ad_db_table" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

@@ -14,6 +14,9 @@ import pandas as pd
 from os.path import join as opj
 import json
 import datetime
+
+from sqlalchemy.testing.plugin.plugin_base import logging
+
 import apsimNGpy.manager.weathermanager as weather
 from functools import cache
 # prepare for the C# import
@@ -49,6 +52,22 @@ MOVE = Models.Core.ApsimFile.Structure.Move
 RENAME = Models.Core.ApsimFile.Structure.Rename
 REPLACE = Models.Core.ApsimFile.Structure.Replace
 
+
+def _eval_model(model__type):
+    model_types = None
+    if isinstance(model__type, str):
+        ln = len('Models.')
+        if model__type[:ln] == 'Models.':
+            _model_type = eval(model__type)
+            if isinstance(_model_type, type(Models.Clock)):
+                model_types = _model_type
+
+    if isinstance(model__type, type(Models.Clock)):
+        model_types = model__type
+    if model_types:
+        return model_types
+    else:
+        raise ValueError(f"invalid model_type: '{model__type}'")
 
 def dataview_to_dataframe(_model, reports):
     """
@@ -688,12 +707,13 @@ class CoreModel:
             logger.info(f"Moved {child_to_move.Name} to {new_parent.Name}")
         self.save()
 
-    def rename_model(self, model_type: Models, old_model_name: str, new_model_name: str):
+    def rename_model(self, model_type: Models, old_model_name: str, new_model_name: str, simulation=None):
         """
         give new name to a model in the simulations
         @param model_type: (Models) Models types e.g., Models.Clock
         @param old_model_name: (str) current model name
         @param new_model_name: (str) new model name
+        @param simulation: (str, optional) defaults to all simulations
         @return: None
         Example;
                >>> from apsimNGpy import core
@@ -702,8 +722,22 @@ class CoreModel:
                >>> apsim = apsim.rename_model(Models.Clock, 'Clock', 'clock')
 
         """
-        __model = self.Simulations.FindInScope[model_type](old_model_name)
-        __model.Name = new_model_name
+        model_type = _eval_model(model_type)
+        def _rename(_sim):
+            __sim = _sim.FindInScope[model_type](old_model_name)
+            if __sim is None:
+                logging.info(f"Model {old_model_name} does not exist exist in the {self.Simulations.Name}")
+            __sim.Name = new_model_name
+        if model_type == Models.Core.Simulations:
+            self.Simulations.Name = new_model_name
+        else:
+            sims = self.find_simulations(simulation)
+            for sim in sims:
+                if model_type == Models.Core.Simulation:
+                    sim.Name = new_model_name
+                    continue
+                _rename(sim)
+
         self.save()
 
     @property  #
@@ -2051,7 +2085,7 @@ class CoreModel:
 
         print_tree_branches(tree)
 
-    @timer
+    #@timer
     def add_db_table(self, variable_spec: list = None, set_event_names: list = None, rename: str = 'my_table', simulation_name:Union[str, list, tuple]=None):
         """
         Adds a new data base table, which APSIM calls Report (Models.Report) to the Simulation under a Simulation Zone.
@@ -2081,6 +2115,8 @@ class CoreModel:
         """
         report = Models.Report()
         report.Name = rename
+        if rename in self.inspect_model('Models.Report', fullpath=False):
+            logging.info(f"{rename} is a database table already ")
 
         # Default events if not specified
         if not set_event_names:

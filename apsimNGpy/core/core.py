@@ -707,7 +707,7 @@ class CoreModel:
             logger.info(f"Moved {child_to_move.Name} to {new_parent.Name}")
         self.save()
 
-    def rename_model(self, model_type: Models, old_model_name: str, new_model_name: str, simulation=None):
+    def rename_model(self, model_type: Models, old_model_name: str, new_model_name: str, simulations=None):
         """
         give new name to a model in the simulations
         @param model_type: (Models) Models types e.g., Models.Clock
@@ -731,7 +731,7 @@ class CoreModel:
         if model_type == Models.Core.Simulations:
             self.Simulations.Name = new_model_name
         else:
-            sims = self.find_simulations(simulation)
+            sims = self.find_simulations(simulations)
             for sim in sims:
                 if model_type == Models.Core.Simulation:
                     sim.Name = new_model_name

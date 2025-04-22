@@ -7,6 +7,7 @@ email: magalarich20@gmail.com
 import inspect
 import random, pathlib
 import string
+from shutil import which
 from typing import Union
 import os, shutil
 import numpy as np
@@ -31,7 +32,7 @@ from System import *
 from Models.Core.ApsimFile import FileFormat
 from Models.Climate import Weather
 from Models.Soils import Soil, Physical, SoilCrop, Organic, Solute, Chemical
-
+from functools import lru_cache
 import Models
 from Models.PMF import Cultivar
 from apsimNGpy.core.runner import run_model_externally, collect_csv_by_model_path
@@ -51,24 +52,40 @@ DELETE = Models.Core.ApsimFile.Structure.Delete
 MOVE = Models.Core.ApsimFile.Structure.Move
 RENAME = Models.Core.ApsimFile.Structure.Rename
 REPLACE = Models.Core.ApsimFile.Structure.Replace
-
-
-def _eval_model(model__type):
+CLASS_MODEL = type(Models.Clock)
+TYPE2 = type(Models.Clock())
+import inspect
+@lru_cache(maxsize=300)
+def _eval_model(model__type, evaluate_bound=False):
+    """
+    Evaluates the model type from either string or Models namespace
+    @param model__type (str,Models, required)
+    @return:
+    """
     model_types = None
+    bound_model =None
     if isinstance(model__type, str):
         _model_name_space = 'Models.'
         ln = len(_model_name_space)
         if model__type[:ln] == _model_name_space:
             _model_type = eval(model__type)
-            if isinstance(_model_type, type(Models.Clock)):
+            bound_model = _model_type.__class__
+            if isinstance(_model_type, CLASS_MODEL):
                 model_types = _model_type
 
-    if isinstance(model__type, type(Models.Clock)):
+    if isinstance(model__type, CLASS_MODEL):
         model_types = model__type
+
+    if evaluate_bound and not isinstance(model__type, str):
+        bound_model = model__type.__class__
+    if isinstance(bound_model,CLASS_MODEL):
+
+        model_types = bound_model
+
     if model_types:
         return model_types
     else:
-        raise ValueError(f"invalid model_type: '{model__type}'")
+        raise ValueError(f"invalid model_type: '{model__type}' from type: {type(model__type)}")
 
 
 from apsimNGpy.settings import *  # This file is not ready and i wanted to do some test
@@ -306,7 +323,7 @@ class CoreModel:
             datas = [pd.read_csv(data_tables[i]) for i in reports if i in data_tables]
             return pd.concat(datas)
         else:
-            logging.error("attempting to get results before running the model or providing the report name")
+            logging.error("attempting to get results before running the model")
 
     def run(self, report_name: Union[tuple, list, str] = None,
             simulations: Union[tuple, list] = None,
@@ -539,33 +556,19 @@ class CoreModel:
 
         replacer = {'Clock': 'change_simulation_dates', 'Weather': 'replace_met_file'}
         sims = self.Simulations
+        model_type = _eval_model(model_type, evaluate_bound=True)
+        adoptive_parent = _eval_model(adoptive_parent, evaluate_bound=False)
         # find where to add the model
-        if  isinstance(adoptive_parent, str) and 'Models.' in adoptive_parent :
-            adoptive_parent = eval(adoptive_parent)
-        if  isinstance(model_type, str) and 'Models.' in model_type:
-            model_type = eval(model_type)
         if adoptive_parent == Models.Core.Simulations:
             parent = self.Simulations
         else:
-            if isinstance(adoptive_parent, type(Models.Clock)):
-
-                if not adoptive_parent_name:
-                    adoptive_parent_name = adoptive_parent().Name
+            if not adoptive_parent_name:
+                adoptive_parent_name = adoptive_parent().Name
             parent = sims.FindInScope[adoptive_parent](adoptive_parent_name)
 
         # parent = _model.Simulations.FindChild(where)
-
-        cla = model_type.__class__
-        if inspect.isclass(model_type):
-            which = model_type
-        elif isinstance(model_type, str):
-            which = self.find_model(model_type)
-        elif isinstance(cla, type(Models.Clock)):
-            which = cla
-        else:
-            raise ValueError(f'Invalid model type description expected str or {type(Models.Clock)}')
-        if which and parent:
-            loc = which()
+        if model_type and parent:
+            loc = model_type()
             loc_name = loc.Name if hasattr(loc, 'Name') else None
             if rename and hasattr(loc, 'Name'):
                 loc.Name = rename
@@ -1423,6 +1426,7 @@ class CoreModel:
             data[sim] = list(soil_p_param)
         return data
 
+    @lru_cache(maxsize=200)
     def inspect_model(self, model_type: Union[str, Models], fullpath=True):
         """
         Inspect the model types and returns the model paths or names. usefull if you want to identify the path to the
@@ -2095,6 +2099,7 @@ class CoreModel:
                >>> model.add_db_table(variable_spec=['[Clock].Today', '[Soil].Nutrient.TotalC[1]/1000 as SOC1'], rename='report2')
                >>> model.add_db_table(variable_spec=['[Clock].Today', '[Soil].Nutrient.TotalC[1]/1000 as SOC1', '[Maize].Grain.Total.Wt*10 as Yield'], rename='report2', set_event_names=['[Maize].Harvesting','[Clock].EndOfYear' ])
         """
+        import Models
         report = Models.Report()
         report.Name = rename
         if rename in self.inspect_model('Models.Report', fullpath=False):
@@ -2132,8 +2137,9 @@ class CoreModel:
                 raise RuntimeError("No Zone found in the Simulation scope to attach the report table.")
 
             zone.Children.Add(report)
+            self.save()
         # save the results to recompile
-        self.save()
+
 
 
 

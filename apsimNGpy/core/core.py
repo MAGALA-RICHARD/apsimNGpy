@@ -370,6 +370,8 @@ class CoreModel:
                 # update report names
                 self.report_names = report_name
                 # self.results = _read_data(report_name)
+            if not self.ran_ok and not verbose:
+                model.run(verbose=True) # we need to understand the problem
 
         finally:
             # close the datastore

@@ -374,7 +374,7 @@ class CoreModel:
 
             if clean_up:
                 self.clean_up()
-
+            # returncode 0 is a sign that everything ran fine
             if res.returncode == 0:
                 self.ran_ok = True
                 self.report_names = report_name

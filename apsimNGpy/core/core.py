@@ -437,45 +437,42 @@ class CoreModel:
 
         Example:
         -------
-        ```python
-        self.clone_model(Models.Clock, "clock1", Models.Simulation, rename="new_clock",adoptive_parent_type= Models.Core.Simulations, adoptive_parent_name="Simulation")
+        >>> from apsimNGpy.core.base_data import load_default_simulations
+        >>> model  = load_default_simulations('Maize')
+        >>> model.clone_model('Models.Clock', "clock1", 'Models.Simulation', rename="new_clock",adoptive_parent_type= 'Models.Core.Simulations', adoptive_parent_name="Simulation")
         ```
         This will create a cloned version of `"clock1"` and place it under `"Simulation"` with the new name `"new_clock"`.
 
         """
         cloner = Models.Core.Apsim.Clone  # Reference to the APSIM cloning function
-        if isinstance(model_type, str) and 'Models.' in model_type:
-            model_type = eval(model_type)
-        if isinstance(adoptive_parent_type, str) and 'Models.' in adoptive_parent_type:
-            adoptive_parent_type = eval(adoptive_parent_type)
-        # Ensure the model type is valid before proceeding
-        if isinstance(model_type, type(Models.Clock)):
-            # Locate the model to be cloned within the simulation scope
-            clone_parent = (self.Simulations.FindInScope[model_type](model_name) if model_name
-                            else self.Simulations.FindInScope[model_type]())
+        model_type = _eval_model(model_type, evaluate_bound=True)
+        adoptive_parent_type = _eval_model(adoptive_parent_type, evaluate_bound=False)
 
-            # Create a clone of the model
-            clone = cloner(clone_parent)
+        # Locate the model to be cloned within the simulation scope
+        clone_parent = (self.Simulations.FindInScope[model_type](model_name) if model_name
+                        else self.Simulations.FindInScope[model_type]())
 
-            # Assign a new name to the cloned model
-            new_name = rename if rename else f"{clone.Name}_clone"
-            clone.Name = new_name
-            check_exists = self.Simulations.FindInScope[model_type](new_name)
-            if check_exists:
-                raise ValueError(
-                    f"adding the same model with the same name and type as the previous one is not allowed")
+        # Create a clone of the model
+        clone = cloner(clone_parent)
 
-            # Find the adoptive parent where the cloned model should be placed
-            parent = (self.Simulations.FindInScope[adoptive_parent_type](adoptive_parent_name) if adoptive_parent_name
-                      else self.Simulations.FindInScope[adoptive_parent_type]())
+        # Assign a new name to the cloned model
+        new_name = rename if rename else f"{clone.Name}_clone"
+        clone.Name = new_name
+        check_exists = self.Simulations.FindInScope[model_type](new_name)
+        if check_exists:
+            DELETE(check_exists)
+            logging.info(f'deleted {check_exists.Name}waiting replacment now')
 
-            # Add the cloned model to the new parent
-            parent.Children.Add(clone)
+        # Find the adoptive parent where the cloned model should be placed
+        parent = (self.Simulations.FindInScope[adoptive_parent_type](adoptive_parent_name) if adoptive_parent_name
+                  else self.Simulations.FindInScope[adoptive_parent_type]())
 
-            # Save the changes to the simulation structure
-            self.save()
-        else:
-            raise TypeError(f'{model_type} is not supported by clone_model at the moment')
+        # Add the cloned model to the new parent
+        parent.Children.Add(clone)
+
+        # Save the changes to the simulation structure
+        self.save()
+
 
     def find_model(self, model_name: str, model_namespace=None):
         """
@@ -565,7 +562,8 @@ class CoreModel:
             if not adoptive_parent_name:
                 adoptive_parent_name = adoptive_parent().Name
             parent = sims.FindInScope[adoptive_parent](adoptive_parent_name)
-
+        if model_type == Models.Core.Simulations:
+            raise ValueError(f"model type can not be a simulations holder did you mean Models.Core.Simulation?")
         # parent = _model.Simulations.FindChild(where)
         if model_type and parent:
             loc = model_type()
@@ -2158,26 +2156,26 @@ if __name__ == '__main__':
     # model = load_default_simulations('maize')
     model = CoreModel(al)
 
-    for N in [3, 300]:
-        # for rn in ['Maize, Soybean, Wheat', 'Maize', 'Soybean, Wheat']:
-        a = perf_counter()
-        # model.RevertCheckpoint()
-        model.update_mgt(management=({"Name": 'Sow using a variable rule', 'Population': N},))
-        # model.replace_soil_properties_by_path(path='None.Soil.Organic.None.None.Carbon', param_values=[N])
-        # model.replace_any_soil_physical(parameter='BD', param_values=[1.23],)
-        # model.save_edited_file(reload=True)
-        model.run('Report', verbose=True)
-        df = model.results
-        ui = model.extract_user_input('Sow using a variable rule')
-        print(ui)
-        print()
-        print(df['Maize.Total.Wt'].mean())
-        print(df.describe())
-        # logger.info(model.results.mean(numeric_only=True))
-        b = perf_counter()
-        logger.info(f"{b - a}, 'seconds")
 
-        a = perf_counter()
+    # for rn in ['Maize, Soybean, Wheat', 'Maize', 'Soybean, Wheat']:
+    a = perf_counter()
+    # model.RevertCheckpoint()
+    model.update_mgt(management=({"Name": 'Sow using a variable rule', 'Population': 10},))
+    # model.replace_soil_properties_by_path(path='None.Soil.Organic.None.None.Carbon', param_values=[N])
+    # model.replace_any_soil_physical(parameter='BD', param_values=[1.23],)
+    # model.save_edited_file(reload=True)
+    model.run('Report', verbose=True)
+    df = model.results
+    ui = model.extract_user_input('Sow using a variable rule')
+    print(ui)
+    print()
+    print(df['Maize.Total.Wt'].mean())
+    print(df.describe())
+    # logger.info(model.results.mean(numeric_only=True))
+    b = perf_counter()
+    logger.info(f"{b - a}, 'seconds")
+
+    a = perf_counter()
     model.clean_up(db=True)
     import doctest
 

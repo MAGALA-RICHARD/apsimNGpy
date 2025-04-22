@@ -1,0 +1,10 @@
+# CITATION.cff
+cff-version: 0.34
+message: "If you use this software, please cite it as below."
+authors:
+  - family-names: Magala
+    given-names: Richard
+title: apsimNGpy: A Python package for running APSIM Next Generation in Python environment
+version: 0.34
+date-released: 2025-04-15
+url: https://github.com/MAGALA-RICHARD/apsimNGpy.git

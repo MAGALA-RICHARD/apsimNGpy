@@ -432,8 +432,7 @@ class ApsimModel(Inspector):
 
     def run_edited_file(self, table_name=None):
         # to be deprecated
-        """Run simulations in this subclass if we want to clean the database, we need to
-         spawn the path with one process to avoid os access permission errors
+        """
 
             :param table_name (str): repot table name in the database
 

@@ -2188,5 +2188,8 @@ if __name__ == '__main__':
     a = perf_counter()
     model.clean_up(db=True)
     import doctest
-
+    # clone test
+    for i in range(100):
+        model.clone_model('Models.Core.Simulation', 'Simulation',
+                          'Models.Core.Simulations', rename=f"sim_{i}")
     # doctest.testmod()

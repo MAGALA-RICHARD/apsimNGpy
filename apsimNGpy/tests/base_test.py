@@ -15,11 +15,13 @@ from os import chdir as _chdir
 from os import remove
 import tempfile
 import joblib
+
+wd= Path.cwd() / 'apsimNGpy_tests'
 def set_wd(_wd=None):
     if _wd is None:
-      wd = Path.cwd() / 'apsimNGpy_tests'
-    else: wd = _wd
-    wd.mkdir(exist_ok=True)
+      WD = Path.cwd() / 'apsimNGpy_tests'
+    else: WD = _wd
+    WD.mkdir(exist_ok=True)
     _chdir(wd)
 
 set_wd()

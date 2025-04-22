@@ -40,7 +40,7 @@ import ast
 from typing import Iterable
 from collections.abc import Iterable
 from typing import Any
-from System.Data import DataView
+
 
 MultiThreaded = Models.Core.Run.Runner.RunTypeEnum.MultiThreaded
 SingleThreaded = Models.Core.Run.Runner.RunTypeEnum.SingleThreaded
@@ -56,8 +56,9 @@ REPLACE = Models.Core.ApsimFile.Structure.Replace
 def _eval_model(model__type):
     model_types = None
     if isinstance(model__type, str):
-        ln = len('Models.')
-        if model__type[:ln] == 'Models.':
+        _model_name_space = 'Models.'
+        ln = len(_model_name_space)
+        if model__type[:ln] == _model_name_space:
             _model_type = eval(model__type)
             if isinstance(_model_type, type(Models.Clock)):
                 model_types = _model_type
@@ -68,34 +69,6 @@ def _eval_model(model__type):
         return model_types
     else:
         raise ValueError(f"invalid model_type: '{model__type}'")
-
-def dataview_to_dataframe(_model, reports):
-    """
-    Convert .NET System.Data.DataView to Pandas DataFrame.
-    report (str, list, tuple) of the report to be displayed. these should be in the simulations
-    :param apsimng model: CoreModel object or instance
-    :return: Pandas DataFrame
-    """
-    try:
-        _model._DataStore.Open()
-        pred = _model._DataStore.Reader.GetData(reports)
-        dataview = DataView(pred)
-        if dataview.Table:
-            # Extract column names
-            column_names = [col.ColumnName for col in dataview.Table.Columns]
-
-            # Extract data from rows
-            data = []
-            for row in dataview:
-                data.append([row[col] for col in column_names])  # Extract row values
-
-            # Convert to Pandas DataFrame
-            df = pd.DataFrame(data, columns=column_names)
-            return df
-        else:
-            logger.error("No DataView was found")
-    finally:
-        _model._DataStore.Close()
 
 
 from apsimNGpy.settings import *  # This file is not ready and i wanted to do some test
@@ -307,7 +280,24 @@ class CoreModel:
 
     @property
     def results(self) -> pd.DataFrame:
-        reports = self.report_names or "Report"  # 'Report' # is the apsim default name
+        """
+    Legacy method for retrieving simulation results.
+
+    This method is implemented as a property to enable lazy loading—results are only loaded into memory when explicitly accessed.
+    This design helps optimize memory usage, especially for large simulations.
+
+    It must be called only after invoking `.run()`. If accessed before the simulation is run, it will raise an error.
+
+    Notes:
+    - The `.run()` method should be called with a valid report name or a list of report names (i.e., APSIM report table names).
+    - If `report_names` is not provided (i.e., `None`), the system will inspect the model and automatically detect all available report components.
+      These reports will then be used to collect the data.
+    - If multiple report names are used, their corresponding data tables will be concatenated along the rows.
+
+    Returns:
+        pd.DataFrame: A DataFrame containing the simulation output.
+    """
+        reports = self.report_names or self.inspect_model('Models.Report', fullpath=False)# false returns all names of the models in that type
         if self.ran_ok and reports:
             data_tables = collect_csv_by_model_path(self.path)
 
@@ -1464,24 +1454,16 @@ class CoreModel:
          >>> model.inspect_model('Models.Fertiliser', fullpath=False) # strings are allowed to
 
         """
-        import Models
-        if isinstance(model_type, str):
-            l_model = len('Models.')
-            attr_model = model_type[l_model:]
-            # for security purpose we have to evaluate the string
-            if "_" in model_type or not getattr(Models, attr_model, None):
-                raise ValueError(f"Invalid model name: {model_type}")
-            model_type = eval(model_type, {'Models': Models})
-        if isinstance(model_type, type(Models.Clock)):
+        model_type = _eval_model(model_type)
+        if model_type == Models.Core.Simulations:
+            obj = [self.Simulations]
+        else:
             obj = self.Simulations.FindAllDescendants[model_type]()
-            if obj:
-                if fullpath:
-                    return [i.FullPath for i in obj]
-                else:
-                    return [i.Name for i in obj]
-
-            logging.info(f"{model_type.__name__} does not exists")
-        logging.error(f"Invalid model type '{model_type}'")
+        if obj:
+            if fullpath:
+                return [i.FullPath for i in obj]
+            else:
+                return [i.Name for i in obj]
 
     def configs(self):
         """records activities that have been done on the model including changes to the file

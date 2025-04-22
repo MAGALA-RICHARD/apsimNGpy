@@ -328,55 +328,68 @@ class CoreModel:
     def run(self, report_name: Union[tuple, list, str] = None,
             simulations: Union[tuple, list] = None,
             clean_up: bool = False,
-            verbose=False,
+            verbose: bool = False,
             **kwargs) -> 'CoreModel':
-        """Run apsim model in the simulations
+        """
+        Run APSIM model simulations.
 
         Parameters
         ----------
-         :param report_name: (iterable, str). defaults to APSIM defaults Report Name if not specified,
-        --Notes
-          if `report_name` is iterable, all tables are read and aggregated not one data frame, returned one pandas data frame
-          if `report_name` is nOne we run but do not collect the results from the data base
-          if report name is string e.g.,  report a panda data frame is returned
+        report_name : Union[tuple, list, str], optional
+            Defaults to APSIM default Report Name if not specified.
+            - If iterable, all report tables are read and aggregated into one DataFrame.
+            - If None, runs without collecting database results.
+            - If str, a single DataFrame is returned.
 
-        simulations (__list_), optional
-            List of simulation names to run, if `None` runs all simulations, by default `None`.
+        simulations : Union[tuple, list], optional
+            List of simulation names to run. If None, runs all simulations.
 
-        :param clean (_-boolean_), optional
-            If `True` remove an existing database for the file before running, deafults to False`
+        clean_up : bool, optional
+            If True, removes existing database before running.
 
-        :param multithread: bool
-            If `True` APSIM uses multiple threads, by default, `True`
-            :param simulations:
+        verbose : bool, optional
+            If True, enables verbose output for debugging. The method continues with debugging info anyway if the run was unsuccessful
 
-        returns
-            instance of the class CoreModel
+        kwargs : dict
+            Additional keyword arguments, e.g., to_csv=True
+
+        Returns
+        -------
+        CoreModel
+            Instance of the class CoreModel.
         """
         try:
-            # we could cut the chase and run apsim faster, but unfortunately some versions are not working properly,
-            # so we run the model externally the previous function allowed to run specific simulations in the file,
-            # it has been renamed to run_in_python.
+            # Dispose any existing data store handle
             self._DataStore.Dispose()
 
-            # before running
-            self.save()  # this compiles any modification to the model, sending it to the disk
-            res = run_model_externally(self.model_info.path, verbose=verbose, to_csv=kwargs.get('to_csv', True))
+            # Save model changes to disk (compile before run)
+            self.save()
+
+            # Run APSIM externally
+            res = run_model_externally(
+                self.model_info.path,
+                verbose=verbose,
+                to_csv=kwargs.get('to_csv', True)
+            )
+
             if clean_up:
                 self.clean_up()
+
             if res.returncode == 0:
-                # update run satus
                 self.ran_ok = True
-                # update report names
                 self.report_names = report_name
-                # self.results = _read_data(report_name)
+
+            # If the model failed and verbose was off, rerun to diagnose
             if not self.ran_ok and not verbose:
-                self.run(verbose=True) # # Rerun with verbosity to help debug the problem
+                self.run(verbose=True)
+
+            return self
+
 
         finally:
             # close the datastore
             self._DataStore.Close()
-        return self
+
 
     @property
     def simulated_results(self) -> pd.DataFrame:

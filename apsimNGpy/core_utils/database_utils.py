@@ -12,7 +12,36 @@ from pandas import read_sql_query as rsq
 from sqlalchemy import create_engine, inspect
 from apsimNGpy.core_utils.exceptions import TableNotFoundError
 from apsimNGpy.settings import logger
+from System.Data import DataView
+from pandas import DataFrame
 
+def dataview_to_dataframe(_model, reports):
+    """
+    Convert .NET System.Data.DataView to Pandas DataFrame.
+    report (str, list, tuple) of the report to be displayed. these should be in the simulations
+    :param apsimng model: CoreModel object or instance
+    :return: Pandas DataFrame
+    """
+    try:
+        _model._DataStore.Open()
+        pred = _model._DataStore.Reader.GetData(reports)
+        dataview = DataView(pred)
+        if dataview.Table:
+            # Extract column names
+            column_names = [col.ColumnName for col in dataview.Table.Columns]
+
+            # Extract data from rows
+            data = []
+            for row in dataview:
+                data.append([row[col] for col in column_names])  # Extract row values
+
+            # Convert to Pandas DataFrame
+            df = DataFrame(data, columns=column_names)
+            return df
+        else:
+            logger.error("No DataView was found")
+    finally:
+        _model._DataStore.Close()
 
 def read_with_query(db, query):
     """

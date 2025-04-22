@@ -1474,7 +1474,7 @@ class CoreModel:
 
 
     def configs(self):
-        """records activities that have been done on the model including changes to the file
+        """records activities or modifications to the model including changes to the file
 
         """
         return {
@@ -1482,7 +1482,8 @@ class CoreModel:
             'model_has_been_ran': self.ran_ok,
             'experiment': self.experiment,
             'experiment_created': self.experiment_created,
-            'reports': self.report_names
+            'reports': self.report_names,
+            'simulations': self.Simulations.Name
         }
 
     def replace_soils_values_by_path(self, node_path: str, indices: list = None, **kwargs):

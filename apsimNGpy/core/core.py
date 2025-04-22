@@ -371,7 +371,7 @@ class CoreModel:
                 self.report_names = report_name
                 # self.results = _read_data(report_name)
             if not self.ran_ok and not verbose:
-                model.run(verbose=True) # we need to understand the problem
+                model.run(verbose=True) # # Rerun with verbosity to help debug the problem
 
         finally:
             # close the datastore

@@ -19,7 +19,7 @@ import datetime
 from sqlalchemy.testing.plugin.plugin_base import logging
 
 import apsimNGpy.manager.weathermanager as weather
-from functools import cache
+from functools import cache, lru_cache
 # prepare for the C# import
 from apsimNGpy.core import pythonet_config
 import warnings
@@ -32,7 +32,6 @@ from System import *
 from Models.Core.ApsimFile import FileFormat
 from Models.Climate import Weather
 from Models.Soils import Soil, Physical, SoilCrop, Organic, Solute, Chemical
-from functools import lru_cache
 import Models
 from Models.PMF import Cultivar
 from apsimNGpy.core.runner import run_model_externally, collect_csv_by_model_path
@@ -55,12 +54,12 @@ REPLACE = Models.Core.ApsimFile.Structure.Replace
 CLASS_MODEL = type(Models.Clock)
 TYPE2 = type(Models.Clock())
 import inspect
-@lru_cache(maxsize=300)
-def _eval_model(model__type, evaluate_bound=False):
+
+def _eval_model(model__type, evaluate_bound=False) -> ['__class__', str]:
     """
     Evaluates the model type from either string or Models namespace
     @param model__type (str,Models, required)
-    @return:
+    @return: ['__class__', str]
     """
     model_types = None
     bound_model =None
@@ -1425,7 +1424,7 @@ class CoreModel:
             data[sim] = list(soil_p_param)
         return data
 
-    @lru_cache(maxsize=200)
+
     def inspect_model(self, model_type: Union[str, Models], fullpath=True):
         """
         Inspect the model types and returns the model paths or names. usefull if you want to identify the path to the
@@ -2141,9 +2140,10 @@ class CoreModel:
             if zone is None:
                 raise RuntimeError("No Zone found in the Simulation scope to attach the report table.")
             check_repo = sim.FindInScope[Models.Report](rename)
-            if not check_repo:# because this is intented to create an entirley new db table
-               zone.Children.Add(report)
-               self.save()
+            if check_repo:# because this is intented to create an entirley new db table
+               DELETE(check_repo)
+            zone.Children.Add(report)
+            self.save()
 
         # save the results to recompile
 

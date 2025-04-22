@@ -64,11 +64,12 @@ def _eval_model(model__type, evaluate_bound=False):
     """
     model_types = None
     bound_model =None
+    import Models
     if isinstance(model__type, str):
         _model_name_space = 'Models.'
         ln = len(_model_name_space)
         if model__type[:ln] == _model_name_space:
-            _model_type = eval(model__type)
+            _model_type = eval(model__type, {"Models": Models}, {"Models": Models})
             bound_model = _model_type.__class__
             if isinstance(_model_type, CLASS_MODEL):
                 model_types = _model_type
@@ -1456,16 +1457,22 @@ class CoreModel:
          >>> model.inspect_model('Models.Fertiliser', fullpath=False) # strings are allowed to
 
         """
+
         model_type = _eval_model(model_type)
         if model_type == Models.Core.Simulations:
             obj = [self.Simulations]
         else:
             obj = self.Simulations.FindAllDescendants[model_type]()
+
         if obj:
+            fupath  = [i.FullPath for i in obj]
+            names = [i.split(".")[-1] for i in fupath]
             if fullpath:
-                return [i.FullPath for i in obj]
+                return fupath
             else:
-                return [i.Name for i in obj]
+                return names
+
+
 
     def configs(self):
         """records activities that have been done on the model including changes to the file
@@ -2133,9 +2140,11 @@ class CoreModel:
             zone = sim.FindInScope[Models.Core.Zone]()
             if zone is None:
                 raise RuntimeError("No Zone found in the Simulation scope to attach the report table.")
+            check_repo = sim.FindInScope[Models.Report](rename)
+            if not check_repo:# because this is intented to create an entirley new db table
+               zone.Children.Add(report)
+               self.save()
 
-            zone.Children.Add(report)
-            self.save()
         # save the results to recompile
 
 
@@ -2174,7 +2183,7 @@ if __name__ == '__main__':
     # logger.info(model.results.mean(numeric_only=True))
     b = perf_counter()
     logger.info(f"{b - a}, 'seconds")
-
+    model.add_db_table(variable_spec=['[Clock].Today', '[Soil].Nutrient.TotalC[1]/1000 as SOC1'], rename='reporterte')
     a = perf_counter()
     model.clean_up(db=True)
     import doctest

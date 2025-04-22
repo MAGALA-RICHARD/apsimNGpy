@@ -162,7 +162,7 @@ class TestAPSIMNG(BaseTester):
           variable_spec=['[Clock].Today', '[Soil].Nutrient.TotalC[1]/1000 as SOC1', '[Maize].Grain.Total.Wt*10 as Yield'],
           rename='report4', set_event_names=['[Maize].Harvesting', '[Clock].EndOfYear'])
         # check if report is created
-         _reports = self.test_ap_sim.inspect_model('Models.Report', fullpath=False)
+         _reports = self.test_ap_sim.inspect_model('Models.Report()', fullpath=False)
 
          assert 'report4' in _reports, 'report4 was not found in reports'
         # try running

@@ -20,7 +20,7 @@ from os import chdir
 import shutil
 from collections import namedtuple
 from pathlib import Path
-from apsimNGpy.core.config import get_apsim_bin_path
+from apsimNGpy.core.config import get_apsim_bin_path, apsim_version
 import subprocess
 from apsimNGpy.core_utils.database_utils import read_db_table
 from apsimNGpy.settings import SCRATCH
@@ -32,12 +32,13 @@ def load_from_dict(dict_data, out):
     return Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](str_, None, True,
                                                                                     fileName=out)
 
-
+version = apsim_version()
 def copy_file(source: Union[str, Path], destination: Union[str, Path] = None,
               wd: Union[str, Path] = None) -> Union[str, Path]:
     if not wd:
         wd = SCRATCH
-    destine_path = destination if destination else os.path.join(wd, f"temp_{uuid.uuid1()}.apsimx")
+
+    destine_path = f"{str(destination).replace('.apsimx', version)}" +'.apsimx' if destination else os.path.join(wd, f"temp_{uuid.uuid1()}_{version}.apsimx")
     shutil.copy2(source, destine_path)
     return destine_path
 

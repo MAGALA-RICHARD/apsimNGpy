@@ -41,7 +41,7 @@ from typing import Iterable
 from collections.abc import Iterable
 from typing import Any
 from apsimNGpy.core_utils.utils import open_file_in_window
-
+from apsimNGpy.core.config import get_apsim_bin_path, load_crop_from_disk
 MultiThreaded = Models.Core.Run.Runner.RunTypeEnum.MultiThreaded
 SingleThreaded = Models.Core.Run.Runner.RunTypeEnum.SingleThreaded
 ModelRUNNER = Models.Core.Run.Runner
@@ -108,6 +108,10 @@ def soil_components(component):
     return comps[_comp]
 
 
+
+def _looks_like_path(value: str) -> bool:
+    return any(sep in value for sep in (os.sep, '/', '\\')) or value.endswith('.apsimx')
+
 class CoreModel:
     """
     Modify and run APSIM Next Generation (APSIM NG) simulation models.
@@ -125,11 +129,17 @@ class CoreModel:
       **`copy` (bool, deprecated)**: Specifies whether to clone the simulation file. This parameter is deprecated because the simulation file is now automatically cloned by default.
 
     When an APSIM file is loaded, it is automatically copied to ensure a fallback to the original file in case of any issues during operations.
+
+   Starting with version 0.35, accessing default simulations no longer requires the load_default_simulations function from the base_data module.
+   Instead, default simulations can now be retrieved directly via the CoreModel attribute or the ApsimModel class by specifying the name of the crop (e.g., "Maize").
+   This means the relevant classes can now accept either a file path or a string representing the crop name.
+
+
     """
     __slots__ = ['model', 'out_path', 'experiment', 'copy', 'base_name', 'others', 'report_names',
                  'factor_names', 'permutation', 'experiment_created', 'set_wd', '_str_model',
                  '_model', 'model_info', 'datastore', 'Simulations', 'Datastore', '_DataStore', 'path',
-                 '_met_file', 'ran_ok', 'factors'
+                 '_met_file', 'ran_ok', 'factors', 'work_space'
                  ]
 
     def __init__(self, model: os.PathLike = None, out_path: os.PathLike = None, out: os.PathLike = None, set_wd=None,
@@ -155,9 +165,12 @@ class CoreModel:
         self._str_model = None
         self._model = model
         self.out_path = out_path or out
-        # model_info is named tuple safe for parallel simulations as named tuples are immutable
+        self.work_space = set_wd or SCRATCH
+        if not _looks_like_path(str(self._model)) and not self._model== None:
+            self._model = load_crop_from_disk(crop=self._model, work_space=self.work_space)
+            # model_info is named tuple safe for parallel simulations as named tuples are immutable
         self.model_info = load_apsim_model(self._model, out_path=self.out_path, met_file=kwargs.get('met_file'),
-                                           wd=set_wd)
+                                           wd=self.work_space)
         self.Simulations = self.model_info.IModel
 
         self.datastore = self.model_info.datastore
@@ -2169,11 +2182,10 @@ if __name__ == '__main__':
     os.chdir(Path.home())
     from apsimNGpy.core.base_data import load_default_simulations
 
-    al = load_default_simulations(crop='maize', simulations_object=False)
-    modelm = al
+
 
     # model = load_default_simulations('maize')
-    model = CoreModel(al)
+    model = CoreModel(model = 'Maize')
 
 
     # for rn in ['Maize, Soybean, Wheat', 'Maize', 'Soybean, Wheat']:
@@ -2198,7 +2210,7 @@ if __name__ == '__main__':
     model.clean_up(db=True)
     import doctest
     # clone test
-    for i in range(100):
-        model.clone_model('Models.Core.Simulation', 'Simulation',
-                          'Models.Core.Simulations', rename=f"sim_{i}")
-    # doctest.testmod()
+    # for i in range(100):
+    #     model.clone_model('Models.Core.Simulation', 'Simulation',
+    #                       'Models.Core.Simulations', rename=f"sim_{i}")
+    # # doctest.testmod()

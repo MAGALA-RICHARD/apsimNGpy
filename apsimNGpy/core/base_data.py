@@ -15,12 +15,15 @@ WEATHER_CO = 'NewMetrrr.met'
 WEA = 'Iem_IA0200.met'
 APSIM_DATA = 'apsim'
 WEATHER = 'weather'
+from functools import lru_cache
 
 BIN_path = get_apsim_bin_path()
 # removed all other functions loading apsim files from the local repository only default apsim simulations
 EXAMPLES_DATA = example_files_path = BIN_path.replace('bin', 'Examples')
 version_number = apsim_version()
 useVn = version_number.replace(".", "_")
+
+BIN = get_apsim_bin_path()
 
 
 def __get_example(crop, path=None, simulations_object=True, **kwargs):

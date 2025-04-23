@@ -7,11 +7,12 @@ import pandas as pd
 # Import the module where CoreModel class is defined
 from apsimNGpy.core.model_loader import save_model_to_file
 from apsimNGpy.tests.base_test import BaseTester, set_wd
+from apsimNGpy.core.core import CoreModel
 set_wd()
 print('current working directory:', os.getcwd())
 
 set_wd()
-class TestAPSIMNG(BaseTester):
+class TestCoreModel(BaseTester):
 
     def test_run(self):
 
@@ -169,7 +170,10 @@ class TestAPSIMNG(BaseTester):
          self.test_ap_sim.run('report4')
 
          self.assertTrue(self.test_ap_sim.ran_ok, msg='simulation was not ran after adding the report table report2.')
-
+    def test_loading_defaults_with(self):
+        model = CoreModel(model = 'Maize')
+        model.run()
+        self.assertTrue(model.ran_ok, 'simulation was not ran after using defualt within CoreModel class')
     def test_edit_cultivar(self):
         """
         Test the edit_cultivar requires that we have replacements in place

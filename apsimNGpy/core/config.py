@@ -9,6 +9,8 @@ from functools import lru_cache, cache
 from os.path import join, dirname
 import logging
 import psutil
+import uuid
+from shutil import copy2
 logger = logging.getLogger(__name__)
 from apsimNGpy.settings import CONFIG_PATH, create_config
 
@@ -231,3 +233,52 @@ def apsim_version():
     _path = get_apsim_bin_path()
     dPath = os.path.dirname(_path)
     return os.path.basename(dPath)
+
+
+@lru_cache(maxsize=300)
+def load_crop_from_disk(crop: str, out: str = None, work_space: str = None):
+    """
+    Load a default APSIM crop simulation file from disk by specifying only the crop name.
+
+    This function locates and copies a `.apsimx` file associated with the specified crop from the APSIM
+    Examples directory into a working directory. It is useful when programmatically running default
+    simulations for different crops without manually managing file paths.
+
+    Args:
+        crop (str): The name of the crop to load (e.g., 'Maize', 'Soybean', 'Barley', 'Mungbean', 'Pinus', 'Eucalyptus').
+                    The name is case-insensitive and must match an existing `.apsimx` file in the APSIM Examples folder.
+        out (str, optional): A custom output path where the `.apsimx` file should be copied.
+                             If not provided, a temporary file will be created in the working directory. this is stamped with the APSIM version being used
+        work_space (str, optional): The base directory to use when generating a temporary output path.
+                                    If not specified, the current working directory is used.
+                                    This path may also contain other simulation or residue files.
+
+    Returns:
+        str: The path to the copied `.apsimx` file ready for further manipulation or simulation.
+
+    Raises:
+        FileNotFoundError: If the APSIM binary path cannot be resolved or the crop simulation file does not exist.
+
+    Example:
+        >>> load_crop_from_disk("Maize")
+        'C:/path/to/temp_uuid_Maize.apsimx'
+    """
+    BIN = get_apsim_bin_path()
+    _version = apsim_version()
+    if BIN and os.path.exists(BIN):
+        EXa = BIN.replace('bin', 'Examples')
+        target_location = glob.glob(f"{EXa}*/{crop}.apsimx")  # case-sensitive match by correct spelling only
+        if target_location:
+            loaded_path = target_location[0]
+        else:
+            raise FileNotFoundError(f"Could not find matching .apsimx file path for crop '{crop}'")
+
+        __wd = Path(work_space) if work_space else Path.cwd()
+        _out_path = out or str(__wd / f"temp_{uuid.uuid1()}_{_version}_{crop}.apsimx")
+        copied_file = copy2(loaded_path, _out_path)
+        return copied_file
+
+    raise FileNotFoundError(
+        "Could not find root path for APSIM binaries. "
+        "Try reinstalling APSIM or use set_apsim_bin_path() to set the path to an existing APSIM version."
+    )

@@ -382,6 +382,7 @@ class CoreModel:
             # If the model failed and verbose was off, rerun to diagnose
             if not self.ran_ok and not verbose:
                 self.run(verbose=True)
+                raise RuntimeError(f'Model failed to run: {res.returncode}. please diagnose and try again')
 
             return self
 

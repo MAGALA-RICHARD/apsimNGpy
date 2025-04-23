@@ -606,8 +606,7 @@ class CoreModel:
                 target_child = parent.FindChild[self.find_model(loc_name)](loc.Name)
                 if target_child:
                     # not raising the error still studying the behaviors of adding a child that already exists
-                    raise ValueError(
-                        f'Child node `{model_type}` already exist at the target parent name`{parent.Name}`')
+                    DELETE(target_child)
 
             ADD(loc, parent)
             # parent.Children.Add(loc)
@@ -1928,6 +1927,7 @@ class CoreModel:
         if not self.experiment:
             msg = 'experiment was not defined, it has been created with default settings'
             self.create_experiment(permutation=True)  # create experiment with default parameters of permutation
+            self.experiment=True
 
         # Add individual factors
         if self.permutation:

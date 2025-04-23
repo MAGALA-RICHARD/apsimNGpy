@@ -76,10 +76,7 @@ ApsimModel
 
 .. function:: apsimNGpy.core.apsim.ApsimModel.run_edited_file(self, table_name=None)
 
-   Run simulations in this subclass if we want to clean the database, we need to
-         spawn the path with one process to avoid os access permission errors
-
-            :param table_name (str): repot table name in the database
+   :param table_name (str): repot table name in the database
 
 .. function:: apsimNGpy.core.apsim.ApsimModel.spin_up(self, report_name: str = 'Report', start=None, end=None, spin_var='Carbon', simulations=None)
 
@@ -126,6 +123,10 @@ CoreModel
 
     When an APSIM file is loaded, it is automatically copied to ensure a fallback to the original file in case of any issues during operations.
 
+   Starting with version 0.35, accessing default simulations no longer requires the load_default_simulations function from the base_data module.
+   Instead, default simulations can now be retrieved directly via the CoreModel attribute or the ApsimModel class by specifying the name of the crop (e.g., "Maize").
+   This means the relevant classes can now accept either a file path or a string representing the crop name.
+
 .. function:: apsimNGpy.core.core.CoreModel.add_crop_replacements(self, _crop: str)
 
    Adds a replacement folder as a child of the simulations.
@@ -140,7 +141,34 @@ CoreModel
         **Raises:**
             - *ValueError*: If the specified crop is not found.
 
-.. function:: apsimNGpy.core.core.CoreModel.add_factor(self, specification: str, factor_name: str, **kwargs)
+.. function:: apsimNGpy.core.core.CoreModel.add_db_table(self, variable_spec: list = None, set_event_names: list = None, rename: str = 'my_table', simulation_name: Union[str, list, tuple] = None)
+
+   Adds a new data base table, which APSIM calls Report (Models.Report) to the Simulation under a Simulation Zone.
+
+        This is different from `add_report_variable` in that it creates a new, named report
+        table that collects data based on a given list of variables and events.
+
+        :Args:
+            variable_spec (list or str): A list of APSIM variable paths to include in the report table.
+                                         If a string is passed, it will be converted to a list.
+            set_event_names (list or str, optional): A list of APSIM events that trigger the recording of variables.
+                                                     Defaults to ['[Clock].EndOfYear'] if not provided. other examples include '[Clock].StartOfYear', '[Clock].EndOfsimulation',
+                                                     '[crop_name].Harvesting' etc.,,
+            rename (str): The name of the report table to be added. Defaults to 'my_table'.
+
+            simulation_name (str,tuple, or list, Optional): if specified, the name of the simulation will be searched and will become the parent candidate for the report table.
+                            If it is none, all Simulations in the file will be updated with the new db_table
+
+        :Raises:
+            ValueError: If no variable_spec is provided.
+            RuntimeError: If no Zone is found in the current simulation scope.
+        : Example:
+               >>> from apsimNGpy import core
+               >>> model = core.base_data.load_default_simulations(crop = 'Maize')
+               >>> model.add_db_table(variable_spec=['[Clock].Today', '[Soil].Nutrient.TotalC[1]/1000 as SOC1'], rename='report2')
+               >>> model.add_db_table(variable_spec=['[Clock].Today', '[Soil].Nutrient.TotalC[1]/1000 as SOC1', '[Maize].Grain.Total.Wt*10 as Yield'], rename='report2', set_event_names=['[Maize].Harvesting','[Clock].EndOfYear' ])
+
+.. function:: apsimNGpy.core.core.CoreModel.add_factor(self, specification: str, factor_name: str = None, **kwargs)
 
    Adds a factor to the created experiment. Thus, this method only works on factorial experiments
 
@@ -202,22 +230,24 @@ CoreModel
          >>> model.preview_simulation() # doctest: +SKIP
          @param adoptive_parent:
 
-.. function:: apsimNGpy.core.core.CoreModel.add_report_variable(self, commands: Union[list, str, tuple], report_name: str = None)
+.. function:: apsimNGpy.core.core.CoreModel.add_report_variable(self, variable_spec: Union[list, str, tuple], report_name: str = None, set_event_names: Union[str, list] = None)
 
    This adds a report variable to the end of other variables, if you want to change the whole report use change_report
 
         Parameters
         -------------------
 
-        :param commands: (str, required): list of text commands for the report variables e.g., '[Clock].Today as Date'
+        :param variable_spec: (str, required): list of text commands for the report variables e.g., '[Clock].Today as Date'
         :param report_name: (str, optional): name of the report variable if not specified the first accessed report object will be altered
+        :set_event_names (list or str, optional): A list of APSIM events that trigger the recording of variables.
+                                                     Defaults to ['[Clock].EndOfYear'] if not provided.
         :Returns:
             returns instance of apsimNGpy.core.core.apsim.ApsimModel or apsimNGpy.core.core.apsim.CoreModel
            raises an erros if a report is not found
         Example:
         >>> from apsimNGpy import core
         >>> model = core.base_data.load_default_simulations()
-        >>> model.add_report_variable(commands = '[Clock].Today as Date', report_name = 'Report')
+        >>> model.add_report_variable(variable_spec = '[Clock].Today as Date', report_name = 'Report')
 
 .. function:: apsimNGpy.core.core.CoreModel.change_report(self, *, command: str, report_name='Report', simulations=None, set_DayAfterLastOutput=None, **kwargs)
 
@@ -300,7 +330,7 @@ CoreModel
 
 .. function:: apsimNGpy.core.core.CoreModel.configs(self)
 
-   records activities that have been done on the model including changes to the file
+   records activities or modifications to the model including changes to the file
 
 .. function:: apsimNGpy.core.core.CoreModel.create_experiment(self, permutation: bool = True, base_name: str = None, **kwargs)
 
@@ -329,7 +359,7 @@ CoreModel
 
           - CultivarName (str, required): Name of the cultivar (e.g., 'laila').
 
-          - commands (str, required): A strings representing the parameter paths to be edited.
+          - variable_spec (str, required): A strings representing the parameter paths to be edited.
                          Example: ('[Grain].MaximumGrainsPerCob.FixedValue', '[Phenology].GrainFilling.Target.FixedValue')
 
           - values: values for each command (e.g., (721, 760)).
@@ -479,7 +509,7 @@ CoreModel
             List of report lines.
             @param names_only: return the names of the reports as a list if names_only is True
 
-.. function:: apsimNGpy.core.core.CoreModel.inspect_file(self, indent=0, display_full_path=True)
+.. function:: apsimNGpy.core.core.CoreModel.inspect_file(self, **kwargs)
 
    Inspect the file by calling inspect_model() through get_model_paths.
         This method is important in inspecting the whole file and also getting the scripts paths
@@ -561,12 +591,13 @@ CoreModel
                >>> model.remove_model(Models.Clock) #deletes the clock node
                >>> model.remove_model(Models.Climate.Weather) #deletes the weather node
 
-.. function:: apsimNGpy.core.core.CoreModel.rename_model(self, model_type: <module 'Models'>, old_model_name: str, new_model_name: str)
+.. function:: apsimNGpy.core.core.CoreModel.rename_model(self, model_type: <module 'Models'>, old_model_name: str, new_model_name: str, simulations=None)
 
    give new name to a model in the simulations
         @param model_type: (Models) Models types e.g., Models.Clock
         @param old_model_name: (str) current model name
         @param new_model_name: (str) new model name
+        @param simulation: (str, optional) defaults to all simulations
         @return: None
         Example;
                >>> from apsimNGpy import core
@@ -657,30 +688,37 @@ CoreModel
 
         :return: self
 
-.. function:: apsimNGpy.core.core.CoreModel.run(self, report_name: Union[tuple, list, str] = None, simulations: Union[tuple, list] = None, clean_up: bool = False, verbose=False, **kwargs) -> 'CoreModel'
+.. function:: apsimNGpy.core.core.CoreModel.run(self, report_name: Union[tuple, list, str] = None, simulations: Union[tuple, list] = None, clean_up: bool = False, verbose: bool = False, **kwargs) -> 'CoreModel'
 
-   Run apsim model in the simulations
+   Run APSIM model simulations.
 
         Parameters
         ----------
-         :param report_name: (iterable, str). defaults to APSIM defaults Report Name if not specified,
-        --Notes
-          if `report_name` is iterable, all tables are read and aggregated not one data frame, returned one pandas data frame
-          if `report_name` is nOne we run but do not collect the results from the data base
-          if report name is string e.g.,  report a panda data frame is returned
+        report_name : Union[tuple, list, str], optional
+            Defaults to APSIM default Report Name if not specified.
+            - If iterable, all report tables are read and aggregated into one DataFrame.
+            - If None, runs without collecting database results.
+            - If str, a single DataFrame is returned.
 
-        simulations (__list_), optional
-            List of simulation names to run, if `None` runs all simulations, by default `None`.
+        simulations : Union[tuple, list], optional
+            List of simulation names to run. If None, runs all simulations.
 
-        :param clean (_-boolean_), optional
-            If `True` remove an existing database for the file before running, deafults to False`
+        clean_up : bool, optional
+            If True, removes existing database before running.
 
-        :param multithread: bool
-            If `True` APSIM uses multiple threads, by default, `True`
-            :param simulations:
+        verbose : bool, optional
+            If True, enables verbose output for debugging. The method continues with debugging info anyway if the run was unsuccessful
 
-        returns
-            instance of the class CoreModel
+        kwargs : dict
+            Additional keyword arguments, e.g., to_csv=True
+
+        Returns
+        -------
+        CoreModel
+            Instance of the class CoreModel.
+       RuntimeError
+            Raised if the APSIM run is unsuccessful. Common causes include missing meteorological files,
+            mismatched simulation start dates with weather data, or other configuration issues.
 
 .. function:: apsimNGpy.core.core.CoreModel.save(self, file_name=None)
 
@@ -932,10 +970,7 @@ apsimNGpy.core.base_data
 
    .. method::apsimNGpy.core.apsim.ApsimModel.run_edited_file(self, table_name=None)
 
-      Run simulations in this subclass if we want to clean the database, we need to
-         spawn the path with one process to avoid os access permission errors
-
-            :param table_name (str): repot table name in the database
+      :param table_name (str): repot table name in the database
 
    .. method::apsimNGpy.core.apsim.ApsimModel.spin_up(self, report_name: str = 'Report', start=None, end=None, spin_var='Carbon', simulations=None)
 
@@ -1226,10 +1261,7 @@ apsimNGpy.core.structure
 
    .. method::apsimNGpy.core.apsim.ApsimModel.run_edited_file(self, table_name=None)
 
-      Run simulations in this subclass if we want to clean the database, we need to
-         spawn the path with one process to avoid os access permission errors
-
-            :param table_name (str): repot table name in the database
+      :param table_name (str): repot table name in the database
 
    .. method::apsimNGpy.core.apsim.ApsimModel.spin_up(self, report_name: str = 'Report', start=None, end=None, spin_var='Carbon', simulations=None)
 

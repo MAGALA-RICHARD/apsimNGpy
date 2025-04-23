@@ -13,7 +13,7 @@ try:
                        'ApsimModel',
                        'core_utils', 'config', 'CoreModel'])
 
-except Exception as e:
+except Exception as e: # expected errors if pythonnet fails to get initialized
 
     pass
 

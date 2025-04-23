@@ -357,7 +357,10 @@ class CoreModel:
         -------
         CoreModel
             Instance of the class CoreModel.
-        """
+       RuntimeError
+            Raised if the APSIM run is unsuccessful. Common causes include missing meteorological files,
+            mismatched simulation start dates with weather data, or other configuration issues.
+             """
         try:
             # Dispose any existing data store handle
             self._DataStore.Dispose()

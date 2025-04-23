@@ -4,6 +4,7 @@ author: Richard Magala
 email: magalarich20@gmail.com
 
 """
+import re
 import inspect
 import random, pathlib
 import string
@@ -337,6 +338,16 @@ class CoreModel:
             return pd.concat(datas)
         else:
             logging.error("attempting to get results before running the model")
+    def read_from_db_names(self, report_names:Union[str, list])->pd.DataFrame:
+        data_tables = collect_csv_by_model_path(self.path)
+        if self.ran_ok:
+            if isinstance(report_names, str):
+                reports = [report_names]
+            datas = [pd.read_csv(data_tables[i]) for i in reports if i in data_tables]
+            return pd.concat(datas)
+        else:
+            logging.error("attempting to get results before running the model")
+
 
     def run(self, report_name: Union[tuple, list, str] = None,
             simulations: Union[tuple, list] = None,
@@ -1073,6 +1084,7 @@ class CoreModel:
         manager = self.Simulations.FindByPath(path)
         for i in range(len(manager.Value.Parameters)):
             _param = manager.Value.Parameters[i].Key
+
             if _param in kwargs:
                 manager.Value.Parameters[i] = KeyValuePair[String, String](_param, f"{kwargs[_param]}")
                 # remove the successfully processed keys
@@ -1083,6 +1095,39 @@ class CoreModel:
         self.recompile_edited_model(out_path=out_mgt_path)
 
         return self
+    @timer
+    def exchange_model(self, model, model_type:str,model_name=None, target_model_name=None, simulations:str=None):
+        model_type = _eval_model(model_type)
+        model2= load_apsim_model(model)
+        get_target_model = model2.IModel.FindInScope[model_type](model_name) if model_name else model2.IModel.FindInScope[model_type]()
+
+        sims = self.find_simulations(simulations)
+        if model_type == Models.Core.Simulation:
+            ...
+
+        for sim in sims:
+
+            if model_type == Models.Core.Simulation:
+                target_model_name = target_model_name or sim.Name
+                if sim.Name == target_model_name:
+                   parent = sim.get_Parent()
+                   parent = sim.FindInScope[parent.__class__]()
+                   DELETE(sim)
+                   ADD(get_target_model, parent)
+                   self.save()
+            else:
+               target = sim.FindInScope[model_type]()
+               parent  = target.get_Parent()
+               parent = target.FindInScope[parent.__class__]()
+               print(parent)
+               DELETE(target)
+               ADD(get_target_model, parent)
+               self.save()
+        return self
+
+
+
+
 
     def update_mgt(self, *, management: Union[dict, tuple], simulations: [list, tuple] = None, out: [Path, str] = None,
                    reload: bool = True,
@@ -1929,7 +1974,15 @@ class CoreModel:
             self.create_experiment(permutation=True)  # create experiment with default parameters of permutation
             self.experiment=True
 
-        # Add individual factors
+        if 'Script' in specification:
+            matches = re.findall(r"\[(.*?)\]", specification)
+            if matches:
+                _managers = set(self.inspect_model('Models.Manager', fullpath=False))
+                ITC = set(matches).intersection(_managers)
+                if not ITC:
+                    raise ValueError('specification has not linked script in the model')
+
+        #Add individual factors
         if self.permutation:
             parent_factor = Models.Factorial.Permutation
         else:

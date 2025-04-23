@@ -26,11 +26,20 @@ import functools
 import traceback
 import sys
 from apsimNGpy.settings import logger
-
+from platform import system
+from subprocess import call
 def select_process(use_thread, ncores):
     return ThreadPoolExecutor(ncores) if use_thread else ProcessPoolExecutor(ncores)
 
-
+def open_file_in_window(filepath):
+    if system() == 'Darwin':  # macOS
+        call(['open', filepath])
+    elif system() == 'Windows':  # Windows
+        os.startfile(filepath)
+    elif system() == 'Linux':  # Linux
+        call(['xdg-open', filepath])
+    else:
+        raise OSError('Unsupported operating system')
 class KeyValuePair:
     def __init__(self, Key, Value):
         self.key = Key

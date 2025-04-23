@@ -40,7 +40,7 @@ import ast
 from typing import Iterable
 from collections.abc import Iterable
 from typing import Any
-
+from apsimNGpy.core_utils.utils import open_file_in_window
 
 MultiThreaded = Models.Core.Run.Runner.RunTypeEnum.MultiThreaded
 SingleThreaded = Models.Core.Run.Runner.RunTypeEnum.SingleThreaded
@@ -1135,17 +1135,7 @@ class CoreModel:
         # TODO this need to be connected to the apsim installation path to make
         #  sure that file are opened in their corresponding versions
         self.save()
-        filepath = self.path
-        import platform
-        import subprocess
-        if platform.system() == 'Darwin':  # macOS
-            subprocess.call(['open', filepath])
-        elif platform.system() == 'Windows':  # Windows
-            os.startfile(filepath)
-        elif platform.system() == 'Linux':  # Linux
-            subprocess.call(['xdg-open', filepath])
-        else:
-            raise OSError('Unsupported operating system')
+        open_file_in_window(self.path)
 
     def _kvtodict(self, kv):
         return {kv[i].Key: kv[i].Value for i in range(kv.Count)}

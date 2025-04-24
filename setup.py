@@ -24,7 +24,8 @@ setup(
     entry_points={
         'console_scripts': [
             'apsim=apsimNGpy.cli.cli:main_entry_point',
-
+            'bp=apsimNGpy.cli.set_bin:app',
+            
             'apsim_bin_path=apsimNGpy.cli.set_ups:apsim_bin_path',
         ],
     },
@@ -59,7 +60,8 @@ setup(
         'sqlalchemy >=2.0',
         'matplotlib',
         'psutil >=6.0.0',
-        'tenacity'
+        'tenacity',
+        'typer'
 
     ]
 )

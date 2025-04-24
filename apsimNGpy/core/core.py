@@ -143,7 +143,7 @@ class CoreModel:
                  '_met_file', 'ran_ok', 'factors', 'work_space'
                  ]
 
-    def __init__(self, model: Union[str, Path, dict] = None, out_path: os.PathLike = None, out: os.PathLike = None, set_wd=None,
+    def __init__(self, model: Union[str, Path, dict] = None, out_path: Union[str, Path] = None, out: Union[str, Path] = None, set_wd:Union[str, Path]=None,
                  experiment=False, **kwargs):
 
         self.experiment_created = None

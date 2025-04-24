@@ -3,7 +3,7 @@ This module offers a procedural alternative other than object-oriented approach 
 """
 import os
 import uuid
-from functools import singledispatch
+from functools import singledispatch, lru_cache
 from typing import Union
 
 from apsimNGpy.core import pythonet_config
@@ -27,7 +27,7 @@ from apsimNGpy.settings import SCRATCH
 from dataclasses import dataclass
 from typing import Any
 
-@dataclass(frozen=True, slots=True)
+@dataclass
 class ModelData:
     IModel: Models
     path: str
@@ -44,6 +44,7 @@ def load_from_dict(dict_data, out):
                                                                                     fileName=out)
 
 version = apsim_version()
+@lru_cache()
 def copy_file(source: Union[str, Path], destination: Union[str, Path] = None,
               wd: Union[str, Path] = None) -> Union[str, Path]:
     if not wd:

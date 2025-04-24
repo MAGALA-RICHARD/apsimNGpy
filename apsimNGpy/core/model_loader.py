@@ -24,6 +24,17 @@ from apsimNGpy.core.config import get_apsim_bin_path, apsim_version
 import subprocess
 from apsimNGpy.core_utils.database_utils import read_db_table
 from apsimNGpy.settings import SCRATCH
+from dataclasses import dataclass
+from typing import Any
+
+@dataclass(frozen=True, slots=True)
+class ModelData:
+    IModel: Models
+    path: str
+    datastore: Any = None
+    DataStore: Any = None
+    results: Any = None
+    met_path: str = ""
 
 
 def load_from_dict(dict_data, out):
@@ -120,8 +131,8 @@ def load_apsim_model(model=None, out_path=None, file_load_method='string', met_f
        returns a named tuple with an out path, datastore path, and IModel in memory
        """
     out = {}  # stores the path to be attached to model_info object
-    Model_data = namedtuple('model_data',
-                            ['IModel', 'path', 'datastore', "DataStore", 'results', 'met_path'])
+    Model_data = ModelData#namedtuple('model_data',
+                            #['IModel', 'path', 'datastore', "DataStore", 'results', 'met_path'])
 
     @singledispatch
     def loader(_model):
@@ -160,7 +171,7 @@ def load_apsim_model(model=None, out_path=None, file_load_method='string', met_f
         _Model = Model
     datastore = _Model.FindChild[Models.Storage.DataStore]().FileName
     DataStore = _Model.FindChild[Models.Storage.DataStore]()
-    return Model_data(IModel=_Model, path=out['path'], datastore=datastore, DataStore=DataStore, results=None,
+    return ModelData(IModel=_Model, path=out['path'], datastore=datastore, DataStore=DataStore, results=None,
                       met_path=met_file)
 
 
@@ -194,7 +205,7 @@ def recompile(_model, out=None, met_path=None, ):
     datastore = _Model.FindChild[Models.Storage.DataStore]().FileName
     DataStore = _Model.FindChild[Models.Storage.DataStore]()
     # need to make ModelData a constant and named outside the script for consistency across scripts
-    ModelData = namedtuple('model_data', ['IModel', 'path', 'datastore', "DataStore", 'results', 'met_path'])
+    #ModelData = namedtuple('model_data', ['IModel', 'path', 'datastore', "DataStore", 'results', 'met_path'])
     return ModelData(IModel=_Model, path=final_out_path, datastore=datastore, DataStore=DataStore,
                      results=None,
                      met_path=met_path)

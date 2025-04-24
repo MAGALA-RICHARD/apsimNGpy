@@ -1115,6 +1115,7 @@ class CoreModel:
                 if sim.Name == target_model_name:
                    parent = sim.get_Parent()
                    parent = sim.FindInScope[parent.__class__]()
+                   # delete before replacments
                    DELETE(sim)
                    ADD(get_target_model, parent)
                    self.save()
@@ -1122,7 +1123,7 @@ class CoreModel:
                target = sim.FindInScope[model_type]()
                parent  = target.get_Parent()
                parent = target.FindInScope[parent.__class__]()
-               print(parent)
+               # delete before replacments
                DELETE(target)
                ADD(get_target_model, parent)
                self.save()

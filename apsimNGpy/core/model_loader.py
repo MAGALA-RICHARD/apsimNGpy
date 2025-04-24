@@ -90,7 +90,7 @@ def covert_to_model(object_to_convert):
 
 
 def load_model_from_dict(dict_model, out, met_file):
-    """useful for spawning many simulation files"""
+    """"""
     met_file = realpath(met_file)
     in_model = dict_model
     memo = load_from_dict(dict_data=in_model, out=out)
@@ -263,7 +263,7 @@ if __name__ == '__main__':
     me1 = maze.results['Maize.Total.Wt'].mean()
     maze.update_mgt(management=({"Name": 'Fertilise at sowing', 'Amount': 300},))
     maze.extract_user_input('Fertilise at sowing')
-    maze.run(report_name='Report')
+    maze.run(report_name='Report', verbose=True)
     me2 = maze.results['Maize.Total.Wt'].mean()
     print(me2)
     dd = run_model_externally(maze.path, 'report', maze.datastore)

@@ -1097,13 +1097,16 @@ class CoreModel:
         return self
     @timer
     def exchange_model(self, model, model_type:str,model_name=None, target_model_name=None, simulations:str=None):
+        warnings.warn("The 'exchange_model' is deprecated and will be removed in future versions. Please use replace_model_from", DeprecationWarning)
+        self.replace_model_from(model, model_type, model_name, target_model_name, simulations)
+    def replace_model_from(self, model, model_type:str,model_name=None, target_model_name=None, simulations:str=None):
         model_type = _eval_model(model_type)
         model2= load_apsim_model(model)
         get_target_model = model2.IModel.FindInScope[model_type](model_name) if model_name else model2.IModel.FindInScope[model_type]()
 
         sims = self.find_simulations(simulations)
-        if model_type == Models.Core.Simulation:
-            ...
+        if model_type == Models.Core.Simulations:
+            raise ValueError(f"{model_type} is not allowed did you mean Models.Core.Simulation?")
 
         for sim in sims:
 

@@ -415,6 +415,7 @@ class CoreModel:
 
 
         finally:
+            ...
             # close the datastore
             self._DataStore.Close()
 
@@ -1875,7 +1876,7 @@ class CoreModel:
                 dul_[enum] = d
         return dul_
 
-    def clean_up(self, db=True):
+    def clean_up(self, db=True, verbose=False):
         """
         Clears the file cloned the datastore and associated csv files are not deleted if db is set to False defaults to True.
 
@@ -1889,14 +1890,16 @@ class CoreModel:
             self._DataStore.Close()
             self._DataStore.Dispose()
             Path(self.path).unlink(missing_ok=True)
-            Path(self.path.strip('apsimx') + "bak").unlink(missing_ok=True)
+            Path(self.path.replace('apsimx', "bak")).unlink(missing_ok=True)
             if db:
                 Path(self.datastore).unlink(missing_ok=True)
-                Path(self.path.strip('apsimx') + "db-wal").unlink(missing_ok=True)
-                Path(self.path.strip('apsimx') + "db-shm").unlink(missing_ok=True)
-                logger.info('database cleaned successfully')
+                Path(self.path.replace('apsimx', "db-wal")).unlink(missing_ok=True)
+                Path(self.path.replace('apsimx', "db-shm")).unlink(missing_ok=True)
+                if verbose:
+                  logger.info('database cleaned successfully')
         except (FileNotFoundError, PermissionError) as e:
-
+            if verbose:
+               logging.info(e)
             pass
 
         return self

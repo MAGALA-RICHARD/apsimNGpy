@@ -597,7 +597,7 @@ class OrganiseSoilProfile:
 
         return frame
 
-
+OrganizeAPSIMsoil_profile = OrganiseSoilProfile #for backward compatibiltiy
 if __name__ == '__main__':
     lonlat = -92.097702, 41.8780025
     dw = DownloadsurgoSoiltables(lonlat)

@@ -1165,7 +1165,7 @@ class CoreModel:
             using a tuple for a specifying management script, paramters is recommended if you are going to pass the function to  a multi-processing class fucntion
 
         """
-        if isinstance(management, dict):  # we want to provide support for multiple scripts
+        if isinstance(management, dict):  # To provide support for multiple scripts
             # note the coma creates a tuple
             management = management,
 

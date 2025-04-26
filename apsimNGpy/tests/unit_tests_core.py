@@ -133,6 +133,7 @@ class TestCoreModel(BaseTester):
         self.test_ap_sim.run()
         self.assertTrue(self.test_ap_sim.ran_ok, msg='simulation was not ran when fmt was /')
 
+
     def test_create_experiment(self):
         """creates a factorial experiment adds a factor, then test if it runs successfully"""
         self.test_ap_sim.create_experiment()
@@ -141,6 +142,7 @@ class TestCoreModel(BaseTester):
                                     factor_name='Nitrogen')
         self.test_ap_sim.run()
         self.assertTrue(self.test_ap_sim.ran_ok, msg='after adding the experiment and factor running apsim failed')
+
 
     def test_add_crop_replacements(self):
         self.test_ap_sim.add_crop_replacements(_crop='Maize')
@@ -170,10 +172,12 @@ class TestCoreModel(BaseTester):
          self.test_ap_sim.run('report4')
 
          self.assertTrue(self.test_ap_sim.ran_ok, msg='simulation was not ran after adding the report table report2.')
+
     def test_loading_defaults_with(self):
         model = CoreModel(model = 'Maize')
         model.run()
         self.assertTrue(model.ran_ok, 'simulation was not ran after using defualt within CoreModel class')
+
     def test_edit_cultivar(self):
         """
         Test the edit_cultivar requires that we have replacements in place

@@ -49,7 +49,7 @@ MultiThreaded = Models.Core.Run.Runner.RunTypeEnum.MultiThreaded
 SingleThreaded = Models.Core.Run.Runner.RunTypeEnum.SingleThreaded
 ModelRUNNER = Models.Core.Run.Runner
 rec_limit = sys.getrecursionlimit()
-print(rec_limit)
+
 ADD = Models.Core.ApsimFile.Structure.Add
 DELETE = Models.Core.ApsimFile.Structure.Delete
 MOVE = Models.Core.ApsimFile.Structure.Move

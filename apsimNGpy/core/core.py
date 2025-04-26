@@ -4,6 +4,8 @@ author: Richard Magala
 email: magalarich20@gmail.com
 
 """
+import sys
+from types import MappingProxyType
 import re
 import inspect
 import random, pathlib
@@ -46,64 +48,83 @@ from apsimNGpy.core.config import get_apsim_bin_path, load_crop_from_disk
 MultiThreaded = Models.Core.Run.Runner.RunTypeEnum.MultiThreaded
 SingleThreaded = Models.Core.Run.Runner.RunTypeEnum.SingleThreaded
 ModelRUNNER = Models.Core.Run.Runner
-
+rec_limit = sys.getrecursionlimit()
+print(rec_limit)
 ADD = Models.Core.ApsimFile.Structure.Add
 DELETE = Models.Core.ApsimFile.Structure.Delete
 MOVE = Models.Core.ApsimFile.Structure.Move
 RENAME = Models.Core.ApsimFile.Structure.Rename
+
 REPLACE = Models.Core.ApsimFile.Structure.Replace
 CLASS_MODEL = type(Models.Clock)
 TYPE2 = type(Models.Clock())
 import inspect
 
+sys.setrecursionlimit(5000)
 
-def _find_model(model_name: str, model_namespace=None):
+def _find_model(model_name: str, model_namespace=Models, target_type=CLASS_MODEL) -> CLASS_MODEL:
     """
-    Find a model from the Models namespace and return its path.
+    Recursively find a model by name within a namespace.
 
     Args:
         model_name (str): The name of the model to find.
         model_namespace (object, optional): The root namespace (defaults to Models).
-        path (str, optional): The accumulated path to the model.
+        target_type (type, optional): Expected type of the model.
 
     Returns:
-        str: The full path to the model if found, otherwise None.
-
-    Example:
-        >>> from apsimNGpy import core  # doctest: +SKIP
-         >>> from apsimNGpy.core.core import Models  # doctest: +SKIP
-         >>> model =core.base_data.load_default_simulations(crop = "Maize")  # doctest: +SKIP
-         >>> model.find_model("Weather")  # doctest: +SKIP
-         'Models.Climate.Weather'
-         >>> model.find_model("Clock")  # doctest: +SKIP
-          'Models.Clock'
-
+        object: The found model object, or None if not found.
     """
-    if model_namespace is None:
-        model_namespace = Models  # Default to Models namespace
-
-    if not hasattr(model_namespace, "__dict__"):
-        return None  # Base case: Not a valid namespace
-
-    for attr, value in model_namespace.__dict__.items():
-        if attr == model_name and isinstance(value, type(getattr(Models, "Clock", object))):
-            return value
-
-        if hasattr(value, "__dict__"):  # Recursively search nested namespaces
-            result = _find_model(model_name, value)
-            if result:
-                return result
-
-    return None  # Model not found
 
 
-def _eval_model(model__type, evaluate_bound=False) -> ['__class__', str]:
+
+    try:
+
+        if not hasattr(model_namespace, "__dict__"):
+            return None
+
+        ITEMS =  MappingProxyType(model_namespace.__dict__)
+        for attr, value in ITEMS.items():
+            if attr == model_name and isinstance(value, target_type):
+                return value
+
+            _get_attr = getattr(value, model_name, None)
+
+            if isinstance(_get_attr, target_type):
+                    return _get_attr
+
+            if hasattr(value, "__dict__"):
+
+                result = _find_model(model_name, value, target_type=target_type)
+                if result:
+                    return result
+        # recursion is complete but model is none
+
+        return None
+
+    finally:
+        ...
+        sys.setrecursionlimit(rec_limit)
+def find_model(model_name: str):
+    model_type = _find_model(model_name)
+    if model_type:
+        return model_type
+    # for some unknown reasons Models.Factorial namespace is not featuring so let's do it mannually here
+    import Models
+    if model_type is None:
+        model_type = getattr(Models.Factorial, model_name, None)
+    return model_type
+
+def _eval_model(model__type, evaluate_bound=False) -> CLASS_MODEL:
     """
     Evaluates the model type from either string or Models namespace
     @param model__type (str,Models, required)
-    A few model we can accept a single word abstracted as a string include:
+    it can also accept either string or Models namespace as single letter specifying the final model or as a whole path e.g 'Models.Clock' and 'Clock' are all valid
          'Clock', 'Simulation', 'Manager', 'Report','Simulations', 'Weather', 'Soil
-    @return: ['__class__', str]
+    @return:
+       model type from Models namespace
+
+    :Raises
+       raises a ValueError if model__type is not valid or found from the Models namespace
     """
     import Models
     model_types = None
@@ -113,8 +134,8 @@ def _eval_model(model__type, evaluate_bound=False) -> ['__class__', str]:
             _model_name_space = 'Models.'
             ln = len(_model_name_space)
             # find _find_model could be sufficent, where we only allow the user to supply a single name but we dont know whether some names repeated on some models
-            if _find_model(model__type):
-                from_single = _find_model(model__type)
+            if find_model(model__type):
+                from_single = find_model(model__type)
                 if from_single is not None:
                     return from_single
             if model__type[:ln] == _model_name_space:
@@ -568,8 +589,8 @@ class CoreModel:
         # Save the changes to the simulation structure
         self.save()
 
-
-    def find_model(self, model_name: str, model_namespace=None):
+    @staticmethod
+    def find_model(model_name: str, model_namespace=None):
         """
         Find a model from the Models namespace and return its path.
 
@@ -583,7 +604,6 @@ class CoreModel:
 
         Example:
             >>> from apsimNGpy import core  # doctest: +SKIP
-             >>> from apsimNGpy.core.core import Models  # doctest: +SKIP
              >>> model =core.base_data.load_default_simulations(crop = "Maize")  # doctest: +SKIP
              >>> model.find_model("Weather")  # doctest: +SKIP
              'Models.Climate.Weather'
@@ -591,7 +611,7 @@ class CoreModel:
               'Models.Clock'
 
         """
-        return _find_model(model_name, model_namespace)
+        return _eval_model(model_name)
     def add_model(self, model_type, adoptive_parent, rename=None,
                   adoptive_parent_name=None, verbose=False, **kwargs):
 
@@ -642,7 +662,7 @@ class CoreModel:
                 adoptive_parent_name = adoptive_parent().Name
             parent = sims.FindInScope[adoptive_parent](adoptive_parent_name)
         if model_type == Models.Core.Simulations:
-            raise ValueError(f"model type can not be a simulations holder did you mean Models.Core.Simulation?")
+            raise ValueError(f"{model_type} can not be a simulations holder did you mean Models.Core.Simulation?")
         # parent = _model.Simulations.FindChild(where)
         if model_type and parent:
             loc = model_type()
@@ -650,7 +670,7 @@ class CoreModel:
             if rename and hasattr(loc, 'Name'):
                 loc.Name = rename
             if hasattr(loc, 'Name'):
-                target_child = parent.FindChild[self.find_model(loc_name)](loc.Name)
+                target_child = parent.FindChild[model_type](loc.Name)
                 if target_child:
                     # not raising the error still studying the behaviors of adding a child that already exists
                     DELETE(target_child)

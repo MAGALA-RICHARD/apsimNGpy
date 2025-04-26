@@ -56,37 +56,88 @@ CLASS_MODEL = type(Models.Clock)
 TYPE2 = type(Models.Clock())
 import inspect
 
+
+def _find_model(model_name: str, model_namespace=None):
+    """
+    Find a model from the Models namespace and return its path.
+
+    Args:
+        model_name (str): The name of the model to find.
+        model_namespace (object, optional): The root namespace (defaults to Models).
+        path (str, optional): The accumulated path to the model.
+
+    Returns:
+        str: The full path to the model if found, otherwise None.
+
+    Example:
+        >>> from apsimNGpy import core  # doctest: +SKIP
+         >>> from apsimNGpy.core.core import Models  # doctest: +SKIP
+         >>> model =core.base_data.load_default_simulations(crop = "Maize")  # doctest: +SKIP
+         >>> model.find_model("Weather")  # doctest: +SKIP
+         'Models.Climate.Weather'
+         >>> model.find_model("Clock")  # doctest: +SKIP
+          'Models.Clock'
+
+    """
+    if model_namespace is None:
+        model_namespace = Models  # Default to Models namespace
+
+    if not hasattr(model_namespace, "__dict__"):
+        return None  # Base case: Not a valid namespace
+
+    for attr, value in model_namespace.__dict__.items():
+        if attr == model_name and isinstance(value, type(getattr(Models, "Clock", object))):
+            return value
+
+        if hasattr(value, "__dict__"):  # Recursively search nested namespaces
+            result = _find_model(model_name, value)
+            if result:
+                return result
+
+    return None  # Model not found
+
+
 def _eval_model(model__type, evaluate_bound=False) -> ['__class__', str]:
     """
     Evaluates the model type from either string or Models namespace
     @param model__type (str,Models, required)
+    A few model we can accept a single word abstracted as a string include:
+         'Clock', 'Simulation', 'Manager', 'Report','Simulations', 'Weather', 'Soil
     @return: ['__class__', str]
     """
-    model_types = None
-    bound_model =None
     import Models
-    if isinstance(model__type, str):
-        _model_name_space = 'Models.'
-        ln = len(_model_name_space)
-        if model__type[:ln] == _model_name_space:
-            _model_type = eval(model__type, {"Models": Models}, {"Models": Models})
-            bound_model = _model_type.__class__
-            if isinstance(_model_type, CLASS_MODEL):
-                model_types = _model_type
+    model_types = None
+    bound_model = None
+    try:
+        if isinstance(model__type, str):
+            _model_name_space = 'Models.'
+            ln = len(_model_name_space)
+            # find _find_model could be sufficent, where we only allow the user to supply a single name but we dont know whether some names repeated on some models
+            if _find_model(model__type):
+                from_single = _find_model(model__type)
+                if from_single is not None:
+                    return from_single
+            if model__type[:ln] == _model_name_space:
+                _model_type = eval(model__type)
+                bound_model = _model_type.__class__
+                if isinstance(_model_type, CLASS_MODEL):
+                    model_types = _model_type
 
-    if isinstance(model__type, CLASS_MODEL):
-        model_types = model__type
+        if isinstance(model__type, CLASS_MODEL):
+            model_types = model__type
 
-    if evaluate_bound and not isinstance(model__type, str):
-        bound_model = model__type.__class__
-    if isinstance(bound_model,CLASS_MODEL):
+        if evaluate_bound and not isinstance(model__type, str):
+            bound_model = model__type.__class__
+        if isinstance(bound_model,CLASS_MODEL):
 
-        model_types = bound_model
+            model_types = bound_model
 
-    if model_types:
-        return model_types
-    else:
-        raise ValueError(f"invalid model_type: '{model__type}' from type: {type(model__type)}")
+        if model_types:
+            return model_types
+        else:
+            raise ValueError(f"invalid model_type: '{model__type}' from type: {type(model__type)}")
+    finally:
+      pass
 
 
 from apsimNGpy.settings import *  # This file is not ready and i wanted to do some test
@@ -540,23 +591,7 @@ class CoreModel:
               'Models.Clock'
 
         """
-        if model_namespace is None:
-            model_namespace = Models  # Default to Models namespace
-
-        if not hasattr(model_namespace, "__dict__"):
-            return None  # Base case: Not a valid namespace
-
-        for attr, value in model_namespace.__dict__.items():
-            if attr == model_name and isinstance(value, type(getattr(Models, "Clock", object))):
-                return value
-
-            if hasattr(value, "__dict__"):  # Recursively search nested namespaces
-                result = self.find_model(model_name, value)
-                if result:
-                    return result
-
-        return None  # Model not found
-
+        return _find_model(model_name, model_namespace)
     def add_model(self, model_type, adoptive_parent, rename=None,
                   adoptive_parent_name=None, verbose=False, **kwargs):
 

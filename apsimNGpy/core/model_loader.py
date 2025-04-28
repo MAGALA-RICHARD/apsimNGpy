@@ -20,7 +20,7 @@ from os import chdir
 import shutil
 from collections import namedtuple
 from pathlib import Path
-from apsimNGpy.core.config import get_apsim_bin_path, apsim_version
+from apsimNGpy.core.config import get_apsim_bin_path, apsim_version, load_crop_from_disk
 import subprocess
 from apsimNGpy.core_utils.database_utils import read_db_table
 from apsimNGpy.settings import SCRATCH
@@ -152,6 +152,8 @@ def load_apsim_model(model=None, out_path=None, file_load_method='string', met_f
     @loader.register(str)
     def _(_model: str):
         """loads apsimx model from a string path"""
+        if not _model.endswith('.apsimx'):
+            _model = load_crop_from_disk(crop=_model, out=None, work_space=wd)
         copy_to = copy_file(_model, destination=out_path, wd=wd)
         out['path'] = copy_to
         return load_from_path(copy_to, file_load_method)
@@ -243,7 +245,7 @@ if __name__ == '__main__':
     os.chdir(tt)
     maze = load_default_simulations('Maize', )
     soy = load_default_simulations('soybean', )
-
+    ap =load_apsim_model('Soybean')
     # maze.initialise_model()
     chdir(Path.home())
     a = time.perf_counter()

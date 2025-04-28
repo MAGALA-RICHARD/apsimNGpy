@@ -614,8 +614,8 @@ class CoreModel:
         """
         return _eval_model(model_name)
     def add_model(self, model_type, adoptive_parent, rename=None,
-                  adoptive_parent_name=None, verbose=False, source='Models', source_model_name=None, **kwargs):
-        import Models# avoids any user contamination of names, which affects evaluation
+                  adoptive_parent_name=None, verbose=False, source='Models', source_model_name=None, override=True, **kwargs):
+        import Models # avoids any user contamination of names, will which affect evaluation
         """
         Adds a model to the Models Simulations namespace.
 
@@ -623,16 +623,18 @@ class CoreModel:
         For example, a Clock model cannot be added to a Soil model.
 
         Args:
-            model_type (str or Models object): The type of model to add, e.g., `Models.Clock` or just `"Clock"`. if the APSIM Models namespace is exposed to the current script, then model_type can be Models.Clock without strings quotes
+            :model_type (str or Models object): The type of model to add, e.g., `Models.Clock` or just `"Clock"`. if the APSIM Models namespace is exposed to the current script, then model_type can be Models.Clock without strings quotes
             rename (str): The new name for the model.
 
-            adoptive_parent (Models object): The target parent where the model will be added or moved e.g `Models.Clock` or Clock as string all are valid
+            :adoptive_parent (Models object): The target parent where the model will be added or moved e.g `Models.Clock` or Clock as string all are valid
 
-            adoptive_parent_name (Models object, optional): Specifies the parent name for precise location. e.g Models.Core.Simulation or Simulations all are valid
+            :adoptive_parent_name (Models object, optional): Specifies the parent name for precise location. e.g Models.Core.Simulation or Simulations all are valid
 
-            source (Models, str, CoreModel, ApsimModel object): defaults to Models namespace, implying a fresh non modified model.
-            The source can be an existing Models or string name to point to one fo the default model example, which we can extract the model from
-
+            :source (Models, str, CoreModel, ApsimModel object): defaults to Models namespace, implying a fresh non modified model.
+            The source can be an existing Models or string name to point to one fo the default model example, which we can extract the model 
+            
+            :override (bool, optional): defaults to `True`. When `True` (recomended) it delete for any model with same name and type at the suggested parent location before adding the new model
+            if False and proposed model to be added exists at the parent location, APSIM automatically generates a new name for the newly added model. This is not recommended.
         Returns:
             None: Models are modified in place, so models retains the same reference.
 
@@ -667,7 +669,7 @@ class CoreModel:
                 adoptive_parent_name = adoptive_parent().Name
             parent = sims.FindInScope[adoptive_parent](adoptive_parent_name)
         if model_type == Models.Core.Simulations:
-            raise ValueError(f"{model_type} can not be a simulations holder did you mean Models.Core.Simulation or Simulation?")
+            raise ValueError(f"{model_type} can not be a simulations holder did you mean 'Models.Core.Simulation' or 'Simulation'?")
         # parent = _model.Simulations.FindChild(where)
 
         if source =='Models':
@@ -679,17 +681,20 @@ class CoreModel:
             elif isinstance(source, CoreModel):
                 source_model = source
             else:
-                raise ValueError(f"model type {type(source)} is not supported. Please supply a string name or path to the apsim file or apsimNGpy.core.CoreModel objects")
+                raise ValueError(f"model type {type(source)} is not supported. Please supply a crop name or path to the apsim file or apsimNGpy.core.CoreModel objects")
             model_type = (source_model.IModel.FindInScope[model_type](source_model_name) if source_model_name else
             source_model.IModel.FindInScope[model_type]() )
-            print(model_type)
+
             if not model_type:
                 if not source_model_name:
-                    raise ValueError(f"{model_type} can not be found. Did you forget to specify the source_model_name")
+                    raise ValueError(f"{model_type} can not be found. Did you forget to specify the `source_model_name`")
                 else:
                     raise ValueError(f"{model_type} can not be found. Please recheck your input or use inspect_file() to see all the available model types")
 
             model_type.Name  = rename if rename else model_type.Name
+            target_child = parent.FindInScope[model_type.__class__](model_type.Name)
+            if target_child and override:
+                DELETE(target_child)
             ADD(model_type, parent)
             self.save()
             if verbose:
@@ -702,7 +707,7 @@ class CoreModel:
                 loc.Name = rename
             if hasattr(loc, 'Name'):
                 target_child = parent.FindChild[model_type](loc.Name)
-                if target_child:
+                if target_child and override:
                     # not raising the error still studying the behaviors of adding a child that already exists
                     DELETE(target_child)
 

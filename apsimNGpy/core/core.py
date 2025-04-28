@@ -1174,8 +1174,8 @@ class CoreModel:
             simulations: str = None
     ):
         """
-        Replace a model component (e.g., a soil node) in one or more simulations with a copy from another APSIM model.
-        the method assumes that the model to replace is already loaded in the current model and is is the same class as source model.
+        Replace a model e.g., a soil model with another soil model from another APSIM model.
+        The method assumes that the model to replace is already loaded in the current model and is is the same class as source model.
         e.g., a soil node to soil node, clock node to clock node, et.c
 
         Args:

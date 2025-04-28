@@ -178,7 +178,7 @@ class TestCoreModel(BaseTester):
         model.run()
         self.assertTrue(model.ran_ok, 'simulation was not ran after using defualt within CoreModel class')
 
-    def test_find_model(self):
+    def test_find_model_andeval_models(self):
         """
         Unit test for the `find_model` and `_eval_model` functions.
         Verifies that:
@@ -202,7 +202,7 @@ class TestCoreModel(BaseTester):
         simulation = _eval_model('Models.Core.Simulation')
         self.assertEqual(simulation, Models.Core.Simulation)  # Confirm evaluation matches Core.Simulation model
 
-        # Test direct evaluation of model paths as strings
+        # Test direct evaluation of just model name
         experiment = _eval_model('Experiment')
         self.assertEqual(experiment, Models.Factorial.Experiment)  # Confirm evaluation matches Models.Factorial.Experiment model
 

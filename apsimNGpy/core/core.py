@@ -83,6 +83,7 @@ def _find_model(model_name: str, model_namespace=Models, target_type=CLASS_MODEL
             return None
 
         ITEMS =  MappingProxyType(model_namespace.__dict__)
+        model_name = model_name.capitalize()
         for attr, value in ITEMS.items():
             if attr == model_name and isinstance(value, target_type):
                 return value
@@ -762,29 +763,37 @@ class CoreModel:
                >>> model.remove_model(Models.Clock) #deletes the clock node
                >>> model.remove_model(Models.Climate.Weather) #deletes the weather node
         """
-
+        model_type = _eval_model(model_type)
         if not model_name:
             model_name = model_type().Name
-        DELETE(self.Simulations.FindInScope[model_type](model_name))
+        to_remove= self.Simulations.FindInScope[model_type](model_name)
+        if to_remove:
+            DELETE(to_remove)
         self.save()
 
     def move_model(self, model_type: Models, new_parent_type: Models, model_name: str = None,
-                   new_parent_name: str = None, verbose: bool = False):
+                   new_parent_name: str = None, verbose: bool = False, simulations: Union[str, list] = None):
         """
         Args:
 
         - model_type (Models): type of model tied to Models Namespace
-        - new_parent_type: new model parent (Models)
+        - new_parent_type: new model parent type (Models)
         - model_name:name of the model e.g., Clock, or Clock2, whatever name that was given to the model
-        -  new_parent_name: what is the new parent names =Field2, this fiedl is optional but important if you have nested simulations
+        -  new_parent_name: what is the new parent names =Field2, this field is optional but important if you have nested simulations
         Returns:
 
           returns instance of apsimNGpy.core.core.apsim.ApsimModel or apsimNGpy.core.core.apsim.CoreModel
 
         """
         sims = self.Simulations
+
+        model_type = _eval_model(model_type)
+        new_parent_type = _eval_model(new_parent_type)
+        if model_type == Models.Core.Simulations:
+            raise ValueError('Can not move a model of type "Models.Core.Simulations". Did you mean Models.Core.Simulation or Simulation?')
         if not model_name:
             model_name = model_type().Name
+
         child_to_move = sims.FindInScope[model_type](model_name)
         if not new_parent_name:
             new_parent_name = new_parent_type().Name
@@ -1162,7 +1171,7 @@ class CoreModel:
 
         sims = self.find_simulations(simulations)
         if model_type == Models.Core.Simulations:
-            raise ValueError(f"{model_type} is not allowed did you mean Models.Core.Simulation?")
+            raise ValueError(f"{model_type} is not allowed did you mean Models.Core.Simulation or Simulation?")
 
         for sim in sims:
 

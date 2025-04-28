@@ -7,7 +7,7 @@ import pandas as pd
 # Import the module where CoreModel class is defined
 from apsimNGpy.core.model_loader import save_model_to_file
 from apsimNGpy.tests.base_test import BaseTester, set_wd
-from apsimNGpy.core.core import CoreModel
+from apsimNGpy.core.core import CoreModel, find_model, _eval_model, Models
 set_wd()
 print('current working directory:', os.getcwd())
 
@@ -177,6 +177,43 @@ class TestCoreModel(BaseTester):
         model = CoreModel(model = 'Maize')
         model.run()
         self.assertTrue(model.ran_ok, 'simulation was not ran after using defualt within CoreModel class')
+
+    def test_find_model(self):
+        """
+        Unit test for the `find_model` and `_eval_model` functions.
+        Verifies that:
+        - Models can be found correctly by name (case-insensitive).
+        - Strings representing full module paths are evaluated correctly.
+        """
+
+        # Test finding a model by simple string name
+        clok_model = find_model('clock')
+        _eval_model(clok_model)  # Validate model lookup
+        self.assertEqual(clok_model, Models.Clock)  # Ensure it matches the Clock model
+
+        simulation_model = find_model('Simulation')
+        _eval_model(simulation_model)  # Validate model lookup
+        self.assertEqual(simulation_model, Models.Core.Simulation)  # Ensure correct match
+
+        # Test direct evaluation of model paths as strings
+        clock = _eval_model('Models.Clock')
+        self.assertEqual(clock, Models.Clock)  # Confirm evaluation matches Clock model
+
+        simulation = _eval_model('Models.Core.Simulation')
+        self.assertEqual(simulation, Models.Core.Simulation)  # Confirm evaluation matches Core.Simulation model
+
+        # Test direct evaluation of model paths as strings
+        experiment = _eval_model('Experiment')
+        self.assertEqual(experiment, Models.Factorial.Experiment)  # Confirm evaluation matches Models.Factorial.Experiment model
+
+        factors = _eval_model('Factors')
+        self.assertEqual(factors, Models.Factorial.Factors)  # Confirm evaluation matches Models.Factorial.Factors model
+
+    def test_add_model_simulation(self):
+        self.test_ap_sim.add_model('Simulation', adoptive_parent='Simulations', rename='soybean_replaced',
+                        source='Soybean', override=False)
+        self.test_ap_sim.inspect_file()
+        assert 'soybean_replaced' in self.test_ap_sim.inspect_model('Simulation', fullpath=False), 'testing adding simulations was not successful'
 
     def test_edit_cultivar(self):
         """

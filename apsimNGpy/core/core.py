@@ -83,7 +83,8 @@ def _find_model(model_name: str, model_namespace=Models, target_type=CLASS_MODEL
             return None
 
         ITEMS =  MappingProxyType(model_namespace.__dict__)
-        model_name = model_name.capitalize()
+        if isinstance(model_name, str):
+            model_name = model_name.capitalize()
         for attr, value in ITEMS.items():
             if attr == model_name and isinstance(value, target_type):
                 return value

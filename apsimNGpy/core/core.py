@@ -4,6 +4,7 @@ author: Richard Magala
 email: magalarich20@gmail.com
 
 """
+import copy
 import sys
 from types import MappingProxyType
 import re
@@ -22,7 +23,7 @@ import datetime
 from sqlalchemy.testing.plugin.plugin_base import logging
 
 import apsimNGpy.manager.weathermanager as weather
-from functools import cache, lru_cache
+from functools import cache, lru_cache, singledispatch
 # prepare for the C# import
 from apsimNGpy.core import pythonet_config
 import warnings
@@ -723,6 +724,70 @@ class CoreModel:
 
         else:
             logger.debug(f"Adding {model_type} to {parent.Name} failed, perhaps models was not found")
+
+    def modify_variables(self, model_type: str, simulations: Union[str, list], model_name: str, **kwargs):
+        def _get_is_model_found(sim, model_type, model_name):
+            get_model = sim.FindInScope[model_type](model_name)
+            if not get_model:
+                raise ValueError(f"{model_name} of type {model_type} not found")
+            return get_model
+
+        model_type_class = _eval_model(model_type)
+
+        for sim in self.find_simulations(simulations):
+            model_instance = _get_is_model_found(sim, model_type_class, model_name)
+
+            # Dispatch using isinstance() checks
+            if isinstance(model_instance, Models.Clock):
+                print(f"Processing a Clock: {model_instance}")
+                pop_item = copy.deepcopy(kwargs)
+                for kwa, value in kwargs.items():
+                    if hasattr(model_instance, kwa):
+                        #from System import DateTime
+                        parsed_value = DateTime.Parse(value)
+                        setattr(model_instance, kwa, parsed_value)
+                        print(f"Set {kwa} to {parsed_value}")
+                        pop_item.pop(kwa)
+                if kwargs != {}:
+                    logging.info(f"following {pop_item} were not valid attributes for class {model_type}")
+
+            elif isinstance(model_instance, Models.Manager):
+                print(f"Processing a Manager: {model_instance}")
+                manager_path = model_instance.FullPath
+                self.update_mgt_by_path(path=manager_path,fmt='.', **kwargs)
+
+
+            elif isinstance(model_instance, Models.Soils.Physical):
+                fp = model_instance.FullPath
+                self.replace_soils_values_by_path(node_path=fp, **kwargs)
+                print(fp)
+                print(f"Processing a Soils.Physical: {model_instance}")
+
+
+            elif isinstance(model_instance, Models.Soils.Chemical):
+                print(f"Processing a Soils.Chemical: {model_instance}")
+                fc = model_instance.FullPath
+                self.replace_soils_values_by_path(node_path=fc, **kwargs)
+
+
+            elif isinstance(model_instance, Models.Soils.Organic):
+                print(f"Processing a Soils.Organic: {model_instance}")
+                fo = model_instance.FullPath
+                self.replace_soils_values_by_path(node_path=fo, **kwargs)
+
+            elif isinstance(model_instance, Models.Soils.Water):
+                print(f"Processing a Soils.Water: {model_instance}")
+                fw = model_instance.FullPath
+                self.replace_soils_values_by_path(node_path=fw, **kwargs)
+
+            elif isinstance(model_instance, Models.Report):
+                print(f"Processing a Report: {model_instance}")
+
+            elif isinstance(model_instance, Models.PMF.Cultivar):
+                print(f"Processing a Cultivar: {model_instance}")
+
+            else:
+                raise NotImplementedError(f"No pre-processing implemented for model type {type(model_instance)}")
 
     def add_report_variable(self, variable_spec: Union[list, str, tuple], report_name: str = None, set_event_names:Union[str,list]=None):
         """

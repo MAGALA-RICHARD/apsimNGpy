@@ -1164,39 +1164,86 @@ class CoreModel:
     def exchange_model(self, model, model_type:str,model_name=None, target_model_name=None, simulations:str=None):
         warnings.warn("The 'exchange_model' is deprecated and will be removed in future versions. Please use replace_model_from", DeprecationWarning)
         self.replace_model_from(model, model_type, model_name, target_model_name, simulations)
-    def replace_model_from(self, model, model_type:str,model_name=None, target_model_name=None, simulations:str=None):
+
+    def replace_model_from(
+            self,
+            model,
+            model_type: str,
+            model_name: str = None,
+            target_model_name: str = None,
+            simulations: str = None
+    ):
+        """
+        Replace a model component (e.g., a soil node) in one or more simulations with a copy from another APSIM model.
+        the method assumes that the model to replace is already loaded in the current model and is is the same class as source model.
+        e.g., a soil node to soil node, clock node to clock node, et.c
+
+        Args:
+            model: Path to the APSIM model file or a CoreModel instance.
+            model_type (str): Class name (as string) of the model to replace (e.g., "Soil").
+            model_name (str, optional): Name of the model instance to copy from the source model.
+                If not provided, the first match is used.
+            target_model_name (str, optional): Specific simulation name to target for replacement.
+                Only used when replacing Simulation-level objects.
+            simulations (str, optional): Simulation(s) to operate on. If None, applies to all.
+
+        Returns:
+            self: To allow method chaining.
+
+        Raises:
+            ValueError: If model_type is "Simulations" which is not allowed for replacement.
+        """
+
+        # Validate and resolve the model type string into the correct class
         model_type = _eval_model(model_type)
-        model2= load_apsim_model(model)
-        get_target_model = model2.IModel.FindInScope[model_type](model_name) if model_name else model2.IModel.FindInScope[model_type]()
 
+        # Load the source model (if a path is provided instead of a CoreModel instance)
+        model2 = load_apsim_model(model) if not isinstance(model, CoreModel) else model
+
+        # Find the target model component in the source model
+        get_target_model = (
+            model2.IModel.FindInScope[model_type](model_name)
+            if model_name
+            else model2.IModel.FindInScope[model_type]()
+        )
+
+        # Find the simulation(s) within the current model
         sims = self.find_simulations(simulations)
+
+        # Prevent replacing "Simulations" class, likely a user error
         if model_type == Models.Core.Simulations:
-            raise ValueError(f"{model_type} is not allowed did you mean Models.Core.Simulation or Simulation?")
+            raise ValueError(f"{model_type} is not allowed. Did you mean Models.Core.Simulation?")
 
+        # Loop through each simulation and perform the replacement
         for sim in sims:
-
             if model_type == Models.Core.Simulation:
+                # If replacing entire simulations
                 target_model_name = target_model_name or sim.Name
+
                 if sim.Name == target_model_name:
-                   parent = sim.get_Parent()
-                   parent = sim.FindInScope[parent.__class__]()
-                   # delete before replacments
-                   DELETE(sim)
-                   ADD(get_target_model, parent)
-                   self.save()
+                    # Find parent of the simulation (likely Simulations)
+                    parent = sim.get_Parent()
+                    parent = sim.FindInScope[parent.__class__]()
+
+                    # Replace: delete existing and add new
+                    DELETE(sim)
+                    ADD(get_target_model, parent)
+                    self.save()
+
             else:
-               target = sim.FindInScope[model_type]()
-               parent  = target.get_Parent()
-               parent = target.FindInScope[parent.__class__]()
-               # delete before replacments
-               DELETE(target)
-               ADD(get_target_model, parent)
-               self.save()
+                # Otherwise, replace components inside each simulation (e.g., Soil, Clock)
+                target = sim.FindInScope[model_type]()
+
+                # Find parent container (usually the simulation itself)
+                parent = target.get_Parent()
+                parent = target.FindInScope[parent.__class__]()
+
+                # Replace: delete existing and add new
+                DELETE(target)
+                ADD(get_target_model, parent)
+                self.save()
+
         return self
-
-
-
-
 
     def update_mgt(self, *, management: Union[dict, tuple], simulations: [list, tuple] = None, out: [Path, str] = None,
                    reload: bool = True,

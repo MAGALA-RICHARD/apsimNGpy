@@ -5,7 +5,7 @@ from platform import system
 
 import pandas as pd
 import matplotlib.pyplot as plt
-
+from summarytools import dfSummary
 try:
     import seaborn as sns
 except ModuleNotFoundError:
@@ -54,7 +54,10 @@ class Diagnostics(ApsimModel):
             df.drop(columns=low_info_cols, inplace=True)
 
         return df
-
+    @property
+    def summary(self):
+        nums = self.results.select_dtypes(include="number").copy()
+        return dfSummary(nums)
     def plot_distribution(self, variable):
         """Plot distribution for a numeric variable."""
         sns.histplot(data=self.results, x=variable, kde=True)

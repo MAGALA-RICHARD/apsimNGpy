@@ -24,8 +24,8 @@ setup(
     entry_points={
         'console_scripts': [
             'apsim=apsimNGpy.cli.cli:main_entry_point',
-            'bp=apsimNGpy.cli.set_bin:app',
-            
+            'bp=apsimNGpy.cli.set_bin:fast',
+            'client=apsimNGpy.cli.client:app',
             'apsim_bin_path=apsimNGpy.cli.set_ups:apsim_bin_path',
         ],
     },
@@ -61,7 +61,8 @@ setup(
         'matplotlib',
         'psutil >=6.0.0',
         'tenacity',
-        'typer'
+        'typer',
+        'summarytools>=0.3.0'
 
     ]
 )

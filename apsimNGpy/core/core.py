@@ -723,7 +723,39 @@ class CoreModel:
         else:
             logger.debug(f"Adding {model_type} to {parent.Name} failed, perhaps models was not found")
 
-    def modify_variables(self, model_type: str, simulations: Union[str, list], model_name: str, **kwargs):
+    def edit_model(self, model_type: str, simulations: Union[str, list], model_name: str, **kwargs):
+        """
+        Modify various APSIM model components by type and name across given simulations.
+
+        Parameters:
+        ----------
+        model_type : str
+            Name of the model class (e.g., 'Clock', 'Manager', 'Soils.Physical', etc.)
+        simulations : Union[str, list]
+            A simulation name or list of simulation names to search in.
+        model_name : str
+            Name of the model instance to modify.
+        kwargs : dict
+            Additional keyword arguments required per model type:
+
+            - Clock: Any subset of date properties (e.g., 'Start', 'End') as ISO strings.
+            - Manager: Variables to update in the Manager script using `update_mgt_by_path`.
+            - Soils.Physical / Soils.Chemical / Soils.Organic / Soils.Water: Variables to replace via `replace_soils_values_by_path`.
+            - Report:
+                - report_name (str): Required
+                - variable_spec (list[str]): Variables to report
+                - set_event_names (list[str]): Events to trigger reporting
+            - Cultivar:
+                - commands (str): APSIM cultivar parameter name to set
+                - values (Any): Value to assign
+
+        Raises:
+        -------
+        ValueError:
+            If model instance is not found, or required kwargs are missing.
+        NotImplementedError:
+            If no logic is implemented for the model type.
+        """
         def _get_is_model_found(sim, model_type, model_name):
             get_model = sim.FindInScope[model_type](model_name)
             if not get_model:
@@ -735,84 +767,69 @@ class CoreModel:
         for sim in self.find_simulations(simulations):
             model_instance = _get_is_model_found(sim, model_type_class, model_name)
 
-            # Dispatch using isinstance() checks
-            if isinstance(model_instance, Models.Clock):
-                print(f"Processing a Clock: {model_instance}")
-                pop_item = copy.deepcopy(kwargs)
-                for kwa, value in kwargs.items():
-                    if hasattr(model_instance, kwa):
-                        #from System import DateTime
-                        parsed_value = DateTime.Parse(value)
-                        setattr(model_instance, kwa, parsed_value)
-                        print(f"Set {kwa} to {parsed_value}")
-                        pop_item.pop(kwa)
-                if kwargs != {}:
-                    logging.info(f"following {pop_item} were not valid attributes for class {model_type}")
+            match type(model_instance):
+                case Models.Clock:
+                    print(f"Processing a Clock: {model_instance}")
+                    pop_item = copy.deepcopy(kwargs)
+                    for kwa, value in kwargs.items():
+                        if hasattr(model_instance, kwa):
+                            try:
+                                parsed_value = DateTime.Parse(value)
+                                setattr(model_instance, kwa, parsed_value)
+                                print(f"Set {kwa} to {parsed_value}")
+                                pop_item.pop(kwa)
+                            except Exception as e:
+                                logging.warning(f"Could not set {kwa} due to error: {e}")
+                    if pop_item:
+                        logging.info(f"The following keys were not valid Clock attributes: {pop_item}")
 
-            elif isinstance(model_instance, Models.Manager):
-                print(f"Processing a Manager: {model_instance}")
-                manager_path = model_instance.FullPath
-                self.update_mgt_by_path(path=manager_path,fmt='.', **kwargs)
+                case Models.Manager:
+                    print(f"Processing a Manager: {model_instance}")
+                    manager_path = model_instance.FullPath
+                    self.update_mgt_by_path(path=manager_path, fmt='.', **kwargs)
 
+                case Models.Soils.Physical | Models.Soils.Chemical | Models.Soils.Organic | Models.Soils.Water:
+                    print(f"Processing a Soils component: {model_instance}")
+                    self.replace_soils_values_by_path(node_path=model_instance.FullPath, **kwargs)
 
-            elif isinstance(model_instance, Models.Soils.Physical):
-                fp = model_instance.FullPath
-                self.replace_soils_values_by_path(node_path=fp, **kwargs)
-                print(fp)
-                print(f"Processing a Soils.Physical: {model_instance}")
+                case Models.Report:
+                    print(f"Processing a Report: {model_instance}")
+                    set_event_names = kwargs.get('set_event_names')
+                    report_name = model_name
 
+                    vs = kwargs.get("variable_spec")
+                    if not vs:
+                        raise ValueError("Please specify a report name using key word 'variable_spec'")
+                    self.add_report_variable(variable_spec=vs, set_event_names=set_event_names, report_name=report_name)
 
-            elif isinstance(model_instance, Models.Soils.Chemical):
-                print(f"Processing a Soils.Chemical: {model_instance}")
-                fc = model_instance.FullPath
-                self.replace_soils_values_by_path(node_path=fc, **kwargs)
+                case Models.PMF.Cultivar:
+                    print(f"Processing a Cultivar: {model_instance}")
+                    if 'Replacements' not in self.inspect_model('Models.Core.Folder'):
+                        for i in self.inspect_model(Models.PMF.Plant, fullpath=False):
+                            self.add_crop_replacements(_crop=i)
 
+                    commands = kwargs.get("commands")
+                    values = kwargs.get("values")
+                    if not commands or values is None:
+                        raise ValueError("Both 'commands' and 'values' must be provided for Cultivar")
 
-            elif isinstance(model_instance, Models.Soils.Organic):
-                print(f"Processing a Soils.Organic: {model_instance}")
-                fo = model_instance.FullPath
-                self.replace_soils_values_by_path(node_path=fo, **kwargs)
+                    cultvar = self._find_cultivar(model_name)
+                    if cultvar is None:
+                        raise ValueError(f"Cultivar '{model_name}' not found")
 
-            elif isinstance(model_instance, Models.Soils.Water):
-                print(f"Processing a Soils.Water: {model_instance}")
-                fw = model_instance.FullPath
-                self.replace_soils_values_by_path(node_path=fw, **kwargs)
+                    params = self._cultivar_params(cultvar)
+                    params[commands] = values
 
-            elif isinstance(model_instance, Models.Report):
-                print(f"Processing a Report: {model_instance}")
+                    updated_commands = [f"{k}={v}" for k, v in params.items()]
+                    cultvar.set_Command(updated_commands)
+                    self.edit_cultivar(CultivarName=model_name, commands=commands, values=values)
+                    self.save()
 
-            elif isinstance(model_instance, Models.PMF.Cultivar):
-                #CultivarName: str, commands: str, values: Any,
-                if 'Replacements' not in self.inspect_model('Models.Core.Folder'):
-                     for i in self.inspect_model(Models.PMF.Plant, fullpath=False):
-                         self.add_crop_replacements(_crop=i)
+                    print(f"Updated Cultivar '{model_name}' with: {params}")
 
-                commands = kwargs.get("commands")
-                if not commands:
-                    raise ValueError(f"key word argument 'commands' missing in the argument")
-                values = kwargs.get("values")
-                if not values:
-                    raise ValueError(f"key word argument 'values' missing in the argument")
-                cultvar = self._find_cultivar(model_name)
-                if cultvar is None:
-                    raise ValueError(f"Cultivar '{model_name}' not found")
-                print(dir(cultvar))
-                params = self._cultivar_params(cultvar)
-
-                params[commands] = values  # Update or add the command with its new value
-
-                # Prepare the command strings for setting the updated parameters
-                updated_commands = [f"{k}={v}" for k, v in params.items()]
-                cultvar.set_Command(updated_commands)
-
-                print(model_name)
-                #self.edit_cultivar(CultivarName=model_name, commands=commands, values=values)
-                self.save()
-                #self.edit_cultivar(**kwargs)
-                print(f"Processing a Cultivar: {model_instance}")
-
-            else:
-                raise NotImplementedError(f"No pre-processing implemented for model type {type(model_instance)}")
+                case _:
+                    raise NotImplementedError(f"No edit method implemented for model type {type(model_instance)}")
+        model.ran_ok = False
 
     def add_report_variable(self, variable_spec: Union[list, str, tuple], report_name: str = None, set_event_names:Union[str,list]=None):
         """

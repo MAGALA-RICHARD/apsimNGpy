@@ -161,6 +161,7 @@ def _eval_model(model__type, evaluate_bound=False) -> CLASS_MODEL:
         else:
             raise ValueError(f"invalid model_type: '{model__type}' from type: {type(model__type)}")
     finally:
+        # future implimentation
       pass
 
 
@@ -242,9 +243,6 @@ class CoreModel:
         self._model = model
         self.out_path = out_path or out
         self.work_space = set_wd or SCRATCH
-        if not _looks_like_path(str(self._model)) and not self._model== None:
-            self._model = load_crop_from_disk(crop=self._model, work_space=self.work_space)
-            # model_info is named tuple safe for parallel simulations as named tuples are immutable
         self.model_info = load_apsim_model(self._model, out_path=self.out_path, met_file=kwargs.get('met_file'),
                                            wd=self.work_space)
         self.Simulations = self.model_info.IModel
@@ -784,6 +782,33 @@ class CoreModel:
                 print(f"Processing a Report: {model_instance}")
 
             elif isinstance(model_instance, Models.PMF.Cultivar):
+                #CultivarName: str, commands: str, values: Any,
+                if 'Replacements' not in self.inspect_model('Models.Core.Folder'):
+                     for i in self.inspect_model(Models.PMF.Plant, fullpath=False):
+                         self.add_crop_replacements(_crop=i)
+
+                commands = kwargs.get("commands")
+                if not commands:
+                    raise ValueError(f"key word argument 'commands' missing in the argument")
+                values = kwargs.get("values")
+                if not values:
+                    raise ValueError(f"key word argument 'values' missing in the argument")
+                cultvar = self._find_cultivar(model_name)
+                if cultvar is None:
+                    raise ValueError(f"Cultivar '{model_name}' not found")
+                print(dir(cultvar))
+                params = self._cultivar_params(cultvar)
+
+                params[commands] = values  # Update or add the command with its new value
+
+                # Prepare the command strings for setting the updated parameters
+                updated_commands = [f"{k}={v}" for k, v in params.items()]
+                cultvar.set_Command(updated_commands)
+
+                print(model_name)
+                #self.edit_cultivar(CultivarName=model_name, commands=commands, values=values)
+                self.save()
+                #self.edit_cultivar(**kwargs)
                 print(f"Processing a Cultivar: {model_instance}")
 
             else:
@@ -2289,7 +2314,10 @@ class CoreModel:
         CROP = _crop
         _FOLDER.Name = "Replacements"
         PARENT = self.Simulations
-        ADD(_FOLDER, PARENT)
+        # parent replacemnt should be added once
+        target_parent  = PARENT.FindInScope[Models.Core.Folder]('Replacements')
+        if not target_parent:
+            ADD(_FOLDER, PARENT)
         # assumes that the crop already exists in the simulation
         _crop = PARENT.FindInScope[Models.PMF.Plant](CROP)
         if _crop is not None:

@@ -48,6 +48,7 @@ from apsimNGpy.core_utils.utils import open_file_in_window
 from apsimNGpy.core.config import get_apsim_bin_path, load_crop_from_disk
 MultiThreaded = Models.Core.Run.Runner.RunTypeEnum.MultiThreaded
 SingleThreaded = Models.Core.Run.Runner.RunTypeEnum.SingleThreaded
+
 ModelRUNNER = Models.Core.Run.Runner
 rec_limit = sys.getrecursionlimit()
 
@@ -55,6 +56,7 @@ ADD = Models.Core.ApsimFile.Structure.Add
 DELETE = Models.Core.ApsimFile.Structure.Delete
 MOVE = Models.Core.ApsimFile.Structure.Move
 RENAME = Models.Core.ApsimFile.Structure.Rename
+CLONER = Models.Core.Apsim.Clone
 
 REPLACE = Models.Core.ApsimFile.Structure.Replace
 CLASS_MODEL = type(Models.Clock)
@@ -620,7 +622,7 @@ class CoreModel:
         This will create a cloned version of `"clock1"` and place it under `"Simulation"` with the new name `"new_clock"`.
 
         """
-        cloner = Models.Core.Apsim.Clone  # Reference to the APSIM cloning function
+        # Reference to the APSIM cloning function
         model_type = _eval_model(model_type, evaluate_bound=True)
         adoptive_parent_type = _eval_model(adoptive_parent_type, evaluate_bound=False)
 
@@ -629,7 +631,7 @@ class CoreModel:
                         else self.Simulations.FindInScope[model_type]())
 
         # Create a clone of the model
-        clone = cloner(clone_parent)
+        clone = CLONER(clone_parent)
 
         # Assign a new name to the cloned model
         new_name = rename if rename else f"{clone.Name}_clone"
@@ -781,7 +783,7 @@ class CoreModel:
 
         else:
             logger.debug(f"Adding {model_type} to {parent.Name} failed, perhaps models was not found")
-
+    @timer
     def edit_model(self, model_type: str, simulations: Union[str, list], model_name: str, **kwargs):
         """
         Modify various APSIM model components by type and name across given simulations.
@@ -815,11 +817,55 @@ class CoreModel:
         NotImplementedError:
             If no logic is implemented for the model type.
         """
-        def _get_is_model_found(sim, model_type, model_name):
-            get_model = sim.FindInScope[model_type](model_name)
-            if not get_model:
+        def _get_is_model_found(sim, model_type, model_name, action='get'):
+            """
+                    Helper function to check if a model instance is found in the simulation
+                    and perform a specified action.
+
+                    Actions supported:
+                    - 'get': returns the found model.
+                    - 'delete': deletes the model.
+                    - 'check': returns True/False depending on whether the model exists.
+
+                    Parameters:
+                    -----------
+                    sim : ApsimSimulation
+                        The APSIM simulation object.
+                    model_type : str
+                        The type of model to search for (e.g., 'Soil', 'Manager').
+                    model_name : str, optional
+                        The name of the model to find. If omitted, returns the first model of that type.
+                    action : str
+                        One of 'get', 'delete', or 'check'.
+
+                    Returns:
+                    --------
+                    object or bool or None
+                        - The found model if action is 'get'.
+                        - True/False if action is 'check'.
+                        - None if action is 'delete'.
+
+                    Raises:
+                    -------
+                    ValueError
+                        If the model is not found (when action is 'get' or 'delete'),
+                        or if an invalid action is specified.
+                    """
+            ACTIONS = ['get', 'delete', 'check']
+            if action not in ACTIONS:
+                raise ValueError(f'sorry action should be any of {ACTIONS} ')
+            # get bound methods based on model type
+            finder = sim.FindInScope[model_type]
+            get_model = finder(model_name) if model_name else finder()
+            if action =='check':
+                return True if get_model is not None else False
+            if not get_model and action =='get':
                 raise ValueError(f"{model_name} of type {model_type} not found")
-            return get_model
+
+            if action == 'delete' and get_model:
+                DELETE(get_model)
+            if get_model and action == 'get':
+                 return get_model
 
         model_type_class = _eval_model(model_type)
 
@@ -848,7 +894,7 @@ class CoreModel:
                     self.update_mgt_by_path(path=manager_path, fmt='.', **kwargs)
 
                 case Models.Soils.Physical | Models.Soils.Chemical | Models.Soils.Organic | Models.Soils.Water:
-                    print(f"Processing a Soils component: {model_instance}")
+                    print(f"Processing a soils component: {model_instance}")
                     self.replace_soils_values_by_path(node_path=model_instance.FullPath, **kwargs)
 
                 case Models.Report:
@@ -869,19 +915,25 @@ class CoreModel:
 
                     commands = kwargs.get("commands")
                     values = kwargs.get("values")
+                    # need to specify back to the cultivar manger script the new cutivar name since APSIM is not allowign editing in place.
+                    # editing in place could work if we were reuning the model in memory of python
+                    cultivar_manager_paramter_name= kwargs.get("parameter_name", 'CultivarName')
+                    cultivar_manager = kwargs.get("cultivar_manager")
+                    if not cultivar_manager:
+                        raise ValueError("Please specify a cultivar manager using key word 'cultivar_manager'")
                     if not commands or values is None:
                         raise ValueError("Both 'commands' and 'values' must be provided for Cultivar")
 
                     cultvar = self._find_cultivar(model_name)
                     if cultvar is None:
                         raise ValueError(f"Cultivar '{model_name}' not found")
-
+                    cultvar =CLONER(cultvar) # let's clone
                     params = self._cultivar_params(cultvar)
                     params[commands] = values
 
                     updated_commands = [f"{k}={v}" for k, v in params.items()]
                     cultvar.set_Command(updated_commands)
-                    print(cultvar.__class__)
+
                     rep = self._find_replacement()
                     plant = kwargs.get('plant')
                     CroP_Parent = rep.FindInScope[Models.PMF.Plant](plant)
@@ -890,17 +942,18 @@ class CoreModel:
                     current_name = cultvar.Name
                     cultvar.Name = f"p_{model_name}"
                     checkFound = rep.FindInScope[Models.PMF.Cultivar](cultvarName)
-                    print(checkFound)
-                    if not checkFound:
-                        cultvar.Name = current_name
+                    #ADD(cultvar, )
+                    _get_is_model_found(rep, Models.PMF.Cultivar, cultvarName, action ='delete')# this will delete the model if found before we add
 
-                        ADD(cultvar, CroP_Parent)
-                    #ADD(cultvar, CroP_Parent)
+                    cultvar.Name = cultvarName
 
-                    #self.edit_cultivar(CultivarName=model_name, commands=commands, values=values)
+                    ADD(cultvar, CroP_Parent)
+                    cultvar.Name = cultvarName
+                    self.edit_cultivar(CultivarName=model_name, commands=commands, values=values)
+                    extra_args = {cultivar_manager_paramter_name: cultvarName}
+                    self.edit_model(Models.Manager, sim.Name, model_name =cultivar_manager,**extra_args)
                     self.save()
-
-                    print(f"Updated Cultivar '{model_name}' with: {params}")
+                    logger.info(f"edited Cultivar '{model_name}' and saved it as {cultvarName}")
 
                 case _:
                     raise NotImplementedError(f"No edit method implemented for model type {type(model_instance)}")

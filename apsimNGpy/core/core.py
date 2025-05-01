@@ -114,12 +114,13 @@ class CoreModel:
     __slots__ = ['model', 'out_path', 'experiment', 'copy', 'base_name', 'others', 'report_names',
                  'factor_names', 'permutation', 'experiment_created', 'set_wd', '_str_model',
                  '_model', 'model_info', 'datastore', 'Simulations', 'Datastore', '_DataStore', 'path',
-                 '_met_file', 'ran_ok', 'factors', 'work_space'
+                 '_met_file', 'ran_ok', 'factors', 'work_space', "Start", 'End'
                  ]
 
     def __init__(self, model: Union[str, Path, dict] = None, out_path: Union[str, Path] = None, out: Union[str, Path] = None, set_wd:Union[str, Path]=None,
                  experiment=False, **kwargs):
-
+        self.Start = 'unknown'# unknown for now
+        self.End = 'unknown'
         self.experiment_created = None
         self.experiment = experiment
         self.permutation = None
@@ -727,19 +728,24 @@ class CoreModel:
                     model_instance.FileName = met_file
                 case Models.Clock:
                     print(f"Processing a Clock: {model_instance}")
-                    pop_item = copy.deepcopy(kwargs)
+                    valid = set(('End', 'Start'))
+                    invalid = set()
                     for kwa, value in kwargs.items():
                         if hasattr(model_instance, kwa):
                             try:
                                 parsed_value = DateTime.Parse(value)
                                 setattr(model_instance, kwa, parsed_value)
-                                print(f"Set {kwa} to {parsed_value}")
-                                pop_item.pop(kwa)
+                                logger.info(f"Set {kwa} to {parsed_value}")
+                                setattr(self, kwa, value)
+
                             except Exception as e:
                                 raise ValueError(f"{e}")
                                 logging.warning(f"Could not set {kwa} due to error: {e}")
-                    if pop_item:
-                        logging.info(f"The following keys were not valid Clock attributes: {pop_item}")
+                        else:
+                            invalid.add(kwa)
+                    if invalid:
+                        logger.info(f"The following keys {invalid} were not valid Clock attributes:\n valid attributes are: {valid}")
+
 
                 case Models.Manager:
                     print(f"Processing a Manager: {model_instance}")
@@ -1787,6 +1793,7 @@ class CoreModel:
 
 
 
+    @property
     def configs(self):
         """records activities or modifications to the model including changes to the file
 
@@ -1796,8 +1803,10 @@ class CoreModel:
             'model_has_been_ran': self.ran_ok,
             'experiment': self.experiment,
             'experiment_created': self.experiment_created,
-            'reports': self.report_names,
-            'simulations': self.Simulations.Name
+            'reports': self.report_names or self.inspect_model("Report"),
+            'simulations': self.Simulations.Name,
+            'start_changed': True if self.Start !='unknown' else False,
+            'end_changed': True if self.End !='unknown' else False
         }
 
     def replace_soils_values_by_path(self, node_path: str, indices: list = None, **kwargs):

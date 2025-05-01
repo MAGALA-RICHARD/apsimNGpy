@@ -36,7 +36,14 @@ from System import *
 from Models.Core.ApsimFile import FileFormat
 from Models.Climate import Weather
 from Models.Soils import Soil, Physical, SoilCrop, Organic, Solute, Chemical
-import Models
+
+
+from apsimNGpy.core_utils.utils import open_file_in_window
+from apsimNGpy.core.config import get_apsim_bin_path, load_crop_from_disk
+
+from apsimNGpy.core._modelhelpers import (get_or_check_model, Models,
+                                          ModelTools, _eval_model,
+                                          _find_model, find_model)
 from Models.PMF import Cultivar
 from apsimNGpy.core.runner import run_model_externally, collect_csv_by_model_path
 from apsimNGpy.core.model_loader import (load_apsim_model, save_model_to_file, recompile)
@@ -44,127 +51,16 @@ import ast
 from typing import Iterable
 from collections.abc import Iterable
 from typing import Any
-from apsimNGpy.core_utils.utils import open_file_in_window
-from apsimNGpy.core.config import get_apsim_bin_path, load_crop_from_disk
-MultiThreaded = Models.Core.Run.Runner.RunTypeEnum.MultiThreaded
-SingleThreaded = Models.Core.Run.Runner.RunTypeEnum.SingleThreaded
 
-ModelRUNNER = Models.Core.Run.Runner
+
 rec_limit = sys.getrecursionlimit()
 
-ADD = Models.Core.ApsimFile.Structure.Add
-DELETE = Models.Core.ApsimFile.Structure.Delete
-MOVE = Models.Core.ApsimFile.Structure.Move
-RENAME = Models.Core.ApsimFile.Structure.Rename
-CLONER = Models.Core.Apsim.Clone
-
-REPLACE = Models.Core.ApsimFile.Structure.Replace
 CLASS_MODEL = type(Models.Clock)
 TYPE2 = type(Models.Clock())
 import inspect
 
 sys.setrecursionlimit(5000)
 
-def _find_model(model_name: str, model_namespace=Models, target_type=CLASS_MODEL) -> CLASS_MODEL:
-    """
-    Recursively find a model by name within a namespace.
-
-    Args:
-        model_name (str): The name of the model to find.
-        model_namespace (object, optional): The root namespace (defaults to Models).
-        target_type (type, optional): Expected type of the model.
-
-    Returns:
-        object: The found model object, or None if not found.
-    """
-
-
-
-    try:
-
-        if not hasattr(model_namespace, "__dict__"):
-            return None
-
-        ITEMS =  MappingProxyType(model_namespace.__dict__)
-        if isinstance(model_name, str):
-            model_name = model_name.capitalize()
-        for attr, value in ITEMS.items():
-            if attr == model_name and isinstance(value, target_type):
-                return value
-
-            _get_attr = getattr(value, model_name, None)
-
-            if isinstance(_get_attr, target_type):
-                    return _get_attr
-
-            if hasattr(value, "__dict__"):
-
-                result = _find_model(model_name, value, target_type=target_type)
-                if result:
-                    return result
-        # recursion is complete but model is none
-
-        return None
-
-    finally:
-        ...
-        sys.setrecursionlimit(rec_limit)
-def find_model(model_name: str):
-    model_type = _find_model(model_name)
-    if model_type:
-        return model_type
-    # for some unknown reasons Models.Factorial namespace is not featuring so let's do it mannually here
-    import Models
-    if model_type is None:
-        model_type = getattr(Models.Factorial, model_name, None)
-    return model_type
-
-def _eval_model(model__type, evaluate_bound=False) -> CLASS_MODEL:
-    """
-    Evaluates the model type from either string or Models namespace
-    @param model__type (str,Models, required)
-    it can also accept either string or Models namespace as single letter specifying the final model or as a whole path e.g 'Models.Clock' and 'Clock' are all valid
-         'Clock', 'Simulation', 'Manager', 'Report','Simulations', 'Weather', 'Soil
-    @return:
-       model type from Models namespace
-
-    :Raises
-       raises a ValueError if model__type is not valid or found from the Models namespace
-    """
-    import Models
-    model_types = None
-    bound_model = None
-    try:
-        if isinstance(model__type, str):
-            _model_name_space = 'Models.'
-            ln = len(_model_name_space)
-            # find _find_model could be sufficent, where we only allow the user to supply a single name but we dont know whether some names repeated on some models
-            if find_model(model__type):
-                from_single = find_model(model__type)
-                if from_single is not None:
-                    return from_single
-            if model__type[:ln] == _model_name_space:
-                _model_type = eval(model__type)
-                bound_model = _model_type.__class__
-                if isinstance(_model_type, CLASS_MODEL):
-                    model_types = _model_type
-
-        if isinstance(model__type, CLASS_MODEL):
-            model_types = model__type
-
-        if evaluate_bound and not isinstance(model__type, str):
-            bound_model = model__type.__class__
-        if isinstance(bound_model,CLASS_MODEL):
-
-            model_types = bound_model
-
-        if model_types:
-            return model_types
-        else:
-            raise ValueError(f"invalid model_type: '{model__type}' from type: {type(model__type)}")
-    finally:
-        # future implimentation
-      pass
 
 
 from apsimNGpy.settings import *  # This file is not ready and i wanted to do some test
@@ -631,15 +527,13 @@ class CoreModel:
                         else self.Simulations.FindInScope[model_type]())
 
         # Create a clone of the model
-        clone = CLONER(clone_parent)
+        clone = ModelTools.CLONER(clone_parent)
 
         # Assign a new name to the cloned model
         new_name = rename if rename else f"{clone.Name}_clone"
         clone.Name = new_name
-        check_exists = self.Simulations.FindInScope[model_type](new_name)
-        if check_exists:
-            DELETE(check_exists)
-            logging.info(f'deleted {check_exists.Name}waiting replacment now')
+        #check_exists = self.Simulations.FindInScope[model_type](new_name)
+        check_exists = get_or_check_model(self.Simulations, model_type, new_name, action ='delete')
 
         # Find the adoptive parent where the cloned model should be placed
         parent = (self.Simulations.FindInScope[adoptive_parent_type](adoptive_parent_name) if adoptive_parent_name
@@ -753,10 +647,12 @@ class CoreModel:
                     raise ValueError(f"{model_type} can not be found. Please recheck your input or use inspect_file() to see all the available model types")
 
             model_type.Name  = rename if rename else model_type.Name
-            target_child = parent.FindInScope[model_type.__class__](model_type.Name)
-            if target_child and override:
-                DELETE(target_child)
-            ADD(model_type, parent)
+            # target_child = parent.FindInScope[model_type.__class__](model_type.Name)
+           # target_child = get_or_check_model(parent, model_type.__class__, model_type.Name, action ='delete')
+            if override:
+                get_or_check_model(parent, model_type.__class__, model_type.Name, action='delete')
+
+            ModelTools.ADD(model_type, parent)
             self.save()
             if verbose:
                 logger.info(f"Added {loc.Name} to {parent.Name}")
@@ -772,7 +668,7 @@ class CoreModel:
                     # not raising the error still studying the behaviors of adding a child that already exists
                     DELETE(target_child)
 
-            ADD(loc, parent)
+            ModelTools.ADD(loc, parent)
 
             if verbose:
                 logger.info(f"Added {loc.Name} to {parent.Name}")
@@ -817,62 +713,18 @@ class CoreModel:
         NotImplementedError:
             If no logic is implemented for the model type.
         """
-        def _get_is_model_found(sim, model_type, model_name, action='get'):
-            """
-                    Helper function to check if a model instance is found in the simulation
-                    and perform a specified action.
-
-                    Actions supported:
-                    - 'get': returns the found model.
-                    - 'delete': deletes the model.
-                    - 'check': returns True/False depending on whether the model exists.
-
-                    Parameters:
-                    -----------
-                    sim : ApsimSimulation
-                        The APSIM simulation object.
-                    model_type : str
-                        The type of model to search for (e.g., 'Soil', 'Manager').
-                    model_name : str, optional
-                        The name of the model to find. If omitted, returns the first model of that type.
-                    action : str
-                        One of 'get', 'delete', or 'check'.
-
-                    Returns:
-                    --------
-                    object or bool or None
-                        - The found model if action is 'get'.
-                        - True/False if action is 'check'.
-                        - None if action is 'delete'.
-
-                    Raises:
-                    -------
-                    ValueError
-                        If the model is not found (when action is 'get' or 'delete'),
-                        or if an invalid action is specified.
-                    """
-            ACTIONS = ['get', 'delete', 'check']
-            if action not in ACTIONS:
-                raise ValueError(f'sorry action should be any of {ACTIONS} ')
-            # get bound methods based on model type
-            finder = sim.FindInScope[model_type]
-            get_model = finder(model_name) if model_name else finder()
-            if action =='check':
-                return True if get_model is not None else False
-            if not get_model and action =='get':
-                raise ValueError(f"{model_name} of type {model_type} not found")
-
-            if action == 'delete' and get_model:
-                DELETE(get_model)
-            if get_model and action == 'get':
-                 return get_model
 
         model_type_class = _eval_model(model_type)
 
         for sim in self.find_simulations(simulations):
-            model_instance = _get_is_model_found(sim, model_type_class, model_name)
+            model_instance = get_or_check_model(sim, model_type_class, model_name, action ='get')
 
             match type(model_instance):
+                case Models.Climate.Weather:
+                    met_file = kwargs.get('weather_file')
+                    if met_file is None:
+                        raise ValueError('Use word argument "weather_file" to supply weather data')
+                    model_instance.FileName = met_file
                 case Models.Clock:
                     print(f"Processing a Clock: {model_instance}")
                     pop_item = copy.deepcopy(kwargs)
@@ -884,6 +736,7 @@ class CoreModel:
                                 print(f"Set {kwa} to {parsed_value}")
                                 pop_item.pop(kwa)
                             except Exception as e:
+                                raise ValueError(f"{e}")
                                 logging.warning(f"Could not set {kwa} due to error: {e}")
                     if pop_item:
                         logging.info(f"The following keys were not valid Clock attributes: {pop_item}")
@@ -927,7 +780,7 @@ class CoreModel:
                     cultvar = self._find_cultivar(model_name)
                     if cultvar is None:
                         raise ValueError(f"Cultivar '{model_name}' not found")
-                    cultvar =CLONER(cultvar) # let's clone
+                    cultvar =ModelTools.CLONER(cultvar) # let's clone
                     params = self._cultivar_params(cultvar)
                     params[commands] = values
 
@@ -936,20 +789,18 @@ class CoreModel:
 
                     rep = self._find_replacement()
                     plant = kwargs.get('plant')
-                    CroP_Parent = rep.FindInScope[Models.PMF.Plant](plant)
+                    CroP_Parent = get_or_check_model(rep, Models.PMF.Plant, plant, action='get')
                     cultvarName =f"edited_cultivar_{model_name}"
                     # mask out the current name such that is not accessed
                     current_name = cultvar.Name
                     cultvar.Name = f"p_{model_name}"
                     checkFound = rep.FindInScope[Models.PMF.Cultivar](cultvarName)
                     #ADD(cultvar, )
-                    _get_is_model_found(rep, Models.PMF.Cultivar, cultvarName, action ='delete')# this will delete the model if found before we add
+                    get_or_check_model(rep, Models.PMF.Cultivar, cultvarName, action ='delete')# this will delete the model if found before we add
 
                     cultvar.Name = cultvarName
 
-                    ADD(cultvar, CroP_Parent)
-                    cultvar.Name = cultvarName
-                    self.edit_cultivar(CultivarName=model_name, commands=commands, values=values)
+                    ModelTools.ADD(cultvar, CroP_Parent)
                     extra_args = {cultivar_manager_paramter_name: cultvarName}
                     self.edit_model(Models.Manager, sim.Name, model_name =cultivar_manager,**extra_args)
                     self.save()
@@ -958,6 +809,7 @@ class CoreModel:
                 case _:
                     raise NotImplementedError(f"No edit method implemented for model type {type(model_instance)}")
         model.ran_ok = False
+        return self
 
     def add_report_variable(self, variable_spec: Union[list, str, tuple], report_name: str = None, set_event_names:Union[str,list]=None):
         """
@@ -1065,13 +917,13 @@ class CoreModel:
         if not model_name:
             model_name = model_type().Name
 
-        child_to_move = sims.FindInScope[model_type](model_name)
+        child_to_move = get_or_check_model(sims, model_type, model_name, action='get')#sims.FindInScope[model_type](model_name)
         if not new_parent_name:
             new_parent_name = new_parent_type().Name
 
-        new_parent = sims.FindInScope[new_parent_type](new_parent_name)
+        new_parent = get_or_check_model(sims, new_parent_type, new_parent_name, action ='get')
 
-        MOVE(child_to_move, new_parent)
+        ModelTools.MOVE(child_to_move, new_parent)
         if verbose:
             logger.info(f"Moved {child_to_move.Name} to {new_parent.Name}")
         self.save()
@@ -1199,7 +1051,7 @@ class CoreModel:
 
     @timer
     def clone(self, new_file_name):
-        """this clones all simulations and returns a path to the néw clone simulations"""
+        """This clones all simulations and returns a path to the néw clone simulations"""
         assert Path(new_file_name).suffix == '.apsimx', 'wrong file extension'
         __simulations__ = Models.Core.Apsim.Clone(self.Simulations)
         save_model_to_file(__simulations__, out=new_file_name)
@@ -1508,7 +1360,7 @@ class CoreModel:
 
                     # Replace: delete existing and add new
                     DELETE(sim)
-                    ADD(get_target_model, parent)
+                    ModelTools.ADD(get_target_model, parent)
                     self.save()
 
             else:
@@ -1520,8 +1372,8 @@ class CoreModel:
                 parent = target.FindInScope[parent.__class__]()
 
                 # Replace: delete existing and add new
-                DELETE(target)
-                ADD(get_target_model, parent)
+                ModelTools.DELETE(target)
+                ModelTools.ADD(get_target_model, parent)
                 self.save()
 
         return self
@@ -1602,8 +1454,7 @@ class CoreModel:
             managers = sim.FindAllDescendants[Models.Manager]()
             for manager in list(managers):
                 print(manager.SuccessfullyCompiledLast)
-                # if not manager.SuccessfullyCompiledLast:
-                #     manager.RebuildScriptModel(allowDuplicateClassName=False)
+
 
     def extract_user_input(self, manager_name: str):
         """
@@ -2472,11 +2323,11 @@ class CoreModel:
         # parent replacemnt should be added once
         target_parent  = PARENT.FindInScope[Models.Core.Folder]('Replacements')
         if not target_parent:
-            ADD(_FOLDER, PARENT)
+            ModelTools.ADD(_FOLDER, PARENT)
         # assumes that the crop already exists in the simulation
         _crop = PARENT.FindInScope[Models.PMF.Plant](CROP)
         if _crop is not None:
-            ADD(_crop, _FOLDER)
+            ModelTools.ADD(_crop, _FOLDER)
         else:
             logger.error(f"No plants of crop{CROP} found")
     def get_model_paths(self) -> list[str]:

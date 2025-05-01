@@ -696,6 +696,7 @@ class CoreModel:
         kwargs : dict
             Additional keyword arguments required per model type:
 
+            - Weather: weather_file as strings path pointing to the weather .met file
             - Clock: Any subset of date properties (e.g., 'Start', 'End') as ISO strings.
             - Manager: Variables to update in the Manager script using `update_mgt_by_path`.
             - Soils.Physical / Soils.Chemical / Soils.Organic / Soils.Water: Variables to replace via `replace_soils_values_by_path`.
@@ -706,6 +707,8 @@ class CoreModel:
             - Cultivar:
                 - commands (str): APSIM cultivar path to the parameter name to set
                 - values (Any): Value to assign
+                - name of the manager script manning the sowing variables, this is expected to have the CultivarName parameter for holding the cultiva name
+                it is needed after editing the cultivar, to replace the old values with new cultivar name since APSIM has made cultivar readonly models
 
         Raises:
         -------
@@ -716,6 +719,8 @@ class CoreModel:
         """
 
         model_type_class = _eval_model(model_type)
+        if kwargs == {}:
+            raise ValueError('specify the model parameters')
 
         for sim in self.find_simulations(simulations):
             model_instance = get_or_check_model(sim, model_type_class, model_name, action ='get')
@@ -724,19 +729,20 @@ class CoreModel:
                 case Models.Climate.Weather:
                     met_file = kwargs.get('weather_file')
                     if met_file is None:
-                        raise ValueError('Use word argument "weather_file" to supply weather data')
+                        raise ValueError('Use key word argument "weather_file" to supply the weather data')
                     model_instance.FileName = met_file
                 case Models.Clock:
                     print(f"Processing a Clock: {model_instance}")
                     valid = set(('End', 'Start'))
                     invalid = set()
                     for kwa, value in kwargs.items():
-                        if hasattr(model_instance, kwa):
+                        key = kwa.capitalize() # APSIM uses camelcase
+                        if hasattr(model_instance, key):
                             try:
                                 parsed_value = DateTime.Parse(value)
-                                setattr(model_instance, kwa, parsed_value)
+                                setattr(model_instance, key, parsed_value)
                                 logger.info(f"Set {kwa} to {parsed_value}")
-                                setattr(self, kwa, value)
+                                setattr(self, key, value)
 
                             except Exception as e:
                                 raise ValueError(f"{e}")
@@ -814,7 +820,7 @@ class CoreModel:
 
                 case _:
                     raise NotImplementedError(f"No edit method implemented for model type {type(model_instance)}")
-        model.ran_ok = False
+        self.ran_ok = False
         return self
 
     def add_report_variable(self, variable_spec: Union[list, str, tuple], report_name: str = None, set_event_names:Union[str,list]=None):
@@ -2264,6 +2270,7 @@ class CoreModel:
         self.save()
         self.factor_names.append(factor_name)
         self.factors[factor_name] = specification
+        return self # allows method chaining
 
     def set_continuous_factor(self, factor_path, lower_bound, upper_bound, interval, factor_name=None):
         """
@@ -2339,6 +2346,7 @@ class CoreModel:
             ModelTools.ADD(_crop, _FOLDER)
         else:
             logger.error(f"No plants of crop{CROP} found")
+        return self
     def get_model_paths(self) -> list[str]:
         """
         select out a few model types to use for building the APSIM file inspections
@@ -2348,7 +2356,7 @@ class CoreModel:
             data = []
             model_types = ['Models.Core.Simulation', 'Models.Soils.Soil', 'Models.PMF.Plant', 'Models.Manager',
                   'Models.Climate.Weather', 'Models.Report', 'Models.Clock', 'Models.Core.Folder',
-                  'Models.Soils.Solute',
+                  'Models.Soils.Solute', 'Models.PMF.Cultivar',
                   'Models.Soils.Swim3', 'Models.Soils.SoilCrop', 'Models.Soils.Water', 'Models.Summary',
                   'Models.Core.Zone', 'Models.Management.RotationManager',
                   'Models.Soils.CERESSoilTemperature', 'Models.Series', 'Models.Factorial.Experiment',

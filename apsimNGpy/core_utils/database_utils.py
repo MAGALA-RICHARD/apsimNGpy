@@ -189,23 +189,24 @@ def clear_table(db, table_name):
         cursor.execute(f"DELETE FROM {table_name}")
         conn.commit()
 
-
+@timer
 def clear_all_tables(db):
     """
-    
-    :param db: path to database file
+    Deletes all rows from all user-defined tables in the given SQLite database.
+
+    :param db: Path to the SQLite database file.
     :return: None
     """
     with sqlite3.connect(db) as conn:
         cursor = conn.cursor()
 
-        # Fetch all table names
-        cursor.execute("SELECT name FROM sqlite_master WHERE ='table';")
+        # Fetch all table names (excluding internal SQLite tables)
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';")
         tables = cursor.fetchall()
 
         # Clear all tables
-        for table in tables:
-            cursor.execute(f"DELETE FROM {table[0]}")
+        for (table_name,) in tables:
+            cursor.execute(f"DELETE FROM '{table_name}'")
 
         conn.commit()
 

@@ -1,7 +1,15 @@
+import pandas as pd
 from apsimNGpy.core import pythonet_config
 from dataclasses import dataclass
-
+from gc import collect
 import Models
+from typing import Union, Tuple
+from System.Collections import IEnumerable
+from System import String
+
+from typing import Union, Dict, Any
+
+
 @dataclass
 class ModelTools:
     ADD = Models.Core.ApsimFile.Structure.Add
@@ -15,9 +23,10 @@ class ModelTools:
     ModelRUNNER = Models.Core.Run.Runner
     CLASS_MODEL = type(Models.Clock)
     ACTIONS = ('get', 'delete', 'check')
+    COLLECT = collect
 
 
-def get_or_check_model(sim, model_type, model_name, action='get'):
+def get_or_check_model(search_scope, model_type, model_name, action='get'):
     """
             Helper function to check if a model instance is found in the simulation
             and perform a specified action.
@@ -55,7 +64,7 @@ def get_or_check_model(sim, model_type, model_name, action='get'):
     if action not in ModelTools.ACTIONS:
         raise ValueError(f'sorry action should be any of {ModelTools.ACTIONS} ')
     # get bound methods based on model type
-    finder = sim.FindInScope[model_type]
+    finder = search_scope.FindInScope[model_type]
     get_model = finder(model_name) if model_name else finder()
     if action == 'check':
         return True if get_model is not None else False
@@ -113,6 +122,7 @@ def find_model(model_name: str):
     import Models
     if model_type is None:
         model_type = getattr(Models.Factorial, model_name, None)
+    collect()
     return model_type
 
 def _eval_model(model__type, evaluate_bound=False) -> ModelTools.CLASS_MODEL:
@@ -160,4 +170,100 @@ def _eval_model(model__type, evaluate_bound=False) -> ModelTools.CLASS_MODEL:
             raise ValueError(f"invalid model_type: '{model__type}' from type: {type(model__type)}")
     finally:
         # future implimentation
-      pass
+
+        pass
+
+
+
+def inspect_model_inputs(scope, model_type: str, simulations: Union[str, list], model_name: str, **kwargs) -> Union[Dict[str, Any], pd.DataFrame, list, Any]:
+    """
+    Inspect the current input values of a specific APSIM model type instance within given simulations.
+
+    Parameters:
+    -----------
+    scope : ApsimNG model context
+        Root scope or project object containing simulations.
+    model_type : str
+        Name of the model class (e.g., 'Clock', 'Manager', 'Soils.Physical', etc.)
+    simulations : Union[str, list]
+        Name or list of names of simulation(s) to inspect.
+    model_name : str
+        Name of the model instance within each simulation.
+    **kwargs : dict
+        Optional keyword arguments — not used here but accepted for interface compatibility.
+
+    Returns:
+    --------
+    Union[Dict[str, Any], pd.DataFrame, list, Any]
+        - For Weather: file path(s)
+        - For Clock: (start, end) tuple(s)
+        - For Manager: dictionary of parameters
+        - For Soil models: pandas DataFrame(s) of layer-based properties
+        - For Report: dictionary with 'VariableNames' and 'EventNames'
+        - For Cultivar: dictionary of parsed parameter=value pairs
+
+    Raises:
+    -------
+    ValueError:
+        If model is not found or invalid arguments are passed.
+    NotImplementedError:
+        If the model type is unsupported.
+
+    Requirements:
+    -------------
+    - APSIM Next Gen Python bindings (apsimNGpy)
+    - Python 3.10+
+    """
+    model_type_class = _eval_model(model_type)
+
+    is_single_sim = isinstance(simulations, str)
+    sim_list = scope.find_simulations(simulations)
+    result = {} if not is_single_sim else None
+
+    for sim in sim_list:
+        model_instance = get_or_check_model(sim, model_type_class, model_name, action='get')
+
+        match type(model_instance):
+            case Models.Climate.Weather:
+                value = model_instance.FileName
+            case Models.Clock:
+                value = (model_instance.Start, model_instance.End)
+            case Models.Manager:
+                value = {param.Key: param.Value for param in model_instance.Parameters}
+            case Models.Soils.Physical | Models.Soils.Chemical | Models.Soils.Organic | Models.Soils.Water:
+                thick = getattr(model_instance, 'Thickness', None)
+                df = pd.DataFrame()
+                if thick:
+                    for attr in dir(model_instance):
+                        if attr.startswith('__'):
+                            continue
+                        val = getattr(model_instance, attr)
+                        if isinstance(val, IEnumerable) and not isinstance(val, String):
+                            val_list = list(val)
+                            if len(val_list) == len(thick):
+                                df[attr] = val_list
+                value = df
+            case Models.Report:
+                value = {
+                    'VariableNames': list(model_instance.VariableNames),
+                    'EventNames': list(model_instance.get_EventNames())
+                }
+            case Models.PMF.Cultivar:
+                params = {}
+                for cmd in model_instance.Command:
+                    if cmd:
+                        if '=' in cmd:
+                            key, val = cmd.split('=', 1)
+                            params[key.strip()] = val.strip()
+                value = params
+            case _:
+                raise NotImplementedError(f"No inspect input method implemented for model type: {type(model_instance)}")
+
+        if is_single_sim:
+            return value
+        else:
+            result[sim.Name] = value
+
+    return result
+
+collect()

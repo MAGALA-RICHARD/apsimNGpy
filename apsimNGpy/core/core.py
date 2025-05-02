@@ -42,6 +42,7 @@ from apsimNGpy.core_utils.utils import open_file_in_window
 from apsimNGpy.core.config import get_apsim_bin_path, load_crop_from_disk
 
 from apsimNGpy.core._modelhelpers import (get_or_check_model, Models,
+                                          inspect_model_inputs,
                                           ModelTools, _eval_model,
                                           _find_model, find_model)
 from Models.PMF import Cultivar
@@ -715,15 +716,13 @@ class CoreModel:
         -------
         ValueError:
             If model instance is not found, or required kwargs are missing.
-            if kwargs dictionary is empty: meaning non of the corresponding parameter for a model was not supplied
+            if kwargs dictionary is empty: meaning none of the corresponding parameter for a model was not supplied
         NotImplementedError:
             If no logic is implemented for the model type.
         """
 
         model_type_class = _eval_model(model_type)
-        if kwargs == {}:
-            # neccessary to raise
-            raise ValueError(f'Please did you forget to specify the model parameters for model type: {model_type} or model named: {model_name}')
+
 
         for sim in self.find_simulations(simulations):
             model_instance = get_or_check_model(sim, model_type_class, model_name, action ='get')
@@ -1068,14 +1067,9 @@ class CoreModel:
             if i.Name == Crop:
                 return i
         return self
-
-    @timer
-    def clone(self, new_file_name):
-        """This clones all simulations and returns a path to the néw clone simulations"""
-        assert Path(new_file_name).suffix == '.apsimx', 'wrong file extension'
-        __simulations__ = Models.Core.Apsim.Clone(self.Simulations)
-        save_model_to_file(__simulations__, out=new_file_name)
-        return new_file_name
+    def inspect_model_params(self, model_type, simulations, model_name):
+        self.inspect_model_params.__doc__ = inspect_model_inputs.__doc__
+        return inspect_model_inputs(self, model_type, simulations, model_name)
 
     def edit_cultivar(self, *, CultivarName: str, commands: str, values: Any, **kwargs):
         """
@@ -2153,8 +2147,15 @@ class CoreModel:
 
         """
         try:
-            self._DataStore.Close()
-            self._DataStore.Dispose()
+            if hasattr(self, '_DataStore'):
+                self._DataStore.Close()
+                self._DataStore.Dispose()
+            try:
+              del self._DataStore
+              del self.Datastore
+            except AttributeError:
+                ...
+
             Path(self.path).unlink(missing_ok=True)
             Path(self.path.replace('apsimx', "bak")).unlink(missing_ok=True)
             if db:
@@ -2164,9 +2165,15 @@ class CoreModel:
                 if verbose:
                   logger.info('database cleaned successfully')
         except (FileNotFoundError, PermissionError) as e:
+            from apsimNGpy.core_utils.database_utils import clear_all_tables
+            # if deleting has failed
+            clear_all_tables(self.datastore) if os.path.exists(self.datastore) else None
+
             if verbose:
-               logging.info(e)
+               logger.info(e)
             pass
+        finally:
+            ModelTools.COLLECT()
 
         return self
 

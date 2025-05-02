@@ -181,8 +181,8 @@ def inspect_model_inputs(scope, model_type: str, simulations: Union[str, list], 
 
     Parameters:
     -----------
-    scope : ApsimNG model context
-        Root scope or project object containing simulations.
+    scope : ApsimNG model context with Models.Core.Simulations  and its associated Simulation
+        Root scope or project object containing Simulations.
     model_type : str
         Name of the model class (e.g., 'Clock', 'Manager', 'Soils.Physical', etc.)
     simulations : Union[str, list]

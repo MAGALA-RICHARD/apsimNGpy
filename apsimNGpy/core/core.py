@@ -1067,10 +1067,11 @@ class CoreModel:
             if i.Name == Crop:
                 return i
         return self
-    def inspect_model_params(self, model_type, simulations, model_name):
-        self.inspect_model_params.__doc__ = inspect_model_inputs.__doc__
+    def inspect_model_parameters(self, model_type, simulations, model_name):
+
         return inspect_model_inputs(self, model_type, simulations, model_name)
 
+    inspect_model_params.__doc__ = inspect_model_inputs.__doc__
     def edit_cultivar(self, *, CultivarName: str, commands: str, values: Any, **kwargs):
         """
         Edits the parameters of a given cultivar. we don't need a simulation name for this unless if you are defining it in the

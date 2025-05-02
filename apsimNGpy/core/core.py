@@ -690,13 +690,14 @@ class CoreModel:
         model_type : str
             Name of the model class (e.g., 'Clock', 'Manager', 'Soils.Physical', etc.)
         simulations : Union[str, list]
-            A simulation name or list of simulation names to search in.
+            A simulation name or list of simulation names to search in. defaults to all simulations in the model
         model_name : str
             Name of the model instance to modify.
         kwargs : dict
             Additional keyword arguments required per model type:
 
-            - Weather: weather_file as strings path pointing to the weather .met file
+
+            - Weather: 'weather_file' as strings path pointing to the weather .met file
             - Clock: Any subset of date properties (e.g., 'Start', 'End') as ISO strings.
             - Manager: Variables to update in the Manager script using `update_mgt_by_path`.
             - Soils.Physical / Soils.Chemical / Soils.Organic / Soils.Water: Variables to replace via `replace_soils_values_by_path`.
@@ -714,13 +715,15 @@ class CoreModel:
         -------
         ValueError:
             If model instance is not found, or required kwargs are missing.
+            if kwargs dictionary is empty: meaning non of the corresponding parameter for a model was not supplied
         NotImplementedError:
             If no logic is implemented for the model type.
         """
 
         model_type_class = _eval_model(model_type)
         if kwargs == {}:
-            raise ValueError('specify the model parameters')
+            # neccessary to raise
+            raise ValueError(f'Please did you forget to specify the model parameters for model type: {model_type} or model named: {model_name}')
 
         for sim in self.find_simulations(simulations):
             model_instance = get_or_check_model(sim, model_type_class, model_name, action ='get')
@@ -730,10 +733,13 @@ class CoreModel:
                     met_file = kwargs.get('weather_file')
                     if met_file is None:
                         raise ValueError('Use key word argument "weather_file" to supply the weather data')
+                    # To avoid carrying over a silent bug or waiting for the bug to manifest during model run, there is need to raise here
+                    if not os.path.exists(met_file):
+                        raise FileNotFoundError(f"'{met_file}' rejected because it does not exist on the computer")
+
                     model_instance.FileName = met_file
                 case Models.Clock:
-                    print(f"Processing a Clock: {model_instance}")
-                    valid = set(('End', 'Start'))
+                    valid = set()
                     invalid = set()
                     for kwa, value in kwargs.items():
                         key = kwa.capitalize() # APSIM uses camelcase
@@ -743,6 +749,7 @@ class CoreModel:
                                 setattr(model_instance, key, parsed_value)
                                 logger.info(f"Set {kwa} to {parsed_value}")
                                 setattr(self, key, value)
+                                valid.add(key)
 
                             except Exception as e:
                                 raise ValueError(f"{e}")
@@ -750,20 +757,21 @@ class CoreModel:
                         else:
                             invalid.add(kwa)
                     if invalid:
-                        logger.info(f"The following keys {invalid} were not valid Clock attributes:\n valid attributes are: {valid}")
+                        if not len(valid) >= 1:
+                            raise ValueError(f"no valid Clock attributes were passed. Valid attributes are: 'End' or 'Start'")
 
 
                 case Models.Manager:
-                    print(f"Processing a Manager: {model_instance}")
+
                     manager_path = model_instance.FullPath
                     self.update_mgt_by_path(path=manager_path, fmt='.', **kwargs)
 
                 case Models.Soils.Physical | Models.Soils.Chemical | Models.Soils.Organic | Models.Soils.Water:
-                    print(f"Processing a soils component: {model_instance}")
+
                     self.replace_soils_values_by_path(node_path=model_instance.FullPath, **kwargs)
 
                 case Models.Report:
-                    print(f"Processing a Report: {model_instance}")
+
                     set_event_names = kwargs.get('set_event_names')
                     report_name = model_name
 
@@ -773,7 +781,7 @@ class CoreModel:
                     self.add_report_variable(variable_spec=vs, set_event_names=set_event_names, report_name=report_name)
 
                 case Models.PMF.Cultivar:
-                    print(f"Processing a Cultivar: {model_instance}")
+
                     if 'Replacements' not in self.inspect_model('Models.Core.Folder'):
                         for i in self.inspect_model(Models.PMF.Plant, fullpath=False):
                             self.add_crop_replacements(_crop=i)
@@ -784,14 +792,16 @@ class CoreModel:
                     # editing in place could work if we were reuning the model in memory of python
                     cultivar_manager_paramter_name= kwargs.get("parameter_name", 'CultivarName')
                     cultivar_manager = kwargs.get("cultivar_manager")
+                    # the reason the parameter path is split into command and values to allow passing different values during optimization
                     if not cultivar_manager:
                         raise ValueError("Please specify a cultivar manager using key word 'cultivar_manager'")
                     if not commands or values is None:
                         raise ValueError("Both 'commands' and 'values' must be provided for Cultivar")
+                    # find replacement
+                    rep = get_or_check_model(self.Simulations, Models.Core.Folder, 'Replacements', action ='get')
+                    # now get cultivar
+                    cultvar = get_or_check_model(rep, Models.PMF.Cultivar, model_name, action ='get')
 
-                    cultvar = self._find_cultivar(model_name)
-                    if cultvar is None:
-                        raise ValueError(f"Cultivar '{model_name}' not found")
                     cultvar =ModelTools.CLONER(cultvar) # let's clone
                     params = self._cultivar_params(cultvar)
                     params[commands] = values
@@ -799,15 +809,13 @@ class CoreModel:
                     updated_commands = [f"{k}={v}" for k, v in params.items()]
                     cultvar.set_Command(updated_commands)
 
-                    rep = self._find_replacement()
                     plant = kwargs.get('plant')
                     CroP_Parent = get_or_check_model(rep, Models.PMF.Plant, plant, action='get')
                     cultvarName =f"edited_cultivar_{model_name}"
                     # mask out the current name such that is not accessed
                     current_name = cultvar.Name
                     cultvar.Name = f"p_{model_name}"
-                    checkFound = rep.FindInScope[Models.PMF.Cultivar](cultvarName)
-                    #ADD(cultvar, )
+
                     get_or_check_model(rep, Models.PMF.Cultivar, cultvarName, action ='delete')# this will delete the model if found before we add
 
                     cultvar.Name = cultvarName

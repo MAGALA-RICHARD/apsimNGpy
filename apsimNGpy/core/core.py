@@ -652,7 +652,8 @@ class CoreModel:
             # target_child = parent.FindInScope[model_type.__class__](model_type.Name)
            # target_child = get_or_check_model(parent, model_type.__class__, model_type.Name, action ='delete')
             if override:
-                get_or_check_model(parent, model_type.__class__, model_type.Name, action='delete')
+                dilit = get_or_check_model(parent, model_type.__class__, model_type.Name, action='delete')
+
 
             ModelTools.ADD(model_type, parent)
             self.save()
@@ -1071,7 +1072,7 @@ class CoreModel:
 
         return inspect_model_inputs(self, model_type, simulations, model_name)
 
-    inspect_model_params.__doc__ = inspect_model_inputs.__doc__
+    inspect_model_parameters.__doc__ = inspect_model_inputs.__doc__
     def edit_cultivar(self, *, CultivarName: str, commands: str, values: Any, **kwargs):
         """
         Edits the parameters of a given cultivar. we don't need a simulation name for this unless if you are defining it in the
@@ -2107,7 +2108,9 @@ class CoreModel:
             if s.Name == name:
                 sims.append(s)
         if len(sims) == 0:
-            logging.info(f"{simulations_names}: Not found!")
+           logger.info(f"{simulations_names}: Not found!")
+           sim_names = ",".join([i.Name for i in self.simulations])
+           raise NameError(f"{simulations_names}: Not found! \n Available simulation(s) names are/is: '{sim_names}'?")
         else:
             return sims
 

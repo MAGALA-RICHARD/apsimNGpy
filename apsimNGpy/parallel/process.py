@@ -24,7 +24,7 @@ def select_type(use_thread: bool, n_cores: int):
     return ThreadPoolExecutor(n_cores) if use_thread else ProcessPoolExecutor(n_cores)
 
 
-def custom_parallel(func, iterable: Iterable, *args, **kwargs):
+def custom_parallel(func, iterable: Iterable,  *args, **kwargs):
     """
     Run a function in parallel using threads or processes.
 
@@ -45,12 +45,17 @@ def custom_parallel(func, iterable: Iterable, *args, **kwargs):
        cores on the machine.
 
      verbose (bool): if progress should be printed on the screen, default is True
-     progress_message (str) sentence to display progress such processing weather please wait
+     progress_message (str) sentence to display progress such processing weather please wait. defaults to f"Processing multiple jobs via 'func.__name__' please wait!"
+
+     void (bool, optional): if True, it implies that the we start consuming data internally right away, recomended for methods that operates on objects without returning data,
+      such that you dont need to unzip or iterate on such returned data objects
 
     """
 
     use_thread, cpu_cores = kwargs.get('use_thread', False), kwargs.get('ncores', CORES)
     progress_message = kwargs.get('progress_message', f"Processing multiple jobs via '{func.__name__}' please wait!")
+    progress_message += ": "
+    void = kwargs.get('void', False)
     selection = select_type(use_thread=use_thread,
                             n_cores=cpu_cores)
     bar_format = f"{progress_message}{{l_bar}}{{bar}}| jobs completed: {{n_fmt}}/{{total_fmt}}| Elapsed time: {{elapsed}}"
@@ -59,19 +64,27 @@ def custom_parallel(func, iterable: Iterable, *args, **kwargs):
 
         # progress = tqdm(total=len(futures), position=0, leave=True,
         #                 bar_format=f'{progress_message} {|{bar}|}:' '{percentage:3.0f}% completed')
-        progress = tqdm(
-            total=len(futures),
-            position=0,
-            leave=True,
-            bar_format=bar_format
-            # '{l_bar}{bar}| {percentage:3.0f}% completed | Elapsed time: {elapsed} | {remaining} remaining',
-        )
+        with selection as pool:
+            futures = [pool.submit(func, i, *args) for i in iterable]
 
-        # Iterate over the futures as they complete
-        for future in as_completed(futures):
-            yield future.result()
-            progress.update(1)
-        progress.close()
+            with tqdm(
+                    total=len(futures),
+                    position=0,
+                    leave=True,
+                    bar_format=bar_format
+            ) as progress:
+
+                if not void:
+                    for future in as_completed(futures):
+                        yield future.result()
+                        progress.update(1)
+                else:
+                    for future in as_completed(futures):
+                        future.result()  # discard result, just execute
+                        progress.update(1)
+                    return None
+
+
 
 
 # _______________________________________________________________
@@ -157,7 +170,7 @@ def read_result_in_parallel(iterable_files: Iterable, ncores: int = None, use_th
     """
 
     func = kwargs.get('func', None)
-    progress_msg = 'reading data from path'
+    progress_msg = 'Reading data from path: '
     Ncores = ncores
     if Ncores:
         ncores_2use = Ncores
@@ -209,7 +222,7 @@ def download_soil_tables(iterable: Iterable, use_threads: bool = False, ncores: 
 
     """
     func = kwargs.get('func', None)
-    progress_msg = 'Downloading soil profile'
+    progress_msg = 'Downloading soil profile: '
     Ncores = ncores
     if Ncores:
         ncores_2use = Ncores
@@ -225,10 +238,10 @@ if __name__ == '__main__':
 
     lp = [(-92.70166631, 42.26139442), (-92.69581474, 42.26436962), (-92.64634469, 42.33703225)]
     gen_d = (i for i in range(100000))
-    lm = custom_parallel(fnn, range(100000), use_thread=True, ncores=4)
+    lm = custom_parallel(fnn, range(10000), use_thread=True, ncores=4)
     # lm2 = custom_parallel(fnn, gen_d, use_thread=True, ncores=10)
     # with a custom message
-    lm = custom_parallel(fnn, range(1000000), use_thread=True, ncores=4, progress_message="running function: ")
+    lm = custom_parallel(fnn, range(100000), use_thread=True, ncores=4, void=True,progress_message="running function: ")
     # simple example
 
-    ap = [i for i in lm]
+   # ap = [i for i in lm]

@@ -873,12 +873,11 @@ class CoreModel:
     @property
     def extract_simulation_name(self):
         warnings.warn(
-            'extract_simulation_name is deprecated for future versions use simulation_names or get_simulation_names')
+            'extract_simulation_name is deprecated for future versions use simulation_names or get_simulation_names', FutureWarning)
         """logger.info or extract a simulation name from the model
 
-            Parameters
-            ----------
-            simulation
+            Returns:
+            -------------
                 The name of the simulation to remove
                 
         """

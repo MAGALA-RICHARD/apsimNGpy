@@ -109,6 +109,37 @@ def run_model_externally(model: Union[Path, str], verbose: bool = False, to_csv:
                 result.kill()
 
 
+from pathlib import Path
+from typing import Union, List
+
+
+def get_matching_files(dir_path: Union[str, Path], pattern: str, recursive: bool = False) -> List[Path]:
+    """
+    Search for files matching a given pattern in the specified directory.
+
+    Args:
+        dir_path (Union[str, Path]): The directory path to search in.
+        pattern (str): The filename pattern to match (e.g., "*.apsimx").
+        recursive (bool): If True, search recursively; otherwise, search only in the top-level directory.
+
+    Returns:
+        List[Path]: A list of matching Path objects.
+
+    Raises:
+        ValueError: If no matching files are found.
+    """
+    global_path = Path(dir_path)
+    if recursive:
+        matching_files = list(global_path.rglob(pattern))
+    else:
+        matching_files = list(global_path.glob(pattern))
+
+    if not matching_files:
+        raise FileNotFoundError(f"No files found that matched pattern: {pattern} in directory: {dir_path}")
+
+    return matching_files
+
+
 def collect_csv_by_model_path(model_path) -> dict[Any, Any]:
     """Collects the data from the simulated model after run
     """
@@ -125,7 +156,6 @@ def collect_csv_by_model_path(model_path) -> dict[Any, Any]:
     else:
         report_paths = {}
     return report_paths
-
 
 def collect_csv_from_dir(dir_path, pattern, recursive=False) -> (pd.DataFrame):
     """Collects the csf=v files in a directory using a pattern, usually the pattern resembling the one of the simulations used to generate those csv files

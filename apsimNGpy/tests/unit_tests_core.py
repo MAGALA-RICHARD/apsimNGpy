@@ -211,9 +211,15 @@ class TestCoreModel(BaseTester):
 
     def test_add_model_simulation(self):
         self.test_ap_sim.add_model('Simulation', adoptive_parent='Simulations', rename='soybean_replaced',
-                        source='Soybean', override=False)
+                        source='Soybean', override=True)
         self.test_ap_sim.inspect_file()
         assert 'soybean_replaced' in self.test_ap_sim.inspect_model('Simulation', fullpath=False), 'testing adding simulations was not successful'
+    def test_edit_model(self):
+        self.test_ap_sim.edit_model(model_type='Clock', simulations = "Simulation", model_name='Clock', Start = '1900-01-01', End = '1990-01-12')
+        start = self.test_ap_sim.Start != 'unknown'
+        end = self.test_ap_sim.End != 'unknown'
+        self.assertTrue(start, 'Simulation start date was not successfully changed')
+        self.assertTrue(end, 'Simulation end date was not successfully changed')
 
     def test_edit_cultivar(self):
         """
@@ -240,6 +246,14 @@ class TestCoreModel(BaseTester):
         self.assertEqual(new_juvenile, juvenile_replacements)
         self.test_ap_sim.run()
         # self.assertGreater(juvenile_replacements, juvenile_original, msg= 'Juvenile target value was not replaced')
+    def test_inspect_model_parameters(self):
+
+        w_file = self.test_ap_sim.inspect_model_parameters(model_type='Weather', simulations='Simulation', model_name='Weather')
+        self.assertIsInstance(w_file, str, msg='Inspect weather model parameters failed, when simulation is a str')
+        # test a list of simulations
+        w_file = self.test_ap_sim.inspect_model_parameters(model_type='Weather', simulations=['Simulation'],
+                                                           model_name='Weather')
+        self.assertIsInstance(w_file, dict, msg='Inspect weather model parameters failed, when simualtion is a list')
 
 
 if __name__ == '__main__':

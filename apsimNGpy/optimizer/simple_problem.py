@@ -80,7 +80,8 @@ class Problem(ABC):
 
     def add_control_variable(self, control: Any):
         self.controls.append(control)
-
+    def add_control(self, model_type, model_name, simulation_name, variable_name):
+        self.controls.append((model_type, model_name, simulation_name, variable_name))
     def update_predictors(self, x: tuple):
         if len(self.controls) < 1:
             raise ValueError("No control variables added yet")
@@ -174,7 +175,7 @@ class Problem(ABC):
     def _freeze_data(self):
         """
         # make the data unchangeable after editing.
-        # Please note that this only works if it minimizes function has been called.
+        # Please note that this only works during execution.
         # I expect some leakages before
          """
         self.controls = tuple([i for i in self.controls])

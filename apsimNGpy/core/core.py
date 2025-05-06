@@ -2247,6 +2247,7 @@ class CoreModel:
             >>> apsim.add_factor(specification="[Sow using a variable rule].Script.Population =4 to 8 step 2", factor_name='Population')
             >>> apsim.run() # doctest: +SKIP
         """
+        # TODO fix factors either composite or not composite
         if factor_name is None:
             get_name = specification.split("=")[0].strip()
             # split again by
@@ -2365,7 +2366,7 @@ class CoreModel:
         else:
             logger.error(f"No plants of crop{CROP} found")
         return self
-    def get_model_paths(self) -> list[str]:
+    def get_model_paths(self, cultivar=False) -> list[str]:
         """
         select out a few model types to use for building the APSIM file inspections
         """
@@ -2374,7 +2375,7 @@ class CoreModel:
             data = []
             model_types = ['Models.Core.Simulation', 'Models.Soils.Soil', 'Models.PMF.Plant', 'Models.Manager',
                   'Models.Climate.Weather', 'Models.Report', 'Models.Clock', 'Models.Core.Folder',
-                  'Models.Soils.Solute', 'Models.PMF.Cultivar',
+                  'Models.Soils.Solute',
                   'Models.Soils.Swim3', 'Models.Soils.SoilCrop', 'Models.Soils.Water', 'Models.Summary',
                   'Models.Core.Zone', 'Models.Management.RotationManager',
                   'Models.Soils.CERESSoilTemperature', 'Models.Series', 'Models.Factorial.Experiment',
@@ -2383,6 +2384,8 @@ class CoreModel:
                   'Models.Sobol', 'Models.Operations', 'Models.Morris', 'Models.Fertiliser', 'Models.Core.Events',
                   'Models.Core.VariableComposite',
                   'Models.Soils.Physical', 'Models.Soils.Chemical', 'Models.Soils.Organic']
+            if cultivar:
+                model_types.append(('Models.PMF.Cultivar'))
             for i in model_types:
 
                 ans = self.inspect_model(eval(i))
@@ -2392,7 +2395,7 @@ class CoreModel:
             del Models, model_types
             return data
         return filter_out()
-    def inspect_file(self, **kwargs):
+    def inspect_file(self, cultivar=False,**kwargs):
         """
         Inspect the file by calling inspect_model() through get_model_paths.
         This method is important in inspecting the whole file and also getting the scripts paths
@@ -2435,7 +2438,7 @@ class CoreModel:
                     display_full_path=display_full_path
                 )
 
-        tree = build_tree(self.get_model_paths())
+        tree = build_tree(self.get_model_paths(cultivar=cultivar))
 
         print_tree_branches(tree)
 

@@ -1,8 +1,9 @@
 from dataclasses import dataclass
 from apsimNGpy.core.runner import run_from_dir, get_matching_files
 import pandas as pd
+import polars as pl
 from apsimNGpy.core_utils.database_utils import (read_db_table, get_db_table_names,custom_remove_file,
-                                                 clear_all_tables, save_todb)
+                                                 clear_all_tables, pl_save_todb)
 from os.path import basename
 from sqlalchemy import create_engine
 from apsimNGpy.core_utils.utils import timer
@@ -53,11 +54,12 @@ class BatchRunner:
             pattern  =self.pattern.replace('.apsimx','.csv')
             csvs = get_matching_files(self.path, pattern, self.recursive)
             if  csvs:
-                base_names = [Path(i).stem for i in csvs]
-                dfs = [pd.read_csv(c) for c in csvs if c is not None]
+                base_names = [Path(i).stem.split(".")[-1] for i in csvs]
+                print(base_names)
+                dfs = [pl.read_csv(c) for c in csvs if c is not None]
                 datas= [(k, v) for k, v in zip(base_names, dfs)]
 
-                list(custom_parallel(save_todb, datas, database, 'replace', void =True, progress_message="saving data to {}".format(database)))
+                list(custom_parallel(pl_save_todb, datas, database, 'replace', void =True, progress_message="saving data to {}".format(database)))
 
                 ...
             else:
@@ -76,15 +78,3 @@ if __name__ == '__main__':
     Batch.export_all_todb('dd')
     #Batch.edit_run_model()
 
-    def nc(N):
-        """
-        Normalize the value N on a scale from 100 to 0,
-        where N=2 gives 100 and N=29.54 gives 0.
-        """
-        N = max(2, min(N, 29.54))  # Clamp N between 2 and 29.54
-
-        return 100 * ( ((N - 2) / (29.54 - 2)))
-
-    def mass_kg(conc):
-
-        ...

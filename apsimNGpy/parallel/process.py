@@ -116,7 +116,7 @@ def run_apsimx_files_in_parallel(iterable_files: Iterable, **kwargs):
     - The choice of thread or process execution can be specified with the `use_threads` parameter.
     - By default, the function uses 50% of available CPU cores or threads if `ncores` is not provided.
     - Progress information is displayed during execution.
-    - Handle any exceptions that may occur during execution for robust processing.
+    - Handle any exceptions that may occur during execution.
     """
     # remove duplicates. because duplicates will be susceptible to race conditioning in paralell computing
     Ncores = kwargs.get('ncores')

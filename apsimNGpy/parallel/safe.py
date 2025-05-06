@@ -1,18 +1,20 @@
-from apsimNGpy.manager.soilmanager import get_surgo_soil_tables, APSimSoilProfile
-from apsimNGpy.manager.weathermanager import daymet_bylocation_nocsv
+from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganiseSoilProfile
+from apsimNGpy.manager.weathermanager import get_met_from_day_met
 from apsimNGpy.core.apsim import ApsimModel
+
 
 def initialise(model, reports):
     model = ApsimModel(model)
-    model.simulate(report_name=reports)
+    model.run(report_name=reports)
     return model.results
+
 
 def download_soil_table(x):
     try:
         cod = x
-        table = get_surgo_soil_tables(cod)
+        table = DownloadsurgoSoiltables(cod)
         th = [150, 150, 200, 200, 200, 250, 300, 300, 400, 500]
-        sp = APSimSoilProfile(table, thickness=20, thickness_values=th).cal_missingFromSurgo()
+        sp = OrganiseSoilProfile(table, thickness=20, thickness_values=th).cal_missingFromSurgo()
         return {x: sp}
     except Exception as e:
         print("Exception Type:", type(e), "has occured")
@@ -33,23 +35,21 @@ def simulator_worker(row, dictio):
     stat, end = kwargs.get('start'), kwargs.get('end')
     if kwargs.get('replace_weather', False):
         wname = model.strip('.apsimx') + '_w.met'
-        wf = daymet_bylocation_nocsv(location, start=stat, end=end, filename=wname)
+        wf = get_met_from_day_met(location, start=stat, end=end, filename=wname)
         simulator_model.replace_met_file(wf, sim_names)
 
     if kwargs.get("replace_soil", False):
-        table = get_surgo_soil_tables(location)
-        sp = APSimSoilProfile(table, thickness=20, thickness_values=th)
+        table = DownloadsurgoSoiltables(location)
+        sp = OrganiseSoilProfile(table, thickness=20, thickness_values=th)
         sp = sp.cal_missingFromSurgo()
         simulator_model.replace_downloaded_soils(sp, sim_names)
 
     if kwargs.get("mgt_practices"):
         simulator_model.update_mgt(kwargs.get('mgt_practices'), sim_names)
     try:
-        simulator_model.simulate(report_name=report)
+        simulator_model.run(report_name=report)
         return simulator_model.results
     except Exception as e:
         print(type(e))
         print('+_____________________________________\n')
         print(e)
-
-

@@ -1,0 +1,27 @@
+from apsimNGpy.core.base_data import load_default_simulations, load_default_sensitivity_model
+from apsimNGpy.core.apsim import ApsimModel
+from apsimNGpy.tests.base_test import BaseTester, set_wd
+import unittest
+class TestCoreModel(BaseTester):
+
+    def test_run(self):
+        model = ApsimModel(model ='Maize')
+        model.run()
+        self.test_ap_sim =model
+        self.assertTrue(model.ran_ok)
+        model.clean_up(db =True)
+    def test_clone_model(self):
+        model = ApsimModel(model='Maize')
+        sim_name = 'clone_test'
+        model.clone_model('Models.Core.Simulation', 'Simulation',
+                               'Models.Core.Simulations', rename=sim_name)
+        model.run()
+        self.assertTrue(model.ran_ok)
+        # inspect simulations
+        sims = model.inspect_model(model_type='Models.Core.Simulation', fullpath=False)
+        assert sim_name in sims, f'{sim_name} is not among the current simulations, implying simulation was not successsful'
+        model.clean_up(db =True)
+
+# initialize the model
+if __name__ == '__main__':
+    unittest.main()

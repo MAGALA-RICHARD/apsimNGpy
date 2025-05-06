@@ -72,7 +72,7 @@ def load_apx_model(model=None, out=None):
 
     @singledispatch
     def loader(_model):
-        raise NotImplementedError(f"Unsupported type: {type(_model)}")
+        raise NotImplementedError(f"Unsupported child: {type(_model)}")
 
     @loader.register(dict)
     def _(_model: dict):
@@ -193,7 +193,7 @@ def update_mgt(model, management, reload=True, out=None):
 
     def replace_met_file(self, weather_file, simulations=None):
         try:
-            """searched the weather node and replaces it with a new one
+            """searched the weather child and replaces it with a new one
 
             Parameters
             ----------
@@ -210,7 +210,7 @@ def update_mgt(model, management, reload=True, out=None):
                     met.FileName = weather_file
             return self
         except Exception as e:
-            print(repr(e))  # this error will be logged to the folder logs in the current working directory
+            print(repr(e))  # this error will be logged to the folder logs in the current working dir_path
             raise
 
 

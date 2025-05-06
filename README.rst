@@ -10,8 +10,10 @@ Requirements
 ***********************************************************************************
 1. Dotnet, install from https://learn.microsoft.com/en-us/dotnet/core/install/
 2. Python3
-3. APSIM Binary from https://apsim.info
-4. At least 8GB of RAM and CPU Corei7
+3. APSIM: Add the directory containing the models executable to the system's PATH or python path (to locate the required .dll files). This can be achieved in either of the following ways:
+4. Utilize the APSIM installer provided for this purpose.
+5. Build APSIM from its source code. This is comming soon
+6. Minimum; 8GM RAM, CPU Core i7
 
 .. _Installation:
 
@@ -21,209 +23,237 @@ Installation
 
 All versions are currently in development, phase and they can be installed as follows:
 
-#. Step 1:
-Register, download and install the Apsim Binary from https://apsim.info Its important to keep track
-of the location of installation of APSIM binary files. We shall shall use in step 3.
-This location of this folder will depend on the operating System.
-
-    * In windows it will be located in C:\\Program Files\APSIM{APSIM VERSION}\bin
-    e.g. C:\\Users\\vanguard/AppData/Local/Programs\\APSIM2024.5.7493.0\\bin
-
-    * In linux it usually is in /usr/local/lib/apsim/{APSIM VERSION}/bin
-    e.g. /usr/local/lib/apsim/2024.8.7571.0/bin
-
-We will need this value for later usage before running the APSIM File Successfully.
-
-#. -STEP 2:
-
-    -- Either install from PyPI
+- Method 1. install from PyPI
 
 .. code:: bash
 
     pip install apsimNGpy
 
--- Or clone the current development repository
+- Method 1. clone the current development repository
 
 .. code:: bash
 
-    git clone https://github.com/MAGALA-RICHARD/apsimNGpy.git@dev
+    git clone https://github.com/MAGALA-RICHARD/apsimNGpy.git
     cd apsimNGpy
     pip install .
 
-You could also install using pip directly from github.
+- Method 2. Use pip straight away and install from github
 
 .. code:: bash
 
-     pip install git+https://github.com/MAGALA-RICHARD/apsimNGpy.git@dev
+     pip install git+https://github.com/MAGALA-RICHARD/apsimNGpy.git
 
 
-#. - STEP 3:
-Set APSIM Binary File Path you stored in step 1
+Full documentation can be found here; https://magala-richard.github.io/apsimNGpy-documentations/index.html
 
-In the file /apsimNGpy/config.ini
- Add the following entry:
-.. code:: ini
-    [Paths]
-    APSIM_LOCATION = /usr/local/lib/apsim/2024.8.7571.0/bin
 
+GETTING STARTED
+*****************************
+
+Before using apsimNGpy, it is necessary to install APSIM. Please follow the instructions provided at the following link to complete the installation: https://www.apsim.info/download-apsim/downloads/
+for MAcOS or Linux users see: https://apsimnextgeneration.netlify.app/install/
+model documentation and tutorial are also available via; https://docs.apsim.info/
+we expect that by accepting to use apsimNGpy, you have a basic understanding of APSIM process-based model, therefore, our focus is to make sure you are able to use apsimNGpy
+
+In addition, make sure that the APSIM installation binaries folder is added to the system path.
+if you run the following code and returns None you need to do something as explained below.
+
+- 1. Use command line interface
+
+.. code-block:: bash
+
+     apsim_bin_path -s
+
+- 2. Use apsimNGpy config module
+
+.. code-block:: python
+
+   from apsimNGpy.core import config
+      print(config.get_apsim_bin_path())
+
+You can also try to check if automatic search will be successful as follows
+
+.. code-block:: bash
+
+    apsim_bin_path --auto_search
+
+The short cut
+
+.. code-block:: bash
+
+    apsim_bin_path -a
+
+
+Locating the APSIM Binaries
+***************************************************************
+By default the APSIM binaries are located automatically. The process for determining the APSIM binary path is as follows:
+
+In apsimNGpy, priority is first given to the user-supplied binary path.
+If no path is supplied, the module searches through the Python global environment
+using the os module. If that fails, it searches through other folders.
+If all approaches are exhausted and no valid path is found, a ValueError will be raised.
+
+
+Changing/setting the APSIM installation binaries path
+*********************************************************************************
+If the automatic search fails, please follow one of the steps below to resolve the issue:
+
+1. Manually configure the APSIM binary path. To do this:
+*************************************************************************************
+
+In your home folder you could look for folder named apsimNGpy_meta_info './APSIMNGpy_meta_data'
+     1. Locate the folder named `APSIMNGpy_meta_info` in your home directory (e.g., `./APSIMNGpy_meta_data`).
+     2. Open the file `apsimNGpy_config.ini` within this folder.
+     3. Modify the `apsim_location` entry to reflect your desired APSIM binary path.
+
+2. change based os.environ module
+************************************
+
+Alternatively, you can use the code at the top of your script as follows
+
+.. code-block:: python
+
+    # Search for the APSIM binary installation path and add it to os.environ as follows:
+    import os
+    os.environ['APSIM'] = r'path/to/your/apsim/binary/folder/bin'
+
+- Note:
+
+This approach may not work consistently in all scenarios, but you can try it.
+The above script line should always be placed at the beginning of your simulation script.
+However, why follow this approach when you can achieve the same result more efficiently? See the approach below:
+
+3. Use the apsimNGpy config module:
+*****************************************************************
+
+.. code-block:: python
+    
+    from apsimNGpy.config import set_apsim_bin_path
+
+    # Set the path to the APSIM binaries:
+    set_apsim_bin_path(path=r'path/to/your/apsim/binary/folder/bin')
+
+
+4. Use command line interface
+*********************************************************************
+
+After installing apsimNGpy, navigate to your terminal and run the following
+
+.. code-block:: bash
+
+    apsim_bin_path -u 'path/to/your/apsim/binary/folder/bin'
+
+Or
+
+.. code-block:: bash
+
+    apsim_bin_path --update 'path/to/your/apsim/binary/folder/bin'
+
+
+# Now that the path is set, you can import any module attached to pythonnet.
+*********************************************************************************************
+
+.. code-block:: python
+    
+    # For example, try importing the ApsimModel class:
+    from apsimNGpy.core.apsim import ApsimModel
 
 .. _Usage:
 
-USAGE
-********************************************************************************
+The above code is also applicable for running different versions of APSIM models.
+The `set_apsim_bin_path` function can be called once and retained unless you uninstall `apsimNGpy`
+or the APSIM application itself. This implies that you can switch between apsim versions easily if you have more than one versions installed on your computer
 
-The modules are configured to automatically detect and load dotnet configurations.
+Examples
+********
 
-.. code:: python
-    from apsimNGpy.core.base_data import load_default_simulations
-    crop_model = load_default_simulations(crop='soybean')
-    # default supported crops include, soybean, maize, wheat.
-    # initialize the simulation
-    result = crop_model.simulate()
-    print(results)
-    print(model_simulation.simulation_names)
+This example demonstrates how to use `apsimNGpy` to load a default simulation, run it, retrieve results, and visualize the output.
 
-After the simulation runs, results are stored in the apsim.results attribute as pandas DataFrames.
-These results can be saved to a CSV file or printed to the console.
-.. code:: python
-    # Retrieve and save the results.
-    data_frame = crop_model.results
-    data_frame.to_csv('my_sample_result.csv')
-    print(data_frame.results
+.. code-block:: python
 
-You can retrieve the names of the simulations from the APSIM model and examine the management
-modules ued in the specified simulations.
-
-.. code:: python
-    sim_name = crop_model.simulation_names  # Retrieve simulation names
-    crop_model.examine_management_info(simulations=sim_name)
-
-Manipulating Simulation Parameters
-*************************************************************************************
-You can manipulate (change) simulation parameters i.e date range, management decisions,
-location.
-
-To change simulation dates call change_simulation_dates with a start_date and end_date
-..code:: python
-    ...
-    ...
-    sim = load_default_simulations(crop='MyCrop')
-    sim.change_simulation_dates(start_date='01/01/2018', end_date='12/31/2020')
-    ...
-    sim.simulate()
-
-To change simulation management decisions
-..code:: python
-    ...
-    ...
-    sim = load_default_simulations(crop='AvailableCrop')
-    rotation_decision = {'Name': "Simple Rotation", "Crops": 'Maize, Wheat, Soybean'}
-    sim.update_mgt(management=rotation_decision)
-    # you can view management decisions by calling
-    sim.examine_management_info()
-
-You can also change/populate new weather data into the simulation
-..code:: python
-    from apsimNGpy.core.weather import daymet_bylocation_nocsv
-    lonlat = -93.08, 42.014
-    start_year, end_year = 2018, 2020
-    wf = daymet_bylocation_nocsv(lonlat, start_year, end_year, filename='samplemet.met')
-    sim = load_default_simulation(crop='mycrop')
-    # to change weather data.
-    sim.replace_met_file(weather_file=wf)
-    mis = sim.show_met_file_in_simulation()  # to see the weather information
-
-Evaluating Predicted Variables
-***************************************************************************************
-You can also validate your simulations against measured data.
-
-..code:: python
-    from apsimNGpy.validation.evaluator import validate
-    import pandas as pd
-    ...
-    ...
-    predicted_results = sim.results
-    actual_results = pd.read_csv(actual_results.csv)
-    measured = actual_results['Measured']
-    predicted = predicted_results['MaizeR'].Yield  # Note here Maize{R}
-    val = validate(measured, predicted)
-
-    # Both variables should be the same length, and here we are assuming that they are sorted in
-    # the corresponding order
-    # There are two options:
-    # 1. Evaluate all
-    metrics = val.evaluate_all(verbose=True)
-    # Setting verbose=True prints all the results on the go; otherwise, a dictionary is returned
-    # with the value for each metric
-
-    # 2. Select or pass your desired metric
-    RMSE = val.evaluate("RMSE")
-    print(RMSE)
-
-# If you want to see the available metrics, use the code below
-available_metrics = metrics.keys()
-print(available_metrics)
-# Then select your choice from the list
-
-
-
-Required Dependencies:
-*****************************
-
-- numpy
-- pandas
-- pythonnet
-- xmltodict
-- tqdm
-- requests
--
-
-Please note that apsimNGpy is tested on Python 3. We are not aware of its performance in Python 2 because it utilizes some of the new libraries like pathlib and f-strings.
-
-Usage
-
-*********************************************************************************
-
-.. code:: python
-
+    # Import necessary modules
     import apsimNGpy
-    from apsimNGpy.core.base_data import LoadExampleFiles
-    from apsimNGpy.core.apsim  import ApsimModel as SoilModel
+    from apsimNGpy.core.base_data import load_default_simulations
+    from apsimNGpy.core.apsim import ApsimModel as SoilModel
     from pathlib import Path
     import os
     from apsimNGpy.validation.visual import plot_data
-    cwd = Path.cwd().home() # sending this to your home folder
-    wd = cwd.joinpath("apsimNGpy_demo")
-    if not wd.exists():
-       os.mkdir(wd)
-    # change directory
-    os.chdir(wd)
-    # Create the data
-    data = LoadExampleFiles(wd)
-    # Get maize model
-    maize = data.get_maize
-    # Alternatively, you can laod from the factory default modules 
-    soybean_model = load_default_simulations(crop = 'soybean') # don't worry it is not case senstive
-    #the load_default_simulation returns a prelloaded model ready to run the existing module
 
-    # Initialize the simulation methods
-    apsim = SoilModel(maize, copy=True)
+The above code imports the necessary modules for running APSIM simulations. This includes `apsimNGpy` modules for loading default simulations and managing results, as well as standard Python libraries for file handling and visualization.
 
-    # Run the file
-    apsim.run() # use run to print time taken to excute or run the model 
-    # print the results
-    print(apsim.results) # prints all data frames in the storage domain subset usign report names
-    # check the manager modules in the apsim simulation file
-    # first get the simualtion names
-    sim_name = apsim.simulation_names
+
+.. code-block:: python
+
+    # Load the default simulation
+    soybean_model = load_default_simulations(crop='soybean')  # Case-insensitive crop specification
+
+The `load_default_simulations` function loads a default APSIM simulation for the specified crop. In this example, the crop is set to soybean, but you can specify other crops as needed.
+
+.. code:: python
+
+    # Load the simulation path without initializing the object
+    soybean_path_model = load_default_simulations(crop='soybean', simulation_object=False)
+
+If you prefer not to initialize the simulation object immediately, you can load only the simulation path by setting `simulation_object=False`.
+
+.. code-block:: python
+
+    # Initialize the APSIM model with the simulation file path
+    apsim = SoilModel(soybean_path_model)
+
+This code initializes the APSIM model using the previously loaded simulation file path.
+
+.. code-block:: python
+
+    # Run the simulation
+    apsim.run(report_name='Report')
+
+The `run` method executes the simulation. The `report_name` parameter specifies which data table from the simulation will be used for results.
+
+.. note:
+   report_name accepts a list of simulation data tables and hence can return a concatenated pandas data frame for all the data tables
+.. code-block:: python
+
+    # Retrieve and save the results
+    df = apsim.results
+    df.to_csv('apsim_df_res.csv')  # Save the results to a CSV file
+    print(apsim.results)  # Print all DataFrames in the storage domain
+
+After the simulation runs, results are stored in the `apsim.results` attribute as pandas DataFrames. Please see note above. These results can be saved to a CSV file or printed to the console.
+
+The code below retrieves the names of simulations from the APSIM model and examines the management modules used in the specified simulations.
+
+.. code-block:: python
+
+    # Examine management modules in the simulation
+    sim_name = apsim.simulation_names  # Retrieve simulation names
     apsim.examine_management_info(simulations=sim_name)
-    # show current simulation in apsim GUI
-    # plot the data
-    res = apsim.results['MaizeR']
-    plot_data(res.Year, res.Yield, xlabel='Years', ylabel=" Maize Yield (kg/ha)")
-    
-A graph should be able to appear like the ones below. Note that plot_data function just wraps matplotlib plot function
-for quick visualisation
+
+
+You can preview the current simulation in the APSIM graphical user interface (GUI) using the `preview_simulation` method.
+
+
+.. code-block:: python
+
+    # Preview the current simulation in the APSIM GUI
+    apsim.preview_simulation()
+
+.. note::
+   apsimNGpy clones a every simulation file before passing it it dotnet runner, however, when you open it in GUI, take note of the version it will be difficult to re-open
+   it in the lower versions after opening it in the higher versions of apsim
+
+Visualise the results. please note that python provide very many plotting libraries below is just a basic description of your results
+
+.. code-block:: python
+
+    # Visualize the simulation results
+    res = apsim.results['MaizeR']  # Replace with the appropriate report name
+    plot_data(df['Clock.Today'], df.Yield, xlabel='Date', ylabel='Soybean Yield (kg/ha)')
+
+Finally, the `plot_data` function is used to visualize the simulation results. Replace 'df['Clock.Today']' and `df.Yield` with the appropriate report name and column from your simulation results.
+
+A graph similar to the example below should appear
+
 
 Congratulations you have successfully used apsimNGpy package
 *********************************************************************************
@@ -232,10 +262,10 @@ Congratulations you have successfully used apsimNGpy package
 
 Change APSIM simulation dates 
 *********************************************************************************
-.. code:: python
+.. code-block:: python
 
     import apsimNGpy
-    from apsimNGpy.core.base_data import LoadExampleFiles
+    from apsimNGpy.core.base_data import load_default_simulations
     from apsimNGpy.core.apsim  import ApsimModel as SoilModel
     from pathlib import Path
     import os
@@ -246,35 +276,30 @@ Change APSIM simulation dates
       os.mkdir(wd)
     # change directory
     os.chdir(wd)
-    # Create the data
-    data = LoadExampleFiles(wd)
-
     # Get maize model
-    maize = data.get_maize
+    maize_model = load_default_simulations(crop = 'maize')
 
-    # Initialize the simulation methods
-    apsim = SoilModel(maize, copy=True)
-    apsim.change_simulation_dates(start_date='01/01/1998', end_date='12/31/2010')
+    maize_model.change_simulation_dates(start_date='01/01/1998', end_date='12/31/2010')
 
 Change  APSIM model management decisions
 *********************************************************************************
-.. code:: python
+.. code-block:: python
 
     # First, examine the manager scripts in the simulation node
     apsim.examine_management_info()
     # now create dictionary holding the parameters. the key to this is that the name of the script manage must be
     passed in the dictionary.
 
-    # in this node we have a script named the Simple Rotation,we want to change the rotation to maybe Maize, Wheat or
+    # in this node we if have a script named the Simple Rotation,we want to change the rotation to maybe Maize, Wheat or
     something else
     rotation  = {'Name': "Simple Rotation", "Crops": 'Maize, Wheat, Soybean'}, # the crops must be seperated my commas
-    apsim.update_mgt(management = rotation, reload=True)
-    # now you cans see we passed rotation as aturple. That means you can add other scripts as your needs suggest. They will all be changed at the 
-    same time
+    apsim.update_mgt(management = rotation)
+    # now you cans see we passed rotation as a tuple. That means you can add other scripts as your needs suggest. They will all be changed at the
+    #same time
 
 Populating the APSIM model with new weather data
 *********************************************************************************
-.. code:: python
+.. code-block:: python
 
     from apsimNGpy.core.weather import daymet_bylocation_nocsv
     lonlat = -93.08, 42.014
@@ -284,9 +309,9 @@ Populating the APSIM model with new weather data
     mis = apsim.show_met_file_in_simulation()
     print(mis)
     # change
-    apsim.replace_met_file(weather_file=wf)
+    maize_model.replace_met_file(weather_file=wf)
     # check again if you want to
-    mis = apsim.show_met_file_in_simulation()
+    mis = maize_model.show_met_file_in_simulation()
     print(mis)
 
 Evaluate Predicted Variables
@@ -294,7 +319,7 @@ Evaluate Predicted Variables
 The apsimNGpy Python package provides a convenient way to validate model simulations against measured data. Below 
 is a step-by-step guide on how to use the validation.evaluator module from apsimNGpy.
 
-.. code:: python
+.. code-block:: python
 
     # Start by importing the required libraries
     from apsimNGpy.validation.evaluator import validate
@@ -329,17 +354,69 @@ is a step-by-step guide on how to use the validation.evaluator module from apsim
     print(available_metrics)
     # Then select your choice from the list
 
+Run factorial experiments faster and efficiently
+*********************************************************************************
+
+The apsimNGpy Python package provides a convenient way to run factorial experiments as follows:
+
+.. code-block:: python
+
+    from apsimNGpy.core import base_data
+    apsim = base_data.load_default_simulations(crop='Maize')
+    apsim.create_experiment(permutation=True)
+    apsim.add_factor(specification="[Fertilise at sowing].Script.Amount = 0 to 200 step 20", factor_name='Nitrogen')
+    # Use categories
+    apsim.add_factor(specification="[Sow using a variable rule].Script.Population = 4, 6, 8, 10", factor_name='Population')
+    apsim.run()
+
+It is possible to specify factors related to crop cultivars; all you need is to add a replacement folder and add the crop as a replacement as follows:
+
+.. code-block:: python
+
+    apsim.add_crop_replacements(_crop='Maize')  # Assumes that maize is already present in the simulation
+    # Add factor and name it RUE
+    apsim.add_factor(specification='[Maize].Leaf.Photosynthesis.RUE.FixedValue = 1.0, 1.23, 4.3', factor_name='RUE')
+    apsim.run() # assumes that the database table Name is the default of the Report
+    # results can be retrieved in the same way
+    df = apsim.results
+    
+Example output:
+
+.. code-block:: text
+
+    SimulationName  SimulationID  ...     Yield   Zone
+    0     ExperimentNitrogen0Population10RUE1.0             8  ...  1379.137  Field
+    1     ExperimentNitrogen0Population10RUE1.0             8  ...  1084.340  Field
+    2     ExperimentNitrogen0Population10RUE1.0             8  ...     0.000  Field
+    3     ExperimentNitrogen0Population10RUE1.0             8  ...   797.680  Field
+    4     ExperimentNitrogen0Population10RUE1.0             8  ...  3682.210  Field
+                                         ...           ...  ...       ...    ...
+    1645  ExperimentNitrogen80Population7RUE4.3           148  ...  4538.774  Field
+    1646  ExperimentNitrogen80Population7RUE4.3           148  ...  7549.985  Field
+    1647  ExperimentNitrogen80Population7RUE4.3           148  ...  4535.009  Field
+    1648  ExperimentNitrogen80Population7RUE4.3           148  ...  8798.415  Field
+    1649  ExperimentNitrogen80Population7RUE4.3           148  ...  3236.126  Field
+    [1650 rows x 20 columns]
+
+
+Access the live documentation for the apsimNGpy package here; https://magala-richard.github.io/apsimNGpy-documentations/index.html
+
+Access the live documentation for the apsimNGpy package API here: https://magala-richard.github.io/apsimNGpy-documentations/api.html
+
 How to Contribute to apsimNGpy
 *********************************************************************************
 We welcome contributions from the community, whether they are bug fixes, enhancements, documentation updates, or new features. Here's how you can contribute to ``apsimNGpy``:
 
 Reporting Issues
 ----------------
+.. note::
+  apsimNGpy is developed and maintained by a dedicated team of volunteers. We kindly ask that you adhere to our community standards when engaging with the project. Please maintain a respectful tone when reporting issues or interacting with community members.
 
 If you find a bug or have a suggestion for improving ``apsimNGpy``, please first check the `Issue Tracker <https://github.com/MAGALA-RICHARD/apsimNGpy/issues>`_ to see if it has already been reported. If it hasn't, feel free to submit a new issue. Please provide as much detail as possible, including steps to reproduce the issue, the expected outcome, and the actual outcome.
 
 Contributing Code
 -----------------
+
 
 We accept code contributions via Pull Requests (PRs). Here are the steps to contribute:
 
@@ -415,3 +492,38 @@ We would also like to express our sincere thanks to the APSIM Initiative. Their 
 Our project stands on the shoulders of these partnerships and support systems, and we are deeply thankful for their contribution to advancing agricultural research and development. Please not that that this library is designed as a bridge to APSIM software, and we hope that by using this library, you have the appropriate APSIM license to do so whether free or commercial.
 
 Lastly but not least, ApsimNGpy is not created in isolation but draws inspiration from apsimx, an R package (https://cran.r-project.org/web/packages/apsimx/vignettes/apsimx.html). We acknowledge and appreciate the writers and contributors of apsimx for their foundational work. ApsimNGpy is designed to complement apsimx by offering similar functionalities and capabilities in the Python ecosystem.
+
+
+# Changelog
+******************************************************************************************************
+
+The earlier versions of apsimNGpy were too experimental with a lot of bugs. Therefore tracking started with version 0..29
+## [0.29.0] - 2025-01-15
+
+### Added
+************************************************************************************
+
+- New logging feature for better debug capability.
+- command line interface to run models faster using the command and crop module
+- command line interface to change the apsim binary path using the apsim_bin_path module
+- more detailed installation documentation
+
+## Fixed
+**************************************************************************************
+
+- config module to run on all operating systems
+- import of load_default simulations
+
+
+## [0.3.0] - 2025-01-20
+## Fixed
+**************************************************************************************
+
+- fixed package to run all latest versions
+- handle multiple reports tables in run method, return a concat of the different  data frame
+
+## Added
+*****************************************************************************
+
+- APSIMNG.run now return pandas data frame consistently
+- files named by default are tagged by the corresponding APSIM installed version

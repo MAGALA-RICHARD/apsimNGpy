@@ -1,12 +1,15 @@
+import os
+
 from setuptools import setup, find_packages
 
-VERSION = '0.0.27.6b'
-DESCRIPTION = 'apsimx next generation package interface'
-LONG_DESCRIPTION = 'run, edit, download soils and weather and interact with the apsimx file'
+VERSION = '0.35'
 
+DESCRIPTION = 'APSIM next generation package interface'
+LONG_DESCRIPTION = 'run, edit, download soils and weather and interact with the apsimx file'
 
 with open('README.rst') as readme_file:
     readme = readme_file.read()
+
 setup(
     name='apsimNGpy',
     version=VERSION,
@@ -18,8 +21,17 @@ setup(
     long_description=readme,
     packages=find_packages(),
     include_package_data=True,
+    entry_points={
+        'console_scripts': [
+            'apsim=apsimNGpy.cli.cli:main_entry_point',
+            'bp=apsimNGpy.cli.set_bin:fast',
+            'client=apsimNGpy.cli.client:app',
+            'apsim_bin_path=apsimNGpy.cli.set_ups:apsim_bin_path',
+        ],
+    },
+
     package_data={'': ['./apsimNGpy/data/*.apsimx',
-                       './apsimNGpy/data/WeatherFiles/*.met',
+                       './apsimNGpy/*.met',
                        "./apsimNGpy/experiment/*.py",
                        './apsimNGpy/examples/*.png',
                        './apsimNGpy/*.ini', "./*.ini"]},
@@ -47,14 +59,10 @@ setup(
         'joblib >= 1.3.2',
         'sqlalchemy >=2.0',
         'matplotlib',
-        'tenacity'
+        'psutil >=6.0.0',
+        'tenacity',
+        'typer',
+        'summarytools>=0.3.0'
 
-    ],
-
-    entry_points={
-        'console_scripts': [
-            'apsim_python_shell = apsimNGpy.cli.shell:run_shell'
-        ]
-    }
+    ]
 )
-

@@ -1,384 +1,166 @@
-import os.path
-from importlib.resources import files
-from os.path import join, realpath, dirname, exists, split, basename
-from os import listdir, walk, getcwd, mkdir
-from apsimNGpy.config import load_python_net
-import shutil
-from apsimNGpy import data as DATA
-from apsimNGpy.core.apsim import ApsimModel as SoilModel
-from pathlib import Path
+import glob
+import logging
 import os
-
+import os.path
+import shutil
+from os.path import join, realpath
+from pathlib import Path
+import uuid
+from apsimNGpy.core.apsim import ApsimModel as SoilModel
+from apsimNGpy.core.config import get_apsim_bin_path, apsim_version
+from apsimNGpy.settings import logger
+from apsimNGpy.settings import SCRATCH
 WEATHER_CO = 'NewMetrrr.met'
 # DATA = 'data' after tests, this did not work
 WEA = 'Iem_IA0200.met'
 APSIM_DATA = 'apsim'
 WEATHER = 'weather'
+from functools import lru_cache
+
+BIN_path = get_apsim_bin_path()
+# removed all other functions loading apsim files from the local repository only default apsim simulations
+EXAMPLES_DATA = example_files_path = BIN_path.replace('bin', 'Examples')
+version_number = apsim_version()
+useVn = version_number.replace(".", "_")
+
+BIN = get_apsim_bin_path()
 
 
-def _weather(path, WEATHER_CON=WEATHER_CO):
-    resource_directory = files(DATA)
-    data_file_path = resource_directory / WEATHER / WEATHER_CON
-    nameout = join(path, WEATHER_CON)
-    contents = data_file_path.read_text()
-    with open(nameout, "w+") as openfile:
-        openfile.write(contents)
-    return nameout
-
-
-def _get_maize_example(file_path):
-    resource_directory = files(DATA)
-    json_file_path = resource_directory / APSIM_DATA / 'corn_base.apsimx'
-    contents = json_file_path.read_text()
-    nameout = join(file_path, 'corn_base.apsimx')
-    with open(nameout, "w+") as openfile:
-        openfile.write(contents)
-    return nameout
-
-
-def _get_maize(file_path):
-    resource_directory = files(DATA)
-    json_file_path = resource_directory / APSIM_DATA / 'clone.apsimx'
-    contents = json_file_path.read_text()
-    name_out = join(file_path, 'clone.apsimx')
-    with open(name_out, "w+") as openfile:
-        openfile.write(contents)
-    return name_out
-
-
-def _get_maize_no_till(file_path):
-    resource_directory = files(DATA)
-    json_file_path = resource_directory / APSIM_DATA / 'maize_nt.apsimx'
-    contents = json_file_path.read_text()
-    nameout = join(file_path, 'maize_nt.apsimx')
-    with open(nameout, "w+") as openfile:
-        openfile.write(contents)
-    return nameout
-
-
-def _get_maize_NF_experiment(file_path):
+def __get_example(crop, path=None, simulations_object=True, **kwargs):
     """
-    copies the apsimx data from 'EXPERIMENT.apsimx' file
-    returns the path
-    """
-    resource_directory = files(DATA)
-    json_file_path = resource_directory / APSIM_DATA / 'EXPERIMENT.apsimx'
-    contents = json_file_path.read_text()
-    nameout = join(file_path, 'EXPERIMENT.apsimx')
-    with open(nameout, "w+") as openfile:
-        openfile.write(contents)
-    return nameout
+    Get an APSIM example file set_wd for a specific crop model.
 
-
-def _get_maize_NF_experiment_NT(file_path):
-    resource_directory = files(DATA)
-    json_file_path = resource_directory / APSIM_DATA / 'EXPERIMENT_NT.apsimx'
-    contents = json_file_path.read_text()
-    nameout = join(file_path, 'EXPERIMENT_NT.apsimx')
-    with open(nameout, "w+") as openfile:
-        openfile.write(contents)
-    return nameout
-
-
-def _get_SWIM(file_path):
-    resource_directory = files(DATA)
-    json_file_path = resource_directory / APSIM_DATA / 'SWIM.apsimx'
-    contents = json_file_path.read_text()
-    nameout = join(file_path, 'SWIM.apsimx')
-    with open(nameout, "w+") as openfile:
-        openfile.write(contents)
-    return nameout
-
-
-def _clean_up(path):
-    Path(f"{path}.db").unlink(missing_ok=True)
-    Path(f"{path}.db-shm").unlink(missing_ok=True)
-    Path(f"{path}.db-wal").unlink(missing_ok=True)
-    return path
-
-
-def load_in_memory(out, met_file=None):
-    """useful for spawning many simulation files"""
-    if met_file is None:
-        path = os.path.realpath(out)
-        w_out = os.path.dirname(path)
-        mPath = _weather(w_out, WEATHER_CON=WEA)
-    else:
-        mPath = met_file
-    # create a temporal file
-    memo = SoilModel(model=None, out_path=out)
-    memo.met = mPath
-    memo.change_met()
-    return memo
-
-
-class LoadExampleFiles:
-    def __init__(self, path=None):
-        """
-        LoadExampleFiles constructor.
-
-        Args:
-        path (str): The path where default example files will be copied to.
-
-        Raises:
-        NameError: If the specified path does not exist.
-        """
-        self.weather_example = None
-        if path is None:
-            self.path = os.getcwd()
-        else:
-            self.path = path
-
-    @property
-    def get_maize_with_cover_crop(self):
-        """
-        Get the example data for maize with a cover crop.
-
-        Returns:
-        path (str): The example data for maize with a cover crop.
-                """
-        self.weather_example = _weather(self.path)
-        return _clean_up(_get_maize_example(self.path))
-
-    @property
-    def get_experiment_nitrogen_residue(self):
-        """
-        Get the example data for an experiment involving nitrogen residue.
-
-        Returns:
-        path (str): The example data for the nitrogen residue experiment.
-        """
-        self.weather_example = _weather(self.path)
-        return _clean_up(_get_maize_NF_experiment(self.path))
-
-    @property
-    def get_get_experiment_nitrogen_residue_NT(self):
-        """
-        Get the example data for an experiment involving nitrogen residue with no-till.
-
-        Returns:
-        path (str): The example data for the nitrogen residue experiment with no-till.
-        """
-        self.weather_example = _weather(self.path)
-        return _clean_up(_get_maize_NF_experiment_NT(self.path))
-
-    @property
-    def get_swim(self):
-        """
-        Get the example data for the SWIM model.
-
-        Returns:
-        path (str): The example data for the SWIM model.
-        """
-        self.weather_example = _weather(self.path)
-        return _clean_up(_get_SWIM(self.path))
-
-    def load_in_memory(self, out, met_file=None, **kwargs):
-
-        if met_file is None:
-            path = realpath(out)
-            w_out = dirname(path)
-            wf = _weather(w_out, WEATHER_CON=WEA)
-        else:
-            wf = met_file
-        memo_model = SoilModel(model=None, out_path=out)
-        memo_model.met = wf
-        memo_model.change_met()
-        self.weather_example = wf
-        return memo_model
-
-    @property
-    def get_maize(self):
-        """
-        Get the example data for the maize model.
-
-        Returns:
-        path (str): The example data for the maize model.
-        """
-        self.weather_example = _weather(self.path)
-        return _clean_up(_get_maize(self.path))
-
-    @property
-    def get_maize_no_till(self):
-        """
-        Get the example data for the maize model with no-till.
-
-        Returns:
-        path (str): The example data for the maize model with no-till.
-        """
-        self.weather_example = _weather(self.path)
-        return _clean_up(_get_maize_no_till(self.path))
-
-    @property
-    def get_maize_model(self):
-        """
-        Get a SoilModel instance for the maize model.
-
-        Returns: SoilModel: An instance of the SoilModel class for the maize model. Great for optimisation,
-        where you wat a model always in memory to reducing laoding overload
-        """
-        return SoilModel(self.get_maize)
-
-    @property
-    def get_maize_model_no_till(self):
-        """
-        Get a SoilModel instance for the maize model with no-till.
-
-        Returns: SoilModel: An instance of the SoilModel class for the maize model with no-till. Great for
-        optimisation, where you wat a model always in memory to reducing laoding overload
-        """
-        return SoilModel(self.get_maize_no_till)
-
-
-from ..import settings
-
-
-def read_examples_dir():
-    from apsimNGpy.config import get_apsim_binary_path
-    apsim_path = get_apsim_binary_path()
-    if not apsim_path:
-        apsim_path = os.getenv('APSIM_BIN_LOCATION')
-
-    examples_dir = apsim_path.replace('bin', 'Examples')
-    all_files = os.listdir(examples_dir)
-    example_files = {}
-    for file_path in all_files:
-        if file_path.endswith(".apsimx"):
-            name, ext = file_path.split(".")
-            example_files[name] = os.path.join(examples_dir, file_path)
-    return example_files
-
-
-class __DetectApsimExamples:
-    """
-    TODO delete this class. It is enough to write a single function get_example.
-    """
-    def __init__(self, copy_path: str = None):
-        self.all = []
-        self.copy_path = copy_path
-        examples_files = read_examples_dir()
-        self.examples_files = examples_files
-        for name, file in examples_files.items():
-            setattr(self, name, name)
-            self.all.append(name)
-
-    def get_example(self, crop, path=None, simulations_object: bool = True):
-        """
-        Get an APSIM example file path for a specific crop model.
-
-        This function copies the APSIM example file for the specified crop model to the target path,
-        creates a SoilModel instance from the copied file, replaces its weather file with the
-        corresponding weather file, and returns the SoilModel instance.
-
-        Args:
-        crop (str): The name of the crop model for which to retrieve the APSIM example.
-
-        Returns: SoilModel: An instance of the SoilModel class representing the APSIM example for the specified crop
-        model. the path of this model will be your current working directory
-
-        Raises:
-        OSError: If there are issues with copying or replacing files.
-        """
-        if not path:
-            self.copy_path = join(settings.BASE_DIR, 'data/copy')
-            if not os.path.exists(self.copy_path):
-                os.mkdir(self.copy_path)
-        else:
-            self.copy_path = path
-        path = join(self.copy_path, crop) + '.apsimx'
-        cp = shutil.copy(self.examples_files[crop], path)
-        if not simulations_object:
-            return cp
-        aPSim = SoilModel(cp)
-        weather_files = os.path.basename(aPSim.show_met_file_in_simulation())
-        APSIM_BIN_LOC = os.environ.get('APSIM_BIN_LOCATION')
-        APSIM_BASE = os.path.dirname(APSIM_BIN_LOC)
-
-        weather_path = os.path.join(APSIM_BASE, "Examples/WeatherFiles")
-        wp = os.path.join(weather_path, weather_files)
-        aPSim.replace_met_file(weather_file=wp)
-        return aPSim
-
-    def get_all(self):
-        """
-            This return all files from APSIM default examples in the example folder. But for what?
-        """
-        return [self.get_example(i) for i in self.all]
-
-
-def __get_example(crop, path=None, simulations_object=True):
-    """
-    Get an APSIM example file path for a specific crop model.
-
-    This function copies the APSIM example file for the specified crop model to the target path,
+    This function copies the APSIM example file for the specified crop model to the target set_wd,
     creates a SoilModel instance from the copied file, replaces its weather file with the
     corresponding weather file, and returns the SoilModel instance.
 
     Args:
     crop (str): The name of the crop model for which to retrieve the APSIM example.
-    path (str, optional): The target path where the example file will be copied. Defaults to the current working directory.
-    simulations_object (bool): Flag indicating whether to return a SoilModel instance or just the copied file path.
+    set_wd (str, optional): The target set_wd where the example file will be copied. Defaults to the current working dir_path.
+    simulations_object (bool): Flag indicating whether to return a SoilModel instance or just the copied file set_wd.
 
     Returns:
     SoilModel or str: An instance of the SoilModel class representing the APSIM example for the specified crop model
-                      or the path to the copied file if `simulations_object` is False.
+                      or the set_wd to the copied file if `simulations_object` is False.
 
     Raises:
     OSError: If there are issues with copying or replacing files.
     """
+
     if not path:
-        copy_path = os.getcwd()
+        copy_path = Path(os.getcwd())
     else:
-        copy_path = path
 
-    target_path = join(copy_path, crop) + '.apsimx'
-    examples_files = read_examples_dir()
-    copied_file = shutil.copy(examples_files[crop], target_path)
+        copy_path = Path(path)
 
-    if not simulations_object:
-        return copied_file
+    target_path = copy_path / f"temp_{uuid.uuid1()}_{crop}.apsimx"
+    target_location = glob.glob(
+        f"{EXAMPLES_DATA}*/{crop}.apsimx")  # no need to capitalize only correct spelling is required
+    # unzip
 
-    aPSim = SoilModel(copied_file)
-    return aPSim
+    if target_location:
+        file_path = str(target_location[0])
+        copied_file = shutil.copy2(file_path, target_path)
+
+        if not simulations_object:
+            return copied_file
+
+        aPSim = SoilModel(model =file_path, out_path=target_path, **kwargs)
+
+        return aPSim
+    else:
+        raise ValueError(f"No crop named:' '{crop}' found at '{example_files_path}'")
 
 
-def get_all_examples():
+def load_default_simulations(crop: str = "Maize", set_wd: [str, Path] = None,
+                             simulations_object: bool = True, **kwargs) :
     """
-    Retrieve all APSIM example files available in the example folder.
+    Load default simulation model from the aPSim folder.
 
-    Returns:
-    list: A list of SoilModel instances or file paths for all crop examples.
+    :param crop: Crop to load (e.g., "Maize"). Not case-sensitive. defaults to maize
+    :param set_wd: Working directory to which the model should be copied.
+    :param simulations_object: If True, returns an APSIMNGpy.core simulation object;
+                               if False, returns the path to the simulation file.
+    :return: An APSIMNGpy.core simulation object or the file path (str or Path) if simulation_object is False
+
+    Examples:
+        >>> # Load the CoreModel object directly
+        >>> model = load_default_simulations('Maize', simulations_object=True)
+        >>> # Run the model
+        >>> model.run()
+        >>> # Collect and print the results
+        >>> df = model.results
+        >>> print(df)
+             SimulationName  SimulationID  CheckpointID  ... Maize.Total.Wt     Yield   Zone
+        0     Simulation             1             1  ...       1728.427  8469.616  Field
+        1     Simulation             1             1  ...        920.854  4668.505  Field
+        2     Simulation             1             1  ...        204.118   555.047  Field
+        3     Simulation             1             1  ...        869.180  3504.000  Field
+        4     Simulation             1             1  ...       1665.475  7820.075  Field
+        5     Simulation             1             1  ...       2124.740  8823.517  Field
+        6     Simulation             1             1  ...       1235.469  3587.101  Field
+        7     Simulation             1             1  ...        951.808  2939.152  Field
+        8     Simulation             1             1  ...       1986.968  8379.435  Field
+        9     Simulation             1             1  ...       1689.966  7370.301  Field
+        [10 rows x 16 columns]
+
+        # Return only the set_wd
+        >>> model = load_default_simulations(crop='Maize', simulations_object=False)
+        >>> print(isinstance(model, (str, Path)))
+        True
+        @param experiment:
     """
-    all_examples = list(examples_files.keys())
-    return [__get_example(crop) for crop in all_examples]
+    # capitalize() no longer needed glob regex just matches crop if spelled correctly
+    return __get_example(crop, set_wd, simulations_object, **kwargs)
 
 
-def load_default_simulations(crop: str, path: [str, Path] = None,
-                             simulations_object:bool = True):
+def load_default_sensitivity_model(method: str, set_wd: str = None, simulations_object: bool = True):
     """
-    Load default simulation model from aPSim folder
-    :param crop: string of the crop to load e.g. Maize, not case-sensitive
-    :param path: string of the path to copy the model
-    :param simulations_object: bool to specify whether to return apsimNGp.core simulation object defaults to True
-    :return: apsimNGpy.core.APSIMNG simulation objects
-    >>># Example
+     Load default simulation model from aPSim folder
+    :@param method: string of the sentitivity child to load e.g. "Morris" or Sobol, not case-sensitive
+    :@param set_wd: string of the set_wd to copy the model
+    :@param simulations_object: bool to specify whether to return apsimNGp.core simulation object defaults to True
+    :@return: apsimNGpy.core.CoreModel simulation objects
+     Example
     # load apsimNG object directly
-    >>> model = load_default_simulations('Maize', simulations_object=True)
-    # try running
-    >>> model.run(report_name='Report', get_dict=True)
-    # collect the results
-    >>> model.results.get('Report')
-    # just return the path
-    >>> model =load_default_simulations('Maize', simulations_object=False)
+    >>> morris_model = load_default_sensitivity_model(method = 'Morris', simulations_object=True)
 
+    # >>> morris_model.run()
 
     """
-    return __get_example(crop.capitalize(), path, simulations_object)
+    dir_path = os.path.join(EXAMPLES_DATA, 'Sensitivity')
+    if not set_wd:
+        copy_path = Path(os.getcwd())
+    else:
+        copy_path = set_wd
+    target_location = glob.glob(
+        f"{dir_path}*/{method}.apsimx")  # no need to capitalize only correct spelling is required
+    # unzip
+    target_path = join(copy_path, method) + useVn + '.apsimx'
+    if target_location:
+        file_path = str(target_location[0])
+        copied_file = shutil.copy2(file_path, target_path)
+
+        if not simulations_object:
+            return copied_file
+
+        aPSim = SoilModel(copied_file, set_wd=set_wd)
+        return aPSim
+    else:
+        logger.info(f"No sensitivity model for method:' '{method}' found at '{dir_path}'")
 
 
 if __name__ == '__main__':
-    pp = Path.home()
-    os.chdir(pp)
-    mn = load_default_simulations('Maize', simulations_object=True)
-
-
+    ...
+    # pp = Path('G:/ndata')
+    # pp.mkdir(exist_ok=True)
+    # os.chdir(pp)
+    # mn = load_default_simulations('Maize', simulations_object=True)
+    # mn.update_mgt(management=({"Name": 'Fertilise at sowing', 'Amount': 200}))
+    # sobol = load_default_sensitivity_model(method='sobol')
+    # logging.info('running sobol')
+    # sobol.run('Report')
+    # mn.run("Report")
+if __name__ == "__main__":
+        import doctest
+        doctest.testmod()

@@ -1,5 +1,5 @@
 Inspect Model
-=============================
+=============
 
 Most of the time, when modifying model parameters and values, you need the full path to the specified APSIM model.  
 This is where the `inspect_model` method becomes useful—it allows you to inspect the model without opening the file in the APSIM GUI.
@@ -36,7 +36,7 @@ Let's take a look at how it works.
     ['.Simulations.Simulation.Field.Fertiliser']
 
 Model Types
-""""""""""""""""""""""""""
+"""""""""""""
 
 `model_type` can be any of the following classes from the `Models` namespace:
 
@@ -47,49 +47,17 @@ Model Types
 - *(Additional model types may be available based on APSIM simulation requirements.)*
 
 Finding the Model Type
-""""""""""""""""""""""""""""""""""""""
+"""""""""""""""""""""
 
 In some cases, determining the model type can be challenging. Fortunately, **apsimNGpy** provides a recursive function to simplify this process—the `find_model` method.  
 This method helps identify the model type efficiently. However, you need to know the name of the model, such as **Clock** or **Weather**, to use it effectively.
 
 .. code-block:: python
 
-    from apsimNGpy import core
-    from apsimNGpy.core.core import Models
-
-    # Load the default maize simulation
-    model = core.base_data.load_default_simulations(crop="Maize")
-
-    # Inspect or find specific components
-    model.find_model("Weather")
-    Models.Climate.Weather
-
-    model.find_model("Clock")
-    Models.Clock
-
-Whole Model inspection
-=====================================
-
-
-Use `inspect_file`` method to inspects all simulations in the file. This method displays a tree showing how each model is connected with each other
-
-
-.. code-block:: python
-
-    model.inspect_file()
-
-
-
-.. image:: ../images/apsim_file_structure.png
-    :alt: Tree structure of the APSIM model
-    :align: center
-    :width: 100%
-
-Note on Model Inspection:
-"""""""""""""""""""""""""""""""""""""""""""""""
-
-Only a few key model types are inspected using model.inspect_model under the hood. Inspecting the entire simulation file can produce a large volume of data, much of which may not be relevant or necessary in most use cases.
-
-If certain models do not appear in the inspection output, this is intentional — the tool selectively inspects components to keep results concise and focused.
-
-For a complete view of the entire model structure, we recommend opening the simulation file in the APSIM GUI.
+   from apsimNGpy import core
+   from apsimNGpy.core.core import Models
+   model =core.base_data.load_default_simulations(crop = "Maize")
+   model.find_model("Weather")
+   Models.Climate.Weather
+   model.find_model("Clock")
+   Models.Clock

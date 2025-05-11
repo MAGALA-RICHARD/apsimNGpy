@@ -297,8 +297,7 @@ class ApsimModel(Inspector):
             Updates soil parameters and configurations for downloaded soil data in simulation models.
 
             This method adjusts soil physical and organic parameters based on provided soil tables and applies these
-            adjustments to specified simulation models. Optionally, it can adjust the Radiation Use Efficiency (RUE)
-            based on a Carbon to Sulfur ratio (CSR) sampled from the provided soil tables.
+            adjustments to specified simulation models.
 
             Parameters:
                  :param soil_tables (list): A list containing soil data tables. Expected to contain: see the naming
@@ -316,11 +315,8 @@ class ApsimModel(Inspector):
             and more based on the provided soil tables.
 
     ->> key-word argument
-             adjust_rue: Boolean, adjust the radiation use efficiency
-            'set_sw_con': Boolean, set the drainage coefficient for each layer
-            adJust_kl:: Bollean, adjust, kl based on productivity index
-            'CultvarName': cultivar name which is in the sowing module for adjusting the rue
-            tillage: specify whether you will be carried to adjust some physical parameters
+           - 'set_sw_con': Boolean, set the drainage coefficient for each layer
+           - tillage: specify whether you will be carried to adjust some physical parameters
 
         """
         adjust_rue = kwargs.get('adjust_rue')

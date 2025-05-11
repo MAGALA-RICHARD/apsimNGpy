@@ -5,15 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="5d471312-8496-4246-98d6-790439318160" name="Changes" comment="ModelTools">
-      <change afterPath="$PROJECT_DIR$/cli/client.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/optimizer/new_opt.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cli/set_bin.py" beforeDir="false" afterPath="$PROJECT_DIR$/cli/set_bin.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/batch_runner.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/batch_runner.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/core.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/core.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core_utils/database_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/core_utils/database_utils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/optimizer/simple_problem.py" beforeDir="false" afterPath="$PROJECT_DIR$/optimizer/simple_problem.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/unit_tests_core.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/unit_tests_core.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -30,7 +22,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$/.." value="consolidating" />
+        <entry key="$PROJECT_DIR$/.." value="development" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
@@ -140,6 +132,9 @@
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/core" />
       <option name="IS_MODULE_SDK" value="true" />
@@ -160,6 +155,9 @@
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/core" />
       <option name="IS_MODULE_SDK" value="true" />

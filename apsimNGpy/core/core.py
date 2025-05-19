@@ -1099,7 +1099,7 @@ class CoreModel:
             if i.Name == Crop:
                 return i
         return self
-    def inspect_model_parameters(self, model_type, simulations, model_name):
+    def inspect_model_parameters(self, model_type, simulations, model_name, **kwargs):
         """
             Inspect the current input values of a specific APSIM model type instance within given simulations.
             This is all in one place to inspect the model, replacing examine_management_info, read_cultivar_params
@@ -1139,9 +1139,13 @@ class CoreModel:
             -------------
             - APSIM Next Gen Python bindings (apsimNGpy)
             - Python 3.10+
+            Examples:
+                >>> model_instance = CoreModel('Maize')
+                >>> model_instance.inspect_model_parameters(model_type='Organic', simulations= 'Simulation', model_name='Organic') # inspect the values for soil organic
+
             """
 
-        return inspect_model_inputs(self, model_type, simulations, model_name)
+        return inspect_model_inputs(self, model_type, simulations, model_name, **kwargs)
 
 
     def edit_cultivar(self, *, CultivarName: str, commands: str, values: Any, **kwargs):

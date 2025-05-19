@@ -192,7 +192,8 @@ def _eval_model(model__type, evaluate_bound=False) -> ModelTools.CLASS_MODEL:
 
 
 
-def inspect_model_inputs(scope, model_type: str, simulations: Union[str, list], model_name: str, **kwargs) -> Union[Dict[str, Any], pd.DataFrame, list, Any]:
+def inspect_model_inputs(scope, model_type: str, simulations: Union[str, list], model_name: str,
+                         **kwargs) -> Union[Dict[str, Any], pd.DataFrame, list, Any]:
     """
     Inspect the current input values of a specific APSIM model type instance within given simulations.
 
@@ -248,10 +249,16 @@ def inspect_model_inputs(scope, model_type: str, simulations: Union[str, list], 
             case Models.Manager:
                 value = {param.Key: param.Value for param in model_instance.Parameters}
             case Models.Soils.Physical | Models.Soils.Chemical | Models.Soils.Organic | Models.Soils.Water:
+                # get key wod argument
+                selected_parameters = set()
+                for k, v in kwargs.items():
+                    if hasattr(model_instance, k):
+                        selected_parameters.add(k)
                 thick = getattr(model_instance, 'Thickness', None)
                 df = pd.DataFrame()
+                attributes = selected_parameters or dir(model_instance)
                 if thick:
-                    for attr in dir(model_instance):
+                    for attr in attributes:
                         if attr.startswith('__'):
                             continue
                         val = getattr(model_instance, attr)

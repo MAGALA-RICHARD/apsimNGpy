@@ -19,7 +19,10 @@ import pandas as pd
 from os.path import join as opj
 import json
 import datetime
-
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Union, Optional, List, Dict
+import warnings
 from sqlalchemy.testing.plugin.plugin_base import logging
 
 import apsimNGpy.manager.weathermanager as weather
@@ -60,12 +63,14 @@ CLASS_MODEL = type(Models.Clock)
 TYPE2 = type(Models.Clock())
 import inspect
 
-from apsimNGpy.settings import *  # This file is not ready and i wanted to do some test
+from apsimNGpy.settings import *
 
 
 def _looks_like_path(value: str) -> bool:
     return any(sep in value for sep in (os.sep, '/', '\\')) or value.endswith('.apsimx')
 
+
+@dataclass(slots=True)
 class CoreModel:
     """
     Modify and run APSIM Next Generation (APSIM NG) simulation models.
@@ -90,51 +95,74 @@ class CoreModel:
 
 
     """
-    __slots__ = ['model', 'out_path', 'experiment', 'copy', 'base_name', 'others', 'report_names',
-                 'factor_names', 'permutation', 'experiment_created', 'set_wd', '_str_model',
-                 '_model', 'model_info', 'datastore', 'Simulations', 'Datastore', '_DataStore', 'path',
-                 '_met_file', 'ran_ok', 'factors', 'work_space', "Start", 'End'
-                 ]
+    model: Union[str, Path, dict] = None
+    out_path: Optional[Union[str, Path]] = None
+    out: Optional[Union[str, Path]] = None
+    set_wd: Optional[Union[str, Path]] = None
+    experiment: bool = False
+    copy: Optional[bool] = field(default=None)
 
-    def __init__(self, model: Union[str, Path, dict] = None, out_path: Union[str, Path] = None, out: Union[str, Path] = None, set_wd:Union[str, Path]=None,
-                 experiment=False, **kwargs):
-        self.Start = 'unknown'# unknown for now
-        self.End = 'unknown'
-        self.experiment_created = None
-        self.experiment = experiment
-        self.permutation = None
-        self.factor_names = []
-        self.report_names = None
-        self.others = kwargs.copy()
-        self.set_wd = set_wd
-        self.factors = {}
-        if kwargs.get('copy'):
+    # Initialized in __post_init__
+    base_name: Optional[str] = field(init=False, default=None)
+    others: Dict = field(init=False, default_factory=dict)
+    report_names: Optional[List[str]] = field(init=False, default=None)
+    factor_names: List[str] = field(init=False, default_factory=list)
+    permutation: Optional[bool] = field(init=False, default=None)
+    experiment_created: Optional[bool] = field(init=False, default=None)
+    _str_model: Optional[str] = field(init=False, default=None)
+    _model: Union[str, Path, dict] = field(init=False, default=None)
+    model_info: Optional[object] = field(init=False, default=None)
+    datastore: Optional[object] = field(init=False, default=None)
+    Simulations: Optional[object] = field(init=False, default=None)
+    Datastore: Optional[object] = field(init=False, default=None)
+    _DataStore: Optional[object] = field(init=False, default=None)
+    path: Optional[Union[str, Path]] = field(init=False, default=None)
+    _met_file: Optional[str] = field(init=False, default=None)
+    ran_ok: bool = field(init=False, default=False)
+    factors: Dict = field(init=False, default_factory=dict)
+    work_space: Optional[Union[str, Path]] = field(init=False, default=None)
+    Start: str = field(init=False, default='unknown')
+    End: str = field(init=False, default='unknown')
+
+    def __post_init__(self):
+        self._model = self.model
+        self.others = {}
+
+        if isinstance(self.out_path, (str, Path)):
+            self.out_path = self.out_path
+        else:
+            self.out_path = None
+
+        if self.out is not None:
+            self.out_path = self.out  # `out` overrides `out_path` if both are provided
+
+        self.work_space = self.set_wd or SCRATCH
+
+        if hasattr(self, 'copy') and self.copy:
             warnings.warn(
-                'copy argument is deprecated, it is now mandatory to copy the model in order to conserve the original '
-                'model.', UserWarning)
+                'copy argument is deprecated, it is now mandatory to copy the model in order to conserve the original model.',
+                UserWarning
+            )
 
-        out_path = out_path if isinstance(out_path, str) or isinstance(out_path, Path) else None
-        self.copy = kwargs.get('copy')  # Mandatory to conserve the original file
-        # all these can be changed after initialization
+        self._met_file = self.others.get('met_file')
+        self.model_info = load_apsim_model(
+            self._model,
+            out_path=self.out_path,
+            met_file=self._met_file,
+            wd=self.work_space
+        )
 
-        self._str_model = None
-        self._model = model
-        self.out_path = out_path or out
-        self.work_space = set_wd or SCRATCH
-        self.model_info = load_apsim_model(self._model, out_path=self.out_path, met_file=kwargs.get('met_file'),
-                                           wd=self.work_space)
         self.Simulations = self.model_info.IModel
-
         self.datastore = self.model_info.datastore
         self.Datastore = self.model_info.DataStore
         self._DataStore = self.model_info.DataStore
         self.path = self.model_info.path
-        self._met_file = kwargs.get('met_file')
-        self.ran_ok = False
-        permutation, base = kwargs.get('permutation', True), kwargs.get('base_name', None)
-        if experiment:
-            # we create an experiment here immediately if the user wants to dive in right away
-            self.create_experiment(permutation=permutation, base_name=base)
+
+        self.permutation = self.others.get('permutation', True)
+        self.base_name = self.others.get('base_name', None)
+
+        if self.experiment:
+            self.create_experiment(permutation=self.permutation, base_name=self.base_name)
 
     def check_model(self):
         if isinstance(self.Simulations, Models.Core.ApsimFile.ConverterReturnType):
@@ -732,8 +760,9 @@ class CoreModel:
                                 valid.add(key)
 
                             except Exception as e:
-                                raise ValueError(f"{e}")
                                 logging.warning(f"Could not set {kwa} due to error: {e}")
+                                raise ValueError(f"{e}")
+
                         else:
                             invalid.add(kwa)
                     if invalid:
@@ -768,11 +797,13 @@ class CoreModel:
 
                     commands = kwargs.get("commands")
                     values = kwargs.get("values")
-                    # need to specify back to the cultivar manger script the new cutivar name since APSIM is not allowign editing in place.
-                    # editing in place could work if we were reuning the model in memory of python
+                    # need to specify back to the cultivar manager script the new cultivar name since APSIM is not allowing editing in place.
+                    # this is a temporal fix though
+                    # editing in place could work if we were reusing the model in memory of python
                     cultivar_manager_paramter_name= kwargs.get("parameter_name", 'CultivarName')
                     cultivar_manager = kwargs.get("cultivar_manager")
                     # the reason the parameter path is split into command and values to allow passing different values during optimization
+                    # Errors should mot pass silently
                     if not cultivar_manager:
                         raise ValueError("Please specify a cultivar manager using key word 'cultivar_manager'")
                     if not commands or values is None:
@@ -2295,7 +2326,7 @@ class CoreModel:
                 _managers = set(self.inspect_model('Models.Manager', fullpath=False))
                 ITC = set(matches).intersection(_managers)
                 if not ITC:
-                    raise ValueError('specification has not linked script in the model')
+                    raise ValueError('specification has no linked script in the model')
 
         #Add individual factors
         if self.permutation:

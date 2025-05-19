@@ -44,7 +44,7 @@ def timing_decorator(func):
     return wrapper
 
 
-class ApsimModel(Inspector):
+class ApsimModel(CoreModel):
     """
     Main class for apsimNGpy modules.
     It inherits from the CoreModel class and therefore has access to a repertoire of methods from it.
@@ -617,7 +617,7 @@ if __name__ == '__main__':
 
         from apsimNGpy import settings
 
-        model = ApsimModel(model, out_path=None, read_from_string=True,
+        model = ApsimModel(model, out_path=None,
                            thickness_values=settings.SOIL_THICKNESS)
         model.replace_met_from_web(lonlat=lonlat, start_year=2001, end_year=2020)
         from apsimNGpy.manager import soilmanager as sm

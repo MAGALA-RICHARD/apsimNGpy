@@ -41,9 +41,9 @@ from Models.Soils import Soil, Physical, SoilCrop, Organic, Solute, Chemical
 from apsimNGpy.core_utils.utils import open_file_in_window
 from apsimNGpy.core.config import get_apsim_bin_path, load_crop_from_disk
 
-from apsimNGpy.core._modelhelpers import (get_or_check_model, Models,
-                                          inspect_model_inputs,
-                                          ModelTools, _eval_model,
+from apsimNGpy.core._modelhelpers import (get_or_check_model, Models, old_method,
+                                          inspect_model_inputs, soil_components,
+                                          ModelTools, _eval_model, replace_variable_by_index,
                                           _find_model, find_model)
 from Models.PMF import Cultivar
 from apsimNGpy.core.runner import run_model_externally, collect_csv_by_model_path
@@ -60,29 +60,7 @@ CLASS_MODEL = type(Models.Clock)
 TYPE2 = type(Models.Clock())
 import inspect
 
-sys.setrecursionlimit(5000)
-
-
-
 from apsimNGpy.settings import *  # This file is not ready and i wanted to do some test
-
-
-def replace_variable_by_index(old_list: list, new_value: list, indices: list):
-    for idx, new_val in zip(indices, new_value):
-        old_list[idx] = new_val
-    return old_list
-
-
-def soil_components(component):
-    _comp = component.lower()
-    comps = {'organic': Organic,
-             'physical': Physical,
-             'soilcrop': SoilCrop,
-             'solute': Solute,
-             'chemical': Chemical,
-             }
-    return comps[_comp]
-
 
 
 def _looks_like_path(value: str) -> bool:
@@ -272,6 +250,7 @@ class CoreModel:
             - reload (bool): Whether to load the file using the `out_path` or the model's original file name.
 
         """
+        old_method('save_edited_file', 'save')
         warnings.warn('The `save_edited_file` method is deprecated use save().', DeprecationWarning)
         # Determine the output path
         _out_path = out_path or self.model_info.path
@@ -465,6 +444,7 @@ class CoreModel:
          >>> sr = model.simulated_results
 
         """
+        old_method('simulated_results', 'read_from_db_names')
         if self.ran_ok:
             data_tables = collect_csv_by_model_path(self.path)
             # reports = get_db_table_names(self.datastore)
@@ -478,7 +458,7 @@ class CoreModel:
         else:
             raise ValueError("you cant load data before running the model please call run() first")
 
-    @timer
+
     def clone_model(self, model_type, model_name, adoptive_parent_type, rename=None, adoptive_parent_name=None,
 
                     in_place=False):
@@ -572,7 +552,7 @@ class CoreModel:
         return _eval_model(model_name)
     def add_model(self, model_type, adoptive_parent, rename=None,
                   adoptive_parent_name=None, verbose=False, source='Models', source_model_name=None, override=True, **kwargs):
-        import Models # avoids any user contamination of names, will which affect evaluation
+
         """
         Adds a model to the Models Simulations namespace.
 
@@ -613,7 +593,7 @@ class CoreModel:
          
 
         """
-
+        import Models
         replacer = {'Clock': 'change_simulation_dates', 'Weather': 'replace_met_file'}
         sims = self.Simulations
         model_type = _eval_model(model_type, evaluate_bound=True)
@@ -682,10 +662,10 @@ class CoreModel:
 
         else:
             logger.debug(f"Adding {model_type} to {parent.Name} failed, perhaps models was not found")
-    @timer
+
     def edit_model(self, model_type: str, simulations: Union[str, list], model_name: str, **kwargs):
         """
-        Modify various APSIM model components by type and name across given simulations.
+        Modify various APSIM model components by specifying the model type and name across given simulations.
 
         Parameters:
         ----------
@@ -964,12 +944,12 @@ class CoreModel:
         """
         model_type = _eval_model(model_type)
         def _rename(_sim):
-            __sim = _sim.FindInScope[model_type](old_model_name)
-            if __sim is None:
-                logging.info(f"Model {old_model_name} does not exist exist in the {self.Simulations.Name}")
+            #__sim = _sim.FindInScope[model_type](old_model_name)
+            __sim  = get_or_check_model(self.Simulations, model_type=model_type, model_name=old_model_name, action ='get')
             __sim.Name = new_model_name
         if model_type == Models.Core.Simulations:
             self.Simulations.Name = new_model_name
+            return self
         else:
             sims = self.find_simulations(simulations)
             for sim in sims:
@@ -986,6 +966,7 @@ class CoreModel:
         @return: dict of  table names in alist in the simulation
 
         """
+        old_method('extract_report_names', 'inspect_model')
         table_dict = self.get_report(names_only=True)
         return table_dict
 
@@ -1048,6 +1029,7 @@ class CoreModel:
         return rep
 
     def read_cultivar_params(self, name: str, verbose: bool = None):
+        old_method('read_cultivar_params', 'inspect_model_parameters')
         cultivar = self._find_cultivar(name)
         c_param = self._cultivar_params(cultivar)
         if verbose:
@@ -1068,10 +1050,50 @@ class CoreModel:
                 return i
         return self
     def inspect_model_parameters(self, model_type, simulations, model_name):
+        """
+            Inspect the current input values of a specific APSIM model type instance within given simulations.
+            This is all in one place to inspect the model, replacing examine_management_info, read_cultivar_params
+
+            Parameters:
+            -----------
+            the search scope is the current instatiated model of ApsimNG model context with Models.Core.Simulations  and its associated Simulation models
+
+            model_type : str
+                Name of the model class (e.g., 'Clock', 'Manager', 'Physical', 'Chemical', etc.) these are abstracted from the model namespace,
+                 so no need for a complete path, although completed pathes are also valid e.g., Models.Clock, Models.Manager, Models.Climate.Weather if you want some kind of clarity
+            simulations : Union[str, list]
+                Name or list of names of simulation(s) to inspect.
+            model_name : str
+                Name of the model instance within each simulation.
+            **kwargs : dict
+                Optional keyword arguments — not used here but accepted for interface compatibility.
+
+            Returns:
+            --------
+            Union[Dict[str, Any], pd.DataFrame, list, Any]
+                - For Weather: file path(s)
+                - For Clock: (start, end) tuple(s)
+                - For Manager: dictionary of parameters,
+                - For Soil models: pandas DataFrame(s) of layer-based properties
+                - For Report: dictionary with 'VariableNames' and 'EventNames'
+                - For Cultivar: dictionary of parsed parameter=value pairs
+
+            Raises:
+            -------
+            ValueError:
+                If model is not found or invalid arguments are passed.
+            NotImplementedError:
+                If the model type is unsupported.
+
+            Requirements:
+            -------------
+            - APSIM Next Gen Python bindings (apsimNGpy)
+            - Python 3.10+
+            """
 
         return inspect_model_inputs(self, model_type, simulations, model_name)
 
-    inspect_model_parameters.__doc__ = inspect_model_inputs.__doc__
+
     def edit_cultivar(self, *, CultivarName: str, commands: str, values: Any, **kwargs):
         """
         Edits the parameters of a given cultivar. we don't need a simulation name for this unless if you are defining it in the
@@ -1092,6 +1114,7 @@ class CoreModel:
         Returns: instance of the class CoreModel or ApsimModel
 
         """
+        old_method('edit_cultivar', 'edit_model')
         if not isinstance(CultivarName, str):
             raise ValueError("Cultivar name must be a string")
 
@@ -1163,6 +1186,7 @@ class CoreModel:
             use the property decorator 'extract_simulation_name'
 
         """
+        old_method('examine_management_info', new_method='inspect_model_parameters')
         try:
             for sim in self.find_simulations(simulations):
                 zone = sim.FindChild[Models.Core.Zone]()
@@ -1176,6 +1200,7 @@ class CoreModel:
             raise Exception(repr(e))
 
     def check_som(self, simulations=None):
+        old_method('check_som', new_method='inspect_model_parameters')
         simus = {}
         for sim in self.find_simulations(simulations):
             zone = sim.FindChild[Models.Core.Zone]()
@@ -1211,6 +1236,7 @@ class CoreModel:
         self: The current instance of the class.
 
         """
+        old_method('change_som', new_method='edit_model')
         som = None
         for sim in self.find_simulations(simulations):
             zone = sim.FindChild[Models.Core.Zone]()
@@ -1280,9 +1306,11 @@ class CoreModel:
         return: self
 
         """
+        #old_method('update_mgt_by_path', new_method='edit_model')
         # reject space in fmt
         if fmt != '.':
             path = path.replace(fmt, ".")
+
 
         manager = self.Simulations.FindByPath(path)
         stack_manager_depth = range(len(manager.Value.Parameters))
@@ -1310,7 +1338,7 @@ class CoreModel:
         return self
     @timer
     def exchange_model(self, model, model_type:str,model_name=None, target_model_name=None, simulations:str=None):
-        warnings.warn("The 'exchange_model' is deprecated and will be removed in future versions. Please use replace_model_from", DeprecationWarning)
+        old_method('exchange_model', new_method=replace_model_from)
         self.replace_model_from(model, model_type, model_name, target_model_name, simulations)
 
     def replace_model_from(
@@ -1425,6 +1453,7 @@ class CoreModel:
             using a tuple for a specifying management script, paramters is recommended if you are going to pass the function to  a multi-processing class fucntion
 
         """
+
         if isinstance(management, dict):  # To provide support for multiple scripts
             # note the coma creates a tuple
             management = management,
@@ -1562,7 +1591,8 @@ class CoreModel:
 
     @property
     def extract_dates(self, simulations=None):
-        """Get simulation dates in the model
+
+        """Get simulation dates in the model. deprecated
 
         Parameters
         ----------
@@ -1595,7 +1625,7 @@ class CoreModel:
         return dates
 
     def extract_start_end_years(self, simulations: str = None):
-        """Get simulation dates
+        """Get simulation dates. deprecated
 
         Parameters
         ----------
@@ -1606,6 +1636,7 @@ class CoreModel:
             Dictionary of simulation names with dates
 
         """
+
         dates = {}
         for sim in self.find_simulations(simulations):
             clock = sim.FindChild[Models.Clock]()

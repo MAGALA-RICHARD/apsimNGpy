@@ -8,10 +8,27 @@ from System.Collections import IEnumerable
 from System import String
 
 from typing import Union, Dict, Any
-
-
+from Models.Soils import Soil, Physical, SoilCrop, Organic, Solute, Chemical
+import warnings
 @dataclass
 class ModelTools:
+    """
+       A utility class providing convenient access to core APSIM model operations and constants.
+
+       Attributes:
+           ADD (callable): Function or class for adding components to an APSIM model.
+           DELETE (callable): Function or class for deleting components from an APSIM model.
+           MOVE (callable): Function or class for moving components within the model structure.
+           RENAME (callable): Function or class for renaming components.
+           CLONER (callable): Utility to clone APSIM models or components.
+           REPLACE (callable): Function to replace components in the model.
+           MultiThreaded (Enum): Enumeration value to specify multi-threaded APSIM runs.
+           SingleThreaded (Enum): Enumeration value to specify single-threaded APSIM runs.
+           ModelRUNNER (class): APSIM run manager that handles simulation execution.
+           CLASS_MODEL (type): The type of the APSIM Clock model, often used for type checks or instantiation.
+           ACTIONS (tuple): Set of supported string actions ('get', 'delete', 'check').
+           COLLECT (callable): Function for collecting or extracting model data (e.g., results, nodes).
+       """
     ADD = Models.Core.ApsimFile.Structure.Add
     DELETE = Models.Core.ApsimFile.Structure.Delete
     MOVE = Models.Core.ApsimFile.Structure.Move
@@ -265,5 +282,32 @@ def inspect_model_inputs(scope, model_type: str, simulations: Union[str, list], 
             result[sim.Name] = value
 
     return result
+
+
+
+def replace_variable_by_index(old_list: list, new_value: list, indices: list):
+    for idx, new_val in zip(indices, new_value):
+        old_list[idx] = new_val
+    return old_list
+
+
+def soil_components(component):
+    _comp = component.lower()
+    comps = {'organic': Organic,
+             'physical': Physical,
+             'soilcrop': SoilCrop,
+             'solute': Solute,
+             'chemical': Chemical,
+             }
+    return comps[_comp]
+
+def old_method(old_method, new_method):
+    warnings.warn(
+        f"{old_method} is deprecated and will be removed in a future release/version. Please use {new_method}() instead.",
+        category=DeprecationWarning,
+        stacklevel=2
+    )
+    # method logic here
+
 
 collect()

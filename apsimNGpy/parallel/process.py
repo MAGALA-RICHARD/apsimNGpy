@@ -128,7 +128,7 @@ def run_apsimx_files_in_parallel(iterable_files: Iterable, **kwargs):
     return custom_parallel(run_model, iterable_files, ncores=ncores_2use, use_threads=kwargs.get('use_threads'))
 
 
-def read_result_in_parallel(iterable_files: Iterable, ncores: int = None, use_threads: bool = False,
+def _read_result_in_parallel(iterable_files: Iterable, ncores: int = None, use_threads: bool = False,
                             report_name: str = "Report", **kwargs):
     """
 

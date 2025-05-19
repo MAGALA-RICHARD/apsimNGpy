@@ -1,3 +1,4 @@
+import os
 import shutil
 from pathlib import Path
 from typing import Union
@@ -45,6 +46,8 @@ def docs(modules: Union[list, object], output_file: Union[str, Path] = "api.rst"
         modules = [modules]
     module_set = list(set(modules))
     modules = sort_modules(module_set)
+    for i in modules:
+        print(i)
 
     with open(output_file, "w", encoding="utf-8") as file:
         title = ''
@@ -127,14 +130,20 @@ def dc():
 
 
 if __name__ == '__main__':
+    from apsimNGpy.core_utils import database_utils
+    from apsimNGpy.parallel import process
+
     runs = [
         runner.collect_csv_by_model_path,
         runner.run_model_externally,
         runner.run_from_dir,
         runner.upgrade_apsim_file, ]
+
+
+
     from apsimNGpy.core import core
 
-    docs([apsim.ApsimModel, core.CoreModel, evaluator, runner, base_data, weathermanager, soilmanager, structure, load_model],
+    docs([apsim.ApsimModel, process, database_utils, core.CoreModel, core.ModelTools, evaluator, runner, base_data, weathermanager, soilmanager, structure, load_model],
          output_file="api.rst")
 
     rsts = list(Path.cwd().rglob("*.rst")) + list(Path.cwd().rglob("*conf.py"))
@@ -143,6 +152,10 @@ if __name__ == '__main__':
         for rst in rsts:
 
             copy = shutil.copy2(rst, SENDTO2.joinpath(rst.name))
+
+            if copy.stem =='api':
+
+                os.startfile(copy)
             print(copy)
     else:
         print(f"{SENDTO2} not present")

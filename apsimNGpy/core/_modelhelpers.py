@@ -264,7 +264,7 @@ def inspect_model_inputs(scope, model_type: str, simulations: Union[str, list], 
                 selected_parameters = {k.capitalize() for k in parameters if hasattr(model_instance, k)} if parameters else set()
                 dif = accepted_attributes - selected_parameters
                 if dif==accepted_attributes and parameters:
-                    raise ValueError(f'Parameters must be none or any of {accepted_attributes}')
+                    raise ValueError(f"Parameters must be none or any of '{accepted_attributes}'")
                 attributes = selected_parameters or accepted_attributes
 
                 if len(attributes) == 1:
@@ -273,10 +273,15 @@ def inspect_model_inputs(scope, model_type: str, simulations: Union[str, list], 
                    value = tuple(__convert_to_datetime(getattr(model_instance, atr)) for atr in attributes)
 
             case Models.Manager:
-                value = {param.Key: param.Value for param in model_instance.Parameters}
-            case Models.Soils.Physical | Models.Soils.Chemical | Models.Soils.Organic | Models.Soils.Water:
-                # get key wod argument
+                selected_parameters = parameters if parameters else set()
+                print(selected_parameters)
 
+                if selected_parameters:
+                    value  = {param.Key: param.Value for param in model_instance.Parameters if param.Key in selected_parameters}
+                else:
+                    value = {param.Key: param.Value for param in model_instance.Parameters}
+            case Models.Soils.Physical | Models.Soils.Chemical | Models.Soils.Organic | Models.Soils.Water:
+                # get selected parameters
                 selected_parameters = {k for k in parameters if hasattr(model_instance, k)} if parameters else set()
 
                 thick = getattr(model_instance, 'Thickness', None)
@@ -298,7 +303,7 @@ def inspect_model_inputs(scope, model_type: str, simulations: Union[str, list], 
                 selected_parameters = {k for k in parameters if hasattr(model_instance, k)} if parameters else set()
                 dif =  accepted_attributes - selected_parameters
                 if dif==accepted_attributes and parameters:
-                    raise ValueError(f"Parameters must be None or any of the following {accepted_attributes}")
+                    raise ValueError(f"Parameters must be none or any of '{accepted_attributes}'")
 
                 attributes = selected_parameters or accepted_attributes
                 value = {}

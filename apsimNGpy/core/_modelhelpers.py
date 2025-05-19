@@ -12,6 +12,8 @@ from System import String
 from typing import Union, Dict, Any
 from Models.Soils import Soil, Physical, SoilCrop, Organic, Solute, Chemical
 import warnings
+
+
 @dataclass
 class ModelTools:
     """
@@ -95,6 +97,7 @@ def get_or_check_model(search_scope, model_type, model_name, action='get'):
     if get_model and action == 'get':
         return get_model
 
+
 def _find_model(model_name: str, model_namespace=Models, target_type=ModelTools.CLASS_MODEL) -> ModelTools.CLASS_MODEL:
     """
     Recursively find a model by name within a namespace.
@@ -111,7 +114,7 @@ def _find_model(model_name: str, model_namespace=Models, target_type=ModelTools.
     if not hasattr(model_namespace, "__dict__"):
         return None
 
-    ITEMS =  model_namespace.__dict__
+    ITEMS = model_namespace.__dict__
     if isinstance(model_name, str):
         model_name = model_name.capitalize()
     for attr, value in ITEMS.items():
@@ -121,7 +124,7 @@ def _find_model(model_name: str, model_namespace=Models, target_type=ModelTools.
         _get_attr = getattr(value, model_name, None)
 
         if isinstance(_get_attr, target_type):
-                return _get_attr
+            return _get_attr
 
         if hasattr(value, "__dict__"):
 
@@ -145,6 +148,7 @@ def find_model(model_name: str):
         model_type = getattr(Models.Surface, model_name, None)
     collect()
     return model_type
+
 
 def _eval_model(model__type, evaluate_bound=False) -> ModelTools.CLASS_MODEL:
     """
@@ -181,8 +185,7 @@ def _eval_model(model__type, evaluate_bound=False) -> ModelTools.CLASS_MODEL:
 
         if evaluate_bound and not isinstance(model__type, str):
             bound_model = model__type.__class__
-        if isinstance(bound_model,ModelTools.CLASS_MODEL):
-
+        if isinstance(bound_model, ModelTools.CLASS_MODEL):
             model_types = bound_model
 
         if model_types:
@@ -195,8 +198,8 @@ def _eval_model(model__type, evaluate_bound=False) -> ModelTools.CLASS_MODEL:
         pass
 
 
-
-def inspect_model_inputs(scope, model_type: str, simulations: Union[str, list], model_name: str, parameters:Union[list, str] =None,
+def inspect_model_inputs(scope, model_type: str, simulations: Union[str, list], model_name: str,
+                         parameters: Union[list, str] = None,
                          **kwargs) -> Union[Dict[str, Any], pd.DataFrame, list, Any]:
     """
     Inspect the current input values of a specific APSIM model type instance within given simulations.
@@ -252,7 +255,7 @@ def inspect_model_inputs(scope, model_type: str, simulations: Union[str, list], 
             case Models.Clock:
                 import datetime
                 def __convert_to_datetime(dotnet_dt):
-                   return datetime.datetime(
+                    return datetime.datetime(
                         dotnet_dt.Year,
                         dotnet_dt.Month,
                         dotnet_dt.Day,
@@ -263,22 +266,24 @@ def inspect_model_inputs(scope, model_type: str, simulations: Union[str, list], 
                     )
 
                 accepted_attributes = {'Start', 'End'}
-                selected_parameters = {k.capitalize() for k in parameters if hasattr(model_instance, k)} if parameters else set()
+                selected_parameters = {k.capitalize() for k in parameters if
+                                       hasattr(model_instance, k)} if parameters else set()
                 dif = accepted_attributes - selected_parameters
-                if dif==accepted_attributes and parameters:
+                if dif == accepted_attributes and parameters:
                     raise ValueError(f"Parameters must be none or any of '{accepted_attributes}'")
                 attributes = selected_parameters or accepted_attributes
 
                 if len(attributes) == 1:
-                   value = __convert_to_datetime(getattr(model_instance, *attributes))
+                    value = __convert_to_datetime(getattr(model_instance, *attributes))
                 else:
-                   value = {atr: __convert_to_datetime(getattr(model_instance, atr)) for atr in attributes}
+                    value = {atr: __convert_to_datetime(getattr(model_instance, atr)) for atr in attributes}
 
             case Models.Manager:
                 selected_parameters = parameters if parameters else set()
 
                 if selected_parameters:
-                    value  = {param.Key: param.Value for param in model_instance.Parameters if param.Key in selected_parameters}
+                    value = {param.Key: param.Value for param in model_instance.Parameters if
+                             param.Key in selected_parameters}
                 else:
                     value = {param.Key: param.Value for param in model_instance.Parameters}
             case Models.Soils.Physical | Models.Soils.Chemical | Models.Soils.Organic | Models.Soils.Water | Models.Soils.Solute:
@@ -287,7 +292,7 @@ def inspect_model_inputs(scope, model_type: str, simulations: Union[str, list], 
 
                 thick = getattr(model_instance, 'Thickness', None)
 
-                df = pd.DataFrame() # empty data frame
+                df = pd.DataFrame()  # empty data frame
                 attributes = selected_parameters or dir(model_instance)
                 evp = [at for at in attributes if not at.startswith('__')]
                 if not selected_parameters and parameters:
@@ -303,10 +308,10 @@ def inspect_model_inputs(scope, model_type: str, simulations: Union[str, list], 
                                 df[attr] = val_list
                 value = df
             case Models.Report:
-                accepted_attributes= {'VariableNames',  'EventNames'}
+                accepted_attributes = {'VariableNames', 'EventNames'}
                 selected_parameters = {k for k in parameters if hasattr(model_instance, k)} if parameters else set()
-                dif =  accepted_attributes - selected_parameters
-                if dif==accepted_attributes and parameters:
+                dif = accepted_attributes - selected_parameters
+                if dif == accepted_attributes and parameters:
                     raise ValueError(f"Parameters must be none or any of '{accepted_attributes}'")
 
                 attributes = selected_parameters or accepted_attributes
@@ -323,9 +328,10 @@ def inspect_model_inputs(scope, model_type: str, simulations: Union[str, list], 
                             key, val = cmd.split('=', 1)
                             params[key.strip()] = val.strip()
                 if selected_parameters:
-                    value = {k:v for k, v in params.items() if k in selected_parameters}
+                    value = {k: v for k, v in params.items() if k in selected_parameters}
                     if not value:
-                        raise ValueError(f"None of '{selected_parameters}' was found. Available parameters are: '{', '.join(params.keys())}'")
+                        raise ValueError(
+                            f"None of '{selected_parameters}' was found. Available parameters are: '{', '.join(params.keys())}'")
                 else:
                     value = params
             case Models.Surface.SurfaceOrganicMatter:
@@ -334,13 +340,13 @@ def inspect_model_inputs(scope, model_type: str, simulations: Union[str, list], 
                                        'InitialCPR', 'IncorporatedC', 'InitialResidueMass', 'StandingWt',
                                        'InitialCNR', 'IncorporatedP', 'InitialCPR'}
                 dif = accepted_attributes - selected_parameters
-                if len(dif) == len(accepted_attributes)  and parameters:
+                if len(dif) == len(accepted_attributes) and parameters:
                     raise ValueError(f"Parameters must be none or any of '{', '.join(accepted_attributes)}'")
                 params = {}
                 attributes = selected_parameters or accepted_attributes
                 for attrib in attributes:
-                        x_attrib = getattr(model_instance, attrib)
-                        params[attrib] = x_attrib
+                    x_attrib = getattr(model_instance, attrib)
+                    params[attrib] = x_attrib
 
                 value = params
             case _:
@@ -352,7 +358,6 @@ def inspect_model_inputs(scope, model_type: str, simulations: Union[str, list], 
             result[sim.Name] = value
 
     return result
-
 
 
 def replace_variable_by_index(old_list: list, new_value: list, indices: list):
@@ -370,6 +375,7 @@ def soil_components(component):
              'chemical': Chemical,
              }
     return comps[_comp]
+
 
 def old_method(old_method, new_method):
     warnings.warn(

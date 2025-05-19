@@ -274,7 +274,6 @@ def inspect_model_inputs(scope, model_type: str, simulations: Union[str, list], 
 
             case Models.Manager:
                 selected_parameters = parameters if parameters else set()
-                print(selected_parameters)
 
                 if selected_parameters:
                     value  = {param.Key: param.Value for param in model_instance.Parameters if param.Key in selected_parameters}
@@ -311,13 +310,19 @@ def inspect_model_inputs(scope, model_type: str, simulations: Union[str, list], 
                     value[attr] = list(getattr(model_instance, attr))
 
             case Models.PMF.Cultivar:
+                selected_parameters = parameters if parameters else set()
                 params = {}
                 for cmd in model_instance.Command:
                     if cmd:
                         if '=' in cmd:
                             key, val = cmd.split('=', 1)
                             params[key.strip()] = val.strip()
-                value = params
+                if selected_parameters:
+                    value = {k:v for k, v in params.items() if k in selected_parameters}
+                    if not value:
+                        raise ValueError(f"None of '{selected_parameters}' was found. Available parameters are: '{', '.join(params.keys())}'")
+                else:
+                    value = params
             case _:
                 raise NotImplementedError(f"No inspect input method implemented for model type: {type(model_instance)}")
 

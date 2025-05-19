@@ -1189,7 +1189,16 @@ class CoreModel:
                 # inspect the met file path
                 >>> model_instance.inspect_model_parameters('Weather', "Simulation", 'Weather')
                 '%root%/Examples/WeatherFiles/AU_Dalby.met'
-
+                # Inspect a manager script.
+                >>> model_instance.inspect_model_parameters("Manager", simulations='Simulation', model_name='Sow using a variable rule')
+                {'Crop': 'Maize', 'StartDate': '1-nov', 'EndDate': '10-jan', 'MinESW': '100.0', 'MinRain': '25.0', 'RainDays': '7',
+                 'CultivarName': 'Dekalb_XL82', 'SowingDepth': '30.0', 'RowSpacing': '750.0', 'Population': '10'}
+                # Inspect only a few parameters
+                >>> model_instance.inspect_model_parameters("Manager", simulations='Simulation', model_name='Sow using a variable rule', parameters = ['Population', 'StartDate'])
+                {'StartDate': '1-nov', 'Population': '10'}
+                # Inspect only one parameter
+               >>> model_instance.inspect_model_parameters("Manager", simulations='Simulation', model_name='Sow using a variable rule', parameters = 'Population')
+                {'Population': '10'}
             """
 
         return inspect_model_inputs(self, model_type, simulations, model_name, parameters, **kwargs)
@@ -1234,21 +1243,6 @@ class CoreModel:
 
         return self
 
-    def get_current_cultivar_name(self, ManagerName: str):
-        """
-        Args:
-       - ManagerName: script manager module in the zone
-
-       Returns:
-           returns the current cultivar name in the manager script 'ManagerName'
-        """
-
-        try:
-            ap = self.extract_user_input(ManagerName)['CultivarName']
-            return ap
-        except  KeyError:
-            parameterName = 'CultivarName'
-            logger.info(f"cultivar name: is not found")
 
     def update_cultivar(self, *, parameters: dict, simulations: Union[list, tuple] = None, clear=False, **kwargs):
         """Update cultivar parameters

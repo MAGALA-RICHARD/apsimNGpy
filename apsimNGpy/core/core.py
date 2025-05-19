@@ -728,6 +728,18 @@ class CoreModel:
             if kwargs dictionary is empty: meaning none of the corresponding parameter for a model was not supplied
         NotImplementedError:
             If no logic is implemented for the model type.
+        Examples:
+            >>> model = CoreModel(model = 'Maize')
+
+            >>> model.edit_model(
+                        ...     model_type = 'Cultivar',
+                        ...     simulations='Simulation',
+                        ...     commands='[Phenology].Juvenile.Target.FixedValue',
+                        ...     values=256,
+                        ...     model_name='B_110',
+                        ...     cultivar_manager='Sow using a variable rule'
+                        ... ) # edits model cultivar
+
         """
 
         model_type_class = _eval_model(model_type)

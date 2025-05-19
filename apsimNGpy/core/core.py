@@ -1187,18 +1187,33 @@ class CoreModel:
                    '[Maize].Grain.N',
                    '[Maize].Total.Wt']}
                 # inspect the met file path
-                >>> model_instance.inspect_model_parameters('Weather', "Simulation", 'Weather')
+                >>> model_instance.inspect_model_parameters(model_type='Weather',simulations= "Simulation", model_name= 'Weather')
                 '%root%/Examples/WeatherFiles/AU_Dalby.met'
                 # Inspect a manager script.
-                >>> model_instance.inspect_model_parameters("Manager", simulations='Simulation', model_name='Sow using a variable rule')
+                >>> model_instance.inspect_model_parameters(model_type="Manager", simulations='Simulation', model_name='Sow using a variable rule')
                 {'Crop': 'Maize', 'StartDate': '1-nov', 'EndDate': '10-jan', 'MinESW': '100.0', 'MinRain': '25.0', 'RainDays': '7',
                  'CultivarName': 'Dekalb_XL82', 'SowingDepth': '30.0', 'RowSpacing': '750.0', 'Population': '10'}
                 # Inspect only a few parameters
-                >>> model_instance.inspect_model_parameters("Manager", simulations='Simulation', model_name='Sow using a variable rule', parameters = ['Population', 'StartDate'])
+                >>> model_instance.inspect_model_parameters(model_type="Manager", simulations='Simulation', model_name='Sow using a variable rule', parameters = ['Population', 'StartDate'])
                 {'StartDate': '1-nov', 'Population': '10'}
                 # Inspect only one parameter
-               >>> model_instance.inspect_model_parameters("Manager", simulations='Simulation', model_name='Sow using a variable rule', parameters = 'Population')
+               >>> model_instance.inspect_model_parameters(model_type="Manager", simulations='Simulation', model_name='Sow using a variable rule', parameters = 'Population')
                 {'Population': '10'}
+                # Inspect a Model cultivar
+                >>> model_instance.inspect_model_parameters("Cultivar", simulations='Simulation', model_name='B_110')
+                {'[Phenology].Juvenile.Target.FixedValue': '210',
+                   '[Phenology].Photosensitive.Target.XYPairs.X': '0, 12.5, 24',
+                   '[Phenology].Photosensitive.Target.XYPairs.Y': '0, 0, 0',
+                   '[Phenology].FlagLeafToFlowering.Target.FixedValue': '1',
+                   '[Phenology].FloweringToGrainFilling.Target.FixedValue': '170',
+                   '[Phenology].GrainFilling.Target.FixedValue': '730',
+                   '[Phenology].Maturing.Target.FixedValue': '1',
+                   '[Phenology].MaturityToHarvestRipe.Target.FixedValue': '100',
+                   '[Rachis].DMDemands.Structural.DMDemandFunction.MaximumOrganWt.FixedValue': '36'}
+                # Inspect a selected cultivar
+                >>> model_instance.inspect_model_parameters("Cultivar", simulations='Simulation', model_name='B_110', parameters = '[Phenology].Juvenile.Target.FixedValue')
+                {'[Phenology].Juvenile.Target.FixedValue': '210'}
+
             """
 
         return inspect_model_inputs(self, model_type, simulations, model_name, parameters, **kwargs)

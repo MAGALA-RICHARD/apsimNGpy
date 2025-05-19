@@ -1099,7 +1099,7 @@ class CoreModel:
             if i.Name == Crop:
                 return i
         return self
-    def inspect_model_parameters(self, model_type, simulations, model_name, **kwargs):
+    def inspect_model_parameters(self, model_type, simulations, model_name,parameters:Union[list, str] =None, **kwargs):
         """
             Inspect the current input values of a specific APSIM model type instance within given simulations.
             This is all in one place to inspect the model, replacing examine_management_info, read_cultivar_params
@@ -1141,15 +1141,63 @@ class CoreModel:
             - Python 3.10+
             Examples:
                 >>> model_instance = CoreModel('Maize')
-                >>> model_instance.inspect_model_parameters(model_type='Organic', simulations= 'Simulation', model_name='Organic') # inspect the values for soil organic
+                >>> model_instance.inspect_model_parameters(model_type='Organic', simulations= 'Simulation', model_name='Organic') # inspect the values for soil organic profile only layered paramter are returned
+                        CNR  Carbon      Depth  FBiom  ...         FOM  Nitrogen  SoilCNRatio  Thickness
+                    0  12.0    1.20      0-150   0.04  ...  347.129032     0.100         12.0      150.0
+                    1  12.0    0.96    150-300   0.02  ...  270.344362     0.080         12.0      150.0
+                    2  12.0    0.60    300-600   0.02  ...  163.972144     0.050         12.0      300.0
+                    3  12.0    0.30    600-900   0.02  ...   99.454133     0.025         12.0      300.0
+                    4  12.0    0.18   900-1200   0.01  ...   60.321981     0.015         12.0      300.0
+                    5  12.0    0.12  1200-1500   0.01  ...   36.587131     0.010         12.0      300.0
+                    6  12.0    0.12  1500-1800   0.01  ...   22.191217     0.010         12.0      300.0
+                >>> model_instance.inspect_model_parameters(model_type='Organic', simulations= 'Simulation', model_name='Organic', parameters='Carbon') # inspects only carbon
+                   Carbon
+                0    1.20
+                1    0.96
+                2    0.60
+                3    0.30
+                4    0.18
+                5    0.12
+                6    0.12
+                >>> model_instance.inspect_model_parameters(model_type='Organic', simulations= 'Simulation', model_name='Organic', parameters=['Carbon', 'CNR']) # inspect CNR and carbon
+                      CNR  Carbon
+                    0  12.0    1.20
+                    1  12.0    0.96
+                    2  12.0    0.60
+                    3  12.0    0.30
+                    4  12.0    0.18
+                    5  12.0    0.12
+                    6  12.0    0.12
+                # Inspect the EventNames parameter in the Report data base attached to simulations
+                >>> model_instance.inspect_model_parameters(model_type='Report', simulations= 'Simulation', model_name='Report', parameters='EventNames')
+                >>> {'EventNames': ['[Maize].Harvesting']}
+                # The code below returns both the EventNames and VariableNames
+                >>> model_instance.inspect_model_parameters(model_type='Report', simulations= 'Simulation', model_name='Report', parameters=None)
+                >>> {'VariableNames': ['[Clock].Today', '[Maize].Phenology.CurrentStageName', '[Maize].AboveGround.Wt', '[Maize].AboveGround.N', '[Maize].Grain.Total.Wt*10 as Yield', '[Maize].Grain.Wt', '[Maize].Grain.Size', '[Maize].Grain.NumberFunction', '[Maize].Grain.Total.Wt', '[Maize].Grain.N', '[Maize].Total.Wt'], 'EventNames': ['[Maize].Harvesting']}
+                >>> model_instance.inspect_model_parameters(model_type='Report', simulations= 'Simulation', model_name='Report', parameters='VariableNames')
+                {'VariableNames': ['[Clock].Today',
+                   '[Maize].Phenology.CurrentStageName',
+                   '[Maize].AboveGround.Wt',
+                   '[Maize].AboveGround.N',
+                   '[Maize].Grain.Total.Wt*10 as Yield',
+                   '[Maize].Grain.Wt',
+                   '[Maize].Grain.Size',
+                   '[Maize].Grain.NumberFunction',
+                   '[Maize].Grain.Total.Wt',
+                   '[Maize].Grain.N',
+                   '[Maize].Total.Wt']}
+                # inspect the met file path
+                >>> model_instance.inspect_model_parameters('Weather', "Simulation", 'Weather')
+                '%root%/Examples/WeatherFiles/AU_Dalby.met'
 
             """
 
-        return inspect_model_inputs(self, model_type, simulations, model_name, **kwargs)
+        return inspect_model_inputs(self, model_type, simulations, model_name, parameters, **kwargs)
 
 
     def edit_cultivar(self, *, CultivarName: str, commands: str, values: Any, **kwargs):
         """
+        @deprecated
         Edits the parameters of a given cultivar. we don't need a simulation name for this unless if you are defining it in the
         manager section, if that it is the case, see update_mgt.
 

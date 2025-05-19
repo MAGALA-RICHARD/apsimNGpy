@@ -1,4 +1,6 @@
 import pandas as pd
+from pandas import to_datetime
+
 from apsimNGpy.core import pythonet_config
 from dataclasses import dataclass
 from gc import collect
@@ -192,7 +194,7 @@ def _eval_model(model__type, evaluate_bound=False) -> ModelTools.CLASS_MODEL:
 
 
 
-def inspect_model_inputs(scope, model_type: str, simulations: Union[str, list], model_name: str,
+def inspect_model_inputs(scope, model_type: str, simulations: Union[str, list], model_name: str, parameters:Union[list, str] =None,
                          **kwargs) -> Union[Dict[str, Any], pd.DataFrame, list, Any]:
     """
     Inspect the current input values of a specific APSIM model type instance within given simulations.
@@ -214,10 +216,10 @@ def inspect_model_inputs(scope, model_type: str, simulations: Union[str, list], 
     --------
     Union[Dict[str, Any], pd.DataFrame, list, Any]
         - For Weather: file path(s)
-        - For Clock: (start, end) tuple(s)
+        - For Clock: (start, end) tuple(s). To narrow down the inspection, accepted parameters are, Start and End supplied as a list or a str if any of them is needed,
         - For Manager: dictionary of parameters
         - For Soil models: pandas DataFrame(s) of layer-based properties
-        - For Report: dictionary with 'VariableNames' and 'EventNames'
+        - For Report: dictionary with 'VariableNames' and 'EventNames'. To narrow down the inspection, 'VariableNames' and 'EventNames' supplied as a list or a str if any of them is needed,
         - For Cultivar: dictionary of parsed parameter=value pairs
 
     Raises:
@@ -237,7 +239,8 @@ def inspect_model_inputs(scope, model_type: str, simulations: Union[str, list], 
     is_single_sim = isinstance(simulations, str)
     sim_list = scope.find_simulations(simulations)
     result = {} if not is_single_sim else None
-
+    if isinstance(parameters, str):
+        parameters = {parameters}
     for sim in sim_list:
         model_instance = get_or_check_model(sim, model_type_class, model_name, action='get')
 
@@ -245,17 +248,40 @@ def inspect_model_inputs(scope, model_type: str, simulations: Union[str, list], 
             case Models.Climate.Weather:
                 value = model_instance.FileName
             case Models.Clock:
-                value = (model_instance.Start, model_instance.End)
+                import datetime
+                def __convert_to_datetime(dotnet_dt):
+                   return datetime.datetime(
+                        dotnet_dt.Year,
+                        dotnet_dt.Month,
+                        dotnet_dt.Day,
+                        dotnet_dt.Hour,
+                        dotnet_dt.Minute,
+                        dotnet_dt.Second,
+                        dotnet_dt.Millisecond * 1000  # Python uses microseconds
+                    )
+
+                accepted_attributes = {'Start', 'End'}
+                selected_parameters = {k.capitalize() for k in parameters if hasattr(model_instance, k)} if parameters else set()
+                dif = accepted_attributes - selected_parameters
+                if dif==accepted_attributes and parameters:
+                    raise ValueError(f'Parameters must be none or any of {accepted_attributes}')
+                attributes = selected_parameters or accepted_attributes
+
+                if len(attributes) == 1:
+                   value = __convert_to_datetime(getattr(model_instance, *attributes))
+                else:
+                   value = tuple(__convert_to_datetime(getattr(model_instance, atr)) for atr in attributes)
+
             case Models.Manager:
                 value = {param.Key: param.Value for param in model_instance.Parameters}
             case Models.Soils.Physical | Models.Soils.Chemical | Models.Soils.Organic | Models.Soils.Water:
                 # get key wod argument
-                selected_parameters = set()
-                for k, v in kwargs.items():
-                    if hasattr(model_instance, k):
-                        selected_parameters.add(k)
+
+                selected_parameters = {k for k in parameters if hasattr(model_instance, k)} if parameters else set()
+
                 thick = getattr(model_instance, 'Thickness', None)
-                df = pd.DataFrame()
+
+                df = pd.DataFrame() # empty data frame
                 attributes = selected_parameters or dir(model_instance)
                 if thick:
                     for attr in attributes:
@@ -268,10 +294,17 @@ def inspect_model_inputs(scope, model_type: str, simulations: Union[str, list], 
                                 df[attr] = val_list
                 value = df
             case Models.Report:
-                value = {
-                    'VariableNames': list(model_instance.VariableNames),
-                    'EventNames': list(model_instance.get_EventNames())
-                }
+                accepted_attributes= {'VariableNames',  'EventNames'}
+                selected_parameters = {k for k in parameters if hasattr(model_instance, k)} if parameters else set()
+                dif =  accepted_attributes - selected_parameters
+                if dif==accepted_attributes and parameters:
+                    raise ValueError(f"Parameters must be None or any of the following {accepted_attributes}")
+
+                attributes = selected_parameters or accepted_attributes
+                value = {}
+                for attr in attributes:
+                    value[attr] = list(getattr(model_instance, attr))
+
             case Models.PMF.Cultivar:
                 params = {}
                 for cmd in model_instance.Command:

@@ -739,6 +739,15 @@ class CoreModel:
                         ...     model_name='B_110',
                         ...     cultivar_manager='Sow using a variable rule'
                         ... ) # edits model cultivar
+            >>> model.edit_model(
+                        ...     model_type = 'Organic',
+                        ...     simulations='Simulation',
+                        ...     model_name = 'Organic',
+                        ...     Carbon = 1.23,
+
+
+                        ... ) # edits soil organic profile
+
 
         """
 

@@ -743,9 +743,7 @@ class CoreModel:
                         ...     model_type = 'Organic',
                         ...     simulations='Simulation',
                         ...     model_name = 'Organic',
-                        ...     Carbon = 1.23,
-
-
+                        ...     Carbon = 1.23
                         ... ) # edits soil organic profile
 
 

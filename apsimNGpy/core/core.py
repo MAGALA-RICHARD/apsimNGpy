@@ -794,7 +794,7 @@ class CoreModel:
                     manager_path = model_instance.FullPath
                     self.update_mgt_by_path(path=manager_path, fmt='.', **kwargs)
 
-                case Models.Soils.Physical | Models.Soils.Chemical | Models.Soils.Organic | Models.Soils.Water:
+                case Models.Soils.Physical | Models.Soils.Chemical | Models.Soils.Organic | Models.Soils.Water | Models.Soils.Solute:
 
                     self.replace_soils_values_by_path(node_path=model_instance.FullPath, **kwargs)
 
@@ -1099,7 +1099,7 @@ class CoreModel:
             if i.Name == Crop:
                 return i
         return self
-    def inspect_model_parameters(self, model_type, simulations, model_name,parameters:Union[list, str] =None, **kwargs):
+    def inspect_model_parameters(self, model_type, model_name, simulations ='all', parameters:Union[list, set, tuple, str] ='all', **kwargs):
         """
             Inspect the current input values of a specific APSIM model type instance within given simulations.
             This is all in one place to inspect the model, replacing examine_management_info, read_cultivar_params
@@ -1109,12 +1109,13 @@ class CoreModel:
             the search scope is the current instatiated model of ApsimNG model context with Models.Core.Simulations  and its associated Simulation models
 
             model_type : str
-                Name of the model class (e.g., 'Clock', 'Manager', 'Physical', 'Chemical', etc.) these are abstracted from the model namespace,
+                Name of the model class (e.g., 'Clock', 'Manager', 'Physical', 'Chemical', Water, Solute etc.) these are abstracted from the model namespace,
                  so no need for a complete path, although completed pathes are also valid e.g., Models.Clock, Models.Manager, Models.Climate.Weather if you want some kind of clarity
             simulations : Union[str, list]
                 Name or list of names of simulation(s) to inspect.
-            model_name : str
+            model_name : str. model type is a solute, model_name could be any of NH4, NH3, or Urea, if not been changed from the defaults
                 Name of the model instance within each simulation.
+            parameters: Union[str, set, list, tuple, Optional) defaults to 'all', meaning all valid attributes are inspected and returned if model type is a Solute, valid parameters are Depth, InitialValues,  SoluteBD,  Thickness
             **kwargs : dict
                 Optional keyword arguments — not used here but accepted for interface compatibility.
 
@@ -1122,7 +1123,7 @@ class CoreModel:
             --------
             Union[Dict[str, Any], pd.DataFrame, list, Any]
                 - For Weather: file path(s)
-                - For Clock: (start, end) tuple(s)
+                - For Clock: (start, end) dict or datetime object if only one parameter is supplied
                 - For Manager: dictionary of parameters,
                 - For Soil models: pandas DataFrame(s) of layer-based properties
                 - For Report: dictionary with 'VariableNames' and 'EventNames'
@@ -1150,15 +1151,26 @@ class CoreModel:
                     4  12.0    0.18   900-1200   0.01  ...   60.321981     0.015         12.0      300.0
                     5  12.0    0.12  1200-1500   0.01  ...   36.587131     0.010         12.0      300.0
                     6  12.0    0.12  1500-1800   0.01  ...   22.191217     0.010         12.0      300.0
+                # inspect the chemical soil profile
+                >>> model_instance.inspect_model_parameters(model_type='Chemical', simulations= 'Simulation', model_name='Chemical')
+                             Depth   PH  Thickness
+                        0      0-150  8.0      150.0
+                        1    150-300  8.0      150.0
+                        2    300-600  8.0      300.0
+                        3    600-900  8.0      300.0
+                        4   900-1200  8.0      300.0
+                        5  1200-1500  8.0      300.0
+                        6  1500-1800  8.0      300.0
+                # inspect one parameter at  a time
                 >>> model_instance.inspect_model_parameters(model_type='Organic', simulations= 'Simulation', model_name='Organic', parameters='Carbon') # inspects only carbon
-                   Carbon
-                0    1.20
-                1    0.96
-                2    0.60
-                3    0.30
-                4    0.18
-                5    0.12
-                6    0.12
+                       Carbon
+                    0    1.20
+                    1    0.96
+                    2    0.60
+                    3    0.30
+                    4    0.18
+                    5    0.12
+                    6    0.12
                 >>> model_instance.inspect_model_parameters(model_type='Organic', simulations= 'Simulation', model_name='Organic', parameters=['Carbon', 'CNR']) # inspect CNR and carbon
                       CNR  Carbon
                     0  12.0    1.20
@@ -1173,7 +1185,14 @@ class CoreModel:
                 >>> {'EventNames': ['[Maize].Harvesting']}
                 # The code below returns both the EventNames and VariableNames
                 >>> model_instance.inspect_model_parameters(model_type='Report', simulations= 'Simulation', model_name='Report', parameters=None)
-                >>> {'VariableNames': ['[Clock].Today', '[Maize].Phenology.CurrentStageName', '[Maize].AboveGround.Wt', '[Maize].AboveGround.N', '[Maize].Grain.Total.Wt*10 as Yield', '[Maize].Grain.Wt', '[Maize].Grain.Size', '[Maize].Grain.NumberFunction', '[Maize].Grain.Total.Wt', '[Maize].Grain.N', '[Maize].Total.Wt'], 'EventNames': ['[Maize].Harvesting']}
+                >>> {'VariableNames': ['[Clock].Today',
+                 '[Maize].Phenology.CurrentStageName',
+                 '[Maize].AboveGround.Wt', '[Maize].AboveGround.N',
+                 '[Maize].Grain.Total.Wt*10 as Yield', '[Maize].Grain.Wt',
+                 '[Maize].Grain.Size', '[Maize].Grain.NumberFunction',
+                 '[Maize].Grain.Total.Wt', '[Maize].Grain.N',
+                 '[Maize].Total.Wt'],
+                 'EventNames': ['[Maize].Harvesting']}
                 >>> model_instance.inspect_model_parameters(model_type='Report', simulations= 'Simulation', model_name='Report', parameters='VariableNames')
                 {'VariableNames': ['[Clock].Today',
                    '[Maize].Phenology.CurrentStageName',
@@ -1188,17 +1207,17 @@ class CoreModel:
                    '[Maize].Total.Wt']}
                 # inspect the met file path
                 >>> model_instance.inspect_model_parameters(model_type='Weather',simulations= "Simulation", model_name= 'Weather')
-                '%root%/Examples/WeatherFiles/AU_Dalby.met'
+                   '%root%/Examples/WeatherFiles/AU_Dalby.met'
                 # Inspect a manager script.
                 >>> model_instance.inspect_model_parameters(model_type="Manager", simulations='Simulation', model_name='Sow using a variable rule')
-                {'Crop': 'Maize', 'StartDate': '1-nov', 'EndDate': '10-jan', 'MinESW': '100.0', 'MinRain': '25.0', 'RainDays': '7',
-                 'CultivarName': 'Dekalb_XL82', 'SowingDepth': '30.0', 'RowSpacing': '750.0', 'Population': '10'}
+                   {'Crop': 'Maize', 'StartDate': '1-nov', 'EndDate': '10-jan', 'MinESW': '100.0', 'MinRain': '25.0', 'RainDays': '7',
+                   'CultivarName': 'Dekalb_XL82', 'SowingDepth': '30.0', 'RowSpacing': '750.0', 'Population': '10'}
                 # Inspect only a few parameters
                 >>> model_instance.inspect_model_parameters(model_type="Manager", simulations='Simulation', model_name='Sow using a variable rule', parameters = ['Population', 'StartDate'])
-                {'StartDate': '1-nov', 'Population': '10'}
+                   {'StartDate': '1-nov', 'Population': '10'}
                 # Inspect only one parameter
                >>> model_instance.inspect_model_parameters(model_type="Manager", simulations='Simulation', model_name='Sow using a variable rule', parameters = 'Population')
-                {'Population': '10'}
+                   {'Population': '10'}
                 # Inspect a Model cultivar
                 >>> model_instance.inspect_model_parameters("Cultivar", simulations='Simulation', model_name='B_110')
                 {'[Phenology].Juvenile.Target.FixedValue': '210',
@@ -1212,9 +1231,57 @@ class CoreModel:
                    '[Rachis].DMDemands.Structural.DMDemandFunction.MaximumOrganWt.FixedValue': '36'}
                 # Inspect a selected cultivar
                 >>> model_instance.inspect_model_parameters("Cultivar", simulations='Simulation', model_name='B_110', parameters = '[Phenology].Juvenile.Target.FixedValue')
-                {'[Phenology].Juvenile.Target.FixedValue': '210'}
+                    {'[Phenology].Juvenile.Target.FixedValue': '210'}
+                    # Check surface organic matter module
+                 >>> model_instance.inspect_model_parameters("Models.Surface.SurfaceOrganicMatter", simulations='Simulation',
+                  ... model_name='SurfaceOrganicMatter')
+                      {'C': 0.0, 'IncorporatedP': 0.0, 'LyingWt': 0.0, 'P': 0.0, 'InitialCNR': 100.0,
+                      'InitialCPR': 0.0, 'InitialResidueMass': 500.0, 'LabileP': 0.0, 'NO3': 0.0, 'N': 0.0,
+                      'Cover': 0.0, 'StandingWt': 0.0, 'IncorporatedC': 0.0, 'NH4': 0.0}
+
+                  # Inspect selected surface organic matter module parameters
+                 >>> model_instance.inspect_model_parameters(model_type="Models.Surface.SurfaceOrganicMatter", simulations='Simulation',
+                  ... model_name='SurfaceOrganicMatter', parameters={'InitialCNR', 'InitialResidueMass'})
+                      {'InitialResidueMass': 500.0, 'InitialCNR': 100.0}
+                  # inspect clock module
+                  >>> model_instance.inspect_model_parameters(model_type="Clock", simulations='Simulation', model_name='Clock')
+                      {'End': datetime.datetime(2000, 12, 31, 0, 0), 'Start': datetime.datetime(1990, 1, 1, 0, 0)}
+                  # Inspect only start or end year
+                  >>> model_instance.inspect_model_parameters(model_type="Clock", simulations='Simulation', model_name='Clock', parameters='End')
+                       datetime.datetime(2000, 12, 31, 0, 0)
+                  >>> model_instance.inspect_model_parameters("Clock", simulations='Simulation', model_name='Clock', parameters='Start')
+                       datetime.datetime(1990, 1, 1, 0, 0)
+                  # extract year only
+                  >>> model_instance.inspect_model_parameters("Clock", simulations='Simulation', model_name='Clock', parameters='Start').year
+                     1990
+                  # Inspect solute model
+                  >>> model_instance.inspect_model_parameters(model_type='Solute', simulations= 'Simulation', model_name='Urea')
+                             Depth     InitialValues  SoluteBD  Thickness
+                        0      0-150            0.0  1.010565      150.0
+                        1    150-300            0.0  1.071456      150.0
+                        2    300-600            0.0  1.093939      300.0
+                        3    600-900            0.0  1.158613      300.0
+                        4   900-1200            0.0  1.173012      300.0
+                        5  1200-1500            0.0  1.162873      300.0
+                        6  1500-1800            0.0  1.187495      300.0
+                  >>> # inspect a specified parameter
+
+                  >>> model_instance.inspect_model_parameters(model_type='Solute', simulations= 'Simulation', model_name='NH4', parameters = 'InitialValues')
+                              InitialValues
+                        0            0.1
+                        1            0.1
+                        2            0.1
+                        3            0.1
+                        4            0.1
+                        5            0.1
+                        6            0.1
 
             """
+        if parameters == 'all':
+            parameters = None # non is easy to deal with at the back end but all is intuitive
+        if simulations == 'all':
+            simulations = self.inspect_model('Simulation', fullpath=False)
+            simulations = simulations[0] if len(simulations) == 1 else simulations
 
         return inspect_model_inputs(self, model_type, simulations, model_name, parameters, **kwargs)
 
@@ -1924,7 +1991,8 @@ class CoreModel:
          ['Maize']
          >>> model.inspect_model(Models.Fertiliser, fullpath=True)
          ['.Simulations.Simulation.Field.Fertiliser']
-         >>> model.inspect_model('Models.Fertiliser', fullpath=False) # strings are allowed to
+         >>> from cli.server import model_instance         >>> model.inspect_model('Models.Fertiliser', fullpath=False) # strings are allowed to
+
 
         """
 

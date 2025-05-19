@@ -221,7 +221,7 @@ class TestCoreModel(BaseTester):
         self.assertTrue(start, 'Simulation start date was not successfully changed')
         self.assertTrue(end, 'Simulation end date was not successfully changed')
 
-    def test_edit_cultivar(self):
+    def test_edit_cultivar_edit_model_method(self):
         """
         Test the edit_cultivar requires that we have replacements in place
         @return:
@@ -229,15 +229,18 @@ class TestCoreModel(BaseTester):
         from apsimNGpy.core.structure import add_crop_replacements
         add_crop_replacements(self.test_ap_sim, _crop='Maize')
         in_cul = self.test_ap_sim.extract_user_input('Sow using a variable rule')
-
         in_cultivar = in_cul['Simulation'].get('CultivarName')
         if not in_cultivar:
             raise unittest.SkipTest('skipping test edit cultivar because cultivar not found')
+        new_juvenile = 289.777729777
+        self.test_ap_sim.edit_model('Cultivar', None, commands='[Phenology].Juvenile.Target.FixedValue', values=new_juvenile,
+                         model_name=in_cultivar, cultivar_manager='Sow using a variable rule')
+
         # first we check the current '[Phenology].Juvenile.Target.FixedValue': '211'
         cp = self.test_ap_sim.read_cultivar_params(name=in_cultivar)
         com_path = '[Phenology].Juvenile.Target.FixedValue'
         juvenile_original = float(cp.get(com_path))
-        new_juvenile = 289.777729777
+
         self.test_ap_sim.edit_cultivar(commands=com_path, values=new_juvenile, CultivarName=in_cultivar)
         # read again
         juvenile_replacements = self.test_ap_sim.read_cultivar_params(name=in_cultivar)[com_path]

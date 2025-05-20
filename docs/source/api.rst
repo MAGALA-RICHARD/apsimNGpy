@@ -745,12 +745,12 @@ CoreModel
         -------
         Union[dict, list, pd.DataFrame, Any]
             The format depends on the model type:
-            - Weather: file path(s) as string(s)
-            - Clock: dictionary with start and end datetime objects (or a single datetime if only one is requested)
-            - Manager: dictionary of script parameters
-            - Soil-related models: pandas DataFrame of layered values
-            - Report: dictionary with `VariableNames` and `EventNames`
-            - Cultivar: dictionary of parameter strings
+            - ``Weather``: file path(s) as string(s)
+            - ``Clock``: dictionary with start and end datetime objects (or a single datetime if only one is requested)
+            - ``Manager``: dictionary of script parameters
+            - ``Soil-related`` models: pandas DataFrame of layered values
+            - ``Report``: dictionary with `VariableNames` and `EventNames`
+            - ``Cultivar``: dictionary of parameter strings
 
         Raises
         ------
@@ -768,7 +768,7 @@ CoreModel
         --------
         >>> model_instance = CoreModel('Maize')
 
-        # Inspect full soil organic profile
+        # Inspect full soil ``Organic`` profile
 
         >>> model_instance.inspect_model_parameters('Organic', simulations='Simulation', model_name='Organic')
            CNR  Carbon      Depth  FBiom  ...         FOM  Nitrogen  SoilCNRatio  Thickness
@@ -781,7 +781,7 @@ CoreModel
         6  12.0    0.12  1500-1800   0.01  ...   22.191217     0.010         12.0      300.0
         [7 rows x 9 columns]
 
-        # inspect soil physical profile
+        # inspect soil ``Physical`` profile
 
         >>> model_instance.inspect_model_parameters('Physical', simulations='Simulation', model_name='Physical')
             AirDry        BD       DUL  ...        SWmm Thickness  ThicknessCumulative
@@ -794,7 +794,7 @@ CoreModel
         6  0.280000  1.187495  0.452332  ...  135.699528     300.0               1800.0
         [7 rows x 17 columns]
 
-        # Inspect soil chemical profile
+        # Inspect soil ``Chemical`` profile
 
         >>> model_instance.inspect_model_parameters('Chemical', simulations='Simulation', model_name='Chemical')
                Depth   PH  Thickness

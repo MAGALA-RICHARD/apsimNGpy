@@ -408,111 +408,151 @@ CoreModel
 
    Modify various APSIM model components by specifying the model type and name across given simulations.
 
-        Parameters:
+        Parameters
         ----------
         model_type : str
-            Name of the model class (e.g., 'Clock', 'Manager', 'Soils.Physical', etc.)
-        simulations : Union[str, list]
-            A simulation name or list of simulation names to search in. defaults to all simulations in the model
+            Type of the model component to modify (e.g., 'Clock', 'Manager', 'Soils.Physical', etc.).
+        simulations : Union[str, list], optional
+            A simulation name or list of simulation names in which to search. Defaults to all simulations in the model.
         model_name : str
             Name of the model instance to modify.
-        kwargs : dict
-            Additional keyword arguments required per model type:
+        **kwargs : dict
+            Additional keyword arguments specific to the model type. These vary by component:
 
+            - Weather:
+                - `weather_file` (str): Path to the weather `.met` file.
 
-            - Weather: 'weather_file' as strings path pointing to the weather .met file
-            - Clock: Any subset of date properties (e.g., 'Start', 'End') as ISO strings.
-            - Manager: Variables to update in the Manager script using `update_mgt_by_path`.
-            - Soils.Physical / Soils.Chemical / Soils.Organic / Soils.Water: Variables to replace via `replace_soils_values_by_path`.
+            - Clock:
+                - Date properties such as `Start` and `End` in ISO format (e.g., '2021-01-01').
+
+            - Manager:
+                - Variables to update in the Manager script using `update_mgt_by_path`.
+
+            - Soils.Physical / Soils.Chemical / Soils.Organic / Soils.Water:
+                - Variables to replace using `replace_soils_values_by_path`.
+
             - Report:
-                - report_name (str): Required
-                - variable_spec (list[str]): Variables to report
-                - set_event_names (list[str]): Events to trigger reporting
+                - `report_name` (str): Name of the report model (optional depending on structure).
+                - `variable_spec` (list[str] or str): Variables to include in the report.
+                - `set_event_names` (list[str], optional): Events that trigger the report.
+
             - Cultivar:
-                - commands (str): APSIM cultivar path to the parameter name to set
-                - values (Any): Value to assign
-                - name of the manager script manning the sowing variables, this is expected to have the CultivarName parameter for holding the cultiva name
-                it is needed after editing the cultivar, to replace the old values with new cultivar name since APSIM has made cultivar readonly models
+                - `commands` (str): APSIM path to the cultivar parameter to update.
+                - `values` (Any): Value to assign.
+                - `cultivar_manager` (str): Name of the Manager script managing the cultivar, which must contain the `CultivarName` parameter. Required to propagate updated cultivar values, as APSIM treats cultivars as read-only.
 
-        Raises:
-        -------
-        ValueError:
-            If model instance is not found, or required kwargs are missing.
-            if kwargs dictionary is empty: meaning none of the corresponding parameter for a model was not supplied
-        NotImplementedError:
-            If no logic is implemented for the model type.
-        Examples:
-            >>> model = CoreModel(model = 'Maize')
+        Raises
+        ------
+        ValueError
+            If the model instance is not found, required kwargs are missing, or `kwargs` is empty.
+        NotImplementedError
+            If the logic for the specified `model_type` is not implemented.
 
-            >>> model.edit_model(
-                        ...     model_type = 'Cultivar',
-                        ...     simulations='Simulation',
-                        ...     commands='[Phenology].Juvenile.Target.FixedValue',
-                        ...     values=256,
-                        ...     model_name='B_110',
-                        ...     cultivar_manager='Sow using a variable rule'
-                        ... ) # edits model cultivar
+        Examples
+        --------
 
-            # edit organic matter module
-            >>> model.edit_model(
-                        ...     model_type = 'Organic',
-                        ...     simulations='Simulation',
-                        ...     model_name = 'Organic',
-                        ...     Carbon = 1.23
-                        ... ) # edits soil organic profile
+        >>> model = CoreModel(model='Maize')
 
-           # supply a list.
-           >>> model.edit_model(
-                        ...     model_type = 'Organic',
-                        ...     simulations='Simulation',
-                        ...     model_name = 'Organic',
-                        ...     Carbon = [1.23, 1.0] # the first two layers will be edited by these values
-                        ... )
+        # Edit a cultivar model
 
-            # edit solute model
-            # NH4 intitial values
-            >>> model.edit_model(
-                        ...     model_type = 'Solute',
-                        ...     simulations='Simulation',
-                        ...     model_name = 'NH4',
-                        ...     InitialValues = 0.2
-                        ... )
+        >>> model.edit_model(
+        ...     model_type='Cultivar',
+        ...     simulations='Simulation',
+        ...     commands='[Phenology].Juvenile.Target.FixedValue',
+        ...     values=256,
+        ...     model_name='B_110',
+        ...     cultivar_manager='Sow using a variable rule'
+        ... )
 
-            # Urea intital values
-             >>> model.edit_model(
-                        ...     model_type = 'Solute',
-                        ...     simulations='Simulation',
-                        ...     model_name = 'Urea',
-                        ...     InitialValues = 0.002
-                        ... )
+        # Edit a soil organic matter module
 
-            # edit a manager script
-             >>> model.edit_model(
-                        ...     model_type = 'Manager',
-                        ...     simulations='Simulation',
-                        ...     model_name = 'Sow using a variable rule',
-                        ...     population = 8.4
-                        ... ) #
+        >>> model.edit_model(
+        ...     model_type='Organic',
+        ...     simulations='Simulation',
+        ...     model_name='Organic',
+        ...     Carbon=1.23
+        ... )
 
-            # Edit the surface organic matter InitialResidueMass
-            >>> model.edit_model( model_type = 'SurfaceOrganicMatter', simulations='Simulation',
-             ... model_name = 'SurfaceOrganicMatter', InitialResidueMass= 2500)
+        # Edit multiple soil layers
 
-             # Edit the surface organic matter InitialCNR
-            >>> model.edit_model( model_type = 'SurfaceOrganicMatter', simulations='Simulation',
-             ... model_name = 'SurfaceOrganicMatter', InitialCNR = 85)
+        >>> model.edit_model(
+        ...     model_type='Organic',
+        ...     simulations='Simulation',
+        ...     model_name='Organic',
+        ...     Carbon=[1.23, 1.0]
+        ... )
 
-             # Edit start and end dates
-             >>> model.edit_model( model_type = 'Clock', simulations='Simulation', model_name = 'Clock', Start='2021-01-01', End='2021-01-12')
+        # Edit solute models
 
-             # Edit report database
-             >>> model.edit_model( model_type = 'Report', simulations='Simulation', model_name = 'Report',
-              ... variable_spec='[Maize].AboveGround.Wt as abw')
+        >>> model.edit_model(
+        ...     model_type='Solute',
+        ...     simulations='Simulation',
+        ...     model_name='NH4',
+        ...     InitialValues=0.2
+        ... )
 
-              supply multiple variable specications
-              # Edit report database. to do this, supply a list of specifications
-             >>> model.edit_model( model_type = 'Report', simulations='Simulation', model_name = 'Report',
-              ... variable_spec=['[Maize].AboveGround.Wt as abw', '[Maize].Grain.Total.Wt as grain_weight'])
+        >>> model.edit_model(
+        ...     model_type='Solute',
+        ...     simulations='Simulation',
+        ...     model_name='Urea',
+        ...     InitialValues=0.002
+        ... )
+
+        # Edit a manager script
+
+        >>> model.edit_model(
+        ...     model_type='Manager',
+        ...     simulations='Simulation',
+        ...     model_name='Sow using a variable rule',
+        ...     population=8.4
+        ... )
+
+        # Edit surface organic matter parameters
+
+        >>> model.edit_model(
+        ...     model_type='SurfaceOrganicMatter',
+        ...     simulations='Simulation',
+        ...     model_name='SurfaceOrganicMatter',
+        ...     InitialResidueMass=2500
+        ... )
+
+        >>> model.edit_model(
+        ...     model_type='SurfaceOrganicMatter',
+        ...     simulations='Simulation',
+        ...     model_name='SurfaceOrganicMatter',
+        ...     InitialCNR=85
+        ... )
+
+        # Edit Clock start and end dates
+
+        >>> model.edit_model(
+        ...     model_type='Clock',
+        ...     simulations='Simulation',
+        ...     model_name='Clock',
+        ...     Start='2021-01-01',
+        ...     End='2021-01-12'
+        ... )
+
+        # Edit report variables
+
+        >>> model.edit_model(
+        ...     model_type='Report',
+        ...     simulations='Simulation',
+        ...     model_name='Report',
+        ...     variable_spec='[Maize].AboveGround.Wt as abw'
+        ... )
+
+        # Multiple report variables
+
+        >>> model.edit_model(
+        ...     model_type='Report',
+        ...     simulations='Simulation',
+        ...     model_name='Report',
+        ...     variable_spec=[
+        ...         '[Maize].AboveGround.Wt as abw',
+        ...         '[Maize].Grain.Total.Wt as grain_weight'
+        ...     ]
+        ... )
 
 .. function:: apsimNGpy.core.core.CoreModel.examine_management_info(self, simulations: Union[list, tuple] = None)
 
@@ -712,27 +752,34 @@ CoreModel
         >>> model_instance = CoreModel('Maize')
 
         # Inspect full soil organic profile
+
         >>> model_instance.inspect_model_parameters('Organic', simulations='Simulation', model_name='Organic')
 
         # Inspect chemical soil properties
+
         >>> model_instance.inspect_model_parameters('Chemical', simulations='Simulation', model_name='Chemical')
 
         # Inspect one or more specific parameters
+
         >>> model_instance.inspect_model_parameters('Organic', simulations='Simulation', model_name='Organic', parameters='Carbon')
         >>> model_instance.inspect_model_parameters('Organic', simulations='Simulation', model_name='Organic', parameters=['Carbon', 'CNR'])
 
         # Inspect Report module attributes
+
         >>> model_instance.inspect_model_parameters('Report', simulations='Simulation', model_name='Report')
         >>> model_instance.inspect_model_parameters('Report', simulations='Simulation', model_name='Report', parameters='EventNames')
 
         # Inspect weather file path
+
         >>> model_instance.inspect_model_parameters('Weather', simulations='Simulation', model_name='Weather')
 
         # Inspect manager script parameters
+
         >>> model_instance.inspect_model_parameters('Manager', simulations='Simulation', model_name='Sow using a variable rule')
         >>> model_instance.inspect_model_parameters('Manager', simulations='Simulation', model_name='Sow using a variable rule', parameters='Population')
 
         # Inspect cultivar parameters
+
         >>> model_instance.inspect_model_parameters('Cultivar', simulations='Simulation', model_name='B_110')
         >>> model_instance.inspect_model_parameters('Cultivar', simulations='Simulation', model_name='B_110', parameters='[Phenology].Juvenile.Target.FixedValue')
 
@@ -741,11 +788,13 @@ CoreModel
         >>> model_instance.inspect_model_parameters('Models.Surface.SurfaceOrganicMatter', simulations='Simulation', model_name='SurfaceOrganicMatter', parameters={'InitialCNR', 'InitialResidueMass'})
 
         # Inspect simulation clock
+
         >>> model_instance.inspect_model_parameters('Clock', simulations='Simulation', model_name='Clock')
         >>> model_instance.inspect_model_parameters('Clock', simulations='Simulation', model_name='Clock', parameters='End')
         >>> model_instance.inspect_model_parameters('Clock', simulations='Simulation', model_name='Clock', parameters='Start').year
 
         # Inspect solute models
+
         >>> model_instance.inspect_model_parameters('Solute', simulations='Simulation', model_name='Urea')
         >>> model_instance.inspect_model_parameters('Solute', simulations='Simulation', model_name='NH4', parameters='InitialValues')
 

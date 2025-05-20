@@ -1265,6 +1265,7 @@ class CoreModel:
         [7 rows x 9 columns]
 
         # inspect soil physical profile
+
         >>> model_instance.inspect_model_parameters('Physical', simulations='Simulation', model_name='Physical')
             AirDry        BD       DUL  ...        SWmm Thickness  ThicknessCumulative
         0  0.130250  1.010565  0.521000  ...   78.150033     150.0                150.0
@@ -1277,6 +1278,7 @@ class CoreModel:
         [7 rows x 17 columns]
 
         # Inspect soil chemical profile
+
         >>> model_instance.inspect_model_parameters('Chemical', simulations='Simulation', model_name='Chemical')
                Depth   PH  Thickness
         0      0-150  8.0      150.0
@@ -1623,7 +1625,7 @@ class CoreModel:
 
         fmt: seperator for formatting the path e.g., ".". Other characters can be used with
         caution, e.g., / and clearly declared in fmt argument.
-         For the above path if we want to use the forward slash, it will be '/Simulations/Simulation/Field/Sow using a variable rule', fmt = '/'
+        For the above path if we want to use the forward slash, it will be '/Simulations/Simulation/Field/Sow using a variable rule', fmt = '/'
 
         kwargs: Corresponding keyword arguments representing the paramters in the script manager and their values. Values is what you want
         to change to; Example here Population =8.2, values should be entered with their corresponding data types e.g.,

@@ -781,6 +781,31 @@ CoreModel
         6  12.0    0.12  1500-1800   0.01  ...   22.191217     0.010         12.0      300.0
         [7 rows x 9 columns]
 
+        # inspect soil physical profile
+
+        >>> model_instance.inspect_model_parameters('Physical', simulations='Simulation', model_name='Physical')
+            AirDry        BD       DUL  ...        SWmm Thickness  ThicknessCumulative
+        0  0.130250  1.010565  0.521000  ...   78.150033     150.0                150.0
+        1  0.198689  1.071456  0.496723  ...   74.508522     150.0                300.0
+        2  0.280000  1.093939  0.488438  ...  146.531282     300.0                600.0
+        3  0.280000  1.158613  0.480297  ...  144.089091     300.0                900.0
+        4  0.280000  1.173012  0.471584  ...  141.475079     300.0               1200.0
+        5  0.280000  1.162873  0.457071  ...  137.121171     300.0               1500.0
+        6  0.280000  1.187495  0.452332  ...  135.699528     300.0               1800.0
+        [7 rows x 17 columns]
+
+        # Inspect soil chemical profile
+
+        >>> model_instance.inspect_model_parameters('Chemical', simulations='Simulation', model_name='Chemical')
+               Depth   PH  Thickness
+        0      0-150  8.0      150.0
+        1    150-300  8.0      150.0
+        2    300-600  8.0      300.0
+        3    600-900  8.0      300.0
+        4   900-1200  8.0      300.0
+        5  1200-1500  8.0      300.0
+        6  1500-1800  8.0      300.0
+
         # Inspect chemical soil properties
 
         >>> model_instance.inspect_model_parameters('Chemical', simulations='Simulation', model_name='Chemical')
@@ -835,10 +860,21 @@ CoreModel
 
         >>> model_instance.inspect_model_parameters('Manager',
         ... simulations='Simulation', model_name='Sow using a variable rule')
+        {'Crop': 'Maize',
+        'StartDate': '1-nov',
+        'EndDate': '10-jan',
+        'MinESW': '100.0',
+        'MinRain': '25.0',
+        'RainDays': '7',
+        'CultivarName': 'Dekalb_XL82',
+        'SowingDepth': '30.0',
+        'RowSpacing': '750.0',
+        'Population': '10'}
 
         >>> model_instance.inspect_model_parameters('Manager',
         ... simulations='Simulation', model_name='Sow using a variable rule',
         ... parameters='Population')
+        {'Population': '10'}
 
         # Inspect cultivar parameters
 
@@ -887,8 +923,25 @@ CoreModel
         # Inspect solute models
 
         >>> model_instance.inspect_model_parameters('Solute', simulations='Simulation', model_name='Urea')
+               Depth  InitialValues  SoluteBD  Thickness
+        0      0-150            0.0  1.010565      150.0
+        1    150-300            0.0  1.071456      150.0
+        2    300-600            0.0  1.093939      300.0
+        3    600-900            0.0  1.158613      300.0
+        4   900-1200            0.0  1.173012      300.0
+        5  1200-1500            0.0  1.162873      300.0
+        6  1500-1800            0.0  1.187495      300.0
+
         >>> model_instance.inspect_model_parameters('Solute', simulations='Simulation', model_name='NH4',
         ... parameters='InitialValues')
+            InitialValues
+        0            0.1
+        1            0.1
+        2            0.1
+        3            0.1
+        4            0.1
+        5            0.1
+        6            0.1
 
 .. function:: apsimNGpy.core.core.CoreModel.move_model(self, model_type: <module 'Models'>, new_parent_type: <module 'Models'>, model_name: str = None, new_parent_name: str = None, verbose: bool = False, simulations: Union[str, list] = None)
 
@@ -1219,7 +1272,7 @@ CoreModel
 
         fmt: seperator for formatting the path e.g., ".". Other characters can be used with
         caution, e.g., / and clearly declared in fmt argument.
-         For the above path if we want to use the forward slash, it will be '/Simulations/Simulation/Field/Sow using a variable rule', fmt = '/'
+        For the above path if we want to use the forward slash, it will be '/Simulations/Simulation/Field/Sow using a variable rule', fmt = '/'
 
         kwargs: Corresponding keyword arguments representing the paramters in the script manager and their values. Values is what you want
         to change to; Example here Population =8.2, values should be entered with their corresponding data types e.g.,

@@ -159,7 +159,7 @@ if __name__ == '__main__':
 
             if copy.stem =='api':
 
-                os.startfile(copy)
+                ... #os.startfile(copy)
             print(copy)
     else:
         print(f"{SENDTO2} not present")

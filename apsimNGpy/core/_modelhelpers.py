@@ -21,17 +21,28 @@ class ModelTools:
 
        Attributes:
            ADD (callable): Function or class for adding components to an APSIM model.
+
            DELETE (callable): Function or class for deleting components from an APSIM model.
+
            MOVE (callable): Function or class for moving components within the model structure.
+
            RENAME (callable): Function or class for renaming components.
+
            CLONER (callable): Utility to clone APSIM models or components.
+
            REPLACE (callable): Function to replace components in the model.
+
            MultiThreaded (Enum): Enumeration value to specify multi-threaded APSIM runs.
+
            SingleThreaded (Enum): Enumeration value to specify single-threaded APSIM runs.
+
            ModelRUNNER (class): APSIM run manager that handles simulation execution.
+
            CLASS_MODEL (type): The type of the APSIM Clock model, often used for type checks or instantiation.
+
            ACTIONS (tuple): Set of supported string actions ('get', 'delete', 'check').
-           COLLECT (callable): Function for collecting or extracting model data (e.g., results, nodes).
+
+           COLLECT (callable): Function for forcing memory checks
        """
     ADD = Models.Core.ApsimFile.Structure.Add
     DELETE = Models.Core.ApsimFile.Structure.Delete
@@ -146,6 +157,8 @@ def find_model(model_name: str):
         model_type = getattr(Models.Factorial, model_name, None)
     if model_type is None:
         model_type = getattr(Models.Surface, model_name, None)
+    if model_type is None:
+        model_type = getattr(Models.Core, model_name, None)
     collect()
     return model_type
 

@@ -784,6 +784,7 @@ CoreModel
         >>> model_instance.inspect_model_parameters('Cultivar', simulations='Simulation', model_name='B_110', parameters='[Phenology].Juvenile.Target.FixedValue')
 
         # Inspect surface organic matter module
+
         >>> model_instance.inspect_model_parameters('Models.Surface.SurfaceOrganicMatter', simulations='Simulation', model_name='SurfaceOrganicMatter')
         >>> model_instance.inspect_model_parameters('Models.Surface.SurfaceOrganicMatter', simulations='Simulation', model_name='SurfaceOrganicMatter', parameters={'InitialCNR', 'InitialResidueMass'})
 
@@ -791,6 +792,9 @@ CoreModel
 
         >>> model_instance.inspect_model_parameters('Clock', simulations='Simulation', model_name='Clock')
         >>> model_instance.inspect_model_parameters('Clock', simulations='Simulation', model_name='Clock', parameters='End')
+
+         datetime.datetime(2000, 12, 31, 0, 0)
+
         >>> model_instance.inspect_model_parameters('Clock', simulations='Simulation', model_name='Clock', parameters='Start').year
 
         1990

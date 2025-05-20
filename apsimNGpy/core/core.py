@@ -1285,12 +1285,35 @@ class CoreModel:
 
         # Inspect surface organic matter module
 
-        >>> model_instance.inspect_model_parameters('Models.Surface.SurfaceOrganicMatter', simulations='Simulation', model_name='SurfaceOrganicMatter')
-        >>> model_instance.inspect_model_parameters('Models.Surface.SurfaceOrganicMatter', simulations='Simulation', model_name='SurfaceOrganicMatter', parameters={'InitialCNR', 'InitialResidueMass'})
+        >>> model_instance.inspect_model_parameters('Models.Surface.SurfaceOrganicMatter',
+        ... simulations='Simulation', model_name='SurfaceOrganicMatter')
+
+        {'NH4': 0.0,
+         'InitialResidueMass': 500.0,
+         'StandingWt': 0.0,
+         'Cover': 0.0,
+         'LabileP': 0.0,
+         'LyingWt': 0.0,
+         'InitialCNR': 100.0,
+         'P': 0.0,
+         'InitialCPR': 0.0,
+         'SurfOM': <System.Collections.Generic.List[SurfOrganicMatterType] object at 0x000001DABDBB58C0>,
+         'C': 0.0,
+         'N': 0.0,
+         'NO3': 0.0}
+
+        >>> model_instance.inspect_model_parameters('Models.Surface.SurfaceOrganicMatter', simulations='Simulation',
+         ... model_name='SurfaceOrganicMatter', parameters={'InitialCNR', 'InitialResidueMass'})
+
+        {'InitialCNR': 100.0, 'InitialResidueMass': 500.0}
 
         # Inspect simulation clock
 
         >>> model_instance.inspect_model_parameters('Clock', simulations='Simulation', model_name='Clock')
+
+         {'End': datetime.datetime(2000, 12, 31, 0, 0),
+         'Start': datetime.datetime(1990, 1, 1, 0, 0)}
+
         >>> model_instance.inspect_model_parameters('Clock', simulations='Simulation', model_name='Clock', parameters='End')
 
          datetime.datetime(2000, 12, 31, 0, 0)

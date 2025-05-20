@@ -152,8 +152,10 @@ if __name__ == '__main__':
     if SENDTO2.exists():
         sd2 = SENDTO2
         for rst in rsts:
-
-            copy = shutil.copy2(rst, SENDTO2.joinpath(rst.name))
+            file_name = SENDTO2.joinpath(rst.name)
+            if file_name.exists():
+                os.remove(file_name)
+            copy = shutil.copy2(rst, file_name)
 
             if copy.stem =='api':
 
@@ -163,8 +165,11 @@ if __name__ == '__main__':
         print(f"{SENDTO2} not present")
 
     for rst in rsts:
+        file_name = SENDTO.joinpath(rst.name)
+        if file_name.exists():
+            os.remove(file_name)
 
-        copy = shutil.copy2(rst, SENDTO.joinpath(rst.name))
+        copy = shutil.copy2(rst, file_name)
         print(copy)
 
     # sphinx-build -b html docs/source docs/build/html

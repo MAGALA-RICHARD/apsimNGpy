@@ -5,9 +5,77 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="5d471312-8496-4246-98d6-790439318160" name="Changes" comment="ModelTools">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/raw_docs/api.rst" beforeDir="false" afterPath="$PROJECT_DIR$/raw_docs/api.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../docs/source/api.rst" beforeDir="false" afterPath="$PROJECT_DIR$/../docs/source/api.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/core.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/core.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/scratch/temp_1bdc24ce-34ca-11f0-8a7a-54bf64886e7e_APSIM2025.2.7671.0_w_.met" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/apsimNGpy_tests/temp_fd034a47-34ca-11f0-ac41-54bf64886e7e_maizeAPSIM2025.2.7671.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_f6e5ac8f-34ca-11f0-880d-54bf64886e7e_APSIM2025.2.7671.0.Report.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_f6e5ac8f-34ca-11f0-880d-54bf64886e7e_APSIM2025.2.7671.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_f6e5ac8f-34ca-11f0-880d-54bf64886e7e_APSIM2025.2.7671.0.db-shm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_f6e5ac8f-34ca-11f0-880d-54bf64886e7e_APSIM2025.2.7671.0.db-wal" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_fcfdc971-34ca-11f0-9a99-54bf64886e7e_APSIM2025.2.7671.0.Report.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_fcfdc971-34ca-11f0-9a99-54bf64886e7e_APSIM2025.2.7671.0.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_fcfdc971-34ca-11f0-9a99-54bf64886e7e_APSIM2025.2.7671.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../docs/.github/workflows/documnetation.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../docs/.nojekyll" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../docs/.readthedocs.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../docs/Makefile" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../docs/index.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../docs/make.bat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../docs/requirements.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../docs/source/Usage.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../docs/source/api.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../docs/source/api_docs.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../docs/source/cli.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../docs/source/conf.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../docs/source/factorial_experiments.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../docs/source/getting started.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../docs/source/index.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../docs/source/model inspection.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../docs/source/modules.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../docs2/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../docs2/getting_started.ipynb" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../docs2/getting_started.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../docs2/source/apsimNGpy.core_utils.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../docs2/source/apsimNGpy.experiment.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../docs2/source/apsimNGpy.manager.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../docs2/source/apsimNGpy.optimizer.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../docs2/source/apsimNGpy.parallel.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../docs2/source/apsimNGpy.replacements.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../docs2/source/apsimNGpy.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../docs2/source/apsimNGpy.tests.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../docs2/source/apsimNGpy.uncertainity_box.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../docs2/source/apsimNGpy.validation.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../docs2/source/apsimNGpy.visual.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../docs2/source/modules.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../source/Usage.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../source/api.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../source/apsimNGpy.core.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../source/apsimNGpy.core_utils.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../source/apsimNGpy.experiment.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../source/apsimNGpy.manager.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../source/apsimNGpy.optimizer.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../source/apsimNGpy.parallel.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../source/apsimNGpy.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../source/apsimNGpy.tests.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../source/apsimNGpy.validation.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../source/apsimNGpy.visual.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../source/cli.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../source/conf.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../source/factorial_experiments.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../source/getting started.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../source/index.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../source/modules.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../source/src.apsimNGpy.core.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../source/src.apsimNGpy.core_utils.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../source/src.apsimNGpy.experiment.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../source/src.apsimNGpy.manager.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../source/src.apsimNGpy.optimizer.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../source/src.apsimNGpy.parallel.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../source/src.apsimNGpy.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../source/src.apsimNGpy.tests.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../source/src.apsimNGpy.validation.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../source/src.apsimNGpy.visual.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../source/src.rst" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -40,62 +108,63 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
-    &quot;Python.__init__.executor&quot;: &quot;Run&quot;,
-    &quot;Python._modelhelpers.executor&quot;: &quot;Run&quot;,
-    &quot;Python.api.executor&quot;: &quot;Run&quot;,
-    &quot;Python.apsim.executor&quot;: &quot;Run&quot;,
-    &quot;Python.base_data.executor&quot;: &quot;Run&quot;,
-    &quot;Python.batch_runner.executor&quot;: &quot;Run&quot;,
-    &quot;Python.cli.executor&quot;: &quot;Run&quot;,
-    &quot;Python.client.executor&quot;: &quot;Run&quot;,
-    &quot;Python.config.executor&quot;: &quot;Run&quot;,
-    &quot;Python.core.executor&quot;: &quot;Run&quot;,
-    &quot;Python.database_utils.executor&quot;: &quot;Run&quot;,
-    &quot;Python.diagnostics.executor&quot;: &quot;Run&quot;,
-    &quot;Python.do not switch off.executor&quot;: &quot;Run&quot;,
-    &quot;Python.glue.executor&quot;: &quot;Run&quot;,
-    &quot;Python.logger.executor&quot;: &quot;Run&quot;,
-    &quot;Python.main.executor&quot;: &quot;Run&quot;,
-    &quot;Python.met_functions.executor&quot;: &quot;Run&quot;,
-    &quot;Python.model_desc.executor&quot;: &quot;Run&quot;,
-    &quot;Python.model_loader.executor&quot;: &quot;Run&quot;,
-    &quot;Python.new_opt.executor&quot;: &quot;Run&quot;,
-    &quot;Python.path_finders.executor&quot;: &quot;Run&quot;,
-    &quot;Python.problem.executor&quot;: &quot;Run&quot;,
-    &quot;Python.process.executor&quot;: &quot;Run&quot;,
-    &quot;Python.pythonet_config.executor&quot;: &quot;Run&quot;,
-    &quot;Python.replacements.executor&quot;: &quot;Run&quot;,
-    &quot;Python.runner.executor&quot;: &quot;Run&quot;,
-    &quot;Python.senstivity.executor&quot;: &quot;Run&quot;,
-    &quot;Python.server.executor&quot;: &quot;Run&quot;,
-    &quot;Python.set_bin.executor&quot;: &quot;Run&quot;,
-    &quot;Python.set_ups.executor&quot;: &quot;Run&quot;,
-    &quot;Python.settings.executor&quot;: &quot;Run&quot;,
-    &quot;Python.sobol.executor&quot;: &quot;Run&quot;,
-    &quot;Python.soilmanager.executor&quot;: &quot;Run&quot;,
-    &quot;Python.tools.executor&quot;: &quot;Run&quot;,
-    &quot;Python.unit_tests_core.executor&quot;: &quot;Run&quot;,
-    &quot;Python.utils.executor&quot;: &quot;Run&quot;,
-    &quot;Python.variable.executor&quot;: &quot;Run&quot;,
-    &quot;Python.weathermanager.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;last_opened_file_path&quot;: &quot;D:/package/apsimNGpy/setup.py&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;inlay.hints&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "Python.__init__.executor": "Run",
+    "Python._modelhelpers.executor": "Run",
+    "Python.api.executor": "Run",
+    "Python.apsim.executor": "Run",
+    "Python.base_data.executor": "Run",
+    "Python.batch_runner.executor": "Run",
+    "Python.cleaner.executor": "Run",
+    "Python.cli.executor": "Run",
+    "Python.client.executor": "Run",
+    "Python.config.executor": "Run",
+    "Python.core.executor": "Run",
+    "Python.database_utils.executor": "Run",
+    "Python.diagnostics.executor": "Run",
+    "Python.do not switch off.executor": "Run",
+    "Python.glue.executor": "Run",
+    "Python.logger.executor": "Run",
+    "Python.main.executor": "Run",
+    "Python.met_functions.executor": "Run",
+    "Python.model_desc.executor": "Run",
+    "Python.model_loader.executor": "Run",
+    "Python.new_opt.executor": "Run",
+    "Python.path_finders.executor": "Run",
+    "Python.problem.executor": "Run",
+    "Python.process.executor": "Run",
+    "Python.pythonet_config.executor": "Run",
+    "Python.replacements.executor": "Run",
+    "Python.runner.executor": "Run",
+    "Python.senstivity.executor": "Run",
+    "Python.server.executor": "Run",
+    "Python.set_bin.executor": "Run",
+    "Python.set_ups.executor": "Run",
+    "Python.settings.executor": "Run",
+    "Python.sobol.executor": "Run",
+    "Python.soilmanager.executor": "Run",
+    "Python.tools.executor": "Run",
+    "Python.unit_tests_core.executor": "Run",
+    "Python.utils.executor": "Run",
+    "Python.variable.executor": "Run",
+    "Python.weathermanager.executor": "Run",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "git-widget-placeholder": "main",
+    "last_opened_file_path": "D:/package/apsimNGpy/setup.py",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "inlay.hints",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="D:\package\apsimNGpy\apsimNGpy" />
@@ -105,7 +174,7 @@
       <recent name="D:\ACPd\Bear creek simulations" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.unit_tests_core">
+  <component name="RunManager" selected="Python.core">
     <configuration name="_modelhelpers" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="apsimNGpy" />
       <option name="ENV_FILES" value="" />
@@ -152,21 +221,18 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="batch_runner" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="cleaner" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="apsimNGpy" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/core" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/w" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/core/batch_runner.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/w/cleaner.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="true" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -180,9 +246,6 @@
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/core" />
       <option name="IS_MODULE_SDK" value="true" />
@@ -203,9 +266,6 @@
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/raw_docs" />
       <option name="IS_MODULE_SDK" value="true" />
@@ -243,11 +303,11 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.unit_tests_core" />
-        <item itemvalue="Python.main" />
         <item itemvalue="Python.core" />
+        <item itemvalue="Python.cleaner" />
+        <item itemvalue="Python.main" />
+        <item itemvalue="Python.unit_tests_core" />
         <item itemvalue="Python._modelhelpers" />
-        <item itemvalue="Python.batch_runner" />
       </list>
     </recent_temporary>
   </component>
@@ -342,22 +402,7 @@
       <workItem from="1746202214987" duration="8937000" />
       <workItem from="1746329299406" duration="12459000" />
       <workItem from="1746475969057" duration="6783000" />
-    </task>
-    <task id="LOCAL-00388" summary="one">
-      <option name="closed" value="true" />
-      <created>1744423039205</created>
-      <option name="number" value="00388" />
-      <option name="presentableId" value="LOCAL-00388" />
-      <option name="project" value="LOCAL" />
-      <updated>1744423039205</updated>
-    </task>
-    <task id="LOCAL-00389" summary="one">
-      <option name="closed" value="true" />
-      <created>1744511106963</created>
-      <option name="number" value="00389" />
-      <option name="presentableId" value="LOCAL-00389" />
-      <option name="project" value="LOCAL" />
-      <updated>1744511106963</updated>
+      <workItem from="1747696101620" duration="1885000" />
     </task>
     <task id="LOCAL-00390" summary="one">
       <option name="closed" value="true" />
@@ -735,7 +780,23 @@
       <option name="project" value="LOCAL" />
       <updated>1747620956039</updated>
     </task>
-    <option name="localTasksCounter" value="437" />
+    <task id="LOCAL-00437" summary="ModelTools">
+      <option name="closed" value="true" />
+      <created>1747696196294</created>
+      <option name="number" value="00437" />
+      <option name="presentableId" value="LOCAL-00437" />
+      <option name="project" value="LOCAL" />
+      <updated>1747696196294</updated>
+    </task>
+    <task id="LOCAL-00438" summary="ModelTools">
+      <option name="closed" value="true" />
+      <created>1747697145703</created>
+      <option name="number" value="00438" />
+      <option name="presentableId" value="LOCAL-00438" />
+      <option name="project" value="LOCAL" />
+      <updated>1747697145703</updated>
+    </task>
+    <option name="localTasksCounter" value="439" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

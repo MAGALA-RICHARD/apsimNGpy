@@ -1281,7 +1281,9 @@ class CoreModel:
         # Inspect cultivar parameters
 
         >>> model_instance.inspect_model_parameters('Cultivar', simulations='Simulation', model_name='B_110')
-        >>> model_instance.inspect_model_parameters('Cultivar', simulations='Simulation', model_name='B_110', parameters='[Phenology].Juvenile.Target.FixedValue')
+        >>> model_instance.inspect_model_parameters('Cultivar', simulations='Simulation',
+        ... model_name='B_110', parameters='[Phenology].Juvenile.Target.FixedValue')
+        {'[Phenology].Juvenile.Target.FixedValue': '210'}
 
         # Inspect surface organic matter module
 
@@ -1303,7 +1305,7 @@ class CoreModel:
          'NO3': 0.0}
 
         >>> model_instance.inspect_model_parameters('Models.Surface.SurfaceOrganicMatter', simulations='Simulation',
-         ... model_name='SurfaceOrganicMatter', parameters={'InitialCNR', 'InitialResidueMass'})
+        ... model_name='SurfaceOrganicMatter', parameters={'InitialCNR', 'InitialResidueMass'})
 
         {'InitialCNR': 100.0, 'InitialResidueMass': 500.0}
 
@@ -2064,6 +2066,8 @@ class CoreModel:
          >>> model.inspect_model('Weather') # inspects the weather module
          ['.Simulations.Simulation.Weather']
 
+         >>> model.inspect_model('Cultivar', fullpath=False) # list all available cultivar names
+         ['Hycorn_53',  'Pioneer_33M54', 'Pioneer_38H20',  'Pioneer_34K77',  'Pioneer_39V43',  'Atrium', 'Laila', 'GH_5019WX']
 
         """
 

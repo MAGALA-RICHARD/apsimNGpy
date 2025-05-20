@@ -1892,13 +1892,7 @@ class CoreModel:
             end = clock.End
         return start.Year, end.Year
 
-    @property
-    def met(self):
-        return self._met
 
-    @met.setter
-    def met(self, value):
-        self._met = value
 
     def change_met(self):
         self.replace_met_file(self.met)
@@ -2187,14 +2181,7 @@ class CoreModel:
             return attribute
         return [attribute[i] for i in index]
 
-    def _extract_solute(self, simulation=None):
-        # find the solute child in the simulation
-        sims = self._find_simulation(simulation)
-        solute = {}
-        for sim in sims:
-            solute[sim.Name] = sim.FindAllDescendants[Models.Soils.Solute]()
 
-        return solute
 
     def replace_soil_properties_by_path(self, path: str,
                                         param_values: list,
@@ -2318,50 +2305,8 @@ class CoreModel:
                 setattr(_soil_child, parameter, _param_new)
         return self
 
-    def extract_any_soil_organic(self, parameter: str, simulation: tuple = None):
-        """extracts any specified soil  parameters in the simulation
 
-        Args:
-            :param parameter (string, required): string e.g., Carbon, FBiom.
-            open APSIMX file in the GUI and examne the phyicals child for clues on the parameter names
-            :param simulation (string, optional): Targeted simulation name.
-            Defaults to None.
-           :param  param_values (array, required): arrays or list of values for the specified parameter to replace
 
-        """
-
-        soil_organic = self.extract_soil_organic(simulation)
-        get_organic = {sim:
-                           list(getattr(soil_organic[sim], parameter))
-                       for sim in (simulation if simulation is not None else self.simulation_names)
-                       }
-
-        return get_organic
-
-    # Find a list of simulations by name
-    def extract_crop_soil_water(self, parameter: str, crop: str = "Maize", simulation: Union[list, tuple] = None):
-        """ deprecated
-
-        Args:
-           :param parameter (str): crop soil water parameter names e.g. LL, XF etc
-           :param crop (str, optional): crop name. Defaults to "Maize".
-            simulation (_str_, optional): _target simulation name . Defaults to None.
-
-        Returns:
-            _type_: list[int, float]
-
-        """
-        assert isinstance(parameter, str), 'Parameter name should be a string'
-        assert isinstance(crop, str), "Crop name should be a string"
-        for simu in self.find_simulations(simulation):
-            soil_object = simu.FindDescendant[Soil]()
-            soil_crop = soil_object.FindAllDescendants[SoilCrop]()
-            # can be used to target specific crop
-            for crops in soil_crop:
-                crop_soil = crop + "Soil"
-                if crops.Name == crop_soil:
-                    param_values = getattr(crops, parameter)
-                    return list(param_values)
 
     def find_simulations(self, simulations: Union[list, tuple, str] = None):
         simulations_names = simulations
@@ -2788,7 +2733,7 @@ class CoreModel:
                 raise RuntimeError("No Zone found in the Simulation scope to attach the report table.")
             check_repo = sim.FindInScope[Models.Report](rename)
             if check_repo:# because this is intented to create an entirley new db table
-               DELETE(check_repo)
+               ModelTools.DELETE(check_repo)
             zone.Children.Add(report)
             self.save()
 

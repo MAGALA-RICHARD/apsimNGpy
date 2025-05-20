@@ -14,6 +14,7 @@ from apsimNGpy.validation import evaluator
 
 modules = list((config, base_data, apsim))
 SENDTO = Path.cwd().parent.parent / 'docs/source'
+SENDTO.mkdir(parents=True, exist_ok=True)
 SENDTO2 = Path.cwd().parent.parent.parent/'apsimNGpy-documentations/doc'
 
 

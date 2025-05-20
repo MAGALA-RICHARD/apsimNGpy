@@ -1219,6 +1219,7 @@ class CoreModel:
                     4  12.0    0.18   900-1200   0.01  ...   60.321981     0.015         12.0      300.0
                     5  12.0    0.12  1200-1500   0.01  ...   36.587131     0.010         12.0      300.0
                     6  12.0    0.12  1500-1800   0.01  ...   22.191217     0.010         12.0      300.0
+
                 # inspect the chemical soil profile
                 >>> model_instance.inspect_model_parameters(model_type='Chemical', simulations= 'Simulation', model_name='Chemical')
                              Depth   PH  Thickness
@@ -1229,6 +1230,7 @@ class CoreModel:
                         4   900-1200  8.0      300.0
                         5  1200-1500  8.0      300.0
                         6  1500-1800  8.0      300.0
+
                 # inspect one parameter at  a time
                 >>> model_instance.inspect_model_parameters(model_type='Organic', simulations= 'Simulation', model_name='Organic', parameters='Carbon') # inspects only carbon
                        Carbon
@@ -1239,6 +1241,7 @@ class CoreModel:
                     4    0.18
                     5    0.12
                     6    0.12
+
                 >>> model_instance.inspect_model_parameters(model_type='Organic', simulations= 'Simulation', model_name='Organic', parameters=['Carbon', 'CNR']) # inspect CNR and carbon
                       CNR  Carbon
                     0  12.0    1.20
@@ -1248,9 +1251,11 @@ class CoreModel:
                     4  12.0    0.18
                     5  12.0    0.12
                     6  12.0    0.12
+
                 # Inspect the EventNames parameter in the Report data base attached to simulations
                 >>> model_instance.inspect_model_parameters(model_type='Report', simulations= 'Simulation', model_name='Report', parameters='EventNames')
                 >>> {'EventNames': ['[Maize].Harvesting']}
+
                 # The code below returns both the EventNames and VariableNames
                 >>> model_instance.inspect_model_parameters(model_type='Report', simulations= 'Simulation', model_name='Report', parameters=None)
                 >>> {'VariableNames': ['[Clock].Today',
@@ -1261,6 +1266,7 @@ class CoreModel:
                  '[Maize].Grain.Total.Wt', '[Maize].Grain.N',
                  '[Maize].Total.Wt'],
                  'EventNames': ['[Maize].Harvesting']}
+
                 >>> model_instance.inspect_model_parameters(model_type='Report', simulations= 'Simulation', model_name='Report', parameters='VariableNames')
                 {'VariableNames': ['[Clock].Today',
                    '[Maize].Phenology.CurrentStageName',
@@ -1273,19 +1279,24 @@ class CoreModel:
                    '[Maize].Grain.Total.Wt',
                    '[Maize].Grain.N',
                    '[Maize].Total.Wt']}
+
                 # inspect the met file path
                 >>> model_instance.inspect_model_parameters(model_type='Weather',simulations= "Simulation", model_name= 'Weather')
                    '%root%/Examples/WeatherFiles/AU_Dalby.met'
+
                 # Inspect a manager script.
                 >>> model_instance.inspect_model_parameters(model_type="Manager", simulations='Simulation', model_name='Sow using a variable rule')
                    {'Crop': 'Maize', 'StartDate': '1-nov', 'EndDate': '10-jan', 'MinESW': '100.0', 'MinRain': '25.0', 'RainDays': '7',
                    'CultivarName': 'Dekalb_XL82', 'SowingDepth': '30.0', 'RowSpacing': '750.0', 'Population': '10'}
+
                 # Inspect only a few parameters
                 >>> model_instance.inspect_model_parameters(model_type="Manager", simulations='Simulation', model_name='Sow using a variable rule', parameters = ['Population', 'StartDate'])
                    {'StartDate': '1-nov', 'Population': '10'}
+
                 # Inspect only one parameter
                >>> model_instance.inspect_model_parameters(model_type="Manager", simulations='Simulation', model_name='Sow using a variable rule', parameters = 'Population')
                    {'Population': '10'}
+
                 # Inspect a Model cultivar
                 >>> model_instance.inspect_model_parameters("Cultivar", simulations='Simulation', model_name='B_110')
                 {'[Phenology].Juvenile.Target.FixedValue': '210',
@@ -1297,9 +1308,11 @@ class CoreModel:
                    '[Phenology].Maturing.Target.FixedValue': '1',
                    '[Phenology].MaturityToHarvestRipe.Target.FixedValue': '100',
                    '[Rachis].DMDemands.Structural.DMDemandFunction.MaximumOrganWt.FixedValue': '36'}
+
                 # Inspect a selected cultivar
                 >>> model_instance.inspect_model_parameters("Cultivar", simulations='Simulation', model_name='B_110', parameters = '[Phenology].Juvenile.Target.FixedValue')
                     {'[Phenology].Juvenile.Target.FixedValue': '210'}
+
                     # Check surface organic matter module
                  >>> model_instance.inspect_model_parameters("Models.Surface.SurfaceOrganicMatter", simulations='Simulation',
                   ... model_name='SurfaceOrganicMatter')
@@ -1311,17 +1324,21 @@ class CoreModel:
                  >>> model_instance.inspect_model_parameters(model_type="Models.Surface.SurfaceOrganicMatter", simulations='Simulation',
                   ... model_name='SurfaceOrganicMatter', parameters={'InitialCNR', 'InitialResidueMass'})
                       {'InitialResidueMass': 500.0, 'InitialCNR': 100.0}
+
                   # inspect clock module
                   >>> model_instance.inspect_model_parameters(model_type="Clock", simulations='Simulation', model_name='Clock')
                       {'End': datetime.datetime(2000, 12, 31, 0, 0), 'Start': datetime.datetime(1990, 1, 1, 0, 0)}
                   # Inspect only start or end year
                   >>> model_instance.inspect_model_parameters(model_type="Clock", simulations='Simulation', model_name='Clock', parameters='End')
                        datetime.datetime(2000, 12, 31, 0, 0)
+
                   >>> model_instance.inspect_model_parameters("Clock", simulations='Simulation', model_name='Clock', parameters='Start')
                        datetime.datetime(1990, 1, 1, 0, 0)
+
                   # extract year only
                   >>> model_instance.inspect_model_parameters("Clock", simulations='Simulation', model_name='Clock', parameters='Start').year
                      1990
+
                   # Inspect solute model
                   >>> model_instance.inspect_model_parameters(model_type='Solute', simulations= 'Simulation', model_name='Urea')
                              Depth     InitialValues  SoluteBD  Thickness
@@ -1332,8 +1349,8 @@ class CoreModel:
                         4   900-1200            0.0  1.173012      300.0
                         5  1200-1500            0.0  1.162873      300.0
                         6  1500-1800            0.0  1.187495      300.0
-                  >>> # inspect a specified parameter
 
+                  >>> # inspect a specified parameter
                   >>> model_instance.inspect_model_parameters(model_type='Solute', simulations= 'Simulation', model_name='NH4', parameters = 'InitialValues')
                               InitialValues
                         0            0.1

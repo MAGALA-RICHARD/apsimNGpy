@@ -1167,7 +1167,7 @@ class CoreModel:
             if i.Name == Crop:
                 return i
         return self
-    def inspect_model_parameters(self, model_type, model_name, simulations ='all', parameters:Union[list, set, tuple, str] ='all', **kwargs):
+    def inspect_model_parameters(self, model_type:Union[Models, str], model_name:str, simulations: Union[str, list] ='all', parameters:Union[list, set, tuple, str] ='all', **kwargs):
         """
         Inspect the input parameters of a specific APSIM model type instance within selected simulations.
 

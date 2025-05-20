@@ -715,6 +715,9 @@ CoreModel
          >>> model.inspect_model('Weather') # inspects the weather module
          ['.Simulations.Simulation.Weather']
 
+         >>> model.inspect_model('Cultivar', fullpath=False) # list all available cultivar names
+         ['Hycorn_53',  'Pioneer_33M54', 'Pioneer_38H20',  'Pioneer_34K77',  'Pioneer_39V43',  'Atrium', 'Laila', 'GH_5019WX']
+
 .. function:: apsimNGpy.core.core.CoreModel.inspect_model_parameters(self, model_type: Union[<module 'Models'>, str], model_name: str, simulations: Union[str, list] = 'all', parameters: Union[list, set, tuple, str] = 'all', **kwargs)
 
    Inspect the input parameters of a specific APSIM model type instance within selected simulations.
@@ -801,7 +804,6 @@ CoreModel
 
         >>> model_instance.inspect_model_parameters('Models.Surface.SurfaceOrganicMatter',
         ... simulations='Simulation', model_name='SurfaceOrganicMatter')
-
         {'NH4': 0.0,
          'InitialResidueMass': 500.0,
          'StandingWt': 0.0,
@@ -817,7 +819,7 @@ CoreModel
          'NO3': 0.0}
 
         >>> model_instance.inspect_model_parameters('Models.Surface.SurfaceOrganicMatter', simulations='Simulation',
-         ... model_name='SurfaceOrganicMatter', parameters={'InitialCNR', 'InitialResidueMass'})
+        ... model_name='SurfaceOrganicMatter', parameters={'InitialCNR', 'InitialResidueMass'})
 
         {'InitialCNR': 100.0, 'InitialResidueMass': 500.0}
 

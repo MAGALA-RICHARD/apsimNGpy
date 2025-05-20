@@ -1254,6 +1254,15 @@ class CoreModel:
         # Inspect full soil organic profile
 
         >>> model_instance.inspect_model_parameters('Organic', simulations='Simulation', model_name='Organic')
+           CNR  Carbon      Depth  FBiom  ...         FOM  Nitrogen  SoilCNRatio  Thickness
+        0  12.0    1.20      0-150   0.04  ...  347.129032     0.100         12.0      150.0
+        1  12.0    0.96    150-300   0.02  ...  270.344362     0.080         12.0      150.0
+        2  12.0    0.60    300-600   0.02  ...  163.972144     0.050         12.0      300.0
+        3  12.0    0.30    600-900   0.02  ...   99.454133     0.025         12.0      300.0
+        4  12.0    0.18   900-1200   0.01  ...   60.321981     0.015         12.0      300.0
+        5  12.0    0.12  1200-1500   0.01  ...   36.587131     0.010         12.0      300.0
+        6  12.0    0.12  1500-1800   0.01  ...   22.191217     0.010         12.0      300.0
+        [7 rows x 9 columns]
 
         # Inspect chemical soil properties
 
@@ -1262,25 +1271,62 @@ class CoreModel:
         # Inspect one or more specific parameters
 
         >>> model_instance.inspect_model_parameters('Organic', simulations='Simulation', model_name='Organic', parameters='Carbon')
+          Carbon
+        0    1.20
+        1    0.96
+        2    0.60
+        3    0.30
+        4    0.18
+        5    0.12
+        6    0.12
+
         >>> model_instance.inspect_model_parameters('Organic', simulations='Simulation', model_name='Organic', parameters=['Carbon', 'CNR'])
+           Carbon   CNR
+        0    1.20  12.0
+        1    0.96  12.0
+        2    0.60  12.0
+        3    0.30  12.0
+        4    0.18  12.0
+        5    0.12  12.0
+        6    0.12  12.0
 
         # Inspect Report module attributes
 
         >>> model_instance.inspect_model_parameters('Report', simulations='Simulation', model_name='Report')
+        {'EventNames': ['[Maize].Harvesting'],
+        'VariableNames': ['[Clock].Today',
+        '[Maize].Phenology.CurrentStageName',
+        '[Maize].AboveGround.Wt',
+        '[Maize].AboveGround.N',
+        '[Maize].Grain.Total.Wt*10 as Yield',
+        '[Maize].Grain.Wt',
+        '[Maize].Grain.Size',
+        '[Maize].Grain.NumberFunction',
+        '[Maize].Grain.Total.Wt',
+        '[Maize].Grain.N',
+        '[Maize].Total.Wt']}
+
         >>> model_instance.inspect_model_parameters('Report', simulations='Simulation', model_name='Report', parameters='EventNames')
+        {'EventNames': ['[Maize].Harvesting']}
 
         # Inspect weather file path
 
         >>> model_instance.inspect_model_parameters('Weather', simulations='Simulation', model_name='Weather')
+        '%root%/Examples/WeatherFiles/AU_Dalby.met'
 
         # Inspect manager script parameters
 
-        >>> model_instance.inspect_model_parameters('Manager', simulations='Simulation', model_name='Sow using a variable rule')
-        >>> model_instance.inspect_model_parameters('Manager', simulations='Simulation', model_name='Sow using a variable rule', parameters='Population')
+        >>> model_instance.inspect_model_parameters('Manager',
+        ... simulations='Simulation', model_name='Sow using a variable rule')
+
+        >>> model_instance.inspect_model_parameters('Manager',
+        ... simulations='Simulation', model_name='Sow using a variable rule',
+        ... parameters='Population')
 
         # Inspect cultivar parameters
 
-        >>> model_instance.inspect_model_parameters('Cultivar', simulations='Simulation', model_name='B_110')
+        >>> model_instance.inspect_model_parameters('Cultivar',
+        ... simulations='Simulation', model_name='B_110') # lists all path specifications for B_110 parameters abd their values
         >>> model_instance.inspect_model_parameters('Cultivar', simulations='Simulation',
         ... model_name='B_110', parameters='[Phenology].Juvenile.Target.FixedValue')
         {'[Phenology].Juvenile.Target.FixedValue': '210'}

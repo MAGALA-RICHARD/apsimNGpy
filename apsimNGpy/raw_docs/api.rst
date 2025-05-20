@@ -793,10 +793,13 @@ CoreModel
         >>> model_instance.inspect_model_parameters('Clock', simulations='Simulation', model_name='Clock', parameters='End')
         >>> model_instance.inspect_model_parameters('Clock', simulations='Simulation', model_name='Clock', parameters='Start').year
 
+        1990
+
         # Inspect solute models
 
         >>> model_instance.inspect_model_parameters('Solute', simulations='Simulation', model_name='Urea')
-        >>> model_instance.inspect_model_parameters('Solute', simulations='Simulation', model_name='NH4', parameters='InitialValues')
+        >>> model_instance.inspect_model_parameters('Solute', simulations='Simulation', model_name='NH4',
+        ... parameters='InitialValues')
 
 .. function:: apsimNGpy.core.core.CoreModel.move_model(self, model_type: <module 'Models'>, new_parent_type: <module 'Models'>, model_name: str = None, new_parent_name: str = None, verbose: bool = False, simulations: Union[str, list] = None)
 

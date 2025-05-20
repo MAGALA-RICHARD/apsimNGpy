@@ -1271,13 +1271,19 @@ class CoreModel:
         >>> model_instance.inspect_model_parameters('Models.Surface.SurfaceOrganicMatter', simulations='Simulation', model_name='SurfaceOrganicMatter', parameters={'InitialCNR', 'InitialResidueMass'})
 
         # Inspect simulation clock
-        >>> model_instance.inspect_model_parameters('Clock', simulations='Simulation', model_name='Clock')
-        >>> model_instance.inspect_model_parameters('Clock', simulations='Simulation', model_name='Clock', parameters='End')
-        >>> model_instance.inspect_model_parameters('Clock', simulations='Simulation', model_name='Clock', parameters='Start').year
 
+        >>> model_instance.inspect_model_parameters('Clock', simulations='Simulation', model_name='Clock')
+        >>> model_instance.inspect_model_parameters('Clock', simulations='Simulation',
+        model_name='Clock', parameters='End')
+        >>> model_instance.inspect_model_parameters('Clock', simulations='Simulation',
+        ... model_name='Clock', parameters='Start').year
+
+        1990
         # Inspect solute models
+
         >>> model_instance.inspect_model_parameters('Solute', simulations='Simulation', model_name='Urea')
-        >>> model_instance.inspect_model_parameters('Solute', simulations='Simulation', model_name='NH4', parameters='InitialValues')
+        >>> model_instance.inspect_model_parameters('Solute', simulations='Simulation',
+        ... model_name='NH4', parameters='InitialValues')
         """
 
         if parameters == 'all':

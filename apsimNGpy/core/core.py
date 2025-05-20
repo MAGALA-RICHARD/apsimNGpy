@@ -2028,6 +2028,7 @@ class CoreModel:
         relative to the parent simulations node. please note the difference between simulations and simulation.
         :return: list[str]: list of all full paths or names of the model relative to the parent simulations node \n
         Example:
+
         >>> from apsimNGpy.core import base_data
         >>> from apsimNGpy.core.core import Models
 
@@ -2051,6 +2052,17 @@ class CoreModel:
          ['.Simulations.Simulation.Field.Fertiliser']
 
          >>> model.inspect_model('Models.Fertiliser', fullpath=False) # strings are allowed to
+
+         The models from Models namespace are abstracted to use strings. all you need is to specify the name or the full path to the model enclosed in a stirng as follows
+
+         >>> model.inspect_model('Clock') # get the path to the clock model
+         ['.Simulations.Simulation.Clock']
+
+         >>> model.inspect_model('IPlant')
+         ['.Simulations.Simulation.Field.Maize']
+
+         >>> model.inspect_model('Weather') # inspects the weather module
+         ['.Simulations.Simulation.Weather']
 
 
         """
@@ -2155,27 +2167,6 @@ class CoreModel:
                     logger.error(f"{arg} is not a valid parameter for child {node_path}")
                 var_out[arg] = gv
         return var_out
-
-    def extract_soil_property_by_path(self, path: str, str_fmt='.', index: list = None):
-        """
-        path to the soil property should be Simulation.soil_child.parameter_name e.g., = 'Simulation.Organic.Carbon.
-        @param: index(list), optional position of the soil property to a return
-        @return: list
-
-        """
-        list_of_soil_nones = dict(organic=Organic, physical=Physical, Chemical=Chemical)
-        parameters = path.split(str_fmt)
-        if len(parameters) != 3:
-            raise ValueError('path incomplete')
-        # find the simulation
-        find_simu = self.find_simulations(parameters[0])[0]  # because it returns a list
-        soil_child = list_of_soil_nones[parameters[1].lower()]
-        soil_object = find_simu.FindDescendant[Soil]().FindDescendant[soil_child]()
-        attribute = list(getattr(soil_object, parameters[2]))
-        if index is None:
-            return attribute
-        return [attribute[i] for i in index]
-
 
 
     def replace_soil_properties_by_path(self, path: str,

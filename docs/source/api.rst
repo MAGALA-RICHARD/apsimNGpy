@@ -587,12 +587,6 @@ CoreModel
         -------
             APSIM Models.Soils.Physical object
 
-.. function:: apsimNGpy.core.core.CoreModel.extract_soil_property_by_path(self, path: str, str_fmt='.', index: list = None)
-
-   path to the soil property should be Simulation.soil_child.parameter_name e.g., = 'Simulation.Organic.Carbon.
-        @param: index(list), optional position of the soil property to a return
-        @return: list
-
 .. function:: apsimNGpy.core.core.CoreModel.extract_start_end_years(self, simulations: str = None)
 
    Get simulation dates. deprecated
@@ -685,6 +679,7 @@ CoreModel
         :return: list[str]: list of all full paths or names of the model relative to the parent simulations node 
 
         Example:
+
         >>> from apsimNGpy.core import base_data
         >>> from apsimNGpy.core.core import Models
 
@@ -708,6 +703,17 @@ CoreModel
          ['.Simulations.Simulation.Field.Fertiliser']
 
          >>> model.inspect_model('Models.Fertiliser', fullpath=False) # strings are allowed to
+
+         The models from Models namespace are abstracted to use strings. all you need is to specify the name or the full path to the model enclosed in a stirng as follows
+
+         >>> model.inspect_model('Clock') # get the path to the clock model
+         ['.Simulations.Simulation.Clock']
+
+         >>> model.inspect_model('IPlant')
+         ['.Simulations.Simulation.Field.Maize']
+
+         >>> model.inspect_model('Weather') # inspects the weather module
+         ['.Simulations.Simulation.Weather']
 
 .. function:: apsimNGpy.core.core.CoreModel.inspect_model_parameters(self, model_type: Union[<module 'Models'>, str], model_name: str, simulations: Union[str, list] = 'all', parameters: Union[list, set, tuple, str] = 'all', **kwargs)
 
@@ -1182,17 +1188,28 @@ ModelTools
 
        Attributes:
            ADD (callable): Function or class for adding components to an APSIM model.
+
            DELETE (callable): Function or class for deleting components from an APSIM model.
+
            MOVE (callable): Function or class for moving components within the model structure.
+
            RENAME (callable): Function or class for renaming components.
+
            CLONER (callable): Utility to clone APSIM models or components.
+
            REPLACE (callable): Function to replace components in the model.
+
            MultiThreaded (Enum): Enumeration value to specify multi-threaded APSIM runs.
+
            SingleThreaded (Enum): Enumeration value to specify single-threaded APSIM runs.
+
            ModelRUNNER (class): APSIM run manager that handles simulation execution.
+
            CLASS_MODEL (type): The type of the APSIM Clock model, often used for type checks or instantiation.
+
            ACTIONS (tuple): Set of supported string actions ('get', 'delete', 'check').
-           COLLECT (callable): Function for collecting or extracting model data (e.g., results, nodes).
+
+           COLLECT (callable): Function for forcing memory checks
 
 apsimNGpy.core.base_data 
 ---------------------------------------

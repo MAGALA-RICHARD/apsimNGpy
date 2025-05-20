@@ -337,8 +337,8 @@ def inspect_model_inputs(scope, model_type: str, simulations: Union[str, list], 
             case Models.Surface.SurfaceOrganicMatter:
                 selected_parameters = set(parameters) if parameters else set()
                 accepted_attributes = {'LyingWt', 'N', 'NH4', 'NO3', 'LabileP', 'SurfOM', 'P', "C", 'Cover',
-                                       'InitialCPR', 'IncorporatedC', 'InitialResidueMass', 'StandingWt',
-                                       'InitialCNR', 'IncorporatedP', 'InitialCPR'}
+                                       'InitialCPR', 'InitialResidueMass', 'StandingWt',
+                                       'InitialCNR', 'InitialCPR'}
                 dif = accepted_attributes - selected_parameters
                 if len(dif) == len(accepted_attributes) and parameters:
                     raise ValueError(f"Parameters must be none or any of '{', '.join(accepted_attributes)}'")

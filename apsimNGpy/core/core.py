@@ -739,12 +739,71 @@ class CoreModel:
                         ...     model_name='B_110',
                         ...     cultivar_manager='Sow using a variable rule'
                         ... ) # edits model cultivar
+
+            # edit organic matter module
             >>> model.edit_model(
                         ...     model_type = 'Organic',
                         ...     simulations='Simulation',
                         ...     model_name = 'Organic',
                         ...     Carbon = 1.23
                         ... ) # edits soil organic profile
+
+           # supply a list.
+           >>> model.edit_model(
+                        ...     model_type = 'Organic',
+                        ...     simulations='Simulation',
+                        ...     model_name = 'Organic',
+                        ...     Carbon = [1.23, 1.0] # the first two layers will be edited by these values
+                        ... )
+
+            # edit solute model
+            # NH4 intitial values
+            >>> model.edit_model(
+                        ...     model_type = 'Solute',
+                        ...     simulations='Simulation',
+                        ...     model_name = 'NH4',
+                        ...     InitialValues = 0.2
+                        ... )
+
+            # Urea intital values
+             >>> model.edit_model(
+                        ...     model_type = 'Solute',
+                        ...     simulations='Simulation',
+                        ...     model_name = 'Urea',
+                        ...     InitialValues = 0.002
+                        ... )
+
+            # edit a manager script
+             >>> model.edit_model(
+                        ...     model_type = 'Manager',
+                        ...     simulations='Simulation',
+                        ...     model_name = 'Sow using a variable rule',
+                        ...     population = 8.4
+                        ... ) #
+
+            # Edit the surface organic matter InitialResidueMass
+            >>> model.edit_model( model_type = 'SurfaceOrganicMatter', simulations='Simulation',
+             ... model_name = 'SurfaceOrganicMatter', InitialResidueMass= 2500)
+
+             # Edit the surface organic matter InitialCNR
+            >>> model.edit_model( model_type = 'SurfaceOrganicMatter', simulations='Simulation',
+             ... model_name = 'SurfaceOrganicMatter', InitialCNR = 85)
+
+             # Edit start and end dates
+             >>> model.edit_model( model_type = 'Clock', simulations='Simulation', model_name = 'Clock', Start='2021-01-01', End='2021-01-12')
+
+             # Edit report database
+             >>> model.edit_model( model_type = 'Report', simulations='Simulation', model_name = 'Report',
+              ... variable_spec='[Maize].AboveGround.Wt as abw')
+
+              supply multiple variable specications
+              # Edit report database. to do this, supply a list of specifications
+             >>> model.edit_model( model_type = 'Report', simulations='Simulation', model_name = 'Report',
+              ... variable_spec=['[Maize].AboveGround.Wt as abw', '[Maize].Grain.Total.Wt as grain_weight'])
+
+
+
+
 
 
         """
@@ -766,27 +825,17 @@ class CoreModel:
 
                     model_instance.FileName = met_file
                 case Models.Clock:
-                    valid = set()
-                    invalid = set()
+                    validated = dict(End = 'End', Start = 'Start', end = 'End', start = 'Start', end_date ='End', start_date ='Start')
+
                     for kwa, value in kwargs.items():
-                        key = kwa.capitalize() # APSIM uses camelcase
-                        if hasattr(model_instance, key):
-                            try:
-                                parsed_value = DateTime.Parse(value)
-                                setattr(model_instance, key, parsed_value)
-                                logger.info(f"Set {kwa} to {parsed_value}")
-                                setattr(self, key, value)
-                                valid.add(key)
-
-                            except Exception as e:
-                                logging.warning(f"Could not set {kwa} due to error: {e}")
-                                raise ValueError(f"{e}")
-
+                        key = validated.get(kwa, 'unknown') # APSIM uses camelcase
+                        if key in ['End', 'Start']:
+                            parsed_value = DateTime.Parse(value)
+                            setattr(model_instance, key, parsed_value)
+                            logger.info(f"Set {key} to {parsed_value}")
+                            setattr(self, key, value)
                         else:
-                            invalid.add(kwa)
-                    if invalid:
-                        if not len(valid) >= 1:
-                            raise ValueError(f"no valid Clock attributes were passed. Valid attributes are: 'End' or 'Start'")
+                            raise AttributeError(f"no valid Clock attributes were passed. Valid arguments are: '{", ".join(validated.keys())}'")
 
 
                 case Models.Manager:
@@ -797,6 +846,22 @@ class CoreModel:
                 case Models.Soils.Physical | Models.Soils.Chemical | Models.Soils.Organic | Models.Soils.Water | Models.Soils.Solute:
 
                     self.replace_soils_values_by_path(node_path=model_instance.FullPath, **kwargs)
+                case  Models.Surface.SurfaceOrganicMatter:
+                    if not kwargs:
+                        raise ValueError(f"Missing keyword argument 'kwargs'")
+                    selected_parameters = set(kwargs.keys())
+                    accepted_attributes = { 'SurfOM',
+                                           'InitialCPR', 'InitialResidueMass',
+                                           'InitialCNR', 'IncorporatedP',}
+                    dif = accepted_attributes - selected_parameters
+                    if dif == accepted_attributes:
+                        raise AttributeError(f"'{', '.join(selected_parameters)}' are not valid")
+                    for param in selected_parameters:
+                        if hasattr(model_instance, param):
+                            setattr(model_instance, param, kwargs[param])
+                            print('success', param)
+                        else:
+                            raise AttributeError(f"suggested attribute {param} is not an attribute of {model_instance}")
 
                 case Models.Report:
 
@@ -877,7 +942,9 @@ class CoreModel:
            raises an erros if a report is not found
         Example:
         >>> from apsimNGpy import core
+
         >>> model = core.base_data.load_default_simulations()
+
         >>> model.add_report_variable(variable_spec = '[Clock].Today as Date', report_name = 'Report')
         """
         if isinstance(variable_spec, str):
@@ -931,6 +998,7 @@ class CoreModel:
         Example:
                >>> from apsimNGpy import core
                >>> from apsimNGpy.core.core import Models
+
                >>> model = core.base_data.load_default_simulations(crop = 'Maize')
                >>> model.remove_model(Models.Clock) #deletes the clock node
                >>> model.remove_model(Models.Climate.Weather) #deletes the weather node
@@ -1580,7 +1648,7 @@ class CoreModel:
                     parent = sim.FindInScope[parent.__class__]()
 
                     # Replace: delete existing and add new
-                    DELETE(sim)
+                    ModelTools.DELETE(sim)
                     ModelTools.ADD(get_target_model, parent)
                     self.save()
 
@@ -1697,6 +1765,7 @@ class CoreModel:
         {'Crop': 'Maize', 'FertiliserType': 'NO3N', 'Amount': '160.0'}
 
         """
+        old_method(old_method='extract_user_input', new_method='inspect_model_parameters')
         param_dict = {}
         for sim in self.simulations:
             params = None
@@ -1752,6 +1821,7 @@ class CoreModel:
              model.change_simulation_dates(start_date='2021-01-01', end_date='2021-01-12', simulation = 'Simulation')
 
         """
+        old_method(old_method='change_simulation_dates', new_method='edit_model')
         check = start_date or end_date
         assert check is not None, "One of the start_date or end_date parameters should not be None"
         for sim in self.find_simulations(simulations):
@@ -1814,7 +1884,7 @@ class CoreModel:
             Dictionary of simulation names with dates
 
         """
-
+        old_method(old_method='extract_start_end_years', new_method='edit_model')
         dates = {}
         for sim in self.find_simulations(simulations):
             clock = sim.FindChild[Models.Clock]()
@@ -2761,7 +2831,7 @@ if __name__ == '__main__':
     logger.info(f"{b - a}, 'seconds")
     model.add_db_table(variable_spec=['[Clock].Today', '[Soil].Nutrient.TotalC[1]/1000 as SOC1'], rename='reporterte')
     a = perf_counter()
-    model.clean_up(db=True)
+    #model.clean_up(db=True)
     import doctest
     # clone test
     # for i in range(100):

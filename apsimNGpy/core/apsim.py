@@ -300,8 +300,6 @@ class ApsimModel(CoreModel):
             tillage: specify whether you will be carried to adjust some physical parameters
 
         """
-        adjust_rue = kwargs.get('adjust_rue')
-        adjust_kl = kwargs.get("adJust_kl")
 
         self.thickness_replace = self.thickness_values
         physical_calculated = soil_tables[0]

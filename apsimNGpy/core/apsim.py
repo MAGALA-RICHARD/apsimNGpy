@@ -92,27 +92,6 @@ class ApsimModel(CoreModel):
     @thickness_values.setter
     def thickness_values(self, values):
         self._thickness_values = values
-    def _find_soil_solute(self, solute: str, simulation: Union[tuple, list] = None):
-        sim = self._find_simulation(simulation)
-        solutes = sim.FindAllDescendants[Models.Soils.Solute]()
-        return [s for s in solutes if s.Name == solute][0]
-
-    def _get_initial_chemical_values(self, name, simulation):
-        s = self._find_soil_solute(name, simulation)
-        return np.array(s.InitialValues)
-
-    def _replace_initial_chemical_values(self, name, values, simulations):
-        """_summary_
-
-        Args:
-            name (str): of the solutes e.g  NH4
-            values (array): _values with equal lengths as the existing other variable
-            simulations (str): simulation name in the root folder
-        """
-        simus = self.find_simulations(simulations)
-        for sim in simus:
-            solute = self._find_soil_solute(name, sim.Name)
-            solute.InitialValues = values
 
     def show_cropsoil_names(self, simulations):
         for simu in self.find_simulations(simulations):
@@ -131,9 +110,7 @@ class ApsimModel(CoreModel):
                 if crops.Name == existing_crop_names:
                     crops.Name = new_cropname
 
-    def get_initial_no3(self, simulation=None):
-        """Get soil initial NO3 content"""
-        return self._get_initial_values("NO3", simulation)
+
 
     def adjust_dul(self, simulations: Union[tuple, list] = None):
         """
@@ -323,8 +300,6 @@ class ApsimModel(CoreModel):
             tillage: specify whether you will be carried to adjust some physical parameters
 
         """
-        adjust_rue = kwargs.get('adjust_rue')
-        adjust_kl = kwargs.get("adJust_kl")
 
         self.thickness_replace = self.thickness_values
         physical_calculated = soil_tables[0]
@@ -346,9 +321,7 @@ class ApsimModel(CoreModel):
             pysoil.ParticleSizeSand = physical_calculated.ParticleSizeSand
             pysoil.ParticleSizeSilt = physical_calculated.ParticleSizeSilt
             water.InitialValues = physical_calculated.DUL
-            print(self.thickness_replace)
-            print()
-            print()
+
             water.Thickness = self.thickness_replace
             pysoil.AirDry = soil_crop.LL
             pysoil.Thickness = self.thickness_replace

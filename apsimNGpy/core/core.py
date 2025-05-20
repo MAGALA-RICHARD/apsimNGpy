@@ -1824,8 +1824,9 @@ class CoreModel:
     @property
     def extract_dates(self, simulations=None):
 
-        """Get simulation dates in the model. deprecated
 
+        """Get simulation dates in the model. deprecated
+        @deprecated
         Parameters
         ----------
         simulations, optional
@@ -1834,10 +1835,12 @@ class CoreModel:
         -------
             Dictionary of simulation names with dates
         # Example
+
             >>> from apsimNGpy.core.base_data import load_default_simulations
             >>> model = load_default_simulations(crop='maize')
             >>> changed_dates = model.extract_dates
             >>> print(changed_dates)
+
                {'Simulation': {'start': datetime.date(2021, 1, 1),
                 'end': datetime.date(2021, 1, 12)}}
             @note
@@ -2027,19 +2030,27 @@ class CoreModel:
         Example:
         >>> from apsimNGpy.core import base_data
         >>> from apsimNGpy.core.core import Models
+
+        # load default maize module
+
         >>> model = base_data.load_default_simulations(crop ='maize')
         >>> model.inspect_model(Models.Manager, fullpath=True)
          [.Simulations.Simulation.Field.Sow using a variable rule', '.Simulations.Simulation.Field.Fertilise at
         sowing', '.Simulations.Simulation.Field.Harvest']
+
          >>> model.inspect_model(Models.Clock) # gets the path to the Clock models
          ['.Simulations.Simulation.Clock']
+
          >>> model.inspect_model(Models.Core.IPlant) # gets the path to the crop model
          ['.Simulations.Simulation.Field.Maize']
+
          >>> model.inspect_model(Models.Core.IPlant, fullpath=False) # gets you the name of the crop Models
          ['Maize']
+
          >>> model.inspect_model(Models.Fertiliser, fullpath=True)
          ['.Simulations.Simulation.Field.Fertiliser']
-         >>> from cli.server import model_instance         >>> model.inspect_model('Models.Fertiliser', fullpath=False) # strings are allowed to
+
+         >>> model.inspect_model('Models.Fertiliser', fullpath=False) # strings are allowed to
 
 
         """
@@ -2099,14 +2110,14 @@ class CoreModel:
          Example:
               >>> from apsimNGpy.core.base_data import load_default_simulations
 
-             >>> model = load_default_simulations(crop ='Maize', simulations_object=False)# initiate model
+              >>> model = load_default_simulations(crop ='Maize', simulations_object=False)# initiate model
 
               >>> model = CoreModel(model) # replace with your intended file path
               >>> model.replace_soils_values_by_path(node_path='.Simulations.Simulation.Field.Soil.Organic', indices=[0], Carbon =1.3)
 
               >>> sv= model.get_soil_values_by_path('.Simulations.Simulation.Field.Soil.Organic', 'Carbon')
 
-               output # {'Carbon': [1.3, 0.96, 0.6, 0.3, 0.18, 0.12, 0.12]}
+            output # {'Carbon': [1.3, 0.96, 0.6, 0.3, 0.18, 0.12, 0.12]}
 
 
         """
@@ -2206,17 +2217,20 @@ class CoreModel:
             Examples include ".", "_", or "/". This defines how the components are joined together to
             form the full path.
 
-        :return:
+        returns:
+        ----------
             Returns the instance of `self` after processing the path and applying the parameter value replacements.
 
-            Example f
+        Example:
+        ---------------------
 
-            from apsimNGpy.core.base_data import load_default_simulations
-            model = load_default_simulations(crop = 'maize')
-            model.replace_soil_properties_by_path(path = 'None.Soil.Organic.None.None.Carbon', param_values= [1.23])
-            if we want to replace carbon at the bottom of the soil profile, we use a negative index  -1
-            model.replace_soil_properties_by_path(path = 'None.Soil.Organic.None.[-1].Carbon', param_values= [1.23])
+            >>> from apsimNGpy.core.base_data import load_default_simulations
+            >>> model = load_default_simulations(crop = 'Maize')
+            >>> model.replace_soil_properties_by_path(path = 'None.Soil.Organic.None.None.Carbon', param_values= [1.23])
             
+            # if we want to replace carbon at the bottom of the soil profile, we use a negative index  -1
+            
+           >>>  model.replace_soil_properties_by_path(path = 'None.Soil.Organic.None.[-1].Carbon', param_values= [1.23])   
         """
 
         function_parameters = ['simulations', 'Soil', 'soil_child', 'crop', 'indices', 'parameter']

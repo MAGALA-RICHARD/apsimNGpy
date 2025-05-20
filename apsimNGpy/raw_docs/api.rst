@@ -687,19 +687,27 @@ CoreModel
         Example:
         >>> from apsimNGpy.core import base_data
         >>> from apsimNGpy.core.core import Models
+
+        # load default maize module
+
         >>> model = base_data.load_default_simulations(crop ='maize')
         >>> model.inspect_model(Models.Manager, fullpath=True)
          [.Simulations.Simulation.Field.Sow using a variable rule', '.Simulations.Simulation.Field.Fertilise at
         sowing', '.Simulations.Simulation.Field.Harvest']
+
          >>> model.inspect_model(Models.Clock) # gets the path to the Clock models
          ['.Simulations.Simulation.Clock']
+
          >>> model.inspect_model(Models.Core.IPlant) # gets the path to the crop model
          ['.Simulations.Simulation.Field.Maize']
+
          >>> model.inspect_model(Models.Core.IPlant, fullpath=False) # gets you the name of the crop Models
          ['Maize']
+
          >>> model.inspect_model(Models.Fertiliser, fullpath=True)
          ['.Simulations.Simulation.Field.Fertiliser']
-         >>> from cli.server import model_instance         >>> model.inspect_model('Models.Fertiliser', fullpath=False) # strings are allowed to
+
+         >>> model.inspect_model('Models.Fertiliser', fullpath=False) # strings are allowed to
 
 .. function:: apsimNGpy.core.core.CoreModel.inspect_model_parameters(self, model_type: Union[<module 'Models'>, str], model_name: str, simulations: Union[str, list] = 'all', parameters: Union[list, set, tuple, str] = 'all', **kwargs)
 
@@ -785,12 +793,35 @@ CoreModel
 
         # Inspect surface organic matter module
 
-        >>> model_instance.inspect_model_parameters('Models.Surface.SurfaceOrganicMatter', simulations='Simulation', model_name='SurfaceOrganicMatter')
-        >>> model_instance.inspect_model_parameters('Models.Surface.SurfaceOrganicMatter', simulations='Simulation', model_name='SurfaceOrganicMatter', parameters={'InitialCNR', 'InitialResidueMass'})
+        >>> model_instance.inspect_model_parameters('Models.Surface.SurfaceOrganicMatter',
+        ... simulations='Simulation', model_name='SurfaceOrganicMatter')
+
+        {'NH4': 0.0,
+         'InitialResidueMass': 500.0,
+         'StandingWt': 0.0,
+         'Cover': 0.0,
+         'LabileP': 0.0,
+         'LyingWt': 0.0,
+         'InitialCNR': 100.0,
+         'P': 0.0,
+         'InitialCPR': 0.0,
+         'SurfOM': <System.Collections.Generic.List[SurfOrganicMatterType] object at 0x000001DABDBB58C0>,
+         'C': 0.0,
+         'N': 0.0,
+         'NO3': 0.0}
+
+        >>> model_instance.inspect_model_parameters('Models.Surface.SurfaceOrganicMatter', simulations='Simulation',
+         ... model_name='SurfaceOrganicMatter', parameters={'InitialCNR', 'InitialResidueMass'})
+
+        {'InitialCNR': 100.0, 'InitialResidueMass': 500.0}
 
         # Inspect simulation clock
 
         >>> model_instance.inspect_model_parameters('Clock', simulations='Simulation', model_name='Clock')
+
+         {'End': datetime.datetime(2000, 12, 31, 0, 0),
+         'Start': datetime.datetime(1990, 1, 1, 0, 0)}
+
         >>> model_instance.inspect_model_parameters('Clock', simulations='Simulation', model_name='Clock', parameters='End')
 
          datetime.datetime(2000, 12, 31, 0, 0)
@@ -948,14 +979,14 @@ CoreModel
          Example:
               >>> from apsimNGpy.core.base_data import load_default_simulations
 
-             >>> model = load_default_simulations(crop ='Maize', simulations_object=False)# initiate model
+              >>> model = load_default_simulations(crop ='Maize', simulations_object=False)# initiate model
 
               >>> model = CoreModel(model) # replace with your intended file path
               >>> model.replace_soils_values_by_path(node_path='.Simulations.Simulation.Field.Soil.Organic', indices=[0], Carbon =1.3)
 
               >>> sv= model.get_soil_values_by_path('.Simulations.Simulation.Field.Soil.Organic', 'Carbon')
 
-               output # {'Carbon': [1.3, 0.96, 0.6, 0.3, 0.18, 0.12, 0.12]}
+            output # {'Carbon': [1.3, 0.96, 0.6, 0.3, 0.18, 0.12, 0.12]}
 
 .. function:: apsimNGpy.core.core.CoreModel.replicate_file(self, k: int, path: os.PathLike = None, suffix: str = 'replica')
 

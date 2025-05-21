@@ -20,7 +20,7 @@ class ModelTools:
        A utility class providing convenient access to core APSIM model operations and constants.
 
        Attributes:
-           ADD (callable): Function or class for adding components to an APSIM model.
+           ``ADD`` (callable): Function or class for adding components to an APSIM model.
 
            ``DELETE`` (callable): Function or class for deleting components from an APSIM model.
 

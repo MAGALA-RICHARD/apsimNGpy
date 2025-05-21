@@ -75,18 +75,21 @@ def __get_example(crop, path=None, simulations_object=True, **kwargs):
 def load_default_simulations(crop: str = "Maize", set_wd: [str, Path] = None,
                              simulations_object: bool = True, **kwargs) :
     """
-    Load default simulation model from the aPSim folder.
+    Load specific crop default simulation model from the ``APSIM`` Example Folder.
 
-    :param crop: Crop to load (e.g., "Maize"). Not case-sensitive. defaults to maize
-    :param set_wd: Working directory to which the model should be copied.
-    :param simulations_object: If True, returns an APSIMNGpy.core simulation object;
-                               if False, returns the path to the simulation file.
-    :return: An APSIMNGpy.core simulation object or the file path (str or Path) if simulation_object is False
+    ``crop``: Crop to load (e.g., "Maize"). Not case-sensitive. defaults to ``Maize``
 
-    Examples:
-        >>> # Load the CoreModel object directly
+    ``set_wd``: Working directory to which the model should be copied.
+
+    ``simulations_object``: If True, returns an APSIMNGpy.core simulation object; if False, returns the path to the simulation file.
+
+    ``Returns``:
+     An APSIMNGpy.core simulation object or the file path (str or Path) if simulation_object is ``False``
+
+     Examples:
+        >>> # Load the ``CoreModel`` object directly
         >>> model = load_default_simulations('Maize', simulations_object=True)
-        >>> # Run the model
+        >>> # Run the ``model``
         >>> model.run()
         >>> # Collect and print the results
         >>> df = model.results
@@ -116,16 +119,24 @@ def load_default_simulations(crop: str = "Maize", set_wd: [str, Path] = None,
 
 def load_default_sensitivity_model(method: str, set_wd: str = None, simulations_object: bool = True):
     """
-     Load default simulation model from aPSim folder
-    :@param method: string of the sentitivity child to load e.g. "Morris" or Sobol, not case-sensitive
-    :@param set_wd: string of the set_wd to copy the model
-    :@param simulations_object: bool to specify whether to return apsimNGp.core simulation object defaults to True
-    :@return: apsimNGpy.core.CoreModel simulation objects
+     Load default simulation model from ``APSIM`` Example Folder.
+
+    ``method``: string of the sentitivity child to load e.g. ``"Morris"`` or ``Sobol``, not case-sensitive.
+
+    ``set_wd``: string of the set_wd to copy the model.
+
+    ``simulations_object``: bool to specify whether to return apsimNGp.core simulation object defaults to ``True``.
+
+    ``Returns:`` apsimNGpy.core.CoreModel simulation objects
+
      Example
+     -----------------
+
     # load apsimNG object directly
+
     >>> morris_model = load_default_sensitivity_model(method = 'Morris', simulations_object=True)
 
-    # >>> morris_model.run()
+    >>> morris_model.run()
 
     """
     dir_path = os.path.join(EXAMPLES_DATA, 'Sensitivity')

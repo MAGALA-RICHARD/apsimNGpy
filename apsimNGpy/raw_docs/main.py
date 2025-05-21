@@ -145,13 +145,16 @@ if __name__ == '__main__':
 
     from apsimNGpy.core import core
 
-    docs([apsim.ApsimModel, process, database_utils, core.CoreModel, core.ModelTools, evaluator, runner, base_data, weathermanager, soilmanager, structure, load_model],
+    docs([apsim.ApsimModel, process, database_utils, core.CoreModel, core.ModelTools, evaluator, runner, base_data, weathermanager, soilmanager, load_model],
          output_file="api.rst")
 
-    rsts = list(Path.cwd().rglob("*.rst")) + list(Path.cwd().rglob("*conf.py"))
+    rsts = list(Path.cwd().rglob("*pi.rst")) #+ list(Path.cwd().rglob("*conf.py"))
     if SENDTO2.exists():
         sd2 = SENDTO2
         for rst in rsts:
+            # turn off index
+            if str(rst).endswith("dex.rst") or str(rst).endswith("inspection.rst"):
+                continue
             file_name = SENDTO2.joinpath(rst.name)
             if file_name.exists():
                 os.remove(file_name)
@@ -165,6 +168,8 @@ if __name__ == '__main__':
         print(f"{SENDTO2} not present")
 
     for rst in rsts:
+        if str(rst).endswith("index.rst") or str(rst).endswith("inspection.rst"):
+            continue
         file_name = SENDTO.joinpath(rst.name)
         if file_name.exists():
             os.remove(file_name)

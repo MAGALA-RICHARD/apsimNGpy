@@ -60,11 +60,11 @@ def generate_unique_name(base_name, length=6):
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(0.5), retry=retry_if_exception_type(NETWORK_EXCEPTIONS))
 def get_iem_by_station(dates_tuple, station, path, met_tag):
     """
-      :param dates_tuple: (tuple, list) is a tupple/list of strings with date ranges
+      ``dates_tuple``: (tuple, list) is a tupple/list of strings with date ranges
       
-      - an example date string should look like this: dates = ["01-01-2012","12-31-2012"]
-      :param station: (str) is the station where toe xtract the data from
-      -If station is given data will be downloaded directly from the station the default is false.
+      - an example date string should look like this: ``dates`` = ["01-01-2012","12-31-2012"]
+      ``station``: (str) is the station where toe xtract the data from
+      -If ``station`` is given data will be downloaded directly from the station the default is false.
       
       :param met_tag: your preferred suffix to save on file
 
@@ -222,32 +222,41 @@ def get_met_from_day_met(lonlat: Union[tuple, list, np.ndarray], start: int,
     """
     Collect weather from daymet solar radiation is replaced with that of nasapower API
 
-
-    parameters
+    Parameters
     ---------------
-    :param lonlat:
-         tuple, list, np.ndarray
-    :param retry_number:
-        (int): retry number of times in case of network errors
-    :param filename.
-         met file name to save on disk
-    :param start.
-         Starting year of the met data
-    :param end.
-         Ending year of the met data
-    :param lonlat.
-         (tuple, list, array): A tuple of XY cordnates, longitude first, then latitude second
-    :param fill_method.
-         (str, optional): fills the missing data based pandas fillna method arguments may be bfill, ffill defaults to ffill
-    :param keyword.
-         timeout specifies the waiting time
 
-    :keyword.
-        -wait: the time in secods to try for every retry in case of network errors
-    @returns
-     a complete path to the new met file but also write the met file to the disk in the working dir_path
+    ``lonlat``:
+         tuple, list, np.ndarray.
+
+    ``retry_number``:
+        (int): retry number of times in case of network errors.
+
+    ``filename``.
+         met file name to save on disk.
+
+    ``start``.
+         Starting year of the met data.
+
+    ``end``.
+         Ending year of the met data.
+
+    ``lonlat``.
+         (tuple, list, array): A tuple of XY cordnates, longitude first, then latitude second.
+
+    ``fill_method``.
+         (str, optional): fills the missing data based pandas fillna method arguments may be bfill, ffill defaults to ffill.
+
+    ``keyword``.
+         ``timeout`` specifies the waiting time.
+
+        ``wait``: the time in secods to try for every retry in case of network errors.
+
+    ``returns``
+       A complete path to the new met file but also write the met file to the disk in the working dir_path.
 
     Example:
+    --------------
+
           >>> from apsimNGpy.manager.weathermanager import get_met_from_day_met
           >>> wf = get_met_from_day_met(lonlat=(-93.04, 42.01247),
           >>> start=2000, end=2020,timeout = 30, wait =2, retry_number=3, filename='daymet.met')
@@ -406,14 +415,17 @@ def impute_data(met, method="mean", verbose=False, **kwargs):
 
     Parameters:
     _______________________
-    :param met: (pd.DataFrame): DataFrame with missing values.
-    :param method: (str, optional): Method for imputing missing values ("approx", "spline", "mean"). Default is "mean".
-    :param verbose: (bool, optional): If True, prints detailed information about the imputation. Default is False.
+
+    ``met``: (pd.DataFrame): DataFrame with missing values.
+
+    ``method``: (str, optional): Method for imputing missing values ("approx", "spline", "mean"). Default is "mean".
+
+    ``verbose``: (bool, optional): If True, prints detailed information about the imputation. Default is False.
 
     - **kwargs (dict, optional): Additional keyword arguments including 'copy' (bool) to deep copy the DataFrame.
 
-    @Returns:
-    - pd.DataFrame: DataFrame with imputed missing values.
+    ``Returns:``
+       - ``pd.DataFrame``: DataFrame with imputed missing values.
     """
 
     if kwargs.get('copy', False):
@@ -526,27 +538,40 @@ def get_weather(lonlat:Union[tuple, list], start:int=1990, end:int=2020, source:
     """
         Collects data from various sources.
 
-        Only nasapower and dayment are currently supported sources, so it will raise an error if mesonnet is suggested.
+        Only ``nasapower`` and ``dayment`` are currently supported sources, so it will raise an error if mesonnet is suggested.
 
-        -Note if you are not in mainland USA, please don't pass source = 'dayment' as it will raise an error due to geographical
+        -Note if you are not in mainland USA, please don't pass source = ``'dayment'`` as it will raise an error due to geographical
              scope
-         Paramters
-         -----------------------
-         :param lonlat: (tuple) lonlat values
-         :param start: (int) start year
-         :param end: (int) end year
-         :param source: (str) source API for weather data
-         :param filename: (str) filename for saving on disk
 
-        >> Example
+         Parameters
+         -----------------------
+
+         ``lonlat``: (tuple) lonlat values
+
+         ``start``: (int) start year
+
+         ``end``: (int) end year
+
+         ``source``: (str) source API for weather data
+
+         ``filename``: (str) filename for saving on disk
+
+        Example.
+
             >>> from apsimNGpy.manager.weathermanager import get_weather
             >>> from apsimNGpy.core.base_data import load_default_simulations
-            We are going to collect data from my hometown Kampala
+
+            # We are going to collect data from my hometown Kampala
+
             >>> kampala_loc = 35.582520, 0.347596
+
             # Notice it return a path to the downloaded weather file
+
             >>> met_file = get_weather(kampala_loc, start=1990, end=2020, source='nasa', filename='kampala_new.met')
             >>> print(met_file)
+
             # next we can pass this weather file to apsim model
+
             >>> maize_model = load_default_simulations(crop = 'maize')
             >>> maize_model.replace_met_file(weather_file = met_file)
 
@@ -600,14 +625,18 @@ def write_edited_met(old: Union[str, Path], daf: pd.DataFrame, filename: str = "
 def merge_columns(df1_main, common_column, df2, fill_column, df2_colummn):
     """
     Parameters:
-    df_main (pd.DataFrame): The first DataFrame to be merged and updated.
-    common_column (str): The name of the common column used for merging.
-    df2 (pd.DataFrame): The second DataFrame to be merged with 'df_main'.
-    fill_column (str): The column in 'edit' to be updated with values from 'df2_column'.
-    df2_column (str): The column in 'df2' that provides replacement values for 'fill_column'.
+    ``df_main`` (pd.DataFrame): The first DataFrame to be merged and updated.
 
-    Returns:
-    pd.DataFrame: A new DataFrame resulting from the merge and update operations.
+    ``common_column`` (str): The name of the common column used for merging.
+
+    ``df2`` (pd.DataFrame): The second DataFrame to be merged with 'df_main'.
+
+    ``fill_column`` (str): The column in 'edit' to be updated with values from 'df2_column'.
+
+    ``df2_column`` (str): The column in 'df2' that provides replacement values for 'fill_column'.
+
+    ``Returns``:
+      ``pd.DataFrame``: A new DataFrame resulting from the merge and update operations.
     """
     try:
         df = df1_main.merge(df2, on=common_column, how='left')
@@ -737,15 +766,16 @@ def day_of_year_to_date(year, day_of_year):
 
     Parameters:
     -----------
-    year : int
+    ``year`` : int
         The year to which the day of the year belongs.
-    day_of_year : int
+
+    ``day_of_year`` : int
         The day of the year (1 to 365 or 366).
 
-    Returns:
+    ``Returns:``
     --------
-    datetime.date
-        The corresponding date.
+    ``datetime.date`` : he corresponding date. ``datetime.date``
+        T
     """
     return datetime(year, 1, 1) + timedelta(days=day_of_year - 1)
 

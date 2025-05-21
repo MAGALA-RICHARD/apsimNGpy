@@ -21,17 +21,19 @@ THICKNESS = [150, 150, 200, 200, 200, 250, 300, 300, 400, 500]
 
 def DownloadsurgoSoiltables(lonlat, select_componentname=None, summarytable=False):
     '''
-    TODO this is a duplicate File. Duplicate of soils/soilmanager
     Downloads SSURGO soil tables
     
     parameters
     ------------------
-    lon: longitude 
-    lat: latitude
-    select_componentname: any componet name within the map unit e.g 'Clarion'. the default is None that mean sa ll the soil componets intersecting a given locationw il be returned
+    ``lon``: longitude
+
+    ``lat``: latitude
+
+    ``select_componentname``: any componet name within the map unit e.g 'Clarion'. the default is None that mean sa ll the soil componets intersecting a given locationw il be returned
       if specified only that soil component table will be returned. in case it is not found the dominant componet will be returned with a caveat meassage.
-        use select_componentname = 'domtcp' to return the dorminant component
-    summarytable: prints the component names, their percentages
+        use select_componentname = 'domtcp' to return the dorminant component.
+
+    ``summarytable``: prints the component names, their percentages
     '''
 
     total_steps = 3
@@ -228,11 +230,11 @@ class OrganizeAPSIMsoil_profile:
           Compute the decreasing exponential function y = a * e^(-b * x).
 
           Parameters:
-              x (array-like): Input values.
-              a (float): Amplitude or scaling factor.
-              b (float): Exponential rate.
+              ``x`` (array-like): Input values.
+              ``a`` (float): Amplitude or scaling factor.
+              ``b`` (float): Exponential rate.
 
-          Returns:
+          ``Returns:``
               numpy.ndarray: The computed decreasing exponential values.
           """
         func = a * np.exp(-b * x)

@@ -79,15 +79,19 @@ class CoreModel:
     It is designed to be base class for all apsimNGpy models.
 
     Parameters:
-        model (os.PathLike): The file path to the APSIM NG model. This parameter specifies the model file to be used in the simulation.
-        out_path (str, optional): The path where the output file should be saved. If not provided, the output will be saved with the same name as the model file in the current dir_path.
-        out (str, optional): Alternative path for the output file. If both `out_path` and `out` are specified, `out` takes precedence. Defaults to `None`.
-        experiment (bool, optional): Specifies whether to initiate your model as an experiment defaults to false
-        bY default, the experiment is created with permutation but permutation can be passed as a kewy word argument to change
-    Keyword parameters:
-      **`copy` (bool, deprecated)**: Specifies whether to clone the simulation file. This parameter is deprecated because the simulation file is now automatically cloned by default.
 
-    When an APSIM file is loaded, it is automatically copied to ensure a fallback to the original file in case of any issues during operations.
+        ``model`` (os.PathLike): The file path to the APSIM NG model. This parameter specifies the model file to be used in the simulation.
+
+        ``out_path`` (str, optional): The path where the output file should be saved. If not provided, the output will be saved with the same name as the model file in the current dir_path.
+
+        ``out`` (str, optional): Alternative path for the output file. If both `out_path` and `out` are specified, `out` takes precedence. Defaults to `None`.
+
+        ``experiment`` (bool, optional): Specifies whether to initiate your model as an experiment defaults to false
+          by default, the experiment is created with permutation but permutation can be passed as a kewy word argument to change
+    Keyword parameters:
+      **``copy`` (bool, deprecated)**: Specifies whether to clone the simulation file. This parameter is deprecated because the simulation file is now automatically cloned by default.
+
+    When an ``APSIM`` file is loaded, it is automatically copied to ensure a fallback to the original file in case of any issues during operations.
 
    Starting with version 0.35, accessing default simulations no longer requires the load_default_simulations function from the base_data module.
    Instead, default simulations can now be retrieved directly via the CoreModel attribute or the ApsimModel class by specifying the name of the crop (e.g., "Maize").
@@ -228,14 +232,14 @@ class CoreModel:
 
     def restart_model(self, model_info=None):
         """
-         :param model_info: A named tuple object returned by `load_apsim_model` from the `model_loader` module.
+        ``model_info``: A named tuple object returned by `load_apsim_model` from the `model_loader` module.
 
         Notes:
-        - This parameter is crucial whenever we need to reinitialize the model, especially after updating management practices or editing the file.
+        - This parameter is crucial whenever we need to ``reinitialize`` the model, especially after updating management practices or editing the file.
         - In some cases, this method is executed automatically.
-        - If `model_info` is not specified, the simulation will be reinitialized from `self`.
+        - If ``model_info`` is not specified, the simulation will be reinitialized from `self`.
 
-        This function is called by `save_edited_file` and `update_mgt`.
+        This function is called by ``save_edited_file`` and ``update_mgt``.
 
         :return: self
         """
@@ -252,8 +256,9 @@ class CoreModel:
     def save(self, file_name=None):
         """
         Save the simulation models to file
-        @param file_name:    The name of the file to save the defaults to none, taking the exising filename
-        @return: model object
+        ``file_name``:    The name of the file to save the defaults to none, taking the exising filename
+
+        Returns: model object
         """
         _path = file_name or self.path
         self.path = _path
@@ -294,13 +299,13 @@ class CoreModel:
         """
     Legacy method for retrieving simulation results.
 
-    This method is implemented as a property to enable lazy loading—results are only loaded into memory when explicitly accessed.
-    This design helps optimize memory usage, especially for large simulations.
+    This method is implemented as a ``property`` to enable lazy loading—results are only loaded into memory when explicitly accessed.
+    This design helps optimize ``memory`` usage, especially for ``large`` simulations.
 
     It must be called only after invoking `.run()`. If accessed before the simulation is run, it will raise an error.
 
     Notes:
-    - The `.run()` method should be called with a valid report name or a list of report names (i.e., APSIM report table names).
+    - The `.run()` method should be called with a valid ``report name`` or a list of report names (i.e., APSIM report table names).
     - If `report_names` is not provided (i.e., `None`), the system will inspect the model and automatically detect all available report components.
       These reports will then be used to collect the data.
     - If multiple report names are used, their corresponding data tables will be concatenated along the rows.
@@ -344,7 +349,7 @@ class CoreModel:
 
         Parameters:
         -----------
-        report_names : Union[str, list]
+        ``report_names`` : Union[str, list]
             Name or list of names of report tables to read. These should match the
             report model names in the simulation output.
 
@@ -355,9 +360,9 @@ class CoreModel:
 
         Raises:
         -------
-        ValueError
+        ``ValueError``
             If any of the requested report names are not found in the available tables.
-        RuntimeError
+        ``RuntimeError``
             If the simulation has not been run successfully before attempting to read data.
         """
         # Collect all available data tables
@@ -394,35 +399,35 @@ class CoreModel:
             verbose: bool = False,
             **kwargs) -> 'CoreModel':
         """
-        Run APSIM model simulations.
+        Run ``APSIM`` model simulations.
 
         Parameters
         ----------
-        report_name : Union[tuple, list, str], optional
+        ``report_name`` : Union[tuple, list, str], optional
             Defaults to APSIM default Report Name if not specified.
             - If iterable, all report tables are read and aggregated into one DataFrame.
             - If None, runs without collecting database results.
             - If str, a single DataFrame is returned.
 
-        simulations : Union[tuple, list], optional
+        ``simulations`` : Union[tuple, list], optional
             List of simulation names to run. If None, runs all simulations.
 
-        clean_up : bool, optional
+        ``clean_up`` : bool, optional
             If True, removes existing database before running.
 
-        verbose : bool, optional
+        ``verbose`` : bool, optional
             If True, enables verbose output for debugging. The method continues with debugging info anyway if the run was unsuccessful
 
-        kwargs : dict
+        ``kwargs`` : dict
             Additional keyword arguments, e.g., to_csv=True
 
         Returns
         -------
-        CoreModel
+        ``CoreModel``
             Instance of the class CoreModel.
-       RuntimeError
-            Raised if the APSIM run is unsuccessful. Common causes include missing meteorological files,
-            mismatched simulation start dates with weather data, or other configuration issues.
+       ``RuntimeError``
+            Raised if the ``APSIM`` run is unsuccessful. Common causes include ``missing meteorological files``,
+            mismatched simulation ``start`` dates with ``weather`` data, or other ``configuration issues``.
              """
         try:
             # Dispose any existing data store handle
@@ -491,28 +496,28 @@ class CoreModel:
 
                     in_place=False):
         """
-        Clone an existing model and move it to a specified parent within the simulation structure.
-        The function modifies the simulation structure by adding the cloned model to the designated parent.
+        Clone an existing  ``model`` and move it to a specified parent within the simulation structure.
+        The function modifies the simulation structure by adding the cloned model to the ``designated parent``.
 
-        This function is useful when a model instance needs to be duplicated and repositioned in the APSIM simulation
+        This function is useful when a model instance needs to be duplicated and repositioned in the ``APSIM`` simulation
         hierarchy without manually redefining its structure.
 
         Parameters:
         ----------
-        model_type : Models
+        ``model_type`` : Models
             The type of the model to be cloned, e.g., `Models.Simulation` or `Models.Clock`.
-        model_name : str
+        ``model_name`` : str
             The unique identification name of the model instance to be cloned, e.g., `"clock1"`.
-        adoptive_parent_type : Models
+        ``adoptive_parent_type`` : Models
             The type of the new parent model where the cloned model will be placed.
-        rename : str, optional
+        ``rename`` : str, optional
             The new name for the cloned model. If not provided, the clone will be renamed using
             the original name with a `_clone` suffix.
-        adoptive_parent_name : str, optional
+        ``adoptive_parent_name`` : str, optional
             The name of the parent model where the cloned model should be moved. If not provided,
             the model will be placed under the default parent of the specified type.
-        in_place : bool, optional
-            If True, the cloned model remains in the same location but is duplicated. Defaults to False.
+        ``in_place`` : bool, optional
+            If ``True``, the cloned model remains in the same location but is duplicated. Defaults to ``False``.
 
         Returns:
         -------
@@ -588,23 +593,24 @@ class CoreModel:
         For example, a Clock model cannot be added to a Soil model.
 
         Args:
-            :model_type (str or Models object): The type of model to add, e.g., `Models.Clock` or just `"Clock"`. if the APSIM Models namespace is exposed to the current script, then model_type can be Models.Clock without strings quotes
-            rename (str): The new name for the model.
+            ``model_type`` (str or Models object): The type of model to add, e.g., `Models.Clock` or just `"Clock"`. if the APSIM Models namespace is exposed to the current script, then model_type can be Models.Clock without strings quotes
 
-            :adoptive_parent (Models object): The target parent where the model will be added or moved e.g `Models.Clock` or Clock as string all are valid
+            ``rename`` (str): The new name for the model.
 
-            :adoptive_parent_name (Models object, optional): Specifies the parent name for precise location. e.g Models.Core.Simulation or Simulations all are valid
+            ``adoptive_parent`` (Models object): The target parent where the model will be added or moved e.g ``Models.Clock`` or ``Clock`` as string all are valid
 
-            :source (Models, str, CoreModel, ApsimModel object): defaults to Models namespace, implying a fresh non modified model.
-            The source can be an existing Models or string name to point to one fo the default model example, which we can extract the model 
+            ``adoptive_parent_name`` (Models object, optional): Specifies the parent name for precise location. e.g ``Models.Core.Simulation`` or ``Simulations`` all are valid
+
+            ``source`` (Models, str, CoreModel, ApsimModel object): ``defaults`` to Models namespace, implying a fresh non modified model.
+            The source can be an existing Models or string name to point to one fo the default model example, which we can extract the model
             
-            :override (bool, optional): defaults to `True`. When `True` (recomended) it delete for any model with same name and type at the suggested parent location before adding the new model
-            if False and proposed model to be added exists at the parent location, APSIM automatically generates a new name for the newly added model. This is not recommended.
+            ``override`` (bool, optional): defaults to `True`. When `True` (recomended) it delete for any model with same name and type at the suggested parent location before adding the new model
+            if ``False`` and proposed model to be added exists at the parent location, ``APSIM`` automatically generates a new name for the newly added model. This is not recommended.
         Returns:
-            None: Models are modified in place, so models retains the same reference.
+            None: ``Models`` are modified in place, so models retains the same reference.
 
         Note:
-            Added models are initially empty. Additional configuration is required to set parameters.
+            Added models from ``Models namespace`` are initially empty. Additional configuration is required to set parameters.
             For example, after adding a Clock module, you must set the start and end dates.
 
         Example:
@@ -691,42 +697,45 @@ class CoreModel:
         else:
             logger.debug(f"Adding {model_type} to {parent.Name} failed, perhaps models was not found")
 
-    def edit_model(self, model_type: str, simulations: Union[str, list], model_name: str, **kwargs):
+    def edit_model(self, model_type: str, model_name: str, simulations: Union[str, list] ='all', **kwargs):
         """
         Modify various APSIM model components by specifying the model type and name across given simulations.
 
         Parameters
         ----------
-        model_type : str
+        ``model_type`` : str
             Type of the model component to modify (e.g., 'Clock', 'Manager', 'Soils.Physical', etc.).
-        simulations : Union[str, list], optional
+
+        ``simulations`` : Union[str, list], optional
             A simulation name or list of simulation names in which to search. Defaults to all simulations in the model.
-        model_name : str
+
+        ``model_name`` : str
             Name of the model instance to modify.
-        **kwargs : dict
+
+        ``**kwargs`` : dict
             Additional keyword arguments specific to the model type. These vary by component:
 
-            - Weather:
-                - `weather_file` (str): Path to the weather `.met` file.
+            - ``Weather``:
+                - ``weather_file`` (str): Path to the weather ``.met`` file.
 
-            - Clock:
-                - Date properties such as `Start` and `End` in ISO format (e.g., '2021-01-01').
+            - ``Clock``:
+                - Date properties such as ``Start`` and ``End`` in ISO format (e.g., '2021-01-01').
 
-            - Manager:
+            - ``Manager``:
                 - Variables to update in the Manager script using `update_mgt_by_path`.
 
-            - Soils.Physical / Soils.Chemical / Soils.Organic / Soils.Water:
-                - Variables to replace using `replace_soils_values_by_path`.
+            - ``Soils.Physical | Soils.Chemical | Soils.Organic | Soils.Water:``
+                - Variables to replace using ``replace_soils_values_by_path``.
 
-            - Report:
-                - `report_name` (str): Name of the report model (optional depending on structure).
-                - `variable_spec` (list[str] or str): Variables to include in the report.
-                - `set_event_names` (list[str], optional): Events that trigger the report.
+            - ``Report``:
+                - ``report_name`` (str): Name of the report model (optional depending on structure).
+                - ``variable_spec`` (list[str] or str): Variables to include in the report.
+                - ``set_event_names`` (list[str], optional): Events that trigger the report.
 
-            - Cultivar:
-                - `commands` (str): APSIM path to the cultivar parameter to update.
-                - `values` (Any): Value to assign.
-                - `cultivar_manager` (str): Name of the Manager script managing the cultivar, which must contain the `CultivarName` parameter. Required to propagate updated cultivar values, as APSIM treats cultivars as read-only.
+            - ``Cultivar``:
+                - ``commands`` (str): APSIM path to the cultivar parameter to update.
+                - ``values`` (Any): Value to assign.
+                - ``cultivar_manager`` (str): Name of the Manager script managing the cultivar, which must contain the `CultivarName` parameter. Required to propagate updated cultivar values, as APSIM treats cultivars as read-only.
 
         Raises
         ------
@@ -841,6 +850,8 @@ class CoreModel:
         ...     ]
         ... )
         """
+        if simulations == 'all':
+            simulations = None
 
         model_type_class = _eval_model(model_type)
 
@@ -967,13 +978,16 @@ class CoreModel:
         Parameters
         -------------------
 
-        :param variable_spec: (str, required): list of text commands for the report variables e.g., '[Clock].Today as Date'
-        :param report_name: (str, optional): name of the report variable if not specified the first accessed report object will be altered
-        :set_event_names (list or str, optional): A list of APSIM events that trigger the recording of variables.
+        ``variable_spec``: (str, required): list of text commands for the report variables e.g., '[Clock].Today as Date'
+
+        ``param report_name``: (str, optional): name of the report variable if not specified the first accessed report object will be altered
+
+        ``set_event_names`` (list or str, optional): A list of APSIM events that trigger the recording of variables.
                                                      Defaults to ['[Clock].EndOfYear'] if not provided.
         :Returns:
             returns instance of apsimNGpy.core.core.apsim.ApsimModel or apsimNGpy.core.core.apsim.CoreModel
            raises an erros if a report is not found
+
         Example:
         >>> from apsimNGpy import core
 
@@ -1021,13 +1035,14 @@ class CoreModel:
 
         Parameters
         ----------
-        model_type : Models
+        ``model_type`` : Models
             The type of the model to remove (e.g., `Models.Clock`). This parameter is required.
 
-        model_name : str, optional
+        ``model_name`` : str, optional
             The name of the specific model instance to remove (e.g., `"Clock"`). If not provided, all models of the
             specified type may be removed.
-        @Returns:
+
+        Returns:
            None
         Example:
                >>> from apsimNGpy import core
@@ -1050,10 +1065,14 @@ class CoreModel:
         """
         Args:
 
-        - model_type (Models): type of model tied to Models Namespace
-        - new_parent_type: new model parent type (Models)
-        - model_name:name of the model e.g., Clock, or Clock2, whatever name that was given to the model
-        -  new_parent_name: what is the new parent names =Field2, this field is optional but important if you have nested simulations
+        - ``model_type`` (Models): type of model tied to Models Namespace
+
+        - ``new_parent_type``: new model parent type (Models)
+
+        - ``model_name``:name of the model e.g., Clock, or Clock2, whatever name that was given to the model
+
+        -  ``new_parent_name``: what is the new parent names =Field2, this field is optional but important if you have nested simulations
+
         Returns:
 
           returns instance of apsimNGpy.core.core.apsim.ApsimModel or apsimNGpy.core.core.apsim.CoreModel
@@ -1081,12 +1100,18 @@ class CoreModel:
 
     def rename_model(self, model_type: Models, old_model_name: str, new_model_name: str, simulations=None):
         """
-        give new name to a model in the simulations
-        @param model_type: (Models) Models types e.g., Models.Clock
-        @param old_model_name: (str) current model name
-        @param new_model_name: (str) new model name
-        @param simulation: (str, optional) defaults to all simulations
-        @return: None
+         give new name to a model in the simulations.
+
+        ``model_type``: (Models) Models types e.g., Models.Clock.
+
+        ``old_model_name``: (str) current model name.
+
+        ``new_model_name``: (str) new model name.
+
+        ``simulation``: (str, optional) defaults to all simulations.
+
+        ``returns``: None
+
         Example;
                >>> from apsimNGpy import core
                >>> from apsimNGpy.core.core import Models
@@ -1124,9 +1149,9 @@ class CoreModel:
 
     def replicate_file(self, k: int, path: os.PathLike = None, suffix: str = "replica"):
         """
-        Replicates a file 'k' times.
+        Replicates a file ``k`` times.
 
-        If a path is specified, the copies will be placed in that dir_path with incremented filenames.
+        If a ``path`` is specified, the copies will be placed in that dir_path with incremented filenames.
 
         If no path is specified, copies are created in the same dir_path as the original file, also with incremented filenames.
 
@@ -1203,47 +1228,58 @@ class CoreModel:
         return self
     def inspect_model_parameters(self, model_type:Union[Models, str], model_name:str, simulations: Union[str, list] ='all', parameters:Union[list, set, tuple, str] ='all', **kwargs):
         """
-        Inspect the input parameters of a specific APSIM model type instance within selected simulations.
+        Inspect the input parameters of a specific ``APSIM`` model type instance within selected simulations.
 
-        This method consolidates functionality previously spread across `examine_management_info`, `read_cultivar_params`, and other inspectors,
+        This method consolidates functionality previously spread across ``examine_management_info``, ``read_cultivar_params``, and other inspectors,
         allowing a unified interface for querying parameters of interest across a wide range of APSIM models.
 
         Parameters
         ----------
-        model_type : str
+        ``model_type`` : str
             The name of the model class to inspect (e.g., 'Clock', 'Manager', 'Physical', 'Chemical', 'Water', 'Solute').
             Shorthand names are accepted (e.g., 'Clock', 'Weather') as well as fully qualified names (e.g., 'Models.Clock', 'Models.Climate.Weather').
-        simulations : Union[str, list]
+
+        ``simulations`` : Union[str, list]
             A single simulation name or a list of simulation names within the APSIM context to inspect.
-        model_name : str
+
+        ``model_name`` : str
             The name of the specific model instance within each simulation. For example, if `model_type='Solute'`,
             `model_name` might be 'NH4', 'Urea', or another solute name.
-        parameters : Union[str, set, list, tuple], optional
+
+        ``parameters`` : Union[str, set, list, tuple], optional
             A specific parameter or a collection of parameters to inspect. Defaults to `'all'`, in which case all accessible attributes are returned.
             For layered models like Solute, valid parameters include `Depth`, `InitialValues`, `SoluteBD`, `Thickness`, etc.
-        **kwargs : dict
+
+        ``kwargs`` : dict
             Reserved for future compatibility; currently unused.
 
-        Returns
+        ``Returns``
         -------
-        Union[dict, list, pd.DataFrame, Any]
+            Union[dict, list, pd.DataFrame, Any]
             The format depends on the model type:
-            - ``Weather``: file path(s) as string(s)
-            - ``Clock``: dictionary with start and end datetime objects (or a single datetime if only one is requested)
-            - ``Manager``: dictionary of script parameters
-            - ``Soil-related`` models: pandas DataFrame of layered values
-            - ``Report``: dictionary with `VariableNames` and `EventNames`
-            - ``Cultivar``: dictionary of parameter strings
+            ``Weather``: file path(s) as string(s)
+
+        - ``Clock``: dictionary with start and end datetime objects (or a single datetime if only one is requested).
+
+        - ``Manager``: dictionary of script parameters.
+
+        - ``Soil-related`` models: pandas DataFrame of layered values.
+
+        - ``Report``: dictionary with `VariableNames` and `EventNames`.
+
+        - ``Cultivar``: dictionary of parameter strings.
 
         Raises
         ------
-        ValueError
+        ``ValueError``
             If the specified model or simulation is not found or arguments are invalid.
-        NotImplementedError
+
+        ``NotImplementedError``
             If the model type is unsupported by the current interface.
 
+
         Requirements
-        ------------
+        --------------
         - APSIM Next Generation Python bindings (`apsimNGpy`)
         - Python 3.10+
 
@@ -1481,13 +1517,13 @@ class CoreModel:
 
         Parameters
         ----------
-       - parameters (dict, required) dictionary of cultivar parameters to update.
+       ``parameters`` (dict, required) dictionary of cultivar parameters to update.
 
-       - simulations, optional
+       ``simulations``, optional
             List or tuples of simulation names to update if `None` update all simulations.
-       - clear (bool, optional)
-            If `True` remove all existing parameters, by default `False`.
 
+       ``clear`` (bool, optional)
+            If `True` remove all existing parameters, by default `False`.
 
         """
         for sim in self.find_simulations(simulations):
@@ -1508,10 +1544,8 @@ class CoreModel:
 
         Parameters
         ----------
-        simulations, optional
-            List or tuple of simulation names to update, if `None` show all simulations. if you are not sure,
-
-            use the property decorator 'extract_simulation_name'
+        ``simulations``, optional
+            List or tuple of simulation names to update, if `None` show all simulations.
 
         """
         old_method('examine_management_info', new_method='inspect_model_parameters')
@@ -1550,16 +1584,16 @@ class CoreModel:
     def change_som(self, *, simulations: Union[tuple, list] = None, inrm: int = None, icnr: int = None,
                    surface_om_name='SurfaceOrganicMatter', **kwargs):
         """
-         Change Surface Organic Matter (SOM) properties in specified simulations.
+         Change ``Surface Organic Matter`` (``SOM``) properties in specified simulations.
 
     Parameters:
-        simulations (str ort list): List of simulation names to target (default: None).
+        ``simulations`` (str ort list): List of simulation names to target (default: None).
 
-        inrm (int): New value for Initial Residue Mass (default: 1250).
+        ``inrm`` (int): New value for Initial Residue Mass (default: 1250).
 
-        icnr (int): New value for Initial Carbon to Nitrogen Ratio (default: 27).
+        ``icnr``` (int): New value for Initial Carbon to Nitrogen Ratio (default: 27).
 
-        surface_om_name (str, optional): name of the surface organic matter child defaults to ='SurfaceOrganicMatter'
+        ``surface_om_name`` (str, optional): name of the surface organic matter child defaults to ='SurfaceOrganicMatter'
     Returns:
         self: The current instance of the class.
 
@@ -1600,9 +1634,9 @@ class CoreModel:
         """
         Args:
         ______________
-        out_path: os.PathLike object this method is called to convert the simulation object from ConverterReturnType to model like object
+        ``out_path``: os.PathLike object this method is called to convert the simulation object from ConverterReturnType to model like object
 
-        return: self
+        ``return:`` self
 
         """
 
@@ -1620,16 +1654,14 @@ class CoreModel:
         """
         Args:
         _________________
-        path: complete node path to the script manager e.g. '.Simulations.Simulation.Field.Sow using a
-        variable rule'
+        ``path``: complete node path to the script manager e.g. '.Simulations.Simulation.Field.Sow using a variable rule'
 
-        fmt: seperator for formatting the path e.g., ".". Other characters can be used with
-        caution, e.g., / and clearly declared in fmt argument.
-        For the above path if we want to use the forward slash, it will be '/Simulations/Simulation/Field/Sow using a variable rule', fmt = '/'
+        ``fmt``: seperator for formatting the path e.g., ".". Other characters can be used with
+         caution, e.g., / and clearly declared in fmt argument. If you want to use the forward slash, it will be '/Simulations/Simulation/Field/Sow using a variable rule', fmt = '/'
 
-        kwargs: Corresponding keyword arguments representing the paramters in the script manager and their values. Values is what you want
-        to change to; Example here Population =8.2, values should be entered with their corresponding data types e.g.,
-        int, float, bool,str etc.
+        ``kwargs``: Corresponding keyword arguments representing the paramters in the script manager and their values. Values is what you want
+        to change to; Example here ``Population`` =8.2, values should be entered with their corresponding data types e.g.,
+         int, float, bool,str etc.
 
         return: self
 
@@ -1683,19 +1715,23 @@ class CoreModel:
         e.g., a soil node to soil node, clock node to clock node, et.c
 
         Args:
-            model: Path to the APSIM model file or a CoreModel instance.
-            model_type (str): Class name (as string) of the model to replace (e.g., "Soil").
-            model_name (str, optional): Name of the model instance to copy from the source model.
+            ``model``: Path to the APSIM model file or a CoreModel instance.
+
+            ``model_type`` (str): Class name (as string) of the model to replace (e.g., "Soil").
+
+            ``model_name`` (str, optional): Name of the model instance to copy from the source model.
                 If not provided, the first match is used.
-            target_model_name (str, optional): Specific simulation name to target for replacement.
+
+            ``target_model_name`` (str, optional): Specific simulation name to target for replacement.
                 Only used when replacing Simulation-level objects.
-            simulations (str, optional): Simulation(s) to operate on. If None, applies to all.
+
+            ``simulations`` (str, optional): Simulation(s) to operate on. If None, applies to all.
 
         Returns:
             self: To allow method chaining.
 
-        Raises:
-            ValueError: If model_type is "Simulations" which is not allowed for replacement.
+        ``Raises:``
+            ``ValueError``: If ``model_type`` is "Simulations" which is not allowed for replacement.
         """
 
         # Validate and resolve the model type string into the correct class
@@ -1757,28 +1793,27 @@ class CoreModel:
 
             Parameters
             ----------
-            management : dict or tuple
+            ``management`` : dict or tuple
                 A dictionary or tuple of management parameters to update. The dictionary should have 'Name' as the key
                 for the management script's name and corresponding values to update. Lists are not allowed as they are mutable
                 and may cause issues with parallel processing. If a tuple is provided, it should be in the form (param_name, param_value).
 
-            simulations : list of str, optional
+            ``simulations`` : list of str, optional
                 List of simulation names to update. If `None`, updates all simulations. This is not recommended for large
                 numbers of simulations as it may result in a high computational load.
 
-            out : str or pathlike, optional
+            ``out`` : str or pathlike, optional
                 Path to save the edited model. If `None`, uses the default output path specified in `self.out_path` or
                 `self.model_info.path`. No need to call `save_edited_file` after updating, as this method handles saving.
 
             Returns
             -------
-            self : Editor
-                Returns the instance of the `Editor` class for method chaining.
+            self : CoreModel
+                Returns the instance of the `CoreModel` class for method chaining.
 
-            Notes ----- - Ensure that the `management` parameter is provided in the correct format to avoid errors. -
-            This method does not perform validation on the provided `management` dictionary beyond checking for key
+            Notes - Ensure that the ``management`` parameter is provided in the correct format to avoid errors. -
+            This method does not perform ``validation`` on the provided ``management`` dictionary beyond checking for key
             existence. - If the specified management script or parameters do not exist, they will be ignored.
-            using a tuple for a specifying management script, paramters is recommended if you are going to pass the function to  a multi-processing class fucntion
 
         """
 
@@ -1809,8 +1844,9 @@ class CoreModel:
     def preview_simulation(self):
 
         """
-        Preview the simulation file in the apsimNGpy object in the APSIM graphical user interface
-        @return: opens the simulation file
+        Preview the simulation file in the apsimNGpy object in the APSIM graphical user interface.
+
+        ``return``: opens the simulation file
 
         """
         # TODO this need to be connected to the apsim installation path to make
@@ -1833,8 +1869,9 @@ class CoreModel:
         Get user_input of a given model manager script.
 
         Args:
-            manager_name (str): name of the Models.Manager script
-        returns:  a dictionary of user input with the key as the script parameters and values as the inputs
+            ``manager_name`` (str): name of the Models.Manager script.
+
+            ``returns:`  a dictionary of user input with the key as the script parameters and values as the inputs
 
         Example:
         ____________________
@@ -1843,7 +1880,6 @@ class CoreModel:
         >>> model = load_default_simulations(crop = 'maize')
         >>> ui = model.extract_user_input(manager_name='Fertilise at sowing')
         >>> print(ui)
-
         {'Crop': 'Maize', 'FertiliserType': 'NO3N', 'Amount': '160.0'}
 
         """
@@ -1870,25 +1906,27 @@ class CoreModel:
 
     def change_simulation_dates(self, start_date: str = None, end_date: str = None,
                                 simulations: Union[tuple, list] = None):
-        """Set simulation dates. this is important to run this method before run the weather replacement method as
-        the date needs to be allowed into weather
+        """Set simulation dates.
 
         Parameters
         -----------------------------------
 
-        :param: start_date: (str) optional
-            Start date as string, by default `None`
-        :param end_date: str (str) optional
-            End date as string, by default `None`
-        :param simulations (str), optional
-            List of simulation names to update, if `None` update all simulations
+        ``start_date``: (str) optional
+            Start date as string, by default ``None``.
+
+        ``end_date``: str (str) optional.
+            End date as string, by default ``None``.
+
+        ``simulations`` (str), optional
+            List of simulation names to update, if ``None`` update all simulations.
         Note
         ________
-        one of the start_date or end_date parameters should at least not be None
+        one of the ``start_date`` or ``end_date`` parameters should at least not be None
 
         raises assertion error if all dates are None
 
-        @return None
+        ``return``: ``none``
+
         Example:
         ---------
             >>> from apsimNGpy.core.base_data import load_default_simulations
@@ -1922,16 +1960,15 @@ class CoreModel:
     @property
     def extract_dates(self, simulations=None):
 
-
         """Get simulation dates in the model. deprecated
         @deprecated
         Parameters
         ----------
-        simulations, optional
-            List of simulation names to get, if `None` get all simulations
-        Returns
-        -------
-            Dictionary of simulation names with dates
+        ``simulations``, optional
+            List of simulation names to get, if ``None`` get all simulations.
+
+        ``Returns``
+            ``Dictionary`` of simulation names with dates
         # Example
 
             >>> from apsimNGpy.core.base_data import load_default_simulations
@@ -1943,8 +1980,9 @@ class CoreModel:
                 'end': datetime.date(2021, 1, 12)}}
             @note
             It is possible to target a specific simulation by specifying simulation name for this case the name is Simulations,
-             so, it could appear as follows
-             model.change_simulation_dates(start_date='2021-01-01', end_date='2021-01-12', simulation = 'Simulation')
+             so, it could appear as follows;
+
+             >>>model.change_simulation_dates(start_date='2021-01-01', end_date='2021-01-12', simulation = 'Simulation')
 
         """
         dates = {}
@@ -1962,11 +2000,11 @@ class CoreModel:
 
         Parameters
         ----------
-        @param simulations: (str) optional
-            List of simulation names to use if `None` get all simulations
-        @Returns
-        -------
-            Dictionary of simulation names with dates
+        ``simulations``: (str) optional
+            List of simulation names to use if `None` get all simulations.
+
+        ``Returns``
+            Dictionary of simulation names with dates.
 
         """
         old_method(old_method='extract_start_end_years', new_method='edit_model')
@@ -1986,15 +2024,15 @@ class CoreModel:
     def replace_met_file(self, *, weather_file: Union[Path, str], simulations=None, **kwargs):
         try:
             """
-            Searches the weather child and replaces it with a new one
+            Searches the weather child and replaces it with a new one. DEPRECATED
 
             Parameters
             ----------
-            @param weather_file: Union[Path, str], required):
+            ``weather_file``: Union[Path, str], required):
                 Weather file name, path should be relative to simulation or absolute.
                 
-            @param simulations (str, optional)
-                List of simulation names to update, if `None` update all simulations
+            ``simulations`` (str, optional)
+                List of simulation names to update, if `None` update all simulations.
                 
             """
             # we need to catch file not found errors before it becomes a problem
@@ -2029,11 +2067,11 @@ class CoreModel:
 
         Parameters
         ----------
-        command : str
+        ``command`` : str
             The new report string that contains variable names.
-        report_name : str
+        ``report_name`` : str
             The name of the APSIM report to update defaults to Report.
-        simulations : list of str, optional
+        ``simulations`` : list of str, optional
             A list of simulation names to update. If `None`, the function will
             update the report for all simulations.
 
@@ -2056,7 +2094,7 @@ class CoreModel:
 
         Parameters
         ----------
-        simulation, optional
+        ``simulation``, optional
             Simulation name, if `None` use the first simulation.
         Returns
         -------
@@ -2076,7 +2114,7 @@ class CoreModel:
 
         Parameters
         ----------
-        :simulation, optional
+        ``simulation``, optional
             Simulation name, if `None` use the first simulation.
         Returns
         -------
@@ -2094,9 +2132,9 @@ class CoreModel:
         """
         Extracts soil physical parameters in the simulation
 
-        Args:
-            parameter (_string_): string e.g. DUL, SAT
-            simulations (string, optional): Targeted simulation name. Defaults to None.
+        Args::
+            ``parameter`` (_string_): string e.g. DUL, SAT
+            ``simulations`` (string, optional): Targeted simulation name. Defaults to None.
         ---------------------------------------------------------------------------
         returns an array of the parameter values
 
@@ -2116,21 +2154,25 @@ class CoreModel:
         """
         Inspect the model types and returns the model paths or names. usefull if you want to identify the path to the
         model for editing the model.
-        :param model_type: (Models) e.g. Models.Clock will return all fullpath or names
-        of models in the type Clock -Models.Manager returns information about the manager scripts in simulations. strings are allowed
-        to, in the case you may not need to import the global namespace, Models. e.g 'Models.Clock' will still work well.
 
-        -Models.Core.Simulation returns information about the simulation -Models.Climate.Weather returns a list of
-        paths or names pertaining to weather models -Models.Core.IPlant  returns a list of paths or names pertaining
-        to all crops models available in the simulation :param  fullpath: (bool) return the full path of the model
+        ``model_type``: (Models) e.g. ``Models.Clock`` or just ``'Clock'`` will return all fullpath or names
+            of models in the type Clock ``-Models.Manager`` returns information about the manager scripts in simulations. strings are allowed
+            to, in the case you may not need to import the global namespace, Models. e.g ``Models.Clock`` will still work well.
+            ``-Models.Core.Simulation`` returns information about the simulation -Models.Climate.Weather returns a list of
+            paths or names pertaining to weather models ``-Models.Core.IPlant``  returns a list of paths or names pertaining
+            to all crops models available in the simulation.
+
+        ``fullpath``: (bool) return the full path of the model
         relative to the parent simulations node. please note the difference between simulations and simulation.
-        :return: list[str]: list of all full paths or names of the model relative to the parent simulations node \n
+
+        Return: list[str]: list of all full paths or names of the model relative to the parent simulations node \n
+
         Example:
 
         >>> from apsimNGpy.core import base_data
         >>> from apsimNGpy.core.core import Models
 
-        # load default maize module
+        # load default ``maize`` module
 
         >>> model = base_data.load_default_simulations(crop ='maize')
         >>> model.inspect_model(Models.Manager, fullpath=True)
@@ -2201,22 +2243,25 @@ class CoreModel:
 
     def replace_soils_values_by_path(self, node_path: str, indices: list = None, **kwargs):
         """
-        set the new values of the specified soil object by path
+        set the new values of the specified soil object by path. only layers parameters are supported.
 
-        unfortunately, it handles one soil child at a time e.g., Physical at a go
+        Unfortunately, it handles one soil child at a time e.g., ``Physical`` at a go
+
         Args:
 
-        node_path (str, required): complete path to the soil child of the Simulations e.g.,Simulations.Simulation.Field.Soil.Organic.
+        ``node_path`` (str, required): complete path to the soil child of the Simulations e.g.,Simulations.Simulation.Field.Soil.Organic.
          Use`copy path to node fucntion in the GUI to get the real path of the soil node.
 
-        indices (list, optional): defaults to none but could be the position of the replacement values for arrays
+        ``indices`` (list, optional): defaults to none but could be the position of the replacement values for arrays
 
-        kwargs (key word arguments): This carries the parameter and the values e.g., BD = 1.23 or BD = [1.23, 1.75]
-         if the child is Physical, or Carbon if the child is Organic
+        ``kwargs`` (key word arguments): This carries the parameter and the values e.g., BD = 1.23 or BD = [1.23, 1.75]
+         if the child is ``Physical``, or ``Carbon`` if the child is ``Organic``
 
-         raises raise value error if none of the key word arguments, representing the paramters are specified
+         ``raises``
+         ``ValueError`` if none of the key word arguments, representing the paramters are specified
+
          returns:
-            - apsimNGpy.core.APSIMNG object and if the path specified does not translate to the child object in
+            - ``apsimNGpy.core.CoreModel`` object and if the path specified does not translate to the child object in
          the simulation
 
          Example:
@@ -2224,7 +2269,7 @@ class CoreModel:
 
               >>> model = load_default_simulations(crop ='Maize', simulations_object=False)# initiate model
 
-              >>> model = CoreModel(model) # replace with your intended file path
+              >>> model = CoreModel(model) # ``replace`` with your intended file path
               >>> model.replace_soils_values_by_path(node_path='.Simulations.Simulation.Field.Soil.Organic', indices=[0], Carbon =1.3)
 
               >>> sv= model.get_soil_values_by_path('.Simulations.Simulation.Field.Soil.Organic', 'Carbon')
@@ -2273,7 +2318,7 @@ class CoreModel:
                                         param_values: list,
                                         str_fmt=".",
                                         **kwargs):
-        # TODO I know there is a better way to implement this, to be duplicated
+
         warnings.warn(f"replace_soil_properties_by_path is deprecated use self.replace_soils_values_by_path instead",
                       DeprecationWarning)
 
@@ -2281,7 +2326,7 @@ class CoreModel:
         This function processes a path where each component represents different nodes in a hierarchy,
         with the ability to replace parameter values at various levels.
 
-        :param path:
+        ``path``:
             A string representing the hierarchical path of nodes in the order:
             'simulations.Soil.soil_child.crop.indices.parameter'. Soil here is a constant
 
@@ -2299,16 +2344,16 @@ class CoreModel:
               documentation for the `replace_soil_property_values` function for more information on
               default values.
 
-        :param param_values:
+        ``param_values``:
             A list of parameter values that will replace the existing values in the specified path.
             For example, `[0.1, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08]` could be used to replace values for `NH3`.
 
-        :param str_fmt:
+        ``str_fmt``:
             A string specifying the formatting character used to separate each component in the path.
             Examples include ".", "_", or "/". This defines how the components are joined together to
             form the full path.
 
-        returns:
+        ``returns``:
         ----------
             Returns the instance of `self` after processing the path and applying the parameter value replacements.
 
@@ -2319,7 +2364,7 @@ class CoreModel:
             >>> model = load_default_simulations(crop = 'Maize')
             >>> model.replace_soil_properties_by_path(path = 'None.Soil.Organic.None.None.Carbon', param_values= [1.23])
             
-            # if we want to replace carbon at the bottom of the soil profile, we use a negative index  -1
+            # if we want to replace ``carbon`` at the ``bottom`` of the ``soil profile``, we use a negative index  -1
             
            >>>  model.replace_soil_properties_by_path(path = 'None.Soil.Organic.None.[-1].Carbon', param_values= [1.23])   
         """
@@ -2357,19 +2402,20 @@ class CoreModel:
                                      crop=None,
                                      **kwargs):
         """
-        Replaces values in any soil property array. The soil property array
-        :param parameter: str: parameter name e.g., NO3, 'BD'
+        Replaces values in any soil property array. The soil property array.
 
-        :param param_values: list or tuple: values of the specified soil property name to replace
+        ``parameter``: str: parameter name e.g., NO3, 'BD'
 
-        :param soil_child: str: sub child of the soil component e.g., organic, physical etc.
+        ``param_values``: list or tuple: values of the specified soil property name to replace
 
-        :param simulations: list: list of simulations to where the child is found if
-        not found, all current simulations will receive the new values, thus defaults to None
+        ``soil_child``: str: sub child of the soil component e.g., organic, physical etc.
 
-        :param indices: list. Positions in the array which will be replaced. Please note that unlike C#, python satrt counting from 0
+        ``simulations``: list: list of simulations to where the child is found if
+          not found, all current simulations will receive the new values, thus defaults to None
 
-        :crop (str, optional): string for soil water replacement. Default is None
+        ``indices``: list. Positions in the array which will be replaced. Please note that unlike C#, python satrt counting from 0
+
+        ``crop`` (str, optional): string for soil water replacement. Default is None
 
         """
         if isinstance(param_values, (int, float)):
@@ -2403,11 +2449,11 @@ class CoreModel:
 
         Parameters
         ----------
-        :param simulations, str, optional
+        ``simulations``, str, optional
             List of simulation names to find, if `None` return all simulations
-        Returns
-        -------
-            list of APSIM Models.Core.Simulation objects
+        ``Returns``
+        ----------
+            list of APSIM ``Models.Core.Simulation`` objects
         """
 
         if simulations_names is None:
@@ -2496,17 +2542,17 @@ class CoreModel:
 
     def create_experiment(self, permutation: bool = True, base_name: str = None, **kwargs):
         """
-        Initialize an Experiment instance, adding the necessary models and factors.
+        Initialize an ``Experiment`` instance, adding the necessary models and factors.
 
         Args:
 
-            **kwargs: Additional parameters for CoreModel.
+            ``kwargs``: Additional parameters for CoreModel.
 
-            :param permutation (bool). If True, the experiment uses a permutation node to run unique combinations of the specified
+            ``permutation`` (bool). If True, the experiment uses a permutation node to run unique combinations of the specified
             factors for the simulation. For example, if planting population and nitrogen fertilizers are provided,
             each combination of planting population level and fertilizer amount is run as an individual treatment.
 
-           :param  base_name (str, optional): The name of the base simulation to be moved into the experiment setup. if not
+           ``base_name`` (str, optional): The name of the base simulation to be moved into the experiment setup. if not
             provided, it is expected to be Simulation as the default
 
         """
@@ -2544,13 +2590,12 @@ class CoreModel:
         Parameters:
         ----------
 
-        :specification: *(str), required*
-
+        ``specification``: *(str), required*
         A specification can be:
                 - 1. multiple values or categories e.g., "[Sow using a variable rule].Script.Population =4, 66, 9, 10"
                 - 2. Range of values e.g, "[Fertilise at sowing].Script.Amount = 0 to 200 step 20",
-        :factor_name: *(str), required*
 
+        ``factor_name``: *(str), required*
         - expected to be the user-desired name of the factor being specified e.g., population
 
         Example:
@@ -2610,15 +2655,19 @@ class CoreModel:
         Wraps around `add_factor` to add a continuous factor, just for clarity
 
         Args:
-            :param factor_path: (str): The path of the factor definition relative to its child node,
+            ``factor_path``: (str): The path of the factor definition relative to its child node,
                 e.g., `"[Fertilise at sowing].Script.Amount"`.
-            :param factor_name: (str): The name of the factor.
-            :param lower_bound: (int or float): The lower bound of the factor.
-            :param upper_bound: (int or float): The upper bound of the factor.
-            :param interval: (int or float): The distance between the factor levels.
 
-        Returns:
-            ApsimModel or CoreModel: An instance of `apsimNGpy.core.core.apsim.ApsimModel` or `CoreModel`.
+            ``factor_name``: (str): The name of the factor.
+
+            ``lower_bound``: (int or float): The lower bound of the factor.
+
+            ``upper_bound``: (int or float): The upper bound of the factor.
+
+            ``interval``: (int or float): The distance between the factor levels.
+
+        ``Returns``:
+            ``ApsimModel`` or ``CoreModel``: An instance of `apsimNGpy.core.core.apsim.ApsimModel` or `CoreModel`.
         Example:
             >>> from apsimNGpy.core import base_data
             >>> apsim = base_data.load_default_simulations(crop='Maize')
@@ -2631,14 +2680,19 @@ class CoreModel:
 
     def set_categorical_factor(self, factor_path: str, categories: Union[list, tuple], factor_name: str = None):
         """
-        wraps around add_factor() to add a continuous factor, just for clarity
+        wraps around ``add_factor()`` to add a continuous factor, just for clarity.
+
          parameters
          __________________________
-        :param factor_path: (str, required): path of the factor definition relative to its child node "[Fertilise at sowing].Script.Amount"
-        :param factor_name: (str) name of the factor.
-        :param categories: (tuple, list, required): multiple values of a factor
-        :returns:
-          ApsimModel or CoreModel: An instance of `apsimNGpy.core.core.apsim.ApsimModel` or `CoreModel`.
+        ``factor_path``: (str, required): path of the factor definition relative to its child node "[Fertilise at sowing].Script.Amount"
+
+        ``factor_name``: (str) name of the factor.
+
+        ``categories``: (tuple, list, required): multiple values of a factor
+
+        ``returns``:
+          ``ApsimModel`` or ``CoreModel``: An instance of ``apsimNGpy.core.core.apsim.ApsimModel`` or ``CoreModel``.
+
         Example:
             >>> from apsimNGpy.core import base_data
             >>> apsim = base_data.load_default_simulations(crop='Maize')
@@ -2652,20 +2706,21 @@ class CoreModel:
     def add_crop_replacements(self, _crop: str):
         """
         Adds a replacement folder as a child of the simulations.
+
         Useful when you intend to edit cultivar **parameters**.
 
         **Args:**
-            - **_crop** (*str*): Name of the crop to be added to the replacement folder.
+            ``_crop`` (*str*): Name of the crop to be added to the replacement folder.
 
-        **Returns:**
+        ``Returns:``
             - *ApsimModel*: An instance of `apsimNGpy.core.core.apsim.ApsimModel` or `CoreModel`.
 
-        **Raises:**
+        ``Raises:``
             - *ValueError*: If the specified crop is not found.
         """
 
         _FOLDER = Models.Core.Folder()
-        "everything is edited in place"
+        #  "everything is edited in place"
         CROP = _crop
         _FOLDER.Name = "Replacements"
         PARENT = self.Simulations
@@ -2682,7 +2737,7 @@ class CoreModel:
         return self
     def get_model_paths(self, cultivar=False) -> list[str]:
         """
-        select out a few model types to use for building the APSIM file inspections
+        Select out a few model types to use for building the APSIM file inspections
         """
         def filter_out():
             import Models
@@ -2711,8 +2766,8 @@ class CoreModel:
         return filter_out()
     def inspect_file(self, cultivar=False,**kwargs):
         """
-        Inspect the file by calling inspect_model() through get_model_paths.
-        This method is important in inspecting the whole file and also getting the scripts paths
+        Inspect the file by calling ``inspect_model()`` through ``get_model_paths.``
+        This method is important in inspecting the ``whole file`` and also getting the ``scripts paths``
         """
         if kwargs.get('indent', None) or kwargs.get('display_full_path', None):
             logger.info(f"Inspecting file with key word indent or display_full_path is \ndeprecated, the inspect_file now print "
@@ -2759,25 +2814,26 @@ class CoreModel:
     #@timer
     def add_db_table(self, variable_spec: list = None, set_event_names: list = None, rename: str = 'my_table', simulation_name:Union[str, list, tuple]=None):
         """
-        Adds a new data base table, which APSIM calls Report (Models.Report) to the Simulation under a Simulation Zone.
+        Adds a new data base table, which ``APSIM`` calls ``Report`` (Models.Report) to the ``Simulation`` under a Simulation Zone.
 
-        This is different from `add_report_variable` in that it creates a new, named report
+        This is different from ``add_report_variable`` in that it creates a new, named report
         table that collects data based on a given list of variables and events.
 
         :Args:
-            variable_spec (list or str): A list of APSIM variable paths to include in the report table.
+            ``variable_spec`` (list or str): A list of APSIM variable paths to include in the report table.
                                          If a string is passed, it will be converted to a list.
-            set_event_names (list or str, optional): A list of APSIM events that trigger the recording of variables.
+            ``set_event_names`` (list or str, optional): A list of APSIM events that trigger the recording of variables.
                                                      Defaults to ['[Clock].EndOfYear'] if not provided. other examples include '[Clock].StartOfYear', '[Clock].EndOfsimulation',
                                                      '[crop_name].Harvesting' etc.,,
-            rename (str): The name of the report table to be added. Defaults to 'my_table'.
+            ``rename`` (str): The name of the report table to be added. Defaults to 'my_table'.
 
-            simulation_name (str,tuple, or list, Optional): if specified, the name of the simulation will be searched and will become the parent candidate for the report table.
+            ``simulation_name`` (str,tuple, or list, Optional): if specified, the name of the simulation will be searched and will become the parent candidate for the report table.
                             If it is none, all Simulations in the file will be updated with the new db_table
 
-        :Raises:
-            ValueError: If no variable_spec is provided.
-            RuntimeError: If no Zone is found in the current simulation scope.
+        ``Raises``:
+            ``ValueError``: If no variable_spec is provided.
+            ``RuntimeError``: If no Zone is found in the current simulation scope.
+
         : Example:
                >>> from apsimNGpy import core
                >>> model = core.base_data.load_default_simulations(crop = 'Maize')
@@ -2827,8 +2883,6 @@ class CoreModel:
             self.save()
 
         # save the results to recompile
-
-
 
 
 if __name__ == '__main__':

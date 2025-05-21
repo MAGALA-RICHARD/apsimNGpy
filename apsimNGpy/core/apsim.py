@@ -114,11 +114,13 @@ class ApsimModel(CoreModel):
 
     def adjust_dul(self, simulations: Union[tuple, list] = None):
         """
-        - This method checks whether the soil SAT is above or below DUL and decreases DUL  values accordingly
-        - Need to cal this method everytime SAT is changed, or DUL is changed accordingly
-        :param simulations: str, name of the simulation where we want to adjust DUL and SAT according
-        :return:
-        model object
+        - This method checks whether the soil ``SAT`` is above or below ``DUL`` and decreases ``DUL``  values accordingly
+        - Need to call this method everytime ``SAT`` is changed, or ``DUL`` is changed accordingly.
+
+        ``simulations``: str, name of the simulation where we want to adjust DUL and SAT according.
+
+        ``returns``:
+            model object
         """
         duL = self.extract_any_soil_physical('DUL', simulations)
         print(duL)
@@ -274,30 +276,29 @@ class ApsimModel(CoreModel):
             Updates soil parameters and configurations for downloaded soil data in simulation models.
 
             This method adjusts soil physical and organic parameters based on provided soil tables and applies these
-            adjustments to specified simulation models. Optionally, it can adjust the Radiation Use Efficiency (RUE)
-            based on a Carbon to Sulfur ratio (CSR) sampled from the provided soil tables.
+            adjustments to specified simulation models.
 
             Parameters:
-                 :param soil_tables (list): A list containing soil data tables. Expected to contain: see the naming
+            ``soil_tables`` (list): A list containing soil data tables. Expected to contain: see the naming
             convention in the for APSIM - [0]: DataFrame with physical soil parameters. - [1]: DataFrame with organic
-            soil parameters. - [2]: DataFrame with crop-specific soil parameters. - RUE adjustment. - simulation_names (list of str): Names or identifiers for the simulations to
+            soil parameters. - [2]: DataFrame with crop-specific soil parameters. - simulation_names (list of str): Names or identifiers for the simulations to
             be updated.s
 
 
             Returns:
-            - self: Returns an instance of the class for chaining methods.
+            - self: Returns an instance of the class for ``chaining`` methods.
 
-            This method directly modifies the simulation instances found by `find_simulations` method calls,
-            updating physical and organic soil properties, as well as crop-specific parameters like lower limit (LL),
-            drain upper limit (DUL), saturation (SAT), bulk density (BD), hydraulic conductivity at saturation (KS),
+            This method directly modifies the simulation instances found by ``find_simulations`` method calls,
+            updating physical and organic soil properties, as well as crop-specific parameters like lower limit (``LL``),
+            drain upper limit (``DUL``), saturation (``SAT``), bulk density (``BD``), hydraulic conductivity at saturation (``KS``),
             and more based on the provided soil tables.
 
     ->> key-word argument
-             adjust_rue: Boolean, adjust the radiation use efficiency
-            'set_sw_con': Boolean, set the drainage coefficient for each layer
-            adJust_kl:: Bollean, adjust, kl based on productivity index
-            'CultvarName': cultivar name which is in the sowing module for adjusting the rue
-            tillage: specify whether you will be carried to adjust some physical parameters
+
+            ``set_sw_con``: Boolean, set the drainage coefficient for each layer
+            ``adJust_kl``:: Bollean, adjust, kl based on productivity index
+            ``CultvarName``: cultivar name which is in the sowing module for adjusting the rue
+            ``tillage``: specify whether you will be carried to adjust some physical parameters
 
         """
 
@@ -421,20 +422,23 @@ class ApsimModel(CoreModel):
 
         Parameters:
         ----------
-        report_name : str, optional (default: 'Report')
+        ``report_name`` : str, optional (default: 'Report')
             The name of the aPSim report to be used for simulation results.
-        start : str, optional
+
+        ``start`` : str, optional
             The start date for the simulation (e.g., '01-01-2023'). If provided, it will change the simulation start date.
-        end : str, optional
+
+        ``end`` : str, optional
             The end date for the simulation (e.g., '3-12-2023'). If provided, it will change the simulation end date.
-        spin_var : str, optional (default: 'Carbon'). the difference between the start and end date will determine the spin-up period
+
+        ``spin_var`` : str, optional (default: 'Carbon'). the difference between the start and end date will determine the spin-up period
             The variable representing the child of spin-up operation. Supported values are 'Carbon' or 'DUL'.
 
-        Returns:
+        ``Returns:``
         -------
         self : ApsimModel
-            The modified ApsimModel object after the spin-up operation.
-            you could call save_edited file and save it to your specified location, but you can also proceed with the simulation
+            The modified ``ApsimModel`` object after the spin-up operation.
+            you could call ``save_edited`` file and save it to your specified location, but you can also proceed with the simulation
 
         """
 
@@ -496,14 +500,19 @@ class ApsimModel(CoreModel):
         Generate layer thicknesses from surface to depth, starting with thin layers and increasing thickness.
 
         Args:
-            max_depth (float): Total depth in mm.
-            n_layers (int): Total number of layers.
-            thin_layers (int): Number of initial thin layers.
-            thin_thickness (float): Thickness of each thin layer.
-            growth_type (str): 'linear' or 'exponential'.
-            thick_growth_rate (float): Growth factor for thick layers (e.g., +50% each layer if exponential).
+            ``max_depth`` (float): Total depth in mm.
 
-        Returns:
+            ``n_layers`` (int): Total number of layers.
+
+            ``thin_layers`` (int): Number of initial thin layers.
+
+            ``thin_thickness`` (float): Thickness of each thin layer.
+
+            ``growth_type`` (str): 'linear' or 'exponential'.
+
+            ``thick_growth_rate`` (float): Growth factor for thick layers (e.g., +50% each layer if exponential).
+
+        ``Returns:``
             List[float]: List of layer thicknesses summing to max_depth.
         """
         from math import pow

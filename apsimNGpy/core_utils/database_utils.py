@@ -48,28 +48,31 @@ def read_with_query(db, query):
         Executes an SQL query on a specified database and returns the result as a Pandas DataFrame.
 
         Args:
-        :db (str): The database file path or identifier to connect to.
-        :query (str): The SQL query string to be executed. The query should be a valid SQL SELECT statement.
+        ``db`` (str): The database file path or identifier to connect to.
 
-        Returns:
-        pandas.DataFrame: A DataFrame containing the results of the SQL query.
+        ``query`` (str): The SQL query string to be executed. The query should be a valid SQL SELECT statement.
+
+        ``Returns:``
+        ``pandas.DataFrame``: A DataFrame containing the results of the SQL query.
 
         The function opens a connection to the specified SQLite database, executes the given SQL query,
         fetches the results into a DataFrame, then closes the database connection.
 
         Example:
             # Define the database and the query
-            database_path = 'your_database.sqlite'
-            sql_query = 'SELECT * FROM your_table WHERE condition = values'
+
+            >>> database_path = 'your_database.sqlite'
+            >>> sql_query = 'SELECT * FROM your_table WHERE condition = values'
 
             # Get the query result as a DataFrame
-            df = read_with_query(database_path, sql_query)
+
+            >>>df = read_with_query(database_path, sql_query)
 
             # Work with the DataFrame
-            print(df)
+            >>> print(df)
 
         Note: Ensure that the database path and the query are correct and that the query is a proper SQL SELECT statement.
-        The function uses 'sqlite3' for connecting to the database; make sure it is appropriate for your database.
+        The function uses ``sqlite3`` for connecting to the database; make sure it is appropriate for your database.
         """
     # table = kwargs.get("table")
     conn = sqlite3.connect(db)
@@ -100,8 +103,9 @@ def clear_dir(pat, exclude=None):
 def get_db_table_names(d_b):
     """
 
-    :param d_b: database name or path
-    :return: all names sql database table names existing within the database
+    ``d_b``: database name or path.
+
+    ``return:`` all names ``SQL`` database table ``names`` existing within the database
     """
     d_b = f'sqlite:///{d_b}'
     # engine = create_engine(mssql+pymssql://sa:saPassword@localhost:52865/{d_b})')
@@ -130,24 +134,28 @@ def read_db_table(db, report_name):
         and returns the results as a Pandas DataFrame.
 
         Args:
-            db (str): The database file path or identifier to connect to.
-            report_name (str): name of the database table: The name of the table in the database from which to retrieve data.
+            ``db`` (str): The database file path or identifier to connect to.
+
+            ``report_name`` (str): name of the database table: The name of the table in the database from which to retrieve data.
+
         Returns:
-            pandas.DataFrame: A DataFrame containing all the records from the specified table.
+            ``pandas.DataFrame``: A DataFrame containing all the records from the specified table.
 
         The function establishes a connection to the specified SQLite database, constructs and executes a SQL query
         to select all records from the specified table, fetches the results into a DataFrame, then closes the database connection.
 
         Examples:
             # Define the database and the table name
-            database_path = 'your_database.sqlite'
-            table_name = 'your_table'
+
+            >>> database_path = 'your_database.sqlite'
+            >>> table_name = 'your_table'
 
             # Get the table data as a DataFrame
-            #>>>> ddf = read_db_table(database_path, table_name)
+
+            >>> ddf = read_db_table(database_path, table_name)
 
             # Work with the DataFrame
-           #>>>> print(ddf)
+            >>> print(ddf)
 
         Note:
             - Ensure that the database path and table name are correct.
@@ -193,9 +201,11 @@ def load_database(path):
 def clear_table(db, table_name):
     """
 
-    :param db: path to db
-    :param table_name: name of the table to clear
-    :return: None
+    ``db``: path to db.
+
+    ``table_name``: name of the table to clear.
+
+    ``return``: None
     """
     with sqlite3.connect(db) as conn:
         cursor = conn.cursor()
@@ -207,8 +217,9 @@ def clear_all_tables(db):
     """
     Deletes all rows from all user-defined tables in the given SQLite database.
 
-    :param db: Path to the SQLite database file.
-    :return: None
+    ``db``: Path to the SQLite database file.
+
+    ``return``: None
     """
     with sqlite3.connect(db) as conn:
         cursor = conn.cursor()

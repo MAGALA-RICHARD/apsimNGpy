@@ -6,6 +6,19 @@
   <component name="ChangeListManager">
     <list default="true" id="5d471312-8496-4246-98d6-790439318160" name="Changes" comment="ModelTools">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/_modelhelpers.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/_modelhelpers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/apsim.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/apsim.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/base_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/base_data.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/core.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/core.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/runner.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/runner.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/soilmanager.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/soilmanager.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core_utils/database_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/core_utils/database_utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/manager/weathermanager.py" beforeDir="false" afterPath="$PROJECT_DIR$/manager/weathermanager.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/new_opt.py" beforeDir="false" afterPath="$PROJECT_DIR$/optimizer/new_opt.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/parallel/process.py" beforeDir="false" afterPath="$PROJECT_DIR$/parallel/process.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/raw_docs/api.rst" beforeDir="false" afterPath="$PROJECT_DIR$/raw_docs/api.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/raw_docs/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/raw_docs/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../docs/source/api.rst" beforeDir="false" afterPath="$PROJECT_DIR$/../docs/source/api.rst" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -104,7 +117,7 @@
       <recent name="D:\package\apsimNGpy\apsimNGpy\core" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.main">
+  <component name="RunManager" selected="Python.core">
     <configuration name="_modelhelpers" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="apsimNGpy" />
       <option name="ENV_FILES" value="" />
@@ -208,18 +221,18 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="unit_tests_core" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="new_opt" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="apsimNGpy" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/optimizer" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/tests/unit_tests_core.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/optimizer/new_opt.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="true" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -230,11 +243,11 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.main" />
         <item itemvalue="Python.core" />
+        <item itemvalue="Python.main" />
+        <item itemvalue="Python.new_opt" />
         <item itemvalue="Python._modelhelpers" />
         <item itemvalue="Python.cleaner" />
-        <item itemvalue="Python.unit_tests_core" />
       </list>
     </recent_temporary>
   </component>
@@ -329,95 +342,7 @@
       <workItem from="1746202214987" duration="8937000" />
       <workItem from="1746329299406" duration="12459000" />
       <workItem from="1746475969057" duration="6783000" />
-      <workItem from="1747696101620" duration="4700000" />
-    </task>
-    <task id="LOCAL-00396" summary="one">
-      <option name="closed" value="true" />
-      <created>1745082114947</created>
-      <option name="number" value="00396" />
-      <option name="presentableId" value="LOCAL-00396" />
-      <option name="project" value="LOCAL" />
-      <updated>1745082114947</updated>
-    </task>
-    <task id="LOCAL-00397" summary="one">
-      <option name="closed" value="true" />
-      <created>1745082975646</created>
-      <option name="number" value="00397" />
-      <option name="presentableId" value="LOCAL-00397" />
-      <option name="project" value="LOCAL" />
-      <updated>1745082975647</updated>
-    </task>
-    <task id="LOCAL-00398" summary="one">
-      <option name="closed" value="true" />
-      <created>1745083359905</created>
-      <option name="number" value="00398" />
-      <option name="presentableId" value="LOCAL-00398" />
-      <option name="project" value="LOCAL" />
-      <updated>1745083359905</updated>
-    </task>
-    <task id="LOCAL-00399" summary="one">
-      <option name="closed" value="true" />
-      <created>1745105078757</created>
-      <option name="number" value="00399" />
-      <option name="presentableId" value="LOCAL-00399" />
-      <option name="project" value="LOCAL" />
-      <updated>1745105078757</updated>
-    </task>
-    <task id="LOCAL-00400" summary="ad_db_table">
-      <option name="closed" value="true" />
-      <created>1745106325905</created>
-      <option name="number" value="00400" />
-      <option name="presentableId" value="LOCAL-00400" />
-      <option name="project" value="LOCAL" />
-      <updated>1745106325905</updated>
-    </task>
-    <task id="LOCAL-00401" summary="ad_db_table">
-      <option name="closed" value="true" />
-      <created>1745107907408</created>
-      <option name="number" value="00401" />
-      <option name="presentableId" value="LOCAL-00401" />
-      <option name="project" value="LOCAL" />
-      <updated>1745107907408</updated>
-    </task>
-    <task id="LOCAL-00402" summary="ad_db_table">
-      <option name="closed" value="true" />
-      <created>1745278665686</created>
-      <option name="number" value="00402" />
-      <option name="presentableId" value="LOCAL-00402" />
-      <option name="project" value="LOCAL" />
-      <updated>1745278665686</updated>
-    </task>
-    <task id="LOCAL-00403" summary="ad_db_table">
-      <option name="closed" value="true" />
-      <created>1745278759351</created>
-      <option name="number" value="00403" />
-      <option name="presentableId" value="LOCAL-00403" />
-      <option name="project" value="LOCAL" />
-      <updated>1745278759351</updated>
-    </task>
-    <task id="LOCAL-00404" summary="ad_db_table">
-      <option name="closed" value="true" />
-      <created>1745503217989</created>
-      <option name="number" value="00404" />
-      <option name="presentableId" value="LOCAL-00404" />
-      <option name="project" value="LOCAL" />
-      <updated>1745503217989</updated>
-    </task>
-    <task id="LOCAL-00405" summary="ad_db_table">
-      <option name="closed" value="true" />
-      <created>1745517871056</created>
-      <option name="number" value="00405" />
-      <option name="presentableId" value="LOCAL-00405" />
-      <option name="project" value="LOCAL" />
-      <updated>1745517871056</updated>
-    </task>
-    <task id="LOCAL-00406" summary="ad_db_table">
-      <option name="closed" value="true" />
-      <created>1745518279532</created>
-      <option name="number" value="00406" />
-      <option name="presentableId" value="LOCAL-00406" />
-      <option name="project" value="LOCAL" />
-      <updated>1745518279532</updated>
+      <workItem from="1747696101620" duration="29789000" />
     </task>
     <task id="LOCAL-00407" summary="ad_db_table">
       <option name="closed" value="true" />
@@ -723,7 +648,95 @@
       <option name="project" value="LOCAL" />
       <updated>1747713127768</updated>
     </task>
-    <option name="localTasksCounter" value="445" />
+    <task id="LOCAL-00445" summary="ModelTools">
+      <option name="closed" value="true" />
+      <created>1747713398201</created>
+      <option name="number" value="00445" />
+      <option name="presentableId" value="LOCAL-00445" />
+      <option name="project" value="LOCAL" />
+      <updated>1747713398201</updated>
+    </task>
+    <task id="LOCAL-00446" summary="ModelTools">
+      <option name="closed" value="true" />
+      <created>1747713788464</created>
+      <option name="number" value="00446" />
+      <option name="presentableId" value="LOCAL-00446" />
+      <option name="project" value="LOCAL" />
+      <updated>1747713788464</updated>
+    </task>
+    <task id="LOCAL-00447" summary="ModelTools">
+      <option name="closed" value="true" />
+      <created>1747714014279</created>
+      <option name="number" value="00447" />
+      <option name="presentableId" value="LOCAL-00447" />
+      <option name="project" value="LOCAL" />
+      <updated>1747714014279</updated>
+    </task>
+    <task id="LOCAL-00448" summary="ModelTools">
+      <option name="closed" value="true" />
+      <created>1747714338364</created>
+      <option name="number" value="00448" />
+      <option name="presentableId" value="LOCAL-00448" />
+      <option name="project" value="LOCAL" />
+      <updated>1747714338364</updated>
+    </task>
+    <task id="LOCAL-00449" summary="ModelTools">
+      <option name="closed" value="true" />
+      <created>1747751155405</created>
+      <option name="number" value="00449" />
+      <option name="presentableId" value="LOCAL-00449" />
+      <option name="project" value="LOCAL" />
+      <updated>1747751155405</updated>
+    </task>
+    <task id="LOCAL-00450" summary="ModelTools">
+      <option name="closed" value="true" />
+      <created>1747752770497</created>
+      <option name="number" value="00450" />
+      <option name="presentableId" value="LOCAL-00450" />
+      <option name="project" value="LOCAL" />
+      <updated>1747752770497</updated>
+    </task>
+    <task id="LOCAL-00451" summary="ModelTools">
+      <option name="closed" value="true" />
+      <created>1747753556044</created>
+      <option name="number" value="00451" />
+      <option name="presentableId" value="LOCAL-00451" />
+      <option name="project" value="LOCAL" />
+      <updated>1747753556044</updated>
+    </task>
+    <task id="LOCAL-00452" summary="ModelTools">
+      <option name="closed" value="true" />
+      <created>1747754172794</created>
+      <option name="number" value="00452" />
+      <option name="presentableId" value="LOCAL-00452" />
+      <option name="project" value="LOCAL" />
+      <updated>1747754172794</updated>
+    </task>
+    <task id="LOCAL-00453" summary="ModelTools">
+      <option name="closed" value="true" />
+      <created>1747755099271</created>
+      <option name="number" value="00453" />
+      <option name="presentableId" value="LOCAL-00453" />
+      <option name="project" value="LOCAL" />
+      <updated>1747755099271</updated>
+    </task>
+    <task id="LOCAL-00454" summary="ModelTools">
+      <option name="closed" value="true" />
+      <created>1747759168979</created>
+      <option name="number" value="00454" />
+      <option name="presentableId" value="LOCAL-00454" />
+      <option name="project" value="LOCAL" />
+      <updated>1747759168979</updated>
+    </task>
+    <task id="LOCAL-00455" summary="ModelTools">
+      <option name="closed" value="true" />
+      <created>1747759607275</created>
+      <option name="number" value="00455" />
+      <option name="presentableId" value="LOCAL-00455" />
+      <option name="project" value="LOCAL" />
+      <updated>1747759607275</updated>
+    </task>
+    <option name="localTasksCounter" value="456" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

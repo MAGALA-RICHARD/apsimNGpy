@@ -18,18 +18,20 @@ class Problem:
         })
 
     def setUP(self, x):
+        sim = self.apsim.inspect_model('Simulation', fullpath=False)[0]
+        edit = self.apsim.edit_model
         for i, varR in enumerate(self.controls):
-            value = x[i]
-            self.apsim.edit_model(
+            print(x)
+            edit(
                 varR['model_type'],
-                self.simulation,
+                sim,
                 varR['model_name'],
-                **{varR['parameter_name']: value}
+                **{varR['parameter_name']: x[i]}
             )
 
     def evaluate(self, x):
         self.setUP(x)
-        result = self.apsim.run().results
+        result = self.apsim.run(verbose=True).results
         emissions = result.Yield  # placeholder
         return  10000 - emissions.mean()
 
@@ -48,5 +50,5 @@ if __name__ == "__main__":
     prob = Problem(model, "Simulation")
     prob.add_control('Manager', "Sow using a variable rule", 'Population', 'population')
     prob.add_control('Manager', "Fertilise at sowing", 'Amount', 'Nitrogen')
-    ans  =prob.minimize_problem(x0=[1, 0], method  ='Powell', bounds =[(1,12), (0, 280)])
+    ans  =prob.minimize_problem(x0=[1, 0], method  ='Powell', bounds =[(1,12), (0, 28)])
     print(ans)

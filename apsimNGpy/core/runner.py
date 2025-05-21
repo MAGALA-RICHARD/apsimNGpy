@@ -22,7 +22,9 @@ else:  # Linux or macOS
 
 def get_apsim_version(verbose:bool=False):
     """ Display version information of the apsim model currently in the apsimNGpy config environment.
-    :param verbose: (bool) Prints the version information instantly
+
+    ``verbose``: (bool) Prints the version information ``instantly``
+
     Example:
             >>> apsim_version = get_apsim_version()
 
@@ -41,10 +43,13 @@ def upgrade_apsim_file(file: str, verbose:bool=True):
 
     Parameters
     ---------------
-    :param file: file to be upgraded to the newest version
-    :param verbose: Write detailed messages to stdout when a conversion starts/finishes.
-    :return:
+    ``file``: file to be upgraded to the newest version
+
+    ``verbose``: Write detailed messages to stdout when a conversion starts/finishes.
+
+    ``return``
        The latest version of the .apsimx file with the same name as the input file
+
     Example:
         >>> from apsimNGpy.core.base_data import load_default_simulations
         >>> filep =load_default_simulations(simulations_object= False)# this is just an example perhaps you need to pass a lower verion file because this one is extracted from thecurrent model as the excutor
@@ -68,15 +73,18 @@ def upgrade_apsim_file(file: str, verbose:bool=True):
 
 def run_model_externally(model: Union[Path, str], verbose: bool = False, to_csv:bool=False) -> Popen[str]:
     """
-    Runs an APSIM model externally, ensuring cross-platform compatibility.
+    Runs an ``APSIM`` model externally, ensuring cross-platform compatibility.
 
-    Although APSIM models can be run internally, compatibility issues across different APSIM versions—
+    Although ``APSIM`` models can be run internally, compatibility issues across different APSIM versions—
     particularly with compiling manager scripts—led to the introduction of this method.
 
-    :param model: (str) Path to the APSIM model file or a filename pattern.
-    :param verbose: (bool) If True, prints stdout output during execution.
-    :param to_csv: (bool) If True, write the results to a CSV file in the same directory.
-    :returns: A subprocess.Popen object.
+    ``model``: (str) Path to the ``APSIM`` model file or a filename pattern.
+
+    ``verbose``: (bool) If ``True``, prints stdout output during execution.
+
+    ``to_csv``: (bool) If ``True``, write the results to a CSV file in the same directory.
+
+    ``returns``: A subprocess.Popen object.
 
     Example:
         >>> result =run_model_externally("path/to/model.apsimx", verbose=True, to_csv=True)
@@ -118,15 +126,15 @@ def get_matching_files(dir_path: Union[str, Path], pattern: str, recursive: bool
     Search for files matching a given pattern in the specified directory.
 
     Args:
-        dir_path (Union[str, Path]): The directory path to search in.
-        pattern (str): The filename pattern to match (e.g., "*.apsimx").
-        recursive (bool): If True, search recursively; otherwise, search only in the top-level directory.
+        ``dir_path`` (Union[str, Path]): The directory path to search in.
+        ``pattern`` (str): The filename pattern to match (e.g., "*.apsimx").
+        ``recursive`` (bool): If True, search recursively; otherwise, search only in the top-level directory.
 
     Returns:
-        List[Path]: A list of matching Path objects.
+        List[Path]: A ``list`` of matching Path objects.
 
     Raises:
-        ValueError: If no matching files are found.
+        ``ValueError:`` If no matching files are found.
     """
     global_path = Path(dir_path)
     if recursive:
@@ -159,11 +167,13 @@ def collect_csv_by_model_path(model_path) -> dict[Any, Any]:
 
 def collect_csv_from_dir(dir_path, pattern, recursive=False) -> (pd.DataFrame):
     """Collects the csf=v files in a directory using a pattern, usually the pattern resembling the one of the simulations used to generate those csv files
-    :param dir_path: (str) path where to look for csv files
-    :param recursive: (bool) whether to recursively search through the directory defaults to false:
-    :param pattern:(str) pattern of the apsim files that produced the csv files through simulations
-    :returns
+    ``dir_path``: (str) path where to look for csv files
+    ``recursive``: (bool) whether to recursively search through the directory defaults to false:
+    ``pattern``:(str) pattern of the apsim files that produced the csv files through simulations
+
+    returns
         a generator object with pandas data frames
+
     Example:
      >>> mock_data = Path.home() / 'mock_data' # this a mock directory substitute accordingly
      >>> df1= list(collect_csv_from_dir(mock_data, '*.apsimx', recursive=True)) # collects all csf file produced by apsimx recursively
@@ -197,7 +207,7 @@ def run_from_dir(dir_path, pattern, verbose=False,
                  recursive=False,  # set to false because the data collector is also set to false
                  write_tocsv=True) -> [pd.DataFrame]:
     """
-       This function acts as a wrapper around the APSIM command line recursive tool, automating
+       This function acts as a wrapper around the ``APSIM`` command line recursive tool, automating
        the execution of APSIM simulations on all files matching a given pattern in a specified
        directory. It facilitates running simulations recursively across directories and outputs
        the results for each file are stored to a csv file in the same directory as the file'.
@@ -207,19 +217,19 @@ def run_from_dir(dir_path, pattern, verbose=False,
 
        :Parameters:
        __________________
-       :param dir_path: (str or Path, required). The path to the directory where the
+       ``dir_path``: (str or Path, required). The path to the directory where the
            simulation files are located.
-       :param pattern: (str, required): The file pattern to match for simulation files
+       ``pattern``: (str, required): The file pattern to match for simulation files
            (e.g., "*.apsimx").
-       :param recursive: (bool, optional):  Recursively search through subdirectories for files
+       ``recursive``: (bool, optional):  Recursively search through subdirectories for files
            matching the file specification.
-       :param write_tocsv: (bool, optional): specify whether to write the
+       ``write_tocsv``: (bool, optional): specify whether to write the
            simulation results to a csv. if true, the exported csv files bear the same name as the input apsimx file name
-           with suffix reportname.csv. if it is false,
-          - if verbose, the progress is printed as the elapsed time and the successfully saved csv
+           with suffix reportname.csv. if it is ``False``,
+          - if ``verbose``, the progress is printed as the elapsed time and the successfully saved csv
 
-       :returns
-        -- a generator that yields data frames knitted by pandas
+       ``returns``
+        -- a ``generator`` that yields data frames knitted by pandas
 
 
        Example:

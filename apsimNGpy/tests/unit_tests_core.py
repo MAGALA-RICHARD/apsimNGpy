@@ -53,7 +53,10 @@ class TestCoreModel(BaseTester):
         self.assertEqual(amountIn, Amount)
 
     def test_check_som(self):
-        som = self.test_ap_sim.check_som()
+        som = self.test_ap_sim.inspect_model_parameters(model_type='SurfaceOrganicMatter',
+                                                        model_name= 'SurfaceOrganicMatter',
+                                                        simulations= 'all',
+                                                        )
         self.assertIsInstance(som, dict, 'check_som should return a dictionary')
 
     def test_change_som(self):

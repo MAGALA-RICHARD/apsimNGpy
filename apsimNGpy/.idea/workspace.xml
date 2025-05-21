@@ -6,19 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="5d471312-8496-4246-98d6-790439318160" name="Changes" comment="ModelTools">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/_modelhelpers.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/_modelhelpers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/apsim.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/apsim.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/base_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/base_data.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/core/core.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/core.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/runner.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/runner.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/soilmanager.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/soilmanager.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core_utils/database_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/core_utils/database_utils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/manager/weathermanager.py" beforeDir="false" afterPath="$PROJECT_DIR$/manager/weathermanager.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/optimizer/new_opt.py" beforeDir="false" afterPath="$PROJECT_DIR$/optimizer/new_opt.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/parallel/process.py" beforeDir="false" afterPath="$PROJECT_DIR$/parallel/process.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/raw_docs/api.rst" beforeDir="false" afterPath="$PROJECT_DIR$/raw_docs/api.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/raw_docs/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/raw_docs/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../docs/source/api.rst" beforeDir="false" afterPath="$PROJECT_DIR$/../docs/source/api.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/unit_tests_core.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/unit_tests_core.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -97,7 +86,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "main",
+    "git-widget-placeholder": "Merging main",
     "last_opened_file_path": "D:/package/src/apsimNGpy/core",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
@@ -342,15 +331,7 @@
       <workItem from="1746202214987" duration="8937000" />
       <workItem from="1746329299406" duration="12459000" />
       <workItem from="1746475969057" duration="6783000" />
-      <workItem from="1747696101620" duration="29789000" />
-    </task>
-    <task id="LOCAL-00407" summary="ad_db_table">
-      <option name="closed" value="true" />
-      <created>1745519583854</created>
-      <option name="number" value="00407" />
-      <option name="presentableId" value="LOCAL-00407" />
-      <option name="project" value="LOCAL" />
-      <updated>1745519583854</updated>
+      <workItem from="1747696101620" duration="30642000" />
     </task>
     <task id="LOCAL-00408" summary="ad_db_table">
       <option name="closed" value="true" />
@@ -736,7 +717,15 @@
       <option name="project" value="LOCAL" />
       <updated>1747759607275</updated>
     </task>
-    <option name="localTasksCounter" value="456" />
+    <task id="LOCAL-00456" summary="ModelTools">
+      <option name="closed" value="true" />
+      <created>1747842537417</created>
+      <option name="number" value="00456" />
+      <option name="presentableId" value="LOCAL-00456" />
+      <option name="project" value="LOCAL" />
+      <updated>1747842537417</updated>
+    </task>
+    <option name="localTasksCounter" value="457" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

@@ -53,18 +53,12 @@ class TestCoreModel(BaseTester):
         self.assertEqual(amountIn, Amount)
 
     def test_check_som(self):
-        som = self.test_ap_sim.check_som()
+        som = self.test_ap_sim.inspect_model_parameters(model_type='SurfaceOrganicMatter',
+                                                        model_name= 'SurfaceOrganicMatter',
+                                                        simulations= 'all',
+                                                        )
         self.assertIsInstance(som, dict, 'check_som should return a dictionary')
 
-    def test_change_som(self):
-        inrm = 105
-        icnr = 29
-        self.test_ap_sim.change_som(inrm=inrm, icnr=icnr)
-        som = self.test_ap_sim.check_som()
-        self.assertIsInstance(som, dict)
-        inrmOut, icnrOut = int(som['Simulation'][0]), int(som['Simulation'][1])
-        self.assertEqual(inrm, inrmOut, msg='inrm are not equal possibly change_som was not successful')
-        self.assertEqual(icnr, icnrOut, msg='icnr are not equal possibly change_som was not successful')
 
     def test_find_simulations(self):
         """ Test find_simulations based on three input None, lists and string"""

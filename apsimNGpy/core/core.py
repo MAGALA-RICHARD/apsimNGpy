@@ -737,9 +737,11 @@ class CoreModel:
 
         Examples
         --------
+
         >>> model = CoreModel(model='Maize')
 
         # Edit a cultivar model
+
         >>> model.edit_model(
         ...     model_type='Cultivar',
         ...     simulations='Simulation',
@@ -750,6 +752,7 @@ class CoreModel:
         ... )
 
         # Edit a soil organic matter module
+
         >>> model.edit_model(
         ...     model_type='Organic',
         ...     simulations='Simulation',
@@ -758,6 +761,7 @@ class CoreModel:
         ... )
 
         # Edit multiple soil layers
+
         >>> model.edit_model(
         ...     model_type='Organic',
         ...     simulations='Simulation',
@@ -766,6 +770,7 @@ class CoreModel:
         ... )
 
         # Edit solute models
+
         >>> model.edit_model(
         ...     model_type='Solute',
         ...     simulations='Simulation',
@@ -781,6 +786,7 @@ class CoreModel:
         ... )
 
         # Edit a manager script
+
         >>> model.edit_model(
         ...     model_type='Manager',
         ...     simulations='Simulation',
@@ -789,6 +795,7 @@ class CoreModel:
         ... )
 
         # Edit surface organic matter parameters
+
         >>> model.edit_model(
         ...     model_type='SurfaceOrganicMatter',
         ...     simulations='Simulation',
@@ -804,6 +811,7 @@ class CoreModel:
         ... )
 
         # Edit Clock start and end dates
+
         >>> model.edit_model(
         ...     model_type='Clock',
         ...     simulations='Simulation',
@@ -813,6 +821,7 @@ class CoreModel:
         ... )
 
         # Edit report variables
+
         >>> model.edit_model(
         ...     model_type='Report',
         ...     simulations='Simulation',
@@ -821,6 +830,7 @@ class CoreModel:
         ... )
 
         # Multiple report variables
+
         >>> model.edit_model(
         ...     model_type='Report',
         ...     simulations='Simulation',
@@ -1218,12 +1228,12 @@ class CoreModel:
         -------
         Union[dict, list, pd.DataFrame, Any]
             The format depends on the model type:
-            - Weather: file path(s) as string(s)
-            - Clock: dictionary with start and end datetime objects (or a single datetime if only one is requested)
-            - Manager: dictionary of script parameters
-            - Soil-related models: pandas DataFrame of layered values
-            - Report: dictionary with `VariableNames` and `EventNames`
-            - Cultivar: dictionary of parameter strings
+            - ``Weather``: file path(s) as string(s)
+            - ``Clock``: dictionary with start and end datetime objects (or a single datetime if only one is requested)
+            - ``Manager``: dictionary of script parameters
+            - ``Soil-related`` models: pandas DataFrame of layered values
+            - ``Report``: dictionary with `VariableNames` and `EventNames`
+            - ``Cultivar``: dictionary of parameter strings
 
         Raises
         ------
@@ -1241,49 +1251,180 @@ class CoreModel:
         --------
         >>> model_instance = CoreModel('Maize')
 
-        # Inspect full soil organic profile
+        # Inspect full soil ``Organic`` profile
+
         >>> model_instance.inspect_model_parameters('Organic', simulations='Simulation', model_name='Organic')
+           CNR  Carbon      Depth  FBiom  ...         FOM  Nitrogen  SoilCNRatio  Thickness
+        0  12.0    1.20      0-150   0.04  ...  347.129032     0.100         12.0      150.0
+        1  12.0    0.96    150-300   0.02  ...  270.344362     0.080         12.0      150.0
+        2  12.0    0.60    300-600   0.02  ...  163.972144     0.050         12.0      300.0
+        3  12.0    0.30    600-900   0.02  ...   99.454133     0.025         12.0      300.0
+        4  12.0    0.18   900-1200   0.01  ...   60.321981     0.015         12.0      300.0
+        5  12.0    0.12  1200-1500   0.01  ...   36.587131     0.010         12.0      300.0
+        6  12.0    0.12  1500-1800   0.01  ...   22.191217     0.010         12.0      300.0
+        [7 rows x 9 columns]
+
+        # inspect soil ``Physical`` profile
+
+        >>> model_instance.inspect_model_parameters('Physical', simulations='Simulation', model_name='Physical')
+            AirDry        BD       DUL  ...        SWmm Thickness  ThicknessCumulative
+        0  0.130250  1.010565  0.521000  ...   78.150033     150.0                150.0
+        1  0.198689  1.071456  0.496723  ...   74.508522     150.0                300.0
+        2  0.280000  1.093939  0.488438  ...  146.531282     300.0                600.0
+        3  0.280000  1.158613  0.480297  ...  144.089091     300.0                900.0
+        4  0.280000  1.173012  0.471584  ...  141.475079     300.0               1200.0
+        5  0.280000  1.162873  0.457071  ...  137.121171     300.0               1500.0
+        6  0.280000  1.187495  0.452332  ...  135.699528     300.0               1800.0
+        [7 rows x 17 columns]
+
+        # Inspect soil ``Chemical`` profile
+
+        >>> model_instance.inspect_model_parameters('Chemical', simulations='Simulation', model_name='Chemical')
+               Depth   PH  Thickness
+        0      0-150  8.0      150.0
+        1    150-300  8.0      150.0
+        2    300-600  8.0      300.0
+        3    600-900  8.0      300.0
+        4   900-1200  8.0      300.0
+        5  1200-1500  8.0      300.0
+        6  1500-1800  8.0      300.0
 
         # Inspect chemical soil properties
+
         >>> model_instance.inspect_model_parameters('Chemical', simulations='Simulation', model_name='Chemical')
 
         # Inspect one or more specific parameters
+
         >>> model_instance.inspect_model_parameters('Organic', simulations='Simulation', model_name='Organic', parameters='Carbon')
+          Carbon
+        0    1.20
+        1    0.96
+        2    0.60
+        3    0.30
+        4    0.18
+        5    0.12
+        6    0.12
+
         >>> model_instance.inspect_model_parameters('Organic', simulations='Simulation', model_name='Organic', parameters=['Carbon', 'CNR'])
+           Carbon   CNR
+        0    1.20  12.0
+        1    0.96  12.0
+        2    0.60  12.0
+        3    0.30  12.0
+        4    0.18  12.0
+        5    0.12  12.0
+        6    0.12  12.0
 
         # Inspect Report module attributes
+
         >>> model_instance.inspect_model_parameters('Report', simulations='Simulation', model_name='Report')
+        {'EventNames': ['[Maize].Harvesting'],
+        'VariableNames': ['[Clock].Today',
+        '[Maize].Phenology.CurrentStageName',
+        '[Maize].AboveGround.Wt',
+        '[Maize].AboveGround.N',
+        '[Maize].Grain.Total.Wt*10 as Yield',
+        '[Maize].Grain.Wt',
+        '[Maize].Grain.Size',
+        '[Maize].Grain.NumberFunction',
+        '[Maize].Grain.Total.Wt',
+        '[Maize].Grain.N',
+        '[Maize].Total.Wt']}
+
         >>> model_instance.inspect_model_parameters('Report', simulations='Simulation', model_name='Report', parameters='EventNames')
+        {'EventNames': ['[Maize].Harvesting']}
 
         # Inspect weather file path
+
         >>> model_instance.inspect_model_parameters('Weather', simulations='Simulation', model_name='Weather')
+        '%root%/Examples/WeatherFiles/AU_Dalby.met'
 
         # Inspect manager script parameters
-        >>> model_instance.inspect_model_parameters('Manager', simulations='Simulation', model_name='Sow using a variable rule')
-        >>> model_instance.inspect_model_parameters('Manager', simulations='Simulation', model_name='Sow using a variable rule', parameters='Population')
+
+        >>> model_instance.inspect_model_parameters('Manager',
+        ... simulations='Simulation', model_name='Sow using a variable rule')
+        {'Crop': 'Maize',
+        'StartDate': '1-nov',
+        'EndDate': '10-jan',
+        'MinESW': '100.0',
+        'MinRain': '25.0',
+        'RainDays': '7',
+        'CultivarName': 'Dekalb_XL82',
+        'SowingDepth': '30.0',
+        'RowSpacing': '750.0',
+        'Population': '10'}
+
+        >>> model_instance.inspect_model_parameters('Manager',
+        ... simulations='Simulation', model_name='Sow using a variable rule',
+        ... parameters='Population')
+        {'Population': '10'}
 
         # Inspect cultivar parameters
-        >>> model_instance.inspect_model_parameters('Cultivar', simulations='Simulation', model_name='B_110')
-        >>> model_instance.inspect_model_parameters('Cultivar', simulations='Simulation', model_name='B_110', parameters='[Phenology].Juvenile.Target.FixedValue')
+
+        >>> model_instance.inspect_model_parameters('Cultivar',
+        ... simulations='Simulation', model_name='B_110') # lists all path specifications for B_110 parameters abd their values
+        >>> model_instance.inspect_model_parameters('Cultivar', simulations='Simulation',
+        ... model_name='B_110', parameters='[Phenology].Juvenile.Target.FixedValue')
+        {'[Phenology].Juvenile.Target.FixedValue': '210'}
 
         # Inspect surface organic matter module
-        >>> model_instance.inspect_model_parameters('Models.Surface.SurfaceOrganicMatter', simulations='Simulation', model_name='SurfaceOrganicMatter')
-        >>> model_instance.inspect_model_parameters('Models.Surface.SurfaceOrganicMatter', simulations='Simulation', model_name='SurfaceOrganicMatter', parameters={'InitialCNR', 'InitialResidueMass'})
+
+        >>> model_instance.inspect_model_parameters('Models.Surface.SurfaceOrganicMatter',
+        ... simulations='Simulation', model_name='SurfaceOrganicMatter')
+        {'NH4': 0.0,
+         'InitialResidueMass': 500.0,
+         'StandingWt': 0.0,
+         'Cover': 0.0,
+         'LabileP': 0.0,
+         'LyingWt': 0.0,
+         'InitialCNR': 100.0,
+         'P': 0.0,
+         'InitialCPR': 0.0,
+         'SurfOM': <System.Collections.Generic.List[SurfOrganicMatterType] object at 0x000001DABDBB58C0>,
+         'C': 0.0,
+         'N': 0.0,
+         'NO3': 0.0}
+
+        >>> model_instance.inspect_model_parameters('Models.Surface.SurfaceOrganicMatter', simulations='Simulation',
+        ... model_name='SurfaceOrganicMatter', parameters={'InitialCNR', 'InitialResidueMass'})
+        {'InitialCNR': 100.0, 'InitialResidueMass': 500.0}
 
         # Inspect simulation clock
 
         >>> model_instance.inspect_model_parameters('Clock', simulations='Simulation', model_name='Clock')
-        >>> model_instance.inspect_model_parameters('Clock', simulations='Simulation',
-        model_name='Clock', parameters='End')
-        >>> model_instance.inspect_model_parameters('Clock', simulations='Simulation',
-        ... model_name='Clock', parameters='Start').year
+        {'End': datetime.datetime(2000, 12, 31, 0, 0),
+        'Start': datetime.datetime(1990, 1, 1, 0, 0)}
 
+        >>> model_instance.inspect_model_parameters('Clock', simulations='Simulation',
+        ... model_name='Clock', parameters='End')
+        datetime.datetime(2000, 12, 31, 0, 0)
+
+        >>> model_instance.inspect_model_parameters('Clock', simulations='Simulation',
+        ... model_name='Clock', parameters='Start').year # gets the start year only
         1990
+
         # Inspect solute models
 
         >>> model_instance.inspect_model_parameters('Solute', simulations='Simulation', model_name='Urea')
-        >>> model_instance.inspect_model_parameters('Solute', simulations='Simulation',
-        ... model_name='NH4', parameters='InitialValues')
+               Depth  InitialValues  SoluteBD  Thickness
+        0      0-150            0.0  1.010565      150.0
+        1    150-300            0.0  1.071456      150.0
+        2    300-600            0.0  1.093939      300.0
+        3    600-900            0.0  1.158613      300.0
+        4   900-1200            0.0  1.173012      300.0
+        5  1200-1500            0.0  1.162873      300.0
+        6  1500-1800            0.0  1.187495      300.0
+
+        >>> model_instance.inspect_model_parameters('Solute', simulations='Simulation', model_name='NH4',
+        ... parameters='InitialValues')
+            InitialValues
+        0            0.1
+        1            0.1
+        2            0.1
+        3            0.1
+        4            0.1
+        5            0.1
+        6            0.1
         """
 
         if parameters == 'all':
@@ -1484,7 +1625,7 @@ class CoreModel:
 
         fmt: seperator for formatting the path e.g., ".". Other characters can be used with
         caution, e.g., / and clearly declared in fmt argument.
-         For the above path if we want to use the forward slash, it will be '/Simulations/Simulation/Field/Sow using a variable rule', fmt = '/'
+        For the above path if we want to use the forward slash, it will be '/Simulations/Simulation/Field/Sow using a variable rule', fmt = '/'
 
         kwargs: Corresponding keyword arguments representing the paramters in the script manager and their values. Values is what you want
         to change to; Example here Population =8.2, values should be entered with their corresponding data types e.g.,
@@ -1781,8 +1922,9 @@ class CoreModel:
     @property
     def extract_dates(self, simulations=None):
 
-        """Get simulation dates in the model. deprecated
 
+        """Get simulation dates in the model. deprecated
+        @deprecated
         Parameters
         ----------
         simulations, optional
@@ -1791,10 +1933,12 @@ class CoreModel:
         -------
             Dictionary of simulation names with dates
         # Example
+
             >>> from apsimNGpy.core.base_data import load_default_simulations
             >>> model = load_default_simulations(crop='maize')
             >>> changed_dates = model.extract_dates
             >>> print(changed_dates)
+
                {'Simulation': {'start': datetime.date(2021, 1, 1),
                 'end': datetime.date(2021, 1, 12)}}
             @note
@@ -1982,22 +2126,44 @@ class CoreModel:
         relative to the parent simulations node. please note the difference between simulations and simulation.
         :return: list[str]: list of all full paths or names of the model relative to the parent simulations node \n
         Example:
+
         >>> from apsimNGpy.core import base_data
         >>> from apsimNGpy.core.core import Models
+
+        # load default maize module
+
         >>> model = base_data.load_default_simulations(crop ='maize')
         >>> model.inspect_model(Models.Manager, fullpath=True)
          [.Simulations.Simulation.Field.Sow using a variable rule', '.Simulations.Simulation.Field.Fertilise at
         sowing', '.Simulations.Simulation.Field.Harvest']
+
          >>> model.inspect_model(Models.Clock) # gets the path to the Clock models
          ['.Simulations.Simulation.Clock']
+
          >>> model.inspect_model(Models.Core.IPlant) # gets the path to the crop model
          ['.Simulations.Simulation.Field.Maize']
+
          >>> model.inspect_model(Models.Core.IPlant, fullpath=False) # gets you the name of the crop Models
          ['Maize']
+
          >>> model.inspect_model(Models.Fertiliser, fullpath=True)
          ['.Simulations.Simulation.Field.Fertiliser']
-         >>> from cli.server import model_instance         >>> model.inspect_model('Models.Fertiliser', fullpath=False) # strings are allowed to
 
+         >>> model.inspect_model('Models.Fertiliser', fullpath=False) # strings are allowed to
+
+         The models from Models namespace are abstracted to use strings. all you need is to specify the name or the full path to the model enclosed in a stirng as follows
+
+         >>> model.inspect_model('Clock') # get the path to the clock model
+         ['.Simulations.Simulation.Clock']
+
+         >>> model.inspect_model('IPlant')
+         ['.Simulations.Simulation.Field.Maize']
+
+         >>> model.inspect_model('Weather') # inspects the weather module
+         ['.Simulations.Simulation.Weather']
+
+         >>> model.inspect_model('Cultivar', fullpath=False) # list all available cultivar names
+         ['Hycorn_53',  'Pioneer_33M54', 'Pioneer_38H20',  'Pioneer_34K77',  'Pioneer_39V43',  'Atrium', 'Laila', 'GH_5019WX']
 
         """
 
@@ -2056,14 +2222,14 @@ class CoreModel:
          Example:
               >>> from apsimNGpy.core.base_data import load_default_simulations
 
-             >>> model = load_default_simulations(crop ='Maize', simulations_object=False)# initiate model
+              >>> model = load_default_simulations(crop ='Maize', simulations_object=False)# initiate model
 
               >>> model = CoreModel(model) # replace with your intended file path
               >>> model.replace_soils_values_by_path(node_path='.Simulations.Simulation.Field.Soil.Organic', indices=[0], Carbon =1.3)
 
               >>> sv= model.get_soil_values_by_path('.Simulations.Simulation.Field.Soil.Organic', 'Carbon')
 
-               output # {'Carbon': [1.3, 0.96, 0.6, 0.3, 0.18, 0.12, 0.12]}
+            output # {'Carbon': [1.3, 0.96, 0.6, 0.3, 0.18, 0.12, 0.12]}
 
 
         """
@@ -2101,27 +2267,6 @@ class CoreModel:
                     logger.error(f"{arg} is not a valid parameter for child {node_path}")
                 var_out[arg] = gv
         return var_out
-
-    def extract_soil_property_by_path(self, path: str, str_fmt='.', index: list = None):
-        """
-        path to the soil property should be Simulation.soil_child.parameter_name e.g., = 'Simulation.Organic.Carbon.
-        @param: index(list), optional position of the soil property to a return
-        @return: list
-
-        """
-        list_of_soil_nones = dict(organic=Organic, physical=Physical, Chemical=Chemical)
-        parameters = path.split(str_fmt)
-        if len(parameters) != 3:
-            raise ValueError('path incomplete')
-        # find the simulation
-        find_simu = self.find_simulations(parameters[0])[0]  # because it returns a list
-        soil_child = list_of_soil_nones[parameters[1].lower()]
-        soil_object = find_simu.FindDescendant[Soil]().FindDescendant[soil_child]()
-        attribute = list(getattr(soil_object, parameters[2]))
-        if index is None:
-            return attribute
-        return [attribute[i] for i in index]
-
 
 
     def replace_soil_properties_by_path(self, path: str,
@@ -2163,17 +2308,20 @@ class CoreModel:
             Examples include ".", "_", or "/". This defines how the components are joined together to
             form the full path.
 
-        :return:
+        returns:
+        ----------
             Returns the instance of `self` after processing the path and applying the parameter value replacements.
 
-            Example f
+        Example:
+        ---------------------
 
-            from apsimNGpy.core.base_data import load_default_simulations
-            model = load_default_simulations(crop = 'maize')
-            model.replace_soil_properties_by_path(path = 'None.Soil.Organic.None.None.Carbon', param_values= [1.23])
-            if we want to replace carbon at the bottom of the soil profile, we use a negative index  -1
-            model.replace_soil_properties_by_path(path = 'None.Soil.Organic.None.[-1].Carbon', param_values= [1.23])
+            >>> from apsimNGpy.core.base_data import load_default_simulations
+            >>> model = load_default_simulations(crop = 'Maize')
+            >>> model.replace_soil_properties_by_path(path = 'None.Soil.Organic.None.None.Carbon', param_values= [1.23])
             
+            # if we want to replace carbon at the bottom of the soil profile, we use a negative index  -1
+            
+           >>>  model.replace_soil_properties_by_path(path = 'None.Soil.Organic.None.[-1].Carbon', param_values= [1.23])   
         """
 
         function_parameters = ['simulations', 'Soil', 'soil_child', 'crop', 'indices', 'parameter']

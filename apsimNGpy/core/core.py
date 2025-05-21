@@ -2759,7 +2759,7 @@ class CoreModel:
     #@timer
     def add_db_table(self, variable_spec: list = None, set_event_names: list = None, rename: str = 'my_table', simulation_name:Union[str, list, tuple]=None):
         """
-        Adds a new data base table, which APSIM calls Report (Models.Report) to the Simulation under a Simulation Zone.
+        Adds a new database table, which APSIM calls Report (Models.Report) to the Simulation under a Simulation Zone.
 
         This is different from `add_report_variable` in that it creates a new, named report
         table that collects data based on a given list of variables and events.

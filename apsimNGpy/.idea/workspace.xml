@@ -5,77 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="5d471312-8496-4246-98d6-790439318160" name="Changes" comment="ModelTools">
-      <change beforePath="$PROJECT_DIR$/core/core.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/core.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/scratch/temp_1bdc24ce-34ca-11f0-8a7a-54bf64886e7e_APSIM2025.2.7671.0_w_.met" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/apsimNGpy_tests/temp_fd034a47-34ca-11f0-ac41-54bf64886e7e_maizeAPSIM2025.2.7671.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_f6e5ac8f-34ca-11f0-880d-54bf64886e7e_APSIM2025.2.7671.0.Report.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_f6e5ac8f-34ca-11f0-880d-54bf64886e7e_APSIM2025.2.7671.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_f6e5ac8f-34ca-11f0-880d-54bf64886e7e_APSIM2025.2.7671.0.db-shm" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_f6e5ac8f-34ca-11f0-880d-54bf64886e7e_APSIM2025.2.7671.0.db-wal" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_fcfdc971-34ca-11f0-9a99-54bf64886e7e_APSIM2025.2.7671.0.Report.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_fcfdc971-34ca-11f0-9a99-54bf64886e7e_APSIM2025.2.7671.0.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_fcfdc971-34ca-11f0-9a99-54bf64886e7e_APSIM2025.2.7671.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../docs/.github/workflows/documnetation.yml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../docs/.nojekyll" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../docs/.readthedocs.yml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../docs/Makefile" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../docs/index.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../docs/make.bat" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../docs/requirements.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../docs/source/Usage.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../docs/source/api.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../docs/source/api_docs.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../docs/source/cli.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../docs/source/conf.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../docs/source/factorial_experiments.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../docs/source/getting started.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../docs/source/index.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../docs/source/model inspection.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../docs/source/modules.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../docs2/README.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../docs2/getting_started.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../docs2/getting_started.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../docs2/source/apsimNGpy.core_utils.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../docs2/source/apsimNGpy.experiment.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../docs2/source/apsimNGpy.manager.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../docs2/source/apsimNGpy.optimizer.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../docs2/source/apsimNGpy.parallel.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../docs2/source/apsimNGpy.replacements.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../docs2/source/apsimNGpy.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../docs2/source/apsimNGpy.tests.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../docs2/source/apsimNGpy.uncertainity_box.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../docs2/source/apsimNGpy.validation.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../docs2/source/apsimNGpy.visual.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../docs2/source/modules.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../source/Usage.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../source/api.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../source/apsimNGpy.core.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../source/apsimNGpy.core_utils.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../source/apsimNGpy.experiment.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../source/apsimNGpy.manager.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../source/apsimNGpy.optimizer.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../source/apsimNGpy.parallel.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../source/apsimNGpy.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../source/apsimNGpy.tests.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../source/apsimNGpy.validation.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../source/apsimNGpy.visual.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../source/cli.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../source/conf.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../source/factorial_experiments.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../source/getting started.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../source/index.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../source/modules.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../source/src.apsimNGpy.core.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../source/src.apsimNGpy.core_utils.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../source/src.apsimNGpy.experiment.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../source/src.apsimNGpy.manager.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../source/src.apsimNGpy.optimizer.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../source/src.apsimNGpy.parallel.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../source/src.apsimNGpy.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../source/src.apsimNGpy.tests.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../source/src.apsimNGpy.validation.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../source/src.apsimNGpy.visual.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../source/src.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -155,7 +85,7 @@
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "WebServerToolWindowFactoryState": "false",
     "git-widget-placeholder": "main",
-    "last_opened_file_path": "D:/package/apsimNGpy/setup.py",
+    "last_opened_file_path": "D:/package/src/apsimNGpy/core",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -167,22 +97,19 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\package\src\apsimNGpy\core" />
       <recent name="D:\package\apsimNGpy\apsimNGpy" />
       <recent name="D:\package\apsimNGpy\apsimNGpy\uncertainity_box" />
       <recent name="D:\package\apsimNGpy\apsimNGpy\manager" />
       <recent name="D:\package\apsimNGpy\apsimNGpy\core" />
-      <recent name="D:\ACPd\Bear creek simulations" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.core">
+  <component name="RunManager" selected="Python.main">
     <configuration name="_modelhelpers" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="apsimNGpy" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/core" />
       <option name="IS_MODULE_SDK" value="true" />
@@ -303,11 +230,11 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.core" />
-        <item itemvalue="Python.cleaner" />
         <item itemvalue="Python.main" />
-        <item itemvalue="Python.unit_tests_core" />
+        <item itemvalue="Python.core" />
         <item itemvalue="Python._modelhelpers" />
+        <item itemvalue="Python.cleaner" />
+        <item itemvalue="Python.unit_tests_core" />
       </list>
     </recent_temporary>
   </component>
@@ -402,55 +329,7 @@
       <workItem from="1746202214987" duration="8937000" />
       <workItem from="1746329299406" duration="12459000" />
       <workItem from="1746475969057" duration="6783000" />
-      <workItem from="1747696101620" duration="1885000" />
-    </task>
-    <task id="LOCAL-00390" summary="one">
-      <option name="closed" value="true" />
-      <created>1744554763861</created>
-      <option name="number" value="00390" />
-      <option name="presentableId" value="LOCAL-00390" />
-      <option name="project" value="LOCAL" />
-      <updated>1744554763861</updated>
-    </task>
-    <task id="LOCAL-00391" summary="one">
-      <option name="closed" value="true" />
-      <created>1744557244701</created>
-      <option name="number" value="00391" />
-      <option name="presentableId" value="LOCAL-00391" />
-      <option name="project" value="LOCAL" />
-      <updated>1744557244701</updated>
-    </task>
-    <task id="LOCAL-00392" summary="one">
-      <option name="closed" value="true" />
-      <created>1745079479932</created>
-      <option name="number" value="00392" />
-      <option name="presentableId" value="LOCAL-00392" />
-      <option name="project" value="LOCAL" />
-      <updated>1745079479932</updated>
-    </task>
-    <task id="LOCAL-00393" summary="one">
-      <option name="closed" value="true" />
-      <created>1745079846370</created>
-      <option name="number" value="00393" />
-      <option name="presentableId" value="LOCAL-00393" />
-      <option name="project" value="LOCAL" />
-      <updated>1745079846370</updated>
-    </task>
-    <task id="LOCAL-00394" summary="one">
-      <option name="closed" value="true" />
-      <created>1745080989150</created>
-      <option name="number" value="00394" />
-      <option name="presentableId" value="LOCAL-00394" />
-      <option name="project" value="LOCAL" />
-      <updated>1745080989150</updated>
-    </task>
-    <task id="LOCAL-00395" summary="one">
-      <option name="closed" value="true" />
-      <created>1745081661931</created>
-      <option name="number" value="00395" />
-      <option name="presentableId" value="LOCAL-00395" />
-      <option name="project" value="LOCAL" />
-      <updated>1745081661931</updated>
+      <workItem from="1747696101620" duration="4700000" />
     </task>
     <task id="LOCAL-00396" summary="one">
       <option name="closed" value="true" />
@@ -796,7 +675,55 @@
       <option name="project" value="LOCAL" />
       <updated>1747697145703</updated>
     </task>
-    <option name="localTasksCounter" value="439" />
+    <task id="LOCAL-00439" summary="ModelTools">
+      <option name="closed" value="true" />
+      <created>1747698319708</created>
+      <option name="number" value="00439" />
+      <option name="presentableId" value="LOCAL-00439" />
+      <option name="project" value="LOCAL" />
+      <updated>1747698319708</updated>
+    </task>
+    <task id="LOCAL-00440" summary="ModelTools">
+      <option name="closed" value="true" />
+      <created>1747711835809</created>
+      <option name="number" value="00440" />
+      <option name="presentableId" value="LOCAL-00440" />
+      <option name="project" value="LOCAL" />
+      <updated>1747711835809</updated>
+    </task>
+    <task id="LOCAL-00441" summary="ModelTools">
+      <option name="closed" value="true" />
+      <created>1747711997199</created>
+      <option name="number" value="00441" />
+      <option name="presentableId" value="LOCAL-00441" />
+      <option name="project" value="LOCAL" />
+      <updated>1747711997199</updated>
+    </task>
+    <task id="LOCAL-00442" summary="ModelTools">
+      <option name="closed" value="true" />
+      <created>1747712106079</created>
+      <option name="number" value="00442" />
+      <option name="presentableId" value="LOCAL-00442" />
+      <option name="project" value="LOCAL" />
+      <updated>1747712106079</updated>
+    </task>
+    <task id="LOCAL-00443" summary="ModelTools">
+      <option name="closed" value="true" />
+      <created>1747712781385</created>
+      <option name="number" value="00443" />
+      <option name="presentableId" value="LOCAL-00443" />
+      <option name="project" value="LOCAL" />
+      <updated>1747712781385</updated>
+    </task>
+    <task id="LOCAL-00444" summary="ModelTools">
+      <option name="closed" value="true" />
+      <created>1747713127768</created>
+      <option name="number" value="00444" />
+      <option name="presentableId" value="LOCAL-00444" />
+      <option name="project" value="LOCAL" />
+      <updated>1747713127768</updated>
+    </task>
+    <option name="localTasksCounter" value="445" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

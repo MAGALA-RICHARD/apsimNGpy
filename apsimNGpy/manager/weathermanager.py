@@ -29,7 +29,7 @@ import os
 from scipy import interpolate
 from scipy.interpolate import UnivariateSpline
 import logging
-
+from functools import lru_cache
 from datetime import datetime
 import pandas as pd
 import numpy as np
@@ -522,7 +522,7 @@ def get_met_nasa_power(lonlat, start=1990, end=2000, fname='get_met_nasa_power.m
         f2app.writelines(data_rows)
     return fname
 
-
+@lru_cache(maxsize=500)
 def _is_within_USA_mainland(lonlat):
     lon_min, lon_max = -125.0, -66.9  # Approximate longitudes for the west and east coasts
     lat_min, lat_max = 24.4, 49.4  # Approximate latitudes for the southern and northern borders
@@ -533,7 +533,7 @@ def _is_within_USA_mainland(lonlat):
     else:
         return False
 
-
+@lru_cache(maxsize=20, typed=True)
 def get_weather(lonlat:Union[tuple, list], start:int=1990, end:int=2020, source:str='daymet', filename:str='__met_.met'):
     """
         Collects data from various sources.

@@ -95,14 +95,16 @@ class TestCoreModel(BaseTester):
         param_values = [2.4, 1.4]
         self.test_ap_sim.replace_soil_property_values(parameter=parameter, param_values=param_values,
                                                       soil_child='Organic', )
-        lisT = self.test_ap_sim.extract_soil_property_by_path(path='Simulation.Organic.Carbon', index=[0, 1])
+        lisT = self.test_ap_sim.inspect_model_parameters(model_type='Organic', model_name='Organic', parameters='Carbon')
+        lisT =lisT['Carbon'].tolist()
         self.assertIsInstance(lisT, list, msg='expected a list got {}'.format(type(lisT)))
         self.assertTrue(lisT)
         self.assertIsInstance(lisT, list, msg='expected a list got {}'.format(type(lisT)))
         self.assertTrue(lisT)
         # if it was successful
-        testP = self.test_ap_sim.extract_soil_property_by_path(path='Simulation.Organic.Carbon', index=[0, 1])
-        self.assertEqual(lisT, param_values,
+        testP = self.test_ap_sim.inspect_model_parameters(model_type='Organic', model_name='Organic', parameters='Carbon')
+        testP = testP['Carbon'].tolist()
+        self.assertEqual(lisT[:2], param_values,
                          msg=f'replace_soil_property_values was not successful returned {testP}\n got {param_values}')
 
     def test_replace_soil_properties_by_path(self):
@@ -110,10 +112,6 @@ class TestCoreModel(BaseTester):
         param_values = [1.45, 1.95]
         self.test_ap_sim.replace_soil_properties_by_path(path=path, param_values=param_values)
 
-    def test_extract_soil_property_by_path(self):
-        lisT = self.test_ap_sim.extract_soil_property_by_path(path='Simulation.Physical.BD')
-        self.assertIsInstance(lisT, list, msg='expected a list got {}'.format(type(lisT)))
-        self.assertTrue(lisT)
 
     def test_update_mgt_by_path(self):
         # test when fmt  ='.'
@@ -227,8 +225,8 @@ class TestCoreModel(BaseTester):
         if not in_cultivar:
             raise unittest.SkipTest('skipping test edit cultivar because cultivar not found')
         new_juvenile = 289.777729777
-        self.test_ap_sim.edit_model('Cultivar', None, commands='[Phenology].Juvenile.Target.FixedValue', values=new_juvenile,
-                         model_name=in_cultivar, cultivar_manager='Sow using a variable rule')
+        self.test_ap_sim.edit_model(model_type='Cultivar',model_name=in_cultivar,commands='[Phenology].Juvenile.Target.FixedValue', values=new_juvenile,
+                         cultivar_manager='Sow using a variable rule')
 
         # first we check the current '[Phenology].Juvenile.Target.FixedValue': '211'
         cp = self.test_ap_sim.read_cultivar_params(name=in_cultivar)

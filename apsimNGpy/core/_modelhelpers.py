@@ -183,6 +183,7 @@ def _eval_model(model__type, evaluate_bound=False) -> ModelTools.CLASS_MODEL:
     import Models
     model_types = None
     bound_model = None
+
     try:
         if isinstance(model__type, str):
             _model_name_space = 'Models.'

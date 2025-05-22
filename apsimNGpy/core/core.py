@@ -309,6 +309,7 @@ class CoreModel:
     - If `report_names` is not provided (i.e., `None`), the system will inspect the model and automatically detect all available report components.
       These reports will then be used to collect the data.
     - If multiple report names are used, their corresponding data tables will be concatenated along the rows.
+    _ after Model run has been called, use can still get results by calling ``get_simulated_output``, it accepts one argument ``report_names``
 
     Returns:
         pd.DataFrame: A DataFrame containing the simulation output.
@@ -355,7 +356,7 @@ class CoreModel:
 
         Returns:
         --------
-        pd.DataFrame
+        ``pd.DataFrame``
             Concatenated DataFrame containing the data from the specified reports.
 
         Raises:
@@ -363,7 +364,7 @@ class CoreModel:
         ``ValueError``
             If any of the requested report names are not found in the available tables.
         ``RuntimeError``
-            If the simulation has not been run successfully before attempting to read data.
+            If the simulation has not been ``run`` successfully before attempting to read data.
         """
         # Collect all available data tables
         data_tables = collect_csv_by_model_path(self.path)

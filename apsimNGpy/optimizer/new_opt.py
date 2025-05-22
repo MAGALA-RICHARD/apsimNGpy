@@ -23,15 +23,16 @@ class Problem:
         for i, varR in enumerate(self.controls):
             print(x)
             edit(
-                varR['model_type'],
-                sim,
-                varR['model_name'],
+                model_type=varR['model_type'],
+                simulations='Simulation',
+                model_name=varR['model_name'],
+                cacheit=True,
                 **{varR['parameter_name']: x[i]}
             )
 
     def evaluate(self, x):
         self.setUP(x)
-        result = self.apsim.run(verbose=True).results
+        result = self.apsim.run(verbose=False).results
         emissions = result.Yield  # placeholder
         return  10000 - emissions.mean()
 

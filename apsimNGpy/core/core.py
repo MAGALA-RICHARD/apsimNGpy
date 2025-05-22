@@ -25,7 +25,7 @@ from typing import Union, Optional, List, Dict
 import warnings
 from sqlalchemy.testing.plugin.plugin_base import logging
 
-import apsimNGpy.manager.weathermanager as weather
+from apsimNGpy.manager.weathermanager import get_weather
 from functools import cache, lru_cache, singledispatch
 # prepare for the C# import
 from apsimNGpy.core import pythonet_config
@@ -698,7 +698,7 @@ class CoreModel:
         else:
             logger.debug(f"Adding {model_type} to {parent.Name} failed, perhaps models was not found")
 
-    def edit_model(self, model_type: str, model_name: str, simulations: Union[str, list] ='all', **kwargs):
+    def edit_model(self, model_type: str, model_name: str, simulations: Union[str, list] ='all', cacheit = False, cache_size=300, **kwargs):
         """
         Modify various APSIM model components by specifying the model type and name across given simulations.
 
@@ -712,6 +712,12 @@ class CoreModel:
 
         ``model_name`` : str
             Name of the model instance to modify.
+        ``cachit`` : bool, optional
+           used to cache results for model selection. Defaults to False. Important during repeated calls, like in optimization.
+           please do not cache, when you expect to make model adjustment, such as adding new child nodes
+
+        ``cache_size``: int, optional
+           maximum number of caches that can be made to avoid memory leaks in case cacheit is true. Defaults to 300
 
         ``**kwargs`` : dict
             Additional keyword arguments specific to the model type. These vary by component:
@@ -858,7 +864,7 @@ class CoreModel:
 
 
         for sim in self.find_simulations(simulations):
-            model_instance = get_or_check_model(sim, model_type_class, model_name, action ='get')
+            model_instance = get_or_check_model(sim, model_type_class, model_name, action ='get', cacheit=cacheit, cache_size=cache_size)
 
             match type(model_instance):
                 case Models.Climate.Weather:
@@ -884,6 +890,7 @@ class CoreModel:
                             raise AttributeError(f"no valid Clock attributes were passed. Valid arguments are: '{", ".join(validated.keys())}'")
 
 
+
                 case Models.Manager:
 
                     manager_path = model_instance.FullPath
@@ -905,7 +912,7 @@ class CoreModel:
                     for param in selected_parameters:
                         if hasattr(model_instance, param):
                             setattr(model_instance, param, kwargs[param])
-                            print('success', param)
+
                         else:
                             raise AttributeError(f"suggested attribute {param} is not an attribute of {model_instance}")
 
@@ -939,9 +946,9 @@ class CoreModel:
                     if not commands or values is None:
                         raise ValueError("Both 'commands' and 'values' must be provided for Cultivar")
                     # find replacement
-                    rep = get_or_check_model(self.Simulations, Models.Core.Folder, 'Replacements', action ='get')
+                    rep = get_or_check_model(self.Simulations, Models.Core.Folder, 'Replacements', action ='get', cacheit=cacheit, cache_size=cache_size)
                     # now get cultivar
-                    cultvar = get_or_check_model(rep, Models.PMF.Cultivar, model_name, action ='get')
+                    cultvar = get_or_check_model(rep, Models.PMF.Cultivar, model_name, action ='get', cacheit=cacheit, cache_size=cache_size)
 
                     cultvar =ModelTools.CLONER(cultvar) # let's clone
                     params = self._cultivar_params(cultvar)
@@ -951,7 +958,7 @@ class CoreModel:
                     cultvar.set_Command(updated_commands)
 
                     plant = kwargs.get('plant')
-                    CroP_Parent = get_or_check_model(rep, Models.PMF.Plant, plant, action='get')
+                    CroP_Parent = get_or_check_model(rep, Models.PMF.Plant, plant, action='get', cacheit=cacheit, cache_size=cache_size)
                     cultvarName =f"edited_cultivar_{model_name}"
                     # mask out the current name such that is not accessed
                     current_name = cultvar.Name
@@ -963,7 +970,7 @@ class CoreModel:
 
                     ModelTools.ADD(cultvar, CroP_Parent)
                     extra_args = {cultivar_manager_paramter_name: cultvarName}
-                    self.edit_model(Models.Manager, sim.Name, model_name =cultivar_manager,**extra_args)
+                    self.edit_model(model_type = Models.Manager, simulations=sim.Name, model_name =cultivar_manager,**extra_args)
                     self.save()
                     logger.info(f"edited Cultivar '{model_name}' and saved it as {cultvarName}")
 
@@ -2048,7 +2055,29 @@ class CoreModel:
         except Exception as e:
             logger.info(repr(e))  # this error will be logged to the folder logs in the current working dir_path
             raise
+    def replace_met_from_web(self, lonlat:tuple, start, end, simulations ='all', source='nasapower', filename= None):
+        """
+            Replaces the meteorological (met) file in the model using weather data fetched from an online source.
 
+            :param lonlat: Tuple containing the longitude and latitude coordinates.
+            :type lonlat: tuple
+            :param start: Start date for the weather data retrieval.
+            :type start: str or datetime
+            :param end: End date for the weather data retrieval.
+            :type end: str or datetime
+            :param simulations: str, list of simulations to place the weather data, defaults to ``all`` as a string
+            :param source: Source of the weather data. Defaults to 'nasapower'.
+            :type source: str, optional
+            :param filename: Name of the file to save the retrieved data. If None, a default name is generated.
+            :type filename: str, optional
+            :return: Path to the saved met file.
+            :rtype: str
+            """
+        name  = filename or str(Path(self._model).stem().joinpath(f"{source}.{start}_{end}.met"))
+        file  = get_weather(lonlat, start = start, end=end, source =source, filename =filename)
+        self.replace_met_file(weather_file=file, simulations=simulations)
+
+        ...
     def show_met_file_in_simulation(self, simulations: list = None):
         """Show weather file for all simulations"""
         weather_list = {}
@@ -2457,7 +2486,7 @@ class CoreModel:
             list of APSIM ``Models.Core.Simulation`` objects
         """
 
-        if simulations_names is None:
+        if simulations_names is None or simulations== 'all':
             return self.simulations
         if isinstance(simulations_names, str):
             simulations_names = {simulations_names}

@@ -302,11 +302,11 @@ class CoreModel:
     This method is implemented as a ``property`` to enable lazy loading—results are only loaded into memory when explicitly accessed.
     This design helps optimize ``memory`` usage, especially for ``large`` simulations.
 
-    It must be called only after invoking `.run()`. If accessed before the simulation is run, it will raise an error.
+    It must be called only after invoking ``run()``. If accessed before the simulation is run, it will raise an error.
 
     Notes:
-    - The `.run()` method should be called with a valid ``report name`` or a list of report names (i.e., APSIM report table names).
-    - If `report_names` is not provided (i.e., `None`), the system will inspect the model and automatically detect all available report components.
+    - The ``run()`` method should be called with a valid ``report name`` or a list of report names (i.e., APSIM report table names).
+    - If `report_names` is not provided (i.e., ``None``), the system will inspect the model and automatically detect all available report components.
       These reports will then be used to collect the data.
     - If multiple report names are used, their corresponding data tables will be concatenated along the rows.
     _ after Model run has been called, use can still get results by calling ``get_simulated_output``, it accepts one argument ``report_names``

@@ -8,7 +8,7 @@ import Models
 from typing import Union, Tuple
 from System.Collections import IEnumerable
 from System import String
-
+from functools import lru_cache
 from typing import Union, Dict, Any
 from Models.Soils import Soil, Physical, SoilCrop, Organic, Solute, Chemical
 import warnings
@@ -58,7 +58,7 @@ class ModelTools:
     COLLECT = collect
 
 
-def get_or_check_model(search_scope, model_type, model_name, action='get'):
+def get_or_check_model(search_scope, model_type, model_name, action='get', cacheit = False, cache_size=300):
     """
             Helper function to check if a model instance is found in the simulation
             and perform a specified action.
@@ -92,21 +92,26 @@ def get_or_check_model(search_scope, model_type, model_name, action='get'):
                 If the model is not found (when action is 'get' or 'delete'),
                 or if an invalid action is specified.
             """
+    def __excute(search_scope, model_type, model_name, action):
+        if action not in ModelTools.ACTIONS:
+            raise ValueError(f'sorry action should be any of {ModelTools.ACTIONS} ')
+        # get bound methods based on model type
+        finder = search_scope.FindInScope[model_type]
+        get_model = finder(model_name) if model_name else finder()
+        if action == 'check':
+            return True if get_model is not None else False
+        if not get_model and action == 'get':
+            raise ValueError(f"{model_name} of type {model_type} not found")
 
-    if action not in ModelTools.ACTIONS:
-        raise ValueError(f'sorry action should be any of {ModelTools.ACTIONS} ')
-    # get bound methods based on model type
-    finder = search_scope.FindInScope[model_type]
-    get_model = finder(model_name) if model_name else finder()
-    if action == 'check':
-        return True if get_model is not None else False
-    if not get_model and action == 'get':
-        raise ValueError(f"{model_name} of type {model_type} not found")
+        if action == 'delete' and get_model:
+            ModelTools.DELETE(get_model)
+        if get_model and action == 'get':
+            return get_model
 
-    if action == 'delete' and get_model:
-        ModelTools.DELETE(get_model)
-    if get_model and action == 'get':
-        return get_model
+    if cacheit:
+        __excute = lru_cache(maxsize=cache_size)(__excute)
+    return __excute(search_scope, model_type, model_name, action)
+
 
 
 def _find_model(model_name: str, model_namespace=Models, target_type=ModelTools.CLASS_MODEL) -> ModelTools.CLASS_MODEL:

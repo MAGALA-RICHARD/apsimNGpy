@@ -284,12 +284,12 @@ def inspect_model_inputs(scope, model_type: str, simulations: Union[str, list], 
                         dotnet_dt.Millisecond * 1000  # Python uses microseconds
                     )
 
+                validated = dict(End='End', Start='Start', end='End', start='Start', end_date='End', start_date='Start')
                 accepted_attributes = {'Start', 'End'}
-                selected_parameters = {k.capitalize() for k in parameters if
-                                       hasattr(model_instance, k)} if parameters else set()
+                selected_parameters = {validated.get(k, k) for k in parameters} if parameters else set()
                 dif = accepted_attributes - selected_parameters
                 if dif == accepted_attributes and parameters:
-                    raise ValueError(f"Parameters must be none or any of '{accepted_attributes}'")
+                    raise ValueError(f"To inspect the 'Clock Model Parameters:\n, Parameters must be None or any of '{', '.join(validated.keys())}'")
                 attributes = selected_parameters or accepted_attributes
 
                 if len(attributes) == 1:

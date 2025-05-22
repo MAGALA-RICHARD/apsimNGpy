@@ -578,10 +578,10 @@ def get_weather(lonlat:Union[tuple, list], start:int=1990, end:int=2020, source:
     """
 
     if source == 'daymet' and _is_within_USA_mainland(lonlat):
-        file_name = "daymet_" + filename
+        file_name =  filename
         return get_met_from_day_met(lonlat, start=start, end=end, filename=file_name)
     elif source == 'nasa':
-        file_name = "nasa_" + filename
+        file_name = filename
         return get_met_nasa_power(lonlat, start, end, fname=file_name)
     else:
         raise ValueError(

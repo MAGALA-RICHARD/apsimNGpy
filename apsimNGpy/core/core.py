@@ -2055,26 +2055,27 @@ class CoreModel:
         except Exception as e:
             logger.info(repr(e))  # this error will be logged to the folder logs in the current working dir_path
             raise
-    def get_weather_from_web(self, lonlat:tuple, start, end, simulations ='all', source='nasapower', filename= None):
+    def get_weather_from_web(self, lonlat:tuple, start:int, end:int, simulations ='all', source='nasa', filename= None):
         """
             Replaces the meteorological (met) file in the model using weather data fetched from an online source.
 
-            :param lonlat: Tuple containing the longitude and latitude coordinates.
-            :type lonlat: tuple
-            :param start: Start date for the weather data retrieval.
-            :type start: str or datetime
-            :param end: End date for the weather data retrieval.
-            :type end: str or datetime
-            :param simulations: str, list of simulations to place the weather data, defaults to ``all`` as a string
-            :param source: Source of the weather data. Defaults to 'nasapower'.
-            :type source: str, optional
-            :param filename: Name of the file to save the retrieved data. If None, a default name is generated.
-            :type filename: str, optional
-            :return: Path to the saved met file.
-            :rtype: str
+            ``lonlat``: ``tuple`` containing the longitude and latitude coordinates.
+            ``start``: Start date for the weather data retrieval.
+            ``end``: End date for the weather data retrieval.
+            ``simulations``: str, list of simulations to place the weather data, defaults to ``all`` as a string
+            ``source``: Source of the weather data. Defaults to 'nasa'.
+            ``filename``: Name of the file to save the retrieved data. If None, a default name is generated.
+
+            ``return:``
+            str Path to the saved met file.
+
             """
-        name  = filename or str(Path(self._model).stem().joinpath(f"{source}.{start}_{end}.met"))
-        file  = get_weather(lonlat, start = start, end=end, source =source, filename =filename)
+        ## TODO impliment logic to avoid date incosistencies in the start and end dates
+        file_name=f"{Path(self._model).stem}_{source}_{start}_{end}.met"
+
+        name  = file_name or filename
+        file  = get_weather(lonlat, start = start, end=end, source =source, filename =name)
+
         self.replace_met_file(weather_file=file, simulations=simulations)
 
         ...

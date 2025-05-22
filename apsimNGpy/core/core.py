@@ -138,7 +138,7 @@ class CoreModel:
             self.out_path = None
 
         if self.out is not None:
-            self.out_path = self.out  # `out` overrides `out_path` if both are provided
+            self.out_path = self.out  # `out` overrides `out_path` if both are provided for maintaining previous versions
 
         self.work_space = self.set_wd or SCRATCH
 
@@ -683,7 +683,7 @@ class CoreModel:
                 target_child = parent.FindChild[model_type](loc.Name)
                 if target_child and override:
                     # not raising the error still studying the behaviors of adding a child that already exists
-                    DELETE(target_child)
+                    ModelTools.DELETE(target_child)
 
             ModelTools.ADD(loc, parent)
 
@@ -1057,7 +1057,7 @@ class CoreModel:
             model_name = model_type().Name
         to_remove= self.Simulations.FindInScope[model_type](model_name)
         if to_remove:
-            DELETE(to_remove)
+            ModelTools.DELETE(to_remove)
         self.save()
 
     def move_model(self, model_type: Models, new_parent_type: Models, model_name: str = None,

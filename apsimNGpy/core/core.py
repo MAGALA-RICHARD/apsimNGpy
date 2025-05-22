@@ -2055,7 +2055,7 @@ class CoreModel:
         except Exception as e:
             logger.info(repr(e))  # this error will be logged to the folder logs in the current working dir_path
             raise
-    def replace_met_from_web(self, lonlat:tuple, start, end, simulations ='all', source='nasapower', filename= None):
+    def get_weather_from_web(self, lonlat:tuple, start, end, simulations ='all', source='nasapower', filename= None):
         """
             Replaces the meteorological (met) file in the model using weather data fetched from an online source.
 

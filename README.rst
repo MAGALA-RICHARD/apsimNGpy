@@ -18,9 +18,10 @@ Badges
    :target: https://pypi.org/project/apsimNGpy/
    :alt: PyPI downloads
 
-.. image:: https://img.shields.io/github/downloads/MAGALA-RICHARD/apsimNGpy/total?color=blue&logo=github
-   :target: https://github.com/MAGALA-RICHARD/apsimNGpy
-   :alt: GitHub All Releases Downloads
+.. image:: https://img.shields.io/github/stars/MAGALA-RICHARD/apsimNGpy?style=social
+   :target: https://github.com/MAGALA-RICHARD/apsimNGpy/stargazers
+   :alt: GitHub Stars
+
 
 
 

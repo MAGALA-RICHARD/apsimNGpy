@@ -26,6 +26,10 @@ apsimNGpy
    :target: https://github.com/MAGALA-RICHARD/apsimNGpy/network/members
    :alt: GitHub Forks
 
+.. image:: https://img.shields.io/github/Code/MAGALA-RICHARD/apsimNGpy?style=social
+   :target: https://github.com/MAGALA-RICHARD/apsimNGpy/network/members
+   :alt: GitHub Forks
+
 
 
 

@@ -286,7 +286,7 @@ def inspect_model_inputs(scope, model_type: str, simulations: Union[str, list], 
 
                 validated = dict(End='End', Start='Start', end='End', start='Start', end_date='End', start_date='Start')
                 accepted_attributes = {'Start', 'End'}
-                selected_parameters = {validated.get(k, k) for k in parameters} if parameters else set()
+                selected_parameters = {validated.get(k) for k in parameters if validated.get(k) in accepted_attributes} if parameters else set()
                 dif = accepted_attributes - selected_parameters
                 if dif == accepted_attributes and parameters:
                     raise ValueError(f"To inspect the 'Clock Model Parameters:\n, Parameters must be None or any of '{', '.join(validated.keys())}'")

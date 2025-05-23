@@ -1,4 +1,4 @@
-[![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) [![Documentation Status](https://readthedocs.org/projects/pix2tex/badge/?version=latest)](https://magala-richard.github.io/apsimNGpy-documentations/index.html)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) [![Docs](https://img.shields.io/badge/docs-online-blue.svg)](https://magala-richard.github.io/apsimNGpy-documentations/index.html)
 [![PyPI](https://img.shields.io/pypi/v/pix2tex?logo=pypi)](https://pypi.org/project/apsimNGpy/)
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/apsimNGpy?logo=pypi)](https://pypi.org/project/apsimNGpy/)
 [![GitHub all releases](https://img.shields.io/github/downloads/MAGALA-RICHARD/LaTeX-OCR/total?color=blue&logo=github)](https://github.com/MAGALA-RICHARD/apsimNGpy/releases)

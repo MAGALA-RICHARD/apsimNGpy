@@ -71,7 +71,7 @@ def __get_example(crop, path=None, simulations_object=True, **kwargs):
     else:
         raise ValueError(f"No crop named:' '{crop}' found at '{example_files_path}'")
 
-
+@lru_cache(maxsize=None)
 def load_default_simulations(crop: str = "Maize", set_wd: [str, Path] = None,
                              simulations_object: bool = True, **kwargs) :
     """

@@ -214,7 +214,7 @@ def get_nasarad(lonlat, start, end):
 
     # fucntion to download data from daymet
 
-
+@lru_cache(maxsize=500)
 def get_met_from_day_met(lonlat: Union[tuple, list, np.ndarray], start: int,
                          end: int, filename: str,
                          fill_method: str = 'ffill',
@@ -393,7 +393,7 @@ def calculate_tav_amp(df):
     return tav, AMP
 
 
-def create_met_header(met_file_name, lonlat, tav, AMP, site=None):
+def _create_met_header(met_file_name, lonlat, tav, AMP, site=None):
     if not site:
         site = 'Not stated'
     if os.path.isfile(met_file_name):
@@ -408,7 +408,7 @@ def create_met_header(met_file_name, lonlat, tav, AMP, site=None):
         f2app.writelines([header_string])
         f2app.writelines(['() () (MJ/m2/day) (oC) (oC) (mm)\n'])
 
-
+@lru_cache(maxsize=50)
 def impute_data(met, method="mean", verbose=False, **kwargs):
     """
     Imputes missing data in a pandas DataFrame using specified interpolation or mean value.
@@ -506,10 +506,11 @@ def get_nasa_data(lonlat, start, end):
     return df
 
 
-def get_met_nasa_power(lonlat, start=1990, end=2000, fname='get_met_nasa_power.met'):
+@lru_cache(maxsize=700) # since it is returning just strings no problem caching it
+def get_met_nasa_power(lonlat, start=1990, end=2000, fname='get_met_nasa_power.met', site=None):
     df = get_nasa_data(lonlat, start, end)
     tav, AMP = calculate_tav_amp(df)
-    create_met_header(fname, lonlat, tav, AMP, site=None)
+    _create_met_header(fname, lonlat, tav, AMP, site=site)
     data_rows = []
     headers = ['year', 'day', 'radn', 'maxt', 'mint', 'rain']
     for index, row in df.iterrows():
@@ -576,6 +577,8 @@ def get_weather(lonlat:Union[tuple, list], start:int=1990, end:int=2020, source:
             >>> maize_model.replace_met_file(weather_file = met_file)
 
     """
+    if source not in ['nasa', 'daymet']:
+        raise NotImplementedError('source must be either "nasa" or "daymet"')
 
     if source == 'daymet' and _is_within_USA_mainland(lonlat):
         file_name =  filename

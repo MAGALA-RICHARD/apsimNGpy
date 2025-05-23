@@ -49,7 +49,8 @@ class TestCoreModel(BaseTester):
         mgt_script = {'Name': script_name, 'Amount': Amount},
         self.test_ap_sim.update_mgt(management=mgt_script)
         # extract user infor
-        amountIn = float(self.test_ap_sim.extract_user_input(script_name)['Simulation']['Amount'])
+        value = self.test_ap_sim.inspect_model_parameters('Manager',simulations='Simulation', model_name='Fertilise at sowing', parameters='Amount')
+        amountIn = float(value['Amount'])
         self.assertEqual(amountIn, Amount)
 
     def test_check_som(self):
@@ -74,14 +75,14 @@ class TestCoreModel(BaseTester):
         # test list input
         self.assertTrue(self.test_ap_sim.find_simulations(simulations=[sim]), msg=MSG)
 
-    def test_simulated_results(self):
+    def test_get_simulated_output(self):
         """ Test load_simulated_results
         requires that the models are ran first"""
         self.test_ap_sim.run()
         if not self.test_ap_sim.ran_ok:
             raise unittest.SkipTest(f'skipping test_simulated_results because model did '
                                     f'not run successfully or db was deleted')
-        repos = self.test_ap_sim.simulated_results
+        repos = self.test_ap_sim.get_simulated_output(report_names='Report')
         msg = f"expected pd.dataframe but received {type(repos)}"
         self.assertIsInstance(repos, pd.DataFrame, msg=msg)
         # test if dict not empty
@@ -108,9 +109,8 @@ class TestCoreModel(BaseTester):
                          msg=f'replace_soil_property_values was not successful returned {testP}\n got {param_values}')
 
     def test_replace_soil_properties_by_path(self):
-        path = 'None.Soil.physical.None.None.BD'
         param_values = [1.45, 1.95]
-        self.test_ap_sim.replace_soil_properties_by_path(path=path, param_values=param_values)
+        self.test_ap_sim.edit_model(model_type='Organic', model_name='Organic', Carbon=param_values)
 
 
     def test_update_mgt_by_path(self):
@@ -202,10 +202,18 @@ class TestCoreModel(BaseTester):
         self.assertEqual(factors, Models.Factorial.Factors)  # Confirm evaluation matches Models.Factorial.Factors model
 
     def test_add_model_simulation(self):
-        self.test_ap_sim.add_model('Simulation', adoptive_parent='Simulations', rename='soybean_replaced',
-                        source='Soybean', override=True)
-        self.test_ap_sim.inspect_file()
-        assert 'soybean_replaced' in self.test_ap_sim.inspect_model('Simulation', fullpath=False), 'testing adding simulations was not successful'
+        try:
+            self.test_ap_sim.add_model('Simulation', adoptive_parent='Simulations', rename='soybean_replaced',
+                            source='Soybean', override=True)
+            self.test_ap_sim.inspect_file()
+            assert 'soybean_replaced' in self.test_ap_sim.inspect_model('Simulation', fullpath=False), 'testing adding simulations was not successful'
+        # clean up
+        finally:
+             from apsimNGpy.core.core import get_or_check_model
+             try:
+                self.test_ap_sim.remove_model(model_type='Simulation', model_name='soybean_replaced')
+             except Exception as e:
+              pass
     def test_edit_model(self):
         self.test_ap_sim.edit_model(model_type='Clock', simulations = "Simulation", model_name='Clock', Start = '1900-01-01', End = '1990-01-12')
         start = self.test_ap_sim.Start != 'unknown'

@@ -13,7 +13,7 @@ import uuid
 from shutil import copy2
 logger = logging.getLogger(__name__)
 from apsimNGpy.settings import CONFIG_PATH, create_config
-
+from functools import lru_cache
 HOME_DATA = Path.home().joinpath('AppData', 'Local', 'Programs')
 cdrive = os.environ.get('PROGRAMFILES')
 CONFIG = configparser.ConfigParser()
@@ -140,7 +140,7 @@ def auto_detect_apsim_bin_path():
     else:
         return ""
 
-
+lru_cache(maxsize =20)
 def get_apsim_bin_path():
     """
     Returns the path to the apsim bin folder from either auto-detection or from the path already supplied by the user
@@ -240,24 +240,26 @@ def load_crop_from_disk(crop: str, out: str = None, work_space: str = None):
     """
     Load a default APSIM crop simulation file from disk by specifying only the crop name.
 
-    This function locates and copies a `.apsimx` file associated with the specified crop from the APSIM
+    This function locates and copies an `.apsimx` file associated with the specified crop from the APSIM
     Examples directory into a working directory. It is useful when programmatically running default
-    simulations for different crops without manually managing file paths.
+    simulations for different crops without manually opening them in GUI.
 
     Args:
-        crop (str): The name of the crop to load (e.g., 'Maize', 'Soybean', 'Barley', 'Mungbean', 'Pinus', 'Eucalyptus').
+        ``crop`` (str): The name of the crop to load (e.g., 'Maize', 'Soybean', 'Barley', 'Mungbean', 'Pinus', 'Eucalyptus').
                     The name is case-insensitive and must match an existing `.apsimx` file in the APSIM Examples folder.
-        out (str, optional): A custom output path where the `.apsimx` file should be copied.
+
+        ``out`` (str, optional): A custom output path where the `.apsimx` file should be copied.
                              If not provided, a temporary file will be created in the working directory. this is stamped with the APSIM version being used
-        work_space (str, optional): The base directory to use when generating a temporary output path.
+
+        ``work_space`` (str, optional): The base directory to use when generating a temporary output path.
                                     If not specified, the current working directory is used.
                                     This path may also contain other simulation or residue files.
 
     Returns:
-        str: The path to the copied `.apsimx` file ready for further manipulation or simulation.
+        ``str``: The path to the copied `.apsimx` file ready for further manipulation or simulation.
 
     Raises:
-        FileNotFoundError: If the APSIM binary path cannot be resolved or the crop simulation file does not exist.
+        ``FileNotFoundError``: If the APSIM binary path cannot be resolved or the crop simulation file does not exist.
 
     Example:
         >>> load_crop_from_disk("Maize")
@@ -265,9 +267,13 @@ def load_crop_from_disk(crop: str, out: str = None, work_space: str = None):
     """
     BIN = get_apsim_bin_path()
     _version = apsim_version()
+    if ".apsimx" in crop:
+        crop, suffix = crop.split(".")
+    else:
+        suffix = 'apsimx'
     if BIN and os.path.exists(BIN):
         EXa = BIN.replace('bin', 'Examples')
-        target_location = glob.glob(f"{EXa}*/{crop}.apsimx")  # case-sensitive match by correct spelling only
+        target_location = glob.glob(f"{EXa}*/{crop}.{suffix}")  # case-sensitive match by correct spelling only
         if target_location:
             loaded_path = target_location[0]
         else:

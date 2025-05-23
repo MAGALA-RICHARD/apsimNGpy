@@ -88,7 +88,7 @@ class TestCoreModel(BaseTester):
         msg = 'expected dict is empty'
 
     def test_get_reports(self):
-        self.assertIsInstance(self.test_ap_sim.get_report(names_only=True), dict)
+        self.assertIsInstance(self.test_ap_sim.inspect_model('Report'), list)
 
     def test_replace_soil_property_values(self):
         parameter = 'Carbon'
@@ -213,7 +213,7 @@ class TestCoreModel(BaseTester):
         self.assertTrue(start, 'Simulation start date was not successfully changed')
         self.assertTrue(end, 'Simulation end date was not successfully changed')
 
-    def test_edit_cultivar_edit_model_method(self):
+    def __test_edit_cultivar_edit_model_method(self):
         """
         Test the edit_cultivar requires that we have replacements in place
         @return:

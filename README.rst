@@ -22,6 +22,10 @@ Badges
    :target: https://github.com/MAGALA-RICHARD/apsimNGpy/stargazers
    :alt: GitHub Stars
 
+.. image:: https://img.shields.io/badge/Clones-~Last_14_days-orange
+   :alt: GitHub Clones (estimated)
+
+
 
 
 

@@ -533,10 +533,10 @@ def _is_within_USA_mainland(lonlat):
     else:
         return False
 
-@lru_cache(maxsize=20, typed=True)
+@lru_cache(maxsize=600, typed=True)
 def get_weather(lonlat:Union[tuple, list], start:int=1990, end:int=2020, source:str='daymet', filename:str='__met_.met'):
     """
-        Collects data from various sources.
+        Collects data from various sources. This function is cached for speed, so when it is called multiple times with the same arguments during optimization, it will be very fast fast
 
         Only ``nasapower`` and ``dayment`` are currently supported sources, so it will raise an error if mesonnet is suggested.
 
@@ -546,15 +546,15 @@ def get_weather(lonlat:Union[tuple, list], start:int=1990, end:int=2020, source:
          Parameters
          -----------------------
 
-         ``lonlat``: (tuple) lonlat values
+         ``lonlat``: (``tuple``) lonlat values
 
-         ``start``: (int) start year
+         ``start``: (``int``) start year
 
-         ``end``: (int) end year
+         ``end``: (``int``) end year
 
-         ``source``: (str) source API for weather data
+         ``source``: (``str``) source API for weather data
 
-         ``filename``: (str) filename for saving on disk
+         ``filename``: (``str``) filename for saving on disk
 
         Example.
 

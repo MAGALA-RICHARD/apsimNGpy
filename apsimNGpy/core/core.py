@@ -1157,15 +1157,6 @@ class CoreModel:
 
         self.save()
 
-    @property  #
-    def extract_report_names(self) -> dict:
-        """ returns all data frames the available report tables
-        @return: dict of  table names in alist in the simulation
-
-        """
-        old_method('extract_report_names', 'inspect_model')
-        table_dict = self.get_report(names_only=True)
-        return table_dict
 
     def replicate_file(self, k: int, path: os.PathLike = None, suffix: str = "replica"):
         """
@@ -2137,25 +2128,6 @@ class CoreModel:
                     rep.set_DayAfterLastOutput = set_DayAfterLastOutput
         return rep
 
-    def get_report(self, simulation=None, names_only=False):
-        """Get current report string
-
-        Parameters
-        ----------
-        ``simulation``, optional
-            Simulation name, if `None` use the first simulation.
-        Returns
-        -------
-            List of report lines.
-            @param names_only: return the names of the reports as a list if names_only is True
-
-        """
-        sim = self.find_simulations(simulation)
-        REPORTS = {}
-        for si in sim:
-            REPORTS[si.Name] = [i.Name for i in (si.FindAllDescendants[Models.Report]())] if names_only else \
-                si.FindAllDescendants[Models.Report]()
-        return REPORTS
 
     def extract_soil_physical(self, simulations: [tuple, list] = None):
         """Find physical soil

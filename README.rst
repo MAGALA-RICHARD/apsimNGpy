@@ -25,7 +25,10 @@ Badges
 .. image:: https://img.shields.io/badge/🤗%20Hugging%20Face-Spaces-blue
    :target: https://huggingface.co/spaces/lukbl/LaTeX-OCR
    :alt: Hugging Face Spaces
-=====================================================================
+
+
+
+
 apsimNGpy: The Next Generation Agroecosytem Simulation Library
 
 ====================================================================

@@ -1,3 +1,11 @@
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Documentation Status](https://readthedocs.org/projects/pix2tex/badge/?version=latest)](https://pix2tex.readthedocs.io/en/latest/?badge=latest)
+[![PyPI](https://img.shields.io/pypi/v/pix2tex?logo=pypi)](https://pypi.org/project/apsimNGpy/)
+[![PyPI - Downloads](https://img.shields.io/pypi/dm/apsimNGpy?logo=pypi)](https://pypi.org/project/apsimNGpy/)
+[![GitHub all releases](https://img.shields.io/github/downloads/MAGALA-RICHARD/LaTeX-OCR/total?color=blue&logo=github)](https://github.com/MAGALA-RICHARD/apsimNGpy/releases)
+[![Hugging Face Spaces](https://img.shields.io/badge/🤗%20Hugging%20Face-Spaces-blue)](https://huggingface.co/spaces/lukbl/LaTeX-OCR)
+
+
 apsimNGpy: The Next Generation Agroecosytem Simulation Library
 
 ====================================================================

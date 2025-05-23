@@ -734,6 +734,18 @@ class CoreModel:
             - ``Soils.Physical | Soils.Chemical | Soils.Organic | Soils.Water:``
                 - Variables to replace using ``replace_soils_values_by_path``.
 
+            Valid ``parameters`` are shown below;
+
+            +------------------+--------------------------------------------------------------------------------------------------------------------------------------+
+            | Soil Model Type  | **Supported key word arguments**                                                                                                     |
+            +==================+======================================================================================================================================+
+            | Physical         | AirDry, BD, DUL, DULmm, Depth, DepthMidPoints, KS, LL15, LL15mm, PAWC, PAWCmm, SAT, SATmm, SW, SWmm, Thickness, ThicknessCumulative  |
+            +------------------+--------------------------------------------------------------------------------------------------------------------------------------+
+            | Organic          | CNR, Carbon, Depth, FBiom, FInert, FOM, Nitrogen, SoilCNRatio, Thickness                                                             |
+            +------------------+--------------------------------------------------------------------------------------------------------------------------------------+
+            | Chemical         | Depth, PH, Thickness                                                                                                                 |
+            +------------------+--------------------------------------------------------------------------------------------------------------------------------------+
+
             - ``Report``:
                 - ``report_name`` (str): Name of the report model (optional depending on structure).
                 - ``variable_spec`` (list[str] or str): Variables to include in the report.
@@ -2060,14 +2072,19 @@ class CoreModel:
             Replaces the meteorological (met) file in the model using weather data fetched from an online source.
 
             ``lonlat``: ``tuple`` containing the longitude and latitude coordinates.
+
             ``start``: Start date for the weather data retrieval.
+
             ``end``: End date for the weather data retrieval.
+
             ``simulations``: str, list of simulations to place the weather data, defaults to ``all`` as a string
+
             ``source``: Source of the weather data. Defaults to 'nasa'.
+
             ``filename``: Name of the file to save the retrieved data. If None, a default name is generated.
 
-            ``return:``
-            str Path to the saved met file.
+            ``Returns:``
+             str Path to the saved met file.
 
             """
         ## TODO impliment logic to avoid date incosistencies in the start and end dates

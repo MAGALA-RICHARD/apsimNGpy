@@ -1,9 +1,26 @@
-[![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) [![Docs](https://img.shields.io/badge/docs-online-blue.svg)](https://magala-richard.github.io/apsimNGpy-documentations/index.html)
-[![PyPI](https://img.shields.io/pypi/v/apsimNGpy?logo=pypi)](https://pypi.org/project/apsimNGpy/)
-[![PyPI - Downloads](https://img.shields.io/pypi/dm/apsimNGpy?logo=pypi)](https://pypi.org/project/apsimNGpy/)
-[![GitHub all releases](https://img.shields.io/github/downloads/MAGALA-RICHARD/LaTeX-OCR/total?color=blue&logo=github)](https://github.com/MAGALA-RICHARD/apsimNGpy/releases)
-[![Hugging Face Spaces](https://img.shields.io/badge/🤗%20Hugging%20Face-Spaces-blue)](https://huggingface.co/spaces/lukbl/LaTeX-OCR)
+.. image:: https://img.shields.io/badge/License-Apache_2.0-blue.svg
+   :target: https://opensource.org/licenses/Apache-2.0
+   :alt: License: Apache-2.0
 
+.. image:: https://img.shields.io/badge/docs-online-blue.svg
+   :target: https://magala-richard.github.io/apsimNGpy-documentations/index.html
+   :alt: Documentation
+
+.. image:: https://img.shields.io/pypi/v/apsimNGpy?logo=pypi
+   :target: https://pypi.org/project/apsimNGpy/
+   :alt: PyPI version
+
+.. image:: https://img.shields.io/pypi/dm/apsimNGpy?logo=pypi
+   :target: https://pypi.org/project/apsimNGpy/
+   :alt: PyPI downloads
+
+.. image:: https://img.shields.io/github/downloads/MAGALA-RICHARD/LaTeX-OCR/total?color=blue&logo=github
+   :target: https://github.com/MAGALA-RICHARD/apsimNGpy/releases
+   :alt: GitHub releases
+
+.. image:: https://img.shields.io/badge/🤗%20Hugging%20Face-Spaces-blue
+   :target: https://huggingface.co/spaces/lukbl/LaTeX-OCR
+   :alt: Hugging Face Spaces
 
 apsimNGpy: The Next Generation Agroecosytem Simulation Library
 

@@ -478,7 +478,7 @@ class CoreModel:
          >>> sr = model.simulated_results
 
         """
-        old_method('simulated_results', 'read_from_db_names')
+        old_method('simulated_results', 'get_simulated_output')
         if self.ran_ok:
             data_tables = collect_csv_by_model_path(self.path)
             # reports = get_db_table_names(self.datastore)
@@ -1874,41 +1874,6 @@ class CoreModel:
             for manager in list(managers):
                 print(manager.SuccessfullyCompiledLast)
 
-
-    def extract_user_input(self, manager_name: str):
-        """
-        Get user_input of a given model manager script.
-
-        Args:
-            ``manager_name`` (str): name of the Models.Manager script.
-
-            ``returns:`  a dictionary of user input with the key as the script parameters and values as the inputs
-
-        Example:
-        ____________________
-
-        >>> from apsimNGpy.core.base_data import load_default_simulations
-        >>> model = load_default_simulations(crop = 'maize')
-        >>> ui = model.extract_user_input(manager_name='Fertilise at sowing')
-        >>> print(ui)
-        {'Crop': 'Maize', 'FertiliserType': 'NO3N', 'Amount': '160.0'}
-
-        """
-        old_method(old_method='extract_user_input', new_method='inspect_model_parameters')
-        param_dict = {}
-        for sim in self.simulations:
-            params = None
-            actions = sim.FindAllDescendants[Models.Manager]()
-            out = {"simulation": sim.Name}
-            for action in actions:
-                if action.Name == manager_name:
-                    params = self._kvtodict(action.Parameters)
-                    # return params
-
-                if params is not None and action.Name == manager_name:
-                    param_dict[sim.Name] = params
-        return param_dict
-
     @staticmethod
     def strip_time(date_string):
         date_object = datetime.datetime.strptime(date_string, "%Y-%m-%d")
@@ -2502,6 +2467,7 @@ class CoreModel:
             return [self.Simulations.FindDescendant(i) for i in simulations if i in self.simulation_names]
 
     @staticmethod
+    @lru_cache(maxsize=80)
     def adjustSatDul(sat_: list, dul_: list):
         for enum, (s, d) in enumerate(zip(sat_, dul_)):
             # first check if they are equal
@@ -2929,9 +2895,7 @@ if __name__ == '__main__':
     # model.save_edited_file(reload=True)
     model.run('Report', verbose=True)
     df = model.results
-    ui = model.extract_user_input('Sow using a variable rule')
-    print(ui)
-    print()
+
     print(df['Maize.Total.Wt'].mean())
     print(df.describe())
     # logger.info(model.results.mean(numeric_only=True))

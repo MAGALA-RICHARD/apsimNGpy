@@ -5,7 +5,7 @@ from subprocess import *
 from typing import Dict, Any, Union
 import contextlib
 import pandas as pd
-
+from functools import lru_cache
 from apsimNGpy.core.config import get_apsim_bin_path
 from apsimNGpy.settings import logger
 from apsimNGpy.core_utils.utils import timer
@@ -120,7 +120,7 @@ def run_model_externally(model: Union[Path, str], verbose: bool = False, to_csv:
 from pathlib import Path
 from typing import Union, List
 
-
+@lru_cache(maxsize=20)
 def get_matching_files(dir_path: Union[str, Path], pattern: str, recursive: bool = False) -> List[Path]:
     """
     Search for files matching a given pattern in the specified directory.

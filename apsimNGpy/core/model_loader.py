@@ -44,7 +44,7 @@ def load_from_dict(dict_data, out):
                                                                                     fileName=out)
 
 version = apsim_version()
-@lru_cache()
+
 def copy_file(source: Union[str, Path], destination: Union[str, Path] = None,
               wd: Union[str, Path] = None) -> Union[str, Path]:
     if not wd:
@@ -122,14 +122,14 @@ def load_from_path(path2file, method='file'):
 
     return new_model
 
-
 def load_apsim_model(model=None, out_path=None, file_load_method='string', met_file=None, wd=None, **kwargs):
     """
-       >> we are loading apsimx model from file, dict, or in memory.
-       >> if model is none, we will return a pre - reloaded one from memory.
-       >> if out parameter is none, the new file will have a suffix _copy at the end
-       >> if model is none, the name is ngpy_model
-       returns a named tuple with an out path, datastore path, and IModel in memory
+       we are loading apsimx model from file, dict, or in memory.
+
+       If model is none, we will return a pre - reloaded one from memory.
+       If out parameter is none, the new file will have a suffix _copy at the end
+       If model is none, the name is ngpy_model
+       returns a ``dataclass`` container with an out path, datastore path, and IModel in memory
        """
     out = {}  # stores the path to be attached to model_info object
     Model_data = ModelData#namedtuple('model_data',

@@ -49,7 +49,7 @@ from apsimNGpy.core._modelhelpers import (get_or_check_model, Models, old_method
                                           ModelTools, _eval_model, replace_variable_by_index,
                                           _find_model, find_model)
 from Models.PMF import Cultivar
-from apsimNGpy.core.runner import run_model_externally, collect_csv_by_model_path
+from apsimNGpy.core.runner import run_model_externally, collect_csv_by_model_path, run_p
 from apsimNGpy.core.model_loader import (load_apsim_model, save_model_to_file, recompile)
 import ast
 from typing import Iterable

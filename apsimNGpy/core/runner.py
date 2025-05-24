@@ -271,52 +271,7 @@ def run_from_dir(dir_path, pattern, verbose=False,
         out = collect_csv_from_dir(dir_path, pattern)
         return out
 
-@timer
-def run_p(_model, simulations=None, clean=False, multithread=True):
-    """Run apsim model in the simulations
 
-    Parameters
-    ----------
-    ``_model`` : ApsimNGpy model object
-
-    ``simulations`` (__str_), optional
-        List of simulation names to run, if `None` runs all simulations, by default `None`.
-
-    ``clean`` (_-boolean_), optional
-        If `True` remove existing database for the file before running, deafults to False`.
-
-    ``multithread``, optional
-        If `True` APSIM uses multiple threads, by default `True`.
-
-    """
-    @lru_cache(maxsize=None)
-    def select_thread(multithread):
-        if multithread:
-            runtype = Models.Core.Run.Runner.RunTypeEnum.MultiThreaded
-        else:
-            runtype = Models.Core.Run.Runner.RunTypeEnum.SingleThreaded
-        return runtype
-
-
-    if clean:
-        self._DataStore.Dispose()
-        pathlib.Path(_model._DataStore.FileName).unlink(missing_ok=True)
-        self._DataStore.Open()
-
-    if simulations is None:
-        runmodel = Models.Core.Run.Runner(_model.Model, True, False, False, None, select_thread(multithread))
-        e = runmodel.Run()
-    else:
-        sims = _model.find_simulations(simulations)
-        # Runner needs C# list
-        cs_sims = List[Models.Core.Simulation]()
-        [cs_sims.Add(s) for s in sims]
-
-        runmodel = Models.Core.Run.Runner(cs_sims, True, False, False, None, select_thread(multithread))
-        e = runmodel.Run()
-
-    if (len(e) > 0):
-        logger.info(repr(e[0].ToString()))
 
 
 

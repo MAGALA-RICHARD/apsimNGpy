@@ -326,9 +326,9 @@ A tree showing the relative path of each model to the parent node ``Simulation``
     :width: 100%
 
 
-You can preview the current simulation in the APSIM graphical user interface (GUI) using the preview_simulation method.
+You can preview the current simulation in the APSIM graphical user interface (GUI) using the ``preview_simulation`` method.
 Note that the file opened in the GUI is a temporary clone, so any changes made and saved within the GUI will not be reflected when you rerun the code.
-If you intend to preserve modifications made in the GUI, you may need to supply the reference path of the edited file using ``ApsimModel`` :class: .
+If you intend to preserve modifications made in the ``GUI``, you may need to supply the ``reference path`` of the edited file using ``ApsimModel`` class .
 
 .. code-block:: python
 

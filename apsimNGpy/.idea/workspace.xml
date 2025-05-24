@@ -5,171 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="5d471312-8496-4246-98d6-790439318160" name="Changes" comment="v0.38">
-      <change beforePath="$PROJECT_DIR$/core/temp_6b7243f8-37fb-11f0-9789-089204ded298_MaizeAPSIM2024.5.7493.0.Report.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_071cd481-37fb-11f0-b5e8-089204ded298_Maize.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_071cd481-37fb-11f0-b5e8-089204ded298_MaizeAPSIM2024.5.7493.0.Report.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_071cd481-37fb-11f0-b5e8-089204ded298_MaizeAPSIM2024.5.7493.0.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_071cd481-37fb-11f0-b5e8-089204ded298_MaizeAPSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_071cd481-37fb-11f0-b5e8-089204ded298_MaizeAPSIM2024.5.7493.0.db-shm" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_0758a7b7-37fb-11f0-a08c-089204ded298_soybean.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_0758a7b7-37fb-11f0-a08c-089204ded298_soybeanAPSIM2024.5.7493.0.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_0758a7b7-37fb-11f0-a08c-089204ded298_soybeanAPSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_0758a7b7-37fb-11f0-a08c-089204ded298_soybeanAPSIM2024.5.7493.0.db-shm" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_0762a532-37fb-11f0-bc15-089204ded298_APSIM2024.5.7493.0_Soybean.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_3d5e4eb0-37fb-11f0-8782-089204ded298_Maize.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_3d5e4eb0-37fb-11f0-8782-089204ded298_MaizeAPSIM2024.5.7493.0.Report.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_3d5e4eb0-37fb-11f0-8782-089204ded298_MaizeAPSIM2024.5.7493.0.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_3d5e4eb0-37fb-11f0-8782-089204ded298_MaizeAPSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_3d5e4eb0-37fb-11f0-8782-089204ded298_MaizeAPSIM2024.5.7493.0.db-shm" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_3d987c18-37fb-11f0-ac3c-089204ded298_soybean.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_3d987c18-37fb-11f0-ac3c-089204ded298_soybeanAPSIM2024.5.7493.0.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_3d987c18-37fb-11f0-ac3c-089204ded298_soybeanAPSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_3d987c18-37fb-11f0-ac3c-089204ded298_soybeanAPSIM2024.5.7493.0.db-shm" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_3da307bd-37fb-11f0-99d1-089204ded298_APSIM2024.5.7493.0_Soybean.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_7378e50a-37fb-11f0-89fc-089204ded298_Maize.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_7378e50a-37fb-11f0-89fc-089204ded298_MaizeAPSIM2024.5.7493.0.Report.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_7378e50a-37fb-11f0-89fc-089204ded298_MaizeAPSIM2024.5.7493.0.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_7378e50a-37fb-11f0-89fc-089204ded298_MaizeAPSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_7378e50a-37fb-11f0-89fc-089204ded298_MaizeAPSIM2024.5.7493.0.db-shm" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_73b64d1a-37fb-11f0-b2f0-089204ded298_soybean.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_73b64d1a-37fb-11f0-b2f0-089204ded298_soybeanAPSIM2024.5.7493.0.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_73b64d1a-37fb-11f0-b2f0-089204ded298_soybeanAPSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_73b64d1a-37fb-11f0-b2f0-089204ded298_soybeanAPSIM2024.5.7493.0.db-shm" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_73c053e7-37fb-11f0-909c-089204ded298_APSIM2024.5.7493.0_Soybean.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_f00f07bb-37fa-11f0-808f-089204ded298_Maize.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_f00f07bb-37fa-11f0-808f-089204ded298_MaizeAPSIM2024.5.7493.0.Report.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_f00f07bb-37fa-11f0-808f-089204ded298_MaizeAPSIM2024.5.7493.0.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_f00f07bb-37fa-11f0-808f-089204ded298_MaizeAPSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_f00f07bb-37fa-11f0-808f-089204ded298_MaizeAPSIM2024.5.7493.0.db-shm" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_f04ab236-37fa-11f0-a5d3-089204ded298_soybean.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_f04ab236-37fa-11f0-a5d3-089204ded298_soybeanAPSIM2024.5.7493.0.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_f04ab236-37fa-11f0-a5d3-089204ded298_soybeanAPSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_f04ab236-37fa-11f0-a5d3-089204ded298_soybeanAPSIM2024.5.7493.0.db-shm" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_f054d688-37fa-11f0-8bbf-089204ded298_APSIM2024.5.7493.0_Soybean.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_51241ea7-3733-11f0-a337-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_553aeb45-3746-11f0-ab8c-089204ded298_APSIM2024.5.7493.0_Maize.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_553b13e9-3746-11f0-875d-089204ded298_APSIM2024.5.7493.0.Report.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_553b13e9-3746-11f0-875d-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_553b13e9-3746-11f0-875d-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_553b13e9-3746-11f0-875d-089204ded298_APSIM2024.5.7493.0.db-shm" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_7d38c585-3733-11f0-93a9-089204ded298_APSIM2024.5.7493.0_Maize.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_7d38f102-3733-11f0-a7e7-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_7d38f102-3733-11f0-a7e7-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_a8de84bd-3733-11f0-b490-089204ded298_APSIM2024.5.7493.0_Maize.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_a8de84be-3733-11f0-8f8a-089204ded298_APSIM2024.5.7493.0.Report.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_a8de84be-3733-11f0-8f8a-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_a8de84be-3733-11f0-8f8a-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_a8de84be-3733-11f0-8f8a-089204ded298_APSIM2024.5.7493.0.db-shm" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_d47cc57f-3733-11f0-9842-089204ded298_APSIM2024.5.7493.0_Maize.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_d47cf404-3733-11f0-b687-089204ded298_APSIM2024.5.7493.0.Report.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_d47cf404-3733-11f0-b687-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_d47cf404-3733-11f0-b687-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_d47cf404-3733-11f0-b687-089204ded298_APSIM2024.5.7493.0.db-shm" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/raw_docs/api.rst" beforeDir="false" afterPath="$PROJECT_DIR$/raw_docs/api.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/raw_docs/temp_09c8c6df-37f4-11f0-949a-089204ded298_maize.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/raw_docs/temp_09c8c6df-37f4-11f0-949a-089204ded298_maizeAPSIM2024.5.7493.0.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/raw_docs/temp_09c8c6df-37f4-11f0-949a-089204ded298_maizeAPSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/raw_docs/temp_0afdb121-3747-11f0-bb4b-089204ded298_maize.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/raw_docs/temp_0afdb121-3747-11f0-bb4b-089204ded298_maizeAPSIM2024.5.7493.0.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/raw_docs/temp_0afdb121-3747-11f0-bb4b-089204ded298_maizeAPSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/raw_docs/temp_1678d3a6-3751-11f0-9fef-089204ded298_maize.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/raw_docs/temp_1678d3a6-3751-11f0-9fef-089204ded298_maizeAPSIM2024.5.7493.0.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/raw_docs/temp_1678d3a6-3751-11f0-9fef-089204ded298_maizeAPSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/raw_docs/temp_21bc7930-36bb-11f0-b20f-089204ded298_maize.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/raw_docs/temp_21bc7930-36bb-11f0-b20f-089204ded298_maizeAPSIM2024.5.7493.0.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/raw_docs/temp_21bc7930-36bb-11f0-b20f-089204ded298_maizeAPSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/raw_docs/temp_26aa490a-37f4-11f0-bbea-089204ded298_maize.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/raw_docs/temp_26aa490a-37f4-11f0-bbea-089204ded298_maizeAPSIM2024.5.7493.0.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/raw_docs/temp_26aa490a-37f4-11f0-bbea-089204ded298_maizeAPSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/raw_docs/temp_42657895-374c-11f0-ab74-089204ded298_maize.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/raw_docs/temp_42657895-374c-11f0-ab74-089204ded298_maizeAPSIM2024.5.7493.0.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/raw_docs/temp_42657895-374c-11f0-ab74-089204ded298_maizeAPSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/raw_docs/temp_45a6d58a-37f4-11f0-849c-089204ded298_maize.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/raw_docs/temp_45a6d58a-37f4-11f0-849c-089204ded298_maizeAPSIM2024.5.7493.0.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/raw_docs/temp_45a6d58a-37f4-11f0-849c-089204ded298_maizeAPSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/raw_docs/temp_5af02902-36bb-11f0-a2e1-089204ded298_maize.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/raw_docs/temp_5af02902-36bb-11f0-a2e1-089204ded298_maizeAPSIM2024.5.7493.0.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/raw_docs/temp_5af02902-36bb-11f0-a2e1-089204ded298_maizeAPSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/raw_docs/temp_67f4ea77-374e-11f0-a3e2-089204ded298_maize.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/raw_docs/temp_67f4ea77-374e-11f0-a3e2-089204ded298_maizeAPSIM2024.5.7493.0.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/raw_docs/temp_67f4ea77-374e-11f0-a3e2-089204ded298_maizeAPSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/raw_docs/temp_86d988dd-36bb-11f0-b06d-089204ded298_maize.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/raw_docs/temp_86d988dd-36bb-11f0-b06d-089204ded298_maizeAPSIM2024.5.7493.0.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/raw_docs/temp_86d988dd-36bb-11f0-b06d-089204ded298_maizeAPSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/raw_docs/temp_9fa614a3-37f4-11f0-8a3c-089204ded298_maize.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/raw_docs/temp_9fa614a3-37f4-11f0-8a3c-089204ded298_maizeAPSIM2024.5.7493.0.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/raw_docs/temp_9fa614a3-37f4-11f0-8a3c-089204ded298_maizeAPSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/raw_docs/temp_b53cd15b-37f5-11f0-8b49-089204ded298_maize.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/raw_docs/temp_b53cd15b-37f5-11f0-8b49-089204ded298_maizeAPSIM2024.5.7493.0.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/raw_docs/temp_b53cd15b-37f5-11f0-8b49-089204ded298_maizeAPSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/raw_docs/temp_b940622c-374c-11f0-9fc3-089204ded298_maize.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/raw_docs/temp_b940622c-374c-11f0-9fc3-089204ded298_maizeAPSIM2024.5.7493.0.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/raw_docs/temp_b940622c-374c-11f0-9fc3-089204ded298_maizeAPSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/raw_docs/temp_d075f6ce-374c-11f0-8150-089204ded298_maize.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/raw_docs/temp_d075f6ce-374c-11f0-8150-089204ded298_maizeAPSIM2024.5.7493.0.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/raw_docs/temp_d075f6ce-374c-11f0-8150-089204ded298_maizeAPSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/raw_docs/temp_f2ae955a-374c-11f0-9e17-089204ded298_maize.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/raw_docs/temp_f2ae955a-374c-11f0-9e17-089204ded298_maizeAPSIM2024.5.7493.0.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/raw_docs/temp_f2ae955a-374c-11f0-9e17-089204ded298_maizeAPSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_d37a06d7-37ff-11f0-9a0b-089204ded298_APSIM2024.5.7493.0.Report.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_d37a06d7-37ff-11f0-9a0b-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_d37a06d7-37ff-11f0-9a0b-089204ded298_APSIM2024.5.7493.0.db-shm" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_d37a06d7-37ff-11f0-9a0b-089204ded298_APSIM2024.5.7493.0.db-wal" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_d37a06d7-37ff-11f0-9a0b-089204ded298_APSIM2024.5.7493.0.report4.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_d54f76da-37ff-11f0-8c7c-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_d54f76da-37ff-11f0-8c7c-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_d555ff3c-37ff-11f0-9b5a-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_d555ff3c-37ff-11f0-9b5a-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_d5acf1f3-37ff-11f0-893e-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_d5acf1f3-37ff-11f0-893e-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_d5c58aba-37ff-11f0-97e5-089204ded298_APSIM2024.5.7493.0.Report.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_d5c58aba-37ff-11f0-97e5-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_d5c58aba-37ff-11f0-97e5-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_d5c58aba-37ff-11f0-97e5-089204ded298_APSIM2024.5.7493.0.db-shm" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_d5c58aba-37ff-11f0-97e5-089204ded298_APSIM2024.5.7493.0.db-wal" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_d831c4d1-37ff-11f0-9bf8-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_d831c4d1-37ff-11f0-9bf8-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_d83a1308-37ff-11f0-b3f3-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_d83a1308-37ff-11f0-b3f3-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_d8539c0d-37ff-11f0-8aa1-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_d8539c0d-37ff-11f0-8aa1-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_d85a2ea0-37ff-11f0-9738-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_d85a2ea0-37ff-11f0-9738-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_d86081a0-37ff-11f0-ae65-089204ded298_APSIM2024.5.7493.0.Report.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_d86081a0-37ff-11f0-ae65-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_d86081a0-37ff-11f0-ae65-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_d86081a0-37ff-11f0-ae65-089204ded298_APSIM2024.5.7493.0.db-shm" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_d86081a0-37ff-11f0-ae65-089204ded298_APSIM2024.5.7493.0.db-wal" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_da27d721-37ff-11f0-8f22-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_da27d721-37ff-11f0-8f22-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_da2dd545-37ff-11f0-9de7-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_da2dd545-37ff-11f0-9de7-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_da3b21d7-37ff-11f0-b70b-089204ded298_APSIM2024.5.7493.0_Maize.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_da3b4e5e-37ff-11f0-8c89-089204ded298_APSIM2024.5.7493.0.Report.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_da3b4e5e-37ff-11f0-8c89-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_da3b4e5e-37ff-11f0-8c89-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_da3b4e5e-37ff-11f0-8c89-089204ded298_APSIM2024.5.7493.0.db-shm" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_da3b4e5e-37ff-11f0-8c89-089204ded298_APSIM2024.5.7493.0.db-wal" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_dbf570a3-37ff-11f0-8249-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_dbf570a3-37ff-11f0-8249-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_dbfc237d-37ff-11f0-b035-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_dbfc237d-37ff-11f0-b035-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_dc056cac-37ff-11f0-9e64-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_dc056cac-37ff-11f0-9e64-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_dc0bc323-37ff-11f0-94ec-089204ded298_APSIM2024.5.7493.0.Report.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_dc0bc323-37ff-11f0-94ec-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_dc0bc323-37ff-11f0-94ec-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_df692b11-37ff-11f0-8b9b-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_df692b11-37ff-11f0-8b9b-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_df71e417-37ff-11f0-b8e6-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_df71e417-37ff-11f0-b8e6-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_df79629e-37ff-11f0-abed-089204ded298_APSIM2024.5.7493.0.Report.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_df79629e-37ff-11f0-abed-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_df79629e-37ff-11f0-abed-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_df79629e-37ff-11f0-abed-089204ded298_APSIM2024.5.7493.0.db-shm" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_df79629e-37ff-11f0-abed-089204ded298_APSIM2024.5.7493.0.db-wal" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_apsim.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_apsim.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../docs/source/api.rst" beforeDir="false" afterPath="$PROJECT_DIR$/../docs/source/api.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../README.rst" beforeDir="false" afterPath="$PROJECT_DIR$/../README.rst" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -225,68 +61,68 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_ADD_EXTERNAL_FILES": "true",
-    "Python tests.Doctests in CoreModel.executor": "Profiler",
-    "Python tests.Python tests for test_core.TestCoreModel.executor": "Run",
-    "Python.__init__.executor": "Run",
-    "Python._modelhelpers.executor": "Run",
-    "Python.api.executor": "Run",
-    "Python.apsim.executor": "Run",
-    "Python.base_data.executor": "Run",
-    "Python.batch_runner.executor": "Run",
-    "Python.cleaner.executor": "Run",
-    "Python.cli.executor": "Run",
-    "Python.client.executor": "Run",
-    "Python.config.executor": "Run",
-    "Python.core.executor": "Run",
-    "Python.data_cleaner.executor": "Run",
-    "Python.database_utils.executor": "Run",
-    "Python.diagnostics.executor": "Run",
-    "Python.do not switch off.executor": "Run",
-    "Python.glue.executor": "Run",
-    "Python.logger.executor": "Run",
-    "Python.main.executor": "Run",
-    "Python.met_functions.executor": "Run",
-    "Python.model_desc.executor": "Run",
-    "Python.model_loader.executor": "Run",
-    "Python.new_opt.executor": "Run",
-    "Python.path_finders.executor": "Run",
-    "Python.problem.executor": "Run",
-    "Python.process.executor": "Run",
-    "Python.pythonet_config.executor": "Run",
-    "Python.replacements.executor": "Run",
-    "Python.runner.executor": "Run",
-    "Python.senstivity.executor": "Run",
-    "Python.server.executor": "Run",
-    "Python.set_bin.executor": "Run",
-    "Python.set_ups.executor": "Run",
-    "Python.settings.executor": "Run",
-    "Python.sobol.executor": "Run",
-    "Python.soilmanager.executor": "Run",
-    "Python.test_apsim.executor": "Run",
-    "Python.test_core.executor": "Run",
-    "Python.tools.executor": "Run",
-    "Python.unit_tests_core.executor": "Run",
-    "Python.utils.executor": "Run",
-    "Python.variable.executor": "Run",
-    "Python.weathermanager.executor": "Run",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "main",
-    "last_opened_file_path": "D:/package/src/apsimNGpy/core",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "copyright",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;Python tests.Doctests in CoreModel.executor&quot;: &quot;Profiler&quot;,
+    &quot;Python tests.Python tests for test_core.TestCoreModel.executor&quot;: &quot;Run&quot;,
+    &quot;Python.__init__.executor&quot;: &quot;Run&quot;,
+    &quot;Python._modelhelpers.executor&quot;: &quot;Run&quot;,
+    &quot;Python.api.executor&quot;: &quot;Run&quot;,
+    &quot;Python.apsim.executor&quot;: &quot;Run&quot;,
+    &quot;Python.base_data.executor&quot;: &quot;Run&quot;,
+    &quot;Python.batch_runner.executor&quot;: &quot;Run&quot;,
+    &quot;Python.cleaner.executor&quot;: &quot;Run&quot;,
+    &quot;Python.cli.executor&quot;: &quot;Run&quot;,
+    &quot;Python.client.executor&quot;: &quot;Run&quot;,
+    &quot;Python.config.executor&quot;: &quot;Run&quot;,
+    &quot;Python.core.executor&quot;: &quot;Run&quot;,
+    &quot;Python.data_cleaner.executor&quot;: &quot;Run&quot;,
+    &quot;Python.database_utils.executor&quot;: &quot;Run&quot;,
+    &quot;Python.diagnostics.executor&quot;: &quot;Run&quot;,
+    &quot;Python.do not switch off.executor&quot;: &quot;Run&quot;,
+    &quot;Python.glue.executor&quot;: &quot;Run&quot;,
+    &quot;Python.logger.executor&quot;: &quot;Run&quot;,
+    &quot;Python.main.executor&quot;: &quot;Run&quot;,
+    &quot;Python.met_functions.executor&quot;: &quot;Run&quot;,
+    &quot;Python.model_desc.executor&quot;: &quot;Run&quot;,
+    &quot;Python.model_loader.executor&quot;: &quot;Run&quot;,
+    &quot;Python.new_opt.executor&quot;: &quot;Run&quot;,
+    &quot;Python.path_finders.executor&quot;: &quot;Run&quot;,
+    &quot;Python.problem.executor&quot;: &quot;Run&quot;,
+    &quot;Python.process.executor&quot;: &quot;Run&quot;,
+    &quot;Python.pythonet_config.executor&quot;: &quot;Run&quot;,
+    &quot;Python.replacements.executor&quot;: &quot;Run&quot;,
+    &quot;Python.runner.executor&quot;: &quot;Run&quot;,
+    &quot;Python.senstivity.executor&quot;: &quot;Run&quot;,
+    &quot;Python.server.executor&quot;: &quot;Run&quot;,
+    &quot;Python.set_bin.executor&quot;: &quot;Run&quot;,
+    &quot;Python.set_ups.executor&quot;: &quot;Run&quot;,
+    &quot;Python.settings.executor&quot;: &quot;Run&quot;,
+    &quot;Python.sobol.executor&quot;: &quot;Run&quot;,
+    &quot;Python.soilmanager.executor&quot;: &quot;Run&quot;,
+    &quot;Python.test_apsim.executor&quot;: &quot;Run&quot;,
+    &quot;Python.test_core.executor&quot;: &quot;Run&quot;,
+    &quot;Python.tools.executor&quot;: &quot;Run&quot;,
+    &quot;Python.unit_tests_core.executor&quot;: &quot;Run&quot;,
+    &quot;Python.utils.executor&quot;: &quot;Run&quot;,
+    &quot;Python.variable.executor&quot;: &quot;Run&quot;,
+    &quot;Python.weathermanager.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/package/src/apsimNGpy/core&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;copyright&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="D:\package\src\apsimNGpy\core" />
@@ -325,6 +161,9 @@
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/w" />
       <option name="IS_MODULE_SDK" value="true" />
@@ -345,6 +184,9 @@
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/core" />
       <option name="IS_MODULE_SDK" value="true" />
@@ -365,6 +207,9 @@
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests" />
       <option name="IS_MODULE_SDK" value="true" />
@@ -385,6 +230,9 @@
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests" />
       <option name="IS_MODULE_SDK" value="true" />
@@ -519,22 +367,7 @@
       <workItem from="1746475969057" duration="6783000" />
       <workItem from="1747696101620" duration="30642000" />
       <workItem from="1747878448871" duration="27729000" />
-    </task>
-    <task id="LOCAL-00448" summary="ModelTools">
-      <option name="closed" value="true" />
-      <created>1747714338364</created>
-      <option name="number" value="00448" />
-      <option name="presentableId" value="LOCAL-00448" />
-      <option name="project" value="LOCAL" />
-      <updated>1747714338364</updated>
-    </task>
-    <task id="LOCAL-00449" summary="ModelTools">
-      <option name="closed" value="true" />
-      <created>1747751155405</created>
-      <option name="number" value="00449" />
-      <option name="presentableId" value="LOCAL-00449" />
-      <option name="project" value="LOCAL" />
-      <updated>1747751155405</updated>
+      <workItem from="1748108154992" duration="1841000" />
     </task>
     <task id="LOCAL-00450" summary="ModelTools">
       <option name="closed" value="true" />
@@ -912,7 +745,23 @@
       <option name="project" value="LOCAL" />
       <updated>1748027671098</updated>
     </task>
-    <option name="localTasksCounter" value="497" />
+    <task id="LOCAL-00497" summary="v0.38">
+      <option name="closed" value="true" />
+      <created>1748109590291</created>
+      <option name="number" value="00497" />
+      <option name="presentableId" value="LOCAL-00497" />
+      <option name="project" value="LOCAL" />
+      <updated>1748109590291</updated>
+    </task>
+    <task id="LOCAL-00498" summary="v0.38">
+      <option name="closed" value="true" />
+      <created>1748110770180</created>
+      <option name="number" value="00498" />
+      <option name="presentableId" value="LOCAL-00498" />
+      <option name="project" value="LOCAL" />
+      <updated>1748110770180</updated>
+    </task>
+    <option name="localTasksCounter" value="499" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

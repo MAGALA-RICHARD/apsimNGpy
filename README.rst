@@ -313,8 +313,7 @@ Let's take a look at how it works.
 Whole Model inspection
 =====================================
 Use `inspect_file`` method to inspects all simulations in the file. This method displays a tree showing how each model is connected with each other. see further information in the documentation here:
-https://magala-richard.github.io/apsimNGpy-documentations/index.html
-
+https://magala-richard.github.io/apsimNGpy-documentations/model%20inspection.html
 
 .. code-block:: python
 

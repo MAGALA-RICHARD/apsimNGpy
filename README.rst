@@ -100,7 +100,7 @@ if you run the following code and returns None you need to do something as expla
 .. code-block:: python
 
    from apsimNGpy.core import config
-      print(config.get_apsim_bin_path())
+   print(config.get_apsim_bin_path())
 
 You can also try to check if automatic search will be successful as follows
 
@@ -120,9 +120,9 @@ Locating the APSIM Binaries
 By default the APSIM binaries are located automatically. The process for determining the APSIM binary path is as follows:
 
 In apsimNGpy, priority is first given to the user-supplied binary path.
-If no path is supplied, the module searches through the Python global environment
-using the os module. If that fails, it searches through other folders.
-If all approaches are exhausted and no valid path is found, a ValueError will be raised.
+If no ``path`` is supplied, the module searches through the ``Python`` global environment ``variables``
+using the ``os`` module. If that fails, it searches through other folders.
+If all approaches are exhausted and no valid ``path`` is found, a ``ValueError`` will be raised while attempting to access objects from ``apsimNGpy.core`` module
 
 
 Changing/setting the APSIM installation binaries path
@@ -317,6 +317,8 @@ https://magala-richard.github.io/apsimNGpy-documentations/model%20inspection.htm
 .. code-block:: python
 
     model.inspect_file()
+
+A tree showing the relative path of each model to the parent node ``Simulation`` similar to the example below should appear.
 
 .. image:: ./apsimNGpy/images/model_tree.png
     :alt: Tree structure of the APSIM model

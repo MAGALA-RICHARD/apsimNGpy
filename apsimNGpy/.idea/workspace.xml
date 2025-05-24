@@ -4,10 +4,172 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5d471312-8496-4246-98d6-790439318160" name="Changes" comment="ModelTools">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/core.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/core.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/unit_tests_core.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/unit_tests_core.py" afterDir="false" />
+    <list default="true" id="5d471312-8496-4246-98d6-790439318160" name="Changes" comment="v0.38">
+      <change beforePath="$PROJECT_DIR$/core/temp_6b7243f8-37fb-11f0-9789-089204ded298_MaizeAPSIM2024.5.7493.0.Report.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_071cd481-37fb-11f0-b5e8-089204ded298_Maize.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_071cd481-37fb-11f0-b5e8-089204ded298_MaizeAPSIM2024.5.7493.0.Report.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_071cd481-37fb-11f0-b5e8-089204ded298_MaizeAPSIM2024.5.7493.0.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_071cd481-37fb-11f0-b5e8-089204ded298_MaizeAPSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_071cd481-37fb-11f0-b5e8-089204ded298_MaizeAPSIM2024.5.7493.0.db-shm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_0758a7b7-37fb-11f0-a08c-089204ded298_soybean.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_0758a7b7-37fb-11f0-a08c-089204ded298_soybeanAPSIM2024.5.7493.0.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_0758a7b7-37fb-11f0-a08c-089204ded298_soybeanAPSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_0758a7b7-37fb-11f0-a08c-089204ded298_soybeanAPSIM2024.5.7493.0.db-shm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_0762a532-37fb-11f0-bc15-089204ded298_APSIM2024.5.7493.0_Soybean.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_3d5e4eb0-37fb-11f0-8782-089204ded298_Maize.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_3d5e4eb0-37fb-11f0-8782-089204ded298_MaizeAPSIM2024.5.7493.0.Report.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_3d5e4eb0-37fb-11f0-8782-089204ded298_MaizeAPSIM2024.5.7493.0.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_3d5e4eb0-37fb-11f0-8782-089204ded298_MaizeAPSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_3d5e4eb0-37fb-11f0-8782-089204ded298_MaizeAPSIM2024.5.7493.0.db-shm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_3d987c18-37fb-11f0-ac3c-089204ded298_soybean.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_3d987c18-37fb-11f0-ac3c-089204ded298_soybeanAPSIM2024.5.7493.0.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_3d987c18-37fb-11f0-ac3c-089204ded298_soybeanAPSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_3d987c18-37fb-11f0-ac3c-089204ded298_soybeanAPSIM2024.5.7493.0.db-shm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_3da307bd-37fb-11f0-99d1-089204ded298_APSIM2024.5.7493.0_Soybean.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_7378e50a-37fb-11f0-89fc-089204ded298_Maize.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_7378e50a-37fb-11f0-89fc-089204ded298_MaizeAPSIM2024.5.7493.0.Report.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_7378e50a-37fb-11f0-89fc-089204ded298_MaizeAPSIM2024.5.7493.0.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_7378e50a-37fb-11f0-89fc-089204ded298_MaizeAPSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_7378e50a-37fb-11f0-89fc-089204ded298_MaizeAPSIM2024.5.7493.0.db-shm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_73b64d1a-37fb-11f0-b2f0-089204ded298_soybean.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_73b64d1a-37fb-11f0-b2f0-089204ded298_soybeanAPSIM2024.5.7493.0.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_73b64d1a-37fb-11f0-b2f0-089204ded298_soybeanAPSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_73b64d1a-37fb-11f0-b2f0-089204ded298_soybeanAPSIM2024.5.7493.0.db-shm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_73c053e7-37fb-11f0-909c-089204ded298_APSIM2024.5.7493.0_Soybean.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_f00f07bb-37fa-11f0-808f-089204ded298_Maize.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_f00f07bb-37fa-11f0-808f-089204ded298_MaizeAPSIM2024.5.7493.0.Report.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_f00f07bb-37fa-11f0-808f-089204ded298_MaizeAPSIM2024.5.7493.0.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_f00f07bb-37fa-11f0-808f-089204ded298_MaizeAPSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_f00f07bb-37fa-11f0-808f-089204ded298_MaizeAPSIM2024.5.7493.0.db-shm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_f04ab236-37fa-11f0-a5d3-089204ded298_soybean.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_f04ab236-37fa-11f0-a5d3-089204ded298_soybeanAPSIM2024.5.7493.0.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_f04ab236-37fa-11f0-a5d3-089204ded298_soybeanAPSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_f04ab236-37fa-11f0-a5d3-089204ded298_soybeanAPSIM2024.5.7493.0.db-shm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_f054d688-37fa-11f0-8bbf-089204ded298_APSIM2024.5.7493.0_Soybean.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_51241ea7-3733-11f0-a337-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_553aeb45-3746-11f0-ab8c-089204ded298_APSIM2024.5.7493.0_Maize.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_553b13e9-3746-11f0-875d-089204ded298_APSIM2024.5.7493.0.Report.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_553b13e9-3746-11f0-875d-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_553b13e9-3746-11f0-875d-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_553b13e9-3746-11f0-875d-089204ded298_APSIM2024.5.7493.0.db-shm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_7d38c585-3733-11f0-93a9-089204ded298_APSIM2024.5.7493.0_Maize.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_7d38f102-3733-11f0-a7e7-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_7d38f102-3733-11f0-a7e7-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_a8de84bd-3733-11f0-b490-089204ded298_APSIM2024.5.7493.0_Maize.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_a8de84be-3733-11f0-8f8a-089204ded298_APSIM2024.5.7493.0.Report.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_a8de84be-3733-11f0-8f8a-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_a8de84be-3733-11f0-8f8a-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_a8de84be-3733-11f0-8f8a-089204ded298_APSIM2024.5.7493.0.db-shm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_d47cc57f-3733-11f0-9842-089204ded298_APSIM2024.5.7493.0_Maize.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_d47cf404-3733-11f0-b687-089204ded298_APSIM2024.5.7493.0.Report.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_d47cf404-3733-11f0-b687-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_d47cf404-3733-11f0-b687-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_d47cf404-3733-11f0-b687-089204ded298_APSIM2024.5.7493.0.db-shm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/raw_docs/api.rst" beforeDir="false" afterPath="$PROJECT_DIR$/raw_docs/api.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/raw_docs/temp_09c8c6df-37f4-11f0-949a-089204ded298_maize.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/raw_docs/temp_09c8c6df-37f4-11f0-949a-089204ded298_maizeAPSIM2024.5.7493.0.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/raw_docs/temp_09c8c6df-37f4-11f0-949a-089204ded298_maizeAPSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/raw_docs/temp_0afdb121-3747-11f0-bb4b-089204ded298_maize.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/raw_docs/temp_0afdb121-3747-11f0-bb4b-089204ded298_maizeAPSIM2024.5.7493.0.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/raw_docs/temp_0afdb121-3747-11f0-bb4b-089204ded298_maizeAPSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/raw_docs/temp_1678d3a6-3751-11f0-9fef-089204ded298_maize.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/raw_docs/temp_1678d3a6-3751-11f0-9fef-089204ded298_maizeAPSIM2024.5.7493.0.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/raw_docs/temp_1678d3a6-3751-11f0-9fef-089204ded298_maizeAPSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/raw_docs/temp_21bc7930-36bb-11f0-b20f-089204ded298_maize.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/raw_docs/temp_21bc7930-36bb-11f0-b20f-089204ded298_maizeAPSIM2024.5.7493.0.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/raw_docs/temp_21bc7930-36bb-11f0-b20f-089204ded298_maizeAPSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/raw_docs/temp_26aa490a-37f4-11f0-bbea-089204ded298_maize.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/raw_docs/temp_26aa490a-37f4-11f0-bbea-089204ded298_maizeAPSIM2024.5.7493.0.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/raw_docs/temp_26aa490a-37f4-11f0-bbea-089204ded298_maizeAPSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/raw_docs/temp_42657895-374c-11f0-ab74-089204ded298_maize.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/raw_docs/temp_42657895-374c-11f0-ab74-089204ded298_maizeAPSIM2024.5.7493.0.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/raw_docs/temp_42657895-374c-11f0-ab74-089204ded298_maizeAPSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/raw_docs/temp_45a6d58a-37f4-11f0-849c-089204ded298_maize.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/raw_docs/temp_45a6d58a-37f4-11f0-849c-089204ded298_maizeAPSIM2024.5.7493.0.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/raw_docs/temp_45a6d58a-37f4-11f0-849c-089204ded298_maizeAPSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/raw_docs/temp_5af02902-36bb-11f0-a2e1-089204ded298_maize.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/raw_docs/temp_5af02902-36bb-11f0-a2e1-089204ded298_maizeAPSIM2024.5.7493.0.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/raw_docs/temp_5af02902-36bb-11f0-a2e1-089204ded298_maizeAPSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/raw_docs/temp_67f4ea77-374e-11f0-a3e2-089204ded298_maize.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/raw_docs/temp_67f4ea77-374e-11f0-a3e2-089204ded298_maizeAPSIM2024.5.7493.0.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/raw_docs/temp_67f4ea77-374e-11f0-a3e2-089204ded298_maizeAPSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/raw_docs/temp_86d988dd-36bb-11f0-b06d-089204ded298_maize.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/raw_docs/temp_86d988dd-36bb-11f0-b06d-089204ded298_maizeAPSIM2024.5.7493.0.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/raw_docs/temp_86d988dd-36bb-11f0-b06d-089204ded298_maizeAPSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/raw_docs/temp_9fa614a3-37f4-11f0-8a3c-089204ded298_maize.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/raw_docs/temp_9fa614a3-37f4-11f0-8a3c-089204ded298_maizeAPSIM2024.5.7493.0.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/raw_docs/temp_9fa614a3-37f4-11f0-8a3c-089204ded298_maizeAPSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/raw_docs/temp_b53cd15b-37f5-11f0-8b49-089204ded298_maize.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/raw_docs/temp_b53cd15b-37f5-11f0-8b49-089204ded298_maizeAPSIM2024.5.7493.0.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/raw_docs/temp_b53cd15b-37f5-11f0-8b49-089204ded298_maizeAPSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/raw_docs/temp_b940622c-374c-11f0-9fc3-089204ded298_maize.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/raw_docs/temp_b940622c-374c-11f0-9fc3-089204ded298_maizeAPSIM2024.5.7493.0.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/raw_docs/temp_b940622c-374c-11f0-9fc3-089204ded298_maizeAPSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/raw_docs/temp_d075f6ce-374c-11f0-8150-089204ded298_maize.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/raw_docs/temp_d075f6ce-374c-11f0-8150-089204ded298_maizeAPSIM2024.5.7493.0.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/raw_docs/temp_d075f6ce-374c-11f0-8150-089204ded298_maizeAPSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/raw_docs/temp_f2ae955a-374c-11f0-9e17-089204ded298_maize.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/raw_docs/temp_f2ae955a-374c-11f0-9e17-089204ded298_maizeAPSIM2024.5.7493.0.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/raw_docs/temp_f2ae955a-374c-11f0-9e17-089204ded298_maizeAPSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_d37a06d7-37ff-11f0-9a0b-089204ded298_APSIM2024.5.7493.0.Report.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_d37a06d7-37ff-11f0-9a0b-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_d37a06d7-37ff-11f0-9a0b-089204ded298_APSIM2024.5.7493.0.db-shm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_d37a06d7-37ff-11f0-9a0b-089204ded298_APSIM2024.5.7493.0.db-wal" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_d37a06d7-37ff-11f0-9a0b-089204ded298_APSIM2024.5.7493.0.report4.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_d54f76da-37ff-11f0-8c7c-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_d54f76da-37ff-11f0-8c7c-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_d555ff3c-37ff-11f0-9b5a-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_d555ff3c-37ff-11f0-9b5a-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_d5acf1f3-37ff-11f0-893e-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_d5acf1f3-37ff-11f0-893e-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_d5c58aba-37ff-11f0-97e5-089204ded298_APSIM2024.5.7493.0.Report.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_d5c58aba-37ff-11f0-97e5-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_d5c58aba-37ff-11f0-97e5-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_d5c58aba-37ff-11f0-97e5-089204ded298_APSIM2024.5.7493.0.db-shm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_d5c58aba-37ff-11f0-97e5-089204ded298_APSIM2024.5.7493.0.db-wal" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_d831c4d1-37ff-11f0-9bf8-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_d831c4d1-37ff-11f0-9bf8-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_d83a1308-37ff-11f0-b3f3-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_d83a1308-37ff-11f0-b3f3-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_d8539c0d-37ff-11f0-8aa1-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_d8539c0d-37ff-11f0-8aa1-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_d85a2ea0-37ff-11f0-9738-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_d85a2ea0-37ff-11f0-9738-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_d86081a0-37ff-11f0-ae65-089204ded298_APSIM2024.5.7493.0.Report.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_d86081a0-37ff-11f0-ae65-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_d86081a0-37ff-11f0-ae65-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_d86081a0-37ff-11f0-ae65-089204ded298_APSIM2024.5.7493.0.db-shm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_d86081a0-37ff-11f0-ae65-089204ded298_APSIM2024.5.7493.0.db-wal" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_da27d721-37ff-11f0-8f22-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_da27d721-37ff-11f0-8f22-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_da2dd545-37ff-11f0-9de7-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_da2dd545-37ff-11f0-9de7-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_da3b21d7-37ff-11f0-b70b-089204ded298_APSIM2024.5.7493.0_Maize.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_da3b4e5e-37ff-11f0-8c89-089204ded298_APSIM2024.5.7493.0.Report.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_da3b4e5e-37ff-11f0-8c89-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_da3b4e5e-37ff-11f0-8c89-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_da3b4e5e-37ff-11f0-8c89-089204ded298_APSIM2024.5.7493.0.db-shm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_da3b4e5e-37ff-11f0-8c89-089204ded298_APSIM2024.5.7493.0.db-wal" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_dbf570a3-37ff-11f0-8249-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_dbf570a3-37ff-11f0-8249-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_dbfc237d-37ff-11f0-b035-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_dbfc237d-37ff-11f0-b035-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_dc056cac-37ff-11f0-9e64-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_dc056cac-37ff-11f0-9e64-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_dc0bc323-37ff-11f0-94ec-089204ded298_APSIM2024.5.7493.0.Report.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_dc0bc323-37ff-11f0-94ec-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_dc0bc323-37ff-11f0-94ec-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_df692b11-37ff-11f0-8b9b-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_df692b11-37ff-11f0-8b9b-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_df71e417-37ff-11f0-b8e6-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_df71e417-37ff-11f0-b8e6-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_df79629e-37ff-11f0-abed-089204ded298_APSIM2024.5.7493.0.Report.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_df79629e-37ff-11f0-abed-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_df79629e-37ff-11f0-abed-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_df79629e-37ff-11f0-abed-089204ded298_APSIM2024.5.7493.0.db-shm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_df79629e-37ff-11f0-abed-089204ded298_APSIM2024.5.7493.0.db-wal" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_apsim.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_apsim.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../docs/source/api.rst" beforeDir="false" afterPath="$PROJECT_DIR$/../docs/source/api.rst" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -21,6 +183,17 @@
       </list>
     </option>
   </component>
+  <component name="FlaskConsoleOptions" custom-start-script="import sys&#10;sys.path.extend([WORKING_DIR_AND_PYTHON_PATHS])&#10;from flask.cli import ScriptInfo&#10;locals().update(ScriptInfo(create_app=None).load_app().make_shell_context())&#10;print(&quot;Python %s on %s\nApp: %s [%s]\nInstance: %s&quot; % (sys.version, sys.platform, app.import_name, app.env, app.instance_path))">
+    <envs>
+      <env key="FLASK_APP" value="app" />
+    </envs>
+    <option name="myCustomStartScript" value="import sys&#10;sys.path.extend([WORKING_DIR_AND_PYTHON_PATHS])&#10;from flask.cli import ScriptInfo&#10;locals().update(ScriptInfo(create_app=None).load_app().make_shell_context())&#10;print(&quot;Python %s on %s\nApp: %s [%s]\nInstance: %s&quot; % (sys.version, sys.platform, app.import_name, app.env, app.instance_path))" />
+    <option name="myEnvs">
+      <map>
+        <entry key="FLASK_APP" value="app" />
+      </map>
+    </option>
+  </component>
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
@@ -28,6 +201,18 @@
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/../README.rst" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" root2="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/core/base_data.py" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/core/batch_runner.py" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/core/config.py" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/core/core.py" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/core/model_loader.py" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/core/runner.py" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/manager/weathermanager.py" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/raw_docs/main.py" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/tests/unit_tests_core.py" root0="SKIP_INSPECTION" />
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
@@ -43,6 +228,8 @@
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
     "ASKED_ADD_EXTERNAL_FILES": "true",
+    "Python tests.Doctests in CoreModel.executor": "Profiler",
+    "Python tests.Python tests for test_core.TestCoreModel.executor": "Run",
     "Python.__init__.executor": "Run",
     "Python._modelhelpers.executor": "Run",
     "Python.api.executor": "Run",
@@ -54,6 +241,7 @@
     "Python.client.executor": "Run",
     "Python.config.executor": "Run",
     "Python.core.executor": "Run",
+    "Python.data_cleaner.executor": "Run",
     "Python.database_utils.executor": "Run",
     "Python.diagnostics.executor": "Run",
     "Python.do not switch off.executor": "Run",
@@ -77,6 +265,8 @@
     "Python.settings.executor": "Run",
     "Python.sobol.executor": "Run",
     "Python.soilmanager.executor": "Run",
+    "Python.test_apsim.executor": "Run",
+    "Python.test_core.executor": "Run",
     "Python.tools.executor": "Run",
     "Python.unit_tests_core.executor": "Run",
     "Python.utils.executor": "Run",
@@ -86,14 +276,14 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "Merging main",
+    "git-widget-placeholder": "main",
     "last_opened_file_path": "D:/package/src/apsimNGpy/core",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "inlay.hints",
+    "settings.editor.selected.configurable": "copyright",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
@@ -106,27 +296,7 @@
       <recent name="D:\package\apsimNGpy\apsimNGpy\core" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.core">
-    <configuration name="_modelhelpers" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="apsimNGpy" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/core" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/core/_modelhelpers.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="true" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
+  <component name="RunManager" selected="Python.test_apsim">
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
       <module name="apsimNGpy" />
       <option name="ENV_FILES" value="" />
@@ -190,18 +360,18 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="main" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="test_apsim" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="apsimNGpy" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/raw_docs" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/raw_docs/main.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/tests/test_apsim.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="true" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -210,33 +380,49 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="new_opt" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="unit_tests_core" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="apsimNGpy" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/optimizer" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/optimizer/new_opt.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/tests/unit_tests_core.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="true" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
       <option name="REDIRECT_INPUT" value="false" />
       <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Python tests for test_core.TestCoreModel" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+      <module name="apsimNGpy" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/core" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;test_core.TestCoreModel&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.core" />
-        <item itemvalue="Python.main" />
-        <item itemvalue="Python.new_opt" />
-        <item itemvalue="Python._modelhelpers" />
+        <item itemvalue="Python.test_apsim" />
         <item itemvalue="Python.cleaner" />
+        <item itemvalue="Python.core" />
+        <item itemvalue="Python.unit_tests_core" />
+        <item itemvalue="Python tests.Python tests for test_core.TestCoreModel" />
       </list>
     </recent_temporary>
   </component>
@@ -332,326 +518,7 @@
       <workItem from="1746329299406" duration="12459000" />
       <workItem from="1746475969057" duration="6783000" />
       <workItem from="1747696101620" duration="30642000" />
-    </task>
-    <task id="LOCAL-00408" summary="ad_db_table">
-      <option name="closed" value="true" />
-      <created>1745519847332</created>
-      <option name="number" value="00408" />
-      <option name="presentableId" value="LOCAL-00408" />
-      <option name="project" value="LOCAL" />
-      <updated>1745519847332</updated>
-    </task>
-    <task id="LOCAL-00409" summary="ad_db_table">
-      <option name="closed" value="true" />
-      <created>1745604408248</created>
-      <option name="number" value="00409" />
-      <option name="presentableId" value="LOCAL-00409" />
-      <option name="project" value="LOCAL" />
-      <updated>1745604408249</updated>
-    </task>
-    <task id="LOCAL-00410" summary="ad_db_table">
-      <option name="closed" value="true" />
-      <created>1745604926601</created>
-      <option name="number" value="00410" />
-      <option name="presentableId" value="LOCAL-00410" />
-      <option name="project" value="LOCAL" />
-      <updated>1745604926601</updated>
-    </task>
-    <task id="LOCAL-00411" summary="ad_db_table">
-      <option name="closed" value="true" />
-      <created>1745629124353</created>
-      <option name="number" value="00411" />
-      <option name="presentableId" value="LOCAL-00411" />
-      <option name="project" value="LOCAL" />
-      <updated>1745629124355</updated>
-    </task>
-    <task id="LOCAL-00412" summary="ad_db_table">
-      <option name="closed" value="true" />
-      <created>1745694813590</created>
-      <option name="number" value="00412" />
-      <option name="presentableId" value="LOCAL-00412" />
-      <option name="project" value="LOCAL" />
-      <updated>1745694813590</updated>
-    </task>
-    <task id="LOCAL-00413" summary="ad_db_table">
-      <option name="closed" value="true" />
-      <created>1745702639616</created>
-      <option name="number" value="00413" />
-      <option name="presentableId" value="LOCAL-00413" />
-      <option name="project" value="LOCAL" />
-      <updated>1745702639616</updated>
-    </task>
-    <task id="LOCAL-00414" summary="ad_db_table">
-      <option name="closed" value="true" />
-      <created>1745799175294</created>
-      <option name="number" value="00414" />
-      <option name="presentableId" value="LOCAL-00414" />
-      <option name="project" value="LOCAL" />
-      <updated>1745799175295</updated>
-    </task>
-    <task id="LOCAL-00415" summary="ad_db_table">
-      <option name="closed" value="true" />
-      <created>1745802762012</created>
-      <option name="number" value="00415" />
-      <option name="presentableId" value="LOCAL-00415" />
-      <option name="project" value="LOCAL" />
-      <updated>1745802762012</updated>
-    </task>
-    <task id="LOCAL-00416" summary="ad_db_table">
-      <option name="closed" value="true" />
-      <created>1745804050088</created>
-      <option name="number" value="00416" />
-      <option name="presentableId" value="LOCAL-00416" />
-      <option name="project" value="LOCAL" />
-      <updated>1745804050088</updated>
-    </task>
-    <task id="LOCAL-00417" summary="ad_db_table">
-      <option name="closed" value="true" />
-      <created>1745852575803</created>
-      <option name="number" value="00417" />
-      <option name="presentableId" value="LOCAL-00417" />
-      <option name="project" value="LOCAL" />
-      <updated>1745852575803</updated>
-    </task>
-    <task id="LOCAL-00418" summary="ad_db_table">
-      <option name="closed" value="true" />
-      <created>1745852627663</created>
-      <option name="number" value="00418" />
-      <option name="presentableId" value="LOCAL-00418" />
-      <option name="project" value="LOCAL" />
-      <updated>1745852627663</updated>
-    </task>
-    <task id="LOCAL-00419" summary="ad_db_table">
-      <option name="closed" value="true" />
-      <created>1745870195776</created>
-      <option name="number" value="00419" />
-      <option name="presentableId" value="LOCAL-00419" />
-      <option name="project" value="LOCAL" />
-      <updated>1745870195776</updated>
-    </task>
-    <task id="LOCAL-00420" summary="ad_db_table">
-      <option name="closed" value="true" />
-      <created>1745873364431</created>
-      <option name="number" value="00420" />
-      <option name="presentableId" value="LOCAL-00420" />
-      <option name="project" value="LOCAL" />
-      <updated>1745873364432</updated>
-    </task>
-    <task id="LOCAL-00421" summary="ad_db_table">
-      <option name="closed" value="true" />
-      <created>1745873440775</created>
-      <option name="number" value="00421" />
-      <option name="presentableId" value="LOCAL-00421" />
-      <option name="project" value="LOCAL" />
-      <updated>1745873440775</updated>
-    </task>
-    <task id="LOCAL-00422" summary="ad_db_table">
-      <option name="closed" value="true" />
-      <created>1745882981613</created>
-      <option name="number" value="00422" />
-      <option name="presentableId" value="LOCAL-00422" />
-      <option name="project" value="LOCAL" />
-      <updated>1745882981614</updated>
-    </task>
-    <task id="LOCAL-00423" summary="ad_db_table">
-      <option name="closed" value="true" />
-      <created>1745891548624</created>
-      <option name="number" value="00423" />
-      <option name="presentableId" value="LOCAL-00423" />
-      <option name="project" value="LOCAL" />
-      <updated>1745891548624</updated>
-    </task>
-    <task id="LOCAL-00424" summary="ad_db_table">
-      <option name="closed" value="true" />
-      <created>1745928632319</created>
-      <option name="number" value="00424" />
-      <option name="presentableId" value="LOCAL-00424" />
-      <option name="project" value="LOCAL" />
-      <updated>1745928632319</updated>
-    </task>
-    <task id="LOCAL-00425" summary="ad_db_table">
-      <option name="closed" value="true" />
-      <created>1746030771503</created>
-      <option name="number" value="00425" />
-      <option name="presentableId" value="LOCAL-00425" />
-      <option name="project" value="LOCAL" />
-      <updated>1746030771503</updated>
-    </task>
-    <task id="LOCAL-00426" summary="ad_db_table">
-      <option name="closed" value="true" />
-      <created>1746047822555</created>
-      <option name="number" value="00426" />
-      <option name="presentableId" value="LOCAL-00426" />
-      <option name="project" value="LOCAL" />
-      <updated>1746047822555</updated>
-    </task>
-    <task id="LOCAL-00427" summary="ModelTools">
-      <option name="closed" value="true" />
-      <created>1746114657455</created>
-      <option name="number" value="00427" />
-      <option name="presentableId" value="LOCAL-00427" />
-      <option name="project" value="LOCAL" />
-      <updated>1746114657455</updated>
-    </task>
-    <task id="LOCAL-00428" summary="ModelTools">
-      <option name="closed" value="true" />
-      <created>1746116516168</created>
-      <option name="number" value="00428" />
-      <option name="presentableId" value="LOCAL-00428" />
-      <option name="project" value="LOCAL" />
-      <updated>1746116516168</updated>
-    </task>
-    <task id="LOCAL-00429" summary="ModelTools">
-      <option name="closed" value="true" />
-      <created>1746131312611</created>
-      <option name="number" value="00429" />
-      <option name="presentableId" value="LOCAL-00429" />
-      <option name="project" value="LOCAL" />
-      <updated>1746131312612</updated>
-    </task>
-    <task id="LOCAL-00430" summary="ModelTools">
-      <option name="closed" value="true" />
-      <created>1746146695695</created>
-      <option name="number" value="00430" />
-      <option name="presentableId" value="LOCAL-00430" />
-      <option name="project" value="LOCAL" />
-      <updated>1746146695695</updated>
-    </task>
-    <task id="LOCAL-00431" summary="ModelTools">
-      <option name="closed" value="true" />
-      <created>1746212738719</created>
-      <option name="number" value="00431" />
-      <option name="presentableId" value="LOCAL-00431" />
-      <option name="project" value="LOCAL" />
-      <updated>1746212738720</updated>
-    </task>
-    <task id="LOCAL-00432" summary="ModelTools">
-      <option name="closed" value="true" />
-      <created>1746214588245</created>
-      <option name="number" value="00432" />
-      <option name="presentableId" value="LOCAL-00432" />
-      <option name="project" value="LOCAL" />
-      <updated>1746214588245</updated>
-    </task>
-    <task id="LOCAL-00433" summary="ModelTools">
-      <option name="closed" value="true" />
-      <created>1746483383991</created>
-      <option name="number" value="00433" />
-      <option name="presentableId" value="LOCAL-00433" />
-      <option name="project" value="LOCAL" />
-      <updated>1746483383991</updated>
-    </task>
-    <task id="LOCAL-00434" summary="ModelTools">
-      <option name="closed" value="true" />
-      <created>1746485063410</created>
-      <option name="number" value="00434" />
-      <option name="presentableId" value="LOCAL-00434" />
-      <option name="project" value="LOCAL" />
-      <updated>1746485063410</updated>
-    </task>
-    <task id="LOCAL-00435" summary="ModelTools">
-      <option name="closed" value="true" />
-      <created>1747003450779</created>
-      <option name="number" value="00435" />
-      <option name="presentableId" value="LOCAL-00435" />
-      <option name="project" value="LOCAL" />
-      <updated>1747003450780</updated>
-    </task>
-    <task id="LOCAL-00436" summary="ModelTools">
-      <option name="closed" value="true" />
-      <created>1747620956039</created>
-      <option name="number" value="00436" />
-      <option name="presentableId" value="LOCAL-00436" />
-      <option name="project" value="LOCAL" />
-      <updated>1747620956039</updated>
-    </task>
-    <task id="LOCAL-00437" summary="ModelTools">
-      <option name="closed" value="true" />
-      <created>1747696196294</created>
-      <option name="number" value="00437" />
-      <option name="presentableId" value="LOCAL-00437" />
-      <option name="project" value="LOCAL" />
-      <updated>1747696196294</updated>
-    </task>
-    <task id="LOCAL-00438" summary="ModelTools">
-      <option name="closed" value="true" />
-      <created>1747697145703</created>
-      <option name="number" value="00438" />
-      <option name="presentableId" value="LOCAL-00438" />
-      <option name="project" value="LOCAL" />
-      <updated>1747697145703</updated>
-    </task>
-    <task id="LOCAL-00439" summary="ModelTools">
-      <option name="closed" value="true" />
-      <created>1747698319708</created>
-      <option name="number" value="00439" />
-      <option name="presentableId" value="LOCAL-00439" />
-      <option name="project" value="LOCAL" />
-      <updated>1747698319708</updated>
-    </task>
-    <task id="LOCAL-00440" summary="ModelTools">
-      <option name="closed" value="true" />
-      <created>1747711835809</created>
-      <option name="number" value="00440" />
-      <option name="presentableId" value="LOCAL-00440" />
-      <option name="project" value="LOCAL" />
-      <updated>1747711835809</updated>
-    </task>
-    <task id="LOCAL-00441" summary="ModelTools">
-      <option name="closed" value="true" />
-      <created>1747711997199</created>
-      <option name="number" value="00441" />
-      <option name="presentableId" value="LOCAL-00441" />
-      <option name="project" value="LOCAL" />
-      <updated>1747711997199</updated>
-    </task>
-    <task id="LOCAL-00442" summary="ModelTools">
-      <option name="closed" value="true" />
-      <created>1747712106079</created>
-      <option name="number" value="00442" />
-      <option name="presentableId" value="LOCAL-00442" />
-      <option name="project" value="LOCAL" />
-      <updated>1747712106079</updated>
-    </task>
-    <task id="LOCAL-00443" summary="ModelTools">
-      <option name="closed" value="true" />
-      <created>1747712781385</created>
-      <option name="number" value="00443" />
-      <option name="presentableId" value="LOCAL-00443" />
-      <option name="project" value="LOCAL" />
-      <updated>1747712781385</updated>
-    </task>
-    <task id="LOCAL-00444" summary="ModelTools">
-      <option name="closed" value="true" />
-      <created>1747713127768</created>
-      <option name="number" value="00444" />
-      <option name="presentableId" value="LOCAL-00444" />
-      <option name="project" value="LOCAL" />
-      <updated>1747713127768</updated>
-    </task>
-    <task id="LOCAL-00445" summary="ModelTools">
-      <option name="closed" value="true" />
-      <created>1747713398201</created>
-      <option name="number" value="00445" />
-      <option name="presentableId" value="LOCAL-00445" />
-      <option name="project" value="LOCAL" />
-      <updated>1747713398201</updated>
-    </task>
-    <task id="LOCAL-00446" summary="ModelTools">
-      <option name="closed" value="true" />
-      <created>1747713788464</created>
-      <option name="number" value="00446" />
-      <option name="presentableId" value="LOCAL-00446" />
-      <option name="project" value="LOCAL" />
-      <updated>1747713788464</updated>
-    </task>
-    <task id="LOCAL-00447" summary="ModelTools">
-      <option name="closed" value="true" />
-      <created>1747714014279</created>
-      <option name="number" value="00447" />
-      <option name="presentableId" value="LOCAL-00447" />
-      <option name="project" value="LOCAL" />
-      <updated>1747714014279</updated>
+      <workItem from="1747878448871" duration="27729000" />
     </task>
     <task id="LOCAL-00448" summary="ModelTools">
       <option name="closed" value="true" />
@@ -725,7 +592,327 @@
       <option name="project" value="LOCAL" />
       <updated>1747842537417</updated>
     </task>
-    <option name="localTasksCounter" value="457" />
+    <task id="LOCAL-00457" summary="ModelTools">
+      <option name="closed" value="true" />
+      <created>1747880566406</created>
+      <option name="number" value="00457" />
+      <option name="presentableId" value="LOCAL-00457" />
+      <option name="project" value="LOCAL" />
+      <updated>1747880566406</updated>
+    </task>
+    <task id="LOCAL-00458" summary="ModelTools">
+      <option name="closed" value="true" />
+      <created>1747883536382</created>
+      <option name="number" value="00458" />
+      <option name="presentableId" value="LOCAL-00458" />
+      <option name="project" value="LOCAL" />
+      <updated>1747883536382</updated>
+    </task>
+    <task id="LOCAL-00459" summary="ModelTools">
+      <option name="closed" value="true" />
+      <created>1747883718786</created>
+      <option name="number" value="00459" />
+      <option name="presentableId" value="LOCAL-00459" />
+      <option name="project" value="LOCAL" />
+      <updated>1747883718786</updated>
+    </task>
+    <task id="LOCAL-00460" summary="ModelTools">
+      <option name="closed" value="true" />
+      <created>1747883880042</created>
+      <option name="number" value="00460" />
+      <option name="presentableId" value="LOCAL-00460" />
+      <option name="project" value="LOCAL" />
+      <updated>1747883880042</updated>
+    </task>
+    <task id="LOCAL-00461" summary="ModelTools">
+      <option name="closed" value="true" />
+      <created>1747883943895</created>
+      <option name="number" value="00461" />
+      <option name="presentableId" value="LOCAL-00461" />
+      <option name="project" value="LOCAL" />
+      <updated>1747883943895</updated>
+    </task>
+    <task id="LOCAL-00462" summary="ModelTools">
+      <option name="closed" value="true" />
+      <created>1747933638927</created>
+      <option name="number" value="00462" />
+      <option name="presentableId" value="LOCAL-00462" />
+      <option name="project" value="LOCAL" />
+      <updated>1747933638927</updated>
+    </task>
+    <task id="LOCAL-00463" summary="ModelTools">
+      <option name="closed" value="true" />
+      <created>1747946325148</created>
+      <option name="number" value="00463" />
+      <option name="presentableId" value="LOCAL-00463" />
+      <option name="project" value="LOCAL" />
+      <updated>1747946325148</updated>
+    </task>
+    <task id="LOCAL-00464" summary="ModelTools">
+      <option name="closed" value="true" />
+      <created>1747946410388</created>
+      <option name="number" value="00464" />
+      <option name="presentableId" value="LOCAL-00464" />
+      <option name="project" value="LOCAL" />
+      <updated>1747946410388</updated>
+    </task>
+    <task id="LOCAL-00465" summary="ModelTools">
+      <option name="closed" value="true" />
+      <created>1747948043745</created>
+      <option name="number" value="00465" />
+      <option name="presentableId" value="LOCAL-00465" />
+      <option name="project" value="LOCAL" />
+      <updated>1747948043746</updated>
+    </task>
+    <task id="LOCAL-00466" summary="ModelTools">
+      <option name="closed" value="true" />
+      <created>1747957122985</created>
+      <option name="number" value="00466" />
+      <option name="presentableId" value="LOCAL-00466" />
+      <option name="project" value="LOCAL" />
+      <updated>1747957122985</updated>
+    </task>
+    <task id="LOCAL-00467" summary="ModelTools">
+      <option name="closed" value="true" />
+      <created>1748018278160</created>
+      <option name="number" value="00467" />
+      <option name="presentableId" value="LOCAL-00467" />
+      <option name="project" value="LOCAL" />
+      <updated>1748018278160</updated>
+    </task>
+    <task id="LOCAL-00468" summary="ModelTools">
+      <option name="closed" value="true" />
+      <created>1748018408819</created>
+      <option name="number" value="00468" />
+      <option name="presentableId" value="LOCAL-00468" />
+      <option name="project" value="LOCAL" />
+      <updated>1748018408819</updated>
+    </task>
+    <task id="LOCAL-00469" summary="removed_get_reports">
+      <option name="closed" value="true" />
+      <created>1748018865172</created>
+      <option name="number" value="00469" />
+      <option name="presentableId" value="LOCAL-00469" />
+      <option name="project" value="LOCAL" />
+      <updated>1748018865172</updated>
+    </task>
+    <task id="LOCAL-00470" summary="removed_get_reports">
+      <option name="closed" value="true" />
+      <created>1748019444993</created>
+      <option name="number" value="00470" />
+      <option name="presentableId" value="LOCAL-00470" />
+      <option name="project" value="LOCAL" />
+      <updated>1748019444993</updated>
+    </task>
+    <task id="LOCAL-00471" summary="removed_get_reports">
+      <option name="closed" value="true" />
+      <created>1748023307186</created>
+      <option name="number" value="00471" />
+      <option name="presentableId" value="LOCAL-00471" />
+      <option name="project" value="LOCAL" />
+      <updated>1748023307186</updated>
+    </task>
+    <task id="LOCAL-00472" summary="removed_get_reports">
+      <option name="closed" value="true" />
+      <created>1748024744571</created>
+      <option name="number" value="00472" />
+      <option name="presentableId" value="LOCAL-00472" />
+      <option name="project" value="LOCAL" />
+      <updated>1748024744571</updated>
+    </task>
+    <task id="LOCAL-00473" summary="removed_get_reports">
+      <option name="closed" value="true" />
+      <created>1748024845488</created>
+      <option name="number" value="00473" />
+      <option name="presentableId" value="LOCAL-00473" />
+      <option name="project" value="LOCAL" />
+      <updated>1748024845488</updated>
+    </task>
+    <task id="LOCAL-00474" summary="removed_get_reports">
+      <option name="closed" value="true" />
+      <created>1748025083904</created>
+      <option name="number" value="00474" />
+      <option name="presentableId" value="LOCAL-00474" />
+      <option name="project" value="LOCAL" />
+      <updated>1748025083904</updated>
+    </task>
+    <task id="LOCAL-00475" summary="removed_get_reports">
+      <option name="closed" value="true" />
+      <created>1748025181875</created>
+      <option name="number" value="00475" />
+      <option name="presentableId" value="LOCAL-00475" />
+      <option name="project" value="LOCAL" />
+      <updated>1748025181875</updated>
+    </task>
+    <task id="LOCAL-00476" summary="removed_get_reports">
+      <option name="closed" value="true" />
+      <created>1748025348181</created>
+      <option name="number" value="00476" />
+      <option name="presentableId" value="LOCAL-00476" />
+      <option name="project" value="LOCAL" />
+      <updated>1748025348181</updated>
+    </task>
+    <task id="LOCAL-00477" summary="removed_get_reports">
+      <option name="closed" value="true" />
+      <created>1748025466571</created>
+      <option name="number" value="00477" />
+      <option name="presentableId" value="LOCAL-00477" />
+      <option name="project" value="LOCAL" />
+      <updated>1748025466571</updated>
+    </task>
+    <task id="LOCAL-00478" summary="removed_get_reports">
+      <option name="closed" value="true" />
+      <created>1748025773428</created>
+      <option name="number" value="00478" />
+      <option name="presentableId" value="LOCAL-00478" />
+      <option name="project" value="LOCAL" />
+      <updated>1748025773428</updated>
+    </task>
+    <task id="LOCAL-00479" summary="removed_get_reports">
+      <option name="closed" value="true" />
+      <created>1748025878716</created>
+      <option name="number" value="00479" />
+      <option name="presentableId" value="LOCAL-00479" />
+      <option name="project" value="LOCAL" />
+      <updated>1748025878716</updated>
+    </task>
+    <task id="LOCAL-00480" summary="removed_get_reports">
+      <option name="closed" value="true" />
+      <created>1748025925328</created>
+      <option name="number" value="00480" />
+      <option name="presentableId" value="LOCAL-00480" />
+      <option name="project" value="LOCAL" />
+      <updated>1748025925328</updated>
+    </task>
+    <task id="LOCAL-00481" summary="removed_get_reports">
+      <option name="closed" value="true" />
+      <created>1748025956652</created>
+      <option name="number" value="00481" />
+      <option name="presentableId" value="LOCAL-00481" />
+      <option name="project" value="LOCAL" />
+      <updated>1748025956652</updated>
+    </task>
+    <task id="LOCAL-00482" summary="removed_get_reports">
+      <option name="closed" value="true" />
+      <created>1748025973773</created>
+      <option name="number" value="00482" />
+      <option name="presentableId" value="LOCAL-00482" />
+      <option name="project" value="LOCAL" />
+      <updated>1748025973773</updated>
+    </task>
+    <task id="LOCAL-00483" summary="removed_get_reports">
+      <option name="closed" value="true" />
+      <created>1748026006140</created>
+      <option name="number" value="00483" />
+      <option name="presentableId" value="LOCAL-00483" />
+      <option name="project" value="LOCAL" />
+      <updated>1748026006140</updated>
+    </task>
+    <task id="LOCAL-00484" summary="removed_get_reports">
+      <option name="closed" value="true" />
+      <created>1748026138314</created>
+      <option name="number" value="00484" />
+      <option name="presentableId" value="LOCAL-00484" />
+      <option name="project" value="LOCAL" />
+      <updated>1748026138314</updated>
+    </task>
+    <task id="LOCAL-00485" summary="removed_get_reports">
+      <option name="closed" value="true" />
+      <created>1748026144412</created>
+      <option name="number" value="00485" />
+      <option name="presentableId" value="LOCAL-00485" />
+      <option name="project" value="LOCAL" />
+      <updated>1748026144412</updated>
+    </task>
+    <task id="LOCAL-00486" summary="removed_get_reports">
+      <option name="closed" value="true" />
+      <created>1748026245862</created>
+      <option name="number" value="00486" />
+      <option name="presentableId" value="LOCAL-00486" />
+      <option name="project" value="LOCAL" />
+      <updated>1748026245862</updated>
+    </task>
+    <task id="LOCAL-00487" summary="removed_get_reports">
+      <option name="closed" value="true" />
+      <created>1748026281071</created>
+      <option name="number" value="00487" />
+      <option name="presentableId" value="LOCAL-00487" />
+      <option name="project" value="LOCAL" />
+      <updated>1748026281071</updated>
+    </task>
+    <task id="LOCAL-00488" summary="removed_get_reports">
+      <option name="closed" value="true" />
+      <created>1748026461796</created>
+      <option name="number" value="00488" />
+      <option name="presentableId" value="LOCAL-00488" />
+      <option name="project" value="LOCAL" />
+      <updated>1748026461797</updated>
+    </task>
+    <task id="LOCAL-00489" summary="removed_get_reports">
+      <option name="closed" value="true" />
+      <created>1748026619738</created>
+      <option name="number" value="00489" />
+      <option name="presentableId" value="LOCAL-00489" />
+      <option name="project" value="LOCAL" />
+      <updated>1748026619738</updated>
+    </task>
+    <task id="LOCAL-00490" summary="removed_get_reports">
+      <option name="closed" value="true" />
+      <created>1748026694756</created>
+      <option name="number" value="00490" />
+      <option name="presentableId" value="LOCAL-00490" />
+      <option name="project" value="LOCAL" />
+      <updated>1748026694756</updated>
+    </task>
+    <task id="LOCAL-00491" summary="removed_get_reports">
+      <option name="closed" value="true" />
+      <created>1748026802834</created>
+      <option name="number" value="00491" />
+      <option name="presentableId" value="LOCAL-00491" />
+      <option name="project" value="LOCAL" />
+      <updated>1748026802834</updated>
+    </task>
+    <task id="LOCAL-00492" summary="removed_get_reports">
+      <option name="closed" value="true" />
+      <created>1748026854482</created>
+      <option name="number" value="00492" />
+      <option name="presentableId" value="LOCAL-00492" />
+      <option name="project" value="LOCAL" />
+      <updated>1748026854482</updated>
+    </task>
+    <task id="LOCAL-00493" summary="v0.38">
+      <option name="closed" value="true" />
+      <created>1748027358901</created>
+      <option name="number" value="00493" />
+      <option name="presentableId" value="LOCAL-00493" />
+      <option name="project" value="LOCAL" />
+      <updated>1748027358901</updated>
+    </task>
+    <task id="LOCAL-00494" summary="v0.38">
+      <option name="closed" value="true" />
+      <created>1748027502861</created>
+      <option name="number" value="00494" />
+      <option name="presentableId" value="LOCAL-00494" />
+      <option name="project" value="LOCAL" />
+      <updated>1748027502861</updated>
+    </task>
+    <task id="LOCAL-00495" summary="v0.38">
+      <option name="closed" value="true" />
+      <created>1748027532562</created>
+      <option name="number" value="00495" />
+      <option name="presentableId" value="LOCAL-00495" />
+      <option name="project" value="LOCAL" />
+      <updated>1748027532562</updated>
+    </task>
+    <task id="LOCAL-00496" summary="v0.38">
+      <option name="closed" value="true" />
+      <created>1748027671098</created>
+      <option name="number" value="00496" />
+      <option name="presentableId" value="LOCAL-00496" />
+      <option name="project" value="LOCAL" />
+      <updated>1748027671098</updated>
+    </task>
+    <option name="localTasksCounter" value="497" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -743,8 +930,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="data" />
-    <MESSAGE value="core_changes" />
     <MESSAGE value="un" />
     <MESSAGE value="bacjed data changed" />
     <MESSAGE value="new approach" />
@@ -768,7 +953,9 @@
     <MESSAGE value="one" />
     <MESSAGE value="ad_db_table" />
     <MESSAGE value="ModelTools" />
-    <option name="LAST_COMMIT_MESSAGE" value="ModelTools" />
+    <MESSAGE value="removed_get_reports" />
+    <MESSAGE value="v0.38" />
+    <option name="LAST_COMMIT_MESSAGE" value="v0.38" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -791,7 +978,8 @@
     </breakpoint-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/apsimNGpy$Docutils_Task_in_README_rst.coverage" NAME="Docutils Task in README.rst Coverage Results" MODIFIED="1698442605826" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/.." />
     <SUITE FILE_PATH="coverage/apsimNGpy$Doctests_in_spatial.coverage" NAME="Doctests in spatial Coverage Results" MODIFIED="1707163424405" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/utililies" />
+    <SUITE FILE_PATH="coverage/apsimNGpy$.coverage" NAME=" Coverage Results" MODIFIED="1748021840696" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/core" />
+    <SUITE FILE_PATH="coverage/apsimNGpy$Docutils_Task_in_README_rst.coverage" NAME="Docutils Task in README.rst Coverage Results" MODIFIED="1698442605826" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/.." />
   </component>
 </project>

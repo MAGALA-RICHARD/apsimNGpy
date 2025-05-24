@@ -315,31 +315,6 @@ Whole Model inspection
 Use `inspect_file`` method to inspects all simulations in the file. This method displays a tree showing how each model is connected with each other. see further information in the documentation here:
 https://magala-richard.github.io/apsimNGpy-documentations/model%20inspection.html
 
- Simulations: .Simulations
-    └── Simulation: .Simulations.Simulation
-        ├── Clock: .Simulations.Simulation.Clock
-        ├── Field: .Simulations.Simulation.Field
-        │   ├── Fertilise at sowing: .Simulations.Simulation.Field.Fertilise at sowing
-        │   ├── Fertiliser: .Simulations.Simulation.Field.Fertiliser
-        │   ├── Harvest: .Simulations.Simulation.Field.Harvest
-        │   ├── Maize: .Simulations.Simulation.Field.Maize
-        │   ├── Report: .Simulations.Simulation.Field.Report
-        │   ├── Soil: .Simulations.Simulation.Field.Soil
-        │   │   ├── Chemical: .Simulations.Simulation.Field.Soil.Chemical
-        │   │   ├── NH4: .Simulations.Simulation.Field.Soil.NH4
-        │   │   ├── NO3: .Simulations.Simulation.Field.Soil.NO3
-        │   │   ├── Organic: .Simulations.Simulation.Field.Soil.Organic
-        │   │   ├── Physical: .Simulations.Simulation.Field.Soil.Physical
-        │   │   │   └── MaizeSoil: .Simulations.Simulation.Field.Soil.Physical.MaizeSoil
-        │   │   ├── Temperature: .Simulations.Simulation.Field.Soil.Temperature
-        │   │   ├── Urea: .Simulations.Simulation.Field.Soil.Urea
-        │   │   └── Water: .Simulations.Simulation.Field.Soil.Water
-        │   ├── Sow using a variable rule: .Simulations.Simulation.Field.Sow using a variable rule
-        │   └── reporterte: .Simulations.Simulation.Field.reporterte
-        ├── Graph: .Simulations.Simulation.Graph
-        │   └── Series: .Simulations.Simulation.Graph.Series
-        ├── Summary: .Simulations.Simulation.Summary
-        └── Weather: .Simulations.Simulation.Weather
 .. code-block:: python
 
     model.inspect_file()

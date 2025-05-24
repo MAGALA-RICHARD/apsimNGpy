@@ -2880,10 +2880,10 @@ if __name__ == '__main__':
     os.chdir(Path.home())
     from apsimNGpy.core.base_data import load_default_simulations
 
-
+    home = Path.home()
 
     # model = load_default_simulations('maize')
-    model = CoreModel(model = 'Maize', out = 'test_.apsimx')
+    model = CoreModel(model = 'Maize', out = home/'test_.apsimx')
 
 
     # for rn in ['Maize, Soybean, Wheat', 'Maize', 'Soybean, Wheat']:

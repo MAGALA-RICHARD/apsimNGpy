@@ -333,11 +333,12 @@ You can preview the current simulation in the APSIM graphical user interface (GU
     # Preview the current simulation in the APSIM GUI
     apsim.preview_simulation()
 
-Note that the file opened in the GUI is a temporary clone, so any changes made and saved within the GUI will not be reflected when you rerun the code.
-If you intend to preserve modifications made in the ``GUI``, you may need to supply the ``reference path`` of the edited file using ``ApsimModel`` class .
 
 .. note::
-   When you open a simulation file in GUI, take note of the version it will be difficult to re-open
+   Note that the file opened in the GUI is a temporary clone, so any changes made and saved within the GUI will not be reflected when you rerun the code.
+   If you intend to preserve modifications made in the ``GUI``, you may need to supply the ``reference path`` of the edited file using ``ApsimModel`` class .
+
+   In addition, take note of the version it will be difficult to re-open
    it in the lower versions after opening it in the higher versions of apsim.
 
 Visualise the results. please note that python provide very many plotting libraries below is just a basic description of your results.we also provide more data visualisation methods in the diagnostic module

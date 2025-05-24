@@ -437,14 +437,6 @@ Join the Discussion
 
 Feel free to join in discussions on issues or pull requests. Your feedback and insights are valuable to the community!
 
-Version 0.0.27.8 new features
-********************************************************************************
-Dynamic handling of simulations and their properties
-
-replacements made easier
-
-object oriented factorial experiment set ups and simulations
-
 Acknowledgements
 *********************************************************************************
 This project, *ApsimNGpy*, greatly appreciates the support and contributions from various organizations and initiatives that have made this research possible. We extend our gratitude to Iowa State University's C-CHANGE Presidential Interdisciplinary Research Initiative, which has played a pivotal role in the development of this project. Additionally, our work has been significantly supported by a generous grant from the USDA-NIFA Sustainable Agricultural Systems program (Grant ID: 2020-68012-31824), underscoring the importance of sustainable agricultural practices and innovations.

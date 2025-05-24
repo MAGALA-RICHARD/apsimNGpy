@@ -276,9 +276,41 @@ Another way to access the results is to use ``get_simulated_output`` on the inst
 Please note that accessing results through any of the above method before calling ``run()`` may not be allowed, and will raise an error.
 
 
-Inspecting the instantiated tree model
-=============================================
-This is implimented via inspect file method
+Inspecting Instantiated Model Object
+===================================
+Most of the time, when modifying model parameters and values, you need the full path to the specified APSIM model type.
+This is where the `inspect_model` method becomes useful—it allows you to inspect the model without opening the file in the APSIM GUI.
+
+Let's take a look at how it works.
+
+.. code-block:: python
+
+    from apsimNGpy.core import base_data
+    from apsimNGpy.core.core import Models
+
+    model = base_data.load_default_simulations(crop='maize')
+
+    # Retrieve paths to Manager models
+    model.inspect_model(model_type=Models.Manager, fullpath=True)
+    ['.Simulations.Simulation.Field.Sow using a variable rule',
+     '.Simulations.Simulation.Field.Fertilise at sowing',
+     '.Simulations.Simulation.Field.Harvest']
+
+    # Retrieve paths to Clock models
+    model.inspect_model(model_type=Models.Clock)
+    ['.Simulations.Simulation.Clock']
+
+    # Retrieve paths to Crop models
+    model.inspect_model(model_type=Models.Core.IPlant)
+    ['.Simulations.Simulation.Field.Maize']
+
+    # Retrieve crop model names instead of full paths
+    model.inspect_model(model_type=Models.Core.IPlant, fullpath=False)
+    ['Maize']
+
+    # Retrieve paths to Fertiliser models
+    model.inspect_model(Models.Fertiliser, fullpath=True)
+    ['.Simulations.Simulation.Field.Fertiliser']
 
 
 You can preview the current simulation in the APSIM graphical user interface (GUI) using the `preview_simulation` method.

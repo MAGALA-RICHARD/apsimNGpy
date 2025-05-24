@@ -253,8 +253,8 @@ Running loaded models implies excuting the model to generate simulated outputs. 
     # Run the simulation
     apsim.run(report_name='Report')
 
-The ``ApsimModel.run`` method executes the simulation. The `report_name` parameter specifies which data table from the simulation will be used for results. Please note thar report_name can be astring, implying a single database table
-or a list, implying two database tables. if the later is true, then the results will be concatenated along the rows using `pands pd.concat` method
+The ``ApsimModel.run()`` method executes the simulation. The ``report_name`` parameter specifies which data table from the simulation will be used for results. Please note that report_name can be a string (``str``), implying a single database table
+or a list, implying that one or more than one database tables. if the later is true, then the results will be concatenated along the rows using ``pandas.concat`` method
 
 .. note:
    report_name accepts a list of simulation data tables and hence can return a concatenated pandas data frame for all the data tables

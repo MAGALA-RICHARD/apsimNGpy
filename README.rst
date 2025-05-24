@@ -265,6 +265,19 @@ By default, ``apsimNGpy`` looks for these report database tables automatically, 
     df.to_csv('apsim_df_res.csv')  # Save the results to a CSV file
     print(apsim.results)  # Print all DataFrames in the storage domain
 
+SimulationName  SimulationID  CheckpointID  ... Maize.Total.Wt      Yield   Zone
+0     Simulation             1             1  ...       1964.016   9367.414  Field
+1     Simulation             1             1  ...       1171.894   5645.455  Field
+2     Simulation             1             1  ...        265.911    303.013  Field
+3     Simulation             1             1  ...        944.673   3528.287  Field
+4     Simulation             1             1  ...       1996.779   9204.485  Field
+5     Simulation             1             1  ...       2447.581  10848.238  Field
+6     Simulation             1             1  ...       1325.265   2352.152  Field
+7     Simulation             1             1  ...       1097.480   2239.558  Field
+8     Simulation             1             1  ...       2264.083  10378.414  Field
+9     Simulation             1             1  ...       2006.421   8577.954  Field
+[10 rows x 16 columns]
+
 Accessing simulated results
 ===========================
 After the simulation runs, results can be via ``apsim.results`` property attribute as pandas DataFrames. Please see note above. These results can be saved to a CSV file or printed to the console.
@@ -347,7 +360,6 @@ Visualise the results. please note that python provide very many plotting librar
 Finally, the `plot_data` function is used to visualize the simulation results. Replace 'df['Clock.Today']' and `df.Yield` with the appropriate report name and column from your simulation results.
 
 A graph similar to the example below should appear
-
 
 Congratulations you have successfully used apsimNGpy package
 *********************************************************************************

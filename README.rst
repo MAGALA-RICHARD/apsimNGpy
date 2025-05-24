@@ -319,8 +319,6 @@ https://magala-richard.github.io/apsimNGpy-documentations/model%20inspection.htm
 
     model.inspect_file()
 
-
-
 .. image:: ./apsimNGpy/images/model_tree.png
     :alt: Tree structure of the APSIM model
     :align: center

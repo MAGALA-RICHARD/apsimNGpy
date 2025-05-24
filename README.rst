@@ -289,8 +289,8 @@ Please note that accessing results through any of the above method before callin
 
 Inspecting Instantiated Model Object
 ===================================
-Most of the time, when modifying model parameters and values, you need the full path to the specified APSIM model type.
-This is where the :func:`inspect_model` method becomes useful—it allows you to inspect the model without opening the file in the APSIM GUI.
+Most of the time, when modifying model parameters and values, you need the  name or a full path to the specified ``APSIM`` model type.
+This is where the ``inspect_model`` method becomes useful—it allows you to inspect the model without opening the file in the APSIM GUI.
 
 Let's take a look at how it works.
 

@@ -27,7 +27,6 @@ apsimNGpy
    :alt: GitHub Forks
 
 
-
 apsimNGpy: The Next Generation Agroecosytem Simulation Library
 ====================================================================
 Our cutting-edge open-source framework, **apsimNGpy**, empowers advanced agroecosystem modeling through the utilization
@@ -95,6 +94,7 @@ if you run the following code and returns None you need to do something as expla
 
      apsim_bin_path -s
 
+
 - 2. Use apsimNGpy config module
 
 .. code-block:: python
@@ -137,24 +137,8 @@ In your home folder you could look for folder named apsimNGpy_meta_info './APSIM
      2. Open the file `apsimNGpy_config.ini` within this folder.
      3. Modify the `apsim_location` entry to reflect your desired APSIM binary path.
 
-2. change based os.environ module
-************************************
 
-Alternatively, you can use the code at the top of your script as follows
-
-.. code-block:: python
-
-    # Search for the APSIM binary installation path and add it to os.environ as follows:
-    import os
-    os.environ['APSIM'] = r'path/to/your/apsim/binary/folder/bin'
-
-- Note:
-
-This approach may not work consistently in all scenarios, but you can try it.
-The above script line should always be placed at the beginning of your simulation script.
-However, why follow this approach when you can achieve the same result more efficiently? See the approach below:
-
-3. Use the apsimNGpy config module:
+2. Use the apsimNGpy config module:
 *****************************************************************
 
 .. code-block:: python
@@ -165,7 +149,7 @@ However, why follow this approach when you can achieve the same result more effi
     set_apsim_bin_path(path=r'path/to/your/apsim/binary/folder/bin')
 
 
-4. Use command line interface
+3. Use command line interface
 *********************************************************************
 
 After installing apsimNGpy, navigate to your terminal and run the following

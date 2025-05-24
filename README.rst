@@ -258,6 +258,15 @@ or a ``list``, implying that one or more than one database tables. If the later 
 
 By default, ``apsimNGpy`` looks for these report database tables automatically, and returns a concatenated pandas data frame. This may not be ideal if they are many report tables, hence the need to cleary specify the preffered report table names
 
+
+Accessing simulated results
+===========================
+After the simulation runs, results can be via ``apsim.results`` property attribute as pandas DataFrames. Please see note above. These results can be saved to a CSV file or printed to the console.
+
+Another way to access the results is to use ``get_simulated_output`` on the instantiated class object. This method accepts only one argument ``report_names`` and under the same principle explained above.
+
+Please note that accessing results through any of the above method before calling ``run()`` may not be allowed, and will raise an ``error``.
+
 .. code-block:: python
 
     # Retrieve and save the results
@@ -277,15 +286,6 @@ By default, ``apsimNGpy`` looks for these report database tables automatically, 
     8     Simulation             1             1  ...       2264.083  10378.414  Field
     9     Simulation             1             1  ...       2006.421   8577.954  Field
     [10 rows x 16 columns]
-
-Accessing simulated results
-===========================
-After the simulation runs, results can be via ``apsim.results`` property attribute as pandas DataFrames. Please see note above. These results can be saved to a CSV file or printed to the console.
-
-Another way to access the results is to use ``get_simulated_output`` on the instantiated class object. This method accepts only one argument ``report_names`` and under the same principle explained above.
-
-Please note that accessing results through any of the above method before calling ``run()`` may not be allowed, and will raise an ``error``.
-
 
 Inspecting Instantiated Model Object
 ===================================

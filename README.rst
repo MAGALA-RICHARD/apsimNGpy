@@ -253,7 +253,7 @@ Running loaded models implies excuting the model to generate simulated outputs. 
     # Run the simulation
     apsim.run(report_name='Report')
 
-The :code:``ApsimModel.run`` method executes the simulation. The `report_name` parameter specifies which data table from the simulation will be used for results. Please note thar report_name can be astring, implying a single database table
+The ``ApsimModel.run`` method executes the simulation. The `report_name` parameter specifies which data table from the simulation will be used for results. Please note thar report_name can be astring, implying a single database table
 or a list, implying two database tables. if the later is true, then the results will be concatenated along the rows using `pands pd.concat` method
 
 .. note:

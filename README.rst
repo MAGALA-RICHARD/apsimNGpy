@@ -222,7 +222,7 @@ To use :code:'apsimNGpy:, you dont need to have a simulation file on your comput
 The `load_default_simulations` function loads a default APSIM simulation for the specified crop. In this example, the crop is set to soybean, but you can specify other crops as needed.
 The importance of this method is that it is cached, so it faster while editing an exisiting simulation during optimization. Caching here has no issues because the default will be the same everytime we load it.
 
-If you prefer not to initialize the simulation object immediately, you can load only the simulation path by setting `simulation_object=False`.
+If you prefer not to initialize the simulation object immediately, you can load only the simulation path by setting  :literal:`simulation_object=False`.
 
 .. code:: python
 

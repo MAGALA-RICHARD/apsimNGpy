@@ -245,7 +245,7 @@ Now it is possible to initialize the APSIM model using the previously loaded sim
 
 # Running loaded models
 ===============================
-Running loaded models implies excuting the model to generate simulated outputs. This is implimented via `run() method` as follows
+Running loaded models implies excuting the model to generate simulated outputs. This is implimented via :code:`run()` method` as follows
 
 
 .. code-block:: python

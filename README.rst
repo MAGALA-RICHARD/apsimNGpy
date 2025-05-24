@@ -32,8 +32,13 @@ apsimNGpy: The Next Generation Agroecosytem Simulation Library
 ====================================================================
 
 Our cutting-edge open-source framework, apsimNGpy, empowers advanced agroecosystem modeling through the utilization
-of object-oriented principles directly within Python_ environment. It features fast batch file simulation, model prediction, evaluation,
-apsimx file editing, seamless weather data retrieval, optimization, and efficient soil profile development
+of object-oriented principles directly within Python_ environment`. It features fast batch file simulation, model prediction, evaluation,
+apsimx file editing, seamless weather data retrieval, optimization, and efficient soil profile development.
+
+environment`__.
+.. _Python: https://www.python.org/
+
+__ Python_
 
 Requirements
 ***********************************************************************************

@@ -208,8 +208,8 @@ This example demonstrates how to use `apsimNGpy` to load a default simulation, r
     import os
     from apsimNGpy.validation.visual import plot_data
 
-ApsimModel class inherits all methods and properties from ``CoreModel`` which can be imported from ``ApsimNGpy.core.core``
-To use apsimNGpy, you dont need to have a simulation file on your computer, we can directly access the default simulations and edit them along. there are two way to access the default simulations.
+ApsimModel class inherits all methods and properties from :code:`CoreModel` which can be imported from :code:`ApsimNGpy.core.core`
+To use :code:'apsimNGpy:, you dont need to have a simulation file on your computer, we can directly access the default simulations and edit them along. There are two way to access the default simulations.
 
 
 1. use `load_default_simulations` method
@@ -253,7 +253,7 @@ Running loaded models implies excuting the model to generate simulated outputs. 
     # Run the simulation
     apsim.run(report_name='Report')
 
-The `run` method executes the simulation. The `report_name` parameter specifies which data table from the simulation will be used for results. Please note thar report_name can be astring, implying a single database table
+The `ApsimModel.run` method executes the simulation. The `report_name` parameter specifies which data table from the simulation will be used for results. Please note thar report_name can be astring, implying a single database table
 or a list, implying two database tables. if the later is true, then the results will be concatenated along the rows using `pands pd.concat` method
 
 .. note:

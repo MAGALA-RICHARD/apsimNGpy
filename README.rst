@@ -245,18 +245,16 @@ Now it is possible to initialize the APSIM model using the previously loaded sim
 
 # Running loaded models
 ===============================
-Running loaded models implies excuting the model to generate simulated outputs. This is implimented via :code:`ApsimModel.run()` method` as follows
-
+Running loaded models implies excuting the model to generate simulated outputs. This is implimented via :code:`ApsimModel.run()` method` as shown below.
+Users can provide the ``report_name``, which specifies data table name from the simulation for retrieving the results.
 
 .. code-block:: python
 
     # Run the simulation
     apsim.run(report_name='Report')
 
-The ``ApsimModel.run()`` method executes the simulation. The ``report_name`` parameter specifies which data table from the simulation will be used for results.
-
 Please note that report_name can be a string (``str``), implying a single database table
-or a list, implying that one or more than one database tables. if the later is true, then the results will be concatenated along the rows using ``pandas.concat`` method.
+or a list, implying that one or more than one database tables. If the later is true, then the results will be concatenated along the rows using ``pandas.concat`` method.
 
 By default, ``apsimNGpy`` looks for these report database tables automatically, and returns a concatenated pandas data frame. This may not be ideal if they are many report tables, hence the need to cleary specify the preffered report table names
 
@@ -273,7 +271,7 @@ After the simulation runs, results can be via ``apsim.results`` property attribu
 
 Another way to access the results is to use ``get_simulated_output`` on the instantiated class object. this method accepts only one argument ``report_names`` and under the same principle explained above.
 
-Please note that accessing results through any of the above method before calling ``run()`` may not be allowed, and will raise an error.
+Please note that accessing results through any of the above method before calling ``run()`` may not be allowed, and will raise an ``error``.
 
 
 Inspecting Instantiated Model Object
@@ -311,6 +309,23 @@ Let's take a look at how it works.
     # Retrieve paths to Fertiliser models
     model.inspect_model(Models.Fertiliser, fullpath=True)
     ['.Simulations.Simulation.Field.Fertiliser']
+
+Whole Model inspection
+=====================================
+Use `inspect_file`` method to inspects all simulations in the file. This method displays a tree showing how each model is connected with each other. see further information in the documentation here:
+https://magala-richard.github.io/apsimNGpy-documentations/index.html
+
+
+.. code-block:: python
+
+    model.inspect_file()
+
+
+
+.. image:: ../images/apsim_file_structure.png
+    :alt: Tree structure of the APSIM model
+    :align: center
+    :width: 100%
 
 
 You can preview the current simulation in the APSIM graphical user interface (GUI) using the `preview_simulation` method.

@@ -208,7 +208,7 @@ This example demonstrates how to use `apsimNGpy` to load a default simulation, r
     import os
     from apsimNGpy.validation.visual import plot_data
 
-ApsimModel class inherits all methods and properties from :code:`CoreModel` which can be imported from :code:`ApsimNGpy.core.core`
+``ApsimModel`` class inherits all methods and properties from :code:`CoreModel` which can be imported from :code:`ApsimNGpy.core.core`
 To use :code:'apsimNGpy:, you dont need to have a simulation file on your computer, we can directly access the default simulations and edit them along. There are two way to access the default simulations.
 
 
@@ -219,8 +219,8 @@ To use :code:'apsimNGpy:, you dont need to have a simulation file on your comput
     # Load the default simulation
     soybean_model = load_default_simulations(crop='soybean', simulation_object=True)  # Case-insensitive crop specification
 
-The `load_default_simulations` function loads a default APSIM simulation for the specified crop. In this example, the crop is set to soybean, but you can specify other crops as needed.
-The importance of this method is that it is cached, so it faster while editing an exisiting simulation during optimization. Caching here has no issues because the default will be the same everytime we load it.
+The ``load_default_simulations`` function loads a default APSIM simulation for the specified crop. In this example, the ``crop`` is set to soybean, but you can specify other crops as needed.
+The importance of this method is that it is cached, so it faster while editing an exisiting simulation during optimization. Caching here has no fatal issues because the default will be the same everytime we load it.
 
 If you prefer not to initialize the simulation object immediately, you can load only the simulation path by setting  :literal:`simulation_object=False`.
 
@@ -254,7 +254,7 @@ Users can provide the ``report_name``, which specifies data table name from the 
     apsim.run(report_name='Report')
 
 Please note that report_name can be a string (``str``), implying a single database table
-or a list, implying that one or more than one database tables. If the later is true, then the results will be concatenated along the rows using ``pandas.concat`` method.
+or a ``list``, implying that one or more than one database tables. If the later is true, then the results will be concatenated along the rows using ``pandas.concat`` method.
 
 By default, ``apsimNGpy`` looks for these report database tables automatically, and returns a concatenated pandas data frame. This may not be ideal if they are many report tables, hence the need to cleary specify the preffered report table names
 
@@ -269,7 +269,7 @@ Accessing simulated results
 ===========================
 After the simulation runs, results can be via ``apsim.results`` property attribute as pandas DataFrames. Please see note above. These results can be saved to a CSV file or printed to the console.
 
-Another way to access the results is to use ``get_simulated_output`` on the instantiated class object. this method accepts only one argument ``report_names`` and under the same principle explained above.
+Another way to access the results is to use ``get_simulated_output`` on the instantiated class object. This method accepts only one argument ``report_names`` and under the same principle explained above.
 
 Please note that accessing results through any of the above method before calling ``run()`` may not be allowed, and will raise an ``error``.
 
@@ -312,7 +312,7 @@ Let's take a look at how it works.
 
 Whole Model inspection
 =====================================
-Use `inspect_file`` method to inspects all simulations in the file. This method displays a tree showing how each model is connected with each other. see further information in the documentation here:
+Use ``inspect_file`` method to inspects all simulations in the file. This method displays a tree showing how each model is connected with each other. see further information in the documentation here:
 https://magala-richard.github.io/apsimNGpy-documentations/model%20inspection.html
 
 .. code-block:: python
@@ -325,8 +325,7 @@ https://magala-richard.github.io/apsimNGpy-documentations/model%20inspection.htm
     :width: 100%
 
 
-You can preview the current simulation in the APSIM graphical user interface (GUI) using the `preview_simulation` method.
-
+You can preview the current simulation in the APSIM graphical user interface (GUI) using the ``preview_simulation`` method.
 
 .. code-block:: python
 

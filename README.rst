@@ -253,8 +253,12 @@ Running loaded models implies excuting the model to generate simulated outputs. 
     # Run the simulation
     apsim.run(report_name='Report')
 
-- The ``ApsimModel.run()`` method executes the simulation. The ``report_name`` parameter specifies which data table from the simulation will be used for results. Please note that report_name can be a string (``str``), implying a single database table
-or a list, implying that one or more than one database tables. if the later is true, then the results will be concatenated along the rows using ``pandas.concat`` method. By default, ``apsimNGpy`` looks for these report database tables automatically, and returns a concatenated pandas data frame.
+The ``ApsimModel.run()`` method executes the simulation. The ``report_name`` parameter specifies which data table from the simulation will be used for results.
+
+Please note that report_name can be a string (``str``), implying a single database table
+or a list, implying that one or more than one database tables. if the later is true, then the results will be concatenated along the rows using ``pandas.concat`` method.
+
+By default, ``apsimNGpy`` looks for these report database tables automatically, and returns a concatenated pandas data frame.
 
 .. code-block:: python
 

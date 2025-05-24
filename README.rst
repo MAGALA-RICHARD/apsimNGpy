@@ -208,36 +208,53 @@ This example demonstrates how to use `apsimNGpy` to load a default simulation, r
     import os
     from apsimNGpy.validation.visual import plot_data
 
-The above code imports the necessary modules for running APSIM simulations. This includes `apsimNGpy` modules for loading default simulations and managing results, as well as standard Python libraries for file handling and visualization.
+ApsimModel class inherits all methods and properties from ``CoreModel`` which can be imported from ``ApsimNGpy.core.core``
+To use apsimNGpy, you dont need to have a simulation file on your computer, we can directly access the default simulations and edit them along. there are two way to access the default simulations.
 
+
+1. use `load_default_simulations` method
 
 .. code-block:: python
 
     # Load the default simulation
-    soybean_model = load_default_simulations(crop='soybean')  # Case-insensitive crop specification
+    soybean_model = load_default_simulations(crop='soybean', simulation_object=True)  # Case-insensitive crop specification
 
 The `load_default_simulations` function loads a default APSIM simulation for the specified crop. In this example, the crop is set to soybean, but you can specify other crops as needed.
+The importance of this method is that it is cached, so it faster while editing an exisiting simulation during optimization. Caching here has no issues because the default will be the same everytime we load it.
+
+If you prefer not to initialize the simulation object immediately, you can load only the simulation path by setting `simulation_object=False`.
 
 .. code:: python
 
     # Load the simulation path without initializing the object
     soybean_path_model = load_default_simulations(crop='soybean', simulation_object=False)
 
-If you prefer not to initialize the simulation object immediately, you can load only the simulation path by setting `simulation_object=False`.
+Now it is possible to initialize the APSIM model using the previously loaded simulation file path, by using ApsimModel class. Note that it is imported in this environment as SoilModel
 
 .. code-block:: python
 
     # Initialize the APSIM model with the simulation file path
     apsim = SoilModel(soybean_path_model)
 
-This code initializes the APSIM model using the previously loaded simulation file path.
+2. Use either ApsimModel Class to load directly the default simulations as follows:
+
+.. code-block:: python
+
+    # this load the default simulation. `Maize.apsimx' can be replaced by any user APSIM file on the computer disk.
+    apsim = ApsimModel(model ='Maize.apsimx', out_path = './my_maize_model.apsimx')
+
+# Running loaded models
+===============================
+Running loaded models implies excuting the model to generate simulated outputs. This is implimented via `run() method` as follows
+
 
 .. code-block:: python
 
     # Run the simulation
     apsim.run(report_name='Report')
 
-The `run` method executes the simulation. The `report_name` parameter specifies which data table from the simulation will be used for results.
+The `run` method executes the simulation. The `report_name` parameter specifies which data table from the simulation will be used for results. Please note thar report_name can be astring, implying a single database table
+or a list, implying two database tables. if the later is true, then the results will be concatenated along the rows using `pands pd.concat` method
 
 .. note:
    report_name accepts a list of simulation data tables and hence can return a concatenated pandas data frame for all the data tables
@@ -385,38 +402,3 @@ We would also like to express our sincere thanks to the APSIM Initiative. Their 
 Our project stands on the shoulders of these partnerships and support systems, and we are deeply thankful for their contribution to advancing agricultural research and development. Please not that that this library is designed as a bridge to APSIM software, and we hope that by using this library, you have the appropriate APSIM license to do so whether free or commercial.
 
 Lastly but not least, ApsimNGpy is not created in isolation but draws inspiration from apsimx, an R package (https://cran.r-project.org/web/packages/apsimx/vignettes/apsimx.html). We acknowledge and appreciate the writers and contributors of apsimx for their foundational work. ApsimNGpy is designed to complement apsimx by offering similar functionalities and capabilities in the Python ecosystem.
-
-
-# Changelog
-******************************************************************************************************
-
-The earlier versions of apsimNGpy were too experimental with a lot of bugs. Therefore tracking started with version 0..29
-## [0.29.0] - 2025-01-15
-
-### Added
-************************************************************************************
-
-- New logging feature for better debug capability.
-- command line interface to run models faster using the command and crop module
-- command line interface to change the apsim binary path using the apsim_bin_path module
-- more detailed installation documentation
-
-## Fixed
-**************************************************************************************
-
-- config module to run on all operating systems
-- import of load_default simulations
-
-
-## [0.3.0] - 2025-01-20
-## Fixed
-**************************************************************************************
-
-- fixed package to run all latest versions
-- handle multiple reports tables in run method, return a concat of the different  data frame
-
-## Added
-*****************************************************************************
-
-- APSIMNG.run now return pandas data frame consistently
-- files named by default are tagged by the corresponding APSIM installed version

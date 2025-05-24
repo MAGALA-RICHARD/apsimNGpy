@@ -258,7 +258,7 @@ The ``ApsimModel.run()`` method executes the simulation. The ``report_name`` par
 Please note that report_name can be a string (``str``), implying a single database table
 or a list, implying that one or more than one database tables. if the later is true, then the results will be concatenated along the rows using ``pandas.concat`` method.
 
-By default, ``apsimNGpy`` looks for these report database tables automatically, and returns a concatenated pandas data frame.
+By default, ``apsimNGpy`` looks for these report database tables automatically, and returns a concatenated pandas data frame. This may not be ideal if they are many report tables, hence the need to cleary specify the preffered report table names
 
 .. code-block:: python
 
@@ -267,15 +267,18 @@ By default, ``apsimNGpy`` looks for these report database tables automatically, 
     df.to_csv('apsim_df_res.csv')  # Save the results to a CSV file
     print(apsim.results)  # Print all DataFrames in the storage domain
 
-After the simulation runs, results are stored in the `apsim.results` attribute as pandas DataFrames. Please see note above. These results can be saved to a CSV file or printed to the console.
+Accessing simulated results
+===========================
+After the simulation runs, results can be via ``apsim.results`` property attribute as pandas DataFrames. Please see note above. These results can be saved to a CSV file or printed to the console.
 
-The code below retrieves the names of simulations from the APSIM model and examines the management modules used in the specified simulations.
+Another way to access the results is to use ``get_simulated_output`` on the instantiated class object. this method accepts only one argument ``report_names`` and under the same principle explained above.
 
-.. code-block:: python
+Please note that accessing results through any of the above method before calling ``run()`` may not be allowed, and will raise an error.
 
-    # Examine management modules in the simulation
-    sim_name = apsim.simulation_names  # Retrieve simulation names
-    apsim.examine_management_info(simulations=sim_name)
+
+Inspecting the instantiated tree model
+=============================================
+This is implimented via inspect file method
 
 
 You can preview the current simulation in the APSIM graphical user interface (GUI) using the `preview_simulation` method.

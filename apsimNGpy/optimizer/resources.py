@@ -2,6 +2,8 @@ from apsimNGpy.optimizer.base import AbstractProblem
 from apsimNGpy.core.apsim import ApsimModel
 from dataclasses import dataclass, field
 import wrapdisc
+
+# this work in progress
 @dataclass
 class BaseProblem(AbstractProblem):
     apsim: ApsimModel

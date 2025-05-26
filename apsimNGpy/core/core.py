@@ -42,6 +42,7 @@ from Models.Soils import Soil, Physical, SoilCrop, Organic, Solute, Chemical
 
 
 from apsimNGpy.core_utils.utils import open_file_in_window
+from apsimNGpy.core_utils.database_utils import read_db_table, dataview_to_dataframe
 from apsimNGpy.core.config import get_apsim_bin_path, load_crop_from_disk
 
 from apsimNGpy.core._modelhelpers import (get_or_check_model, Models, old_method,
@@ -49,7 +50,7 @@ from apsimNGpy.core._modelhelpers import (get_or_check_model, Models, old_method
                                           ModelTools, _eval_model, replace_variable_by_index,
                                           _find_model, find_model)
 from Models.PMF import Cultivar
-from apsimNGpy.core.runner import run_model_externally, collect_csv_by_model_path, run_p
+from apsimNGpy.core.runner import run_model_externally, collect_csv_by_model_path, upgrade_apsim_file, run_p
 from apsimNGpy.core.model_loader import (load_apsim_model, save_model_to_file, recompile)
 import ast
 from typing import Iterable
@@ -69,6 +70,9 @@ from apsimNGpy.settings import *
 def _looks_like_path(value: str) -> bool:
     return any(sep in value for sep in (os.sep, '/', '\\')) or value.endswith('.apsimx')
 
+def compile_script(script_code: str, code_model):
+    compiler= Models.Core.ScriptCompiler()
+    compiler(script_code, code_model)
 
 @dataclass(slots=True)
 class CoreModel:
@@ -127,6 +131,7 @@ class CoreModel:
     work_space: Optional[Union[str, Path]] = field(init=False, default=None)
     Start: str = field(init=False, default='unknown')
     End: str = field(init=False, default='unknown')
+    run_method: callable =  field(init=False, default=None)
 
     def __post_init__(self):
         self._model = self.model
@@ -314,33 +319,40 @@ class CoreModel:
     Returns:
         pd.DataFrame: A DataFrame containing the simulation output.
     """
-        _reports = self.report_names or self.inspect_model('Models.Report', fullpath=False)# false returns all names other than fullpath of the models in that type
-        # Collect all available data tables
-        if self.ran_ok: # if run was not successfull, then the tables are not populated
-            data_tables = collect_csv_by_model_path(self.path)
+        _reports = self.report_names or self.inspect_model('Models.Report',
+                                                           fullpath=False)  # false returns all names other than fullpath of the models in that type
+        if self.run_method == run_model_externally:
 
-            # Normalize report_names to a list
-            if isinstance(_reports, str):
-                reports = [_reports]
-            elif isinstance(_reports, (tuple,list)):
-                reports = _reports
+            # Collect all available data tables
+            if self.ran_ok: # if run was not successfull, then the tables are not populated
+                data_tables = collect_csv_by_model_path(self.path)
+
+                # Normalize report_names to a list
+                if isinstance(_reports, str):
+                    reports = [_reports]
+                elif isinstance(_reports, (tuple,list)):
+                    reports = _reports
+                else:
+                    raise TypeError("report_names must be a string, tuple of strings or a list of strings.")
+
+                # Check for missing report names
+                missing = [r for r in reports if r not in data_tables]
+                if missing:
+                    raise ValueError(
+                        f"The following report names were not found: {missing}. "
+                        f"Available tables include: {list(data_tables.keys())}"
+                    )
+
+                datas = [pd.read_csv(data_tables[i]) for i in reports]
+                return pd.concat(datas)
             else:
-                raise TypeError("report_names must be a string, tuple of strings or a list of strings.")
-
-            # Check for missing report names
-            missing = [r for r in reports if r not in data_tables]
-            if missing:
-                raise ValueError(
-                    f"The following report names were not found: {missing}. "
-                    f"Available tables include: {list(data_tables.keys())}"
-                )
-
-            datas = [pd.read_csv(data_tables[i]) for i in reports]
-            return pd.concat(datas)
-        else:
-            msg = "Attempting to get results before running the model"
-            logging.error(msg)
-            raise RuntimeError(msg)
+                msg = "Attempting to get results before running the model"
+                logging.error(msg)
+                raise RuntimeError(msg)
+        if self.run_method == run_p:
+            print(_reports)
+            dfs  =[dataview_to_dataframe(self, rp) for rp in _reports]
+            return pd.concat(dfs)
 
 
 
@@ -393,7 +405,7 @@ class CoreModel:
         # Load and concatenate requested report data
         datas = [pd.read_csv(data_tables[r]) for r in reports]
         return pd.concat(datas, ignore_index=True, axis=kwargs.get('axis', 0))
-
+    @timer
     def run(self, report_name: Union[tuple, list, str] = None,
             simulations: Union[tuple, list] = None,
             clean_up: bool = False,
@@ -450,6 +462,7 @@ class CoreModel:
             if res.returncode == 0:
                 self.ran_ok = True
                 self.report_names = report_name
+                self.run_method = run_model_externally
 
             # If the model failed and verbose was off, rerun to diagnose
             if not self.ran_ok and not verbose:
@@ -1520,6 +1533,11 @@ class CoreModel:
         updated_commands = [f"{k}={v}" for k, v in params.items()]
         cultvar.set_Command(updated_commands)
 
+        return self
+    @timer
+    def run2(self, simulations='all', clean =True, verbose=True,multithread=True):
+        self.run_method =run_p
+        run_p(self.path)
         return self
 
 

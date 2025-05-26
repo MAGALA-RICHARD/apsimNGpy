@@ -4,7 +4,36 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5d471312-8496-4246-98d6-790439318160" name="Changes" comment="v0.38" />
+    <list default="true" id="5d471312-8496-4246-98d6-790439318160" name="Changes" comment="v0.38">
+      <change afterPath="$PROJECT_DIR$/optimizer/base.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/optimizer/resources.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_10_27_2024_12_50_AM__Changes_.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_10_27_2024_12_50_AM__Changes_.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/_modelhelpers.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/_modelhelpers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/config.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/core.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/core.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/runner.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/runner.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_071cd481-37fb-11f0-b5e8-089204ded298_MaizeAPSIM2024.5.7493.0.db-wal" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_0758a7b7-37fb-11f0-a08c-089204ded298_soybeanAPSIM2024.5.7493.0.db-wal" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_3d5e4eb0-37fb-11f0-8782-089204ded298_MaizeAPSIM2024.5.7493.0.db-wal" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_3d987c18-37fb-11f0-ac3c-089204ded298_soybeanAPSIM2024.5.7493.0.db-wal" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_7378e50a-37fb-11f0-89fc-089204ded298_MaizeAPSIM2024.5.7493.0.db-wal" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_73b64d1a-37fb-11f0-b2f0-089204ded298_soybeanAPSIM2024.5.7493.0.db-wal" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_f00f07bb-37fa-11f0-808f-089204ded298_MaizeAPSIM2024.5.7493.0.db-wal" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_f04ab236-37fa-11f0-a5d3-089204ded298_soybeanAPSIM2024.5.7493.0.db-wal" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/core_utils/database_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/core_utils/database_utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/new_opt.py" beforeDir="false" afterPath="$PROJECT_DIR$/optimizer/new_opt.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_553b13e9-3746-11f0-875d-089204ded298_APSIM2024.5.7493.0.db-wal" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_a8de84be-3733-11f0-8f8a-089204ded298_APSIM2024.5.7493.0.db-wal" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_d47cf404-3733-11f0-b687-089204ded298_APSIM2024.5.7493.0.db-wal" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_eedbba45-3808-11f0-b4c0-089204ded298_APSIM2024.5.7493.0_whiteclover.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_eedbe427-3808-11f0-abb5-089204ded298_APSIM2024.5.7493.0.Report.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_eedbe427-3808-11f0-abb5-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_eedbe427-3808-11f0-abb5-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_ef69ab1d-3808-11f0-a51e-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_ef69ab1d-3808-11f0-a51e-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/sobolAPSIM2024_5_7493_0.apsimx" beforeDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -71,6 +100,7 @@
     "Python._modelhelpers.executor": "Run",
     "Python.api.executor": "Run",
     "Python.apsim.executor": "Run",
+    "Python.base.executor": "Run",
     "Python.base_data.executor": "Run",
     "Python.batch_runner.executor": "Run",
     "Python.cleaner.executor": "Run",
@@ -94,6 +124,7 @@
     "Python.process.executor": "Run",
     "Python.pythonet_config.executor": "Run",
     "Python.replacements.executor": "Run",
+    "Python.resources.executor": "Run",
     "Python.runner.executor": "Run",
     "Python.senstivity.executor": "Run",
     "Python.server.executor": "Run",
@@ -113,8 +144,8 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "main",
-    "last_opened_file_path": "D:/package/src/apsimNGpy/core",
+    "git-widget-placeholder": "development",
+    "last_opened_file_path": "D:/package/src/apsimNGpy/optimizer",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -126,14 +157,14 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\package\src\apsimNGpy\optimizer" />
       <recent name="D:\package\src\apsimNGpy\core" />
       <recent name="D:\package\apsimNGpy\apsimNGpy" />
       <recent name="D:\package\apsimNGpy\apsimNGpy\uncertainity_box" />
       <recent name="D:\package\apsimNGpy\apsimNGpy\manager" />
-      <recent name="D:\package\apsimNGpy\apsimNGpy\core" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.core">
+  <component name="RunManager" selected="Python.base">
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
       <module name="apsimNGpy" />
       <option name="ENV_FILES" value="" />
@@ -157,21 +188,18 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="cleaner" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="base" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="apsimNGpy" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/w" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/optimizer" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/w/cleaner.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/optimizer/base.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="true" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -185,6 +213,9 @@
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/core" />
       <option name="IS_MODULE_SDK" value="true" />
@@ -200,7 +231,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="test_apsim" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="database_utils" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="apsimNGpy" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -209,12 +240,12 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/core_utils" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/tests/test_apsim.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/core_utils/database_utils.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="true" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -223,21 +254,18 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="unit_tests_core" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="new_opt" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="apsimNGpy" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/optimizer" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/tests/unit_tests_core.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/optimizer/new_opt.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="true" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -246,29 +274,33 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="Python tests for test_core.TestCoreModel" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+    <configuration name="resources" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="apsimNGpy" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/core" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/optimizer" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;test_core.TestCoreModel&quot;" />
-      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/optimizer/resources.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.base" />
+        <item itemvalue="Python.resources" />
+        <item itemvalue="Python.new_opt" />
         <item itemvalue="Python.core" />
-        <item itemvalue="Python.test_apsim" />
-        <item itemvalue="Python.cleaner" />
-        <item itemvalue="Python.unit_tests_core" />
-        <item itemvalue="Python tests.Python tests for test_core.TestCoreModel" />
+        <item itemvalue="Python.database_utils" />
       </list>
     </recent_temporary>
   </component>
@@ -366,22 +398,8 @@
       <workItem from="1747696101620" duration="30642000" />
       <workItem from="1747878448871" duration="27729000" />
       <workItem from="1748108154992" duration="7580000" />
-    </task>
-    <task id="LOCAL-00487" summary="removed_get_reports">
-      <option name="closed" value="true" />
-      <created>1748026281071</created>
-      <option name="number" value="00487" />
-      <option name="presentableId" value="LOCAL-00487" />
-      <option name="project" value="LOCAL" />
-      <updated>1748026281071</updated>
-    </task>
-    <task id="LOCAL-00488" summary="removed_get_reports">
-      <option name="closed" value="true" />
-      <created>1748026461796</created>
-      <option name="number" value="00488" />
-      <option name="presentableId" value="LOCAL-00488" />
-      <option name="project" value="LOCAL" />
-      <updated>1748026461797</updated>
+      <workItem from="1748185932476" duration="2318000" />
+      <workItem from="1748213880457" duration="16421000" />
     </task>
     <task id="LOCAL-00489" summary="removed_get_reports">
       <option name="closed" value="true" />
@@ -759,7 +777,23 @@
       <option name="project" value="LOCAL" />
       <updated>1748121781047</updated>
     </task>
-    <option name="localTasksCounter" value="536" />
+    <task id="LOCAL-00536" summary="v0.38">
+      <option name="closed" value="true" />
+      <created>1748123432464</created>
+      <option name="number" value="00536" />
+      <option name="presentableId" value="LOCAL-00536" />
+      <option name="project" value="LOCAL" />
+      <updated>1748123432464</updated>
+    </task>
+    <task id="LOCAL-00537" summary="v0.38">
+      <option name="closed" value="true" />
+      <created>1748123906854</created>
+      <option name="number" value="00537" />
+      <option name="presentableId" value="LOCAL-00537" />
+      <option name="project" value="LOCAL" />
+      <updated>1748123906854</updated>
+    </task>
+    <option name="localTasksCounter" value="538" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -820,6 +854,15 @@
           <url>file://$PROJECT_DIR$/core/api.py</url>
           <line>6</line>
           <option name="timeStamp" value="3" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/core/runner.py</url>
+          <option name="timeStamp" value="4" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/optimizer/variables.py</url>
+          <line>4</line>
+          <option name="timeStamp" value="5" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

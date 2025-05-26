@@ -10,7 +10,7 @@ from apsimNGpy.core.config import get_apsim_bin_path
 from apsimNGpy.settings import logger
 from apsimNGpy.core_utils.utils import timer
 import contextlib
-
+from apsimNGpy.settings import *
 apsim_bin_path = Path(get_apsim_bin_path())
 
 # Determine executable based on OS
@@ -271,10 +271,13 @@ def run_from_dir(dir_path, pattern, verbose=False,
         out = collect_csv_from_dir(dir_path, pattern)
         return out
 
+@lru_cache(maxsize=None)
+def apsim_executable(path, *args):
+    base  = [str(APSIM_EXEC), str(path), '--verbose', '--csv']
+    return base
 
-
-
-
+def run_p(path):
+    run(apsim_executable(path))
 
 
 if __name__ == "__main__":

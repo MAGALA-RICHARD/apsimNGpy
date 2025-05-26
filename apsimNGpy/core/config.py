@@ -140,7 +140,7 @@ def auto_detect_apsim_bin_path():
     else:
         return ""
 
-lru_cache(maxsize =20)
+lru_cache(maxsize =200)
 def get_apsim_bin_path():
     """
     Returns the path to the apsim bin folder from either auto-detection or from the path already supplied by the user

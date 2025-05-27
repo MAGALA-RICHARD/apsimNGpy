@@ -6,9 +6,35 @@
   <component name="ChangeListManager">
     <list default="true" id="5d471312-8496-4246-98d6-790439318160" name="Changes" comment="v0.38">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/core.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/core.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/optimizer/base.py" beforeDir="false" afterPath="$PROJECT_DIR$/optimizer/base.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/optimizer/resources.py" beforeDir="false" afterPath="$PROJECT_DIR$/optimizer/resources.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_31e22510-3b1a-11f0-8e03-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_3222827c-3b1a-11f0-8f65-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_3222827c-3b1a-11f0-8f65-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_412ba552-3b1a-11f0-b829-089204ded298_APSIM2024.5.7493.0_Maize.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_412bcc5c-3b1a-11f0-a887-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_412bcc5c-3b1a-11f0-a887-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_41703e12-3b1a-11f0-87e1-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_41703e12-3b1a-11f0-87e1-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_69a0a82a-3b1a-11f0-90b8-089204ded298_APSIM2024.5.7493.0_Maize.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_69a0ceb9-3b1a-11f0-9638-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_69a0ceb9-3b1a-11f0-9638-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_69dcf5cd-3b1a-11f0-8074-089204ded298_APSIM2024.5.7493.0.Report.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_69dcf5cd-3b1a-11f0-8074-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_69dcf5cd-3b1a-11f0-8074-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_69dcf5cd-3b1a-11f0-8074-089204ded298_APSIM2024.5.7493.0.db-shm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_69dcf5cd-3b1a-11f0-8074-089204ded298_APSIM2024.5.7493.0.db-wal" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_9658885e-3b18-11f0-8903-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_96a6c21f-3b18-11f0-9ca2-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_96a6c21f-3b18-11f0-9ca2-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_a44e5fdc-3b18-11f0-9943-089204ded298_APSIM2024.5.7493.0_Maize.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_a44eadf2-3b18-11f0-a9b1-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_a44eadf2-3b18-11f0-a9b1-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_a49c56f4-3b18-11f0-be98-089204ded298_APSIM2024.5.7493.0.Report.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_a49c56f4-3b18-11f0-be98-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_a49c56f4-3b18-11f0-be98-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_a49c56f4-3b18-11f0-be98-089204ded298_APSIM2024.5.7493.0.db-shm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_a49c56f4-3b18-11f0-be98-089204ded298_APSIM2024.5.7493.0.db-wal" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -140,7 +166,7 @@
       <recent name="D:\package\apsimNGpy\apsimNGpy\manager" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.base">
+  <component name="RunManager" selected="Python.resources">
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
       <module name="apsimNGpy" />
       <option name="ENV_FILES" value="" />
@@ -275,8 +301,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.base" />
         <item itemvalue="Python.resources" />
+        <item itemvalue="Python.base" />
         <item itemvalue="Python.new_opt" />
         <item itemvalue="Python.core" />
         <item itemvalue="Python.database_utils" />
@@ -379,22 +405,6 @@
       <workItem from="1748108154992" duration="7580000" />
       <workItem from="1748185932476" duration="2318000" />
       <workItem from="1748213880457" duration="16421000" />
-    </task>
-    <task id="LOCAL-00489" summary="removed_get_reports">
-      <option name="closed" value="true" />
-      <created>1748026619738</created>
-      <option name="number" value="00489" />
-      <option name="presentableId" value="LOCAL-00489" />
-      <option name="project" value="LOCAL" />
-      <updated>1748026619738</updated>
-    </task>
-    <task id="LOCAL-00490" summary="removed_get_reports">
-      <option name="closed" value="true" />
-      <created>1748026694756</created>
-      <option name="number" value="00490" />
-      <option name="presentableId" value="LOCAL-00490" />
-      <option name="project" value="LOCAL" />
-      <updated>1748026694756</updated>
     </task>
     <task id="LOCAL-00491" summary="removed_get_reports">
       <option name="closed" value="true" />
@@ -772,7 +782,23 @@
       <option name="project" value="LOCAL" />
       <updated>1748123906854</updated>
     </task>
-    <option name="localTasksCounter" value="538" />
+    <task id="LOCAL-00538" summary="v0.38">
+      <option name="closed" value="true" />
+      <created>1748322150610</created>
+      <option name="number" value="00538" />
+      <option name="presentableId" value="LOCAL-00538" />
+      <option name="project" value="LOCAL" />
+      <updated>1748322150610</updated>
+    </task>
+    <task id="LOCAL-00539" summary="v0.38">
+      <option name="closed" value="true" />
+      <created>1748365158881</created>
+      <option name="number" value="00539" />
+      <option name="presentableId" value="LOCAL-00539" />
+      <option name="project" value="LOCAL" />
+      <updated>1748365158881</updated>
+    </task>
+    <option name="localTasksCounter" value="540" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

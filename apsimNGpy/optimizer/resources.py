@@ -3,6 +3,7 @@ from apsimNGpy.core.apsim import ApsimModel
 from dataclasses import dataclass, field
 from scipy.optimize import minimize
 import wrapdisc
+from functools import cache
 from tqdm import tqdm
 from typing import Union
 SIMULATIONS = object()
@@ -32,12 +33,24 @@ class BaseProblem(AbstractProblem):
                     vtype, start_value, bounds=None):
         self._evaluate_args(model_type, model_name, parameter_name)
         label = f"{parameter_name}"
-        self.control_vars.append(self.VarDesc(model_type, model_name, parameter_name, vtype, label, start_value, bounds))
+        self.control_vars.append(VarDesc(model_type, model_name, parameter_name, vtype, label, start_value, bounds))
         return self # To support method chaining
+    @property
+    def bounds(self):
+        bounds = []
+        for var in self.control_vars:
+            bounds.append(var.bounds)
+        return tuple(bounds)
 
-    def setup_edit(self, x) -> None:
+    def starting_values(self):
+        starting_values = []
+        for var in self.control_vars:
+            starting_values.append(var.start_value)
+        return tuple(starting_values)
+    def insert_controls(self, x) -> None:
 
         edit = self.edit_model
+
         for i, varR in enumerate(self.control_vars):
             vtype = varR.vtype
             value = x[i]
@@ -58,7 +71,7 @@ class BaseProblem(AbstractProblem):
 
 
     def set_objective_function(self, x):
-        xl = self.setup_edit(x)
+        xl = self.insert_controls(x)
         # Try local per-instance results cache first
         if self.cache and (cached := self.get_cached(*xl)):
 
@@ -71,8 +84,47 @@ class BaseProblem(AbstractProblem):
         return SCORE
 
     def minimize_problem(self, **kwargs):
+        """
+        scipy.optimize.minimize provide a number of optimization algorithms see table below or for details check their website:
+        https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
+        +------------------+-----------------------+-------------------+----------------+---------------------+---------------------------------------------+
+        | Method           | Type                  | Gradient Required | Handles Bounds | Handles Constraints | Notes                                       |
+        +==================+=======================+===================+================+=====================+=============================================+
+        | Nelder-Mead      | Local (Derivative-free)| No                | No             | No                  | Simplex algorithm                           |
+        +------------------+-----------------------+-------------------+----------------+---------------------+---------------------------------------------+
+        | Powell           | Local (Derivative-free)| No                | Yes            | No                  | Direction set method                        |
+        +------------------+-----------------------+-------------------+----------------+---------------------+---------------------------------------------+
+        | CG               | Local (Gradient-based) | Yes               | No             | No                  | Conjugate Gradient                          |
+        +------------------+-----------------------+-------------------+----------------+---------------------+---------------------------------------------+
+        | BFGS             | Local (Gradient-based) | Yes               | No             | No                  | Quasi-Newton                                |
+        +------------------+-----------------------+-------------------+----------------+---------------------+---------------------------------------------+
+        | Newton-CG        | Local (Gradient-based) | Yes               | No             | No                  | Newton's method                             |
+        +------------------+-----------------------+-------------------+----------------+---------------------+---------------------------------------------+
+        | L-BFGS-B         | Local (Gradient-based) | Yes               | Yes            | No                  | Limited memory BFGS                         |
+        +------------------+-----------------------+-------------------+----------------+---------------------+---------------------------------------------+
+        | TNC              | Local (Gradient-based) | Yes               | Yes            | No                  | Truncated Newton                            |
+        +------------------+-----------------------+-------------------+----------------+---------------------+---------------------------------------------+
+        | COBYLA           | Local (Derivative-free)| No                | No             | Yes                 | Constrained optimization by linear approx.  |
+        +------------------+-----------------------+-------------------+----------------+---------------------+---------------------------------------------+
+        | SLSQP            | Local (Gradient-based) | Yes               | Yes            | Yes                 | Sequential Least Squares Programming        |
+        +------------------+-----------------------+-------------------+----------------+---------------------+---------------------------------------------+
+        | trust-constr     | Local (Gradient-based) | Yes               | Yes            | Yes                 | Trust-region constrained                    |
+        +------------------+-----------------------+-------------------+----------------+---------------------+---------------------------------------------+
+        | dogleg           | Local (Gradient-based) | Yes               | No             | No                  | Requires Hessian                            |
+        +------------------+-----------------------+-------------------+----------------+---------------------+---------------------------------------------+
+        | trust-ncg        | Local (Gradient-based) | Yes               | No             | No                  | Newton-CG trust region                      |
+        +------------------+-----------------------+-------------------+----------------+---------------------+---------------------------------------------+
+        | trust-exact      | Local (Gradient-based) | Yes               | No             | No                  | Trust-region, exact Hessian                 |
+        +------------------+-----------------------+-------------------+----------------+---------------------+---------------------------------------------+
+        | trust-krylov     | Local (Gradient-based) | Yes               | No             | No                  | Trust-region, Hessian-free                  |
+        +------------------+-----------------------+-------------------+----------------+---------------------+---------------------------------------------+
+
+        """
+
         try:
             x0 = kwargs.pop("x0", [1] * len(self.control_vars))
+            if 'bounds' not in kwargs.keys():
+                kwargs['bounds'] = self.bounds
             max_iter = kwargs.get("options", {}).get("maxiter", 400)
             labels = [i.label for i in self.control_vars]
             pbar = tqdm(total=max_iter, desc=f"Optimizing:: {','.join(labels)}", unit=" iterations")
@@ -83,32 +135,30 @@ class BaseProblem(AbstractProblem):
                 #pbar.set_postfix({"score": round(self._last_score, 2)})
                 return self.set_objective_function(x)
 
-            result = minimize(wrapped_obj, x0=x0, **kwargs)
+            result = minimize(wrapped_obj, x0=self.starting_values(), **kwargs)
             labels = [c.label for c in self.control_vars]
             result.x_vars = dict(zip(labels, result.x))
             return result
         finally:
-            print(self._cache)
             self.clear_cache()
 def problemspec(model, simulation, factors):
     ...
 if __name__ == "__main__":
     ##xample
     maize_model = "Maize"
-    problem = BaseProblem(model=maize_model, simulation='Simulation', cache=True)
     class Problem(BaseProblem):
         def __init__(self, model=None, simulation='Simulation'):
-            super().__init__(model, simulation, cache)
-            self.cache = cache
+            super().__init__(model, simulation)
+            self.cache = True
             self.simulation = simulation
 
         def evaluate(self, x, **kwargs):
            return -self.run(verbose=False).results.Yield.mean()
     problem  = Problem(maize_model, simulation='Simulation')
-    problem.add_control('Manager', "Sow using a variable rule", 'Population',  vtype=int)
-    problem.add_control('Manager', "Sow using a variable rule", 'RowSpacing', vtype=int)
+    problem.add_control('Manager', "Sow using a variable rule", 'Population',  int,5, bounds=[2, 15])
+    #problem.add_control('Manager', "Sow using a variable rule", 'RowSpacing', int, 500)
 
-    res = problem.minimize_problem( method  ='Powell', x0=(5, 500), bounds =[(1, 12),(500, 750)],  options={
+    res = problem.minimize_problem( method  ='Powell',  options={
         # 'xatol': 1e-4,      # absolute error in xopt between iterations
         # 'fatol': 1e-4,      # absolute error in func(xopt) between iterations
         'maxiter': 1000,    # maximum number of iterations

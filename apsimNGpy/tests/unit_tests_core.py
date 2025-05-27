@@ -203,15 +203,16 @@ class TestCoreModel(BaseTester):
 
     def test_add_model_simulation(self):
         try:
-            self.test_ap_sim.add_model('Simulation', adoptive_parent='Simulations', rename='soybean_replaced',
+            self.test_ap_sim.add_model('Simulation', adoptive_parent='Simulations', rename='soybean_replaced1',
                             source='Soybean', override=True)
             self.test_ap_sim.inspect_file()
-            assert 'soybean_replaced' in self.test_ap_sim.inspect_model('Simulation', fullpath=False), 'testing adding simulations was not successful'
+            assert 'soybean_replaced1' in self.test_ap_sim.inspect_model('Simulation', fullpath=False), 'testing adding simulations was not successful'
         # clean up
         finally:
              from apsimNGpy.core.core import get_or_check_model
              try:
-                self.test_ap_sim.remove_model(model_type='Simulation', model_name='soybean_replaced')
+                self.test_ap_sim.remove_model(model_type='Simulation', model_name='soybean_replaced1')
+                get_or_check_model(search_scope=self.test_ap_sim.Simulations, model_type='Simulation', model_name='soybean_replaced1', action='delete')
              except Exception as e:
               pass
     def test_edit_model(self):

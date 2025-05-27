@@ -141,15 +141,24 @@ class BaseProblem(AbstractProblem):
             return result
         finally:
             self.clear_cache()
-    def minimize_with_de(self, **kwargs):
+    def minimize_with_de(self, args=(), strategy='best1bin',
+                         maxiter=1000, popsize=15,
+                         tol=0.01, mutation=(0.5, 1), recombination=0.7,
+                         rng=None, callback=None,
+                         disp=True, polish=True,
+                         init='latinhypercube', atol=0,
+                         updating='immediate', workers=1,
+                         constraints=(), x0=None, *,
+                         integrality=None, vectorized=False):
+        """
+
+        reference; https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.differential_evolution.html
+        """
 
         try:
-            x0 = kwargs.pop("x0", [1] * len(self.control_vars))
-            if 'bounds' not in kwargs.keys():
-                kwargs['bounds'] = self.bounds
-            max_iter = kwargs.get("options", {}).get("maxiter", 400)
+
             labels = [i.label for i in self.control_vars]
-            pbar = tqdm(total=max_iter, desc=f"Optimizing:: {','.join(labels)}", unit=" iterations")
+            pbar = tqdm(total=maxiter, desc=f"Optimizing:: {','.join(labels)}", unit=" iterations")
             call_counter = {"count": 0}
             def wrapped_obj(x):
                 call_counter["count"] += 1
@@ -158,12 +167,12 @@ class BaseProblem(AbstractProblem):
                 return self.set_objective_function(x)
 
             result = differential_evolution(wrapped_obj, self.bounds, args=(), strategy='best1bin',
-                                      maxiter=1000, popsize=15, tol=0.01,
-                                      mutation=(0.5, 1), recombination=0.7,
-                                      seed=None, callback=None, disp=False,
-                                      polish=True, init='latinhypercube',
-                                      atol=0, updating='immediate',
-                                      workers=1, constraints=())
+                                      maxiter=maxiter, popsize=popsize, tol=tol,
+                                      mutation=mutation, recombination=recombination,
+                                       callback=callback, disp=disp,
+                                      polish=True, init=init,
+                                      atol=atol, updating=updating,
+                                      workers=workers, constraints=constraints)
             labels = [c.label for c in self.control_vars]
             result.x_vars = dict(zip(labels, result.x))
             return result
@@ -184,7 +193,7 @@ if __name__ == "__main__":
            return -self.run(verbose=False).results.Yield.mean()
     problem  = Problem(maize_model, simulation='Simulation')
     problem.add_control('Manager', "Sow using a variable rule", 'Population',  int,5, bounds=[2, 15])
-    #problem.add_control('Manager', "Sow using a variable rule", 'RowSpacing', int, 500)
+    problem.add_control('Manager', "Sow using a variable rule", 'RowSpacing', int, 500, bounds=[400, 800])
 
     # res = problem.minimize_problem( method  ='Powell',  options={
     #     # 'xatol': 1e-4,      # absolute error in xopt between iterations

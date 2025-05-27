@@ -10,7 +10,7 @@ from apsimNGpy.core_utils.utils import timer
 from apsimNGpy.optimizer.simple_problem import Problem, Solvers, auto_guess
 from scipy.optimize import minimize, differential_evolution
 import subprocess
-
+from apsimNGpy.optimizer.resources import AbstractProblem, SIMULATIONS, BaseProblem
 try:
     import wrapdisc
 except ModuleNotFoundError as mnf:
@@ -41,18 +41,34 @@ def _variable_type(type_name: str) -> str:
     return variable_types[type_name.lower()]
 
 
-class MixedVariable(Problem):
-    def __init__(self):
-        super().__init__()
-        self.reset_data()
+class MixedVariable(BaseProblem):
+    def __init__(self, model: str,
+                 simulation=SIMULATIONS,
+                 controls=None,
+                 control_vars=None,
+                 labels=None,
+
+                 func=None,
+                 cache_size=400):
+
+        # Initialize parent classes explicitly
+        AbstractProblem.__init__(self, model, simulation)
+        self.model = model
+        self.simulation = simulation if simulation is not SIMULATIONS else 'all'
+        self.controls = controls or []
+        self.control_vars = control_vars or []
+        self.labels = labels or []
+        self.cache = True
+        self.cache_size = cache_size
+        self.max_cache_size =cache_size
 
     @timer
     def minimize_wrap_vars(self, de=True, **kwargs):
         self._freeze_data()
 
         wrap = Objective(
-            self.update_predictors,
-            variables=[i.var_type for i in self.controls]
+            self.set_objective_function,
+            variables=[i.vtype for i in self.control_vars]
         )
         bounds = wrap.bounds
         optional_fixed_args = ("arg1", 2, 3.0)
@@ -94,4 +110,4 @@ class MixedVariable(Problem):
         return result
 
 
-MixedOptimizer = MixedVariable()
+MixedOptimizer = MixedVariable(model='maize')

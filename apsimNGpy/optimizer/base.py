@@ -10,6 +10,7 @@ from abc import ABC, abstractmethod
 from wrapdisc.var import ChoiceVar, GridVar, QrandintVar, QuniformVar, RandintVar, UniformVar
 import inspect
 from typing import Union
+import wrapdisc
 
 
 @lru_cache(maxsize=None)
@@ -77,7 +78,7 @@ class VarDesc:
     model_type: str
     model_name: str
     parameter_name: str
-    vtype: Union[str, object]
+    vtype: Union[str, object, wrapdisc.var]
     label: str
     start_value: Union[float, int]
     bounds: tuple[float, int]

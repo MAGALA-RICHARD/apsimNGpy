@@ -9,6 +9,7 @@ from collections import OrderedDict
 from abc import ABC, abstractmethod
 from wrapdisc.var import ChoiceVar, GridVar, QrandintVar, QuniformVar, RandintVar, UniformVar
 import inspect
+from typing import Union
 
 
 @lru_cache(maxsize=None)
@@ -78,8 +79,9 @@ class VarDesc:
     parameter_name: str
     vtype: Union[str, object]
     label: str
-    bounds: Tuple[float, int]
     start_value: Union[float, int]
+    bounds: tuple[float, int]
+
 
 
 class OptimizationProblem:

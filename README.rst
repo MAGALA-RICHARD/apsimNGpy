@@ -274,7 +274,7 @@ Please note that accessing results through any of the above method before callin
     [10 rows x 16 columns]
 
 Inspecting Instantiated Model Object
-===================================
+========================================
 Most of the time, when modifying model parameters and values, you need the  name or a full path to the specified ``APSIM`` model type.
 This is where the ``inspect_model`` method becomes useful—it allows you to inspect the model without opening the file in the APSIM GUI.
 

@@ -668,6 +668,7 @@ class CoreModel:
            # target_child = get_or_check_model(parent, model_type.__class__, model_type.Name, action ='delete')
             if override:
                 dilit = get_or_check_model(parent, model_type.__class__, model_type.Name, action='delete')
+            get_or_check_model(parent, model_type.__class__, model_type.Name, action='delete')
 
 
             ModelTools.ADD(model_type, parent)

@@ -2,7 +2,7 @@ import os
 
 from setuptools import setup, find_packages
 
-VERSION = '0.38'
+VERSION = '0.4'
 
 DESCRIPTION = 'APSIM next generation package interface'
 LONG_DESCRIPTION = 'run, edit, download soils and weather and interact with the apsimx file'
@@ -34,6 +34,7 @@ setup(
                        './apsimNGpy/*.met',
                        "./apsimNGpy/experiment/*.py",
                        './apsimNGpy/examples/*.png',
+                       './apsimNGpy/images/*.png'
                        './apsimNGpy/*.ini', "./*.ini"]},
     keywords=['python', 'APSIM Next Generation', 'pythonnet', 'crop modeling'],
     classifiers=[

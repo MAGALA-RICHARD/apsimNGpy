@@ -26,20 +26,23 @@ class AbstractProblem(ApsimModel):
         self._cache = OrderedDict()
         self.max_cache_size = max_cache_size
 
-    def insert_cache_result(self, args, result):
+    def insert_cache_result(self, *args, result):
+
         args  =tuple(args)
         self._cache[args] = result
 
         if self.max_cache_size is not None and len(self._cache) > self.max_cache_size: # saturation reached according to specified maxsize free space
             self._cache.popitem(last=False)
 
-    def get_cached(self, *args, **kwargs):
-        key = (args, tuple(sorted(kwargs.items())))
+    def get_cached(self, *args):
+        key = tuple(args)
         return self._cache.get(key, None)
 
     def clear_cache(self):
         self._cache.clear()
-
+    @abstractmethod
+    def add_control(self):
+        pass
     @abstractmethod
     def evaluate(self, x):
         pass
@@ -67,6 +70,17 @@ class AbstractProblem(ApsimModel):
         else:
             raise ValueError(f'data: {type(data)} not supported')
         return sample_set
+
+@dataclass(slots=True, frozen=True)
+class VarDesc:
+    model_type: str
+    model_name: str
+    parameter_name: str
+    vtype: Union[str, object]
+    label: str
+    bounds: Tuple[float, int]
+    start_value: Union[float, int]
+
 
 class OptimizationProblem:
 

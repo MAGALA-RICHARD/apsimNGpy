@@ -789,6 +789,7 @@ class CoreModel:
         ...     commands='[Phenology].Juvenile.Target.FixedValue',
         ...     values=256,
         ...     model_name='B_110',
+        ...     new_cultivar_name='B_110_edited',
         ...     cultivar_manager='Sow using a variable rule'
         ... )
 
@@ -964,6 +965,7 @@ class CoreModel:
                     # editing in place could work if we were reusing the model in memory of python
                     cultivar_manager_paramter_name= kwargs.get("parameter_name", 'CultivarName')
                     cultivar_manager = kwargs.get("cultivar_manager")
+                    new_cultivar_name = kwargs.get("new_cultivar_name")
                     # the reason the parameter path is split into command and values to allow passing different values during optimization
                     # Errors should mot pass silently
                     if not cultivar_manager:
@@ -984,7 +986,7 @@ class CoreModel:
 
                     plant = kwargs.get('plant')
                     CroP_Parent = get_or_check_model(rep, Models.PMF.Plant, plant, action='get', cacheit=cacheit, cache_size=cache_size)
-                    cultvarName =f"edited_cultivar_{model_name}"
+                    cultvarName =f"{new_cultivar_name}"
                     # mask out the current name such that is not accessed
                     current_name = cultvar.Name
                     cultvar.Name = f"p_{model_name}"

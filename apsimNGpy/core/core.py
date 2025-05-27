@@ -711,7 +711,7 @@ class CoreModel:
         else:
             logger.debug(f"Adding {model_type} to {parent.Name} failed, perhaps models was not found")
 
-    def edit_model(self, model_type: str, model_name: str, simulations: Union[str, list] ='all', cacheit = False, cache_size=300, **kwargs):
+    def edit_model(self, model_type: str, model_name: str, simulations: Union[str, list] ='all', cacheit = False, cache_size=300, verbose=False, **kwargs):
         """
         Modify various APSIM model components by specifying the model type and name across given simulations.
 
@@ -910,7 +910,8 @@ class CoreModel:
                         if key in ['End', 'Start']:
                             parsed_value = DateTime.Parse(value)
                             setattr(model_instance, key, parsed_value)
-                            logger.info(f"Set {key} to {parsed_value}")
+                            if verbose:
+                                logger.info(f"Set {key} to {parsed_value}")
                             setattr(self, key, value)
                         else:
                             raise AttributeError(f"no valid Clock attributes were passed. Valid arguments are: '{", ".join(validated.keys())}'")
@@ -979,9 +980,11 @@ class CoreModel:
 
                     cultvar =ModelTools.CLONER(cultvar) # let's clone
                     params = self._cultivar_params(cultvar)
+                    if isinstance(values, str):
+                        values = values.strip()
                     params[commands] = values
 
-                    updated_commands = [f"{k}={v}" for k, v in params.items()]
+                    updated_commands = [f"{k.strip()}={v}" for k, v in params.items()]
                     cultvar.set_Command(updated_commands)
 
                     plant = kwargs.get('plant')
@@ -999,7 +1002,8 @@ class CoreModel:
                     extra_args = {cultivar_manager_paramter_name: cultvarName}
                     self.edit_model(model_type = Models.Manager, simulations=sim.Name, model_name =cultivar_manager,**extra_args)
                     self.save()
-                    logger.info(f"edited Cultivar '{model_name}' and saved it as {cultvarName}")
+                    if verbose:
+                       logger.info(f"edited Cultivar '{model_name}' and saved it as {cultvarName}")
 
                 case _:
                     raise NotImplementedError(f"No edit method implemented for model type {type(model_instance)}")

@@ -5,34 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="5d471312-8496-4246-98d6-790439318160" name="Changes" comment="v0.38">
-      <change afterPath="$PROJECT_DIR$/optimizer/base.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/optimizer/resources.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_10_27_2024_12_50_AM__Changes_.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_10_27_2024_12_50_AM__Changes_.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/_modelhelpers.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/_modelhelpers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/config.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/core/core.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/core.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/runner.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/runner.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_071cd481-37fb-11f0-b5e8-089204ded298_MaizeAPSIM2024.5.7493.0.db-wal" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_0758a7b7-37fb-11f0-a08c-089204ded298_soybeanAPSIM2024.5.7493.0.db-wal" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_3d5e4eb0-37fb-11f0-8782-089204ded298_MaizeAPSIM2024.5.7493.0.db-wal" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_3d987c18-37fb-11f0-ac3c-089204ded298_soybeanAPSIM2024.5.7493.0.db-wal" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_7378e50a-37fb-11f0-89fc-089204ded298_MaizeAPSIM2024.5.7493.0.db-wal" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_73b64d1a-37fb-11f0-b2f0-089204ded298_soybeanAPSIM2024.5.7493.0.db-wal" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_f00f07bb-37fa-11f0-808f-089204ded298_MaizeAPSIM2024.5.7493.0.db-wal" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/test_folder/temp_f04ab236-37fa-11f0-a5d3-089204ded298_soybeanAPSIM2024.5.7493.0.db-wal" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core_utils/database_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/core_utils/database_utils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/optimizer/new_opt.py" beforeDir="false" afterPath="$PROJECT_DIR$/optimizer/new_opt.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_553b13e9-3746-11f0-875d-089204ded298_APSIM2024.5.7493.0.db-wal" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_a8de84be-3733-11f0-8f8a-089204ded298_APSIM2024.5.7493.0.db-wal" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_d47cf404-3733-11f0-b687-089204ded298_APSIM2024.5.7493.0.db-wal" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_eedbba45-3808-11f0-b4c0-089204ded298_APSIM2024.5.7493.0_whiteclover.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_eedbe427-3808-11f0-abb5-089204ded298_APSIM2024.5.7493.0.Report.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_eedbe427-3808-11f0-abb5-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_eedbe427-3808-11f0-abb5-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_ef69ab1d-3808-11f0-a51e-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/scratch/temp_ef69ab1d-3808-11f0-a51e-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/sobolAPSIM2024_5_7493_0.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/base.py" beforeDir="false" afterPath="$PROJECT_DIR$/optimizer/base.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/resources.py" beforeDir="false" afterPath="$PROJECT_DIR$/optimizer/resources.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -60,7 +36,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$/.." value="development" />
+        <entry key="$PROJECT_DIR$/.." value="main" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
@@ -91,70 +67,70 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_ADD_EXTERNAL_FILES": "true",
-    "Python tests.Doctests in CoreModel.executor": "Profiler",
-    "Python tests.Python tests for test_core.TestCoreModel.executor": "Run",
-    "Python.__init__.executor": "Run",
-    "Python._modelhelpers.executor": "Run",
-    "Python.api.executor": "Run",
-    "Python.apsim.executor": "Run",
-    "Python.base.executor": "Run",
-    "Python.base_data.executor": "Run",
-    "Python.batch_runner.executor": "Run",
-    "Python.cleaner.executor": "Run",
-    "Python.cli.executor": "Run",
-    "Python.client.executor": "Run",
-    "Python.config.executor": "Run",
-    "Python.core.executor": "Run",
-    "Python.data_cleaner.executor": "Run",
-    "Python.database_utils.executor": "Run",
-    "Python.diagnostics.executor": "Run",
-    "Python.do not switch off.executor": "Run",
-    "Python.glue.executor": "Run",
-    "Python.logger.executor": "Run",
-    "Python.main.executor": "Run",
-    "Python.met_functions.executor": "Run",
-    "Python.model_desc.executor": "Run",
-    "Python.model_loader.executor": "Run",
-    "Python.new_opt.executor": "Run",
-    "Python.path_finders.executor": "Run",
-    "Python.problem.executor": "Run",
-    "Python.process.executor": "Run",
-    "Python.pythonet_config.executor": "Run",
-    "Python.replacements.executor": "Run",
-    "Python.resources.executor": "Run",
-    "Python.runner.executor": "Run",
-    "Python.senstivity.executor": "Run",
-    "Python.server.executor": "Run",
-    "Python.set_bin.executor": "Run",
-    "Python.set_ups.executor": "Run",
-    "Python.settings.executor": "Run",
-    "Python.sobol.executor": "Run",
-    "Python.soilmanager.executor": "Run",
-    "Python.test_apsim.executor": "Run",
-    "Python.test_core.executor": "Run",
-    "Python.tools.executor": "Run",
-    "Python.unit_tests_core.executor": "Run",
-    "Python.utils.executor": "Run",
-    "Python.variable.executor": "Run",
-    "Python.weathermanager.executor": "Run",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "development",
-    "last_opened_file_path": "D:/package/src/apsimNGpy/optimizer",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "preferences.lookFeel",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;Python tests.Doctests in CoreModel.executor&quot;: &quot;Profiler&quot;,
+    &quot;Python tests.Python tests for test_core.TestCoreModel.executor&quot;: &quot;Run&quot;,
+    &quot;Python.__init__.executor&quot;: &quot;Run&quot;,
+    &quot;Python._modelhelpers.executor&quot;: &quot;Run&quot;,
+    &quot;Python.api.executor&quot;: &quot;Run&quot;,
+    &quot;Python.apsim.executor&quot;: &quot;Run&quot;,
+    &quot;Python.base.executor&quot;: &quot;Run&quot;,
+    &quot;Python.base_data.executor&quot;: &quot;Run&quot;,
+    &quot;Python.batch_runner.executor&quot;: &quot;Run&quot;,
+    &quot;Python.cleaner.executor&quot;: &quot;Run&quot;,
+    &quot;Python.cli.executor&quot;: &quot;Run&quot;,
+    &quot;Python.client.executor&quot;: &quot;Run&quot;,
+    &quot;Python.config.executor&quot;: &quot;Run&quot;,
+    &quot;Python.core.executor&quot;: &quot;Run&quot;,
+    &quot;Python.data_cleaner.executor&quot;: &quot;Run&quot;,
+    &quot;Python.database_utils.executor&quot;: &quot;Run&quot;,
+    &quot;Python.diagnostics.executor&quot;: &quot;Run&quot;,
+    &quot;Python.do not switch off.executor&quot;: &quot;Run&quot;,
+    &quot;Python.glue.executor&quot;: &quot;Run&quot;,
+    &quot;Python.logger.executor&quot;: &quot;Run&quot;,
+    &quot;Python.main.executor&quot;: &quot;Run&quot;,
+    &quot;Python.met_functions.executor&quot;: &quot;Run&quot;,
+    &quot;Python.model_desc.executor&quot;: &quot;Run&quot;,
+    &quot;Python.model_loader.executor&quot;: &quot;Run&quot;,
+    &quot;Python.new_opt.executor&quot;: &quot;Run&quot;,
+    &quot;Python.path_finders.executor&quot;: &quot;Run&quot;,
+    &quot;Python.problem.executor&quot;: &quot;Run&quot;,
+    &quot;Python.process.executor&quot;: &quot;Run&quot;,
+    &quot;Python.pythonet_config.executor&quot;: &quot;Run&quot;,
+    &quot;Python.replacements.executor&quot;: &quot;Run&quot;,
+    &quot;Python.resources.executor&quot;: &quot;Run&quot;,
+    &quot;Python.runner.executor&quot;: &quot;Run&quot;,
+    &quot;Python.senstivity.executor&quot;: &quot;Run&quot;,
+    &quot;Python.server.executor&quot;: &quot;Run&quot;,
+    &quot;Python.set_bin.executor&quot;: &quot;Run&quot;,
+    &quot;Python.set_ups.executor&quot;: &quot;Run&quot;,
+    &quot;Python.settings.executor&quot;: &quot;Run&quot;,
+    &quot;Python.sobol.executor&quot;: &quot;Run&quot;,
+    &quot;Python.soilmanager.executor&quot;: &quot;Run&quot;,
+    &quot;Python.test_apsim.executor&quot;: &quot;Run&quot;,
+    &quot;Python.test_core.executor&quot;: &quot;Run&quot;,
+    &quot;Python.tools.executor&quot;: &quot;Run&quot;,
+    &quot;Python.unit_tests_core.executor&quot;: &quot;Run&quot;,
+    &quot;Python.utils.executor&quot;: &quot;Run&quot;,
+    &quot;Python.variable.executor&quot;: &quot;Run&quot;,
+    &quot;Python.weathermanager.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;development&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/package/src/apsimNGpy/optimizer&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.lookFeel&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="D:\package\src\apsimNGpy\optimizer" />
@@ -259,6 +235,9 @@
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/optimizer" />
       <option name="IS_MODULE_SDK" value="true" />

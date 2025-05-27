@@ -8,18 +8,27 @@ from functools import wraps
 from collections import OrderedDict
 from abc import ABC, abstractmethod
 from wrapdisc.var import ChoiceVar, GridVar, QrandintVar, QuniformVar, RandintVar, UniformVar
-class AbstractProblem(ABC):
-    def __init__(self, max_cache_size=None):
+import inspect
+
+
+@lru_cache(maxsize=None)
+def get_function_param_names(func):
+    """
+    Return only the parameter names of a function as a tuple.
+    """
+    sig = inspect.signature(func)
+    return tuple(sig.parameters.keys())
+
+
+class AbstractProblem(ApsimModel):
+    def __init__(self, model, max_cache_size=None):
+        super().__init__(model)
         self._cache = OrderedDict()
         self.max_cache_size = max_cache_size
 
-    def insert_cache_result(self, result=None, *args,  **kwargs):
-        key = (args, tuple(sorted(kwargs.items())))
-
-        if key in self._cache:
-            return self._cache[key]
-
-        self._cache[key] = result
+    def insert_cache_result(self, args, result):
+        args  =tuple(args)
+        self._cache[args] = result
 
         if self.max_cache_size is not None and len(self._cache) > self.max_cache_size: # saturation reached according to specified maxsize free space
             self._cache.popitem(last=False)
@@ -39,21 +48,10 @@ class AbstractProblem(ABC):
     def minimize_problem(self, **kwargs):
         pass
 
-    def _evaluate_args(self, main_param, params, label, var_desc):
-        assertion_msg = 'params  must be a  '
-        if not isinstance(params, dict):
-            raise ValueError(assertion_msg)
-        if not isinstance(label, str):
-            raise ValueError('label must be a string')
-        if not isinstance(main_param, str):
-            raise ValueError('main param must be defined as a string')
-        try:
-            # CHECK IF UPDATOR IS A valid attribute from ApsimModel
-            getattr(ApsimModel, updater)
-        except AttributeError as e:
-            raise AttributeError(f'{updater} is not a valid method for updating parameters')
-
-    def auto_guess(data):
+    def _evaluate_args(self, *args, **kwargs):
+        if not all(isinstance(arg, str) for arg in args):
+            raise ValueError("all arguments must be strings")
+    def auto_guess(self, data):
         if isinstance(data, ChoiceVar):
             sample_set = np.random.choice(data.categories, size=1)[0]
         elif isinstance(data, GridVar):

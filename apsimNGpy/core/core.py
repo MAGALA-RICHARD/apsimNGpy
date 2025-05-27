@@ -405,7 +405,7 @@ class CoreModel:
         # Load and concatenate requested report data
         datas = [pd.read_csv(data_tables[r]) for r in reports]
         return pd.concat(datas, ignore_index=True, axis=kwargs.get('axis', 0))
-    @timer
+
     def run(self, report_name: Union[tuple, list, str] = None,
             simulations: Union[tuple, list] = None,
             clean_up: bool = False,

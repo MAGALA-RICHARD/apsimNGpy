@@ -27,6 +27,7 @@ class BaseProblem(AbstractProblem):
         self.labels = labels or []
         self.cache = True
         self.cache_size = cache_size
+        self.pbar = None
 
 
     def add_control(self, model_type, model_name, parameter_name,
@@ -47,7 +48,7 @@ class BaseProblem(AbstractProblem):
         for var in self.control_vars:
             starting_values.append(var.start_value)
         return tuple(starting_values)
-    def insert_controls(self, x) -> None:
+    def _insert_controls(self, x) -> None:
 
         edit = self.edit_model
 
@@ -71,10 +72,10 @@ class BaseProblem(AbstractProblem):
 
 
     def set_objective_function(self, x):
-        xl = self.insert_controls(x)
+        xl = self._insert_controls(x)
         # Try local per-instance results cache first
         if self.cache and (cached := self.get_cached(*xl)):
-
+        # Evaluation is expensive because it involves running APSIM, so the call for caching before evaluation
                return cached
 
         SCORE  = self.evaluate(x)
@@ -127,7 +128,7 @@ class BaseProblem(AbstractProblem):
                 kwargs['bounds'] = self.bounds
             max_iter = kwargs.get("options", {}).get("maxiter", 400)
             labels = [i.label for i in self.control_vars]
-            pbar = tqdm(total=max_iter, desc=f"Optimizing:: {','.join(labels)}", unit=" iterations")
+            self.pbar.open(labels, maxiter=max_iter)
             call_counter = {"count": 0}
             def wrapped_obj(x):
                 call_counter["count"] += 1
@@ -138,9 +139,24 @@ class BaseProblem(AbstractProblem):
             result = differential_evolution(wrapped_obj, x0=self.starting_values(), **kwargs)
             labels = [c.label for c in self.control_vars]
             result.x_vars = dict(zip(labels, result.x))
+            self.results = result
             return result
         finally:
+            self.pbar.close()
             self.clear_cache()
+    def  wrapped_prog_obj(x):
+                call_counter["count"] += 1
+                pbar.update(1)
+                # pbar.set_postfix({"score": round(self._last_score, 2)})
+                return self.set_objective_function(x)
+    def open_pbar(self, labels, maxiter =400):
+        self.pbar = tqdm(total=maxiter, desc=f"Optimizing:: {', '.join(labels)}", unit=" iterations")
+
+
+    def close_pbar(self):
+        if self.pbar is not None:
+           self.pbar.close()
+
     def minimize_with_de(self, args=(), strategy='best1bin',
                          maxiter=1000, popsize=15,
                          tol=0.01, mutation=(0.5, 1), recombination=0.7,
@@ -158,11 +174,13 @@ class BaseProblem(AbstractProblem):
         try:
 
             labels = [i.label for i in self.control_vars]
-            pbar = tqdm(total=maxiter, desc=f"Optimizing:: {','.join(labels)}", unit=" iterations")
+            self.labels = [i.label for i in self.control_vars]
+            self.open_pbar(labels, maxiter=maxiter)
             call_counter = {"count": 0}
+
             def wrapped_obj(x):
                 call_counter["count"] += 1
-                pbar.update(1)
+                self.pbar.update(1)
                 #pbar.set_postfix({"score": round(self._last_score, 2)})
                 return self.set_objective_function(x)
 
@@ -175,8 +193,10 @@ class BaseProblem(AbstractProblem):
                                       workers=workers, constraints=constraints)
             labels = [c.label for c in self.control_vars]
             result.x_vars = dict(zip(labels, result.x))
+            self.results =result
             return result
         finally:
+            self.close_pbar()
             self.clear_cache()
 def problemspec(model, simulation, factors):
     ...
@@ -186,7 +206,6 @@ if __name__ == "__main__":
     class Problem(BaseProblem):
         def __init__(self, model=None, simulation='Simulation'):
             super().__init__(model, simulation)
-            self.cache = True
             self.simulation = simulation
 
         def evaluate(self, x, **kwargs):
@@ -202,7 +221,7 @@ if __name__ == "__main__":
     #     'disp': True ,      # display optimization messages
     #
     # })
-    res = problem.minimize_with_de()
+    res = problem.minimize_with_de(popsize=25)
 
 
 

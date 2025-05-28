@@ -4,9 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5d471312-8496-4246-98d6-790439318160" name="Changes" comment="v0.38">
+    <list default="true" id="5d471312-8496-4246-98d6-790439318160" name="Changes" comment="optimizations">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/optimizer/base.py" beforeDir="false" afterPath="$PROJECT_DIR$/optimizer/base.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/mixed.py" beforeDir="false" afterPath="$PROJECT_DIR$/optimizer/mixed.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/optimizer/resources.py" beforeDir="false" afterPath="$PROJECT_DIR$/optimizer/resources.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_31e22510-3b1a-11f0-8e03-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_3222827c-3b1a-11f0-8f65-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
@@ -35,6 +36,7 @@
       <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_a49c56f4-3b18-11f0-be98-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_a49c56f4-3b18-11f0-be98-089204ded298_APSIM2024.5.7493.0.db-shm" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_a49c56f4-3b18-11f0-be98-089204ded298_APSIM2024.5.7493.0.db-wal" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/variables.py" beforeDir="false" afterPath="$PROJECT_DIR$/optimizer/variables.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -93,70 +95,73 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
-    &quot;Python tests.Doctests in CoreModel.executor&quot;: &quot;Profiler&quot;,
-    &quot;Python tests.Python tests for test_core.TestCoreModel.executor&quot;: &quot;Run&quot;,
-    &quot;Python.__init__.executor&quot;: &quot;Run&quot;,
-    &quot;Python._modelhelpers.executor&quot;: &quot;Run&quot;,
-    &quot;Python.api.executor&quot;: &quot;Run&quot;,
-    &quot;Python.apsim.executor&quot;: &quot;Run&quot;,
-    &quot;Python.base.executor&quot;: &quot;Run&quot;,
-    &quot;Python.base_data.executor&quot;: &quot;Run&quot;,
-    &quot;Python.batch_runner.executor&quot;: &quot;Run&quot;,
-    &quot;Python.cleaner.executor&quot;: &quot;Run&quot;,
-    &quot;Python.cli.executor&quot;: &quot;Run&quot;,
-    &quot;Python.client.executor&quot;: &quot;Run&quot;,
-    &quot;Python.config.executor&quot;: &quot;Run&quot;,
-    &quot;Python.core.executor&quot;: &quot;Run&quot;,
-    &quot;Python.data_cleaner.executor&quot;: &quot;Run&quot;,
-    &quot;Python.database_utils.executor&quot;: &quot;Run&quot;,
-    &quot;Python.diagnostics.executor&quot;: &quot;Run&quot;,
-    &quot;Python.do not switch off.executor&quot;: &quot;Run&quot;,
-    &quot;Python.glue.executor&quot;: &quot;Run&quot;,
-    &quot;Python.logger.executor&quot;: &quot;Run&quot;,
-    &quot;Python.main.executor&quot;: &quot;Run&quot;,
-    &quot;Python.met_functions.executor&quot;: &quot;Run&quot;,
-    &quot;Python.model_desc.executor&quot;: &quot;Run&quot;,
-    &quot;Python.model_loader.executor&quot;: &quot;Run&quot;,
-    &quot;Python.new_opt.executor&quot;: &quot;Run&quot;,
-    &quot;Python.path_finders.executor&quot;: &quot;Run&quot;,
-    &quot;Python.problem.executor&quot;: &quot;Run&quot;,
-    &quot;Python.process.executor&quot;: &quot;Run&quot;,
-    &quot;Python.pythonet_config.executor&quot;: &quot;Run&quot;,
-    &quot;Python.replacements.executor&quot;: &quot;Run&quot;,
-    &quot;Python.resources.executor&quot;: &quot;Run&quot;,
-    &quot;Python.runner.executor&quot;: &quot;Run&quot;,
-    &quot;Python.senstivity.executor&quot;: &quot;Run&quot;,
-    &quot;Python.server.executor&quot;: &quot;Run&quot;,
-    &quot;Python.set_bin.executor&quot;: &quot;Run&quot;,
-    &quot;Python.set_ups.executor&quot;: &quot;Run&quot;,
-    &quot;Python.settings.executor&quot;: &quot;Run&quot;,
-    &quot;Python.sobol.executor&quot;: &quot;Run&quot;,
-    &quot;Python.soilmanager.executor&quot;: &quot;Run&quot;,
-    &quot;Python.test_apsim.executor&quot;: &quot;Run&quot;,
-    &quot;Python.test_core.executor&quot;: &quot;Run&quot;,
-    &quot;Python.tools.executor&quot;: &quot;Run&quot;,
-    &quot;Python.unit_tests_core.executor&quot;: &quot;Run&quot;,
-    &quot;Python.utils.executor&quot;: &quot;Run&quot;,
-    &quot;Python.variable.executor&quot;: &quot;Run&quot;,
-    &quot;Python.weathermanager.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;development&quot;,
-    &quot;last_opened_file_path&quot;: &quot;D:/package/src/apsimNGpy/optimizer&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.lookFeel&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "Python tests.Doctests in CoreModel.executor": "Profiler",
+    "Python tests.Python tests for test_core.TestCoreModel.executor": "Run",
+    "Python.__init__.executor": "Run",
+    "Python._modelhelpers.executor": "Run",
+    "Python.api.executor": "Run",
+    "Python.apsim.executor": "Run",
+    "Python.base.executor": "Run",
+    "Python.base_data.executor": "Run",
+    "Python.batch_runner.executor": "Run",
+    "Python.cleaner.executor": "Run",
+    "Python.cli.executor": "Run",
+    "Python.client.executor": "Run",
+    "Python.config.executor": "Run",
+    "Python.core.executor": "Run",
+    "Python.data_cleaner.executor": "Run",
+    "Python.database_utils.executor": "Run",
+    "Python.diagnostics.executor": "Run",
+    "Python.do not switch off.executor": "Run",
+    "Python.glue.executor": "Run",
+    "Python.logger.executor": "Run",
+    "Python.main.executor": "Run",
+    "Python.met_functions.executor": "Run",
+    "Python.mixed.executor": "Run",
+    "Python.model_desc.executor": "Run",
+    "Python.model_loader.executor": "Run",
+    "Python.new_opt.executor": "Run",
+    "Python.optimizer.executor": "Run",
+    "Python.path_finders.executor": "Run",
+    "Python.problem.executor": "Run",
+    "Python.process.executor": "Run",
+    "Python.pythonet_config.executor": "Run",
+    "Python.replacements.executor": "Run",
+    "Python.resources.executor": "Run",
+    "Python.runner.executor": "Run",
+    "Python.senstivity.executor": "Run",
+    "Python.server.executor": "Run",
+    "Python.set_bin.executor": "Run",
+    "Python.set_ups.executor": "Run",
+    "Python.settings.executor": "Run",
+    "Python.sobol.executor": "Run",
+    "Python.soilmanager.executor": "Run",
+    "Python.test_apsim.executor": "Run",
+    "Python.test_core.executor": "Run",
+    "Python.tools.executor": "Run",
+    "Python.unit_tests_core.executor": "Run",
+    "Python.utils.executor": "Run",
+    "Python.variable.executor": "Run",
+    "Python.variables.executor": "Run",
+    "Python.weathermanager.executor": "Run",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "git-widget-placeholder": "development",
+    "last_opened_file_path": "D:/package/src/apsimNGpy/optimizer",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "preferences.lookFeel",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="D:\package\src\apsimNGpy\optimizer" />
@@ -166,7 +171,7 @@
       <recent name="D:\package\apsimNGpy\apsimNGpy\manager" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.resources">
+  <component name="RunManager" selected="Python.mixed">
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
       <module name="apsimNGpy" />
       <option name="ENV_FILES" value="" />
@@ -210,67 +215,38 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="core" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="mixed" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="apsimNGpy" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/core" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/core/core.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="true" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="database_utils" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="apsimNGpy" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/core_utils" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/core_utils/database_utils.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="true" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="new_opt" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="apsimNGpy" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/optimizer" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/optimizer/new_opt.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/optimizer/mixed.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="optimizer" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="apsimNGpy" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/optimizer" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/optimizer/optimizer.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="true" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -299,13 +275,33 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="variables" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="apsimNGpy" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/optimizer" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/optimizer/variables.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.mixed" />
         <item itemvalue="Python.resources" />
+        <item itemvalue="Python.optimizer" />
         <item itemvalue="Python.base" />
-        <item itemvalue="Python.new_opt" />
-        <item itemvalue="Python.core" />
-        <item itemvalue="Python.database_utils" />
+        <item itemvalue="Python.variables" />
       </list>
     </recent_temporary>
   </component>
@@ -405,46 +401,6 @@
       <workItem from="1748108154992" duration="7580000" />
       <workItem from="1748185932476" duration="2318000" />
       <workItem from="1748213880457" duration="16421000" />
-    </task>
-    <task id="LOCAL-00491" summary="removed_get_reports">
-      <option name="closed" value="true" />
-      <created>1748026802834</created>
-      <option name="number" value="00491" />
-      <option name="presentableId" value="LOCAL-00491" />
-      <option name="project" value="LOCAL" />
-      <updated>1748026802834</updated>
-    </task>
-    <task id="LOCAL-00492" summary="removed_get_reports">
-      <option name="closed" value="true" />
-      <created>1748026854482</created>
-      <option name="number" value="00492" />
-      <option name="presentableId" value="LOCAL-00492" />
-      <option name="project" value="LOCAL" />
-      <updated>1748026854482</updated>
-    </task>
-    <task id="LOCAL-00493" summary="v0.38">
-      <option name="closed" value="true" />
-      <created>1748027358901</created>
-      <option name="number" value="00493" />
-      <option name="presentableId" value="LOCAL-00493" />
-      <option name="project" value="LOCAL" />
-      <updated>1748027358901</updated>
-    </task>
-    <task id="LOCAL-00494" summary="v0.38">
-      <option name="closed" value="true" />
-      <created>1748027502861</created>
-      <option name="number" value="00494" />
-      <option name="presentableId" value="LOCAL-00494" />
-      <option name="project" value="LOCAL" />
-      <updated>1748027502861</updated>
-    </task>
-    <task id="LOCAL-00495" summary="v0.38">
-      <option name="closed" value="true" />
-      <created>1748027532562</created>
-      <option name="number" value="00495" />
-      <option name="presentableId" value="LOCAL-00495" />
-      <option name="project" value="LOCAL" />
-      <updated>1748027532562</updated>
     </task>
     <task id="LOCAL-00496" summary="v0.38">
       <option name="closed" value="true" />
@@ -798,7 +754,47 @@
       <option name="project" value="LOCAL" />
       <updated>1748365158881</updated>
     </task>
-    <option name="localTasksCounter" value="540" />
+    <task id="LOCAL-00540" summary="v0.38">
+      <option name="closed" value="true" />
+      <created>1748366992511</created>
+      <option name="number" value="00540" />
+      <option name="presentableId" value="LOCAL-00540" />
+      <option name="project" value="LOCAL" />
+      <updated>1748366992511</updated>
+    </task>
+    <task id="LOCAL-00541" summary="v0.38">
+      <option name="closed" value="true" />
+      <created>1748369339947</created>
+      <option name="number" value="00541" />
+      <option name="presentableId" value="LOCAL-00541" />
+      <option name="project" value="LOCAL" />
+      <updated>1748369339947</updated>
+    </task>
+    <task id="LOCAL-00542" summary="v0.38">
+      <option name="closed" value="true" />
+      <created>1748369907887</created>
+      <option name="number" value="00542" />
+      <option name="presentableId" value="LOCAL-00542" />
+      <option name="project" value="LOCAL" />
+      <updated>1748369907887</updated>
+    </task>
+    <task id="LOCAL-00543" summary="mixed.py">
+      <option name="closed" value="true" />
+      <created>1748375531972</created>
+      <option name="number" value="00543" />
+      <option name="presentableId" value="LOCAL-00543" />
+      <option name="project" value="LOCAL" />
+      <updated>1748375531972</updated>
+    </task>
+    <task id="LOCAL-00544" summary="optimizations">
+      <option name="closed" value="true" />
+      <created>1748397887038</created>
+      <option name="number" value="00544" />
+      <option name="presentableId" value="LOCAL-00544" />
+      <option name="project" value="LOCAL" />
+      <updated>1748397887038</updated>
+    </task>
+    <option name="localTasksCounter" value="545" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -816,8 +812,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="un" />
-    <MESSAGE value="bacjed data changed" />
     <MESSAGE value="new approach" />
     <MESSAGE value="update readme" />
     <MESSAGE value="updated database functgions" />
@@ -841,7 +835,9 @@
     <MESSAGE value="ModelTools" />
     <MESSAGE value="removed_get_reports" />
     <MESSAGE value="v0.38" />
-    <option name="LAST_COMMIT_MESSAGE" value="v0.38" />
+    <MESSAGE value="mixed.py" />
+    <MESSAGE value="optimizations" />
+    <option name="LAST_COMMIT_MESSAGE" value="optimizations" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -868,6 +864,11 @@
           <url>file://$PROJECT_DIR$/optimizer/variables.py</url>
           <line>4</line>
           <option name="timeStamp" value="5" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$USER_HOME$/AppData/Local/Programs/Python/Python312/Lib/site-packages/wrapdisc/wrapdisc.py</url>
+          <line>2</line>
+          <option name="timeStamp" value="6" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

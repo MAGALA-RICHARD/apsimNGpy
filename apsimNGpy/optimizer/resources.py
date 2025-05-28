@@ -8,7 +8,7 @@ from tqdm import tqdm
 from typing import Union
 SIMULATIONS = object()
 
-class BaseProblem(AbstractProblem):
+class ContinuousVariableProblem(AbstractProblem):
     def __init__(self, model: str,
                  simulation=SIMULATIONS,
                  controls=None,
@@ -80,7 +80,7 @@ class BaseProblem(AbstractProblem):
 
         SCORE  = self.evaluate(x)
         if self.cache:
-            self.insert_cache_result(*xl, result=SCORE)
+            self._insert_cache_result(*xl, result=SCORE)
         self._last_score = SCORE
         return SCORE
 
@@ -139,7 +139,7 @@ class BaseProblem(AbstractProblem):
             result = differential_evolution(wrapped_obj, x0=self.starting_values(), **kwargs)
             labels = [c.label for c in self.control_vars]
             result.x_vars = dict(zip(labels, result.x))
-            self.results = result
+            self.outcomes = result
             return result
         finally:
             self.pbar.close()
@@ -193,7 +193,7 @@ class BaseProblem(AbstractProblem):
                                       workers=workers, constraints=constraints)
             labels = [c.label for c in self.control_vars]
             result.x_vars = dict(zip(labels, result.x))
-            self.results =result
+            self.outcomes =result
             return result
         finally:
             self.close_pbar()
@@ -203,7 +203,7 @@ def problemspec(model, simulation, factors):
 if __name__ == "__main__":
     ##xample
     maize_model = "Maize"
-    class Problem(BaseProblem):
+    class Problem(ContinuousVariableProblem):
         def __init__(self, model=None, simulation='Simulation'):
             super().__init__(model, simulation)
             self.simulation = simulation

@@ -53,7 +53,7 @@ class AbstractProblem(ApsimModel):
         pass
 
     @abstractmethod
-    def minimize_problem(self, **kwargs):
+    def minimize_with_local_solver(self, **kwargs):
         pass
 
     def __str__(self):

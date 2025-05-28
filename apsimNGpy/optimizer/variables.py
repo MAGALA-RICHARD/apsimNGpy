@@ -1,5 +1,5 @@
 """
-This module contains methods for generating variables used in optimization, particular those related to APSIM replacement
+This module contains methods for generating _variables used in optimization, particular those related to APSIM replacement
 """
 
 import logging

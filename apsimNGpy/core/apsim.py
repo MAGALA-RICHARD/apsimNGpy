@@ -418,7 +418,7 @@ class ApsimModel(CoreModel):
         Perform a spin-up operation on the aPSim model.
 
         This method is used to simulate a spin-up operation in an aPSim model. During a spin-up, various soil properties or
-        variables may be adjusted based on the simulation results.
+        _variables may be adjusted based on the simulation results.
 
         Parameters:
         ----------

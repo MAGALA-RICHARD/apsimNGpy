@@ -39,7 +39,7 @@ CRS: str = 'EPSG:26915'
 MSG = """
 ERROR: APSIM Path Not Found
 
-It seems that the APSIM path is either not installed or not added to your environment variables.
+It seems that the APSIM path is either not installed or not added to your environment _variables.
 
 Please follow these steps to resolve the issue:
 
@@ -54,7 +54,7 @@ Please follow these steps to resolve the issue:
      [APSIM User Tutorials](https://apsimnextgeneration.netlify.app/user_tutorials/)
 
 3. **Set APSIM Bin Path**:  
-   After installing APSIM, make sure to add the installation path to your environment variables. You can do this by using the following Python command:
+   After installing APSIM, make sure to add the installation path to your environment _variables. You can do this by using the following Python command:
 
    ```python
    from apsimNGpy.config import set_apsim_bin_path

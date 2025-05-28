@@ -13,6 +13,7 @@ from typing import Union
 import wrapdisc
 
 
+
 @lru_cache(maxsize=None)
 def get_function_param_names(func):
     """
@@ -27,6 +28,8 @@ class AbstractProblem(ApsimModel):
         super().__init__(model)
         self._cache = OrderedDict()
         self.max_cache_size = max_cache_size
+        self.results = None
+        self.labels = []
 
     def insert_cache_result(self, *args, result):
 
@@ -52,6 +55,24 @@ class AbstractProblem(ApsimModel):
     @abstractmethod
     def minimize_problem(self, **kwargs):
         pass
+
+    def __str__(self):
+        summary = f"Optimization Problem for APSIM Model: {self.model}\n"
+        summary += f"===================================================\n"
+        summary += f"Simulation: {self.simulation}\n"
+        summary += f"Number of Control Variables: {len(self.control_vars)}\n\n"
+        summary += "Control Variables:\n"
+        for var in self.control_vars:
+            summary += (
+                f"  - {var.label} ({type(var.vtype).__name__}): "
+                f"model_type={var.model_type}, model_name='{var.model_name}', "
+                f"param='{var.parameter_name}'\n"
+                f"Results summary:: {self.results}\n"
+            )
+        return summary
+
+    def __repr__(self):
+        return self.__str__()
 
     def _evaluate_args(self, *args, **kwargs):
         if not all(isinstance(arg, str) for arg in args):

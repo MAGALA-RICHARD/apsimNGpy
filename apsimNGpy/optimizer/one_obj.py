@@ -156,8 +156,6 @@ class ContinuousVariableProblem(AbstractProblem):
 
         Optimization methods available in `scipy.optimize.minimize` include:
 
-        https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize.
-
         +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
         | Method           | Type                   | Gradient Required | Handles Bounds | Handles Constraints | Notes                                        |
         +==================+========================+===================+================+=====================+==============================================+
@@ -182,13 +180,17 @@ class ContinuousVariableProblem(AbstractProblem):
         | trust-constr     | Local (Gradient-based) | Yes               | Yes            | Yes                 | Trust-region constrained                     |
         +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
         | dogleg           | Local (Gradient-based) | Yes               | No             | No                  | Requires Hessian                             |
-        +------------------+------------------------+-------------------+-----------------+--------------------+----------------------------------------------+
+        +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
         | trust-ncg        | Local (Gradient-based) | Yes               | No             | No                  | Newton-CG trust region                       |
         +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
         | trust-exact      | Local (Gradient-based) | Yes               | No             | No                  | Trust-region, exact Hessian                  |
         +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
         | trust-krylov     | Local (Gradient-based) | Yes               | No             | No                  | Trust-region, Hessian-free                   |
         +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
+
+        Reference:
+
+        https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize.
 
         Parameters::
 
@@ -210,6 +212,7 @@ class ContinuousVariableProblem(AbstractProblem):
                 - result.x_vars (dict): A dictionary of variable labels and optimized values.
 
         Example::
+
           from apsimNGpy.optimizer.one_objective import ContinuousVariableProblem
           class Problem(ContinuousVariableProblem):
                 def __init__(self, model=None, simulation='Simulation'):
@@ -218,14 +221,14 @@ class ContinuousVariableProblem(AbstractProblem):
                 def evaluate(self, x, **kwargs):
                    return -self.run(verbose=False).results.Yield.mean()
 
-            >>> problem = Problem(model="Maize", simulation="Sim")
-            >>> problem.add_control("Manager", "Sow using a rule", "Population", vtype="grid",
-            ...                     start_value=5, values=[5, 9, 11])
-            >>> problem.add_control("Manager", "Sow using a rule", "RowSpacing", vtype="grid",
-            ...                     start_value=400, values=[400, 800, 1200])
-            >>> result = problem.minimize_with_local_solver(method='Powell', options={"maxiter": 300})
-            >>> print(result.x_vars)
-            {'Population': 9, 'RowSpacing': 800}
+          problem = Problem(model="Maize", simulation="Sim")
+          problem.add_control("Manager", "Sow using a rule", "Population", vtype="grid",
+                                start_value=5, values=[5, 9, 11])
+          problem.add_control("Manager", "Sow using a rule", "RowSpacing", vtype="grid",
+                                start_value=400, values=[400, 800, 1200])
+          result = problem.minimize_with_local_solver(method='Powell', options={"maxiter": 300})
+          print(result.x_vars)
+          {'Population': 9, 'RowSpacing': 800}
         """
 
         try:

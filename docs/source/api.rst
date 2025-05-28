@@ -110,7 +110,7 @@ ApsimModel
 ContinuousVariableProblem 
 ----------------------------------------
 
-.. function:: apsimNGpy.optimizer.one_obj.ContinuousVariableProblem(model: str, simulation=<object object at 0x0000023B870A3250>, controls=None, control_vars=None, labels=None, func=None, cache_size=400)
+.. function:: apsimNGpy.optimizer.one_obj.ContinuousVariableProblem(model: str, simulation=<object object at 0x00000299070A7250>, controls=None, control_vars=None, labels=None, func=None, cache_size=400)
 
    Defines an optimization problem for continuous variables in APSIM simulations.
 
@@ -183,8 +183,6 @@ ContinuousVariableProblem
 
         Optimization methods available in `scipy.optimize.minimize` include:
 
-        https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize.
-
         +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
         | Method           | Type                   | Gradient Required | Handles Bounds | Handles Constraints | Notes                                        |
         +==================+========================+===================+================+=====================+==============================================+
@@ -209,13 +207,17 @@ ContinuousVariableProblem
         | trust-constr     | Local (Gradient-based) | Yes               | Yes            | Yes                 | Trust-region constrained                     |
         +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
         | dogleg           | Local (Gradient-based) | Yes               | No             | No                  | Requires Hessian                             |
-        +------------------+------------------------+-------------------+-----------------+--------------------+----------------------------------------------+
+        +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
         | trust-ncg        | Local (Gradient-based) | Yes               | No             | No                  | Newton-CG trust region                       |
         +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
         | trust-exact      | Local (Gradient-based) | Yes               | No             | No                  | Trust-region, exact Hessian                  |
         +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
         | trust-krylov     | Local (Gradient-based) | Yes               | No             | No                  | Trust-region, Hessian-free                   |
         +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
+
+        Reference:
+
+        https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize.
 
         Parameters::
 
@@ -237,6 +239,7 @@ ContinuousVariableProblem
                 - result.x_vars (dict): A dictionary of variable labels and optimized values.
 
         Example::
+
           from apsimNGpy.optimizer.one_objective import ContinuousVariableProblem
           class Problem(ContinuousVariableProblem):
                 def __init__(self, model=None, simulation='Simulation'):
@@ -245,14 +248,14 @@ ContinuousVariableProblem
                 def evaluate(self, x, **kwargs):
                    return -self.run(verbose=False).results.Yield.mean()
 
-            >>> problem = Problem(model="Maize", simulation="Sim")
-            >>> problem.add_control("Manager", "Sow using a rule", "Population", vtype="grid",
-            ...                     start_value=5, values=[5, 9, 11])
-            >>> problem.add_control("Manager", "Sow using a rule", "RowSpacing", vtype="grid",
-            ...                     start_value=400, values=[400, 800, 1200])
-            >>> result = problem.minimize_with_local_solver(method='Powell', options={"maxiter": 300})
-            >>> print(result.x_vars)
-            {'Population': 9, 'RowSpacing': 800}
+          problem = Problem(model="Maize", simulation="Sim")
+          problem.add_control("Manager", "Sow using a rule", "Population", vtype="grid",
+                                start_value=5, values=[5, 9, 11])
+          problem.add_control("Manager", "Sow using a rule", "RowSpacing", vtype="grid",
+                                start_value=400, values=[400, 800, 1200])
+          result = problem.minimize_with_local_solver(method='Powell', options={"maxiter": 300})
+          print(result.x_vars)
+          {'Population': 9, 'RowSpacing': 800}
 
 .. function:: apsimNGpy.optimizer.one_obj.ContinuousVariableProblem.optimize_with_differential_evolution(self, args=(), strategy='best1bin', maxiter=1000, popsize=15, tol=0.01, mutation=(0.5, 1), recombination=0.7, rng=None, callback=None, disp=True, polish=True, init='latinhypercube', atol=0, updating='immediate', workers=1, constraints=(), x0=None, *, integrality=None, vectorized=False)
 
@@ -640,49 +643,44 @@ CoreModel
         NotImplementedError
             If the logic for the specified `model_type` is not implemented.
 
-        Examples
-        --------
+        Examples::
 
-        >>> model = CoreModel(model='Maize')
+            from apsimNGpy.core.apsim import ApsimModel
+            model = ApsimModel(model='Maize')
 
-        # Edit a cultivar model
+        Example of how to edit a cultivar model::
 
-        >>> model.edit_model(
-        ...     model_type='Cultivar',
-        ...     simulations='Simulation',
-        ...     commands='[Phenology].Juvenile.Target.FixedValue',
-        ...     values=256,
-        ...     model_name='B_110',
-        ...     new_cultivar_name='B_110_edited',
-        ...     cultivar_manager='Sow using a variable rule'
-        ... )
+            model.edit_model(model_type='Cultivar',
+                 simulations='Simulation',
+                 commands='[Phenology].Juvenile.Target.FixedValue',
+                 values=256,
+                 model_name='B_110',
+                 new_cultivar_name='B_110_edited',
+                 cultivar_manager='Sow using a variable rule')
 
-        # Edit a soil organic matter module
+        Edit a soil organic matter module::
 
-        >>> model.edit_model(
-        ...     model_type='Organic',
-        ...     simulations='Simulation',
-        ...     model_name='Organic',
-        ...     Carbon=1.23
-        ... )
+            model.edit_model(
+                 model_type='Organic',
+                 simulations='Simulation',
+                 model_name='Organic',
+                 Carbon=1.23)
 
-        # Edit multiple soil layers
+        Edit multiple soil layers::
 
-        >>> model.edit_model(
-        ...     model_type='Organic',
-        ...     simulations='Simulation',
-        ...     model_name='Organic',
-        ...     Carbon=[1.23, 1.0]
-        ... )
+            model.edit_model(
+                 model_type='Organic',
+                 simulations='Simulation',
+                 model_name='Organic',
+                 Carbon=[1.23, 1.0])
 
-        # Edit solute models
+        Example of how to edit solute models::
 
-        >>> model.edit_model(
-        ...     model_type='Solute',
-        ...     simulations='Simulation',
-        ...     model_name='NH4',
-        ...     InitialValues=0.2
-        ... )
+           model.edit_model(
+                 model_type='Solute',
+                 simulations='Simulation',
+                 model_name='NH4',
+                 InitialValues=0.2 )
 
         >>> model.edit_model(
         ...     model_type='Solute',

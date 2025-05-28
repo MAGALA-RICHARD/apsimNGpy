@@ -5,38 +5,31 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="5d471312-8496-4246-98d6-790439318160" name="Changes" comment="optimizations">
+      <change afterPath="$PROJECT_DIR$/optimizer/one_objective.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cli/_args.py" beforeDir="false" afterPath="$PROJECT_DIR$/cli/_args.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/apsim.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/apsim.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/config.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/core.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/core.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/diagnostics.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/diagnostics.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/load_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/load_model.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/soilmanager.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/soilmanager.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/experiment/_variables.py" beforeDir="false" afterPath="$PROJECT_DIR$/experiment/_variables.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/experiment/permutations.py" beforeDir="false" afterPath="$PROJECT_DIR$/experiment/permutations.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/experiment/variable.py" beforeDir="false" afterPath="$PROJECT_DIR$/experiment/variable.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/experiment/vars.py" beforeDir="false" afterPath="$PROJECT_DIR$/experiment/vars.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/manager/soilmanager.py" beforeDir="false" afterPath="$PROJECT_DIR$/manager/soilmanager.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/optimizer/base.py" beforeDir="false" afterPath="$PROJECT_DIR$/optimizer/base.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/differential_evolution.py" beforeDir="false" afterPath="$PROJECT_DIR$/optimizer/differential_evolution.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/fn.py" beforeDir="false" afterPath="$PROJECT_DIR$/optimizer/fn.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/optimizer/mixed.py" beforeDir="false" afterPath="$PROJECT_DIR$/optimizer/mixed.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/optimizer/resources.py" beforeDir="false" afterPath="$PROJECT_DIR$/optimizer/resources.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_31e22510-3b1a-11f0-8e03-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_3222827c-3b1a-11f0-8f65-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_3222827c-3b1a-11f0-8f65-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_412ba552-3b1a-11f0-b829-089204ded298_APSIM2024.5.7493.0_Maize.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_412bcc5c-3b1a-11f0-a887-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_412bcc5c-3b1a-11f0-a887-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_41703e12-3b1a-11f0-87e1-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_41703e12-3b1a-11f0-87e1-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_69a0a82a-3b1a-11f0-90b8-089204ded298_APSIM2024.5.7493.0_Maize.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_69a0ceb9-3b1a-11f0-9638-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_69a0ceb9-3b1a-11f0-9638-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_69dcf5cd-3b1a-11f0-8074-089204ded298_APSIM2024.5.7493.0.Report.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_69dcf5cd-3b1a-11f0-8074-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_69dcf5cd-3b1a-11f0-8074-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_69dcf5cd-3b1a-11f0-8074-089204ded298_APSIM2024.5.7493.0.db-shm" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_69dcf5cd-3b1a-11f0-8074-089204ded298_APSIM2024.5.7493.0.db-wal" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_9658885e-3b18-11f0-8903-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_96a6c21f-3b18-11f0-9ca2-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_96a6c21f-3b18-11f0-9ca2-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_a44e5fdc-3b18-11f0-9943-089204ded298_APSIM2024.5.7493.0_Maize.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_a44eadf2-3b18-11f0-a9b1-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_a44eadf2-3b18-11f0-a9b1-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_a49c56f4-3b18-11f0-be98-089204ded298_APSIM2024.5.7493.0.Report.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_a49c56f4-3b18-11f0-be98-089204ded298_APSIM2024.5.7493.0.apsimx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_a49c56f4-3b18-11f0-be98-089204ded298_APSIM2024.5.7493.0.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_a49c56f4-3b18-11f0-be98-089204ded298_APSIM2024.5.7493.0.db-shm" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/optimizer/scratch/temp_a49c56f4-3b18-11f0-be98-089204ded298_APSIM2024.5.7493.0.db-wal" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/resources.py" beforeDir="false" afterPath="$PROJECT_DIR$/optimizer/one_obj.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizer/simple_problem.py" beforeDir="false" afterPath="$PROJECT_DIR$/optimizer/simple_problem.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/optimizer/variables.py" beforeDir="false" afterPath="$PROJECT_DIR$/optimizer/variables.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/raw_docs/api.rst" beforeDir="false" afterPath="$PROJECT_DIR$/raw_docs/api.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/raw_docs/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/raw_docs/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/settings.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../docs/source/api.rst" beforeDir="false" afterPath="$PROJECT_DIR$/../docs/source/api.rst" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -124,6 +117,7 @@
     "Python.model_desc.executor": "Run",
     "Python.model_loader.executor": "Run",
     "Python.new_opt.executor": "Run",
+    "Python.one_objective.executor": "Run",
     "Python.optimizer.executor": "Run",
     "Python.path_finders.executor": "Run",
     "Python.problem.executor": "Run",
@@ -171,7 +165,7 @@
       <recent name="D:\package\apsimNGpy\apsimNGpy\manager" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.mixed">
+  <component name="RunManager" selected="Python.main">
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
       <module name="apsimNGpy" />
       <option name="ENV_FILES" value="" />
@@ -195,18 +189,18 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="base" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="main" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="apsimNGpy" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/optimizer" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/raw_docs" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/optimizer/base.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/raw_docs/main.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="true" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -235,6 +229,46 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="one_obj" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="apsimNGpy" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/optimizer" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="D:\package\src\apsimNGpy\optimizer\one_obj.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="one_objective" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="apsimNGpy" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/optimizer" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/optimizer/one_objective.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="optimizer" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="apsimNGpy" />
       <option name="ENV_FILES" value="" />
@@ -255,53 +289,13 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="resources" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="apsimNGpy" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/optimizer" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/optimizer/resources.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="true" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="variables" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="apsimNGpy" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/optimizer" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/optimizer/variables.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="true" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.main" />
+        <item itemvalue="Python.one_objective" />
         <item itemvalue="Python.mixed" />
-        <item itemvalue="Python.resources" />
+        <item itemvalue="Python.one_obj" />
         <item itemvalue="Python.optimizer" />
-        <item itemvalue="Python.base" />
-        <item itemvalue="Python.variables" />
       </list>
     </recent_temporary>
   </component>
@@ -401,14 +395,6 @@
       <workItem from="1748108154992" duration="7580000" />
       <workItem from="1748185932476" duration="2318000" />
       <workItem from="1748213880457" duration="16421000" />
-    </task>
-    <task id="LOCAL-00496" summary="v0.38">
-      <option name="closed" value="true" />
-      <created>1748027671098</created>
-      <option name="number" value="00496" />
-      <option name="presentableId" value="LOCAL-00496" />
-      <option name="project" value="LOCAL" />
-      <updated>1748027671098</updated>
     </task>
     <task id="LOCAL-00497" summary="v0.38">
       <option name="closed" value="true" />
@@ -794,7 +780,15 @@
       <option name="project" value="LOCAL" />
       <updated>1748397887038</updated>
     </task>
-    <option name="localTasksCounter" value="545" />
+    <task id="LOCAL-00545" summary="optimizations">
+      <option name="closed" value="true" />
+      <created>1748399279356</created>
+      <option name="number" value="00545" />
+      <option name="presentableId" value="LOCAL-00545" />
+      <option name="project" value="LOCAL" />
+      <updated>1748399279356</updated>
+    </task>
+    <option name="localTasksCounter" value="546" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

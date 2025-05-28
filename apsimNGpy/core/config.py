@@ -196,7 +196,7 @@ def set_apsim_bin_path(path, raise_errors=True):
 class Config:
     """
         The configuration class providing the leeway for the user to change the
-       global variables such as aPSim bin locations. it is deprecated
+       global _variables such as aPSim bin locations. it is deprecated
         """
 
     @classmethod

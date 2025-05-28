@@ -42,7 +42,7 @@ def set_up_data(model: str, func: callable, out_path: str = None, observed_value
     This is something you should write for your self.
     A typical evaluation function takes on the functional signature func(apsimNGpy.CoreModel.model, *args) Additional
     arguments can be passed as a tuple.
-    Example of this could be observed variables to be compared with the
+    Example of this could be observed _variables to be compared with the
     predicted, where a loss function like rmse errors can be computed.
     In case of extra argument, these should be
     passed via options e.g., options ={args: None}
@@ -75,7 +75,7 @@ def add_control_var(self, updater: str, main_param, params: dict, label: str, **
         }
     Note that this main_param = 'param_values', which is excluded here.
 
-    To optimize variables defined via the manager module, use `update_mgt_by_path` and define params as: {
+    To optimize _variables defined via the manager module, use `update_mgt_by_path` and define params as: {
     'path': "Simulation.Manager.script_name.None.parameter_name" } and main_parm  = 'param_values', Here,
     'None' represents the path to recompile the model to, and 'Simulation' is typically the name used in the
     simulation, though it can vary. For further information, refer to the CoreModel API documentation.

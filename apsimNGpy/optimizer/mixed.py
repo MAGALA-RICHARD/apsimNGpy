@@ -1,5 +1,5 @@
 """
-This allows for mixed variable optimization by encoding the categorical variables
+This allows for mixed variable optimization by encoding the categorical _variables
 """
 from pathlib import Path
 
@@ -11,7 +11,7 @@ from apsimNGpy.optimizer.simple_problem import Problem, Solvers, auto_guess
 from scipy.optimize import minimize, differential_evolution
 import subprocess
 from tqdm import tqdm
-from apsimNGpy.optimizer.resources import AbstractProblem, SIMULATIONS, ContinuousVariableProblem, cache, VarDesc
+from apsimNGpy.optimizer.one_obj import AbstractProblem, SIMULATIONS, ContinuousVariableProblem, cache, VarDesc
 try:
     import wrapdisc
 except ModuleNotFoundError as mnf:
@@ -46,6 +46,58 @@ def _variable_type(type_name: str) -> str:
 
 
 class MixedVariableProblem(ContinuousVariableProblem):
+    """
+           Defines an optimization problem for continuous variables in APSIM simulations.
+
+           This class enables the user to configure and solve optimization problems involving continuous
+           control variables in APSIM models. It provides methods for setting up control variables,
+           applying bounds and starting values, inserting variable values into APSIM model configurations,
+           and running optimization routines using local solvers or differential evolution.
+
+           Inherits from:
+               ``ContinuousVariableProblem``
+
+           Parameters:
+               ``model (str):`` The name or path of the APSIM template file.
+               .
+               ``simulation (str or list, optional)``: The name(s) of the APSIM simulation(s) to target.
+                                                   Defaults to all simulations.
+
+               ``control_vars`` (list, optional): A list of VarDesc instances defining variable metadata.
+
+               ``labels (list, optional)``: Variable labels for display and results tracking.
+
+               ``cache_size (int):`` Maximum number of results to store in the evaluation cache.
+
+           Attributes:
+               ``model (str):`` The APSIM model template file name.
+               ``simulation (str):`` Target simulation(s).
+               ``controls (list):`` Defined control variables.
+               ``control_vars (list):`` List of VarDesc instances for optimization.
+               ``labels (list): Labels`` for variables.
+               ``pbar (tqdm):`` Progress bar instance.
+               ```cache (bool):`` Whether to cache evaluation results.
+               ```cache_size (int):`` Size of the local cache.
+
+           Methods:
+               ``add_control(...):`` Add a new control variable to the optimization problem.
+               ``bounds:`` Return the bounds for all control variables as a tuple.
+               ``starting_values():`` Return the initial values for all control variables.
+               ``minimize_with_local_solver(...):`` Optimize using `scipy.optimize.minimize`.
+               ``optimize_with_differential_evolution(...):`` Optimize using `scipy.optimize.differential_evolution`.
+               ``_open_pbar(labels, maxiter):`` Open a progress bar.
+               ``_close_pbar():`` Close the progress bar.
+
+           Example:
+               >>> class Problem(ContinuousVariableProblem):
+               ...     def evaluate(self, x):
+               ...         return -self.run(verbose=False).results.Yield.mean()
+
+               >>> problem = Problem(model="Maize", simulation="Sim")
+               >>> problem.add_control("Manager", "Sow using a rule", "Population", int, 5, bounds=[2, 15])
+               >>> result = problem.minimize_with_local_solver(method='Powell')
+               >>> print(result.x_vars)
+           """
     def __init__(self, model: str,
                  simulation=SIMULATIONS,
                  controls=None,
@@ -80,18 +132,20 @@ class MixedVariableProblem(ContinuousVariableProblem):
             q=None
     ) -> "ContinuousVariableProblem":
         """
-        Adds a control variable to the optimization problem.
+        Adds a control variable to the optimization problem. Under the hood, the variables are edited using ``edit_method``.
+        So, take note of the similarities in the requested parameters
 
         Parameters:
-            model_type (str): APSIM model type (e.g., 'Manager').
-            model_name (str): Name of the model instance.
-            parameter_name (str): Name of the parameter to control.
-            vtype (type): Variable type class (e.g., ChoiceVar, RandintVar).
-            start_value: Initial value for the variable.
-            bounds (tuple, optional): Lower and upper bounds for numeric variables.
-            categories (list, optional): Category names for categorical variables.
-            values (list, optional): Grid values for GridVar.
-            q (float, optional): Quantization value for quantized variables.
+            ``model_type (str)``: APSIM model type (e.g., 'Manager').
+            ``model_name (str)``: Name of the model instance.
+            ``parameter_name (str)``: Name of the parameter to control.
+            ``vtype (type)``: Variable type class (e.g., 'choice, grid, qrandint, quniform, randint, uniform'
+           ).
+            ``start_value``: Initial value for the variable.
+            ``bounds (tuple, optional)``: Lower and upper bounds for numeric variables.
+            ``categories (list, optional)``: Category names for categorical variables.
+            ``values (list, optional)``: Grid values for GridVar.
+            ``q (float, optional)``: Quantization value for quantized variables.
 
         Returns:
             self: Enables method chaining.
@@ -153,7 +207,7 @@ class MixedVariableProblem(ContinuousVariableProblem):
         return x
 
     @property
-    def variables(self):
+    def _variables(self):
         var_s = []
         for index, value in enumerate(self.control_vars):
            var_s.append(value.vtype)
@@ -161,32 +215,32 @@ class MixedVariableProblem(ContinuousVariableProblem):
 
     from scipy.optimize import differential_evolution
     from tqdm import tqdm
-    def set_objective_function(self, x):
+    def _set_objective_function(self, x):
         xl = self._insert_controls(x)
         SCORE  = self.evaluate(xl)
         return SCORE
 
-    def minimize_with_de(self,
-            args=(),
-            strategy='best1bin',
-            maxiter=1000,
-            popsize=15,
-            tol=0.01,
-            mutation=(0.5, 1),
-            recombination=0.7,
-            rng=None,
-            callback=None,
-            disp=True,
-            polish=True,
-            init='latinhypercube',
-            atol=0,
-            updating='immediate',
-            workers=1,
-            constraints=(),
-            x0=None,
-            *,
-            integrality=None,
-            vectorized=False):
+    def optimize_with_differential_evolution(self,
+                                             args=(),
+                                             strategy='best1bin',
+                                             maxiter=1000,
+                                             popsize=15,
+                                             tol=0.01,
+                                             mutation=(0.5, 1),
+                                             recombination=0.7,
+                                             rng=None,
+                                             callback=None,
+                                             disp=True,
+                                             polish=True,
+                                             init='latinhypercube',
+                                             atol=0,
+                                             updating='immediate',
+                                             workers=1,
+                                             constraints=(),
+                                             x0=None,
+                                             *,
+                                             integrality=None,
+                                             vectorized=False):
         """
         Runs differential evolution on the wrapped objective function.
         Reference: https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.differential_evolution.html
@@ -194,17 +248,17 @@ class MixedVariableProblem(ContinuousVariableProblem):
 
         try:
 
-            self.open_pbar(labels = [l.label for l in self.control_vars])
+            self._open_pbar(labels = [l.label for l in self.control_vars])
             call_counter = {"count": 0}
-            func = getattr(self, 'set_objective_function')
+            func = getattr(self, '_set_objective_function')
             def wrapped_obj(x, *args):
                 call_counter["count"] += 1
                 self.pbar.update(1)
-                return self.set_objective_function(x)
+                return self._set_objective_function(x)
 
             wrapped = Objective(
                 func= wrapped_obj,
-                variables=self.variables
+                variables=self._variables
             )
 
             bounds = wrapped.bounds
@@ -233,7 +287,7 @@ class MixedVariableProblem(ContinuousVariableProblem):
                 init=init,
                 atol=atol,
                 updating='deferred',
-                workers=1,
+                workers=workers,
                 constraints=constraints,
                 x0=encoded_initial,
                 integrality=integrality,
@@ -248,22 +302,106 @@ class MixedVariableProblem(ContinuousVariableProblem):
 
         finally:
             self.clear_cache()
-            self.close_pbar()
+            self._close_pbar()
 
-    def minimize(self, **kwargs):
+    def minimize_with_local_solver(self, **kwargs):
+        """
+            Run a local optimization solver (e.g., Powell, L-BFGS-B, etc.) on given defined problem.
+
+            This method wraps ``scipy.optimize.minimize`` and handles mixed-variable encoding internally
+            using the `Objective` wrapper from ``wrapdisc``. It supports any method supported by SciPy's
+            `minimize` function and uses the encoded starting values and variable bounds. This decoding implies that you can optimize categorical variable such as start dates or
+            cultivar paramter with xy numerical values.
+
+            Progress is tracked using a progress bar, and results are automatically decoded and stored
+            in ``self.outcomes``.
+
+            Parameters:
+                **kwargs: Keyword arguments passed directly to `scipy.optimize.minimize`.
+                          Important keys include:
+                            - ``method (str)``: Optimization algorithm (e.g., 'Powell', 'L-BFGS-B').
+                            - ``options (dict)``: Dictionary of solver options like maxiter, disp, etc.
+        scipy.optimize.minimize provide a number of optimization algorithms see table below or for details check their website:
+        https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
+        +------------------+-----------------------+-------------------+----------------+---------------------+---------------------------------------------+
+        | Method           | Type                  | Gradient Required | Handles Bounds | Handles Constraints | Notes                                       |
+        +==================+=======================+===================+================+=====================+=============================================+
+        | Nelder-Mead      | Local (Derivative-free)| No                | No             | No                  | Simplex algorithm                           |
+        +------------------+-----------------------+-------------------+----------------+---------------------+---------------------------------------------+
+        | Powell           | Local (Derivative-free)| No                | Yes            | No                  | Direction set method                        |
+        +------------------+-----------------------+-------------------+----------------+---------------------+---------------------------------------------+
+        | CG               | Local (Gradient-based) | Yes               | No             | No                  | Conjugate Gradient                          |
+        +------------------+-----------------------+-------------------+----------------+---------------------+---------------------------------------------+
+        | BFGS             | Local (Gradient-based) | Yes               | No             | No                  | Quasi-Newton                                |
+        +------------------+-----------------------+-------------------+----------------+---------------------+---------------------------------------------+
+        | Newton-CG        | Local (Gradient-based) | Yes               | No             | No                  | Newton's method                             |
+        +------------------+-----------------------+-------------------+----------------+---------------------+---------------------------------------------+
+        | L-BFGS-B         | Local (Gradient-based) | Yes               | Yes            | No                  | Limited memory BFGS                         |
+        +------------------+-----------------------+-------------------+----------------+---------------------+---------------------------------------------+
+        | TNC              | Local (Gradient-based) | Yes               | Yes            | No                  | Truncated Newton                            |
+        +------------------+-----------------------+-------------------+----------------+---------------------+---------------------------------------------+
+        | COBYLA           | Local (Derivative-free)| No                | No             | Yes                 | Constrained optimization by linear approx.  |
+        +------------------+-----------------------+-------------------+----------------+---------------------+---------------------------------------------+
+        | SLSQP            | Local (Gradient-based) | Yes               | Yes            | Yes                 | Sequential Least Squares Programming        |
+        +------------------+-----------------------+-------------------+----------------+---------------------+---------------------------------------------+
+        | trust-constr     | Local (Gradient-based) | Yes               | Yes            | Yes                 | Trust-region constrained                    |
+        +------------------+-----------------------+-------------------+----------------+---------------------+---------------------------------------------+
+        | dogleg           | Local (Gradient-based) | Yes               | No             | No                  | Requires Hessian                            |
+        +------------------+-----------------------+-------------------+----------------+---------------------+---------------------------------------------+
+        | trust-ncg        | Local (Gradient-based) | Yes               | No             | No                  | Newton-CG trust region                      |
+        +------------------+-----------------------+-------------------+----------------+---------------------+---------------------------------------------+
+        | trust-exact      | Local (Gradient-based) | Yes               | No             | No                  | Trust-region, exact Hessian                 |
+        +------------------+-----------------------+-------------------+----------------+---------------------+---------------------------------------------+
+        | trust-krylov     | Local (Gradient-based) | Yes               | No             | No                  | Trust-region, Hessian-free                  |
+        +------------------+-----------------------+-------------------+----------------+---------------------+---------------------------------------------+
+
+            Returns:
+                result (OptimizeResult): The result of the optimization, with an additional
+                                         `x_vars` attribute that provides a labeled dict of optimized
+                                         control variable values.
+
+            Raises:
+                Any exceptions raised by `scipy.optimize.minimize`.
+
+            Example:
+            --------
+            The following example shows how to use this method, the evaluation is very basic, but you
+            can add a more advanced evaluation by adding a loss function e.g RMSE os NSE by comparing with the observed and predicted,
+            and changing the control variables::
+
+            class Problem(MixedVariableProblem):
+                def __init__(self, model=None, simulation='Simulation'):
+                    super().__init__(model, simulation)
+                    self.simulation = simulation
+
+                def evaluate(self, x, **kwargs):
+                    # All evlauations can be defined inside here, by taking into accound the fact that the results object returns a data frame
+                    # Also, you can specify the database table or report name holding the ``results``
+                    return -self.run(verbose=False).results.Yield.mean() # A return is based on your objective definition, but as I said this could a ``RRMSE`` error or any other loss function
+
+            # now we are ready to initialise the problem
+            >>> problem = Problem(model="Maize", simulation="Simulation")
+            >>> problem.add_control("Manager", "Sow using a variable rule", "Population", vtype="grid",
+            ...                     start_value=5, values=[5, 9, 11])
+            >>> problem.add_control("Manager", "Sow using a variable rule", "RowSpacing", vtype="grid",
+            ...                     start_value=400, values=[400, 800, 1200])
+            >>> result = problem.minimize_with_local_solver(method="Powell")
+            >>> print(result.x_vars)
+            {'Population': 11, 'RowSpacing': 800}
+            """
         try:
 
-            self.open_pbar(labels=[i.label for i in self.control_vars])
+            self._open_pbar(labels=[i.label for i in self.control_vars])
             call_counter = {"count": 0}
-            func = getattr(self, 'set_objective_function')
+            func = getattr(self, '_set_objective_function')
             def wrapped_obj(x, *args):
                 call_counter["count"] += 1
                 self.pbar.update(1)
-                return self.set_objective_function(x)
+                return self._set_objective_function(x)
 
             wrapped = Objective(
                 func= wrapped_obj,
-                variables=self.variables
+                variables=self._variables
             )
 
             bounds = wrapped.bounds
@@ -285,7 +423,7 @@ class MixedVariableProblem(ContinuousVariableProblem):
 
         finally:
             self.clear_cache()
-            self.close_pbar()
+            self._close_pbar()
 
 if __name__ == "__main__":
     maize_model = "Maize"
@@ -300,9 +438,9 @@ if __name__ == "__main__":
 
     problem = Problem(maize_model, simulation='Simulation')
     problem.add_control('Manager', "Sow using a variable rule", 'Population',vtype='grid',
-                        start_value=5, values=[2,11, 13, 9, 5, 15])
+                        start_value=5, values=[2,11, 12.5, 12, 10, 13,  5, 15])
     problem.add_control('Manager', "Sow using a variable rule", 'RowSpacing', vtype='grid', start_value=400,
                         values=[400, 600, 750, 800, 900, 1000, 1100, 1200])
-    de_res = problem.minimize_with_de()
-    res= problem.minimize(method='Powell')
+    #de_res = problem.optimize_with_differential_evolution()
+    res= problem.minimize_with_local_solver(method='Powell')
 

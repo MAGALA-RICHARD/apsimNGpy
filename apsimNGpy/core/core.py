@@ -862,7 +862,7 @@ class CoreModel:
         ...     End='2021-01-12'
         ... )
 
-        # Edit report variables
+        # Edit report _variables
 
         >>> model.edit_model(
         ...     model_type='Report',
@@ -871,7 +871,7 @@ class CoreModel:
         ...     variable_spec='[Maize].AboveGround.Wt as abw'
         ... )
 
-        # Multiple report variables
+        # Multiple report _variables
 
         >>> model.edit_model(
         ...     model_type='Report',
@@ -1012,16 +1012,16 @@ class CoreModel:
 
     def add_report_variable(self, variable_spec: Union[list, str, tuple], report_name: str = None, set_event_names:Union[str,list]=None):
         """
-        This adds a report variable to the end of other variables, if you want to change the whole report use change_report
+        This adds a report variable to the end of other _variables, if you want to change the whole report use change_report
 
         Parameters
         -------------------
 
-        ``variable_spec``: (str, required): list of text commands for the report variables e.g., '[Clock].Today as Date'
+        ``variable_spec``: (str, required): list of text commands for the report _variables e.g., '[Clock].Today as Date'
 
         ``param report_name``: (str, optional): name of the report variable if not specified the first accessed report object will be altered
 
-        ``set_event_names`` (list or str, optional): A list of APSIM events that trigger the recording of variables.
+        ``set_event_names`` (list or str, optional): A list of APSIM events that trigger the recording of _variables.
                                                      Defaults to ['[Clock].EndOfYear'] if not provided.
         :Returns:
             returns instance of apsimNGpy.core.core.apsim.ApsimModel or apsimNGpy.core.core.apsim.CoreModel
@@ -2088,7 +2088,7 @@ class CoreModel:
     def change_report(self, *, command: str, report_name='Report', simulations=None, set_DayAfterLastOutput=None,
                       **kwargs):
         """
-            Set APSIM report variables for specified simulations.
+            Set APSIM report _variables for specified simulations.
 
         This function allows you to set the variable names for an APSIM report
         in one or more simulations.
@@ -2827,12 +2827,12 @@ class CoreModel:
         Adds a new data base table, which ``APSIM`` calls ``Report`` (Models.Report) to the ``Simulation`` under a Simulation Zone.
 
         This is different from ``add_report_variable`` in that it creates a new, named report
-        table that collects data based on a given list of variables and events.
+        table that collects data based on a given list of _variables and events.
 
         :Args:
             ``variable_spec`` (list or str): A list of APSIM variable paths to include in the report table.
                                          If a string is passed, it will be converted to a list.
-            ``set_event_names`` (list or str, optional): A list of APSIM events that trigger the recording of variables.
+            ``set_event_names`` (list or str, optional): A list of APSIM events that trigger the recording of _variables.
                                                      Defaults to ['[Clock].EndOfYear'] if not provided. other examples include '[Clock].StartOfYear', '[Clock].EndOfsimulation',
                                                      '[crop_name].Harvesting' etc.,,
             ``rename`` (str): The name of the report table to be added. Defaults to 'my_table'.
@@ -2874,7 +2874,7 @@ class CoreModel:
             set_event_names = [set_event_names]
         set_event_names = list(set(set_event_names))
 
-        # Assign variables and events to the report object
+        # Assign _variables and events to the report object
         report.VariableNames = variable_spec
 
         set_event_names = list(set(set_event_names))

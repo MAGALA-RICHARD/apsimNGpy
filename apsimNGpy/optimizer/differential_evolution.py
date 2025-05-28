@@ -1,5 +1,5 @@
 """
-This allows for multi-objective optimization and mixed variable optimization by encoding the categorical variables
+This allows for multi-objective optimization and mixed variable optimization by encoding the categorical _variables
 """
 import subprocess
 

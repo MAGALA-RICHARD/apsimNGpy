@@ -11,7 +11,7 @@ from apsimNGpy.optimizer.simple_problem import Problem, Solvers, auto_guess
 from scipy.optimize import minimize, differential_evolution
 import subprocess
 from tqdm import tqdm
-from apsimNGpy.optimizer.resources import AbstractProblem, SIMULATIONS, BaseProblem, cache, VarDesc
+from apsimNGpy.optimizer.resources import AbstractProblem, SIMULATIONS, ContinuousVariableProblem, cache, VarDesc
 try:
     import wrapdisc
 except ModuleNotFoundError as mnf:
@@ -45,7 +45,7 @@ def _variable_type(type_name: str) -> str:
           raise ValueError(f"Invalid type '{type_name}'. Use one of: {', '.join(var_map)}")
 
 
-class MixedVariableProblem(BaseProblem):
+class MixedVariableProblem(ContinuousVariableProblem):
     def __init__(self, model: str,
                  simulation=SIMULATIONS,
                  controls=None,
@@ -78,7 +78,7 @@ class MixedVariableProblem(BaseProblem):
             categories=None,
             values=None,
             q=None
-    ) -> "BaseProblem":
+    ) -> "ContinuousVariableProblem":
         """
         Adds a control variable to the optimization problem.
 
@@ -243,7 +243,7 @@ class MixedVariableProblem(BaseProblem):
             # Attach labeled solution
             decoded_solution = wrapped.decode(result.x)
             result.x_vars = dict(zip(self.labels, decoded_solution))
-            self.results = result
+            self.outcomes = result
             return result
 
         finally:
@@ -280,7 +280,7 @@ class MixedVariableProblem(BaseProblem):
             # Attach labeled solution
             decoded_solution = wrapped.decode(result.x)
             result.x_vars = dict(zip(self.labels, decoded_solution))
-            self.results = result
+            self.outcomes = result
             return result
 
         finally:

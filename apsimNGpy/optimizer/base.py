@@ -28,10 +28,10 @@ class AbstractProblem(ApsimModel):
         super().__init__(model)
         self._cache = OrderedDict()
         self.max_cache_size = max_cache_size
-        self.results = None
+        self._outcomes = None
         self.labels = []
 
-    def insert_cache_result(self, *args, result):
+    def _insert_cache_result(self, *args, result):
 
         args  =tuple(args)
         self._cache[args] = result
@@ -67,17 +67,25 @@ class AbstractProblem(ApsimModel):
                 f"  - {var.label} ({type(var.vtype).__name__}): "
                 f"model_type={var.model_type}, model_name='{var.model_name}', "
                 f"param='{var.parameter_name}'\n"
-                f"Results summary:: {self.results}\n"
+                f"Results summary:: {self.outcomes}\n"
             )
         return summary
 
     def __repr__(self):
         return self.__str__()
 
+    @property
+    def outcomes(self):
+        return self._outcomes
+
+    @outcomes.setter
+    def outcomes(self, value):
+        self._outcomes = value
+
     def _evaluate_args(self, *args, **kwargs):
         if not all(isinstance(arg, str) for arg in args):
             raise ValueError("all arguments must be strings")
-    def auto_guess(self, data):
+    def _auto_guess(self, data):
         if isinstance(data, ChoiceVar):
             sample_set = np.random.choice(data.categories, size=1)[0]
         elif isinstance(data, GridVar):
@@ -106,15 +114,3 @@ class VarDesc:
 
 
 
-class OptimizationProblem:
-
-    def __init__(self, problem, args, kwargs) -> None:
-        super().__init__()
-        self.problem = problem
-        self.args = args
-        self.kwargs = kwargs
-
-    def __call__(self, x):
-        out = dict()
-        self.problem._evaluate(x, out, *self.args, **self.kwargs)
-        return out

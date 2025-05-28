@@ -6,7 +6,7 @@ import logging
 from collections import namedtuple
 
 import numpy as np
-
+from typing import Tuple, Any
 from apsimNGpy.core_utils.utils import timer
 from apsimNGpy.core.apsim import ApsimModel
 import wrapdisc
@@ -51,7 +51,7 @@ class CropVar:
     main_param: str
     params: dict
     label: str
-    var_type: wrapdisc.var
+    var_type: Any
 
 
 def _evaluate_args(updater, main_param, params, label, var_desc):

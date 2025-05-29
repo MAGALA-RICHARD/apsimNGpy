@@ -349,7 +349,9 @@ Visualise the results. please note that python provide very many plotting librar
 .. code-block:: python
 
     # Visualize the simulation results
-    res = apsim.results['MaizeR']  # Replace with the appropriate report name
+    res = apsim.results  # data frame reading directly from Report
+    # alternativel
+    res = apsim.get_simulated_output("Report")
     plot_data(df['Clock.Today'], df.Yield, xlabel='Date', ylabel='Soybean Yield (kg/ha)')
 
 Finally, the `plot_data` function is used to visualize the simulation results. Replace 'df['Clock.Today']' and `df.Yield` with the appropriate report name and column from your simulation results.

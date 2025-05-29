@@ -356,7 +356,7 @@ Visualise the results. please note that python provide very many plotting librar
 
 Finally, the ``plot_data`` function is used to visualize the simulation results. Replace ``df['Clock.Today']`` and ``df.Yield`` with the appropriate columns names from your simulation results.
 
-A graph similar to the example below should appear
+A graph similar to the example below should appear.
 
 Congratulations you have successfully used apsimNGpy package
 *********************************************************************************

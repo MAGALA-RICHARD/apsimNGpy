@@ -110,7 +110,7 @@ ApsimModel
 ContinuousVariableProblem 
 ----------------------------------------
 
-.. function:: apsimNGpy.optimizer.one_obj.ContinuousVariableProblem(model: str, simulation=<object object at 0x00000299070A7250>, controls=None, control_vars=None, labels=None, func=None, cache_size=400)
+.. function:: apsimNGpy.optimizer.one_obj.ContinuousVariableProblem(model: str, simulation=<object object at 0x000001072723B250>, controls=None, control_vars=None, labels=None, func=None, cache_size=400)
 
    Defines an optimization problem for continuous variables in APSIM simulations.
 
@@ -681,69 +681,60 @@ CoreModel
                  simulations='Simulation',
                  model_name='NH4',
                  InitialValues=0.2 )
+           model.edit_model(
+                model_type='Solute',
+                simulations='Simulation',
+                model_name='Urea',
+                InitialValues=0.002)
 
-        >>> model.edit_model(
-        ...     model_type='Solute',
-        ...     simulations='Simulation',
-        ...     model_name='Urea',
-        ...     InitialValues=0.002
-        ... )
+        Edit a manager script::
 
-        # Edit a manager script
+           model.edit_model(
+                model_type='Manager',
+                simulations='Simulation',
+                model_name='Sow using a variable rule',
+                population=8.4)
 
-        >>> model.edit_model(
-        ...     model_type='Manager',
-        ...     simulations='Simulation',
-        ...     model_name='Sow using a variable rule',
-        ...     population=8.4
-        ... )
+        Edit surface organic matter parameters::
 
-        # Edit surface organic matter parameters
+            model.edit_model(
+                model_type='SurfaceOrganicMatter',
+                simulations='Simulation',
+                model_name='SurfaceOrganicMatter',
+                InitialResidueMass=2500)
 
-        >>> model.edit_model(
-        ...     model_type='SurfaceOrganicMatter',
-        ...     simulations='Simulation',
-        ...     model_name='SurfaceOrganicMatter',
-        ...     InitialResidueMass=2500
-        ... )
+            model.edit_model(
+                model_type='SurfaceOrganicMatter',
+                simulations='Simulation',
+                model_name='SurfaceOrganicMatter',
+                InitialCNR=85)
 
-        >>> model.edit_model(
-        ...     model_type='SurfaceOrganicMatter',
-        ...     simulations='Simulation',
-        ...     model_name='SurfaceOrganicMatter',
-        ...     InitialCNR=85
-        ... )
+        Edit Clock start and end dates::
 
-        # Edit Clock start and end dates
+            model.edit_model(
+                model_type='Clock',
+                simulations='Simulation',
+                model_name='Clock',
+                Start='2021-01-01',
+                End='2021-01-12')
 
-        >>> model.edit_model(
-        ...     model_type='Clock',
-        ...     simulations='Simulation',
-        ...     model_name='Clock',
-        ...     Start='2021-01-01',
-        ...     End='2021-01-12'
-        ... )
+        Edit report _variables::
 
-        # Edit report _variables
+            model.edit_model(
+                model_type='Report',
+                simulations='Simulation',
+                model_name='Report',
+                variable_spec='[Maize].AboveGround.Wt as abw')
 
-        >>> model.edit_model(
-        ...     model_type='Report',
-        ...     simulations='Simulation',
-        ...     model_name='Report',
-        ...     variable_spec='[Maize].AboveGround.Wt as abw'
-        ... )
+        Multiple report _variables::
 
-        # Multiple report _variables
-
-        >>> model.edit_model(
-        ...     model_type='Report',
-        ...     simulations='Simulation',
-        ...     model_name='Report',
-        ...     variable_spec=[
-        ...         '[Maize].AboveGround.Wt as abw',
-        ...         '[Maize].Grain.Total.Wt as grain_weight'
-        ...     ]
-        ... )
+            model.edit_model(
+                model_type='Report',
+                simulations='Simulation',
+                model_name='Report',
+                variable_spec=[
+                '[Maize].AboveGround.Wt as abw',
+                '[Maize].Grain.Total.Wt as grain_weight'])
 
 .. function:: apsimNGpy.core.core.CoreModel.examine_management_info(self, simulations: Union[list, tuple] = None)
 

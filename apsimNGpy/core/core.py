@@ -441,6 +441,15 @@ class CoreModel:
        ``RuntimeError``
             Raised if the ``APSIM`` run is unsuccessful. Common causes include ``missing meteorological files``,
             mismatched simulation ``start`` dates with ``weather`` data, or other ``configuration issues``.
+
+       Example:
+
+       Instatiate an ``apsimNGpy.core.apsim.ApsimModel`` object and run ::
+
+              from apsimNGpy.core.apsim import ApsimModel
+              model = ApsimModel(model= 'Maize')# replace with your path to the apsim template model
+              model.run(report_name = "Report")
+
              """
         try:
             # Dispose any existing data store handle
@@ -481,9 +490,11 @@ class CoreModel:
     @property
     def simulated_results(self) -> pd.DataFrame:
         """
+        @deprecated
 
         @return: pandas data frame containing the data
-        Example:
+        Example::
+
          >>> from apsimNGpy.core.base_data import load_default_simulations
          >>> fmodel = load_default_simulations(crop ='Maize', simulations_object=False) # get path only
          >>> model = CoreModel(fmodel)
@@ -540,11 +551,13 @@ class CoreModel:
 
         Example:
         -------
-        >>> from apsimNGpy.core.base_data import load_default_simulations
-        >>> model  = load_default_simulations('Maize')
-        >>> model.clone_model('Models.Clock', "clock1", 'Models.Simulation', rename="new_clock",adoptive_parent_type= 'Models.Core.Simulations', adoptive_parent_name="Simulation")
-        ```
-        This will create a cloned version of `"clock1"` and place it under `"Simulation"` with the new name `"new_clock"`.
+         Create a cloned version of `"clock1"` and place it under `"Simulation"` with the new name ``"new_clock`"`::
+
+            from apsimNGpy.core.base_data import load_default_simulations
+            model  = load_default_simulations('Maize')
+            model.clone_model('Models.Clock', "clock1", 'Models.Simulation', rename="new_clock",adoptive_parent_type= 'Models.Core.Simulations', adoptive_parent_name="Simulation")
+
+
 
         """
         # Reference to the APSIM cloning function
@@ -587,13 +600,14 @@ class CoreModel:
         Returns:
             str: The full path to the model if found, otherwise None.
 
-        Example:
-            >>> from apsimNGpy import core  # doctest: +SKIP
-             >>> model =core.base_data.load_default_simulations(crop = "Maize")  # doctest: +SKIP
-             >>> model.find_model("Weather")  # doctest: +SKIP
+        Example::
+
+             from apsimNGpy import core  # doctest: +SKIP
+             model =core.base_data.load_default_simulations(crop = "Maize")  # doctest: +SKIP
+             model.find_model("Weather")  # doctest: +SKIP
              'Models.Climate.Weather'
-             >>> model.find_model("Clock")  # doctest: +SKIP
-              'Models.Clock'
+             model.find_model("Clock")  # doctest: +SKIP
+             'Models.Clock'
 
         """
         return _eval_model(model_name)
@@ -627,19 +641,25 @@ class CoreModel:
             Added models from ``Models namespace`` are initially empty. Additional configuration is required to set parameters.
             For example, after adding a Clock module, you must set the start and end dates.
 
-        Example:
+        Example::
 
-         >>> from apsimNGpy import core
-         >>> from apsimNGpy.core.core import Models
-         >>> model =core.base_data.load_default_simulations(crop = "Maize")
-         >>> model.remove_model(Models.Clock) # first delete model
-         >>> model.add_model(Models.Clock, adoptive_parent = Models.Core.Simulation, rename = 'Clock_replaced', verbose=False)
+            from apsimNGpy import core
+            from apsimNGpy.core.core import Models
 
-         >>> model.add_model(model_type=Models.Core.Simulation, adoptive_parent=Models.Core.Simulations, rename='Iowa')
-         >>> model.preview_simulation() # doctest: +SKIP
-         >>> model.add_model(Models.Core.Simulation, adoptive_parent='Simulations', rename='soybean_replaced', source='Soybean') # basically adding another simulation from soybean to the maize simulation
-         
+            model = core.base_data.load_default_simulations(crop="Maize")
 
+            model.remove_model(Models.Clock)  # first delete the model
+            model.add_model(Models.Clock, adoptive_parent=Models.Core.Simulation, rename='Clock_replaced', verbose=False)
+
+            model.add_model(model_type=Models.Core.Simulation, adoptive_parent=Models.Core.Simulations, rename='Iowa')
+
+            model.preview_simulation()  # doctest: +SKIP
+
+            model.add_model(
+                Models.Core.Simulation,
+                adoptive_parent='Simulations',
+                rename='soybean_replaced',
+                source='Soybean')  # basically adding another simulation from soybean to the maize simulation
         """
         import Models
         replacer = {'Clock': 'change_simulation_dates', 'Weather': 'replace_met_file'}

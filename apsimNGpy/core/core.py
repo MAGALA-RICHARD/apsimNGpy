@@ -2098,6 +2098,7 @@ class CoreModel:
              self. replace the weather data with the fetched data.
 
             Example::
+
               from apsimNgpy.core.apsim import ApsimModel
               model = ApsimModel(model= "Maize")
               model.get_weather_from_web(lonlat = (-93.885490, 42.060650), start = 1990, end  =2001)

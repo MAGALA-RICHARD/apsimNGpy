@@ -38,10 +38,10 @@ class Diagnostics(ApsimModel):
             self.run()
 
     def _clean_numeric_data(self, exclude_vars=('SimulationID', 'CheckpointID', 'CheckpointName')):
-        """Select numeric variables and remove low-signal columns."""
+        """Select numeric _variables and remove low-signal columns."""
         df = self.results.select_dtypes(include="number").copy()
 
-        # Drop excluded variables
+        # Drop excluded _variables
         for var in exclude_vars:
             if var in df.columns:
                 print(f"Removing column: {var}")
@@ -104,7 +104,7 @@ class Diagnostics(ApsimModel):
             open_file(output_path)
             plt.close()
     def plot_correlation_heatmap(self, figsize=(10, 8)):
-        """Plot correlation heatmap for numeric variables."""
+        """Plot correlation heatmap for numeric _variables."""
         df = self._clean_numeric_data()
         if df.empty:
             print("No valid numeric data for correlation heatmap.")

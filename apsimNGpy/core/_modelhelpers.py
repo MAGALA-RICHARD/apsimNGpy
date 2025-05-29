@@ -12,7 +12,38 @@ from functools import lru_cache
 from typing import Union, Dict, Any
 from Models.Soils import Soil, Physical, SoilCrop, Organic, Solute, Chemical
 import warnings
+from System.Collections.Generic import List
+from apsimNGpy.core_utils.utils import timer
+from apsimNGpy.settings import *
+from pathlib import Path
+@lru_cache(maxsize=None)
+def select_thread(multithread):
+    if multithread:
+        runtype = Models.Core.Run.Runner.RunTypeEnum.MultiThreaded
+    else:
+        runtype = Models.Core.Run.Runner.RunTypeEnum.SingleThreaded
+    return runtype
 
+select_thread(multithread=True)
+@lru_cache(maxsize=200)
+def _tools(method):
+    config = {
+        "ADD": Models.Core.ApsimFile.Structure.Add,
+        "DELETE": Models.Core.ApsimFile.Structure.Delete,
+        "MOVE": Models.Core.ApsimFile.Structure.Move,
+        "RENAME": Models.Core.ApsimFile.Structure.Rename,
+        "CLONER": Models.Core.Apsim.Clone,
+        "REPLACE": Models.Core.ApsimFile.Structure.Replace,
+        "MultiThreaded": Models.Core.Run.Runner.RunTypeEnum.MultiThreaded,
+        "SingleThreaded": Models.Core.Run.Runner.RunTypeEnum.SingleThreaded,
+        "ModelRUNNER": Models.Core.Run.Runner,
+        "CLASS_MODEL": type(Models.Clock),
+        "ACTIONS": ('get', 'delete', 'check'),
+        "COLLECT": collect,
+    }
+    method = config[method]
+    del config
+    return method
 
 @dataclass
 class ModelTools:
@@ -44,20 +75,21 @@ class ModelTools:
 
            ``COLLECT`` (callable): Function for forcing memory checks
        """
-    ADD = Models.Core.ApsimFile.Structure.Add
-    DELETE = Models.Core.ApsimFile.Structure.Delete
-    MOVE = Models.Core.ApsimFile.Structure.Move
-    RENAME = Models.Core.ApsimFile.Structure.Rename
-    CLONER = Models.Core.Apsim.Clone
-    REPLACE = Models.Core.ApsimFile.Structure.Replace
-    MultiThreaded = Models.Core.Run.Runner.RunTypeEnum.MultiThreaded
-    SingleThreaded = Models.Core.Run.Runner.RunTypeEnum.SingleThreaded
-    ModelRUNNER = Models.Core.Run.Runner
-    CLASS_MODEL = type(Models.Clock)
-    ACTIONS = ('get', 'delete', 'check')
-    COLLECT = collect
+    ADD = _tools('ADD')
+    DELETE = _tools('DELETE')
+    MOVE = _tools('MOVE')
+    RENAME = _tools('RENAME')
+    CLONER = _tools('CLONER')
+    REPLACE = _tools('REPLACE')
+    MultiThreaded = _tools('MultiThreaded')
+    SingleThreaded = _tools('SingleThreaded')
+    ModelRUNNER = _tools('ModelRUNNER')
+    CLASS_MODEL = _tools('CLASS_MODEL')
+    ACTIONS = _tools('ACTIONS')
+    COLLECT = _tools('COLLECT')
 
-
+ModelTools.ACTIONS
+ModelTools.DELETE
 def get_or_check_model(search_scope, model_type, model_name, action='get', cacheit = False, cache_size=300):
     """
             Helper function to check if a model instance is found in the simulation
@@ -151,7 +183,7 @@ def _find_model(model_name: str, model_namespace=Models, target_type=ModelTools.
 
     return None
 
-
+@lru_cache(maxsize=100)
 def find_model(model_name: str):
     model_type = _find_model(model_name)
     if model_type:
@@ -167,7 +199,7 @@ def find_model(model_name: str):
     collect()
     return model_type
 
-
+@lru_cache(maxsize=300)
 def _eval_model(model__type, evaluate_bound=False) -> ModelTools.CLASS_MODEL:
     """
     Evaluates the model type from either string or Models namespace
@@ -384,7 +416,7 @@ def replace_variable_by_index(old_list: list, new_value: list, indices: list):
         old_list[idx] = new_val
     return old_list
 
-
+@lru_cache(maxsize=None)
 def soil_components(component):
     _comp = component.lower()
     comps = {'organic': Organic,
@@ -404,5 +436,43 @@ def old_method(old_method, new_method):
     )
     # method logic here
 
+
+def run_p(_model, simulations='all', clean=False, multithread=True):
+    """Run apsim model in the simulations
+
+    Parameters
+    ----------
+    ``_model`` : ApsimNGpy model object
+
+    ``simulations`` (__str_), optional
+        List of simulation names to run, if `None` runs all simulations, by default `None`.
+
+    ``clean`` (_-boolean_), optional
+        If `True` remove existing database for the file before running, deafults to False`.
+
+    ``multithread``, optional
+        If `True` APSIM uses multiple threads, by default `True`.
+
+    """
+
+
+
+    if clean:
+        _model._DataStore.Dispose()
+        Path(_model._DataStore.FileName).unlink(missing_ok=True)
+        _model._DataStore.Open()
+
+    if simulations == 'all':
+        simulations = None
+    sims = _model.find_simulations(simulations) # returns a list
+    print(sims)
+    # Runner needs C# list
+    cs_sims = List[Models.Core.Simulation]()
+    for sim in sims:
+        cs_sims.Add(sim)
+    runmodel = Models.Core.Run.Runner(cs_sims, True, False, False, None, select_thread(multithread))
+    e = runmodel.Run()
+    if (len(e) > 0):
+        logger.info(e[0].ToString())
 
 collect()

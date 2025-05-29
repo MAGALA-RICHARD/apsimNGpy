@@ -30,7 +30,7 @@ from functools import cache, lru_cache, singledispatch
 # prepare for the C# import
 from apsimNGpy.core import pythonet_config
 import warnings
-from apsimNGpy.core_utils.utils import timer
+from apsimNGpy.core_utils.utils import timer, open_apsimx_file_in_window, open_file_in_window
 
 # now we can safely import C# libraries
 from System.Collections.Generic import *
@@ -40,8 +40,7 @@ from Models.Core.ApsimFile import FileFormat
 from Models.Climate import Weather
 from Models.Soils import Soil, Physical, SoilCrop, Organic, Solute, Chemical
 
-
-from apsimNGpy.core_utils.utils import open_file_in_window
+from apsimNGpy.core_utils.database_utils import read_db_table, dataview_to_dataframe
 from apsimNGpy.core.config import get_apsim_bin_path, load_crop_from_disk
 
 from apsimNGpy.core._modelhelpers import (get_or_check_model, Models, old_method,
@@ -49,7 +48,7 @@ from apsimNGpy.core._modelhelpers import (get_or_check_model, Models, old_method
                                           ModelTools, _eval_model, replace_variable_by_index,
                                           _find_model, find_model)
 from Models.PMF import Cultivar
-from apsimNGpy.core.runner import run_model_externally, collect_csv_by_model_path
+from apsimNGpy.core.runner import run_model_externally, collect_csv_by_model_path, upgrade_apsim_file, run_p
 from apsimNGpy.core.model_loader import (load_apsim_model, save_model_to_file, recompile)
 import ast
 from typing import Iterable
@@ -69,6 +68,9 @@ from apsimNGpy.settings import *
 def _looks_like_path(value: str) -> bool:
     return any(sep in value for sep in (os.sep, '/', '\\')) or value.endswith('.apsimx')
 
+def compile_script(script_code: str, code_model):
+    compiler= Models.Core.ScriptCompiler()
+    compiler(script_code, code_model)
 
 @dataclass(slots=True)
 class CoreModel:
@@ -127,6 +129,7 @@ class CoreModel:
     work_space: Optional[Union[str, Path]] = field(init=False, default=None)
     Start: str = field(init=False, default='unknown')
     End: str = field(init=False, default='unknown')
+    run_method: callable =  field(init=False, default=None)
 
     def __post_init__(self):
         self._model = self.model
@@ -314,33 +317,40 @@ class CoreModel:
     Returns:
         pd.DataFrame: A DataFrame containing the simulation output.
     """
-        _reports = self.report_names or self.inspect_model('Models.Report', fullpath=False)# false returns all names other than fullpath of the models in that type
-        # Collect all available data tables
-        if self.ran_ok: # if run was not successfull, then the tables are not populated
-            data_tables = collect_csv_by_model_path(self.path)
+        _reports = self.report_names or self.inspect_model('Models.Report',
+                                                           fullpath=False)  # false returns all names other than fullpath of the models in that type
+        if self.run_method == run_model_externally:
 
-            # Normalize report_names to a list
-            if isinstance(_reports, str):
-                reports = [_reports]
-            elif isinstance(_reports, (tuple,list)):
-                reports = _reports
+            # Collect all available data tables
+            if self.ran_ok: # if run was not successfull, then the tables are not populated
+                data_tables = collect_csv_by_model_path(self.path)
+
+                # Normalize report_names to a list
+                if isinstance(_reports, str):
+                    reports = [_reports]
+                elif isinstance(_reports, (tuple,list)):
+                    reports = _reports
+                else:
+                    raise TypeError("report_names must be a string, tuple of strings or a list of strings.")
+
+                # Check for missing report names
+                missing = [r for r in reports if r not in data_tables]
+                if missing:
+                    raise ValueError(
+                        f"The following report names were not found: {missing}. "
+                        f"Available tables include: {list(data_tables.keys())}"
+                    )
+
+                datas = [pd.read_csv(data_tables[i]) for i in reports]
+                return pd.concat(datas)
             else:
-                raise TypeError("report_names must be a string, tuple of strings or a list of strings.")
-
-            # Check for missing report names
-            missing = [r for r in reports if r not in data_tables]
-            if missing:
-                raise ValueError(
-                    f"The following report names were not found: {missing}. "
-                    f"Available tables include: {list(data_tables.keys())}"
-                )
-
-            datas = [pd.read_csv(data_tables[i]) for i in reports]
-            return pd.concat(datas)
-        else:
-            msg = "Attempting to get results before running the model"
-            logging.error(msg)
-            raise RuntimeError(msg)
+                msg = "Attempting to get results before running the model"
+                logging.error(msg)
+                raise RuntimeError(msg)
+        if self.run_method == run_p:
+            print(_reports)
+            dfs  =[dataview_to_dataframe(self, rp) for rp in _reports]
+            return pd.concat(dfs)
 
 
 
@@ -363,8 +373,31 @@ class CoreModel:
         -------
         ``ValueError``
             If any of the requested report names are not found in the available tables.
+
         ``RuntimeError``
             If the simulation has not been ``run`` successfully before attempting to read data.
+        Example::
+
+          from apsimNGpy.core.apsim import ApsimModel
+          model = ApsimModel(model= 'Maize') # replace with your path to the apsim template model
+          model.run() # if we are going to use get_simulated_output, no to need to provide the report name in ``run()`` method
+          df = model.get_simulated_output(report_names = ["Report"])
+          print(df)
+            SimulationName  SimulationID  CheckpointID  ... Maize.Total.Wt     Yield   Zone
+         0     Simulation             1             1  ...       1728.427  8469.616  Field
+         1     Simulation             1             1  ...        920.854  4668.505  Field
+         2     Simulation             1             1  ...        204.118   555.047  Field
+         3     Simulation             1             1  ...        869.180  3504.000  Field
+         4     Simulation             1             1  ...       1665.475  7820.075  Field
+         5     Simulation             1             1  ...       2124.740  8823.517  Field
+         6     Simulation             1             1  ...       1235.469  3587.101  Field
+         7     Simulation             1             1  ...        951.808  2939.152  Field
+         8     Simulation             1             1  ...       1986.968  8379.435  Field
+         9     Simulation             1             1  ...       1689.966  7370.301  Field
+         [10 rows x 16 columns]
+
+
+
         """
         # Collect all available data tables
         data_tables = collect_csv_by_model_path(self.path)
@@ -429,6 +462,15 @@ class CoreModel:
        ``RuntimeError``
             Raised if the ``APSIM`` run is unsuccessful. Common causes include ``missing meteorological files``,
             mismatched simulation ``start`` dates with ``weather`` data, or other ``configuration issues``.
+
+       Example:
+
+       Instatiate an ``apsimNGpy.core.apsim.ApsimModel`` object and run ::
+
+              from apsimNGpy.core.apsim import ApsimModel
+              model = ApsimModel(model= 'Maize')# replace with your path to the apsim template model
+              model.run(report_name = "Report")
+
              """
         try:
             # Dispose any existing data store handle
@@ -450,6 +492,7 @@ class CoreModel:
             if res.returncode == 0:
                 self.ran_ok = True
                 self.report_names = report_name
+                self.run_method = run_model_externally
 
             # If the model failed and verbose was off, rerun to diagnose
             if not self.ran_ok and not verbose:
@@ -468,9 +511,11 @@ class CoreModel:
     @property
     def simulated_results(self) -> pd.DataFrame:
         """
+        @deprecated
 
         @return: pandas data frame containing the data
-        Example:
+        Example::
+
          >>> from apsimNGpy.core.base_data import load_default_simulations
          >>> fmodel = load_default_simulations(crop ='Maize', simulations_object=False) # get path only
          >>> model = CoreModel(fmodel)
@@ -527,11 +572,13 @@ class CoreModel:
 
         Example:
         -------
-        >>> from apsimNGpy.core.base_data import load_default_simulations
-        >>> model  = load_default_simulations('Maize')
-        >>> model.clone_model('Models.Clock', "clock1", 'Models.Simulation', rename="new_clock",adoptive_parent_type= 'Models.Core.Simulations', adoptive_parent_name="Simulation")
-        ```
-        This will create a cloned version of `"clock1"` and place it under `"Simulation"` with the new name `"new_clock"`.
+         Create a cloned version of `"clock1"` and place it under `"Simulation"` with the new name ``"new_clock`"`::
+
+            from apsimNGpy.core.base_data import load_default_simulations
+            model  = load_default_simulations('Maize')
+            model.clone_model('Models.Clock', "clock1", 'Models.Simulation', rename="new_clock",adoptive_parent_type= 'Models.Core.Simulations', adoptive_parent_name="Simulation")
+
+
 
         """
         # Reference to the APSIM cloning function
@@ -574,13 +621,14 @@ class CoreModel:
         Returns:
             str: The full path to the model if found, otherwise None.
 
-        Example:
-            >>> from apsimNGpy import core  # doctest: +SKIP
-             >>> model =core.base_data.load_default_simulations(crop = "Maize")  # doctest: +SKIP
-             >>> model.find_model("Weather")  # doctest: +SKIP
+        Example::
+
+             from apsimNGpy import core  # doctest: +SKIP
+             model =core.base_data.load_default_simulations(crop = "Maize")  # doctest: +SKIP
+             model.find_model("Weather")  # doctest: +SKIP
              'Models.Climate.Weather'
-             >>> model.find_model("Clock")  # doctest: +SKIP
-              'Models.Clock'
+             model.find_model("Clock")  # doctest: +SKIP
+             'Models.Clock'
 
         """
         return _eval_model(model_name)
@@ -614,19 +662,25 @@ class CoreModel:
             Added models from ``Models namespace`` are initially empty. Additional configuration is required to set parameters.
             For example, after adding a Clock module, you must set the start and end dates.
 
-        Example:
+        Example::
 
-         >>> from apsimNGpy import core
-         >>> from apsimNGpy.core.core import Models
-         >>> model =core.base_data.load_default_simulations(crop = "Maize")
-         >>> model.remove_model(Models.Clock) # first delete model
-         >>> model.add_model(Models.Clock, adoptive_parent = Models.Core.Simulation, rename = 'Clock_replaced', verbose=False)
+            from apsimNGpy import core
+            from apsimNGpy.core.core import Models
 
-         >>> model.add_model(model_type=Models.Core.Simulation, adoptive_parent=Models.Core.Simulations, rename='Iowa')
-         >>> model.preview_simulation() # doctest: +SKIP
-         >>> model.add_model(Models.Core.Simulation, adoptive_parent='Simulations', rename='soybean_replaced', source='Soybean') # basically adding another simulation from soybean to the maize simulation
-         
+            model = core.base_data.load_default_simulations(crop="Maize")
 
+            model.remove_model(Models.Clock)  # first delete the model
+            model.add_model(Models.Clock, adoptive_parent=Models.Core.Simulation, rename='Clock_replaced', verbose=False)
+
+            model.add_model(model_type=Models.Core.Simulation, adoptive_parent=Models.Core.Simulations, rename='Iowa')
+
+            model.preview_simulation()  # doctest: +SKIP
+
+            model.add_model(
+                Models.Core.Simulation,
+                adoptive_parent='Simulations',
+                rename='soybean_replaced',
+                source='Soybean')  # basically adding another simulation from soybean to the maize simulation
         """
         import Models
         replacer = {'Clock': 'change_simulation_dates', 'Weather': 'replace_met_file'}
@@ -699,7 +753,7 @@ class CoreModel:
         else:
             logger.debug(f"Adding {model_type} to {parent.Name} failed, perhaps models was not found")
 
-    def edit_model(self, model_type: str, model_name: str, simulations: Union[str, list] ='all', cacheit = False, cache_size=300, **kwargs):
+    def edit_model(self, model_type: str, model_name: str, simulations: Union[str, list] ='all', cacheit = False, cache_size=300, verbose=False, **kwargs):
         """
         Modify various APSIM model components by specifying the model type and name across given simulations.
 
@@ -764,111 +818,99 @@ class CoreModel:
         NotImplementedError
             If the logic for the specified `model_type` is not implemented.
 
-        Examples
-        --------
+        Examples::
 
-        >>> model = CoreModel(model='Maize')
+            from apsimNGpy.core.apsim import ApsimModel
+            model = ApsimModel(model='Maize')
 
-        # Edit a cultivar model
+        Example of how to edit a cultivar model::
 
-        >>> model.edit_model(
-        ...     model_type='Cultivar',
-        ...     simulations='Simulation',
-        ...     commands='[Phenology].Juvenile.Target.FixedValue',
-        ...     values=256,
-        ...     model_name='B_110',
-        ...     cultivar_manager='Sow using a variable rule'
-        ... )
+            model.edit_model(model_type='Cultivar',
+                 simulations='Simulation',
+                 commands='[Phenology].Juvenile.Target.FixedValue',
+                 values=256,
+                 model_name='B_110',
+                 new_cultivar_name='B_110_edited',
+                 cultivar_manager='Sow using a variable rule')
 
-        # Edit a soil organic matter module
+        Edit a soil organic matter module::
 
-        >>> model.edit_model(
-        ...     model_type='Organic',
-        ...     simulations='Simulation',
-        ...     model_name='Organic',
-        ...     Carbon=1.23
-        ... )
+            model.edit_model(
+                 model_type='Organic',
+                 simulations='Simulation',
+                 model_name='Organic',
+                 Carbon=1.23)
 
-        # Edit multiple soil layers
+        Edit multiple soil layers::
 
-        >>> model.edit_model(
-        ...     model_type='Organic',
-        ...     simulations='Simulation',
-        ...     model_name='Organic',
-        ...     Carbon=[1.23, 1.0]
-        ... )
+            model.edit_model(
+                 model_type='Organic',
+                 simulations='Simulation',
+                 model_name='Organic',
+                 Carbon=[1.23, 1.0])
 
-        # Edit solute models
+        Example of how to edit solute models::
 
-        >>> model.edit_model(
-        ...     model_type='Solute',
-        ...     simulations='Simulation',
-        ...     model_name='NH4',
-        ...     InitialValues=0.2
-        ... )
+           model.edit_model(
+                 model_type='Solute',
+                 simulations='Simulation',
+                 model_name='NH4',
+                 InitialValues=0.2 )
+           model.edit_model(
+                model_type='Solute',
+                simulations='Simulation',
+                model_name='Urea',
+                InitialValues=0.002)
 
-        >>> model.edit_model(
-        ...     model_type='Solute',
-        ...     simulations='Simulation',
-        ...     model_name='Urea',
-        ...     InitialValues=0.002
-        ... )
+        Edit a manager script::
 
-        # Edit a manager script
+           model.edit_model(
+                model_type='Manager',
+                simulations='Simulation',
+                model_name='Sow using a variable rule',
+                population=8.4)
 
-        >>> model.edit_model(
-        ...     model_type='Manager',
-        ...     simulations='Simulation',
-        ...     model_name='Sow using a variable rule',
-        ...     population=8.4
-        ... )
+        Edit surface organic matter parameters::
 
-        # Edit surface organic matter parameters
+            model.edit_model(
+                model_type='SurfaceOrganicMatter',
+                simulations='Simulation',
+                model_name='SurfaceOrganicMatter',
+                InitialResidueMass=2500)
 
-        >>> model.edit_model(
-        ...     model_type='SurfaceOrganicMatter',
-        ...     simulations='Simulation',
-        ...     model_name='SurfaceOrganicMatter',
-        ...     InitialResidueMass=2500
-        ... )
+            model.edit_model(
+                model_type='SurfaceOrganicMatter',
+                simulations='Simulation',
+                model_name='SurfaceOrganicMatter',
+                InitialCNR=85)
 
-        >>> model.edit_model(
-        ...     model_type='SurfaceOrganicMatter',
-        ...     simulations='Simulation',
-        ...     model_name='SurfaceOrganicMatter',
-        ...     InitialCNR=85
-        ... )
+        Edit Clock start and end dates::
 
-        # Edit Clock start and end dates
+            model.edit_model(
+                model_type='Clock',
+                simulations='Simulation',
+                model_name='Clock',
+                Start='2021-01-01',
+                End='2021-01-12')
 
-        >>> model.edit_model(
-        ...     model_type='Clock',
-        ...     simulations='Simulation',
-        ...     model_name='Clock',
-        ...     Start='2021-01-01',
-        ...     End='2021-01-12'
-        ... )
+        Edit report _variables::
 
-        # Edit report variables
+            model.edit_model(
+                model_type='Report',
+                simulations='Simulation',
+                model_name='Report',
+                variable_spec='[Maize].AboveGround.Wt as abw')
 
-        >>> model.edit_model(
-        ...     model_type='Report',
-        ...     simulations='Simulation',
-        ...     model_name='Report',
-        ...     variable_spec='[Maize].AboveGround.Wt as abw'
-        ... )
+        Multiple report _variables::
 
-        # Multiple report variables
+            model.edit_model(
+                model_type='Report',
+                simulations='Simulation',
+                model_name='Report',
+                variable_spec=[
+                '[Maize].AboveGround.Wt as abw',
+                '[Maize].Grain.Total.Wt as grain_weight'])
 
-        >>> model.edit_model(
-        ...     model_type='Report',
-        ...     simulations='Simulation',
-        ...     model_name='Report',
-        ...     variable_spec=[
-        ...         '[Maize].AboveGround.Wt as abw',
-        ...         '[Maize].Grain.Total.Wt as grain_weight'
-        ...     ]
-        ... )
         """
         if simulations == 'all':
             simulations = None
@@ -897,7 +939,8 @@ class CoreModel:
                         if key in ['End', 'Start']:
                             parsed_value = DateTime.Parse(value)
                             setattr(model_instance, key, parsed_value)
-                            logger.info(f"Set {key} to {parsed_value}")
+                            if verbose:
+                                logger.info(f"Set {key} to {parsed_value}")
                             setattr(self, key, value)
                         else:
                             raise AttributeError(f"no valid Clock attributes were passed. Valid arguments are: '{", ".join(validated.keys())}'")
@@ -947,11 +990,19 @@ class CoreModel:
 
                     commands = kwargs.get("commands")
                     values = kwargs.get("values")
+                    if isinstance(commands, (list, tuple)) or isinstance(values, (list, tuple)):
+                        assert isinstance(commands, (list, tuple)) and isinstance(values, (list, tuple)), \
+                            "Both `commands` and `values` must be iterables (list or tuple), and sets are not allowed"
+                        assert len(commands) == len(values), \
+                            "`commands` and `values` must have the same length."
+
                     # need to specify back to the cultivar manager script the new cultivar name since APSIM is not allowing editing in place.
                     # this is a temporal fix though
                     # editing in place could work if we were reusing the model in memory of python
                     cultivar_manager_paramter_name= kwargs.get("parameter_name", 'CultivarName')
                     cultivar_manager = kwargs.get("cultivar_manager")
+                    new_cultivar_name = kwargs.get("new_cultivar_name", None)
+                    assert new_cultivar_name, "`new_cultivar_name` is required to proceed. use new_cultivar_name ='your_vutivar_name'"
                     # the reason the parameter path is split into command and values to allow passing different values during optimization
                     # Errors should mot pass silently
                     if not cultivar_manager:
@@ -965,14 +1016,20 @@ class CoreModel:
 
                     cultvar =ModelTools.CLONER(cultvar) # let's clone
                     params = self._cultivar_params(cultvar)
-                    params[commands] = values
+                    if isinstance(values, str):
+                        values = values.strip()
+                        params[commands] = values
+                    else:
+                        par_value = zip(commands, values)
+                        for param, value in par_value:
+                            params[param.strip()] = value.strip() if isinstance(value, str) else value
 
-                    updated_commands = [f"{k}={v}" for k, v in params.items()]
+                    updated_commands = [f"{k.strip()}={v}" for k, v in params.items()]
                     cultvar.set_Command(updated_commands)
 
                     plant = kwargs.get('plant')
                     CroP_Parent = get_or_check_model(rep, Models.PMF.Plant, plant, action='get', cacheit=cacheit, cache_size=cache_size)
-                    cultvarName =f"edited_cultivar_{model_name}"
+                    cultvarName =f"{new_cultivar_name}"
                     # mask out the current name such that is not accessed
                     current_name = cultvar.Name
                     cultvar.Name = f"p_{model_name}"
@@ -985,7 +1042,8 @@ class CoreModel:
                     extra_args = {cultivar_manager_paramter_name: cultvarName}
                     self.edit_model(model_type = Models.Manager, simulations=sim.Name, model_name =cultivar_manager,**extra_args)
                     self.save()
-                    logger.info(f"edited Cultivar '{model_name}' and saved it as {cultvarName}")
+                    if verbose:
+                       logger.info(f"edited Cultivar '{model_name}' and saved it as {cultvarName}")
 
                 case _:
                     raise NotImplementedError(f"No edit method implemented for model type {type(model_instance)}")
@@ -994,16 +1052,16 @@ class CoreModel:
 
     def add_report_variable(self, variable_spec: Union[list, str, tuple], report_name: str = None, set_event_names:Union[str,list]=None):
         """
-        This adds a report variable to the end of other variables, if you want to change the whole report use change_report
+        This adds a report variable to the end of other _variables, if you want to change the whole report use change_report
 
         Parameters
         -------------------
 
-        ``variable_spec``: (str, required): list of text commands for the report variables e.g., '[Clock].Today as Date'
+        ``variable_spec``: (str, required): list of text commands for the report _variables e.g., '[Clock].Today as Date'
 
         ``param report_name``: (str, optional): name of the report variable if not specified the first accessed report object will be altered
 
-        ``set_event_names`` (list or str, optional): A list of APSIM events that trigger the recording of variables.
+        ``set_event_names`` (list or str, optional): A list of APSIM events that trigger the recording of _variables.
                                                      Defaults to ['[Clock].EndOfYear'] if not provided.
         :Returns:
             returns instance of apsimNGpy.core.core.apsim.ApsimModel or apsimNGpy.core.core.apsim.CoreModel
@@ -1133,11 +1191,12 @@ class CoreModel:
 
         ``returns``: None
 
-        Example;
-               >>> from apsimNGpy import core
-               >>> from apsimNGpy.core.core import Models
-               >>> apsim = core.base_data.load_default_simulations(crop = 'Maize')
-               >>> apsim = apsim.rename_model(Models.Clock, 'Clock', 'clock')
+        Example::
+
+               from apsimNGpy import core
+               from apsimNGpy.core.core import Models
+               apsim = core.base_data.load_default_simulations(crop = 'Maize')
+               apsim = apsim.rename_model(Models.Clock, 'Clock', 'clock')
 
         """
         model_type = _eval_model(model_type)
@@ -1295,184 +1354,191 @@ class CoreModel:
         - APSIM Next Generation Python bindings (`apsimNGpy`)
         - Python 3.10+
 
-        Examples
-        --------
-        >>> model_instance = CoreModel('Maize')
+        Examples::
 
-        # Inspect full soil ``Organic`` profile
+           model_instance = CoreModel('Maize')
 
-        >>> model_instance.inspect_model_parameters('Organic', simulations='Simulation', model_name='Organic')
-           CNR  Carbon      Depth  FBiom  ...         FOM  Nitrogen  SoilCNRatio  Thickness
-        0  12.0    1.20      0-150   0.04  ...  347.129032     0.100         12.0      150.0
-        1  12.0    0.96    150-300   0.02  ...  270.344362     0.080         12.0      150.0
-        2  12.0    0.60    300-600   0.02  ...  163.972144     0.050         12.0      300.0
-        3  12.0    0.30    600-900   0.02  ...   99.454133     0.025         12.0      300.0
-        4  12.0    0.18   900-1200   0.01  ...   60.321981     0.015         12.0      300.0
-        5  12.0    0.12  1200-1500   0.01  ...   36.587131     0.010         12.0      300.0
-        6  12.0    0.12  1500-1800   0.01  ...   22.191217     0.010         12.0      300.0
-        [7 rows x 9 columns]
+        Inspect full soil ``Organic`` profile::
 
-        # inspect soil ``Physical`` profile
+            model_instance.inspect_model_parameters('Organic', simulations='Simulation', model_name='Organic')
+               CNR  Carbon      Depth  FBiom  ...         FOM  Nitrogen  SoilCNRatio  Thickness
+            0  12.0    1.20      0-150   0.04  ...  347.129032     0.100         12.0      150.0
+            1  12.0    0.96    150-300   0.02  ...  270.344362     0.080         12.0      150.0
+            2  12.0    0.60    300-600   0.02  ...  163.972144     0.050         12.0      300.0
+            3  12.0    0.30    600-900   0.02  ...   99.454133     0.025         12.0      300.0
+            4  12.0    0.18   900-1200   0.01  ...   60.321981     0.015         12.0      300.0
+            5  12.0    0.12  1200-1500   0.01  ...   36.587131     0.010         12.0      300.0
+            6  12.0    0.12  1500-1800   0.01  ...   22.191217     0.010         12.0      300.0
+            [7 rows x 9 columns]
 
-        >>> model_instance.inspect_model_parameters('Physical', simulations='Simulation', model_name='Physical')
-            AirDry        BD       DUL  ...        SWmm Thickness  ThicknessCumulative
-        0  0.130250  1.010565  0.521000  ...   78.150033     150.0                150.0
-        1  0.198689  1.071456  0.496723  ...   74.508522     150.0                300.0
-        2  0.280000  1.093939  0.488438  ...  146.531282     300.0                600.0
-        3  0.280000  1.158613  0.480297  ...  144.089091     300.0                900.0
-        4  0.280000  1.173012  0.471584  ...  141.475079     300.0               1200.0
-        5  0.280000  1.162873  0.457071  ...  137.121171     300.0               1500.0
-        6  0.280000  1.187495  0.452332  ...  135.699528     300.0               1800.0
-        [7 rows x 17 columns]
+        Inspect soil ``Physical`` profile::
 
-        # Inspect soil ``Chemical`` profile
+            model_instance.inspect_model_parameters('Physical', simulations='Simulation', model_name='Physical')
+                AirDry        BD       DUL  ...        SWmm Thickness  ThicknessCumulative
+            0  0.130250  1.010565  0.521000  ...   78.150033     150.0                150.0
+            1  0.198689  1.071456  0.496723  ...   74.508522     150.0                300.0
+            2  0.280000  1.093939  0.488438  ...  146.531282     300.0                600.0
+            3  0.280000  1.158613  0.480297  ...  144.089091     300.0                900.0
+            4  0.280000  1.173012  0.471584  ...  141.475079     300.0               1200.0
+            5  0.280000  1.162873  0.457071  ...  137.121171     300.0               1500.0
+            6  0.280000  1.187495  0.452332  ...  135.699528     300.0               1800.0
+            [7 rows x 17 columns]
 
-        >>> model_instance.inspect_model_parameters('Chemical', simulations='Simulation', model_name='Chemical')
+        Inspect soil ``Chemical`` profile::
+
+            model_instance.inspect_model_parameters('Chemical', simulations='Simulation', model_name='Chemical')
                Depth   PH  Thickness
-        0      0-150  8.0      150.0
-        1    150-300  8.0      150.0
-        2    300-600  8.0      300.0
-        3    600-900  8.0      300.0
-        4   900-1200  8.0      300.0
-        5  1200-1500  8.0      300.0
-        6  1500-1800  8.0      300.0
+            0      0-150  8.0      150.0
+            1    150-300  8.0      150.0
+            2    300-600  8.0      300.0
+            3    600-900  8.0      300.0
+            4   900-1200  8.0      300.0
+            5  1200-1500  8.0      300.0
+            6  1500-1800  8.0      300.0
 
-        # Inspect chemical soil properties
+        Inspect one or more specific parameters::
 
-        >>> model_instance.inspect_model_parameters('Chemical', simulations='Simulation', model_name='Chemical')
+            model_instance.inspect_model_parameters('Organic', simulations='Simulation', model_name='Organic', parameters='Carbon')
+              Carbon
+            0    1.20
+            1    0.96
+            2    0.60
+            3    0.30
+            4    0.18
+            5    0.12
+            6    0.12
 
-        # Inspect one or more specific parameters
+        Inspect more than one specific properties::
 
-        >>> model_instance.inspect_model_parameters('Organic', simulations='Simulation', model_name='Organic', parameters='Carbon')
-          Carbon
-        0    1.20
-        1    0.96
-        2    0.60
-        3    0.30
-        4    0.18
-        5    0.12
-        6    0.12
+            model_instance.inspect_model_parameters('Organic', simulations='Simulation', model_name='Organic', parameters=['Carbon', 'CNR'])
+               Carbon   CNR
+            0    1.20  12.0
+            1    0.96  12.0
+            2    0.60  12.0
+            3    0.30  12.0
+            4    0.18  12.0
+            5    0.12  12.0
+            6    0.12  12.0
 
-        >>> model_instance.inspect_model_parameters('Organic', simulations='Simulation', model_name='Organic', parameters=['Carbon', 'CNR'])
-           Carbon   CNR
-        0    1.20  12.0
-        1    0.96  12.0
-        2    0.60  12.0
-        3    0.30  12.0
-        4    0.18  12.0
-        5    0.12  12.0
-        6    0.12  12.0
+        Inspect Report module attributes::
 
-        # Inspect Report module attributes
+             model_instance.inspect_model_parameters('Report', simulations='Simulation', model_name='Report')
+             {'EventNames': ['[Maize].Harvesting'],
+            'VariableNames': ['[Clock].Today',
+            '[Maize].Phenology.CurrentStageName',
+            '[Maize].AboveGround.Wt',
+            '[Maize].AboveGround.N',
+            '[Maize].Grain.Total.Wt*10 as Yield',
+            '[Maize].Grain.Wt',
+            '[Maize].Grain.Size',
+            '[Maize].Grain.NumberFunction',
+            '[Maize].Grain.Total.Wt',
+            '[Maize].Grain.N',
+            '[Maize].Total.Wt']}
 
-        >>> model_instance.inspect_model_parameters('Report', simulations='Simulation', model_name='Report')
-        {'EventNames': ['[Maize].Harvesting'],
-        'VariableNames': ['[Clock].Today',
-        '[Maize].Phenology.CurrentStageName',
-        '[Maize].AboveGround.Wt',
-        '[Maize].AboveGround.N',
-        '[Maize].Grain.Total.Wt*10 as Yield',
-        '[Maize].Grain.Wt',
-        '[Maize].Grain.Size',
-        '[Maize].Grain.NumberFunction',
-        '[Maize].Grain.Total.Wt',
-        '[Maize].Grain.N',
-        '[Maize].Total.Wt']}
+        Specify only Eventnames::
 
-        >>> model_instance.inspect_model_parameters('Report', simulations='Simulation', model_name='Report', parameters='EventNames')
-        {'EventNames': ['[Maize].Harvesting']}
+           model_instance.inspect_model_parameters('Report', simulations='Simulation', model_name='Report', parameters='EventNames')
+           {'EventNames': ['[Maize].Harvesting']}
 
-        # Inspect weather file path
+        Inspect weather file path::
 
-        >>> model_instance.inspect_model_parameters('Weather', simulations='Simulation', model_name='Weather')
-        '%root%/Examples/WeatherFiles/AU_Dalby.met'
+             model_instance.inspect_model_parameters('Weather', simulations='Simulation', model_name='Weather')
+            '%root%/Examples/WeatherFiles/AU_Dalby.met'
 
-        # Inspect manager script parameters
+        Inspect manager script parameters::
 
-        >>> model_instance.inspect_model_parameters('Manager',
-        ... simulations='Simulation', model_name='Sow using a variable rule')
-        {'Crop': 'Maize',
-        'StartDate': '1-nov',
-        'EndDate': '10-jan',
-        'MinESW': '100.0',
-        'MinRain': '25.0',
-        'RainDays': '7',
-        'CultivarName': 'Dekalb_XL82',
-        'SowingDepth': '30.0',
-        'RowSpacing': '750.0',
-        'Population': '10'}
+            model_instance.inspect_model_parameters('Manager',
+            simulations='Simulation', model_name='Sow using a variable rule')
+            {'Crop': 'Maize',
+            'StartDate': '1-nov',
+            'EndDate': '10-jan',
+            'MinESW': '100.0',
+            'MinRain': '25.0',
+            'RainDays': '7',
+            'CultivarName': 'Dekalb_XL82',
+            'SowingDepth': '30.0',
+            'RowSpacing': '750.0',
+            'Population': '10'}
+        Inspect manager script by specifying one or more parameters::
 
-        >>> model_instance.inspect_model_parameters('Manager',
-        ... simulations='Simulation', model_name='Sow using a variable rule',
-        ... parameters='Population')
-        {'Population': '10'}
+            model_instance.inspect_model_parameters('Manager',
+            simulations='Simulation', model_name='Sow using a variable rule',
+            parameters='Population')
+            {'Population': '10'}
 
-        # Inspect cultivar parameters
+        Inspect cultivar parameters::
 
-        >>> model_instance.inspect_model_parameters('Cultivar',
-        ... simulations='Simulation', model_name='B_110') # lists all path specifications for B_110 parameters abd their values
-        >>> model_instance.inspect_model_parameters('Cultivar', simulations='Simulation',
-        ... model_name='B_110', parameters='[Phenology].Juvenile.Target.FixedValue')
-        {'[Phenology].Juvenile.Target.FixedValue': '210'}
+            model_instance.inspect_model_parameters('Cultivar',
+            simulations='Simulation', model_name='B_110') # lists all path specifications for B_110 parameters abd their values
+            model_instance.inspect_model_parameters('Cultivar', simulations='Simulation',
+            model_name='B_110', parameters='[Phenology].Juvenile.Target.FixedValue')
+            {'[Phenology].Juvenile.Target.FixedValue': '210'}
 
-        # Inspect surface organic matter module
+        Inspect surface organic matter module::
 
-        >>> model_instance.inspect_model_parameters('Models.Surface.SurfaceOrganicMatter',
-        ... simulations='Simulation', model_name='SurfaceOrganicMatter')
-        {'NH4': 0.0,
-         'InitialResidueMass': 500.0,
-         'StandingWt': 0.0,
-         'Cover': 0.0,
-         'LabileP': 0.0,
-         'LyingWt': 0.0,
-         'InitialCNR': 100.0,
-         'P': 0.0,
-         'InitialCPR': 0.0,
-         'SurfOM': <System.Collections.Generic.List[SurfOrganicMatterType] object at 0x000001DABDBB58C0>,
-         'C': 0.0,
-         'N': 0.0,
-         'NO3': 0.0}
+            model_instance.inspect_model_parameters('Models.Surface.SurfaceOrganicMatter',
+            simulations='Simulation', model_name='SurfaceOrganicMatter')
+            {'NH4': 0.0,
+             'InitialResidueMass': 500.0,
+             'StandingWt': 0.0,
+             'Cover': 0.0,
+             'LabileP': 0.0,
+             'LyingWt': 0.0,
+             'InitialCNR': 100.0,
+             'P': 0.0,
+             'InitialCPR': 0.0,
+             'SurfOM': <System.Collections.Generic.List[SurfOrganicMatterType] object at 0x000001DABDBB58C0>,
+             'C': 0.0,
+             'N': 0.0,
+             'NO3': 0.0}
 
-        >>> model_instance.inspect_model_parameters('Models.Surface.SurfaceOrganicMatter', simulations='Simulation',
-        ... model_name='SurfaceOrganicMatter', parameters={'InitialCNR', 'InitialResidueMass'})
-        {'InitialCNR': 100.0, 'InitialResidueMass': 500.0}
+        Inspect a few parameters as needed::
 
-        # Inspect simulation clock
+            model_instance.inspect_model_parameters('Models.Surface.SurfaceOrganicMatter', simulations='Simulation',
+            ... model_name='SurfaceOrganicMatter', parameters={'InitialCNR', 'InitialResidueMass'})
+            {'InitialCNR': 100.0, 'InitialResidueMass': 500.0}
 
-        >>> model_instance.inspect_model_parameters('Clock', simulations='Simulation', model_name='Clock')
-        {'End': datetime.datetime(2000, 12, 31, 0, 0),
-        'Start': datetime.datetime(1990, 1, 1, 0, 0)}
+        Inspect simulation clock::
 
-        >>> model_instance.inspect_model_parameters('Clock', simulations='Simulation',
-        ... model_name='Clock', parameters='End')
-        datetime.datetime(2000, 12, 31, 0, 0)
+             model_instance.inspect_model_parameters('Clock', simulations='Simulation', model_name='Clock')
+             {'End': datetime.datetime(2000, 12, 31, 0, 0),
+             'Start': datetime.datetime(1990, 1, 1, 0, 0)}
 
-        >>> model_instance.inspect_model_parameters('Clock', simulations='Simulation',
-        ... model_name='Clock', parameters='Start').year # gets the start year only
-        1990
+        Inspect a few Clock  parameters as needed::
 
-        # Inspect solute models
+            model_instance.inspect_model_parameters('Clock', simulations='Simulation',
+            model_name='Clock', parameters='End')
+            datetime.datetime(2000, 12, 31, 0, 0)
 
-        >>> model_instance.inspect_model_parameters('Solute', simulations='Simulation', model_name='Urea')
-               Depth  InitialValues  SoluteBD  Thickness
-        0      0-150            0.0  1.010565      150.0
-        1    150-300            0.0  1.071456      150.0
-        2    300-600            0.0  1.093939      300.0
-        3    600-900            0.0  1.158613      300.0
-        4   900-1200            0.0  1.173012      300.0
-        5  1200-1500            0.0  1.162873      300.0
-        6  1500-1800            0.0  1.187495      300.0
+        Access specific componets of the datetime object e.g., year, month, day, hour, minute::
 
-        >>> model_instance.inspect_model_parameters('Solute', simulations='Simulation', model_name='NH4',
-        ... parameters='InitialValues')
-            InitialValues
-        0            0.1
-        1            0.1
-        2            0.1
-        3            0.1
-        4            0.1
-        5            0.1
-        6            0.1
+              model_instance.inspect_model_parameters('Clock', simulations='Simulation',
+              model_name='Clock', parameters='Start').year # gets the start year only
+              1990
+
+        Inspect solute models::
+
+            model_instance.inspect_model_parameters('Solute', simulations='Simulation', model_name='Urea')
+                   Depth  InitialValues  SoluteBD  Thickness
+            0      0-150            0.0  1.010565      150.0
+            1    150-300            0.0  1.071456      150.0
+            2    300-600            0.0  1.093939      300.0
+            3    600-900            0.0  1.158613      300.0
+            4   900-1200            0.0  1.173012      300.0
+            5  1200-1500            0.0  1.162873      300.0
+            6  1500-1800            0.0  1.187495      300.0
+
+            model_instance.inspect_model_parameters('Solute', simulations='Simulation', model_name='NH4',
+            parameters='InitialValues')
+                InitialValues
+            0            0.1
+            1            0.1
+            2            0.1
+            3            0.1
+            4            0.1
+            5            0.1
+            6            0.1
         """
 
         if parameters == 'all':
@@ -1522,6 +1588,11 @@ class CoreModel:
         cultvar.set_Command(updated_commands)
 
         return self
+    @timer
+    def run2(self, simulations='all', clean =True, verbose=True,multithread=True):
+        self.run_method =run_p
+        run_p(self.path)
+        return self
 
 
     def update_cultivar(self, *, parameters: dict, simulations: Union[list, tuple] = None, clear=False, **kwargs):
@@ -1552,6 +1623,7 @@ class CoreModel:
 
     def examine_management_info(self, simulations: Union[list, tuple] = None):
         """
+         @deprecated in versions 0.38+
         This will show the current management scripts in the simulation root
 
         Parameters
@@ -1574,6 +1646,9 @@ class CoreModel:
             raise Exception(repr(e))
 
     def check_som(self, simulations=None):
+        """
+        @deprecated in versions 0.38+
+        """
         old_method('check_som', new_method='inspect_model_parameters')
         simus = {}
         for sim in self.find_simulations(simulations):
@@ -1596,6 +1671,8 @@ class CoreModel:
     def change_som(self, *, simulations: Union[tuple, list] = None, inrm: int = None, icnr: int = None,
                    surface_om_name='SurfaceOrganicMatter', **kwargs):
         """
+        @deprecated in v0.38 +
+
          Change ``Surface Organic Matter`` (``SOM``) properties in specified simulations.
 
     Parameters:
@@ -1606,6 +1683,7 @@ class CoreModel:
         ``icnr``` (int): New value for Initial Carbon to Nitrogen Ratio (default: 27).
 
         ``surface_om_name`` (str, optional): name of the surface organic matter child defaults to ='SurfaceOrganicMatter'
+
     Returns:
         self: The current instance of the class.
 
@@ -1861,10 +1939,8 @@ class CoreModel:
         ``return``: opens the simulation file
 
         """
-        # TODO this need to be connected to the apsim installation path to make
-        #  sure that file are opened in their corresponding versions
         self.save()
-        open_file_in_window(self.path)
+        open_apsimx_file_in_window(self.path, bin_path=get_apsim_bin_path())
 
     def _kvtodict(self, kv):
         return {kv[i].Key: kv[i].Value for i in range(kv.Count)}
@@ -1884,6 +1960,8 @@ class CoreModel:
     def change_simulation_dates(self, start_date: str = None, end_date: str = None,
                                 simulations: Union[tuple, list] = None):
         """Set simulation dates.
+
+        @deprecated
 
         Parameters
         -----------------------------------
@@ -1937,8 +2015,10 @@ class CoreModel:
     @property
     def extract_dates(self, simulations=None):
 
-        """Get simulation dates in the model. deprecated
+        """Get simulation dates in the model.
+
         @deprecated
+
         Parameters
         ----------
         ``simulations``, optional
@@ -2024,6 +2104,7 @@ class CoreModel:
         except Exception as e:
             logger.info(repr(e))  # this error will be logged to the folder logs in the current working dir_path
             raise
+
     def get_weather_from_web(self, lonlat:tuple, start:int, end:int, simulations ='all', source='nasa', filename= None):
         """
             Replaces the meteorological (met) file in the model using weather data fetched from an online source.
@@ -2041,10 +2122,22 @@ class CoreModel:
             ``filename``: Name of the file to save the retrieved data. If None, a default name is generated.
 
             ``Returns:``
-             str Path to the saved met file.
+             self. replace the weather data with the fetched data.
 
+            Example::
+
+              from apsimNgpy.core.apsim import ApsimModel
+              model = ApsimModel(model= "Maize")
+              model.get_weather_from_web(lonlat = (-93.885490, 42.060650), start = 1990, end  =2001)
+
+            Changing weather data with unmatching start and end dates in the simulation will lead to ``RuntimeErrors``. To avoid this first check the start and end date before proceedign as follows::
+
+              dt = model.inspect_model_parameters(model_type='Clock', model_name='Clock', simulations='Simulation')
+              start, end = dt['Start'].year, dt['End'].year
+              # output: 1990, 2000
             """
-        ## TODO impliment logic to avoid date incosistencies in the start and end dates
+
+        start, end = self.inspect_model_parameters(model_type='Clock', model_name='Clock', start=start, end=end)
         file_name=f"{Path(self._model).stem}_{source}_{start}_{end}.met"
 
         name  = file_name or filename
@@ -2065,7 +2158,7 @@ class CoreModel:
     def change_report(self, *, command: str, report_name='Report', simulations=None, set_DayAfterLastOutput=None,
                       **kwargs):
         """
-            Set APSIM report variables for specified simulations.
+            Set APSIM report _variables for specified simulations.
 
         This function allows you to set the variable names for an APSIM report
         in one or more simulations.
@@ -2804,12 +2897,12 @@ class CoreModel:
         Adds a new data base table, which ``APSIM`` calls ``Report`` (Models.Report) to the ``Simulation`` under a Simulation Zone.
 
         This is different from ``add_report_variable`` in that it creates a new, named report
-        table that collects data based on a given list of variables and events.
+        table that collects data based on a given list of _variables and events.
 
         :Args:
             ``variable_spec`` (list or str): A list of APSIM variable paths to include in the report table.
                                          If a string is passed, it will be converted to a list.
-            ``set_event_names`` (list or str, optional): A list of APSIM events that trigger the recording of variables.
+            ``set_event_names`` (list or str, optional): A list of APSIM events that trigger the recording of _variables.
                                                      Defaults to ['[Clock].EndOfYear'] if not provided. other examples include '[Clock].StartOfYear', '[Clock].EndOfsimulation',
                                                      '[crop_name].Harvesting' etc.,,
             ``rename`` (str): The name of the report table to be added. Defaults to 'my_table'.
@@ -2851,7 +2944,7 @@ class CoreModel:
             set_event_names = [set_event_names]
         set_event_names = list(set(set_event_names))
 
-        # Assign variables and events to the report object
+        # Assign _variables and events to the report object
         report.VariableNames = variable_spec
 
         set_event_names = list(set(set_event_names))

@@ -1,12 +1,17 @@
 """
 This module contains methods for generating _variables used in optimization, particular those related to APSIM replacement
 """
-from dataclasses import dataclass
-from typing import Union
+
+import logging
+from collections import namedtuple
 
 import numpy as np
-
+from typing import Tuple, Any
+from apsimNGpy.core_utils.utils import timer
 from apsimNGpy.core.apsim import ApsimModel
+import wrapdisc
+from wrapdisc.var import ChoiceVar, GridVar, QrandintVar, QuniformVar, RandintVar, UniformVar
+from dataclasses import dataclass, field
 
 
 def _doc(section_desc):
@@ -22,36 +27,22 @@ def _doc(section_desc):
     """
 
 
-Var_types = ['int', 'float', 'choice_var', 'grid_var']
-
-
-def _auto_data(data_type, bounds: tuple, step=None):
-    if data_type not in ['int', 'float', int, float, np.int8, np.int32, np.int16, np.float32, np.float64]:
-        raise ValueError('data-child not supported')
-    if isinstance(data_type, str):
-        data_type = eval(data_type)
-    data = np.arange(bounds[0], bounds[1], step=step).astype(data_type)
-    return data
-
-
-class ContinuousVar:
-    __slots__ = ['bounds', 'data_type', 'steps', ]
-
-    def __init__(self, bounds: tuple, data_type: Union[int, float], steps: Union[int, float] = None):
-        self.bounds = bounds
-        self.data_type = data_type
-        self.steps = steps
-
-    @property
-    def values(self):
-        return _auto_data(self.data_type, self.bounds, self.steps)
-
-
-class ChoiceVar:
-    __slots__ = ['values']
-
-    def __init__(self, categories: [int, str, float] = None):
-        self.values = categories
+def auto_guess(data):
+    if isinstance(data, ChoiceVar):
+        sample_set = np.random.choice(data.categories, size=1)[0]
+    elif isinstance(data, GridVar):
+        sample_set = np.random.choice(data.values, size=1)[0]
+    elif isinstance(data, (QrandintVar, RandintVar, QuniformVar)):
+        sample_set = data.lower
+    elif isinstance(data, UniformVar):
+        if len(data.bounds) == 1:
+            bounds = data.bounds[0]
+        else:
+            bounds = data.bounds
+        sample_set = np.random.uniform(bounds[0], bounds[1], size=1)[0]
+    else:
+        raise ValueError(f'data: {type(data)} not supported')
+    return sample_set
 
 
 @dataclass(slots=True, frozen=True)
@@ -60,7 +51,7 @@ class CropVar:
     main_param: str
     params: dict
     label: str
-    var_desc: Union[ContinuousVar, ChoiceVar]
+    var_type: Any
 
 
 def _evaluate_args(updater, main_param, params, label, var_desc):
@@ -71,8 +62,6 @@ def _evaluate_args(updater, main_param, params, label, var_desc):
         raise ValueError('label must be a string')
     if not isinstance(main_param, str):
         raise ValueError('main param must be defined as a string')
-    if not isinstance(var_desc, (ContinuousVar, ChoiceVar)):
-        raise ValueError(f"Var_desc must be any of: '{[ContinuousVar, ChoiceVar]}")
     try:
         # CHECK IF UPDATOR IS A valid attribute from ApsimModel
         getattr(ApsimModel, updater)

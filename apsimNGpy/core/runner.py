@@ -10,7 +10,7 @@ from apsimNGpy.core.config import get_apsim_bin_path
 from apsimNGpy.settings import logger
 from apsimNGpy.core_utils.utils import timer
 import contextlib
-
+from apsimNGpy.settings import *
 apsim_bin_path = Path(get_apsim_bin_path())
 
 # Determine executable based on OS
@@ -25,8 +25,9 @@ def get_apsim_version(verbose:bool=False):
 
     ``verbose``: (bool) Prints the version information ``instantly``
 
-    Example:
-            >>> apsim_version = get_apsim_version()
+    Example::
+
+            apsim_version = get_apsim_version()
 
     """
     cmd = [APSIM_EXEC, '--version']
@@ -50,10 +51,11 @@ def upgrade_apsim_file(file: str, verbose:bool=True):
     ``return``
        The latest version of the .apsimx file with the same name as the input file
 
-    Example:
-        >>> from apsimNGpy.core.base_data import load_default_simulations
-        >>> filep =load_default_simulations(simulations_object= False)# this is just an example perhaps you need to pass a lower verion file because this one is extracted from thecurrent model as the excutor
-        >>> upgrade_file =upgrade_apsim_file(filep, verbose=False)
+    Example::
+
+        from apsimNGpy.core.base_data import load_default_simulations
+        filep =load_default_simulations(simulations_object= False)# this is just an example perhaps you need to pass a lower verion file because this one is extracted from thecurrent model as the excutor
+        upgrade_file =upgrade_apsim_file(filep, verbose=False)
 
     """
     file = str(file)
@@ -86,12 +88,13 @@ def run_model_externally(model: Union[Path, str], verbose: bool = False, to_csv:
 
     ``returns``: A subprocess.Popen object.
 
-    Example:
-        >>> result =run_model_externally("path/to/model.apsimx", verbose=True, to_csv=True)
-        >>> from apsimNGpy.core.base_data import load_default_simulations
-        >>> path_to_model = load_default_simulations(crop ='maize', simulations_object =False)
-        >>> pop_obj = run_model_externally(path_to_model, verbose=False)
-        >>> pop_obj1 = run_model_externally(path_to_model, verbose=True)# when verbose is true, will print the time taken
+    Example::
+
+        result =run_model_externally("path/to/model.apsimx", verbose=True, to_csv=True)
+        from apsimNGpy.core.base_data import load_default_simulations
+        path_to_model = load_default_simulations(crop ='maize', simulations_object =False)
+        pop_obj = run_model_externally(path_to_model, verbose=False)
+        pop_obj1 = run_model_externally(path_to_model, verbose=True)# when verbose is true, will print the time taken
     """
 
     apsim_file = model  # Define the APSIMX file path
@@ -109,7 +112,7 @@ def run_model_externally(model: Union[Path, str], verbose: bool = False, to_csv:
             if err:
                 logger.error(err.strip())
             if verbose:
-                logger.info(f"{out.strip()}, output from {apsim_file}")
+                logger.info(f"{repr(out.strip())}, output from {apsim_file}")
 
             return result
         finally:
@@ -174,10 +177,11 @@ def collect_csv_from_dir(dir_path, pattern, recursive=False) -> (pd.DataFrame):
     returns
         a generator object with pandas data frames
 
-    Example:
-     >>> mock_data = Path.home() / 'mock_data' # this a mock directory substitute accordingly
-     >>> df1= list(collect_csv_from_dir(mock_data, '*.apsimx', recursive=True)) # collects all csf file produced by apsimx recursively
-     >>> df2= list(collect_csv_from_dir(mock_data, '*.apsimx',  recursive=False)) # collects all csf file produced by apsimx only in the specified directory directory
+    Example::
+
+         mock_data = Path.home() / 'mock_data' # this a mock directory substitute accordingly
+         df1= list(collect_csv_from_dir(mock_data, '*.apsimx', recursive=True)) # collects all csf file produced by apsimx recursively
+         df2= list(collect_csv_from_dir(mock_data, '*.apsimx',  recursive=False)) # collects all csf file produced by apsimx only in the specified directory directory
 
 
     """
@@ -232,13 +236,18 @@ def run_from_dir(dir_path, pattern, verbose=False,
         -- a ``generator`` that yields data frames knitted by pandas
 
 
-       Example:
-          >>> mock_data = Path.home() / 'mock_data'# As an example let's mock some data move the apsim files to this directory before runnning
-          >>> mock_data.mkdir(parents=True, exist_ok=True)
-          >>> from apsimNGpy.core.base_data import load_default_simulations
-          >>> path_to_model = load_default_simulations(crop ='maize', simulations_object =False) # get base model
-          >>> ap =path_to_model.replicate_file(k=10, path= mock_data)  if not list(mock_data.rglob("*.apsimx")) else None
-          >>> df = run_from_dir(str(mock_data), pattern="*.apsimx", verbose=True, recursive=True)# all files that matches that pattern
+       Example::
+
+            mock_data = Path.home() / 'mock_data'  # As an example, let's mock some data; move the APSIM files to this directory before running
+            mock_data.mkdir(parents=True, exist_ok=True)
+
+            from apsimNGpy.core.base_data import load_default_simulations
+            path_to_model = load_default_simulations(crop='maize', simulations_object=False)  # Get base model
+
+            ap = path_to_model.replicate_file(k=10, path=mock_data) if not list(mock_data.rglob("*.apsimx")) else None
+
+            df = run_from_dir(str(mock_data), pattern="*.apsimx", verbose=True, recursive=True)  # All files that match the pattern
+
 
        """
     dir_path = str(dir_path)
@@ -271,7 +280,13 @@ def run_from_dir(dir_path, pattern, verbose=False,
         out = collect_csv_from_dir(dir_path, pattern)
         return out
 
+@lru_cache(maxsize=None)
+def apsim_executable(path, *args):
+    base  = [str(APSIM_EXEC), str(path), '--verbose', '--csv']
+    return base
 
+def run_p(path):
+    run(apsim_executable(path))
 
 
 if __name__ == "__main__":

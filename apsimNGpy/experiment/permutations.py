@@ -47,7 +47,7 @@ class GenerateCombinations:
 
     @property
     def management_combination(self):
-        return create_permutations([n.variables for n in self.mgt], [i.parameter for i in self.mgt])
+        return create_permutations([n._variables for n in self.mgt], [i.parameter for i in self.mgt])
 
     @property
     def organise_scrips(self):

@@ -43,6 +43,7 @@ def dataview_to_dataframe(_model, reports):
     finally:
         _model._DataStore.Close()
 
+
 def read_with_query(db, query):
     """
         Executes an SQL query on a specified database and returns the result as a Pandas DataFrame.

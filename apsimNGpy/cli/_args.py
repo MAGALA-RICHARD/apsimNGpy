@@ -46,4 +46,4 @@ parser.add_argument('-fw', '--get_web_data', type=str, required=False, choices=[
 parser.add_argument('-e', '--experiment', type=str, required=False,
                     help="set experiment by providing the specification in the form of a string."
                          "Different specifications are seperated by a  full colon."
-                         "Edits like changing management practices or soils variables will be made before creating the experiment ")
+                         "Edits like changing management practices or soils _variables will be made before creating the experiment ")

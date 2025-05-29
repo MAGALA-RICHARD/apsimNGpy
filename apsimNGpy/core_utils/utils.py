@@ -27,7 +27,7 @@ import traceback
 import sys
 from apsimNGpy.settings import logger
 from platform import system
-from subprocess import call
+from subprocess import call, run, Popen
 def select_process(use_thread, ncores):
     return ThreadPoolExecutor(ncores) if use_thread else ProcessPoolExecutor(ncores)
 
@@ -40,6 +40,35 @@ def open_file_in_window(filepath):
         call(['xdg-open', filepath])
     else:
         raise OSError('Unsupported operating system')
+# to avoid breaking old versions. am repeating it here
+
+
+def open_apsimx_file_in_window(filepath, bin_path):
+    """
+    Opens the given .apsimx file using the APSIM Next Generation executable located in `bin_path`.
+
+    Parameters:
+        filepath (str): Path to the .apsimx file.
+        bin_path (str): Path to the APSIM binaries (folder containing ApsimNG or ApsimNG.exe).
+
+    Raises:
+        FileNotFoundError: If the APSIM executable does not exist.
+    """
+    if system() == 'Windows':
+        executor = os.path.join(bin_path, 'ApsimNG.exe')
+    else:
+        executor = os.path.join(bin_path, 'ApsimNG')
+
+    if not os.path.exists(executor):
+        raise FileNotFoundError(f"APSIM executable not found at: {executor}")
+
+    try:
+        process = Popen([executor, filepath])
+        return process  # Return the running process if needed
+    except Exception as e:
+        raise RuntimeError(f"Failed to open file: {e}")
+
+
 class KeyValuePair:
     def __init__(self, Key, Value):
         self.key = Key

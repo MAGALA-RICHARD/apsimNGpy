@@ -14,6 +14,10 @@ apsimNGpy
    :target: https://pypi.org/project/apsimNGpy/
    :alt: PyPI version
 
+.. image:: https://static.pepy.tech/badge/apsimNGpy
+   :target: https://pepy.tech/project/apsimNGpy
+   :alt: Total PyPI downloads 
+
 .. image:: https://img.shields.io/pypi/dm/apsimNGpy?logo=pypi
    :target: https://pypi.org/project/apsimNGpy/
    :alt: PyPI downloads
@@ -39,7 +43,7 @@ APSIMX file editing, seamless weather data retrieval, optimization, and efficien
 Requirements
 ***********************************************************************************
 1. Dotnet, install from https://learn.microsoft.com/en-us/dotnet/core/install/
-2. Python3
+2. Python 3.10 +
 3. APSIM: Add the directory containing the models executable to the system's PATH or python path (to locate the required .dll files). This can be achieved in either of the following ways:
 4. Utilize the APSIM installer provided for this purpose.
 5. Build APSIM from its source code. This is comming soon
@@ -83,7 +87,7 @@ GETTING STARTED
 Before using apsimNGpy, it is necessary to install APSIM. Please follow the instructions provided at the following link to complete the installation: https://www.apsim.info/download-apsim/downloads/
 for MAcOS or Linux users see: https://apsimnextgeneration.netlify.app/install/
 model documentation and tutorial are also available via; https://docs.apsim.info/
-we expect that by accepting to use apsimNGpy, you have a basic understanding of APSIM process-based model, therefore, our focus is to make sure you are able to use apsimNGpy
+we expect that by accepting to use apsimNGpy, you have a basic understanding of APSIM process-based model, therefore, our focus is to make sure you are able to use apsimNGpy.
 
 In addition, make sure that the APSIM installation binaries folder is added to the system path.
 if you run the following code and returns None you need to do something as explained below.
@@ -338,20 +342,21 @@ You can preview the current simulation in the APSIM graphical user interface (GU
    Note that the file opened in the GUI is a temporary clone, so any changes made and saved within the GUI will not be reflected when you rerun the code.
    If you intend to preserve modifications made in the ``GUI``, you may need to supply the ``reference path`` of the edited file using ``ApsimModel`` class .
 
-   In addition, take note of the version it will be difficult to re-open
-   it in the lower versions after opening it in the higher versions of apsim.
+   In addition, apsim file will be opened based on the apsim bin path in use by apsimNGpy.
 
 Visualise the results. please note that python provide very many plotting libraries below is just a basic description of your results.we also provide more data visualisation methods in the diagnostic module
 
 .. code-block:: python
 
     # Visualize the simulation results
-    res = apsim.results['MaizeR']  # Replace with the appropriate report name
+    res = apsim.results  # Reading directly from Report
+    # alternativel
+    res = apsim.get_simulated_output("Report")
     plot_data(df['Clock.Today'], df.Yield, xlabel='Date', ylabel='Soybean Yield (kg/ha)')
 
-Finally, the `plot_data` function is used to visualize the simulation results. Replace 'df['Clock.Today']' and `df.Yield` with the appropriate report name and column from your simulation results.
+Finally, the ``plot_data`` function is used to visualize the simulation results. Replace ``df['Clock.Today']`` and ``df.Yield`` with the appropriate columns names from your simulation results.
 
-A graph similar to the example below should appear
+A graph similar to the example below should appear.
 
 Congratulations you have successfully used apsimNGpy package
 *********************************************************************************

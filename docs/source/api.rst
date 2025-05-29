@@ -110,7 +110,7 @@ ApsimModel
 ContinuousVariableProblem 
 ----------------------------------------
 
-.. function:: apsimNGpy.optimizer.one_obj.ContinuousVariableProblem(model: str, simulation=<object object at 0x00000204070AF250>, controls=None, control_vars=None, labels=None, func=None, cache_size=400)
+.. function:: apsimNGpy.optimizer.one_obj.ContinuousVariableProblem(model: str, simulation=<object object at 0x00000298ACB17250>, controls=None, control_vars=None, labels=None, func=None, cache_size=400)
 
    Defines an optimization problem for continuous variables in APSIM simulations.
 
@@ -457,6 +457,8 @@ CoreModel
 
    Set simulation dates.
 
+        @deprecated
+
         Parameters
         -----------------------------------
 
@@ -491,7 +493,9 @@ CoreModel
 
 .. function:: apsimNGpy.core.core.CoreModel.change_som(self, *, simulations: Union[tuple, list] = None, inrm: int = None, icnr: int = None, surface_om_name='SurfaceOrganicMatter', **kwargs)
 
-   Change ``Surface Organic Matter`` (``SOM``) properties in specified simulations.
+   @deprecated in v0.38 +
+
+         Change ``Surface Organic Matter`` (``SOM``) properties in specified simulations.
 
     Parameters:
         ``simulations`` (str ort list): List of simulation names to target (default: None).
@@ -503,6 +507,10 @@ CoreModel
         ``surface_om_name`` (str, optional): name of the surface organic matter child defaults to ='SurfaceOrganicMatter'
     Returns:
         self: The current instance of the class.
+
+.. function:: apsimNGpy.core.core.CoreModel.check_som(self, simulations=None)
+
+   @deprecated in versions 0.38+
 
 .. function:: apsimNGpy.core.core.CoreModel.clean_up(self, db=True, verbose=False)
 
@@ -746,7 +754,8 @@ CoreModel
 
 .. function:: apsimNGpy.core.core.CoreModel.examine_management_info(self, simulations: Union[list, tuple] = None)
 
-   This will show the current management scripts in the simulation root
+   @deprecated in versions 0.38+
+        This will show the current management scripts in the simulation root
 
         Parameters
         ----------
@@ -1575,13 +1584,6 @@ ModelTools
 apsimNGpy.core.base_data 
 ---------------------------------------
 
-.. function:: apsimNGpy.core.config.get_apsim_bin_path()
-
-   Returns the path to the apsim bin folder from either auto-detection or from the path already supplied by the user
-    through the apsimNgp config.ini file in the user home dir_path. the location folder is called
-    The function is silent does not raise any exception but return empty string in all cases
-    :return:
-
 .. function:: apsimNGpy.core.base_data.load_default_sensitivity_model(method: str, set_wd: str = None, simulations_object: bool = True)
 
    Load default simulation model from ``APSIM`` Example Folder.
@@ -1734,13 +1736,6 @@ apsimNGpy.core.runner
 .. function:: apsimNGpy.settings.config_internal(key: str, value: str) -> None
 
    Stores the apsim version and many others to be used by the app
-
-.. function:: apsimNGpy.core.config.get_apsim_bin_path()
-
-   Returns the path to the apsim bin folder from either auto-detection or from the path already supplied by the user
-    through the apsimNgp config.ini file in the user home dir_path. the location folder is called
-    The function is silent does not raise any exception but return empty string in all cases
-    :return:
 
 .. function:: apsimNGpy.core.runner.get_apsim_version(verbose: bool = False)
 

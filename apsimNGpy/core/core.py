@@ -259,6 +259,7 @@ class CoreModel:
     def save(self, file_name=None):
         """
         Save the simulation models to file
+
         ``file_name``:    The name of the file to save the defaults to none, taking the exising filename
 
         Returns: model object
@@ -275,6 +276,7 @@ class CoreModel:
 
     def save_edited_file(self, out_path: os.PathLike = None, reload: bool = False) -> Union['CoreModel', None]:
         """ Saves the model to the local drive.
+            @deprecated: use save() method instead
 
             Notes: - If `out_path` is None, the `save_model_to_file` function extracts the filename from the
             `Model.Core.Simulation` object. - `out_path`, however, is given high priority. Therefore,
@@ -315,7 +317,7 @@ class CoreModel:
     _ after Model run has been called, use can still get results by calling ``get_simulated_output``, it accepts one argument ``report_names``
 
     Returns:
-        pd.DataFrame: A DataFrame containing the simulation output.
+        pd.DataFrame: A DataFrame containing the simulation output results.
     """
         _reports = self.report_names or self.inspect_model('Models.Report',
                                                            fullpath=False)  # false returns all names other than fullpath of the models in that type
@@ -623,8 +625,8 @@ class CoreModel:
 
         Example::
 
-             from apsimNGpy import core  # doctest: +SKIP
-             model =core.base_data.load_default_simulations(crop = "Maize")  # doctest: +SKIP
+             from apsimNGpy import core  # doctest:
+             model =core.base_data.load_default_simulations(crop = "Maize")
              model.find_model("Weather")  # doctest: +SKIP
              'Models.Climate.Weather'
              model.find_model("Clock")  # doctest: +SKIP
@@ -1066,12 +1068,11 @@ class CoreModel:
             returns instance of apsimNGpy.core.core.apsim.ApsimModel or apsimNGpy.core.core.apsim.CoreModel
            raises an erros if a report is not found
 
-        Example:
-        >>> from apsimNGpy import core
+        Example::
 
-        >>> model = core.base_data.load_default_simulations()
-
-        >>> model.add_report_variable(variable_spec = '[Clock].Today as Date', report_name = 'Report')
+            from apsimNGpy import core
+            model = core.base_data.load_default_simulations('Maize')
+            model.add_report_variable(variable_spec = '[Clock].Today as Date', report_name = 'Report')
         """
         if isinstance(variable_spec, str):
             variable_spec = [variable_spec]
@@ -1122,13 +1123,13 @@ class CoreModel:
 
         Returns:
            None
-        Example:
-               >>> from apsimNGpy import core
-               >>> from apsimNGpy.core.core import Models
+        Example::
 
-               >>> model = core.base_data.load_default_simulations(crop = 'Maize')
-               >>> model.remove_model(Models.Clock) #deletes the clock node
-               >>> model.remove_model(Models.Climate.Weather) #deletes the weather node
+               from apsimNGpy import core
+               from apsimNGpy.core.core import Models
+               model = core.base_data.load_default_simulations(crop = 'Maize')
+               model.remove_model(Models.Clock) #deletes the clock node
+               model.remove_model(Models.Climate.Weather) #deletes the weather node
         """
         model_type = _eval_model(model_type)
         if not model_name:
@@ -2245,46 +2246,49 @@ class CoreModel:
 
         Return: list[str]: list of all full paths or names of the model relative to the parent simulations node \n
 
-        Example:
+        Examples::
 
-        >>> from apsimNGpy.core import base_data
-        >>> from apsimNGpy.core.core import Models
+             from apsimNGpy.core import base_data
+             from apsimNGpy.core.core import Models
+             # load default ``maize`` module
+             model = base_data.load_default_simulations(crop ='maize')
+             model.inspect_model(Models.Manager, fullpath=True)
+             [.Simulations.Simulation.Field.Sow using a variable rule', '.Simulations.Simulation.Field.Fertilise at
+             sowing', '.Simulations.Simulation.Field.Harvest']
+             model.inspect_model(Models.Clock) # gets the path to the Clock models
+             ['.Simulations.Simulation.Clock']
+             model.inspect_model(Models.Core.IPlant) # gets the path to the crop model
+             ['.Simulations.Simulation.Field.Maize']
+             model.inspect_model(Models.Core.IPlant, fullpath=False) # gets you the name of the crop Models
+             ['Maize']
+             model.inspect_model(Models.Fertiliser, fullpath=True)
+             ['.Simulations.Simulation.Field.Fertiliser']
+             model.inspect_model('Models.Fertiliser', fullpath=False) # strings are allowed to
+        The models from APSIM Models namespace are abstracted to use strings. All you need is to specify the name or the full path to the model enclosed in a stirng as follows::
 
-        # load default ``maize`` module
+             model.inspect_model('Clock') # get the path to the clock model
+             ['.Simulations.Simulation.Clock']
+             # alternatively, you can do the following
+             model.inspect_model('Models.Clock')
+             ['.Simulations.Simulation.Clock']
 
-        >>> model = base_data.load_default_simulations(crop ='maize')
-        >>> model.inspect_model(Models.Manager, fullpath=True)
-         [.Simulations.Simulation.Field.Sow using a variable rule', '.Simulations.Simulation.Field.Fertilise at
-        sowing', '.Simulations.Simulation.Field.Harvest']
+             model.inspect_model('IPlant')
+             ['.Simulations.Simulation.Field.Maize']
+             # inspect using full model namespace path
+             model.inspect_model('IPlant')
+             model.inspect_model('Weather') # inspects the weather module
+             ['.Simulations.Simulation.Weather']
+             # or inspect using full model namespace path
+             model.inspect_model('Models.Climate.Weather')
+             ['.Simulations.Simulation.Weather']
+             model.inspect_model('Cultivar', fullpath=False) # list all available cultivar names
+             ['Hycorn_53',  'Pioneer_33M54', 'Pioneer_38H20',  'Pioneer_34K77',  'Pioneer_39V43',  'Atrium', 'Laila', 'GH_5019WX']
+             # the full path to cultivar will
+             model.inspect_model('Models.PMF.Cultivar', fullpath = False)
+             ['Hycorn_53',  'Pioneer_33M54', 'Pioneer_38H20',  'Pioneer_34K77',  'Pioneer_39V43',  'Atrium', 'Laila', 'GH_5019WX']
 
-         >>> model.inspect_model(Models.Clock) # gets the path to the Clock models
-         ['.Simulations.Simulation.Clock']
-
-         >>> model.inspect_model(Models.Core.IPlant) # gets the path to the crop model
-         ['.Simulations.Simulation.Field.Maize']
-
-         >>> model.inspect_model(Models.Core.IPlant, fullpath=False) # gets you the name of the crop Models
-         ['Maize']
-
-         >>> model.inspect_model(Models.Fertiliser, fullpath=True)
-         ['.Simulations.Simulation.Field.Fertiliser']
-
-         >>> model.inspect_model('Models.Fertiliser', fullpath=False) # strings are allowed to
-
-         The models from Models namespace are abstracted to use strings. all you need is to specify the name or the full path to the model enclosed in a stirng as follows
-
-         >>> model.inspect_model('Clock') # get the path to the clock model
-         ['.Simulations.Simulation.Clock']
-
-         >>> model.inspect_model('IPlant')
-         ['.Simulations.Simulation.Field.Maize']
-
-         >>> model.inspect_model('Weather') # inspects the weather module
-         ['.Simulations.Simulation.Weather']
-
-         >>> model.inspect_model('Cultivar', fullpath=False) # list all available cultivar names
-         ['Hycorn_53',  'Pioneer_33M54', 'Pioneer_38H20',  'Pioneer_34K77',  'Pioneer_39V43',  'Atrium', 'Laila', 'GH_5019WX']
-
+        Models can be inspected either by importing the Models namespace or by using string paths. The most reliable approach is to provide the full model path—either as a string or as a Models object.
+        However, remembering full paths can be tedious, so allowing partial model names or references can significantly save time during development and exploration.
         """
 
         model_type = _eval_model(model_type)
@@ -2523,12 +2527,12 @@ class CoreModel:
 
     def find_simulations(self, simulations: Union[list, tuple, str] = None):
         simulations_names = simulations
-        """Find simulations by name
+        """Find simulations by name or names in a list
 
         Parameters
         ----------
-        ``simulations``, str, optional
-            List of simulation names to find, if `None` return all simulations
+        ``simulations``, str, list optional
+            List of simulation names to find, if `None` or named 'all' return all simulations
         ``Returns``
         ----------
             list of APSIM ``Models.Core.Simulation`` objects
@@ -2677,13 +2681,14 @@ class CoreModel:
         ``factor_name``: *(str), required*
         - expected to be the user-desired name of the factor being specified e.g., population
 
-        Example:
-            >>> from apsimNGpy.core import base_data
-            >>> apsim = base_data.load_default_simulations(crop='Maize')
-            >>> apsim.create_experiment(permutation=False)
-            >>> apsim.add_factor(specification="[Fertilise at sowing].Script.Amount = 0 to 200 step 20", factor_name='Nitrogen')
-            >>> apsim.add_factor(specification="[Sow using a variable rule].Script.Population =4 to 8 step 2", factor_name='Population')
-            >>> apsim.run() # doctest: +SKIP
+        Example::
+
+            from apsimNGpy.core import base_data
+            apsim = base_data.load_default_simulations(crop='Maize')
+            apsim.create_experiment(permutation=False)
+            apsim.add_factor(specification="[Fertilise at sowing].Script.Amount = 0 to 200 step 20", factor_name='Nitrogen')
+            apsim.add_factor(specification="[Sow using a variable rule].Script.Population =4 to 8 step 2", factor_name='Population')
+            apsim.run() # doctest: +SKIP
         """
         # TODO fix factors either composite or not composite
         if factor_name is None:
@@ -2747,11 +2752,12 @@ class CoreModel:
 
         ``Returns``:
             ``ApsimModel`` or ``CoreModel``: An instance of `apsimNGpy.core.core.apsim.ApsimModel` or `CoreModel`.
-        Example:
-            >>> from apsimNGpy.core import base_data
-            >>> apsim = base_data.load_default_simulations(crop='Maize')
-            >>> apsim.create_experiment(permutation=False)
-            >>> apsim.set_continuous_factor(factor_path = "[Fertilise at sowing].Script.Amount", lower_bound=100, upper_bound=300, interval=10)
+        Example::
+
+            from apsimNGpy.core import base_data
+            apsim = base_data.load_default_simulations(crop='Maize')
+            apsim.create_experiment(permutation=False)
+            apsim.set_continuous_factor(factor_path = "[Fertilise at sowing].Script.Amount", lower_bound=100, upper_bound=300, interval=10)
 
         """
         format_factor = f"{factor_path} = {lower_bound} to {upper_bound} step {interval}"
@@ -2772,11 +2778,12 @@ class CoreModel:
         ``returns``:
           ``ApsimModel`` or ``CoreModel``: An instance of ``apsimNGpy.core.core.apsim.ApsimModel`` or ``CoreModel``.
 
-        Example:
-            >>> from apsimNGpy.core import base_data
-            >>> apsim = base_data.load_default_simulations(crop='Maize')
-            >>> apsim.create_experiment(permutation=False)
-            >>> apsim.set_continuous_factor(factor_path = "[Fertilise at sowing].Script.Amount", lower_bound=100, upper_bound=300, interval=10)
+        Example::
+
+            from apsimNGpy.core import base_data
+            apsim = base_data.load_default_simulations(crop='Maize')
+            apsim.create_experiment(permutation=False)
+            apsim.set_continuous_factor(factor_path = "[Fertilise at sowing].Script.Amount", lower_bound=100, upper_bound=300, interval=10)
 
         """
         format_factor = f"{factor_path} = {','.join(map(str, categories))}"
@@ -2913,11 +2920,12 @@ class CoreModel:
             ``ValueError``: If no variable_spec is provided.
             ``RuntimeError``: If no Zone is found in the current simulation scope.
 
-        : Example:
-               >>> from apsimNGpy import core
-               >>> model = core.base_data.load_default_simulations(crop = 'Maize')
-               >>> model.add_db_table(variable_spec=['[Clock].Today', '[Soil].Nutrient.TotalC[1]/1000 as SOC1'], rename='report2')
-               >>> model.add_db_table(variable_spec=['[Clock].Today', '[Soil].Nutrient.TotalC[1]/1000 as SOC1', '[Maize].Grain.Total.Wt*10 as Yield'], rename='report2', set_event_names=['[Maize].Harvesting','[Clock].EndOfYear' ])
+        : Example::
+
+               from apsimNGpy import core
+               model = core.base_data.load_default_simulations(crop = 'Maize')
+               model.add_db_table(variable_spec=['[Clock].Today', '[Soil].Nutrient.TotalC[1]/1000 as SOC1'], rename='report2')
+               model.add_db_table(variable_spec=['[Clock].Today', '[Soil].Nutrient.TotalC[1]/1000 as SOC1', '[Maize].Grain.Total.Wt*10 as Yield'], rename='report2', set_event_names=['[Maize].Harvesting','[Clock].EndOfYear' ])
         """
         import Models
         report = Models.Report()

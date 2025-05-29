@@ -43,7 +43,7 @@ APSIMX file editing, seamless weather data retrieval, optimization, and efficien
 Requirements
 ***********************************************************************************
 1. Dotnet, install from https://learn.microsoft.com/en-us/dotnet/core/install/
-2. Python3
+2. Python 3.10 +
 3. APSIM: Add the directory containing the models executable to the system's PATH or python path (to locate the required .dll files). This can be achieved in either of the following ways:
 4. Utilize the APSIM installer provided for this purpose.
 5. Build APSIM from its source code. This is comming soon

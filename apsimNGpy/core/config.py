@@ -18,7 +18,7 @@ HOME_DATA = Path.home().joinpath('AppData', 'Local', 'Programs')
 cdrive = os.environ.get('PROGRAMFILES')
 CONFIG = configparser.ConfigParser()
 
-
+@cache
 def _apsim_model_is_installed(_path: str):
     """
     This private function checks if the APSIM model is installed by verifying the presence of binaries, especially if they haven't been
@@ -140,13 +140,17 @@ def auto_detect_apsim_bin_path():
     else:
         return ""
 
-lru_cache(maxsize =200)
+@cache
 def get_apsim_bin_path():
     """
     Returns the path to the apsim bin folder from either auto-detection or from the path already supplied by the user
     through the apsimNgp config.ini file in the user home dir_path. the location folder is called
     The function is silent does not raise any exception but return empty string in all cases
     :return:
+
+    Example::
+
+      bin_path = get_apsim_bin_path()
     """
     # if it does not exist, we create it and try to load from the auto-detected pass
     g_CONFIG = configparser.ConfigParser()
@@ -164,14 +168,15 @@ def set_apsim_bin_path(path, raise_errors=True):
     """ Send your desired path to the aPSim binary folder to the config module
     the path should end with bin as the parent dir_path of the aPSim Model.
     >> Please be careful with adding an uninstalled path, which does not have model.exe file or unix executable.
-    It won't work and python with throw an error
-    Example:
+    It won't work and Python with throw an error
 
-    >>> from apsimNGpy.core import config
-    # check the current path
-     >>>config = config.get_apsim_bin_path()
-     # set the desired path
-     >>> config.set_apsim_bin_path(path = '/path/to/APSIM*/bin')
+    Example::
+
+         from apsimNGpy.core import config
+         # check the current path
+         config = config.get_apsim_bin_path()
+         # set the desired path
+         config.set_apsim_bin_path(path = '/path/to/APSIM*/bin')
     """
     _path = realpath(path)
     if os.path.basename(_path) != 'bin':
@@ -195,8 +200,10 @@ def set_apsim_bin_path(path, raise_errors=True):
 
 class Config:
     """
+    @deprecated since version 0.2
+
         The configuration class providing the leeway for the user to change the
-       global _variables such as aPSim bin locations. it is deprecated
+       global variables such as APSIM bin locations. It is deprecated
         """
 
     @classmethod

@@ -30,7 +30,7 @@ from functools import cache, lru_cache, singledispatch
 # prepare for the C# import
 from apsimNGpy.core import pythonet_config
 import warnings
-from apsimNGpy.core_utils.utils import timer
+from apsimNGpy.core_utils.utils import timer, open_apsimx_file_in_window, open_file_in_window
 
 # now we can safely import C# libraries
 from System.Collections.Generic import *
@@ -40,8 +40,6 @@ from Models.Core.ApsimFile import FileFormat
 from Models.Climate import Weather
 from Models.Soils import Soil, Physical, SoilCrop, Organic, Solute, Chemical
 
-
-from apsimNGpy.core_utils.utils import open_file_in_window
 from apsimNGpy.core_utils.database_utils import read_db_table, dataview_to_dataframe
 from apsimNGpy.core.config import get_apsim_bin_path, load_crop_from_disk
 
@@ -1914,10 +1912,8 @@ class CoreModel:
         ``return``: opens the simulation file
 
         """
-        # TODO this need to be connected to the apsim installation path to make
-        #  sure that file are opened in their corresponding versions
         self.save()
-        open_file_in_window(self.path)
+        open_apsimx_file_in_window(self.path, bin_path=get_apsim_bin_path())
 
     def _kvtodict(self, kv):
         return {kv[i].Key: kv[i].Value for i in range(kv.Count)}
@@ -1937,6 +1933,8 @@ class CoreModel:
     def change_simulation_dates(self, start_date: str = None, end_date: str = None,
                                 simulations: Union[tuple, list] = None):
         """Set simulation dates.
+
+        @deprecated
 
         Parameters
         -----------------------------------
@@ -1990,8 +1988,10 @@ class CoreModel:
     @property
     def extract_dates(self, simulations=None):
 
-        """Get simulation dates in the model. deprecated
+        """Get simulation dates in the model.
+
         @deprecated
+
         Parameters
         ----------
         ``simulations``, optional

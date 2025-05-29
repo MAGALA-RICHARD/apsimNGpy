@@ -27,7 +27,7 @@ import traceback
 import sys
 from apsimNGpy.settings import logger
 from platform import system
-from subprocess import call
+from subprocess import call, run
 def select_process(use_thread, ncores):
     return ThreadPoolExecutor(ncores) if use_thread else ProcessPoolExecutor(ncores)
 
@@ -40,6 +40,25 @@ def open_file_in_window(filepath):
         call(['xdg-open', filepath])
     else:
         raise OSError('Unsupported operating system')
+# to avoid breaking old versions. am repeating it here
+
+def open_apsimx_file_in_window(filepath, bin_path):
+    """
+    It opens the file in the current bin path
+    """
+    if system() == 'Windows':
+        excutor = os.path.join(bin_path, 'ApsimNG.exe')
+    else:
+        excutor = os.path.join(bin_path, 'ApsimNG')
+    if os.path.exists(excutor):
+        completed = run([excutor, filepath])
+
+        return completed
+    else:
+        raise FileNotFoundError(f"excutor: {excutor} not found")
+
+
+
 class KeyValuePair:
     def __init__(self, Key, Value):
         self.key = Key

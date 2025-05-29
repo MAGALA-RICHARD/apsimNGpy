@@ -110,7 +110,7 @@ ApsimModel
 ContinuousVariableProblem 
 ----------------------------------------
 
-.. function:: apsimNGpy.optimizer.one_obj.ContinuousVariableProblem(model: str, simulation=<object object at 0x0000024CC6AFB250>, controls=None, control_vars=None, labels=None, func=None, cache_size=400)
+.. function:: apsimNGpy.optimizer.one_obj.ContinuousVariableProblem(model: str, simulation=<object object at 0x000002780C597250>, controls=None, control_vars=None, labels=None, func=None, cache_size=400)
 
    Defines an optimization problem for continuous variables in APSIM simulations.
 
@@ -928,40 +928,72 @@ CoreModel
 
              from apsimNGpy.core import base_data
              from apsimNGpy.core.core import Models
-             # load default ``maize`` module
+        load default ``maize`` module::
+
              model = base_data.load_default_simulations(crop ='maize')
+
+        Find the path to all the manager script in the simulation::
+
              model.inspect_model(Models.Manager, fullpath=True)
              [.Simulations.Simulation.Field.Sow using a variable rule', '.Simulations.Simulation.Field.Fertilise at
              sowing', '.Simulations.Simulation.Field.Harvest']
+
+        Inspect the full path of the Clock Model::
+
              model.inspect_model(Models.Clock) # gets the path to the Clock models
              ['.Simulations.Simulation.Clock']
+
+        Inspect the full path to the crop plants in the simulation::
+
              model.inspect_model(Models.Core.IPlant) # gets the path to the crop model
              ['.Simulations.Simulation.Field.Maize']
+
+        Or use full string path as follows::
+
              model.inspect_model(Models.Core.IPlant, fullpath=False) # gets you the name of the crop Models
              ['Maize']
+        Get full path to the fertiliser model::
+
              model.inspect_model(Models.Fertiliser, fullpath=True)
              ['.Simulations.Simulation.Field.Fertiliser']
-             model.inspect_model('Models.Fertiliser', fullpath=False) # strings are allowed to
+
         The models from APSIM Models namespace are abstracted to use strings. All you need is to specify the name or the full path to the model enclosed in a stirng as follows::
 
              model.inspect_model('Clock') # get the path to the clock model
              ['.Simulations.Simulation.Clock']
-             # alternatively, you can do the following
+
+        Alternatively, you can do the following::
+
              model.inspect_model('Models.Clock')
              ['.Simulations.Simulation.Clock']
 
+        Repeat inspection of the plant model while using a ``string``::
+
              model.inspect_model('IPlant')
              ['.Simulations.Simulation.Field.Maize']
-             # inspect using full model namespace path
-             model.inspect_model('IPlant')
+
+        Inspect using full model namespace path::
+
+             model.inspect_model('Models.Core.IPlant')
+
+        What about weather model?::
+
              model.inspect_model('Weather') # inspects the weather module
              ['.Simulations.Simulation.Weather']
+
+        Alternative::
+
              # or inspect using full model namespace path
              model.inspect_model('Models.Climate.Weather')
              ['.Simulations.Simulation.Weather']
+
+        Try finding path to the cultivar model::
+
              model.inspect_model('Cultivar', fullpath=False) # list all available cultivar names
              ['Hycorn_53',  'Pioneer_33M54', 'Pioneer_38H20',  'Pioneer_34K77',  'Pioneer_39V43',  'Atrium', 'Laila', 'GH_5019WX']
-             # the full path to cultivar will
+
+        # we can get only the names of the cultivar models using the full string path::
+
              model.inspect_model('Models.PMF.Cultivar', fullpath = False)
              ['Hycorn_53',  'Pioneer_33M54', 'Pioneer_38H20',  'Pioneer_34K77',  'Pioneer_39V43',  'Atrium', 'Laila', 'GH_5019WX']
 

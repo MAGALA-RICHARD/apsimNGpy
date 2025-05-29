@@ -2098,7 +2098,8 @@ class CoreModel:
              self. replace the weather data with the fetched data.
 
             Example::
-
+              from apsimNgpy.core.apsim import ApsimModel
+              model = ApsimModel(model= "Maize")
               model.get_weather_from_web(lonlat = (-93.885490, 42.060650), start = 1990, end  =2001)
 
             Changing weather data with unmatching start and end dates in the simulation will lead to ``RuntimeErrors``. To avoid this first check the start and end date before proceedign as follows::

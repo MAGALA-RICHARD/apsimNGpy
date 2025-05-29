@@ -6,6 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="5d471312-8496-4246-98d6-790439318160" name="Changes" comment="optimizations">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/core.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/core.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/raw_docs/api.rst" beforeDir="false" afterPath="$PROJECT_DIR$/raw_docs/api.rst" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../docs/source/api.rst" beforeDir="false" afterPath="$PROJECT_DIR$/../docs/source/api.rst" afterDir="false" />
     </list>
@@ -167,6 +168,26 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="core" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="apsimNGpy" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/core" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/core/core.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="main" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="apsimNGpy" />
       <option name="ENV_FILES" value="" />
@@ -247,33 +268,13 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="optimizer" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="apsimNGpy" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/optimizer" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/optimizer/optimizer.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="true" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
     <recent_temporary>
       <list>
         <item itemvalue="Python.main" />
+        <item itemvalue="Python.core" />
         <item itemvalue="Python.one_objective" />
         <item itemvalue="Python.mixed" />
         <item itemvalue="Python.one_obj" />
-        <item itemvalue="Python.optimizer" />
       </list>
     </recent_temporary>
   </component>
@@ -373,54 +374,6 @@
       <workItem from="1748108154992" duration="7580000" />
       <workItem from="1748185932476" duration="2318000" />
       <workItem from="1748213880457" duration="16421000" />
-    </task>
-    <task id="LOCAL-00500" summary="v0.38">
-      <option name="closed" value="true" />
-      <created>1748111532805</created>
-      <option name="number" value="00500" />
-      <option name="presentableId" value="LOCAL-00500" />
-      <option name="project" value="LOCAL" />
-      <updated>1748111532805</updated>
-    </task>
-    <task id="LOCAL-00501" summary="v0.38">
-      <option name="closed" value="true" />
-      <created>1748111680458</created>
-      <option name="number" value="00501" />
-      <option name="presentableId" value="LOCAL-00501" />
-      <option name="project" value="LOCAL" />
-      <updated>1748111680458</updated>
-    </task>
-    <task id="LOCAL-00502" summary="v0.38">
-      <option name="closed" value="true" />
-      <created>1748111739137</created>
-      <option name="number" value="00502" />
-      <option name="presentableId" value="LOCAL-00502" />
-      <option name="project" value="LOCAL" />
-      <updated>1748111739137</updated>
-    </task>
-    <task id="LOCAL-00503" summary="v0.38">
-      <option name="closed" value="true" />
-      <created>1748111820704</created>
-      <option name="number" value="00503" />
-      <option name="presentableId" value="LOCAL-00503" />
-      <option name="project" value="LOCAL" />
-      <updated>1748111820704</updated>
-    </task>
-    <task id="LOCAL-00504" summary="v0.38">
-      <option name="closed" value="true" />
-      <created>1748111838513</created>
-      <option name="number" value="00504" />
-      <option name="presentableId" value="LOCAL-00504" />
-      <option name="project" value="LOCAL" />
-      <updated>1748111838513</updated>
-    </task>
-    <task id="LOCAL-00505" summary="v0.38">
-      <option name="closed" value="true" />
-      <created>1748111955734</created>
-      <option name="number" value="00505" />
-      <option name="presentableId" value="LOCAL-00505" />
-      <option name="project" value="LOCAL" />
-      <updated>1748111955734</updated>
     </task>
     <task id="LOCAL-00506" summary="v0.38">
       <option name="closed" value="true" />
@@ -766,7 +719,55 @@
       <option name="project" value="LOCAL" />
       <updated>1748451053853</updated>
     </task>
-    <option name="localTasksCounter" value="549" />
+    <task id="LOCAL-00549" summary="optimizations">
+      <option name="closed" value="true" />
+      <created>1748527823868</created>
+      <option name="number" value="00549" />
+      <option name="presentableId" value="LOCAL-00549" />
+      <option name="project" value="LOCAL" />
+      <updated>1748527823868</updated>
+    </task>
+    <task id="LOCAL-00550" summary="optimizations">
+      <option name="closed" value="true" />
+      <created>1748528461443</created>
+      <option name="number" value="00550" />
+      <option name="presentableId" value="LOCAL-00550" />
+      <option name="project" value="LOCAL" />
+      <updated>1748528461443</updated>
+    </task>
+    <task id="LOCAL-00551" summary="optimizations">
+      <option name="closed" value="true" />
+      <created>1748530383250</created>
+      <option name="number" value="00551" />
+      <option name="presentableId" value="LOCAL-00551" />
+      <option name="project" value="LOCAL" />
+      <updated>1748530383250</updated>
+    </task>
+    <task id="LOCAL-00552" summary="optimizations">
+      <option name="closed" value="true" />
+      <created>1748530768537</created>
+      <option name="number" value="00552" />
+      <option name="presentableId" value="LOCAL-00552" />
+      <option name="project" value="LOCAL" />
+      <updated>1748530768537</updated>
+    </task>
+    <task id="LOCAL-00553" summary="optimizations">
+      <option name="closed" value="true" />
+      <created>1748530832135</created>
+      <option name="number" value="00553" />
+      <option name="presentableId" value="LOCAL-00553" />
+      <option name="project" value="LOCAL" />
+      <updated>1748530832135</updated>
+    </task>
+    <task id="LOCAL-00554" summary="optimizations">
+      <option name="closed" value="true" />
+      <created>1748531646717</created>
+      <option name="number" value="00554" />
+      <option name="presentableId" value="LOCAL-00554" />
+      <option name="project" value="LOCAL" />
+      <updated>1748531646717</updated>
+    </task>
+    <option name="localTasksCounter" value="555" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

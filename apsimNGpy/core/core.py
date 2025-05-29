@@ -2077,6 +2077,7 @@ class CoreModel:
         except Exception as e:
             logger.info(repr(e))  # this error will be logged to the folder logs in the current working dir_path
             raise
+
     def get_weather_from_web(self, lonlat:tuple, start:int, end:int, simulations ='all', source='nasa', filename= None):
         """
             Replaces the meteorological (met) file in the model using weather data fetched from an online source.
@@ -2094,10 +2095,20 @@ class CoreModel:
             ``filename``: Name of the file to save the retrieved data. If None, a default name is generated.
 
             ``Returns:``
-             str Path to the saved met file.
+             self. replace the weather data with the fetched data.
 
+            Example::
+
+              model.get_weather_from_web(lonlat = (-93.885490, 42.060650), start = 1990, end  =2001)
+
+            Changing weather data with unmatching start and end dates in the simulation will lead to ``RuntimeErrors``. To avoid this first check the start and end date before proceedign as follows::
+
+              dt = model.inspect_model_parameters(model_type='Clock', model_name='Clock', simulations='Simulation')
+              start, end = dt['Start'].year, dt['End'].year
+              # output: 1990, 2000
             """
-        ## TODO impliment logic to avoid date incosistencies in the start and end dates
+
+        start, end = self.inspect_model_parameters(model_type='Clock', model_name='Clock', start=start, end=end)
         file_name=f"{Path(self._model).stem}_{source}_{start}_{end}.met"
 
         name  = file_name or filename

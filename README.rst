@@ -14,6 +14,10 @@ apsimNGpy
    :target: https://pypi.org/project/apsimNGpy/
    :alt: PyPI version
 
+.. image:: https://static.pepy.tech/badge/apsimNGpy
+   :target: https://pepy.tech/project/apsimNGpy
+   :alt: Total PyPI downloads
+
 .. image:: https://img.shields.io/pypi/dm/apsimNGpy?logo=pypi
    :target: https://pypi.org/project/apsimNGpy/
    :alt: PyPI downloads

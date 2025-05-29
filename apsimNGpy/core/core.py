@@ -989,12 +989,19 @@ class CoreModel:
 
                     commands = kwargs.get("commands")
                     values = kwargs.get("values")
+                    if isinstance(commands, (list, tuple)) or isinstance(values, (list, tuple)):
+                        assert isinstance(commands, (list, tuple)) and isinstance(values, (list, tuple)), \
+                            "Both `commands` and `values` must be iterables (list or tuple), and sets are not allowed"
+                        assert len(commands) == len(values), \
+                            "`commands` and `values` must have the same length."
+
                     # need to specify back to the cultivar manager script the new cultivar name since APSIM is not allowing editing in place.
                     # this is a temporal fix though
                     # editing in place could work if we were reusing the model in memory of python
                     cultivar_manager_paramter_name= kwargs.get("parameter_name", 'CultivarName')
                     cultivar_manager = kwargs.get("cultivar_manager")
-                    new_cultivar_name = kwargs.get("new_cultivar_name")
+                    new_cultivar_name = kwargs.get("new_cultivar_name", None)
+                    assert new_cultivar_name, "`new_cultivar_name` is required to proceed. use new_cultivar_name ='your_vutivar_name'"
                     # the reason the parameter path is split into command and values to allow passing different values during optimization
                     # Errors should mot pass silently
                     if not cultivar_manager:
@@ -1010,7 +1017,11 @@ class CoreModel:
                     params = self._cultivar_params(cultvar)
                     if isinstance(values, str):
                         values = values.strip()
-                    params[commands] = values
+                        params[commands] = values
+                    else:
+                        par_value = zip(commands, values)
+                        for param, value in par_value:
+                            params[param.strip()] = value.strip() if isinstance(value, str) else value
 
                     updated_commands = [f"{k.strip()}={v}" for k, v in params.items()]
                     cultvar.set_Command(updated_commands)
@@ -1603,6 +1614,7 @@ class CoreModel:
 
     def examine_management_info(self, simulations: Union[list, tuple] = None):
         """
+         @deprecated in versions 0.38+
         This will show the current management scripts in the simulation root
 
         Parameters
@@ -1625,6 +1637,9 @@ class CoreModel:
             raise Exception(repr(e))
 
     def check_som(self, simulations=None):
+        """
+        @deprecated in versions 0.38+
+        """
         old_method('check_som', new_method='inspect_model_parameters')
         simus = {}
         for sim in self.find_simulations(simulations):
@@ -1647,6 +1662,8 @@ class CoreModel:
     def change_som(self, *, simulations: Union[tuple, list] = None, inrm: int = None, icnr: int = None,
                    surface_om_name='SurfaceOrganicMatter', **kwargs):
         """
+        @deprecated in v0.38 +
+
          Change ``Surface Organic Matter`` (``SOM``) properties in specified simulations.
 
     Parameters:

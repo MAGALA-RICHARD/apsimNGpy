@@ -685,7 +685,7 @@ class CoreModel:
                 source='Soybean')  # basically adding another simulation from soybean to the maize simulation
         """
         import Models
-        replacer = {'Clock': 'change_simulation_dates', 'Weather': 'replace_met_file'}
+
         sims = self.Simulations
         model_type = _eval_model(model_type, evaluate_bound=True)
         adoptive_parent = _eval_model(adoptive_parent, evaluate_bound=False)

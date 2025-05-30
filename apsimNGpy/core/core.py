@@ -723,13 +723,13 @@ class CoreModel:
             # target_child = parent.FindInScope[model_type.__class__](model_type.Name)
            # target_child = get_or_check_model(parent, model_type.__class__, model_type.Name, action ='delete')
             if override:
-                dilit = get_or_check_model(parent, model_type.__class__, model_type.Name, action='delete')
+                get_or_check_model(parent, model_type.__class__, model_type.Name, action='delete')
 
 
             ModelTools.ADD(model_type, parent)
             self.save()
             if verbose:
-                logger.info(f"Added {loc.Name} to {parent.Name}")
+                logger.info(f"Added {model_type.Name} to {parent.Name}")
             return self
         if model_type and parent:
             loc = model_type()
@@ -741,15 +741,15 @@ class CoreModel:
                 if target_child and override:
                     # not raising the error still studying the behaviors of adding a child that already exists
                     ModelTools.DELETE(target_child)
+            get_or_check_model(parent, model_type.__class__, model_type.Name, action='delete')
 
             ModelTools.ADD(loc, parent)
 
             if verbose:
                 logger.info(f"Added {loc.Name} to {parent.Name}")
-            # we need to put the changes into effect
+            # compile
             self.save()
-            # if verbose:
-            #     logger.info(f'successfully saved to {self.path}')
+
 
         else:
             logger.debug(f"Adding {model_type} to {parent.Name} failed, perhaps models was not found")

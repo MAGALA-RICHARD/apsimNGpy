@@ -5,7 +5,6 @@ import unittest
 
 
 class TestCoreModel(BaseTester):
-
     def test_run(self):
         model = ApsimModel(model='Maize')
         model.run()

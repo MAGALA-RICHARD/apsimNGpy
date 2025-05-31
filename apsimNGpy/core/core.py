@@ -56,21 +56,20 @@ from collections.abc import Iterable
 from typing import Any
 
 
-rec_limit = sys.getrecursionlimit()
-
-CLASS_MODEL = type(Models.Clock)
-TYPE2 = type(Models.Clock())
-import inspect
-
 from apsimNGpy.settings import *
 
 
 def _looks_like_path(value: str) -> bool:
     return any(sep in value for sep in (os.sep, '/', '\\')) or value.endswith('.apsimx')
 
+
 def compile_script(script_code: str, code_model):
-    compiler= Models.Core.ScriptCompiler()
+    compiler = Models.Core.ScriptCompiler()
     compiler(script_code, code_model)
+
+
+
+
 
 @dataclass(slots=True)
 class CoreModel:
@@ -127,9 +126,9 @@ class CoreModel:
     ran_ok: bool = field(init=False, default=False)
     factors: Dict = field(init=False, default_factory=dict)
     work_space: Optional[Union[str, Path]] = field(init=False, default=None)
-    Start: str = field(init=False, default='unknown')
-    End: str = field(init=False, default='unknown')
-    run_method: callable =  field(init=False, default=None)
+    Start: str = field(init=False, default=MissingOption)
+    End: str = field(init=False, default=MissingOption)
+    run_method: callable = field(init=False, default=None)
 
     def __post_init__(self):
         self._model = self.model
@@ -324,13 +323,13 @@ class CoreModel:
         if self.run_method == run_model_externally:
 
             # Collect all available data tables
-            if self.ran_ok: # if run was not successfull, then the tables are not populated
+            if self.ran_ok:  # if run was not successfull, then the tables are not populated
                 data_tables = collect_csv_by_model_path(self.path)
 
                 # Normalize report_names to a list
                 if isinstance(_reports, str):
                     reports = [_reports]
-                elif isinstance(_reports, (tuple,list)):
+                elif isinstance(_reports, (tuple, list)):
                     reports = _reports
                 else:
                     raise TypeError("report_names must be a string, tuple of strings or a list of strings.")
@@ -351,10 +350,8 @@ class CoreModel:
                 raise RuntimeError(msg)
         if self.run_method == run_p:
             print(_reports)
-            dfs  =[dataview_to_dataframe(self, rp) for rp in _reports]
+            dfs = [dataview_to_dataframe(self, rp) for rp in _reports]
             return pd.concat(dfs)
-
-
 
     def get_simulated_output(self, report_names: Union[str, list], **kwargs) -> pd.DataFrame:
         """
@@ -509,7 +506,6 @@ class CoreModel:
             # close the datastore
             self._DataStore.Close()
 
-
     @property
     def simulated_results(self) -> pd.DataFrame:
         """
@@ -538,7 +534,6 @@ class CoreModel:
             return pd.concat(bag)
         else:
             raise ValueError("you cant load data before running the model please call run() first")
-
 
     def clone_model(self, model_type, model_name, adoptive_parent_type, rename=None, adoptive_parent_name=None,
 
@@ -597,8 +592,8 @@ class CoreModel:
         # Assign a new name to the cloned model
         new_name = rename if rename else f"{clone.Name}_clone"
         clone.Name = new_name
-        #check_exists = self.Simulations.FindInScope[model_type](new_name)
-        check_exists = get_or_check_model(self.Simulations, model_type, new_name, action ='delete')
+        # check_exists = self.Simulations.FindInScope[model_type](new_name)
+        check_exists = get_or_check_model(self.Simulations, model_type, new_name, action='delete')
 
         # Find the adoptive parent where the cloned model should be placed
         parent = (self.Simulations.FindInScope[adoptive_parent_type](adoptive_parent_name) if adoptive_parent_name
@@ -634,8 +629,10 @@ class CoreModel:
 
         """
         return _eval_model(model_name)
+
     def add_model(self, model_type, adoptive_parent, rename=None,
-                  adoptive_parent_name=None, verbose=False, source='Models', source_model_name=None, override=True, **kwargs):
+                  adoptive_parent_name=None, verbose=False, source='Models', source_model_name=None, override=True,
+                  **kwargs):
 
         """
         Adds a model to the Models Simulations namespace.
@@ -697,34 +694,37 @@ class CoreModel:
                 adoptive_parent_name = adoptive_parent().Name
             parent = sims.FindInScope[adoptive_parent](adoptive_parent_name)
         if model_type == Models.Core.Simulations:
-            raise ValueError(f"{model_type} can not be a simulations holder did you mean 'Models.Core.Simulation' or 'Simulation'?")
+            raise ValueError(
+                f"{model_type} can not be a simulations holder did you mean 'Models.Core.Simulation' or 'Simulation'?")
         # parent = _model.Simulations.FindChild(where)
 
-        if source =='Models':
+        if source == 'Models':
             model_type = model_type
         else:
             # look for the model from source
-            if isinstance(source,(str, dict)):
-                source_model= load_apsim_model(source)
+            if isinstance(source, (str, dict)):
+                source_model = load_apsim_model(source)
             elif isinstance(source, CoreModel):
                 source_model = source
             else:
-                raise ValueError(f"model type {type(source)} is not supported. Please supply a crop name or path to the apsim file or apsimNGpy.core.CoreModel objects")
+                raise ValueError(
+                    f"model type {type(source)} is not supported. Please supply a crop name or path to the apsim file or apsimNGpy.core.CoreModel objects")
             model_type = (source_model.IModel.FindInScope[model_type](source_model_name) if source_model_name else
-            source_model.IModel.FindInScope[model_type]() )
+                          source_model.IModel.FindInScope[model_type]())
 
             if not model_type:
                 if not source_model_name:
-                    raise ValueError(f"{model_type} can not be found. Did you forget to specify the `source_model_name`")
+                    raise ValueError(
+                        f"{model_type} can not be found. Did you forget to specify the `source_model_name`")
                 else:
-                    raise ValueError(f"{model_type} can not be found. Please recheck your input or use inspect_file() to see all the available model types")
+                    raise ValueError(
+                        f"{model_type} can not be found. Please recheck your input or use inspect_file() to see all the available model types")
 
-            model_type.Name  = rename if rename else model_type.Name
+            model_type.Name = rename if rename else model_type.Name
             # target_child = parent.FindInScope[model_type.__class__](model_type.Name)
-           # target_child = get_or_check_model(parent, model_type.__class__, model_type.Name, action ='delete')
+            # target_child = get_or_check_model(parent, model_type.__class__, model_type.Name, action ='delete')
             if override:
                 dilit = get_or_check_model(parent, model_type.__class__, model_type.Name, action='delete')
-
 
             ModelTools.ADD(model_type, parent)
             self.save()
@@ -754,7 +754,8 @@ class CoreModel:
         else:
             logger.debug(f"Adding {model_type} to {parent.Name} failed, perhaps models was not found")
 
-    def edit_model(self, model_type: str, model_name: str, simulations: Union[str, list] ='all', cacheit = False, cache_size=300, verbose=False, **kwargs):
+    def edit_model(self, model_type: str, model_name: str, simulations: Union[str, list] = 'all', cacheit=False,
+                   cache_size=300, verbose=False, **kwargs):
         """
         Modify various APSIM model components by specifying the model type and name across given simulations.
 
@@ -914,13 +915,13 @@ class CoreModel:
 
         """
         if simulations == 'all':
-            simulations = None
+            simulations = MissingOption
 
         model_type_class = _eval_model(model_type)
 
-
         for sim in self.find_simulations(simulations):
-            model_instance = get_or_check_model(sim, model_type_class, model_name, action ='get', cacheit=cacheit, cache_size=cache_size)
+            model_instance = get_or_check_model(sim, model_type_class, model_name, action='get', cacheit=cacheit,
+                                                cache_size=cache_size)
 
             match type(model_instance):
                 case Models.Climate.Weather:
@@ -933,10 +934,11 @@ class CoreModel:
 
                     model_instance.FileName = met_file
                 case Models.Clock:
-                    validated = dict(End = 'End', Start = 'Start', end = 'End', start = 'Start', end_date ='End', start_date ='Start')
+                    validated = dict(End='End', Start='Start', end='End', start='Start', end_date='End',
+                                     start_date='Start')
 
                     for kwa, value in kwargs.items():
-                        key = validated.get(kwa, 'unknown') # APSIM uses camelcase
+                        key = validated.get(kwa, 'unknown')  # APSIM uses camelcase
                         if key in ['End', 'Start']:
                             parsed_value = DateTime.Parse(value)
                             setattr(model_instance, key, parsed_value)
@@ -944,9 +946,8 @@ class CoreModel:
                                 logger.info(f"Set {key} to {parsed_value}")
                             setattr(self, key, value)
                         else:
-                            raise AttributeError(f"no valid Clock attributes were passed. Valid arguments are: '{", ".join(validated.keys())}'")
-
-
+                            raise AttributeError(
+                                f"no valid Clock attributes were passed. Valid arguments are: '{", ".join(validated.keys())}'")
 
                 case Models.Manager:
 
@@ -956,13 +957,13 @@ class CoreModel:
                 case Models.Soils.Physical | Models.Soils.Chemical | Models.Soils.Organic | Models.Soils.Water | Models.Soils.Solute:
 
                     self.replace_soils_values_by_path(node_path=model_instance.FullPath, **kwargs)
-                case  Models.Surface.SurfaceOrganicMatter:
+                case Models.Surface.SurfaceOrganicMatter:
                     if not kwargs:
-                        raise ValueError(f"Missing keyword argument 'kwargs'")
+                        raise ValueError(f"MissingOption keyword argument 'kwargs'")
                     selected_parameters = set(kwargs.keys())
-                    accepted_attributes = { 'SurfOM',
+                    accepted_attributes = {'SurfOM',
                                            'InitialCPR', 'InitialResidueMass',
-                                           'InitialCNR', 'IncorporatedP',}
+                                           'InitialCNR', 'IncorporatedP', }
                     dif = accepted_attributes - selected_parameters
                     if dif == accepted_attributes:
                         raise AttributeError(f"'{', '.join(selected_parameters)}' are not valid")
@@ -1000,7 +1001,7 @@ class CoreModel:
                     # need to specify back to the cultivar manager script the new cultivar name since APSIM is not allowing editing in place.
                     # this is a temporal fix though
                     # editing in place could work if we were reusing the model in memory of python
-                    cultivar_manager_paramter_name= kwargs.get("parameter_name", 'CultivarName')
+                    cultivar_manager_paramter_name = kwargs.get("parameter_name", 'CultivarName')
                     cultivar_manager = kwargs.get("cultivar_manager")
                     new_cultivar_name = kwargs.get("new_cultivar_name", None)
                     assert new_cultivar_name, "`new_cultivar_name` is required to proceed. use new_cultivar_name ='your_vutivar_name'"
@@ -1011,11 +1012,13 @@ class CoreModel:
                     if not commands or values is None:
                         raise ValueError("Both 'commands' and 'values' must be provided for Cultivar")
                     # find replacement
-                    rep = get_or_check_model(self.Simulations, Models.Core.Folder, 'Replacements', action ='get', cacheit=cacheit, cache_size=cache_size)
+                    rep = get_or_check_model(self.Simulations, Models.Core.Folder, 'Replacements', action='get',
+                                             cacheit=cacheit, cache_size=cache_size)
                     # now get cultivar
-                    cultvar = get_or_check_model(rep, Models.PMF.Cultivar, model_name, action ='get', cacheit=cacheit, cache_size=cache_size)
+                    cultvar = get_or_check_model(rep, Models.PMF.Cultivar, model_name, action='get', cacheit=cacheit,
+                                                 cache_size=cache_size)
 
-                    cultvar =ModelTools.CLONER(cultvar) # let's clone
+                    cultvar = ModelTools.CLONER(cultvar)  # let's clone
                     params = self._cultivar_params(cultvar)
                     if isinstance(values, str):
                         values = values.strip()
@@ -1029,29 +1032,33 @@ class CoreModel:
                     cultvar.set_Command(updated_commands)
 
                     plant = kwargs.get('plant')
-                    CroP_Parent = get_or_check_model(rep, Models.PMF.Plant, plant, action='get', cacheit=cacheit, cache_size=cache_size)
-                    cultvarName =f"{new_cultivar_name}"
+                    CroP_Parent = get_or_check_model(rep, Models.PMF.Plant, plant, action='get', cacheit=cacheit,
+                                                     cache_size=cache_size)
+                    cultvarName = f"{new_cultivar_name}"
                     # mask out the current name such that is not accessed
                     current_name = cultvar.Name
                     cultvar.Name = f"p_{model_name}"
 
-                    get_or_check_model(rep, Models.PMF.Cultivar, cultvarName, action ='delete')# this will delete the model if found before we add
+                    get_or_check_model(rep, Models.PMF.Cultivar, cultvarName,
+                                       action='delete')  # this will delete the model if found before we add
 
                     cultvar.Name = cultvarName
 
                     ModelTools.ADD(cultvar, CroP_Parent)
                     extra_args = {cultivar_manager_paramter_name: cultvarName}
-                    self.edit_model(model_type = Models.Manager, simulations=sim.Name, model_name =cultivar_manager,**extra_args)
+                    self.edit_model(model_type=Models.Manager, simulations=sim.Name, model_name=cultivar_manager,
+                                    **extra_args)
                     self.save()
                     if verbose:
-                       logger.info(f"edited Cultivar '{model_name}' and saved it as {cultvarName}")
+                        logger.info(f"edited Cultivar '{model_name}' and saved it as {cultvarName}")
 
                 case _:
                     raise NotImplementedError(f"No edit method implemented for model type {type(model_instance)}")
         self.ran_ok = False
         return self
 
-    def add_report_variable(self, variable_spec: Union[list, str, tuple], report_name: str = None, set_event_names:Union[str,list]=None):
+    def add_report_variable(self, variable_spec: Union[list, str, tuple], report_name: str = None,
+                            set_event_names: Union[str, list] = None):
         """
         This adds a report variable to the end of other _variables, if you want to change the whole report use change_report
 
@@ -1097,7 +1104,8 @@ class CoreModel:
     @property
     def extract_simulation_name(self):
         warnings.warn(
-            'extract_simulation_name is deprecated for future versions use simulation_names or get_simulation_names', FutureWarning)
+            'extract_simulation_name is deprecated for future versions use simulation_names or get_simulation_names',
+            FutureWarning)
         """logger.info or extract a simulation name from the model
 
             Returns:
@@ -1134,7 +1142,7 @@ class CoreModel:
         model_type = _eval_model(model_type)
         if not model_name:
             model_name = model_type().Name
-        to_remove= self.Simulations.FindInScope[model_type](model_name)
+        to_remove = self.Simulations.FindInScope[model_type](model_name)
         if to_remove:
             ModelTools.DELETE(to_remove)
         self.save()
@@ -1162,15 +1170,17 @@ class CoreModel:
         model_type = _eval_model(model_type)
         new_parent_type = _eval_model(new_parent_type)
         if model_type == Models.Core.Simulations:
-            raise ValueError('Can not move a model of type "Models.Core.Simulations". Did you mean Models.Core.Simulation or Simulation?')
+            raise ValueError(
+                'Can not move a model of type "Models.Core.Simulations". Did you mean Models.Core.Simulation or Simulation?')
         if not model_name:
             model_name = model_type().Name
 
-        child_to_move = get_or_check_model(sims, model_type, model_name, action='get')#sims.FindInScope[model_type](model_name)
+        child_to_move = get_or_check_model(sims, model_type, model_name,
+                                           action='get')  # sims.FindInScope[model_type](model_name)
         if not new_parent_name:
             new_parent_name = new_parent_type().Name
 
-        new_parent = get_or_check_model(sims, new_parent_type, new_parent_name, action ='get')
+        new_parent = get_or_check_model(sims, new_parent_type, new_parent_name, action='get')
 
         ModelTools.MOVE(child_to_move, new_parent)
         if verbose:
@@ -1200,10 +1210,12 @@ class CoreModel:
 
         """
         model_type = _eval_model(model_type)
+
         def _rename(_sim):
-            #__sim = _sim.FindInScope[model_type](old_model_name)
-            __sim  = get_or_check_model(self.Simulations, model_type=model_type, model_name=old_model_name, action ='get')
+            # __sim = _sim.FindInScope[model_type](old_model_name)
+            __sim = get_or_check_model(self.Simulations, model_type=model_type, model_name=old_model_name, action='get')
             __sim.Name = new_model_name
+
         if model_type == Models.Core.Simulations:
             self.Simulations.Name = new_model_name
             return self
@@ -1216,7 +1228,6 @@ class CoreModel:
                 _rename(sim)
 
         self.save()
-
 
     def replicate_file(self, k: int, path: os.PathLike = None, suffix: str = "replica"):
         """
@@ -1297,7 +1308,10 @@ class CoreModel:
             if i.Name == Crop:
                 return i
         return self
-    def inspect_model_parameters(self, model_type:Union[Models, str], model_name:str, simulations: Union[str, list] ='all', parameters:Union[list, set, tuple, str] ='all', **kwargs):
+
+    def inspect_model_parameters(self, model_type: Union[Models, str], model_name: str,
+                                 simulations: Union[str, list] = MissingOption,
+                                 parameters: Union[list, set, tuple, str] = 'all', **kwargs):
         """
         Inspect the input parameters of a specific ``APSIM`` model type instance within selected simulations.
 
@@ -1436,12 +1450,12 @@ class CoreModel:
             '[Maize].Grain.N',
             '[Maize].Total.Wt']}
 
-        Specify only Eventnames::
+        Specify only EventNames:
 
            model_instance.inspect_model_parameters('Report', simulations='Simulation', model_name='Report', parameters='EventNames')
            {'EventNames': ['[Maize].Harvesting']}
 
-        Inspect weather file path::
+        Inspect a weather file path::
 
              model_instance.inspect_model_parameters('Weather', simulations='Simulation', model_name='Weather')
             '%root%/Examples/WeatherFiles/AU_Dalby.met'
@@ -1499,19 +1513,19 @@ class CoreModel:
             ... model_name='SurfaceOrganicMatter', parameters={'InitialCNR', 'InitialResidueMass'})
             {'InitialCNR': 100.0, 'InitialResidueMass': 500.0}
 
-        Inspect simulation clock::
+        Inspect a clock::
 
              model_instance.inspect_model_parameters('Clock', simulations='Simulation', model_name='Clock')
              {'End': datetime.datetime(2000, 12, 31, 0, 0),
              'Start': datetime.datetime(1990, 1, 1, 0, 0)}
 
-        Inspect a few Clock  parameters as needed::
+        Inspect a few Clock parameters as needed::
 
             model_instance.inspect_model_parameters('Clock', simulations='Simulation',
             model_name='Clock', parameters='End')
             datetime.datetime(2000, 12, 31, 0, 0)
 
-        Access specific componets of the datetime object e.g., year, month, day, hour, minute::
+        Access specific components of the datetime object e.g., year, month, day, hour, minute::
 
               model_instance.inspect_model_parameters('Clock', simulations='Simulation',
               model_name='Clock', parameters='Start').year # gets the start year only
@@ -1532,23 +1546,22 @@ class CoreModel:
             model_instance.inspect_model_parameters('Solute', simulations='Simulation', model_name='NH4',
             parameters='InitialValues')
                 InitialValues
-            0            0.1
-            1            0.1
-            2            0.1
-            3            0.1
-            4            0.1
-            5            0.1
-            6            0.1
+            0 0.1
+            1 0.1
+            2 0.1
+            3 0.1
+            4 0.1
+            5 0.1
+            6 0.1
         """
 
         if parameters == 'all':
-            parameters = None # non is easy to deal with at the back end but all is intuitive
-        if simulations == 'all':
-            simulations = self.inspect_model('Simulation', fullpath=False)
+            parameters = None  # non is easy to deal with at the back end but all is intuitive
+        if simulations == MissingOption:
+            simulations = self.inspect_model(model_type='Models.Core.Simulation', fullpath=False)
             simulations = simulations[0] if len(simulations) == 1 else simulations
 
-        return inspect_model_inputs(self, model_type, simulations, model_name, parameters, **kwargs)
-
+        return inspect_model_inputs(self, model_type=model_type, model_name=model_name, simulations=simulations, parameters=parameters, **kwargs)
 
     def edit_cultivar(self, *, CultivarName: str, commands: str, values: Any, **kwargs):
         """
@@ -1588,12 +1601,12 @@ class CoreModel:
         cultvar.set_Command(updated_commands)
 
         return self
+
     @timer
-    def run2(self, simulations='all', clean =True, verbose=True,multithread=True):
-        self.run_method =run_p
+    def run2(self, simulations='all', clean=True, verbose=True, multithread=True):
+        self.run_method = run_p
         run_p(self.path)
         return self
-
 
     def update_cultivar(self, *, parameters: dict, simulations: Union[list, tuple] = None, clear=False, **kwargs):
         """Update cultivar parameters
@@ -1756,11 +1769,10 @@ class CoreModel:
         return: self
 
         """
-        #old_method('update_mgt_by_path', new_method='edit_model')
+        # old_method('update_mgt_by_path', new_method='edit_model')
         # reject space in fmt
         if fmt != '.':
             path = path.replace(fmt, ".")
-
 
         manager = self.Simulations.FindByPath(path)
         stack_manager_depth = range(len(manager.Value.Parameters))
@@ -1786,8 +1798,9 @@ class CoreModel:
         self.recompile_edited_model(out_path=out_mgt_path)
 
         return self
+
     @timer
-    def exchange_model(self, model, model_type:str,model_name=None, target_model_name=None, simulations:str=None):
+    def exchange_model(self, model, model_type: str, model_name=None, target_model_name=None, simulations: str = None):
         old_method('exchange_model', new_method=replace_model_from)
         self.replace_model_from(model, model_type, model_name, target_model_name, simulations)
 
@@ -1875,7 +1888,7 @@ class CoreModel:
 
         return self
 
-    def update_mgt(self, *, management: Union[dict, tuple], simulations: [list, tuple] = None, out: [Path, str] = None,
+    def update_mgt(self, *, management: Union[dict, tuple], simulations: [list, tuple] = MissingOption, out: [Path, str] = None,
                    reload: bool = True,
                    **kwargs):
         """
@@ -2072,8 +2085,6 @@ class CoreModel:
             end = clock.End
         return start.Year, end.Year
 
-
-
     def change_met(self):
         self.replace_met_file(self.met)
         return self
@@ -2105,7 +2116,8 @@ class CoreModel:
             logger.info(repr(e))  # this error will be logged to the folder logs in the current working dir_path
             raise
 
-    def get_weather_from_web(self, lonlat:tuple, start:int, end:int, simulations ='all', source='nasa', filename= None):
+    def get_weather_from_web(self, lonlat: tuple, start: int, end: int, simulations='all', source='nasa',
+                             filename=None):
         """
             Replaces the meteorological (met) file in the model using weather data fetched from an online source.
 
@@ -2138,14 +2150,15 @@ class CoreModel:
             """
 
         start, end = self.inspect_model_parameters(model_type='Clock', model_name='Clock', start=start, end=end)
-        file_name=f"{Path(self._model).stem}_{source}_{start}_{end}.met"
+        file_name = f"{Path(self._model).stem}_{source}_{start}_{end}.met"
 
-        name  = file_name or filename
-        file  = get_weather(lonlat, start = start, end=end, source =source, filename =name)
+        name = file_name or filename
+        file = get_weather(lonlat, start=start, end=end, source=source, filename=name)
 
         self.replace_met_file(weather_file=file, simulations=simulations)
 
         ...
+
     def show_met_file_in_simulation(self, simulations: list = None):
         """Show weather file for all simulations"""
         weather_list = {}
@@ -2187,7 +2200,6 @@ class CoreModel:
                     rep.set_DayAfterLastOutput = set_DayAfterLastOutput
         return rep
 
-
     def extract_soil_physical(self, simulations: [tuple, list] = None):
         """Find physical soil
 
@@ -2207,7 +2219,7 @@ class CoreModel:
             sim_physical[simu.Name] = physical_soil
         return sim_physical
 
-    def extract_any_soil_physical(self, parameter, simulations: [list, tuple] = None):
+    def extract_any_soil_physical(self, parameter, simulations: [list, tuple] = MissingOption):
         """
         Extracts soil physical parameters in the simulation
 
@@ -2227,7 +2239,6 @@ class CoreModel:
             soil_p_param = getattr(soil_physical, parameter)
             data[sim] = list(soil_p_param)
         return data
-
 
     def inspect_model(self, model_type: Union[str, Models], fullpath=True, **kwargs):
         """
@@ -2330,14 +2341,12 @@ class CoreModel:
             obj = self.Simulations.FindAllDescendants[model_type]()
 
         if obj:
-            fupath  = [i.FullPath for i in obj]
-            names = [i.split(".")[-1] for i in fupath]
+            fpath = [i.FullPath for i in obj]
+            names = [i.split(".")[-1] for i in fpath]
             if fullpath:
-                return fupath
+                return fpath
             else:
                 return names
-
-
 
     @property
     def configs(self):
@@ -2345,14 +2354,18 @@ class CoreModel:
 
         """
         return {
-            # check is model has been ran yet
+            # check if model has been ran yet
             'model_has_been_ran': self.ran_ok,
             'experiment': self.experiment,
             'experiment_created': self.experiment_created,
             'reports': self.report_names or self.inspect_model("Report"),
             'simulations': self.Simulations.Name,
-            'start_changed': True if self.Start !='unknown' else False,
-            'end_changed': True if self.End !='unknown' else False
+            'start_changed': True if self.Start != MissingOption else False,
+            'end_changed': True if self.End != MissingOption else False,
+            'start_date': self.inspect_model_parameters(model_type='Clock', model_name='Clock',
+                                                        simulations=self.simulation_names, parameters='Start'),
+            'end_date': self.inspect_model_parameters(model_type='Clock', model_name='Clock',
+                                                      simulations=self.simulation_names, parameters='Start')
         }
 
     def replace_soils_values_by_path(self, node_path: str, indices: list = None, **kwargs):
@@ -2378,17 +2391,14 @@ class CoreModel:
             - ``apsimNGpy.core.CoreModel`` object and if the path specified does not translate to the child object in
          the simulation
 
-         Example:
-              >>> from apsimNGpy.core.base_data import load_default_simulations
+         Example::
 
-              >>> model = load_default_simulations(crop ='Maize', simulations_object=False)# initiate model
-
-              >>> model = CoreModel(model) # ``replace`` with your intended file path
-              >>> model.replace_soils_values_by_path(node_path='.Simulations.Simulation.Field.Soil.Organic', indices=[0], Carbon =1.3)
-
-              >>> sv= model.get_soil_values_by_path('.Simulations.Simulation.Field.Soil.Organic', 'Carbon')
-
-            output # {'Carbon': [1.3, 0.96, 0.6, 0.3, 0.18, 0.12, 0.12]}
+              from apsimNGpy.core.base_data import load_default_simulations
+              model = load_default_simulations(crop ='Maize', simulations_object=False) # initiate model.
+              model = CoreModel(model) # ``replace`` with your intended file path
+              model.replace_soils_values_by_path(node_path='.Simulations.Simulation.Field.Soil.Organic', indices=[0], Carbon =1.3)
+              sv= model.get_soil_values_by_path('.Simulations.Simulation.Field.Soil.Organic', 'Carbon')
+              output # {'Carbon': [1.3, 0.96, 0.6, 0.3, 0.18, 0.12, 0.12]}
 
 
         """
@@ -2426,7 +2436,6 @@ class CoreModel:
                     logger.error(f"{arg} is not a valid parameter for child {node_path}")
                 var_out[arg] = gv
         return var_out
-
 
     def replace_soil_properties_by_path(self, path: str,
                                         param_values: list,
@@ -2511,7 +2520,7 @@ class CoreModel:
     def replace_soil_property_values(self, *, parameter: str,
                                      param_values: list,
                                      soil_child: str,
-                                     simulations: list = None,
+                                     simulations: list = MissingOption,
                                      indices: list = None,
                                      crop=None,
                                      **kwargs):
@@ -2554,10 +2563,7 @@ class CoreModel:
                 setattr(_soil_child, parameter, _param_new)
         return self
 
-
-
-
-    def find_simulations(self, simulations: Union[list, tuple, str] = None):
+    def find_simulations(self, simulations: Union[list, tuple, str] = MissingOption):
         simulations_names = simulations
         """Find simulations by name or names in a list
 
@@ -2570,7 +2576,7 @@ class CoreModel:
             list of APSIM ``Models.Core.Simulation`` objects
         """
 
-        if simulations_names is None or simulations== 'all':
+        if simulations == 'all' or simulations == MissingOption:
             return self.simulations
         if isinstance(simulations_names, str):
             simulations_names = {simulations_names}
@@ -2581,15 +2587,15 @@ class CoreModel:
             if s.Name == name:
                 sims.append(s)
         if len(sims) == 0:
-           logger.info(f"{simulations_names}: Not found!")
-           sim_names = ",".join([i.Name for i in self.simulations])
-           raise NameError(f"{simulations_names}: Not found! \n Available simulation(s) names are/is: '{sim_names}'?")
+            logger.info(f"{simulations_names}: Not found!")
+            sim_names = ",".join([i.Name for i in self.simulations])
+            raise NameError(f"{simulations_names}: Not found! \n Available simulation(s) names are/is: '{sim_names}'?")
         else:
             return sims
 
     # Find a single simulation by name
-    def _find_simulation(self, simulations: Union[tuple, list] = None):
-        if simulations is None:
+    def _find_simulation(self, simulations: Union[tuple, list] = MissingOption):
+        if simulations is MissingOption:
             return self.simulations
 
         else:
@@ -2629,8 +2635,8 @@ class CoreModel:
                 self._DataStore.Close()
                 self._DataStore.Dispose()
             try:
-              del self._DataStore
-              del self.Datastore
+                del self._DataStore
+                del self.Datastore
             except AttributeError:
                 ...
 
@@ -2641,14 +2647,14 @@ class CoreModel:
                 Path(self.path.replace('apsimx', "db-wal")).unlink(missing_ok=True)
                 Path(self.path.replace('apsimx', "db-shm")).unlink(missing_ok=True)
                 if verbose:
-                  logger.info('database cleaned successfully')
+                    logger.info('database cleaned successfully')
         except (FileNotFoundError, PermissionError) as e:
             from apsimNGpy.core_utils.database_utils import clear_all_tables
             # if deleting has failed
             clear_all_tables(self.datastore) if os.path.exists(self.datastore) else None
 
             if verbose:
-               logger.info(e)
+                logger.info(e)
             pass
         finally:
             ModelTools.COLLECT()
@@ -2694,7 +2700,7 @@ class CoreModel:
         self.experiment = True
         self.experiment_created = True
 
-    def add_factor(self, specification: str, factor_name:str=None, **kwargs):
+    def add_factor(self, specification: str, factor_name: str = None, **kwargs):
         """
         Adds a factor to the created experiment. Thus, this method only works on factorial experiments
 
@@ -2731,7 +2737,7 @@ class CoreModel:
         if not self.experiment:
             msg = 'experiment was not defined, it has been created with default settings'
             self.create_experiment(permutation=True)  # create experiment with default parameters of permutation
-            self.experiment=True
+            self.experiment = True
 
         if 'Script' in specification:
             matches = re.findall(r"\[(.*?)\]", specification)
@@ -2741,7 +2747,7 @@ class CoreModel:
                 if not ITC:
                     raise ValueError('specification has no linked script in the model')
 
-        #Add individual factors
+        # Add individual factors
         if self.permutation:
             parent_factor = Models.Factorial.Permutation
         else:
@@ -2764,7 +2770,7 @@ class CoreModel:
         self.save()
         self.factor_names.append(factor_name)
         self.factors[factor_name] = specification
-        return self # allows method chaining
+        return self  # allows method chaining
 
     def set_continuous_factor(self, factor_path, lower_bound, upper_bound, interval, factor_name=None):
         """
@@ -2843,7 +2849,7 @@ class CoreModel:
         _FOLDER.Name = "Replacements"
         PARENT = self.Simulations
         # parent replacemnt should be added once
-        target_parent  = PARENT.FindInScope[Models.Core.Folder]('Replacements')
+        target_parent = PARENT.FindInScope[Models.Core.Folder]('Replacements')
         if not target_parent:
             ModelTools.ADD(_FOLDER, PARENT)
         # assumes that the crop already exists in the simulation
@@ -2853,26 +2859,29 @@ class CoreModel:
         else:
             logger.error(f"No plants of crop{CROP} found")
         return self
+
     def get_model_paths(self, cultivar=False) -> list[str]:
         """
         Select out a few model types to use for building the APSIM file inspections
         """
+
         def filter_out():
             import Models
             data = []
             model_types = ['Models.Core.Simulation', 'Models.Soils.Soil', 'Models.PMF.Plant', 'Models.Manager',
-                  'Models.Climate.Weather', 'Models.Report', 'Models.Clock', 'Models.Core.Folder',
-                  'Models.Soils.Solute',
-                  'Models.Soils.Swim3', 'Models.Soils.SoilCrop', 'Models.Soils.Water', 'Models.Summary',
-                  'Models.Core.Zone', 'Models.Management.RotationManager',
-                  'Models.Soils.CERESSoilTemperature', 'Models.Series', 'Models.Factorial.Experiment',
-                  'Models.Factorial.Permutation', 'Models.Irrigation',
-                  'Models.Factorial.Factors',
-                  'Models.Sobol', 'Models.Operations', 'Models.Morris', 'Models.Fertiliser', 'Models.Core.Events',
-                  'Models.Core.VariableComposite',
-                  'Models.Soils.Physical', 'Models.Soils.Chemical', 'Models.Soils.Organic']
+                           'Models.Climate.Weather', 'Models.Report', 'Models.Clock', 'Models.Core.Folder',
+                           'Models.Soils.Solute',
+                           'Models.Soils.Swim3', 'Models.Soils.SoilCrop', 'Models.Soils.Water', 'Models.Summary',
+                           'Models.Core.Zone', 'Models.Management.RotationManager',
+                           'Models.Soils.CERESSoilTemperature', 'Models.Series', 'Models.Factorial.Experiment',
+                           'Models.Factorial.Permutation', 'Models.Irrigation',
+                           'Models.Factorial.Factors',
+                           'Models.Sobol', 'Models.Operations', 'Models.Morris', 'Models.Fertiliser',
+                           'Models.Core.Events',
+                           'Models.Core.VariableComposite',
+                           'Models.Soils.Physical', 'Models.Soils.Chemical', 'Models.Soils.Organic']
             if cultivar:
-                model_types.append(('Models.PMF.Cultivar'))
+                model_types.append('Models.PMF.Cultivar')
             for i in model_types:
 
                 ans = self.inspect_model(eval(i))
@@ -2881,15 +2890,18 @@ class CoreModel:
                 data.extend(ans)
             del Models, model_types
             return data
+
         return filter_out()
-    def inspect_file(self, cultivar=False,**kwargs):
+
+    def inspect_file(self, cultivar=False, **kwargs):
         """
         Inspect the file by calling ``inspect_model()`` through ``get_model_paths.``
         This method is important in inspecting the ``whole file`` and also getting the ``scripts paths``
         """
         if kwargs.get('indent', None) or kwargs.get('display_full_path', None):
-            logger.info(f"Inspecting file with key word indent or display_full_path is \ndeprecated, the inspect_file now print "
-                        f"the inspection as a tree with names and corresponding model \nfull paths combined")
+            logger.info(
+                f"Inspecting file with key word indent or display_full_path is \ndeprecated, the inspect_file now print "
+                f"the inspection as a tree with names and corresponding model \nfull paths combined")
 
         def build_tree(paths):
             from collections import defaultdict
@@ -2902,7 +2914,6 @@ class CoreModel:
                     current = current[part]
             return root
 
-
         def print_tree_branches(node, prefix="", is_last=True, full_path="", display_full_path=False):
             keys = sorted(node.keys())
             for index, key in enumerate(keys):
@@ -2910,7 +2921,6 @@ class CoreModel:
                 branch = "└── " if is_last_key else "├── "
                 child_prefix = "    " if is_last_key else "│   "
                 current_path = f"{full_path}.{key}" if full_path else key
-
 
                 print(f"{prefix}{branch}\033[95m{key}\033[0m: .{current_path}")
 
@@ -2929,8 +2939,9 @@ class CoreModel:
 
         print_tree_branches(tree)
 
-    #@timer
-    def add_db_table(self, variable_spec: list = None, set_event_names: list = None, rename: str = 'my_table', simulation_name:Union[str, list, tuple]=None):
+    # @timer
+    def add_db_table(self, variable_spec: list = None, set_event_names: list = None, rename: str = 'my_table',
+                     simulation_name: Union[str, list, tuple] = MissingOption):
         """
         Adds a new data base table, which ``APSIM`` calls ``Report`` (Models.Report) to the ``Simulation`` under a Simulation Zone.
 
@@ -2996,8 +3007,8 @@ class CoreModel:
             if zone is None:
                 raise RuntimeError("No Zone found in the Simulation scope to attach the report table.")
             check_repo = sim.FindInScope[Models.Report](rename)
-            if check_repo:# because this is intented to create an entirley new db table
-               ModelTools.DELETE(check_repo)
+            if check_repo:  # because this is intented to create an entirley new db table
+                ModelTools.DELETE(check_repo)
             zone.Children.Add(report)
             self.save()
 
@@ -3005,7 +3016,6 @@ class CoreModel:
 
 
 if __name__ == '__main__':
-
     from pathlib import Path
     from time import perf_counter
 
@@ -3016,8 +3026,7 @@ if __name__ == '__main__':
     home = Path.home()
 
     # model = load_default_simulations('maize')
-    model = CoreModel(model = 'Maize', out = home/'test_.apsimx')
-
+    model = CoreModel(model='Maize', out=home / 'test_.apsimx')
 
     # for rn in ['Maize, Soybean, Wheat', 'Maize', 'Soybean, Wheat']:
     a = perf_counter()
@@ -3036,7 +3045,7 @@ if __name__ == '__main__':
     logger.info(f"{b - a}, 'seconds")
     model.add_db_table(variable_spec=['[Clock].Today', '[Soil].Nutrient.TotalC[1]/1000 as SOC1'], rename='reporterte')
     a = perf_counter()
-    #model.clean_up(db=True)
+    # model.clean_up(db=True)
     import doctest
     # clone test
     # for i in range(100):

@@ -36,15 +36,17 @@ suite.addTests(loader.loadTestsFromModule(test_edit_model))
 
 
 def run_suite():
-    runner = unittest.TextTestRunner(verbosity=2)
-    runner.run(suite)
+    try:
+        runner = unittest.TextTestRunner(verbosity=2)
+        runner.run(suite)
+    finally:
+        clean_up()
 
 
 if __name__ == '__main__':
-    try:
+
         # Run the test suite
         clean_up()
         run_suite()
 
-    finally:
-        clean_up()
+

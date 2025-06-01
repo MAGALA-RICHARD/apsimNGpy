@@ -1,14 +1,12 @@
+import stat
 import unittest
+from pathlib import Path
+
 from apsimNGpy.tests import (unit_tests_core,
                              unit_test_apsim,
                              test_config,
                              test_edit_model,
                              test_weathermanager)
-from pathlib import Path
-
-import os
-import stat
-from pathlib import Path
 
 
 def clean_up():
@@ -35,9 +33,9 @@ suite.addTests(loader.loadTestsFromModule(unit_test_apsim))
 suite.addTests(loader.loadTestsFromModule(test_edit_model))
 
 
-def run_suite():
+def run_suite(verbosity_level=2):
     try:
-        runner = unittest.TextTestRunner(verbosity=2)
+        runner = unittest.TextTestRunner(verbosity=verbosity_level)
         runner.run(suite)
     finally:
         clean_up()
@@ -47,6 +45,6 @@ if __name__ == '__main__':
 
         # Run the test suite
         clean_up()
-        run_suite()
+        run_suite(3)
 
 

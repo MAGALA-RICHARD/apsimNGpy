@@ -1,3 +1,6 @@
+"""
+Tests edit_model_method and inspect model_parameters co-currently
+"""
 from apsimNGpy.core.base_data import load_default_simulations
 from apsimNGpy.core.apsim import ApsimModel
 from apsimNGpy.tests.base_test import BaseTester

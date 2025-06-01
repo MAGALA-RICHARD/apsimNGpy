@@ -21,7 +21,8 @@ class TestCoreModel(BaseTester):
         self.assertTrue(model.ran_ok)
         # inspect simulations
         sims = model.inspect_model(model_type='Models.Core.Simulation', fullpath=False)
-        assert sim_name in sims, f'{sim_name} is not among the current simulations, implying simulation was not successsful'
+        assert sim_name in sims, (f'{sim_name} is not among the current simulations, implying simulation was not '
+                                  f'successful')
         model.clean_up(db=True)
 
 

@@ -5,6 +5,7 @@ import unittest
 
 SIMULATION = 'Simulation'
 
+
 class TestCoreModel(unittest.TestCase):
 
     def setUp(self):

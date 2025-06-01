@@ -741,7 +741,7 @@ class CoreModel:
                 if target_child and override:
                     # not raising the error still studying the behaviors of adding a child that already exists
                     ModelTools.DELETE(target_child)
-            get_or_check_model(parent, model_type.__class__, model_type.Name, action='delete')
+            #get_or_check_model(parent, model_type.__class__, model_type.Name, action='delete')
 
             ModelTools.ADD(loc, parent)
 
@@ -2685,7 +2685,7 @@ class CoreModel:
         self.permutation = permutation
         # Add core experiment structure
 
-        self.add_model(model_type=Models.Factorial.Experiment, adoptive_parent=Models.Core.Simulations, **kwargs)
+        self.add_model(model_type='Models.Factorial.Experiment', adoptive_parent='Models.Core.Simulations', **kwargs)
 
         self.add_model(model_type=Models.Factorial.Factors, adoptive_parent=Models.Factorial.Experiment, **kwargs)
 
@@ -3013,7 +3013,7 @@ class CoreModel:
             self.save()
 
         # save the results to recompile
-
+APSIMNG = CoreModel
 
 if __name__ == '__main__':
     from pathlib import Path

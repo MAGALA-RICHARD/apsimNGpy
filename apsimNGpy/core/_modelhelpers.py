@@ -8,7 +8,7 @@ import Models
 from typing import Union, Tuple
 from System.Collections import IEnumerable
 from System import String
-from functools import lru_cache
+from functools import lru_cache, cache
 from typing import Union, Dict, Any
 from Models.Soils import Soil, Physical, SoilCrop, Organic, Solute, Chemical
 import warnings
@@ -16,7 +16,9 @@ from System.Collections.Generic import List
 from apsimNGpy.core_utils.utils import timer
 from apsimNGpy.settings import *
 from pathlib import Path
-@lru_cache(maxsize=None)
+
+
+@cache
 def select_thread(multithread):
     if multithread:
         runtype = Models.Core.Run.Runner.RunTypeEnum.MultiThreaded
@@ -24,8 +26,11 @@ def select_thread(multithread):
         runtype = Models.Core.Run.Runner.RunTypeEnum.SingleThreaded
     return runtype
 
+
 select_thread(multithread=True)
-@lru_cache(maxsize=200)
+
+
+@cache
 def _tools(method):
     config = {
         "ADD": Models.Core.ApsimFile.Structure.Add,
@@ -44,6 +49,7 @@ def _tools(method):
     method = config[method]
     del config
     return method
+
 
 @dataclass
 class ModelTools:
@@ -88,9 +94,12 @@ class ModelTools:
     ACTIONS = _tools('ACTIONS')
     COLLECT = _tools('COLLECT')
 
+
 ModelTools.ACTIONS
 ModelTools.DELETE
-def get_or_check_model(search_scope, model_type, model_name, action='get', cacheit = False, cache_size=300):
+
+
+def get_or_check_model(search_scope, model_type, model_name, action='get', cacheit=False, cache_size=300):
     """
             Helper function to check if a model instance is found in the simulation
             and perform a specified action.
@@ -124,6 +133,7 @@ def get_or_check_model(search_scope, model_type, model_name, action='get', cache
                 If the model is not found (when action is 'get' or 'delete'),
                 or if an invalid action is specified.
             """
+
     def __excute(search_scope, model_type, model_name, action):
         if action not in ModelTools.ACTIONS:
             raise ValueError(f'sorry action should be any of {ModelTools.ACTIONS} ')
@@ -143,7 +153,6 @@ def get_or_check_model(search_scope, model_type, model_name, action='get', cache
     if cacheit:
         __excute = lru_cache(maxsize=cache_size)(__excute)
     return __excute(search_scope, model_type, model_name, action)
-
 
 
 def _find_model(model_name: str, model_namespace=Models, target_type=ModelTools.CLASS_MODEL) -> ModelTools.CLASS_MODEL:
@@ -183,6 +192,7 @@ def _find_model(model_name: str, model_namespace=Models, target_type=ModelTools.
 
     return None
 
+
 @lru_cache(maxsize=100)
 def find_model(model_name: str):
     model_type = _find_model(model_name)
@@ -198,6 +208,7 @@ def find_model(model_name: str):
         model_type = getattr(Models.Core, model_name, None)
     collect()
     return model_type
+
 
 @lru_cache(maxsize=300)
 def _eval_model(model__type, evaluate_bound=False) -> ModelTools.CLASS_MODEL:
@@ -249,7 +260,8 @@ def _eval_model(model__type, evaluate_bound=False) -> ModelTools.CLASS_MODEL:
         pass
 
 
-def inspect_model_inputs(scope, model_type: str, simulations: Union[str, list], model_name: str,
+def inspect_model_inputs(scope, model_type: str,  model_name: str,
+                         simulations: Union[str, list] = MissingOption,
                          parameters: Union[list, str] = None,
                          **kwargs) -> Union[Dict[str, Any], pd.DataFrame, list, Any]:
     """
@@ -290,6 +302,7 @@ def inspect_model_inputs(scope, model_type: str, simulations: Union[str, list], 
     - APSIM Next Gen Python bindings (apsimNGpy)
     - Python 3.10+
     """
+
     model_type_class = _eval_model(model_type)
 
     is_single_sim = isinstance(simulations, str)
@@ -318,10 +331,12 @@ def inspect_model_inputs(scope, model_type: str, simulations: Union[str, list], 
 
                 validated = dict(End='End', Start='Start', end='End', start='Start', end_date='End', start_date='Start')
                 accepted_attributes = {'Start', 'End'}
-                selected_parameters = {validated.get(k) for k in parameters if validated.get(k) in accepted_attributes} if parameters else set()
+                selected_parameters = {validated.get(k) for k in parameters if
+                                       validated.get(k) in accepted_attributes} if parameters else set()
                 dif = accepted_attributes - selected_parameters
                 if dif == accepted_attributes and parameters:
-                    raise ValueError(f"To inspect the 'Clock Model Parameters:\n, Parameters must be None or any of '{', '.join(validated.keys())}'")
+                    raise ValueError(
+                        f"To inspect the 'Clock Model Parameters:\n, Parameters must be None or any of '{', '.join(validated.keys())}'")
                 attributes = selected_parameters or accepted_attributes
 
                 if len(attributes) == 1:
@@ -416,6 +431,7 @@ def replace_variable_by_index(old_list: list, new_value: list, indices: list):
         old_list[idx] = new_val
     return old_list
 
+
 @lru_cache(maxsize=None)
 def soil_components(component):
     _comp = component.lower()
@@ -455,8 +471,6 @@ def run_p(_model, simulations='all', clean=False, multithread=True):
 
     """
 
-
-
     if clean:
         _model._DataStore.Dispose()
         Path(_model._DataStore.FileName).unlink(missing_ok=True)
@@ -464,7 +478,7 @@ def run_p(_model, simulations='all', clean=False, multithread=True):
 
     if simulations == 'all':
         simulations = None
-    sims = _model.find_simulations(simulations) # returns a list
+    sims = _model.find_simulations(simulations)  # returns a list
     print(sims)
     # Runner needs C# list
     cs_sims = List[Models.Core.Simulation]()
@@ -474,5 +488,6 @@ def run_p(_model, simulations='all', clean=False, multithread=True):
     e = runmodel.Run()
     if (len(e) > 0):
         logger.info(e[0].ToString())
+
 
 collect()

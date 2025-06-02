@@ -438,7 +438,7 @@ Updating Documentation
 Improvements or updates to documentation are greatly appreciated. You can submit changes to documentation with the same process used for code contributions.
 
 Testing your pull request or your contribution
-----------------------------------------------
+-----------------------------------------------
 After making any code improvements, It is important that all modules are still working correctly. This calls for an explict test of the added code changes.
 apsimNGpy tests are implemented via python ``unittest`` module. We provide a testing framework as shown below. First navigate to your apsimNGpy repo or directory with the ``setup.py`` on your terminal and run the following code::
 
@@ -457,14 +457,13 @@ Set up the test and add any test module as follows::
         def setUp(self):
             self.model = load_default_simulations('Maize')
             self.out = 'test_edit_model.apsimx'
-
         # add test case as shown below
         def test_add_crop_replacement(self):
             "+++test adding crop replacement++"
             self.model.add_crop_replacements(_crop='Maize')
             self.model.create_experiment(permutation=True)
 
-Finally run the model::
+Finally run test suite. It is recommended to run the test suite using the ``run_suite`` method, which runs all the tests to check if dependent modules are still working perfectly::
 
     if __name__ == '__main__':
         suite.addTests(loader.loadTestsFromTestCase(TestCaseAddModule))

@@ -447,7 +447,8 @@ First, navigate to your `apsimNGpy` repository or the directory containing ``set
 
 .. code-block:: python
 
-    pip install -e .  # Installs apsimNGpy as an editable package, enabling direct imports and reflecting code changes without re-installation
+    pip install -e .  # Installs apsimNGpy as an editable package, enabling direct imports
+                    #and reflecting code changes without re-installation
 
 Import the necessary modules as follows:
 

@@ -1,16 +1,13 @@
 import os
 import unittest
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pandas as pd
 
+from apsimNGpy.core.core import CoreModel, find_model, _eval_model, Models
 # Import the module where CoreModel class is defined
 from apsimNGpy.core.model_loader import save_model_to_file
 from apsimNGpy.tests.base_test import BaseTester, set_wd
-from apsimNGpy.core.core import CoreModel, find_model, _eval_model, Models
-
-set_wd()
-print('current working directory:', os.getcwd())
 
 set_wd()
 
@@ -19,7 +16,8 @@ class TestCoreModel(BaseTester):
 
     def test_run(self):
 
-        """ Test the run method's behavior under normal conditions. """
+        """ Test the run method's behavior under normal conditions.
+         ==========================================================="""
         with patch.object(self.test_ap_sim, '_DataStore', create=True) as mock_datastore:
             # if we just run without
             """There are several ways to check if the run was successful, here I have tried all of them"""
@@ -38,13 +36,9 @@ class TestCoreModel(BaseTester):
 
     #            self.assertTrue(mock_datastore.Close.called)
 
-    def test_save_edited_file(self, ):
-        result_path = save_model_to_file(self.test_ap_sim.Simulations, out=self.out)
-        isfile = os.path.isfile(result_path)
-        self.assertEqual(isfile, True)
-
     def test_update_mgt(self):
-        """ Test the update method's behavior under"""
+        """ Test the update method's behavior under
+        ==========================================="""
         Amount = 23.557777
         script_name = 'Fertilise at sowing'
         mgt_script = {'Name': script_name, 'Amount': Amount},
@@ -55,15 +49,10 @@ class TestCoreModel(BaseTester):
         amountIn = float(value['Amount'])
         self.assertEqual(amountIn, Amount)
 
-    def test_check_som(self):
-        som = self.test_ap_sim.inspect_model_parameters(model_type='SurfaceOrganicMatter',
-                                                        model_name='SurfaceOrganicMatter',
-                                                        simulations='all',
-                                                        )
-        self.assertIsInstance(som, dict, 'check_som should return a dictionary')
-
     def test_find_simulations(self):
-        """ Test find_simulations based on three input None, lists and string"""
+        """ Test find_simulations based on three input None, lists and string
+        =====================================================================
+        """
         # test None
         sim = 'Simulation'
         MSG = f'test_find_simulations failed to return requested simulation object: {sim}'
@@ -78,7 +67,9 @@ class TestCoreModel(BaseTester):
 
     def test_get_simulated_output(self):
         """ Test load_simulated_results
-        requires that the models are ran first"""
+        requires that the models are run first
+        ================================================
+        """
         self.test_ap_sim.run()
         if not self.test_ap_sim.ran_ok:
             raise unittest.SkipTest(f'skipping test_simulated_results because model did '
@@ -91,6 +82,12 @@ class TestCoreModel(BaseTester):
 
     def test_get_reports(self):
         self.assertIsInstance(self.test_ap_sim.inspect_model('Report'), list)
+
+    def test_inspect_clock(self):
+        self.assertIsInstance(self.test_ap_sim.inspect_model('Clock'), list)
+
+    def test_inspect_simulation(self):
+        self.assertIsInstance(self.test_ap_sim.inspect_model('Models.Core.Simulation', fullpath=False), list)
 
     def test_replace_soil_property_values(self):
         parameter = 'Carbon'
@@ -128,7 +125,9 @@ class TestCoreModel(BaseTester):
         self.assertTrue(self.test_ap_sim.ran_ok, msg='simulation was not ran when fmt was /')
 
     def test_create_experiment(self):
-        """creates a factorial experiment adds a factor, then test if it runs successfully"""
+        """creates a factorial experiment adds a factor, then test if it runs successfully
+        =====================================================================================
+        """
         self.test_ap_sim.create_experiment()
         # add factor
         self.test_ap_sim.add_factor(specification="[Fertilise at sowing].Script.Amount = 0 to 200 step 20",

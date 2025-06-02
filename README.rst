@@ -457,11 +457,12 @@ Import the necessary module as follows::
 Set up the test and add any test module as follows::
 
     class TestCaseAddModule(unittest.TestCase):
-
+        # set up the model to use
         def setUp(self):
             self.model = load_default_simulations('Maize')
             self.out = 'test_edit_model.apsimx'
 
+        # add test case as shown below
         def test_add_crop_replacement(self):
             "+++test adding crop replacement++"
             self.model.add_crop_replacements(_crop='Maize')

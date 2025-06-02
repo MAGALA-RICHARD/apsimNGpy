@@ -437,7 +437,6 @@ Updating Documentation
 Improvements or updates to documentation are greatly appreciated. You can submit changes to documentation with the same process used for code contributions.
 
 Testing your pull request or your contribution
------------------------------------------------
   After making any code improvements, It is important that all modules are still working correctly. This calls for an explict test of the added code changes.
   apsimNGpy tests are implemented via python ``unittest`` module. We provide a testing framework as shown below. First navigate to your apsimNGpy repo or directory with the ``setup.py`` on your terminal and run the following code::
 

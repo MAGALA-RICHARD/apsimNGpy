@@ -445,9 +445,13 @@ After making any code improvements, it is important to ensure that all modules a
 
 First, navigate to your `apsimNGpy` repository or the directory containing ``setup.py`` in your terminal, and run the following command::
 
+.. code-block:: python
+
     pip install -e .  # Installs apsimNGpy as an editable package, enabling direct imports and reflecting code changes without re-installation
 
-Import the necessary modules as follows::
+Import the necessary modules as follows:
+
+.. code-block:: python
 
     import unittest
     from apsimNGpy.tests.tester_main import suite, loader, run_suite

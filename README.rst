@@ -453,7 +453,9 @@ Import the necessary modules as follows::
     from apsimNGpy.tests.tester_main import suite, loader, run_suite
     from apsimNGpy.core.base_data import load_default_simulations
 
-Set up the test and add any test case as shown below::
+Set up the test and add any test case as shown below:
+
+.. code-block:: python
 
     class TestCaseAddModule(unittest.TestCase):
         # Set up the model to use

@@ -443,11 +443,12 @@ After making any code improvements, it is important to ensure that all modules a
 
 `apsimNGpy` tests are implemented via Python's ``unittest`` module. We provide a testing framework as shown below.
 
-First, navigate to your `apsimNGpy` repository or the directory containing ``setup.py`` in your terminal, and run the following command::
+First, navigate to your `apsimNGpy` repository or the directory containing ``setup.py`` in your terminal, and run the following command:
 
-.. code-block:: python
+.. code-block:: bash
 
-    pip install -e .  # Installs apsimNGpy as an editable package, enabling direct imports and reflecting code changes without re-installation
+    pip install -e .  # Installs apsimNGpy as an editable package, enabling direct imports and
+                      #reflecting code changes without re-installation
 
 Import the necessary modules as follows:
 

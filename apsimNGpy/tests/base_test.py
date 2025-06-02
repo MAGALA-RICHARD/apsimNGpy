@@ -80,7 +80,7 @@ class BaseTester(TestCase):
             cls.temp_dir = temp_dir
 
         @classmethod
-        def tearDownClass(cls):
+        def _tearDownClass(cls):
 
             try:
 

@@ -467,7 +467,9 @@ Set up the test and add any test case as shown below::
             self.model.add_crop_replacements(_crop='Maize')
             self.model.create_experiment(permutation=True)
 
-Finally, run the test suite. It is recommended to use the ``run_suite`` method, which executes all registered tests and ensures that dependent modules are functioning correctly. You may need to add your test case before running::
+Finally, run the test suite. It is recommended to use the ``run_suite`` method, which executes all registered tests and ensures that dependent modules are functioning correctly. You may need to add your test case before running
+
+.. code-block:: python
 
     if __name__ == '__main__':
         suite.addTests(loader.loadTestsFromTestCase(TestCaseAddModule))

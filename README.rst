@@ -437,36 +437,41 @@ Updating Documentation
 Improvements or updates to documentation are greatly appreciated. You can submit changes to documentation with the same process used for code contributions.
 
 Testing your pull request or your contribution
-  After making any code improvements, It is important that all modules are still working correctly. This calls for an explict test of the added code changes.
-  apsimNGpy tests are implemented via python ``unittest`` module. We provide a testing framework as shown below. First navigate to your apsimNGpy repo or directory with the ``setup.py`` on your terminal and run the following code::
+----------------------------------------------
+
+After making any code improvements, it is important to ensure that all modules are still working correctly. This calls for an explicit test of the added code changes.
+
+`apsimNGpy` tests are implemented via Python's ``unittest`` module. We provide a testing framework as shown below.
+
+First, navigate to your `apsimNGpy` repository or the directory containing ``setup.py`` in your terminal, and run the following command::
 
     pip install -e .  # Installs apsimNGpy as an editable package, enabling direct imports and reflecting code changes without re-installation
 
- Import the necessary module as follows::
+Import the necessary modules as follows::
 
     import unittest
     from apsimNGpy.tests.tester_main import suite, loader, run_suite
     from apsimNGpy.core.base_data import load_default_simulations
 
-  Set up the test and add any test module as follows::
+Set up the test and add any test case as shown below::
 
     class TestCaseAddModule(unittest.TestCase):
-        # set up the model to use
+        # Set up the model to use
         def setUp(self):
             self.model = load_default_simulations('Maize')
             self.out = 'test_edit_model.apsimx'
-        # add test case as shown below
+
+        # Add test case
         def test_add_crop_replacement(self):
             """+++test adding crop replacement++"""
             self.model.add_crop_replacements(_crop='Maize')
             self.model.create_experiment(permutation=True)
 
-  Finally run test suite. It is recommended to run the test suite using the ``run_suite`` method, which runs all the tests to check if dependent modules are still working perfectly. You may need to add your test case before running as follows::
+Finally, run the test suite. It is recommended to use the ``run_suite`` method, which executes all registered tests and ensures that dependent modules are functioning correctly. You may need to add your test case before running::
 
     if __name__ == '__main__':
         suite.addTests(loader.loadTestsFromTestCase(TestCaseAddModule))
         run_suite(2)
-
 
 Join the Discussion
 -------------------

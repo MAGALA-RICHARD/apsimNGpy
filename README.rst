@@ -430,11 +430,10 @@ Push to GitHub
     git push origin your-branch-name
 
 Submit a Pull Request
-  Go to the ``apsimNGpy`` repository on GitHub, and you'll see a prompt to submit a pull request based on your branch. Click on "Compare & pull request" and describe the changes you've made. Finally, submit the pull request.
+Go to the ``apsimNGpy`` repository on GitHub, and you'll see a prompt to submit a pull request based on your branch. Click on "Compare & pull request" and describe the changes you've made. Finally, submit the pull request.
 
 Updating Documentation
 ----------------------
-
 Improvements or updates to documentation are greatly appreciated. You can submit changes to documentation with the same process used for code contributions.
 
 Testing your pull request or your contribution
@@ -463,11 +462,12 @@ Set up the test and add any test module as follows::
             self.model.add_crop_replacements(_crop='Maize')
             self.model.create_experiment(permutation=True)
 
-Finally run test suite. It is recommended to run the test suite using the ``run_suite`` method, which runs all the tests to check if dependent modules are still working perfectly::
+Finally run test suite. It is recommended to run the test suite using the ``run_suite`` method, which runs all the tests to check if dependent modules are still working perfectly. You may need to add your test case before running as follows::
 
     if __name__ == '__main__':
         suite.addTests(loader.loadTestsFromTestCase(TestCaseAddModule))
         run_suite(2)
+
 
 Join the Discussion
 -------------------

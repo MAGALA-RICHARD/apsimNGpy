@@ -438,18 +438,18 @@ Improvements or updates to documentation are greatly appreciated. You can submit
 
 Testing your pull request or your contribution
 -----------------------------------------------
-After making any code improvements, It is important that all modules are still working correctly. This calls for an explict test of the added code changes.
-apsimNGpy tests are implemented via python ``unittest`` module. We provide a testing framework as shown below. First navigate to your apsimNGpy repo or directory with the ``setup.py`` on your terminal and run the following code::
+  After making any code improvements, It is important that all modules are still working correctly. This calls for an explict test of the added code changes.
+  apsimNGpy tests are implemented via python ``unittest`` module. We provide a testing framework as shown below. First navigate to your apsimNGpy repo or directory with the ``setup.py`` on your terminal and run the following code::
 
     pip install -e .  # Installs apsimNGpy as an editable package, enabling direct imports and reflecting code changes without re-installation
 
-Import the necessary module as follows::
+ Import the necessary module as follows::
 
     import unittest
     from apsimNGpy.tests.tester_main import suite, loader, run_suite
     from apsimNGpy.core.base_data import load_default_simulations
 
-Set up the test and add any test module as follows::
+  Set up the test and add any test module as follows::
 
     class TestCaseAddModule(unittest.TestCase):
         # set up the model to use
@@ -462,7 +462,7 @@ Set up the test and add any test module as follows::
             self.model.add_crop_replacements(_crop='Maize')
             self.model.create_experiment(permutation=True)
 
-Finally run test suite. It is recommended to run the test suite using the ``run_suite`` method, which runs all the tests to check if dependent modules are still working perfectly. You may need to add your test case before running as follows::
+  Finally run test suite. It is recommended to run the test suite using the ``run_suite`` method, which runs all the tests to check if dependent modules are still working perfectly. You may need to add your test case before running as follows::
 
     if __name__ == '__main__':
         suite.addTests(loader.loadTestsFromTestCase(TestCaseAddModule))

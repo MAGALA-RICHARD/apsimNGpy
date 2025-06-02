@@ -444,8 +444,7 @@ apsimNGpy tests are implemented via python ``unittest`` module. We provide a tes
 
 First navigate to your apsimNGpy repo or directory with the ``setup.py`` on your terminal and run the following code::
 
-  pip install -e .  # Installs apsimNGpy as an editable package, enabling direct imports and reflecting code changes without re-installation
-
+    pip install -e .  # Installs apsimNGpy as an editable package, enabling direct imports and reflecting code changes without re-installation
 
 Import the necessary module as follows::
 

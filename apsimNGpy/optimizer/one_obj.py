@@ -8,6 +8,7 @@ from tqdm import tqdm
 from typing import Union
 SIMULATIONS = object()
 
+new_maxiter  =0
 class ContinuousVariableProblem(AbstractProblem):
     """
         Defines an optimization problem for continuous variables in APSIM simulations.
@@ -90,6 +91,8 @@ class ContinuousVariableProblem(AbstractProblem):
         self.cache = True
         self.cache_size = cache_size
         self.pbar = None
+        self.counter = 0
+        self.maxiter = 0
 
 
     def add_control(self, model_type, model_name, parameter_name,
@@ -253,13 +256,34 @@ class ContinuousVariableProblem(AbstractProblem):
         finally:
             self.pbar.close()
             self.clear_cache()
-    def  wrapped_prog_obj(x):
-                call_counter["count"] += 1
-                pbar.update(1)
-                # pbar.set_postfix({"score": round(self._last_score, 2)})
-                return self._set_objective_function(x)
+
     def _open_pbar(self, labels, maxiter =400):
+
         self.pbar = tqdm(total=maxiter, desc=f"Optimizing:: {', '.join(labels)}", unit=" iterations")
+
+    def update_pbar(self, labels, extend_by=20):
+        """
+        Extends the tqdm progress bar by `extend_by` steps if current progress exceeds the known max.
+
+        Parameters:
+            labels (list): List of variable labels used for tqdm description.
+            extend_by (int): Number of additional steps to extend the progress bar.
+        """
+        if not hasattr(self, "counter"):
+            self.counter = 0
+        if not hasattr(self, "maxiter"):
+            self.maxiter = self.pbar.total if self.pbar else 0
+
+        # Check if counter exceeds current maximum iteration count
+        if self.counter >= self.maxiter:
+            self.maxiter += extend_by
+            prev_n = self.pbar.n if self.pbar else 0
+            self.pbar.close()
+            self.pbar = tqdm(total=self.maxiter, desc=f"Optimizing:: {', '.join(labels)}", unit=" iterations")
+            self.pbar.n = prev_n
+            self.pbar.refresh()
+
+        return self
 
 
     def _close_pbar(self):
@@ -284,11 +308,21 @@ class ContinuousVariableProblem(AbstractProblem):
 
             labels = [i.label for i in self.control_vars]
             self.labels = [i.label for i in self.control_vars]
+            self.maxiter = maxiter
             self._open_pbar(labels, maxiter=maxiter)
+            self.update_pbar(labels, extend_by=50)
             call_counter = {"count": 0}
 
+
             def wrapped_obj(x):
+                lm =maxiter
                 call_counter["count"] += 1
+                xc  =  call_counter["count"]
+                self.counter = xc
+                if xc > maxiter:
+                    lm +=1
+
+                self.update_pbar(labels, extend_by=50)
                 self.pbar.update(1)
                 #pbar.set_postfix({"score": round(self._last_score, 2)})
                 return self._set_objective_function(x)
@@ -330,7 +364,7 @@ if __name__ == "__main__":
     #     'disp': True ,      # display optimization messages
     #
     # })
-    res = problem.optimize_with_differential_evolution(popsize=25)
+    res = problem.optimize_with_differential_evolution(popsize=25, maxiter=20)
 
 
 

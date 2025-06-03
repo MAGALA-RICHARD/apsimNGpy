@@ -18,9 +18,7 @@ apsimNGpy
    :target: https://pepy.tech/project/apsimNGpy
    :alt: Total PyPI downloads 
 
-.. image:: https://static.pepy.tech/badge/apsimNGpy/Month
-   :target: https://pepy.tech/project/apsimNGpy
-   :alt: Weekly PyPI downloads
+
 
 .. image:: https://static.pepy.tech/badge/apsimNGpy/week
    :target: https://pepy.tech/project/apsimNGpy

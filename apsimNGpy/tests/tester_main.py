@@ -8,6 +8,11 @@ from apsimNGpy.tests import (unit_tests_core,
                              test_edit_model,
                              test_weathermanager)
 
+modules= (m for m in (unit_tests_core,
+         unit_test_apsim,
+         test_config,
+         test_edit_model,
+         test_weathermanager))
 
 def clean_up():
     sc = Path('../scratch')
@@ -26,12 +31,8 @@ def clean_up():
 loader = unittest.TestLoader()
 suite = unittest.TestSuite()
 
-suite.addTests(loader.loadTestsFromModule(test_config))
-suite.addTests(loader.loadTestsFromModule(test_weathermanager))
-suite.addTests(loader.loadTestsFromModule(unit_tests_core))
-suite.addTests(loader.loadTestsFromModule(unit_test_apsim))
-suite.addTests(loader.loadTestsFromModule(test_edit_model))
-
+for mod  in modules:
+    suite.addTests(loader.loadTestsFromModule(mod))
 
 def run_suite(verbosity_level=2):
     try:

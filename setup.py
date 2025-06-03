@@ -63,6 +63,8 @@ setup(
         'psutil >=6.0.0',
         'tenacity',
         'typer',
+        'wrapdisc==2.5.0',
+
         'summarytools>=0.3.0'
 
     ]

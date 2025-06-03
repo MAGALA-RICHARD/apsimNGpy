@@ -26,9 +26,10 @@ apsimNGpy
    :target: https://github.com/MAGALA-RICHARD/apsimNGpy/stargazers
    :alt: GitHub Stars
 
-.. image:: https://img.shields.io/github/forks/MAGALA-RICHARD/apsimNGpy?style=social
-   :target: https://github.com/MAGALA-RICHARD/apsimNGpy/network/members
-   :alt: GitHub Forks
+.. image:: https://static.pepy.tech/badge/apsimNGpy/week
+   :target: https://pepy.tech/project/apsimNGpy
+   :alt: Weekly PyPI downloads
+
 
 
 apsimNGpy: The Next Generation Agroecosytem Simulation Library

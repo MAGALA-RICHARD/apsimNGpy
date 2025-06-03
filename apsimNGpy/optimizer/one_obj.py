@@ -259,7 +259,7 @@ class ContinuousVariableProblem(AbstractProblem):
 
     def _open_pbar(self, labels, maxiter =400):
 
-        self.pbar = tqdm(total=maxiter, desc=f"Optimizing:: {', '.join(labels)}", unit=" iterations")
+        self.pbar = tqdm(total=maxiter, desc=f"Optimizing:: {', '.join(labels)}", unit=" iterations", colour="green")
 
     def update_pbar(self, labels, extend_by=20):
         """
@@ -279,7 +279,7 @@ class ContinuousVariableProblem(AbstractProblem):
             self.maxiter += extend_by
             prev_n = self.pbar.n if self.pbar else 0
             self.pbar.close()
-            self.pbar = tqdm(total=self.maxiter, desc=f"Optimizing:: {', '.join(labels)}", unit=" iterations")
+            self.pbar = tqdm(total=self.maxiter, desc=f"Optimizing:: {', '.join(labels)}", unit=" iterations", colour ='blue')
             self.pbar.n = prev_n
             self.pbar.refresh()
 

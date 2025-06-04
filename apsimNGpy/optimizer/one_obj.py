@@ -279,7 +279,7 @@ class ContinuousVariableProblem(AbstractProblem):
             self.maxiter += extend_by
             prev_n = self.pbar.n if self.pbar else 0
             self.pbar.close()
-            self.pbar = tqdm(total=self.maxiter, desc=f"Optimizing:: {', '.join(labels)}", unit=" iterations", colour ='blue')
+            self.pbar = tqdm(total=self.maxiter, desc=f"Progress bar refreshed", unit=" iterations", colour ='blue')
             self.pbar.n = prev_n
             self.pbar.refresh()
 

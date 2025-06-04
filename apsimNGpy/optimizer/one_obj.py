@@ -6,7 +6,9 @@ import wrapdisc
 from functools import cache
 from tqdm import tqdm
 from typing import Union
+
 SIMULATIONS = object()
+
 
 class ContinuousVariableProblem(AbstractProblem):
     """
@@ -71,17 +73,18 @@ class ContinuousVariableProblem(AbstractProblem):
             >>> result = problem.minimize_with_local_solver(method='Powell')
             >>> print(result.x_vars)
         """
+
     def __init__(self, model: str,
                  simulation=SIMULATIONS,
                  controls=None,
                  control_vars=None,
                  labels=None,
 
-                 func = None,
+                 func=None,
                  cache_size=400):
 
         # Initialize parent classes explicitly
-        AbstractProblem.__init__(self, model,max_cache_size=cache_size)
+        AbstractProblem.__init__(self, model, max_cache_size=cache_size)
         self.model = model
         self.simulation = simulation if simulation is not SIMULATIONS else 'all'
         self.controls = controls or []
@@ -91,13 +94,13 @@ class ContinuousVariableProblem(AbstractProblem):
         self.cache_size = cache_size
         self.pbar = None
 
-
     def add_control(self, model_type, model_name, parameter_name,
                     vtype, start_value, bounds=None):
         self._evaluate_args(model_type, model_name, parameter_name)
         label = f"{parameter_name}"
         self.control_vars.append(VarDesc(model_type, model_name, parameter_name, vtype, label, start_value, bounds))
-        return self # To support method chaining
+        return self  # To support method chaining
+
     @property
     def bounds(self):
         bounds = []
@@ -110,6 +113,7 @@ class ContinuousVariableProblem(AbstractProblem):
         for var in self.control_vars:
             starting_values.append(var.start_value)
         return tuple(starting_values)
+
     def _insert_controls(self, x) -> None:
 
         edit = self.edit_model
@@ -117,7 +121,7 @@ class ContinuousVariableProblem(AbstractProblem):
         for i, varR in enumerate(self.control_vars):
             vtype = varR.vtype
             value = x[i]
-            if vtype==int or vtype =='int':
+            if vtype == int or vtype == 'int':
                 value = int(value)
             else:
                 value = round(value, 4)
@@ -128,19 +132,18 @@ class ContinuousVariableProblem(AbstractProblem):
                 cacheit=True,
                 **{varR.parameter_name: value}
             )
-            x[i] =value
+            x[i] = value
 
         return x.tolist()
-
 
     def _set_objective_function(self, x):
         xl = self._insert_controls(x)
         # Try local per-instance results cache first
         if self.cache and (cached := self.get_cached(*xl)):
-        # Evaluation is expensive because it involves running APSIM, so the call for caching before evaluation
-               return cached
+            # Evaluation is expensive because it involves running APSIM, so the call for caching before evaluation
+            return cached
 
-        SCORE  = self.evaluate(x)
+        SCORE = self.evaluate()
         if self.cache:
             self._insert_cache_result(*xl, result=SCORE)
         self._last_score = SCORE
@@ -239,10 +242,11 @@ class ContinuousVariableProblem(AbstractProblem):
             labels = [i.label for i in self.control_vars]
             self.pbar.open(labels, maxiter=max_iter)
             call_counter = {"count": 0}
+
             def wrapped_obj(x):
                 call_counter["count"] += 1
                 pbar.update(1)
-                #pbar.set_postfix({"score": round(self._last_score, 2)})
+                # pbar.set_postfix({"score": round(self._last_score, 2)})
                 return self._set_objective_function(x)
 
             result = differential_evolution(wrapped_obj, x0=self.starting_values(), **kwargs)
@@ -253,18 +257,13 @@ class ContinuousVariableProblem(AbstractProblem):
         finally:
             self.pbar.close()
             self.clear_cache()
-    def  wrapped_prog_obj(x):
-                call_counter["count"] += 1
-                pbar.update(1)
-                # pbar.set_postfix({"score": round(self._last_score, 2)})
-                return self._set_objective_function(x)
-    def _open_pbar(self, labels, maxiter =400):
-        self.pbar = tqdm(total=maxiter, desc=f"Optimizing:: {', '.join(labels)}", unit=" iterations")
 
+    def _open_pbar(self, labels, maxiter=400):
+        self.pbar = tqdm(total=maxiter, desc=f"Optimizing:: {', '.join(labels)}", unit=" iterations")
 
     def _close_pbar(self):
         if self.pbar is not None:
-           self.pbar.close()
+            self.pbar.close()
 
     def optimize_with_differential_evolution(self, args=(), strategy='best1bin',
                                              maxiter=1000, popsize=15,
@@ -290,37 +289,45 @@ class ContinuousVariableProblem(AbstractProblem):
             def wrapped_obj(x):
                 call_counter["count"] += 1
                 self.pbar.update(1)
-                #pbar.set_postfix({"score": round(self._last_score, 2)})
+                # pbar.set_postfix({"score": round(self._last_score, 2)})
                 return self._set_objective_function(x)
 
             result = differential_evolution(wrapped_obj, self.bounds, args=(), strategy='best1bin',
-                                      maxiter=maxiter, popsize=popsize, tol=tol,
-                                      mutation=mutation, recombination=recombination,
-                                       callback=callback, disp=disp,
-                                      polish=True, init=init,
-                                      atol=atol, updating=updating,
-                                      workers=workers, constraints=constraints)
+                                            maxiter=maxiter, popsize=popsize, tol=tol,
+                                            mutation=mutation, recombination=recombination,
+                                            callback=callback, disp=disp,
+                                            polish=True, init=init,
+                                            atol=atol, updating=updating,
+                                            workers=workers, constraints=constraints)
             labels = [c.label for c in self.control_vars]
             result.x_vars = dict(zip(labels, result.x))
-            self.outcomes =result
+            self.outcomes = result
             return result
         finally:
             self._close_pbar()
             self.clear_cache()
+
+
 def problemspec(model, simulation, factors):
     ...
+
+
 if __name__ == "__main__":
     ##xample
     maize_model = "Maize"
+
+
     class Problem(ContinuousVariableProblem):
         def __init__(self, model=None, simulation='Simulation'):
             super().__init__(model, simulation)
             self.simulation = simulation
 
-        def evaluate(self, x, **kwargs):
-           return -self.run(verbose=False).results.Yield.mean()
-    problem  = Problem(maize_model, simulation='Simulation')
-    problem.add_control('Manager', "Sow using a variable rule", 'Population',  int,5, bounds=[2, 15])
+        def evaluate(self, **kwargs):
+            return -self.run(verbose=False).results.Yield.mean()
+
+
+    problem = Problem(maize_model, simulation='Simulation')
+    problem.add_control('Manager', "Sow using a variable rule", 'Population', int, 5, bounds=[2, 15])
     problem.add_control('Manager', "Sow using a variable rule", 'RowSpacing', int, 500, bounds=[400, 800])
 
     # res = problem.minimize_with_local_solver( method  ='Powell',  options={
@@ -331,6 +338,3 @@ if __name__ == "__main__":
     #
     # })
     res = problem.optimize_with_differential_evolution(popsize=25)
-
-
-

@@ -26,7 +26,7 @@ apsimNGpy
    :target: https://pepy.tech/project/apsimNGpy
    :alt: Weekly PyPI downloads
 
-.. image:: https://img.shields.io/badge/Join%20Discussions-red.svg
+.. image:: https://img.shields.io/badge/Join%20Discussions-orange.svg
    :target: https://discord.gg/SU9A6nNv
    :alt: Join Discussions
 

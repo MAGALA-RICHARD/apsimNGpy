@@ -43,9 +43,6 @@ def run_suite(verbosity_level=2):
 
 
 if __name__ == '__main__':
-
-        # Run the test suite
-        clean_up()
-        run_suite(3)
+        run_suite(verbosity_level=2)
 
 

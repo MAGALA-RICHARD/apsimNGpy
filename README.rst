@@ -30,7 +30,7 @@ apsimNGpy
    :target: https://discord.gg/SU9A6nNv
    :alt: Join Discussions
 
-.. image:: https://img.shields.io/badge/Ask%20Teams-magenta.svg
+.. image:: https://img.shields.io/badge/Ask%20Through%20Teams-magenta.svg
    :target: https://teams.live.com/l/community/FBAbNOQj7y9dPcoaAI
    :alt: Ask Teams
 

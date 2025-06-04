@@ -534,6 +534,43 @@ class CoreModel:
             return pd.concat(bag)
         else:
             raise ValueError("you cant load data before running the model please call run() first")
+    def rename_model(self, model_type, old_name, new_name):
+        """
+            Renames a model within the APSIM simulation tree.
+
+            This method searches for a model of the specified type and current name,
+            then updates its name to the new one provided. After renaming, it saves
+            the updated simulation file to enforce the changes.
+
+            Parameters
+            ----------
+            model_type : str
+                The type of the model to rename (e.g., "Manager", "Clock", etc.).
+            old_name : str
+                The current name of the model to be renamed.
+            new_name : str
+                The new name to assign to the model.
+
+            Returns
+            -------
+            self : object
+                Returns the modified object to allow for method chaining.
+
+            Raises
+            ------
+            ValueError
+                If the model of the specified type and name is not found.
+
+            Notes
+            -----
+            This method uses `get_or_check_model` with action='get' to locate the model,
+            and then updates the model's `Name` attribute. `save()` is called
+            immediately after to apply and enfoce the change.
+            """
+        mtn = get_or_check_model(self.Simulations, model_type=model_type, model_name=old_name, action='get')
+        mtn.Name= f"{new_name}"
+        self.save()
+        return self
 
     def clone_model(self, model_type, model_name, adoptive_parent_type, rename=None, adoptive_parent_name=None,
 

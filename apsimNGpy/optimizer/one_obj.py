@@ -8,6 +8,8 @@ from tqdm import tqdm
 from typing import Union
 SIMULATIONS = object()
 
+
+
 new_maxiter  =0
 class ContinuousVariableProblem(AbstractProblem):
     """
@@ -94,13 +96,68 @@ class ContinuousVariableProblem(AbstractProblem):
         self.counter = 0
         self.maxiter = 0
 
-
     def add_control(self, model_type, model_name, parameter_name,
                     vtype, start_value, bounds=None):
+        """
+        Adds a continuous control variable to the optimization problem.
+
+        This method allows the user to specify a parameter in the APSIM model
+        that will be treated as a variable during optimization. It helps ensure
+        that parameters are consistently defined and validated.
+
+        Parameters
+        ----------
+        model_type : str
+            The section of the APSIM model where the parameter resides
+            (e.g., 'Manager', 'Organic', 'IPlant').
+
+        model_name : str
+            The name of the specific model or module within APSIM where the parameter
+            is defined (e.g., "Sow on fixed date", "Fertiliser").
+
+        parameter_name : str
+            The name of the parameter to control (e.g., 'Population', 'Amount').
+
+        vtype : type
+            The Python type of the variable. Should be either `int` or `float` to indicate
+            whether the parameter is discrete or continuous.
+
+        start_value : int or float
+            The initial value to use for the parameter in optimization routines.
+
+        bounds : tuple of (float, float), optional
+            Lower and upper bounds for the parameter (used in bounded optimization).
+            Must be a tuple like (min, max). If None, the variable is considered unbounded.
+
+        Returns
+        -------
+        self : object
+            Returns self to support method chaining.
+
+        Raises
+        ------
+        ValueError
+            If the provided arguments do not pass validation via `_evaluate_args`.
+
+        Notes
+        -----
+        - This method is typically used before running optimization to define which
+          parameters should be tuned.
+        - Only continuous variables (`int` or `float`) are supported by this method.
+          Use other methods for categorical or grid variables.
+
+        Example
+        -------
+        >>> opt = APSIMOptimizer()
+        >>> opt.add_control("manager", "Sow using rule", "Population", float, 8.0, (5.0, 15.0))
+        """
         self._evaluate_args(model_type, model_name, parameter_name)
         label = f"{parameter_name}"
-        self.control_vars.append(VarDesc(model_type, model_name, parameter_name, vtype, label, start_value, bounds))
-        return self # To support method chaining
+        self.control_vars.append(
+            VarDesc(model_type, model_name, parameter_name, vtype, label, start_value, bounds)
+        )
+        return self  # Enables method chaining
+
     @property
     def bounds(self):
         bounds = []
@@ -114,8 +171,9 @@ class ContinuousVariableProblem(AbstractProblem):
             starting_values.append(var.start_value)
         return tuple(starting_values)
     def _insert_controls(self, x) -> None:
-
-        edit = self.edit_model
+        @cache
+        def editable_model():
+          return self.edit_model
 
         for i, varR in enumerate(self.control_vars):
             vtype = varR.vtype
@@ -124,7 +182,7 @@ class ContinuousVariableProblem(AbstractProblem):
                 value = int(value)
             else:
                 value = round(value, 4)
-            edit(
+            editable_model()(
                 model_type=varR.model_type,
                 simulations=self.simulation,
                 model_name=varR.model_name,
@@ -143,7 +201,7 @@ class ContinuousVariableProblem(AbstractProblem):
         # Evaluation is expensive because it involves running APSIM, so the call for caching before evaluation
                return cached
 
-        SCORE  = self.evaluate(x)
+        SCORE  = self.evaluate()
         if self.cache:
             self._insert_cache_result(*xl, result=SCORE)
         self._last_score = SCORE
@@ -240,15 +298,15 @@ class ContinuousVariableProblem(AbstractProblem):
                 kwargs['bounds'] = self.bounds
             max_iter = kwargs.get("options", {}).get("maxiter", 400)
             labels = [i.label for i in self.control_vars]
-            self.pbar.open(labels, maxiter=max_iter)
+            self._open_pbar(labels, maxiter=max_iter)
             call_counter = {"count": 0}
             def wrapped_obj(x):
                 call_counter["count"] += 1
-                pbar.update(1)
+                self.pbar.update(1)
                 #pbar.set_postfix({"score": round(self._last_score, 2)})
                 return self._set_objective_function(x)
 
-            result = differential_evolution(wrapped_obj, x0=self.starting_values(), **kwargs)
+            result = minimize(wrapped_obj, x0=self.starting_values(), **kwargs)
             labels = [c.label for c in self.control_vars]
             result.x_vars = dict(zip(labels, result.x))
             self.outcomes = result
@@ -261,7 +319,7 @@ class ContinuousVariableProblem(AbstractProblem):
 
         self.pbar = tqdm(total=maxiter, desc=f"Optimizing:: {', '.join(labels)}", unit=" iterations", colour="green")
 
-    def update_pbar(self, labels, extend_by=20):
+    def update_pbar(self, labels, extend_by=None):
         """
         Extends the tqdm progress bar by `extend_by` steps if current progress exceeds the known max.
 
@@ -269,6 +327,8 @@ class ContinuousVariableProblem(AbstractProblem):
             labels (list): List of variable labels used for tqdm description.
             extend_by (int): Number of additional steps to extend the progress bar.
         """
+        if not extend_by:
+            extend_by = int(0.4 * self.maxiter)
         if not hasattr(self, "counter"):
             self.counter = 0
         if not hasattr(self, "maxiter"):
@@ -331,7 +391,7 @@ class ContinuousVariableProblem(AbstractProblem):
                                       maxiter=maxiter, popsize=popsize, tol=tol,
                                       mutation=mutation, recombination=recombination,
                                        callback=callback, disp=disp,
-                                      polish=True, init=init,
+                                      polish=polish, init=init,
                                       atol=atol, updating=updating,
                                       workers=workers, constraints=constraints)
             labels = [c.label for c in self.control_vars]
@@ -341,18 +401,55 @@ class ContinuousVariableProblem(AbstractProblem):
         finally:
             self._close_pbar()
             self.clear_cache()
+    def setup_obj(self):
+        labels = [i.label for i in self.control_vars]
+        self.labels = [i.label for i in self.control_vars]
+        self.maxiter = maxiter
+        self._open_pbar(labels, maxiter=maxiter)
+        self.update_pbar(labels, extend_by=50)
+        call_counter = {"count": 0}
+
+        def wrapped_obj(x):
+            lm = maxiter
+            call_counter["count"] += 1
+            xc = call_counter["count"]
+            self.counter = xc
+            if xc > maxiter:
+                lm += 1
+
+            self.update_pbar(labels, extend_by=50)
+            self.pbar.update(1)
+            # pbar.set_postfix({"score": round(self._last_score, 2)})
+            return self._set_objective_function(x)
+
+    def start_optimization(self, algarithm,):
+        ...
 def problemspec(model, simulation, factors):
     ...
 if __name__ == "__main__":
     ##xample
     maize_model = "Maize"
+    obs = [
+        7000.0,
+        5000.505,
+        1000.047,
+        3504.000,
+        7820.075,
+        7000.517,
+        3587.101,
+        4000.152,
+        8379.435,
+        4000.301
+    ]
     class Problem(ContinuousVariableProblem):
         def __init__(self, model=None, simulation='Simulation'):
             super().__init__(model, simulation)
             self.simulation = simulation
 
-        def evaluate(self, x, **kwargs):
-           return -self.run(verbose=False).results.Yield.mean()
+        def evaluate(self, **kwargs):
+            predicted = self.run(verbose=False).results.Yield.mean()
+            ans = self.rmse(obs, predicted)
+            return ans
     problem  = Problem(maize_model, simulation='Simulation')
     problem.add_control('Manager', "Sow using a variable rule", 'Population',  int,5, bounds=[2, 15])
     problem.add_control('Manager', "Sow using a variable rule", 'RowSpacing', int, 500, bounds=[400, 800])
@@ -360,11 +457,12 @@ if __name__ == "__main__":
     # res = problem.minimize_with_local_solver( method  ='Powell',  options={
     #     # 'xatol': 1e-4,      # absolute error in xopt between iterations
     #     # 'fatol': 1e-4,      # absolute error in func(xopt) between iterations
-    #     'maxiter': 1000,    # maximum number of iterations
+    #     'maxiter': 100,    # maximum number of iterations
     #     'disp': True ,      # display optimization messages
     #
     # })
-    res = problem.optimize_with_differential_evolution(popsize=25, maxiter=20)
+   # de = problem.optimize_with_differential_evolution(popsize=10, maxiter=100)
+   # dep = problem.optimize_with_differential_evolution(popsize=10, maxiter=100, polish=False)
 
 
 

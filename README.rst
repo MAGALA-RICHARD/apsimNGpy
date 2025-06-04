@@ -58,7 +58,7 @@ Installation
 
 All versions are currently in development, phase and they can be installed as follows:
 
-- Method 1. install from PyPI
+- Method 1. Stable versions can be installed from PyPI
 
 .. code:: bash
 

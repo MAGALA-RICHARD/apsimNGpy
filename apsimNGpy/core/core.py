@@ -2089,7 +2089,7 @@ class CoreModel:
         self.replace_met_file(self.met)
         return self
 
-    def replace_met_file(self, *, weather_file: Union[Path, str], simulations=None, **kwargs):
+    def replace_met_file(self, *, weather_file: Union[Path, str], simulations=MissingOption, **kwargs):
         try:
             """
             Searches the weather child and replaces it with a new one. DEPRECATED
@@ -2116,7 +2116,7 @@ class CoreModel:
             logger.info(repr(e))  # this error will be logged to the folder logs in the current working dir_path
             raise
 
-    def get_weather_from_web(self, lonlat: tuple, start: int, end: int, simulations='all', source='nasa',
+    def get_weather_from_web(self, lonlat: tuple, start: int, end: int, simulations=MissingOption, source='nasa',
                              filename=None):
         """
             Replaces the meteorological (met) file in the model using weather data fetched from an online source.
@@ -2576,7 +2576,7 @@ class CoreModel:
             list of APSIM ``Models.Core.Simulation`` objects
         """
 
-        if simulations == 'all' or simulations == MissingOption:
+        if simulations == 'all' or simulations == MissingOption or simulations ==None:
             return self.simulations
         if isinstance(simulations_names, str):
             simulations_names = {simulations_names}

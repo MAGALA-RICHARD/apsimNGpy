@@ -89,6 +89,17 @@ class TestCoreModel(BaseTester):
     def test_inspect_simulation(self):
         self.assertIsInstance(self.test_ap_sim.inspect_model('Models.Core.Simulation', fullpath=False), list)
 
+    def test_rename(self):
+        NEW_NAME = 'NEW_NAME'
+        from apsimNGpy.core.base_data import load_default_simulations
+        model = load_default_simulations(crop='Maize')
+        model.rename_model(model_type="Simulation", old_name='Simulation', new_name=NEW_NAME)
+        # check if it has been successfully renamed
+        sims = model.inspect_model(model_type='Simulation', fullpath=False)
+        assert NEW_NAME in sims, 'rename not successful'
+        # The alternative is to use model.inspect_file to see your changes
+        model.inspect_file()
+
     def test_replace_soil_property_values(self):
         parameter = 'Carbon'
         param_values = [2.4, 1.4]

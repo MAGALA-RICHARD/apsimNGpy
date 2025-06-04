@@ -26,11 +26,11 @@ apsimNGpy
    :target: https://pepy.tech/project/apsimNGpy
    :alt: Weekly PyPI downloads
 
-.. image:: https://img.shields.io/badge/Join%20Discussions-green.svg
+.. image:: https://img.shields.io/badge/Join%20Discussions-blue.svg
    :target: https://discord.gg/SU9A6nNv
    :alt: Join Discussions
 
-.. image:: https://img.shields.io/badge/Ask%20Through%20Teams-magenta.svg
+.. image:: https://img.shields.io/badge/Ask%20Through%20Teams-purple.svg
    :target: https://teams.live.com/l/community/FBAbNOQj7y9dPcoaAI
    :alt: Ask Teams
 

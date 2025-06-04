@@ -26,6 +26,10 @@ apsimNGpy
    :target: https://pepy.tech/project/apsimNGpy
    :alt: Weekly PyPI downloads
 
+.. image:: https://img.shields.io/badge/Join%20Discussions-red.svg
+   :target: https://discord.gg/SU9A6nNv
+   :alt: Join Discussions
+
 
 
 apsimNGpy: The Next Generation Agroecosytem Simulation Library

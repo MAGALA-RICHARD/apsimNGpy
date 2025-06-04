@@ -8,9 +8,9 @@ __all__ = ['Validate']
 import numpy as np
 import pandas as pd
 from attr import dataclass
+from numpy import floating
 from scipy.stats import norm, linregress
-from typing import Union, List, Dict
-
+from typing import Union, List, Dict, Any
 
 ArrayLike = Union[np.ndarray, List[float], pd.Series]
 
@@ -24,53 +24,48 @@ class Validate:
     actual: ArrayLike
     predicted: ArrayLike
 
-    METRICS = ['RMSE', 'MAE', 'MSE', 'RRMSE', 'bias', 'ME', 'WIA', 'R2', 'CCC', 'slope']
+    metrics = ['rmse', 'mae', 'mse', 'rrmse', 'bias', 'me', 'wia', 'r2', 'ccc', 'slope']
 
     def __post_init__(self):
         self.actual = np.asarray(self.actual)
         self.predicted = np.asarray(self.predicted)
-        self.obs_mean = np.mean(self.actual)
-        self.pred_mean = np.mean(self.predicted)
-        self.std_actual = np.std(self.actual)
-        self.std_predicted = np.std(self.predicted)
         assert len(self.actual) == len(self.predicted), "Predicted and actual arrays must have the same length."
 
-    def RRMSE(self) -> float:
-        rmse = self.RMSE()
-        return rmse / np.mean(self.actual)
+    def rrmse(self) -> float:
+        return self.rmse() / np.mean(self.actual)
 
-    def WIA(self) -> float:
+    def wia(self) -> float:
         mean_obs = np.mean(self.actual)
         numerator = np.sum((self.predicted - self.actual) ** 2)
         denominator = np.sum((np.abs(self.predicted - mean_obs) + np.abs(self.actual - mean_obs)) ** 2)
         return 1 - numerator / denominator
 
-    def MSE(self) -> float:
+    def mse(self) -> floating[Any]:
         return np.mean((self.actual - self.predicted) ** 2)
 
-    def RMSE(self) -> float:
-        return np.sqrt(self.MSE())
+    def rmse(self) -> float:
+        return np.sqrt(self.mse())
 
-    def MAE(self) -> float:
+    def mae(self) -> float:
         return np.mean(np.abs(self.actual - self.predicted))
 
-    def bias(self) -> float:
+    def bias(self) -> floating[Any]:
         return np.mean(self.actual - self.predicted)
 
     def slope(self) -> float:
         slope, *_ = linregress(self.actual, self.predicted)
         return slope
 
-    def R2(self) -> float:
+    def r2(self) -> float:
         _, _, r_value, _, _ = linregress(self.actual, self.predicted)
         return r_value ** 2
 
-    def ME(self) -> float:
+    def me(self) -> float:
         mse_pred = np.mean((self.predicted - self.actual) ** 2)
         mse_obs = np.mean((self.actual - np.mean(self.actual)) ** 2)
         return 1 - mse_pred / mse_obs
 
-    def CCC(self) -> float:
+    def ccc(self) -> float:
         return self.rho_ci()['rho_c']['est'].iloc[0]
 
     def rho_ci(self, ci: str = "z-transform", conf_level: float = 0.95, na_rm: bool = False) -> Dict:
@@ -86,7 +81,7 @@ class Validate:
         sxy = r * np.sqrt(sx2 * sy2)
         p = 2 * sxy / (sx2 + sy2 + (yb - xb) ** 2)
         v, u = sd1 / sd2, (yb - xb) / ((sx2 * sy2) ** 0.25)
-        C_b = p / r
+        c_b = p / r
         zv = norm.ppf(1 - (1 - conf_level) / 2)
 
         sep = np.sqrt(((1 - r ** 2) * p ** 2 * (1 - p ** 2) / r ** 2 +
@@ -107,14 +102,14 @@ class Validate:
         rmean = dat.mean(axis=1)
         blalt = pd.DataFrame({'mean': rmean, 'delta': delta})
 
-        return {'rho_c': ci_result, 's_shift': v, 'l_shift': u, 'C_b': C_b, 'blalt': blalt}
+        return {'rho_c': ci_result, 's_shift': v, 'l_shift': u, 'C_b': c_b, 'blalt': blalt}
 
-    def evaluate(self, metric: str = 'RMSE') -> float:
-        assert metric in self.METRICS, f"Metric '{metric}' is not supported."
+    def evaluate(self, metric: str = 'rmse') -> float:
+        assert metric in self.metrics, f"Metric '{metric}' is not supported."
         return getattr(self, metric)()
 
     def evaluate_all(self, verbose: bool = False) -> Dict[str, float]:
-        results = {metric: getattr(self, metric)() for metric in self.METRICS}
+        results = {metric: getattr(self, metric)() for metric in self.metrics}
         if verbose:
             for k, v in results.items():
                 print(f"{k}: {v:.4f}")

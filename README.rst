@@ -18,17 +18,14 @@ apsimNGpy
    :target: https://pepy.tech/project/apsimNGpy
    :alt: Total PyPI downloads 
 
-.. image:: https://img.shields.io/pypi/dm/apsimNGpy?logo=pypi
-   :target: https://pypi.org/project/apsimNGpy/
-   :alt: PyPI downloads
+.. image:: https://static.pepy.tech/badge/apsimNGpy/month
+   :target: https://pepy.tech/project/apsimNGpy
+   :alt: Weekly PyPI downloads
 
-.. image:: https://img.shields.io/github/stars/MAGALA-RICHARD/apsimNGpy?style=social
-   :target: https://github.com/MAGALA-RICHARD/apsimNGpy/stargazers
-   :alt: GitHub Stars
+.. image:: https://static.pepy.tech/badge/apsimNGpy/week
+   :target: https://pepy.tech/project/apsimNGpy
+   :alt: Weekly PyPI downloads
 
-.. image:: https://img.shields.io/github/forks/MAGALA-RICHARD/apsimNGpy?style=social
-   :target: https://github.com/MAGALA-RICHARD/apsimNGpy/network/members
-   :alt: GitHub Forks
 
 
 apsimNGpy: The Next Generation Agroecosytem Simulation Library

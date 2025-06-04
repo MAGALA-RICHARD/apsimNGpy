@@ -30,6 +30,9 @@ apsimNGpy
    :target: https://discord.gg/SU9A6nNv
    :alt: Join Discussions
 
+.. image:: https://img.shields.io/badge/Join%20Teams-green.svg
+   :target: https://teams.live.com/l/community/FBAbNOQj7y9dPcoaAI
+   :alt: Join Teams
 
 
 apsimNGpy: The Next Generation Agroecosytem Simulation Library

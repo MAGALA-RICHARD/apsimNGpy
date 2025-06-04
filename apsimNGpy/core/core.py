@@ -55,7 +55,6 @@ from typing import Iterable
 from collections.abc import Iterable
 from typing import Any
 
-
 from apsimNGpy.settings import *
 
 
@@ -66,9 +65,6 @@ def _looks_like_path(value: str) -> bool:
 def compile_script(script_code: str, code_model):
     compiler = Models.Core.ScriptCompiler()
     compiler(script_code, code_model)
-
-
-
 
 
 @dataclass(slots=True)
@@ -534,7 +530,8 @@ class CoreModel:
             return pd.concat(bag)
         else:
             raise ValueError("you cant load data before running the model please call run() first")
-    def rename_model(self, model_type, old_name, new_name):
+
+    def rename_model(self, model_type, *, old_name, new_name):
         """
             Renames a model within the APSIM simulation tree.
 
@@ -566,9 +563,22 @@ class CoreModel:
             This method uses `get_or_check_model` with action='get' to locate the model,
             and then updates the model's `Name` attribute. `save()` is called
             immediately after to apply and enfoce the change.
+
+            Example::
+               from apsimNGpy.core.apsim import ApsimModel
+               model = ApsimModel(model = 'Maize')
+               model.rename_model(model_type="Simulation", old_name ='Simulation', new_name='my_simulation')
+               # check if it has been successfully renamed
+               model.inspect_model(model_type='Simulation', fullpath = False)
+               ['my_simulation']
+               # The alternative is to use model.inspect_file to see your changes
+               model.inspect_file()
+
             """
-        mtn = get_or_check_model(self.Simulations, model_type=model_type, model_name=old_name, action='get')
-        mtn.Name= f"{new_name}"
+        model_type = _eval_model(model_type)
+        mtn = get_or_check_model(self.Simulations, model_type=model_type, model_name=old_name, action='get',
+                                 cacheit=False)
+        mtn.Name = f"{new_name}"
         self.save()
         return self
 
@@ -778,7 +788,7 @@ class CoreModel:
                 if target_child and override:
                     # not raising the error still studying the behaviors of adding a child that already exists
                     ModelTools.DELETE(target_child)
-            #get_or_check_model(parent, model_type.__class__, model_type.Name, action='delete')
+            # get_or_check_model(parent, model_type.__class__, model_type.Name, action='delete')
 
             ModelTools.ADD(loc, parent)
 
@@ -1224,7 +1234,7 @@ class CoreModel:
             logger.info(f"Moved {child_to_move.Name} to {new_parent.Name}")
         self.save()
 
-    def rename_model(self, model_type: Models, old_model_name: str, new_model_name: str, simulations=None):
+    def _rename_model(self, model_type: Models, old_model_name: str, new_model_name: str, simulations=None):
         """
          give new name to a model in the simulations.
 
@@ -1243,7 +1253,7 @@ class CoreModel:
                from apsimNGpy import core
                from apsimNGpy.core.core import Models
                apsim = core.base_data.load_default_simulations(crop = 'Maize')
-               apsim = apsim.rename_model(Models.Clock, 'Clock', 'clock')
+               apsim = apsim._rename_model(Models.Clock, 'Clock', 'clock')
 
         """
         model_type = _eval_model(model_type)
@@ -1598,7 +1608,8 @@ class CoreModel:
             simulations = self.inspect_model(model_type='Models.Core.Simulation', fullpath=False)
             simulations = simulations[0] if len(simulations) == 1 else simulations
 
-        return inspect_model_inputs(self, model_type=model_type, model_name=model_name, simulations=simulations, parameters=parameters, **kwargs)
+        return inspect_model_inputs(self, model_type=model_type, model_name=model_name, simulations=simulations,
+                                    parameters=parameters, **kwargs)
 
     def edit_cultivar(self, *, CultivarName: str, commands: str, values: Any, **kwargs):
         """
@@ -1925,7 +1936,8 @@ class CoreModel:
 
         return self
 
-    def update_mgt(self, *, management: Union[dict, tuple], simulations: [list, tuple] = MissingOption, out: [Path, str] = None,
+    def update_mgt(self, *, management: Union[dict, tuple], simulations: [list, tuple] = MissingOption,
+                   out: [Path, str] = None,
                    reload: bool = True,
                    **kwargs):
         """
@@ -2613,7 +2625,7 @@ class CoreModel:
             list of APSIM ``Models.Core.Simulation`` objects
         """
 
-        if simulations == 'all' or simulations == MissingOption or simulations ==None:
+        if simulations == 'all' or simulations == MissingOption or simulations == None:
             return self.simulations
         if isinstance(simulations_names, str):
             simulations_names = {simulations_names}
@@ -3050,6 +3062,8 @@ class CoreModel:
             self.save()
 
         # save the results to recompile
+
+
 APSIMNG = CoreModel
 
 if __name__ == '__main__':

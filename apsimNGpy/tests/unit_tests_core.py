@@ -89,6 +89,13 @@ class TestCoreModel(BaseTester):
     def test_inspect_simulation(self):
         self.assertIsInstance(self.test_ap_sim.inspect_model('Models.Core.Simulation', fullpath=False), list)
 
+    def test_find__simulations(self):
+        sims = self.test_ap_sim.find_simulations()
+        self.assertIsInstance(sims, list)
+        self.assertTrue(len(sims) > 0)
+        sims = self.test_ap_sim.find_simulations(simulations=None)
+        self.assertIsInstance(sims, list)
+        self.assertTrue(len(sims) > 0)
     def test_rename(self):
         NEW_NAME = 'NEW_SIM_NAME'
         NEW_SIMs_NAME = 'NEW_SIMULATION_NAME'

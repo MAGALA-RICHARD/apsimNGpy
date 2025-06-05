@@ -12,6 +12,7 @@ from scipy.optimize import minimize, differential_evolution
 import subprocess
 from tqdm import tqdm
 from apsimNGpy.optimizer.one_obj import AbstractProblem, SIMULATIONS, ContinuousVariableProblem, cache, VarDesc
+
 try:
     import wrapdisc
 except ModuleNotFoundError as mnf:
@@ -29,6 +30,7 @@ import scipy.optimize
 from wrapdisc import Objective
 from wrapdisc.var import ChoiceVar, GridVar, QrandintVar, QuniformVar, RandintVar, UniformVar
 
+
 @cache
 def _variable_type(type_name: str) -> str:
     variable_types = {
@@ -40,9 +42,9 @@ def _variable_type(type_name: str) -> str:
         'uniform': UniformVar
     }
     try:
-       return variable_types[type_name.lower()]
+        return variable_types[type_name.lower()]
     except KeyError:
-          raise ValueError(f"Invalid type '{type_name}'. Use one of: {', '.join(var_map)}")
+        raise ValueError(f"Invalid type '{type_name}'. Use one of: {', '.join(var_map)}")
 
 
 class MixedVariableProblem(ContinuousVariableProblem):
@@ -98,6 +100,7 @@ class MixedVariableProblem(ContinuousVariableProblem):
                >>> result = problem.minimize_with_local_solver(method='Powell')
                >>> print(result.x_vars)
            """
+
     def __init__(self, model: str,
                  simulation=SIMULATIONS,
                  controls=None,
@@ -112,12 +115,11 @@ class MixedVariableProblem(ContinuousVariableProblem):
         self.simulation = simulation if simulation is not SIMULATIONS else 'all'
         self.controls = controls or []
         self.control_vars = control_vars or []
-        self.labels =  []
+        self.labels = []
         self.cache = False
         self.cache_size = cache_size
-        self.max_cache_size =cache_size
+        self.max_cache_size = cache_size
         self.pbar = None
-
 
     def add_control(
             self,
@@ -130,7 +132,7 @@ class MixedVariableProblem(ContinuousVariableProblem):
             categories=None,
             values=None,
             q=None
-    ) -> "ContinuousVariableProblem":
+    ) -> "MixedVariableProblem":
         """
         Adds a control variable to the optimization problem. Under the hood, the variables are edited using ``edit_method``.
         So, take note of the similarities in the requested parameters
@@ -172,6 +174,8 @@ class MixedVariableProblem(ContinuousVariableProblem):
             if not bounds or q is None:
                 raise ValueError("QrandintVar requires bounds and q.")
             _vtype = QrandintVar(lower=bounds[0], upper=bounds[1], q=q)
+        elif vtype_cls == UniformVar:
+            _vtype = UniformVar(lower=bounds[0], upper=bounds[1])
         else:
             raise TypeError(f"Unsupported variable type: {vtype_cls}")
         self.labels.append(label)
@@ -188,12 +192,12 @@ class MixedVariableProblem(ContinuousVariableProblem):
         )
 
         return self  # Enable method chaining
+
     def _insert_controls(self, x) -> None:
 
         edit = self.edit_model
 
         for i, varR in enumerate(self.control_vars):
-            vtype = varR.vtype
             value = x[i]
             edit(
                 model_type=varR.model_type,
@@ -203,21 +207,20 @@ class MixedVariableProblem(ContinuousVariableProblem):
                 **{varR.parameter_name: value}
             )
 
-
         return x
 
     @property
     def _variables(self):
         var_s = []
         for index, value in enumerate(self.control_vars):
-           var_s.append(value.vtype)
+            var_s.append(value.vtype)
         return var_s
 
     from scipy.optimize import differential_evolution
     from tqdm import tqdm
     def _set_objective_function(self, x):
-        xl = self._insert_controls(x)
-        SCORE  = self.evaluate(xl)
+        self._insert_controls(x)
+        SCORE = self.evaluate()
         return SCORE
 
     def optimize_with_differential_evolution(self,
@@ -248,27 +251,26 @@ class MixedVariableProblem(ContinuousVariableProblem):
 
         try:
 
-            self._open_pbar(labels = [l.label for l in self.control_vars])
+            self._open_pbar(labels=[l.label for l in self.control_vars])
             call_counter = {"count": 0}
             func = getattr(self, '_set_objective_function')
+
             def wrapped_obj(x, *args):
                 call_counter["count"] += 1
                 self.pbar.update(1)
                 return self._set_objective_function(x)
 
             wrapped = Objective(
-                func= wrapped_obj,
+                func=wrapped_obj,
                 variables=self._variables
             )
 
             bounds = wrapped.bounds
 
-
             # Handle initial guess
             initial_guess = self.starting_values()
 
             encoded_initial = wrapped.encode(initial_guess)
-
 
             # Run optimization
             result = differential_evolution(
@@ -294,7 +296,7 @@ class MixedVariableProblem(ContinuousVariableProblem):
                 vectorized=vectorized
             )
 
-            # Attach labeled solution
+            # Attach a labeled solution
             decoded_solution = wrapped.decode(result.x)
             result.x_vars = dict(zip(self.labels, decoded_solution))
             self.outcomes = result
@@ -395,24 +397,23 @@ class MixedVariableProblem(ContinuousVariableProblem):
             self._open_pbar(labels=[i.label for i in self.control_vars])
             call_counter = {"count": 0}
             func = getattr(self, '_set_objective_function')
+
             def wrapped_obj(x, *args):
                 call_counter["count"] += 1
                 self.pbar.update(1)
                 return self._set_objective_function(x)
 
             wrapped = Objective(
-                func= wrapped_obj,
+                func=wrapped_obj,
                 variables=self._variables
             )
 
             bounds = wrapped.bounds
 
-
             # Handle initial guess
             initial_guess = self.starting_values()
 
             encoded_initial = wrapped.encode(initial_guess)
-
 
             result = minimize(wrapped, x0=encoded_initial, bounds=bounds, **kwargs)
 
@@ -426,22 +427,25 @@ class MixedVariableProblem(ContinuousVariableProblem):
             self.clear_cache()
             self._close_pbar()
 
+
 if __name__ == "__main__":
     maize_model = "Maize"
+
+
     class Problem(MixedVariableProblem):
         def __init__(self, model=None, simulation='Simulation'):
             super().__init__(model, simulation)
             self.simulation = simulation
 
-        def evaluate(self, x, **kwargs):
+        def evaluate(self, **kwargs):
             return -self.run(verbose=False).results.Yield.mean()
 
 
     problem = Problem(maize_model, simulation='Simulation')
-    problem.add_control('Manager', "Sow using a variable rule", 'Population',vtype='grid',
-                        start_value=5, values=[2,11, 12.5, 12, 10, 13,  5, 15])
+    problem.add_control('Manager', "Sow using a variable rule", 'Population', vtype='grid',
+                        start_value=5, values=[2, 11, 12.5, 12, 10, 13, 5, 15])
     problem.add_control('Manager', "Sow using a variable rule", 'RowSpacing', vtype='grid', start_value=400,
                         values=[400, 600, 750, 800, 900, 1000, 1100, 1200])
-    #de_res = problem.optimize_with_differential_evolution()
-    res= problem.minimize_with_local_solver(method='Powell')
-
+    # de_res = problem.optimize_with_differential_evolution()
+    res = problem.minimize_with_local_solver(method='Powell')
+    de = problem.optimize_with_differential_evolution(popsize=20, polish =True)

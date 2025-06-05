@@ -772,7 +772,7 @@ class CoreModel:
             # target_child = get_or_check_model(parent, model_type.__class__, model_type.Name, action ='delete')
             if override:
                 get_or_check_model(parent, model_type.__class__, model_type.Name, action='delete')
-
+            model_type = ModelTools.CLONER(model_type)
             ModelTools.ADD(model_type, parent)
             self.save()
             if verbose:
@@ -780,7 +780,6 @@ class CoreModel:
             return self
         if model_type and parent:
             loc = model_type()
-            loc_name = loc.Name if hasattr(loc, 'Name') else None
             if rename and hasattr(loc, 'Name'):
                 loc.Name = rename
             if hasattr(loc, 'Name'):
@@ -789,14 +788,14 @@ class CoreModel:
                     # not raising the error still studying the behaviors of adding a child that already exists
                     ModelTools.DELETE(target_child)
             # get_or_check_model(parent, model_type.__class__, model_type.Name, action='delete')
-
-            ModelTools.ADD(loc, parent)
+            model_to_add = ModelTools.CLONER(loc)
+            del loc
+            ModelTools.ADD(model_to_add, parent)
 
             if verbose:
-                logger.info(f"Added {loc.Name} to {parent.Name}")
+                logger.info(f"Added {model_to_add.Name} to {parent.Name}")
             # compile
             self.save()
-
 
         else:
             logger.debug(f"Adding {model_type} to {parent.Name} failed, perhaps models was not found")
@@ -808,22 +807,22 @@ class CoreModel:
 
         Parameters
         ----------
-        ``model_type`` : str
+        ``model_type``: str
             Type of the model component to modify (e.g., 'Clock', 'Manager', 'Soils.Physical', etc.).
 
-        ``simulations`` : Union[str, list], optional
+        ``simulations``: Union[str, list], optional
             A simulation name or list of simulation names in which to search. Defaults to all simulations in the model.
 
-        ``model_name`` : str
+        ``model_name``: str
             Name of the model instance to modify.
-        ``cachit`` : bool, optional
+        ``cachit``: bool, optional
            used to cache results for model selection. Defaults to False. Important during repeated calls, like in optimization.
            please do not cache, when you expect to make model adjustment, such as adding new child nodes
 
         ``cache_size``: int, optional
            maximum number of caches that can be made to avoid memory leaks in case cacheit is true. Defaults to 300
 
-        ``**kwargs`` : dict
+        ``**kwargs``: dict
             Additional keyword arguments specific to the model type. These vary by component:
 
             - ``Weather``:
@@ -904,7 +903,7 @@ class CoreModel:
                  model_type='Solute',
                  simulations='Simulation',
                  model_name='NH4',
-                 InitialValues=0.2 )
+                 InitialValues=0.2)
            model.edit_model(
                 model_type='Solute',
                 simulations='Simulation',
@@ -961,21 +960,24 @@ class CoreModel:
                 '[Maize].Grain.Total.Wt as grain_weight'])
 
         """
-        if simulations == 'all':
-            simulations = MissingOption
+        if simulations == 'all' or simulations is None or simulations == MissingOption:
+            simulations = self.inspect_model('Models.Core.Simulation', fullpath=False)
+            simulations = [str(i) for i in simulations]
 
         model_type_class = _eval_model(model_type)
 
         for sim in self.find_simulations(simulations):
             model_instance = get_or_check_model(sim, model_type_class, model_name, action='get', cacheit=cacheit,
                                                 cache_size=cache_size)
+            model_instance = sim.FindInScope[model_type_class](model_name)
 
             match type(model_instance):
                 case Models.Climate.Weather:
                     met_file = kwargs.get('weather_file')
                     if met_file is None:
                         raise ValueError('Use key word argument "weather_file" to supply the weather data')
-                    # To avoid carrying over a silent bug or waiting for the bug to manifest during model run, there is need to raise here
+                    # To avoid carrying over a silent bug or waiting for the bug to manifest during model run,
+                    # there is need to raise here
                     if not os.path.exists(met_file):
                         raise FileNotFoundError(f"'{met_file}' rejected because it does not exist on the computer")
 
@@ -997,9 +999,14 @@ class CoreModel:
                                 f"no valid Clock attributes were passed. Valid arguments are: '{", ".join(validated.keys())}'")
 
                 case Models.Manager:
-
-                    manager_path = model_instance.FullPath
-                    self.update_mgt_by_path(path=manager_path, fmt='.', **kwargs)
+                    self.update_manager(scope=sim, manager_name=model_name, **kwargs)
+                    # manager_path = model_instance.FullPath
+                    # print(model_instance.Parameters)
+                    # manager = sim.FindByPath(manager_path)
+                    # stack_manager_depth = range(len(manager.Value.Parameters))
+                    # print(stack_manager_depth)
+                    #
+                    # self.update_mgt_by_path(path=manager_path, fmt='.', **kwargs)
 
                 case Models.Soils.Physical | Models.Soils.Chemical | Models.Soils.Organic | Models.Soils.Water | Models.Soils.Solute:
 
@@ -1603,9 +1610,10 @@ class CoreModel:
         """
 
         if parameters == 'all':
-            parameters = None  # non is easy to deal with at the back end but all is intuitive
-        if simulations == MissingOption:
+            parameters = None
+        if simulations == MissingOption or simulations is None or simulations == 'all':
             simulations = self.inspect_model(model_type='Models.Core.Simulation', fullpath=False)
+            simulations = [str(sim) for sim in simulations]
             simulations = simulations[0] if len(simulations) == 1 else simulations
 
         return inspect_model_inputs(self, model_type=model_type, model_name=model_name, simulations=simulations,
@@ -1823,6 +1831,7 @@ class CoreModel:
             path = path.replace(fmt, ".")
 
         manager = self.Simulations.FindByPath(path)
+        print(path)
         stack_manager_depth = range(len(manager.Value.Parameters))
         if kwargs == {}:
             raise ValueError(
@@ -1847,9 +1856,23 @@ class CoreModel:
 
         return self
 
+    @staticmethod
+    def update_manager(scope, manager_name, **kwargs):
+        manager = scope.FindInScope[Models.Manager](manager_name)
+        g_parameters = manager.Parameters
+        for i in range(len(list(g_parameters))):
+            _param = g_parameters[i].Key
+
+            if _param in kwargs:
+                manager.Parameters[i] = KeyValuePair[String, String](_param, f"{kwargs[_param]}")
+                # remove the successfully processed keys
+                kwargs.pop(_param)
+        if len(kwargs.keys()) > 0:
+            logger.error(f"The following {kwargs} were not found in {manager.FullPath}")
+
     @timer
     def exchange_model(self, model, model_type: str, model_name=None, target_model_name=None, simulations: str = None):
-        old_method('exchange_model', new_method=replace_model_from)
+        old_method('exchange_model', new_method='replace_model_from')
         self.replace_model_from(model, model_type, model_name, target_model_name, simulations)
 
     def replace_model_from(
@@ -2391,7 +2414,7 @@ class CoreModel:
 
         if obj:
             fpath = [i.FullPath for i in obj]
-            names = [i.split(".")[-1] for i in fpath]
+            names = [i.Name for i in obj]
             if fullpath:
                 return fpath
             else:
@@ -2625,19 +2648,22 @@ class CoreModel:
             list of APSIM ``Models.Core.Simulation`` objects
         """
 
-        if simulations == 'all' or simulations == MissingOption or simulations == None:
+        if simulations == 'all' or simulations == MissingOption or simulations is None:
             return self.simulations
         if isinstance(simulations_names, str):
             simulations_names = {simulations_names}
         elif isinstance(simulations, (list, tuple)):
             simulations_names = set(simulations)
         sims = []
-        for s, name in zip(self.simulations, simulations_names):
-            if s.Name == name:
-                sims.append(s)
+        # available_simulations = {si.Name:si for si in self.simulations}
+        for sim in self.simulations:
+            sim_name = str(sim.Name)
+            if sim_name in simulations_names:
+                sims.append(sim)
+                simulations_names.remove(sim_name)
         if len(sims) == 0:
             logger.info(f"{simulations_names}: Not found!")
-            sim_names = ",".join([i.Name for i in self.simulations])
+            sim_names = ", ".join([i.Name for i in self.simulations])
             raise NameError(f"{simulations_names}: Not found! \n Available simulation(s) names are/is: '{sim_names}'?")
         else:
             return sims

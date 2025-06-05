@@ -61,7 +61,7 @@ class AbstractProblem(ApsimModel):
     def add_control(self):
         pass
     @abstractmethod
-    def evaluate(self, x):
+    def evaluate(self):
         pass
 
     @abstractmethod

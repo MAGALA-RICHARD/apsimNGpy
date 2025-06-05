@@ -14,6 +14,14 @@ class TestCaseAddModule(unittest.TestCase):
         self.model.add_crop_replacements(_crop='Maize')
         self.model.create_experiment(permutation=True)
 
+    def test_find_simulations(self):
+        sims = self.model.find_simulations()
+        self.assertIsInstance(sims, sims)
+        self.assertTrue(len(sims) > 0)
+        sims = self.model.find_simulations(simulations=None)
+        self.assertIsInstance(sims, sims)
+        self.assertTrue(len(sims) > 0)
+
 
 if __name__ == '__main__':
     suite.addTests(loader.loadTestsFromTestCase(TestCaseAddModule))

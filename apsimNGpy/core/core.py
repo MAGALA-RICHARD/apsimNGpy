@@ -1831,7 +1831,7 @@ class CoreModel:
             path = path.replace(fmt, ".")
 
         manager = self.Simulations.FindByPath(path)
-        print(path)
+
         stack_manager_depth = range(len(manager.Value.Parameters))
         if kwargs == {}:
             raise ValueError(

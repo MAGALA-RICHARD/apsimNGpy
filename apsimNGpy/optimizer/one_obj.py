@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from scipy.optimize import minimize, differential_evolution
 import wrapdisc
 from functools import cache
-from tqdm import tqdm
+from apsimNGpy.core_utils.progbar import ProgressBar
 from typing import Union
 SIMULATIONS = object()
 
@@ -146,10 +146,7 @@ class ContinuousVariableProblem(AbstractProblem):
         - Only continuous variables (`int` or `float`) are supported by this method.
           Use other methods for categorical or grid variables.
 
-        Example
-        -------
-        >>> opt = APSIMOptimizer()
-        >>> opt.add_control("manager", "Sow using rule", "Population", float, 8.0, (5.0, 15.0))
+
         """
         self._evaluate_args(model_type, model_name, parameter_name)
         label = f"{parameter_name}"
@@ -317,7 +314,8 @@ class ContinuousVariableProblem(AbstractProblem):
 
     def _open_pbar(self, labels, maxiter =400):
 
-        self.pbar = tqdm(total=maxiter, desc=f"Optimizing:: {', '.join(labels)}", unit=" iterations", colour="green")
+        #self.pbar = tqdm(total=maxiter, desc=f"Optimizing:: {', '.join(labels)}", unit=" iterations", colour="green")
+        self.pbar = ProgressBar(total=maxiter, prefix=f"Optimizing:: {', '.join(labels)}", suffix='Complete', color='cyan')
 
     def update_pbar(self, labels, extend_by=None):
         """
@@ -327,21 +325,8 @@ class ContinuousVariableProblem(AbstractProblem):
             labels (list): List of variable labels used for tqdm description.
             extend_by (int): Number of additional steps to extend the progress bar.
         """
-        if not extend_by:
-            extend_by = int(0.4 * self.maxiter)
-        if not hasattr(self, "counter"):
-            self.counter = 0
-        if not hasattr(self, "maxiter"):
-            self.maxiter = self.pbar.total if self.pbar else 0
-
-        # Check if counter exceeds current maximum iteration count
-        if self.counter >= self.maxiter:
-            self.maxiter += extend_by
-            prev_n = self.pbar.n if self.pbar else 0
-            self.pbar.close()
-            self.pbar = tqdm(total=self.maxiter, desc=f"Progress bar refreshed", unit=" iterations", colour ='blue')
-            self.pbar.n = prev_n
-            self.pbar.refresh()
+        total  = extend_by or int(0.4 * self.pbar.total)
+        self.pbar.refresh(new_total=total)
 
         return self
 

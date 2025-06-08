@@ -235,7 +235,7 @@ Now it is possible to initialize the APSIM model using the previously loaded sim
 
 # Running loaded models
 ===============================
-Running loaded models implies excuting the model to generate simulated outputs. This is implimented via :code:`ApsimModel.run()` method` as shown below.
+Running loaded models implies executing the model to generate simulated outputs. This is implemented via ``ApsimModel.run()`` method as shown below.
 Users can provide the ``report_name``, which specifies data table name from the simulation for retrieving the results.
 
 .. code-block:: python
@@ -246,7 +246,7 @@ Users can provide the ``report_name``, which specifies data table name from the 
 Please note that report_name can be a string (``str``), implying a single database table
 or a ``list``, implying that one or more than one database tables. If the later is true, then the results will be concatenated along the rows using ``pandas.concat`` method.
 
-By default, ``apsimNGpy`` looks for these report database tables automatically, and returns a concatenated pandas data frame. This may not be ideal if they are many report tables, hence the need to cleary specify the preffered report table names
+By default, ``apsimNGpy`` looks for these report database tables automatically, and returns a concatenated pandas data frame. This may not be ideal if they are many report tables, hence the need to clearly specify the preferred report table names
 
 
 Accessing simulated results
@@ -280,7 +280,7 @@ Please note that accessing results through any of the above method before callin
 Inspecting Instantiated Model Object
 ===================================
 Most of the time, when modifying model parameters and values, you need the  name or a full path to the specified ``APSIM`` model type.
-This is where the ``inspect_model`` method becomes useful—it allows you to inspect the model without opening the file in the APSIM GUI.
+This is where the ``inspect_model`` method becomes useful. It allows you to inspect the model without opening the file in the APSIM GUI.
 
 Let's take a look at how it works.
 
@@ -430,12 +430,43 @@ Push to GitHub
     git push origin your-branch-name
 
 Submit a Pull Request
-  Go to the ``apsimNGpy`` repository on GitHub, and you'll see a prompt to submit a pull request based on your branch. Click on "Compare & pull request" and describe the changes you've made. Finally, submit the pull request.
+Go to the ``apsimNGpy`` repository on GitHub, and you'll see a prompt to submit a pull request based on your branch. Click on "Compare & pull request" and describe the changes you've made. Finally, submit the pull request.
 
 Updating Documentation
 ----------------------
-
 Improvements or updates to documentation are greatly appreciated. You can submit changes to documentation with the same process used for code contributions.
+
+Testing your pull request or your contribution
+  After making any code improvements, It is important that all modules are still working correctly. This calls for an explict test of the added code changes.
+  apsimNGpy tests are implemented via python ``unittest`` module. We provide a testing framework as shown below. First navigate to your apsimNGpy repo or directory with the ``setup.py`` on your terminal and run the following code::
+
+    pip install -e .  # Installs apsimNGpy as an editable package, enabling direct imports and reflecting code changes without re-installation
+
+ Import the necessary module as follows::
+
+    import unittest
+    from apsimNGpy.tests.tester_main import suite, loader, run_suite
+    from apsimNGpy.core.base_data import load_default_simulations
+
+  Set up the test and add any test module as follows::
+
+    class TestCaseAddModule(unittest.TestCase):
+        # set up the model to use
+        def setUp(self):
+            self.model = load_default_simulations('Maize')
+            self.out = 'test_edit_model.apsimx'
+        # add test case as shown below
+        def test_add_crop_replacement(self):
+            """+++test adding crop replacement++"""
+            self.model.add_crop_replacements(_crop='Maize')
+            self.model.create_experiment(permutation=True)
+
+  Finally run test suite. It is recommended to run the test suite using the ``run_suite`` method, which runs all the tests to check if dependent modules are still working perfectly. You may need to add your test case before running as follows::
+
+    if __name__ == '__main__':
+        suite.addTests(loader.loadTestsFromTestCase(TestCaseAddModule))
+        run_suite(2)
+
 
 Join the Discussion
 -------------------

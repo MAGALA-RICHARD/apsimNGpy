@@ -29,8 +29,8 @@ def sort_modules(modules):
     Returns:
         list: A list of modules sorted by their names.
     """
-    names = {i.__name__: i for i in modules}  # Create a dictionary mapping names to modules
-    sorted_names = sorted(names.keys())  # Sort module names alphabetically
+    names = {i.__name__: i for i in modules}
+    sorted_names = sorted(names.keys())
     return [names[name] for name in sorted_names]  # Return modules in sorted order
 
 
@@ -54,11 +54,11 @@ def docs(modules: Union[list, object], output_file: Union[str, Path] = "api.rst"
     with open(output_file, "w", encoding="utf-8") as file:
         title = ''
         file.write(f"{main_package}: API Reference\n")
-        file.write("-" * (len(main_package) + 15) + "\n\n")
+        file.write("~" * (len(main_package) + 15) + "\n\n")
         for module in modules:
             module_name = module.__name__
             file.write(f"{module.__name__} \n")
-            file.write("-" * (len(module.__name__) + 15) + "\n\n")
+            file.write("~" * (len(module.__name__) + 15) + "\n\n")
             module_name = module.__name__ if hasattr(module, '__name__') else module.__class__.__name__
             class_name = 'Class' if hasattr(module, '__class__') else ''
             if inspect.isclass(module):
@@ -134,6 +134,7 @@ def dc():
 if __name__ == '__main__':
     from apsimNGpy.core_utils import database_utils
     from apsimNGpy.parallel import process
+    from apsimNGpy.optimizer.one_obj import ContinuousVariableProblem
 
     runs = [
         runner.collect_csv_by_model_path,
@@ -145,7 +146,7 @@ if __name__ == '__main__':
 
     from apsimNGpy.core import core
 
-    docs([apsim.ApsimModel, process, database_utils, core.CoreModel, core.ModelTools, evaluator, runner, base_data, weathermanager, soilmanager, load_model],
+    docs([apsim.ApsimModel, ContinuousVariableProblem, process, database_utils, core.CoreModel, core.ModelTools, evaluator, runner, base_data, weathermanager, soilmanager, load_model],
          output_file="api.rst")
 
     rsts = list(Path.cwd().rglob("*pi.rst")) #+ list(Path.cwd().rglob("*conf.py"))

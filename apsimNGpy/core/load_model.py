@@ -30773,7 +30773,7 @@ l_model ={
                     "[Leaf].Photosynthesis.FT.MaximumTemperatureWeighting = 0.5",
                     "[Leaf].MinimumLAI.FixedValue = 0.1",
                     "[Leaf].InitialWtFunction.InitialPlantWt.FixedValue = 0.2",
-                    "//Nitrogen variables",
+                    "//Nitrogen _variables",
                     "[Leaf].MaximumNConc.FixedValue = 0.023",
                     "[Leaf].MinimumNConc.FixedValue = 0.0045"
                   ],

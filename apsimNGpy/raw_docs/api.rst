@@ -1,8 +1,8 @@
 apsimNGpy: API Reference
-------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 ApsimModel 
--------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. function:: apsimNGpy.core.apsim.ApsimModel(model: Union[os.PathLike, dict, str], out_path: os.PathLike = None, out: os.PathLike = None, lonlat: tuple = None, soil_series: str = 'domtcp', thickness: int = 20, bottomdepth: int = 200, thickness_values: list = None, run_all_soils: bool = False, set_wd=None, **kwargs)
 
@@ -85,7 +85,7 @@ ApsimModel
    Perform a spin-up operation on the aPSim model.
 
         This method is used to simulate a spin-up operation in an aPSim model. During a spin-up, various soil properties or
-        variables may be adjusted based on the simulation results.
+        _variables may be adjusted based on the simulation results.
 
         Parameters:
         ----------
@@ -107,8 +107,162 @@ ApsimModel
             The modified ``ApsimModel`` object after the spin-up operation.
             you could call ``save_edited`` file and save it to your specified location, but you can also proceed with the simulation
 
+ContinuousVariableProblem 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. function:: apsimNGpy.optimizer.one_obj.ContinuousVariableProblem(model: str, simulation=<object object at 0x000002065C003250>, controls=None, control_vars=None, labels=None, func=None, cache_size=400)
+
+   Defines an optimization problem for continuous variables in APSIM simulations.
+
+        This class enables the user to configure and solve optimization problems involving continuous
+        control variables in APSIM models. It provides methods for setting up control variables,
+        applying bounds and starting values, inserting variable values into APSIM model configurations,
+        and running optimization routines using local solvers or differential evolution.
+
+        Inherits from:
+            AbstractProblem: A base class providing caching and model-editing functionality.
+
+        Parameters:
+            ``model (str):`` The name or path of the APSIM template file.
+            .
+            ``simulation (str or list, optional)``: The name(s) of the APSIM simulation(s) to target.
+                                                Defaults to all simulations.
+
+            ``control_vars`` (list, optional): A list of VarDesc instances defining variable metadata.
+
+            ``labels (list, optional)``: Variable labels for display and results tracking.
+
+            ``cache_size (int):`` Maximum number of results to store in the evaluation cache.
+
+        Attributes:
+            ``model (str):`` The APSIM model template file name.
+
+            ``simulation (str):`` Target simulation(s).
+
+            ``controls (list):`` Defined control variables.
+
+            ``control_vars (list):`` List of VarDesc instances for optimization.
+
+            ``labels (list): Labels`` for variables.
+
+            ``pbar (tqdm):`` Progress bar instance.
+
+            ```cache (bool):`` Whether to cache evaluation results.
+
+            ```cache_size (int):`` Size of the local cache.
+
+        Methods:
+            ``add_control(...):`` Add a new control variable to the optimization problem.
+
+            ``bounds:`` Return the bounds for all control variables as a tuple.
+
+            ``starting_values():`` Return the initial values for all control variables.
+
+            ``minimize_with_local_solver(...):`` Optimize using `scipy.optimize.minimize`.
+
+            ``optimize_with_differential_evolution(...):`` Optimize using `scipy.optimize.differential_evolution`.
+
+
+        Example:
+            >>> class Problem(ContinuousVariableProblem):
+            ...     def evaluate(self, x):
+            ...         return -self.run(verbose=False).results.Yield.mean()
+
+            >>> problem = Problem(model="Maize", simulation="Sim")
+            >>> problem.add_control("Manager", "Sow using a rule", "Population", int, 5, bounds=[2, 15])
+            >>> result = problem.minimize_with_local_solver(method='Powell')
+            >>> print(result.x_vars)
+
+.. function:: apsimNGpy.optimizer.one_obj.ContinuousVariableProblem.minimize_with_local_solver(self, **kwargs)
+
+   Run a local optimization solver using `scipy.optimize.minimize`.
+
+        This method wraps ``scipy.optimize.minimize`` to solve APSIM optimization problems
+        defined using APSIM control variables and variable encodings. It tracks optimization progress via a progress bar,
+        and decodes results into user-friendly labeled dictionaries.
+
+        Optimization methods available in `scipy.optimize.minimize` include:
+
+        +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
+        | Method           | Type                   | Gradient Required | Handles Bounds | Handles Constraints | Notes                                        |
+        +==================+========================+===================+================+=====================+==============================================+
+        | Nelder-Mead      | Local (Derivative-free)| No                | No             | No                  | Simplex algorithm                            |
+        +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
+        | Powell           | Local (Derivative-free)| No                | Yes            | No                  | Direction set method                         |
+        +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
+        | CG               | Local (Gradient-based) | Yes               | No             | No                  | Conjugate Gradient                           |
+        +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
+        | BFGS             | Local (Gradient-based) | Yes               | No             | No                  | Quasi-Newton                                 |
+        +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
+        | Newton-CG        | Local (Gradient-based) | Yes               | No             | No                  | Newton's method                              |
+        +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
+        | L-BFGS-B         | Local (Gradient-based) | Yes               | Yes            | No                  | Limited memory BFGS                          |
+        +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
+        | TNC              | Local (Gradient-based) | Yes               | Yes            | No                  | Truncated Newton                             |
+        +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
+        | COBYLA           | Local (Derivative-free)| No                | No             | Yes                 | Constrained optimization by linear approx.   |
+        +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
+        | SLSQP            | Local (Gradient-based) | Yes               | Yes            | Yes                 | Sequential Least Squares Programming         |
+        +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
+        | trust-constr     | Local (Gradient-based) | Yes               | Yes            | Yes                 | Trust-region constrained                     |
+        +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
+        | dogleg           | Local (Gradient-based) | Yes               | No             | No                  | Requires Hessian                             |
+        +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
+        | trust-ncg        | Local (Gradient-based) | Yes               | No             | No                  | Newton-CG trust region                       |
+        +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
+        | trust-exact      | Local (Gradient-based) | Yes               | No             | No                  | Trust-region, exact Hessian                  |
+        +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
+        | trust-krylov     | Local (Gradient-based) | Yes               | No             | No                  | Trust-region, Hessian-free                   |
+        +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
+
+        Reference:
+
+        https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize.
+
+        Parameters::
+
+        **kwargs:
+
+            Arbitrary keyword arguments passed to `scipy.optimize.minimize`, such as:
+
+            - ``method (str)``: The optimization method to use.
+
+            - ``options (dict)``: Solver-specific options like `disp`, `maxiter`, `gtol`, etc.
+
+            - ``bounds (list of tuple)``: Variable bounds; defaults to self.bounds if not provided.
+
+            - ``x0 (list):`` Optional starting guess (will override default provided values with ``add_control_var`` starting values).
+
+        Returns:
+            result (OptimizeResult):
+                The optimization result object with the following additional field:
+                - result.x_vars (dict): A dictionary of variable labels and optimized values.
+
+        Example::
+
+          from apsimNGpy.optimizer.one_objective import ContinuousVariableProblem
+          class Problem(ContinuousVariableProblem):
+                def __init__(self, model=None, simulation='Simulation'):
+                    super().__init__(model, simulation)
+                    self.simulation = simulation
+                def evaluate(self, x, **kwargs):
+                   return -self.run(verbose=False).results.Yield.mean()
+
+          problem = Problem(model="Maize", simulation="Sim")
+          problem.add_control("Manager", "Sow using a rule", "Population", vtype="grid",
+                                start_value=5, values=[5, 9, 11])
+          problem.add_control("Manager", "Sow using a rule", "RowSpacing", vtype="grid",
+                                start_value=400, values=[400, 800, 1200])
+          result = problem.minimize_with_local_solver(method='Powell', options={"maxiter": 300})
+          print(result.x_vars)
+          {'Population': 9, 'RowSpacing': 800}
+
+.. function:: apsimNGpy.optimizer.one_obj.ContinuousVariableProblem.optimize_with_differential_evolution(self, args=(), strategy='best1bin', maxiter=1000, popsize=15, tol=0.01, mutation=(0.5, 1), recombination=0.7, rng=None, callback=None, disp=True, polish=True, init='latinhypercube', atol=0, updating='immediate', workers=1, constraints=(), x0=None, *, integrality=None, vectorized=False)
+
+   reference; https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.differential_evolution.html
+
 CoreModel 
-------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. function:: apsimNGpy.core.core.CoreModel(model: Union[str, pathlib.Path, dict] = None, out_path: Union[str, pathlib.Path, NoneType] = None, out: Union[str, pathlib.Path, NoneType] = None, set_wd: Union[str, pathlib.Path, NoneType] = None, experiment: bool = False, copy: Optional[bool] = None) -> None
 
@@ -151,17 +305,17 @@ CoreModel
         ``Raises:``
             - *ValueError*: If the specified crop is not found.
 
-.. function:: apsimNGpy.core.core.CoreModel.add_db_table(self, variable_spec: list = None, set_event_names: list = None, rename: str = 'my_table', simulation_name: Union[str, list, tuple] = None)
+.. function:: apsimNGpy.core.core.CoreModel.add_db_table(self, variable_spec: list = None, set_event_names: list = None, rename: str = 'my_table', simulation_name: Union[str, list, tuple] = <UserOptionMissing>)
 
    Adds a new data base table, which ``APSIM`` calls ``Report`` (Models.Report) to the ``Simulation`` under a Simulation Zone.
 
         This is different from ``add_report_variable`` in that it creates a new, named report
-        table that collects data based on a given list of variables and events.
+        table that collects data based on a given list of _variables and events.
 
         :Args:
             ``variable_spec`` (list or str): A list of APSIM variable paths to include in the report table.
                                          If a string is passed, it will be converted to a list.
-            ``set_event_names`` (list or str, optional): A list of APSIM events that trigger the recording of variables.
+            ``set_event_names`` (list or str, optional): A list of APSIM events that trigger the recording of _variables.
                                                      Defaults to ['[Clock].EndOfYear'] if not provided. other examples include '[Clock].StartOfYear', '[Clock].EndOfsimulation',
                                                      '[crop_name].Harvesting' etc.,,
             ``rename`` (str): The name of the report table to be added. Defaults to 'my_table'.
@@ -173,11 +327,12 @@ CoreModel
             ``ValueError``: If no variable_spec is provided.
             ``RuntimeError``: If no Zone is found in the current simulation scope.
 
-        : Example:
-               >>> from apsimNGpy import core
-               >>> model = core.base_data.load_default_simulations(crop = 'Maize')
-               >>> model.add_db_table(variable_spec=['[Clock].Today', '[Soil].Nutrient.TotalC[1]/1000 as SOC1'], rename='report2')
-               >>> model.add_db_table(variable_spec=['[Clock].Today', '[Soil].Nutrient.TotalC[1]/1000 as SOC1', '[Maize].Grain.Total.Wt*10 as Yield'], rename='report2', set_event_names=['[Maize].Harvesting','[Clock].EndOfYear' ])
+        : Example::
+
+               from apsimNGpy import core
+               model = core.base_data.load_default_simulations(crop = 'Maize')
+               model.add_db_table(variable_spec=['[Clock].Today', '[Soil].Nutrient.TotalC[1]/1000 as SOC1'], rename='report2')
+               model.add_db_table(variable_spec=['[Clock].Today', '[Soil].Nutrient.TotalC[1]/1000 as SOC1', '[Maize].Grain.Total.Wt*10 as Yield'], rename='report2', set_event_names=['[Maize].Harvesting','[Clock].EndOfYear' ])
 
 .. function:: apsimNGpy.core.core.CoreModel.add_factor(self, specification: str, factor_name: str = None, **kwargs)
 
@@ -198,13 +353,14 @@ CoreModel
         ``factor_name``: *(str), required*
         - expected to be the user-desired name of the factor being specified e.g., population
 
-        Example:
-            >>> from apsimNGpy.core import base_data
-            >>> apsim = base_data.load_default_simulations(crop='Maize')
-            >>> apsim.create_experiment(permutation=False)
-            >>> apsim.add_factor(specification="[Fertilise at sowing].Script.Amount = 0 to 200 step 20", factor_name='Nitrogen')
-            >>> apsim.add_factor(specification="[Sow using a variable rule].Script.Population =4 to 8 step 2", factor_name='Population')
-            >>> apsim.run() # doctest: +SKIP
+        Example::
+
+            from apsimNGpy.core import base_data
+            apsim = base_data.load_default_simulations(crop='Maize')
+            apsim.create_experiment(permutation=False)
+            apsim.add_factor(specification="[Fertilise at sowing].Script.Amount = 0 to 200 step 20", factor_name='Nitrogen')
+            apsim.add_factor(specification="[Sow using a variable rule].Script.Population =4 to 8 step 2", factor_name='Population')
+            apsim.run() # doctest: +SKIP
 
 .. function:: apsimNGpy.core.core.CoreModel.add_model(self, model_type, adoptive_parent, rename=None, adoptive_parent_name=None, verbose=False, source='Models', source_model_name=None, override=True, **kwargs)
 
@@ -234,45 +390,52 @@ CoreModel
             Added models from ``Models namespace`` are initially empty. Additional configuration is required to set parameters.
             For example, after adding a Clock module, you must set the start and end dates.
 
-        Example:
+        Example::
 
-         >>> from apsimNGpy import core
-         >>> from apsimNGpy.core.core import Models
-         >>> model =core.base_data.load_default_simulations(crop = "Maize")
-         >>> model.remove_model(Models.Clock) # first delete model
-         >>> model.add_model(Models.Clock, adoptive_parent = Models.Core.Simulation, rename = 'Clock_replaced', verbose=False)
+            from apsimNGpy import core
+            from apsimNGpy.core.core import Models
 
-         >>> model.add_model(model_type=Models.Core.Simulation, adoptive_parent=Models.Core.Simulations, rename='Iowa')
-         >>> model.preview_simulation() # doctest: +SKIP
-         >>> model.add_model(Models.Core.Simulation, adoptive_parent='Simulations', rename='soybean_replaced', source='Soybean') # basically adding another simulation from soybean to the maize simulation
+            model = core.base_data.load_default_simulations(crop="Maize")
+
+            model.remove_model(Models.Clock)  # first delete the model
+            model.add_model(Models.Clock, adoptive_parent=Models.Core.Simulation, rename='Clock_replaced', verbose=False)
+
+            model.add_model(model_type=Models.Core.Simulation, adoptive_parent=Models.Core.Simulations, rename='Iowa')
+
+            model.preview_simulation()  # doctest: +SKIP
+
+            model.add_model(
+                Models.Core.Simulation,
+                adoptive_parent='Simulations',
+                rename='soybean_replaced',
+                source='Soybean')  # basically adding another simulation from soybean to the maize simulation
 
 .. function:: apsimNGpy.core.core.CoreModel.add_report_variable(self, variable_spec: Union[list, str, tuple], report_name: str = None, set_event_names: Union[str, list] = None)
 
-   This adds a report variable to the end of other variables, if you want to change the whole report use change_report
+   This adds a report variable to the end of other _variables, if you want to change the whole report use change_report
 
         Parameters
         -------------------
 
-        ``variable_spec``: (str, required): list of text commands for the report variables e.g., '[Clock].Today as Date'
+        ``variable_spec``: (str, required): list of text commands for the report _variables e.g., '[Clock].Today as Date'
 
         ``param report_name``: (str, optional): name of the report variable if not specified the first accessed report object will be altered
 
-        ``set_event_names`` (list or str, optional): A list of APSIM events that trigger the recording of variables.
+        ``set_event_names`` (list or str, optional): A list of APSIM events that trigger the recording of _variables.
                                                      Defaults to ['[Clock].EndOfYear'] if not provided.
         :Returns:
             returns instance of apsimNGpy.core.core.apsim.ApsimModel or apsimNGpy.core.core.apsim.CoreModel
            raises an erros if a report is not found
 
-        Example:
-        >>> from apsimNGpy import core
+        Example::
 
-        >>> model = core.base_data.load_default_simulations()
-
-        >>> model.add_report_variable(variable_spec = '[Clock].Today as Date', report_name = 'Report')
+            from apsimNGpy import core
+            model = core.base_data.load_default_simulations('Maize')
+            model.add_report_variable(variable_spec = '[Clock].Today as Date', report_name = 'Report')
 
 .. function:: apsimNGpy.core.core.CoreModel.change_report(self, *, command: str, report_name='Report', simulations=None, set_DayAfterLastOutput=None, **kwargs)
 
-   Set APSIM report variables for specified simulations.
+   Set APSIM report _variables for specified simulations.
 
         This function allows you to set the variable names for an APSIM report
         in one or more simulations.
@@ -294,6 +457,8 @@ CoreModel
 .. function:: apsimNGpy.core.core.CoreModel.change_simulation_dates(self, start_date: str = None, end_date: str = None, simulations: Union[tuple, list] = None)
 
    Set simulation dates.
+
+        @deprecated
 
         Parameters
         -----------------------------------
@@ -329,7 +494,9 @@ CoreModel
 
 .. function:: apsimNGpy.core.core.CoreModel.change_som(self, *, simulations: Union[tuple, list] = None, inrm: int = None, icnr: int = None, surface_om_name='SurfaceOrganicMatter', **kwargs)
 
-   Change ``Surface Organic Matter`` (``SOM``) properties in specified simulations.
+   @deprecated in v0.38 +
+
+         Change ``Surface Organic Matter`` (``SOM``) properties in specified simulations.
 
     Parameters:
         ``simulations`` (str ort list): List of simulation names to target (default: None).
@@ -339,8 +506,13 @@ CoreModel
         ``icnr``` (int): New value for Initial Carbon to Nitrogen Ratio (default: 27).
 
         ``surface_om_name`` (str, optional): name of the surface organic matter child defaults to ='SurfaceOrganicMatter'
+
     Returns:
         self: The current instance of the class.
+
+.. function:: apsimNGpy.core.core.CoreModel.check_som(self, simulations=None)
+
+   @deprecated in versions 0.38+
 
 .. function:: apsimNGpy.core.core.CoreModel.clean_up(self, db=True, verbose=False)
 
@@ -383,11 +555,11 @@ CoreModel
 
         Example:
         -------
-        >>> from apsimNGpy.core.base_data import load_default_simulations
-        >>> model  = load_default_simulations('Maize')
-        >>> model.clone_model('Models.Clock', "clock1", 'Models.Simulation', rename="new_clock",adoptive_parent_type= 'Models.Core.Simulations', adoptive_parent_name="Simulation")
-        ```
-        This will create a cloned version of `"clock1"` and place it under `"Simulation"` with the new name `"new_clock"`.
+         Create a cloned version of `"clock1"` and place it under `"Simulation"` with the new name ``"new_clock`"`::
+
+            from apsimNGpy.core.base_data import load_default_simulations
+            model  = load_default_simulations('Maize')
+            model.clone_model('Models.Clock', "clock1", 'Models.Simulation', rename="new_clock",adoptive_parent_type= 'Models.Core.Simulations', adoptive_parent_name="Simulation")
 
 .. function:: apsimNGpy.core.core.CoreModel.create_experiment(self, permutation: bool = True, base_name: str = None, **kwargs)
 
@@ -424,7 +596,7 @@ CoreModel
 
         Returns: instance of the class CoreModel or ApsimModel
 
-.. function:: apsimNGpy.core.core.CoreModel.edit_model(self, model_type: str, model_name: str, simulations: Union[str, list] = 'all', cacheit=False, cache_size=300, **kwargs)
+.. function:: apsimNGpy.core.core.CoreModel.edit_model(self, model_type: str, model_name: str, simulations: Union[str, list] = 'all', cacheit=False, cache_size=300, verbose=False, **kwargs)
 
    Modify various APSIM model components by specifying the model type and name across given simulations.
 
@@ -489,122 +661,110 @@ CoreModel
         NotImplementedError
             If the logic for the specified `model_type` is not implemented.
 
-        Examples
-        --------
+        Examples::
 
-        >>> model = CoreModel(model='Maize')
+            from apsimNGpy.core.apsim import ApsimModel
+            model = ApsimModel(model='Maize')
 
-        # Edit a cultivar model
+        Example of how to edit a cultivar model::
 
-        >>> model.edit_model(
-        ...     model_type='Cultivar',
-        ...     simulations='Simulation',
-        ...     commands='[Phenology].Juvenile.Target.FixedValue',
-        ...     values=256,
-        ...     model_name='B_110',
-        ...     cultivar_manager='Sow using a variable rule'
-        ... )
+            model.edit_model(model_type='Cultivar',
+                 simulations='Simulation',
+                 commands='[Phenology].Juvenile.Target.FixedValue',
+                 values=256,
+                 model_name='B_110',
+                 new_cultivar_name='B_110_edited',
+                 cultivar_manager='Sow using a variable rule')
 
-        # Edit a soil organic matter module
+        Edit a soil organic matter module::
 
-        >>> model.edit_model(
-        ...     model_type='Organic',
-        ...     simulations='Simulation',
-        ...     model_name='Organic',
-        ...     Carbon=1.23
-        ... )
+            model.edit_model(
+                 model_type='Organic',
+                 simulations='Simulation',
+                 model_name='Organic',
+                 Carbon=1.23)
 
-        # Edit multiple soil layers
+        Edit multiple soil layers::
 
-        >>> model.edit_model(
-        ...     model_type='Organic',
-        ...     simulations='Simulation',
-        ...     model_name='Organic',
-        ...     Carbon=[1.23, 1.0]
-        ... )
+            model.edit_model(
+                 model_type='Organic',
+                 simulations='Simulation',
+                 model_name='Organic',
+                 Carbon=[1.23, 1.0])
 
-        # Edit solute models
+        Example of how to edit solute models::
 
-        >>> model.edit_model(
-        ...     model_type='Solute',
-        ...     simulations='Simulation',
-        ...     model_name='NH4',
-        ...     InitialValues=0.2
-        ... )
+           model.edit_model(
+                 model_type='Solute',
+                 simulations='Simulation',
+                 model_name='NH4',
+                 InitialValues=0.2 )
+           model.edit_model(
+                model_type='Solute',
+                simulations='Simulation',
+                model_name='Urea',
+                InitialValues=0.002)
 
-        >>> model.edit_model(
-        ...     model_type='Solute',
-        ...     simulations='Simulation',
-        ...     model_name='Urea',
-        ...     InitialValues=0.002
-        ... )
+        Edit a manager script::
 
-        # Edit a manager script
+           model.edit_model(
+                model_type='Manager',
+                simulations='Simulation',
+                model_name='Sow using a variable rule',
+                population=8.4)
 
-        >>> model.edit_model(
-        ...     model_type='Manager',
-        ...     simulations='Simulation',
-        ...     model_name='Sow using a variable rule',
-        ...     population=8.4
-        ... )
+        Edit surface organic matter parameters::
 
-        # Edit surface organic matter parameters
+            model.edit_model(
+                model_type='SurfaceOrganicMatter',
+                simulations='Simulation',
+                model_name='SurfaceOrganicMatter',
+                InitialResidueMass=2500)
 
-        >>> model.edit_model(
-        ...     model_type='SurfaceOrganicMatter',
-        ...     simulations='Simulation',
-        ...     model_name='SurfaceOrganicMatter',
-        ...     InitialResidueMass=2500
-        ... )
+            model.edit_model(
+                model_type='SurfaceOrganicMatter',
+                simulations='Simulation',
+                model_name='SurfaceOrganicMatter',
+                InitialCNR=85)
 
-        >>> model.edit_model(
-        ...     model_type='SurfaceOrganicMatter',
-        ...     simulations='Simulation',
-        ...     model_name='SurfaceOrganicMatter',
-        ...     InitialCNR=85
-        ... )
+        Edit Clock start and end dates::
 
-        # Edit Clock start and end dates
+            model.edit_model(
+                model_type='Clock',
+                simulations='Simulation',
+                model_name='Clock',
+                Start='2021-01-01',
+                End='2021-01-12')
 
-        >>> model.edit_model(
-        ...     model_type='Clock',
-        ...     simulations='Simulation',
-        ...     model_name='Clock',
-        ...     Start='2021-01-01',
-        ...     End='2021-01-12'
-        ... )
+        Edit report _variables::
 
-        # Edit report variables
+            model.edit_model(
+                model_type='Report',
+                simulations='Simulation',
+                model_name='Report',
+                variable_spec='[Maize].AboveGround.Wt as abw')
 
-        >>> model.edit_model(
-        ...     model_type='Report',
-        ...     simulations='Simulation',
-        ...     model_name='Report',
-        ...     variable_spec='[Maize].AboveGround.Wt as abw'
-        ... )
+        Multiple report _variables::
 
-        # Multiple report variables
-
-        >>> model.edit_model(
-        ...     model_type='Report',
-        ...     simulations='Simulation',
-        ...     model_name='Report',
-        ...     variable_spec=[
-        ...         '[Maize].AboveGround.Wt as abw',
-        ...         '[Maize].Grain.Total.Wt as grain_weight'
-        ...     ]
-        ... )
+            model.edit_model(
+                model_type='Report',
+                simulations='Simulation',
+                model_name='Report',
+                variable_spec=[
+                '[Maize].AboveGround.Wt as abw',
+                '[Maize].Grain.Total.Wt as grain_weight'])
 
 .. function:: apsimNGpy.core.core.CoreModel.examine_management_info(self, simulations: Union[list, tuple] = None)
 
-   This will show the current management scripts in the simulation root
+   @deprecated in versions 0.38+
+        This will show the current management scripts in the simulation root
 
         Parameters
         ----------
         ``simulations``, optional
             List or tuple of simulation names to update, if `None` show all simulations.
 
-.. function:: apsimNGpy.core.core.CoreModel.extract_any_soil_physical(self, parameter, simulations: [<class 'list'>, <class 'tuple'>] = None)
+.. function:: apsimNGpy.core.core.CoreModel.extract_any_soil_physical(self, parameter, simulations: [<class 'list'>, <class 'tuple'>] = <UserOptionMissing>)
 
    Extracts soil physical parameters in the simulation
 
@@ -638,24 +798,6 @@ CoreModel
         ``Returns``
             Dictionary of simulation names with dates.
 
-.. function:: apsimNGpy.core.core.CoreModel.extract_user_input(self, manager_name: str)
-
-   Get user_input of a given model manager script.
-
-        Args:
-            ``manager_name`` (str): name of the Models.Manager script.
-
-            ``returns:`  a dictionary of user input with the key as the script parameters and values as the inputs
-
-        Example:
-        ____________________
-
-        >>> from apsimNGpy.core.base_data import load_default_simulations
-        >>> model = load_default_simulations(crop = 'maize')
-        >>> ui = model.extract_user_input(manager_name='Fertilise at sowing')
-        >>> print(ui)
-        {'Crop': 'Maize', 'FertiliserType': 'NO3N', 'Amount': '160.0'}
-
 .. function:: apsimNGpy.core.core.CoreModel.find_model(model_name: str, model_namespace=None)
 
    Find a model from the Models namespace and return its path.
@@ -668,13 +810,14 @@ CoreModel
         Returns:
             str: The full path to the model if found, otherwise None.
 
-        Example:
-            >>> from apsimNGpy import core  # doctest: +SKIP
-             >>> model =core.base_data.load_default_simulations(crop = "Maize")  # doctest: +SKIP
-             >>> model.find_model("Weather")  # doctest: +SKIP
+        Example::
+
+             from apsimNGpy import core  # doctest:
+             model =core.base_data.load_default_simulations(crop = "Maize")
+             model.find_model("Weather")  # doctest: +SKIP
              'Models.Climate.Weather'
-             >>> model.find_model("Clock")  # doctest: +SKIP
-              'Models.Clock'
+             model.find_model("Clock")  # doctest: +SKIP
+             'Models.Clock'
 
 .. function:: apsimNGpy.core.core.CoreModel.get_crop_replacement(self, Crop)
 
@@ -704,8 +847,28 @@ CoreModel
         -------
         ``ValueError``
             If any of the requested report names are not found in the available tables.
+
         ``RuntimeError``
             If the simulation has not been ``run`` successfully before attempting to read data.
+        Example::
+
+          from apsimNGpy.core.apsim import ApsimModel
+          model = ApsimModel(model= 'Maize') # replace with your path to the apsim template model
+          model.run() # if we are going to use get_simulated_output, no to need to provide the report name in ``run()`` method
+          df = model.get_simulated_output(report_names = ["Report"])
+          print(df)
+            SimulationName  SimulationID  CheckpointID  ... Maize.Total.Wt     Yield   Zone
+         0     Simulation             1             1  ...       1728.427  8469.616  Field
+         1     Simulation             1             1  ...        920.854  4668.505  Field
+         2     Simulation             1             1  ...        204.118   555.047  Field
+         3     Simulation             1             1  ...        869.180  3504.000  Field
+         4     Simulation             1             1  ...       1665.475  7820.075  Field
+         5     Simulation             1             1  ...       2124.740  8823.517  Field
+         6     Simulation             1             1  ...       1235.469  3587.101  Field
+         7     Simulation             1             1  ...        951.808  2939.152  Field
+         8     Simulation             1             1  ...       1986.968  8379.435  Field
+         9     Simulation             1             1  ...       1689.966  7370.301  Field
+         [10 rows x 16 columns]
 
 .. function:: apsimNGpy.core.core.CoreModel.get_weather_from_web(self, lonlat: tuple, start: int, end: int, simulations='all', source='nasa', filename=None)
 
@@ -724,7 +887,19 @@ CoreModel
             ``filename``: Name of the file to save the retrieved data. If None, a default name is generated.
 
             ``Returns:``
-             str Path to the saved met file.
+             self. replace the weather data with the fetched data.
+
+            Example::
+
+              from apsimNgpy.core.apsim import ApsimModel
+              model = ApsimModel(model= "Maize")
+              model.get_weather_from_web(lonlat = (-93.885490, 42.060650), start = 1990, end  =2001)
+
+            Changing weather data with unmatching start and end dates in the simulation will lead to ``RuntimeErrors``. To avoid this first check the start and end date before proceedign as follows::
+
+              dt = model.inspect_model_parameters(model_type='Clock', model_name='Clock', simulations='Simulation')
+              start, end = dt['Start'].year, dt['End'].year
+              # output: 1990, 2000
 
 .. function:: apsimNGpy.core.core.CoreModel.inspect_file(self, cultivar=False, **kwargs)
 
@@ -749,47 +924,83 @@ CoreModel
         Return: list[str]: list of all full paths or names of the model relative to the parent simulations node 
 
 
-        Example:
+        Examples::
 
-        >>> from apsimNGpy.core import base_data
-        >>> from apsimNGpy.core.core import Models
+             from apsimNGpy.core import base_data
+             from apsimNGpy.core.core import Models
+        load default ``maize`` module::
 
-        # load default ``maize`` module
+             model = base_data.load_default_simulations(crop ='maize')
 
-        >>> model = base_data.load_default_simulations(crop ='maize')
-        >>> model.inspect_model(Models.Manager, fullpath=True)
-         [.Simulations.Simulation.Field.Sow using a variable rule', '.Simulations.Simulation.Field.Fertilise at
-        sowing', '.Simulations.Simulation.Field.Harvest']
+        Find the path to all the manager script in the simulation::
 
-         >>> model.inspect_model(Models.Clock) # gets the path to the Clock models
-         ['.Simulations.Simulation.Clock']
+             model.inspect_model(Models.Manager, fullpath=True)
+             [.Simulations.Simulation.Field.Sow using a variable rule', '.Simulations.Simulation.Field.Fertilise at
+             sowing', '.Simulations.Simulation.Field.Harvest']
 
-         >>> model.inspect_model(Models.Core.IPlant) # gets the path to the crop model
-         ['.Simulations.Simulation.Field.Maize']
+        Inspect the full path of the Clock Model::
 
-         >>> model.inspect_model(Models.Core.IPlant, fullpath=False) # gets you the name of the crop Models
-         ['Maize']
+             model.inspect_model(Models.Clock) # gets the path to the Clock models
+             ['.Simulations.Simulation.Clock']
 
-         >>> model.inspect_model(Models.Fertiliser, fullpath=True)
-         ['.Simulations.Simulation.Field.Fertiliser']
+        Inspect the full path to the crop plants in the simulation::
 
-         >>> model.inspect_model('Models.Fertiliser', fullpath=False) # strings are allowed to
+             model.inspect_model(Models.Core.IPlant) # gets the path to the crop model
+             ['.Simulations.Simulation.Field.Maize']
 
-         The models from Models namespace are abstracted to use strings. all you need is to specify the name or the full path to the model enclosed in a stirng as follows
+        Or use full string path as follows::
 
-         >>> model.inspect_model('Clock') # get the path to the clock model
-         ['.Simulations.Simulation.Clock']
+             model.inspect_model(Models.Core.IPlant, fullpath=False) # gets you the name of the crop Models
+             ['Maize']
+        Get full path to the fertiliser model::
 
-         >>> model.inspect_model('IPlant')
-         ['.Simulations.Simulation.Field.Maize']
+             model.inspect_model(Models.Fertiliser, fullpath=True)
+             ['.Simulations.Simulation.Field.Fertiliser']
 
-         >>> model.inspect_model('Weather') # inspects the weather module
-         ['.Simulations.Simulation.Weather']
+        The models from APSIM Models namespace are abstracted to use strings. All you need is to specify the name or the full path to the model enclosed in a stirng as follows::
 
-         >>> model.inspect_model('Cultivar', fullpath=False) # list all available cultivar names
-         ['Hycorn_53',  'Pioneer_33M54', 'Pioneer_38H20',  'Pioneer_34K77',  'Pioneer_39V43',  'Atrium', 'Laila', 'GH_5019WX']
+             model.inspect_model('Clock') # get the path to the clock model
+             ['.Simulations.Simulation.Clock']
 
-.. function:: apsimNGpy.core.core.CoreModel.inspect_model_parameters(self, model_type: Union[<module 'Models'>, str], model_name: str, simulations: Union[str, list] = 'all', parameters: Union[list, set, tuple, str] = 'all', **kwargs)
+        Alternatively, you can do the following::
+
+             model.inspect_model('Models.Clock')
+             ['.Simulations.Simulation.Clock']
+
+        Repeat inspection of the plant model while using a ``string``::
+
+             model.inspect_model('IPlant')
+             ['.Simulations.Simulation.Field.Maize']
+
+        Inspect using full model namespace path::
+
+             model.inspect_model('Models.Core.IPlant')
+
+        What about weather model?::
+
+             model.inspect_model('Weather') # inspects the weather module
+             ['.Simulations.Simulation.Weather']
+
+        Alternative::
+
+             # or inspect using full model namespace path
+             model.inspect_model('Models.Climate.Weather')
+             ['.Simulations.Simulation.Weather']
+
+        Try finding path to the cultivar model::
+
+             model.inspect_model('Cultivar', fullpath=False) # list all available cultivar names
+             ['Hycorn_53',  'Pioneer_33M54', 'Pioneer_38H20',  'Pioneer_34K77',  'Pioneer_39V43',  'Atrium', 'Laila', 'GH_5019WX']
+
+        # we can get only the names of the cultivar models using the full string path::
+
+             model.inspect_model('Models.PMF.Cultivar', fullpath = False)
+             ['Hycorn_53',  'Pioneer_33M54', 'Pioneer_38H20',  'Pioneer_34K77',  'Pioneer_39V43',  'Atrium', 'Laila', 'GH_5019WX']
+
+        Models can be inspected either by importing the Models namespace or by using string paths. The most reliable approach is to provide the full model path—either as a string or as a Models object.
+        However, remembering full paths can be tedious, so allowing partial model names or references can significantly save time during development and exploration.
+
+.. function:: apsimNGpy.core.core.CoreModel.inspect_model_parameters(self, model_type: Union[<module 'Models'>, str], model_name: str, simulations: Union[str, list] = <UserOptionMissing>, parameters: Union[list, set, tuple, str] = 'all', **kwargs)
 
    Inspect the input parameters of a specific ``APSIM`` model type instance within selected simulations.
 
@@ -846,184 +1057,191 @@ CoreModel
         - APSIM Next Generation Python bindings (`apsimNGpy`)
         - Python 3.10+
 
-        Examples
-        --------
-        >>> model_instance = CoreModel('Maize')
+        Examples::
 
-        # Inspect full soil ``Organic`` profile
+           model_instance = CoreModel('Maize')
 
-        >>> model_instance.inspect_model_parameters('Organic', simulations='Simulation', model_name='Organic')
-           CNR  Carbon      Depth  FBiom  ...         FOM  Nitrogen  SoilCNRatio  Thickness
-        0  12.0    1.20      0-150   0.04  ...  347.129032     0.100         12.0      150.0
-        1  12.0    0.96    150-300   0.02  ...  270.344362     0.080         12.0      150.0
-        2  12.0    0.60    300-600   0.02  ...  163.972144     0.050         12.0      300.0
-        3  12.0    0.30    600-900   0.02  ...   99.454133     0.025         12.0      300.0
-        4  12.0    0.18   900-1200   0.01  ...   60.321981     0.015         12.0      300.0
-        5  12.0    0.12  1200-1500   0.01  ...   36.587131     0.010         12.0      300.0
-        6  12.0    0.12  1500-1800   0.01  ...   22.191217     0.010         12.0      300.0
-        [7 rows x 9 columns]
+        Inspect full soil ``Organic`` profile::
 
-        # inspect soil ``Physical`` profile
+            model_instance.inspect_model_parameters('Organic', simulations='Simulation', model_name='Organic')
+               CNR  Carbon      Depth  FBiom  ...         FOM  Nitrogen  SoilCNRatio  Thickness
+            0  12.0    1.20      0-150   0.04  ...  347.129032     0.100         12.0      150.0
+            1  12.0    0.96    150-300   0.02  ...  270.344362     0.080         12.0      150.0
+            2  12.0    0.60    300-600   0.02  ...  163.972144     0.050         12.0      300.0
+            3  12.0    0.30    600-900   0.02  ...   99.454133     0.025         12.0      300.0
+            4  12.0    0.18   900-1200   0.01  ...   60.321981     0.015         12.0      300.0
+            5  12.0    0.12  1200-1500   0.01  ...   36.587131     0.010         12.0      300.0
+            6  12.0    0.12  1500-1800   0.01  ...   22.191217     0.010         12.0      300.0
+            [7 rows x 9 columns]
 
-        >>> model_instance.inspect_model_parameters('Physical', simulations='Simulation', model_name='Physical')
-            AirDry        BD       DUL  ...        SWmm Thickness  ThicknessCumulative
-        0  0.130250  1.010565  0.521000  ...   78.150033     150.0                150.0
-        1  0.198689  1.071456  0.496723  ...   74.508522     150.0                300.0
-        2  0.280000  1.093939  0.488438  ...  146.531282     300.0                600.0
-        3  0.280000  1.158613  0.480297  ...  144.089091     300.0                900.0
-        4  0.280000  1.173012  0.471584  ...  141.475079     300.0               1200.0
-        5  0.280000  1.162873  0.457071  ...  137.121171     300.0               1500.0
-        6  0.280000  1.187495  0.452332  ...  135.699528     300.0               1800.0
-        [7 rows x 17 columns]
+        Inspect soil ``Physical`` profile::
 
-        # Inspect soil ``Chemical`` profile
+            model_instance.inspect_model_parameters('Physical', simulations='Simulation', model_name='Physical')
+                AirDry        BD       DUL  ...        SWmm Thickness  ThicknessCumulative
+            0  0.130250  1.010565  0.521000  ...   78.150033     150.0                150.0
+            1  0.198689  1.071456  0.496723  ...   74.508522     150.0                300.0
+            2  0.280000  1.093939  0.488438  ...  146.531282     300.0                600.0
+            3  0.280000  1.158613  0.480297  ...  144.089091     300.0                900.0
+            4  0.280000  1.173012  0.471584  ...  141.475079     300.0               1200.0
+            5  0.280000  1.162873  0.457071  ...  137.121171     300.0               1500.0
+            6  0.280000  1.187495  0.452332  ...  135.699528     300.0               1800.0
+            [7 rows x 17 columns]
 
-        >>> model_instance.inspect_model_parameters('Chemical', simulations='Simulation', model_name='Chemical')
+        Inspect soil ``Chemical`` profile::
+
+            model_instance.inspect_model_parameters('Chemical', simulations='Simulation', model_name='Chemical')
                Depth   PH  Thickness
-        0      0-150  8.0      150.0
-        1    150-300  8.0      150.0
-        2    300-600  8.0      300.0
-        3    600-900  8.0      300.0
-        4   900-1200  8.0      300.0
-        5  1200-1500  8.0      300.0
-        6  1500-1800  8.0      300.0
+            0      0-150  8.0      150.0
+            1    150-300  8.0      150.0
+            2    300-600  8.0      300.0
+            3    600-900  8.0      300.0
+            4   900-1200  8.0      300.0
+            5  1200-1500  8.0      300.0
+            6  1500-1800  8.0      300.0
 
-        # Inspect chemical soil properties
+        Inspect one or more specific parameters::
 
-        >>> model_instance.inspect_model_parameters('Chemical', simulations='Simulation', model_name='Chemical')
+            model_instance.inspect_model_parameters('Organic', simulations='Simulation', model_name='Organic', parameters='Carbon')
+              Carbon
+            0    1.20
+            1    0.96
+            2    0.60
+            3    0.30
+            4    0.18
+            5    0.12
+            6    0.12
 
-        # Inspect one or more specific parameters
+        Inspect more than one specific properties::
 
-        >>> model_instance.inspect_model_parameters('Organic', simulations='Simulation', model_name='Organic', parameters='Carbon')
-          Carbon
-        0    1.20
-        1    0.96
-        2    0.60
-        3    0.30
-        4    0.18
-        5    0.12
-        6    0.12
+            model_instance.inspect_model_parameters('Organic', simulations='Simulation', model_name='Organic', parameters=['Carbon', 'CNR'])
+               Carbon   CNR
+            0    1.20  12.0
+            1    0.96  12.0
+            2    0.60  12.0
+            3    0.30  12.0
+            4    0.18  12.0
+            5    0.12  12.0
+            6    0.12  12.0
 
-        >>> model_instance.inspect_model_parameters('Organic', simulations='Simulation', model_name='Organic', parameters=['Carbon', 'CNR'])
-           Carbon   CNR
-        0    1.20  12.0
-        1    0.96  12.0
-        2    0.60  12.0
-        3    0.30  12.0
-        4    0.18  12.0
-        5    0.12  12.0
-        6    0.12  12.0
+        Inspect Report module attributes::
 
-        # Inspect Report module attributes
+             model_instance.inspect_model_parameters('Report', simulations='Simulation', model_name='Report')
+             {'EventNames': ['[Maize].Harvesting'],
+            'VariableNames': ['[Clock].Today',
+            '[Maize].Phenology.CurrentStageName',
+            '[Maize].AboveGround.Wt',
+            '[Maize].AboveGround.N',
+            '[Maize].Grain.Total.Wt*10 as Yield',
+            '[Maize].Grain.Wt',
+            '[Maize].Grain.Size',
+            '[Maize].Grain.NumberFunction',
+            '[Maize].Grain.Total.Wt',
+            '[Maize].Grain.N',
+            '[Maize].Total.Wt']}
 
-        >>> model_instance.inspect_model_parameters('Report', simulations='Simulation', model_name='Report')
-        {'EventNames': ['[Maize].Harvesting'],
-        'VariableNames': ['[Clock].Today',
-        '[Maize].Phenology.CurrentStageName',
-        '[Maize].AboveGround.Wt',
-        '[Maize].AboveGround.N',
-        '[Maize].Grain.Total.Wt*10 as Yield',
-        '[Maize].Grain.Wt',
-        '[Maize].Grain.Size',
-        '[Maize].Grain.NumberFunction',
-        '[Maize].Grain.Total.Wt',
-        '[Maize].Grain.N',
-        '[Maize].Total.Wt']}
+        Specify only EventNames:
 
-        >>> model_instance.inspect_model_parameters('Report', simulations='Simulation', model_name='Report', parameters='EventNames')
-        {'EventNames': ['[Maize].Harvesting']}
+           model_instance.inspect_model_parameters('Report', simulations='Simulation', model_name='Report', parameters='EventNames')
+           {'EventNames': ['[Maize].Harvesting']}
 
-        # Inspect weather file path
+        Inspect a weather file path::
 
-        >>> model_instance.inspect_model_parameters('Weather', simulations='Simulation', model_name='Weather')
-        '%root%/Examples/WeatherFiles/AU_Dalby.met'
+             model_instance.inspect_model_parameters('Weather', simulations='Simulation', model_name='Weather')
+            '%root%/Examples/WeatherFiles/AU_Dalby.met'
 
-        # Inspect manager script parameters
+        Inspect manager script parameters::
 
-        >>> model_instance.inspect_model_parameters('Manager',
-        ... simulations='Simulation', model_name='Sow using a variable rule')
-        {'Crop': 'Maize',
-        'StartDate': '1-nov',
-        'EndDate': '10-jan',
-        'MinESW': '100.0',
-        'MinRain': '25.0',
-        'RainDays': '7',
-        'CultivarName': 'Dekalb_XL82',
-        'SowingDepth': '30.0',
-        'RowSpacing': '750.0',
-        'Population': '10'}
+            model_instance.inspect_model_parameters('Manager',
+            simulations='Simulation', model_name='Sow using a variable rule')
+            {'Crop': 'Maize',
+            'StartDate': '1-nov',
+            'EndDate': '10-jan',
+            'MinESW': '100.0',
+            'MinRain': '25.0',
+            'RainDays': '7',
+            'CultivarName': 'Dekalb_XL82',
+            'SowingDepth': '30.0',
+            'RowSpacing': '750.0',
+            'Population': '10'}
+        Inspect manager script by specifying one or more parameters::
 
-        >>> model_instance.inspect_model_parameters('Manager',
-        ... simulations='Simulation', model_name='Sow using a variable rule',
-        ... parameters='Population')
-        {'Population': '10'}
+            model_instance.inspect_model_parameters('Manager',
+            simulations='Simulation', model_name='Sow using a variable rule',
+            parameters='Population')
+            {'Population': '10'}
 
-        # Inspect cultivar parameters
+        Inspect cultivar parameters::
 
-        >>> model_instance.inspect_model_parameters('Cultivar',
-        ... simulations='Simulation', model_name='B_110') # lists all path specifications for B_110 parameters abd their values
-        >>> model_instance.inspect_model_parameters('Cultivar', simulations='Simulation',
-        ... model_name='B_110', parameters='[Phenology].Juvenile.Target.FixedValue')
-        {'[Phenology].Juvenile.Target.FixedValue': '210'}
+            model_instance.inspect_model_parameters('Cultivar',
+            simulations='Simulation', model_name='B_110') # lists all path specifications for B_110 parameters abd their values
+            model_instance.inspect_model_parameters('Cultivar', simulations='Simulation',
+            model_name='B_110', parameters='[Phenology].Juvenile.Target.FixedValue')
+            {'[Phenology].Juvenile.Target.FixedValue': '210'}
 
-        # Inspect surface organic matter module
+        Inspect surface organic matter module::
 
-        >>> model_instance.inspect_model_parameters('Models.Surface.SurfaceOrganicMatter',
-        ... simulations='Simulation', model_name='SurfaceOrganicMatter')
-        {'NH4': 0.0,
-         'InitialResidueMass': 500.0,
-         'StandingWt': 0.0,
-         'Cover': 0.0,
-         'LabileP': 0.0,
-         'LyingWt': 0.0,
-         'InitialCNR': 100.0,
-         'P': 0.0,
-         'InitialCPR': 0.0,
-         'SurfOM': <System.Collections.Generic.List[SurfOrganicMatterType] object at 0x000001DABDBB58C0>,
-         'C': 0.0,
-         'N': 0.0,
-         'NO3': 0.0}
+            model_instance.inspect_model_parameters('Models.Surface.SurfaceOrganicMatter',
+            simulations='Simulation', model_name='SurfaceOrganicMatter')
+            {'NH4': 0.0,
+             'InitialResidueMass': 500.0,
+             'StandingWt': 0.0,
+             'Cover': 0.0,
+             'LabileP': 0.0,
+             'LyingWt': 0.0,
+             'InitialCNR': 100.0,
+             'P': 0.0,
+             'InitialCPR': 0.0,
+             'SurfOM': <System.Collections.Generic.List[SurfOrganicMatterType] object at 0x000001DABDBB58C0>,
+             'C': 0.0,
+             'N': 0.0,
+             'NO3': 0.0}
 
-        >>> model_instance.inspect_model_parameters('Models.Surface.SurfaceOrganicMatter', simulations='Simulation',
-        ... model_name='SurfaceOrganicMatter', parameters={'InitialCNR', 'InitialResidueMass'})
-        {'InitialCNR': 100.0, 'InitialResidueMass': 500.0}
+        Inspect a few parameters as needed::
 
-        # Inspect simulation clock
+            model_instance.inspect_model_parameters('Models.Surface.SurfaceOrganicMatter', simulations='Simulation',
+            ... model_name='SurfaceOrganicMatter', parameters={'InitialCNR', 'InitialResidueMass'})
+            {'InitialCNR': 100.0, 'InitialResidueMass': 500.0}
 
-        >>> model_instance.inspect_model_parameters('Clock', simulations='Simulation', model_name='Clock')
-        {'End': datetime.datetime(2000, 12, 31, 0, 0),
-        'Start': datetime.datetime(1990, 1, 1, 0, 0)}
+        Inspect a clock::
 
-        >>> model_instance.inspect_model_parameters('Clock', simulations='Simulation',
-        ... model_name='Clock', parameters='End')
-        datetime.datetime(2000, 12, 31, 0, 0)
+             model_instance.inspect_model_parameters('Clock', simulations='Simulation', model_name='Clock')
+             {'End': datetime.datetime(2000, 12, 31, 0, 0),
+             'Start': datetime.datetime(1990, 1, 1, 0, 0)}
 
-        >>> model_instance.inspect_model_parameters('Clock', simulations='Simulation',
-        ... model_name='Clock', parameters='Start').year # gets the start year only
-        1990
+        Inspect a few Clock parameters as needed::
 
-        # Inspect solute models
+            model_instance.inspect_model_parameters('Clock', simulations='Simulation',
+            model_name='Clock', parameters='End')
+            datetime.datetime(2000, 12, 31, 0, 0)
 
-        >>> model_instance.inspect_model_parameters('Solute', simulations='Simulation', model_name='Urea')
-               Depth  InitialValues  SoluteBD  Thickness
-        0      0-150            0.0  1.010565      150.0
-        1    150-300            0.0  1.071456      150.0
-        2    300-600            0.0  1.093939      300.0
-        3    600-900            0.0  1.158613      300.0
-        4   900-1200            0.0  1.173012      300.0
-        5  1200-1500            0.0  1.162873      300.0
-        6  1500-1800            0.0  1.187495      300.0
+        Access specific components of the datetime object e.g., year, month, day, hour, minute::
 
-        >>> model_instance.inspect_model_parameters('Solute', simulations='Simulation', model_name='NH4',
-        ... parameters='InitialValues')
-            InitialValues
-        0            0.1
-        1            0.1
-        2            0.1
-        3            0.1
-        4            0.1
-        5            0.1
-        6            0.1
+              model_instance.inspect_model_parameters('Clock', simulations='Simulation',
+              model_name='Clock', parameters='Start').year # gets the start year only
+              1990
+
+        Inspect solute models::
+
+            model_instance.inspect_model_parameters('Solute', simulations='Simulation', model_name='Urea')
+                   Depth  InitialValues  SoluteBD  Thickness
+            0      0-150            0.0  1.010565      150.0
+            1    150-300            0.0  1.071456      150.0
+            2    300-600            0.0  1.093939      300.0
+            3    600-900            0.0  1.158613      300.0
+            4   900-1200            0.0  1.173012      300.0
+            5  1200-1500            0.0  1.162873      300.0
+            6  1500-1800            0.0  1.187495      300.0
+
+            model_instance.inspect_model_parameters('Solute', simulations='Simulation', model_name='NH4',
+            parameters='InitialValues')
+                InitialValues
+            0 0.1
+            1 0.1
+            2 0.1
+            3 0.1
+            4 0.1
+            5 0.1
+            6 0.1
 
 .. function:: apsimNGpy.core.core.CoreModel.move_model(self, model_type: <module 'Models'>, new_parent_type: <module 'Models'>, model_name: str = None, new_parent_name: str = None, verbose: bool = False, simulations: Union[str, list] = None)
 
@@ -1070,13 +1288,13 @@ CoreModel
 
         Returns:
            None
-        Example:
-               >>> from apsimNGpy import core
-               >>> from apsimNGpy.core.core import Models
+        Example::
 
-               >>> model = core.base_data.load_default_simulations(crop = 'Maize')
-               >>> model.remove_model(Models.Clock) #deletes the clock node
-               >>> model.remove_model(Models.Climate.Weather) #deletes the weather node
+               from apsimNGpy import core
+               from apsimNGpy.core.core import Models
+               model = core.base_data.load_default_simulations(crop = 'Maize')
+               model.remove_model(Models.Clock) #deletes the clock node
+               model.remove_model(Models.Climate.Weather) #deletes the weather node
 
 .. function:: apsimNGpy.core.core.CoreModel.rename_model(self, model_type: <module 'Models'>, old_model_name: str, new_model_name: str, simulations=None)
 
@@ -1092,11 +1310,12 @@ CoreModel
 
         ``returns``: None
 
-        Example;
-               >>> from apsimNGpy import core
-               >>> from apsimNGpy.core.core import Models
-               >>> apsim = core.base_data.load_default_simulations(crop = 'Maize')
-               >>> apsim = apsim.rename_model(Models.Clock, 'Clock', 'clock')
+        Example::
+
+               from apsimNGpy import core
+               from apsimNGpy.core.core import Models
+               apsim = core.base_data.load_default_simulations(crop = 'Maize')
+               apsim = apsim.rename_model(Models.Clock, 'Clock', 'clock')
 
 .. function:: apsimNGpy.core.core.CoreModel.replace_model_from(self, model, model_type: str, model_name: str = None, target_model_name: str = None, simulations: str = None)
 
@@ -1123,7 +1342,7 @@ CoreModel
         ``Raises:``
             ``ValueError``: If ``model_type`` is "Simulations" which is not allowed for replacement.
 
-.. function:: apsimNGpy.core.core.CoreModel.replace_soil_property_values(self, *, parameter: str, param_values: list, soil_child: str, simulations: list = None, indices: list = None, crop=None, **kwargs)
+.. function:: apsimNGpy.core.core.CoreModel.replace_soil_property_values(self, *, parameter: str, param_values: list, soil_child: str, simulations: list = <UserOptionMissing>, indices: list = None, crop=None, **kwargs)
 
    Replaces values in any soil property array. The soil property array.
 
@@ -1163,17 +1382,14 @@ CoreModel
             - ``apsimNGpy.core.CoreModel`` object and if the path specified does not translate to the child object in
          the simulation
 
-         Example:
-              >>> from apsimNGpy.core.base_data import load_default_simulations
+         Example::
 
-              >>> model = load_default_simulations(crop ='Maize', simulations_object=False)# initiate model
-
-              >>> model = CoreModel(model) # ``replace`` with your intended file path
-              >>> model.replace_soils_values_by_path(node_path='.Simulations.Simulation.Field.Soil.Organic', indices=[0], Carbon =1.3)
-
-              >>> sv= model.get_soil_values_by_path('.Simulations.Simulation.Field.Soil.Organic', 'Carbon')
-
-            output # {'Carbon': [1.3, 0.96, 0.6, 0.3, 0.18, 0.12, 0.12]}
+              from apsimNGpy.core.base_data import load_default_simulations
+              model = load_default_simulations(crop ='Maize', simulations_object=False) # initiate model.
+              model = CoreModel(model) # ``replace`` with your intended file path
+              model.replace_soils_values_by_path(node_path='.Simulations.Simulation.Field.Soil.Organic', indices=[0], Carbon =1.3)
+              sv= model.get_soil_values_by_path('.Simulations.Simulation.Field.Soil.Organic', 'Carbon')
+              output # {'Carbon': [1.3, 0.96, 0.6, 0.3, 0.18, 0.12, 0.12]}
 
 .. function:: apsimNGpy.core.core.CoreModel.replicate_file(self, k: int, path: os.PathLike = None, suffix: str = 'replica')
 
@@ -1242,9 +1458,18 @@ CoreModel
             Raised if the ``APSIM`` run is unsuccessful. Common causes include ``missing meteorological files``,
             mismatched simulation ``start`` dates with ``weather`` data, or other ``configuration issues``.
 
+       Example:
+
+       Instatiate an ``apsimNGpy.core.apsim.ApsimModel`` object and run ::
+
+              from apsimNGpy.core.apsim import ApsimModel
+              model = ApsimModel(model= 'Maize')# replace with your path to the apsim template model
+              model.run(report_name = "Report")
+
 .. function:: apsimNGpy.core.core.CoreModel.save(self, file_name=None)
 
    Save the simulation models to file
+
         ``file_name``:    The name of the file to save the defaults to none, taking the exising filename
 
         Returns: model object
@@ -1252,6 +1477,7 @@ CoreModel
 .. function:: apsimNGpy.core.core.CoreModel.save_edited_file(self, out_path: os.PathLike = None, reload: bool = False) -> Optional[ForwardRef('CoreModel')]
 
    Saves the model to the local drive.
+            @deprecated: use save() method instead
 
             Notes: - If `out_path` is None, the `save_model_to_file` function extracts the filename from the
             `Model.Core.Simulation` object. - `out_path`, however, is given high priority. Therefore,
@@ -1277,11 +1503,12 @@ CoreModel
         ``returns``:
           ``ApsimModel`` or ``CoreModel``: An instance of ``apsimNGpy.core.core.apsim.ApsimModel`` or ``CoreModel``.
 
-        Example:
-            >>> from apsimNGpy.core import base_data
-            >>> apsim = base_data.load_default_simulations(crop='Maize')
-            >>> apsim.create_experiment(permutation=False)
-            >>> apsim.set_continuous_factor(factor_path = "[Fertilise at sowing].Script.Amount", lower_bound=100, upper_bound=300, interval=10)
+        Example::
+
+            from apsimNGpy.core import base_data
+            apsim = base_data.load_default_simulations(crop='Maize')
+            apsim.create_experiment(permutation=False)
+            apsim.set_continuous_factor(factor_path = "[Fertilise at sowing].Script.Amount", lower_bound=100, upper_bound=300, interval=10)
 
 .. function:: apsimNGpy.core.core.CoreModel.set_continuous_factor(self, factor_path, lower_bound, upper_bound, interval, factor_name=None)
 
@@ -1301,11 +1528,12 @@ CoreModel
 
         ``Returns``:
             ``ApsimModel`` or ``CoreModel``: An instance of `apsimNGpy.core.core.apsim.ApsimModel` or `CoreModel`.
-        Example:
-            >>> from apsimNGpy.core import base_data
-            >>> apsim = base_data.load_default_simulations(crop='Maize')
-            >>> apsim.create_experiment(permutation=False)
-            >>> apsim.set_continuous_factor(factor_path = "[Fertilise at sowing].Script.Amount", lower_bound=100, upper_bound=300, interval=10)
+        Example::
+
+            from apsimNGpy.core import base_data
+            apsim = base_data.load_default_simulations(crop='Maize')
+            apsim.create_experiment(permutation=False)
+            apsim.set_continuous_factor(factor_path = "[Fertilise at sowing].Script.Amount", lower_bound=100, upper_bound=300, interval=10)
 
 .. function:: apsimNGpy.core.core.CoreModel.show_met_file_in_simulation(self, simulations: list = None)
 
@@ -1325,7 +1553,7 @@ CoreModel
        ``clear`` (bool, optional)
             If `True` remove all existing parameters, by default `False`.
 
-.. function:: apsimNGpy.core.core.CoreModel.update_mgt(self, *, management: Union[dict, tuple], simulations: [<class 'list'>, <class 'tuple'>] = None, out: [<class 'pathlib.Path'>, <class 'str'>] = None, reload: bool = True, **kwargs)
+.. function:: apsimNGpy.core.core.CoreModel.update_mgt(self, *, management: Union[dict, tuple], simulations: [<class 'list'>, <class 'tuple'>] = <UserOptionMissing>, out: [<class 'pathlib.Path'>, <class 'str'>] = None, reload: bool = True, **kwargs)
 
    Update management settings in the model. This method handles one management parameter at a time.
 
@@ -1369,7 +1597,7 @@ CoreModel
         return: self
 
 ModelTools 
--------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. function:: apsimNGpy.core._modelhelpers.ModelTools() -> None
 
@@ -1401,14 +1629,7 @@ ModelTools
            ``COLLECT`` (callable): Function for forcing memory checks
 
 apsimNGpy.core.base_data 
----------------------------------------
-
-.. function:: apsimNGpy.core.config.get_apsim_bin_path()
-
-   Returns the path to the apsim bin folder from either auto-detection or from the path already supplied by the user
-    through the apsimNgp config.ini file in the user home dir_path. the location folder is called
-    The function is silent does not raise any exception but return empty string in all cases
-    :return:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. function:: apsimNGpy.core.base_data.load_default_sensitivity_model(method: str, set_wd: str = None, simulations_object: bool = True)
 
@@ -1430,46 +1651,6 @@ apsimNGpy.core.base_data
     >>> morris_model = load_default_sensitivity_model(method = 'Morris', simulations_object=True)
 
     >>> morris_model.run()
-
-.. function:: apsimNGpy.core.base_data.load_default_simulations(crop: str = 'Maize', set_wd: [<class 'str'>, <class 'pathlib.Path'>] = None, simulations_object: bool = True, **kwargs)
-
-   Load specific crop default simulation model from the ``APSIM`` Example Folder.
-
-    ``crop``: Crop to load (e.g., "Maize"). Not case-sensitive. defaults to ``Maize``
-
-    ``set_wd``: Working directory to which the model should be copied.
-
-    ``simulations_object``: If True, returns an APSIMNGpy.core simulation object; if False, returns the path to the simulation file.
-
-    ``Returns``:
-     An APSIMNGpy.core simulation object or the file path (str or Path) if simulation_object is ``False``
-
-     Examples:
-        >>> # Load the ``CoreModel`` object directly
-        >>> model = load_default_simulations('Maize', simulations_object=True)
-        >>> # Run the ``model``
-        >>> model.run()
-        >>> # Collect and print the results
-        >>> df = model.results
-        >>> print(df)
-             SimulationName  SimulationID  CheckpointID  ... Maize.Total.Wt     Yield   Zone
-        0     Simulation             1             1  ...       1728.427  8469.616  Field
-        1     Simulation             1             1  ...        920.854  4668.505  Field
-        2     Simulation             1             1  ...        204.118   555.047  Field
-        3     Simulation             1             1  ...        869.180  3504.000  Field
-        4     Simulation             1             1  ...       1665.475  7820.075  Field
-        5     Simulation             1             1  ...       2124.740  8823.517  Field
-        6     Simulation             1             1  ...       1235.469  3587.101  Field
-        7     Simulation             1             1  ...        951.808  2939.152  Field
-        8     Simulation             1             1  ...       1986.968  8379.435  Field
-        9     Simulation             1             1  ...       1689.966  7370.301  Field
-        [10 rows x 16 columns]
-
-        # Return only the set_wd
-        >>> model = load_default_simulations(crop='Maize', simulations_object=False)
-        >>> print(isinstance(model, (str, Path)))
-        True
-        @param experiment:
 
 .. class:: apsimNGpy.core.apsimSoilModel
 
@@ -1552,7 +1733,7 @@ apsimNGpy.core.base_data
       Perform a spin-up operation on the aPSim model.
 
         This method is used to simulate a spin-up operation in an aPSim model. During a spin-up, various soil properties or
-        variables may be adjusted based on the simulation results.
+        _variables may be adjusted based on the simulation results.
 
         Parameters:
         ----------
@@ -1575,10 +1756,10 @@ apsimNGpy.core.base_data
             you could call ``save_edited`` file and save it to your specified location, but you can also proceed with the simulation
 
 apsimNGpy.core.load_model 
-----------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 apsimNGpy.core.runner 
-------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. function:: apsimNGpy.core.runner.collect_csv_by_model_path(model_path) -> dict[typing.Any, typing.Any]
 
@@ -1594,17 +1775,15 @@ apsimNGpy.core.runner
     returns
         a generator object with pandas data frames
 
-    Example:
-     >>> mock_data = Path.home() / 'mock_data' # this a mock directory substitute accordingly
-     >>> df1= list(collect_csv_from_dir(mock_data, '*.apsimx', recursive=True)) # collects all csf file produced by apsimx recursively
-     >>> df2= list(collect_csv_from_dir(mock_data, '*.apsimx',  recursive=False)) # collects all csf file produced by apsimx only in the specified directory directory
+    Example::
 
-.. function:: apsimNGpy.core.config.get_apsim_bin_path()
+         mock_data = Path.home() / 'mock_data' # this a mock directory substitute accordingly
+         df1= list(collect_csv_from_dir(mock_data, '*.apsimx', recursive=True)) # collects all csf file produced by apsimx recursively
+         df2= list(collect_csv_from_dir(mock_data, '*.apsimx',  recursive=False)) # collects all csf file produced by apsimx only in the specified directory directory
 
-   Returns the path to the apsim bin folder from either auto-detection or from the path already supplied by the user
-    through the apsimNgp config.ini file in the user home dir_path. the location folder is called
-    The function is silent does not raise any exception but return empty string in all cases
-    :return:
+.. function:: apsimNGpy.settings.config_internal(key: str, value: str) -> None
+
+   Stores the apsim version and many others to be used by the app
 
 .. function:: apsimNGpy.core.runner.get_apsim_version(verbose: bool = False)
 
@@ -1612,23 +1791,9 @@ apsimNGpy.core.runner
 
     ``verbose``: (bool) Prints the version information ``instantly``
 
-    Example:
-            >>> apsim_version = get_apsim_version()
+    Example::
 
-.. function:: apsimNGpy.core.runner.get_matching_files(dir_path: Union[str, pathlib.Path], pattern: str, recursive: bool = False) -> List[pathlib.Path]
-
-   Search for files matching a given pattern in the specified directory.
-
-    Args:
-        ``dir_path`` (Union[str, Path]): The directory path to search in.
-        ``pattern`` (str): The filename pattern to match (e.g., "*.apsimx").
-        ``recursive`` (bool): If True, search recursively; otherwise, search only in the top-level directory.
-
-    Returns:
-        List[Path]: A ``list`` of matching Path objects.
-
-    Raises:
-        ``ValueError:`` If no matching files are found.
+            apsim_version = get_apsim_version()
 
 .. function:: apsimNGpy.core.runner.run_from_dir(dir_path, pattern, verbose=False, recursive=False, write_tocsv=True) -> [<class 'pandas.core.frame.DataFrame'>]
 
@@ -1657,13 +1822,17 @@ apsimNGpy.core.runner
         -- a ``generator`` that yields data frames knitted by pandas
 
 
-       Example:
-          >>> mock_data = Path.home() / 'mock_data'# As an example let's mock some data move the apsim files to this directory before runnning
-          >>> mock_data.mkdir(parents=True, exist_ok=True)
-          >>> from apsimNGpy.core.base_data import load_default_simulations
-          >>> path_to_model = load_default_simulations(crop ='maize', simulations_object =False) # get base model
-          >>> ap =path_to_model.replicate_file(k=10, path= mock_data)  if not list(mock_data.rglob("*.apsimx")) else None
-          >>> df = run_from_dir(str(mock_data), pattern="*.apsimx", verbose=True, recursive=True)# all files that matches that pattern
+       Example::
+
+            mock_data = Path.home() / 'mock_data'  # As an example, let's mock some data; move the APSIM files to this directory before running
+            mock_data.mkdir(parents=True, exist_ok=True)
+
+            from apsimNGpy.core.base_data import load_default_simulations
+            path_to_model = load_default_simulations(crop='maize', simulations_object=False)  # Get base model
+
+            ap = path_to_model.replicate_file(k=10, path=mock_data) if not list(mock_data.rglob("*.apsimx")) else None
+
+            df = run_from_dir(str(mock_data), pattern="*.apsimx", verbose=True, recursive=True)  # All files that match the pattern
 
 .. function:: apsimNGpy.core.runner.run_model_externally(model: Union[pathlib.Path, str], verbose: bool = False, to_csv: bool = False) -> subprocess.Popen[str]
 
@@ -1680,12 +1849,13 @@ apsimNGpy.core.runner
 
     ``returns``: A subprocess.Popen object.
 
-    Example:
-        >>> result =run_model_externally("path/to/model.apsimx", verbose=True, to_csv=True)
-        >>> from apsimNGpy.core.base_data import load_default_simulations
-        >>> path_to_model = load_default_simulations(crop ='maize', simulations_object =False)
-        >>> pop_obj = run_model_externally(path_to_model, verbose=False)
-        >>> pop_obj1 = run_model_externally(path_to_model, verbose=True)# when verbose is true, will print the time taken
+    Example::
+
+        result =run_model_externally("path/to/model.apsimx", verbose=True, to_csv=True)
+        from apsimNGpy.core.base_data import load_default_simulations
+        path_to_model = load_default_simulations(crop ='maize', simulations_object =False)
+        pop_obj = run_model_externally(path_to_model, verbose=False)
+        pop_obj1 = run_model_externally(path_to_model, verbose=True)# when verbose is true, will print the time taken
 
 .. function:: apsimNGpy.core.runner.upgrade_apsim_file(file: str, verbose: bool = True)
 
@@ -1700,13 +1870,14 @@ apsimNGpy.core.runner
     ``return``
        The latest version of the .apsimx file with the same name as the input file
 
-    Example:
-        >>> from apsimNGpy.core.base_data import load_default_simulations
-        >>> filep =load_default_simulations(simulations_object= False)# this is just an example perhaps you need to pass a lower verion file because this one is extracted from thecurrent model as the excutor
-        >>> upgrade_file =upgrade_apsim_file(filep, verbose=False)
+    Example::
+
+        from apsimNGpy.core.base_data import load_default_simulations
+        filep =load_default_simulations(simulations_object= False)# this is just an example perhaps you need to pass a lower verion file because this one is extracted from thecurrent model as the excutor
+        upgrade_file =upgrade_apsim_file(filep, verbose=False)
 
 apsimNGpy.core_utils.database_utils 
---------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. function:: apsimNGpy.core_utils.database_utils.clear_table(db, table_name)
 
@@ -1765,7 +1936,7 @@ apsimNGpy.core_utils.database_utils
    Exception raised when the specified table cannot be found.
 
 apsimNGpy.manager.soilmanager 
---------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. function:: apsimNGpy.manager.soilmanager.DownloadsurgoSoiltables(lonlat, select_componentname=None, summarytable=False)
 
@@ -1787,7 +1958,7 @@ apsimNGpy.manager.soilmanager
 bottom depth and top depth in a turple
 
 apsimNGpy.manager.weathermanager 
------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. function:: apsimNGpy.manager.weathermanager.daterange(start, end)
 
@@ -1822,67 +1993,6 @@ apsimNGpy.manager.weathermanager
       
       :param met_tag: your preferred suffix to save on file
 
-.. function:: apsimNGpy.manager.weathermanager.get_met_from_day_met(lonlat: Union[tuple, list, numpy.ndarray], start: int, end: int, filename: str, fill_method: str = 'ffill', retry_number: Optional[int] = 1, **kwa: None) -> str
-
-   Collect weather from daymet solar radiation is replaced with that of nasapower API
-
-    Parameters
-    ---------------
-
-    ``lonlat``:
-         tuple, list, np.ndarray.
-
-    ``retry_number``:
-        (int): retry number of times in case of network errors.
-
-    ``filename``.
-         met file name to save on disk.
-
-    ``start``.
-         Starting year of the met data.
-
-    ``end``.
-         Ending year of the met data.
-
-    ``lonlat``.
-         (tuple, list, array): A tuple of XY cordnates, longitude first, then latitude second.
-
-    ``fill_method``.
-         (str, optional): fills the missing data based pandas fillna method arguments may be bfill, ffill defaults to ffill.
-
-    ``keyword``.
-         ``timeout`` specifies the waiting time.
-
-        ``wait``: the time in secods to try for every retry in case of network errors.
-
-    ``returns``
-       A complete path to the new met file but also write the met file to the disk in the working dir_path.
-
-    Example:
-    --------------
-
-          >>> from apsimNGpy.manager.weathermanager import get_met_from_day_met
-          >>> wf = get_met_from_day_met(lonlat=(-93.04, 42.01247),
-          >>> start=2000, end=2020,timeout = 30, wait =2, retry_number=3, filename='daymet.met')
-
-.. function:: apsimNGpy.manager.weathermanager.impute_data(met, method='mean', verbose=False, **kwargs)
-
-   Imputes missing data in a pandas DataFrame using specified interpolation or mean value.
-
-    Parameters:
-    _______________________
-
-    ``met``: (pd.DataFrame): DataFrame with missing values.
-
-    ``method``: (str, optional): Method for imputing missing values ("approx", "spline", "mean"). Default is "mean".
-
-    ``verbose``: (bool, optional): If True, prints detailed information about the imputation. Default is False.
-
-    - **kwargs (dict, optional): Additional keyword arguments including 'copy' (bool) to deep copy the DataFrame.
-
-    ``Returns:``
-       - ``pd.DataFrame``: DataFrame with imputed missing values.
-
 .. function:: apsimNGpy.manager.weathermanager.merge_columns(df1_main, common_column, df2, fill_column, df2_colummn)
 
    Parameters:
@@ -1900,7 +2010,7 @@ apsimNGpy.manager.weathermanager
       ``pd.DataFrame``: A new DataFrame resulting from the merge and update operations.
 
 apsimNGpy.parallel.process 
------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. function:: apsimNGpy.parallel.process.custom_parallel(func, iterable: Iterable, *args, **kwargs)
 
@@ -2002,7 +2112,7 @@ apsimNGpy.parallel.process
     :return: none
 
 apsimNGpy.validation.evaluator 
----------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. class:: apsimNGpy.validation.evaluatorMetrics
 

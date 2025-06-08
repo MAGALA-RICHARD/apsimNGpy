@@ -54,7 +54,7 @@ class Problem(ABC):
         This is something you should write for your self.
         A typical evaluation function takes on the functional signature func(apsimNGpy.CoreModel.model, *args) Additional
         arguments can be passed as a tuple.
-        Example of this could be observed variables to be compared with the
+        Example of this could be observed _variables to be compared with the
         predicted, where a loss function like rmse errors can be computed.
         In case of extra argument, these should be
         passed via options e.g., options ={args: None}
@@ -84,7 +84,7 @@ class Problem(ABC):
         self.controls.append((model_type, model_name, simulation_name, variable_name))
     def update_predictors(self, x: tuple):
         if len(self.controls) < 1:
-            raise ValueError("No control variables added yet")
+            raise ValueError("No control _variables added yet")
         vals = '_'.join(str(v) for v in x)
         # we want a unique out_path name for parallel processing
         if self.n_workers > 1:

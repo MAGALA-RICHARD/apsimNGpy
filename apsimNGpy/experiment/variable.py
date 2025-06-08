@@ -1,5 +1,5 @@
 """
-This module contains methods for generating variables used in optimization, particular those related to APSIM replacement
+This module contains methods for generating _variables used in optimization, particular those related to APSIM replacement
 """
 from dataclasses import dataclass
 from typing import Union
@@ -54,7 +54,7 @@ def _doc(section_desc):
     Any parameters that is in the `{section_desc}` of apsim model can be optimized by calling this function
     @param params:is a dictionary that could hold extra argument for each function.
     @param label: name suffix for the control variable being optimized
-    @param var_desc: instance of `{ContinuousVar}` or `{ChoiceVar}` for categorical variables. Big up to the authors of this 
+    @param var_desc: instance of `{ContinuousVar}` or `{ChoiceVar}` for categorical _variables. Big up to the authors of this 
     package we wrap around their variable description to facilitate mixed variable optimization. @param main_param: 
     is main_param arguments @param updater: method of ApsimModel class to update the parameters during the 
     optimization @return:  instance of `{CropVar}`

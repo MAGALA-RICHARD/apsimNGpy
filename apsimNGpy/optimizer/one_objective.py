@@ -1,0 +1,7 @@
+from apsimNGpy.optimizer.mixed import MixedVariableProblem
+from apsimNGpy.optimizer.one_obj import ContinuousVariableProblem
+
+
+ContinuousVariableProblem = ContinuousVariableProblem
+
+MixedVariableProblem = MixedVariableProblem

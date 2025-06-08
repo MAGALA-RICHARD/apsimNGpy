@@ -14,17 +14,25 @@ apsimNGpy
    :target: https://pypi.org/project/apsimNGpy/
    :alt: PyPI version
 
-.. image:: https://img.shields.io/pypi/dm/apsimNGpy?logo=pypi
-   :target: https://pypi.org/project/apsimNGpy/
-   :alt: PyPI downloads
+.. image:: https://static.pepy.tech/badge/apsimNGpy
+   :target: https://pepy.tech/project/apsimNGpy
+   :alt: Total PyPI downloads 
 
-.. image:: https://img.shields.io/github/stars/MAGALA-RICHARD/apsimNGpy?style=social
-   :target: https://github.com/MAGALA-RICHARD/apsimNGpy/stargazers
-   :alt: GitHub Stars
+.. image:: https://static.pepy.tech/badge/apsimNGpy/month
+   :target: https://pepy.tech/project/apsimNGpy
+   :alt: Weekly PyPI downloads
 
-.. image:: https://img.shields.io/github/forks/MAGALA-RICHARD/apsimNGpy?style=social
-   :target: https://github.com/MAGALA-RICHARD/apsimNGpy/network/members
-   :alt: GitHub Forks
+.. image:: https://static.pepy.tech/badge/apsimNGpy/week
+   :target: https://pepy.tech/project/apsimNGpy
+   :alt: Weekly PyPI downloads
+
+.. image:: https://img.shields.io/badge/Join%20Discussions-blue.svg
+   :target: https://discord.gg/SU9A6nNv
+   :alt: Join Discussions
+
+.. image:: https://img.shields.io/badge/Ask%20Through%20Teams-purple.svg
+   :target: https://teams.live.com/l/community/FBAbNOQj7y9dPcoaAI
+   :alt: Ask Teams
 
 
 apsimNGpy: The Next Generation Agroecosytem Simulation Library
@@ -39,7 +47,7 @@ APSIMX file editing, seamless weather data retrieval, optimization, and efficien
 Requirements
 ***********************************************************************************
 1. Dotnet, install from https://learn.microsoft.com/en-us/dotnet/core/install/
-2. Python3
+2. Python 3.10 +
 3. APSIM: Add the directory containing the models executable to the system's PATH or python path (to locate the required .dll files). This can be achieved in either of the following ways:
 4. Utilize the APSIM installer provided for this purpose.
 5. Build APSIM from its source code. This is comming soon
@@ -53,7 +61,7 @@ Installation
 
 All versions are currently in development, phase and they can be installed as follows:
 
-- Method 1. install from PyPI
+- Method 1. Stable versions can be installed from PyPI
 
 .. code:: bash
 
@@ -83,7 +91,7 @@ GETTING STARTED
 Before using apsimNGpy, it is necessary to install APSIM. Please follow the instructions provided at the following link to complete the installation: https://www.apsim.info/download-apsim/downloads/
 for MAcOS or Linux users see: https://apsimnextgeneration.netlify.app/install/
 model documentation and tutorial are also available via; https://docs.apsim.info/
-we expect that by accepting to use apsimNGpy, you have a basic understanding of APSIM process-based model, therefore, our focus is to make sure you are able to use apsimNGpy
+we expect that by accepting to use apsimNGpy, you have a basic understanding of APSIM process-based model, therefore, our focus is to make sure you are able to use apsimNGpy.
 
 In addition, make sure that the APSIM installation binaries folder is added to the system path.
 if you run the following code and returns None you need to do something as explained below.
@@ -231,7 +239,7 @@ Now it is possible to initialize the APSIM model using the previously loaded sim
 
 # Running loaded models
 ===============================
-Running loaded models implies excuting the model to generate simulated outputs. This is implimented via :code:`ApsimModel.run()` method` as shown below.
+Running loaded models implies executing the model to generate simulated outputs. This is implemented via ``ApsimModel.run()`` method as shown below.
 Users can provide the ``report_name``, which specifies data table name from the simulation for retrieving the results.
 
 .. code-block:: python
@@ -242,7 +250,7 @@ Users can provide the ``report_name``, which specifies data table name from the 
 Please note that report_name can be a string (``str``), implying a single database table
 or a ``list``, implying that one or more than one database tables. If the later is true, then the results will be concatenated along the rows using ``pandas.concat`` method.
 
-By default, ``apsimNGpy`` looks for these report database tables automatically, and returns a concatenated pandas data frame. This may not be ideal if they are many report tables, hence the need to cleary specify the preffered report table names
+By default, ``apsimNGpy`` looks for these report database tables automatically, and returns a concatenated pandas data frame. This may not be ideal if they are many report tables, hence the need to clearly specify the preferred report table names
 
 
 Accessing simulated results
@@ -274,9 +282,9 @@ Please note that accessing results through any of the above method before callin
     [10 rows x 16 columns]
 
 Inspecting Instantiated Model Object
-===================================
+========================================
 Most of the time, when modifying model parameters and values, you need the  name or a full path to the specified ``APSIM`` model type.
-This is where the ``inspect_model`` method becomes useful—it allows you to inspect the model without opening the file in the APSIM GUI.
+This is where the ``inspect_model`` method becomes useful. It allows you to inspect the model without opening the file in the APSIM GUI.
 
 Let's take a look at how it works.
 
@@ -338,20 +346,21 @@ You can preview the current simulation in the APSIM graphical user interface (GU
    Note that the file opened in the GUI is a temporary clone, so any changes made and saved within the GUI will not be reflected when you rerun the code.
    If you intend to preserve modifications made in the ``GUI``, you may need to supply the ``reference path`` of the edited file using ``ApsimModel`` class .
 
-   In addition, take note of the version it will be difficult to re-open
-   it in the lower versions after opening it in the higher versions of apsim.
+   In addition, apsim file will be opened based on the apsim bin path in use by apsimNGpy.
 
 Visualise the results. please note that python provide very many plotting libraries below is just a basic description of your results.we also provide more data visualisation methods in the diagnostic module
 
 .. code-block:: python
 
     # Visualize the simulation results
-    res = apsim.results['MaizeR']  # Replace with the appropriate report name
+    res = apsim.results  # Reading directly from Report
+    # alternativel
+    res = apsim.get_simulated_output("Report")
     plot_data(df['Clock.Today'], df.Yield, xlabel='Date', ylabel='Soybean Yield (kg/ha)')
 
-Finally, the `plot_data` function is used to visualize the simulation results. Replace 'df['Clock.Today']' and `df.Yield` with the appropriate report name and column from your simulation results.
+Finally, the ``plot_data`` function is used to visualize the simulation results. Replace ``df['Clock.Today']`` and ``df.Yield`` with the appropriate columns names from your simulation results.
 
-A graph similar to the example below should appear
+A graph similar to the example below should appear.
 
 Congratulations you have successfully used apsimNGpy package
 *********************************************************************************
@@ -425,12 +434,57 @@ Push to GitHub
     git push origin your-branch-name
 
 Submit a Pull Request
-  Go to the ``apsimNGpy`` repository on GitHub, and you'll see a prompt to submit a pull request based on your branch. Click on "Compare & pull request" and describe the changes you've made. Finally, submit the pull request.
+Go to the ``apsimNGpy`` repository on GitHub, and you'll see a prompt to submit a pull request based on your branch. Click on "Compare & pull request" and describe the changes you've made. Finally, submit the pull request.
 
 Updating Documentation
 ----------------------
-
 Improvements or updates to documentation are greatly appreciated. You can submit changes to documentation with the same process used for code contributions.
+
+Testing your pull request or your contribution
+----------------------------------------------
+
+After making any code improvements, it is important to ensure that all modules are still working correctly. This calls for an explicit test of the added code changes.
+
+`apsimNGpy` tests are implemented via Python's ``unittest`` module. We provide a testing framework as shown below.
+
+First, navigate to your `apsimNGpy` repository or the directory containing ``setup.py`` in your terminal, and run the following command:
+
+.. code-block:: python
+
+    pip install -e .  # Installs apsimNGpy as an editable package, enabling direct imports
+                    #and reflecting code changes without re-installation
+
+Import the necessary modules as follows:
+
+.. code-block:: python
+
+    import unittest
+    from apsimNGpy.tests.tester_main import suite, loader, run_suite
+    from apsimNGpy.core.base_data import load_default_simulations
+
+Set up the test and add any test case as shown below:
+
+.. code-block:: python
+
+    class TestCaseAddModule(unittest.TestCase):
+        # Set up the model to use
+        def setUp(self):
+            self.model = load_default_simulations('Maize')
+            self.out = 'test_edit_model.apsimx'
+
+        # Add test case
+        def test_add_crop_replacement(self):
+            """+++test adding crop replacement++"""
+            self.model.add_crop_replacements(_crop='Maize')
+            self.model.create_experiment(permutation=True)
+
+Finally, run the test suite. It is recommended to use the ``run_suite`` method, which executes all registered tests and ensures that dependent modules are functioning correctly. You may need to add your test case before running
+
+.. code-block:: python
+
+    if __name__ == '__main__':
+        suite.addTests(loader.loadTestsFromTestCase(TestCaseAddModule))
+        run_suite(2)
 
 Join the Discussion
 -------------------

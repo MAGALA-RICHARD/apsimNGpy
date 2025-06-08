@@ -190,7 +190,7 @@ class OrganizeAPSIMsoil_profile:
         # trial
         self.thickness_values = np.array(thickness_values)
 
-    # create a function that creates a variable profile of the provide variables
+    # create a function that creates a variable profile of the provide _variables
     @staticmethod
     def set_depth(depththickness):
         """
@@ -450,7 +450,7 @@ class OrganizeAPSIMsoil_profile:
         # ad * soilvar_perdep_cor(nlayers, a = curveparam_a, b = curveparam_b)
         cropKL = 0.06 * soilvar_perdep_cor(nlayers, a=curveparam_a, b=curveparam_b)
         cropXF = 1 * soilvar_perdep_cor(nlayers, a=curveparam_a, b=0)
-        # create a data frame for these three variables
+        # create a data frame for these three _variables
         dfs = pd.DataFrame({'kl': cropKL, 'll': cropLL, 'xf': cropXF})
         SoilCNRatio = np.full(shape=nlayers, fill_value=12.2, dtype=np.int64)
         FOM = 160 * soilvar_perdep_cor(nlayers, a=curveparam_a, b=curveparam_b)

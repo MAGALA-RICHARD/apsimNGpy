@@ -1,5 +1,7 @@
 """
-Tests edit_model_method and inspect model_parameters co-currently
+Tests edit_model_method and inspect model_parameters co-currently.
+
+
 """
 from apsimNGpy.core.base_data import load_default_simulations
 from apsimNGpy.core.apsim import ApsimModel
@@ -34,7 +36,7 @@ class TestCoreModel(unittest.TestCase):
 
     def test_edit_soil_multiple_soil_layers(self):
         """
-        scenario 2. supplying a list to update soil layers
+        Scenario 2. Supplying a list to update soil layers
 
         """
         toPCarbList = [1.23, 1.0]

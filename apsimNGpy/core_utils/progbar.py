@@ -66,5 +66,6 @@ def progress(total, color ='blue'):
         print_progress_bar(i, total, prefix='Progress', suffix='Complete', length=10, color=color)
         time.sleep(0.03)  # Simulate work
 
-#progress(100)
+if __name__ == '__main__':
+  progress(100)
 

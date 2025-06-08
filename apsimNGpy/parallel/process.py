@@ -181,7 +181,7 @@ if __name__ == '__main__':
     lm = custom_parallel(fnn, range(10000), use_thread=True, ncores=4)
     # lm2 = custom_parallel(fnn, gen_d, use_thread=True, ncores=10)
     # with a custom message
-    lm = custom_parallel(fnn, range(100000), use_thread=True, ncores=4, void=False,progress_message="running function: ")
+    lm = custom_parallel(fnn, range(1000000), use_thread=True, ncores=4, void=False,progress_message="running function: ")
     # simple example
 
     ap = [i for i in lm]

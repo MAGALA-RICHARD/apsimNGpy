@@ -2219,7 +2219,7 @@ class CoreModel:
               # output: 1990, 2000
             """
 
-        start, end = self.inspect_model_parameters(model_type='Clock', model_name='Clock', start=start, end=end)
+        #start, end = self.inspect_model_parameters(model_type='Clock', model_name='Clock', start=start, end=end)
         file_name = f"{Path(self._model).stem}_{source}_{start}_{end}.met"
 
         name = file_name or filename

@@ -18,17 +18,21 @@ apsimNGpy
    :target: https://pepy.tech/project/apsimNGpy
    :alt: Total PyPI downloads 
 
-.. image:: https://img.shields.io/pypi/dm/apsimNGpy?logo=pypi
-   :target: https://pypi.org/project/apsimNGpy/
-   :alt: PyPI downloads
+.. image:: https://static.pepy.tech/badge/apsimNGpy/month
+   :target: https://pepy.tech/project/apsimNGpy
+   :alt: Weekly PyPI downloads
 
-.. image:: https://img.shields.io/github/stars/MAGALA-RICHARD/apsimNGpy?style=social
-   :target: https://github.com/MAGALA-RICHARD/apsimNGpy/stargazers
-   :alt: GitHub Stars
+.. image:: https://static.pepy.tech/badge/apsimNGpy/week
+   :target: https://pepy.tech/project/apsimNGpy
+   :alt: Weekly PyPI downloads
 
-.. image:: https://img.shields.io/github/forks/MAGALA-RICHARD/apsimNGpy?style=social
-   :target: https://github.com/MAGALA-RICHARD/apsimNGpy/network/members
-   :alt: GitHub Forks
+.. image:: https://img.shields.io/badge/Join%20Discussions-blue.svg
+   :target: https://discord.gg/SU9A6nNv
+   :alt: Join Discussions
+
+.. image:: https://img.shields.io/badge/Ask%20Through%20Teams-purple.svg
+   :target: https://teams.live.com/l/community/FBAbNOQj7y9dPcoaAI
+   :alt: Ask Teams
 
 
 apsimNGpy: The Next Generation Agroecosytem Simulation Library
@@ -57,7 +61,7 @@ Installation
 
 All versions are currently in development, phase and they can be installed as follows:
 
-- Method 1. install from PyPI
+- Method 1. Stable versions can be installed from PyPI
 
 .. code:: bash
 
@@ -278,7 +282,7 @@ Please note that accessing results through any of the above method before callin
     [10 rows x 16 columns]
 
 Inspecting Instantiated Model Object
-===================================
+========================================
 Most of the time, when modifying model parameters and values, you need the  name or a full path to the specified ``APSIM`` model type.
 This is where the ``inspect_model`` method becomes useful. It allows you to inspect the model without opening the file in the APSIM GUI.
 
@@ -437,36 +441,50 @@ Updating Documentation
 Improvements or updates to documentation are greatly appreciated. You can submit changes to documentation with the same process used for code contributions.
 
 Testing your pull request or your contribution
-  After making any code improvements, It is important that all modules are still working correctly. This calls for an explict test of the added code changes.
-  apsimNGpy tests are implemented via python ``unittest`` module. We provide a testing framework as shown below. First navigate to your apsimNGpy repo or directory with the ``setup.py`` on your terminal and run the following code::
+----------------------------------------------
 
-    pip install -e .  # Installs apsimNGpy as an editable package, enabling direct imports and reflecting code changes without re-installation
+After making any code improvements, it is important to ensure that all modules are still working correctly. This calls for an explicit test of the added code changes.
 
- Import the necessary module as follows::
+`apsimNGpy` tests are implemented via Python's ``unittest`` module. We provide a testing framework as shown below.
+
+First, navigate to your `apsimNGpy` repository or the directory containing ``setup.py`` in your terminal, and run the following command:
+
+.. code-block:: python
+
+    pip install -e .  # Installs apsimNGpy as an editable package, enabling direct imports
+                    #and reflecting code changes without re-installation
+
+Import the necessary modules as follows:
+
+.. code-block:: python
 
     import unittest
     from apsimNGpy.tests.tester_main import suite, loader, run_suite
     from apsimNGpy.core.base_data import load_default_simulations
 
-  Set up the test and add any test module as follows::
+Set up the test and add any test case as shown below:
+
+.. code-block:: python
 
     class TestCaseAddModule(unittest.TestCase):
-        # set up the model to use
+        # Set up the model to use
         def setUp(self):
             self.model = load_default_simulations('Maize')
             self.out = 'test_edit_model.apsimx'
-        # add test case as shown below
+
+        # Add test case
         def test_add_crop_replacement(self):
             """+++test adding crop replacement++"""
             self.model.add_crop_replacements(_crop='Maize')
             self.model.create_experiment(permutation=True)
 
-  Finally run test suite. It is recommended to run the test suite using the ``run_suite`` method, which runs all the tests to check if dependent modules are still working perfectly. You may need to add your test case before running as follows::
+Finally, run the test suite. It is recommended to use the ``run_suite`` method, which executes all registered tests and ensures that dependent modules are functioning correctly. You may need to add your test case before running
+
+.. code-block:: python
 
     if __name__ == '__main__':
         suite.addTests(loader.loadTestsFromTestCase(TestCaseAddModule))
         run_suite(2)
-
 
 Join the Discussion
 -------------------

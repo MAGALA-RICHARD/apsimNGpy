@@ -33,7 +33,8 @@ def open_file(filepath):
 
 class Diagnostics(ApsimModel):
     def __init__(self, model, out_path=None, **kwargs):
-        super().__init__(model, out_path, time='year', **kwargs)
+        super().__init__(model, out_path, **kwargs)
+
         if not self.ran_ok:
             self.run()
 
@@ -127,12 +128,14 @@ if __name__ == '__main__':
     scrach.mkdir(exist_ok=True)
     apsim = load_default_simulations(crop='Maize', simulations_object=False, set_wd= scrach)
     model = Diagnostics(apsim)
-    model.add_report_variable(variable_spec='[Soil].Nutrient.TotalC[1]/1000 as SOC1', report_name='Report', set_event_names=['[Clock].EndOfYear'])
+    model.add_report_variable(variable_spec='[Soil].Nutrient.TotalC[1]/1000 as SOC1', report_name='Report', set_event_names=['[Clock].EndOfYear', '[Maize].Harvesting'])
     model.add_db_table(variable_spec=['[Soil].Nutrient.TotalC[1]/1000 as SOC1', '[Clock].Today.Year as Year'])
     model.update_mgt(management=({"Name": 'Sow using a variable rule', 'Population': 8},))
     model.run(report_name='my_table')
 
     model.plot_time_series(y='SOC1', time='Year', table_name='my_table')
     model.plot_distribution('SOC1')
+    model.plot_distribution('Yield')
     model.run(report_name='Report')
     model.plot_correlation_heatmap()
+    model.get_weather_from_web(lonlat=(-93.50456, 42.601247), start=1990, end=2001, source='daymet')

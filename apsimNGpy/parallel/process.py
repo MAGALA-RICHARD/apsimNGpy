@@ -43,7 +43,7 @@ def custom_parallel(func, iterable: Iterable,  *args, **kwargs):
     """
 
     use_thread, cpu_cores = kwargs.get('use_thread', False), kwargs.get('ncores', CORES)
-    progress_message = kwargs.get('progress_message', f"Processing multiple jobs via '{func.__name__}' please wait!")
+    progress_message = kwargs.get('progress_message', f"Processing via '{func.__name__}' please wait!")
     progress_message += ": "
     void = kwargs.get('void', False)
     selection = select_type(use_thread=use_thread,
@@ -181,7 +181,7 @@ if __name__ == '__main__':
     lm = custom_parallel(fnn, range(10000), use_thread=True, ncores=4)
     # lm2 = custom_parallel(fnn, gen_d, use_thread=True, ncores=10)
     # with a custom message
-    lm = custom_parallel(fnn, range(1000000), use_thread=True, ncores=4, void=False,progress_message="running function: ")
+    lm = custom_parallel(fnn, range(1000000), use_thread=True, ncores=4, void=False)
     # simple example
 
     ap = [i for i in lm]

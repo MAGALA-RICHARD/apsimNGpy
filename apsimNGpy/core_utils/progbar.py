@@ -112,7 +112,7 @@ class ProgressBar:
             tasks = f'{color_code}[{self.iteration}/{self.total}]{reset}'
 
         sys.stdout.write(f'\r{prefix} |{bar}| {percent_str}| {tasks}| {suffix}{time_info}')
-        sys.stdout.flush()
+        #sys.stdout.flush()
 
 
 def print_progress_bar(iteration, total, prefix='', suffix='', length=10, fill='█', color='green', leader_head=' '):

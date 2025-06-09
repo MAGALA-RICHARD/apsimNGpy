@@ -260,7 +260,7 @@ def _eval_model(model__type, evaluate_bound=False) -> ModelTools.CLASS_MODEL:
         pass
 
 
-def inspect_model_inputs(scope, model_type: str,  model_name: str,
+def inspect_model_inputs(scope, model_type: str, model_name: str,
                          simulations: Union[str, list] = MissingOption,
                          parameters: Union[list, str] = None,
                          **kwargs) -> Union[Dict[str, Any], pd.DataFrame, list, Any]:
@@ -305,7 +305,7 @@ def inspect_model_inputs(scope, model_type: str,  model_name: str,
 
     model_type_class = _eval_model(model_type)
 
-    is_single_sim = isinstance(simulations, str)
+    is_single_sim = True if isinstance(simulations, str) else False
     sim_list = scope.find_simulations(simulations)
     result = {} if not is_single_sim else None
     if isinstance(parameters, str):

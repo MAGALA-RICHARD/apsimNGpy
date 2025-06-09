@@ -2,7 +2,7 @@ import os
 
 import pandas as pd
 
-from apsimNGpy.parallel.process import run_apsimx_files_in_parallel, read_result_in_parallel
+from apsimNGpy.parallel.process import run_apsimx_files_in_parallel, _read_result_in_parallel
 from apsimNGpy.core_utils.utils import collect_runfiles
 from pathlib import Path
 
@@ -21,6 +21,7 @@ ap = make_apsimx_clones(maize, 20)
 
 
 def fnn(x):
+
     return x
 
 
@@ -37,7 +38,7 @@ if __name__ == "__main__":
     rpath = os.path.realpath(hd.joinpath('apsimx_cloned'))
     # we can now read the results using the .db path as follow
     files_db = [i for i in collect_runfiles(path2files=rpath, pattern=["*.db"])]
-    dat = read_result_in_parallel(files_db, ncores=2, use_threads=True, report_name='report')
+    dat = _read_result_in_parallel(files_db, ncores=2, use_threads=True, report_name='report')
     # return a generator object
     dl = list(dat)
     # df = pd.concat(dat)

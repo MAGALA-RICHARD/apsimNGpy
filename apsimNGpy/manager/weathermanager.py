@@ -13,8 +13,6 @@ import json
 import pandas as pd
 import time
 import statistics
-from progressbar import ProgressBar
-import progressbar
 import numpy as np
 import string
 import io
@@ -820,7 +818,7 @@ if __name__ == '__main__':
     profiler.disable()
     # profiler.print_stats(sort='time')
     a = time.perf_counter()
-    xp = get_met_from_day_met(lonlat=(-93.50456, 42.601247), start=1989, end=2001, filename=Name, retry_number=3)
+    xp = get_met_from_day_met(lonlat=(-93.50456, 42.601247), start=1989, end=2001, filename=Name, retry_number=3, )
 
     b = time.perf_counter()
     print(b - a)

@@ -8,6 +8,7 @@ from apsimNGpy.core.core import CoreModel, find_model, _eval_model, Models
 # Import the module where CoreModel class is defined
 from apsimNGpy.core.model_loader import save_model_to_file
 from apsimNGpy.tests.base_test import BaseTester, set_wd
+from core.base_data import load_default_simulations
 
 set_wd()
 
@@ -238,7 +239,10 @@ class TestCoreModel(BaseTester):
                 self.test_ap_sim.remove_model(model_type='Simulation', model_name='soybean_replaced')
             except Exception as e:
                 pass
-
+    def test_get_weather_from_web(self):
+        model = load_default_simulations('Maize')
+        model.get_weather_from_web(lonlat=(-93.50456, 42.601247), start=1990, end=2001, source='daymet')
+        model.run()
     def test_edit_model(self):
         self.test_ap_sim.edit_model(model_type='Clock', simulations="Simulation", model_name='Clock',
                                     Start='1900-01-01', End='1990-01-12')

@@ -582,9 +582,7 @@ class CoreModel:
         self.save()
         return self
 
-    def clone_model(self, model_type, model_name, adoptive_parent_type, rename=None, adoptive_parent_name=None,
-
-                    in_place=False):
+    def clone_model(self, model_type, model_name, adoptive_parent_type, rename=None, adoptive_parent_name=None):
         """
         Clone an existing  ``model`` and move it to a specified parent within the simulation structure.
         The function modifies the simulation structure by adding the cloned model to the ``designated parent``.
@@ -653,7 +651,7 @@ class CoreModel:
         self.save()
 
     @staticmethod
-    def find_model(model_name: str, model_namespace=None):
+    def find_model(model_name: str):
         """
         Find a model from the Models namespace and return its path.
 

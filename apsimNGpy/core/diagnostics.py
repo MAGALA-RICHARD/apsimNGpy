@@ -33,7 +33,8 @@ def open_file(filepath):
 
 class Diagnostics(ApsimModel):
     def __init__(self, model, out_path=None, **kwargs):
-        super().__init__(model, out_path, time='year', **kwargs)
+        super().__init__(model, out_path, **kwargs)
+
         if not self.ran_ok:
             self.run()
 

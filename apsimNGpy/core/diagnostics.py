@@ -135,7 +135,7 @@ if __name__ == '__main__':
 
     model.plot_time_series(y='SOC1', time='Year', table_name='my_table')
     model.plot_distribution('SOC1')
-    model.plot_distribution('Yield')
+    #model.plot_distribution('Yield')
     model.run(report_name='Report')
     model.plot_correlation_heatmap()
     model.get_weather_from_web(lonlat=(-93.50456, 42.601247), start=1990, end=2001, source='daymet')

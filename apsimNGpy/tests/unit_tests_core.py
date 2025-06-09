@@ -239,7 +239,11 @@ class TestCoreModel(BaseTester):
                 self.test_ap_sim.remove_model(model_type='Simulation', model_name='soybean_replaced')
             except Exception as e:
                 pass
-    def test_get_weather_from_web(self):
+    def test_get_weather_from_web_nasa(self):
+        model = load_default_simulations('Maize')
+        model.get_weather_from_web(lonlat=(-93.50456, 42.601247), start=1990, end=2001, source='nasa')
+        model.run()
+    def test_get_weather_from_web_daymet(self):
         model = load_default_simulations('Maize')
         model.get_weather_from_web(lonlat=(-93.50456, 42.601247), start=1990, end=2001, source='daymet')
         model.run()

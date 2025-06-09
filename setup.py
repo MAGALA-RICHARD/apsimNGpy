@@ -55,8 +55,6 @@ setup(
         'geopandas >=0.13.2',
         'pandas >=2.0.3',
         'geopy >= 2.4.1',
-        'tqdm >= 4.66.2',
-        'progressbar >= 2.5',
         'joblib >= 1.3.2',
         'sqlalchemy >=2.0',
         'matplotlib',
@@ -64,7 +62,6 @@ setup(
         'tenacity',
         'typer',
         'wrapdisc==2.5.0',
-
         'summarytools>=0.3.0'
 
     ]

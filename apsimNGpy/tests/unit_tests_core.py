@@ -4,7 +4,8 @@ from unittest.mock import patch
 
 import pandas as pd
 
-from apsimNGpy.core.core import CoreModel, find_model, _eval_model, Models
+from apsimNGpy.core.core import CoreModel, Models
+from apsimNGpy.core._modelhelpers import find_model, _eval_model
 # Import the module where CoreModel class is defined
 from apsimNGpy.core.model_loader import save_model_to_file
 from apsimNGpy.tests.base_test import BaseTester, set_wd

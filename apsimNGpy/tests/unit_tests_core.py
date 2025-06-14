@@ -247,34 +247,36 @@ class TestCoreModel(BaseTester):
         self.assertTrue(start, 'Simulation start date was not successfully changed')
         self.assertTrue(end, 'Simulation end date was not successfully changed')
 
-    def __test_edit_cultivar_edit_model_method(self):
+    def test_edit_cultivar_edit_model_method(self):
         """
         Test the edit_cultivar requires that we have replacements in place
         @return:
         """
+        from apsimNGpy.core.base_data import load_default_simulations
+        test_ap_sim = load_default_simulations(crop = 'Maize')
         from apsimNGpy.core.structure import add_crop_replacements
-        add_crop_replacements(self.test_ap_sim, _crop='Maize')
-        in_cul = self.test_ap_sim.extract_user_input('Sow using a variable rule')
-        in_cultivar = in_cul['Simulation'].get('CultivarName')
-        if not in_cultivar:
-            raise unittest.SkipTest('skipping test edit cultivar because cultivar not found')
+        add_crop_replacements(test_ap_sim, _crop='Maize')
+        in_cul = test_ap_sim.inspect_model_parameters(model_type='Cultivar', model_name='B_110')
+        out_cultivar = 'B_110-e'
         new_juvenile = 289.777729777
-        self.test_ap_sim.edit_model(model_type='Cultivar', model_name=in_cultivar,
-                                    commands='[Phenology].Juvenile.Target.FixedValue', values=new_juvenile,
+        com_path = '[Phenology].Juvenile.Target.FixedValue'
+        test_ap_sim.edit_model(model_type='Cultivar', model_name='B_110',new_cultivar_name=out_cultivar,
+                                    commands=com_path, values=new_juvenile,
                                     cultivar_manager='Sow using a variable rule')
 
         # first we check the current '[Phenology].Juvenile.Target.FixedValue': '211'
-        cp = self.test_ap_sim.read_cultivar_params(name=in_cultivar)
-        com_path = '[Phenology].Juvenile.Target.FixedValue'
-        juvenile_original = float(cp.get(com_path))
+        cp = test_ap_sim.read_cultivar_params(name=out_cultivar)
 
-        self.test_ap_sim.edit_cultivar(commands=com_path, values=new_juvenile, CultivarName=in_cultivar)
+        juvenile_original = float(cp.get(com_path))
+        print(juvenile_original)
+        self.assertEqual(new_juvenile, juvenile_replacements)
+        test_ap_sim.edit_cultivar(commands=com_path, values=new_juvenile, CultivarName=out_cultivar)
         # read again
-        juvenile_replacements = self.test_ap_sim.read_cultivar_params(name=in_cultivar)[com_path]
+        juvenile_replacements = test_ap_sim.read_cultivar_params(name=out_cultivar)[com_path]
         if juvenile_replacements:
             juvenile_replacements = float(juvenile_replacements)
         self.assertEqual(new_juvenile, juvenile_replacements)
-        self.test_ap_sim.run()
+        test_ap_sim.run()
         # self.assertGreater(juvenile_replacements, juvenile_original, msg= 'Juvenile target value was not replaced')
 
     def test_inspect_model_parameters(self):

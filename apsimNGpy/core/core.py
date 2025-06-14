@@ -1052,15 +1052,19 @@ class CoreModel:
                         assert len(commands) == len(values), \
                             "`commands` and `values` must have the same length."
 
-                    # need to specify back to the cultivar manager script the new cultivar name since APSIM is not allowing editing in place.
-                    # this is a temporal fix though
-                    # editing in place could work if we were reusing the model in memory of python
+                    # need to specify back to the cultivar manager script the new cultivar name since APSIM is not
+                    # allowing editing in place. this is a temporal fix though editing in place could work if we were
+                    # reusing the model in memory of python
                     cultivar_manager_paramter_name = kwargs.get("parameter_name", 'CultivarName')
                     cultivar_manager = kwargs.get("cultivar_manager")
                     new_cultivar_name = kwargs.get("new_cultivar_name", None)
-                    assert new_cultivar_name, "`new_cultivar_name` is required to proceed. use new_cultivar_name ='your_vutivar_name'"
-                    # the reason the parameter path is split into command and values to allow passing different values during optimization
-                    # Errors should mot pass silently
+                    if not new_cultivar_name:
+                        raise ValueError(f"please specify new cultivar name using `new_cultivar_name= "
+                                         f"'your_cultivar_name`")
+                    assert new_cultivar_name, ("`new_cultivar_name` is required to proceed. use new_cultivar_name "
+                                               "='your_vutivar_name'")
+                    # the reason the parameter path is split into command and values to allow passing different
+                    # values during optimization Errors should mot pass silently
                     if not cultivar_manager:
                         raise ValueError("Please specify a cultivar manager using key word 'cultivar_manager'")
                     if not commands or values is None:
@@ -1076,6 +1080,8 @@ class CoreModel:
                     params = self._cultivar_params(cultvar)
                     if isinstance(values, str):
                         values = values.strip()
+                        params[commands] = values
+                    if isinstance(values, (float, int)):
                         params[commands] = values
                     else:
                         par_value = zip(commands, values)

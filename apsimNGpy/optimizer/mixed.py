@@ -131,7 +131,7 @@ class MixedVariableProblem(ContinuousVariableProblem):
             bounds=None,
             categories=None,
             values=None,
-            q=None
+            q=None, **kwargs
     ) -> "MixedVariableProblem":
         """
         Adds a control variable to the optimization problem. Under the hood, the variables are edited using ``edit_method``.

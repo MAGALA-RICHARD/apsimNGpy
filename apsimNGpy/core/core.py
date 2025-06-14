@@ -4,58 +4,41 @@ author: Richard Magala
 email: magalarich20@gmail.com
 
 """
-import copy
-import sys
-from types import MappingProxyType
 import re
-import inspect
-import random, pathlib
+import random
+import pathlib
 import string
-from shutil import which
 from typing import Union
-import os, shutil
-import numpy as np
+import os
+import shutil
 import pandas as pd
-from os.path import join as opj
 import json
 import datetime
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Union, Optional, List, Dict
+from typing import Optional, List, Dict
 import warnings
 from sqlalchemy.testing.plugin.plugin_base import logging
 
 from apsimNGpy.manager.weathermanager import get_weather
-from functools import cache, lru_cache, singledispatch
+from functools import lru_cache
 # prepare for the C# import
-from apsimNGpy.core import pythonet_config
-import warnings
-from apsimNGpy.core_utils.utils import timer, open_apsimx_file_in_window, open_file_in_window
-
+from apsimNGpy.core_utils.utils import timer, open_apsimx_file_in_window
+from apsimNGpy.core.pythonet_config import start_pythonnet
 # now we can safely import C# libraries
-from System.Collections.Generic import *
-from Models.Core import Simulations, ScriptCompiler, Simulation
-from System import *
-from Models.Core.ApsimFile import FileFormat
-from Models.Climate import Weather
-from Models.Soils import Soil, Physical, SoilCrop, Organic, Solute, Chemical
+from apsimNGpy.core.pythonet_config import *
+from apsimNGpy.core_utils.database_utils import dataview_to_dataframe
+from apsimNGpy.core.config import get_apsim_bin_path
 
-from apsimNGpy.core_utils.database_utils import read_db_table, dataview_to_dataframe
-from apsimNGpy.core.config import get_apsim_bin_path, load_crop_from_disk
-
-from apsimNGpy.core._modelhelpers import (get_or_check_model, Models, old_method,
+from apsimNGpy.core._modelhelpers import (get_or_check_model, old_method,
                                           inspect_model_inputs, soil_components,
-                                          ModelTools, _eval_model, replace_variable_by_index,
-                                          _find_model, find_model)
-from Models.PMF import Cultivar
-from apsimNGpy.core.runner import run_model_externally, collect_csv_by_model_path, upgrade_apsim_file, run_p
+                                          ModelTools, _eval_model, replace_variable_by_index)
+from apsimNGpy.core.runner import run_model_externally, collect_csv_by_model_path, run_p
 from apsimNGpy.core.model_loader import (load_apsim_model, save_model_to_file, recompile)
 import ast
-from typing import Iterable
-from collections.abc import Iterable
 from typing import Any
 
-from apsimNGpy.settings import *
+from apsimNGpy.settings import SCRATCH, logger, MissingOption
 
 
 def _looks_like_path(value: str) -> bool:
@@ -582,9 +565,7 @@ class CoreModel:
         self.save()
         return self
 
-    def clone_model(self, model_type, model_name, adoptive_parent_type, rename=None, adoptive_parent_name=None,
-
-                    in_place=False):
+    def clone_model(self, model_type, model_name, adoptive_parent_type, rename=None, adoptive_parent_name=None):
         """
         Clone an existing  ``model`` and move it to a specified parent within the simulation structure.
         The function modifies the simulation structure by adding the cloned model to the ``designated parent``.
@@ -653,7 +634,7 @@ class CoreModel:
         self.save()
 
     @staticmethod
-    def find_model(model_name: str, model_namespace=None):
+    def find_model(model_name: str):
         """
         Find a model from the Models namespace and return its path.
 
@@ -1013,7 +994,7 @@ class CoreModel:
                     self.replace_soils_values_by_path(node_path=model_instance.FullPath, **kwargs)
                 case Models.Surface.SurfaceOrganicMatter:
                     if not kwargs:
-                        raise ValueError(f"MissingOption keyword argument 'kwargs'")
+                        raise ValueError("MissingOption keyword argument 'kwargs'")
                     selected_parameters = set(kwargs.keys())
                     accepted_attributes = {'SurfOM',
                                            'InitialCPR', 'InitialResidueMass',
@@ -1811,7 +1792,7 @@ class CoreModel:
                 self.path = out_path or self.path
                 self.datastore = self.path.replace("apsimx", 'db')
                 self._DataStore = self.Simulations.FindChild[Models.Storage.DataStore]()
-        except AttributeError as e:
+        except AttributeError:
             pass
         return self
 
@@ -2227,7 +2208,7 @@ class CoreModel:
               # output: 1990, 2000
             """
 
-        start, end = self.inspect_model_parameters(model_type='Clock', model_name='Clock', start=start, end=end)
+        #start, end = self.inspect_model_parameters(model_type='Clock', model_name='Clock', start=start, end=end)
         file_name = f"{Path(self._model).stem}_{source}_{start}_{end}.met"
 
         name = file_name or filename
@@ -2520,7 +2501,7 @@ class CoreModel:
                                         str_fmt=".",
                                         **kwargs):
 
-        warnings.warn(f"replace_soil_properties_by_path is deprecated use self.replace_soils_values_by_path instead",
+        warnings.warn("replace_soil_properties_by_path is deprecated use self.replace_soils_values_by_path instead",
                       DeprecationWarning)
 
         """
@@ -2966,7 +2947,7 @@ class CoreModel:
             for i in model_types:
 
                 ans = self.inspect_model(eval(i))
-                if not 'Replacements' in ans and 'Folder' in i:
+                if 'Replacements' not in ans and 'Folder' in i:
                     continue
                 data.extend(ans)
             del Models, model_types
@@ -2981,8 +2962,8 @@ class CoreModel:
         """
         if kwargs.get('indent', None) or kwargs.get('display_full_path', None):
             logger.info(
-                f"Inspecting file with key word indent or display_full_path is \ndeprecated, the inspect_file now print "
-                f"the inspection as a tree with names and corresponding model \nfull paths combined")
+                "Inspecting file with key word indent or display_full_path is \ndeprecated, the inspect_file now print "
+                "the inspection as a tree with names and corresponding model \nfull paths combined")
 
         def build_tree(paths):
             from collections import defaultdict
@@ -3104,7 +3085,6 @@ if __name__ == '__main__':
 
     # Model = FileFormat.ReadFromFile[Models.Core.Simulations](model, None, False)
     os.chdir(Path.home())
-    from apsimNGpy.core.base_data import load_default_simulations
 
     home = Path.home()
 
@@ -3129,7 +3109,6 @@ if __name__ == '__main__':
     model.add_db_table(variable_spec=['[Clock].Today', '[Soil].Nutrient.TotalC[1]/1000 as SOC1'], rename='reporterte')
     a = perf_counter()
     # model.clean_up(db=True)
-    import doctest
     # clone test
     # for i in range(100):
     #     model.clone_model('Models.Core.Simulation', 'Simulation',

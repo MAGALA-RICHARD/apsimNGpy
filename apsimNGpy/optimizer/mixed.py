@@ -12,7 +12,7 @@ from scipy.optimize import minimize, differential_evolution
 import subprocess
 from tqdm import tqdm
 from apsimNGpy.optimizer.one_obj import AbstractProblem, SIMULATIONS, ContinuousVariableProblem, cache, VarDesc
-
+from apsimNGpy.core_utils.progbar import ProgressBar
 try:
     import wrapdisc
 except ModuleNotFoundError as mnf:
@@ -396,7 +396,6 @@ class MixedVariableProblem(ContinuousVariableProblem):
 
             self._open_pbar(labels=[i.label for i in self.control_vars])
             call_counter = {"count": 0}
-            func = getattr(self, '_set_objective_function')
 
             def wrapped_obj(x, *args):
                 call_counter["count"] += 1
@@ -447,5 +446,5 @@ if __name__ == "__main__":
     problem.add_control('Manager', "Sow using a variable rule", 'RowSpacing', vtype='grid', start_value=400,
                         values=[400, 600, 750, 800, 900, 1000, 1100, 1200])
     # de_res = problem.optimize_with_differential_evolution()
-    res = problem.minimize_with_local_solver(method='Powell')
+    res = problem.minimize_with_local_solver(method='Powell', )
     de = problem.optimize_with_differential_evolution(popsize=20, polish =True)

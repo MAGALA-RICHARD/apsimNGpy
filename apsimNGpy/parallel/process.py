@@ -1,20 +1,10 @@
-import os
-
 from concurrent.futures import ProcessPoolExecutor, as_completed, ThreadPoolExecutor
 from multiprocessing import cpu_count
-from time import perf_counter
-from apsimNGpy.settings import NUM_CORES
-from apsimNGpy.core_utils.run_utils import run_model
-from tqdm import tqdm
-from apsimNGpy import settings
-from apsimNGpy.core_utils.utils import select_process
-from apsimNGpy.core_utils.database_utils import read_db_table
-from apsimNGpy.parallel.safe import download_soil_table
-from itertools import islice
-import pandas as pd
-import multiprocessing as mp
-import types
 from typing import Iterable
+from apsimNGpy.core_utils.progbar import ProgressBar
+from apsimNGpy.core_utils.database_utils import read_db_table
+from apsimNGpy.core_utils.run_utils import run_model
+from apsimNGpy.settings import NUM_CORES
 
 CPU = int(int(cpu_count()) * 0.5)
 CORES = NUM_CORES
@@ -53,7 +43,7 @@ def custom_parallel(func, iterable: Iterable,  *args, **kwargs):
     """
 
     use_thread, cpu_cores = kwargs.get('use_thread', False), kwargs.get('ncores', CORES)
-    progress_message = kwargs.get('progress_message', f"Processing multiple jobs via '{func.__name__}' please wait!")
+    progress_message = kwargs.get('progress_message', f"Processing via '{func.__name__}' please wait!")
     progress_message += ": "
     void = kwargs.get('void', False)
     selection = select_type(use_thread=use_thread,
@@ -61,28 +51,24 @@ def custom_parallel(func, iterable: Iterable,  *args, **kwargs):
     bar_format = f"{progress_message}{{l_bar}}{{bar}}| jobs completed: {{n_fmt}}/{{total_fmt}}| Elapsed time: {{elapsed}}"
     with selection as pool:
         futures = [pool.submit(func, i, *args) for i in iterable]
+        progress = ProgressBar(total=len(futures), prefix=f"{progress_message}", suffix='Complete', color='green')
+        # with tqdm(
+        #         total=len(futures),
+        #         position=0,
+        #         leave=True,
+        #         bar_format=bar_format
+        # ) as progress:
 
-        # progress = tqdm(total=len(futures), position=0, leave=True,
-        #                 bar_format=f'{progress_message} {|{bar}|}:' '{percentage:3.0f}% completed')
-        with selection as pool:
-            futures = [pool.submit(func, i, *args) for i in iterable]
 
-            with tqdm(
-                    total=len(futures),
-                    position=0,
-                    leave=True,
-                    bar_format=bar_format
-            ) as progress:
-
-                if not void:
-                    for future in as_completed(futures):
-                        yield future.result()
-                        progress.update(1)
-                else:
-                    for future in as_completed(futures):
-                        future.result()  # discard result, just execute
-                        progress.update(1)
-                    return None
+        if not void:
+            for future in as_completed(futures):
+                yield future.result()
+                progress.update(1)
+        else:
+            for future in as_completed(futures):
+                future.result()  # discard result, just execute
+                progress.update(1)
+            return None
 
 
 
@@ -106,7 +92,7 @@ def run_apsimx_files_in_parallel(iterable_files: Iterable, **kwargs):
 
     # Example usage of read_result_in_parallel function
 
-    >>> from apsimNgpy.parallel.process import run_apsimxfiles_in_parallel
+    >>> from apsimNGpy.parallel.process import run_apsimx_files_in_parallel
     >>> simulation_files = ["file1.apsimx", "file2.apsimx", ...]  # Replace with actual database file names
 
     # Using processes for parallel execution
@@ -121,7 +107,7 @@ def run_apsimx_files_in_parallel(iterable_files: Iterable, **kwargs):
     - Progress information is displayed during execution.
     - Handle any exceptions that may occur during execution for robust processing.
     """
-    # remove duplicates. because duplicates will be susceptible to race conditioning in paralell computing
+    # remove duplicates. because duplicates will be susceptible to race conditioning in parallel computing
     Ncores = kwargs.get('ncores')
     if Ncores:
         ncores_2use = Ncores
@@ -152,10 +138,6 @@ def _read_result_in_parallel(iterable_files: Iterable, ncores: int = None, use_t
     Example:
 
     # Example usage of read_result_in_parallel function
-
-    >>> from  apsimNgpy.parallel.process import read_result_in_parallel
-
-    >>> simulation_files = ["file1.db", "file2.db", ...]  # Replace with actual database file names
 
     # Using processes for parallel execution
     result_generator = read_result_in_parallel(simulation_files, ncores=4, use_threads=False)
@@ -188,53 +170,7 @@ def _read_result_in_parallel(iterable_files: Iterable, ncores: int = None, use_t
                            use_threads=use_threads)
 
 
-def download_soil_tables(iterable: Iterable, use_threads: bool = False, ncores: int = 2, **kwargs):
-    """
 
-    Downloads soil data from SSURGO (Soil Survey Geographic Database) based on lonlat coordinates.
-
-    Args:
-        ``iterable`` (iterable): An iterable containing lonlat coordinates as tuples or lists. Preferred is generator.
-
-        ``use_threads`` (bool, optional): If True, use thread pool execution. If False, use process pool execution. Default
-          is ``False``. - Ncores (int, optional): The number of CPU cores or threads to use for parallel processing. If not
-          provided, it defaults to ``40%`` of available CPU cores.
-
-    Returns:
-    - a ``generator``: with dictionaries containing calculated soil profiles with the corresponding index positions based on lonlat coordinates.
-
-    Example:
-
-    # Example usage of download_soil_tables function
-    >>> from your_module import download_soil_tables
-
-    >>>Lonlat_coords = [(x1, y1), (x2, y2), ...]  # Replace with actual lonlat coordinates
-
-    # Using threads for parallel processing
-
-    >>> soil_profiles = download_soil_tables(lonlat_coords, use_threads=True, ncores=4)
-
-        ``Kwargs``: ``func`` custom method for downloading soils
-    ```
-
-    Notes:
-    - This function efficiently downloads soil data and returns calculated profiles.
-    - The choice of thread or process execution can be specified with the ``use_threads`` parameter.
-    - By default, the function utilizes available CPU cores or threads (40% of total) if `ncores` is not provided.
-    - Progress information is displayed during execution.
-    - Handle any exceptions that may occur during execution to avoid aborting the whole download
-
-    """
-    func = kwargs.get('func', None)
-    progress_msg = 'Downloading soil profile: '
-    Ncores = ncores
-    if Ncores:
-        ncores_2use = Ncores
-    else:
-        ncores_2use = int(cpu_count() * 0.50)
-    worker = func or download_soil_table
-    return custom_parallel(worker, iterable, ncores=ncores_2use, progress_message=progress_msg,
-                           use_threads=use_threads)
 
 
 if __name__ == '__main__':
@@ -245,7 +181,7 @@ if __name__ == '__main__':
     lm = custom_parallel(fnn, range(10000), use_thread=True, ncores=4)
     # lm2 = custom_parallel(fnn, gen_d, use_thread=True, ncores=10)
     # with a custom message
-    lm = custom_parallel(fnn, range(100000), use_thread=True, ncores=4, void=True,progress_message="running function: ")
+    lm = custom_parallel(fnn, range(1000000), use_thread=True, ncores=4, void=False)
     # simple example
 
-   # ap = [i for i in lm]
+    ap = [i for i in lm]

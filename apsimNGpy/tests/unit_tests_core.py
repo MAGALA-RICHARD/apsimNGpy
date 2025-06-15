@@ -98,6 +98,7 @@ class TestCoreModel(BaseTester):
         sims = self.test_ap_sim.find_simulations(simulations=None)
         self.assertIsInstance(sims, list)
         self.assertTrue(len(sims) > 0)
+
     def test_rename(self):
         NEW_NAME = 'NEW_SIM_NAME'
         NEW_SIMs_NAME = 'NEW_SIMULATION_NAME'
@@ -109,8 +110,8 @@ class TestCoreModel(BaseTester):
         assert NEW_NAME in sims, 'rename not successful'
         # The alternative is to use model.inspect_file to see your changes
         model.rename_model(model_type="Simulations", old_name='Simulations', new_name=NEW_SIMs_NAME)
-        assert NEW_SIMs_NAME in model.inspect_model(model_type='Simulations', fullpath=False), 'renaming simulations was not successful'
-
+        assert NEW_SIMs_NAME in model.inspect_model(model_type='Simulations',
+                                                    fullpath=False), 'renaming simulations was not successful'
 
     def test_replace_soil_property_values(self):
         parameter = 'Carbon'
@@ -240,14 +241,17 @@ class TestCoreModel(BaseTester):
                 self.test_ap_sim.remove_model(model_type='Simulation', model_name='soybean_replaced')
             except Exception as e:
                 pass
+
     def test_get_weather_from_web_nasa(self):
         model = load_default_simulations('Maize')
         model.get_weather_from_web(lonlat=(-93.50456, 42.601247), start=1990, end=2001, source='nasa')
         model.run()
+
     def test_get_weather_from_web_daymet(self):
         model = load_default_simulations('Maize')
         model.get_weather_from_web(lonlat=(-93.50456, 42.601247), start=1990, end=2001, source='daymet')
         model.run()
+
     def test_edit_model(self):
         self.test_ap_sim.edit_model(model_type='Clock', simulations="Simulation", model_name='Clock',
                                     Start='1900-01-01', End='1990-01-12')
@@ -262,26 +266,34 @@ class TestCoreModel(BaseTester):
         @return:
         """
         from apsimNGpy.core.base_data import load_default_simulations
-        test_ap_sim = load_default_simulations(crop = 'Maize')
+        test_ap_sim = load_default_simulations(crop='Maize')
         from apsimNGpy.core.structure import add_crop_replacements
         add_crop_replacements(test_ap_sim, _crop='Maize')
-        in_cul = test_ap_sim.inspect_model_parameters(model_type='Cultivar', model_name='B_110')
+
         out_cultivar = 'B_110-e'
         new_juvenile = 289.777729777
         com_path = '[Phenology].Juvenile.Target.FixedValue'
-        test_ap_sim.edit_model(model_type='Cultivar', model_name='B_110',new_cultivar_name=out_cultivar,
-                                    commands=com_path, values=new_juvenile,
-                                    cultivar_manager='Sow using a variable rule')
+        test_ap_sim.edit_model(model_type='Cultivar', model_name='B_110', new_cultivar_name=out_cultivar,
+                               commands=com_path, values=new_juvenile,
+                               cultivar_manager='Sow using a variable rule')
 
         # first we check the current '[Phenology].Juvenile.Target.FixedValue': '211'
-        cp = test_ap_sim.read_cultivar_params(name=out_cultivar)
+        cp = test_ap_sim.inspect_model_parameters(model_type='Cultivar', model_name=out_cultivar)
+        self.assertEqual(new_juvenile, float(cp.get(com_path)))
 
-        juvenile_original = float(cp.get(com_path))
-        print(juvenile_original)
-        self.assertEqual(new_juvenile, juvenile_replacements)
-        test_ap_sim.edit_cultivar(commands=com_path, values=new_juvenile, CultivarName=out_cultivar)
+    def _test_edit_cultivar(self):
+
+        """This is deprecated though"""
+        com_path = '[Phenology].Juvenile.Target.FixedValue'
+
+        test_ap_sim = load_default_simulations(crop='Maize')
+        cp = test_ap_sim.inspect_model_parameters(model_type='Cultivar', model_name='B_110')
+
+        new_juvenile = 289.888
+        test_ap_sim.edit_cultivar(commands=com_path, values=new_juvenile, CultivarName='B_110')
         # read again
-        juvenile_replacements = test_ap_sim.read_cultivar_params(name=out_cultivar)[com_path]
+        juvenile_replacements = test_ap_sim.inspect_model_parameters(model_type='Cultivar', model_name='B_110')[
+            com_path]
         if juvenile_replacements:
             juvenile_replacements = float(juvenile_replacements)
         self.assertEqual(new_juvenile, juvenile_replacements)

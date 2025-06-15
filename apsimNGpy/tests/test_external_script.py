@@ -15,8 +15,6 @@ class TestCaseAddModule(unittest.TestCase):
         self.model.create_experiment(permutation=True)
 
 
-
-
 if __name__ == '__main__':
     suite.addTests(loader.loadTestsFromTestCase(TestCaseAddModule))
     run_suite(2)

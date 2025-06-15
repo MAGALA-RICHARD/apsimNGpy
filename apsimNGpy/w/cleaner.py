@@ -2,6 +2,8 @@ from pathlib import Path
 import os
 import schedule
 import time
+
+
 def clean():
     path = Path("../../")
     ax = path.rglob('*.apsimx')
@@ -13,8 +15,9 @@ def clean():
             os.remove(str(i))
         except PermissionError:
             print(f"skipping '{i}' due to permission error")
-    if fl >0:
-      print(f" cleaned {fl} unwanted files")
+    if fl > 0:
+        print(f" cleaned {fl} unwanted files")
+
 
 if __name__ == "__main__":
     def job_with_argument(name):

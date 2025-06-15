@@ -948,8 +948,8 @@ class CoreModel:
         model_type_class = _eval_model(model_type)
 
         for sim in self.find_simulations(simulations):
-            model_instance = get_or_check_model(sim, model_type_class, model_name, action='get', cacheit=cacheit,
-                                                cache_size=cache_size)
+            # model_instance = get_or_check_model(sim, model_type_class, model_name, action='get', cacheit=cacheit,
+            #                                     cache_size=cache_size)
             model_instance = sim.FindInScope[model_type_class](model_name)
 
             match type(model_instance):
@@ -981,13 +981,6 @@ class CoreModel:
 
                 case Models.Manager:
                     self.update_manager(scope=sim, manager_name=model_name, **kwargs)
-                    # manager_path = model_instance.FullPath
-                    # print(model_instance.Parameters)
-                    # manager = sim.FindByPath(manager_path)
-                    # stack_manager_depth = range(len(manager.Value.Parameters))
-                    # print(stack_manager_depth)
-                    #
-                    # self.update_mgt_by_path(path=manager_path, fmt='.', **kwargs)
 
                 case Models.Soils.Physical | Models.Soils.Chemical | Models.Soils.Organic | Models.Soils.Water | Models.Soils.Solute:
 
@@ -1021,77 +1014,81 @@ class CoreModel:
 
                 case Models.PMF.Cultivar:
 
+                    # Ensure crop replacements exist under Replacements
                     if 'Replacements' not in self.inspect_model('Models.Core.Folder'):
-                        for i in self.inspect_model(Models.PMF.Plant, fullpath=False):
-                            self.add_crop_replacements(_crop=i)
+                        for crop_name in self.inspect_model(Models.PMF.Plant, fullpath=False):
+                            self.add_crop_replacements(_crop=crop_name)
 
+                    _cultivar_names = self.inspect_model('Cultivar', fullpath=False)
+
+                    # Extract input parameters
                     commands = kwargs.get("commands")
                     values = kwargs.get("values")
-                    if isinstance(commands, (list, tuple)) or isinstance(values, (list, tuple)):
-                        assert isinstance(commands, (list, tuple)) and isinstance(values, (list, tuple)), \
-                            "Both `commands` and `values` must be iterables (list or tuple), and sets are not allowed"
-                        assert len(commands) == len(values), \
-                            "`commands` and `values` must have the same length."
 
-                    # need to specify back to the cultivar manager script the new cultivar name since APSIM is not
-                    # allowing editing in place. this is a temporal fix though editing in place could work if we were
-                    # reusing the model in memory of python
-                    cultivar_manager_paramter_name = kwargs.get("parameter_name", 'CultivarName')
                     cultivar_manager = kwargs.get("cultivar_manager")
                     new_cultivar_name = kwargs.get("new_cultivar_name", None)
+                    cultivar_manager_param = kwargs.get("parameter_name", 'CultivarName')
+                    plant_name = kwargs.get('plant')
+
+                    # Input validation
                     if not new_cultivar_name:
-                        raise ValueError(f"please specify new cultivar name using `new_cultivar_name= "
-                                         f"'your_cultivar_name`")
-                    assert new_cultivar_name, ("`new_cultivar_name` is required to proceed. use new_cultivar_name "
-                                               "='your_vutivar_name'")
-                    # the reason the parameter path is split into command and values to allow passing different
-                    # values during optimization Errors should mot pass silently
+                        raise ValueError("Please specify a new cultivar name using 'new_cultivar_name=\"your_name\"'")
+
                     if not cultivar_manager:
-                        raise ValueError("Please specify a cultivar manager using key word 'cultivar_manager'")
+                        raise ValueError("Please specify a cultivar manager using 'cultivar_manager=\"your_manager\"'")
+
                     if not commands or values is None:
-                        raise ValueError("Both 'commands' and 'values' must be provided for Cultivar")
-                    # find replacement
-                    rep = get_or_check_model(self.Simulations, Models.Core.Folder, 'Replacements', action='get',
-                                             cacheit=cacheit, cache_size=cache_size)
-                    # now get cultivar
-                    cultvar = get_or_check_model(rep, Models.PMF.Cultivar, model_name, action='get', cacheit=cacheit,
-                                                 cache_size=cache_size)
+                        raise ValueError("Both 'commands' and 'values' must be provided for editing a cultivar")
 
-                    cultvar = ModelTools.CLONER(cultvar)  # let's clone
-                    params = self._cultivar_params(cultvar)
+                    if isinstance(commands, (list, tuple)) or isinstance(values, (list, tuple)):
+                        assert isinstance(commands, (list, tuple)) and isinstance(values, (list, tuple)), \
+                            "Both `commands` and `values` must be iterables (list or tuple), not sets or mismatched types"
+                        assert len(commands) == len(values), "`commands` and `values` must have the same length"
+
+                    # Get replacement folder and source cultivar model
+                    replacements = get_or_check_model(self.Simulations, Models.Core.Folder, 'Replacements',
+                                                      action='get', cacheit=False, cache_size=cache_size)
+
+                    get_or_check_model(replacements, Models.Core.Folder, 'Replacements',
+                                       action='delete', cacheit=False, cache_size=cache_size)
+                    cultivar_fallback = get_or_check_model(self.Simulations, Models.PMF.Cultivar, model_name,
+                                                           action='get', cacheit=False, cache_size=cache_size)
+                    cultivar = ModelTools.CLONER(cultivar_fallback)
+
+                    # Update cultivar parameters
+                    cultivar_params = self._cultivar_params(cultivar)
+
                     if isinstance(values, str):
-                        values = values.strip()
-                        params[commands] = values
-                    if isinstance(values, (float, int)):
-                        params[commands] = values
+                        cultivar_params[commands] = values.strip()
+                    elif isinstance(values, (int, float)):
+                        cultivar_params[commands] = values
                     else:
-                        par_value = zip(commands, values)
-                        for param, value in par_value:
-                            params[param.strip()] = value.strip() if isinstance(value, str) else value
+                        for cmd, val in zip(commands, values):
+                            cultivar_params[cmd.strip()] = val.strip() if isinstance(val, str) else val
 
-                    updated_commands = [f"{k.strip()}={v}" for k, v in params.items()]
-                    cultvar.set_Command(updated_commands)
+                    # Apply updated commands
+                    updated_cmds = [f"{k.strip()}={v}" for k, v in cultivar_params.items()]
+                    cultivar.set_Command(updated_cmds)
 
-                    plant = kwargs.get('plant')
-                    CroP_Parent = get_or_check_model(rep, Models.PMF.Plant, plant, action='get', cacheit=cacheit,
-                                                     cache_size=cache_size)
-                    cultvarName = f"{new_cultivar_name}"
-                    # mask out the current name such that is not accessed
-                    current_name = cultvar.Name
-                    cultvar.Name = f"p_{model_name}"
+                    # Attach cultivar under plant model
+                    plant_model = get_or_check_model(replacements, Models.PMF.Plant, plant_name,
+                                                     action='get', cacheit=False, cache_size=cache_size)
 
-                    get_or_check_model(rep, Models.PMF.Cultivar, cultvarName,
-                                       action='delete')  # this will delete the model if found before we add
+                    # Remove existing cultivar with same name
+                    get_or_check_model(replacements, Models.PMF.Cultivar, new_cultivar_name, action='delete')
 
-                    cultvar.Name = cultvarName
+                    # Rename and reattach cultivar
+                    cultivar.Name = new_cultivar_name
+                    ModelTools.ADD(cultivar, plant_model)
 
-                    ModelTools.ADD(cultvar, CroP_Parent)
-                    extra_args = {cultivar_manager_paramter_name: cultvarName}
-                    self.edit_model(model_type=Models.Manager, simulations=sim.Name, model_name=cultivar_manager,
-                                    **extra_args)
+                    # Update cultivar manager script
+                    self.edit_model(model_type=Models.Manager, simulations=sim.Name,
+                                    model_name=cultivar_manager, **{cultivar_manager_param: new_cultivar_name})
+
                     self.save()
+
                     if verbose:
-                        logger.info(f"edited Cultivar '{model_name}' and saved it as {cultvarName}")
+                        logger.info(f"Edited Cultivar '{model_name}' and saved it as '{new_cultivar_name}'")
 
                 case _:
                     raise NotImplementedError(f"No edit method implemented for model type {type(model_instance)}")
@@ -2208,7 +2205,7 @@ class CoreModel:
               # output: 1990, 2000
             """
 
-        #start, end = self.inspect_model_parameters(model_type='Clock', model_name='Clock', start=start, end=end)
+        # start, end = self.inspect_model_parameters(model_type='Clock', model_name='Clock', start=start, end=end)
         file_name = f"{Path(self._model).stem}_{source}_{start}_{end}.met"
 
         name = file_name or filename

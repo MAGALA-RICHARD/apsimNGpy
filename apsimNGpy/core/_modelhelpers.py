@@ -30,7 +30,6 @@ def select_thread(multithread):
 select_thread(multithread=True)
 
 
-@cache
 def _tools(method):
     config = {
         "ADD": Models.Core.ApsimFile.Structure.Add,
@@ -150,8 +149,8 @@ def get_or_check_model(search_scope, model_type, model_name, action='get', cache
         if get_model and action == 'get':
             return get_model
 
-    if cacheit:
-        __excute = lru_cache(maxsize=cache_size)(__excute)
+    # if cacheit:
+    #     __excute = lru_cache(maxsize=cache_size)(__excute)
     return __excute(search_scope, model_type, model_name, action)
 
 
@@ -193,7 +192,6 @@ def _find_model(model_name: str, model_namespace=Models, target_type=ModelTools.
     return None
 
 
-@lru_cache(maxsize=100)
 def find_model(model_name: str):
     model_type = _find_model(model_name)
     if model_type:

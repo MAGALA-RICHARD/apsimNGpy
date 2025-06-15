@@ -21,7 +21,7 @@ if __name__ == "__main__":
         print(f"I am {name}")
 
 
-    schedule.every(10).seconds.do(clean)
+    schedule.every(2).seconds.do(clean)
 
     while True:
         schedule.run_pending()

@@ -2570,7 +2570,7 @@ class CoreModel:
         Parameters
         ----------
         ``simulations``, str, list optional
-            List of simulation names to find, if `None` or named 'all' return all simulations
+            List of simulation names to find, if `None` or named 'all' return all simulations. These will be removed in future versions and stick to MissingOption
         ``Returns``
         ----------
             list of APSIM ``Models.Core.Simulation`` objects

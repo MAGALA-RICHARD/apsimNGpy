@@ -66,14 +66,14 @@ class Diagnostics(ApsimModel):
     def summary(self):
         nums = self.results.select_dtypes(include="number").copy()
         return dfSummary(nums)
-    def plot_distribution(self, variable, *, y=None, xlab=None, ylab=None,
+    def plot_distribution(self, variable, *, stat='density', y=None, xlab=None, ylab=None,
                           title='', show=False, save_as='',**kwargs):
         """Plot distribution for a numeric variable."""
         self.refresh()
-
+        kwargs['stat'] = stat
         kwargs.pop('x', None)
         if y:
-            kwargs[y] = y
+            kwargs['y'] = y
 
         from pandas.api.types import is_string_dtype
 
@@ -118,7 +118,7 @@ class Diagnostics(ApsimModel):
     def refresh():
         if plt.get_fignums():
             plt.close()
-    def plot_time_series(self, y:Union[str, list, tuple], x=None, time='Year',table_name='Report',show =True, save_as='', **kwargs):
+    def line_plot(self, y:Union[str, list, tuple], *,  xlab=None, ylab=None, x=None, time='Year',table_name='Report',show =True, save_as='', **kwargs):
         """Plot time series of a variable against a time field."""
         self.refresh()
         var_name = time.capitalize()
@@ -128,6 +128,7 @@ class Diagnostics(ApsimModel):
             kwargs.pop(p, None)
         if x is None:
             self.run(report_name=table_name)
+
         else:
             var_name =x
 
@@ -142,19 +143,24 @@ class Diagnostics(ApsimModel):
             for yv, lab in zip(y, labels):
                 sns.lineplot(data=df, x=var_name, y=yv, label=lab, **kwargs)
         plt.title(f"{y} over {var_name}")
+        if xlab:
+            plt.xlabel(xlab)
+        if ylab:
+            plt.ylabel(ylab)
         plt.tight_layout()
         self.finalize(show, save_as)
-    def plot_categories(self, y, *, x=None, time='Year',show =False, save_as='', **kwargs):
+    def cat_plot(self, y, *, vary_by=None, x=None, time='Year', show =False, save_as='', **kwargs):
             self.refresh()
-            """Plot time series of a variable against a time field."""
+            """Plot time series of a variable against a time field. use seaborn.catplot"""
             var_name = time.capitalize()
-            self.add_report_variable(f'[Clock].Today.{var_name} as {var_name}', 'Report2')
+            self.add_report_variable(f'[Clock].Today.{var_name} as {var_name}', 'Report')
 
             if x is None:
-                self.run(report_name='Report2')
+                self.run(report_name='Report')
             else:
                 var_name = x
-
+            if vary_by:
+                kwargs['hue'] =vary_by
             df = self.results
             sns.catplot(data=df, x=var_name, y=y, **kwargs)
             plt.title(f"{y} over {var_name}")
@@ -188,9 +194,9 @@ if __name__ == '__main__':
     model.update_mgt(management=({"Name": 'Sow using a variable rule', 'Population': 8},))
     model.run(report_name='my_table')
 
-    model.plot_time_series(y=['SOC1', 'SOC2'], time='Year', table_name='my_table', show=True)
+    model.line_plot(y=['SOC1', 'SOC2'], time='Year', table_name='my_table', show=False, ylab = 'Soil organic carbon(Mg^{-1})')
     model.plot_distribution('SOC1', show=False)
     #model.plot_distribution('Yield')
     model.run(report_name='Report')
     model.plot_correlation_heatmap()
-    model.get_weather_from_web(lonlat=(-93.50456, 42.601247), start=1990, end=2001, source='daymet')
+    #model.get_weather_from_web(lonlat=(-93.50456, 42.601247), start=1990, end=2001, source='daymet')

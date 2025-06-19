@@ -3033,7 +3033,7 @@ class CoreModel:
         report = Models.Report()
         report.Name = rename
         if rename in self.inspect_model('Models.Report', fullpath=False):
-            logging.info(f"{rename} is a database table already ")
+            logger.info(f"{rename} is a database table already ")
 
         # Default events if not specified
         if not set_event_names:

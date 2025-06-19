@@ -8,6 +8,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from sqlalchemy import label
 from summarytools import dfSummary
+from winerror import XACT_S_LAST
+
 from apsimNGpy.settings import logger
 try:
     import seaborn as sns
@@ -64,22 +66,35 @@ class Diagnostics(ApsimModel):
     def summary(self):
         nums = self.results.select_dtypes(include="number").copy()
         return dfSummary(nums)
-    def plot_distribution(self, variable, title='', show=False, save_as=''):
+    def plot_distribution(self, variable, *, y=None, xlab=None, ylab=None,
+                          title='', show=False, save_as='',**kwargs):
         """Plot distribution for a numeric variable."""
+        self.refresh()
+
+        kwargs.pop('x', None)
+        if y:
+            kwargs[y] = y
+
         from pandas.api.types import is_string_dtype
 
         if is_string_dtype(self.results[variable]):
             raise ValueError(f"{variable} contains strings")
 
-        sns.histplot(data=self.results, x=variable, kde=True)
+        sns.histplot(data=self.results, x=variable, kde=True, **kwargs)
         plt.title(title)
         plt.tight_layout()
+        xlab = xlab or variable
+        if ylab:
+            plt.xlabel(ylab)
+
+        plt.xlabel(xlab)
         self.finalize(show, save_as)
 
     def label(self):
        ...
 
     def finalize(self, show,save_as):
+        assert isinstance(show, bool), f"show is expected to be a boolean value"
         if not any([show, save_as]):
             logger.warning('Please specify either show (bool) or save_as (str) as an argument')
         if save_as:
@@ -87,7 +102,6 @@ class Diagnostics(ApsimModel):
         if show:
             self.display=True
             self.show()
-
 
     @staticmethod
     def show():
@@ -100,11 +114,18 @@ class Diagnostics(ApsimModel):
             if plt.get_fignums():
               plt.close()
 
+    @staticmethod
+    def refresh():
+        if plt.get_fignums():
+            plt.close()
     def plot_time_series(self, y:Union[str, list, tuple], x=None, time='Year',table_name='Report',show =True, save_as='', **kwargs):
         """Plot time series of a variable against a time field."""
+        self.refresh()
         var_name = time.capitalize()
         self.add_report_variable(f'[Clock].Today.{var_name} as {var_name}', table_name)
-
+        pops = ['y', 'x']
+        for p in pops:
+            kwargs.pop(p, None)
         if x is None:
             self.run(report_name=table_name)
         else:
@@ -114,12 +135,17 @@ class Diagnostics(ApsimModel):
         if isinstance(y, str):
            sns.lineplot(data=df, x=var_name, y=y, **kwargs)
         if isinstance(y, (tuple,list)):
-            for yv in y:
-                sns.lineplot(data=df, x=var_name, y=yv, label=yv, **kwargs)
+            labels= y or kwargs.get('label', None)
+            if len(y) != len(labels):
+                raise ValueError("labels are inadequate")
+            kwargs.pop('label', None)
+            for yv, lab in zip(y, labels):
+                sns.lineplot(data=df, x=var_name, y=yv, label=lab, **kwargs)
         plt.title(f"{y} over {var_name}")
         plt.tight_layout()
         self.finalize(show, save_as)
-    def plot_categories(self, y, x=None, time='Year',show =False, save_as='', **kwargs):
+    def plot_categories(self, y, *, x=None, time='Year',show =False, save_as='', **kwargs):
+            self.refresh()
             """Plot time series of a variable against a time field."""
             var_name = time.capitalize()
             self.add_report_variable(f'[Clock].Today.{var_name} as {var_name}', 'Report2')
@@ -135,7 +161,8 @@ class Diagnostics(ApsimModel):
             plt.tight_layout()
             self.finalize(show, save_as)
 
-    def plot_correlation_heatmap(self, figsize=(10, 8)):
+    def plot_correlation_heatmap(self, figsize=(10, 8), show =False, save_as=''):
+        self.refresh()
         """Plot correlation heatmap for numeric _variables."""
         df = self._clean_numeric_data()
         if df.empty:
@@ -147,11 +174,7 @@ class Diagnostics(ApsimModel):
         sns.heatmap(corr, annot=True, cmap="coolwarm", fmt=".2f")
         plt.title("Correlation Heatmap")
         plt.tight_layout()
-
-        output_path = HOME / 'heat.png'
-        plt.savefig(output_path)
-        open_file(output_path)
-        plt.close()
+        self.finalize(show, save_as)
 
 if __name__ == '__main__':
     from apsimNGpy.core.base_data import load_default_simulations

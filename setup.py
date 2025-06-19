@@ -2,7 +2,7 @@ import os
 
 from setuptools import setup, find_packages
 
-VERSION = '0.39.1'
+VERSION = '0.39.3.2'
 
 DESCRIPTION = 'APSIM next generation package interface'
 LONG_DESCRIPTION = 'run, edit, download soils and weather and interact with the apsimx file'
@@ -55,8 +55,6 @@ setup(
         'geopandas >=0.13.2',
         'pandas >=2.0.3',
         'geopy >= 2.4.1',
-        'tqdm >= 4.66.2',
-        'progressbar >= 2.5',
         'joblib >= 1.3.2',
         'sqlalchemy >=2.0',
         'matplotlib',
@@ -64,7 +62,6 @@ setup(
         'tenacity',
         'typer',
         'wrapdisc==2.5.0',
-
         'summarytools>=0.3.0'
 
     ]

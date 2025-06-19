@@ -59,6 +59,16 @@ def load_pythonnet():
 
 
 load_pythonnet()
+# now we can safely import C# libraries
+from System.Collections.Generic import *
+from Models.Core import Simulation
+
+from Models.Climate import Weather
+from Models.Soils import Soil, Physical
+import Models
+from System import *
+Models = Models
+
 
 # Example usage:
 if __name__ == '__main__':

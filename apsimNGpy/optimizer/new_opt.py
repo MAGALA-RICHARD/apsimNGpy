@@ -33,6 +33,8 @@ class SimpleCache:
 
 
 results = {}
+
+
 @dataclass
 class Problem:
     apsim: ApsimModel
@@ -67,7 +69,6 @@ class Problem:
                 **{varR['parameter_name']: x[i]}
             )
 
-
     def evaluate(self, x):
         x = tuple([np.round(i) for i in x])
         if results.get(x, None):
@@ -75,13 +76,11 @@ class Problem:
         self.setUP(x)
         result = self.apsim.run(verbose=False).results
         emissions = result.Yield  # placeholder
-        result=  10000 - emissions.mean()
+        result = 10000 - emissions.mean()
         results[x] = result
         return result
 
-
     def minimize_problem(self, **kwargs):
-
 
         x0 = kwargs.pop("x0", [1] * len(self.controls))  # Starting guess
         result = minimize(self.evaluate, x0=x0, **kwargs)
@@ -90,10 +89,4 @@ class Problem:
         result.x_vars = dict(zip(labels, result.x))
         return result
 
-if __name__ == "__main__":
-    model = ApsimModel('Maize')
-    prob = Problem(model, "Simulation", cache_size=200, cache=True)
-    prob.add_control('Manager', "Sow using a variable rule", 'Population', 'population')
-    prob.add_control('Manager', "Fertilise at sowing", 'Amount', 'Nitrogen')
-    ans  =prob.minimize_problem(x0=[1, 0], method  ='Powell', bounds =[(1,12), (0, 208)])
-    print(ans)
+

@@ -6,6 +6,7 @@ from typing import Union
 
 import pandas as pd
 import matplotlib.pyplot as plt
+from sqlalchemy import label
 from summarytools import dfSummary
 from apsimNGpy.settings import logger
 try:
@@ -114,7 +115,7 @@ class Diagnostics(ApsimModel):
            sns.lineplot(data=df, x=var_name, y=y, **kwargs)
         if isinstance(y, (tuple,list)):
             for yv in y:
-                sns.lineplot(data=df, x=var_name, y=yv, **kwargs)
+                sns.lineplot(data=df, x=var_name, y=yv, label=yv, **kwargs)
         plt.title(f"{y} over {var_name}")
         plt.tight_layout()
         self.finalize(show, save_as)

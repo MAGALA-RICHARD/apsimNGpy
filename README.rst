@@ -26,6 +26,13 @@ apsimNGpy
    :target: https://pepy.tech/project/apsimNGpy
    :alt: Weekly PyPI downloads
 
+.. image:: https://img.shields.io/badge/Join%20Discussions-blue.svg
+   :target: https://discord.gg/SU9A6nNv
+   :alt: Join Discussions
+
+.. image:: https://img.shields.io/badge/Ask%20Through%20Teams-purple.svg
+   :target: https://teams.live.com/l/community/FBAbNOQj7y9dPcoaAI
+   :alt: Ask Teams
 
 
 apsimNGpy: The Next Generation Agroecosytem Simulation Library
@@ -43,8 +50,7 @@ Requirements
 2. Python 3.10 +
 3. APSIM: Add the directory containing the models executable to the system's PATH or python path (to locate the required .dll files). This can be achieved in either of the following ways:
 4. Utilize the APSIM installer provided for this purpose.
-5. Build APSIM from its source code. This is comming soon
-6. Minimum; 8GM RAM, CPU Core i7
+5. Minimum; 8GM RAM, CPU Core i7
 
 .. _Installation:
 
@@ -54,11 +60,16 @@ Installation
 
 All versions are currently in development, phase and they can be installed as follows:
 
-- Method 1. install from PyPI
+- Method 1. Stable versions can be installed from PyPI
 
 .. code:: bash
 
     pip install apsimNGpy
+
+If you are using the fleeting uv virtual environment manager
+.. code-block:: python
+
+    uv pip install apsimNGpy
 
 - Method 1. clone the current development repository
 

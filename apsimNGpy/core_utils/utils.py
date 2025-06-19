@@ -21,7 +21,7 @@ import time
 from functools import cache
 from pathlib import Path
 from shapely import wkt
-from geopy.distance import geodesic
+
 import functools
 import traceback
 import sys
@@ -638,6 +638,7 @@ def convert_df_to_gdf(df, CRS):
 
 
 def bounding_box_corners(center_point, radius):
+    from geopy.distance import geodesic
     """
         Generates a bounding box around a center point within a specified radius and returns all four corners.
 

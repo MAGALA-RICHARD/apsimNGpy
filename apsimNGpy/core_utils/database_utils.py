@@ -12,7 +12,7 @@ from pandas import read_sql_query as rsq
 from sqlalchemy import create_engine, inspect
 from apsimNGpy.core_utils.exceptions import TableNotFoundError
 from apsimNGpy.settings import logger
-from System.Data import DataView
+from apsimNGpy.core.pythonet_config import *
 from pandas import DataFrame
 
 def dataview_to_dataframe(_model, reports):
@@ -22,6 +22,8 @@ def dataview_to_dataframe(_model, reports):
     :param apsimng model: CoreModel object or instance
     :return: Pandas DataFrame
     """
+
+    from System.Data import DataView
     try:
         _model._DataStore.Open()
         pred = _model._DataStore.Reader.GetData(reports)

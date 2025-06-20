@@ -44,7 +44,6 @@ setup(
         "Intended Audience :: Education",
         "Topic :: Scientific/Engineering :: Visualization",
         "Topic :: Scientific/Engineering :: Information Analysis",
-        "Topic :: Scientific/Engineering :: Agriculture",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.10",
         "Operating System :: OS Independent",

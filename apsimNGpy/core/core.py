@@ -2626,7 +2626,7 @@ class CoreModel:
         Parameters
         ----------
         ``simulations``, str, list optional
-            List of simulation names to find, if `None` or named 'all' return all simulations
+            List of simulation names to find, if `None` or named 'all' return all simulations. These will be removed in future versions and stick to MissingOption
         ``Returns``
         ----------
             list of APSIM ``Models.Core.Simulation`` objects
@@ -2998,6 +2998,37 @@ class CoreModel:
 
         print_tree_branches(tree)
 
+
+
+    def summarize_numeric(self, data_table:Union[str, tuple, list]=None, percentiles=(0.25, 0.5, 0.75), round=2) -> pd.DataFrame:
+        """
+        Summarize numeric columns in a simulated pandas DataFrame. Useful when you want to quickly look at the simulated data
+
+        Parameters:
+            data_table (list, tuple, str): The names of the data table attached to the simulations.
+            percentiles (tuple): Optional percentiles to include in the summary.
+
+        Returns:
+            pd.DataFrame: A summary DataFrame with statistics for each numeric column.
+        """
+        if data_table is None:
+            fd = self.results
+        else:
+               fd = self.get_simulated_output(data_table)
+
+        if not isinstance(fd, pd.DataFrame):
+            raise ValueError("Input must be a pandas DataFrame")
+
+        numeric_df = fd.select_dtypes(include='number')
+
+        if numeric_df.empty:
+            raise ValueError("No numeric columns found in the DataFrame")
+
+        summary = numeric_df.describe(percentiles=percentiles).T
+        summary['missing'] = fd.shape[0] - summary['count']
+
+        return summary.round(round)
+
     # @timer
     def add_db_table(self, variable_spec: list = None, set_event_names: list = None, rename: str = 'my_table',
                      simulation_name: Union[str, list, tuple] = MissingOption):
@@ -3033,7 +3064,7 @@ class CoreModel:
         report = Models.Report()
         report.Name = rename
         if rename in self.inspect_model('Models.Report', fullpath=False):
-            logging.info(f"{rename} is a database table already ")
+            logger.info(f"{rename} is a database table already ")
 
         # Default events if not specified
         if not set_event_names:

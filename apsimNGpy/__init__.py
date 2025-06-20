@@ -19,7 +19,7 @@ if get_apsim_bin_path():
                     'evaluator', 'eval_methods',
                         "custom_parallel", 'run_apsimx_files_in_parallel', '_read_result_in_parallel',
                     'database_utils',
-                   "get_met_from_day_met", "get_met_nasa_power", "get_iem_by_station", "get_weather"])
+                   get_met_from_day_met.__name__, "get_met_nasa_power", "get_iem_by_station", "get_weather"])
 
 
 # Define the apsimNgpy version

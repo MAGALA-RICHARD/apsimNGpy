@@ -1,6 +1,6 @@
 from apsimNGpy.core.config import get_apsim_bin_path, set_apsim_bin_path, auto_detect_apsim_bin_path
-
-__all__ = ['get_apsim_bin_path', 'auto_detect_apsim_bin_path', 'set_apsim_bin_path']
+__version__ = '0.39.3.2'
+__all__ = ['get_apsim_bin_path', 'auto_detect_apsim_bin_path', 'set_apsim_bin_path', '__version__']
 
 if get_apsim_bin_path():
 

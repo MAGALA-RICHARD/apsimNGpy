@@ -69,7 +69,7 @@ class Diagnostics(ApsimModel):
     def plot_distribution(self, variable, *, stat='density', y=None, xlab=None, ylab=None,
                           title='', show=False, save_as='',**kwargs):
         """Plot distribution for a numeric variable."""
-        self.refresh()
+        self._refresh()
         kwargs['stat'] = stat
         kwargs.pop('x', None)
         if y:
@@ -88,12 +88,12 @@ class Diagnostics(ApsimModel):
             plt.xlabel(ylab)
 
         plt.xlabel(xlab)
-        self.finalize(show, save_as)
+        self._finalize(show, save_as)
 
     def label(self):
        ...
 
-    def finalize(self, show,save_as):
+    def _finalize(self, show, save_as):
         assert isinstance(show, bool), f"show is expected to be a boolean value"
         if not any([show, save_as]):
             logger.warning('Please specify either show (bool) or save_as (str) as an argument')
@@ -114,13 +114,14 @@ class Diagnostics(ApsimModel):
             if plt.get_fignums():
               plt.close()
 
+
     @staticmethod
-    def refresh():
+    def _refresh():
         if plt.get_fignums():
             plt.close()
     def line_plot(self, y:Union[str, list, tuple], *,  xlab=None, ylab=None, x=None, time='Year',table_name='Report',show =True, save_as='', **kwargs):
         """Plot time series of a variable against a time field."""
-        self.refresh()
+        self._refresh()
         var_name = time.capitalize()
         self.add_report_variable(f'[Clock].Today.{var_name} as {var_name}', table_name)
         pops = ['y', 'x']
@@ -148,9 +149,9 @@ class Diagnostics(ApsimModel):
         if ylab:
             plt.ylabel(ylab)
         plt.tight_layout()
-        self.finalize(show, save_as)
+        self._finalize(show, save_as)
     def cat_plot(self, y, *, vary_by=None, x=None, time='Year', show =False, save_as='', **kwargs):
-            self.refresh()
+            self._refresh()
             """Plot time series of a variable against a time field. use seaborn.catplot"""
             var_name = time.capitalize()
             self.add_report_variable(f'[Clock].Today.{var_name} as {var_name}', 'Report')
@@ -165,10 +166,10 @@ class Diagnostics(ApsimModel):
             sns.catplot(data=df, x=var_name, y=y, **kwargs)
             plt.title(f"{y} over {var_name}")
             plt.tight_layout()
-            self.finalize(show, save_as)
+            self._finalize(show, save_as)
 
     def plot_correlation_heatmap(self, figsize=(10, 8), show =False, save_as=''):
-        self.refresh()
+        self._refresh()
         """Plot correlation heatmap for numeric _variables."""
         df = self._clean_numeric_data()
         if df.empty:
@@ -180,7 +181,7 @@ class Diagnostics(ApsimModel):
         sns.heatmap(corr, annot=True, cmap="coolwarm", fmt=".2f")
         plt.title("Correlation Heatmap")
         plt.tight_layout()
-        self.finalize(show, save_as)
+        self._finalize(show, save_as)
 
 if __name__ == '__main__':
     from apsimNGpy.core.base_data import load_default_simulations

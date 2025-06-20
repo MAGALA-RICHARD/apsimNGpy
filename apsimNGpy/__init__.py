@@ -13,7 +13,6 @@ if get_apsim_bin_path():
     from apsimNGpy.manager.weathermanager import get_met_from_day_met, get_met_nasa_power, get_iem_by_station, get_weather
 
 
-
     __all__.extend(['core', 'apsim', 'get_apsim_bin_path', 'base_data',
                     'mixed', 'one_objective', 'one_obj',
                     'evaluator', 'eval_methods',

@@ -62,36 +62,6 @@ class Diagnostics(ApsimModel):
             df.drop(columns=low_info_cols, inplace=True)
 
         return df
-    @property
-    def summary(self):
-        nums = self.results.select_dtypes(include="number").copy()
-        return dfSummary(nums)
-
-    import pandas as pd
-
-    def summarize_numeric(df: pd.DataFrame, percentiles=(0.25, 0.5, 0.75)) -> pd.DataFrame:
-        """
-        Summarize numeric columns in a pandas DataFrame.
-
-        Parameters:
-            df (pd.DataFrame): The input DataFrame.
-            percentiles (tuple): Optional percentiles to include in the summary.
-
-        Returns:
-            pd.DataFrame: A summary DataFrame with statistics for each numeric column.
-        """
-        if not isinstance(df, pd.DataFrame):
-            raise ValueError("Input must be a pandas DataFrame")
-
-        numeric_df = df.select_dtypes(include='number')
-
-        if numeric_df.empty:
-            raise ValueError("No numeric columns found in the DataFrame")
-
-        summary = numeric_df.describe(percentiles=percentiles).T
-        summary['missing'] = df.shape[0] - summary['count']
-
-        return summary
 
     def plot_distribution(self, variable, *, stat='density', y=None, xlab=None, ylab=None,
                           title='', show=False, save_as='',**kwargs):
@@ -177,6 +147,7 @@ class Diagnostics(ApsimModel):
             plt.ylabel(ylab)
         plt.tight_layout()
         self._finalize(show, save_as)
+
     def cat_plot(self, y, *, vary_by=None, x=None, time='Year', show =False, save_as='', **kwargs):
             self._refresh()
             """Plot time series of a variable against a time field. use seaborn.catplot"""
@@ -221,6 +192,7 @@ if __name__ == '__main__':
    # model.add_db_table(variable_spec=['[Soil].Nutrient.TotalC[2]/1000 as SOC2',])
     model.update_mgt(management=({"Name": 'Sow using a variable rule', 'Population': 8},))
     model.run(report_name='my_table')
+    model.cat_plot(y='Yield', x = 'Zone' )
 
     model.line_plot(y=['SOC1', 'SOC2'], time='Year', table_name='my_table', show=False, ylab = 'Soil organic carbon(Mg^{-1})')
     model.plot_distribution('SOC1', show=False)

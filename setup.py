@@ -2,10 +2,10 @@ import os
 
 from setuptools import setup, find_packages
 
-VERSION = '0.39.3.2'
+VERSION = '0.41'
 
 DESCRIPTION = 'APSIM next generation package interface'
-LONG_DESCRIPTION = 'run, edit, download soils and weather and interact with the apsimx file'
+LONG_DESCRIPTION = 'Run, edit, download soils and weather and interact with the apsimx file'
 
 with open('README.rst') as readme_file:
     readme = readme_file.read()
@@ -14,7 +14,7 @@ setup(
     name='apsimNGpy',
     version=VERSION,
     url='https://github.com/MAGALA-RICHARD/apsimNGpy.git',
-    license='MIT',
+    license_file="./LICENSE",
     author='Richard Magala',
     author_email='magalarich20@gmail.com',
     description=DESCRIPTION,
@@ -24,8 +24,8 @@ setup(
     entry_points={
         'console_scripts': [
             'apsim=apsimNGpy.cli.cli:main_entry_point',
-            'bp=apsimNGpy.cli.set_bin:fast',
-            'client=apsimNGpy.cli.client:app',
+            'bp=apsimNGpy.cli.set_ups:apsim_bin_path',
+
             'apsim_bin_path=apsimNGpy.cli.set_ups:apsim_bin_path',
         ],
     },
@@ -38,11 +38,18 @@ setup(
                        './apsimNGpy/*.ini', "./*.ini"]},
     keywords=['python', 'APSIM Next Generation', 'pythonnet', 'crop modeling'],
     classifiers=[
+        "License :: OSI Approved :: Apache Software License",
         "Development Status :: 3 - Alpha",
+        "Intended Audience :: Science/Research",
         "Intended Audience :: Education",
+        "Topic :: Scientific/Engineering :: Visualization",
+        "Topic :: Scientific/Engineering :: Information Analysis",
+        "Topic :: Scientific/Engineering :: Agriculture",
         "Programming Language :: Python :: 3",
-        "Operating System :: Microsoft :: Windows",
+        "Programming Language :: Python :: 3.10",
+        "Operating System :: OS Independent",
     ],
+
     install_requires=[
         'numpy>=1.20.0',
         'scipy>=1.7',

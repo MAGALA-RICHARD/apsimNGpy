@@ -2998,6 +2998,34 @@ class CoreModel:
 
         print_tree_branches(tree)
 
+
+
+    def summarize_numeric(self, df: pd.DataFrame=None, percentiles=(0.25, 0.5, 0.75), round=2) -> pd.DataFrame:
+        """
+        Summarize numeric columns in a simulated pandas DataFrame. Useful when you want to quickly look at the simulated data
+
+        Parameters:
+            df (pd.DataFrame): The input DataFrame.
+            percentiles (tuple): Optional percentiles to include in the summary.
+
+        Returns:
+            pd.DataFrame: A summary DataFrame with statistics for each numeric column.
+        """
+        if df is None:
+            df = self.results
+        if not isinstance(df, pd.DataFrame):
+            raise ValueError("Input must be a pandas DataFrame")
+
+        numeric_df = df.select_dtypes(include='number')
+
+        if numeric_df.empty:
+            raise ValueError("No numeric columns found in the DataFrame")
+
+        summary = numeric_df.describe(percentiles=percentiles).T
+        summary['missing'] = df.shape[0] - summary['count']
+
+        return summary.round(round)
+
     # @timer
     def add_db_table(self, variable_spec: list = None, set_event_names: list = None, rename: str = 'my_table',
                      simulation_name: Union[str, list, tuple] = MissingOption):

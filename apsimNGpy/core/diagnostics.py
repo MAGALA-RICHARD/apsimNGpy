@@ -66,6 +66,33 @@ class Diagnostics(ApsimModel):
     def summary(self):
         nums = self.results.select_dtypes(include="number").copy()
         return dfSummary(nums)
+
+    import pandas as pd
+
+    def summarize_numeric(df: pd.DataFrame, percentiles=(0.25, 0.5, 0.75)) -> pd.DataFrame:
+        """
+        Summarize numeric columns in a pandas DataFrame.
+
+        Parameters:
+            df (pd.DataFrame): The input DataFrame.
+            percentiles (tuple): Optional percentiles to include in the summary.
+
+        Returns:
+            pd.DataFrame: A summary DataFrame with statistics for each numeric column.
+        """
+        if not isinstance(df, pd.DataFrame):
+            raise ValueError("Input must be a pandas DataFrame")
+
+        numeric_df = df.select_dtypes(include='number')
+
+        if numeric_df.empty:
+            raise ValueError("No numeric columns found in the DataFrame")
+
+        summary = numeric_df.describe(percentiles=percentiles).T
+        summary['missing'] = df.shape[0] - summary['count']
+
+        return summary
+
     def plot_distribution(self, variable, *, stat='density', y=None, xlab=None, ylab=None,
                           title='', show=False, save_as='',**kwargs):
         """Plot distribution for a numeric variable."""

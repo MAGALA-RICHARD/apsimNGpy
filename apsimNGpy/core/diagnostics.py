@@ -148,6 +148,40 @@ class Diagnostics(ApsimModel):
         plt.tight_layout()
         self._finalize(show, save_as)
 
+    def scatter_plot(self, y: Union[str, list, tuple], *, xlab=None, ylab=None, x=None,
+                     time='Year', table_name='Report', show=True, save_as='', **kwargs):
+        """Plot scatter plot of a variable against a time field or x-axis."""
+        self._refresh()
+        var_name = time.capitalize()
+        self.add_report_variable(f'[Clock].Today.{var_name} as {var_name}', table_name)
+        pops = ['y', 'x']
+        for p in pops:
+            kwargs.pop(p, None)
+        if x is None:
+            self.run(report_name=table_name)
+        else:
+            var_name = x
+
+        df = self.results
+
+        if isinstance(y, str):
+            sns.scatterplot(data=df, x=var_name, y=y, **kwargs)
+        elif isinstance(y, (tuple, list)):
+            labels = kwargs.get('label', y)
+            if len(y) != len(labels):
+                raise ValueError("labels are inadequate")
+            kwargs.pop('label', None)
+            for yv, lab in zip(y, labels):
+                sns.scatterplot(data=df, x=var_name, y=yv, label=lab, **kwargs)
+
+        plt.title(f"{y} over {var_name}")
+        if xlab:
+            plt.xlabel(xlab)
+        if ylab:
+            plt.ylabel(ylab)
+        plt.tight_layout()
+        self._finalize(show, save_as)
+
     def cat_plot(self, y, *, vary_by=None, x=None, time='Year', show =False, save_as='', **kwargs):
             self._refresh()
             """Plot time series of a variable against a time field. use seaborn.catplot"""

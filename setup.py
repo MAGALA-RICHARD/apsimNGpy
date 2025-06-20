@@ -65,6 +65,7 @@ setup(
         'joblib >= 1.3.2',
         'sqlalchemy >=2.0',
         'matplotlib',
+        'seaborn >=0.13.2',
         'psutil >=6.0.0',
         'tenacity',
         'typer',

@@ -1,7 +1,6 @@
 import sys
 import time
 
-from sphinx.cmd.quickstart import suffix
 from dataclasses import dataclass, field
 
 from sqlalchemy.testing.util import total_size

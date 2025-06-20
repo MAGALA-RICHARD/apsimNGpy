@@ -6,11 +6,9 @@ from pathlib import Path
 import numpy as np
 
 from apsimNGpy.core_utils.utils import timer
-
-from apsimNGpy.optimizer.simple_problem import Problem, Solvers, auto_guess
 from scipy.optimize import minimize, differential_evolution
 import subprocess
-from tqdm import tqdm
+
 from apsimNGpy.optimizer.one_obj import AbstractProblem, SIMULATIONS, ContinuousVariableProblem, cache, VarDesc
 from apsimNGpy.core_utils.progbar import ProgressBar
 try:
@@ -216,8 +214,6 @@ class MixedVariableProblem(ContinuousVariableProblem):
             var_s.append(value.vtype)
         return var_s
 
-    from scipy.optimize import differential_evolution
-    from tqdm import tqdm
     def _set_objective_function(self, x):
         self._insert_controls(x)
         SCORE = self.evaluate()

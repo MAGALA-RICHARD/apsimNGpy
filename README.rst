@@ -6,7 +6,7 @@ apsimNGpy
    :target: https://opensource.org/licenses/Apache-2.0
    :alt: License: Apache-2.0
 
-.. image:: https://img.shields.io/badge/Online-Documentation-gray.svg
+.. image:: https://img.shields.io/badge/Online-Documentation-magenta.svg
    :target: https://magala-richard.github.io/apsimNGpy-documentations/index.html
    :alt: Documentation
 

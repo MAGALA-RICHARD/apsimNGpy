@@ -18,6 +18,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional, List, Dict
 import warnings
+
+from pandas.core.interchange.dataframe_protocol import DataFrame
 from sqlalchemy.testing.plugin.plugin_base import logging
 
 from apsimNGpy.manager.weathermanager import get_weather
@@ -3000,17 +3002,24 @@ class CoreModel:
 
 
 
-    def summarize_numeric(self, data_table:Union[str, tuple, list]=None, percentiles=(0.25, 0.5, 0.75), round=2) -> pd.DataFrame:
+    def summarize_numeric(self, data_table:Union[str, tuple, list]=None, columns:list=None, percentiles=(0.25, 0.5, 0.75), round=2) -> pd.DataFrame:
         """
         Summarize numeric columns in a simulated pandas DataFrame. Useful when you want to quickly look at the simulated data
 
         Parameters:
-            data_table (list, tuple, str): The names of the data table attached to the simulations.
-            percentiles (tuple): Optional percentiles to include in the summary.
+
+            -  data_table (list, tuple, str): The names of the data table attached to the simulations. defaults to all data tables.
+            -  specific (list) columns to summarize.
+            -  percentiles (tuple): Optional percentiles to include in the summary.
+            -  round (int): number of decimal places for rounding off.
 
         Returns:
+
             pd.DataFrame: A summary DataFrame with statistics for each numeric column.
+
+
         """
+        from pandas import DataFrame
         if data_table is None:
             fd = self.results
         else:
@@ -3019,8 +3028,13 @@ class CoreModel:
         if not isinstance(fd, pd.DataFrame):
             raise ValueError("Input must be a pandas DataFrame")
 
-        numeric_df = fd.select_dtypes(include='number')
+        get_df = fd.get(columns)
+        sel_df = fd.select_dtypes(include='number')
+        drop_col = {'SimulationID',  'CheckpointID'}
+        numeric_df = DataFrame(get_df) if columns else sel_df
+        dp = numeric_df.columns.intersection(drop_col)
 
+        numeric_df = numeric_df.drop(dp, axis=1)
         if numeric_df.empty:
             raise ValueError("No numeric columns found in the DataFrame")
 
@@ -3033,7 +3047,7 @@ class CoreModel:
     def add_db_table(self, variable_spec: list = None, set_event_names: list = None, rename: str = 'my_table',
                      simulation_name: Union[str, list, tuple] = MissingOption):
         """
-        Adds a new data base table, which ``APSIM`` calls ``Report`` (Models.Report) to the ``Simulation`` under a Simulation Zone.
+        Adds a new database table, which ``APSIM`` calls ``Report`` (Models.Report) to the ``Simulation`` under a Simulation Zone.
 
         This is different from ``add_report_variable`` in that it creates a new, named report
         table that collects data based on a given list of _variables and events.

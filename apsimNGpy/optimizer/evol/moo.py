@@ -1,14 +1,7 @@
 from pydantic import BaseModel, Field, validator
-from typing import Optional, Union
-from pymoo.core.duplicate import DefaultDuplicateElimination, NoDuplicateElimination
-from pymoo.core.repair import NoRepair
-from pymoo.core.selection import Selection
-from pymoo.core.crossover import Crossover
-from pymoo.core.mutation import Mutation
-from pymoo.core.survival import Survival
-from pymoo.core.sampling import Sampling
 
-class GeneticAlgorithmConfig(BaseModel):
+
+class BaseConfig(BaseModel):
     pop_size: int = Field(..., gt=0, description="Population size")
     sampling: Optional[Sampling] = None
     selection: Optional[Selection] = None

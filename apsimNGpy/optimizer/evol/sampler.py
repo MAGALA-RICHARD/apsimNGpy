@@ -2,11 +2,12 @@ import numpy as np
 import numpy as np
 from typing import Optional, Tuple
 
+
 def float_random_sampling(
-    n_var: int,
-    n: int,
-    bounds: Optional[Tuple[np.ndarray, np.ndarray]] = None,
-    **kwargs
+        n_var: int,
+        n: int,
+        bounds: Optional[Tuple[np.ndarray, np.ndarray]] = None,
+        **kwargs
 ) -> np.ndarray:
     """
     Generate random float samples in [0, 1) or within provided bounds.
@@ -34,31 +35,38 @@ def float_random_sampling(
     return X
 
 
-
-def integer_random_sampling(n_var:int, n:int, bounds:tuple):
+def integer_random_sampling(n_var: int, n: int, bounds: list[tuple] = None, max_default=100000):
     """
     Generate random integer samples within problem bounds.
 
     Parameters:
             - n_var: int, number of variables
-            - bounds:(xl, xu), the lower and upper bounds as arrays e.g., ((10, 10), (100, 50)) for n-var =2
+            - bounds: (xl, xu), the lower and upper bounds as arrays e.g., ((10, 10), (100, 50)) for n-var =2
             - n: int, number of samples to generate
 
     Returns:
         np.ndarray: A (n_samples, n_var) array of integer samples.
     """
-    xl, xu = bounds
-    return np.column_stack([
-        np.random.randint(xl[k], xu[k] + 1, size=n)
-        for k in range(n_var)
-    ])
+    if bounds is not None:
+        xl, xu = bounds
+        if len(xl) != len(xu):
+            raise ValueError(f"lower & upper bounds must be equal")
+        if len(xl) != n_var:
+            raise ValueError(f"bounds does not match number of variables; expected {n_var}, got {len(xl)}")
+        return np.column_stack([
+            np.random.randint(xl[k], xu[k] + 1, size=n)
+            for k in range(n_var)
+        ])
+    else:
+        return np.random.randint(0, max_default, size=(n, n_var))
 
 
 def boolean_random_sampling(n_var, n):
-        val = np.random.random((n, n_var))
-        return (val < 0.5).astype(bool)
+    val = np.random.random((n, n_var))
+    return (val < 0.5).astype(bool)
+
 
 if __name__ == '__main__':
-    float_random_sampling(1,20, ((10), (50)))
-    boolean_random_sampling(4,20)
-    integer_random_sampling(2, 100, ((10, 10), (100, 50)))
+    float_random_sampling(1, 20, [(10,), (50,)])
+    boolean_random_sampling(4, 20)
+    integer_random_sampling(2, 100, [(10, 10), (100, 5000)])

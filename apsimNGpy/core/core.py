@@ -32,7 +32,7 @@ from apsimNGpy.core.pythonet_config import *
 from apsimNGpy.core_utils.database_utils import dataview_to_dataframe
 from apsimNGpy.core.config import get_apsim_bin_path
 
-from apsimNGpy.core._modelhelpers import (get_or_check_model, old_method,
+from apsimNGpy.core._modelhelpers import (get_or_check_model, old_method, Double, Array, _edit_in_cultivar,
                                           inspect_model_inputs, soil_components,
                                           ModelTools, _eval_model, replace_variable_by_index)
 from apsimNGpy.core.runner import run_model_externally, collect_csv_by_model_path, run_p
@@ -783,6 +783,120 @@ class CoreModel:
         else:
             logger.debug(f"Adding {model_type} to {parent.Name} failed, perhaps models was not found")
 
+    @staticmethod
+    def _set_clock_vars(model_instance, param_values: dict, verbose=False):
+        validated = dict(End='End', Start='Start', end='End', start='Start', end_date='End',
+                         start_date='Start')
+
+        for kwa, value in param_values.items():
+            key = validated.get(kwa, 'unknown')  # APSIM uses camelcase
+            if key in ['End', 'Start']:
+                parsed_value = DateTime.Parse(value)
+                setattr(model_instance, key, parsed_value)
+                if verbose:
+                    logger.info(f"Set {key} to {parsed_value}")
+
+            else:
+                raise AttributeError(
+                    f"no valid Clock attributes were passed. Valid arguments are: '{", ".join(validated.keys())}'")
+
+    @staticmethod
+    def _set_weather_path(model_instance, param_values: dict, verbose=False):
+        met_file = param_values.get('weather_file')
+        if met_file is None:
+            raise ValueError('Use key word argument "weather_file" to supply the weather data')
+        # To avoid carrying over a silent bug or waiting for the bug to manifest during a model run,
+        # there is a need to raise here
+        if not os.path.exists(met_file):
+            raise FileNotFoundError(f"'{met_file}' rejected because it does not exist on the computer")
+        if not os.path.isfile(met_file):
+            raise FileNotFoundError(f"'{met_file}' is not a valid file did you forget to add .met at the end?")
+        c_wet = model_instance.FileName
+        model_instance.FileName = met_file
+        if verbose:
+            logger.info(f"weather file changed from '{c_wet}' to '{met_file}'")
+
+    def _set_report_vars(self, model_instance, param_values: dict, verbose=False):
+
+        set_event_names = param_values.get('set_event_names')
+        report_name = model_instance.Name
+
+        vs = param_values.get("variable_spec")
+        if not vs:
+            raise ValueError("Please specify a report name using key word 'variable_spec'")
+        self.add_report_variable(variable_spec=vs, set_event_names=set_event_names, report_name=report_name)
+        if verbose:
+            logger.info(f" '{vs}' added to '{report_name}'")
+
+    @staticmethod
+    def _set_surface_organic_matter(model_instance, param_values: dict, verbose=False):
+        verbose= verbose
+        selected_parameters = set(param_values.keys())
+        accepted_attributes = {'SurfOM',
+                               'InitialCPR', 'InitialResidueMass',
+                               'InitialCNR', 'IncorporatedP', }
+        dif = selected_parameters - accepted_attributes
+        if len(dif) > 0:
+            raise AttributeError(f"'{', '.join(dif)}' are not valid attributes for {model_instance.FullPath}")
+        for param in selected_parameters:
+            if hasattr(model_instance, param):
+                setattr(model_instance, param, param_values[param])
+
+            else:
+                raise AttributeError(f"suggested attribute {param} is not an attribute of {model_instance}")
+        if verbose:
+            logger.info(f"successfully set surface organic matter params {param_values}")
+
+    def edit_model_by_path(self, path, simulations =None, verbose=True, **kwargs):
+        v_obj = self.Simulations.FindByPath(path)
+        if v_obj is None:
+            raise ValueError(f"Could not find model instance associated with path `{path}`")
+        values = v_obj.Value
+
+        match type(values):
+            case Models.Climate.Weather:
+                self._set_weather_path(values, param_values=kwargs, verbose=verbose)
+                ...
+            case Models.Manager:
+                kas = set(kwargs.keys())
+                kav = {values.Parameters[i].Key for i in range(len(values.Parameters))}
+                dif = kas - kav
+                if len(dif) > 0:
+                    raise ValueError(f"{kas - kav} is not a valid parameter for {path}")
+                # Manager scripts have extra attribute parameters
+                if hasattr(values, 'Parameters'):
+                    values = values.Parameters
+                    for i in range(len(values)):
+                        param = values[i].Key
+                        if param in kas:
+                            param_value = kwargs[param]
+                            values[i] = KeyValuePair[String, String](param, f"{param_value}")
+
+                ...
+            case Models.PMF.Cultivar:
+
+                # Ensure crop replacements exist under Replacements
+                if 'Replacements' not in self.inspect_model('Models.Core.Folder'):
+                    for crop_name in self.inspect_model(Models.PMF.Plant, fullpath=False):
+                        self.add_crop_replacements(_crop=crop_name)
+                        print('added')
+                _edit_in_cultivar(self, model_name=values.Name, simulations=simulations, param_values=kwargs, verbose=verbose)
+                ...
+            case Models.Clock:
+                self._set_clock_vars(values, param_values=kwargs)
+            case Models.Soils.Physical | Models.Soils.Chemical | Models.Soils.Organic | Models.Soils.Water | Models.Soils.Solute:
+                self.replace_soils_values_by_path(node_path=path, **kwargs)
+            case Models.Report:
+                self._set_report_vars(values, param_values=kwargs, verbose=verbose)
+            case Models.Surface.SurfaceOrganicMatter:
+                if kwargs == {}:
+                    raise ValueError(f"Please supply at least one parameter:value {path}")
+                self._set_surface_organic_matter(values, param_values=kwargs, verbose=verbose)
+            case _:
+                raise NotImplementedError(f"No edit method implemented for model type {type(model_instance)}")
+
+        return v_obj
+
     def edit_model(self, model_type: str, model_name: str, simulations: Union[str, list] = 'all', cacheit=False,
                    cache_size=300, verbose=False, **kwargs):
         """
@@ -956,30 +1070,9 @@ class CoreModel:
 
             match type(model_instance):
                 case Models.Climate.Weather:
-                    met_file = kwargs.get('weather_file')
-                    if met_file is None:
-                        raise ValueError('Use key word argument "weather_file" to supply the weather data')
-                    # To avoid carrying over a silent bug or waiting for the bug to manifest during model run,
-                    # there is need to raise here
-                    if not os.path.exists(met_file):
-                        raise FileNotFoundError(f"'{met_file}' rejected because it does not exist on the computer")
-
-                    model_instance.FileName = met_file
+                    self._set_weather_path(model_instance, param_values=kwargs, verbose=verbose)
                 case Models.Clock:
-                    validated = dict(End='End', Start='Start', end='End', start='Start', end_date='End',
-                                     start_date='Start')
-
-                    for kwa, value in kwargs.items():
-                        key = validated.get(kwa, 'unknown')  # APSIM uses camelcase
-                        if key in ['End', 'Start']:
-                            parsed_value = DateTime.Parse(value)
-                            setattr(model_instance, key, parsed_value)
-                            if verbose:
-                                logger.info(f"Set {key} to {parsed_value}")
-                            setattr(self, key, value)
-                        else:
-                            raise AttributeError(
-                                f"no valid Clock attributes were passed. Valid arguments are: '{", ".join(validated.keys())}'")
+                    self._set_clock_vars(model_instance, param_values=kwargs, verbose=verbose)
 
                 case Models.Manager:
                     self.update_manager(scope=sim, manager_name=model_name, **kwargs)
@@ -988,31 +1081,10 @@ class CoreModel:
 
                     self.replace_soils_values_by_path(node_path=model_instance.FullPath, **kwargs)
                 case Models.Surface.SurfaceOrganicMatter:
-                    if not kwargs:
-                        raise ValueError("MissingOption keyword argument 'kwargs'")
-                    selected_parameters = set(kwargs.keys())
-                    accepted_attributes = {'SurfOM',
-                                           'InitialCPR', 'InitialResidueMass',
-                                           'InitialCNR', 'IncorporatedP', }
-                    dif = accepted_attributes - selected_parameters
-                    if dif == accepted_attributes:
-                        raise AttributeError(f"'{', '.join(selected_parameters)}' are not valid")
-                    for param in selected_parameters:
-                        if hasattr(model_instance, param):
-                            setattr(model_instance, param, kwargs[param])
-
-                        else:
-                            raise AttributeError(f"suggested attribute {param} is not an attribute of {model_instance}")
+                    self._set_surface_organic_matter(model_instance, param_values=kwargs, verbose=verbose)
 
                 case Models.Report:
-
-                    set_event_names = kwargs.get('set_event_names')
-                    report_name = model_name
-
-                    vs = kwargs.get("variable_spec")
-                    if not vs:
-                        raise ValueError("Please specify a report name using key word 'variable_spec'")
-                    self.add_report_variable(variable_spec=vs, set_event_names=set_event_names, report_name=report_name)
+                    self._set_report_vars(model_instance, param_values=kwargs, verbose=verbose)
 
                 case Models.PMF.Cultivar:
 
@@ -1044,7 +1116,8 @@ class CoreModel:
 
                     if isinstance(commands, (list, tuple)) or isinstance(values, (list, tuple)):
                         assert isinstance(commands, (list, tuple)) and isinstance(values, (list, tuple)), \
-                            "Both `commands` and `values` must be iterables (list or tuple), not sets or mismatched types"
+                            ("Both `commands` and `values` must be iterables (list or tuple), not sets or mismatched "
+                             "types")
                         assert len(commands) == len(values), "`commands` and `values` must have the same length"
 
                     # Get replacement folder and source cultivar model
@@ -2931,7 +3004,7 @@ class CoreModel:
             data = []
             model_types = ['Models.Core.Simulation', 'Models.Soils.Soil', 'Models.PMF.Plant', 'Models.Manager',
                            'Models.Climate.Weather', 'Models.Report', 'Models.Clock', 'Models.Core.Folder',
-                           'Models.Soils.Solute',
+                           'Models.Soils.Solute', 'Models.Surface.SurfaceOrganicMatter',
                            'Models.Soils.Swim3', 'Models.Soils.SoilCrop', 'Models.Soils.Water', 'Models.Summary',
                            'Models.Core.Zone', 'Models.Management.RotationManager',
                            'Models.Soils.CERESSoilTemperature', 'Models.Series', 'Models.Factorial.Experiment',
@@ -3000,9 +3073,8 @@ class CoreModel:
 
         print_tree_branches(tree)
 
-
-
-    def summarize_numeric(self, data_table:Union[str, tuple, list]=None, columns:list=None, percentiles=(0.25, 0.5, 0.75), round=2) -> pd.DataFrame:
+    def summarize_numeric(self, data_table: Union[str, tuple, list] = None, columns: list = None,
+                          percentiles=(0.25, 0.5, 0.75), round=2) -> pd.DataFrame:
         """
         Summarize numeric columns in a simulated pandas DataFrame. Useful when you want to quickly look at the simulated data
 
@@ -3023,14 +3095,14 @@ class CoreModel:
         if data_table is None:
             fd = self.results
         else:
-               fd = self.get_simulated_output(data_table)
+            fd = self.get_simulated_output(data_table)
 
         if not isinstance(fd, pd.DataFrame):
             raise ValueError("Input must be a pandas DataFrame")
 
         get_df = fd.get(columns)
         sel_df = fd.select_dtypes(include='number')
-        drop_col = {'SimulationID',  'CheckpointID'}
+        drop_col = {'SimulationID', 'CheckpointID'}
         numeric_df = DataFrame(get_df) if columns else sel_df
         dp = numeric_df.columns.intersection(drop_col)
 

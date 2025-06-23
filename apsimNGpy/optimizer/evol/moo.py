@@ -1,29 +1,26 @@
-from pydantic import BaseModel, Field, validator
+from pymoo.algorithms.moo import nsga3, nsga2
+from dataclasses import dataclass
+from pydantic import Field, BaseModel
+import numpy as np
+from pymoo.core.problem import ElementwiseProblem
 
 
-class BaseConfig(BaseModel):
-    pop_size: int = Field(..., gt=0, description="Population size")
-    sampling: Optional[Sampling] = None
-    selection: Optional[Selection] = None
-    crossover: Optional[Crossover] = None
-    mutation: Optional[Mutation] = None
-    survival: Optional[Survival] = None
-    n_offsprings: Optional[int] = None
-    eliminate_duplicates: Union[bool, DefaultDuplicateElimination, NoDuplicateElimination] = True
-    repair: Optional[object] = None
-    mating: Optional[object] = None
-    advance_after_initial_infill: bool = False
+class ElementwiseSphereWithConstraint(ElementwiseProblem):
 
-    @validator("n_offsprings", always=True)
-    def set_default_offsprings(cls, v, values):
-        return v if v is not None else values.get("pop_size")
+    def __init__(self):
+        xl = np.zeros(10)
+        xl[0] = -5.0
 
-    @validator("eliminate_duplicates", pre=True)
-    def resolve_duplicates(cls, v):
-        if isinstance(v, bool):
-            return DefaultDuplicateElimination() if v else NoDuplicateElimination()
-        return v
+        xu = np.ones(10)
+        xu[0] = 5.0
 
-    @validator("repair", always=True)
-    def set_default_repair(cls, v):
-        return v if v is not None else NoRepair()
+        super().__init__(n_var=10, n_obj=1, n_ieq_constr=2, xl=xl, xu=xu)
+
+    def _evaluate(self, x, out, *args, **kwargs):
+        out["F"] = np.sum((x - 0.5) ** 2)
+        out["G"] = np.column_stack([0.1 - out["F"], out["F"] - 0.5])
+
+
+class Val(BaseModel):
+    pop_size: int
+    n_var: int

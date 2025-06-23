@@ -193,7 +193,17 @@ class TestCoreModel(BaseTester):
     def test_loading_defaults_with(self):
         model = CoreModel(model='Maize')
         model.run()
-        self.assertTrue(model.ran_ok, 'simulation was not ran after using defualt within CoreModel class')
+        self.assertTrue(model.ran_ok, 'simulation was not ran after using default within CoreModel class')
+
+    def test_edit_with_path_som(self):
+        model = CoreModel(model='Maize')
+        initial_ratio = 200.0
+        model.edit_model_by_path('.Simulations.Simulation.Field.SurfaceOrganicMatter', InitialCNR=initial_ratio, verbose=False)
+        # after inspect if it was successfully updated
+        icnr = model.inspect_model_parameters(model_type='SurfaceOrganicMatter', model_name='SurfaceOrganicMatter', parameters='InitialCNR')
+        self.assertEqual(icnr['InitialCNR'], initial_ratio, msg='InitialCNR was not successfully updated by '
+                                                                'edit_model_by_path method')
+
 
     def test_find_model_andeval_models(self):
         """

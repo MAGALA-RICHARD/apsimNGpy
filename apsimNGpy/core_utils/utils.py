@@ -104,7 +104,7 @@ def delete_simulation_files(path, patterns=None):
             pass
 
 
-# _______________
+# ____________________________________________________________
 def upload_weather(path, specific_number):
     pattern = f'daymet_wf_{specific_number}.met'
     localfiles = glob.glob1(path, pattern)
@@ -477,16 +477,7 @@ def threaded_weather_download(self, iter_arable):
         thread.join()
 
 
-# # Example usage:
-# locations_array = [(1, 2), (3, 4), (5, 6), (7, 8), (1, 2), (3, 4), (5, 6), (7, 8)]  # Example array of locations (x, y coordinates)
-# object_ids_array = [101, 102, 103, 104, 105, 106, 107, 109]  # Example array of object IDs
-# num_management_practices = 5  # Total number of different management practices
 
-# result_data = assign_management_practices(locations_array, object_ids_array, num_management_practices)
-#
-# print(pd.DataFrame(result_data))
-# some ideas
-# __________________________________________________________________________
 # we can constrain the sample size of each management practice every time we sample
 def collect_runfiles(path2files, pattern="*.apsimx"):
     """_summary_
@@ -548,6 +539,7 @@ def number_of_cells(r, cell_size):
 
 
 def timer(func):
+    @functools.wraps(func)  # Preserves metadata
     def wrapper(*args, **kwargs):
         start_time = perf_counter()
         result = func(*args, **kwargs)
@@ -555,7 +547,6 @@ def timer(func):
         elapsed_time = end_time - start_time
         logger.info(f"{func.__name__} took {elapsed_time:.4f} seconds to execute.")
         return result
-
     return wrapper
 
 
@@ -573,25 +564,16 @@ def filter_df(df, **kwargs):
     Example:
         filtered_df = filter_dataframe(df, Age=30, City='Los Angeles')
     """
-    # Initialize a boolean mask with True values
+
     mask = pd.Series(True, index=df.index)
 
-    # Iterate through keyword arguments and update the mask for each column and value pair
+    #
     for column, value in kwargs.items():
         mask &= (df[column] == value)
 
-    # Apply the mask to the DataFrame to filter the rows
+
     filtered_df = df[mask]
     return filtered_df
-
-
-@cache
-def find_models(path, filename):
-    mod = list(path.rglob(filename))
-    if mod != []:
-        return os.path.dirname(mod[0])
-    else:
-        return None
 
 
 def convert_df_to_gdf(df, CRS):

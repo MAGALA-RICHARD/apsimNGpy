@@ -54,11 +54,11 @@ def integer_random_sampling(n_var:int, n:int, bounds:tuple):
     ])
 
 
-def bin_random_sampling(n_var, n):
+def boolean_random_sampling(n_var, n):
         val = np.random.random((n, n_var))
         return (val < 0.5).astype(bool)
 
 if __name__ == '__main__':
-    float_random_sampling(4,20, (10, 50))
-    bin_random_sampling(4,20)
+    float_random_sampling(1,20, ((10), (50)))
+    boolean_random_sampling(4,20)
     integer_random_sampling(2, 100, ((10, 10), (100, 50)))

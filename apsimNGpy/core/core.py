@@ -893,7 +893,7 @@ class CoreModel:
                     raise ValueError(f"Please supply at least one parameter:value {path}")
                 self._set_surface_organic_matter(values, param_values=kwargs, verbose=verbose)
             case _:
-                raise NotImplementedError(f"No edit method implemented for model type {type(model_instance)}")
+                raise NotImplementedError(f"No edit method implemented for model type {type(values)}")
 
         return v_obj
 

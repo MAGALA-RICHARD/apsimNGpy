@@ -491,80 +491,74 @@ def run_p(_model, simulations='all', clean=False, multithread=True):
 def _edit_in_cultivar(_model, model_name, param_values, simulations=None, verbose=False):
     # if there is a need to target a specific simulation in case of changing the current culvar in simulation
 
+    _cultivar_names = _model.inspect_model('Cultivar', fullpath=False)
 
-            _cultivar_names = _model.inspect_model('Cultivar', fullpath=False)
+    # Extract input parameters
+    commands = param_values.get("commands")
+    values = param_values.get("values")
 
-            # Extract input parameters
-            commands = param_values.get("commands")
-            values = param_values.get("values")
+    cultivar_manager = param_values.get("cultivar_manager")
+    new_cultivar_name = param_values.get("new_cultivar_name", None)
+    cultivar_manager_param = param_values.get("parameter_name", 'CultivarName')
+    plant_name = param_values.get('plant')
+    # Input validation
+    required_keys = ["commands", "values", "cultivar_manager", "parameter_name", "new_cultivar_name"]
+    # Extract input parameters
+    missing = [key for key in required_keys if not param_values.get(key)]
 
-            cultivar_manager = param_values.get("cultivar_manager")
-            new_cultivar_name = param_values.get("new_cultivar_name", None)
-            cultivar_manager_param = param_values.get("parameter_name", 'CultivarName')
-            plant_name = param_values.get('plant')
+    if missing:
+        raise ValueError(f"Missing required parameter(s): {', '.join(missing)}")
 
-            # Input validation
-            if not new_cultivar_name:
-                raise ValueError("Please specify a new cultivar name using 'new_cultivar_name=\"your_name\"'")
+    if isinstance(commands, (list, tuple)) or isinstance(values, (list, tuple)):
+        assert isinstance(commands, (list, tuple)) and isinstance(values, (list, tuple)), \
+            ("Both `commands` and `values` must be iterables (list or tuple), not sets or mismatched "
+             "types")
+        assert len(commands) == len(values), "`commands` and `values` must have the same length"
 
-            if not cultivar_manager:
-                raise ValueError("Please specify a cultivar manager using 'cultivar_manager=\"your_manager\"'")
+    # Get replacement folder and source cultivar model
+    replacements = get_or_check_model(_model.Simulations, Models.Core.Folder, 'Replacements',
+                                      action='get', cacheit=False)
 
-            if not commands or values is None:
-                raise ValueError("Both 'commands' and 'values' must be provided for editing a cultivar")
+    get_or_check_model(replacements, Models.Core.Folder, 'Replacements',
+                       action='delete')
+    cultivar_fallback = get_or_check_model(_model.Simulations, Models.PMF.Cultivar, model_name,
+                                           action='get', )
+    cultivar = ModelTools.CLONER(cultivar_fallback)
 
-            if isinstance(commands, (list, tuple)) or isinstance(values, (list, tuple)):
-                assert isinstance(commands, (list, tuple)) and isinstance(values, (list, tuple)), \
-                    ("Both `commands` and `values` must be iterables (list or tuple), not sets or mismatched "
-                     "types")
-                assert len(commands) == len(values), "`commands` and `values` must have the same length"
+    # Update cultivar parameters
+    cultivar_params = _model._cultivar_params(cultivar)
 
-            # Get replacement folder and source cultivar model
-            replacements = get_or_check_model(_model.Simulations, Models.Core.Folder, 'Replacements',
-                                              action='get', cacheit=False)
+    if isinstance(values, str):
+        cultivar_params[commands] = values.strip()
+    elif isinstance(values, (int, float)):
+        cultivar_params[commands] = values
+    else:
+        for cmd, val in zip(commands, values):
+            cultivar_params[cmd.strip()] = val.strip() if isinstance(val, str) else val
 
-            get_or_check_model(replacements, Models.Core.Folder, 'Replacements',
-                               action='delete')
-            cultivar_fallback = get_or_check_model(_model.Simulations, Models.PMF.Cultivar, model_name,
-                                                   action='get', )
-            cultivar = ModelTools.CLONER(cultivar_fallback)
+    # Apply updated commands
+    updated_cmds = [f"{k.strip()}={v}" for k, v in cultivar_params.items()]
+    cultivar.set_Command(updated_cmds)
 
-            # Update cultivar parameters
-            cultivar_params = _model._cultivar_params(cultivar)
+    # Attach cultivar under a plant model
+    plant_model = get_or_check_model(replacements, Models.PMF.Plant, plant_name,
+                                     action='get')
 
-            if isinstance(values, str):
-                cultivar_params[commands] = values.strip()
-            elif isinstance(values, (int, float)):
-                cultivar_params[commands] = values
-            else:
-                for cmd, val in zip(commands, values):
-                    cultivar_params[cmd.strip()] = val.strip() if isinstance(val, str) else val
+    # Remove existing cultivar with same name
+    get_or_check_model(replacements, Models.PMF.Cultivar, new_cultivar_name, action='delete')
 
-            # Apply updated commands
-            updated_cmds = [f"{k.strip()}={v}" for k, v in cultivar_params.items()]
-            cultivar.set_Command(updated_cmds)
+    # Rename and reattach cultivar
+    cultivar.Name = new_cultivar_name
+    ModelTools.ADD(cultivar, plant_model)
 
-            # Attach cultivar under a plant model
-            plant_model = get_or_check_model(replacements, Models.PMF.Plant, plant_name,
-                                             action='get')
+    for sim in _model.find_simulations(simulations):
+        # Update cultivar manager script
+        _model.edit_model(model_type=Models.Manager, simulations=sim.Name,
+                          model_name=cultivar_manager, **{cultivar_manager_param: new_cultivar_name})
 
-            # Remove existing cultivar with same name
-            get_or_check_model(replacements, Models.PMF.Cultivar, new_cultivar_name, action='delete')
-
-            # Rename and reattach cultivar
-            cultivar.Name = new_cultivar_name
-            ModelTools.ADD(cultivar, plant_model)
-
-
-            for sim in _model.find_simulations(simulations):
-
-            # Update cultivar manager script
-                _model.edit_model(model_type=Models.Manager, simulations=sim.Name,
-                                  model_name=cultivar_manager, **{cultivar_manager_param: new_cultivar_name})
-
-            if verbose:
-                logger.info(f"\nEdited Cultivar '{model_name}' and saved it as '{new_cultivar_name}'")
-            _model.save()
+    if verbose:
+        logger.info(f"\nEdited Cultivar '{model_name}' and saved it as '{new_cultivar_name}'")
+    _model.save()
 
 
 collect()

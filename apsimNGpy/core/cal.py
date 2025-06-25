@@ -72,7 +72,14 @@ class Calibrator(ApsimModel):
                     raise ValueError(f"Please supply at least one parameter: value \n '{', '.join(accept)}' for {path}")
                 _raise_value_error(path, accept, kas)
             case Models.PMF.Cultivar:
-                accept = {}
+                # Define required parameters
+                required_keys = ["commands", "values", "cultivar_manager", "parameter_name", "new_cultivar_name"]
+                # Extract input parameters
+                param_values = kwargs
+                missing = [key for key in required_keys if not param_values.get(key)]
+
+                if missing:
+                    raise ValueError(f"Missing required parameter(s): {', '.join(missing)}")
 
     def add_parameters(self, path: str, **kwargs):
         """
@@ -84,7 +91,7 @@ class Calibrator(ApsimModel):
             The full APSIM component path where the parameters should be edited.
         **kwargs :
             Key-value pairs of parameters to be updated. One and only one value should be
-            designated ("?", 'fill') to indicate the parameter to be optimized.
+            designated ("?", '', "") to indicate the parameter to be optimized. remember '' is not the same as ''
 
         Notes
         -----
@@ -118,17 +125,19 @@ class Calibrator(ApsimModel):
             raise ValueError("No parameters defined for calibration.")
 
         if len(x) != len(self.parameters):
-            raise ValueError(f"Expected {len(self.parameters)} parameters, but got {len(x)}.")
+            raise ValueError(f"Expected {len(self.parameters)} parameters' values, but got {len(x)}.")
 
         for i, value in enumerate(x):
             path, param_dict = self.parameters[i]
-            updated_params = {k: value for k in param_dict.keys() if param_dict[k] == '?'}
-            self.edit_model_by_path(path=path, **updated_params)
+            updated_params = {k: value for k in param_dict.keys() if param_dict[k] in ('?', "")}
+            pp = param_dict | updated_params  # Python 3.9+: right-hand overrides left-hand
+
+            self.edit_model_by_path(path=path, **pp)
 
     @staticmethod
     def is_incomplete_date(series: pd.Series) -> bool:
         """
-        Determine if a pandas datetime series was likely created from year, month or days onlyvalues.
+        Determine if a pandas datetime series was likely created from year, month or days only values.
         Assumes the default day and month values are 1 (i.e., January 1st).
         """
         if not pd.api.types.is_datetime64_any_dtype(series):
@@ -143,77 +152,107 @@ class Calibrator(ApsimModel):
         pattern = r'\[[^\]]+\]\.\w+'
         return re.findall(pattern, text)
 
+    @property
+    def n_vars(self):
+        return len(self.parameters)
+
+    @timer
     def _process_data(self, obs, *, data_table, output_column, time_step='Year', obs_time_column='year'):
         """
+        Align observed data with APSIM simulation results.
 
-        @param obs:
-        @param data_table:
-        @param output_column:
-        @param time_step: Must be 'Year', 'Month', 'Day''
-        @param obs_time_column:
-        @return:
+        Parameters
+        ----------
+        obs : Union[pd.DataFrame, str, Path]
+            The observed data, either as a DataFrame or a file path to a CSV.
+        data_table : str
+            The name of the APSIM report table to extract simulation results from.
+        output_column : str
+            The output column of interest from the APSIM results.
+        time_step : str, default 'Year'
+            One of {'Year', 'Month', 'Day'} or full date.
+        obs_time_column : str, default 'year'
+            The time column in the observed data.
+
+        Returns
+        -------
+        pd.DataFrame
+            A DataFrame with columns: [date, time_step, apsim, observed]
         """
         DATE = 'date'
-        obs_ser = obs[obs_time_column]
-        obs_date = pd.to_datetime(obs_ser)
 
-        def _proc_df(_obs, _data_table, column, _time_step, _obs_time_column):
-
-            time = _time_step.capitalize()
-            if time not in {'Year', 'Month', 'Day'}:
-                raise ValueError('Invalid time step')
-
-            if self.is_incomplete_date(obs_date):
-                time_stem_spec = f'[Clock].Today.{time} as {_obs_time_column}'
-            else:
-                time_stem_spec = f'[Clock].Today as {_obs_time_column}'
-
-            a_reports = self.inspect_model('Models.Report', fullpath=False)
-            assert isinstance(_data_table, str), 'Data table must be a scalar'
-            if not a_reports:
-                raise ValueError('No report table was found')
-            if _data_table not in a_reports:
-                scalar = 'Did you mean'
-                many = 'Did you mean any of the following'
-                msg = scalar if len(a_reports) == 1 else many
-                raise ValueError(f"Data table {_data_table} not found. {msg} '{','.join(a_reports)}'? ")
-
-            self.add_report_variable(
-                [time_stem_spec, f'[Clock].Today as {DATE}'],
-                _data_table)
-
-            dtf = self.run(_data_table).results
-            columns = dtf.columns.tolist()
-            if column not in columns:
-                raise ValueError(f'Column {column} not found in the data table')
-            obs_time = _obs[_obs_time_column]
-            sdf = dtf[dtf[_obs_time_column].isin(obs_time)]
-            if sdf.shape[0] != _obs.shape[0]:
-                raise ValueError(
-                    f"observed data does not match expected simulation results, apsim simulated data has ({sdf.shape[0]} rows)\n observed has ({_obs.shape[0]} rows)")
-            _obs.sort_values(inplace=True, by=_time_step)
-            ans = pd.DataFrame()
-            if DATE != obs_time_column:
-                if self.is_incomplete_date(obs_date):
-                    ans[DATE] = sdf[DATE]
-            ans[_time_step] = sdf[_obs_time_column]
-            ans['apsim'] = sdf[output_column]
-            ans['observed'] = _obs[output_column]
-
-            return ans
-
+        # Accept a file path or DataFrame
         match obs:
             case pd.DataFrame():
-                obs = obs.copy()
+                obs = obs.copy(deep=True)
             case str() | Path():
                 obs = pd.read_csv(str(obs))
             case _:
                 raise TypeError(f"Unsupported type for 'obs': {type(obs)}")
 
-        # validate if the data provided is present
+        if obs_time_column not in obs.columns:
+            raise KeyError(f"Column '{obs_time_column}' not found in observed data")
 
-        return _proc_df(obs, _data_table=data_table, column=output_column, _obs_time_column=obs_time_column,
-                        _time_step=time_step)
+        obs_date = pd.to_datetime(obs[obs_time_column])
+
+        def _proc_df(_obs, _data_table, column, _time_step, _obs_time_column):
+            time = _time_step.capitalize()
+            if time not in {'Year', 'Month', 'Day'}:
+                raise ValueError("`time_step` must be one of {'Year', 'Month', 'Day'}")
+
+            # Clock variable to add to APSIM
+            if self.is_incomplete_date(obs_date):
+                clock_variable = f'[Clock].Today.{time} as {_obs_time_column}'
+            else:
+                clock_variable = f'[Clock].Today as {_obs_time_column}'
+
+            # Validate report existence
+            available_reports = self.inspect_model('Models.Report', fullpath=False)
+            if not isinstance(_data_table, str):
+                raise TypeError("Data table name must be a string")
+            if not available_reports:
+                raise ValueError("No report tables found in the APSIM model")
+            if _data_table not in available_reports:
+                suggestion = 'Did you mean' if len(available_reports) == 1 else 'Did you mean any of'
+                raise ValueError(
+                    f"Data table '{_data_table}' not found. {suggestion} '{', '.join(available_reports)}'?"
+                )
+
+            # Inject Clock variable to report
+            self.add_report_variable(
+                [clock_variable, f'[Clock].Today as {DATE}'],
+                _data_table
+            )
+
+            dtf = self.run(_data_table).results
+
+            if column not in dtf.columns:
+                raise ValueError(f"Column '{column}' not found in simulation output table.")
+
+            obs_time = _obs[_obs_time_column]
+            sdf = dtf[dtf[_obs_time_column].isin(obs_time)]
+
+            if sdf.shape[0] != _obs.shape[0]:
+                raise ValueError(
+                    f"Mismatch in row count:\nSimulated: {sdf.shape[0]}\nObserved: {_obs.shape[0]}"
+                )
+
+            _obs.sort_values(by=_obs_time_column, inplace=True)
+
+            result = pd.DataFrame()
+            if DATE != _obs_time_column and self.is_incomplete_date(obs_date):
+                result[DATE] = sdf[DATE]
+            elif self.is_incomplete_date(obs_date):
+                result[DATE] = _obs[_obs_time_column]
+
+            result[_time_step] = sdf[_obs_time_column]
+            result['apsim'] = sdf[output_column]
+            result['observed'] = _obs[output_column]
+
+            return result
+
+        return _proc_df(obs, _data_table=data_table, column=output_column,
+                        _time_step=time_step, _obs_time_column=obs_time_column)
 
 
 if __name__ == "__main__":
@@ -223,4 +262,11 @@ if __name__ == "__main__":
     ar = df.to_numpy(copy=True)
     df = mod._process_data(obs=df, data_table='Report', output_column='Yield', obs_time_column='year', time_step='year')
     mod.add_parameters('.Simulations.Simulation.Field.SurfaceOrganicMatter', InitialCNR='?', InitialCPR=10)
-    mod._do_model_edit([23])
+    # example of adding cultivar
+    mod.add_parameters(path='.Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_110',
+                       commands='[Phenology].Juvenile.Target.FixedValue', values='?',
+                       cultivar_manager='Sow using a variable rule', new_cultivar_name='be',
+                       parameter_name='CultivarName')
+    mod._do_model_edit([23, 156])
+
+    mod.inspect_model_parameters(model_type='Cultivar', model_name='be')

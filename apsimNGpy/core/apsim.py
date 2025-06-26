@@ -4,7 +4,8 @@ author: Richard Magala
 email: magalarich20@gmail.com
 """
 import logging, pathlib
-from typing import Union
+from builtins import str
+from typing import Union, Any
 import os
 import numpy as np
 import time
@@ -14,10 +15,9 @@ import pandas as pd
 import sys
 # prepare for the C# import
 # from apsimNGpy.core.pythonet_config import start_pythonnet
-
+from pathlib import Path
 from apsimNGpy.core.core import CoreModel, Models
 from apsimNGpy.core.inspector import Inspector
-# now we can safely import any c# related libraries
 from System.Collections.Generic import *
 from Models.Core import Simulations
 from System import *
@@ -32,16 +32,6 @@ REPORT_PATH = {'Carbon': '[Soil].Nutrient.TotalC/1000 as dyn', 'DUL': '[Soil].So
 
 
 # decorator to monitor performance
-def timing_decorator(func):
-    def wrapper(*args, **kwargs):
-        start_time = time.perf_counter()
-        result = func(*args, **kwargs)
-        end_time = time.perf_counter()
-        elapsed_time = end_time - start_time
-        print(f"{func.__name__} took {elapsed_time:.4f} seconds to execute.")
-        return result
-
-    return wrapper
 
 
 class ApsimModel(CoreModel):
@@ -57,18 +47,14 @@ class ApsimModel(CoreModel):
         >>> model = ApsimModel(path_model, set_wd=Path.home())# replace with your path
         >>> model.run(report_name='Report') # report is the default replace as needed
     """
-    def __init__(self, model: Union[os.PathLike, dict, str], out_path: os.PathLike = None, out: os.PathLike = None,
+
+    def __init__(self, model: Union[os.PathLike, dict, str], out_path: Union[str, Path] = None, out: Union[str, Path] = None,
                  lonlat: tuple = None, soil_series: str = 'domtcp', thickness: int = 20, bottomdepth: int = 200,
 
                  thickness_values: list = None, run_all_soils: bool = False, set_wd=None, **kwargs):
         super().__init__(model, out_path, set_wd, **kwargs)
         self.soiltype = None
         self.SWICON = None
-        """get SSURG soil tables and organise it to aPSim soil profiles -------------------- parameters soil_series (
-        _str_) specifying the soils series default is domcp meaning dominant soil series, users can specify any 
-        other series if known. lonlat {_lonlat_} of the specified location run_all_soils (__boolean_) if True, 
-        all soil series in the map units will be analysed if false the soil series will be the one determined by 
-        parameter soil series model is a path of aPSim file or aPSIMNG object"""
         self.lonlat = lonlat
         self.Nlayers = bottomdepth / thickness
         bm = bottomdepth * 10
@@ -81,14 +67,17 @@ class ApsimModel(CoreModel):
         self.copy = True
         self.run_all_soils = run_all_soils
         if not isinstance(thickness_values, np.ndarray):
-            self.thickness_values = np.array(self._thickness_values, dtype=np.float64)  # apsim uses floating digit number
+            self.thickness_values = np.array(self._thickness_values,
+                                             dtype=np.float64)  # apsim uses floating digit number
         else:
             self.thickness_values = self._thickness_values
         if kwargs.get('experiment', False):
             self.create_experiment()
+
     @property
     def thickness_values(self):
         return self._thickness_values
+
     @thickness_values.setter
     def thickness_values(self, values):
         self._thickness_values = values
@@ -109,8 +98,6 @@ class ApsimModel(CoreModel):
             for crops in soil_crop:
                 if crops.Name == existing_crop_names:
                     crops.Name = new_cropname
-
-
 
     def adjust_dul(self, simulations: Union[tuple, list] = None):
         """
@@ -143,9 +130,9 @@ class ApsimModel(CoreModel):
                 soil_object = self.Simulations.FindDescendant[Soil]()
 
                 soilsy = soil_object.FindDescendant[Physical]()
-                soilsy.DUL =duls
+                soilsy.DUL = duls
         self.save()
-            #self.replace_any_soil_physical('DUL', simulations, duL)
+        # self.replace_any_soil_physical('DUL', simulations, duL)
         return self
 
     def _get_SSURGO_soil_profile(self, lonlat: tuple, run_all_soils: bool = False):
@@ -493,9 +480,9 @@ class ApsimModel(CoreModel):
         return self
 
     def auto_gen_thickness_layers(self,
-            max_depth, n_layers=10, thin_layers=3, thin_thickness=100,
-            growth_type="linear", thick_growth_rate=1.5
-    ):
+                                  max_depth, n_layers=10, thin_layers=3, thin_thickness=100,
+                                  growth_type="linear", thick_growth_rate=1.5
+                                  ):
         """
         Generate layer thicknesses from surface to depth, starting with thin layers and increasing thickness.
 
@@ -561,10 +548,8 @@ class ApsimModel(CoreModel):
 
         return layers
 
-
-
     def replace_soil_profile_from_web(self, **kwargs):
-        from apsimNGpy.manager.weathermanager import get_weather, _is_within_USA_mainland
+        from apsimNGpy.manager.weathermanager import _is_within_USA_mainland
         lon_lat = kwargs.get('lonlat', self.lonlat)
         if not _is_within_USA_mainland(lon_lat):
             raise ValueError(f"{lon_lat} is not within USA. coordnates outside USA are not supported yet")
@@ -576,9 +561,9 @@ class ApsimModel(CoreModel):
 
         if self.thickness_values is None:
             self.thickness_values = self.auto_gen_thickness_layers(max_depth=2200, n_layers=int(self.Nlayers),
-                                                    thin_layers=3, thin_thickness=100,
-                                                    growth_type='linear', thick_growth_rate=50)
-        self.thickness_replace =self.thickness_values.copy()
+                                                                   thin_layers=3, thin_thickness=100,
+                                                                   growth_type='linear', thick_growth_rate=50)
+        self.thickness_replace = self.thickness_values.copy()
         self.replace_downloaded_soils(sop, simulation_names=sim_name)
         self.save()
         return self
@@ -586,37 +571,38 @@ class ApsimModel(CoreModel):
 
 if __name__ == '__main__':
     # test
-    from pathlib import Path
 
-    # Model = FileFormat.ReadFromFile[Models.Core.Simulations](model, None, False)
     os.chdir(Path.home())
     from apsimNGpy.core.base_data import load_default_simulations
 
-    try:
-        lonlat = -93.7738, 42.0204
-        al =load_default_simulations(simulations_object=False)
-        model = al
+    #
+    # try:
+    #     lonlat = -93.7738, 42.0204
+    #     al = load_default_simulations(simulations_object=False)
+    #     model = al
+    #
+    #     from apsimNGpy import settings
+    #
+    #     mod = ApsimModel('Maize')
+    #     model = ApsimModel(model, out_path=None,
+    #                        thickness_values=settings.SOIL_THICKNESS)
+    #     model.replace_met_from_web(lonlat=lonlat, start_year=2001, end_year=2020)
+    #     from apsimNGpy.manager import soilmanager as sm
+    #
+    #     st = sm.DownloadsurgoSoiltables(lonlat)
+    #     sp = sm.OrganiseSoilProfile(st, 20)
+    #     sop = sp.cal_missingFromSurgo()
+    #     model.replace_downloaded_soils(sop, model.simulation_names, No_till=True)
+    #     bd = model.extract_any_soil_physical("BD")
+    #
+    # except Exception as e:
+    #     print(type(e).__name__, repr(e))
+    #     exc_type, exc_value, exc_traceback = sys.exc_info()
+    #     # Extract the line number from the traceback object
+    #     line_number = exc_traceback.tb_lineno
+    #     print(f"Error: {type(e).__name__} occurred on line: {line_number} execution value: {exc_value}")
 
-        from apsimNGpy import settings
-
-        model = ApsimModel(model, out_path=None,
-                           thickness_values=settings.SOIL_THICKNESS)
-        model.replace_met_from_web(lonlat=lonlat, start_year=2001, end_year=2020)
-        from apsimNGpy.manager import soilmanager as sm
-
-        st = sm.DownloadsurgoSoiltables(lonlat)
-        sp = sm.OrganiseSoilProfile(st, 20)
-        sop = sp.cal_missingFromSurgo()
-        model.replace_downloaded_soils(sop, model.simulation_names, No_till=True)
-        bd = model.extract_any_soil_physical("BD")
-
-    except Exception as e:
-        print(type(e).__name__, repr(e))
-        exc_type, exc_value, exc_traceback = sys.exc_info()
-        # Extract the line number from the traceback object
-        line_number = exc_traceback.tb_lineno
-        print(f"Error: {type(e).__name__} occurred on line: {line_number} execution value: {exc_value}")
-
-
-
-
+    obs = r'D:\package\synthetic_observed.csv'
+    df = pd.read_csv(obs)
+    mod = ApsimModel('Maize')
+    ar = df.to_numpy(copy=True)

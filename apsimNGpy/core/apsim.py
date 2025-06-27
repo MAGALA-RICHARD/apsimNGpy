@@ -53,13 +53,13 @@ class ApsimModel(CoreModel):
 
                  thickness_values: list = None, run_all_soils: bool = False, set_wd=None, **kwargs):
         super().__init__(model, out_path, set_wd, **kwargs)
-        self.soiltype = None
+        self.soil_type = None
         self.SWICON = None
         self.lonlat = lonlat
-        self.Nlayers = bottomdepth / thickness
+        self.n_layers = bottomdepth / thickness
         bm = bottomdepth * 10
         if thickness_values is None:
-            thickness_values = self.auto_gen_thickness_layers(max_depth=bm, n_layers=int(self.Nlayers))
+            thickness_values = self.auto_gen_thickness_layers(max_depth=bm, n_layers=int(self.n_layers))
         self.soil_series = soil_series
         self.thickness = thickness
         self.out_path = out_path or out
@@ -194,11 +194,11 @@ class ApsimModel(CoreModel):
             self.thickness_replace = self.thickness_values
 
         else:
-            tv = np.tile(float(self.thickness), int(self.Nlayers))
+            tv = np.tile(float(self.thickness), int(self.n_layers))
             self.thickness_replace = tv
         pss = self._get_SSURGO_soil_profile(lonlat)
         for keys in pss.dict_of_soils_tables.keys():
-            self.soiltype = keys
+            self.soil_type = keys
             if verbose:
                 print("Padding variabales for:", keys)
             self.soil_profile = OrganiseSoilProfile(self.dict_of_soils_tables[keys],
@@ -210,7 +210,7 @@ class ApsimModel(CoreModel):
             self.cropdf = missing_properties[2]
             # ps = self._get_SSURGO_soil_profile()
 
-            # self.thickness_replace = list(np.full(shape=int(self.Nlayers,), fill_value=self.thickness*10,  dtype=np.float64))
+            # self.thickness_replace = list(np.full(shape=int(self.n_layers,), fill_value=self.thickness*10,  dtype=np.float64))
             for simu in self.find_simulations(simulation_names):
                 pysoil = simu.FindDescendant[Physical]()  # meaning physical soil child
                 soil_crop = pysoil.FindChild[SoilCrop]()
@@ -241,8 +241,8 @@ class ApsimModel(CoreModel):
                 chemical = simu.FindDescendant[Chemical]()
                 chemical.Thickness = self.thickness_replace
                 # to do fix the crop management may use FindAllDescendants. it worked
-                # XF = np.full(shape=self.Nlayers, fill_value=1,  dtype=np.float64)
-                XF = np.tile(float(1), int(self.Nlayers))
+                # XF = np.full(shape=self.n_layers, fill_value=1,  dtype=np.float64)
+                XF = np.tile(float(1), int(self.n_layers))
 
             for simu in self.find_simulations(simulation_names):
                 soil_crop = pysoil.FindAllDescendants[SoilCrop]()
@@ -330,7 +330,7 @@ class ApsimModel(CoreModel):
             organic.Carbon = self.organic_calcualted.Carbon
             chemical = simu.FindDescendant[Chemical]()
             chemical.Thickness = self.thickness_values
-            XF = np.tile(float(1), int(self.Nlayers))
+            XF = np.tile(float(1), int(self.n_layers))
 
         for simu in self.find_simulations(simulation_names):
             soil_crop = pysoil.FindAllDescendants[SoilCrop]()
@@ -560,7 +560,7 @@ class ApsimModel(CoreModel):
         sop = OrganiseSoilProfile(sp, thickness, thickness_values=self.thickness_values).cal_missingFromSurgo()
 
         if self.thickness_values is None:
-            self.thickness_values = self.auto_gen_thickness_layers(max_depth=2200, n_layers=int(self.Nlayers),
+            self.thickness_values = self.auto_gen_thickness_layers(max_depth=2200, n_layers=int(self.n_layers),
                                                                    thin_layers=3, thin_thickness=100,
                                                                    growth_type='linear', thick_growth_rate=50)
         self.thickness_replace = self.thickness_values.copy()

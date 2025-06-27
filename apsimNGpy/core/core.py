@@ -93,6 +93,7 @@ class CoreModel:
     others: Dict = field(init=False, default_factory=dict)
     report_names: Optional[List[str]] = field(init=False, default=None)
     factor_names: List[str] = field(init=False, default_factory=list)
+    _specifications: List[str] = field(init=False, default_factory=list)
     permutation: Optional[bool] = field(init=False, default=None)
     experiment_created: Optional[bool] = field(init=False, default=None)
     _str_model: Optional[str] = field(init=False, default=None)
@@ -802,7 +803,7 @@ class CoreModel:
 
     @staticmethod
     def _set_weather_path(model_instance, param_values: dict, verbose=False):
-        met_file = param_values.get('weather_file')
+        met_file = param_values.get('weather_file') or param_values.get('met_file')
         if met_file is None:
             raise ValueError('Use key word argument "weather_file" to supply the weather data')
         # To avoid carrying over a silent bug or waiting for the bug to manifest during a model run,
@@ -830,7 +831,7 @@ class CoreModel:
 
     @staticmethod
     def _set_surface_organic_matter(model_instance, param_values: dict, verbose=False):
-        verbose= verbose
+        verbose = verbose
         selected_parameters = set(param_values.keys())
         accepted_attributes = {'SurfOM',
                                'InitialCPR', 'InitialResidueMass',
@@ -847,7 +848,12 @@ class CoreModel:
         if verbose:
             logger.info(f"successfully set surface organic matter params {param_values}")
 
-    def edit_model_by_path(self, path, simulations =None, verbose=True, **kwargs):
+    def edit_model_by_path(self, path, **kwargs):
+        simulations = kwargs.get('simulations', None) or kwargs.get('simulation', None)
+        verbose = kwargs.get('verbose', False)
+        for p in {'simulation', 'simulations', 'verbose'}:
+            kwargs.pop(p, None)
+
         v_obj = self.Simulations.FindByPath(path)
         if v_obj is None:
             raise ValueError(f"Could not find model instance associated with path `{path}`")
@@ -879,8 +885,9 @@ class CoreModel:
                 if 'Replacements' not in self.inspect_model('Models.Core.Folder'):
                     for crop_name in self.inspect_model(Models.PMF.Plant, fullpath=False):
                         self.add_crop_replacements(_crop=crop_name)
-                        print('added')
-                _edit_in_cultivar(self, model_name=values.Name, simulations=simulations, param_values=kwargs, verbose=verbose)
+
+                _edit_in_cultivar(self, model_name=values.Name, simulations=simulations, param_values=kwargs,
+                                  verbose=verbose)
                 ...
             case Models.Clock:
                 self._set_clock_vars(values, param_values=kwargs)
@@ -890,12 +897,14 @@ class CoreModel:
                 self._set_report_vars(values, param_values=kwargs, verbose=verbose)
             case Models.Surface.SurfaceOrganicMatter:
                 if kwargs == {}:
-                    raise ValueError(f"Please supply at least one parameter:value {path}")
+                    raise ValueError(f"Please supply at least one parameter: value \n '{', '.join({'SurfOM',
+                                                                                             'InitialCPR', 'InitialResidueMass',
+                                                                                             'InitialCNR', 'IncorporatedP', })}' for {path}")
                 self._set_surface_organic_matter(values, param_values=kwargs, verbose=verbose)
             case _:
                 raise NotImplementedError(f"No edit method implemented for model type {type(values)}")
 
-        return v_obj
+        return self
 
     def edit_model(self, model_type: str, model_name: str, simulations: Union[str, list] = 'all', cacheit=False,
                    cache_size=300, verbose=False, **kwargs):
@@ -2816,6 +2825,7 @@ class CoreModel:
                         'use add_model(), remove_model()')
             return self
         self.factor_names = []
+
         self.permutation = permutation
         # Add core experiment structure
 
@@ -2867,43 +2877,46 @@ class CoreModel:
             get_name = specification.split("=")[0].strip()
             # split again by
             factor_name = get_name.split(".")[-1]
+        original_spec = specification
+        if specification not in self._specifications:
 
-        if not self.experiment:
-            msg = 'experiment was not defined, it has been created with default settings'
-            self.create_experiment(permutation=True)  # create experiment with default parameters of permutation
-            self.experiment = True
+            if not self.experiment:
+                msg = 'experiment was not defined, it has been created with default settings'
+                self.create_experiment(permutation=True)  # create experiment with default parameters of permutation
+                self.experiment = True
 
-        if 'Script' in specification:
-            matches = re.findall(r"\[(.*?)\]", specification)
-            if matches:
-                _managers = set(self.inspect_model('Models.Manager', fullpath=False))
-                ITC = set(matches).intersection(_managers)
-                if not ITC:
-                    raise ValueError('specification has no linked script in the model')
+            if 'Script' in specification:
+                matches = re.findall(r"\[(.*?)\]", specification)
+                if matches:
+                    _managers = set(self.inspect_model('Models.Manager', fullpath=False))
+                    ITC = set(matches).intersection(_managers)
+                    if not ITC:
+                        raise ValueError('specification has no linked script in the model')
 
-        # Add individual factors
-        if self.permutation:
-            parent_factor = Models.Factorial.Permutation
-        else:
-            parent_factor = Models.Factorial.Factors
+            # Add individual factors
+            if self.permutation:
+                parent_factor = Models.Factorial.Permutation
+            else:
+                parent_factor = Models.Factorial.Factors
 
-        # find if a suggested factor exists
-        factor_in = self.Simulations.FindInScope[Models.Factorial.Factor](factor_name)
-        if factor_in:
+            # find if a suggested factor exists
+            factor_in = self.Simulations.FindInScope[Models.Factorial.Factor](factor_name)
+            if factor_in:
 
-            # if already exists, update the specifications
-            factor_in.set_Specification(specification)
+                # if already exists, update the specifications
+                factor_in.set_Specification(specification)
 
-        else:
-            # if new factor, add it to the Simulations
-            self.add_model(model_type=Models.Factorial.Factor, adoptive_parent=parent_factor, rename=factor_name)
+            else:
+                # if new factor, add it to the Simulations
+                self.add_model(model_type=Models.Factorial.Factor, adoptive_parent=parent_factor, rename=factor_name)
 
-            _added = self.Simulations.FindInScope[Models.Factorial.Factor](factor_name)
-            # update with specification
-            _added.set_Specification(specification)
-        self.save()
-        self.factor_names.append(factor_name)
-        self.factors[factor_name] = specification
+                _added = self.Simulations.FindInScope[Models.Factorial.Factor](factor_name)
+                # update with specification
+                _added.set_Specification(specification)
+            self.save()
+            self.factor_names.append(factor_name)
+            self.factors[factor_name] = specification
+            self._specifications.append(original_spec)
         return self  # allows method chaining
 
     def set_continuous_factor(self, factor_path, lower_bound, upper_bound, interval, factor_name=None):

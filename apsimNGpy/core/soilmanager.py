@@ -371,7 +371,7 @@ class OrganizeAPSIMsoil_profile:
         for i in range(len(self.newbottomdepth)):
             Depth.append(str(self.newtopdepth[i]) + "-" + str(self.newbottomdepth[i]))
         Depth = Depth
-        # Thickness  = [self.thickness]*self.Nlayers
+        # Thickness  = [self.thickness]*self.n_layers
         Carbon = self.cal_Carbon()
         AirDry = self.get_AirDry()
         L15 = self.get_L15()

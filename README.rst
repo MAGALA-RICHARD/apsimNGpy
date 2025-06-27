@@ -97,8 +97,10 @@ for MAcOS or Linux users see: https://apsimnextgeneration.netlify.app/install/
 model documentation and tutorial are also available via; https://docs.apsim.info/
 we expect that by accepting to use apsimNGpy, you have a basic understanding of APSIM process-based model, therefore, our focus is to make sure you are able to use apsimNGpy.
 
-In addition, make sure that the APSIM installation binaries folder is added to the system path.
-if you run the following code and returns None you need to do something as explained below.
+.. note::
+
+    In addition, make sure that the APSIM installation binaries folder is added to the system path.
+    if you run the following code and returns None you need to do something as explained below.
 
 - 1. Use command line interface
 

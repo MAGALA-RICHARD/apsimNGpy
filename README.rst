@@ -65,11 +65,11 @@ All versions are currently in development, phase and they can be installed as fo
 .. code:: bash
 
     pip install apsimNGpy
+.. tip::
+    If you are using the fleeting uv virtual environment manager. you can still the package as follows:
+    .. code-block:: python
 
-If you are using the fleeting uv virtual environment manager
-.. code-block:: python
-
-    uv pip install apsimNGpy
+        uv pip install apsimNGpy
 
 - Method 1. clone the current development repository
 

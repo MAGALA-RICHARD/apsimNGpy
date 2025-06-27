@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from apsimNGpy.core.apsim import ApsimModel
+from apsimNGpy.core.cal import OptimizationBase
 from scipy.optimize import minimize
 import numpy as np
 from functools import reduce, lru_cache, cache
@@ -15,6 +15,7 @@ from numpy import floating
 from scipy.stats import norm, linregress
 from typing import Union, List, Dict, Any
 import pandas as pd
+
 ArrayLike = Union[np.ndarray, List[float], pd.Series]
 
 
@@ -27,7 +28,30 @@ def get_function_param_names(func):
     return tuple(sig.parameters.keys())
 
 
-class AbstractProblem(ApsimModel):
+def _evaluate_args(*args, **kwargs):
+    if not all(isinstance(arg, str) for arg in args):
+        raise ValueError("all arguments must be strings")
+
+
+def _auto_guess(data):
+    if isinstance(data, ChoiceVar):
+        sample_set = np.random.choice(data.categories, size=1)[0]
+    elif isinstance(data, GridVar):
+        sample_set = np.random.choice(data.values, size=1)[0]
+    elif isinstance(data, (QrandintVar, RandintVar, QuniformVar)):
+        sample_set = data.lower
+    elif isinstance(data, UniformVar):
+        if len(data.bounds) == 1:
+            bounds = data.bounds[0]
+        else:
+            bounds = data.bounds
+        sample_set = np.random.uniform(bounds[0], bounds[1], size=1)[0]
+    else:
+        raise ValueError(f'data: {type(data)} not supported')
+    return sample_set
+
+
+class AbstractProblem(OptimizationBase):
     def __init__(self, model, max_cache_size=None):
         super().__init__(model)
         self._cache = OrderedDict()
@@ -37,10 +61,11 @@ class AbstractProblem(ApsimModel):
 
     def _insert_cache_result(self, *args, result):
 
-        args  =tuple(args)
+        args = tuple(args)
         self._cache[args] = result
 
-        if self.max_cache_size is not None and len(self._cache) > self.max_cache_size: # saturation reached according to specified maxsize free space
+        if self.max_cache_size is not None and len(
+                self._cache) > self.max_cache_size:  # saturation reached according to specified maxsize free space
             self._cache.popitem(last=False)
 
     def get_cached(self, *args):
@@ -48,8 +73,8 @@ class AbstractProblem(ApsimModel):
         return self._cache.get(key, None)
 
     @cache
-    def _insert_apsim_model(self, model:str, outpath=None, **kwargs):
-        return ApsimModel(model, out_path=outpath)
+    def _insert_apsim_model(self, model: str, outpath=None, **kwargs):
+        return OptimizationBase(model, out_path=outpath)
 
     @cache
     def _get_editable_model(self):
@@ -57,9 +82,11 @@ class AbstractProblem(ApsimModel):
 
     def clear_cache(self):
         self._cache.clear()
+
     @abstractmethod
     def add_control(self):
         pass
+
     @abstractmethod
     def evaluate(self):
         pass
@@ -93,26 +120,6 @@ class AbstractProblem(ApsimModel):
     @outcomes.setter
     def outcomes(self, value):
         self._outcomes = value
-
-    def _evaluate_args(self, *args, **kwargs):
-        if not all(isinstance(arg, str) for arg in args):
-            raise ValueError("all arguments must be strings")
-    def _auto_guess(self, data):
-        if isinstance(data, ChoiceVar):
-            sample_set = np.random.choice(data.categories, size=1)[0]
-        elif isinstance(data, GridVar):
-            sample_set = np.random.choice(data.values, size=1)[0]
-        elif isinstance(data, (QrandintVar, RandintVar, QuniformVar)):
-            sample_set = data.lower
-        elif isinstance(data, UniformVar):
-            if len(data.bounds) == 1:
-                bounds = data.bounds[0]
-            else:
-                bounds = data.bounds
-            sample_set = np.random.uniform(bounds[0], bounds[1], size=1)[0]
-        else:
-            raise ValueError(f'data: {type(data)} not supported')
-        return sample_set
 
     @staticmethod
     def rrmse(actual, predicted) -> float:
@@ -199,6 +206,7 @@ class AbstractProblem(ApsimModel):
     def ccc(actual, predicted) -> float:
         return AbstractProblem.rho_ci(actual, predicted)['rho_c']['est'].iloc[0]
 
+
 @dataclass(slots=True, frozen=True)
 class VarDesc:
     model_type: str
@@ -209,7 +217,22 @@ class VarDesc:
     start_value: Union[float, int]
     bounds: tuple[float, int]
 
-predicted = np.array([
+
+def g_ran_observed_variables(predicted, dist='normal'):
+    # Calculate mean and standard deviation of predicted
+    mean_pred = np.mean(predicted)
+    std_pred = np.std(predicted)
+
+    # Generate observed values from a normal distribution with same mean and std
+    np.random.seed(42)  # for reproducibility
+    if dist.lower() == 'normal':
+        return np.random.normal(loc=mean_pred, scale=std_pred, size=predicted.shape)
+    if dist.lower() == 'uniform':
+        return np.random.uniform(low=np.min(predicted), high=np.max(predicted), size=predicted.shape)
+
+
+if __name__ == '__main__':
+    pred_data = np.array([
         8469.616,
         4668.505,
         555.047,
@@ -221,21 +244,8 @@ predicted = np.array([
         8379.435,
         7370.301
     ])
-def g_ran_observed_variables(predicted, dist='normal'):
 
-
-    # Calculate mean and standard deviation of predicted
-    mean_pred = np.mean(predicted)
-    std_pred = np.std(predicted)
-
-    # Generate observed values from a normal distribution with same mean and std
-    np.random.seed(42)  # for reproducibility
-    if dist.lower() == 'normal':
-      return np.random.normal(loc=mean_pred, scale=std_pred, size=predicted.shape)
-    if dist.lower() == 'uniform':
-        return np.random.uniform(low=np.min(predicted), high=np.max(predicted), size=predicted.shape)
-if __name__ == '__main__':
-    obs =  np.array([
+    obs = np.array([
         7000.0,
         5000.505,
         1000.047,
@@ -247,12 +257,13 @@ if __name__ == '__main__':
         8379.435,
         4000.301
     ])
-    val = dict(mse=AbstractProblem.mse(obs, predicted),
-    rmse =AbstractProblem.rmse(obs, predicted),
-    mae= AbstractProblem.mae(obs, predicted),
-    rrmse = AbstractProblem.rrmse(obs, predicted),
-    wia = AbstractProblem.wia(obs, predicted),
-    ccc= AbstractProblem.ccc(obs, predicted),
-    slope = AbstractProblem.slope(obs, predicted),
-    r2 = AbstractProblem.r2(obs, predicted))
-    print(val)
+    val = dict(mse=AbstractProblem.mse(obs, pred_data),
+               rmse=AbstractProblem.rmse(obs, pred_data),
+               mae=AbstractProblem.mae(obs, pred_data),
+               rrmse=AbstractProblem.rrmse(obs, pred_data),
+               wia=AbstractProblem.wia(obs, pred_data),
+               ccc=AbstractProblem.ccc(obs, pred_data),
+               slope=AbstractProblem.slope(obs, pred_data),
+               r2=AbstractProblem.r2(obs, pred_data))
+    import pprint
+    pprint.pprint(val, indent=4, width=4)

@@ -151,7 +151,7 @@ class MixedVariableProblem(ContinuousVariableProblem):
             self: Enables method chaining.
         """
 
-        self._evaluate_args(model_type, model_name, parameter_name, vtype)
+        _evaluate_args(model_type, model_name, parameter_name, vtype)
 
         label = f"{parameter_name}"
         vtype_cls = _variable_type(vtype)

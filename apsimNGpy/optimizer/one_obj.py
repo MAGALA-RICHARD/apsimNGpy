@@ -148,7 +148,7 @@ class ContinuousVariableProblem(AbstractProblem):
 
 
         """
-        self._evaluate_args(model_type, model_name, parameter_name)
+        _evaluate_args(model_type, model_name, parameter_name)
         label = f"{parameter_name}"
         self.control_vars.append(
             VarDesc(model_type, model_name, parameter_name, vtype, label, start_value, bounds)

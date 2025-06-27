@@ -65,11 +65,11 @@ All versions are currently in development, phase and they can be installed as fo
 .. code:: bash
 
     pip install apsimNGpy
-.. tip::
-    If you are using the fleeting uv virtual environment manager. you can still the package as follows:
-    .. code-block:: python
 
-        uv pip install apsimNGpy
+If you are using the fleeting uv virtual environment manager.
+.. code-block:: python
+
+    uv pip install apsimNGpy
 
 - Method 1. clone the current development repository
 
@@ -97,10 +97,8 @@ for MAcOS or Linux users see: https://apsimnextgeneration.netlify.app/install/
 model documentation and tutorial are also available via; https://docs.apsim.info/
 we expect that by accepting to use apsimNGpy, you have a basic understanding of APSIM process-based model, therefore, our focus is to make sure you are able to use apsimNGpy.
 
-.. note::
-
-    In addition, make sure that the APSIM installation binaries folder is added to the system path.
-    if you run the following code and returns None you need to do something as explained below.
+In addition, make sure that the APSIM installation binaries folder is added to the system path.
+if you run the following code and returns None you need to do something as explained below.
 
 - 1. Use command line interface
 

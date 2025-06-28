@@ -18,7 +18,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional, List, Dict
 import warnings
-
+from deprecated import deprecated
 from pandas.core.interchange.dataframe_protocol import DataFrame
 from sqlalchemy.testing.plugin.plugin_base import logging
 
@@ -75,9 +75,11 @@ class CoreModel:
 
     When an ``APSIM`` file is loaded, it is automatically copied to ensure a fallback to the original file in case of any issues during operations.
 
-   Starting with version 0.35, accessing default simulations no longer requires the load_default_simulations function from the base_data module.
-   Instead, default simulations can now be retrieved directly via the CoreModel attribute or the ApsimModel class by specifying the name of the crop (e.g., "Maize").
-   This means the relevant classes can now accept either a file path or a string representing the crop name.
+   .. Note::
+
+       Starting with version 0.35, accessing default simulations no longer requires the load_default_simulations function from the base_data module.
+       Instead, default simulations can now be retrieved directly via the CoreModel attribute or the ApsimModel class by specifying the name of the crop (e.g., "Maize").
+       This means the relevant classes can now accept either a file path or a string representing the crop name.
 
 
     """
@@ -254,7 +256,7 @@ class CoreModel:
         self.restart_model(model_info)
 
         return self
-
+    @deprecated('Use save() instead')
     def save_edited_file(self, out_path: os.PathLike = None, reload: bool = False) -> Union['CoreModel', None]:
         """ Saves the model to the local drive.
             @deprecated: use save() method instead
@@ -544,11 +546,11 @@ class CoreModel:
             ValueError
                 If the model of the specified type and name is not found.
 
-            Notes
-            -----
-            This method uses `get_or_check_model` with action='get' to locate the model,
-            and then updates the model's `Name` attribute. `save()` is called
-            immediately after to apply and enfoce the change.
+            .. Note::
+
+                This method uses ``get_or_check_model`` with action='get' to locate the model,
+                and then updates the model's `Name` attribute. ``save()`` is called
+                immediately after to apply and enfoce the change.
 
             Example::
                from apsimNGpy.core.apsim import ApsimModel
@@ -688,7 +690,7 @@ class CoreModel:
         Returns:
             None: ``Models`` are modified in place, so models retains the same reference.
 
-        Note:
+        .. caution::
             Added models from ``Models namespace`` are initially empty. Additional configuration is required to set parameters.
             For example, after adding a Clock module, you must set the start and end dates.
 
@@ -848,6 +850,23 @@ class CoreModel:
         if verbose:
             logger.info(f"successfully set surface organic matter params {param_values}")
 
+    def detect_model_type(self, model_instance: Union[str, Models]):
+        """Detects the model type from a given APSIM model instance or path string."""
+        if not isinstance(model_instance, str):
+            model= model_instance
+
+        else:
+            # Otherwise, assume it's a path and try to retrieve the model
+            path = model_instance
+            model = self.Simulations.FindByPath(path)
+            if model is None:
+                raise ValueError(f"No model found associated with: {model_instance}")
+            model = model.Value
+
+
+
+        return type(model)
+
     def edit_model_by_path(self, path, **kwargs):
         simulations = kwargs.get('simulations', None) or kwargs.get('simulation', None)
         verbose = kwargs.get('verbose', False)
@@ -965,12 +984,12 @@ class CoreModel:
                 - ``values`` (Any): Value to assign.
                 - ``cultivar_manager`` (str): Name of the Manager script managing the cultivar, which must contain the `CultivarName` parameter. Required to propagate updated cultivar values, as APSIM treats cultivars as read-only.
 
-        Raises
-        ------
-        ValueError
-            If the model instance is not found, required kwargs are missing, or `kwargs` is empty.
-        NotImplementedError
-            If the logic for the specified `model_type` is not implemented.
+        .. warning::
+
+            ValueError
+                If the model instance is not found, required kwargs are missing, or `kwargs` is empty.
+            NotImplementedError
+                If the logic for the specified `model_type` is not implemented.
 
         Examples::
 
@@ -1252,7 +1271,9 @@ class CoreModel:
             specified type may be removed.
 
         Returns:
+
            None
+
         Example::
 
                from apsimNGpy import core
@@ -2144,9 +2165,11 @@ class CoreModel:
             >>> print(changed_dates)
                {'Simulation': {'start': datetime.date(2021, 1, 1),
                 'end': datetime.date(2021, 1, 12)}}
-            @note
-            It is possible to target a specific simulation by specifying simulation name for this case the name is Simulations, so, it could appear as follows
-             model.change_simulation_dates(start_date='2021-01-01', end_date='2021-01-12', simulation = 'Simulation')
+
+            .. tip::
+
+                It is possible to target a specific simulation by specifying simulation name for this case the name is Simulations, so, it could appear as follows
+                 model.change_simulation_dates(start_date='2021-01-01', end_date='2021-01-12', simulation = 'Simulation')
 
         """
         old_method(old_method='change_simulation_dates', new_method='edit_model')
@@ -2188,9 +2211,11 @@ class CoreModel:
 
                {'Simulation': {'start': datetime.date(2021, 1, 1),
                 'end': datetime.date(2021, 1, 12)}}
-            @note
-            It is possible to target a specific simulation by specifying simulation name for this case the name is Simulations,
-             so, it could appear as follows;
+
+            .. note::
+
+                It is possible to target a specific simulation by specifying simulation name for this case the name is Simulations,
+                 so, it could appear as follows;
 
              >>>model.change_simulation_dates(start_date='2021-01-01', end_date='2021-01-12', simulation = 'Simulation')
 
@@ -2470,8 +2495,10 @@ class CoreModel:
              model.inspect_model('Models.PMF.Cultivar', fullpath = False)
              ['Hycorn_53',  'Pioneer_33M54', 'Pioneer_38H20',  'Pioneer_34K77',  'Pioneer_39V43',  'Atrium', 'Laila', 'GH_5019WX']
 
-        Models can be inspected either by importing the Models namespace or by using string paths. The most reliable approach is to provide the full model path—either as a string or as a Models object.
-        However, remembering full paths can be tedious, so allowing partial model names or references can significantly save time during development and exploration.
+        .. tip::
+
+            Models can be inspected either by importing the Models namespace or by using string paths. The most reliable approach is to provide the full model path—either as a string or as a Models object.
+            However, remembering full paths can be tedious, so allowing partial model names or references can significantly save time during development and exploration.
         """
 
         model_type = _eval_model(model_type)
@@ -2769,7 +2796,10 @@ class CoreModel:
 
         Returns:
            >>None: This method does not return a value.
-           >> Please proceed with caution, we assume that if you want to clear the model objects, then you don't need them,
+
+        .. caution::
+
+           Please proceed with caution, we assume that if you want to clear the model objects, then you don't need them,
            but by making copy compulsory, then, we are clearing the edited files
 
         """

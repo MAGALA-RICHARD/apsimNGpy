@@ -155,8 +155,15 @@ class AbstractProblem(ABC):
         example:
 
         .. code-block:: python
+                 problem = MultiObjectiveProblem(runner, objectives=objectives, decision_vars=_vars)
+                _vars = [
+                {'path': '.Simulations.Simulation.Field.Fertilise at sowing', 'Amount': "?", "bounds": [50, 300],
+                 "v_type": "float"},
+                {'path': '.Simulations.Simulation.Field.Sow using a variable rule', 'Population': "?", 'v_type': 'float',
+                 'bounds': [4, 14]}
+                 ]
 
-                problem = ApsimOptimizationProblem(runner, objectives=objectives, decision_vars=_vars)
+
                 problem.add_control(
                     **{'path': '.Simulations.Simulation.Field.Fertilise at sowing', 'Amount': "?", "bounds": [50, 300],
                        "v_type": "float"})

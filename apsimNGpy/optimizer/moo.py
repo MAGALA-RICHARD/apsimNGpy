@@ -21,7 +21,7 @@ import numpy as np
 # Disable compilation warning
 Config.warnings['not_compiled'] = False
 
-class ApsimOptimizationProblem(AbstractProblem):
+class MultiObjectiveProblem(AbstractProblem):
 
     def __init__(self, apsim_model: Runner, objectives: list, *, decision_vars: list = None, cache_size = 100):
         """

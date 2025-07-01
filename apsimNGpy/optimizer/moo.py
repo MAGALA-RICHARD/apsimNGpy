@@ -13,7 +13,7 @@ from pymoo.optimize import minimize
 from apsimNGpy.core.cal import OptimizationBase as Runner, OptimizationBase
 import numpy as np
 from apsimNGpy.optimizer.optutils import compute_hyper_volume, edit_runner
-
+from apsimNGpy.optimizer.base import AbstractProblem
 from pymoo.core.problem import ElementwiseProblem
 from apsimNGpy.core.cal import OptimizationBase as Runner
 import numpy as np
@@ -21,9 +21,9 @@ import numpy as np
 # Disable compilation warning
 Config.warnings['not_compiled'] = False
 
-class ApsimOptimizationProblem:
+class ApsimOptimizationProblem(AbstractProblem):
 
-    def __init__(self, apsim_runner: Runner, objectives: list, *, decision_vars: list = None):
+    def __init__(self, apsim_model: Runner, objectives: list, *, decision_vars: list = None, cache_size = 100):
         """
                    Parameters
                    ----------
@@ -34,13 +34,28 @@ class ApsimOptimizationProblem:
                    decision_vars : list of dict, optional
                        Each dict must have: 'path', 'bounds', 'v_type', 'kwargs'.
                    """
-
-        self.apsim_runner = apsim_runner
+        AbstractProblem.__init__(self, apsim_model, max_cache_size=cache_size)
+        self.apsim_model = apsim_model
         self.objectives = objectives
         self.params = []
         self.decision_vars = decision_vars if decision_vars is not None else []
+        self.optimization_type = 'multi-objective'
 
         assert all(callable(obj) for obj in objectives), "All objectives must be callable"
+
+
+    def evaluate_objectives(self, x, *args, **kwargs):
+        for val, spec in zip(x, self.decision_vars):
+            edit_runner(self.apsim_model, decision_specs=spec, x_values=val)
+        # get results
+        df = self.apsim_model.run().results
+        return np.array([obj(df) for obj in self.objectives])
+
+    def  optimization_type(self):
+         return 'multi-objective'
+
+    def minimize_with_local_solver(self, **kwargs):
+        pass  # not needed in this problem
 
     class SetUpProblem(ElementwiseProblem):
         def __init__(self, core_problem, **kwargs):
@@ -55,12 +70,7 @@ class ApsimOptimizationProblem:
             )
 
         def _evaluate(self, x, out, *args, **kwargs):
-            # `x` is a single solution (vector), because this is ElementwiseProblem
-            for val, spec in zip(x, self.core_problem.decision_vars):
-                edit_runner(self.core_problem.apsim_runner, decision_specs=spec, x_values=val)
-
-            df = self.core_problem.apsim_runner.run().results
-            out["F"] = np.array([obj(df) for obj in self.core_problem.objectives])
+            out["F"] = self.core_problem.evaluate_objectives(x, args, kwargs)
 
     def extract_bounds(self):
         xl, xu = [], []
@@ -73,37 +83,6 @@ class ApsimOptimizationProblem:
 
     def get_problem(self):
         return self.SetUpProblem(self)
-
-    def add_parameters(self, path: str, *, bounds, v_type, **kwargs):
-        """
-        Adds a single APSIM parameter to be optimized.
-
-        Parameters
-        ----------
-        path : str
-            APSIM component path.
-        bounds : tuple
-            Lower and upper bounds for optimization variable.
-        v_type : str
-            Variable type: 'int' or 'float'.
-        kwargs : dict
-            One of the key-values must be '?' to be filled during optimization.
-        """
-        self.apsim_runner.evaluate_kwargs(path, **kwargs)
-
-        to_fill = [k for k, v in kwargs.items() if v in ('?', 'fill', "")]
-        if len(to_fill) != 1:
-            raise ValueError("Exactly one parameter must be unspecified with '?' or 'fill'.")
-
-        var_spec = {
-            'path': path,
-            'bounds': bounds,
-            'v_type': v_type,
-            'kwargs': kwargs
-        }
-
-        if var_spec not in self.decision_vars:
-            self.decision_vars.append(var_spec)
 
     def is_mixed_type_vars(self):
         """Detect if decision vars contain types other than float or int."""

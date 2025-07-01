@@ -1,5 +1,4 @@
 from dataclasses import dataclass, field
-from apsimNGpy.core.cal import OptimizationBase
 from scipy.optimize import minimize
 import numpy as np
 from functools import reduce, lru_cache, cache
@@ -15,9 +14,14 @@ from numpy import floating
 from scipy.stats import norm, linregress
 from typing import Union, List, Dict, Any
 import pandas as pd
-
+from abc import ABC, abstractmethod
+from collections.abc import Iterable
+from apsimNGpy.optimizer.optutils import compute_hyper_volume, edit_runner
 ArrayLike = Union[np.ndarray, List[float], pd.Series]
+from collections import OrderedDict
 
+SING_OBJ_CONT_VAR = 'single-continuous-vars'
+SING_OBJ_MIXED_VAR = 'single-mixed-vars'
 
 @lru_cache(maxsize=None)
 def get_function_param_names(func):
@@ -51,14 +55,25 @@ def _auto_guess(data):
     return sample_set
 
 
-class AbstractProblem(OptimizationBase):
-    def __init__(self, model, max_cache_size=None):
-        super().__init__(model)
+
+class AbstractProblem(ABC):
+    def __init__(self, apsim_model, max_cache_size=400, objectives = None, decision_vars=None, **kwargs):
+        self.apsim_model = apsim_model
         self._cache = OrderedDict()
         self.max_cache_size = max_cache_size
         self._outcomes = None
-        self.labels = []
+        self.editor = edit_runner
+        self.decision_vars = decision_vars or []
+        self.objectives = objectives or []
+        self.optimization_type= 'single'
+        self.optimizer = None
+        self.target_parameters = OrderedDict()
 
+    @property
+    @abstractmethod
+    def optimization_type(self):
+        """Must be implemented as a property in subclass"""
+        pass
     def _insert_cache_result(self, *args, result):
 
         args = tuple(args)
@@ -70,6 +85,7 @@ class AbstractProblem(OptimizationBase):
 
     def get_cached(self, *args):
         key = tuple(args)
+
         return self._cache.get(key, None)
 
     @cache
@@ -84,35 +100,153 @@ class AbstractProblem(OptimizationBase):
         self._cache.clear()
 
     @abstractmethod
-    def add_control(self):
-        pass
+    def extract_bounds(self):
+        xl, xu = [], []
+        for var in self.decision_vars:
+            if var['v_type'] not in {'int', 'float'}:
+                raise ValueError(f"Unsupported variable type: {var['v_type']}")
+            xl.append(var['bounds'][0])
+            xu.append(var['bounds'][1])
+        print(xl, xu)
+        return xl, xu
+
+    def add_control(self, path: str, *, bounds, v_type, q=None, start_value=None, categories=None, **kwargs):
+        """
+        Adds a single APSIM parameter to be optimized.
+
+        Parameters
+        ----------
+        path : str
+            APSIM component path.
+
+         v_type : type
+            The Python type of the variable. Should be either `int` or `float` for continous variable problem or
+            'uniform', 'choice',  'grid',   'categorical',   'qrandint',  'quniform' for mixed variable problem
+
+        start_value : any (type determined by the variable type.
+            The initial value to use for the parameter in optimization routines.
+
+        bounds : tuple of (float, float), optional
+            Lower and upper bounds for the parameter (used in bounded optimization).
+            Must be a tuple like (min, max). If None, the variable is considered unbounded.
+
+        kwargs: dict
+            One of the key-value pairs must contain a value of '?', indicating the parameter to be filled during optimization.
+            Keyword arguments are used because most APSIM models have unique parameter structures, and this approach allows
+            flexible specification of model-specific parameters.
+
+
+        Returns
+        -------
+        self : object
+            Returns self to support method chaining.
+
+        .. warning::
+
+            Raises a ``ValueError``
+                If the provided arguments do not pass validation via `_evaluate_args`.
+
+
+        .. Note::
+
+            - This method is typically used before running optimization to define which
+              parameters should be tuned.
+
+        example:
+
+        .. code-block:: python
+
+                problem = ApsimOptimizationProblem(runner, objectives=objectives, decision_vars=_vars)
+                problem.add_control(
+                    **{'path': '.Simulations.Simulation.Field.Fertilise at sowing', 'Amount': "?", "bounds": [50, 300],
+                       "v_type": "float"})
+                problem.add_control(
+                    **{'path': '.Simulations.Simulation.Field.Sow using a variable rule', 'Population': "?", 'v_type': 'float',
+                       'bounds': [4, 14]})
+        """
+        self.apsim_model.check_kwargs(path, **kwargs)
+        if not start_value and self.optimization_type in [SING_OBJ_CONT_VAR, SING_OBJ_MIXED_VAR]:
+            raise ValueError("start_value must be provided for this problem to proceed")
+
+        to_fill = [k for k, v in kwargs.items() if v in ('?', "")]
+        if len(to_fill) != 1:
+            raise ValueError("Exactly one parameter must be unspecified with '?' or '' .")
+
+        var_spec = {
+            'path': path,
+            'bounds': bounds,
+            'v_type': v_type,
+            'q':q,
+            'categories': categories,
+            'start_value': start_value,
+            'kwargs': kwargs
+        }
+        tp = to_fill[0]
+        self.target_parameters[tp] = var_spec # if the parameter changes, then it is a new control
+        # update decissions vars
+        self.decision_vars = [self.target_parameters[i] for i in self.target_parameters]
 
     @abstractmethod
-    def evaluate(self):
+    def evaluate_objectives(self):
         pass
 
-    @abstractmethod
-    def minimize_with_local_solver(self, **kwargs):
-        pass
+
 
     def __str__(self):
+        opt_type = self.optimization_type
+        if isinstance(self.objectives, Iterable):
+           ob_names = [i.__name__ for i in self.objectives ]
+           ob_names = ', '.join(ob_names)
+        if callable(self.objectives):
+            ob_names = self.objectives.__name__
+        else:
+            ob_names = 'None'
         summary = f"Optimization Problem for APSIM Model: {self.model}\n"
+
         summary += f"===================================================\n"
-        summary += f"Simulation: {self.simulation}\n"
-        summary += f"Number of Control Variables: {len(self.control_vars)}\n\n"
+        summary += f"objective_name: {ob_names}\n"
+        summary += f"Number of Control Variables: {len(self.decision_vars)}\n"
         summary += "Control Variables:\n"
-        for var in self.control_vars:
-            summary += (
-                f"  - {var.label} ({type(var.vtype).__name__}): "
-                f"model_type={var.model_type}, model_name='{var.model_name}', "
-                f"param='{var.parameter_name}'\n"
-                f"Results summary:: {self.outcomes}\n"
-            )
+        for count, var in enumerate(self.decision_vars):
+             count += 1
+             vard = var.copy()
+             vark = vard.pop('kwargs', var).copy()
+
+             data  = vard | vark
+
+             for key, value in data.items():
+                if key in self.labels and self.outcomes:
+                    x_var = getattr(self.outcomes, 'x_vars')[key]
+                    summary += (
+                        f"  -variable {count}: {key} = ({value}): optimized_value={x_var}\n "
+                    )
+                else:
+                    x_var = ''
+                    summary += (
+                        f"  -variable {count}: {key} = ({value}):\n "
+                    )
+        summary += f"Results summary:: {self.outcomes}\n"
         return summary
 
     def __repr__(self):
         return self.__str__()
+    @property
+    def labels(self):
+        labels = []
+        for var in self.decision_vars:
+            vark = var.get('kwargs', var).copy()
+            data = var | vark
+            for key, value in data.items():
+                if value in ['?', ""]:
+                 labels.append(key)
+        return labels
 
+
+
+    @property
+    def indicators(self) -> List[str]:
+        inds = ['mse', 'mae', 'rmse', 'rrmse', 'r2', 'wia', 'ccc', 'bias', 'slope', 'me', 'hv']
+        return [i for i in inds if getattr(self, i, None) is not None]
     @property
     def outcomes(self):
         return self._outcomes
@@ -120,7 +254,9 @@ class AbstractProblem(OptimizationBase):
     @outcomes.setter
     def outcomes(self, value):
         self._outcomes = value
-
+    @staticmethod
+    def hv(F, reference_point=None, normalize=False, normalization_bounds=None):
+        return compute_hyper_volume(F, reference_point=None, normalize=False, normalization_bounds=None)
     @staticmethod
     def rrmse(actual, predicted) -> float:
         return AbstractProblem.rmse(actual, predicted) / np.mean(actual)
@@ -138,6 +274,7 @@ class AbstractProblem(OptimizationBase):
 
     @staticmethod
     def rmse(actual, predicted) -> float:
+        assert len(actual) == len(predicted), f'{len(actual)} != {len(predicted)}'
         return np.sqrt(AbstractProblem.mse(actual, predicted))
 
     @staticmethod

@@ -24,9 +24,12 @@ def edit_runner(model_runner, decision_specs: dict, x_values, verbose=False):
     kwargs.pop('path', None)
     kwargs.pop('v_type', None)
     kwargs.pop('bounds', None)
+    kwargs.pop('q', None)
+    kwargs.pop('values', None)
+    kwargs.pop('start_value', None)
 
     # Replace the placeholder (e.g., '?' or '') with the optimization value
-    fill_keys = [k for k, v in kwargs.items() if v in ('?', '', 'fill')]
+    fill_keys = [k for k, v in kwargs.items() if v in ('?', '',)]
     if len(fill_keys) > 1:
         raise ValueError("Exactly one parameter should be marked with '?' or '' for optimization.")
 
@@ -84,3 +87,4 @@ def compute_hyper_volume(F, reference_point=None, normalize=False, normalization
 
     hv = HV(ref_point=np.array(reference_point))
     return hv.do(F)
+

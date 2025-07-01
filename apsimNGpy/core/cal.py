@@ -9,36 +9,37 @@ from apsimNGpy.core.apsim import ApsimModel
 from apsimNGpy.core.pythonet_config import Models
 
 
-class Calibrator(ApsimModel):
+class OptimizationBase(ApsimModel):
 
     def __init__(self, model: Union[Path, dict, str], out_path: Union[str, Path] = None, out: Union[str, Path] = None,
                  lonlat: tuple = None, soil_series: str = 'domtcp', thickness: int = 20, bottomdepth: int = 200,
-                 thickness_values: list = None, run_all_soils: bool = False, set_wd=None, **kwargs):
+                 thickness_values: list = None, set_wd=None, **kwargs):
 
         super().__init__(model, out_path, set_wd, **kwargs)
-        self.soiltype = None
+        self.soil_type = None
         self.SWICON = None
         self.lonlat = lonlat
-        self.Nlayers = bottomdepth / thickness
+        self.n_layers = bottomdepth / thickness
         bm = bottomdepth * 10
         if thickness_values is None:
-            thickness_values = self.auto_gen_thickness_layers(max_depth=bm, n_layers=int(self.Nlayers))
+            thickness_values = self.auto_gen_thickness_layers(max_depth=bm, n_layers=int(self.n_layers))
         self.soil_series = soil_series
         self.thickness = thickness
         self.out_path = out_path or out
         self._thickness_values = thickness_values
         self.copy = True
         self.parameters = []
-        self.run_all_soils = run_all_soils
+        self.params = []
+
         if not isinstance(thickness_values, np.ndarray):
             self.thickness_values = np.array(self._thickness_values,
-                                             dtype=np.float64)  # apsim uses floating digit number
+                                             dtype=np.float64)
         else:
             self.thickness_values = self._thickness_values
         if kwargs.get('experiment', False):
             self.create_experiment()
 
-    def evaluate_kwargs(self, path, **kwargs):
+    def check_kwargs(self, path, **kwargs):
         mod_obj = self.Simulations.FindByPath(path)
         if mod_obj is None:
             raise ValueError(f"Could not find model associated with path {path}")
@@ -64,7 +65,7 @@ class Calibrator(ApsimModel):
                     if not os.path.isfile(met_file):
                         raise ValueError(f"{met_file} is not a valid file")
                 else:
-                    raise ValueError(f"{met_file} file name is need use key word 'met_file' or 'weather_file'")
+                    raise ValueError(f"{met_file} file name is needed use key word 'met_file' or 'weather_file'")
             case Models.Surface.SurfaceOrganicMatter:
                 accept = {'SurfOM', 'InitialCPR', 'InitialResidueMass',
                           'InitialCNR', 'IncorporatedP', }
@@ -81,7 +82,7 @@ class Calibrator(ApsimModel):
                 if missing:
                     raise ValueError(f"Missing required parameter(s): {', '.join(missing)}")
 
-    def add_parameters(self, path: str, **kwargs):
+    def add_parameters(self, path: str, *, bounds=None, v_type, **kwargs):
         """
         Add a parameter set associated with a given APSIM model path.
 
@@ -97,9 +98,11 @@ class Calibrator(ApsimModel):
         -----
         - Only one parameter per call should be marked with either "?" or 'fill' (to be filled or edited during calibration).
         - Duplicate entries are ignored.
+        @param v_type: var type e.g., int, str, float, bool
+        @param bounds: lower and upper limits of x variable
         """
         # Pre-check parameter keys/values for validity in APSIM context
-        self.evaluate_kwargs(path, **kwargs)
+        self.check_kwargs(path, **kwargs)
 
         # Allow only one parameter to be unspecified as "?" or 'fill'
         missing = [k for k, v in kwargs.items() if v in ("?", 'fill')]
@@ -117,6 +120,17 @@ class Calibrator(ApsimModel):
         entry = (path, kwargs)
         if entry not in self.parameters:
             self.parameters.append(entry)
+        args = (path, bounds, v_type, kwargs)
+        out_args = dict(zip(['path', "v_type", 'bounds', 'kwargs'], args))
+        if out_args not in self.params:
+            self.params.append(out_args)
+
+    def set_param(self, path, x_value):
+        st = path.split('.')
+        param_name = st[-1]
+        base_path = st[:-1]
+        base_path = '.'.join(base_path)
+        self.edit_model_by_path(base_path, **{param_name: x_value})
 
     @timer
     def _do_model_edit(self, x):
@@ -156,8 +170,11 @@ class Calibrator(ApsimModel):
     def n_vars(self):
         return len(self.parameters)
 
-    @timer
-    def _process_data(self, obs, *, data_table, output_column, time_step='Year', obs_time_column='year'):
+    def clean_data(self, obs: Union[pd.DataFrame, str, Path], *,
+                   data_table: str,
+                   output_column: str,
+                   time_step: str = 'Year',
+                   obs_time_column: str = 'year'):
         """
         Align observed data with APSIM simulation results.
 
@@ -253,20 +270,3 @@ class Calibrator(ApsimModel):
 
         return _proc_df(obs, _data_table=data_table, column=output_column,
                         _time_step=time_step, _obs_time_column=obs_time_column)
-
-
-if __name__ == "__main__":
-    obs = r'D:\package\synthetic_observed.csv'
-    df = pd.read_csv(obs)
-    mod = Calibrator('Maize')
-    ar = df.to_numpy(copy=True)
-    df = mod._process_data(obs=df, data_table='Report', output_column='Yield', obs_time_column='year', time_step='year')
-    mod.add_parameters('.Simulations.Simulation.Field.SurfaceOrganicMatter', InitialCNR='?', InitialCPR=10)
-    # example of adding cultivar
-    mod.add_parameters(path='.Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_110',
-                       commands='[Phenology].Juvenile.Target.FixedValue', values='?',
-                       cultivar_manager='Sow using a variable rule', new_cultivar_name='be',
-                       parameter_name='CultivarName')
-    mod._do_model_edit([23, 156])
-
-    mod.inspect_model_parameters(model_type='Cultivar', model_name='be')

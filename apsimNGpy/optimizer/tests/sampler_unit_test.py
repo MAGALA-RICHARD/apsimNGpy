@@ -1,6 +1,6 @@
 import numpy as np
 import pytest
-from apsimNGpy.optimizer.evol.sampler import float_random_sampling, integer_random_sampling, boolean_random_sampling
+from apsimNGpy.optimizer.sampler import float_random_sampling, integer_random_sampling, boolean_random_sampling
 
 
 def test_float_random_sampling_default_bounds():

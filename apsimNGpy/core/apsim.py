@@ -568,6 +568,49 @@ class ApsimModel(CoreModel):
         self.save()
         return self
 
+    def check_kwargs(self, path, **kwargs):
+        mod_obj = self.Simulations.FindByPath(path)
+        if mod_obj is None:
+            raise ValueError(f"Could not find model associated with path {path}")
+        v_mod = mod_obj.Value
+        kas = set(kwargs.keys())
+
+        def _raise_value_error(_path, acceptable, user_info, msg='not a valid attribute'):
+            _dif = user_info - acceptable
+            if len(_dif) > 0:
+                raise ValueError(f"{_dif} is not a valid parameter for {_path}")
+
+        match type(v_mod):
+            case Models.Manager:
+                kav = {v_mod.Parameters[i].Key for i in range(len(v_mod.Parameters))}
+                _raise_value_error(path, kav, kas)
+
+            case Models.Clock:
+                acceptable = {'End', "Start"}
+                _raise_value_error(path, acceptable, kas)
+            case Models.Climate.Weather:
+                met_file = kwargs.get('weather_file') or kwargs.get('met_file')
+                if met_file is not None:
+                    if not os.path.isfile(met_file):
+                        raise ValueError(f"{met_file} is not a valid file")
+                else:
+                    raise ValueError(f"{met_file} file name is needed use key word 'met_file' or 'weather_file'")
+            case Models.Surface.SurfaceOrganicMatter:
+                accept = {'SurfOM', 'InitialCPR', 'InitialResidueMass',
+                          'InitialCNR', 'IncorporatedP', }
+                if kwargs == {}:
+                    raise ValueError(f"Please supply at least one parameter: value \n '{', '.join(accept)}' for {path}")
+                _raise_value_error(path, accept, kas)
+            case Models.PMF.Cultivar:
+                # Define required parameters
+                required_keys = ["commands", "values", "cultivar_manager", "parameter_name", "new_cultivar_name"]
+                # Extract input parameters
+                param_values = kwargs
+                missing = [key for key in required_keys if not param_values.get(key)]
+
+                if missing:
+                    raise ValueError(f"Missing required parameter(s): {', '.join(missing)}")
+
 
 if __name__ == '__main__':
     # test

@@ -1,0 +1,73 @@
+{
+  "template_source": "shared",
+  "apsimx_path": "/absolute/path/to/shared_template.apsimx",
+
+  "simulation_templates": {
+    "Sim1": "/path/to/template_sim1.apsimx",
+    "Sim2": "/path/to/template_sim2.apsimx",
+    "Sim3": "/path/to/template_sim3.apsimx"
+  },
+
+  "output_folder": "/absolute/path/to/output/folder",
+
+  "simulation_names": [
+    "Sim1",
+    "Sim2",
+    "Sim3"
+  ],
+
+  "report_names": [
+    "Report",
+    "SoilReport"
+  ],
+
+  "lonlat": {
+    "Sim1": [41.8781, -93.0977],
+    "Sim2": [42.0347, -92.9125],
+    "Sim3": [40.8106, -91.1121]
+  },
+
+  "download_flags": {
+    "Sim1": {
+      "download_soil": true,
+      "download_weather": false
+    },
+    "Sim2": {
+      "download_soil": true,
+      "download_weather": true
+    },
+    "Sim3": {
+      "download_soil": false,
+      "download_weather": true
+    }
+  },
+
+  "weather_files": {
+    "Sim1": "/path/to/weather1.met",
+    "Sim2": "/path/to/weather2.met",
+    "Sim3": "/path/to/weather3.met"
+  },
+
+  "parameter_modifications": {
+    "Sim1": {
+      "[Wheat].SowingRule.SowingDate": "2025-10-15"
+    },
+    "Sim2": {
+      "[Wheat].SowingRule.SowingDate": "2025-10-22"
+    },
+    "Sim3": {
+      "[Wheat].SowingRule.SowingDate": "2025-11-01"
+    }
+  },
+
+  "filters": {
+    "years": [2025, 2026],
+    "variables": ["Yield", "SoilWater", "NO3"]
+  },
+
+  "run_metadata": {
+    "created_by": "Dr. Richard Magala",
+    "description": "Batch run testing different sowing dates, templates, and web data",
+    "date_created": "2025-06-23"
+  }
+}

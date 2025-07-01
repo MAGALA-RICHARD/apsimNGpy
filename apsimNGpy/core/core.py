@@ -73,7 +73,9 @@ class CoreModel:
     Keyword parameters:
       **``copy`` (bool, deprecated)**: Specifies whether to clone the simulation file. This parameter is deprecated because the simulation file is now automatically cloned by default.
 
-    When an ``APSIM`` file is loaded, it is automatically copied to ensure a fallback to the original file in case of any issues during operations.
+    .. tip::
+
+          When an ``APSIM`` file is loaded, it is automatically copied to ensure a fallback to the original file in case of any issues during operations.
 
    .. Note::
 
@@ -96,6 +98,7 @@ class CoreModel:
     report_names: Optional[List[str]] = field(init=False, default=None)
     factor_names: List[str] = field(init=False, default_factory=list)
     _specifications: List[str] = field(init=False, default_factory=list)
+    _intact_model: List[str] = field(init=False, default_factory=list)
     permutation: Optional[bool] = field(init=False, default=None)
     experiment_created: Optional[bool] = field(init=False, default=None)
     _str_model: Optional[str] = field(init=False, default=None)
@@ -113,11 +116,12 @@ class CoreModel:
     Start: str = field(init=False, default=MissingOption)
     End: str = field(init=False, default=MissingOption)
     run_method: callable = field(init=False, default=None)
+    Models: object = field(init=False, default=Models)
 
     def __post_init__(self):
         self._model = self.model
         self.others = {}
-
+        self.Models = Models
         if isinstance(self.out_path, (str, Path)):
             self.out_path = self.out_path
         else:
@@ -250,13 +254,13 @@ class CoreModel:
         _path = file_name or self.path
         self.path = _path
         save_model_to_file(self.Simulations, out=_path)
-        # logger.info(f"Saved model to {_path} {os.path.isfile(_path)}")
+
 
         model_info = recompile(self)  # load_apsim_model(_path)
         self.restart_model(model_info)
 
         return self
-    @deprecated('Use save() instead')
+
     def save_edited_file(self, out_path: os.PathLike = None, reload: bool = False) -> Union['CoreModel', None]:
         """ Saves the model to the local drive.
             @deprecated: use save() method instead
@@ -271,6 +275,7 @@ class CoreModel:
             - reload (bool): Whether to load the file using the `out_path` or the model's original file name.
 
         """
+
         old_method('save_edited_file', 'save')
         warnings.warn('The `save_edited_file` method is deprecated use save().', DeprecationWarning)
         # Determine the output path
@@ -2847,13 +2852,22 @@ class CoreModel:
             each combination of planting population level and fertilizer amount is run as an individual treatment.
 
            ``base_name`` (str, optional): The name of the base simulation to be moved into the experiment setup. if not
-            provided, it is expected to be Simulation as the default
+            provided, it is expected to be Simulation as the default.
+
+        .. warning::
+
+            ``base_name`` is optional but the experiment may not be created if there are more than one base simulations. Therefore, an error is likely.
 
         """
-        if self.experiment_created:
-            logger.info('Experiment was already created. If you want to amend experiment, '
-                        'use add_model(), remove_model()')
-            return self
+        old_model = ModelTools.CLONER(self.Simulations)
+        if not self._intact_model:
+           self._intact_model.append(old_model)
+        if self._intact_model:
+            self.Simulations = self._intact_model[0]
+        # if self.experiment_created:
+        #     logger.info('Experiment was already created. If you want to amend experiment, '
+        #                 'use add_model(), remove_model()')
+        #     return self
         self.factor_names = []
 
         self.permutation = permutation
@@ -2873,6 +2887,7 @@ class CoreModel:
         # update the experiment status
         self.experiment = True
         self.experiment_created = True
+
 
     def add_factor(self, specification: str, factor_name: str = None, **kwargs):
         """

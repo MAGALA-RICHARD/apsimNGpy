@@ -9,7 +9,7 @@ if get_apsim_bin_path():
 
     from apsimNGpy.core import core, apsim, base_data
     from apsimNGpy.core.apsim import ApsimModel
-    from apsimNGpy.optimizer import mixed, one_objective, one_obj
+
     from apsimNGpy.validation import evaluator, eval_methods
     from apsimNGpy.parallel.process import custom_parallel, run_apsimx_files_in_parallel, _read_result_in_parallel
     from apsimNGpy.core_utils import database_utils
@@ -17,7 +17,7 @@ if get_apsim_bin_path():
 
 
     __all__.extend(['core', 'apsim', 'get_apsim_bin_path', 'base_data','ApsimModel',
-                    'mixed', 'one_objective', 'one_obj',
+                    'mixed',
                     'evaluator', 'eval_methods',
                         "custom_parallel", 'run_apsimx_files_in_parallel', '_read_result_in_parallel',
                     'database_utils',

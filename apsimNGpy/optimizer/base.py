@@ -17,6 +17,8 @@ import pandas as pd
 from abc import ABC, abstractmethod
 from collections.abc import Iterable
 from apsimNGpy.optimizer.optutils import compute_hyper_volume, edit_runner
+from core.cal import OptimizationBase
+
 ArrayLike = Union[np.ndarray, List[float], pd.Series]
 from collections import OrderedDict
 
@@ -65,7 +67,6 @@ class AbstractProblem(ABC):
         self.editor = edit_runner
         self.decision_vars = decision_vars or []
         self.objectives = objectives or []
-        self.optimization_type= 'single'
         self.optimizer = None
         self.target_parameters = OrderedDict()
 
@@ -124,16 +125,16 @@ class AbstractProblem(ABC):
             'uniform', 'choice',  'grid',   'categorical',   'qrandint',  'quniform' for mixed variable problem
 
         start_value : any (type determined by the variable type.
-            The initial value to use for the parameter in optimization routines.
+            The initial value to use for the parameter in optimization routines. Only required for single objective optimizations
 
         bounds : tuple of (float, float), optional
             Lower and upper bounds for the parameter (used in bounded optimization).
-            Must be a tuple like (min, max). If None, the variable is considered unbounded.
+            Must be a tuple like (min, max). If None, the variable is considered unbounded or categorical or the algorithm to be used do not support bounds
 
         kwargs: dict
             One of the key-value pairs must contain a value of '?', indicating the parameter to be filled during optimization.
             Keyword arguments are used because most APSIM models have unique parameter structures, and this approach allows
-            flexible specification of model-specific parameters.
+            flexible specification of model-specific parameters. It is also possible to pass other parameters associated with the model in question to be changed on the fly.
 
 
         Returns
@@ -152,18 +153,23 @@ class AbstractProblem(ABC):
             - This method is typically used before running optimization to define which
               parameters should be tuned.
 
-        example:
+        Example:
 
         .. code-block:: python
-                 problem = MultiObjectiveProblem(runner, objectives=objectives, decision_vars=_vars)
+
+                 from apsimNGpy.core.apsim import ApsimModel
+                 from apsimNGpy.core.optimizer import MultiObjectiveProblem
+                 runner = ApsimModel("Maize")
+
                 _vars = [
                 {'path': '.Simulations.Simulation.Field.Fertilise at sowing', 'Amount': "?", "bounds": [50, 300],
                  "v_type": "float"},
                 {'path': '.Simulations.Simulation.Field.Sow using a variable rule', 'Population': "?", 'v_type': 'float',
                  'bounds': [4, 14]}
                  ]
-
-
+                problem = MultiObjectiveProblem(runner, objectives=objectives, decision_vars=_vars)
+                # or
+                problem = MultiObjectiveProblem(runner, objectives=objectives, None)
                 problem.add_control(
                     **{'path': '.Simulations.Simulation.Field.Fertilise at sowing', 'Amount': "?", "bounds": [50, 300],
                        "v_type": "float"})
@@ -360,19 +366,6 @@ class VarDesc:
     label: str
     start_value: Union[float, int]
     bounds: tuple[float, int]
-
-
-def g_ran_observed_variables(predicted, dist='normal'):
-    # Calculate mean and standard deviation of predicted
-    mean_pred = np.mean(predicted)
-    std_pred = np.std(predicted)
-
-    # Generate observed values from a normal distribution with same mean and std
-    np.random.seed(42)  # for reproducibility
-    if dist.lower() == 'normal':
-        return np.random.normal(loc=mean_pred, scale=std_pred, size=predicted.shape)
-    if dist.lower() == 'uniform':
-        return np.random.uniform(low=np.min(predicted), high=np.max(predicted), size=predicted.shape)
 
 
 if __name__ == '__main__':

@@ -88,6 +88,12 @@ class MultiObjectiveProblem(AbstractProblem):
         """Detect if decision vars contain types other than float or int."""
         return any(var['v_type'] not in {'int', 'float'} for var in self.decision_vars)
 
+    def minimize(self, **kwargs):
+        return minimize
+
+    def NSG2(self):
+        return NSGA2
+
 
 # 1. Setup APSIM model
 runner = Runner("Maize")

@@ -36,17 +36,32 @@ problem.add_control(
     path='.Simulations.Simulation.Field.Sow using a variable rule',
     Population="?", v_type='int', bounds=[4, 14], start_value=8
 )
-
-res_local = problem.minimize_with_a_local_solver(
+# test with nelder mead
+res_nm = problem.minimize_with_a_local_solver(
     method='Nelder-Mead',
     options={
         'maxiter': 100,
         'disp': True
     }
 )
-# differential evoloution
+print("Nelder mead results")
+logger.info(res_nm)
+
+res_powell = problem.minimize_with_a_local_solver(
+    method='Powell',
+    options={
+        'maxiter': 100,
+        'disp': True
+    }
+)
+print("Powell results")
+logger.info(res_powell)
+# test with powell
+# differential evolution
 res_de = problem.minimize_with_de(
     popsize=10,
     maxiter=100,
     polish=False  # Set to True if you want to refine with a local solver at the end
 )
+print("differential evolution results")
+logger.info(res_de)

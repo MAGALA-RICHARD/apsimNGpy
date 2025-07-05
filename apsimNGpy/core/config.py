@@ -268,7 +268,8 @@ def load_crop_from_disk(crop: str, out: str = None, work_space: str = None):
     Raises:
         ``FileNotFoundError``: If the APSIM binary path cannot be resolved or the crop simulation file does not exist.
 
-    Example:
+    Example::
+
         >>> load_crop_from_disk("Maize")
         'C:/path/to/temp_uuid_Maize.apsimx'
     """
@@ -278,9 +279,12 @@ def load_crop_from_disk(crop: str, out: str = None, work_space: str = None):
         crop, suffix = crop.split(".")
     else:
         suffix = 'apsimx'
+
     if BIN and os.path.exists(BIN):
         EXa = BIN.replace('bin', 'Examples')
-        target_location = glob.glob(f"{EXa}*/{crop}.{suffix}")  # case-sensitive match by correct spelling only
+        print(f"{EXa}*/{crop}.{suffix}")
+
+        target_location = glob.glob(f"{EXa}/**/*{crop.capitalize()}.{suffix}", recursive=True)  # case-sensitive match by correct spelling only
         if target_location:
             loaded_path = target_location[0]
         else:

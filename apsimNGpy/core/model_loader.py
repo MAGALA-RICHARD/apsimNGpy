@@ -132,9 +132,6 @@ def load_apsim_model(model=None, out_path=None, file_load_method='string', met_f
        returns a ``dataclass`` container with an out path, datastore path, and IModel in memory
        """
     out = {}  # stores the path to be attached to model_info object
-    Model_data = ModelData#namedtuple('model_data',
-                            #['IModel', 'path', 'datastore', "DataStore", 'results', 'met_path'])
-
     @singledispatch
     def loader(_model):
         """base loader to handle non implemented data type"""

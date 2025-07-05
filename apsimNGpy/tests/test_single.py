@@ -1,6 +1,6 @@
 from apsimNGpy.optimizer.single import ContinuousVariable, MixedVariable
 from apsimNGpy.core.apsim import ApsimModel
-
+from apsimNGpy.settings import  logger
 maize_model = ApsimModel("Maize") # replace with the template path
 
 obs = [
@@ -10,6 +10,7 @@ obs = [
 
 class Problem(ContinuousVariable):
     def __init__(self, apsim_model, obs):
+
         super().__init__(apsim_model=apsim_model)
         self.obs = obs
 
@@ -43,7 +44,7 @@ res_local = problem.minimize_with_a_local_solver(
         'disp': True
     }
 )
-
+# differential evoloution
 res_de = problem.minimize_with_de(
     popsize=10,
     maxiter=100,

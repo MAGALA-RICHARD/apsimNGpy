@@ -39,25 +39,6 @@ def _evaluate_args(*args, **kwargs):
         raise ValueError("all arguments must be strings")
 
 
-def _auto_guess(data):
-    if isinstance(data, ChoiceVar):
-        sample_set = np.random.choice(data.categories, size=1)[0]
-    elif isinstance(data, GridVar):
-        sample_set = np.random.choice(data.values, size=1)[0]
-    elif isinstance(data, (QrandintVar, RandintVar, QuniformVar)):
-        sample_set = data.lower
-    elif isinstance(data, UniformVar):
-        if len(data.bounds) == 1:
-            bounds = data.bounds[0]
-        else:
-            bounds = data.bounds
-        sample_set = np.random.uniform(bounds[0], bounds[1], size=1)[0]
-    else:
-        raise ValueError(f'data: {type(data)} not supported')
-    return sample_set
-
-
-
 class AbstractProblem(ABC):
     def __init__(self, apsim_model, max_cache_size=400, objectives = None, decision_vars=None, **kwargs):
         self.apsim_model = apsim_model

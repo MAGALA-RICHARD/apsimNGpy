@@ -1,4 +1,4 @@
-# this an evolving module acording to github issue No#
+# this an evolving module according to github issue No#
 
 import typer
 import requests

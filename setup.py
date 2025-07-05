@@ -68,6 +68,7 @@ setup(
         'psutil >=6.0.0',
         'tenacity',
         'typer',
+        'pymoo == 0.6.1.5'
         'wrapdisc==2.5.0',
         'summarytools>=0.3.0'
 

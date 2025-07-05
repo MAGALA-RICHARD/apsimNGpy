@@ -163,7 +163,7 @@ class ContVarProblem(AbstractProblem):
         if self.pbar is not None:
            self.pbar.close()
     @abstractmethod
-    def minimize_with_alocal_solver(self, **kwargs):
+    def minimize_with_a_local_solver(self, **kwargs):
         'To be implimneted in sub class'
         pass
 

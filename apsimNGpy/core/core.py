@@ -325,10 +325,13 @@ class CoreModel:
                 # Check for missing report names
                 missing = [r for r in reports if r not in data_tables]
                 if missing:
-                    raise ValueError(
-                        f"The following report names were not found: {missing}. "
-                        f"Available tables include: {list(data_tables.keys())}"
-                    )
+                    if data_tables:
+                        raise ValueError(
+                            f"The following report names were not found: {missing}. "
+                            f"Available tables include: {list(data_tables.keys())}"
+                        )
+                    else:
+                        raise RuntimeError('some thing happened not right')
 
                 datas = [pd.read_csv(data_tables[i]) for i in reports]
                 return pd.concat(datas)

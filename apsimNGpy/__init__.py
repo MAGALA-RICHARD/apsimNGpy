@@ -1,7 +1,8 @@
 from apsimNGpy.core.config import get_apsim_bin_path, set_apsim_bin_path, auto_detect_apsim_bin_path
+from apsimNGpy.core_utils.utils import timer
 __version__ = '0.39.3.2'
 
-__all__ = ['get_apsim_bin_path', 'auto_detect_apsim_bin_path', 'set_apsim_bin_path', '__version__']
+__all__ = ['get_apsim_bin_path', 'auto_detect_apsim_bin_path', 'set_apsim_bin_path', '__version__', 'timer']
 
 if get_apsim_bin_path():
 

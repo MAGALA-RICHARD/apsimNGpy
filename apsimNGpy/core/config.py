@@ -284,7 +284,7 @@ def load_crop_from_disk(crop: str, out: str = None, work_space: str = None):
         EXa = BIN.replace('bin', 'Examples')
         print(f"{EXa}*/{crop}.{suffix}")
 
-        target_location = glob.glob(f"{EXa}/**/*{crop.capitalize()}.{suffix}", recursive=True)  # case-sensitive match by correct spelling only
+        target_location = glob.glob(f"{EXa}/**/*{crop}.{suffix}", recursive=True)  # case-sensitive
         if target_location:
             loaded_path = target_location[0]
         else:

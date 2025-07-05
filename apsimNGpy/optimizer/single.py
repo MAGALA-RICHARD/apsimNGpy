@@ -1,3 +1,5 @@
+import subprocess
+
 from apsimNGpy.optimizer._one_obj import ContVarProblem, SING_OBJ_CONT_VAR, SING_OBJ_MIXED_VAR
 from apsimNGpy.optimizer._mixed import MixedVarProblem
 from scipy.optimize import minimize, differential_evolution
@@ -20,7 +22,7 @@ from wrapdisc import Objective
 from wrapdisc.var import ChoiceVar, GridVar, QrandintVar, QuniformVar, RandintVar, UniformVar
 
 class ContinuousVariable(ContVarProblem):
-    def __init__(self, apsim_model: 'ApsimNGpy.Core.Model', max_cache_size=400, objectives=None, decision_vars=None):
+    def __init__(self, apsim_model: 'apsimNGpy.core.apsim.ApsimModel', max_cache_size:int=400, objectives:list=None, decision_vars:list=None):
         # Initialize parent classes explicitly
         ContVarProblem.__init__(self, apsim_model, max_cache_size, objectives, decision_vars)
         self.model = apsim_model
@@ -36,7 +38,7 @@ class ContinuousVariable(ContVarProblem):
     def optimimization_type(self):
         return SING_OBJ_CONT_VAR
 
-    def minimize_with_alocal_solver(self, **kwargs):
+    def minimize_with_a_local_solver(self, **kwargs):
         """
         Run a local optimization solver using `scipy.optimize.minimize`.
 
@@ -44,7 +46,8 @@ class ContinuousVariable(ContVarProblem):
         defined using APSIM control variables and variable encodings. It tracks optimization progress via a progress bar,
         and decodes results into user-friendly labeled dictionaries.
 
-        Optimization methods available in `scipy.optimize.minimize` include:
+        Optimization methods avail
+        able in `scipy.optimize.minimize` include:
 
         +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
         | Method           | Type                   | Gradient Required | Handles Bounds | Handles Constraints | Notes                                        |
@@ -120,7 +123,7 @@ class ContinuousVariable(ContVarProblem):
           print(result.x_vars)
           {'Population': 9, 'RowSpacing': 800}
         """
-        self.optimizer = self.minimize_with_alocal_solver.__name__
+        self.optimizer = self.minimize_with_a_local_solver.__name__
         try:
             x0 = kwargs.pop("x0", [1] * len(self.decision_vars))
             if 'bounds' not in kwargs.keys():

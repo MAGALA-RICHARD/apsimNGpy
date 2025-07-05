@@ -18,7 +18,6 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional, List, Dict
 import warnings
-from deprecated import deprecated
 from pandas.core.interchange.dataframe_protocol import DataFrame
 from sqlalchemy.testing.plugin.plugin_base import logging
 

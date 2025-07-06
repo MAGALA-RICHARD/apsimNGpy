@@ -107,77 +107,14 @@ ApsimModel
             The modified ``ApsimModel`` object after the spin-up operation.
             you could call ``save_edited`` file and save it to your specified location, but you can also proceed with the simulation
 
-ContVarProblem 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ContinuousVariable 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. function:: apsimNGpy.optimizer.one_obj.ContVarProblem(apsim_model: 'ApsimNGpy.Core.Model', max_cache_size=400, objectives=None, decision_vars=None)
+.. function:: apsimNGpy.optimizer.single.ContinuousVariable(apsim_model: 'apsimNGpy.core.apsim.ApsimModel', max_cache_size: int = 400, objectives: list = None, decision_vars: list = None)
 
-   Defines an optimization problem for continuous variables in APSIM simulations.
+   No documentation available.
 
-        This class enables the user to configure and solve optimization problems involving continuous
-        control variables in APSIM models. It provides methods for setting up control variables,
-        applying bounds and starting values, inserting variable values into APSIM model configurations,
-        and running optimization routines using local solvers or differential evolution.
-
-        Inherits from:
-            AbstractProblem: A base class providing caching and model-editing functionality.
-
-        Parameters:
-            ``model (str):`` The name or path of the APSIM template file.
-            .
-            ``simulation (str or list, optional)``: The name(s) of the APSIM simulation(s) to target.
-                                                Defaults to all simulations.
-
-            ``decision_vars`` (list, optional): A list of VarDesc instances defining variable metadata.
-
-            ``labels (list, optional)``: Variable labels for display and results tracking.
-
-            ``cache_size (int):`` Maximum number of results to store in the evaluation cache.
-
-        Attributes:
-            ``model (str):`` The APSIM model template file name.
-
-            ``simulation (str):`` Target simulation(s).
-
-            ``decision_vars (list):`` Defined control variables.
-
-            ``decission_vars (list):`` List of VarDesc instances for optimization.
-
-            ``labels (list): Labels`` for variables.
-
-            ``pbar (tqdm):`` Progress bar instance.
-
-            ```cache (bool):`` Whether to cache evaluation results.
-
-            ```cache_size (int):`` Size of the local cache.
-
-        Methods:
-            ``add_control(...):`` Add a new control variable to the optimization problem.
-
-            ``bounds:`` Return the bounds for all control variables as a tuple.
-
-            ``starting_values():`` Return the initial values for all control variables.
-
-            ``minimize_with_local_solver(...):`` Optimize using `scipy.optimize.minimize`.
-
-            ``optimize_with_differential_evolution(...):`` Optimize using `scipy.optimize.differential_evolution`.
-
-
-        Example:
-            >>> class Problem(ContVarProblem):
-            ...     def evaluate(self, x):
-            ...         return -self.run(verbose=False).results.Yield.mean()
-
-            >>> problem = Problem(model="Maize", simulation="Sim")
-            >>> problem.add_control("Manager", "Sow using a rule", "Population", int, 5, bounds=[2, 15])
-            >>> result = problem.minimize_with_local_solver(method='Powell')
-            >>> print(result.x_vars)
-
-.. function:: apsimNGpy.optimizer.one_obj.ContVarProblem.minimize_with_differential_evolution(self, args=(), strategy='best1bin', maxiter=1000, popsize=15, tol=0.01, mutation=(0.5, 1), recombination=0.7, rng=None, callback=None, disp=True, polish=True, init='latinhypercube', atol=0, updating='immediate', workers=1, constraints=(), x0=None, *, integrality=None, vectorized=False)
-
-   reference; https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.differential_evolution.html
-
-.. function:: apsimNGpy.optimizer.one_obj.ContVarProblem.minimize_with_local_solver(self, **kwargs)
+.. function:: apsimNGpy.optimizer.single.ContinuousVariable.minimize_with_a_local_solver(self, **kwargs)
 
    Run a local optimization solver using `scipy.optimize.minimize`.
 
@@ -185,7 +122,8 @@ ContVarProblem
         defined using APSIM control variables and variable encodings. It tracks optimization progress via a progress bar,
         and decodes results into user-friendly labeled dictionaries.
 
-        Optimization methods available in `scipy.optimize.minimize` include:
+        Optimization methods avail
+        able in `scipy.optimize.minimize` include:
 
         +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
         | Method           | Type                   | Gradient Required | Handles Bounds | Handles Constraints | Notes                                        |
@@ -244,8 +182,10 @@ ContVarProblem
 
         Example::
 
-          from apsimNGpy.optimizer.one_objective import ContVarProblem
+          from apsimNGpy.optimizer.single import ContinuousVariable
+
           class Problem(ContVarProblem):
+
                 def __init__(self, model=None, simulation='Simulation'):
                     super().__init__(model, simulation)
                     self.simulation = simulation
@@ -253,21 +193,21 @@ ContVarProblem
                    return -self.run(verbose=False).results.Yield.mean()
 
           problem = Problem(model="Maize", simulation="Sim")
-          problem.add_control("Manager", "Sow using a rule", "Population", vtype="grid",
+          problem.add_control("Manager", "Sow using a rule", "Population", v_type="grid",
                                 start_value=5, values=[5, 9, 11])
-          problem.add_control("Manager", "Sow using a rule", "RowSpacing", vtype="grid",
+          problem.add_control("Manager", "Sow using a rule", "RowSpacing", v_type="grid",
                                 start_value=400, values=[400, 800, 1200])
           result = problem.minimize_with_local_solver(method='Powell', options={"maxiter": 300})
           print(result.x_vars)
           {'Population': 9, 'RowSpacing': 800}
 
-.. function:: apsimNGpy.optimizer.one_obj.ContVarProblem.update_pbar(self, labels, extend_by=None)
+.. function:: apsimNGpy.optimizer.single.ContinuousVariable.minimize_with_de(self, args=(), strategy='best1bin', maxiter=1000, popsize=15, tol=0.01, mutation=(0.5, 1), recombination=0.7, rng=None, callback=None, disp=True, polish=True, init='latinhypercube', atol=0, updating='immediate', workers=1, constraints=(), x0=None, *, integrality=None, vectorized=False)
 
-   Extends the tqdm progress bar by `extend_by` steps if current progress exceeds the known max.
+   reference; https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.differential_evolution.html
 
-        Parameters:
-            labels (list): List of variable labels used for tqdm description.
-            extend_by (int): Number of additional steps to extend the progress bar.
+.. function:: apsimNGpy.optimizer.single.ContinuousVariable.optimization_type(self)
+
+   No documentation available.
 
 CoreModel 
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -597,7 +537,7 @@ CoreModel
 
             ``base_name`` is optional but the experiment may not be created if there are more than one base simulations. Therefore, an error is likely.
 
-.. function:: apsimNGpy.core.core.CoreModel.detect_model_type(self, model_instance: Union[str, Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x000001187E186E10>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD)])
+.. function:: apsimNGpy.core.core.CoreModel.detect_model_type(self, model_instance: Union[str, Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x10b1ce6f0>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD)])
 
    Detects the model type from a given APSIM model instance or path string.
 
@@ -931,7 +871,7 @@ CoreModel
    Inspect the file by calling ``inspect_model()`` through ``get_model_paths.``
         This method is important in inspecting the ``whole file`` and also getting the ``scripts paths``
 
-.. function:: apsimNGpy.core.core.CoreModel.inspect_model(self, model_type: Union[str, Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x000001187E186E10>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD)], fullpath=True, **kwargs)
+.. function:: apsimNGpy.core.core.CoreModel.inspect_model(self, model_type: Union[str, Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x10b1ce6f0>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD)], fullpath=True, **kwargs)
 
    Inspect the model types and returns the model paths or names. usefull if you want to identify the path to the
         model for editing the model.
@@ -1027,7 +967,7 @@ CoreModel
             Models can be inspected either by importing the Models namespace or by using string paths. The most reliable approach is to provide the full model path—either as a string or as a Models object.
             However, remembering full paths can be tedious, so allowing partial model names or references can significantly save time during development and exploration.
 
-.. function:: apsimNGpy.core.core.CoreModel.inspect_model_parameters(self, model_type: Union[Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x000001187E186E10>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), str], model_name: str, simulations: Union[str, list] = <UserOptionMissing>, parameters: Union[list, set, tuple, str] = 'all', **kwargs)
+.. function:: apsimNGpy.core.core.CoreModel.inspect_model_parameters(self, model_type: Union[Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x10b1ce6f0>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), str], model_name: str, simulations: Union[str, list] = <UserOptionMissing>, parameters: Union[list, set, tuple, str] = 'all', **kwargs)
 
    Inspect the input parameters of a specific ``APSIM`` model type instance within selected simulations.
 
@@ -1270,7 +1210,31 @@ CoreModel
             5 0.1
             6 0.1
 
-.. function:: apsimNGpy.core.core.CoreModel.move_model(self, model_type: Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x000001187E186E10>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), new_parent_type: Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x000001187E186E10>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), model_name: str = None, new_parent_name: str = None, verbose: bool = False, simulations: Union[str, list] = None)
+.. function:: apsimNGpy.core.core.CoreModel.inspect_model_parameters_by_path(self, path, *, parameters: Union[list, set, tuple, str] = None)
+
+   Inspect and extract parameters from a model component specified by its path.
+
+        Parameters
+        ----------
+        path : str
+            A string path to the model component within the APSIM simulation hierarchy.
+
+        parameters : list, set, tuple, or str, optional
+            One or more parameter names to extract from the model. If None, attempts to extract all available parameters.
+
+        Returns
+        -------
+        dict
+            A dictionary of parameter names and their values.
+
+        .. note::
+
+            This method wraps the `extract_value` utility to fetch parameters from a model component
+            identified by a path string. Internally, it:
+            1. Finds the model object using the given path.
+            2. Extracts and returns the requested parameter(s).
+
+.. function:: apsimNGpy.core.core.CoreModel.move_model(self, model_type: Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x10b1ce6f0>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), new_parent_type: Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x10b1ce6f0>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), model_name: str = None, new_parent_name: str = None, verbose: bool = False, simulations: Union[str, list] = None)
 
    Args:
 
@@ -1300,7 +1264,7 @@ CoreModel
 
         ``return:`` self
 
-.. function:: apsimNGpy.core.core.CoreModel.remove_model(self, model_type: Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x000001187E186E10>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), model_name: str = None)
+.. function:: apsimNGpy.core.core.CoreModel.remove_model(self, model_type: Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x10b1ce6f0>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), model_name: str = None)
 
    Removes a model from the APSIM Models.Simulations namespace.
 
@@ -1661,6 +1625,118 @@ CoreModel
          int, float, bool,str etc.
 
         return: self
+
+MixedVariable 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. function:: apsimNGpy.optimizer.single.MixedVariable(apsim_model: 'ApsimNGpy.Core.Model', max_cache_size=400, objectives=None, decision_vars=None)
+
+   No documentation available.
+
+.. function:: apsimNGpy.optimizer.single.MixedVariable.minimize_with_alocal_solver(self, **kwargs)
+
+   Run a local optimization solver (e.g., Powell, L-BFGS-B, etc.) on given defined problem.
+
+            This method wraps ``scipy.optimize.minimize`` and handles mixed-variable encoding internally
+            using the `Objective` wrapper from ``wrapdisc``. It supports any method supported by SciPy's
+            `minimize` function and uses the encoded starting values and variable bounds. This decoding implies that you can optimize categorical variable such as start dates or
+            cultivar paramter with xy numerical values.
+
+            Progress is tracked using a progress bar, and results are automatically decoded and stored
+            in ``self.outcomes``.
+
+            Parameters:
+                **kwargs: Keyword arguments passed directly to `scipy.optimize.minimize`.
+                          Important keys include:
+                            - ``method (str)``: Optimization algorithm (e.g., 'Powell', 'L-BFGS-B').
+                            - ``options (dict)``: Dictionary of solver options like maxiter, disp, etc.
+        scipy.optimize.minimize provide a number of optimization algorithms see table below or for details check their website:
+        https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
+
+        +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
+        | Method           | Type                   | Gradient Required | Handles Bounds | Handles Constraints | Notes                                        |
+        +==================+========================+===================+================+=====================+==============================================+
+        | Nelder-Mead      | Local (Derivative-free)| No                | No             | No                  | Simplex algorithm                            |
+        +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
+        | Powell           | Local (Derivative-free)| No                | Yes            | No                  | Direction set method                         |
+        +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
+        | CG               | Local (Gradient-based) | Yes               | No             | No                  | Conjugate Gradient                           |
+        +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
+        | BFGS             | Local (Gradient-based) | Yes               | No             | No                  | Quasi-Newton                                 |
+        +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
+        | Newton-CG        | Local (Gradient-based) | Yes               | No             | No                  | Newton's method                              |
+        +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
+        | L-BFGS-B         | Local (Gradient-based) | Yes               | Yes            | No                  | Limited memory BFGS                          |
+        +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
+        | TNC              | Local (Gradient-based) | Yes               | Yes            | No                  | Truncated Newton                             |
+        +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
+        | COBYLA           | Local (Derivative-free)| No                | No             | Yes                 | Constrained optimization by linear approx.   |
+        +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
+        | SLSQP            | Local (Gradient-based) | Yes               | Yes            | Yes                 | Sequential Least Squares Programming         |
+        +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
+        | trust-constr     | Local (Gradient-based) | Yes               | Yes            | Yes                 | Trust-region constrained                     |
+        +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
+        | dogleg           | Local (Gradient-based) | Yes               | No             | No                  | Requires Hessian                             |
+        +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
+        | trust-ncg        | Local (Gradient-based) | Yes               | No             | No                  | Newton-CG trust region                       |
+        +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
+        | trust-exact      | Local (Gradient-based) | Yes               | No             | No                  | Trust-region, exact Hessian                  |
+        +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
+        | trust-krylov     | Local (Gradient-based) | Yes               | No             | No                  | Trust-region, Hessian-free                   |
+        +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
+
+            Returns:
+                result (OptimizeResult): The result of the optimization, with an additional
+                                         `x_vars` attribute that provides a labeled dict of optimized
+                                         control variable values.
+
+            Raises:
+                Any exceptions raised by `scipy.optimize.minimize`.
+
+            Example:
+            --------
+            The following example shows how to use this method, the evaluation is very basic, but you
+            can add a more advanced evaluation by adding a loss function e.g RMSE os NSE by comparing with the observed and predicted,
+            and changing the control variables::
+
+            class Problem(MixedVarProblem):
+                def __init__(self, model=None, simulation='Simulation'):
+                    super().__init__(model, simulation)
+                    self.simulation = simulation
+
+                def evaluate(self, x, **kwargs):
+                    # All evlauations can be defined inside here, by taking into accound the fact that the results object returns a data frame
+                    # Also, you can specify the database table or report name holding the ``results``
+                    return -self.run(verbose=False).results.Yield.mean() # A return is based on your objective definition, but as I said this could a ``RRMSE`` error or any other loss function
+
+            # Ready to initialise the problem
+
+            .. code-block:: python
+
+                 problem.add_control(
+                    path='.Simulations.Simulation.Field.Fertilise at sowing',
+                    Amount="?",
+                    bounds=[50, 300],
+                    v_type="float",
+                    start_value =50
+                 )
+
+                problem.add_control(
+                    path='.Simulations.Simulation.Field.Sow using a variable rule',
+                    Population="?",
+                    bounds=[4, 14],
+                    v_type="float",
+                    start_value=5
+                )
+
+.. function:: apsimNGpy.optimizer.single.MixedVariable.minimize_with_de(self, args=(), strategy='best1bin', maxiter=1000, popsize=15, tol=0.01, mutation=(0.5, 1), recombination=0.7, rng=None, callback=None, disp=True, polish=True, init='latinhypercube', atol=0, updating='immediate', workers=1, constraints=(), x0=None, seed=1, *, integrality=None, vectorized=False)
+
+   Runs differential evolution on the wrapped objective function.
+        Reference: https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.differential_evolution.html
+
+.. function:: apsimNGpy.optimizer.single.MixedVariable.optimization_type(self)
+
+   No documentation available.
 
 ModelTools 
 ~~~~~~~~~~~~~~~~~~~~~~~~~

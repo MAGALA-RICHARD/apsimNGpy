@@ -11,6 +11,7 @@ from apsimNGpy.core import runner
 from apsimNGpy.core import (config, base_data, apsim, load_model, structure)
 from apsimNGpy.manager import soilmanager, weathermanager
 from apsimNGpy.validation import evaluator
+from apsimNGpy.optimizer import single
 
 modules = list((config, base_data, apsim))
 SENDTO = Path.cwd().parent.parent / 'docs/source'
@@ -146,7 +147,7 @@ if __name__ == '__main__':
 
     from apsimNGpy.core import core
 
-    docs([apsim.ApsimModel, ContVarProblem, process, database_utils, core.CoreModel, core.ModelTools, evaluator, runner, base_data, weathermanager, soilmanager, load_model],
+    docs([apsim.ApsimModel,single.ContinuousVariable, single.MixedVariable, process, database_utils, core.CoreModel, core.ModelTools, evaluator, runner, base_data, weathermanager, soilmanager, load_model],
          output_file="api.rst")
 
     rsts = list(Path.cwd().rglob("*pi.rst")) #+ list(Path.cwd().rglob("*conf.py"))

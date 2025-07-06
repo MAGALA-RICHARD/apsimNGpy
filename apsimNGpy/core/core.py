@@ -311,7 +311,7 @@ class CoreModel:
         if self.run_method == run_model_externally:
 
             # Collect all available data tables
-            if self.ran_ok:  # if run was not successfull, then the tables are not populated
+            if self.ran_ok:  # If run was not successfully, then the tables are not populated
                 data_tables = collect_csv_by_model_path(self.path)
 
                 # Normalize report_names to a list
@@ -331,16 +331,16 @@ class CoreModel:
                             f"Available tables include: {list(data_tables.keys())}"
                         )
                     else:
-                        raise RuntimeError('some thing happened not right')
+                        raise RuntimeError('some thing happened that is not right')
 
                 datas = [pd.read_csv(data_tables[i]) for i in reports]
                 return pd.concat(datas)
             else:
                 msg = "Attempting to get results before running the model"
-                logging.error(msg)
+                logger.info(msg)
                 raise RuntimeError(msg)
         if self.run_method == run_p:
-            print(_reports)
+
             dfs = [dataview_to_dataframe(self, rp) for rp in _reports]
             return pd.concat(dfs)
 
@@ -1714,6 +1714,40 @@ class CoreModel:
 
         return inspect_model_inputs(self, model_type=model_type, model_name=model_name, simulations=simulations,
                                     parameters=parameters, **kwargs)
+
+    def inspect_model_parameters_by_path(self, path, *,
+                                 parameters: Union[list, set, tuple, str] = None):
+        """
+        Inspect and extract parameters from a model component specified by its path.
+
+        Parameters
+        ----------
+        path : str
+            A string path to the model component within the APSIM simulation hierarchy.
+
+        parameters : list, set, tuple, or str, optional
+            One or more parameter names to extract from the model. If None, attempts to extract all available parameters.
+
+        Returns
+        -------
+        dict
+            A dictionary of parameter names and their values.
+
+        .. note::
+
+            This method wraps the `extract_value` utility to fetch parameters from a model component
+            identified by a path string. Internally, it:
+            1. Finds the model object using the given path.
+            2. Extracts and returns the requested parameter(s).
+        """
+        from apsimNGpy.core._modelhelpers import extract_value
+        model_by_path = self.Simulations.FindByPath(path)
+        _model_type = self.detect_model_type(path)
+
+        mod_obj = model_by_path.Value
+
+        return extract_value(mod_obj, parameters=parameters)
+
 
     def edit_cultivar(self, *, CultivarName: str, commands: str, values: Any, **kwargs):
         """

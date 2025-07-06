@@ -282,7 +282,7 @@ def load_crop_from_disk(crop: str, out: str = None, work_space: str = None):
 
     if BIN and os.path.exists(BIN):
         EXa = BIN.replace('bin', 'Examples')
-        print(f"{EXa}*/{crop}.{suffix}")
+        #print(f"{EXa}*/{crop}.{suffix}")
 
         target_location = glob.glob(f"{EXa}/**/*{crop}.{suffix}", recursive=True)  # case-sensitive
         if target_location:

@@ -423,6 +423,116 @@ def inspect_model_inputs(scope, model_type: str, model_name: str,
 
     return result
 
+def extract_value(model_instance, parameters=None):
+    if isinstance(parameters, str):
+        parameters = {parameters}
+
+    match type(model_instance):
+        case Models.Climate.Weather:
+            value = model_instance.FileName
+        case Models.Clock:
+            import datetime
+            def __convert_to_datetime(dotnet_dt):
+                return datetime.datetime(
+                    dotnet_dt.Year,
+                    dotnet_dt.Month,
+                    dotnet_dt.Day,
+                    dotnet_dt.Hour,
+                    dotnet_dt.Minute,
+                    dotnet_dt.Second,
+                    dotnet_dt.Millisecond * 1000  # Python uses microseconds
+                )
+
+            validated = dict(End='End', Start='Start', end='End', start='Start', end_date='End', start_date='Start')
+            accepted_attributes = {'Start', 'End'}
+            selected_parameters = {validated.get(k) for k in parameters if
+                                   validated.get(k) in accepted_attributes} if parameters else set()
+            dif = accepted_attributes - selected_parameters
+            if dif == accepted_attributes and parameters:
+                raise ValueError(
+                    f"To inspect the 'Clock Model Parameters:\n, Parameters must be None or any of '{', '.join(validated.keys())}'")
+            attributes = selected_parameters or accepted_attributes
+
+            if len(attributes) == 1:
+                value = __convert_to_datetime(getattr(model_instance, *attributes))
+            else:
+                value = {atr: __convert_to_datetime(getattr(model_instance, atr)) for atr in attributes}
+
+        case Models.Manager:
+            selected_parameters = parameters if parameters else set()
+
+            if selected_parameters:
+                value = {param.Key: param.Value for param in model_instance.Parameters if
+                         param.Key in selected_parameters}
+            else:
+                value = {param.Key: param.Value for param in model_instance.Parameters}
+        case Models.Soils.Physical | Models.Soils.Chemical | Models.Soils.Organic | Models.Soils.Water | Models.Soils.Solute:
+            # get selected parameters
+            selected_parameters = {k for k in parameters if hasattr(model_instance, k)} if parameters else set()
+
+            thick = getattr(model_instance, 'Thickness', None)
+
+            df = pd.DataFrame()  # empty data frame
+            attributes = selected_parameters or dir(model_instance)
+            evp = [at for at in attributes if not at.startswith('__')]
+            if not selected_parameters and parameters:
+                raise ValueError(f"Parameters must be none or any of '{", \n".join(evp)}'")
+            if thick:
+                for attr in attributes:
+                    if attr.startswith('__'):
+                        continue
+                    val = getattr(model_instance, attr)
+                    if isinstance(val, IEnumerable) and not isinstance(val, String):
+                        val_list = list(val)
+                        if len(val_list) == len(thick):
+                            df[attr] = val_list
+            value = df
+        case Models.Report:
+            accepted_attributes = {'VariableNames', 'EventNames'}
+            selected_parameters = {k for k in parameters if hasattr(model_instance, k)} if parameters else set()
+            dif = accepted_attributes - selected_parameters
+            if dif == accepted_attributes and parameters:
+                raise ValueError(f"Parameters must be none or any of '{accepted_attributes}'")
+
+            attributes = selected_parameters or accepted_attributes
+            value = {}
+            for attr in attributes:
+                value[attr] = list(getattr(model_instance, attr))
+
+        case Models.PMF.Cultivar:
+            selected_parameters = set(parameters) if parameters else set()
+            params = {}
+            for cmd in model_instance.Command:
+                if cmd:
+                    if '=' in cmd:
+                        key, val = cmd.split('=', 1)
+                        params[key.strip()] = val.strip()
+            if selected_parameters:
+                value = {k: v for k, v in params.items() if k in selected_parameters}
+                if not value:
+                    raise ValueError(
+                        f"None of '{selected_parameters}' was found. Available parameters are: '{', '.join(params.keys())}'")
+            else:
+                value = params
+        case Models.Surface.SurfaceOrganicMatter:
+            selected_parameters = set(parameters) if parameters else set()
+            accepted_attributes = {'LyingWt', 'N', 'NH4', 'NO3', 'LabileP', 'SurfOM', 'P', "C", 'Cover',
+                                   'InitialCPR', 'InitialResidueMass', 'StandingWt',
+                                   'InitialCNR', 'InitialCPR'}
+            dif = accepted_attributes - selected_parameters
+            if len(dif) == len(accepted_attributes) and parameters:
+                raise ValueError(f"Parameters must be none or any of '{', '.join(accepted_attributes)}'")
+            params = {}
+            attributes = selected_parameters or accepted_attributes
+            for attrib in attributes:
+                x_attrib = getattr(model_instance, attrib)
+                params[attrib] = x_attrib
+
+            value = params
+        case _:
+            raise NotImplementedError(f"No inspect input method implemented for model type: {type(model_instance)}")
+    return value
+
 
 def replace_variable_by_index(old_list: list, new_value: list, indices: list):
     for idx, new_val in zip(indices, new_value):

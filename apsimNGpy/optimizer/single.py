@@ -34,7 +34,7 @@ class ContinuousVariable(ContVarProblem):
         self.pbar = None
         self.counter = 0
         self.maxiter = 0
-
+    @property
     def optimimization_type(self):
         return SING_OBJ_CONT_VAR
 
@@ -106,8 +106,10 @@ class ContinuousVariable(ContVarProblem):
 
         Example::
 
-          from apsimNGpy.optimizer.one_objective import ContVarProblem
+          from apsimNGpy.optimizer.single import ContinuousVariable
+
           class Problem(ContVarProblem):
+
                 def __init__(self, model=None, simulation='Simulation'):
                     super().__init__(model, simulation)
                     self.simulation = simulation
@@ -115,9 +117,9 @@ class ContinuousVariable(ContVarProblem):
                    return -self.run(verbose=False).results.Yield.mean()
 
           problem = Problem(model="Maize", simulation="Sim")
-          problem.add_control("Manager", "Sow using a rule", "Population", vtype="grid",
+          problem.add_control("Manager", "Sow using a rule", "Population", v_type="grid",
                                 start_value=5, values=[5, 9, 11])
-          problem.add_control("Manager", "Sow using a rule", "RowSpacing", vtype="grid",
+          problem.add_control("Manager", "Sow using a rule", "RowSpacing", v_type="grid",
                                 start_value=400, values=[400, 800, 1200])
           result = problem.minimize_with_local_solver(method='Powell', options={"maxiter": 300})
           print(result.x_vars)

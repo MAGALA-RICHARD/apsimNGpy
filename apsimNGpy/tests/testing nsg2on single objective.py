@@ -4,12 +4,12 @@ from scipy.optimize import minimize
 from pymoo.core.problem import ElementwiseProblem
 from pymoo.algorithms.moo.nsga2 import NSGA2
 from pymoo.optimize import minimize as pymoo_minimize
-from pymoo.operators.sampling.rnd import FloatRandomSampling
+from pymoo.operators.sampling.rnd import FloatRandomSampling, IntegerRandomSampling
 from pymoo.termination import get_termination
 
 # Objective function
 def fun(x):
-    return (x[0] ** 3)**2
+    return x**2
 
 # --- Nelder-Mead ---
 res_nm = minimize(fun, x0=[-10], method='powell',bounds=[(-10, 10)], options={'maxiter': 1000})
@@ -25,7 +25,7 @@ class MyProblem(ElementwiseProblem):
 problem = MyProblem()
 algorithm = NSGA2(
     pop_size=200,
-    sampling= FloatRandomSampling(),
+    sampling= IntegerRandomSampling(),
     eliminate_duplicates=True,
 
 )
@@ -37,6 +37,8 @@ print(res_nsga2.X,'\n')
 nsg2 = res_nsga2.F
 if nsg2 < res_nm.fun:
     print('NSG2 has won')
+elif nsg2 == res_nm.fun:
+    print('draw')
 else:
     print('NSG2 has lost', '\n')
 

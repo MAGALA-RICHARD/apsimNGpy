@@ -521,7 +521,7 @@ def get_met_nasa_power(lonlat, start=1990, end=2000, fname='get_met_nasa_power.m
         f2app.writelines(data_rows)
     return fname
 
-@lru_cache(maxsize=500)
+@lru_cache(maxsize=100)
 def _is_within_USA_mainland(lonlat):
     lon_min, lon_max = -125.0, -66.9  # Approximate longitudes for the west and east coasts
     lat_min, lat_max = 24.4, 49.4  # Approximate latitudes for the southern and northern borders
@@ -571,7 +571,7 @@ def get_weather(lonlat:Union[tuple, list], start:int=1990, end:int=2020, source:
 
             # next we can pass this weather file to apsim model
 
-            >>> maize_model = load_default_simulations(crop = 'maize')
+            >>> maize_model = load_default_simulations(crop = 'Maize')
             >>> maize_model.replace_met_file(weather_file = met_file)
 
     """
@@ -589,13 +589,38 @@ def get_weather(lonlat:Union[tuple, list], start:int=1990, end:int=2020, source:
             f"Invalid source: {source} according to supplied {lonlat} lon_lat values try 'nasa' instead")
 
 
-def read_apsim_met(met_path, skip=5, index_drop=0, separator=' '):
-    try:
-        data = pd.read_csv(met_path, skiprows=skip, delim_whitespace=True)
-        return data.drop(0)
 
-    except Exception as e:
-        print(repr(e))
+def read_apsim_met(met_path, skip=5, index_drop=0, separator=r'\s+'):
+    """
+    Read an APSIM .met file into a pandas DataFrame.
+
+    Parameters
+    ----------
+    met_path : str
+        Path to the .met file.
+
+    skip : int, optional
+        Number of header lines to skip before data starts (default is 5).
+
+    index_drop : int or list, optional
+        Index or list of indices to drop after reading (default is 0).
+
+    separator : str, optional
+        Column separator, default is one or more whitespace characters (regex '\\s+').
+
+    Returns
+    -------
+    pd.DataFrame
+        The parsed meteorological data.
+    """
+    try:
+        df = pd.read_csv(met_path, skiprows=skip, sep=separator)
+        return df.drop(index=index_drop).reset_index(drop=True)
+
+    except TypeError as e:
+        print(f"Error reading file: {e!r}")
+        return None
+
 
 
 def write_edited_met(old: Union[str, Path], daf: pd.DataFrame, filename: str = "edited_met.met") -> str:

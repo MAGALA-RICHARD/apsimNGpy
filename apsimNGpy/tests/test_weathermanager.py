@@ -11,7 +11,7 @@ AMES_LONLAT = -93.0, 42.03534
 
 class test_weatherManager(BaseTester):
     def test_get_weather(self):
-        met = weathermanager.get_weather(LONLAT, source='nasa')
+        met = weathermanager.get_weather(LONLAT, start =2000, end  =2001,source='nasa', filename='nasa_2.met')
         self.assertIsInstance(met, str)
         self.assertTrue(os.path.exists(met))
         met = weathermanager.get_weather(AMES_LONLAT, source='daymet')

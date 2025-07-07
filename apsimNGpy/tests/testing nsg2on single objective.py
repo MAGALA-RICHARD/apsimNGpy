@@ -24,7 +24,7 @@ class MyProblem(ElementwiseProblem):
 
 problem = MyProblem()
 algorithm = NSGA2(
-    pop_size=200,
+    pop_size=10,
     sampling= IntegerRandomSampling(),
     eliminate_duplicates=True,
 

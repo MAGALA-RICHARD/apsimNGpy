@@ -17,7 +17,6 @@ import pandas as pd
 from abc import ABC, abstractmethod
 from collections.abc import Iterable
 from apsimNGpy.optimizer.optutils import compute_hyper_volume, edit_runner
-from core.cal import OptimizationBase
 
 ArrayLike = Union[np.ndarray, List[float], pd.Series]
 from collections import OrderedDict
@@ -70,13 +69,10 @@ class AbstractProblem(ABC):
 
         return self._cache.get(key, None)
 
-    @cache
-    def _insert_apsim_model(self, model: str, outpath=None, **kwargs):
-        return OptimizationBase(model, out_path=outpath)
 
     @cache
     def _get_editable_model(self):
-        return self.model
+        return self.apsim_model
 
     def clear_cache(self):
         self._cache.clear()

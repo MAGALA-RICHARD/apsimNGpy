@@ -4,3 +4,6 @@ class InvalidInputErrors(Exception):
 
 class ForgotToRunError(Exception):
     pass
+
+class EmptyDateFrameError(Exception):
+    pass

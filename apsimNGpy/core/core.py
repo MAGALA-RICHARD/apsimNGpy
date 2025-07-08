@@ -486,11 +486,12 @@ class CoreModel(PlotManager):
 
             # If the model failed and verbose was off, rerun to diagnose
             if not self.ran_ok and not verbose:
-                from apsimNGpy.core._exceptions import InvalidInputErrors
+                from apsimNGpy.exceptions import InvalidInputErrors
                 self.run(verbose=True)
-                raise InvalidInputError(f'Invalid inputs encountered. Please diagnose and try again')
+                raise InvalidInputErrors(f'Invalid inputs encountered. Please diagnose and try again')
 
             return self
+
 
 
         finally:

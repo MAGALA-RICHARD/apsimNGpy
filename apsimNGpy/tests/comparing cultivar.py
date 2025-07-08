@@ -29,4 +29,4 @@ if __name__ == '__main__':
     #model = CompareCultivar(model='Maize')
     model = ApsimModel('Maize')
     model.create_experiment(permutation=False)
-    model.add_factor(specification="[Sow using a variable rule].Script.CultivarName =  'Laila', B_110, A_90")
+    model.add_factor(specification="[Sow using a variable rule].Script.CultivarName = 'Pioneer_34K77', 'Laila', B_110, A_90")

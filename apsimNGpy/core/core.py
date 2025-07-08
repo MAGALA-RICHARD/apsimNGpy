@@ -2895,15 +2895,8 @@ class CoreModel:
             ``base_name`` is optional but the experiment may not be created if there are more than one base simulations. Therefore, an error is likely.
 
         """
-        old_model = ModelTools.CLONER(self.Simulations)
-        if not self._intact_model:
-           self._intact_model.append(old_model)
-        if self._intact_model:
-            self.Simulations = self._intact_model[0]
-        # if self.experiment_created:
-        #     logger.info('Experiment was already created. If you want to amend experiment, '
-        #                 'use add_model(), remove_model()')
-        #     return self
+        #
+        self.refresh_model()
         self.factor_names = []
 
         self.permutation = permutation
@@ -2923,6 +2916,17 @@ class CoreModel:
         # update the experiment status
         self.experiment = True
         self.experiment_created = True
+
+    def refresh_model(self):
+       """
+       for methods that will alter the simulation objects and need refreshing the second time we call
+       @return: self for method chaining
+       """
+       if not self._intact_model:
+           old_model = ModelTools.CLONER(self.Simulations)
+           self._intact_model.append(old_model)
+       if self._intact_model:
+           self.Simulations = self._intact_model[0]
 
 
     def add_factor(self, specification: str, factor_name: str = None, **kwargs):

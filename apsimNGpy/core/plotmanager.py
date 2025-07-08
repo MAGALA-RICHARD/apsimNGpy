@@ -75,7 +75,7 @@ class PlotManager(ABC):
         return df
 
     def boxplot(self, column, *, title='', xlab='', ylab='',
-                by=None, figsize=(10, 8), grid=False, show=False,
+                by=None, figsize=(10, 8), grid=False, show=True,
                 save_as='', dpi=600, rotate_xticks=False):
         """
         Plot a boxplot from the simulation results.
@@ -249,7 +249,7 @@ class PlotManager(ABC):
         plt.tight_layout()
         self._finalize(show, save_as)
 
-    def cat_plot(self, y, *, by=None, x=None, time='Year', show=True, save_as='', **kwargs):
+    def cat_plot(self, y, *, by=None, x=None, time='Year', show=True, save_as='', kind='bar', **kwargs):
         self._refresh()
         """Plot time series of a variable against a time field. use seaborn.catplot"""
         var_name = time.capitalize()
@@ -261,13 +261,14 @@ class PlotManager(ABC):
             var_name = x
         if by:
             kwargs['hue'] = by
+        kwargs['kind'] = kind
         df = self.results
         sns.catplot(data=df, x=var_name, y=y, **kwargs)
         plt.title(f"{y} over {var_name}")
         plt.tight_layout()
         self._finalize(show, save_as)
 
-    def correlation_heatmap(self, figsize=(10, 8), show=False, save_as=''):
+    def correlation_heatmap(self, figsize=(10, 8), show=True, save_as=''):
         self._refresh()
         """Plot correlation heatmap for numeric _variables."""
         df = self._clean_numeric_data()
@@ -305,7 +306,7 @@ if __name__ == '__main__':
 
     model.lineplot(y=['SOC1', 'SOC2'], time='Year', table_name='my_table', show=False,
                    ylab='Soil organic carbon(Mg^{-1})')
-    model.distribution('SOC1', show=False)
+    model.distribution('SOC1', show=True)
     # model.plot_distribution('Yield')
     model.run(report_name='Report')
     model.correlation_heatmap()

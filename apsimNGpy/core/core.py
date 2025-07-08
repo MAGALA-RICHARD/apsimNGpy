@@ -40,7 +40,7 @@ import ast
 from typing import Any
 
 from apsimNGpy.settings import SCRATCH, logger, MissingOption
-
+from apsimNGpy.core.plotmanager import PlotManager
 
 def _looks_like_path(value: str) -> bool:
     return any(sep in value for sep in (os.sep, '/', '\\')) or value.endswith('.apsimx')
@@ -52,7 +52,7 @@ def compile_script(script_code: str, code_model):
 
 
 @dataclass(slots=True)
-class CoreModel:
+class CoreModel(PlotManager):
     """
     Modify and run APSIM Next Generation (APSIM NG) simulation models.
 
@@ -3059,6 +3059,7 @@ class CoreModel:
         """
         format_factor = f"{factor_path} = {','.join(map(str, categories))}"
         self.add_factor(specification=format_factor, factor_name=factor_name)
+        return self
 
     def add_crop_replacements(self, _crop: str):
         """

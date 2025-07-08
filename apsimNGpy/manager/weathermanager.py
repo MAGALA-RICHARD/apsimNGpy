@@ -618,8 +618,8 @@ def read_apsim_met(met_path, skip=5, index_drop=0, separator=r'\s+'):
         return df.drop(index=index_drop).reset_index(drop=True)
 
     except TypeError as e:
-        print(f"Error reading file: {e!r}")
-        return None
+        print(f"Type Error reading file: {e!r}")
+        raise TypeError(e)
 
 
 

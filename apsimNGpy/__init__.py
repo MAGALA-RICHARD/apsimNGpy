@@ -9,7 +9,7 @@ from apsimNGpy.exceptions import (
     ForgotToRunError,
     EmptyDateFrameError
 )
-from apsimNGpy.core.version import version
+from apsimNGpy.version import version
 __version__ = version
 
 __all__ = [

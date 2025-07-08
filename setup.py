@@ -60,7 +60,8 @@ setup(
                        './apsimNGpy/*.met',
                        "./apsimNGpy/experiment/*.py",
                        './apsimNGpy/examples/*.png',
-                       './apsimNGpy/images/*.png'
+                       './apsimNGpy/images/*.png',
+                       './apsimNGpy/*.toml',
                        './apsimNGpy/*.ini', "./*.ini"]},
     keywords=['python', 'APSIM Next Generation', 'pythonnet', 'crop modeling'],
     classifiers=[

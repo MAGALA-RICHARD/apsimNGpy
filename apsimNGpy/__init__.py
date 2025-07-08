@@ -9,8 +9,8 @@ from apsimNGpy.exceptions import (
     ForgotToRunError,
     EmptyDateFrameError
 )
-from apsimNGpy.version import version
-__version__ = version
+
+__version__ = '0.39.3.5'
 
 __all__ = [
     'InvalidInputErrors',

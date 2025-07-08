@@ -3,7 +3,7 @@ import subprocess
 from pathlib import Path
 from platform import system
 from typing import Union
-from apsimNGpy.core._exceptions import ForgotToRunError
+from apsimNGpy.exceptions import ForgotToRunError, EmptyDateFrameError
 import pandas as pd
 import matplotlib.pyplot as plt
 from sqlalchemy import label
@@ -26,23 +26,22 @@ HOME = Path.home()
 
 def open_file(filepath):
     """Open a file using the default OS application."""
-    try:
-        if system() == 'Darwin':
-            subprocess.call(['open', filepath])
-        elif system() == 'Windows':
-            os.startfile(filepath)
-        elif system() == 'Linux':
-            subprocess.call(['xdg-open', filepath])
-        else:
-            raise OSError('Unsupported operating system')
-    except Exception as e:
-        print(f"Failed to open file: {e}")
+
+    if system() == 'Darwin':
+        subprocess.call(['open', filepath])
+    elif system() == 'Windows':
+        os.startfile(filepath)
+    elif system() == 'Linux':
+        subprocess.call(['xdg-open', filepath])
+    else:
+        raise OSError('Unsupported operating system')
+
 
 
 class PlotManager(ABC):
     def __init__(self):
 
-        self.display = False
+        self.displayed = False
 
     @property
     @abstractmethod
@@ -50,11 +49,15 @@ class PlotManager(ABC):
         pass
 
     @abstractmethod
-    def add_report_variable(self, specification):
+    def get_simulated_output(self, report_name:str):
         pass
 
     @abstractmethod
-    def run(self, report_name):
+    def add_report_variable(self, specification:str):
+        pass
+
+    @abstractmethod
+    def run(self, report_name: Union[str, list, tuple]):
         pass
     def _clean_numeric_data(self, exclude_vars=('SimulationID', 'CheckpointID', 'CheckpointName')):
         """Select numeric _variables and remove low-signal columns."""
@@ -63,7 +66,6 @@ class PlotManager(ABC):
         # Drop excluded _variables
         for var in exclude_vars:
             if var in df.columns:
-                print(f"Removing column: {var}")
                 df.drop(columns=var, inplace=True)
 
         # Remove columns with near-zero sum
@@ -123,7 +125,7 @@ class PlotManager(ABC):
 
         plt.tight_layout()
 
-        self._finalize(show, save_as, dpi=dpi)
+        self.render_plot(show, save_as, dpi=dpi)
 
         return ax
 
@@ -150,19 +152,24 @@ class PlotManager(ABC):
             plt.xlabel(ylab)
 
         plt.xlabel(xlab)
-        self._finalize(show, save_as)
+        self.render_plot(show, save_as)
 
     def label(self):
         ...
 
-    def _finalize(self, show, save_as, dpi =600):
+    def render_plot(self, show, save_as, dpi =600, **kwargs):
+        plt.rcParams['axes.titlesize'] = kwargs.get('titlesize', 12)
+        plt.rcParams['axes.labelsize'] = kwargs.get('axessize', 14)
+        plt.rcParams['xtick.labelsize'] = kwargs.get('xticksize', 12)
+        plt.rcParams['ytick.labelsize'] = kwargs.get('yticksize', 12)
+        plt.rcParams['legend.fontsize'] = kwargs.get('legend_size', 12)
+        plt.rcParams['figure.titlesize'] = kwargs.get('figtitle_size', 15)
         assert isinstance(show, bool), f"show is expected to be a boolean value"
-        if not any([show, save_as]):
-            logger.warning('Please specify either show (bool) or save_as (str) as an argument')
         if save_as:
+            save_as =str(save_as)
             plt.savefig(save_as, dpi=dpi)
         if show:
-            self.display = True
+            self.displayed = True
             self.show()
 
     @staticmethod
@@ -181,13 +188,15 @@ class PlotManager(ABC):
         if plt.get_fignums():
             plt.close()
 
-    def lineplot(self, y: Union[str, list, tuple], *, xlab=None, ylab=None, x=None, time='Year', table_name='Report',
-                 show=True, save_as='', **kwargs):
+    def line_plot(self, y: Union[str, list, tuple], *, by = None,  figsize=(10, 8), xlab=None, ylab=None, x=None, time='Year', table_name='Report',
+                  show=True, save_as='', **kwargs):
         """Plot time series of a variable against a time field."""
         self._refresh()
         var_name = time.capitalize()
         self.add_report_variable(f'[Clock].Today.{var_name} as {var_name}', table_name)
         pops = ['y', 'x']
+        if by:
+            kwargs['hue'] =by
         for p in pops:
             kwargs.pop(p, None)
         if x is None:
@@ -212,9 +221,9 @@ class PlotManager(ABC):
         if ylab:
             plt.ylabel(ylab)
         plt.tight_layout()
-        self._finalize(show, save_as)
+        self.render_plot(show, save_as)
 
-    def scatter(self, y: Union[str, list, tuple], *, xlab=None, ylab=None, x=None,
+    def scatter(self, y: Union[str, list, tuple], *, figsize=(10, 8), xlab=None, ylab=None, x=None,
                 time='Year', table_name='Report', show=True, save_as='', **kwargs):
         """Plot scatter plot of a variable against a time field or x-axis."""
         self._refresh()
@@ -247,15 +256,16 @@ class PlotManager(ABC):
         if ylab:
             plt.ylabel(ylab)
         plt.tight_layout()
-        self._finalize(show, save_as)
+        self.render_plot(show, save_as)
 
-    def cat_plot(self, y, *, by=None, x=None, time='Year', show=True, save_as='', kind='bar', **kwargs):
+    def cat_plot(self, y, *, by=None, x=None, figsize=(10, 8), time='Year', show=True, save_as='', kind='bar', **kwargs):
         self._refresh()
         """Plot time series of a variable against a time field. use seaborn.catplot"""
         var_name = time.capitalize()
-        self.add_report_variable(f'[Clock].Today.{var_name} as {var_name}', 'Report')
+
 
         if x is None:
+            self.add_report_variable(f'[Clock].Today.{var_name} as {var_name}', 'Report')
             self.run(report_name='Report')
         else:
             var_name = x
@@ -266,22 +276,25 @@ class PlotManager(ABC):
         sns.catplot(data=df, x=var_name, y=y, **kwargs)
         plt.title(f"{y} over {var_name}")
         plt.tight_layout()
-        self._finalize(show, save_as)
+        self.render_plot(show, save_as)
 
-    def correlation_heatmap(self, figsize=(10, 8), show=True, save_as=''):
+    def correlation_heatmap(self,columns:list=None, figsize=(10, 8), show=True, save_as=''):
         self._refresh()
         """Plot correlation heatmap for numeric _variables."""
-        df = self._clean_numeric_data()
-        if df.empty:
-            print("No valid numeric data for correlation heatmap.")
-            return
+        if columns:
+            df  = self.results[columns]
+        else:
+            df = self._clean_numeric_data()
+            if df.empty:
+                raise EmptyDateFrameError("No valid numeric data for correlation heatmap.")
+
 
         corr = df.corr()
         plt.figure(figsize=figsize)
         sns.heatmap(corr, annot=True, cmap="coolwarm", fmt=".2f")
         plt.title("Correlation Heatmap")
         plt.tight_layout()
-        self._finalize(show, save_as)
+        self.render_plot(show, save_as)
 
 
 if __name__ == '__main__':
@@ -301,11 +314,11 @@ if __name__ == '__main__':
     # model.add_db_table(variable_spec=['[Soil].Nutrient.TotalC[2]/1000 as SOC2',])
     model.update_mgt(management=({"Name": 'Sow using a variable rule', 'Population': 8},))
     model.run(report_name='my_table')
-    print(model.results.columns)
+
     model.cat_plot(y='SOC1', x='Zone')
 
-    model.lineplot(y=['SOC1', 'SOC2'], time='Year', table_name='my_table', show=False,
-                   ylab='Soil organic carbon(Mg^{-1})')
+    model.line_plot(y=['SOC1', 'SOC2'], time='Year', table_name='my_table', show=False,
+                    ylab='Soil organic carbon(Mg^{-1})')
     model.distribution('SOC1', show=True)
     # model.plot_distribution('Yield')
     model.run(report_name='Report')

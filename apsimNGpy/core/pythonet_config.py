@@ -4,6 +4,11 @@ import pythonnet
 from apsimNGpy.core import config
 aPSim_PATH = config.get_apsim_bin_path()
 
+def is_file_format_modified(models):
+    if getattr(models.Core.ApsimFile, "FileFormat", None):
+        return False
+    return True
+
 def start_pythonnet():
     try:
         if pythonnet.get_runtime_info() is None:
@@ -54,6 +59,11 @@ def load_pythonnet():
 
     MMODELSS = clr.AddReference("Models")
     apsimNG = clr.AddReference('ApsimNG')
+    import Models
+    if is_file_format_modified(Models):
+           APSIM  =clr.AddReference('APSIM.Core')
+
+
 
     # return lm, sys, pythonnet.get_runtime_info()
 
@@ -66,6 +76,7 @@ from Models.Core import Simulation
 from Models.Climate import Weather
 from Models.Soils import Soil, Physical
 import Models
+
 from System import *
 Models = Models
 

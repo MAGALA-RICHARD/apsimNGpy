@@ -2,6 +2,7 @@
 This module offers a procedural alternative other than object-oriented approach provided in api and ApsimModel classes
 """
 import os
+import sys
 import uuid
 from functools import singledispatch, lru_cache
 from typing import Union
@@ -14,6 +15,7 @@ pyth = pythonet_config
 from System.Collections.Generic import *
 from System import *
 import Models
+import APSIM.Core as NEW_APSIM_CORE
 import json
 from os.path import (realpath)
 from os import chdir
@@ -35,6 +37,7 @@ class ModelData:
     DataStore: Any = None
     results: Any = None
     met_path: str = ""
+
 
 
 def load_from_dict(dict_data, out):
@@ -80,11 +83,12 @@ def save_model_to_file(_model, out=None):
 
 
 def covert_to_model(object_to_convert):
-    if isinstance(object_to_convert, Models.Core.ApsimFile.ConverterReturnType):
-        did_convert = object_to_convert.DidConvert
-        # if not did_convert:
-        #     raise ValueError('conversion to the newest version failed')
-        return object_to_convert.get_NewModel()
+    if pythonet_config.is_file_format_modified(Models) is False:
+        if isinstance(object_to_convert, Models.Core.ApsimFile.ConverterReturnType):
+            did_convert = object_to_convert.DidConvert
+            # if not did_convert:
+            #     raise ValueError('conversion to the newest version failed')
+            return object_to_convert.get_NewModel()
     else:
         return object_to_convert
 
@@ -111,12 +115,23 @@ def load_from_path(path2file, method='file'):
         app_ap = json.load(apsimx)
     string_name = json.dumps(app_ap)
     if method == 'string':
-        __model = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](string_name, None,
-                                                                                           True,
+        if not pythonet_config.is_file_format_modified(Models):
+            __model = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](string_name, None,
+                                                                                               True,
                                                                                            fileName=f_name)
-        __model = __model.NewModel
+            __model = __model.NewModel
+        else:
+
+            __model = NEW_APSIM_CORE.FileFormat.ReadFromString[Models.Core.Simulations](string_name, None,
+                                                                                               True,
+                                                                                               fileName=f_name)
+            __model = __model.get_Model()
+
     else:
-        __model = Models.Core.ApsimFile.FileFormat.ReadFromFile[Models.Core.Simulations](f_name, None, True)
+        try:
+            __model = Models.Core.ApsimFile.FileFormat.ReadFromFile[Models.Core.Simulations](f_name, None, True)
+        except AttributeError:
+            pass
 
     new_model = covert_to_model(__model)
 
@@ -165,18 +180,19 @@ def load_apsim_model(model=None, out_path=None, file_load_method='string', met_f
 
     Model = loader(model)
     _Model = False
-    if isinstance(Model, Models.Core.ApsimFile.ConverterReturnType):
+    if getattr(Model, 'get_NewModel', None):
         _Model = Model.get_NewModel()
     else:
         _Model = Model
-    datastore = _Model.FindChild[Models.Storage.DataStore]().FileName
+    print(dir(_Model))
+    datastore = _Model.GetChildren[Models.Storage.DataStore]().FileName
     DataStore = _Model.FindChild[Models.Storage.DataStore]()
     return ModelData(IModel=_Model, path=out['path'], datastore=datastore, DataStore=DataStore, results=None,
                       met_path=met_file)
 
 
 def recompile(_model, out=None, met_path=None, ):
-    """ recompile without saving to disk useful for recombiling the same model on the go after updating management scripts
+    """ recompile without saving to disk useful for recompiling the same model on the go after updating management scripts
 
             Parameters
             ----------

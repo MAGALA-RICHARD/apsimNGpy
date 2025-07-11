@@ -204,6 +204,8 @@ def find_model(model_name: str):
         model_type = getattr(Models.Surface, model_name, None)
     if model_type is None:
         model_type = getattr(Models.Core, model_name, None)
+    if model_type is None:
+        model_type = getattr(Models.Storage, model_name, None)
     collect()
     return model_type
 
@@ -253,7 +255,7 @@ def _eval_model(model__type, evaluate_bound=False) -> ModelTools.CLASS_MODEL:
         else:
             raise ValueError(f"invalid model_type: '{model__type}' from type: {type(model__type)}")
     finally:
-        # future implimentation
+        # future implementation
 
         pass
 

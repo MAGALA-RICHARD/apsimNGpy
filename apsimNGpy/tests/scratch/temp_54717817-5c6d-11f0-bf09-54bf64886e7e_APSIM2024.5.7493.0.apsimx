@@ -1,0 +1,10 @@
+{
+  "$type": "Models.Storage.DataStore, Models",
+  "useFirebird": false,
+  "CustomFileName": null,
+  "Name": "DataStore1",
+  "ResourceName": null,
+  "Children": [],
+  "Enabled": true,
+  "ReadOnly": false
+}

@@ -160,8 +160,8 @@ class PlotManager(ABC):
     def render_plot(self, show, save_as, dpi =600, **kwargs):
         plt.rcParams['axes.titlesize'] = kwargs.get('titlesize', 12)
         plt.rcParams['axes.labelsize'] = kwargs.get('axessize', 14)
-        plt.rcParams['xtick.labelsize'] = kwargs.get('xticksize', 12)
-        plt.rcParams['ytick.labelsize'] = kwargs.get('yticksize', 12)
+        plt.rcParams['xtick.labelsize'] = kwargs.get('xticksize', 10)
+        plt.rcParams['ytick.labelsize'] = kwargs.get('yticksize', 10)
         plt.rcParams['legend.fontsize'] = kwargs.get('legend_size', 12)
         plt.rcParams['figure.titlesize'] = kwargs.get('figtitle_size', 15)
         assert isinstance(show, bool), f"show is expected to be a boolean value"

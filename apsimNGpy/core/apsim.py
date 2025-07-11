@@ -16,7 +16,7 @@ import sys
 # prepare for the C# import
 # from apsimNGpy.core.pythonet_config import start_pythonnet
 from pathlib import Path
-from apsimNGpy.core.core import CoreModel, Models
+from apsimNGpy.core.core import CoreModel, Models, ModelTools
 from apsimNGpy.core.inspector import Inspector
 from System.Collections.Generic import *
 from Models.Core import Simulations
@@ -73,6 +73,7 @@ class ApsimModel(CoreModel):
             self.thickness_values = self._thickness_values
         if kwargs.get('experiment', False):
             self.create_experiment()
+        self.base_simulations = None
 
     @property
     def thickness_values(self):
@@ -611,6 +612,32 @@ class ApsimModel(CoreModel):
                 if missing:
                     raise ValueError(f"Missing required parameter(s): {', '.join(missing)}")
 
+    def get_base_simulations(self):
+        if self.base_simulations is None:
+            base_sim = self.Simulations.FindInScope[Models.Core.Simulation]()
+            base_sim = ModelTools.CLONER(base_sim)
+            self.base_simulations = base_sim
+        return ModelTools.CLONER(self.base_simulations)
+
+    def create_new_simulation(self, sim_name,lonlat=None):
+        _sim = self.get_base_simulations()
+        _sim.Name = sim_name
+        ModelTools.ADD(sim_name, self.Simulations)
+
+
+    def simulate_different_locations(self, locations: list[tuple]):
+        sim = self.get_base_simulations()
+
+        sims = self.Simulations.FindAllInScope[Models.Core.Simulation]()
+        for s in sims:
+            ModelTools.DELETE(s)
+        for lonlat in locations:
+            sim_name = f"sim_{lonlat[0]}_{lonlat[1]}"
+            clone_sim = ModelTools.CLONER(sim)
+            print(clone_sim)
+            clone_sim.Name = sim_name
+            ModelTools.ADD(clone_sim, self.Simulations)
+
 
 if __name__ == '__main__':
     # test
@@ -645,7 +672,6 @@ if __name__ == '__main__':
     #     line_number = exc_traceback.tb_lineno
     #     print(f"Error: {type(e).__name__} occurred on line: {line_number} execution value: {exc_value}")
 
-    obs = r'D:\package\synthetic_observed.csv'
-    df = pd.read_csv(obs)
+
     mod = ApsimModel('Maize')
-    ar = df.to_numpy(copy=True)
+

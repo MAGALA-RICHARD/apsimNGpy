@@ -1,4 +1,5 @@
-.. admonition:: Alert
+Alert
+============================
 
    **⚠️ Compatibility Warning**
 

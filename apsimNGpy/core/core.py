@@ -158,9 +158,11 @@ class CoreModel(PlotManager):
             self.create_experiment(permutation=self.permutation, base_name=self.base_name)
 
     def check_model(self):
-        if isinstance(self.Simulations, Models.Core.ApsimFile.ConverterReturnType):
-            self.Simulations = self.Simulations.get_NewModel()
-            self.model_info = self.model_info._replace(IModel=self.Simulations)
+        if hasattr(Models.Core.ApsimFile, "ConverterReturnType"):
+
+            if isinstance(self.Simulations, Models.Core.ApsimFile.ConverterReturnType):
+                self.Simulations = self.Simulations.get_NewModel()
+                self.model_info = self.model_info._replace(IModel=self.Simulations)
         return self
 
     @staticmethod

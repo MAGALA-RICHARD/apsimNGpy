@@ -7,3 +7,6 @@ class ForgotToRunError(Exception):
 
 class EmptyDateFrameError(Exception):
     pass
+
+class NodeNotFoundError(Exception):
+    pass

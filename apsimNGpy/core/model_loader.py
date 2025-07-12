@@ -9,7 +9,7 @@ from typing import Union
 
 from apsimNGpy.core import pythonet_config
 from apsimNGpy.core_utils.utils import timer
-
+from apsimNGpy.exceptions import NodeNotFoundError
 pyth = pythonet_config
 # now we can safely import C# libraries
 from System.Collections.Generic import *
@@ -37,6 +37,8 @@ class ModelData:
     DataStore: Any = None
     results: Any = None
     met_path: str = ""
+    Node: Any = None
+    Simulations: Any = None
 
 
 
@@ -85,11 +87,11 @@ def save_model_to_file(_model, out=None):
 def covert_to_model(object_to_convert):
     if pythonet_config.is_file_format_modified(Models) is False:
         if isinstance(object_to_convert, Models.Core.ApsimFile.ConverterReturnType):
-            did_convert = object_to_convert.DidConvert
-            # if not did_convert:
-            #     raise ValueError('conversion to the newest version failed')
             return object_to_convert.get_NewModel()
-    else:
+        return object_to_convert
+    if pythonet_config.is_file_format_modified(Models):
+        d=dir(object_to_convert)
+
         return object_to_convert
 
 
@@ -101,7 +103,7 @@ def load_model_from_dict(dict_model, out, met_file):
     return memo
 
 
-def load_from_path(path2file, method='file'):
+def load_from_path(path2file, method='string'):
     """"
 
     :param path2file: path to apsimx file
@@ -122,76 +124,102 @@ def load_from_path(path2file, method='file'):
             __model = __model.NewModel
         else:
 
-            __model = NEW_APSIM_CORE.FileFormat.ReadFromString[Models.Core.Simulations](string_name, None,
+            _model = NEW_APSIM_CORE.FileFormat.ReadFromString[Models.Core.Simulations](string_name, None,
                                                                                                True,
-                                                                                               fileName=f_name)
-            __model = __model.get_Model()
+                                                                                            fileName=f_name)
+            print(_model, 'be')
+            __model = _model.get_Model()
+            print(__model, 'af') # output Models.Core.Simulations
+            print(__model==_model)
+
 
     else:
+
         try:
             __model = Models.Core.ApsimFile.FileFormat.ReadFromFile[Models.Core.Simulations](f_name, None, True)
+
         except AttributeError:
-            pass
+            __model = NEW_APSIM_CORE.FileFormat.ReadFromFile[Models.Core.Simulations](f_name, None, True)
 
     new_model = covert_to_model(__model)
+    print(new_model, 'converted ;;')
 
     return new_model
 
+
 def load_apsim_model(model=None, out_path=None, file_load_method='string', met_file=None, wd=None, **kwargs):
     """
-       we are loading apsimx model from file, dict, or in memory.
+    Load an APSIMX model from a file path, dictionary, or in-memory object.
 
-       If model is none, we will return a pre - reloaded one from memory.
-       If out parameter is none, the new file will have a suffix _copy at the end
-       If model is none, the name is ngpy_model
-       returns a ``dataclass`` container with an out path, datastore path, and IModel in memory
-       """
-    out = {}  # stores the path to be attached to model_info object
+    Parameters:
+        model (str | dict | Simulation | None): The APSIM model source. Can be a file path, dictionary,
+                                                APSIM simulation object, or None.
+        out_path (str | Path, optional): The output path to save the working copy of the model.
+                                         If None, a new filename will be generated.
+        file_load_method (str): How to load the file (e.g., 'string', 'json').
+        met_file (str, optional): Path to the associated meteorological file.
+        wd (str, optional): Working directory for temporary file operations.
+        **kwargs: Additional options (reserved for future use).
+
+    Returns:
+        ModelData: A dataclass container with paths, model object, and metadata.
+    """
+
+    if isinstance(model, Path):
+        model = str(model)
+
+    out = {}  # Stores the final output path used
+
     @singledispatch
     def loader(_model):
-        """base loader to handle non implemented data type"""
-        # this will raise not implemented error if the _model is not a dict, str, None, Models.Core.Simulation,
-        raise NotImplementedError(f"Unsupported type: {type(_model)}")
+        """Base loader to handle unrecognized types."""
+        raise NotImplementedError(f"Unsupported model type: {type(_model)}")
 
     @loader.register(dict)
-    def _(_model: dict):
-        """loads apsimx model from a dictionary"""
-        # no need to copy the file
-        _out = out_path or f"{uuid.uuid1()}.apsimx"
-        out['path'] = _out
-        return load_from_dict(_model, _out)
+    def _load_from_dict(_model: dict):
+        """Load APSIMX model from a dictionary."""
+        output = out_path or f"{uuid.uuid1()}.apsimx"
+        out['path'] = output
+        return load_from_dict(_model, output)
 
     @loader.register(str)
-    def _(_model: str):
-        """loads apsimx model from a string path"""
+    def _load_from_str(_model: str):
+        """Load apsimx model from a string path."""
         if not _model.endswith('.apsimx'):
             _model = load_crop_from_disk(crop=_model, out=None, work_space=wd)
         copy_to = copy_file(_model, destination=out_path, wd=wd)
         out['path'] = copy_to
         return load_from_path(copy_to, file_load_method)
 
-    @loader.register(Path)
-    def _(_model: Path):
-        """loads apsimx model from a pathlib.Path object"""
-        # same as the string one, the difference is that this is a pathlib path object
-        copy_to = copy_file(_model, destination=out_path, wd=wd)
-        out['path'] = copy_to
-        return load_from_path(copy_to, file_load_method)
-
+    # Dispatch loader based on model type
     Model = loader(model)
-    _Model = False
+
+    # If loaded object has get_NewModel, extract the inner model
     if getattr(Model, 'get_NewModel', None):
         _Model = Model.get_NewModel()
     else:
         _Model = Model
-    print(dir(_Model))
-    try:
-        datastore = _Model.FindChild[Models.Storage.DataStore]().FileName
+
+
+    if hasattr(_Model, "FindChild"):
         DataStore = _Model.FindChild[Models.Storage.DataStore]()
-        return ModelData(IModel=_Model, path=out['path'], datastore=datastore, DataStore=DataStore, results=None,
-                          met_path=met_file)
-    except AttributeError as e:
-      return _Model.Node
+
+        datastore_path = DataStore.FileName
+
+    else:
+        DataStore = None
+        datastore_path = None
+
+    return ModelData(
+        IModel=_Model,
+        path=out.get('path'),
+        datastore=datastore_path,
+        DataStore=DataStore,
+        results=None,
+        met_path=met_file,
+        Node=_Model.Node,
+        Simulations=Model
+    )
 
 
 def recompile(_model, out=None, met_path=None, ):
@@ -219,19 +247,26 @@ def recompile(_model, out=None, met_path=None, ):
     # Model = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](json_string, None, True,
     #                                                                                  fileName=final_out_path)
     _Model = False
-    _Model = covert_to_model(Model)
 
-    datastore = _Model.FindChild[Models.Storage.DataStore]().FileName
-    DataStore = _Model.FindChild[Models.Storage.DataStore]()
+    _Model = covert_to_model(Model)
+    print(_Model == Model)
+    try:
+        datastore = _Model.FindChild[Models.Storage.DataStore]().FileName
+        DataStore = _Model.FindChild[Models.Storage.DataStore]()
+    except AttributeError:
+        datastore = None
+        DataStore = None
     # need to make ModelData a constant and named outside the script for consistency across scripts
     #ModelData = namedtuple('model_data', ['IModel', 'path', 'datastore', "DataStore", 'results', 'met_path'])
     return ModelData(IModel=_Model, path=final_out_path, datastore=datastore, DataStore=DataStore,
                      results=None,
-                     met_path=met_path)
+                     met_path=met_path,
+                     Node=_Model.Node,
+                     Simulations=Model)
 
 
 @timer
-def run_model_externally(model, table, datastore):
+def run_model_externally(model):
     # Define the APSIM executable path (adjust if needed)
     apsim_exe = Path(get_apsim_bin_path()) / 'Models.exe'
 
@@ -244,8 +279,8 @@ def run_model_externally(model, table, datastore):
 
         print("APSIM Run Successful!")
 
-        df = read_db_table(datastore, table)
-        return df
+        # df = read_db_table(datastore, table)
+        # return df
     except subprocess.CalledProcessError as e:
         print("Error running APSIM:")
         print(e.stderr)  # Print APSIM error message if execution fails
@@ -288,10 +323,50 @@ def run_model_externally(model, table, datastore):
 #
 #
 #
-if __name__ =='__main__':
-     p = load_apsim_model('Maize')
-     for mm in p.Walk():
+def get_node_by_name(node, name):
+    if hasattr(node, 'Node'):
+        node = node.Node
+    if hasattr(node, 'Walk'):
+        for n in node.Walk():
+            if n.Name == name:
+                return n
+    else:
+        raise AttributeError(f"Node supplied has no attribute: Walk")
+    raise NodeNotFoundError(f'Node with supplied name: `{name}` was not found')
+    #
+def get_node_by_path(node, node_path):
+    """
+    get a node by path
+    @param node: node object or APSIM.Core object
+    @param node_path: node path
+    @return: node object if found. raise NodeNotFoundError
+    """
+    if hasattr(node, 'Node'):
+        node = node.Node
+    if hasattr(node, 'Walk'):
+        for n in node.Walk():
+            if n.get_FullNameAndPath() == node_path:
+                return n
+    else:
+        raise AttributeError(f"Node supplied has no attribute: Walk")
+    raise NodeNotFoundError(f'Node with supplied path: `{node_path}` was not found')
 
+
+def get_attributes(obj):
+    d = dir(obj)
+    for i in d:
+        if not i.startswith('__'):
+            print(i)
+if __name__ =='__main__':
+     load = load_apsim_model('Maize')
+     p, model, model2 = load.Node, load.IModel, load.IModel
+     for mm in p.Walk():
+         mod = mm.get_Model()
+         typ = mod.GetType()
+
+
+
+         print(mm.get_Model().GetType())
          if mm.Name =='Sow using a variable rule':
              mm.get_FullNameAndPath()
              break
@@ -299,3 +374,8 @@ if __name__ =='__main__':
         ws
      for pp in p.WalkParents():
          print(pp)
+     ch =  list(load.Simulations.GetChildren())
+     xc=  ch[0].GetChildren()
+     print([i.Name for i in xc])
+
+     odm = load_from_path(load.path)

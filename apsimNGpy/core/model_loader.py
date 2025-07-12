@@ -185,10 +185,13 @@ def load_apsim_model(model=None, out_path=None, file_load_method='string', met_f
     else:
         _Model = Model
     print(dir(_Model))
-    datastore = _Model.GetChildren[Models.Storage.DataStore]().FileName
-    DataStore = _Model.FindChild[Models.Storage.DataStore]()
-    return ModelData(IModel=_Model, path=out['path'], datastore=datastore, DataStore=DataStore, results=None,
-                      met_path=met_file)
+    try:
+        datastore = _Model.FindChild[Models.Storage.DataStore]().FileName
+        DataStore = _Model.FindChild[Models.Storage.DataStore]()
+        return ModelData(IModel=_Model, path=out['path'], datastore=datastore, DataStore=DataStore, results=None,
+                          met_path=met_file)
+    except AttributeError as e:
+      return _Model.Node
 
 
 def recompile(_model, out=None, met_path=None, ):
@@ -285,3 +288,14 @@ def run_model_externally(model, table, datastore):
 #
 #
 #
+if __name__ =='__main__':
+     p = load_apsim_model('Maize')
+     for mm in p.Walk():
+
+         if mm.Name =='Sow using a variable rule':
+             mm.get_FullNameAndPath()
+             break
+     for ws in p.WalkScoped():
+        ws
+     for pp in p.WalkParents():
+         print(pp)

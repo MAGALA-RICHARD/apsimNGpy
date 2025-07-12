@@ -9,7 +9,7 @@ Alert
 
    **✅ Workaround:** We strongly recommend using an **earlier version of APSIM Next Gen** (e.g., versions prior to the structural changes) until this issue is resolved.
 
-   **🔧 Status:** The _apsimNGpy_ developer team is actively working to update the package to accommodate these upstream changes.
+   **🔧 Status:** The __apsimNGpy__ developer team is actively working to update the package to accommodate these upstream changes.
 
    We appreciate your patience and understanding. If you encounter specific issues, please report them on `GitHub Issues <https://github.com/MAGALA-RICHARD/apsimNGpy/issues/29>`_ or contact the development team.
 

@@ -43,6 +43,7 @@ APSIMX file editing, seamless weather data retrieval, optimization, and efficien
 
 .. _Python: https://www.python.org/
 
+.. include:: alert.rst
 
 Requirements
 ***********************************************************************************

@@ -264,6 +264,18 @@ def recompile(_model, out=None, met_path=None, ):
                      Node=_Model.Node,
                      Simulations=Model)
 
+def  read_from_string(model):
+    if str(model).endswith('.apsimx'):
+        path2file = model
+    else:
+        path2file = load_crop_from_disk(model, out='../testformatx.apsimx')
+
+    f_name = realpath(path2file)
+
+    with open(f_name, "r+", encoding='utf-8') as apsimx:
+        app_ap = json.load(apsimx)
+    string_name = json.dumps(app_ap)
+    return NEW_APSIM_CORE.FileFormat.ReadFromString[Models.Core.Simulations](string_name, None, True )
 
 @timer
 def run_model_externally(model):

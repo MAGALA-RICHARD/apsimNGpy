@@ -15,7 +15,7 @@ pyth = pythonet_config
 from System.Collections.Generic import *
 from System import *
 import Models
-import APSIM.Core as NEW_APSIM_CORE
+
 import json
 from os.path import (realpath)
 from os import chdir
@@ -185,7 +185,7 @@ def load_apsim_model(model=None, out_path=None, file_load_method='string', met_f
     else:
         _Model = Model
     print(dir(_Model))
-    datastore = _Model.GetChildren[Models.Storage.DataStore]().FileName
+    datastore = _Model.FindChild[Models.Storage.DataStore]().FileName
     DataStore = _Model.FindChild[Models.Storage.DataStore]()
     return ModelData(IModel=_Model, path=out['path'], datastore=datastore, DataStore=DataStore, results=None,
                       met_path=met_file)

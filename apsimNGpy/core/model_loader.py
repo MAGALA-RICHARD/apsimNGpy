@@ -274,8 +274,10 @@ def  read_from_string(model):
 
     with open(f_name, "r+", encoding='utf-8') as apsimx:
         app_ap = json.load(apsimx)
-    string_name = json.dumps(app_ap)
-    return NEW_APSIM_CORE.FileFormat.ReadFromString[Models.Core.Simulations](string_name, None, True )
+        string_name = json.dumps(app_ap)
+        from Models.Core import Simulations
+        model= NEW_APSIM_CORE.FileFormat.ReadFromString[Simulations](string_name, None, True ).Model
+        return model
 
 @timer
 def run_model_externally(model):
@@ -363,12 +365,22 @@ def get_node_by_path(node, node_path):
         raise AttributeError(f"Node supplied has no attribute: Walk")
     raise NodeNotFoundError(f'Node with supplied path: `{node_path}` was not found')
 
+def get_node_string(node):
+    """
+
+    @param node: node object
+    @return: a string name for the node e.g., Models.Clock
+    """
+    return node.ToString()
+
 
 def get_attributes(obj):
     d = dir(obj)
     for i in d:
         if not i.startswith('__'):
             print(i)
+
+
 if __name__ =='__main__':
      load = load_apsim_model('Maize')
      p, model, model2 = load.Node, load.IModel, load.IModel
@@ -376,10 +388,10 @@ if __name__ =='__main__':
          mod = mm.get_Model()
          typ = mod.GetType()
 
-
-
          print(mm.get_Model().GetType())
-         if mm.Name =='Sow using a variable rule':
+         if mm.Name =='Clock':
+             mod = mm.get_Model()
+             print(mod.GetType(), 'end')
              mm.get_FullNameAndPath()
              break
      for ws in p.WalkScoped():
@@ -390,4 +402,14 @@ if __name__ =='__main__':
      xc=  ch[0].GetChildren()
      print([i.Name for i in xc])
 
-     odm = load_from_path(load.path)
+     dat= read_from_string("Maize")
+     odm = load_from_path(load.path).Node.Model
+     sim = list(dat.GetChildren())[0]
+     chid = list(sim.GetChildren())[0]
+     from typing import cast
+     from System import DateTime
+     from datetime import datetime
+     cas = cast(mod, Models.Clock)
+
+
+

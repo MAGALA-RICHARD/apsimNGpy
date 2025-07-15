@@ -3,7 +3,7 @@ import gc
 import json
 import os
 import sys
-
+from apsimNGpy.core.model_loader import load_as_dict
 from apsimNGpy.core.config import load_crop_from_disk
 from os.path import realpath
 from collections import OrderedDict

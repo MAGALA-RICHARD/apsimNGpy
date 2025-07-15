@@ -184,7 +184,7 @@ def load_apsim_model(model=None, out_path=None, file_load_method='string', met_f
         _Model = Model.get_NewModel()
     else:
         _Model = Model
-    print(dir(_Model))
+
     datastore = _Model.FindChild[Models.Storage.DataStore]().FileName
     DataStore = _Model.FindChild[Models.Storage.DataStore]()
     return ModelData(IModel=_Model, path=out['path'], datastore=datastore, DataStore=DataStore, results=None,

@@ -3304,7 +3304,7 @@ if __name__ == '__main__':
     home = Path.home()
 
     # model = load_default_simulations('maize')
-    model = CoreModel(model='Maize', out=home / 'test_.apsimx')
+    model = CoreModel(model='Maize', out=home / 'tesit_.apsimx')
 
     # for rn in ['Maize, Soybean, Wheat', 'Maize', 'Soybean, Wheat']:
     a = perf_counter()

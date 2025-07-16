@@ -174,7 +174,11 @@ def load_apsim_model(model=None, out_path=None, file_load_method='string', met_f
     return ModelData(IModel=_Model, path=out['path'], datastore=datastore, DataStore=DataStore, results=None,
                       met_path=met_file)
 
-
+def load_as_dict(file: Models.Core.ApsimFile) -> dict:
+    """loads apsimx model from a pathlib"""
+    model_simulations = load_from_path(file)
+    json_string = Models.Core.ApsimFile.FileFormat.WriteToString(model_simulations)
+    return json.loads(json_string)
 def recompile(_model, out=None, met_path=None, ):
     """ recompile without saving to disk useful for recombiling the same model on the go after updating management scripts
 
@@ -261,7 +265,6 @@ if __name__ == '__main__':
     maze.run(report_name='Report')
     me1 = maze.results['Maize.Total.Wt'].mean()
     maze.update_mgt(management=({"Name": 'Fertilise at sowing', 'Amount': 300},))
-    maze.extract_user_input('Fertilise at sowing')
     maze.run(report_name='Report', verbose=True)
     me2 = maze.results['Maize.Total.Wt'].mean()
     print(me2)

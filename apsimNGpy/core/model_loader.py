@@ -387,6 +387,9 @@ if __name__ =='__main__':
      for mm in p.Walk():
          mod = mm.get_Model()
          typ = mod.GetType()
+         get_attributes(mm)
+         hac  =mm.GetHashCode()
+         print(hac)
 
          print(mm.get_Model().GetType())
          if mm.Name =='Clock':

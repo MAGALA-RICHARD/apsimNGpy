@@ -14,7 +14,8 @@ f_name = realpath(path2file)
 import datetime
 import re
 
-with open(f_name, "r+", encoding='utf-8') as apsimx:
+temp= r"C:\Users\vanguard\Downloads\maize.apsimx"
+with open(temp, "r+", encoding='utf-8') as apsimx:
     data = OrderedDict()
     app_ap = data | json.load(apsimx)
 

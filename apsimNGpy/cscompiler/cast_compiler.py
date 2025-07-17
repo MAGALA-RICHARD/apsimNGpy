@@ -43,4 +43,4 @@ def add_ref_cast(verbose=False):
         logger.info('Cast loaded successfully from {}'.format(cast_path))
 
 
-add_ref_cast(True)
+

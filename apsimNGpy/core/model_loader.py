@@ -427,3 +427,8 @@ if __name__ == '__main__':
 
     se = get_attributes(sim)
     print(se)
+
+    import clr
+
+    clr.AddReference(r"D:\package\src\apsimNGpy\cscompiler\bin\Debug\net48\cast.dll")
+    from CastBridge import CastHelpers

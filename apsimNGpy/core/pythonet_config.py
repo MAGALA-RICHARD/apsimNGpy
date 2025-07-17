@@ -2,12 +2,15 @@ import os
 import sys as system
 import pythonnet
 from apsimNGpy.core import config
+
 aPSim_PATH = config.get_apsim_bin_path()
+
 
 def is_file_format_modified(models):
     if getattr(models.Core.ApsimFile, "FileFormat", None):
         return False
     return True
+
 
 def start_pythonnet():
     try:
@@ -59,14 +62,11 @@ def load_pythonnet():
 
     MMODELSS = clr.AddReference("Models")
     # apsimNG = clr.AddReference('ApsimNG')
-    #import Models
+    # import Models
     # if is_file_format_modified(Models):
     #        APSIM  =clr.AddReference('APSIM.Core')
     APSIM = clr.AddReference('APSIM.Core')
     clr.AddReference('apsim')
-    clr.AddReference('IdentityModel')
-
-
 
     # return lm, sys, pythonnet.get_runtime_info()
 
@@ -81,8 +81,8 @@ from Models.Soils import Soil, Physical
 import Models
 
 from System import *
-Models = Models
 
+Models = Models
 
 # Example usage:
 if __name__ == '__main__':

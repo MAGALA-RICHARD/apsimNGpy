@@ -200,7 +200,6 @@ def load_apsim_model(model=None, out_path=None, file_load_method='string', met_f
     else:
         _Model = Model
 
-
     if hasattr(_Model, "FindChild"):
         DataStore = _Model.FindChild[Models.Storage.DataStore]()
 

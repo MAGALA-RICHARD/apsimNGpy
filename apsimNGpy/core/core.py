@@ -42,6 +42,7 @@ from typing import Any
 from apsimNGpy.settings import SCRATCH, logger, MissingOption
 from apsimNGpy.core.plotmanager import PlotManager
 
+
 def _looks_like_path(value: str) -> bool:
     return any(sep in value for sep in (os.sep, '/', '\\')) or value.endswith('.apsimx')
 
@@ -254,8 +255,8 @@ class CoreModel(PlotManager):
         """
         _path = file_name or self.path
         self.path = _path
-        save_model_to_file(self.Simulations, out=_path)
-
+        sva = getattr(self.Simulations, 'Node', self.Simulations)
+        save_model_to_file(sva, out=_path)
 
         model_info = recompile(self)  # load_apsim_model(_path)
         self.restart_model(model_info)
@@ -342,7 +343,6 @@ class CoreModel(PlotManager):
                 logger.info(msg)
                 raise RuntimeError(msg)
         if self.run_method == run_p:
-
             dfs = [dataview_to_dataframe(self, rp) for rp in _reports]
             return pd.concat(dfs)
 
@@ -864,7 +864,7 @@ class CoreModel(PlotManager):
     def detect_model_type(self, model_instance: Union[str, Models]):
         """Detects the model type from a given APSIM model instance or path string."""
         if not isinstance(model_instance, str):
-            model= model_instance
+            model = model_instance
 
         else:
             # Otherwise, assume it's a path and try to retrieve the model
@@ -873,8 +873,6 @@ class CoreModel(PlotManager):
             if model is None:
                 raise ValueError(f"No model found associated with: {model_instance}")
             model = model.Value
-
-
 
         return type(model)
 
@@ -928,8 +926,8 @@ class CoreModel(PlotManager):
             case Models.Surface.SurfaceOrganicMatter:
                 if kwargs == {}:
                     raise ValueError(f"Please supply at least one parameter: value \n '{', '.join({'SurfOM',
-                                                                                             'InitialCPR', 'InitialResidueMass',
-                                                                                             'InitialCNR', 'IncorporatedP', })}' for {path}")
+                                                                                                   'InitialCPR', 'InitialResidueMass',
+                                                                                                   'InitialCNR', 'IncorporatedP', })}' for {path}")
                 self._set_surface_organic_matter(values, param_values=kwargs, verbose=verbose)
             case _:
                 raise NotImplementedError(f"No edit method implemented for model type {type(values)}")
@@ -1720,7 +1718,7 @@ class CoreModel(PlotManager):
                                     parameters=parameters, **kwargs)
 
     def inspect_model_parameters_by_path(self, path, *,
-                                 parameters: Union[list, set, tuple, str] = None):
+                                         parameters: Union[list, set, tuple, str] = None):
         """
         Inspect and extract parameters from a model component specified by its path.
 
@@ -1751,7 +1749,6 @@ class CoreModel(PlotManager):
         mod_obj = model_by_path.Value
 
         return extract_value(mod_obj, parameters=parameters)
-
 
     def edit_cultivar(self, *, CultivarName: str, commands: str, values: Any, **kwargs):
         """
@@ -2922,16 +2919,15 @@ class CoreModel(PlotManager):
         self.experiment_created = True
 
     def refresh_model(self):
-       """
+        """
        for methods that will alter the simulation objects and need refreshing the second time we call
        @return: self for method chaining
        """
-       if not self._intact_model:
-           old_model = ModelTools.CLONER(self.Simulations)
-           self._intact_model.append(old_model)
-       if self._intact_model:
-           self.Simulations = self._intact_model[0]
-
+        if not self._intact_model:
+            old_model = ModelTools.CLONER(self.Simulations)
+            self._intact_model.append(old_model)
+        if self._intact_model:
+            self.Simulations = self._intact_model[0]
 
     def add_factor(self, specification: str, factor_name: str = None, **kwargs):
         """

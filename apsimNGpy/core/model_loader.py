@@ -289,7 +289,6 @@ def run_model_externally(model):
     # Run APSIM with the specified file
     try:
         result = subprocess.run([apsim_exe, apsim_file])
-
         print("APSIM Run Successful!")
 
         # df = read_db_table(datastore, table)

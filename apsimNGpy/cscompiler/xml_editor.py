@@ -5,7 +5,7 @@ import os
 APSIM_BIN_DIR = get_apsim_bin_path()
 
 
-def update_hint_paths(csproj_path, models_dll_path, apsim_shared_path):
+def _update_hint_paths(csproj_path, models_dll_path, apsim_shared_path):
     tree = ET.parse(csproj_path)
     root = tree.getroot()
 
@@ -24,17 +24,14 @@ def update_hint_paths(csproj_path, models_dll_path, apsim_shared_path):
                 hint.text = apsim_shared_path
 
     tree.write(csproj_path, encoding='utf-8', xml_declaration=True)
-    print(f"Updated HintPaths in {csproj_path}")
+
 
 
 # Example usage
-update_hint_paths(
-    csproj_path=os.path.abspath('./cast.csproj'),
-    models_dll_path=os.path.join(APSIM_BIN_DIR, "Models.dll"),
-    apsim_shared_path=os.path.join(APSIM_BIN_DIR, "APSIM.Shared.dll")
-)
+def update_csproj_hint_paths():
+    _update_hint_paths(
+        csproj_path=os.path.abspath('./cast.csproj'),
+        models_dll_path=os.path.join(APSIM_BIN_DIR, "Models.dll"),
+        apsim_shared_path=os.path.join(APSIM_BIN_DIR, "APSIM.Shared.dll")
+    )
 
-from apsimNGpy.core.pythonet_config import start_pythonnet
-import clr
-start_pythonnet()
-clr.AddReference

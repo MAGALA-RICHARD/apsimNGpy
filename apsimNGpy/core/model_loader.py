@@ -286,7 +286,6 @@ def run_model_externally(model):
 
     # Define the APSIMX file path
     apsim_file = model
-
     # Run APSIM with the specified file
     try:
         result = subprocess.run([apsim_exe, apsim_file])

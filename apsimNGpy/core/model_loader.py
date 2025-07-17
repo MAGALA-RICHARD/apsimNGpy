@@ -30,7 +30,9 @@ from apsimNGpy.core_utils.database_utils import read_db_table
 from apsimNGpy.settings import SCRATCH
 from dataclasses import dataclass
 from typing import Any
-
+from apsimNGpy.cscompiler.cast_compiler import add_ref_cast
+add_ref_cast(verbose=True)
+from CastBridge import CastHelpers
 
 @dataclass
 class ModelData:
@@ -132,10 +134,8 @@ def load_from_path(path2file, method='string'):
             _model = NEW_APSIM_CORE.FileFormat.ReadFromString[Models.Core.Simulations](string_name, None,
                                                                                        True,
                                                                                        fileName=f_name)
-            print(_model, 'be')
-            __model = _model.get_Model()
-            print(__model, 'af')  # output Models.Core.Simulations
-            print(__model == _model)
+            __model = CastHelpers.CastAs[Models.Core.Simulations](_model.Model)
+
 
 
     else:
@@ -394,5 +394,4 @@ if __name__ == '__main__':
     import clr
 
     from apsimNGpy.cscompiler.cast_compiler import add_ref_cast
-    add_ref_cast(verbose=True)
-    from CastBridge import CastHelpers
+

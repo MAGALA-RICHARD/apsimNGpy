@@ -90,11 +90,11 @@ def save_model_to_file(_model, out=None):
 
 
 def covert_to_model(object_to_convert):
-    if pythonet_config.is_file_format_modified(Models) is False:
+    if pythonet_config.is_file_format_modified() is False:
         if isinstance(object_to_convert, Models.Core.ApsimFile.ConverterReturnType):
             return object_to_convert.get_NewModel()
         return object_to_convert
-    if pythonet_config.is_file_format_modified(Models):
+    if pythonet_config.is_file_format_modified():
         d = dir(object_to_convert)
 
         return object_to_convert
@@ -122,7 +122,7 @@ def load_from_path(path2file, method='string'):
         app_ap = json.load(apsimx)
     string_name = json.dumps(app_ap)
     if method == 'string':
-        if not pythonet_config.is_file_format_modified(Models):
+        if not pythonet_config.is_file_format_modified():
             __model = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](string_name, None,
                                                                                                True,
                                                                                                fileName=f_name)
@@ -307,43 +307,6 @@ def run_model_externally(model):
         print(e.stderr)  # Print APSIM error message if execution fails
 
 
-# if __name__ == '__main__':
-#     import time
-#     from pathlib import Path
-#     from apsimNGpy.core.base_data import load_default_simulations
-#
-#     tt = Path("test_folder")
-#     tt.mkdir(parents=True, exist_ok=True)
-#     os.chdir(tt)
-#     maze = load_default_simulations('Maize', )
-#     soy = load_default_simulations('soybean', )
-#     ap =load_apsim_model('Soybean')
-#     # maze.initialise_model()
-#     chdir(Path.home())
-#     a = time.perf_counter()
-#     mod = load_from_path(maze.path, method='string')
-#     b = time.perf_counter()
-#     print(b - a, 'seconds', 'loading from file')
-#     aa = time.perf_counter()
-#     model1 = load_from_path(soy.path, method='string')
-#     print(time.perf_counter() - aa, 'seconds', 'loading from string')
-#
-#     sv = save_model_to_file(maze.model_info.IModel)
-#     from apsimNGpy.core.core import CoreModel
-#     from apsimNGpy.core.apsim import ApsimModel
-#
-#     maze.update_mgt(management=({"Name": 'Fertilise at sowing', 'Amount': 10},))
-#     maze.run(report_name='Report')
-#     me1 = maze.results['Maize.Total.Wt'].mean()
-#     maze.update_mgt(management=({"Name": 'Fertilise at sowing', 'Amount': 300},))
-#     maze.extract_user_input('Fertilise at sowing')
-#     maze.run(report_name='Report', verbose=True)
-#     me2 = maze.results['Maize.Total.Wt'].mean()
-#     print(me2)
-#     dd = run_model_externally(maze.path, 'report', maze.datastore)
-#
-#
-#
 def get_node_by_name(node, name):
     if hasattr(node, 'Node'):
         node = node.Node
@@ -430,5 +393,6 @@ if __name__ == '__main__':
 
     import clr
 
-    clr.AddReference(r"D:\package\src\apsimNGpy\cscompiler\bin\Debug\net48\cast.dll")
+    from apsimNGpy.cscompiler.cast_compiler import add_ref_cast
+    add_ref_cast(verbose=True)
     from CastBridge import CastHelpers

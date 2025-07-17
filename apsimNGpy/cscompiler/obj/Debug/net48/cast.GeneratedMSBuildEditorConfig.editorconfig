@@ -1,0 +1,5 @@
+is_global = true
+build_property.RootNamespace = cast
+build_property.ProjectDir = D:\package\src\apsimNGpy\cscompiler\
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = 

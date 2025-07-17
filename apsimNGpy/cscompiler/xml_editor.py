@@ -1,7 +1,7 @@
 import xml.etree.ElementTree as ET
 from apsimNGpy.core.config import get_apsim_bin_path
 import os
-
+cwd = os.path.dirname(os.path.realpath(__file__))
 APSIM_BIN_DIR = get_apsim_bin_path()
 
 
@@ -30,7 +30,7 @@ def _update_hint_paths(csproj_path, models_dll_path, apsim_shared_path):
 # Example usage
 def update_csproj_hint_paths():
     _update_hint_paths(
-        csproj_path=os.path.abspath('./cast.csproj'),
+        csproj_path=os.path.join(cwd, 'cast.csproj'),
         models_dll_path=os.path.join(APSIM_BIN_DIR, "Models.dll"),
         apsim_shared_path=os.path.join(APSIM_BIN_DIR, "APSIM.Shared.dll")
     )

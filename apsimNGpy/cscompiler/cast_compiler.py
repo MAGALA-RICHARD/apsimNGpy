@@ -3,7 +3,9 @@ import os
 from pprint import pprint
 from apsimNGpy.settings import logger
 from pathlib import Path
+from apsimNGpy.cscompiler.xml_editor import update_csproj_hint_paths
 
+update_csproj_hint_paths()
 
 # Set working directory
 project_path = str(Path(__file__).parent.absolute())

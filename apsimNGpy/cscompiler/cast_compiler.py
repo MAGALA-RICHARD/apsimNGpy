@@ -4,8 +4,9 @@ from pprint import pprint
 from apsimNGpy.settings import logger
 from pathlib import Path
 
+
 # Set working directory
-project_path = os.path.abspath(r"./")
+project_path = str(Path(__file__).parent.absolute())
 build_config = "Debug"
 
 
@@ -14,7 +15,7 @@ def compile_cast():
     cmd = ["dotnet", "build", "--configuration", build_config]
 
     try:
-        result = subprocess.run(cmd, cwd=project_path, check=True, capture_output=True, text=True)
+        result = subprocess.run(cmd, cwd=str(project_path), check=True, capture_output=True, text=True)
         logger.info('✔ Build succeeded!')
 
     except subprocess.CalledProcessError as e:

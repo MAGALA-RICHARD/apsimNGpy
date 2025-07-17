@@ -2,12 +2,20 @@ import os
 import sys as system
 import pythonnet
 from apsimNGpy.core import config
+
 aPSim_PATH = config.get_apsim_bin_path()
 
-def is_file_format_modified(models):
-    if getattr(models.Core.ApsimFile, "FileFormat", None):
-        return False
-    return True
+
+def is_file_format_modified():
+    """
+    Checks if the APSIM.CORE.dll is present in the bin path
+    @return: bool
+    """
+    pp = os.path.join(aPSim_PATH, "APSIM.CORE.dll")
+    if os.path.exists(pp):
+        return True
+    return False
+
 
 def start_pythonnet():
     try:
@@ -58,12 +66,11 @@ def load_pythonnet():
     SYSTEM = clr.AddReference("System")
 
     MMODELSS = clr.AddReference("Models")
-    apsimNG = clr.AddReference('ApsimNG')
-    import Models
-    if is_file_format_modified(Models):
-           APSIM  =clr.AddReference('APSIM.Core')
+    # apsimNG = clr.AddReference('ApsimNG')
 
-
+    if is_file_format_modified():
+        APSIM = clr.AddReference('APSIM.Core')
+    clr.AddReference('apsim')
 
     # return lm, sys, pythonnet.get_runtime_info()
 
@@ -78,8 +85,8 @@ from Models.Soils import Soil, Physical
 import Models
 
 from System import *
-Models = Models
 
+Models = Models
 
 # Example usage:
 if __name__ == '__main__':

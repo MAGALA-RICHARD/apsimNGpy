@@ -58,10 +58,13 @@ def load_pythonnet():
     SYSTEM = clr.AddReference("System")
 
     MMODELSS = clr.AddReference("Models")
-    apsimNG = clr.AddReference('ApsimNG')
-    import Models
-    if is_file_format_modified(Models):
-           APSIM  =clr.AddReference('APSIM.Core')
+    # apsimNG = clr.AddReference('ApsimNG')
+    #import Models
+    # if is_file_format_modified(Models):
+    #        APSIM  =clr.AddReference('APSIM.Core')
+    APSIM = clr.AddReference('APSIM.Core')
+    clr.AddReference('apsim')
+    clr.AddReference('IdentityModel')
 
 
 

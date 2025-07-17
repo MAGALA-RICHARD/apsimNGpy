@@ -10,12 +10,14 @@ from typing import Union
 from apsimNGpy.core import pythonet_config
 from apsimNGpy.core_utils.utils import timer
 from apsimNGpy.exceptions import NodeNotFoundError
+
 pyth = pythonet_config
 # now we can safely import C# libraries
 from System.Collections.Generic import *
 from System import *
 import Models
 import APSIM.Core as NEW_APSIM_CORE
+from APSIM.Core import Node
 import json
 from os.path import (realpath)
 from os import chdir
@@ -29,6 +31,7 @@ from apsimNGpy.settings import SCRATCH
 from dataclasses import dataclass
 from typing import Any
 
+
 @dataclass
 class ModelData:
     IModel: Models
@@ -41,21 +44,23 @@ class ModelData:
     Simulations: Any = None
 
 
-
 def load_from_dict(dict_data, out):
     str_ = json.dumps(dict_data)
     out = realpath(out)
     return Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](str_, None, True,
                                                                                     fileName=out)
 
+
 version = apsim_version()
+
 
 def copy_file(source: Union[str, Path], destination: Union[str, Path] = None,
               wd: Union[str, Path] = None) -> Union[str, Path]:
     if not wd:
         wd = SCRATCH
 
-    destine_path = f"{str(destination).replace('.apsimx', version)}" +'.apsimx' if destination else os.path.join(wd, f"temp_{uuid.uuid1()}_{version}.apsimx")
+    destine_path = f"{str(destination).replace('.apsimx', version)}" + '.apsimx' if destination else os.path.join(wd,
+                                                                                                                  f"temp_{uuid.uuid1()}_{version}.apsimx")
     shutil.copy2(source, destine_path)
     return destine_path
 
@@ -90,7 +95,7 @@ def covert_to_model(object_to_convert):
             return object_to_convert.get_NewModel()
         return object_to_convert
     if pythonet_config.is_file_format_modified(Models):
-        d=dir(object_to_convert)
+        d = dir(object_to_convert)
 
         return object_to_convert
 
@@ -120,17 +125,17 @@ def load_from_path(path2file, method='string'):
         if not pythonet_config.is_file_format_modified(Models):
             __model = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](string_name, None,
                                                                                                True,
-                                                                                           fileName=f_name)
+                                                                                               fileName=f_name)
             __model = __model.NewModel
         else:
 
             _model = NEW_APSIM_CORE.FileFormat.ReadFromString[Models.Core.Simulations](string_name, None,
-                                                                                               True,
-                                                                                            fileName=f_name)
+                                                                                       True,
+                                                                                       fileName=f_name)
             print(_model, 'be')
             __model = _model.get_Model()
-            print(__model, 'af') # output Models.Core.Simulations
-            print(__model==_model)
+            print(__model, 'af')  # output Models.Core.Simulations
+            print(__model == _model)
 
 
     else:
@@ -200,7 +205,6 @@ def load_apsim_model(model=None, out_path=None, file_load_method='string', met_f
     else:
         _Model = Model
 
-
     if hasattr(_Model, "FindChild"):
         DataStore = _Model.FindChild[Models.Storage.DataStore]()
 
@@ -241,9 +245,7 @@ def recompile(_model, out=None, met_path=None, ):
     # Serialize the model to JSON string
     json_string = Models.Core.ApsimFile.FileFormat.WriteToString(_model.Simulations)
 
-    Model = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](json_string, None,
-                                                                                     True,
-                                                                                     fileName=str(final_out_path))
+    Model = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](json_string)
     # Model = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](json_string, None, True,
     #                                                                                  fileName=final_out_path)
     _Model = False
@@ -257,14 +259,15 @@ def recompile(_model, out=None, met_path=None, ):
         datastore = None
         DataStore = None
     # need to make ModelData a constant and named outside the script for consistency across scripts
-    #ModelData = namedtuple('model_data', ['IModel', 'path', 'datastore', "DataStore", 'results', 'met_path'])
+    # ModelData = namedtuple('model_data', ['IModel', 'path', 'datastore', "DataStore", 'results', 'met_path'])
     return ModelData(IModel=_Model, path=final_out_path, datastore=datastore, DataStore=DataStore,
                      results=None,
                      met_path=met_path,
                      Node=_Model.Node,
                      Simulations=Model)
 
-def  read_from_string(model):
+
+def read_from_string(model):
     if str(model).endswith('.apsimx'):
         path2file = model
     else:
@@ -276,8 +279,12 @@ def  read_from_string(model):
         app_ap = json.load(apsimx)
         string_name = json.dumps(app_ap)
         from Models.Core import Simulations
-        model= NEW_APSIM_CORE.FileFormat.ReadFromString[Simulations](string_name, None, True ).Model
+        model = NEW_APSIM_CORE.FileFormat.ReadFromString[type(Models.Core.Simulations())](string_name,
+                                                                                          initInBackground=True).Model
+        if not isinstance(model, Models.Core.Simulations):
+            print('Model is not an instance of Models.Core.Simulations\n==============================')
         return model
+
 
 @timer
 def run_model_externally(model):
@@ -348,6 +355,8 @@ def get_node_by_name(node, name):
         raise AttributeError(f"Node supplied has no attribute: Walk")
     raise NodeNotFoundError(f'Node with supplied name: `{name}` was not found')
     #
+
+
 def get_node_by_path(node, node_path):
     """
     get a node by path
@@ -365,6 +374,7 @@ def get_node_by_path(node, node_path):
         raise AttributeError(f"Node supplied has no attribute: Walk")
     raise NodeNotFoundError(f'Node with supplied path: `{node_path}` was not found')
 
+
 def get_node_string(node):
     """
 
@@ -375,44 +385,45 @@ def get_node_string(node):
 
 
 def get_attributes(obj):
+    attributes = set()
     d = dir(obj)
     for i in d:
         if not i.startswith('__'):
-            print(i)
+            attributes.add(i)
+    return attributes
 
 
-if __name__ =='__main__':
-     load = load_apsim_model('Maize')
-     p, model, model2 = load.Node, load.IModel, load.IModel
-     for mm in p.Walk():
-         mod = mm.get_Model()
-         typ = mod.GetType()
-         get_attributes(mm)
-         hac  =mm.GetHashCode()
-         print(hac)
+if __name__ == '__main__':
+    from pprint import pprint
 
-         print(mm.get_Model().GetType())
-         if mm.Name =='Clock':
-             mod = mm.get_Model()
-             print(mod.GetType(), 'end')
-             mm.get_FullNameAndPath()
-             break
-     for ws in p.WalkScoped():
+    load = load_apsim_model('Maize')
+    p, model, model2 = load.Node, load.IModel, load.IModel
+    for mm in p.Walk():
+        mod = mm.get_Model()
+        typ = mod.GetType()
+        get_attributes(mm)
+        hac = mm.GetHashCode()
+
+        if mm.Name == 'B_110':
+            mod = mm.get_Model()
+            print(mod.GetType(), 'end')
+            mm.get_FullNameAndPath()
+            break
+    for ws in p.WalkScoped():
         ws
-     for pp in p.WalkParents():
-         print(pp)
-     ch =  list(load.Simulations.GetChildren())
-     xc=  ch[0].GetChildren()
-     print([i.Name for i in xc])
+    for pp in p.WalkParents():
+        print(pp)
+    ch = list(load.Simulations.GetChildren())
+    xc = ch[0].GetChildren()
+    # print([i.Name for i in xc])
 
-     dat= read_from_string("Maize")
-     odm = load_from_path(load.path).Node.Model
-     sim = list(dat.GetChildren())[0]
-     chid = list(sim.GetChildren())[0]
-     from typing import cast
-     from System import DateTime
-     from datetime import datetime
-     cas = cast(mod, Models.Clock)
+    dat = read_from_string("Maize")
+    odm = load_from_path(load.path).Node.Model
+    sim = list(dat.GetChildren())[0]
+    chid = list(sim.GetChildren())[0]
+    from typing import cast
+    from System import DateTime
+    from datetime import datetime
 
-
-
+    se = get_attributes(sim)
+    print(se)

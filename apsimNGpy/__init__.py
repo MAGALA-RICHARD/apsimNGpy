@@ -3,11 +3,8 @@ import shutil
 
 from apsimNGpy.core.config import get_apsim_bin_path
 from apsimNGpy.core_utils.cs_utils import start_pythonnet
-start_pythonnet()
-import clr
-clr.AddReference('dll/CastBridge')
-from CastBridge import CastHelper
-__all__ = ['CastHelper']
+#from apsimNGpy.core_utils.cs_utils import CastHelper
+__all__ = ['start_pythonnet']
 
 from apsimNGpy.core.config import (
     get_apsim_bin_path,

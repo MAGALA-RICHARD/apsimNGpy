@@ -1,6 +1,7 @@
 from apsimNGpy.core.apsim import ApsimModel
 from apsimNGpy.core._modelhelpers import Models, ModelTools
 
+
 class CompareCultivar(ApsimModel):
     def __init__(self, model, out_path=None):
         super().__init__(model=model, out_path=out_path)
@@ -13,12 +14,11 @@ class CompareCultivar(ApsimModel):
             self.base_simulations = base_sim
         return self.base_simulations
 
-    def simulate_different_locations(self, locations:list[tuple]):
+    def simulate_different_locations(self, locations: list[tuple]):
         sim = self.refresh_base_simulations()
 
         sims = self.Simulations.FindAllInScope[Models.Core.Simulation]()
         for s in sims:
-
             ModelTools.DELETE(s)
         for lonlat in locations:
             sim_name = f"sim_{lonlat[0]}_{lonlat[1]}"
@@ -27,23 +27,20 @@ class CompareCultivar(ApsimModel):
             clone_sim.Name = sim_name
             ModelTools.ADD(clone_sim, self.Simulations)
 
-
-
     def simulate_different_cultivars(self, cultivar_names):
         cultivars = self.inspect_model('Cultivar', fullpath=False)
         lower = dict(zip([i.lower() for i in cultivars], cultivars))
 
         return lower
 
-
     model = ApsimModel('Maize')
     model.add_factor(specification="[Sow using a variable rule].Script.CultivarName = B_110, A_90")
 
 
-
 if __name__ == '__main__':
-    #model = CompareCultivar(model='Maize')
+    # model = CompareCultivar(model='Maize')
     import pandas as pd
+
     mod = CompareCultivar('Maize')
     lonlat_iowa = [
         (-96.4003, 42.5006),  # Sioux City (NW)

@@ -1,0 +1,11 @@
+SimulationName,SimulationID,CheckpointID,CheckpointName,Clock.Today,Maize.AboveGround.N,Maize.AboveGround.Wt,Maize.Grain.N,Maize.Grain.NumberFunction,Maize.Grain.Size,Maize.Grain.Total.Wt,Maize.Grain.Wt,Maize.Phenology.CurrentStageName,Maize.Total.Wt,Yield,Zone
+Simulation,1,1,Current,1991-05-28,15.578,1603.310,11.178,3043.698,0.278,846.962,846.962,HarvestRipe,1728.427,8469.616,Field
+Simulation,1,1,Current,1992-04-09,9.684,849.734,6.226,1707.246,0.274,467.451,467.451,HarvestRipe,922.394,4674.514,Field
+Simulation,1,1,Current,1993-03-16,1.862,182.767,0.752,182.533,0.304,55.502,55.502,HarvestRipe,204.109,555.021,Field
+Simulation,1,1,Current,1994-03-15,8.344,795.134,4.887,1545.553,0.227,350.427,350.427,HarvestRipe,869.243,3504.275,Field
+Simulation,1,1,Current,1995-04-04,16.482,1525.129,10.464,2859.155,0.274,782.012,782.012,HarvestRipe,1665.484,7820.119,Field
+Simulation,1,1,Current,1996-03-15,18.309,1968.461,11.254,2945.305,0.300,882.352,882.352,HarvestRipe,2124.740,8823.516,Field
+Simulation,1,1,Current,1997-04-05,11.094,1111.598,5.044,1271.381,0.299,380.184,380.184,HarvestRipe,1261.675,3801.835,Field
+Simulation,1,1,Current,1998-03-06,8.164,837.748,3.955,965.454,0.305,294.300,294.300,HarvestRipe,951.303,2942.999,Field
+Simulation,1,1,Current,1999-04-10,17.893,1835.874,11.081,2808.459,0.298,837.993,837.993,HarvestRipe,1987.107,8379.928,Field
+Simulation,1,1,Current,2000-04-05,16.401,1541.244,9.751,2538.920,0.291,739.347,739.347,HarvestRipe,1693.893,7393.472,Field

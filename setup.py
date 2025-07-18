@@ -57,7 +57,9 @@ setup(
     },
 
     package_data={'': ['./apsimNGpy/data/*.apsimx',
+                       './apsimNGpy/dll/*.dll',
                        './apsimNGpy/*.met',
+                       './apsimNGpy/*.dll',
                        "./apsimNGpy/experiment/*.py",
                        './apsimNGpy/examples/*.png',
                        './apsimNGpy/images/*.png',
@@ -81,7 +83,7 @@ setup(
         'scipy>=1.7',
         'xmltodict >=0.13.0',
         'requests >=2.31.0',
-        'pythonnet >= 3.0.1',
+        'pythonnet >= 3.0.5',
         'rasterio >=1.3.8',
         'shapely >=2.0.1',
         'clr >= 1.0.3',

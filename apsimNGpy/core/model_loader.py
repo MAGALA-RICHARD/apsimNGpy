@@ -27,7 +27,7 @@ from apsimNGpy.settings import SCRATCH
 from dataclasses import dataclass
 from typing import Any
 
-from apsimNGpy import CastHelper as CastHelpers
+from apsimNGpy.core_utils.cs_utils import CastHelper as CastHelpers
 
 GLOBAL_IS_FILE_MODIFIED = pythonet_config.is_file_format_modified()
 if GLOBAL_IS_FILE_MODIFIED:

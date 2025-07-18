@@ -309,9 +309,15 @@ def read_from_string(model):
     with open(f_name, "r+", encoding='utf-8') as apsimx:
         app_ap = json.load(apsimx)
         string_name = json.dumps(app_ap)
+        if GLOBAL_IS_FILE_MODIFIED:
+            model = NEW_APSIM_CORE.FileFormat.ReadFromString[type(Models.Core.Simulations())](string_name,
+                                                                                              initInBackground=True).Model
+        else:
+            model = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](string_name, None,
+                                                                                        True,
+                                                                                        fileName=f_name)
+            model= covert_to_model(model)
 
-        model = NEW_APSIM_CORE.FileFormat.ReadFromString[type(Models.Core.Simulations())](string_name,
-                                                                                          initInBackground=True).Model
         if not isinstance(model, Models.Core.Simulations):
             print('Model is not an instance of Models.Core.Simulations\n==============================')
         return model

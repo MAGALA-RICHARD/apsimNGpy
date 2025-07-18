@@ -119,7 +119,6 @@ class JsonUtilities:
         data = self.find_all_descendants(model_class)
         return tuple(data.keys())
 
-
     def edit_model_by_path(self, model_class, path, verbose=True, **kwargs):
         model = self.find_all_descendants(model_class=model_class).get(path)
         match model_class:
@@ -171,12 +170,13 @@ class JsonUtilities:
                     print(f"weather file changed from '{c_file}' to '{met_file}'")
 
         return model
+
     def read(self):
         json_string = json.dumps(self.json)
 
         model_frm_str = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](json_string, None,
-                                                                                         True,
-                                                                                         fileName='./_.apsimx')
+                                                                                                 True,
+                                                                                                 fileName='./_.apsimx')
         return model_frm_str
 
 

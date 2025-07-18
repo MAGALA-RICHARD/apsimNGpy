@@ -31,12 +31,9 @@ from apsimNGpy.settings import SCRATCH
 from dataclasses import dataclass
 from typing import Any
 from apsimNGpy.cscompiler.cast_compiler import add_ref_cast
+from apsimNGpy import CastHelper as CastHelpers
 
 GLOBAL_IS_FILE_MODIFIED = pythonet_config.is_file_format_modified()
-
-if GLOBAL_IS_FILE_MODIFIED:
-    add_ref_cast(verbose=False)
-    from CastBridge import CastHelpers
 
 
 def to_model_from_string(json_string, fname):

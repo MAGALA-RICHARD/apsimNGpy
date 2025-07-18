@@ -57,6 +57,8 @@ include-package-data = true
 "apsimNGpy" = [
     "data/*.apsimx",
     "*.met",
+    './apsimNGpy/*.dll',
+    './apsimNGpy/dll/*.dll',
     "experiment/*.py",
     "examples/*.png",
     "images/*.png",

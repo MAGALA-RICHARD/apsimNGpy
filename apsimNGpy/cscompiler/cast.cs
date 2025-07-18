@@ -7,7 +7,7 @@ namespace CastBridge
     /// does not automatically resolve the true runtime type. This utility
     /// allows for explicit casting from Python.
     /// </summary>
-    public static class CastHelpers
+    public static class CastHelper
     {
         /// <summary>
         /// Generic method to safely cast an object to a specified reference type.

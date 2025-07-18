@@ -7,10 +7,10 @@
 
   <ItemGroup>
     <Reference Include="Models">
-      <HintPath>C:\Users\rmagala\AppData\Local\Programs\APSIM2025.7.7807.0\bin\Models.dll</HintPath>
+      <HintPath>/Volumes/APSIM2025.7.7806.0/APSIM2025.7.7806.0.app/Contents/Resources/bin/Models.dll</HintPath>
     </Reference>
     <Reference Include="APSIM.Shared">
-      <HintPath>C:\Users\rmagala\AppData\Local\Programs\APSIM2025.7.7807.0\bin\APSIM.Shared.dll</HintPath>
+      <HintPath>/Volumes/APSIM2025.7.7806.0/APSIM2025.7.7806.0.app/Contents/Resources/bin/APSIM.Shared.dll</HintPath>
     </Reference>
   </ItemGroup>
 </Project>

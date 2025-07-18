@@ -11,8 +11,11 @@ def is_file_format_modified():
     Checks if the APSIM.CORE.dll is present in the bin path
     @return: bool
     """
+    from pathlib import Path
+    binP  = Path(config.get_apsim_bin_path())/ r"APSIM.CORE.dll"
+    print(binP)
     pp = os.path.join(aPSim_PATH, "APSIM.CORE.dll")
-    if os.path.exists(pp):
+    if binP.exists():
         return True
     return False
 
@@ -70,7 +73,7 @@ def load_pythonnet():
 
     if is_file_format_modified():
         APSIM = clr.AddReference('APSIM.Core')
-    clr.AddReference('apsim')
+
 
     # return lm, sys, pythonnet.get_runtime_info()
 

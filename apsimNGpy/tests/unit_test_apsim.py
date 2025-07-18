@@ -1,5 +1,4 @@
 import unittest
-
 from apsimNGpy.core.apsim import ApsimModel
 from apsimNGpy.tests.base_test import BaseTester
 

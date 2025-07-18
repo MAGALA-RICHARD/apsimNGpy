@@ -17,16 +17,12 @@ from System.Collections.Generic import *
 from System import *
 import Models
 import APSIM.Core as NEW_APSIM_CORE
-from APSIM.Core import Node
 import json
 from os.path import (realpath)
-from os import chdir
 import shutil
-from collections import namedtuple
 from pathlib import Path
 from apsimNGpy.core.config import get_apsim_bin_path, apsim_version, load_crop_from_disk
 import subprocess
-from apsimNGpy.core_utils.database_utils import read_db_table
 from apsimNGpy.settings import SCRATCH
 from dataclasses import dataclass
 from typing import Any

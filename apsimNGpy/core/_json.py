@@ -119,6 +119,7 @@ class JsonUtilities:
         data = self.find_all_descendants(model_class)
         return tuple(data.keys())
 
+
     def edit_model_by_path(self, model_class, path, verbose=True, **kwargs):
         model = self.find_all_descendants(model_class=model_class).get(path)
         match model_class:

@@ -10,3 +10,6 @@ class EmptyDateFrameError(Exception):
 
 class NodeNotFoundError(Exception):
     pass
+
+class CastCompilationError(Exception):
+    pass

@@ -30,7 +30,7 @@ from apsimNGpy.core_utils.database_utils import read_db_table
 from apsimNGpy.settings import SCRATCH
 from dataclasses import dataclass
 from typing import Any
-from apsimNGpy.cscompiler.cast_compiler import add_ref_cast
+
 from apsimNGpy import CastHelper as CastHelpers
 
 GLOBAL_IS_FILE_MODIFIED = pythonet_config.is_file_format_modified()

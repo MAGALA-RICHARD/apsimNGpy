@@ -1,5 +1,3 @@
-using Models.Core;
-
 namespace CastBridge
 {
     /// <summary>

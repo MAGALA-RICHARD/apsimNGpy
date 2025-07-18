@@ -23,3 +23,4 @@ model.edit_model(
     cultivar_manager='Sow using a variable rule')
 
 res2 = model.run().results.Yield.mean()
+assert res1 != res2

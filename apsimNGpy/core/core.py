@@ -2859,7 +2859,7 @@ class CoreModel(PlotManager):
             Path(self.path.replace('apsimx', "bak")).unlink(missing_ok=True)
             if db:
                 if self.datastore:
-                  Path(self.datastore).unlink(missing_ok=True)
+                    Path(self.datastore).unlink(missing_ok=True)
                 Path(self.path.replace('apsimx', "db-wal")).unlink(missing_ok=True)
                 Path(self.path.replace('apsimx', "db-shm")).unlink(missing_ok=True)
                 if verbose:
@@ -2918,6 +2918,10 @@ class CoreModel(PlotManager):
         # update the experiment status
         self.experiment = True
         self.experiment_created = True
+
+    def stop(self):
+        storage = self.Simulations.FindDescendant[Models.Storage.DataStore]()
+        storage.Writer.Stop()
 
     def refresh_model(self):
         """

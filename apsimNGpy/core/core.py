@@ -2858,7 +2858,8 @@ class CoreModel(PlotManager):
             Path(self.path).unlink(missing_ok=True)
             Path(self.path.replace('apsimx', "bak")).unlink(missing_ok=True)
             if db:
-                Path(self.datastore).unlink(missing_ok=True)
+                if self.datastore:
+                  Path(self.datastore).unlink(missing_ok=True)
                 Path(self.path.replace('apsimx', "db-wal")).unlink(missing_ok=True)
                 Path(self.path.replace('apsimx', "db-shm")).unlink(missing_ok=True)
                 if verbose:

@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 from shutil import rmtree
 
-VERSION = 0.4
+VERSION = '0.3.9.4'
 
 
 class MissingType:
@@ -107,3 +107,4 @@ except (FileNotFoundError, PermissionError) as fp:
 SCRATCH.mkdir(parents=True, exist_ok=True)
 
 config_internal('version', f"{VERSION}")
+

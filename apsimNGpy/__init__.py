@@ -1,29 +1,37 @@
-# from apsimNGpy.core.config import (
-#     get_apsim_bin_path,
-#     set_apsim_bin_path,
-#     auto_detect_apsim_bin_path
-# )
-# from apsimNGpy.core_utils.utils import timer
-# from apsimNGpy.exceptions import (
-#     InvalidInputErrors,
-#     ForgotToRunError,
-#     EmptyDateFrameError
-# )
-#
-# __version__ = '0.39.3.5'
-#
-# __all__ = [
-#     'InvalidInputErrors',
-#     'ForgotToRunError',
-#     'EmptyDateFrameError',
-#     'get_apsim_bin_path',
-#     'auto_detect_apsim_bin_path',
-#     'set_apsim_bin_path',
-#     'timer',
-#     '__version__',
-#     'version'
-# ]
-#
+import os
+import shutil
+
+from apsimNGpy.core.config import get_apsim_bin_path
+from apsimNGpy.core_utils.cs_utils import start_pythonnet
+#from apsimNGpy.core_utils.cs_utils import CastHelper
+__all__ = ['start_pythonnet']
+
+from apsimNGpy.core.config import (
+    get_apsim_bin_path,
+    set_apsim_bin_path,
+    auto_detect_apsim_bin_path
+)
+from apsimNGpy.core_utils.utils import timer
+from apsimNGpy.exceptions import (
+    InvalidInputErrors,
+    ForgotToRunError,
+    EmptyDateFrameError
+)
+
+__version__ = '0.39.3.5'
+
+__all__.extend([
+    'InvalidInputErrors',
+    'ForgotToRunError',
+    'EmptyDateFrameError',
+    'get_apsim_bin_path',
+    'auto_detect_apsim_bin_path',
+    'set_apsim_bin_path',
+    'timer',
+    '__version__',
+    'version'
+])
+
 # # Conditionally import core modules that rely on APSIM binary being available
 # if get_apsim_bin_path():
 #

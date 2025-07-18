@@ -1,21 +1,21 @@
 import os
 import sys as system
-import pythonnet
+import clr
 from apsimNGpy.core import config
+from apsimNGpy.core_utils.cs_utils import start_pythonnet
+
 aPSim_PATH = config.get_apsim_bin_path()
 
-def is_file_format_modified(models):
-    if getattr(models.Core.ApsimFile, "FileFormat", None):
-        return False
-    return True
 
-def start_pythonnet():
-    try:
-        if pythonnet.get_runtime_info() is None:
-            return pythonnet.load("coreclr")
-    except:
-        print("dotnet not found, trying alternate runtime")
-        return pythonnet.load()
+def is_file_format_modified():
+    """
+    Checks if the APSIM.CORE.dll is present in the bin path
+    @return: bool
+    """
+    pp = os.path.join(aPSim_PATH, "APSIM.CORE.dll")
+    if os.path.exists(pp):
+        return True
+    return False
 
 
 def load_pythonnet():
@@ -56,20 +56,19 @@ def load_pythonnet():
     import clr
     start_pythonnet()
     SYSTEM = clr.AddReference("System")
+    model_path = os.path.join(aPSim_path, 'Models.dll')
+    MMODELSS = clr.AddReference(model_path)
+    # apsimNG = clr.AddReference('ApsimNG')
 
-    MMODELSS = clr.AddReference("Models")
-    apsimNG = clr.AddReference('ApsimNG')
-    import Models
-    if is_file_format_modified(Models):
-           APSIM  =clr.AddReference('APSIM.Core')
-
-
+    if is_file_format_modified():
+        APSIM = clr.AddReference('APSIM.Core')
 
     # return lm, sys, pythonnet.get_runtime_info()
 
 
 load_pythonnet()
 # now we can safely import C# libraries
+
 from System.Collections.Generic import *
 from Models.Core import Simulation
 
@@ -78,8 +77,8 @@ from Models.Soils import Soil, Physical
 import Models
 
 from System import *
-Models = Models
 
+Models = Models
 
 # Example usage:
 if __name__ == '__main__':

@@ -6,12 +6,14 @@ from apsimNGpy.tests import (unit_tests_core,
                              unit_test_apsim,
                              test_config,
                              test_edit_model,
+                             test_cast_helper,
                              test_weathermanager)
 
 modules = (m for m in (unit_tests_core,
                        unit_test_apsim,
                        test_config,
                        test_edit_model,
+                       test_cast_helper,
                        test_weathermanager))
 
 

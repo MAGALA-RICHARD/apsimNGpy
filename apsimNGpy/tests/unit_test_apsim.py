@@ -1,7 +1,7 @@
-from apsimNGpy.core.base_data import load_default_simulations, load_default_sensitivity_model
-from apsimNGpy.core.apsim import ApsimModel
-from apsimNGpy.tests.base_test import BaseTester, set_wd
 import unittest
+
+from apsimNGpy.core.apsim import ApsimModel
+from apsimNGpy.tests.base_test import BaseTester
 
 
 class TestCoreModel(BaseTester):

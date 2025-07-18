@@ -1,7 +1,8 @@
 import os
 import sys as system
-import pythonnet
+import clr
 from apsimNGpy.core import config
+from apsimNGpy.core_utils.cs_utils import start_pythonnet
 
 aPSim_PATH = config.get_apsim_bin_path()
 
@@ -11,22 +12,10 @@ def is_file_format_modified():
     Checks if the APSIM.CORE.dll is present in the bin path
     @return: bool
     """
-    from pathlib import Path
-    binP  = Path(config.get_apsim_bin_path())/ r"APSIM.CORE.dll"
-    print(binP)
     pp = os.path.join(aPSim_PATH, "APSIM.CORE.dll")
-    if binP.exists():
+    if os.path.exists(pp):
         return True
     return False
-
-
-def start_pythonnet():
-    try:
-        if pythonnet.get_runtime_info() is None:
-            return pythonnet.load("coreclr")
-    except:
-        print("dotnet not found, trying alternate runtime")
-        return pythonnet.load()
 
 
 def load_pythonnet():
@@ -67,19 +56,19 @@ def load_pythonnet():
     import clr
     start_pythonnet()
     SYSTEM = clr.AddReference("System")
-
-    MMODELSS = clr.AddReference("Models")
+    model_path = os.path.join(aPSim_path, 'Models.dll')
+    MMODELSS = clr.AddReference(model_path)
     # apsimNG = clr.AddReference('ApsimNG')
 
     if is_file_format_modified():
         APSIM = clr.AddReference('APSIM.Core')
-
 
     # return lm, sys, pythonnet.get_runtime_info()
 
 
 load_pythonnet()
 # now we can safely import C# libraries
+
 from System.Collections.Generic import *
 from Models.Core import Simulation
 

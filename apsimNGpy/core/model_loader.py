@@ -16,27 +16,22 @@ pyth = pythonet_config
 from System.Collections.Generic import *
 from System import *
 import Models
-import APSIM.Core as NEW_APSIM_CORE
-from APSIM.Core import Node
+
 import json
 from os.path import (realpath)
-from os import chdir
 import shutil
-from collections import namedtuple
 from pathlib import Path
 from apsimNGpy.core.config import get_apsim_bin_path, apsim_version, load_crop_from_disk
 import subprocess
-from apsimNGpy.core_utils.database_utils import read_db_table
 from apsimNGpy.settings import SCRATCH
 from dataclasses import dataclass
 from typing import Any
-from apsimNGpy.cscompiler.cast_compiler import add_ref_cast
+
+from apsimNGpy.core_utils.cs_utils import CastHelper as CastHelpers
 
 GLOBAL_IS_FILE_MODIFIED = pythonet_config.is_file_format_modified()
-
 if GLOBAL_IS_FILE_MODIFIED:
-    add_ref_cast(verbose=False)
-    from CastBridge import CastHelpers
+    import APSIM.Core as NEW_APSIM_CORE
 
 
 def to_model_from_string(json_string, fname):
@@ -45,7 +40,9 @@ def to_model_from_string(json_string, fname):
                                                                                  True,
                                                                                  fileName=fname)
     else:
-        return Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](json_string)
+        return Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](json_string, None,
+                                                                                 True,
+                                                                                 fileName=fname)
 
 
 def to_json_string(_model: Models.Core.Simulation):
@@ -240,8 +237,8 @@ def load_apsim_model(model=None, out_path=None, file_load_method='string', met_f
         datastore_path = DataStore.FileName
 
     else:
-        DataStore = None
-        datastore_path = None
+        DataStore = ''
+        datastore_path = ''
 
     return ModelData(
         IModel=out_model,
@@ -282,13 +279,16 @@ def recompile(_model, out=None, met_path=None, ):
     _Model = False
 
     _Model = covert_to_model(Model)
-    out_model = CastHelpers.CastAs[Models.Core.Simulations](_Model.Model)
+    if GLOBAL_IS_FILE_MODIFIED:
+        out_model = CastHelpers.CastAs[Models.Core.Simulations](_Model.Model)
+    else:
+        out_model = _Model
     try:
         datastore = out_model.FindChild[Models.Storage.DataStore]().FileName
         DataStore = out_model.FindChild[Models.Storage.DataStore]()
     except AttributeError:
-        datastore = None
-        DataStore = None
+        datastore = ''
+        DataStore = ''
     # need to make ModelData a constant and named outside the script for consistency across scripts
     # ModelData = namedtuple('model_data', ['IModel', 'path', 'datastore', "DataStore", 'results', 'met_path'])
     return ModelData(IModel=out_model, path=final_out_path, datastore=datastore, DataStore=DataStore,
@@ -309,9 +309,15 @@ def read_from_string(model):
     with open(f_name, "r+", encoding='utf-8') as apsimx:
         app_ap = json.load(apsimx)
         string_name = json.dumps(app_ap)
-        from Models.Core import Simulations
-        model = NEW_APSIM_CORE.FileFormat.ReadFromString[type(Models.Core.Simulations())](string_name,
-                                                                                          initInBackground=True).Model
+        if GLOBAL_IS_FILE_MODIFIED:
+            model = NEW_APSIM_CORE.FileFormat.ReadFromString[type(Models.Core.Simulations())](string_name,
+                                                                                              initInBackground=True).Model
+        else:
+            model = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](string_name, None,
+                                                                                        True,
+                                                                                        fileName=f_name)
+            model= covert_to_model(model)
+
         if not isinstance(model, Models.Core.Simulations):
             print('Model is not an instance of Models.Core.Simulations\n==============================')
         return model

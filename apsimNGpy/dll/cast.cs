@@ -6,6 +6,7 @@ namespace CastBridge
     /// PythonNet. PythonNet often binds to the base class reference and
     /// does not automatically resolve the true runtime type. This utility
     /// allows for explicit casting from Python.
+    /// casts only class objects
     /// </summary>
     public static class CastHelper
     {

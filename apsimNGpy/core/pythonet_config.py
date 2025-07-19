@@ -83,6 +83,31 @@ from System import *
 
 Models = Models
 
+def get_apsim_file_reader( method:str='string'):
+
+    if is_file_format_modified() or  not getattr(Models.Core.ApsimFile, "FileFormat", None):
+        import APSIM.Core
+        base = APSIM.Core.FileFormat
+        os.environ['A'] = 'true'
+    else:
+        base = Models.Core.ApsimFile.FileFormat
+    match method:
+        case 'string':
+            return getattr(base, 'ReadFromString')
+        case 'file':
+            return getattr(base, 'ReadFromFile')
+        case _:
+            raise NotImplementedError(f"{method} method is not implemented")
+
+def get_apsim_file_writer():
+
+    if is_file_format_modified() or  not getattr(Models.Core.ApsimFile, "FileFormat", None):
+        import APSIM.Core
+        base = APSIM.Core.FileFormat
+        os.environ['A'] = 'true'
+    else:
+        base = Models.Core.ApsimFile.FileFormat
+    return getattr(base, 'WriteToString')
 # Example usage:
 if __name__ == '__main__':
     loader = load_pythonnet()

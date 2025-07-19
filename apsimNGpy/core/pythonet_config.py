@@ -108,6 +108,7 @@ def get_apsim_file_writer():
     else:
         base = Models.Core.ApsimFile.FileFormat
     return getattr(base, 'WriteToString')
+
 # Example usage:
 if __name__ == '__main__':
     loader = load_pythonnet()

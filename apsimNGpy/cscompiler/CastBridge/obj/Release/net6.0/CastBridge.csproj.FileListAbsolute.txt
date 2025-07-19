@@ -1,0 +1,12 @@
+/Users/richardmagala/src/src/package/apsimNGpy/apsimNGpy/cscompiler/CastBridge/bin/Release/net6.0/CastBridge.deps.json
+/Users/richardmagala/src/src/package/apsimNGpy/apsimNGpy/cscompiler/CastBridge/bin/Release/net6.0/CastBridge.dll
+/Users/richardmagala/src/src/package/apsimNGpy/apsimNGpy/cscompiler/CastBridge/bin/Release/net6.0/CastBridge.pdb
+/Users/richardmagala/src/src/package/apsimNGpy/apsimNGpy/cscompiler/CastBridge/obj/Release/net6.0/CastBridge.csproj.AssemblyReference.cache
+/Users/richardmagala/src/src/package/apsimNGpy/apsimNGpy/cscompiler/CastBridge/obj/Release/net6.0/CastBridge.GeneratedMSBuildEditorConfig.editorconfig
+/Users/richardmagala/src/src/package/apsimNGpy/apsimNGpy/cscompiler/CastBridge/obj/Release/net6.0/CastBridge.AssemblyInfoInputs.cache
+/Users/richardmagala/src/src/package/apsimNGpy/apsimNGpy/cscompiler/CastBridge/obj/Release/net6.0/CastBridge.AssemblyInfo.cs
+/Users/richardmagala/src/src/package/apsimNGpy/apsimNGpy/cscompiler/CastBridge/obj/Release/net6.0/CastBridge.csproj.CoreCompileInputs.cache
+/Users/richardmagala/src/src/package/apsimNGpy/apsimNGpy/cscompiler/CastBridge/obj/Release/net6.0/CastBridge.dll
+/Users/richardmagala/src/src/package/apsimNGpy/apsimNGpy/cscompiler/CastBridge/obj/Release/net6.0/refint/CastBridge.dll
+/Users/richardmagala/src/src/package/apsimNGpy/apsimNGpy/cscompiler/CastBridge/obj/Release/net6.0/CastBridge.pdb
+/Users/richardmagala/src/src/package/apsimNGpy/apsimNGpy/cscompiler/CastBridge/obj/Release/net6.0/ref/CastBridge.dll

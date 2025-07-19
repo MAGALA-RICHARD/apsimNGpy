@@ -1,8 +1,8 @@
 from apsimNGpy.core_utils.cs_utils import CastHelper as CastHelpers
 from apsimNGpy.core.pythonet_config import Models
-from apsimNGpy.core.model_loader import read_from_string
+from apsimNGpy.core.model_loader import model_from_string
 import unittest
-model = read_from_string("Maize")
+model = model_from_string("Maize")
 if hasattr(model, 'Model'):  # incase it is an APSIM.Core.Node object
     model = model.Model
 

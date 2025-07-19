@@ -40,8 +40,8 @@ def to_model_from_string(json_string, fname):
                                                                                  fileName=fname)
     else:
         return Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](json_string, None,
-                                                                                 True,
-                                                                                 fileName=fname)
+                                                                                        True,
+                                                                                        fileName=fname)
 
 
 def to_json_string(_model: Models.Core.Simulation):
@@ -64,11 +64,11 @@ class ModelData:
     Node: Any = None
     Simulations: Any = None
 
+
 def load_from_dict(dict_data, out):
     str_ = json.dumps(dict_data)
     out = realpath(out)
-    return Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](str_, None, True,
-                                                                                    fileName=out)
+    return to_model_from_string(str_, out)
 
 
 version = apsim_version()
@@ -90,11 +90,8 @@ def save_model_to_file(_model, out=None):
 
         Parameters
         ----------
-        out : str, optional path to save the model to
-            reload: bool to load the file using the out path
-            :param out: out path
-            :param _model:APSIM Models.Core.Simulations object
-            returns the filename or the specified out name
+
+            Returns the filename or the specified out name
         """
     # Determine the output path
     _model = covert_to_model(object_to_convert=_model)
@@ -189,58 +186,50 @@ def load_apsim_model(model=None, out_path=None, file_load_method='string', met_f
     Returns:
         ModelData: A dataclass container with paths, model object, and metadata.
     """
-
     if isinstance(model, Path):
         model = str(model)
 
-    out = {}  # Stores the final output path used
+    out = {}  # Store final output path
 
-    @singledispatch
-    def loader(_model):
-        """Base loader to handle unrecognized types."""
-        raise NotImplementedError(f"Unsupported model type: {type(_model)}")
+    match model:
+        case dict():
+            output = out_path or f"{uuid.uuid1()}.apsimx"
+            out['path'] = output
+            Model = load_from_dict(model, output)
 
-    @loader.register(dict)
-    def _load_from_dict(_model: dict):
-        """Load APSIMX model from a dictionary."""
-        output = out_path or f"{uuid.uuid1()}.apsimx"
-        out['path'] = output
-        return load_from_dict(_model, output)
+        case str():
+            if not model.endswith('.apsimx'):
+                model = load_crop_from_disk(crop=model, out=None, work_space=wd)
+            copy_to = copy_file(model, destination=out_path, wd=wd)
+            out['path'] = copy_to
+            Model = load_from_path(copy_to, file_load_method)
 
-    @loader.register(str)
-    def _load_from_str(_model: str):
-        """Load apsimx model from a string path."""
-        if not _model.endswith('.apsimx'):
-            _model = load_crop_from_disk(crop=_model, out=None, work_space=wd)
-        copy_to = copy_file(_model, destination=out_path, wd=wd)
-        out['path'] = copy_to
-        return load_from_path(copy_to, file_load_method)
+        case None:
+            raise ValueError("Model cannot be None")
 
-    # Dispatch loader based on model type
-    Model = loader(model)
+        case _:
+            raise NotImplementedError(f"Unsupported model type: {type(model)}")
 
-    # If loaded object has get_NewModel, extract the inner model
-    if getattr(Model, 'get_NewModel', None):
-        _Model = Model.get_NewModel()
-    else:
-        _Model = Model
+    _Model = getattr(Model, 'get_NewModel', Model)
     node = _Model
+
     if GLOBAL_IS_FILE_MODIFIED:
         out_model = CastHelpers.CastAs[Models.Core.Simulations](_Model.Model)
     else:
         out_model = _Model
+
+    out_path = out.get('path')
+    datastore_path = str(Path(out_path).with_suffix('.db')) if out_path else ""
+
     if hasattr(out_model, "FindChild"):
         DataStore = out_model.FindChild[Models.Storage.DataStore]()
-
-        datastore_path = DataStore.FileName
-
     else:
         DataStore = ''
         datastore_path = ''
 
     return ModelData(
         IModel=out_model,
-        path=out.get('path'),
+        path=out_path,
         datastore=datastore_path,
         DataStore=DataStore,
         results=None,
@@ -249,11 +238,14 @@ def load_apsim_model(model=None, out_path=None, file_load_method='string', met_f
         Simulations=Model
     )
 
+
 def load_as_dict(file: Models.Core.ApsimFile) -> dict:
     """loads apsimx model from a pathlib"""
     model_simulations = load_from_path(file)
     json_string = Models.Core.ApsimFile.FileFormat.WriteToString(model_simulations)
     return json.loads(json_string)
+
+
 def recompile(_model, out=None, met_path=None, ):
     """ recompile without saving to disk useful for recombiling the same model on the go after updating management scripts
 
@@ -276,7 +268,7 @@ def recompile(_model, out=None, met_path=None, ):
     if GLOBAL_IS_FILE_MODIFIED:
         model_node = getattr(_model.Simulations, 'Node', _model.Simulations)
         json_string = model_node.ToJSONString()
-    Model = to_model_from_string(json_string, fname = _model.path)
+    Model = to_model_from_string(json_string, fname=_model.path)
 
     _Model = False
 
@@ -286,21 +278,26 @@ def recompile(_model, out=None, met_path=None, ):
     else:
         out_model = _Model
     try:
-        datastore = out_model.FindChild[Models.Storage.DataStore]().FileName
+        datastore = str(Path(_model.path).with_suffix('.db'))
+
         DataStore = out_model.FindChild[Models.Storage.DataStore]()
     except AttributeError:
         datastore = ''
         DataStore = ''
+
     # need to make ModelData a constant and named outside the script for consistency across scripts
     # ModelData = namedtuple('model_data', ['IModel', 'path', 'datastore', "DataStore", 'results', 'met_path'])
-    return ModelData(IModel=out_model, path=final_out_path, datastore=datastore, DataStore=DataStore,
+    return ModelData(IModel=out_model,
+                     path=final_out_path,
+                     datastore=datastore,
+                     DataStore=DataStore,
                      results=None,
                      met_path=met_path,
                      Node=_Model,
                      Simulations=Model)
 
 
-def read_from_string(model):
+def model_from_string(model):
     if str(model).endswith('.apsimx'):
         path2file = model
     else:
@@ -316,12 +313,10 @@ def read_from_string(model):
                                                                                               initInBackground=True).Model
         else:
             model = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](string_name, None,
-                                                                                        True,
-                                                                                        fileName=f_name)
-            model= covert_to_model(model)
+                                                                                             True,
+                                                                                             fileName=f_name)
+            model = covert_to_model(model)
 
-        if not isinstance(model, Models.Core.Simulations):
-            print('Model is not an instance of Models.Core.Simulations\n==============================')
         return model
 
 

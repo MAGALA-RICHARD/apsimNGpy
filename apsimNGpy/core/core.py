@@ -457,7 +457,7 @@ class CoreModel(PlotManager):
 
        Example:
 
-       Instatiate an ``apsimNGpy.core.apsim.ApsimModel`` object and run ::
+       Instantiate an ``apsimNGpy.core.apsim.ApsimModel`` object and run::
 
               from apsimNGpy.core.apsim import ApsimModel
               model = ApsimModel(model= 'Maize')# replace with your path to the apsim template model

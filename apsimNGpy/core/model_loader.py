@@ -27,30 +27,26 @@ from dataclasses import dataclass
 from typing import Any
 
 from apsimNGpy.core_utils.cs_utils import CastHelper as CastHelpers
-
-GLOBAL_IS_FILE_MODIFIED = pythonet_config.is_file_format_modified()
+from apsimNGpy.core.pythonet_config import get_apsim_file_reader, get_apsim_file_writer
+from apsimNGpy.core.pythonet_config import is_file_format_modified
+GLOBAL_IS_FILE_MODIFIED = is_file_format_modified()
 if GLOBAL_IS_FILE_MODIFIED:
     import APSIM.Core as NEW_APSIM_CORE
 
 
 def to_model_from_string(json_string, fname):
-    if GLOBAL_IS_FILE_MODIFIED:
-        return NEW_APSIM_CORE.FileFormat.ReadFromString[Models.Core.Simulations](json_string, None,
-                                                                                 True,
-                                                                                 fileName=fname)
-    else:
-        return Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](json_string, None,
-                                                                                        True,
-                                                                                        fileName=fname)
+    loader = get_apsim_file_reader()
+
+    return loader[Models.Core.Simulations](json_string, None, True, fileName=fname)
 
 
 def to_json_string(_model: Models.Core.Simulation):
     """We first determine whether the model is loaded from APSIM>CORE."""
-    if GLOBAL_IS_FILE_MODIFIED:
-        _model = getattr(_model, 'Node', _model)
-        return NEW_APSIM_CORE.FileFormat.WriteToString(_model)
-    else:
-        return Models.Core.ApsimFile.FileFormat.WriteToString(_model)
+
+    _model = getattr(_model, 'Node', _model)
+    writer = get_apsim_file_writer()
+    return writer(_model)
+
 
 
 @dataclass
@@ -138,29 +134,17 @@ def load_from_path(path2file, method='string'):
     string_name = json.dumps(app_ap)
 
     method = method.lower()
+
+    loader = get_apsim_file_reader(method)
+
     match method:
         case 'string':
-
-            if not GLOBAL_IS_FILE_MODIFIED:
-                __model = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](string_name, None,
-                                                                                                   True,
-                                                                                                   fileName=f_name)
-                __model = getattr(__model, 'NewModel', __model)
-            else:
-
-                __model = NEW_APSIM_CORE.FileFormat.ReadFromString[Models.Core.Simulations](string_name, None,
-                                                                                            True,
-                                                                                            fileName=f_name)
+            __model = loader[Models.Core.Simulations](string_name, None,True,fileName=f_name)
+            __model = getattr(__model, 'NewModel', __model)
 
         case 'file':
-
-            if not pythonet_config.is_file_format_modified():
-                __model = Models.Core.ApsimFile.FileFormat.ReadFromFile[Models.Core.Simulations](f_name, None, True)
+                __model = loader[Models.Core.Simulations](f_name, None, True)
                 __model = getattr(__model, 'NewModel', __model)
-
-            else:
-                __model = NEW_APSIM_CORE.FileFormat.ReadFromFile[Models.Core.Simulations](f_name, None, True)
-
         case _:
             raise NotImplementedError('Unsupported method for reading apsim json file')
 
@@ -297,27 +281,25 @@ def recompile(_model, out=None, met_path=None, ):
                      Simulations=Model)
 
 
-def model_from_string(model):
-    if str(model).endswith('.apsimx'):
-        path2file = model
+def model_from_string(mod):
+    if str(mod).endswith('.apsimx'):
+        path2file = mod
     else:
-        path2file = load_crop_from_disk(model, out='../testformatx.apsimx')
+        path2file = load_crop_from_disk(mod, out='../testformatx.apsimx')
 
     f_name = realpath(path2file)
 
     with open(f_name, "r+", encoding='utf-8') as apsimx:
         app_ap = json.load(apsimx)
         string_name = json.dumps(app_ap)
-        if GLOBAL_IS_FILE_MODIFIED:
-            model = NEW_APSIM_CORE.FileFormat.ReadFromString[type(Models.Core.Simulations())](string_name,
-                                                                                              initInBackground=True).Model
-        else:
-            model = Models.Core.ApsimFile.FileFormat.ReadFromString[Models.Core.Simulations](string_name, None,
-                                                                                             True,
-                                                                                             fileName=f_name)
-            model = covert_to_model(model)
+        loader = get_apsim_file_reader(method='string')
 
-        return model
+        mod = loader[Models.Core.Simulations](string_name, None, initInBackground=True)
+        mod = getattr(mod, "Model", mod)
+
+        mod = covert_to_model(mod)
+
+        return mod
 
 
 @timer
@@ -395,3 +377,7 @@ if __name__ == '__main__':
 
     load = load_apsim_model('Maize')
     p, model, model2 = load.Node, load.IModel, load.IModel
+    from apsimNGpy.core.config import set_apsim_bin_path
+    getattr(Models.Core.ApsimFile, "FileFormat")
+    set_apsim_bin_path(r'/Applications/APSIM2025.2.7670.0.app/Contents/Resources/bin')
+    to_json_string(model2)

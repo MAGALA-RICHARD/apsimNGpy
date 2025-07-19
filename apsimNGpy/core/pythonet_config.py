@@ -4,8 +4,9 @@ import clr
 from apsimNGpy.core import config
 from apsimNGpy.core_utils.cs_utils import start_pythonnet
 from pathlib import Path
-
-aPSim_PATH = config.get_apsim_bin_path()
+from apsimNGpy.exceptions import ApsimNotFoundError, ApsimBinPathConfigError
+from apsimNGpy.core_utils.utils import timer
+APSIM_BIN_PATH = config.get_apsim_bin_path()
 
 start_pythonnet()
 
@@ -15,13 +16,13 @@ def is_file_format_modified():
     Checks if the APSIM.CORE.dll is present in the bin path
     @return: bool
     """
-    path = list(Path(aPSim_PATH).rglob("*APSIM.CORE.dll"))
+    path = list(Path(APSIM_BIN_PATH).rglob("*APSIM.CORE.dll"))
     if len(path) > 0:
         return True
     return False
 
 
-def load_pythonnet():
+def load_pythonnet(bin_path=APSIM_BIN_PATH):
     """
     A method for loading Python for .NET (pythonnet) and APSIM models.
 
@@ -47,24 +48,24 @@ def load_pythonnet():
     None
     """
 
-    _aPSim_Path = aPSim_PATH
-    start_pythonnet()
-    # use get because it does not raise key error. it returns none if not found
-    aPSim_path = aPSim_PATH
-    if not aPSim_path:
-        raise KeyError("APSIM is not loaded in the system environmental variable")
-    if 'bin' not in aPSim_path:
-        aPSim_path = os.path.join(aPSim_path, 'bin')
-    system.path.append(aPSim_path)
+
+    if not os.path.isdir(bin_path):
+        raise ApsimBinPathConfigError("Bin path configuration error or APSIM is not yet installed, or APSIM was recently uninstalled")
+
+    candidate = os.path.join(bin_path, 'bin')
+    if os.path.basename(bin_path).lower() != 'bin' and os.path.isdir(candidate):
+        bin_path = candidate
+
+    system.path.append(bin_path)
     import clr
     start_pythonnet()
-    SYSTEM = clr.AddReference("System")
-    model_path = os.path.join(aPSim_path, 'Models.dll')
-    MMODELSS = clr.AddReference(model_path)
+    clr.AddReference("System")
+    model_path = os.path.join(bin_path, 'Models.dll')
+    clr.AddReference(model_path)
     # apsimNG = clr.AddReference('ApsimNG')
 
     if is_file_format_modified():
-        APSIM = clr.AddReference('APSIM.Core')
+        clr.AddReference('APSIM.Core')
 
     # return lm, sys, pythonnet.get_runtime_info()
 
@@ -83,12 +84,12 @@ from System import *
 
 Models = Models
 
-def get_apsim_file_reader( method:str='string'):
-
-    if is_file_format_modified() or  not getattr(Models.Core.ApsimFile, "FileFormat", None):
+@timer
+def get_apsim_file_reader(method: str = 'string'):
+    if is_file_format_modified() or not getattr(Models.Core.ApsimFile, "FileFormat", None):
         import APSIM.Core
         base = APSIM.Core.FileFormat
-        os.environ['A'] = 'true'
+
     else:
         base = Models.Core.ApsimFile.FileFormat
     match method:
@@ -99,9 +100,9 @@ def get_apsim_file_reader( method:str='string'):
         case _:
             raise NotImplementedError(f"{method} method is not implemented")
 
-def get_apsim_file_writer():
 
-    if is_file_format_modified() or  not getattr(Models.Core.ApsimFile, "FileFormat", None):
+def get_apsim_file_writer():
+    if is_file_format_modified() or not getattr(Models.Core.ApsimFile, "FileFormat", None):
         import APSIM.Core
         base = APSIM.Core.FileFormat
         os.environ['A'] = 'true'
@@ -109,8 +110,8 @@ def get_apsim_file_writer():
         base = Models.Core.ApsimFile.FileFormat
     return getattr(base, 'WriteToString')
 
+
 # Example usage:
 if __name__ == '__main__':
     loader = load_pythonnet()
     loaded_models = loader
-

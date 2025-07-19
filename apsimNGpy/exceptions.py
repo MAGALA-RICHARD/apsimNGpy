@@ -1,5 +1,5 @@
 class ApsimNGpyError(Exception):
-    """Base class for all APSIMNGpy-related exceptions."""
+    """Base class for all APSIMNGpy-related exceptions. These errors are more descriptive than just rising a value error"""
     pass
 
 

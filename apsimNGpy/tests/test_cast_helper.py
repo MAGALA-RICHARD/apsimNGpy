@@ -2,11 +2,12 @@ from apsimNGpy.core_utils.cs_utils import CastHelper as CastHelpers
 from apsimNGpy.core.pythonet_config import Models
 from apsimNGpy.core.model_loader import model_from_string
 import unittest
+from apsimNGpy.tests.base_test import BaseTester
+
+
 model = model_from_string("Maize")
 if hasattr(model, 'Model'):  # incase it is an APSIM.Core.Node object
     model = model.Model
-
-from apsimNGpy.tests.base_test import BaseTester
 
 
 class TestCoreModel(BaseTester):

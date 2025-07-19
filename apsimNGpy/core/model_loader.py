@@ -30,8 +30,6 @@ from apsimNGpy.core_utils.cs_utils import CastHelper as CastHelpers
 from apsimNGpy.core.pythonet_config import get_apsim_file_reader, get_apsim_file_writer
 from apsimNGpy.core.pythonet_config import is_file_format_modified
 GLOBAL_IS_FILE_MODIFIED = is_file_format_modified()
-if GLOBAL_IS_FILE_MODIFIED:
-    import APSIM.Core as NEW_APSIM_CORE
 
 
 def to_model_from_string(json_string, fname):
@@ -231,7 +229,7 @@ def load_as_dict(file: Models.Core.ApsimFile) -> dict:
 
 
 def recompile(_model, out=None, met_path=None, ):
-    """ recompile without saving to disk useful for recombiling the same model on the go after updating management scripts
+    """ recompile without saving to disk useful for recombining the same model on the go after updating management scripts
 
             Parameters
             ----------
@@ -378,6 +376,6 @@ if __name__ == '__main__':
     load = load_apsim_model('Maize')
     p, model, model2 = load.Node, load.IModel, load.IModel
     from apsimNGpy.core.config import set_apsim_bin_path
-    getattr(Models.Core.ApsimFile, "FileFormat")
-    set_apsim_bin_path(r'/Applications/APSIM2025.2.7670.0.app/Contents/Resources/bin')
+    getattr(Models.Core.ApsimFile, "FileFormat", None)
+    # set_apsim_bin_path(r'/Applications/APSIM2025.2.7670.0.app/Contents/Resources/bin')
     to_json_string(model2)

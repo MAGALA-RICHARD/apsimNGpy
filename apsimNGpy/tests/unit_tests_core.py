@@ -276,9 +276,9 @@ class TestCoreModel(BaseTester):
         @return:
         """
         from apsimNGpy.core.base_data import load_default_simulations
-        test_ap_sim = load_default_simulations(crop='Maize')
+        test_ap_sim = CoreModel('Maize', out='test_cult.apsimx')
         from apsimNGpy.core.structure import add_crop_replacements
-        add_crop_replacements(test_ap_sim, _crop='Maize')
+        #test_ap_sim.add_crop_replacements(_crop='Maize')
 
         out_cultivar = 'B_110-e'
         new_juvenile = 289.777729777

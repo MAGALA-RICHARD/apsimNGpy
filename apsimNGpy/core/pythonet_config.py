@@ -6,7 +6,9 @@ from apsimNGpy.core_utils.cs_utils import start_pythonnet
 from pathlib import Path
 from apsimNGpy.exceptions import ApsimNotFoundError, ApsimBinPathConfigError
 from apsimNGpy.core_utils.utils import timer
+
 APSIM_BIN_PATH = config.get_apsim_bin_path()
+from functools import cache
 
 start_pythonnet()
 
@@ -48,22 +50,23 @@ def load_pythonnet(bin_path=APSIM_BIN_PATH):
     None
     """
 
-
     if not os.path.isdir(bin_path):
-        raise ApsimBinPathConfigError("Bin path configuration error or APSIM is not yet installed, or APSIM was recently uninstalled")
+        raise ApsimBinPathConfigError(
+            "Bin path configuration error or APSIM is not yet installed, or APSIM was recently uninstalled")
 
     candidate = os.path.join(bin_path, 'bin')
     if os.path.basename(bin_path).lower() != 'bin' and os.path.isdir(candidate):
         bin_path = candidate
 
     system.path.append(bin_path)
+    print(bin_path)
     import clr
     start_pythonnet()
     clr.AddReference("System")
-    model_path = os.path.join(bin_path, 'Models.dll')
-    clr.AddReference(model_path)
+    # model_path = os.path.join(bin_path, 'Models.dll')
+    # clr.AddReference(model_path)
     # apsimNG = clr.AddReference('ApsimNG')
-
+    clr.AddReference("Models")
     if is_file_format_modified():
         clr.AddReference('APSIM.Core')
 
@@ -84,7 +87,8 @@ from System import *
 
 Models = Models
 
-@timer
+
+
 def get_apsim_file_reader(method: str = 'string'):
     if is_file_format_modified() or not getattr(Models.Core.ApsimFile, "FileFormat", None):
         import APSIM.Core

@@ -537,7 +537,7 @@ CoreModel
 
             ``base_name`` is optional but the experiment may not be created if there are more than one base simulations. Therefore, an error is likely.
 
-.. function:: apsimNGpy.core.core.CoreModel.detect_model_type(self, model_instance: Union[str, Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x10b1ce6f0>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD)])
+.. function:: apsimNGpy.core.core.CoreModel.detect_model_type(self, model_instance: Union[str, Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x110086f30>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD)])
 
    Detects the model type from a given APSIM model instance or path string.
 
@@ -871,7 +871,7 @@ CoreModel
    Inspect the file by calling ``inspect_model()`` through ``get_model_paths.``
         This method is important in inspecting the ``whole file`` and also getting the ``scripts paths``
 
-.. function:: apsimNGpy.core.core.CoreModel.inspect_model(self, model_type: Union[str, Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x10b1ce6f0>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD)], fullpath=True, **kwargs)
+.. function:: apsimNGpy.core.core.CoreModel.inspect_model(self, model_type: Union[str, Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x110086f30>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD)], fullpath=True, **kwargs)
 
    Inspect the model types and returns the model paths or names. usefull if you want to identify the path to the
         model for editing the model.
@@ -967,7 +967,7 @@ CoreModel
             Models can be inspected either by importing the Models namespace or by using string paths. The most reliable approach is to provide the full model path—either as a string or as a Models object.
             However, remembering full paths can be tedious, so allowing partial model names or references can significantly save time during development and exploration.
 
-.. function:: apsimNGpy.core.core.CoreModel.inspect_model_parameters(self, model_type: Union[Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x10b1ce6f0>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), str], model_name: str, simulations: Union[str, list] = <UserOptionMissing>, parameters: Union[list, set, tuple, str] = 'all', **kwargs)
+.. function:: apsimNGpy.core.core.CoreModel.inspect_model_parameters(self, model_type: Union[Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x110086f30>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), str], model_name: str, simulations: Union[str, list] = <UserOptionMissing>, parameters: Union[list, set, tuple, str] = 'all', **kwargs)
 
    Inspect the input parameters of a specific ``APSIM`` model type instance within selected simulations.
 
@@ -1234,7 +1234,7 @@ CoreModel
             1. Finds the model object using the given path.
             2. Extracts and returns the requested parameter(s).
 
-.. function:: apsimNGpy.core.core.CoreModel.move_model(self, model_type: Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x10b1ce6f0>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), new_parent_type: Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x10b1ce6f0>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), model_name: str = None, new_parent_name: str = None, verbose: bool = False, simulations: Union[str, list] = None)
+.. function:: apsimNGpy.core.core.CoreModel.move_model(self, model_type: Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x110086f30>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), new_parent_type: Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x110086f30>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), model_name: str = None, new_parent_name: str = None, verbose: bool = False, simulations: Union[str, list] = None)
 
    Args:
 
@@ -1264,7 +1264,12 @@ CoreModel
 
         ``return:`` self
 
-.. function:: apsimNGpy.core.core.CoreModel.remove_model(self, model_type: Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x10b1ce6f0>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), model_name: str = None)
+.. function:: apsimNGpy.core.core.CoreModel.refresh_model(self)
+
+   for methods that will alter the simulation objects and need refreshing the second time we call
+       @return: self for method chaining
+
+.. function:: apsimNGpy.core.core.CoreModel.remove_model(self, model_type: Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x110086f30>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), model_name: str = None)
 
    Removes a model from the APSIM Models.Simulations namespace.
 
@@ -1475,7 +1480,7 @@ CoreModel
 
        Example:
 
-       Instatiate an ``apsimNGpy.core.apsim.ApsimModel`` object and run ::
+       Instantiate an ``apsimNGpy.core.apsim.ApsimModel`` object and run::
 
               from apsimNGpy.core.apsim import ApsimModel
               model = ApsimModel(model= 'Maize')# replace with your path to the apsim template model
@@ -2050,7 +2055,12 @@ apsimNGpy.core_utils.database_utils
 
     ``return:`` all names ``SQL`` database table ``names`` existing within the database
 
-.. function:: apsimNGpy.core.pythonet_config.load_pythonnet()
+.. function:: apsimNGpy.core.pythonet_config.is_file_format_modified()
+
+   Checks if the APSIM.CORE.dll is present in the bin path
+    @return: bool
+
+.. function:: apsimNGpy.core.pythonet_config.load_pythonnet(bin_path='/Applications/APSIM2025.2.7670.0.app/Contents/Resources/bin')
 
    A method for loading Python for .NET (pythonnet) and APSIM models.
 
@@ -2140,9 +2150,52 @@ apsimNGpy.core_utils.database_utils
         Note: Ensure that the database path and the query are correct and that the query is a proper SQL SELECT statement.
         The function uses ``sqlite3`` for connecting to the database; make sure it is appropriate for your database.
 
+.. class:: apsimNGpy.exceptionsApsimBinPathConfigError
+
+   Raised when the APSIM bin path is misconfigured or incomplete.
+
+.. class:: apsimNGpy.exceptionsApsimNotFoundError
+
+   Raised when the APSIM executable or directory is not found.
+
 .. class:: apsimNGpy.core_utils.exceptionsTableNotFoundError
 
    Exception raised when the specified table cannot be found.
+
+apsimNGpy.exceptions 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. class:: apsimNGpy.exceptionsApsimBinPathConfigError
+
+   Raised when the APSIM bin path is misconfigured or incomplete.
+
+.. class:: apsimNGpy.exceptionsApsimNGpyError
+
+   Base class for all apsimNGpy-related exceptions. These errors are more descriptive than just rising a value error
+
+.. class:: apsimNGpy.exceptionsApsimNotFoundError
+
+   Raised when the APSIM executable or directory is not found.
+
+.. class:: apsimNGpy.exceptionsCastCompilationError
+
+   Raised when the C# cast helper DLL fails to compile.
+
+.. class:: apsimNGpy.exceptionsEmptyDateFrameError
+
+   Raised when a DataFrame is unexpectedly empty.
+
+.. class:: apsimNGpy.exceptionsForgotToRunError
+
+   Raised when a required APSIM model run was skipped or forgotten.
+
+.. class:: apsimNGpy.exceptionsInvalidInputErrors
+
+   Raised when the input provided is invalid or improperly formatted.
+
+.. class:: apsimNGpy.exceptionsNodeNotFoundError
+
+   Raised when a specified model node cannot be found.
 
 apsimNGpy.manager.soilmanager 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2217,6 +2270,29 @@ apsimNGpy.manager.weathermanager
 
     ``Returns``:
       ``pd.DataFrame``: A new DataFrame resulting from the merge and update operations.
+
+.. function:: apsimNGpy.manager.weathermanager.read_apsim_met(met_path, skip=5, index_drop=0, separator='\\s+')
+
+   Read an APSIM .met file into a pandas DataFrame.
+
+    Parameters
+    ----------
+    met_path : str
+        Path to the .met file.
+
+    skip : int, optional
+        Number of header lines to skip before data starts (default is 5).
+
+    index_drop : int or list, optional
+        Index or list of indices to drop after reading (default is 0).
+
+    separator : str, optional
+        Column separator, default is one or more whitespace characters (regex '\s+').
+
+    Returns
+    -------
+    pd.DataFrame
+        The parsed meteorological data.
 
 apsimNGpy.parallel.process 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

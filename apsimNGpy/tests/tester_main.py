@@ -7,6 +7,7 @@ from apsimNGpy.tests import (unit_tests_core,
                              test_config,
                              test_edit_model,
                              test_cast_helper,
+                             test_model_loader,
                              test_weathermanager)
 
 modules = (m for m in (unit_tests_core,
@@ -14,6 +15,7 @@ modules = (m for m in (unit_tests_core,
                        test_config,
                        test_edit_model,
                        test_cast_helper,
+                       test_model_loader,
                        test_weathermanager))
 
 
@@ -24,9 +26,7 @@ def clean_up():
             # Ensure file is writable (especially on Windows)
             path.chmod(stat.S_IWRITE)
             path.unlink(missing_ok=True)
-        except PermissionError:
-            ...
-        except Exception as e:
+        except (PermissionError, FileNotFoundError):
             ...
 
 

@@ -29,6 +29,7 @@ from typing import Any
 from apsimNGpy.core_utils.cs_utils import CastHelper as CastHelpers
 from apsimNGpy.core.pythonet_config import get_apsim_file_reader, get_apsim_file_writer
 from apsimNGpy.core.pythonet_config import is_file_format_modified
+
 GLOBAL_IS_FILE_MODIFIED = is_file_format_modified()
 
 
@@ -46,7 +47,6 @@ def to_json_string(_model: Models.Core.Simulation):
     return writer(_model)
 
 
-
 @dataclass
 class ModelData:
     IModel: Models
@@ -57,6 +57,12 @@ class ModelData:
     met_path: str = ""
     Node: Any = None
     Simulations: Any = None
+
+
+def get_model(obj):
+    out_model = getattr(obj, 'Model', obj)  # for new versions
+    out_model = getattr(out_model, 'NewModel', out_model)  # previous versions
+    return out_model
 
 
 def load_from_dict(dict_data, out):
@@ -101,20 +107,7 @@ def save_model_to_file(_model, out=None):
 
 
 def covert_to_model(object_to_convert):
-    if GLOBAL_IS_FILE_MODIFIED is False:
-        if isinstance(object_to_convert, Models.Core.ApsimFile.ConverterReturnType):
-            return object_to_convert.get_NewModel()
-        return object_to_convert
-    if GLOBAL_IS_FILE_MODIFIED:
-        return object_to_convert
-
-
-def load_model_from_dict(dict_model, out, met_file):
-    """"""
-    met_file = realpath(met_file)
-    in_model = dict_model
-    memo = load_from_dict(dict_data=in_model, out=out)
-    return memo
+    return getattr(object_to_convert, 'NewModel', object_to_convert)
 
 
 def load_from_path(path2file, method='string'):
@@ -137,12 +130,12 @@ def load_from_path(path2file, method='string'):
 
     match method:
         case 'string':
-            __model = loader[Models.Core.Simulations](string_name, None,True,fileName=f_name)
+            __model = loader[Models.Core.Simulations](string_name, None, True, fileName=f_name)
             __model = getattr(__model, 'NewModel', __model)
 
         case 'file':
-                __model = loader[Models.Core.Simulations](f_name, None, True)
-                __model = getattr(__model, 'NewModel', __model)
+            __model = loader[Models.Core.Simulations](f_name, None, True)
+            __model = getattr(__model, 'NewModel', __model)
         case _:
             raise NotImplementedError('Unsupported method for reading apsim json file')
 
@@ -192,11 +185,12 @@ def load_apsim_model(model=None, out_path=None, file_load_method='string', met_f
         case _:
             raise NotImplementedError(f"Unsupported model type: {type(model)}")
 
-    _Model = getattr(Model, 'get_NewModel', Model)
+    _Model = get_model(Model)
     node = _Model
 
     if GLOBAL_IS_FILE_MODIFIED:
-        out_model = CastHelpers.CastAs[Models.Core.Simulations](_Model.Model)
+        g_model = getattr(_Model, 'Model', _Model)
+        out_model = CastHelpers.CastAs[Models.Core.Simulations](g_model)
     else:
         out_model = _Model
 
@@ -376,6 +370,7 @@ if __name__ == '__main__':
     load = load_apsim_model('Maize')
     p, model, model2 = load.Node, load.IModel, load.IModel
     from apsimNGpy.core.config import set_apsim_bin_path
+
     getattr(Models.Core.ApsimFile, "FileFormat", None)
     # set_apsim_bin_path(r'/Applications/APSIM2025.2.7670.0.app/Contents/Resources/bin')
     to_json_string(model2)

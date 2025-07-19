@@ -3095,6 +3095,7 @@ class CoreModel(PlotManager):
         if _crop is not None:
             ModelTools.ADD(_crop, _FOLDER)
         else:
+
             logger.error(f"No plants of crop{CROP} found")
         return self
 

@@ -2,13 +2,8 @@ import stat
 import unittest
 from pathlib import Path
 
-from apsimNGpy.tests import (unit_tests_core,
-                             unit_test_apsim,
-                             test_config,
-                             test_edit_model,
-                             test_cast_helper,
-                             test_model_loader,
-                             test_weathermanager)
+from apsimNGpy.tests.unittests import test_model_loader, unit_test_apsim, test_cast_helper, unit_tests_core, test_weathermanager, \
+    test_edit_model, test_config
 
 modules = (m for m in (unit_tests_core,
                        unit_test_apsim,

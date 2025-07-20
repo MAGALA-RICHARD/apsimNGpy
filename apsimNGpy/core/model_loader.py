@@ -42,9 +42,14 @@ def to_model_from_string(json_string, fname):
 def to_json_string(_model: Models.Core.Simulation):
     """We first determine whether the model is loaded from APSIM>CORE."""
 
-    _model = getattr(_model, 'Node', _model)
+    n_model = getattr(_model, 'Node', _model)
+    if hasattr(n_model, 'ToJSONString'):
+        return n_model.ToJSONString()
+
     writer = get_apsim_file_writer()
-    return writer(_model)
+    if _model:
+        return writer(_model)
+    raise ValueError(f'failed to convert model:`{_model}` to strings ')
 
 
 @dataclass
@@ -97,7 +102,7 @@ def save_model_to_file(_model, out=None):
             Returns the filename or the specified out name
         """
     # Determine the output path
-    _model = covert_to_model(object_to_convert=_model)
+    _model = get_model(_model)
     final_out_path = out or '_saved_model.apsimx'
 
     json_string = to_json_string(_model)
@@ -253,7 +258,7 @@ def recompile(_model, out=None, met_path=None, ):
 
     _Model = get_model(Model)
     if GLOBAL_IS_FILE_MODIFIED:
-        out_model = CastHelpers.CastAs[Models.Core.Simulations](_Model.Model)
+        out_model = CastHelpers.CastAs[Models.Core.Simulations](_Model)
     else:
         out_model = _Model
     try:

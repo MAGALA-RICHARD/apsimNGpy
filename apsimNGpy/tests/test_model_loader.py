@@ -1,9 +1,11 @@
 from apsimNGpy.core_utils.cs_utils import CastHelper as CastHelpers
 from apsimNGpy.core.pythonet_config import Models
 from apsimNGpy.core.model_loader import (load_apsim_model, get_model,
-                                         model_from_string, load_from_path, load_crop_from_disk, load_from_dict)
+                                         save_model_to_file,  model_from_string,
+                                         load_from_path, load_crop_from_disk, load_from_dict)
 import unittest
 import shutil
+from unittest.mock import patch
 from apsimNGpy.tests.base_test import BaseTester
 import json
 from pathlib import Path
@@ -118,6 +120,14 @@ class TestCoreModel(BaseTester):
             failed = True
 
         self.assertTrue(failed, 'loading model from model while mocking None did not succeed error was not raised')
+
+    @patch('apsimNGpy.core.model_loader.save_model_to_file')
+    def test_save_model_to_disk(self):
+        def save_maize_model():
+            mod = load_apsim_model("Maize")
+            save_model_to_file(mod)
+
+        save_maize_model()
 
 
 # initialize the model

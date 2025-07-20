@@ -59,6 +59,7 @@ class ModelData:
     Simulations: Any = None
 
 
+
 def get_model(obj):
     out_model = getattr(obj, 'Model', obj)  # for new versions
     out_model = getattr(out_model, 'NewModel', out_model)  # previous versions
@@ -248,7 +249,7 @@ def recompile(_model, out=None, met_path=None, ):
 
     _Model = False
 
-    _Model = covert_to_model(Model)
+    _Model = get_model(Model)
     if GLOBAL_IS_FILE_MODIFIED:
         out_model = CastHelpers.CastAs[Models.Core.Simulations](_Model.Model)
     else:

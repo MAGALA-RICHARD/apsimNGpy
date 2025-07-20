@@ -212,6 +212,7 @@ def get_nasarad(lonlat, start, end):
 
     # fucntion to download data from daymet
 
+
 @lru_cache(maxsize=500)
 def get_met_from_day_met(lonlat: Union[tuple, list, np.ndarray], start: int,
                          end: int, filename: str,
@@ -273,7 +274,7 @@ def get_met_from_day_met(lonlat: Union[tuple, list, np.ndarray], start: int,
         var_headers = ['dayl', 'prcp', 'srad', 'tmax', 'tmin', 'vp', 'swe']
         years_in_range = ",".join([str(year) for year in full_date_range.year.unique()])
         # join the years as a string
-        years_str, var_field = "&years=" + years_in_range,  ",".join(var_headers)
+        years_str, var_field = "&years=" + years_in_range, ",".join(var_headers)
 
         var_str = "&measuredParams=" + var_field
         # join the string url together
@@ -406,6 +407,7 @@ def _create_met_header(met_file_name, lonlat, tav, AMP, site=None):
         f2app.writelines([header_string])
         f2app.writelines(['() () (MJ/m2/day) (oC) (oC) (mm)\n'])
 
+
 @lru_cache(maxsize=50)
 def impute_data(met, method="mean", verbose=False, **kwargs):
     """
@@ -504,7 +506,7 @@ def get_nasa_data(lonlat, start, end):
     return df
 
 
-@lru_cache(maxsize=700) # since it is returning just strings no problem caching it
+@lru_cache(maxsize=700)  # since it is returning just strings no problem caching it
 def get_met_nasa_power(lonlat, start=1990, end=2000, fname='get_met_nasa_power.met', site=None):
     df = get_nasa_data(lonlat, start, end)
     tav, AMP = calculate_tav_amp(df)
@@ -521,6 +523,7 @@ def get_met_nasa_power(lonlat, start=1990, end=2000, fname='get_met_nasa_power.m
         f2app.writelines(data_rows)
     return fname
 
+
 @lru_cache(maxsize=100)
 def _is_within_USA_mainland(lonlat):
     lon_min, lon_max = -125.0, -66.9  # Approximate longitudes for the west and east coasts
@@ -532,8 +535,10 @@ def _is_within_USA_mainland(lonlat):
     else:
         return False
 
+
 @lru_cache(maxsize=600, typed=True)
-def get_weather(lonlat:Union[tuple, list], start:int=1990, end:int=2020, source:str='daymet', filename:str='__met_.met'):
+def get_weather(lonlat: Union[tuple, list], start: int = 1990, end: int = 2020, source: str = 'daymet',
+                filename: str = '__met_.met'):
     """
         Collects data from various sources. This function is cached for speed, so when it is called multiple times with the same arguments during optimization, it will be very fast fast
 
@@ -579,7 +584,7 @@ def get_weather(lonlat:Union[tuple, list], start:int=1990, end:int=2020, source:
         raise NotImplementedError('source must be either "nasa" or "daymet"')
 
     if source == 'daymet' and _is_within_USA_mainland(lonlat):
-        file_name =  filename
+        file_name = filename
         return get_met_from_day_met(lonlat, start=start, end=end, filename=file_name)
     elif source == 'nasa':
         file_name = filename
@@ -587,7 +592,6 @@ def get_weather(lonlat:Union[tuple, list], start:int=1990, end:int=2020, source:
     else:
         raise ValueError(
             f"Invalid source: {source} according to supplied {lonlat} lon_lat values try 'nasa' instead")
-
 
 
 def read_apsim_met(met_path, skip=5, index_drop=0, separator=r'\s+'):
@@ -622,9 +626,7 @@ def read_apsim_met(met_path, skip=5, index_drop=0, separator=r'\s+'):
         raise TypeError(e)
 
 
-
 def write_edited_met(old: Union[str, Path], daf: pd.DataFrame, filename: str = "edited_met.met") -> str:
-
     existing_lines = []
     with open(old, 'r+') as file:
         for i, line in enumerate(file):
@@ -804,6 +806,7 @@ def day_of_year_to_date(year, day_of_year):
         T
     """
     return datetime(year, 1, 1) + timedelta(days=day_of_year - 1)
+
 
 def impute_missing_leaps(dmet, fill=0):
     dmet['year'] = dmet['year'].astype(int)

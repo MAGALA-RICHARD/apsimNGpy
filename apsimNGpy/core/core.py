@@ -20,7 +20,7 @@ from typing import Optional, List, Dict
 import warnings
 from pandas.core.interchange.dataframe_protocol import DataFrame
 from sqlalchemy.testing.plugin.plugin_base import logging
-
+from apsimNGpy.core_utils.cs_utils import CastHelper
 from apsimNGpy.manager.weathermanager import get_weather
 from functools import lru_cache
 # prepare for the C# import
@@ -736,7 +736,12 @@ class CoreModel(PlotManager):
         else:
             if not adoptive_parent_name:
                 adoptive_parent_name = adoptive_parent().Name
-            parent = sims.FindInScope[adoptive_parent](adoptive_parent_name)
+                print("name", adoptive_parent_name)
+            try:
+                parent = sims.FindInScope[adoptive_parent](adoptive_parent_name)
+            except:
+
+               parent = sims.FindDescendant[adoptive_parent](adoptive_parent_name)
         if model_type == Models.Core.Simulations:
             raise ValueError(
                 f"{model_type} can not be a simulations holder did you mean 'Models.Core.Simulation' or 'Simulation'?")
@@ -787,12 +792,15 @@ class CoreModel(PlotManager):
             # get_or_check_model(parent, model_type.__class__, model_type.Name, action='delete')
             model_to_add = ModelTools.CLONER(loc)
             del loc
-            ModelTools.ADD(model_to_add, parent)
+            if hasattr(parent, 'AddChild'):
+                parent.AddChild(model_to_add)
+            else:
+               ModelTools.ADD(model_to_add, parent)
 
             if verbose:
                 logger.info(f"Added {model_to_add.Name} to {parent.Name}")
             # compile
-            self.save()
+            return self
 
         else:
             logger.debug(f"Adding {model_type} to {parent.Name} failed, perhaps models was not found")

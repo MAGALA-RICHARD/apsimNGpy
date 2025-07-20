@@ -1,10 +1,13 @@
+import os
+
 from apsimNGpy.core_utils.cs_utils import CastHelper as CastHelpers
 from apsimNGpy.core.pythonet_config import Models
-from apsimNGpy.core.model_loader import (load_apsim_model, get_model,
-                                         save_model_to_file,  model_from_string,
+from apsimNGpy.core.model_loader import (load_apsim_model, get_model, version,
+                                         save_model_to_file, model_from_string,
                                          load_from_path, load_crop_from_disk, load_from_dict)
 import unittest
 import shutil
+import uuid
 from unittest.mock import patch
 from apsimNGpy.tests.base_test import BaseTester
 import json
@@ -121,13 +124,28 @@ class TestCoreModel(BaseTester):
 
         self.assertTrue(failed, 'loading model from model while mocking None did not succeed error was not raised')
 
-    @patch('apsimNGpy.core.model_loader.save_model_to_file')
     def test_save_model_to_disk(self):
-        def save_maize_model():
-            mod = load_apsim_model("Maize")
-            save_model_to_file(mod)
+        import pathlib
+        def test(mod_p):
+            mod = load_apsim_model(mod_p, out='maize_from_fp.apsimx')
+            fp = pathlib.Path.home() / f"{uuid.uuid1()}_{version}.apsimx"
+            try:
+                fp.unlink(missing_ok=True)
+                self.assertFalse(fp.exists(), 'target file exists')
 
-        save_maize_model()
+                save_model_to_file(mod, out=fp)
+                exi_fp = all([fp.exists(), fp.is_file()])
+                self.assertTrue(exi_fp)
+
+            finally:
+                fp.unlink(missing_ok=True)
+                Path('maize_from_fp.apsimx').unlink(missing_ok=True)
+
+        # test from default
+        mod = load_apsim_model("Maize", out='maize_from_fp.apsimx')
+        test('Maize')
+        # test from disk
+        test(mock_file_from_disk())
 
 
 # initialize the model

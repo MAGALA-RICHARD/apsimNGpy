@@ -49,6 +49,9 @@ def to_json_string(_model: Models.Core.Simulation):
 
 @dataclass
 class ModelData:
+    """
+    This is a meta-data container for the loaded models
+    """
     IModel: Models
     path: str
     datastore: Any = None
@@ -57,7 +60,6 @@ class ModelData:
     met_path: str = ""
     Node: Any = None
     Simulations: Any = None
-
 
 
 def get_model(obj):

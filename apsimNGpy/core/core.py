@@ -117,10 +117,12 @@ class CoreModel(PlotManager):
     End: str = field(init=False, default=MissingOption)
     run_method: callable = field(init=False, default=None)
     Models: object = field(init=False, default=Models)
+    wk_info: Dict = field(init=False, default_factory=dict)
 
     def __post_init__(self):
         self._model = self.model
         self.others = {}
+        self.wk_info = {}
         self.Models = Models
         if isinstance(self.out_path, (str, Path)):
             self.out_path = self.out_path
@@ -741,7 +743,7 @@ class CoreModel(PlotManager):
                 parent = sims.FindInScope[adoptive_parent](adoptive_parent_name)
             except:
 
-               parent = sims.FindDescendant[adoptive_parent](adoptive_parent_name)
+                parent = sims.FindDescendant[adoptive_parent](adoptive_parent_name)
         if model_type == Models.Core.Simulations:
             raise ValueError(
                 f"{model_type} can not be a simulations holder did you mean 'Models.Core.Simulation' or 'Simulation'?")
@@ -792,10 +794,8 @@ class CoreModel(PlotManager):
             # get_or_check_model(parent, model_type.__class__, model_type.Name, action='delete')
             model_to_add = ModelTools.CLONER(loc)
             del loc
-            if hasattr(parent, 'AddChild'):
-                parent.AddChild(model_to_add)
-            else:
-               ModelTools.ADD(model_to_add, parent)
+            parent = getattr(parent, 'Model', parent)
+            ModelTools.ADD(model_to_add, parent)
 
             if verbose:
                 logger.info(f"Added {model_to_add.Name} to {parent.Name}")
@@ -804,6 +804,11 @@ class CoreModel(PlotManager):
 
         else:
             logger.debug(f"Adding {model_type} to {parent.Name} failed, perhaps models was not found")
+
+    def _refresh_experiment(self):
+        mi = load_apsim_model(self.path)
+        self.wk_info['SIM'] = mi.Simulations
+        self.wk_info['NODE'] = mi.Node
 
     @staticmethod
     def _set_clock_vars(model_instance, param_values: dict, verbose=False):
@@ -3341,3 +3346,31 @@ if __name__ == '__main__':
     #     model.clone_model('Models.Core.Simulation', 'Simulation',
     #                       'Models.Core.Simulations', rename=f"sim_{i}")
     # # doctest.testmod()
+    from model_loader import get_node_by_path
+
+
+    # Node = model.model_info.Node
+    # Node.AddChild(Models.Factorial.Experiment())
+    # proto = CastHelper.CastAs[Models.Core.Simulations](Node)
+    # fp1 = model.Simulations.FindInScope[Models.Factorial.Experiment]()
+    # si = ModelTools.CLONER(model.simulations[0])
+    # Node.RemoveChild(model.simulations[0])
+    # model.save()
+    # fp = model.Simulations.FindInScope[Models.Factorial.Experiment]().FullPath
+
+    # model.preview_simulation()
+    def create_experiment(mode):
+        mode._refresh_experiment()
+        base = ModelTools.CLONER(mode.simulations[0])
+        Node = mode.wk_info['NODE']
+        SIM = mode.wk_info['SIM']
+        if not mode.Simulations.FindInScope[Models.Factorial.Experiment]():
+            Node.AddChild(Models.Factorial.Experiment())
+            mode.save()
+        fp =SIM.FindInScope[Models.Factorial.Experiment]()
+        exp_node = get_node_by_path(Node, fp.FullPath)
+        exp_node.Model.AddChild(base)
+        mode.preview_simulation()
+        return exp_node
+
+        # add experiment

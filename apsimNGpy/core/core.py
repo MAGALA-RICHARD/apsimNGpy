@@ -25,7 +25,7 @@ from apsimNGpy.manager.weathermanager import get_weather
 from functools import lru_cache
 # prepare for the C# import
 from apsimNGpy.core_utils.utils import timer, open_apsimx_file_in_window
-from apsimNGpy.core.pythonet_config import start_pythonnet
+from apsimNGpy.core.pythonet_config import start_pythonnet, is_file_format_modified
 # now we can safely import C# libraries
 from apsimNGpy.core.pythonet_config import *
 from apsimNGpy.core_utils.database_utils import dataview_to_dataframe
@@ -42,6 +42,7 @@ from typing import Any
 from apsimNGpy.settings import SCRATCH, logger, MissingOption
 from apsimNGpy.core.plotmanager import PlotManager
 
+IS_NEW_MODEL = is_file_format_modified()
 
 def _looks_like_path(value: str) -> bool:
     return any(sep in value for sep in (os.sep, '/', '\\')) or value.endswith('.apsimx')
@@ -2910,6 +2911,9 @@ class CoreModel(PlotManager):
             ``base_name`` is optional but the experiment may not be created if there are more than one base simulations. Therefore, an error is likely.
 
         """
+        if IS_NEW_MODEL:
+            self.create_experiment_for_node()
+            return self
         #
         self.refresh_model()
         self.factor_names = []
@@ -3233,6 +3237,29 @@ class CoreModel(PlotManager):
 
         return summary.round(round)
 
+    def create_experiment_for_node(self):
+        def exp_refresher(mode):
+            sim = mode.simulations[0]
+            base = ModelTools.CLONER(sim)
+            for simx in mode.simulations:  # it does not matter how many experiments exist, we need only one
+                ModelTools.DELETE(simx)
+            # replace before delete
+            mode.simulations[0] = base
+            base = mode.simulations[0]
+            experiment = Models.Factorial.Experiment()
+            experiment.AddChild(base)
+            mode.model_info.Node.AddChild(experiment)
+
+        # delete experiment if exists to allow refreshing if simulation was edited
+        experi = self.Simulations.FindInScope[Models.Factorial.Experiment]()
+        if experi:
+            ModelTools.DELETE(experi)
+        exp_refresher(self)
+        self.save()
+        fp = model.Simulations.FindInScope[Models.Factorial.Experiment]()
+        exp_node = get_node_by_path(self.model_info.Node, fp.FullPath)
+        self.preview_simulation()
+        return exp_node
     # @timer
     def add_db_table(self, variable_spec: list = None, set_event_names: list = None, rename: str = 'my_table',
                      simulation_name: Union[str, list, tuple] = MissingOption):
@@ -3360,17 +3387,29 @@ if __name__ == '__main__':
 
     # model.preview_simulation()
     def create_experiment(mode):
-        mode._refresh_experiment()
-        base = ModelTools.CLONER(mode.simulations[0])
-        Node = mode.wk_info['NODE']
-        SIM = mode.wk_info['SIM']
-        if not mode.Simulations.FindInScope[Models.Factorial.Experiment]():
-            Node.AddChild(Models.Factorial.Experiment())
-            mode.save()
-        fp =SIM.FindInScope[Models.Factorial.Experiment]()
-        exp_node = get_node_by_path(Node, fp.FullPath)
-        exp_node.Model.AddChild(base)
+        def exp_refresher(mode):
+            sim = mode.simulations[0]
+            base = ModelTools.CLONER(sim)
+            for simx in mode.simulations:  # it does not matter how many experiments exists, we need only one
+                ModelTools.DELETE(simx)
+            # replace before delete
+            mode.simulations[0] = base
+            base = mode.simulations[0]
+            experiment = Models.Factorial.Experiment()
+            experiment.AddChild(base)
+            mode.model_info.Node.AddChild(experiment)
+        # delete experiment if exists to allow refreshing if simulation was edited
+        experi = mode.Simulations.FindInScope[Models.Factorial.Experiment]()
+        if experi:
+            ModelTools.DELETE(experi)
+        exp_refresher(mode)
+        mode.save()
+        fp = model.Simulations.FindInScope[Models.Factorial.Experiment]()
+        exp_node = get_node_by_path(mode.model_info.Node, fp.FullPath)
         mode.preview_simulation()
         return exp_node
 
         # add experiment
+
+
+    create_experiment(model)

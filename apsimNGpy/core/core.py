@@ -3237,7 +3237,7 @@ class CoreModel(PlotManager):
 
         return summary.round(round)
 
-    def create_experiment_for_node(self):
+    def create_experiment_for_node(self, permutation=True):
         def exp_refresher(mode):
             sim = mode.simulations[0]
             base = ModelTools.CLONER(sim)
@@ -3247,8 +3247,14 @@ class CoreModel(PlotManager):
             mode.simulations[0] = base
             base = mode.simulations[0]
             experiment = Models.Factorial.Experiment()
+            factor = Models.Factorial.Factors()
+            if permutation:
+                factor.AddChild(Models.Factorial.Permutation())
+            experiment.AddChild(factor)
             experiment.AddChild(base)
             mode.model_info.Node.AddChild(experiment)
+
+
 
         # delete experiment if exists to allow refreshing if simulation was edited
         experi = self.Simulations.FindInScope[Models.Factorial.Experiment]()
@@ -3406,10 +3412,10 @@ if __name__ == '__main__':
         mode.save()
         fp = model.Simulations.FindInScope[Models.Factorial.Experiment]()
         exp_node = get_node_by_path(mode.model_info.Node, fp.FullPath)
-        mode.preview_simulation()
+        #mode.preview_simulation()
         return exp_node
 
         # add experiment
 
 
-    create_experiment(model)
+    e = create_experiment(model)

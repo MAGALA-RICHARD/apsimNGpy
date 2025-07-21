@@ -347,6 +347,7 @@ def get_node_by_path(node, node_path):
         node = node.Node
     if hasattr(node, 'Walk'):
         for n in node.Walk():
+
             if n.get_FullNameAndPath() == node_path:
                 return n
     else:

@@ -162,6 +162,9 @@ class CoreModel(PlotManager):
         if self.experiment:
             self.create_experiment(permutation=self.permutation, base_name=self.base_name)
 
+    def __repr__(self):
+        return ""
+
     def check_model(self):
         if hasattr(Models.Core.ApsimFile, "ConverterReturnType"):
 
@@ -2913,7 +2916,10 @@ class CoreModel(PlotManager):
 
         """
         if IS_NEW_MODEL:
-            self.create_experiment_for_node()
+            from apsimNGpy.core.config import apsim_version
+            version = apsim_version()
+            logger.warning(
+                f'\n create_experiment is deprecated for this apsim version {version} use the `apsimNGpy.core.experiment.Experiment` class instead.')
             return self
         #
         self.refresh_model()

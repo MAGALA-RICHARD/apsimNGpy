@@ -49,8 +49,11 @@ The test output should include a summary at the end, showing the total number of
 
 Ran 54 tests in 96.975s
 OK
+
   [INFO]
+
  Test Summary:
+
   [INFO]   ✅ Passed  : 54
   [INFO]   ❌ Failures: 0
   [INFO]   💥 Errors  : 0

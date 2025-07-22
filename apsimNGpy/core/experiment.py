@@ -1,0 +1,120 @@
+import re
+
+from apsimNGpy.core.apsim import ApsimModel
+from collections import OrderedDict
+from apsimNGpy.core._modelhelpers import ModelTools, Models
+from apsimNGpy.core_utils.cs_utils import CastHelper
+import APSIM.Core as NodeUtils
+import System
+
+class Experiment(ApsimModel):
+    def __init__(self, model, out_path=None, out=None):
+        super().__init__(model=model, out_path=out_path, out=out)
+        self.parent_factor = None
+        self.experiment_node = None
+        self.factorial_node = None
+        self.permutation_node = None
+        self.factors = OrderedDict()
+        self.specs = OrderedDict()
+        self.counter = 0
+
+    def init_experiment(self, permutation=True):
+        self.permutation = permutation
+
+        def exp_refresher(mode):
+            sim = mode.simulations[0]
+            base = ModelTools.CLONER(sim)
+            for simx in mode.simulations:  # it does not matter how many experiments exist, we need only one
+                ModelTools.DELETE(simx)
+            # replace before delete
+            mode.simulations[0] = base
+            base = mode.simulations[0]
+            experiment = Models.Factorial.Experiment()
+            self.experiment_node = experiment
+            factor = Models.Factorial.Factors()
+            self.factorial_node = factor
+            if self.permutation:
+                perm_node = Models.Factorial.Permutation()
+                self.permutation_node = perm_node
+                factor.AddChild(perm_node)
+            experiment.AddChild(factor)
+            experiment.AddChild(base)
+            experi = mode.Simulations.FindInScope[Models.Factorial.Experiment]()
+            if experi:
+                ModelTools.DELETE(experi)
+            mode.model_info.Node.AddChild(experiment)
+
+        exp_refresher(self)
+
+    def add_factor(self, specification: str, factor_name: str = None, **kwargs):
+
+
+        # Auto-generate factor name from specification if not provided
+        if factor_name is None:
+            factor_name = specification.split("=")[0].strip().split(".")[-1]
+
+        # If it's a Script-based specification, validate linkage
+        if 'Script' in specification:
+            matches = re.findall(r"\[(.*?)\]", specification)
+            if matches:
+                manager_names = set(self.inspect_model('Models.Manager', fullpath=False))
+                linked = set(matches) & manager_names
+                if not linked:
+                    raise ValueError('Specification has no linked script in the model')
+
+        # Record factor info
+        self.factors[factor_name] = (specification, kwargs)
+
+        # Choose parent node and parent class
+        parent_factor = self.permutation_node if self.permutation else self.factorial_node
+        parent_class = Models.Factorial.Permutation if self.permutation else Models.Factorial.Factors
+
+        new_factor = Models.Factorial.Factor()
+        new_factor.Name = factor_name
+        new_factor.set_Specification(specification)
+
+        self.specs[factor_name] = new_factor
+
+        # Maintain counter and avoid index error
+        index = len(self.specs) - 1
+        try:
+            # Try to remove existing child at index before inserting
+            if 0 <= index < len(parent_factor.Children):
+                old_child = parent_factor.Children[index]
+                if old_child is not None:
+                    ModelTools.DELETE(old_child)
+
+        except System.ArgumentOutOfRangeException:
+            pass
+
+        # Insert a new factor
+        parent_factor.InsertChild(index, new_factor)
+        self.parent_factor = parent_factor
+
+    @property
+    def n_factors(self):
+        return len(self.specs)
+
+    def finalize(self):
+        """written as a guard to avoid overwriting existing factors, which still have reference to the main simulation.
+        the add_factor can still work without calling this method"""
+        self.parent_factor.Children.Clear()
+        for name, spec in self.specs.items():
+            node = NodeUtils.Node.Create(spec, parent=self.parent_factor)
+            self.parent_factor.AddChild(node.Model)
+        self.save()
+
+
+if __name__ == '__main__':
+    exp = Experiment('Maize', out_path='exp.apsimx')
+    exp.init_experiment(permutation=True)
+    exp.add_factor("[Fertilise at sowing].Script.Amount = 0 to 200 step 20")
+    exp.add_factor("[Fertilise at sowing].Script.FertiliserType= DAP,NO3N")
+    exp.add_factor(specification="[Sow using a variable rule].Script.RowSpacing = 100, 450, 700",
+                   factor_name='Population')
+    exp.add_factor(specification="[Sow using a variable rule].Script.RowSpacing = 100, 450, 700",
+                   factor_name='Population')
+    # exp.add_factor(specification="[Sow using a variable rule].Script.RowSpacing = 100, 450, 700",
+    #                factor_name='Population')
+    # exp.finalize()
+    # exp.preview_simulation()

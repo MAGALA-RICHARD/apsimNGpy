@@ -45,6 +45,7 @@ Finally, run the test suite. It is recommended to use the ``run_suite`` method, 
         run_suite(2) # 0 turns off the verbosity
 
 .. plaintext::
+
   OK
   [INFO]
  Test Summary:

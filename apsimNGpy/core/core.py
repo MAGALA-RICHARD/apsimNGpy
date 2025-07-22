@@ -44,6 +44,7 @@ from apsimNGpy.core.plotmanager import PlotManager
 
 IS_NEW_MODEL = is_file_format_modified()
 
+
 def _looks_like_path(value: str) -> bool:
     return any(sep in value for sep in (os.sep, '/', '\\')) or value.endswith('.apsimx')
 
@@ -3254,18 +3255,17 @@ class CoreModel(PlotManager):
             experiment.AddChild(base)
             mode.model_info.Node.AddChild(experiment)
 
-
-
         # delete experiment if exists to allow refreshing if simulation was edited
         experi = self.Simulations.FindInScope[Models.Factorial.Experiment]()
         if experi:
             ModelTools.DELETE(experi)
         exp_refresher(self)
         self.save()
-        fp = model.Simulations.FindInScope[Models.Factorial.Experiment]()
+        fp = self.Simulations.FindInScope[Models.Factorial.Experiment]()
         exp_node = get_node_by_path(self.model_info.Node, fp.FullPath)
         self.preview_simulation()
         return exp_node
+
     # @timer
     def add_db_table(self, variable_spec: list = None, set_event_names: list = None, rename: str = 'my_table',
                      simulation_name: Union[str, list, tuple] = MissingOption):
@@ -3337,7 +3337,7 @@ class CoreModel(PlotManager):
             if check_repo:  # because this is intented to create an entirley new db table
                 ModelTools.DELETE(check_repo)
             zone.Children.Add(report)
-            self.save()
+        self.save()
 
         # save the results to recompile
 
@@ -3404,6 +3404,7 @@ if __name__ == '__main__':
             experiment = Models.Factorial.Experiment()
             experiment.AddChild(base)
             mode.model_info.Node.AddChild(experiment)
+
         # delete experiment if exists to allow refreshing if simulation was edited
         experi = mode.Simulations.FindInScope[Models.Factorial.Experiment]()
         if experi:
@@ -3412,7 +3413,7 @@ if __name__ == '__main__':
         mode.save()
         fp = model.Simulations.FindInScope[Models.Factorial.Experiment]()
         exp_node = get_node_by_path(mode.model_info.Node, fp.FullPath)
-        #mode.preview_simulation()
+        # mode.preview_simulation()
         return exp_node
 
         # add experiment

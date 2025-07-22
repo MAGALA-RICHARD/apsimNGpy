@@ -385,7 +385,7 @@ class PlotManager(ABC):
         =========================================================================================================\n"""
         self._refresh()
         added_plots['cat_plot'] = 'cat_plot'
-        df = data or self.results
+        df =   self.results if data is None else data
         return sns.catplot(
             data=df,
             x=x,

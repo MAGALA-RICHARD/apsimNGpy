@@ -264,9 +264,9 @@ def get_met_from_day_met(lonlat: Union[tuple, list, np.ndarray], start: int,
     _start = f"{start}-01-01"
     _end = f'{end}-12-31'
     full_date_range = pd.date_range(start=_start, end=_end, freq='D')
-    if start < 1980 or end > 2023:
+    if start < 1980:
         print("requested year precedes valid data range! \n"
-              " end years should not exceed 2021 and start year should not be less than 1980")
+              " start year should not be less than 1980")
     else:
         base_url = 'https://daymet.ornl.gov/single-pixel/api/data?'
         lat_str, lon_str = 'lat=' + str(lonlat[1]), '&lon=' + str(lonlat[0])

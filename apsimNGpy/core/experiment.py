@@ -19,6 +19,16 @@ class Experiment(ApsimModel):
         self.counter = 0
 
     def init_experiment(self, permutation=True):
+        """
+            Initializes the factorial experiment structure inside the APSIM file.
+
+            Args:
+                permutation (bool): If True, enables permutation mode; otherwise, uses standard factor crossing.
+
+            Side Effects:
+                Replaces any existing Experiment node with a new configuration.
+                Clones the base simulation and adds it under the experiment.
+            """
         self.permutation = permutation
 
         def exp_refresher(mode):
@@ -47,6 +57,21 @@ class Experiment(ApsimModel):
         exp_refresher(self)
 
     def add_factor(self, specification: str, factor_name: str = None, **kwargs):
+        """
+           Adds a new factor to the experiment based on an APSIM script specification.
+
+           Args:
+               specification (str): A script-like APSIM expression that defines the parameter variation.
+               factor_name (str, optional): A unique name for the factor; auto-generated if not provided.
+               **kwargs: Optional metadata or configuration (not yet used internally).
+
+           Raises:
+               ValueError: If a Script-based specification references a non-existent or unlinked manager script.
+
+           Side Effects:
+               Inserts the factor into the appropriate parent node (Permutation or Factors).
+               If a factor at the same index already exists, it is safely deleted before inserting the new one.
+           """
 
 
         # Auto-generate factor name from specification if not provided
@@ -93,11 +118,24 @@ class Experiment(ApsimModel):
 
     @property
     def n_factors(self):
+        """
+            Returns:
+                int: The total number of active factor specifications currently added to the experiment.
+            """
         return len(self.specs)
 
     def finalize(self):
-        """written as a guard to avoid overwriting existing factors, which still have reference to the main simulation.
-        the add_factor can still work without calling this method"""
+        """"
+        Finalizes the experiment setup by re-creating the internal APSIM factor nodes from specs.
+
+        This method is designed as a guard against unintended modifications and ensures that all
+        factor definitions are fully resolved and written before saving.
+
+        Side Effects:
+            Clears existing children from the parent factor node.
+            Re-creates and attaches each factor as a new node.
+            Triggers model saving.
+    """
         self.parent_factor.Children.Clear()
         for name, spec in self.specs.items():
             node = NodeUtils.Node.Create(spec, parent=self.parent_factor)

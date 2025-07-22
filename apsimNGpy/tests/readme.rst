@@ -56,7 +56,9 @@ OK
 Test Summary:
 
   [INFO]   ✅ Passed  : 54
+
   [INFO]   ❌ Failures: 0
+
   [INFO]   💥 Errors  : 0
   [INFO]   📉 Failure Rate: 0.00%
   =====================================

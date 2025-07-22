@@ -743,7 +743,7 @@ class CoreModel(PlotManager):
         else:
             if not adoptive_parent_name:
                 adoptive_parent_name = adoptive_parent().Name
-                print("name", adoptive_parent_name)
+
             try:
                 parent = sims.FindInScope[adoptive_parent](adoptive_parent_name)
             except:
@@ -2176,14 +2176,6 @@ class CoreModel(PlotManager):
         self.save()
         open_apsimx_file_in_window(self.path, bin_path=get_apsim_bin_path())
 
-    def _kvtodict(self, kv):
-        return {kv[i].Key: kv[i].Value for i in range(kv.Count)}
-
-    def compile_scripts(self):
-        for sim in self.simulations:
-            managers = sim.FindAllDescendants[Models.Manager]()
-            for manager in list(managers):
-                print(manager.SuccessfullyCompiledLast)
 
     @staticmethod
     def strip_time(date_string):
@@ -3387,7 +3379,6 @@ if __name__ == '__main__':
     # # doctest.testmod()
     from model_loader import get_node_by_path
 
-
     # Node = model.model_info.Node
     # Node.AddChild(Models.Factorial.Experiment())
     # proto = CastHelper.CastAs[Models.Core.Simulations](Node)
@@ -3398,31 +3389,3 @@ if __name__ == '__main__':
     # fp = model.Simulations.FindInScope[Models.Factorial.Experiment]().FullPath
 
     # model.preview_simulation()
-    def create_experiment(mode):
-        def exp_refresher(mode):
-            sim = mode.simulations[0]
-            base = ModelTools.CLONER(sim)
-            for simx in mode.simulations:  # it does not matter how many experiments exists, we need only one
-                ModelTools.DELETE(simx)
-            # replace before delete
-            mode.simulations[0] = base
-            base = mode.simulations[0]
-            experiment = Models.Factorial.Experiment()
-            experiment.AddChild(base)
-            mode.model_info.Node.AddChild(experiment)
-
-        # delete experiment if exists to allow refreshing if simulation was edited
-        experi = mode.Simulations.FindInScope[Models.Factorial.Experiment]()
-        if experi:
-            ModelTools.DELETE(experi)
-        exp_refresher(mode)
-        mode.save()
-        fp = model.Simulations.FindInScope[Models.Factorial.Experiment]()
-        exp_node = get_node_by_path(mode.model_info.Node, fp.FullPath)
-        # mode.preview_simulation()
-        return exp_node
-
-        # add experiment
-
-
-    e = create_experiment(model)

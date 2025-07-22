@@ -1,4 +1,5 @@
 import stat
+import sys
 import unittest
 from pathlib import Path
 from apsimNGpy.core.pythonet_config import is_file_format_modified
@@ -62,10 +63,10 @@ def run_suite(verbosity_level=2):
 
         # Optional: Exit with non-zero status code if any test fails
         if not result.wasSuccessful():
-            exit(1)
+           sys.exit(1)
     finally:
         clean_up()
 
 
 if __name__ == '__main__':
-    run_suite(verbosity_level=2)
+    run_suite(verbosity_level=0)

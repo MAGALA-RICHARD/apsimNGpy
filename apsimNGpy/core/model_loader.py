@@ -167,7 +167,7 @@ def load_apsim_model(model=None, out_path=None, file_load_method='string', met_f
         **kwargs: Additional options (reserved for future use).
 
     Returns:
-        ModelData: A dataclass container with paths, model object, and metadata.
+        {ModelData}: A dataclass container with paths, model object, and metadata.
     """
     if isinstance(model, Path):
         model = str(model)

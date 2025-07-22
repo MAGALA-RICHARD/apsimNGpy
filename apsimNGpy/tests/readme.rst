@@ -48,7 +48,9 @@ Finally, run the test suite. It is recommended to use the ``run_suite`` method, 
 The test output should include a summary at the end, showing the total number of tests, the number passed, the number failed, and the failure rate.
 
 Ran 54 tests in 96.975s
+
 OK
+
 [INFO]
 
 Test Summary:

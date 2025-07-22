@@ -7,6 +7,7 @@ from apsimNGpy.core_utils.cs_utils import CastHelper
 import APSIM.Core as NodeUtils
 import System
 
+
 class Experiment(ApsimModel):
     def __init__(self, model, out_path=None, out=None):
         super().__init__(model=model, out_path=out_path, out=out)
@@ -72,7 +73,6 @@ class Experiment(ApsimModel):
                Inserts the factor into the appropriate parent node (Permutation or Factors).
                If a factor at the same index already exists, it is safely deleted before inserting the new one.
            """
-
 
         # Auto-generate factor name from specification if not provided
         if factor_name is None:

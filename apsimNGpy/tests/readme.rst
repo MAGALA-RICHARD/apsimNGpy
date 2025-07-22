@@ -44,9 +44,12 @@ Finally, run the test suite. It is recommended to use the ``run_suite`` method, 
         suite.addTests(loader.loadTestsFromTestCase(TestCaseAddModule))
         run_suite(2) # 0 turns off the verbosity
 
-.. plaintext::
+output at end of the tests include something like that below, total number of tests numbers paased, failed and and the failure rate
 
-  OK
+
+----------------------------------------------------------------------
+Ran 54 tests in 96.975s
+OK
   [INFO]
  Test Summary:
   [INFO]   ✅ Passed  : 54
@@ -54,5 +57,6 @@ Finally, run the test suite. It is recommended to use the ``run_suite`` method, 
   [INFO]   💥 Errors  : 0
   [INFO]   📉 Failure Rate: 0.00%
 =====================================
+
 
 

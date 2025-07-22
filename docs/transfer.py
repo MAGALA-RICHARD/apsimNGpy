@@ -4,11 +4,11 @@ import shutil
 from pathlib import Path
 import logging
 
-logging.basicConfig(level=logging.INFO, format='  [%(levelname)s] %(message)s')
+logging.basicConfig(level=logging.INFO, format='  [%(levelname)s]: %(message)s')
 logger = logging.getLogger(__name__)
 CWD = Path(__file__).parent
-target = CWD.parent.parent / 'docs'
-source = CWD.parent.parent.parent / "apsimNGpy-documentations/doc/"
+target = CWD.parent / 'docs'
+source = CWD.parent.parent / "apsimNGpy-documentations/doc"
 
 
 def transfer():
@@ -20,7 +20,7 @@ def transfer():
 
 
 if __name__ == "__main__":
-    schedule.every(2).minutes.do(transfer)
+    schedule.every(1).seconds.do(transfer)
     while True:
         schedule.run_pending()
-        time.sleep(60)
+        time.sleep(1)

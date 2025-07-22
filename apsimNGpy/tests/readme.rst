@@ -44,7 +44,7 @@ Finally, run the test suite. It is recommended to use the ``run_suite`` method, 
         suite.addTests(loader.loadTestsFromTestCase(TestCaseAddModule))
         run_suite(2) # 0 turns off the verbosity
 
-output at end of the tests include something like that below, total number of tests numbers paased, failed and and the failure rate
+The test output should include a summary at the end, showing the total number of tests, the number passed, the number failed, and the failure rate.
 
 
 ----------------------------------------------------------------------

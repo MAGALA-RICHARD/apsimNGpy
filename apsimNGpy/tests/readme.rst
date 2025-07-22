@@ -60,7 +60,9 @@ Test Summary:
   [INFO]   ❌ Failures: 0
 
   [INFO]   💥 Errors  : 0
+
   [INFO]   📉 Failure Rate: 0.00%
+
   =====================================
 
 

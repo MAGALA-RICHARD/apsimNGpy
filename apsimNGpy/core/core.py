@@ -20,12 +20,12 @@ from typing import Optional, List, Dict
 import warnings
 from pandas.core.interchange.dataframe_protocol import DataFrame
 from sqlalchemy.testing.plugin.plugin_base import logging
-
+from apsimNGpy.core_utils.cs_utils import CastHelper
 from apsimNGpy.manager.weathermanager import get_weather
 from functools import lru_cache
 # prepare for the C# import
 from apsimNGpy.core_utils.utils import timer, open_apsimx_file_in_window
-from apsimNGpy.core.pythonet_config import start_pythonnet
+from apsimNGpy.core.pythonet_config import start_pythonnet, is_file_format_modified
 # now we can safely import C# libraries
 from apsimNGpy.core.pythonet_config import *
 from apsimNGpy.core_utils.database_utils import dataview_to_dataframe
@@ -41,6 +41,9 @@ from typing import Any
 
 from apsimNGpy.settings import SCRATCH, logger, MissingOption
 from apsimNGpy.core.plotmanager import PlotManager
+
+IS_NEW_MODEL = is_file_format_modified()
+
 
 def _looks_like_path(value: str) -> bool:
     return any(sep in value for sep in (os.sep, '/', '\\')) or value.endswith('.apsimx')
@@ -116,10 +119,12 @@ class CoreModel(PlotManager):
     End: str = field(init=False, default=MissingOption)
     run_method: callable = field(init=False, default=None)
     Models: object = field(init=False, default=Models)
+    wk_info: Dict = field(init=False, default_factory=dict)
 
     def __post_init__(self):
         self._model = self.model
         self.others = {}
+        self.wk_info = {}
         self.Models = Models
         if isinstance(self.out_path, (str, Path)):
             self.out_path = self.out_path
@@ -157,10 +162,15 @@ class CoreModel(PlotManager):
         if self.experiment:
             self.create_experiment(permutation=self.permutation, base_name=self.base_name)
 
+    def __repr__(self):
+        return ""
+
     def check_model(self):
-        if isinstance(self.Simulations, Models.Core.ApsimFile.ConverterReturnType):
-            self.Simulations = self.Simulations.get_NewModel()
-            self.model_info = self.model_info._replace(IModel=self.Simulations)
+        if hasattr(Models.Core.ApsimFile, "ConverterReturnType"):
+
+            if isinstance(self.Simulations, Models.Core.ApsimFile.ConverterReturnType):
+                self.Simulations = self.Simulations.get_NewModel()
+                self.model_info = self.model_info._replace(IModel=self.Simulations)
         return self
 
     @staticmethod
@@ -252,8 +262,8 @@ class CoreModel(PlotManager):
         """
         _path = file_name or self.path
         self.path = _path
-        save_model_to_file(self.Simulations, out=_path)
-
+        sva = getattr(self.Simulations, 'Node', self.Simulations)
+        save_model_to_file(sva, out=_path)
 
         model_info = recompile(self)  # load_apsim_model(_path)
         self.restart_model(model_info)
@@ -340,7 +350,6 @@ class CoreModel(PlotManager):
                 logger.info(msg)
                 raise RuntimeError(msg)
         if self.run_method == run_p:
-
             dfs = [dataview_to_dataframe(self, rp) for rp in _reports]
             return pd.concat(dfs)
 
@@ -455,7 +464,7 @@ class CoreModel(PlotManager):
 
        Example:
 
-       Instatiate an ``apsimNGpy.core.apsim.ApsimModel`` object and run ::
+       Instantiate an ``apsimNGpy.core.apsim.ApsimModel`` object and run::
 
               from apsimNGpy.core.apsim import ApsimModel
               model = ApsimModel(model= 'Maize')# replace with your path to the apsim template model
@@ -734,7 +743,12 @@ class CoreModel(PlotManager):
         else:
             if not adoptive_parent_name:
                 adoptive_parent_name = adoptive_parent().Name
-            parent = sims.FindInScope[adoptive_parent](adoptive_parent_name)
+
+            try:
+                parent = sims.FindInScope[adoptive_parent](adoptive_parent_name)
+            except:
+
+                parent = sims.FindDescendant[adoptive_parent](adoptive_parent_name)
         if model_type == Models.Core.Simulations:
             raise ValueError(
                 f"{model_type} can not be a simulations holder did you mean 'Models.Core.Simulation' or 'Simulation'?")
@@ -785,15 +799,21 @@ class CoreModel(PlotManager):
             # get_or_check_model(parent, model_type.__class__, model_type.Name, action='delete')
             model_to_add = ModelTools.CLONER(loc)
             del loc
+            parent = getattr(parent, 'Model', parent)
             ModelTools.ADD(model_to_add, parent)
 
             if verbose:
                 logger.info(f"Added {model_to_add.Name} to {parent.Name}")
             # compile
-            self.save()
+            return self
 
         else:
             logger.debug(f"Adding {model_type} to {parent.Name} failed, perhaps models was not found")
+
+    def _refresh_experiment(self):
+        mi = load_apsim_model(self.path)
+        self.wk_info['SIM'] = mi.Simulations
+        self.wk_info['NODE'] = mi.Node
 
     @staticmethod
     def _set_clock_vars(model_instance, param_values: dict, verbose=False):
@@ -862,7 +882,7 @@ class CoreModel(PlotManager):
     def detect_model_type(self, model_instance: Union[str, Models]):
         """Detects the model type from a given APSIM model instance or path string."""
         if not isinstance(model_instance, str):
-            model= model_instance
+            model = model_instance
 
         else:
             # Otherwise, assume it's a path and try to retrieve the model
@@ -871,8 +891,6 @@ class CoreModel(PlotManager):
             if model is None:
                 raise ValueError(f"No model found associated with: {model_instance}")
             model = model.Value
-
-
 
         return type(model)
 
@@ -926,8 +944,8 @@ class CoreModel(PlotManager):
             case Models.Surface.SurfaceOrganicMatter:
                 if kwargs == {}:
                     raise ValueError(f"Please supply at least one parameter: value \n '{', '.join({'SurfOM',
-                                                                                             'InitialCPR', 'InitialResidueMass',
-                                                                                             'InitialCNR', 'IncorporatedP', })}' for {path}")
+                                                                                                   'InitialCPR', 'InitialResidueMass',
+                                                                                                   'InitialCNR', 'IncorporatedP', })}' for {path}")
                 self._set_surface_organic_matter(values, param_values=kwargs, verbose=verbose)
             case _:
                 raise NotImplementedError(f"No edit method implemented for model type {type(values)}")
@@ -1718,7 +1736,7 @@ class CoreModel(PlotManager):
                                     parameters=parameters, **kwargs)
 
     def inspect_model_parameters_by_path(self, path, *,
-                                 parameters: Union[list, set, tuple, str] = None):
+                                         parameters: Union[list, set, tuple, str] = None):
         """
         Inspect and extract parameters from a model component specified by its path.
 
@@ -1749,7 +1767,6 @@ class CoreModel(PlotManager):
         mod_obj = model_by_path.Value
 
         return extract_value(mod_obj, parameters=parameters)
-
 
     def edit_cultivar(self, *, CultivarName: str, commands: str, values: Any, **kwargs):
         """
@@ -2159,14 +2176,6 @@ class CoreModel(PlotManager):
         self.save()
         open_apsimx_file_in_window(self.path, bin_path=get_apsim_bin_path())
 
-    def _kvtodict(self, kv):
-        return {kv[i].Key: kv[i].Value for i in range(kv.Count)}
-
-    def compile_scripts(self):
-        for sim in self.simulations:
-            managers = sim.FindAllDescendants[Models.Manager]()
-            for manager in list(managers):
-                print(manager.SuccessfullyCompiledLast)
 
     @staticmethod
     def strip_time(date_string):
@@ -2859,7 +2868,8 @@ class CoreModel(PlotManager):
             Path(self.path).unlink(missing_ok=True)
             Path(self.path.replace('apsimx', "bak")).unlink(missing_ok=True)
             if db:
-                Path(self.datastore).unlink(missing_ok=True)
+                if self.datastore:
+                    Path(self.datastore).unlink(missing_ok=True)
                 Path(self.path.replace('apsimx', "db-wal")).unlink(missing_ok=True)
                 Path(self.path.replace('apsimx', "db-shm")).unlink(missing_ok=True)
                 if verbose:
@@ -2897,6 +2907,12 @@ class CoreModel(PlotManager):
             ``base_name`` is optional but the experiment may not be created if there are more than one base simulations. Therefore, an error is likely.
 
         """
+        if IS_NEW_MODEL:
+            from apsimNGpy.core.config import apsim_version
+            version = apsim_version()
+            logger.warning(
+                f'\n create_experiment is deprecated for this apsim version {version} use the `apsimNGpy.core.experiment.Experiment` class instead.')
+            return self
         #
         self.refresh_model()
         self.factor_names = []
@@ -2919,17 +2935,20 @@ class CoreModel(PlotManager):
         self.experiment = True
         self.experiment_created = True
 
+    def stop(self):
+        storage = self.Simulations.FindDescendant[Models.Storage.DataStore]()
+        storage.Writer.Stop()
+
     def refresh_model(self):
-       """
+        """
        for methods that will alter the simulation objects and need refreshing the second time we call
        @return: self for method chaining
        """
-       if not self._intact_model:
-           old_model = ModelTools.CLONER(self.Simulations)
-           self._intact_model.append(old_model)
-       if self._intact_model:
-           self.Simulations = self._intact_model[0]
-
+        if not self._intact_model:
+            old_model = ModelTools.CLONER(self.Simulations)
+            self._intact_model.append(old_model)
+        if self._intact_model:
+            self.Simulations = self._intact_model[0]
 
     def add_factor(self, specification: str, factor_name: str = None, **kwargs):
         """
@@ -3092,6 +3111,7 @@ class CoreModel(PlotManager):
         if _crop is not None:
             ModelTools.ADD(_crop, _FOLDER)
         else:
+
             logger.error(f"No plants of crop{CROP} found")
         return self
 
@@ -3216,6 +3236,34 @@ class CoreModel(PlotManager):
 
         return summary.round(round)
 
+    def create_experiment_for_node(self, permutation=True):
+        def exp_refresher(mode):
+            sim = mode.simulations[0]
+            base = ModelTools.CLONER(sim)
+            for simx in mode.simulations:  # it does not matter how many experiments exist, we need only one
+                ModelTools.DELETE(simx)
+            # replace before delete
+            mode.simulations[0] = base
+            base = mode.simulations[0]
+            experiment = Models.Factorial.Experiment()
+            factor = Models.Factorial.Factors()
+            if permutation:
+                factor.AddChild(Models.Factorial.Permutation())
+            experiment.AddChild(factor)
+            experiment.AddChild(base)
+            mode.model_info.Node.AddChild(experiment)
+
+        # delete experiment if exists to allow refreshing if simulation was edited
+        experi = self.Simulations.FindInScope[Models.Factorial.Experiment]()
+        if experi:
+            ModelTools.DELETE(experi)
+        exp_refresher(self)
+        self.save()
+        fp = self.Simulations.FindInScope[Models.Factorial.Experiment]()
+        exp_node = get_node_by_path(self.model_info.Node, fp.FullPath)
+        self.preview_simulation()
+        return exp_node
+
     # @timer
     def add_db_table(self, variable_spec: list = None, set_event_names: list = None, rename: str = 'my_table',
                      simulation_name: Union[str, list, tuple] = MissingOption):
@@ -3287,7 +3335,7 @@ class CoreModel(PlotManager):
             if check_repo:  # because this is intented to create an entirley new db table
                 ModelTools.DELETE(check_repo)
             zone.Children.Add(report)
-            self.save()
+        self.save()
 
         # save the results to recompile
 
@@ -3329,3 +3377,15 @@ if __name__ == '__main__':
     #     model.clone_model('Models.Core.Simulation', 'Simulation',
     #                       'Models.Core.Simulations', rename=f"sim_{i}")
     # # doctest.testmod()
+    from model_loader import get_node_by_path
+
+    # Node = model.model_info.Node
+    # Node.AddChild(Models.Factorial.Experiment())
+    # proto = CastHelper.CastAs[Models.Core.Simulations](Node)
+    # fp1 = model.Simulations.FindInScope[Models.Factorial.Experiment]()
+    # si = ModelTools.CLONER(model.simulations[0])
+    # Node.RemoveChild(model.simulations[0])
+    # model.save()
+    # fp = model.Simulations.FindInScope[Models.Factorial.Experiment]().FullPath
+
+    # model.preview_simulation()

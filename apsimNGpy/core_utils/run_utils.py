@@ -11,7 +11,7 @@ import sys
 import warnings
 import pythonnet
 from apsimNGpy.core import pythonet_config
-apsim_model = pythonet_config.aPSim_PATH
+apsim_model = pythonet_config.APSIM_BIN_PATH
 
 from os.path import realpath
 import warnings

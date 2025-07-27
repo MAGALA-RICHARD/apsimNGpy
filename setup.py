@@ -4,31 +4,7 @@ from setuptools import setup, find_packages
 import sys
 from functools import cache
 
-@cache
-def extract_for_lower(toml_path):
-    with open(toml_path, 'r') as f:
-        inside_project = False
-        for line in f:
-            line = line.strip()
-            if line == '[project]':
-                inside_project = True
-            elif inside_project and line.startswith('version'):
-                return line.split('=')[1].strip().strip('"').strip("'")
-
-def extract_version(toml_path='./pyproject.toml'):
-    if sys.version_info >= (3, 11):
-        import tomllib
-        with open(toml_path, 'rb') as f:
-            data = tomllib.load(f)
-        return data['project']['version']
-
-    else:
-        extract_for_lower(toml_path)
-        raise RuntimeError("Version not found in [project] section.")
-
-
-VERSION = extract_version()
-
+VERSION = '0.39.3.6'
 
 DESCRIPTION = 'APSIM next generation package interface'
 LONG_DESCRIPTION = 'Run, edit, download soils and weather and interact with the apsimx file'
@@ -57,7 +33,9 @@ setup(
     },
 
     package_data={'': ['./apsimNGpy/data/*.apsimx',
+                       './apsimNGpy/dll/*.dll',
                        './apsimNGpy/*.met',
+                       './apsimNGpy/*.dll',
                        "./apsimNGpy/experiment/*.py",
                        './apsimNGpy/examples/*.png',
                        './apsimNGpy/images/*.png',
@@ -80,8 +58,8 @@ setup(
         'numpy>=1.20.0',
         'scipy>=1.7',
         'xmltodict >=0.13.0',
-        'requests >=2.31.0',
-        'pythonnet >= 3.0.1',
+        'requests >=2.32.4',
+        "pythonnet>=3.0.5",
         'rasterio >=1.3.8',
         'shapely >=2.0.1',
         'clr >= 1.0.3',

@@ -161,6 +161,8 @@ def get_apsim_bin_path():
         auto_path = auto_detect_apsim_bin_path()
         create_config(CONFIG_PATH, apsim_path=auto_path)
         return auto_path
+
+
     return apsim_bin_path
 
 

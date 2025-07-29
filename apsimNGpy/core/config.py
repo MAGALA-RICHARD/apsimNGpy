@@ -11,12 +11,15 @@ import logging
 import psutil
 import uuid
 from shutil import copy2
+
 logger = logging.getLogger(__name__)
-from apsimNGpy.settings import CONFIG_PATH, create_config
+from apsimNGpy.settings import CONFIG_PATH, create_config, logger
 from functools import lru_cache
+
 HOME_DATA = Path.home().joinpath('AppData', 'Local', 'Programs')
 cdrive = os.environ.get('PROGRAMFILES')
 CONFIG = configparser.ConfigParser()
+
 
 @cache
 def _apsim_model_is_installed(_path: str):
@@ -140,6 +143,7 @@ def auto_detect_apsim_bin_path():
     else:
         return ""
 
+
 @cache
 def get_apsim_bin_path():
     """
@@ -155,15 +159,29 @@ def get_apsim_bin_path():
     # if it does not exist, we create it and try to load from the auto-detected pass
     g_CONFIG = configparser.ConfigParser()
     g_CONFIG.read(CONFIG_PATH)
-    """We can extract the current path from apsimNGpyconfig.ini"""
+    # """We can extract the current path from apsimNGpyconfig.ini"""
     apsim_bin_path = g_CONFIG['Paths']['APSIM_LOCATION']
     if not exists(apsim_bin_path):
         auto_path = auto_detect_apsim_bin_path()
         create_config(CONFIG_PATH, apsim_path=auto_path)
         return auto_path
 
-
     return apsim_bin_path
+
+
+def get_bin_use_history():
+    """
+    shows the bins that have been used oly those still available on the computer as valid paths are shown.
+
+    @return: list[paths]
+    """
+    g_CONFIG = configparser.ConfigParser()
+    g_CONFIG.read(CONFIG_PATH)
+    if g_CONFIG.has_section('PreviousPaths'):
+        history = g_CONFIG['PreviousPaths']['BINS']
+        return eval(history)
+    else:
+        logger.info('No bin path have been set to get generate bin use histories')
 
 
 def set_apsim_bin_path(path, raise_errors=True):
@@ -190,7 +208,7 @@ def set_apsim_bin_path(path, raise_errors=True):
             logger.warning(f"Attempted to set an invalid path: {_path}")
             return  # Optionally, you could return False here to indicate failure
     current_path = get_apsim_bin_path()
-    if _path != current_path:
+    if str(_path) != str(current_path):
         create_config(CONFIG_PATH, _path)
 
         logger.info(f"APSIM binary path successfully updated from '{current_path}' to '{_path}'")
@@ -284,7 +302,7 @@ def load_crop_from_disk(crop: str, out: str = None, work_space: str = None):
 
     if BIN and os.path.exists(BIN):
         EXa = BIN.replace('bin', 'Examples')
-        #print(f"{EXa}*/{crop}.{suffix}")
+        # print(f"{EXa}*/{crop}.{suffix}")
 
         target_location = glob.glob(f"{EXa}/**/*{crop}.{suffix}", recursive=True)  # case-sensitive
         if target_location:

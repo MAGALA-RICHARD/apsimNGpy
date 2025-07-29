@@ -4,6 +4,7 @@ author: Richard Magala
 email: magalarich20@gmail.com
 
 """
+import gc
 import re
 import random
 import pathlib
@@ -31,11 +32,11 @@ from apsimNGpy.core.pythonet_config import *
 from apsimNGpy.core_utils.database_utils import dataview_to_dataframe
 from apsimNGpy.core.config import get_apsim_bin_path
 
-from apsimNGpy.core._modelhelpers import (get_or_check_model, old_method, Double, Array, _edit_in_cultivar,
-                                          inspect_model_inputs, soil_components,
-                                          ModelTools, _eval_model, replace_variable_by_index)
+from apsimNGpy.core.model_tools import (get_or_check_model, old_method, Double, Array, _edit_in_cultivar,
+                                        inspect_model_inputs, soil_components,
+                                        ModelTools, validate_model_obj, replace_variable_by_index)
 from apsimNGpy.core.runner import run_model_externally, collect_csv_by_model_path, run_p
-from apsimNGpy.core.model_loader import (load_apsim_model, save_model_to_file, recompile)
+from apsimNGpy.core.model_loader import (load_apsim_model, save_model_to_file, recompile, get_node_by_path)
 import ast
 from typing import Any
 
@@ -135,12 +136,6 @@ class CoreModel(PlotManager):
             self.out_path = self.out  # `out` overrides `out_path` if both are provided for maintaining previous versions
 
         self.work_space = self.set_wd or SCRATCH
-
-        if hasattr(self, 'copy') and self.copy:
-            warnings.warn(
-                'copy argument is deprecated, it is now mandatory to copy the model in order to conserve the original model.',
-                UserWarning
-            )
 
         self._met_file = self.others.get('met_file')
         self.model_info = load_apsim_model(
@@ -497,6 +492,7 @@ class CoreModel(PlotManager):
             if not self.ran_ok and not verbose:
                 from apsimNGpy.exceptions import InvalidInputErrors
                 self.run(verbose=True)
+
                 raise InvalidInputErrors(f'Invalid inputs encountered. Please diagnose and try again')
 
             return self
@@ -581,9 +577,8 @@ class CoreModel(PlotManager):
                model.inspect_file()
 
             """
-        model_type = _eval_model(model_type)
-        mtn = get_or_check_model(self.Simulations, model_type=model_type, model_name=old_name, action='get',
-                                 cacheit=False)
+        model_type = validate_model_obj(model_type)
+        mtn = get_or_check_model(self.Simulations, model_type=model_type, model_name=old_name, action='get')
         mtn.Name = f"{new_name}"
         self.save()
         return self
@@ -630,8 +625,8 @@ class CoreModel(PlotManager):
 
         """
         # Reference to the APSIM cloning function
-        model_type = _eval_model(model_type, evaluate_bound=True)
-        adoptive_parent_type = _eval_model(adoptive_parent_type, evaluate_bound=False)
+        model_type = validate_model_obj(model_type, evaluate_bound=True)
+        adoptive_parent_type = validate_model_obj(adoptive_parent_type, evaluate_bound=False)
 
         # Locate the model to be cloned within the simulation scope
         clone_parent = (self.Simulations.FindInScope[model_type](model_name) if model_name
@@ -679,7 +674,7 @@ class CoreModel(PlotManager):
              'Models.Clock'
 
         """
-        return _eval_model(model_name)
+        return validate_model_obj(model_name)
 
     def add_model(self, model_type, adoptive_parent, rename=None,
                   adoptive_parent_name=None, verbose=False, source='Models', source_model_name=None, override=True,
@@ -735,8 +730,8 @@ class CoreModel(PlotManager):
         import Models
 
         sims = self.Simulations
-        model_type = _eval_model(model_type, evaluate_bound=True)
-        adoptive_parent = _eval_model(adoptive_parent, evaluate_bound=False)
+        model_type = validate_model_obj(model_type, evaluate_bound=True)
+        adoptive_parent = validate_model_obj(adoptive_parent, evaluate_bound=False)
         # find where to add the model
         if adoptive_parent == Models.Core.Simulations:
             parent = self.Simulations
@@ -887,7 +882,10 @@ class CoreModel(PlotManager):
         else:
             # Otherwise, assume it's a path and try to retrieve the model
             path = model_instance
-            model = self.Simulations.FindByPath(path)
+            try:
+                model = self.Simulations.FindByPath(path)
+            except AttributeError as e:
+                model = get_node_by_path(self.Simulations, path)
             if model is None:
                 raise ValueError(f"No model found associated with: {model_instance}")
             model = model.Value
@@ -899,11 +897,29 @@ class CoreModel(PlotManager):
         verbose = kwargs.get('verbose', False)
         for p in {'simulation', 'simulations', 'verbose'}:
             kwargs.pop(p, None)
-
-        v_obj = self.Simulations.FindByPath(path)
+        try:
+            v_obj = self.Simulations.FindByPath(path)
+        except AttributeError as e:
+            v_obj = get_node_by_path(self.Simulations, path)
         if v_obj is None:
             raise ValueError(f"Could not find model instance associated with path `{path}`")
-        values = v_obj.Value
+        try:
+            values = v_obj.Value
+        except AttributeError:
+            values = v_obj.Model
+            for model_class in {Models.Manager, Models.Climate.Weather,
+                                Models.PMF.Cultivar, Models.Clock, Models.Report,
+                                Models.Surface.SurfaceOrganicMatter,
+                                Models.Soils.Physical, Models.Soils.Chemical, Models.Soils.Organic, Models.Soils.Water,
+                                Models.Soils.Solute
+                                }:
+                cast_model = CastHelper.CastAs[model_class](values)
+                if cast_model is not None:
+                    values = cast_model
+                    break
+            else:
+                raise ValueError(
+                    f"Could not find model instance associated with `{path}\n or {path} is not supported by this method")
 
         match type(values):
             case Models.Climate.Weather:
@@ -1116,13 +1132,14 @@ class CoreModel(PlotManager):
             simulations = self.inspect_model('Models.Core.Simulation', fullpath=False)
             simulations = [str(i) for i in simulations]
 
-        model_type_class = _eval_model(model_type)
+        model_type_class = validate_model_obj(model_type)
 
         for sim in self.find_simulations(simulations):
             # model_instance = get_or_check_model(sim, model_type_class, model_name, action='get', cacheit=cacheit,
             #                                     cache_size=cache_size)
             model_instance = sim.FindInScope[model_type_class](model_name)
-
+            if hasattr(model_instance, 'Model'):
+                model_instance = CastHelper.CastAs[model_type_class](model_instance.Model)
             match type(model_instance):
                 case Models.Climate.Weather:
                     self._set_weather_path(model_instance, param_values=kwargs, verbose=verbose)
@@ -1177,12 +1194,12 @@ class CoreModel(PlotManager):
 
                     # Get replacement folder and source cultivar model
                     replacements = get_or_check_model(self.Simulations, Models.Core.Folder, 'Replacements',
-                                                      action='get', cacheit=False, cache_size=cache_size)
+                                                      action='get', cache_size=cache_size)
 
                     get_or_check_model(replacements, Models.Core.Folder, 'Replacements',
-                                       action='delete', cacheit=False, cache_size=cache_size)
+                                       action='delete', cache_size=cache_size)
                     cultivar_fallback = get_or_check_model(self.Simulations, Models.PMF.Cultivar, model_name,
-                                                           action='get', cacheit=False, cache_size=cache_size)
+                                                           action='get', cache_size=cache_size)
                     cultivar = ModelTools.CLONER(cultivar_fallback)
 
                     # Update cultivar parameters
@@ -1202,7 +1219,7 @@ class CoreModel(PlotManager):
 
                     # Attach cultivar under plant model
                     plant_model = get_or_check_model(replacements, Models.PMF.Plant, plant_name,
-                                                     action='get', cacheit=False, cache_size=cache_size)
+                                                     action='get', cache_size=cache_size)
 
                     # Remove existing cultivar with same name
                     get_or_check_model(replacements, Models.PMF.Cultivar, new_cultivar_name, action='delete')
@@ -1309,7 +1326,7 @@ class CoreModel(PlotManager):
                model.remove_model(Models.Clock) #deletes the clock node
                model.remove_model(Models.Climate.Weather) #deletes the weather node
         """
-        model_type = _eval_model(model_type)
+        model_type = validate_model_obj(model_type)
         if not model_name:
             model_name = model_type().Name
         to_remove = self.Simulations.FindInScope[model_type](model_name)
@@ -1337,8 +1354,8 @@ class CoreModel(PlotManager):
         """
         sims = self.Simulations
 
-        model_type = _eval_model(model_type)
-        new_parent_type = _eval_model(new_parent_type)
+        model_type = validate_model_obj(model_type)
+        new_parent_type = validate_model_obj(new_parent_type)
         if model_type == Models.Core.Simulations:
             raise ValueError(
                 'Can not move a model of type "Models.Core.Simulations". Did you mean Models.Core.Simulation or Simulation?')
@@ -1379,7 +1396,7 @@ class CoreModel(PlotManager):
                apsim = apsim._rename_model(Models.Clock, 'Clock', 'clock')
 
         """
-        model_type = _eval_model(model_type)
+        model_type = validate_model_obj(model_type)
 
         def _rename(_sim):
             # __sim = _sim.FindInScope[model_type](old_model_name)
@@ -1760,8 +1777,11 @@ class CoreModel(PlotManager):
             1. Finds the model object using the given path.
             2. Extracts and returns the requested parameter(s).
         """
-        from apsimNGpy.core._modelhelpers import extract_value
-        model_by_path = self.Simulations.FindByPath(path)
+        from apsimNGpy.core.model_tools import extract_value
+        try:
+            model_by_path = self.Simulations.FindByPath(path)
+        except AttributeError as ae:
+            model_by_path = get_node_by_path(self.Simulations, path)
         _model_type = self.detect_model_type(path)
 
         mod_obj = model_by_path.Value
@@ -1879,7 +1899,10 @@ class CoreModel(PlotManager):
 
             som_path = f'{zone.FullPath}.SurfaceOrganicMatter'
             if som_path:
-                som = zone.FindByPath(som_path)
+                try:
+                    som = zone.FindByPath(som_path)
+                except AttributeError as ae:
+                    som = get_node_by_path(zone, som_path)
                 if som:
                     simus[sim.Name] = som.Value.InitialResidueMass, som.Value.InitialCNR
             else:
@@ -1978,24 +2001,33 @@ class CoreModel(PlotManager):
         # reject space in fmt
         if fmt != '.':
             path = path.replace(fmt, ".")
+        try:
+            manager = self.Simulations.FindByPath(path)
+        except AttributeError:
+            manager = get_node_by_path(self.Simulations, path)
 
-        manager = self.Simulations.FindByPath(path)
+            manager = CastHelper.CastAs[Models.Manager](manager.Model)
+        try:
+            vp = manager.Value.Parameters
+        except AttributeError:
 
-        stack_manager_depth = range(len(manager.Value.Parameters))
+            vp = manager.Parameters
+        stack_manager_depth = range(len(vp))
+
         if kwargs == {}:
             raise ValueError(
                 "Please supply parameters and their values as keyword arguments. "
                 "These arguments are unique for each script.\n"
                 f"In '{path}', the following parameters were found: "
-                f"{[manager.Value.Parameters[i].Key for i in stack_manager_depth]}.\n"
+                f"{[vp[i].Key for i in stack_manager_depth]}.\n"
                 "You need to specify at least one of them."
             )
 
         for i in stack_manager_depth:
-            _param = manager.Value.Parameters[i].Key
+            _param = vp[i].Key
 
             if _param in kwargs:
-                manager.Value.Parameters[i] = KeyValuePair[String, String](_param, f"{kwargs[_param]}")
+                vp[i] = KeyValuePair[String, String](_param, f"{kwargs[_param]}")
                 # remove the successfully processed keys
                 kwargs.pop(_param)
         if len(kwargs.keys()) > 0:
@@ -2058,7 +2090,7 @@ class CoreModel(PlotManager):
         """
 
         # Validate and resolve the model type string into the correct class
-        model_type = _eval_model(model_type)
+        model_type = validate_model_obj(model_type)
 
         # Load the source model (if a path is provided instead of a CoreModel instance)
         model2 = load_apsim_model(model) if not isinstance(model, CoreModel) else model
@@ -2151,14 +2183,27 @@ class CoreModel(PlotManager):
             for mgt in management:
 
                 action_path = f'{zone_path}.{mgt.get("Name")}'
-                fp = zone.FindByPath(action_path)
+                try:
+                    fp = zone.FindByPath(action_path)
+
+                except AttributeError:
+
+                    fp = get_node_by_path(zone, action_path)
+                    fp = CastHelper.CastAs[Models.Manager](fp.Model)
+
+                try:
+                    vp = fp.Value.Parameters
+                except AttributeError:
+                    vp = fp.Parameters
                 # before proceeding, we need to check if fp is not None, that is if that script name does not exist
                 if fp is not None:
                     values = mgt
-                    for i in range(len(fp.Value.Parameters)):
-                        param = fp.Value.Parameters[i].Key
+                    for i in range(len(vp)):
+                        param = vp[i].Key
                         if param in values.keys():
-                            fp.Value.Parameters[i] = KeyValuePair[String, String](param, f"{values[param]}")
+                            vp[i] = KeyValuePair[String, String](param, f"{values[param]}")
+                else:
+                    raise ValueError(f"invalid manager inputs. Manager not found")
         out_mgt_path = out or self.out_path or self.model_info.path
         self.recompile_edited_model(out_path=out_mgt_path)
 
@@ -2175,7 +2220,6 @@ class CoreModel(PlotManager):
         """
         self.save()
         open_apsimx_file_in_window(self.path, bin_path=get_apsim_bin_path())
-
 
     @staticmethod
     def strip_time(date_string):
@@ -2553,7 +2597,7 @@ class CoreModel(PlotManager):
             However, remembering full paths can be tedious, so allowing partial model names or references can significantly save time during development and exploration.
         """
 
-        model_type = _eval_model(model_type)
+        model_type = validate_model_obj(model_type)
         if model_type == Models.Core.Simulations:
             obj = [self.Simulations]
         else:
@@ -2623,7 +2667,17 @@ class CoreModel(PlotManager):
         """
         if not kwargs:
             raise ValueError('No parameters are specified')
-        _soil_child = self.Simulations.FindByPath(node_path)
+        try:
+            _soil_child = self.Simulations.FindByPath(node_path)
+        except AttributeError:
+            _soil_child = get_node_by_path(self.Simulations, node_path)
+            soil_class = 'Models.Soils.' + '.'.join(node_path.split('.')[-1:])
+            try:
+                soil_class = validate_model_obj(soil_class)
+            except AttributeError:
+                soil_class = Models.Soils.Solute
+            _soil_child = CastHelper.CastAs[soil_class](_soil_child.Model)
+
         if _soil_child is None:
             raise ValueError(f"No such child: {node_path} exist in the simulation file {self.path}")
         if not kwargs:
@@ -2635,20 +2689,26 @@ class CoreModel(PlotManager):
                 v = [v]
             if indices is None:
                 indices = [v.index(i) for i in v]
-
-            param_values_new = list(getattr(_soil_child.Value, parameter))
+            val_p = getattr(_soil_child, 'Value', _soil_child)
+            param_values_new = list(getattr(val_p, parameter))
             _param_new = replace_variable_by_index(param_values_new, v, indices)
-            setattr(_soil_child.Value, parameter, _param_new)
+            setattr(val_p, parameter, _param_new)
 
     def get_soil_values_by_path(self, node_path, *args):
 
         var_out = {}
-        _soil_child_obj = self.Simulations.FindByPath(node_path)
+        try:
+            _soil_child_obj = self.Simulations.FindByPath(node_path)
+        except AttributeError:
+            _soil_child_obj = get_node_by_path(self.Simulations, node_path)
+            soil_class = 'Models.Soils.' + '.'.join(node_path.split('.')[-1:])
+            soil_class = validate_model_obj(soil_class)
+            _soil_child_obj = CastHelper.CastAs[soil_class](_soil_child_obj.Model)
 
         if args:
             for arg in args:
-
-                gv = getattr(_soil_child_obj.Value, arg, None)
+                val_p = getattr(_soil_child_obj, 'Value', _soil_child_obj)
+                gv = getattr(val_p, arg, None)
                 if gv:
                     gv = list(gv)
                 else:
@@ -3138,8 +3198,10 @@ class CoreModel(PlotManager):
             if cultivar:
                 model_types.append('Models.PMF.Cultivar')
             for i in model_types:
-
-                ans = self.inspect_model(eval(i))
+                try:
+                    ans = self.inspect_model(eval(i))
+                except AttributeError as ae:
+                    continue
                 if 'Replacements' not in ans and 'Folder' in i:
                     continue
                 data.extend(ans)
@@ -3339,9 +3401,14 @@ class CoreModel(PlotManager):
 
         # save the results to recompile
 
+    @simulations.setter
+    def simulations(self, value):
+        self._simulations = value
+
 
 APSIMNG = CoreModel
 
+gc.collect()
 if __name__ == '__main__':
     from pathlib import Path
     from time import perf_counter
@@ -3357,7 +3424,7 @@ if __name__ == '__main__':
     # for rn in ['Maize, Soybean, Wheat', 'Maize', 'Soybean, Wheat']:
     a = perf_counter()
     # model.RevertCheckpoint()
-    model.update_mgt(management=({"Name": 'Sow using a variable rule', 'Population': 10},))
+    # model.update_mgt(management=({"Name": 'Sow using a variable rule', 'Population': 10},))
     # model.replace_soil_properties_by_path(path='None.Soil.Organic.None.None.Carbon', param_values=[N])
     # model.replace_any_soil_physical(parameter='BD', param_values=[1.23],)
     # model.save_edited_file(reload=True)

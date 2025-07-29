@@ -1,3 +1,6 @@
+"""
+This module contains unit tests for the testing external tests if added to the suite
+"""
 import unittest
 from tests.tester_main import suite, loader, run_suite
 from apsimNGpy.core.base_data import load_default_simulations

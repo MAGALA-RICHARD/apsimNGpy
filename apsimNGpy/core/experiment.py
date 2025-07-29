@@ -2,7 +2,7 @@ import re
 
 from apsimNGpy.core.apsim import ApsimModel
 from collections import OrderedDict
-from apsimNGpy.core._modelhelpers import ModelTools, Models
+from apsimNGpy.core.model_tools import ModelTools, Models
 from apsimNGpy.core_utils.cs_utils import CastHelper
 import APSIM.Core as NodeUtils
 import System
@@ -18,6 +18,7 @@ class Experiment(ApsimModel):
         self.factors = OrderedDict()
         self.specs = OrderedDict()
         self.counter = 0
+        self.sims = self.simulations
 
     def init_experiment(self, permutation=True):
         """
@@ -33,12 +34,26 @@ class Experiment(ApsimModel):
         self.permutation = permutation
 
         def exp_refresher(mode):
-            sim = mode.simulations[0]
-            base = ModelTools.CLONER(sim)
+            sim_in = mode.simulations[:]
+            sim = mode.simulations[0].Node.Clone()
+            mode.simulations = sim_in
+            print(mode.simulations, 'xx')
+            sim = CastHelper.CastAs[Models.Core.Simulation](sim.Model)
+            base = sim #ModelTools.CLONER(sim)
+
+            self.sims = base,
+            print(base)
+            print(type(sim_in))
+            print(mode.simulations)
+            if not mode.simulations:
+                raise ValueError('simulation not found in the root node')
             for simx in mode.simulations:  # it does not matter how many experiments exist, we need only one
-                ModelTools.DELETE(simx)
+                #ModelTools.DELETE(simx)
+                print(base, 'tr')
             # replace before delete
-            mode.simulations[0] = base
+            mode.simulations.append(base)
+            print(mode.simulations, '////')
+            mode.simulations.append(sim)
             base = mode.simulations[0]
             experiment = Models.Factorial.Experiment()
             self.experiment_node = experiment

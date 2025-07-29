@@ -6,7 +6,11 @@ Tests edit_model_method and inspect model_parameters co-currently.
 from apsimNGpy.core.base_data import load_default_simulations
 from apsimNGpy.core.apsim import ApsimModel
 import unittest
-
+from pathlib import Path
+wd = Path(__file__).parent.joinpath('test_edits')
+wd.mkdir(parents=True, exist_ok=True)
+from os import chdir
+chdir(wd)
 SIMULATION = 'Simulation'
 
 

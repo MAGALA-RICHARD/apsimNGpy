@@ -1,5 +1,6 @@
 import os.path
 import platform
+import textwrap
 from pathlib import Path
 from subprocess import *
 from typing import Dict, Any, Union
@@ -73,33 +74,14 @@ def upgrade_apsim_file(file: str, verbose:bool=True):
         return file
 
 
-def run_model_externally(model: Union[Path, str], verbose: bool = False, to_csv:bool=False) -> Popen[str]:
+
+
+def run_model_externally(model: Union[Path, str], verbose: bool = False, to_csv: bool = False) -> Popen[str]:
     """
-    Runs an ``APSIM`` model externally, ensuring cross-platform compatibility.
-
-    Although ``APSIM`` models can be run internally, compatibility issues across different APSIM versions—
-    particularly with compiling manager scripts—led to the introduction of this method.
-
-    ``model``: (str) Path to the ``APSIM`` model file or a filename pattern.
-
-    ``verbose``: (bool) If ``True``, prints stdout output during execution.
-
-    ``to_csv``: (bool) If ``True``, write the results to a CSV file in the same directory.
-
-    ``returns``: A subprocess.Popen object.
-
-    Example::
-
-        result =run_model_externally("path/to/model.apsimx", verbose=True, to_csv=True)
-        from apsimNGpy.core.base_data import load_default_simulations
-        path_to_model = load_default_simulations(crop ='maize', simulations_object =False)
-        pop_obj = run_model_externally(path_to_model, verbose=False)
-        pop_obj1 = run_model_externally(path_to_model, verbose=True)# when verbose is true, will print the time taken
+    Runs an APSIM model externally with cross-platform support and optional CSV output.
     """
-
-    apsim_file = model  # Define the APSIMX file path
+    apsim_file = model
     cmd = [str(APSIM_EXEC), str(apsim_file), '--verbose']
-
     if to_csv:
         cmd.append('--csv')
 
@@ -110,14 +92,19 @@ def run_model_externally(model: Union[Path, str], verbose: bool = False, to_csv:
             out, err = result.communicate()
 
             if err:
-                logger.error(err.strip())
+                wrapped_err = textwrap.fill(err.strip(), width=80)
+                logger.error("APSIM Execution Error:\n" + wrapped_err)
+
             if verbose:
-                logger.info(f"{repr(out.strip())}, output from {apsim_file}")
+                wrapped_out = textwrap.fill(out.strip(), width=80)
+                logger.info(f"APSIM Output from {apsim_file}:\n{wrapped_out}")
 
             return result
+
         finally:
-            if result.poll() is None:  # Ensures the process is properly killed
+            if result.poll() is None:
                 result.kill()
+
 
 
 from pathlib import Path
@@ -288,6 +275,91 @@ def apsim_executable(path, *args):
 def run_p(path):
     run(apsim_executable(path))
 
+def run(self, report_name=None,
+        simulations=None,
+        clean=False,
+        multithread=True,
+        verbose=False,
+        get_dict=False, **kwargs):
+    """
+    Run APSIM model simulations.
+
+    Parameters
+    ----------
+    report_name : str or list of str, optional
+        Name(s) of report table(s) to retrieve. If not specified or missing in the database,
+        the model still runs and results can be accessed later.
+
+    simulations : list of str, optional
+        Names of simulations to run. If None, all simulations are executed.
+
+    clean : bool, default False
+        If True, deletes the existing database file before running.
+
+    multithread : bool, default True
+        If True, runs simulations using multiple threads.
+
+    verbose : bool, default False
+        If True, prints diagnostic messages (e.g., missing report names).
+
+    get_dict : bool, default False
+        If True, returns results as a dictionary {table_name: DataFrame}.
+
+    Returns
+    -------
+    results : DataFrame or list or dict of DataFrames
+        Simulation output(s) from the specified report table(s).
+    """
+    try:
+        # Set run type
+        runtype = Models.Core.Run.Runner.RunTypeEnum.MultiThreaded if multithread \
+                  else Models.Core.Run.Runner.RunTypeEnum.SingleThreaded
+
+        # Open and optionally clean the datastore
+        self._DataStore.Open()
+        if clean:
+            self._DataStore.Dispose()
+            pathlib.Path(self._DataStore.FileName).unlink(missing_ok=True)
+
+        # Get simulations to run
+        sims = self.find_simulations(simulations) if simulations else self.Simulations
+        if simulations:
+            cs_sims = List[Models.Core.Simulation]()
+            for s in sims:
+                cs_sims.Add(s)
+            sim = cs_sims
+        else:
+            sim = sims
+
+        # Run the model
+        _run_model = Models.Core.Run.Runner(sim, True, False, False, None, runtype)
+        errors = _run_model.Run()
+        if errors:
+            print(errors[0].ToString())
+
+        # Determine report names
+        if report_name is None:
+            report_name = get_db_table_names(self.datastore)
+            if '_Units' in report_name:
+                report_name.remove('_Units')
+            if verbose:
+                warnings.warn(f"No report name specified. Using detected tables: {report_name}")
+
+        # Read results
+        if isinstance(report_name, (list, tuple)):
+            if get_dict:
+                results = {rep: read_db_table(self.datastore, rep) for rep in report_name}
+            else:
+                results = [read_db_table(self.datastore, rep) for rep in report_name]
+        else:
+            if get_dict:
+                results = {report_name: read_db_table(self.datastore, report_name)}
+            else:
+                results = read_db_table(self.datastore, report_name)
+    finally:
+        self._DataStore.Close()
+
+    return results
 
 if __name__ == "__main__":
     import doctest

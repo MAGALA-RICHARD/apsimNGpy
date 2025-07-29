@@ -30,6 +30,11 @@
    :target: https://teams.live.com/l/community/FBAbNOQj7y9dPcoaAI
    :alt: Ask Teams
 
+.. image:: https://img.shields.io/badge/APSIM--NG-2025.7.7811.0-blue?style=flat&logo=apachespark
+   :target: https://www.apsim.info
+   :alt: APSIM Next Generation version
+
+
 
 apsimNGpy: The Next Generation Agroecosytem Simulation Library
 ====================================================================

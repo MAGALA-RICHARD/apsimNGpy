@@ -59,7 +59,7 @@ def load_pythonnet(bin_path=APSIM_BIN_PATH):
         bin_path = candidate
 
     system.path.append(bin_path)
-    print(bin_path)
+
     import clr
     start_pythonnet()
     clr.AddReference("System")

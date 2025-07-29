@@ -10,6 +10,12 @@ from tests.unittests.base_unit_tests import BaseTester
 import json
 from pathlib import Path
 from apsimNGpy.exceptions import CastCompilationError
+from apsimNGpy.core_utils.clean import clean
+import os
+import atexit
+wd = Path.home() / "test_model_loader"
+wd.mkdir(parents=True, exist_ok=True)
+os.chdir(wd)
 
 model = model_from_string("Maize")
 if hasattr(model, 'Model'):  # incase it is an APSIM.Core.Node object
@@ -26,7 +32,7 @@ def mock_model_from_dict():
 
 
 def mock_file_from_disk():
-    target = Path.home() / 'mock_on_disk.apsimx'
+    target = Path.home() / 'mock_on_disk1.apsimx'
     return shutil.copyfile(MODEL_PATH, target)
 
 
@@ -66,7 +72,7 @@ class TestCoreModel(BaseTester):
     def test_load_load_apsim_model_dict(self):
         """Test unified APSIM model loader with dictionary input."""
         dict_data = mock_model_from_dict()
-        out = load_apsim_model(dict_data, out='maize.apsimx')
+        out = load_apsim_model(dict_data, out='maizex.apsimx')
         sims = cast(out.IModel)
 
         self.assertIsInstance(sims, Models.Core.Simulations, 'loading model fro dict using load_apsim_model '
@@ -124,7 +130,7 @@ class TestCoreModel(BaseTester):
     def test_save_model_to_disk(self):
         import pathlib
         def test(mod_p):
-            mod = load_apsim_model(mod_p, out='maize_from_fp.apsimx')
+            mod = load_apsim_model(mod_p, out='../maize_from_fp.apsimx')
             fp = pathlib.Path.home() / f"{uuid.uuid1()}_{version}.apsimx"
             try:
                 fp.unlink(missing_ok=True)
@@ -139,14 +145,19 @@ class TestCoreModel(BaseTester):
                 Path('maize_from_fp.apsimx').unlink(missing_ok=True)
 
         # test from default
-        mod = load_apsim_model("Maize", out='maize_from_fp.apsimx')
+        mod = load_apsim_model("Maize", out='../maize_from_fp.apsimx')
         test('Maize')
         # test from disk
         test(mock_file_from_disk())
+
+
 
 
 # initialize the model
 if __name__ == '__main__':
     ...
     mo = load_apsim_model('Maize')
-    unittest.main()
+    try:
+        unittest.main()
+    finally:
+        atexit.register(clean, wd)

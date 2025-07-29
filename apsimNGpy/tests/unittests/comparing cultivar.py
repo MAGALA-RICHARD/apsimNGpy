@@ -1,5 +1,5 @@
 from apsimNGpy.core.apsim import ApsimModel
-from apsimNGpy.core._modelhelpers import Models, ModelTools
+from apsimNGpy.core.model_tools import Models, ModelTools
 
 
 class CompareCultivar(ApsimModel):

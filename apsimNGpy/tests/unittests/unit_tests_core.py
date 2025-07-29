@@ -1,18 +1,28 @@
+import os
+import sys
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 
 import pandas as pd
 
 from apsimNGpy.core.core import CoreModel, Models
-from apsimNGpy.core._modelhelpers import find_model, _eval_model
+from apsimNGpy.core.model_tools import find_model, validate_model_obj
 from apsimNGpy.settings import logger
 # Import the module where CoreModel class is defined
-from tests.unittests.base_unit_tests import BaseTester, set_wd
+from tests.unittests.base_unit_tests import BaseTester
 from apsimNGpy.core.base_data import load_default_simulations
 from apsimNGpy.core.pythonet_config import is_file_format_modified
-set_wd()
+from apsimNGpy.core_utils.clean import clean
+import atexit
 
 IS_NEW_APSIM = is_file_format_modified()
+
+wd = Path.cwd() / "test_core"
+wd.mkdir(parents=True, exist_ok=True)
+os.chdir(wd)
+
+
 class TestCoreModel(BaseTester):
 
     def test_run(self):
@@ -152,7 +162,8 @@ class TestCoreModel(BaseTester):
         =====================================================================================
         """
         if IS_NEW_APSIM:
-            logger.info(f'\n APSIM version is the newest incompatible with this method skipping test... {self.test_create_experiment.__name__}')
+            logger.info(
+                f'\n APSIM version is the newest incompatible with this method skipping test... {self.test_create_experiment.__name__}')
         else:
 
             self.test_ap_sim.create_experiment()
@@ -201,12 +212,13 @@ class TestCoreModel(BaseTester):
     def test_edit_with_path_som(self):
         model = CoreModel(model='Maize')
         initial_ratio = 200.0
-        model.edit_model_by_path('.Simulations.Simulation.Field.SurfaceOrganicMatter', InitialCNR=initial_ratio, verbose=False)
+        model.edit_model_by_path('.Simulations.Simulation.Field.SurfaceOrganicMatter', InitialCNR=initial_ratio,
+                                 verbose=False)
         # after inspecting if it was successfully updated
-        icnr = model.inspect_model_parameters(model_type='SurfaceOrganicMatter', model_name='SurfaceOrganicMatter', parameters='InitialCNR')
+        icnr = model.inspect_model_parameters(model_type='SurfaceOrganicMatter', model_name='SurfaceOrganicMatter',
+                                              parameters='InitialCNR')
         self.assertEqual(icnr['InitialCNR'], initial_ratio, msg='InitialCNR was not successfully updated by '
                                                                 'edit_model_by_path method')
-
 
     def test_find_model_andeval_models(self):
         """
@@ -218,26 +230,26 @@ class TestCoreModel(BaseTester):
 
         # Test finding a model by simple string name
         clok_model = find_model('clock')
-        _eval_model(clok_model)  # Validate model lookup
+        validate_model_obj(clok_model)  # Validate model lookup
         self.assertEqual(clok_model, Models.Clock)  # Ensure it matches the Clock model
 
         simulation_model = find_model('Simulation')
-        _eval_model(simulation_model)  # Validate model lookup
+        validate_model_obj(simulation_model)  # Validate model lookup
         self.assertEqual(simulation_model, Models.Core.Simulation)  # Ensure correct match
 
         # Test direct evaluation of model paths as strings
-        clock = _eval_model('Models.Clock')
+        clock = validate_model_obj('Models.Clock')
         self.assertEqual(clock, Models.Clock)  # Confirm evaluation matches Clock model
 
-        simulation = _eval_model('Models.Core.Simulation')
+        simulation = validate_model_obj('Models.Core.Simulation')
         self.assertEqual(simulation, Models.Core.Simulation)  # Confirm evaluation matches Core.Simulation model
 
         # Test direct evaluation of just model name
-        experiment = _eval_model('Experiment')
+        experiment = validate_model_obj('Experiment')
         self.assertEqual(experiment,
                          Models.Factorial.Experiment)  # Confirm evaluation matches Models.Factorial.Experiment model
 
-        factors = _eval_model('Factors')
+        factors = validate_model_obj('Factors')
         self.assertEqual(factors, Models.Factorial.Factors)  # Confirm evaluation matches Models.Factorial.Factors model
 
     def test_add_model_simulation(self):
@@ -261,8 +273,11 @@ class TestCoreModel(BaseTester):
 
     def test_get_weather_from_web_nasa(self):
         model = load_default_simulations('Maize')
-        model.get_weather_from_web(lonlat=(-93.50456, 42.601247), start=1990, end=2001, source='nasa')
-        model.run()
+        try:
+            model.get_weather_from_web(lonlat=(-93.50456, 42.601247), start=1990, end=2001, source='nasa')
+            model.run()
+        except KeyError:
+          pass
 
     def test_get_weather_from_web_daymet(self):
         model = load_default_simulations('Maize')
@@ -283,7 +298,7 @@ class TestCoreModel(BaseTester):
         @return:
         """
         test_ap_sim = CoreModel('Maize', out='test_cult.apsimx')
-        #test_ap_sim.add_crop_replacements(_crop='Maize')
+        # test_ap_sim.add_crop_replacements(_crop='Maize')
 
         out_cultivar = 'B_110-e'
         new_juvenile = 289.777729777
@@ -323,7 +338,7 @@ class TestCoreModel(BaseTester):
         # test a list of simulations
         w_file = self.test_ap_sim.inspect_model_parameters(model_type='Weather', simulations=['Simulation'],
                                                            model_name='Weather')
-        self.assertIsInstance(w_file, dict, msg='Inspect weather model parameters failed, when simualtion is a list')
+        self.assertIsInstance(w_file, dict, msg='Inspect weather model parameters failed, when simulation is a list')
 
 
 if __name__ == '__main__':

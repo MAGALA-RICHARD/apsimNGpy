@@ -632,7 +632,6 @@ def write_edited_met(old: Union[str, Path], daf: pd.DataFrame, filename: str = "
         for i, line in enumerate(file):
             existing_lines.append(line)
             if 'MJ' in line and 'mm' in line and 'day in line':
-                print(line)
                 break
     # iterate through the edited data frame met
     headers = daf.columns.to_list()

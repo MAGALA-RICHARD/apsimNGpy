@@ -1,6 +1,15 @@
+import os
 import unittest
+from pathlib import Path
+
 from apsimNGpy.core.apsim import ApsimModel
 from tests.unittests.base_unit_tests import BaseTester
+from apsimNGpy.core_utils.clean import clean
+import tempfile
+
+wd = Path.cwd() / "test_apsim"
+wd.mkdir(parents=True, exist_ok=True)
+os.chdir(wd)
 
 
 class TestCoreModel(BaseTester):

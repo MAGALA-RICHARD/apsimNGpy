@@ -20,7 +20,7 @@ def transfer():
 
 
 if __name__ == "__main__":
-    schedule.every(1).seconds.do(transfer)
+    schedule.every(1).day.do(transfer)
     while True:
         schedule.run_pending()
-        time.sleep(1)
+        time.sleep(36000)

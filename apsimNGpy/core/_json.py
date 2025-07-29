@@ -7,7 +7,7 @@ from apsimNGpy.core.model_loader import load_as_dict
 from apsimNGpy.core.config import load_crop_from_disk
 from os.path import realpath
 from collections import OrderedDict
-from apsimNGpy.core._modelhelpers import _eval_model, Models
+from apsimNGpy.core.model_tools import validate_model_obj, Models
 
 path2file = load_crop_from_disk('Maize', '../t.apsim')
 f_name = realpath(path2file)
@@ -36,7 +36,7 @@ def evaluate_model_class(model_class):
     @param model_class:
     @return: full string representation of model_class
     """
-    evaluated = _eval_model(model_class)
+    evaluated = validate_model_obj(model_class)
     return match_model_path(str(evaluated))
 
 

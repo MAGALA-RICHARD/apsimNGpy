@@ -343,6 +343,7 @@ def get_node_by_path(node, node_path):
     @param node_path: node path
     @return: node object if found. raise NodeNotFoundError
     """
+
     if hasattr(node, 'Node'):
         node = node.Node
     if hasattr(node, 'Walk'):
@@ -376,6 +377,7 @@ def get_attributes(obj):
 if __name__ == '__main__':
     from pprint import pprint
 
+    pat = load_crop_from_disk('Maize')
     load = load_apsim_model('Maize')
     p, model, model2 = load.Node, load.IModel, load.IModel
     from apsimNGpy.core.config import set_apsim_bin_path

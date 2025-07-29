@@ -20,11 +20,27 @@ MissingOption = MissingType()
 
 
 def create_config(config_path, apsim_path=""):
-    _CONFIG = configparser.ConfigParser()
-    _CONFIG.read(config_path)
+    _CONFIG = create_bin_paths_used(config_path, apsim_path)
     _CONFIG['Paths'] = {'APSIM_LOCATION': apsim_path}
     with open(config_path, 'w') as configured_file:
         _CONFIG.write(configured_file)
+
+
+def create_bin_paths_used(config_path, apsim_path=""):
+    BINS = []
+    _CONFIG = configparser.ConfigParser()
+    _CONFIG.read(config_path)
+    if _CONFIG.has_section('PreviousPaths'):
+        pp = _CONFIG['PreviousPaths']
+        prev = pp.get('BINS', "[]")
+        binS = set(eval(prev))
+        BINS = [i for i in binS if os.path.exists(i)]
+        BINS = list(dict.fromkeys(BINS))
+    if os.path.exists(config_path) and str(apsim_path) not in BINS:
+        BINS.append(apsim_path)
+    _CONFIG['PreviousPaths'] = dict(BINS=str(BINS))
+
+    return _CONFIG
 
 
 def config_internal(key: str, value: str) -> None:
@@ -100,11 +116,7 @@ APSIM_LOCATION = os.environ.get('APSIM_LOCATION')
 
 SCRATCH = os.environ.get('WS', Path(os.getcwd()) / 'scratch')
 # need to clean up periodically if can
-try:
-    rmtree(SCRATCH)
-except (FileNotFoundError, PermissionError) as fp:
-    ...
+
 SCRATCH.mkdir(parents=True, exist_ok=True)
 
 config_internal('version', f"{VERSION}")
-

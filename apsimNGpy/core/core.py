@@ -194,7 +194,7 @@ class CoreModel(PlotManager):
         # fixed
         # we can actually specify the simulation name in the bracket
         self.check_model()
-        return list(self.Simulations.FindAllInScope[Models.Core.Simulation]())
+        return list(self.Simulations.FindAllDescendants[Models.Core.Simulation]())
 
     @property
     def simulation_names(self):
@@ -3179,25 +3179,25 @@ class CoreModel(PlotManager):
         """
         Select out a few model types to use for building the APSIM file inspections
         """
-
+        self.save()
         def filter_out():
             import Models
             data = []
-            model_types = ['Models.Core.Simulation', 'Models.Soils.Soil', 'Models.PMF.Plant', 'Models.Manager',
-                           'Models.Climate.Weather', 'Models.Report', 'Models.Clock', 'Models.Core.Folder',
-                           'Models.Soils.Solute', 'Models.Surface.SurfaceOrganicMatter',
-                           'Models.Soils.Swim3', 'Models.Soils.SoilCrop', 'Models.Soils.Water', 'Models.Summary',
-                           'Models.Core.Zone', 'Models.Management.RotationManager',
-                           'Models.Soils.CERESSoilTemperature', 'Models.Series', 'Models.Factorial.Experiment',
-                           'Models.Factorial.Permutation', 'Models.Irrigation',
-                           'Models.Factorial.Factors',
-                           'Models.Sobol', 'Models.Operations', 'Models.Morris', 'Models.Fertiliser',
-                           'Models.Core.Events',
-                           'Models.Core.VariableComposite',
-                           'Models.Soils.Physical', 'Models.Soils.Chemical', 'Models.Soils.Organic']
+            model_classes = ['Models.Core.Simulation', 'Models.Soils.Soil', 'Models.PMF.Plant', 'Models.Manager',
+                             'Models.Climate.Weather', 'Models.Report', 'Models.Clock', 'Models.Core.Folder',
+                             'Models.Soils.Solute', 'Models.Surface.SurfaceOrganicMatter',
+                             'Models.Soils.Swim3', 'Models.Soils.SoilCrop', 'Models.Soils.Water', 'Models.Summary',
+                             'Models.Core.Zone', 'Models.Management.RotationManager',
+                             'Models.Soils.CERESSoilTemperature', 'Models.Series', 'Models.Factorial.Experiment',
+                             'Models.Factorial.Permutation', 'Models.Irrigation',
+                             'Models.Factorial.Factors',
+                             'Models.Sobol', 'Models.Operations', 'Models.Morris', 'Models.Fertiliser',
+                             'Models.Core.Events',
+                             'Models.Core.VariableComposite',
+                             'Models.Soils.Physical', 'Models.Soils.Chemical', 'Models.Soils.Organic']
             if cultivar:
-                model_types.append('Models.PMF.Cultivar')
-            for i in model_types:
+                model_classes.append('Models.PMF.Cultivar')
+            for i in model_classes:
                 try:
                     ans = self.inspect_model(eval(i))
                 except AttributeError as ae:
@@ -3205,8 +3205,8 @@ class CoreModel(PlotManager):
                 if 'Replacements' not in ans and 'Folder' in i:
                     continue
                 data.extend(ans)
-            del Models, model_types
-            return data
+            del Models, model_classes
+            return [i for i in data if i is not None]
 
         return filter_out()
 
@@ -3253,7 +3253,7 @@ class CoreModel(PlotManager):
                 )
 
         tree = build_tree(self.get_model_paths(cultivar=cultivar))
-
+        print(tree, 'tree')
         print_tree_branches(tree)
 
     def summarize_numeric(self, data_table: Union[str, tuple, list] = None, columns: list = None,

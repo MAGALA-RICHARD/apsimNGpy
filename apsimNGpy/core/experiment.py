@@ -6,6 +6,7 @@ from apsimNGpy.core.model_tools import ModelTools, Models
 from apsimNGpy.core_utils.cs_utils import CastHelper
 import APSIM.Core as NodeUtils
 import System
+from apsimNGpy.core.model_loader import to_model_from_string, to_json_string
 
 
 class Experiment(ApsimModel):
@@ -34,27 +35,17 @@ class Experiment(ApsimModel):
         self.permutation = permutation
 
         def exp_refresher(mode):
-            sim_in = mode.simulations[:]
-            sim = mode.simulations[0].Node.Clone()
-            mode.simulations = sim_in
-            print(mode.simulations, 'xx')
-            sim = CastHelper.CastAs[Models.Core.Simulation](sim.Model)
-            base = sim #ModelTools.CLONER(sim)
-
-            self.sims = base,
-            print(base)
-            print(type(sim_in))
-            print(mode.simulations)
-            if not mode.simulations:
-                raise ValueError('simulation not found in the root node')
+            sim = mode.simulations[0]
+            base = ModelTools.CLONER(sim)
             for simx in mode.simulations:  # it does not matter how many experiments exist, we need only one
-                #ModelTools.DELETE(simx)
-                print(base, 'tr')
+                ModelTools.DELETE(simx)
             # replace before delete
-            mode.simulations.append(base)
-            print(mode.simulations, '////')
-            mode.simulations.append(sim)
-            base = mode.simulations[0]
+
+            try:
+                mode.simulations[0] = base
+                base = mode.simulations[0]
+            except IndexError:
+                pass
             experiment = Models.Factorial.Experiment()
             self.experiment_node = experiment
             factor = Models.Factorial.Factors()
@@ -69,6 +60,8 @@ class Experiment(ApsimModel):
             if experi:
                 ModelTools.DELETE(experi)
             mode.model_info.Node.AddChild(experiment)
+
+
 
         exp_refresher(self)
 
@@ -122,7 +115,10 @@ class Experiment(ApsimModel):
             if 0 <= index < len(parent_factor.Children):
                 old_child = parent_factor.Children[index]
                 if old_child is not None:
-                    ModelTools.DELETE(old_child)
+                    ...
+                    parent_factor.Children.Remove(old_child)
+                    #NodeUtils.Node.RemoveChild(old_child)
+                  #  ModelTools.DELETE(old_child)
 
         except System.ArgumentOutOfRangeException:
             pass

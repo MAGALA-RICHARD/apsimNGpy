@@ -60,6 +60,10 @@ class Experiment(ApsimModel):
             if experi:
                 ModelTools.DELETE(experi)
             mode.model_info.Node.AddChild(experiment)
+            sim_final = CastHelper.CastAs[Models.Core.Simulations](mode.model_info.Node)
+            simx = list(sim_final.FindAllDescendants[Models.Core.Simulation]())
+            if not mode.simulations:
+                mode.simulations.extend(simx)
 
 
 

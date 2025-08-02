@@ -17,12 +17,14 @@ from apsimNGpy.core_utils.utils import timer
 from apsimNGpy.settings import *
 from pathlib import Path
 from apsimNGpy.core.config import load_crop_from_disk
-from apsimNGpy.core.model_loader import load_apsim_model
+from apsimNGpy.core.model_loader import load_apsim_model, get_node_by_path
 from apsimNGpy.core_utils.cs_utils import simple_rotation_code, update_manager_code
 from core_utils.database_utils import read_db_table
 from apsimNGpy.core.pythonet_config import is_file_format_modified
 
 IS_NEW_APSIM = is_file_format_modified()
+
+from apsimNGpy.core_utils.cs_utils import CastHelper
 
 
 @cache
@@ -112,6 +114,42 @@ ModelTools.ACTIONS
 ModelTools.DELETE
 
 
+def find_child(parent, child_class, child_name):
+    parent = getattr(parent, 'Model', parent)
+    if isinstance(child_class, str):
+        child_class = validate_model_obj(child_class)
+
+    for child in parent.Children:
+        cast_child = CastHelper.CastAs[child_class](child)
+        if child.Name == child_name and cast_child:
+            return child
+        # 🔁 Recursively search in child's children
+        result = find_child(child, child_class, child_name)
+        if result is not None:
+            return result
+
+    return None  # Not found
+
+
+def find_all_in_scope(scope, child_class):
+    all_in_scope = []
+
+    if isinstance(child_class, str):
+        child_class = validate_model_obj(child_class)
+
+    for child in scope.Children:
+        cast_child = CastHelper.CastAs[child_class](child)
+        if cast_child:
+            all_in_scope.append(child)
+
+        # 🔁 Recursively search in this child's children
+        child_results = find_all_in_scope(child, child_class)
+        if child_results:
+            all_in_scope.extend(child_results)
+
+    return all_in_scope
+
+
 def get_or_check_model(search_scope, model_type, model_name, action='get', cache_size=300):
     """
             Helper function to check if a model instance is found in the simulation
@@ -126,7 +164,7 @@ def get_or_check_model(search_scope, model_type, model_name, action='get', cache
             -----------
             sim : ApsimSimulation
                 The APSIM simulation object.
-            model_type : str
+            model_class : str
                 The type of model to search for (e.g., 'Soil', 'Manager').
             model_name : str, optional
                 The name of the model to find. If omitted, returns the first model of that type.
@@ -151,11 +189,16 @@ def get_or_check_model(search_scope, model_type, model_name, action='get', cache
         if action not in ModelTools.ACTIONS:
             raise ValueError(f'sorry action should be any of {ModelTools.ACTIONS} ')
         # get bound methods based on model type
-        finder = search_scope.FindInScope[model_type]
-        get_model = finder(model_name) if model_name else finder()
+        try:
+            finder = search_scope.FindInScope[model_type]
+            get_model = finder(model_name) if model_name else finder()
+        except AttributeError:
+            get_model = find_child(search_scope, child_class=model_type, child_name=model_name)
         if action == 'check':
             return True if get_model is not None else False
         if not get_model and action == 'get':
+            if model_type == 'Models.Core.Simulations' or model_type == Models.Core.Simulations:
+                return search_scope
             raise ValueError(f"{model_name} of type {model_type} not found")
 
         if action == 'delete' and get_model:
@@ -267,7 +310,7 @@ def validate_model_obj(model__type, evaluate_bound=False) -> ModelTools.CLASS_MO
         if model_types:
             return model_types
         else:
-            raise ValueError(f"invalid model_type: '{model__type}' from type: {type(model__type)}")
+            raise ValueError(f"invalid model_class: '{model__type}' from type: {type(model__type)}")
     finally:
         # future implementation
 
@@ -275,8 +318,10 @@ def validate_model_obj(model__type, evaluate_bound=False) -> ModelTools.CLASS_MO
 
 
 def extract_value(model_instance, parameters=None):
+
     if isinstance(parameters, str):
         parameters = {parameters}
+
 
     match type(model_instance):
         case Models.Climate.Weather:
@@ -396,7 +441,7 @@ def inspect_model_inputs(scope, model_type: str, model_name: str,
     -----------
     scope : ApsimNG model context with Models.Core.Simulations  and its associated Simulation
         Root scope or project object containing Simulations.
-    model_type : str
+    model_class : str
         Name of the model class (e.g., 'Clock', 'Manager', 'Soils.Physical', etc.)
     simulations : Union[str, list]
         Name or list of names of simulation(s) to inspect.
@@ -432,11 +477,14 @@ def inspect_model_inputs(scope, model_type: str, model_name: str,
 
     is_single_sim = True if isinstance(simulations, str) else False
     sim_list = scope.find_simulations(simulations)
+
     result = {} if not is_single_sim else None
     if isinstance(parameters, str):
         parameters = {parameters}
     for sim in sim_list:
-        model_instance = get_or_check_model(sim, model_type_class, model_name, action='get')
+        model_instance = find_child(sim, child_class= model_type_class, child_name=model_name)
+        model_class = validate_model_obj(model_type_class)
+        model_instance = CastHelper.CastAs[model_class](model_instance)
         value = extract_value(model_instance, parameters)
         if is_single_sim:
             return value
@@ -592,7 +640,7 @@ def add_model(_model, parent, model):
 
 def add_as_simulation(_model, resource, sim_name):
     model = load_apsim_model(resource)
-    sim = model.IModel.FindInScope[Models.Core.Simulation]()
+    sim = model.IModel.FindDescendant[Models.Core.Simulation]()
     if sim is None:
         raise RuntimeError(f'simulation not found {model.IModel}')
     new_sim = sim
@@ -614,7 +662,7 @@ def add_as_simulation(_model, resource, sim_name):
 
 
 def detect_sowing_managers(_model):
-    managers = _model.Simulations.FindAllInScope[Models.Manager]()
+    managers = _model.Simulations.FindAllDescendants[Models.Manager]()
     if managers is not None:
         for manager in managers:
             code = manager.Code
@@ -636,7 +684,7 @@ def configure_rotation(_model, simulations=None):
             sims = simulations
         new_sim = [si for si in model_sims if si.Name in sims]
     for sim in new_sim:
-        zone = sim.FindInScope[Models.Core.Zone]()
+        zone = sim.FindDescendant[Models.Core.Zone]()
         zone.Children.Add(manager)
     man = detect_sowing_managers(_model)
     update = update_manager_code(man.Code, description="Simple Rotation Manager", typeof='Manager', var_name='rotation')
@@ -644,13 +692,15 @@ def configure_rotation(_model, simulations=None):
     new_manager.Rename('rots')
     new_manager.set_Code(update)
     for sim in new_sim:
-        zone = sim.FindInScope[Models.Core.Zone]()
+        zone = sim.FindDescendant[Models.Core.Zone]()
         zone.Children.Add(new_manager)
-
-    mann = _model.Simulations.FindInScope[Models.Manager]('Sow on a fixed date')
 
     _model.save()
     return _model
 
 
 collect()
+setattr(ModelTools, 'find_child', find_child)
+setattr(ModelTools, 'find_all_in_scope', find_all_in_scope)
+if __name__ == "__main__":
+    ...

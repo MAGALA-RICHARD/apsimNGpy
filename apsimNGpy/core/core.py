@@ -42,7 +42,7 @@ from typing import Any
 
 from apsimNGpy.settings import SCRATCH, logger, MissingOption
 from apsimNGpy.core.plotmanager import PlotManager
-
+from apsimNGpy.core.model_tools import find_child
 IS_NEW_MODEL = is_file_format_modified()
 
 
@@ -569,9 +569,9 @@ class CoreModel(PlotManager):
             Example::
                from apsimNGpy.core.apsim import ApsimModel
                model = ApsimModel(model = 'Maize')
-               model.rename_model(model_type="Simulation", old_name ='Simulation', new_name='my_simulation')
+               model.rename_model(model_class="Simulation", old_name ='Simulation', new_name='my_simulation')
                # check if it has been successfully renamed
-               model.inspect_model(model_type='Simulation', fullpath = False)
+               model.inspect_model(model_class='Simulation', fullpath = False)
                ['my_simulation']
                # The alternative is to use model.inspect_file to see your changes
                model.inspect_file()
@@ -593,7 +593,7 @@ class CoreModel(PlotManager):
 
         Parameters:
         ----------
-        ``model_type`` : Models
+        ``model_class`` : Models
             The type of the model to be cloned, e.g., `Models.Simulation` or `Models.Clock`.
         ``model_name`` : str
             The unique identification name of the model instance to be cloned, e.g., `"clock1"`.
@@ -629,8 +629,8 @@ class CoreModel(PlotManager):
         adoptive_parent_type = validate_model_obj(adoptive_parent_type, evaluate_bound=False)
 
         # Locate the model to be cloned within the simulation scope
-        clone_parent = (self.Simulations.FindInScope[model_type](model_name) if model_name
-                        else self.Simulations.FindInScope[model_type]())
+        clone_parent = (self.Simulations.FindDescendant[model_type](model_name) if model_name
+                        else self.Simulations.FindDescendant[model_type]())
 
         # Create a clone of the model
         clone = ModelTools.CLONER(clone_parent)
@@ -638,12 +638,16 @@ class CoreModel(PlotManager):
         # Assign a new name to the cloned model
         new_name = rename if rename else f"{clone.Name}_clone"
         clone.Name = new_name
-        # check_exists = self.Simulations.FindInScope[model_type](new_name)
-        check_exists = get_or_check_model(self.Simulations, model_type, new_name, action='delete')
+        # check_exists = self.Simulations.FindInScope[model_class](new_name)
+        get_or_check_model(self.Simulations, model_type, new_name, action='delete')
 
         # Find the adoptive parent where the cloned model should be placed
-        parent = (self.Simulations.FindInScope[adoptive_parent_type](adoptive_parent_name) if adoptive_parent_name
-                  else self.Simulations.FindInScope[adoptive_parent_type]())
+        if adoptive_parent_type == Models.Core.Simulations or adoptive_parent_type == 'Models.Core.Simulations':
+            parent = self.Simulations
+        else:
+            parent = (
+                self.Simulations.FindDescendant[adoptive_parent_type](adoptive_parent_name) if adoptive_parent_name
+                else self.Simulations.FindDescendant[adoptive_parent_type]())
 
         # Add the cloned model to the new parent
         parent.Children.Add(clone)
@@ -687,7 +691,7 @@ class CoreModel(PlotManager):
         For example, a Clock model cannot be added to a Soil model.
 
         Args:
-            ``model_type`` (str or Models object): The type of model to add, e.g., `Models.Clock` or just `"Clock"`. if the APSIM Models namespace is exposed to the current script, then model_type can be Models.Clock without strings quotes
+            ``model_class`` (str or Models object): The type of model to add, e.g., `Models.Clock` or just `"Clock"`. if the APSIM Models namespace is exposed to the current script, then model_class can be Models.Clock without strings quotes
 
             ``rename`` (str): The new name for the model.
 
@@ -717,7 +721,7 @@ class CoreModel(PlotManager):
             model.remove_model(Models.Clock)  # first delete the model
             model.add_model(Models.Clock, adoptive_parent=Models.Core.Simulation, rename='Clock_replaced', verbose=False)
 
-            model.add_model(model_type=Models.Core.Simulation, adoptive_parent=Models.Core.Simulations, rename='Iowa')
+            model.add_model(model_class=Models.Core.Simulation, adoptive_parent=Models.Core.Simulations, rename='Iowa')
 
             model.preview_simulation()  # doctest: +SKIP
 
@@ -772,8 +776,8 @@ class CoreModel(PlotManager):
                         f"{model_type} can not be found. Please recheck your input or use inspect_file() to see all the available model types")
 
             model_type.Name = rename if rename else model_type.Name
-            # target_child = parent.FindInScope[model_type.__class__](model_type.Name)
-            # target_child = get_or_check_model(parent, model_type.__class__, model_type.Name, action ='delete')
+            # target_child = parent.FindInScope[model_class.__class__](model_class.Name)
+            # target_child = get_or_check_model(parent, model_class.__class__, model_class.Name, action ='delete')
             if override:
                 get_or_check_model(parent, model_type.__class__, model_type.Name, action='delete')
             model_type = ModelTools.CLONER(model_type)
@@ -791,7 +795,7 @@ class CoreModel(PlotManager):
                 if target_child and override:
                     # not raising the error still studying the behaviors of adding a child that already exists
                     ModelTools.DELETE(target_child)
-            # get_or_check_model(parent, model_type.__class__, model_type.Name, action='delete')
+            # get_or_check_model(parent, model_class.__class__, model_class.Name, action='delete')
             model_to_add = ModelTools.CLONER(loc)
             del loc
             parent = getattr(parent, 'Model', parent)
@@ -975,7 +979,7 @@ class CoreModel(PlotManager):
 
         Parameters
         ----------
-        ``model_type``: str
+        ``model_class``: str
             Type of the model component to modify (e.g., 'Clock', 'Manager', 'Soils.Physical', etc.).
 
         ``simulations``: Union[str, list], optional
@@ -1032,7 +1036,7 @@ class CoreModel(PlotManager):
             ValueError
                 If the model instance is not found, required kwargs are missing, or `kwargs` is empty.
             NotImplementedError
-                If the logic for the specified `model_type` is not implemented.
+                If the logic for the specified `model_class` is not implemented.
 
         Examples::
 
@@ -1041,7 +1045,7 @@ class CoreModel(PlotManager):
 
         Example of how to edit a cultivar model::
 
-            model.edit_model(model_type='Cultivar',
+            model.edit_model(model_class='Cultivar',
                  simulations='Simulation',
                  commands='[Phenology].Juvenile.Target.FixedValue',
                  values=256,
@@ -1052,7 +1056,7 @@ class CoreModel(PlotManager):
         Edit a soil organic matter module::
 
             model.edit_model(
-                 model_type='Organic',
+                 model_class='Organic',
                  simulations='Simulation',
                  model_name='Organic',
                  Carbon=1.23)
@@ -1060,7 +1064,7 @@ class CoreModel(PlotManager):
         Edit multiple soil layers::
 
             model.edit_model(
-                 model_type='Organic',
+                 model_class='Organic',
                  simulations='Simulation',
                  model_name='Organic',
                  Carbon=[1.23, 1.0])
@@ -1068,12 +1072,12 @@ class CoreModel(PlotManager):
         Example of how to edit solute models::
 
            model.edit_model(
-                 model_type='Solute',
+                 model_class='Solute',
                  simulations='Simulation',
                  model_name='NH4',
                  InitialValues=0.2)
            model.edit_model(
-                model_type='Solute',
+                model_class='Solute',
                 simulations='Simulation',
                 model_name='Urea',
                 InitialValues=0.002)
@@ -1081,7 +1085,7 @@ class CoreModel(PlotManager):
         Edit a manager script::
 
            model.edit_model(
-                model_type='Manager',
+                model_class='Manager',
                 simulations='Simulation',
                 model_name='Sow using a variable rule',
                 population=8.4)
@@ -1089,13 +1093,13 @@ class CoreModel(PlotManager):
         Edit surface organic matter parameters::
 
             model.edit_model(
-                model_type='SurfaceOrganicMatter',
+                model_class='SurfaceOrganicMatter',
                 simulations='Simulation',
                 model_name='SurfaceOrganicMatter',
                 InitialResidueMass=2500)
 
             model.edit_model(
-                model_type='SurfaceOrganicMatter',
+                model_class='SurfaceOrganicMatter',
                 simulations='Simulation',
                 model_name='SurfaceOrganicMatter',
                 InitialCNR=85)
@@ -1103,7 +1107,7 @@ class CoreModel(PlotManager):
         Edit Clock start and end dates::
 
             model.edit_model(
-                model_type='Clock',
+                model_class='Clock',
                 simulations='Simulation',
                 model_name='Clock',
                 Start='2021-01-01',
@@ -1112,7 +1116,7 @@ class CoreModel(PlotManager):
         Edit report _variables::
 
             model.edit_model(
-                model_type='Report',
+                model_class='Report',
                 simulations='Simulation',
                 model_name='Report',
                 variable_spec='[Maize].AboveGround.Wt as abw')
@@ -1120,7 +1124,7 @@ class CoreModel(PlotManager):
         Multiple report _variables::
 
             model.edit_model(
-                model_type='Report',
+                model_class='Report',
                 simulations='Simulation',
                 model_name='Report',
                 variable_spec=[
@@ -1137,7 +1141,7 @@ class CoreModel(PlotManager):
         for sim in self.find_simulations(simulations):
             # model_instance = get_or_check_model(sim, model_type_class, model_name, action='get', cacheit=cacheit,
             #                                     cache_size=cache_size)
-            model_instance = sim.FindInScope[model_type_class](model_name)
+            model_instance = sim.FindDescendant[model_type_class](model_name)
             if hasattr(model_instance, 'Model'):
                 model_instance = CastHelper.CastAs[model_type_class](model_instance.Model)
             match type(model_instance):
@@ -1215,11 +1219,16 @@ class CoreModel(PlotManager):
 
                     # Apply updated commands
                     updated_cmds = [f"{k.strip()}={v}" for k, v in cultivar_params.items()]
+                    cultivar = CastHelper.CastAs[Models.PMF.Cultivar](cultivar)
                     cultivar.set_Command(updated_cmds)
 
                     # Attach cultivar under plant model
-                    plant_model = get_or_check_model(replacements, Models.PMF.Plant, plant_name,
-                                                     action='get', cache_size=cache_size)
+                    try:
+                        plant_model = get_or_check_model(replacements, Models.PMF.Plant, plant_name,
+                                                         action='get', cache_size=cache_size)
+                    except ValueError:
+                        pl_model = find_child(parent=replacements, child_class=Models.PMF.Plant, child_name='Maize')
+                        plant_model = pl_model
 
                     # Remove existing cultivar with same name
                     get_or_check_model(replacements, Models.PMF.Cultivar, new_cultivar_name, action='delete')
@@ -1270,9 +1279,9 @@ class CoreModel(PlotManager):
             variable_spec = [variable_spec]
 
         if report_name:
-            get_report = self.Simulations.FindInScope[Models.Report](report_name)
+            get_report = self.Simulations.FindDescendant[Models.Report](report_name)
         else:
-            get_report = self.Simulations.FindInScope[Models.Report]()
+            get_report = self.Simulations.FindDescendant[Models.Report]()
         get_cur_variables = list(get_report.VariableNames)
         get_cur_variables.extend(variable_spec)
         final_command = "\n".join(get_cur_variables)
@@ -1307,7 +1316,7 @@ class CoreModel(PlotManager):
 
         Parameters
         ----------
-        ``model_type`` : Models
+        ``model_class`` : Models
             The type of the model to remove (e.g., `Models.Clock`). This parameter is required.
 
         ``model_name`` : str, optional
@@ -1339,7 +1348,7 @@ class CoreModel(PlotManager):
         """
         Args:
 
-        - ``model_type`` (Models): type of model tied to Models Namespace
+        - ``model_class`` (Models): type of model tied to Models Namespace
 
         - ``new_parent_type``: new model parent type (Models)
 
@@ -1363,7 +1372,7 @@ class CoreModel(PlotManager):
             model_name = model_type().Name
 
         child_to_move = get_or_check_model(sims, model_type, model_name,
-                                           action='get')  # sims.FindInScope[model_type](model_name)
+                                           action='get')  # sims.FindInScope[model_class](model_name)
         if not new_parent_name:
             new_parent_name = new_parent_type().Name
 
@@ -1378,7 +1387,7 @@ class CoreModel(PlotManager):
         """
          give new name to a model in the simulations.
 
-        ``model_type``: (Models) Models types e.g., Models.Clock.
+        ``model_class``: (Models) Models types e.g., Models.Clock.
 
         ``old_model_name``: (str) current model name.
 
@@ -1399,7 +1408,7 @@ class CoreModel(PlotManager):
         model_type = validate_model_obj(model_type)
 
         def _rename(_sim):
-            # __sim = _sim.FindInScope[model_type](old_model_name)
+            # __sim = _sim.FindInScope[model_class](old_model_name)
             __sim = get_or_check_model(self.Simulations, model_type=model_type, model_name=old_model_name, action='get')
             __sim.Name = new_model_name
 
@@ -1451,7 +1460,7 @@ class CoreModel(PlotManager):
         """
          returns all params in a cultivar
         """
-
+        cultivar = CastHelper.CastAs[Models.PMF.Cultivar](cultivar)
         cmd = cultivar.Command
         params = {}
         for c in cmd:
@@ -1507,7 +1516,7 @@ class CoreModel(PlotManager):
 
         Parameters
         ----------
-        ``model_type`` : str
+        ``model_class`` : str
             The name of the model class to inspect (e.g., 'Clock', 'Manager', 'Physical', 'Chemical', 'Water', 'Solute').
             Shorthand names are accepted (e.g., 'Clock', 'Weather') as well as fully qualified names (e.g., 'Models.Clock', 'Models.Climate.Weather').
 
@@ -1515,7 +1524,7 @@ class CoreModel(PlotManager):
             A single simulation name or a list of simulation names within the APSIM context to inspect.
 
         ``model_name`` : str
-            The name of the specific model instance within each simulation. For example, if `model_type='Solute'`,
+            The name of the specific model instance within each simulation. For example, if `model_class='Solute'`,
             `model_name` might be 'NH4', 'Urea', or another solute name.
 
         ``parameters`` : Union[str, set, list, tuple], optional
@@ -2039,7 +2048,7 @@ class CoreModel(PlotManager):
 
     @staticmethod
     def update_manager(scope, manager_name, **kwargs):
-        manager = scope.FindInScope[Models.Manager](manager_name)
+        manager = scope.FindDescendant[Models.Manager](manager_name)
         g_parameters = manager.Parameters
         for i in range(len(list(g_parameters))):
             _param = g_parameters[i].Key
@@ -2072,7 +2081,7 @@ class CoreModel(PlotManager):
         Args:
             ``model``: Path to the APSIM model file or a CoreModel instance.
 
-            ``model_type`` (str): Class name (as string) of the model to replace (e.g., "Soil").
+            ``model_class`` (str): Class name (as string) of the model to replace (e.g., "Soil").
 
             ``model_name`` (str, optional): Name of the model instance to copy from the source model.
                 If not provided, the first match is used.
@@ -2086,7 +2095,7 @@ class CoreModel(PlotManager):
             self: To allow method chaining.
 
         ``Raises:``
-            ``ValueError``: If ``model_type`` is "Simulations" which is not allowed for replacement.
+            ``ValueError``: If ``model_class`` is "Simulations" which is not allowed for replacement.
         """
 
         # Validate and resolve the model type string into the correct class
@@ -2405,12 +2414,12 @@ class CoreModel(PlotManager):
 
             Changing weather data with unmatching start and end dates in the simulation will lead to ``RuntimeErrors``. To avoid this first check the start and end date before proceedign as follows::
 
-              dt = model.inspect_model_parameters(model_type='Clock', model_name='Clock', simulations='Simulation')
+              dt = model.inspect_model_parameters(model_class='Clock', model_name='Clock', simulations='Simulation')
               start, end = dt['Start'].year, dt['End'].year
               # output: 1990, 2000
             """
 
-        # start, end = self.inspect_model_parameters(model_type='Clock', model_name='Clock', start=start, end=end)
+        # start, end = self.inspect_model_parameters(model_class='Clock', model_name='Clock', start=start, end=end)
         file_name = f"{Path(self._model).stem}_{source}_{start}_{end}.met"
 
         name = file_name or filename
@@ -2506,7 +2515,7 @@ class CoreModel(PlotManager):
         Inspect the model types and returns the model paths or names. usefull if you want to identify the path to the
         model for editing the model.
 
-        ``model_type``: (Models) e.g. ``Models.Clock`` or just ``'Clock'`` will return all fullpath or names
+        ``model_class``: (Models) e.g. ``Models.Clock`` or just ``'Clock'`` will return all fullpath or names
             of models in the type Clock ``-Models.Manager`` returns information about the manager scripts in simulations. strings are allowed
             to, in the case you may not need to import the global namespace, Models. e.g ``Models.Clock`` will still work well.
             ``-Models.Core.Simulation`` returns information about the simulation -Models.Climate.Weather returns a list of
@@ -3163,11 +3172,11 @@ class CoreModel(PlotManager):
         _FOLDER.Name = "Replacements"
         PARENT = self.Simulations
         # parent replacemnt should be added once
-        target_parent = PARENT.FindInScope[Models.Core.Folder]('Replacements')
+        target_parent = PARENT.FindDescendant[Models.Core.Folder]('Replacements')
         if not target_parent:
             ModelTools.ADD(_FOLDER, PARENT)
         # assumes that the crop already exists in the simulation
-        _crop = PARENT.FindInScope[Models.PMF.Plant](CROP)
+        _crop = PARENT.FindDescendant[Models.PMF.Plant](CROP)
         if _crop is not None:
             ModelTools.ADD(_crop, _FOLDER)
         else:
@@ -3180,6 +3189,7 @@ class CoreModel(PlotManager):
         Select out a few model types to use for building the APSIM file inspections
         """
         self.save()
+
         def filter_out():
             import Models
             data = []
@@ -3390,10 +3400,10 @@ class CoreModel(PlotManager):
         # Try to find a Zone in scope and attach the report to it
         sims = self.find_simulations(simulation_name)
         for sim in sims:
-            zone = sim.FindInScope[Models.Core.Zone]()
+            zone = sim.FindDescendant[Models.Core.Zone]()
             if zone is None:
                 raise RuntimeError("No Zone found in the Simulation scope to attach the report table.")
-            check_repo = sim.FindInScope[Models.Report](rename)
+            check_repo = sim.FindDescendant[Models.Report](rename)
             if check_repo:  # because this is intented to create an entirley new db table
                 ModelTools.DELETE(check_repo)
             zone.Children.Add(report)

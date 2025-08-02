@@ -22,6 +22,7 @@ class Experiment(ApsimModel):
         self.sims = self.simulations
 
     def init_experiment(self, permutation=True):
+        self.factors = OrderedDict()
         """
             Initializes the factorial experiment structure inside the APSIM file.
 
@@ -56,7 +57,7 @@ class Experiment(ApsimModel):
                 factor.AddChild(perm_node)
             experiment.AddChild(factor)
             experiment.AddChild(base)
-            experi = mode.Simulations.FindInScope[Models.Factorial.Experiment]()
+            experi = mode.Simulations.FindDescendant[Models.Factorial.Experiment]()
             if experi:
                 ModelTools.DELETE(experi)
             mode.model_info.Node.AddChild(experiment)
@@ -64,8 +65,7 @@ class Experiment(ApsimModel):
             simx = list(sim_final.FindAllDescendants[Models.Core.Simulation]())
             if not mode.simulations:
                 mode.simulations.extend(simx)
-
-
+            # mode.save()
 
         exp_refresher(self)
 
@@ -121,8 +121,8 @@ class Experiment(ApsimModel):
                 if old_child is not None:
                     ...
                     parent_factor.Children.Remove(old_child)
-                    #NodeUtils.Node.RemoveChild(old_child)
-                  #  ModelTools.DELETE(old_child)
+                    # NodeUtils.Node.RemoveChild(old_child)
+                #  ModelTools.DELETE(old_child)
 
         except System.ArgumentOutOfRangeException:
             pass

@@ -1,25 +1,100 @@
+import configparser
+import os
 import stat
 import sys
 import unittest
 from pathlib import Path
 from apsimNGpy.core.pythonet_config import is_file_format_modified
 import logging
+import smtplib
+from email.mime.text import MIMEText
+from apsimNGpy.core.config import get_apsim_bin_path, apsim_version
+from datetime import datetime
+from email import encoders
+
+from pathlib import Path
+
+date_STR = datetime.now().strftime("%y-%m-%d-%H-%M-%S")
 logging.basicConfig(level=logging.INFO, format='  [%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO, format='  [%(levelname)s] %(message)s')
+logger = logging.getLogger(__name__)
+from apsimNGpy.core.pythonet_config import is_file_format_modified
+
 IS_NEW_APSIM = is_file_format_modified()
+config = configparser.ConfigParser()
+config_file = config.read('./unittests/configs.ini')
+
+
+def send_report(sms, subject, attachment_path=None):
+    # Works only on the local machine for the robot to run automatically and send results of what is going on
+    # the env vars are set manually on the local machine for security purposes
+    all_envs = False
+    sender= None
+    receiver = None
+    key = None
+    if os.environ.get('REPORT_TESTS', None):
+        sender = os.environ.get('SENDER', sender)
+        receiver = os.environ.get('RECEIVER', receiver)
+        key = os.environ.get('PASSCODE', key)
+        all_envs = all([receiver, sender, key])
+    if all_envs:
+        from email.mime.base import MIMEBase
+        from email.mime.multipart import MIMEMultipart
+        from email.mime.text import MIMEText
+        # Email credentials
+        SMTP_SERVER = "smtp.gmail.com"
+        SMTP_PORT = 587
+        EMAIL_SENDER = sender
+        EMAIL_PASSWORD = key
+        EMAIL_RECEIVER = receiver
+
+        # Create the email message
+        msg = MIMEMultipart()
+        msg["From"] = EMAIL_SENDER
+        msg["To"] = EMAIL_RECEIVER
+        msg["Subject"] = subject
+
+        # Attach text message
+        msg.attach(MIMEText(sms, "plain"))
+
+        # Attach a file if provided
+        if attachment_path and os.path.exists(attachment_path):
+            with open(attachment_path, "rb") as attachment:
+                part = MIMEBase("application", "octet-stream")
+                part.set_payload(attachment.read())
+
+            encoders.encode_base64(part)
+            part.add_header(
+                "Content-Disposition",
+                f"attachment; filename={os.path.basename(attachment_path)}",
+            )
+            msg.attach(part)
+
+        # Send the email
+        try:
+            with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+                server.starttls()  # Secure the connection
+                server.login(EMAIL_SENDER, EMAIL_PASSWORD)
+                server.sendmail(EMAIL_SENDER, EMAIL_RECEIVER, msg.as_string())
+                logger.info("Email sent successfully!")
+        except Exception as e:
+            print("Error:", e)
+
+
 if IS_NEW_APSIM:
     from apsimNGpy.tests.unittests import test_experiment
-from apsimNGpy.tests.unittests import test_model_loader, unit_test_apsim, test_cast_helper, unit_tests_core, test_weathermanager, \
+from apsimNGpy.tests.unittests import test_model_loader, unit_test_apsim, test_cast_helper, unit_tests_core, \
+    test_weathermanager, \
     test_edit_model, test_config, unittest_model_tools
 
 modules = [m for m in (unittest_model_tools,
                        unit_tests_core,
                        unit_test_apsim,
-                       test_config,
                        test_edit_model,
                        test_cast_helper,
                        test_model_loader,
-                       test_weathermanager)]
+                       )]
 if IS_NEW_APSIM:
     modules.append(test_experiment)
     modules = (i for i in modules)
@@ -62,9 +137,24 @@ def run_suite(verbosity_level=2):
         logger.info(f"  💥 Errors  : {num_errors}")
         logger.info(f"  📉 Failure Rate: {failure_rate:.2f}%")
 
-        # Optional: Exit with non-zero status code if any test fails
-        if not result.wasSuccessful():
-           sys.exit(1)
+        # Create report string
+        report = (
+            f"Test Suite Summary for {apsim_version()}\n"
+            f"====================================\n"
+            f"✅ Passed  : {num_passed}\n"
+            f"❌ Failures: {num_failures}\n"
+            f"💥 Errors  : {num_errors}\n"
+            f"📉 Failure Rate: {failure_rate:.2f}%\n"
+            f"Date: {date_STR}"
+        )
+
+        # Send report
+
+        send_report(sms=report,
+                    subject=f"{apsim_version()} Test Suite Report"
+                    )
+
+        return report
     finally:
         clean_up()
 

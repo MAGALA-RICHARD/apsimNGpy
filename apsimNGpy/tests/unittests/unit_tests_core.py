@@ -7,7 +7,7 @@ from unittest.mock import patch
 import pandas as pd
 
 from apsimNGpy.core.core import CoreModel, Models
-from apsimNGpy.core.model_tools import find_model, validate_model_obj
+from apsimNGpy.core.model_tools import find_model, validate_model_obj, find_child
 from apsimNGpy.settings import logger
 # Import the module where CoreModel class is defined
 from tests.unittests.base_unit_tests import BaseTester
@@ -162,8 +162,9 @@ class TestCoreModel(BaseTester):
         =====================================================================================
         """
         if IS_NEW_APSIM:
-            logger.info(
-                f'\n APSIM version is the newest incompatible with this method skipping test... {self.test_create_experiment.__name__}')
+            pass
+            # logger.info(
+            #     f'\n APSIM version is the newest incompatible with this method skipping test... {self.test_create_experiment.__name__}')
         else:
 
             self.test_ap_sim.create_experiment()
@@ -175,7 +176,8 @@ class TestCoreModel(BaseTester):
 
     def test_add_crop_replacements(self):
         self.test_ap_sim.add_crop_replacements(_crop='Maize')
-        xp = self.test_ap_sim.Simulations.FindInScope('Replacements')
+        xp = find_child(self.test_ap_sim.Simulations, child_name='Replacements', child_class='Models.Core.Folder')
+        #xp = self.test_ap_sim.Simulations.FindInScope('Replacements')
         if xp:
             rep = True
         else:
@@ -254,8 +256,9 @@ class TestCoreModel(BaseTester):
 
     def test_add_model_simulation(self):
         if IS_NEW_APSIM:
-            logger.info(
-                f'\n APSIM version is the newest incompatible with this method skipping test...{self.test_add_model_simulation.__name__}')
+            pass
+            # logger.info(
+            #     f'\n APSIM version is the newest incompatible with this method skipping test...{self.test_add_model_simulation.__name__}')
         else:
             try:
                 self.test_ap_sim.add_model('Simulation', adoptive_parent='Simulations', rename='soybean_replaced',

@@ -89,4 +89,6 @@ If you are using the fleeting uv virtual environment manager.
 
 Full documentation can be found here; https://magala-richard.github.io/apsimNGpy-documentations/index.html
 
+What started as a simple solution may now seem like overkill, but I didn't expect my hobbyist instincts to take it this far. This has officially become a hobby project. If you find it useful, feel free to star the repo or buy me a coffee to help keep it going and growing!
+
 

@@ -31,7 +31,7 @@
    :alt: Ask Teams
 
 .. image:: https://img.shields.io/badge/Latest--Unittest--APSIM--NG-2025.07.7820-blue?style=flat&logo=apachespark
-   :target: https://registration.apsim.info/?version=2025.07.7820.0&product=APSIM%20Next%20Generation
+   :target: https://registration.apsim.info/?version=2025.07.7822.0&product=APSIM%20Next%20Generation
    :alt: APSIM Next Generation version
 
 
@@ -89,6 +89,5 @@ If you are using the fleeting uv virtual environment manager.
 
 Full documentation can be found here; https://magala-richard.github.io/apsimNGpy-documentations/index.html
 
-What started as a simple solution may now seem like overkill, but I didn't expect my hobbyist instincts to take it this far. This has officially become a hobby project. If you find it useful, feel free to star the repo or buy me a coffee to help keep it going and growing!
 
 

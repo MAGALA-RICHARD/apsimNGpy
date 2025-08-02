@@ -3221,10 +3221,12 @@ class CoreModel(PlotManager):
         return filter_out()
 
     def inspect_file(self, cultivar=False, **kwargs):
+
         """
         Inspect the file by calling ``inspect_model()`` through ``get_model_paths.``
         This method is important in inspecting the ``whole file`` and also getting the ``scripts paths``
         """
+        self.save() #save before compiling for consistent behaviors
         if kwargs.get('indent', None) or kwargs.get('display_full_path', None):
             logger.info(
                 "Inspecting file with key word indent or display_full_path is \ndeprecated, the inspect_file now print "

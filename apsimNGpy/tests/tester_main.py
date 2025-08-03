@@ -86,9 +86,9 @@ if IS_NEW_APSIM:
     from apsimNGpy.tests.unittests import test_experiment
 from apsimNGpy.tests.unittests import test_model_loader, unit_test_apsim, test_cast_helper, unit_tests_core, \
     test_weathermanager, \
-    test_edit_model, test_config, unittest_model_tools
+    test_edit_model, test_config, model_tools
 
-modules = [m for m in (unittest_model_tools,
+modules = [m for m in (model_tools,
                        unit_tests_core,
                        unit_test_apsim,
                        test_edit_model,

@@ -39,7 +39,8 @@ class TestConfig(BaseTester):
 
         finally:
             # Clean up: restore an original path to avoid side effects in other tests
-            set_apsim_bin_path(original_path)
+            #set_apsim_bin_path(original_path)
+            pass
 
 
 if __name__ == '__main__':

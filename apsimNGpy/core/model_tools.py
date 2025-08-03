@@ -697,10 +697,42 @@ def configure_rotation(_model, simulations=None):
 
     _model.save()
     return _model
+def add_method_to_model_tools(method):
+    setattr(ModelTools, method.__name__, method)
 
+def add_replacement_folder(simulations):
+
+    rep_old = find_child(simulations, child_class=Models.Core.Folder, child_name='Replacements')
+    if not rep_old:
+        folder = Models.Core.Folder()
+        try:
+            folder.Rename('Replacements')
+        except AttributeError:
+            folder.Name = "Replacements"
+        simulations.Children.Add(folder)
+def add_model_as_a_replacement(simulations, model_class, model_name):
+    if isinstance(model_class, str):
+        model_class =validate_model_obj(model_class)
+    model = model_class()
+    model.Name = model_name
+    if model_class == Models.PMF.Plant:
+        model.ResourceName = model_name
+    add_replacement_folder(simulations)
+    rep_old = find_child(simulations, child_class=Models.Core.Folder, child_name='Replacements')
+    if rep_old:
+        # find weather requested model exists, remove or do nothing
+        model_exists = find_child(rep_old, child_class=model_class, child_name=model_name)
+        if not model_exists:
+           rep_old.Children.Add(model)
+    # check again before exiting caller
+    model_exists = find_child(rep_old, child_class=model_class, child_name=model_name)
+    if not model_exists:
+        raise RuntimeError(f"failed to add model of class{model_class} with identification name: {model_name}")
 
 collect()
-setattr(ModelTools, 'find_child', find_child)
-setattr(ModelTools, 'find_all_in_scope', find_all_in_scope)
+add_method_to_model_tools(find_child)
+add_method_to_model_tools(find_all_in_scope)
+add_method_to_model_tools(add_replacement_folder)
+
 if __name__ == "__main__":
     ...

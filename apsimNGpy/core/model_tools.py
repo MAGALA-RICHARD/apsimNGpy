@@ -122,6 +122,7 @@ def find_child(parent, child_class, child_name):
     for child in parent.Children:
         cast_child = CastHelper.CastAs[child_class](child)
         if child.Name == child_name and cast_child:
+            child = CastHelper.CastAs[child_class](child)
             return child
         # 🔁 Recursively search in child's children
         result = find_child(child, child_class, child_name)
@@ -710,6 +711,7 @@ def add_replacement_folder(simulations):
         except AttributeError:
             folder.Name = "Replacements"
         simulations.Children.Add(folder)
+
 def add_model_as_a_replacement(simulations, model_class, model_name):
     if isinstance(model_class, str):
         model_class =validate_model_obj(model_class)
@@ -724,6 +726,8 @@ def add_model_as_a_replacement(simulations, model_class, model_name):
         model_exists = find_child(rep_old, child_class=model_class, child_name=model_name)
         if not model_exists:
            rep_old.Children.Add(model)
+    else:
+        raise RuntimeError("failed to add replacement folder")
     # check again before exiting caller
     model_exists = find_child(rep_old, child_class=model_class, child_name=model_name)
     if not model_exists:

@@ -6,7 +6,7 @@ import warnings
 from apsimNGpy.core_utils.utils import timer
 from apsimNGpy.core.apsim import ApsimModel
 from apsimNGpy.core.model_tools import validate_model_obj, ModelTools, add_as_simulation, find_model, \
-    get_or_check_model, detect_sowing_managers, find_child, find_all_in_scope
+    get_or_check_model, detect_sowing_managers, find_child, find_all_in_scope, add_replacement_folder, add_model_as_a_replacement
 from apsimNGpy.core.pythonet_config import is_file_format_modified
 
 IS_NEW_APSIM = is_file_format_modified()
@@ -123,6 +123,38 @@ class TestModelTools(unittest.TestCase):
         # ensure that it is empty because experiment does not exist at this node
         test = experiments == []
         self.assertTrue(test, msg='failed to return empty for no existing experiments class models')
+    def test_add_folder(self):
+        model = ApsimModel('Maize', out = os.path.realpath('replacement2.apsimx'))
+        add_replacement_folder(model.Simulations)
+        folder= find_child(model.Simulations, 'Models.Core.Folder', "Replacements")
+        self.assertTrue(folder, 'replacement folder not found')
+    def test_add_crop_replacement(self):
+        model = ApsimModel('Maize', out = os.path.realpath('replacement3.apsimx'))
+        add_model_as_a_replacement(model.Simulations, 'Models.PMF.Plant', 'Maize')
+        folder= find_child(model.Simulations, 'Models.Core.Folder', "Replacements")
+        self.assertTrue(folder, 'replacement folder not found')
+    def test_add_crop_replacement_and_run(self):
+        """ensures that model runs after replacement"""
+        model = ApsimModel('Maize', out = os.path.realpath('replacement5.apsimx'))
+        add_model_as_a_replacement(model.Simulations, 'Models.PMF.Plant', 'Maize')
+        folder= find_child(model.Simulations, 'Models.Core.Folder', "Replacements")
+        model.run()
+        self.assertTrue(model.ran_ok, 'after replacement, model did not run properly')
+
+    def test_add_clock_replacement(self):
+        model = ApsimModel('Maize', out = os.path.realpath('replacement4.apsimx'))
+        add_model_as_a_replacement(model.Simulations, 'Models.Clock', 'Maize')
+        folder= find_child(model.Simulations, 'Models.Core.Folder', "Replacements")
+        self.assertTrue(folder, 'replacement folder not found')
+
+
+    def test_add_what_happens_to_repeat_reps(self):
+        model = ApsimModel('Maize', out=os.path.realpath('replacement4.apsimx'))
+        add_model_as_a_replacement(model.Simulations, 'Models.Clock', 'Clock')
+        add_model_as_a_replacement(model.Simulations, 'Models.Clock', 'Clock')
+        folder = find_child(model.Simulations, 'Models.Core.Folder', "Replacements")
+        self.assertTrue(folder, 'replacement folder not found')
+
 
 
 # Optional utility function

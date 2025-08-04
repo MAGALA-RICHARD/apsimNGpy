@@ -191,7 +191,7 @@ def get_or_check_model(search_scope, model_type, model_name, action='get', cache
             raise ValueError(f'sorry action should be any of {ModelTools.ACTIONS} ')
         # get bound methods based on model type
         try:
-            finder = search_scope.FindInScope[model_type]
+            finder = search_scope.FindIDescendant[model_type]
             get_model = finder(model_name) if model_name else finder()
         except AttributeError:
             get_model = find_child(search_scope, child_class=model_type, child_name=model_name)
@@ -319,10 +319,8 @@ def validate_model_obj(model__type, evaluate_bound=False) -> ModelTools.CLASS_MO
 
 
 def extract_value(model_instance, parameters=None):
-
     if isinstance(parameters, str):
         parameters = {parameters}
-
 
     match type(model_instance):
         case Models.Climate.Weather:
@@ -483,7 +481,7 @@ def inspect_model_inputs(scope, model_type: str, model_name: str,
     if isinstance(parameters, str):
         parameters = {parameters}
     for sim in sim_list:
-        model_instance = find_child(sim, child_class= model_type_class, child_name=model_name)
+        model_instance = find_child(sim, child_class=model_type_class, child_name=model_name)
         model_class = validate_model_obj(model_type_class)
         model_instance = CastHelper.CastAs[model_class](model_instance)
         value = extract_value(model_instance, parameters)
@@ -698,11 +696,13 @@ def configure_rotation(_model, simulations=None):
 
     _model.save()
     return _model
+
+
 def add_method_to_model_tools(method):
     setattr(ModelTools, method.__name__, method)
 
-def add_replacement_folder(simulations):
 
+def add_replacement_folder(simulations):
     rep_old = find_child(simulations, child_class=Models.Core.Folder, child_name='Replacements')
     if not rep_old:
         folder = Models.Core.Folder()
@@ -712,26 +712,34 @@ def add_replacement_folder(simulations):
             folder.Name = "Replacements"
         simulations.Children.Add(folder)
 
+
 def add_model_as_a_replacement(simulations, model_class, model_name):
     if isinstance(model_class, str):
-        model_class =validate_model_obj(model_class)
-    model = model_class()
-    model.Name = model_name
-    if model_class == Models.PMF.Plant:
-        model.ResourceName = model_name
+        model_class = validate_model_obj(model_class)
     add_replacement_folder(simulations)
+    # ensure that model being added as replacement exists
+    model_to_replace = simulations.FindDescendant[model_class](model_name)
+    fin_all = find_all_in_scope(simulations, model_class)
+    names = ','.join([i.Name for i in fin_all])
+    if not model_to_replace:
+        raise ValueError(f"model class {model_class} with {model_name} not found in the current simulations. "
+                         f"suggested available model names: {names}")
     rep_old = find_child(simulations, child_class=Models.Core.Folder, child_name='Replacements')
     if rep_old:
-        # find weather requested model exists, remove or do nothing
+        # find if the requested model exists in the replacement folder, remove or do nothing
         model_exists = find_child(rep_old, child_class=model_class, child_name=model_name)
-        if not model_exists:
-           rep_old.Children.Add(model)
+        if model_exists:
+
+            rep_old.Children.Remove(model_exists)
+        # now we add the found model at the top as replacement
+        rep_old.Children.Add(model_to_replace)
     else:
         raise RuntimeError("failed to add replacement folder")
     # check again before exiting caller
     model_exists = find_child(rep_old, child_class=model_class, child_name=model_name)
     if not model_exists:
         raise RuntimeError(f"failed to add model of class{model_class} with identification name: {model_name}")
+
 
 collect()
 add_method_to_model_tools(find_child)

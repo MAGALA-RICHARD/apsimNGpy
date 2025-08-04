@@ -186,7 +186,7 @@ def get_or_check_model(search_scope, model_type, model_name, action='get', cache
                 or if an invalid action is specified.
             """
 
-    def __excute(search_scope, model_type, model_name, action):
+    def _execute(search_scope, model_type, model_name, action):
         if action not in ModelTools.ACTIONS:
             raise ValueError(f'sorry action should be any of {ModelTools.ACTIONS} ')
         # get bound methods based on model type
@@ -209,7 +209,7 @@ def get_or_check_model(search_scope, model_type, model_name, action='get', cache
 
     # if cacheit:
     #     __excute = lru_cache(maxsize=cache_size)(__excute)
-    return __excute(search_scope, model_type, model_name, action)
+    return _execute(search_scope, model_type, model_name, action)
 
 
 def _find_model(model_name: str, model_namespace=Models, target_type=ModelTools.CLASS_MODEL) -> ModelTools.CLASS_MODEL:

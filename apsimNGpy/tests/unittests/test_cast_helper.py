@@ -1,4 +1,4 @@
-from apsimNGpy.core_utils.cs_utils import CastHelper as CastHelpers
+from core.cs_resources import CastHelper as CastHelpers
 from apsimNGpy.core.pythonet_config import Models
 from apsimNGpy.core.model_loader import model_from_string
 import unittest

@@ -2,7 +2,7 @@ import os
 
 import requests
 from bs4 import BeautifulSoup
-import os
+
 from apsimNGpy.tests.automate_tests import get_last_installed, get_next_version, v_next, extract_version_from_url
 from apsimNGpy.tests.tester_main import send_report
 
@@ -10,7 +10,7 @@ email = os.environ.get('RECEIVER')
 
 
 def notify_installer():
-    global RUNS
+
     try:
         LAST = get_last_installed()
         # logger.info("last apsim version is {}".format(LAST))

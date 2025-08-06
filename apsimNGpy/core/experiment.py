@@ -3,10 +3,9 @@ import re
 from apsimNGpy.core.apsim import ApsimModel
 from collections import OrderedDict
 from apsimNGpy.core.model_tools import ModelTools, Models
-from apsimNGpy.core_utils.cs_utils import CastHelper
+from core.cs_resources import CastHelper
 import APSIM.Core as NodeUtils
 import System
-from apsimNGpy.core.model_loader import to_model_from_string, to_json_string
 
 
 class Experiment(ApsimModel):

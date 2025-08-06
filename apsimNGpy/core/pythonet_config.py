@@ -1,14 +1,12 @@
 import os
 import sys as system
-import clr
 from apsimNGpy.core import config
-from apsimNGpy.core_utils.cs_utils import start_pythonnet
+from apsimNGpy.core.cs_resources import start_pythonnet
 from pathlib import Path
-from apsimNGpy.exceptions import ApsimNotFoundError, ApsimBinPathConfigError
+from apsimNGpy.exceptions import ApsimBinPathConfigError
 from apsimNGpy.core_utils.utils import timer
 
 APSIM_BIN_PATH = config.get_apsim_bin_path()
-from functools import cache
 
 start_pythonnet()
 
@@ -79,8 +77,6 @@ load_pythonnet()
 from System.Collections.Generic import *
 from Models.Core import Simulation
 
-from Models.Climate import Weather
-from Models.Soils import Soil, Physical
 import Models
 
 from System import *

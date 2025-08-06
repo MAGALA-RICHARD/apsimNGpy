@@ -1,31 +1,24 @@
 import pandas as pd
-
-from pandas import to_datetime
-
-from apsimNGpy.core import pythonet_config
+from apsimNGpy.core.pythonet_config import is_file_format_modified
 from dataclasses import dataclass
 from gc import collect
-import Models
-from typing import Union, Tuple
+import  Models
 from System.Collections import IEnumerable
 from System import String, Double, Array
 from functools import lru_cache, cache
 from typing import Union, Dict, Any
-from Models.Soils import Soil, Physical, SoilCrop, Organic, Solute, Chemical
+from Models.Soils import Physical, SoilCrop, Organic, Solute, Chemical
 import warnings
 from System.Collections.Generic import List, KeyValuePair
-from apsimNGpy.core_utils.utils import timer
 from apsimNGpy.settings import *
 from pathlib import Path
-from apsimNGpy.core.config import load_crop_from_disk
-from apsimNGpy.core.model_loader import load_apsim_model, get_node_by_path
-from apsimNGpy.core_utils.cs_utils import simple_rotation_code, update_manager_code
-from core_utils.database_utils import read_db_table
-from apsimNGpy.core.pythonet_config import is_file_format_modified
+from apsimNGpy.core.model_loader import load_apsim_model
+from apsimNGpy.core.cs_resources import simple_rotation_code, update_manager_code
+
 
 IS_NEW_APSIM = is_file_format_modified()
 
-from apsimNGpy.core_utils.cs_utils import CastHelper, sow_using_variable_rule, sow_on_fixed_date, harvest, fertilizer_at_sow
+from apsimNGpy.core.cs_resources import CastHelper, sow_using_variable_rule, sow_on_fixed_date, harvest, fertilizer_at_sow, cast_as
 
 
 @cache
@@ -109,6 +102,7 @@ class ModelTools:
     String = String
     Double = Double
     Array = Array
+    CAST = cast_as
 
 
 ModelTools.ACTIONS
@@ -282,7 +276,6 @@ def validate_model_obj(model__type, evaluate_bound=False) -> ModelTools.CLASS_MO
     :Raises
        raises a ValueError if model__type is not valid or found from the Models namespace
     """
-    import Models
     model_types = None
     bound_model = None
 

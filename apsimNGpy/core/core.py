@@ -3339,7 +3339,7 @@ class CoreModel(PlotManager):
         return exp_node
 
     # @timer
-    def add_db_table(self, variable_spec: list = None, set_event_names: list = None, rename: str = 'my_table',
+    def add_db_table(self, variable_spec: list = None, set_event_names: list = None, rename: str = None,
                      simulation_name: Union[str, list, tuple] = MissingOption):
         """
         Adds a new database table, which ``APSIM`` calls ``Report`` (Models.Report) to the ``Simulation`` under a Simulation Zone.
@@ -3369,9 +3369,11 @@ class CoreModel(PlotManager):
                model.add_db_table(variable_spec=['[Clock].Today', '[Soil].Nutrient.TotalC[1]/1000 as SOC1'], rename='report2')
                model.add_db_table(variable_spec=['[Clock].Today', '[Soil].Nutrient.TotalC[1]/1000 as SOC1', '[Maize].Grain.Total.Wt*10 as Yield'], rename='report2', set_event_names=['[Maize].Harvesting','[Clock].EndOfYear' ])
         """
+        if not rename:
+            raise ValueError(f" please specify rename ")
         import Models
-        report = Models.Report()
-        report.Name = rename
+        report_table = Models.Report()
+        report_table.Name = rename
         if rename in self.inspect_model('Models.Report', fullpath=False):
             logger.info(f"{rename} is a database table already ")
 
@@ -3394,22 +3396,24 @@ class CoreModel(PlotManager):
         set_event_names = list(set(set_event_names))
 
         # Assign _variables and events to the report object
-        report.VariableNames = variable_spec
+        report_table.VariableNames = variable_spec
 
         set_event_names = list(set(set_event_names))
         final_command = "\n".join(set_event_names)
-        report.set_EventNames(final_command.strip().splitlines())
+        report_table.set_EventNames(final_command.strip().splitlines())
         # Try to find a Zone in scope and attach the report to it
         sims = self.find_simulations(simulation_name)
         for sim in sims:
             zone = sim.FindDescendant[Models.Core.Zone]()
+
             if zone is None:
                 raise RuntimeError("No Zone found in the Simulation scope to attach the report table.")
-            check_repo = sim.FindDescendant[Models.Report](rename)
-            if check_repo:  # because this is intented to create an entirley new db table
-                ModelTools.DELETE(check_repo)
-            zone.Children.Add(report)
-        self.save()
+            # check_repo = sim.FindDescendant[Models.Report](rename)
+            check_repo = find_child(zone, Models.Report, rename)
+            if check_repo:  # because this is intended to create an entirely new db table
+                zone.Children.remove(check_repo)
+            zone.Children.Add(report_table)
+
 
         # save the results to recompile
 

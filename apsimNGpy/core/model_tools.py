@@ -1,4 +1,5 @@
 import pandas as pd
+
 from pandas import to_datetime
 
 from apsimNGpy.core import pythonet_config
@@ -12,7 +13,7 @@ from functools import lru_cache, cache
 from typing import Union, Dict, Any
 from Models.Soils import Soil, Physical, SoilCrop, Organic, Solute, Chemical
 import warnings
-from System.Collections.Generic import List
+from System.Collections.Generic import List, KeyValuePair
 from apsimNGpy.core_utils.utils import timer
 from apsimNGpy.settings import *
 from pathlib import Path
@@ -24,7 +25,7 @@ from apsimNGpy.core.pythonet_config import is_file_format_modified
 
 IS_NEW_APSIM = is_file_format_modified()
 
-from apsimNGpy.core_utils.cs_utils import CastHelper
+from apsimNGpy.core_utils.cs_utils import CastHelper, sow_using_variable_rule, sow_on_fixed_date, harvest, fertilizer_at_sow
 
 
 @cache
@@ -122,7 +123,7 @@ def find_child(parent, child_class, child_name):
     for child in parent.Children:
         cast_child = CastHelper.CastAs[child_class](child)
         if child.Name == child_name and cast_child:
-            child = CastHelper.CastAs[child_class](child)
+            # child = CastHelper.CastAs[child_class](child)
             return child
         # 🔁 Recursively search in child's children
         result = find_child(child, child_class, child_name)
@@ -631,6 +632,12 @@ def _edit_in_cultivar(_model, model_name, param_values, simulations=None, verbos
         logger.info(f"\nEdited Cultivar '{model_name}' and saved it as '{new_cultivar_name}'")
     _model.save()
 
+def load_parameters(**kwargs):
+    params = List[KeyValuePair[String, String]]()
+    for k, v in kwargs.items():
+        kv = KeyValuePair[String, String](String(k), String(str(v)))
+        params.Add(kv)
+    return params
 
 def add_model(_model, parent, model):
     parent = validate_model_obj(parent)
@@ -670,6 +677,133 @@ def detect_sowing_managers(_model):
             if code is not None:
                 if 'Crop.Sow' in code and 'using Models.PMF' in code and 'IPlant' in code:
                     return manager
+
+def compile_manager(code):
+    manager = Models.Manager()
+    manager.set_Code(code)
+    return manager
+planting_info = {'seq': 'Maize, Soybean', 'in_crop': ('Maize',)}
+
+def configure(app, seq:Union[str, tuple, list], in_crop:Union[tuple,list], strategy: str,
+              sowing_depth:str, row_spacing:str, population:int,
+              cultivar_name:str, start_date:str, end_date=None, min_esw=100,
+              min_rain= 10, rain_duration=4, simulations=None, fertilize_crop=None):
+    """
+
+    @param fertilize_crop:
+    @param simulations: simulation to configure rotation
+    @param min_esw:
+    @param min_rain:
+    @param sowing_depth:
+    @param row_spacing: spacing between rows
+    @param population: int, planting density
+    @param rain_duration:
+    @param cultivar_name: name of the cultivar
+    @param app: apsimNGpy model
+    @param seq: str e.g (Maize, Soybean) or as a string 'Maize, Soybean'. The first crop will be planted first in the first yea, then followed by another crop after the comma
+    @param in_crop: is the crop currently in the simulation
+    @param strategy: either fixed or variable, variable required start and end date, while foxed only start date is required
+    @param start_date: sowing date or start date if sowing is through a variable time window
+    @param end_date: date to end the sowing
+    @return:
+    """
+    def _add_child_model(parent, child_model, name):
+        """
+        if child is found remove and add, or add, proceed with caution
+        @param parent: parent model
+        @param child_model:  child imodel
+        @param name: name of the child
+        @return:
+        """
+
+        # enforce
+        child_model.Name = name
+        ch = parent.Children
+        for child in ch:
+            if child.Name == name:
+                parent.Children.Remove(child)
+                parent.Children.Add(child_model)
+                break
+        else:
+            parent.Children.Add(child_model)
+
+    if not fertilize_crop:
+        fertilize_crop = {}
+    fixed_parameters = dict(SowDate=start_date,
+                            SowingDepth=sowing_depth,
+                            CultivarName=cultivar_name,
+                            RowSpacing=row_spacing,
+                            Population=population,
+                            Crop ="")
+    if strategy == 'fixed':
+        sow_params = fixed_parameters
+    else:
+        if end_date is None:
+            raise ValueError(f"end_date must be specified if sowing strategy is variable not  fixed")
+        fixed_parameters.pop('SowDate', None)
+        sow_params= dict(**fixed_parameters,EndDate=end_date, StartDate=start_date, MinESW = min_esw,
+                     MinRain =min_rain, RainDays=rain_duration, )
+    rotation  = '.'.join(seq) if not isinstance(seq, str) else seq
+    if isinstance(seq, str):
+        seq = seq.split(",")
+    in_crop =[in_crop] if  isinstance(in_crop, str) else in_crop
+    for crop in in_crop:
+        if crop not in seq:
+           raise ValueError(f"in_crop must be in {seq}")
+    sims = app.find_simulations(None)
+    # get crop that needs new sowing_manager
+    need_sower= set(seq) - set(seq).difference(in_crop)
+    print(need_sower)
+    print(need_sower)
+    # add rotation manager
+    rot_manager = compile_manager(simple_rotation_code)
+    # set the rotation
+    rot_manager.set_Parameters(load_parameters(Crops = rotation))
+
+    for crops in need_sower:
+        # add new plant
+        m_crop = Models.PMF.Plant()
+        m_crop.Name = crops
+        m_crop.ResourceName =crops
+
+        for sim in sims:
+            zone  = sim.FindDescendant[Models.Core.Zone]()
+            _add_child_model(zone, rot_manager, 'Simple Rotation Manager')
+            _add_child_model(zone,m_crop, crops)
+            # add sowing manager
+            code = sow_on_fixed_date if strategy =='fixed' else sow_using_variable_rule
+            sow_manager = compile_manager(code)
+            sow_manager.Name = f"{crops}_sow_on_fixed_date" if strategy =='fixed' else f"{crops}_sow_using_variable_rule"
+            sow_params['Crop'] = crops
+            sow_params['RotationManager'] = rot_manager.Name
+            sow_manager.set_Parameters(load_parameters(**sow_params))
+            zone.Children.Add(sow_manager)
+
+            # add harvest manager
+            manager_harvest = compile_manager(harvest)
+            manager_harvest.set_Parameters(load_parameters(Crop = crops))
+            manager_harvest.Name = f"harvest{crops}"
+            _add_child_model(zone, manager_harvest,manager_harvest.Name)
+
+
+
+            n_amount= fertilize_crop.get(crops)
+            if n_amount:
+                # add fertilizer manager or operations
+                f_manager  = compile_manager(fertilizer_at_sow)
+                params = {"Crop": crops, 'Amount': n_amount, 'FertiliseDepth': '10', 'FertiliserType': "Urea"}
+                f_manager.set_Parameters(load_parameters(**params))
+                f_manager.Name = f"{crops}-fertilize-at-sowing"
+                zone.Children.Add(f_manager)
+
+
+                app.save()
+                # app.edit_model(model_type='Models.Manager',
+                #                model_name=f_manager.Name, simulations=sim.Name, **params)
+
+                return find_child(app.Simulations, child_class=Models.Manager, child_name=f_manager.Name)
+            ...
+
 
 
 def configure_rotation(_model, simulations=None):
@@ -739,4 +873,8 @@ add_method_to_model_tools(find_all_in_scope)
 add_method_to_model_tools(add_replacement_folder)
 
 if __name__ == "__main__":
-    ...
+          ...
+          from apsimNGpy.core.apsim import ApsimModel
+          model= ApsimModel('Maize')
+          ap = configure(model, 'Maize,Soybean', "Soybean", 'fixed',
+                    10, 50, 10, "B_110", '12-30-2025', fertilize_crop={'Soybean':30})

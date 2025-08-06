@@ -32,7 +32,7 @@ from apsimNGpy.core.model_tools import (get_or_check_model, old_method, _edit_in
                                         inspect_model_inputs, soil_components,
                                         ModelTools, validate_model_obj, replace_variable_by_index)
 from apsimNGpy.core.runner import run_model_externally, collect_csv_by_model_path, run_p
-from apsimNGpy.core.model_loader import (load_apsim_model, save_model_to_file, recompile)
+from apsimNGpy.core.model_loader import (load_apsim_model, save_model_to_file, recompile, get_node_by_path)
 import ast
 from typing import Any
 
@@ -2377,7 +2377,7 @@ class CoreModel(PlotManager):
             if not os.path.isfile(weather_file):
                 raise FileNotFoundError(weather_file)
             for sim_name in self.find_simulations(simulations):
-                weathers = sim_name.FindAllDescendants[Weather]()
+                weathers = sim_name.FindAllDescendants[Models.Climate.Weather]()
                 for met in weathers:
                     met.FileName = os.path.realpath(weather_file)
             return self
@@ -2834,21 +2834,25 @@ class CoreModel(PlotManager):
         if indices is None:
             indices = [param_values.index(i) for i in param_values]
         for simu in self.find_simulations(simulations):
-            soil_object = simu.FindDescendant[Soil]()
-            _soil_child = soil_object.FindDescendant[soil_components(soil_child)]()
+            sub_soil = soil_child.capitalize()
+            soil_class = self.find_model(sub_soil)
+            if soil_child != 'soilcrop':
+                _soil_child = simu.FindDescendant[soil_class]()
+                # _soil_child = soil_object.FindDescendant[soil_components(soil_child)]()
 
-            param_values_new = list(getattr(_soil_child, parameter))
-            if soil_child == 'soilcrop':
-                if crop is None:
-                    raise ValueError('Crop not defined')
-                crop = crop.capitalize() + "Soil"
-                _soil_child = soil_object.FindDescendant[soil_components(soil_child)](crop)
                 param_values_new = list(getattr(_soil_child, parameter))
                 _param_new = replace_variable_by_index(param_values_new, param_values, indices)
                 setattr(_soil_child, parameter, _param_new)
             else:
+
+                if crop is None:
+                    raise ValueError('Crop not defined')
+                crop = crop.capitalize() + "Soil"
+                _soil_child = simu.FindDescendant[Models.Soils.SoilCrop](crop)
+                param_values_new = list(getattr(_soil_child, parameter))
                 _param_new = replace_variable_by_index(param_values_new, param_values, indices)
                 setattr(_soil_child, parameter, _param_new)
+
         return self
 
     def find_simulations(self, simulations: Union[list, tuple, str] = MissingOption):

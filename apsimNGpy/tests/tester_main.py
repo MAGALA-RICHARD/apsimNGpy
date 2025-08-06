@@ -30,7 +30,7 @@ def send_report(sms, subject, attachment_path=None):
     # Works only on the local machine for the robot to run automatically and send results of what is going on
     # the env vars are set manually on the local machine for security purposes
     all_envs = False
-    sender= None
+    sender = None
     receiver = None
     key = None
     if os.environ.get('REPORT_TESTS', None):

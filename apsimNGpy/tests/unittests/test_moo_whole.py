@@ -3,11 +3,10 @@ from pymoo.optimize import minimize
 import matplotlib.pyplot as plt
 from apsimNGpy.core.apsim import ApsimModel as Runner
 import numpy as np
+
 # 1. Setup APSIM model
 runner = Runner("Maize")
 runner.add_report_variable('[Soil].Nutrient.NO3.kgha[1] as nitrate', report_name='Report')
-
-
 
 # below enables defining other parameters that will be required for editing
 _vars = [
@@ -54,7 +53,7 @@ def run_example():
     import matplotlib.pyplot as plt
 
     F = result.F
-    plt.scatter(F[:, 0] *-1, F[:, 1])
+    plt.scatter(F[:, 0] * -1, F[:, 1])
     plt.xlabel("Yield")
     plt.ylabel("N Leaching")
     plt.title("Trade-offs between yield and nitrate leaching")
@@ -64,8 +63,9 @@ def run_example():
     print(hiv)
     return result
 
+
 if __name__ == '__main__':
-    res= run_example()
+    res = run_example()
     import os
 
     from sklearn.preprocessing import MinMaxScaler
@@ -83,7 +83,6 @@ if __name__ == '__main__':
     I = dm(f_scaled)
     tdp = f_scaled[I]
 
-
     plt.scatter(f_scaled[:, 0], f_scaled[:, 1])
     plt.scatter(tdp[0][0] * -1, tdp[0][0], c="red", s=100, label='Selected Solution')
     plt.xlabel("Yield")
@@ -91,7 +90,8 @@ if __name__ == '__main__':
     plt.title("Pareto Front")
     plt.show()
 
-    weights = 1/np.array([0.6, 0.4])
+    weights = 1 / np.array([0.6, 0.4])
+
 
     def compromise_with_weights(res, weights):
         assert np.sum(weights) == 1, "weights must sum to 1"

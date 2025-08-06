@@ -177,7 +177,7 @@ class TestCoreModel(BaseTester):
     def test_add_crop_replacements(self):
         self.test_ap_sim.add_crop_replacements(_crop='Maize')
         xp = find_child(self.test_ap_sim.Simulations, child_name='Replacements', child_class='Models.Core.Folder')
-        #xp = self.test_ap_sim.Simulations.FindInScope('Replacements')
+        # xp = self.test_ap_sim.Simulations.FindInScope('Replacements')
         if xp:
             rep = True
         else:
@@ -255,11 +255,8 @@ class TestCoreModel(BaseTester):
         self.assertEqual(factors, Models.Factorial.Factors)  # Confirm evaluation matches Models.Factorial.Factors model
 
     def test_add_model_simulation(self):
-        if IS_NEW_APSIM:
-            pass
-            # logger.info(
-            #     f'\n APSIM version is the newest incompatible with this method skipping test...{self.test_add_model_simulation.__name__}')
-        else:
+        if not IS_NEW_APSIM:
+
             try:
                 self.test_ap_sim.add_model('Simulation', adoptive_parent='Simulations', rename='soybean_replaced',
                                            source='Soybean', override=True)
@@ -269,23 +266,23 @@ class TestCoreModel(BaseTester):
             # clean up
             finally:
                 from apsimNGpy.core.core import get_or_check_model
-                try:
-                    self.test_ap_sim.remove_model(model_type='Simulation', model_name='soybean_replaced')
-                except Exception as e:
-                    pass
+
+                self.test_ap_sim.remove_model(model_class='Simulation', model_name='soybean_replaced')
 
     def test_get_weather_from_web_nasa(self):
         model = load_default_simulations('Maize')
         try:
             model.get_weather_from_web(lonlat=(-93.50456, 42.601247), start=1990, end=2001, source='nasa')
             model.run()
+            self.assertTrue(model.ran_ok)
         except KeyError:
-          pass
+            pass
 
     def test_get_weather_from_web_daymet(self):
         model = load_default_simulations('Maize')
         model.get_weather_from_web(lonlat=(-93.50456, 42.601247), start=1990, end=2001, source='daymet')
         model.run()
+        self.assertTrue(model.ran_ok)
 
     def test_edit_model(self):
         self.test_ap_sim.edit_model(model_type='Clock', simulations="Simulation", model_name='Clock',

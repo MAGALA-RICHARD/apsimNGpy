@@ -1,8 +1,5 @@
-import os
-import shutil
-
 from apsimNGpy.core.config import get_apsim_bin_path
-from apsimNGpy.core_utils.cs_utils import start_pythonnet
+from apsimNGpy.core.cs_resources import start_pythonnet
 #from apsimNGpy.core_utils.cs_utils import CastHelper
 __all__ = ['start_pythonnet']
 

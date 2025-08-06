@@ -3,7 +3,6 @@ This module offers a procedural alternative other than object-oriented approach 
 """
 import os
 import uuid
-from functools import singledispatch, lru_cache
 from typing import Union
 
 from apsimNGpy.core import pythonet_config
@@ -26,7 +25,7 @@ from apsimNGpy.settings import SCRATCH
 from dataclasses import dataclass
 from typing import Any
 
-from apsimNGpy.core_utils.cs_utils import CastHelper as CastHelpers
+from apsimNGpy.core.cs_resources import CastHelper as CastHelpers
 from apsimNGpy.core.pythonet_config import get_apsim_file_reader, get_apsim_file_writer
 from apsimNGpy.core.pythonet_config import is_file_format_modified
 
@@ -375,12 +374,9 @@ def get_attributes(obj):
 
 
 if __name__ == '__main__':
-    from pprint import pprint
-
     pat = load_crop_from_disk('Maize')
     load = load_apsim_model('Maize')
     p, model, model2 = load.Node, load.IModel, load.IModel
-    from apsimNGpy.core.config import set_apsim_bin_path
 
     getattr(Models.Core.ApsimFile, "FileFormat", None)
     # set_apsim_bin_path(r'/Applications/APSIM2025.2.7670.0.app/Contents/Resources/bin')

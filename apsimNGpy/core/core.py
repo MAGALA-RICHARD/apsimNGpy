@@ -10,39 +10,36 @@ import random
 import pathlib
 import string
 from typing import Union
-import os
 import shutil
 import pandas as pd
 import json
 import datetime
 from dataclasses import dataclass, field
-from pathlib import Path
 from typing import Optional, List, Dict
 import warnings
-from pandas.core.interchange.dataframe_protocol import DataFrame
 from sqlalchemy.testing.plugin.plugin_base import logging
-from apsimNGpy.core_utils.cs_utils import CastHelper
+from apsimNGpy.core.cs_resources import CastHelper
 from apsimNGpy.manager.weathermanager import get_weather
 from functools import lru_cache
 # prepare for the C# import
-from apsimNGpy.core_utils.utils import timer, open_apsimx_file_in_window
-from apsimNGpy.core.pythonet_config import start_pythonnet, is_file_format_modified
+from apsimNGpy.core_utils.utils import open_apsimx_file_in_window
 # now we can safely import C# libraries
 from apsimNGpy.core.pythonet_config import *
 from apsimNGpy.core_utils.database_utils import dataview_to_dataframe
 from apsimNGpy.core.config import get_apsim_bin_path
 
-from apsimNGpy.core.model_tools import (get_or_check_model, old_method, Double, Array, _edit_in_cultivar,
+from apsimNGpy.core.model_tools import (get_or_check_model, old_method, _edit_in_cultivar,
                                         inspect_model_inputs, soil_components,
                                         ModelTools, validate_model_obj, replace_variable_by_index)
 from apsimNGpy.core.runner import run_model_externally, collect_csv_by_model_path, run_p
-from apsimNGpy.core.model_loader import (load_apsim_model, save_model_to_file, recompile, get_node_by_path)
+from apsimNGpy.core.model_loader import (load_apsim_model, save_model_to_file, recompile)
 import ast
 from typing import Any
 
 from apsimNGpy.settings import SCRATCH, logger, MissingOption
 from apsimNGpy.core.plotmanager import PlotManager
 from apsimNGpy.core.model_tools import find_child
+
 IS_NEW_MODEL = is_file_format_modified()
 
 
@@ -1310,7 +1307,7 @@ class CoreModel(PlotManager):
         # this is a repetition because I want to deprecate it and maintain simulation_name or use get_simulation_name
         return self.simulation_names
 
-    def remove_model(self, model_type: Models, model_name: str = None):
+    def remove_model(self, model_class: Models, model_name: str = None):
         """
        Removes a model from the APSIM Models.Simulations namespace.
 
@@ -1335,12 +1332,15 @@ class CoreModel(PlotManager):
                model.remove_model(Models.Clock) #deletes the clock node
                model.remove_model(Models.Climate.Weather) #deletes the weather node
         """
-        model_type = validate_model_obj(model_type)
+        model_class = validate_model_obj(model_class)
         if not model_name:
-            model_name = model_type().Name
-        to_remove = self.Simulations.FindInScope[model_type](model_name)
+            model_name = model_class().Name
+        to_remove = self.Simulations.FindChild[model_class](model_name)
         if to_remove:
-            ModelTools.DELETE(to_remove)
+            try:
+                ModelTools.DELETE(to_remove)
+            except AttributeError:
+                pass
         self.save()
 
     def move_model(self, model_type: Models, new_parent_type: Models, model_name: str = None,
@@ -3226,7 +3226,7 @@ class CoreModel(PlotManager):
         Inspect the file by calling ``inspect_model()`` through ``get_model_paths.``
         This method is important in inspecting the ``whole file`` and also getting the ``scripts paths``
         """
-        self.save() #save before compiling for consistent behaviors
+        self.save()  # save before compiling for consistent behaviors
         if kwargs.get('indent', None) or kwargs.get('display_full_path', None):
             logger.info(
                 "Inspecting file with key word indent or display_full_path is \ndeprecated, the inspect_file now print "

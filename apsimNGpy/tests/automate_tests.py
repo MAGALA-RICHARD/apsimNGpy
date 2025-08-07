@@ -239,7 +239,7 @@ def main():
 if __name__ == '__main__':
     import schedule
 
-    schedule.every(1).seconds.do(main)
+    schedule.every(10).seconds.do(main)
 
     while True:
         schedule.run_pending()

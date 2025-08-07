@@ -891,4 +891,4 @@ if __name__ == "__main__":
 
     model = ApsimModel('Maize')
     ap = configure(model, 'Maize,Soybean', "Soybean", 'fixed',
-                   10, 50, 10, "Bunya", '12-may', fertilize_crop={'Soybean': 30})
+                   10, 50, 10, "Bunya", end_date='15-may',start_date= '12-may', fertilize_crop={'Soybean': 30})

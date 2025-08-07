@@ -1,8 +1,8 @@
-from core.cs_resources import CastHelper as CastHelpers
+from apsimNGpy.core.cs_resources import CastHelper as CastHelpers
 from apsimNGpy.core.pythonet_config import Models
 from apsimNGpy.core.model_loader import model_from_string
 import unittest
-from tests.unittests.base_unit_tests import BaseTester
+from apsimNGpy.tests.unittests.base_unit_tests import BaseTester
 
 
 model = model_from_string("Maize")

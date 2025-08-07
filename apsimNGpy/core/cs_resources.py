@@ -146,86 +146,96 @@ namespace Models
 """
 
 sow_using_variable_rule = """
-    using Models.Interfaces;
-    using APSIM.Shared.Utilities;
-    using Models.Utilities;
-    using Models.Soils;
-    using Models.PMF;
-    using Models.Core;
-    using System;
-    using System.Linq;
-    using Models.Climate;
-    
-    namespace Models
+using Models.Interfaces;
+using APSIM.Shared.Utilities;
+using Models.Utilities;
+using Models.Soils;
+using Models.PMF;
+using Models.Core;
+using System;
+using Models.Climate;
+
+namespace Models
+{
+    [Serializable]
+    public class Script : Model
     {
-        [Serializable]
-        public class Script : Model
+        [Link] private Clock Clock;
+        [Link] private Summary Summary;
+        private Accumulator accumulatedRain;
+        [Link]
+        private ISoilWater waterBalance;
+        
+        [Description("Simple Rotation Manager")]
+        public Manager Rotations { get; set; }
+        
+        [Separator("Sowing Info")]
+        
+        [Description("Crop")]
+        public IPlant Crop { get; set; }
+
+        [Description("Start of sowing window (d-mmm)")]
+        public string StartDate { get; set; }
+
+        [Description("End of sowing window (d-mmm)")]
+        public string EndDate { get; set; }
+
+        [Description("Minimum extractable soil water for sowing (mm)")]
+        public double MinESW { get; set; }
+
+        [Description("Accumulated rainfall required for sowing (mm)")]
+        public double MinRain { get; set; }
+
+        [Description("Duration of rainfall accumulation (d)")]
+        public int RainDays { get; set; }
+
+        [Display(Type = DisplayType.CultivarName)]
+        [Description("Cultivar to be sown")]
+        public string CultivarName { get; set; }
+
+        [Description("Sowing depth (mm)")]
+        public double SowingDepth { get; set; }
+
+        [Description("Row spacing (mm)")]
+        public double RowSpacing { get; set; }
+
+        [Description("Plant population (/m2)")]
+        public double Population { get; set; }
+        
+        [Description("Must sow by end date?")]
+        public bool MustSow { get; set; }
+        
+        
+        [EventSubscribe("StartOfSimulation")]
+        private void OnSimulationCommencing(object sender, EventArgs e)
         {
-            [Link] private Clock Clock;
-            [Link] private Fertiliser Fertiliser;
-            [Link] private Summary Summary;
-            [Link] private Soil Soil;
-            private Accumulator accumulatedRain;
-            [Link]
-            private ISoilWater waterBalance;
-            
-            [Description("Rotation manager name")]
-            public Manager RotationManager { get; set; }
-            [Separator("Sowing Info")]
-            
-            [Description("Crop")]
-            public IPlant Crop { get; set; }
-    
-            [Description("Start of sowing window (d-mmm)")]
-            public string StartDate { get; set; }
-    
-            [Description("End of sowing window (d-mmm)")]
-            public string EndDate { get; set; }
-    
-            [Description("Minimum extractable soil water for sowing (mm)")]
-            public double MinESW { get; set; }
-    
-            [Description("Accumulated rainfall required for sowing (mm)")]
-            public double MinRain { get; set; }
-    
-            [Description("Duration of rainfall accumulation (d)")]
-            public int RainDays { get; set; }
-    
-            [Display(Type = DisplayType.CultivarName)]
-            [Description("Cultivar to be sown")]
-            public string CultivarName { get; set; }
-    
-            [Description("Sowing depth (mm)")]
-            public double SowingDepth { get; set; }
-    
-            [Description("Row spacing (mm)")]
-            public double RowSpacing { get; set; }
-    
-            [Description("Plant population (/m2)")]
-            public double Population { get; set; }
-            
-            
-            [EventSubscribe("StartOfSimulation")]
-            private void OnSimulationCommencing(object sender, EventArgs e)
-            {
-                accumulatedRain = new Accumulator(this, "[Weather].Rain", RainDays);
-            }
-    
-            [EventSubscribe("DoManagement")]
-            private void OnDoManagement(object sender, EventArgs e)
-            {
-                accumulatedRain.Update();
-                
-                if (DateUtilities.WithinDates(StartDate, Clock.Today, EndDate) &&
-                    !Crop.IsAlive &&
-                    MathUtilities.Sum(waterBalance.ESW) > MinESW &&
-                    accumulatedRain.Sum > MinRain)
-                {
-                    Crop.Sow(population: Population, cultivar: CultivarName, depth: SowingDepth, rowSpacing: RowSpacing);    
-                }
-            }
+            accumulatedRain = new Accumulator(this, "[Weather].Rain", RainDays);
+        }
+
+        [EventSubscribe("DoManagement")]
+        private void OnDoManagement(object sender, EventArgs e)
+        {
+            accumulatedRain.Update();
+            if (!Crop.IsAlive &&
+                   DateUtilities.WithinDates(StartDate, Clock.Today, EndDate))
+               {
+                   var rainSum = accumulatedRain.Sum;
+                   var eswSum  = MathUtilities.Sum(waterBalance.ESW);
+                   if (rainSum > MinRain && eswSum > MinESW ||
+                       DateUtilities.DatesEqual(EndDate, Clock.Today) && MustSow)
+                   {
+                       var thisCrop = Crop.Name.ToLower();
+                       var nextCrop = (string)Rotations?.FindByPath("Script.NextCrop")?.Value;
+                       if (thisCrop == (nextCrop?.ToLower() ?? thisCrop))
+                           Crop.Sow(population: Population,
+                                 cultivar: CultivarName,
+                                 depth: SowingDepth,
+                                 rowSpacing: RowSpacing);
+                   }
+               }
         }
     }
+}
 """
 
 harvest = """using APSIM.Shared.Utilities;

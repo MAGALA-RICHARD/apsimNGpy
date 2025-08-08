@@ -1,7 +1,7 @@
 import os.path
 import unittest
 
-from tests.unittests.base_unit_tests import BaseTester
+from apsimNGpy.tests.unittests.base_unit_tests import BaseTester
 
 from apsimNGpy.manager import weathermanager
 

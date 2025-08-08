@@ -1,7 +1,7 @@
 import os.path
 import unittest
 from pandas import DataFrame
-from tests.unittests.base_unit_tests import BaseTester
+from apsimNGpy.tests.unittests.base_unit_tests import BaseTester
 from apsimNGpy.core.experiment import Experiment
 from pathlib import Path
 

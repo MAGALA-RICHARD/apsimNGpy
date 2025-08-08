@@ -2,7 +2,7 @@ import unittest
 
 # Import the module where CoreModel class is defined
 from apsimNGpy.core.config import (set_apsim_bin_path, get_apsim_bin_path, auto_detect_apsim_bin_path)
-from tests.unittests.base_unit_tests import BaseTester, path
+from apsimNGpy.tests.unittests.base_unit_tests import BaseTester, path
 
 TEST_PATH = "/path/to/test/bin"  # apsim bin path to test
 

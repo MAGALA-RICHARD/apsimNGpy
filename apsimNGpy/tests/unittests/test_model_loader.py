@@ -1,4 +1,4 @@
-from core.cs_resources import CastHelper as CastHelpers
+from apsimNGpy.core.cs_resources import CastHelper as CastHelpers
 from apsimNGpy.core.pythonet_config import Models
 from apsimNGpy.core.model_loader import (load_apsim_model, get_model, version,
                                          save_model_to_file, model_from_string,
@@ -6,7 +6,7 @@ from apsimNGpy.core.model_loader import (load_apsim_model, get_model, version,
 import unittest
 import shutil
 import uuid
-from tests.unittests.base_unit_tests import BaseTester
+from apsimNGpy.tests.unittests.base_unit_tests import BaseTester
 import json
 from pathlib import Path
 from apsimNGpy.exceptions import CastCompilationError

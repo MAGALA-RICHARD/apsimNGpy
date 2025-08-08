@@ -1,6 +1,6 @@
 from apsimNGpy.core.cal import OptimizationBase, pd
 import unittest
-from tests.unittests.base_unit_tests import BaseTester
+from apsimNGpy.tests.unittests.base_unit_tests import BaseTester
 
 data = {
     "year": [1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000],

@@ -1,4 +1,5 @@
 import os
+import platform
 import sys as system
 from apsimNGpy.core import config
 from apsimNGpy.core.cs_resources import start_pythonnet
@@ -16,7 +17,10 @@ def is_file_format_modified():
     Checks if the APSIM.CORE.dll is present in the bin path
     @return: bool
     """
-    path = list(Path(APSIM_BIN_PATH).rglob("*APSIM.CORE.dll"))
+    patterns = {"*APSIM.CORE.dll", "*APSIM.Core.dll"}
+    path = []
+    for pat in patterns:
+        path.extend(Path(APSIM_BIN_PATH).rglob(pat))
     if len(path) > 0:
         return True
     return False

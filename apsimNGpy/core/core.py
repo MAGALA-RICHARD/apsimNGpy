@@ -465,7 +465,7 @@ class CoreModel(PlotManager):
              """
         try:
             # Dispose any existing data store handle
-            self._DataStore.Dispose()
+#            self._DataStore.Dispose()
 
             # Save model changes to disk (compile before run)
             self.save()
@@ -499,7 +499,10 @@ class CoreModel(PlotManager):
         finally:
             ...
             # close the datastore
-            self._DataStore.Close()
+            try:
+               self._DataStore.Close()
+            except AttributeError:
+                ...
 
     @property
     def simulated_results(self) -> pd.DataFrame:

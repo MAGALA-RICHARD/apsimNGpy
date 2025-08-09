@@ -35,8 +35,8 @@ class BaseTester(TestCase, ABC):
 
     def setUp(self):
         # Mock the model path and other attributes
-        self.model_path = Path(load_default_simulations(crop='maize', simulations_object=False), )
-        self.model_path2 = Path(load_default_simulations(crop='soybean', simulations_object=False), )
+        self.model_path = Path(load_default_simulations(crop='Maize', simulations_object=False), )
+        self.model_path2 = Path(load_default_simulations(crop='Soybean', simulations_object=False), )
         self.logger = logger
         self.out_path = Path.cwd() / 'test_output.apsimx'
         self.test_ap_sim = CoreModel(model=self.model_path)

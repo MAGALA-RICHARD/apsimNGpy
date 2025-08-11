@@ -3,9 +3,14 @@ import re
 from apsimNGpy.core.apsim import ApsimModel
 from collections import OrderedDict
 from apsimNGpy.core.model_tools import ModelTools, Models
-from core.cs_resources import CastHelper
-import APSIM.Core as NodeUtils
-import System
+from apsimNGpy.core.cs_resources import CastHelper
+from apsimNGpy.core.pythonet_config import is_file_format_modified
+if is_file_format_modified():
+    import APSIM.Core as NodeUtils
+    import System
+else:
+    from apsimNGpy.core.config import apsim_version
+    raise ValueError(f"The experiment module is not supported for this type of {apsim_version()} ")
 
 
 class Experiment(ApsimModel):

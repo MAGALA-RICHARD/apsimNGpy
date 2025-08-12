@@ -205,10 +205,8 @@ class ParallelRunner:
 
 
 if __name__ == '__main__':
-    job = ['Maize', 'Soybean', 'Barley', 'Canola', "Wheat", 'Oats', "Potato", 'MungBean']
-    # clear_all_tables('my.db')
     create_jobs = [ApsimModel('Maize').path for _ in range(10)]
-    Parallel = ParallelRunner(db_path='myyy.db', agg_func=None)
+    Parallel = ParallelRunner(db_path='myy.db', agg_func=None)
     Parallel.run_all_jobs(create_jobs, n_cores=4, threads=False, clear_db=True)
     df = Parallel.get_simulated_output(axis=0)
     wdr = Path(".").glob("*scratch")

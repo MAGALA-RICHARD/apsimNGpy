@@ -15,6 +15,7 @@ from apsimNGpy.settings import logger
 from apsimNGpy.core.pythonet_config import *
 from pandas import DataFrame
 
+
 def dataview_to_dataframe(_model, reports):
     """
     Convert .NET System.Data.DataView to Pandas DataFrame.
@@ -116,21 +117,27 @@ def get_db_table_names(d_b):
     insp = inspect(engine)
     return insp.get_table_names()
 
-def pd_save_todb(datas:dict, database, if_exists):
+
+def pd_save_todb(datas: dict, database, if_exists):
     engine = create_engine(f'sqlite:///{database}')
     table_names, data = datas
 
     data.to_sql(table_names, engine, if_exists=if_exists, index=False)
+
+
 def pl_save_todb(datas: tuple, database: str, if_exists: str):
     engine = create_engine(f'sqlite:///{database}')
     table_name, data = datas
 
     # Convert Polars DataFrame to pandas before saving
     data.to_pandas().to_sql(table_name, engine, if_exists=if_exists, index=False)
+
+
 def custom_remove_file(file):
     if os.path.exists(file):
         os.remove(file)
-@timer
+
+
 def read_db_table(db, report_name):
     """
         Connects to a specified database, retrieves the entire contents of a specified table,
@@ -214,6 +221,7 @@ def clear_table(db, table_name):
         cursor = conn.cursor()
         cursor.execute(f"DELETE FROM {table_name}")
         conn.commit()
+
 
 @timer
 def clear_all_tables(db):

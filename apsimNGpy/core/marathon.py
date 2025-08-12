@@ -4,12 +4,11 @@ import shutil
 from collections import OrderedDict
 from pathlib import Path
 from typing import Union
-
 import numpy as np
 from sqlalchemy import create_engine, MetaData, Table, Column, String, Float, Integer
 from sqlalchemy.dialects.sqlite import insert
 import pandas as pd
-
+from dataclasses import dataclass
 from sqlalchemy import create_engine
 
 from apsimNGpy.parallel.process import custom_parallel
@@ -60,26 +59,40 @@ def simulation_exists(db_path: str, table_name: str, simulation_id: int) -> bool
 setData = set()
 
 
+@dataclass(slots=True)
 class ParallelRunner:
-    def __init__(self, db_path: Union[str, Path], agg_func=None):
-        db_path = str(db_path)
-        self.counter = 0
-        self.db_path = db_path
-        self.tables = setData if setData else set()
-        self.agg_func = agg_func
+    db_path: Union[str, Path]
+    counter: int = 0
+    agg_func:Union[str, None]  = None
+    ran_ok: bool = False
 
     def insert_data(self, results, table):
+        """
+        Insert results into the specified table
+        results: (Pd.DataFrame, dict) The results that will be inserted into the table
+        table: str (name of the table to insert)
+        """
 
-        engine = create_engine(f"sqlite:///{self.db_path}")
+        engine = create_engine(f"sqlite:///{str(self.db_path)}")
         metadata = MetaData()
 
         # Define your schema manually for full control
         if isinstance(results, pd.DataFrame):
-            results = results.select_dtypes(include='number')
-            res = results
-            cols = [Column(i, Float) for i in results.columns if res[i].dtype == np.float32]
+            results_num = results.select_dtypes(include='number')
+
+            cols = [Column(i, Float) for i in results_num.columns]
+            # Find all object (string-like) columns
+            str_cols_df = results.select_dtypes(include='object')
+
+            if not str_cols_df.empty:  # safer than "is not None"
+                str_cols = [Column(col_name, String) for col_name in str_cols_df.columns]
+                cols.extend(str_cols)
+
         else:
-            cols = [Column(i, Float) for i in results]
+            cols = [
+                Column(col_name, String) if isinstance(results[col_name], str) else Column(col_name, Float)
+                for col_name in results
+            ]
         results_table = Table(
             table,
             metadata,
@@ -110,87 +123,97 @@ class ParallelRunner:
             conn.execute(results_table.insert(), data_dicts)
             conn.execute(table_meta_info.insert(), table_info)
 
+    @property
+    def tables(self):
+        if self.ran_ok:
+            if os.path.exists(self.db_path) and os.path.isfile(self.db_path) and str(self.db_path).endswith('.db'):
+                dt= read_db_table(self.db_path, report_name='table_names')
+                return set(dt.table.values)
+        else:
+            raise ValueError("attempting to get results from database before running all jobs")
+        return None
+
     def run_parallel(self, model):
+        """
+        This i the worker for each simulation.
+
+        :param model: Str, dict Path object related APSIMX json file
+        """
         self.counter += 1
-        model = ApsimModel(model, out_path=None)
-        table_names = model.inspect_model('Models.Report', fullpath=False)
-        crops = model.inspect_model('Models.PMF.Plant', fullpath=False)
+        _model = ApsimModel(model, out_path=None)
+        table_names = _model.inspect_model('Models.Report', fullpath=False)
+        crops = _model.inspect_model('Models.PMF.Plant', fullpath=False)
         crop_table = [f"{a}_{b}" for a, b in zip(table_names, crops)]
         tables = '_'.join(crop_table)
-        model.run()
+        _model.run()
         if self.agg_func:
-            out = getattr(model.results, self.agg_func)(numeric_only=True)
+            out = getattr(_model.results, self.agg_func)(numeric_only=True)
             out = out.to_dict()
+            out['modelName'] = model
 
         else:
-            out = model.results
-        out['SimulationID'] = int(self.counter)
+            out = _model.results
+        out['modelName'] = model
 
         self.insert_data(out, table=tables)
 
-        model.clean_up()
+        _model.clean_up()
         gc.collect()
 
     def get_simulated_output(self, axis=0):
-        tb = read_db_table(self.db_path, report_name='table_names')
-        tb_names = tb['table'].values.tolist()
-        df = [read_db_table(self.db_path, report_name=rp) for rp in tb_names]
-        return pd.concat(df, axis=axis)
+        """
+        Get simulated output from the API
+        :param axis: if axis =0, concatenation is along the rows and if it is 1 concatenation is along the colmns
+        """
+        if axis not in {0, 1}:
+            raise ValueError('Wrong value for axis should be either 0 or 1')
+
+        data = [read_db_table(self.db_path, report_name=rp) for rp in self.tables]
+        return pd.concat(data, axis=axis)
+
+    @property
+    def results(self):
+        """property methods for getting simulated output"""
+        return self.get_simulated_output(axis=0)
 
     def clear_db(self):
+        """clears the database before any simulations   """
         if not self.db_path.endswith('.db'):
             raise ValueError(f"Cannot clear invalid db path: {self.db_path}")
         if os.path.exists(self.db_path):
-            clear_all_tables(self.db_path)
+            try:
+                os.remove(self.db_path)
+            except (PermissionError, FileNotFoundError):
+                clear_all_tables(self.db_path)
 
-    def run_all_jobs(self, jobs, n_cores=6, threads=False):
+    def run_all_jobs(self, jobs, n_cores=6, threads=False, clear_db=True):
         """
         runs all provided jobs using processes
         :param threads: threads or processes
         :param jobs: jobs to run
         :param n_cores: number of cores to use
+        :param clear_db: clear the database existing data if any. defaults to True
         :return: None
         """
-        self.clear_db()  # each simulation is fresh,
+        if clear_db:
+            self.clear_db()  # each simulation is fresh,
         # future updates include support for skipping some simulation
         for _ in custom_parallel(self.run_parallel, jobs, ncores=n_cores, use_threads=threads,
                                  progress_message='Processing all jobs. Please wait!: '):
             pass
-
-
-# Example usage:
-# df = pd.DataFrame([{"name": "Temperature", "value": 25.4, "unit": "C"}])
-# model.results = df
-# configure_db(model, "my_database.sqlite")
-@timer
-def configure_db(model, db):
-    results = model.results
-    engine = create_engine(f'sqlite:///{db}')
-    if isinstance(results, pd.DataFrame):
-        results.to_sql('results', engine, if_exists='replace', index=False)
-
-
-# You can run many simulations in a distributed computing model either through using threads or processes
-
-def run_parallel(model):
-    global ID
-    ID += 1
-    model = ApsimModel(model, out_path=None)
-    model.run()
-    model.clean_up()
-    configure_db(model=model, db='x.db')
-    cc = gc.collect()
+        self.ran_ok = True
 
 
 if __name__ == '__main__':
     job = ['Maize', 'Soybean', 'Barley', 'Canola', "Wheat", 'Oats', "Potato", 'MungBean']
     # clear_all_tables('my.db')
-    create_jobs = [ApsimModel('Maize').path for _ in range(100)]
-    Parallel = ParallelRunner(db_path='my.db', agg_func='mean')
-    Parallel.run_all_jobs(create_jobs, n_cores=4, threads=False)
+    create_jobs = [ApsimModel('Maize').path for _ in range(10)]
+    Parallel = ParallelRunner(db_path='myyy.db', agg_func=None)
+    Parallel.run_all_jobs(create_jobs, n_cores=4, threads=False, clear_db=True)
     df = Parallel.get_simulated_output(axis=0)
     wdr = Path(".").glob("*scratch")
     try:
         [shutil.rmtree(i) for i in wdr]
+        print("Deleted scratch")
     except PermissionError:
         pass

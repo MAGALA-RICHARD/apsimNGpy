@@ -335,7 +335,10 @@ class CoreModel(PlotManager):
                     else:
                         raise RuntimeError('some thing happened that is not right')
 
-                datas = [pd.read_csv(data_tables[i]) for i in reports]
+                datas = [
+                    (df := pd.read_csv(data_tables[i])).assign(source_table=i)
+                    for i in reports
+                ]
                 return pd.concat(datas)
             else:
                 msg = "Attempting to get results before running the model"
@@ -404,9 +407,10 @@ class CoreModel(PlotManager):
         # Check for missing report names
         missing = [r for r in reports if r not in data_tables]
         if missing:
+            decide = 'Did you mean' if len(data_tables) ==1 else 'Did you mean any of the following'
             raise ValueError(
                 f"The following report names were not found: {missing}. "
-                f"Available tables include: {list(data_tables.keys())}"
+                f"{decide}: '{', '.join(list(data_tables.keys()))}'?"
             )
 
         # Check if simulation ran successfully
@@ -415,7 +419,10 @@ class CoreModel(PlotManager):
             raise RuntimeError("Attempting to get results before running the model.")
 
         # Load and concatenate requested report data
-        datas = [pd.read_csv(data_tables[r]) for r in reports]
+        datas = [
+            (df := pd.read_csv(data_tables[i])).assign(source_table=i)
+            for i in reports
+        ]
         return pd.concat(datas, ignore_index=True, axis=kwargs.get('axis', 0))
 
     def run(self, report_name: Union[tuple, list, str] = None,

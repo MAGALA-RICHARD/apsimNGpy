@@ -24,6 +24,7 @@ class Experiment(ApsimModel):
         self.specs = OrderedDict()
         self.counter = 0
         self.sims = self.simulations
+        self.init = False
 
     def init_experiment(self, permutation=True):
         self.factors = OrderedDict()
@@ -72,6 +73,7 @@ class Experiment(ApsimModel):
             # mode.save()
 
         exp_refresher(self)
+        self.init =True
 
     def add_factor(self, specification: str, factor_name: str = None, **kwargs):
         """
@@ -89,7 +91,8 @@ class Experiment(ApsimModel):
                Inserts the factor into the appropriate parent node (Permutation or Factors).
                If a factor at the same index already exists, it is safely deleted before inserting the new one.
            """
-
+        if not self.init:
+            raise ValueError("Please initialize the experiment first by calling: self.init_experiment method")
         # Auto-generate factor name from specification if not provided
         if factor_name is None:
             factor_name = specification.split("=")[0].strip().split(".")[-1]

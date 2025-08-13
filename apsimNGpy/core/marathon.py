@@ -10,7 +10,7 @@ from sqlalchemy.dialects.sqlite import insert
 import pandas as pd
 from dataclasses import dataclass
 from sqlalchemy import create_engine
-
+import time
 from apsimNGpy.parallel.process import custom_parallel
 from apsimNGpy.core.apsim import ApsimModel
 from collections.abc import Iterable
@@ -130,7 +130,7 @@ class ParallelRunner:
                 dt= read_db_table(self.db_path, report_name='table_names')
                 return set(dt.table.values)
         else:
-            raise ValueError("attempting to get results from database before running all jobs")
+            raise ValueError("Attempting to get results from database before running all jobs")
         return None
 
     def run_parallel(self, model):
@@ -186,6 +186,17 @@ class ParallelRunner:
             except (PermissionError, FileNotFoundError):
                 clear_all_tables(self.db_path)
 
+    def clear_scratch(self):
+        """clears the scratch directory where apsim files are cloned before being loaded. should be called after all simulations are completed
+
+        """
+        paths = Path.cwd().glob("*scratch")
+        for path in paths:
+            try:
+                shutil.rmtree(str(path), ignore_errors=True)
+            except PermissionError:
+                ...
+
     def run_all_jobs(self, jobs, n_cores=6, threads=False, clear_db=True):
         """
         runs all provided jobs using processes
@@ -198,10 +209,14 @@ class ParallelRunner:
         if clear_db:
             self.clear_db()  # each simulation is fresh,
         # future updates include support for skipping some simulation
-        for _ in custom_parallel(self.run_parallel, jobs, ncores=n_cores, use_threads=threads,
-                                 progress_message='Processing all jobs. Please wait!: '):
-            pass
-        self.ran_ok = True
+        try:
+            for _ in custom_parallel(self.run_parallel, jobs, ncores=n_cores, use_threads=threads,
+                                     progress_message='Processing all jobs. Please wait!: '):
+                ...
+            self.ran_ok = True
+        finally:
+            time.sleep(0.5) # buy some time to ensure all resources are released
+            self.clear_scratch()
 
 
 if __name__ == '__main__':
@@ -209,9 +224,4 @@ if __name__ == '__main__':
     Parallel = ParallelRunner(db_path='myy.db', agg_func=None)
     Parallel.run_all_jobs(create_jobs, n_cores=4, threads=False, clear_db=True)
     df = Parallel.get_simulated_output(axis=0)
-    wdr = Path(".").glob("*scratch")
-    try:
-        [shutil.rmtree(i) for i in wdr]
-        print("Deleted scratch")
-    except PermissionError:
-        pass
+

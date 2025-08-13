@@ -86,7 +86,7 @@ if IS_NEW_APSIM:
     from apsimNGpy.tests.unittests import test_experiment
 from apsimNGpy.tests.unittests import test_model_loader, unit_test_apsim, test_cast_helper, unit_tests_core, \
     test_weathermanager, \
-    test_edit_model, test_config, model_tools
+    test_edit_model, test_config, model_tools, marathon_runner
 
 modules = [m for m in (model_tools,
                        unit_tests_core,
@@ -95,7 +95,8 @@ modules = [m for m in (model_tools,
                        test_cast_helper,
                        test_model_loader,
                        test_config,
-                       test_weathermanager
+                       test_weathermanager,
+                       marathon_runner
                        )]
 if IS_NEW_APSIM:
     modules.append(test_experiment)

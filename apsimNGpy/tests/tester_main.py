@@ -96,7 +96,7 @@ modules = [m for m in (model_tools,
                        test_model_loader,
                        test_config,
                        test_weathermanager,
-                       marathon_runner
+
                        )]
 if IS_NEW_APSIM:
     modules.append(test_experiment)

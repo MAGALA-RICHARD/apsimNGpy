@@ -135,7 +135,7 @@ class Experiment(ApsimModel):
             pass
 
         # Insert a new factor
-        parent_factor.InsertChild(index, new_factor)
+        parent_factor.Children.Add(new_factor)
         self.parent_factor = parent_factor
 
     @property

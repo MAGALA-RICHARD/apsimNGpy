@@ -178,7 +178,7 @@ class ParallelRunner:
 
     def clear_db(self):
         """clears the database before any simulations   """
-        if not self.db_path.endswith('.db'):
+        if not str(self.db_path).endswith('.db'):
             raise ValueError(f"Cannot clear invalid db path: {self.db_path}")
         if os.path.exists(self.db_path):
             try:

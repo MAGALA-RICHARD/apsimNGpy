@@ -138,6 +138,7 @@ def progress(total, color ='blue'):
         time.sleep(0.03)  # Simulate work
 
 if __name__ == '__main__':
+    # quick tests
   from apsimNGpy.core.apsim import ApsimModel
   bar = ProgressBar(total=50, prefix='Progress', suffix='Complete', color='yellow')
   model = ApsimModel('Maize')

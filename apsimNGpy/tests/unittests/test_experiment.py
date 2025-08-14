@@ -2,7 +2,7 @@ import os.path
 import unittest
 from pandas import DataFrame
 from apsimNGpy.tests.unittests.base_unit_tests import BaseTester
-from apsimNGpy.core.experiment import Experiment
+from apsimNGpy.core.experimentmanager import ExperimentManager as Experiment
 from pathlib import Path
 
 cwd = Path.cwd()

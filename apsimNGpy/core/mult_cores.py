@@ -1,21 +1,18 @@
 import gc
 import os.path
 import shutil
-from collections import OrderedDict
+import time
+from collections.abc import Iterable
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Union
-import numpy as np
-from sqlalchemy import create_engine, MetaData, Table, Column, String, Float, Integer
-from sqlalchemy.dialects.sqlite import insert
-import pandas as pd
-from dataclasses import dataclass
-from sqlalchemy import create_engine
-import time
-from apsimNGpy.parallel.process import custom_parallel
-from apsimNGpy.core.apsim import ApsimModel
-from collections.abc import Iterable
 from apsimNGpy.core_utils.utils import timer
+import pandas as pd
+from apsimNGpy.core.apsim import ApsimModel
 from apsimNGpy.core_utils.database_utils import read_db_table, clear_all_tables
+from apsimNGpy.parallel.process import custom_parallel
+from sqlalchemy import MetaData, Table, Column, String, Float, Integer
+from sqlalchemy import create_engine, text
 
 ID = 0
 
@@ -23,11 +20,6 @@ ID = 0
 def is_my_iterable(value):
     """Check if a value is an iterable, but not a string."""
     return isinstance(value, Iterable) and not isinstance(value, str)
-
-
-data_type = {}
-
-from sqlalchemy import create_engine, text
 
 
 def simulation_exists(db_path: str, table_name: str, simulation_id: int) -> bool:
@@ -59,11 +51,17 @@ def simulation_exists(db_path: str, table_name: str, simulation_id: int) -> bool
 setData = set()
 
 
+@timer
+def insert_data_with_pd(db, table, results, if_exists):
+    engine = create_engine(f'sqlite:///{db}')
+    results.to_sql(table, engine, index=False, if_exists=if_exists)
+
+
 @dataclass(slots=True)
-class ParallelManager:
+class MultiCoreManager:
     db_path: Union[str, Path]
     counter: int = 0
-    agg_func:Union[str, None]  = None
+    agg_func: Union[str, None] = None
     ran_ok: bool = False
 
     def insert_data(self, results, table):
@@ -127,7 +125,7 @@ class ParallelManager:
     def tables(self):
         if self.ran_ok:
             if os.path.exists(self.db_path) and os.path.isfile(self.db_path) and str(self.db_path).endswith('.db'):
-                dt= read_db_table(self.db_path, report_name='table_names')
+                dt = read_db_table(self.db_path, report_name='table_names')
                 return set(dt.table.values)
         else:
             raise ValueError("Attempting to get results from database before running all jobs")
@@ -147,8 +145,12 @@ class ParallelManager:
         tables = '_'.join(crop_table)
         _model.run()
         if self.agg_func:
-            out = getattr(_model.results, self.agg_func)(numeric_only=True)
-            out = out.to_dict()
+            if self.agg_func not in {'sum', 'mean', 'max', 'min', 'median', 'std'}:
+                raise ValueError(f"unsupported aggregation function {self.agg_func}")
+            dat = _model.results.groupby('source_table')  # if there are more than one table we do not want to
+            # aggregate them together
+            out = dat.agg(self.agg_func, numeric_only=True)
+
             out['modelName'] = model
 
         else:
@@ -200,10 +202,10 @@ class ParallelManager:
     def run_all_jobs(self, jobs, n_cores=6, threads=False, clear_db=True):
         """
         runs all provided jobs using processes
-        :param threads: threads or processes
-        :param jobs: jobs to run
-        :param n_cores: number of cores to use
-        :param clear_db: clear the database existing data if any. defaults to True
+        :param threads (bool): threads or processes
+        :param jobs (iterable[simulations paths]: jobs to run
+        :param n_cores (int): number of cores to use
+        :param clear_db (bool): clear the database existing data if any. defaults to True
         :return: None
         """
         if clear_db:
@@ -215,13 +217,15 @@ class ParallelManager:
                 ...
             self.ran_ok = True
         finally:
-            time.sleep(0.5) # buy some time to ensure all resources are released
+            time.sleep(0.5)  # buy some time to ensure all resources are released
             self.clear_scratch()
 
 
 if __name__ == '__main__':
-    create_jobs = [ApsimModel('Maize').path for _ in range(10)]
-    Parallel = ParallelManager(db_path='myy.db', agg_func=None)
+    create_jobs = (ApsimModel('Maize').path for _ in range(10))
+
+    Parallel = MultiCoreManager(db_path='testing.db', agg_func=None)
     Parallel.run_all_jobs(create_jobs, n_cores=4, threads=False, clear_db=True)
     df = Parallel.get_simulated_output(axis=0)
 
+    insert_data_with_pd('tss.db', 'my', df, 'replace')

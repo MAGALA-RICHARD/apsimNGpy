@@ -2972,7 +2972,7 @@ class CoreModel(PlotManager):
 
     def create_experiment(self, permutation: bool = True, base_name: str = None, **kwargs):
         """
-        Initialize an ``Experiment`` instance, adding the necessary models and factors.
+        Initialize an ``ExperimentManager`` instance, adding the necessary models and factors.
 
         Args:
 
@@ -2994,7 +2994,7 @@ class CoreModel(PlotManager):
             from apsimNGpy.core.config import apsim_version
             version = apsim_version()
             logger.warning(
-                f'\n create_experiment is deprecated for this apsim version {version} use the `apsimNGpy.core.experiment.Experiment` class instead.')
+                f'\n create_experiment is deprecated for this apsim version {version} use the `apsimNGpy.core.experiment.ExperimentManager` class instead.')
             return self
         #
         self.refresh_model()
@@ -3003,15 +3003,15 @@ class CoreModel(PlotManager):
         self.permutation = permutation
         # Add core experiment structure
 
-        self.add_model(model_type='Models.Factorial.Experiment', adoptive_parent='Models.Core.Simulations', **kwargs)
+        self.add_model(model_type='Models.Factorial.ExperimentManager', adoptive_parent='Models.Core.Simulations', **kwargs)
 
-        self.add_model(model_type=Models.Factorial.Factors, adoptive_parent=Models.Factorial.Experiment, **kwargs)
+        self.add_model(model_type=Models.Factorial.Factors, adoptive_parent=Models.Factorial.ExperimentManager, **kwargs)
 
         if permutation:
             self.add_model(model_type=Models.Factorial.Permutation, adoptive_parent=Models.Factorial.Factors, **kwargs)
 
         # Move base simulation under the factorial experiment
-        self.move_model(Models.Core.Simulation, Models.Factorial.Experiment, base_name, None)
+        self.move_model(Models.Core.Simulation, Models.Factorial.ExperimentManager, base_name, None)
 
         self.save()
         # update the experiment status
@@ -3212,7 +3212,7 @@ class CoreModel(PlotManager):
                              'Models.Soils.Solute', 'Models.Surface.SurfaceOrganicMatter',
                              'Models.Soils.Swim3', 'Models.Soils.SoilCrop', 'Models.Soils.Water', 'Models.Summary',
                              'Models.Core.Zone', 'Models.Management.RotationManager',
-                             'Models.Soils.CERESSoilTemperature', 'Models.Series', 'Models.Factorial.Experiment',
+                             'Models.Soils.CERESSoilTemperature', 'Models.Series', 'Models.Factorial.ExperimentManager',
                              'Models.Factorial.Permutation', 'Models.Irrigation',
                              'Models.Factorial.Factors',
                              'Models.Sobol', 'Models.Operations', 'Models.Morris', 'Models.Fertiliser',
@@ -3333,7 +3333,7 @@ class CoreModel(PlotManager):
             # replace before delete
             mode.simulations[0] = base
             base = mode.simulations[0]
-            experiment = Models.Factorial.Experiment()
+            experiment = Models.Factorial.ExperimentManager()
             factor = Models.Factorial.Factors()
             if permutation:
                 factor.AddChild(Models.Factorial.Permutation())
@@ -3342,12 +3342,12 @@ class CoreModel(PlotManager):
             mode.model_info.Node.AddChild(experiment)
 
         # delete experiment if exists to allow refreshing if simulation was edited
-        experi = self.Simulations.FindInScope[Models.Factorial.Experiment]()
+        experi = self.Simulations.FindInScope[Models.Factorial.ExperimentManager]()
         if experi:
             ModelTools.DELETE(experi)
         exp_refresher(self)
         self.save()
-        fp = self.Simulations.FindInScope[Models.Factorial.Experiment]()
+        fp = self.Simulations.FindInScope[Models.Factorial.ExperimentManager]()
         exp_node = get_node_by_path(self.model_info.Node, fp.FullPath)
         self.preview_simulation()
         return exp_node
@@ -3477,12 +3477,12 @@ if __name__ == '__main__':
     from model_loader import get_node_by_path
 
     # Node = model.model_info.Node
-    # Node.AddChild(Models.Factorial.Experiment())
+    # Node.AddChild(Models.Factorial.ExperimentManager())
     # proto = CastHelper.CastAs[Models.Core.Simulations](Node)
-    # fp1 = model.Simulations.FindInScope[Models.Factorial.Experiment]()
+    # fp1 = model.Simulations.FindInScope[Models.Factorial.ExperimentManager]()
     # si = ModelTools.CLONER(model.simulations[0])
     # Node.RemoveChild(model.simulations[0])
     # model.save()
-    # fp = model.Simulations.FindInScope[Models.Factorial.Experiment]().FullPath
+    # fp = model.Simulations.FindInScope[Models.Factorial.ExperimentManager]().FullPath
 
     # model.preview_simulation()

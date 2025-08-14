@@ -33,7 +33,7 @@ To explicitly set unique filenames for each simulation:
 
 .. code-block:: python
 
-       create_jobs = (ApsimModel('Maize', out_path = Path(f"_{i}.apsimx").resolve()).path for i in range(10))
+       create_jobs = (ApsimModel('Maize', out_path = Path(f"_{i}.apsimx").resolve()).path for i in range(100))
 
 
 .. tip::
@@ -50,6 +50,8 @@ Instantiating and Running the Simulations
             task_manager = MultiCoreManager(db_path=Path('test.db').resolve(), agg_func=None)
             # Run all the jobs
             task_manager.run_all_jobs(create_jobs, n_cores=16, threads=False, clear_db=True)
+            # this the progress info
+            Processing all jobs. Please wait!: :  |██████████| 100.0%| [100/100]| Complete | 1.07s/iteration | Elapsed time: 00:01:46.850
             # get the results
             df = task_manager.get_simulated_output(axis=0)
             # same as

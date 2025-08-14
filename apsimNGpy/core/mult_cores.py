@@ -60,7 +60,7 @@ setData = set()
 
 
 @dataclass(slots=True)
-class ParallelManager:
+class MultiCoreManager:
     db_path: Union[str, Path]
     counter: int = 0
     agg_func:Union[str, None]  = None
@@ -200,10 +200,10 @@ class ParallelManager:
     def run_all_jobs(self, jobs, n_cores=6, threads=False, clear_db=True):
         """
         runs all provided jobs using processes
-        :param threads: threads or processes
-        :param jobs: jobs to run
-        :param n_cores: number of cores to use
-        :param clear_db: clear the database existing data if any. defaults to True
+        :param threads (bool): threads or processes
+        :param jobs (iterable[simulations paths]: jobs to run
+        :param n_cores (int): number of cores to use
+        :param clear_db (bool): clear the database existing data if any. defaults to True
         :return: None
         """
         if clear_db:
@@ -220,8 +220,9 @@ class ParallelManager:
 
 
 if __name__ == '__main__':
-    create_jobs = [ApsimModel('Maize').path for _ in range(10)]
-    Parallel = ParallelManager(db_path='myy.db', agg_func=None)
+    create_jobs = (ApsimModel('Maize').path for _ in range(10))
+    create_jobs = (ApsimModel('Maize', out_path=Path(f"_{i}.apsimx").resolve()).path for i in range(10))
+    Parallel = MultiCoreManager(db_path='testing.db', agg_func=None)
     Parallel.run_all_jobs(create_jobs, n_cores=4, threads=False, clear_db=True)
     df = Parallel.get_simulated_output(axis=0)
 

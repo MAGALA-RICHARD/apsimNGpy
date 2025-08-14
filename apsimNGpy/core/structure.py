@@ -176,15 +176,15 @@ if __name__ == '__main__':
 
     nexp = load_default_simulations(crop='Maize')
     # add experiment
-    add_model(nexp, model_type=Models.Factorial.Experiment, adoptive_parent=Models.Core.Simulations)
+    add_model(nexp, model_type=Models.Factorial.ExperimentManager, adoptive_parent=Models.Core.Simulations)
     # add factor holder
-    add_model(nexp, model_type=Models.Factorial.Factors, adoptive_parent=Models.Factorial.Experiment)
+    add_model(nexp, model_type=Models.Factorial.Factors, adoptive_parent=Models.Factorial.ExperimentManager)
     # now add individual factorst
     add_model(nexp, model_type=Models.Factorial.Factor, adoptive_parent=Models.Factorial.Factors)
     add_model(model, model_type=Models.Clock, adoptive_parent=Models.Core.Simulation, rename='sim5',
               adoptive_parent_name='Simulation')
     # final step is to move the base simulation
-    move_model(nexp, Models.Core.Simulation, Models.Factorial.Experiment, None, None)
+    move_model(nexp, Models.Core.Simulation, Models.Factorial.ExperimentManager, None, None)
     pp = nexp.Simulations.FindInScope[Models.Factorial.Factor]()
     pp.set_Specification("[Fertilise at sowing].Script.Amount = 0 to 100 step 20")
     nexp.save()

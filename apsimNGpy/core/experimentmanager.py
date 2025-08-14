@@ -52,7 +52,7 @@ class ExperimentManager(ApsimModel):
                 base = mode.simulations[0]
             except IndexError:
                 pass
-            experiment = Models.Factorial.ExperimentManager()
+            experiment = Models.Factorial.Experiment()
             self.experiment_node = experiment
             factor = Models.Factorial.Factors()
             self.factorial_node = factor
@@ -62,7 +62,7 @@ class ExperimentManager(ApsimModel):
                 factor.AddChild(perm_node)
             experiment.AddChild(factor)
             experiment.AddChild(base)
-            experi = mode.Simulations.FindDescendant[Models.Factorial.ExperimentManager]()
+            experi = mode.Simulations.FindDescendant[Models.Factorial.Experiment]()
             if experi:
                 ModelTools.DELETE(experi)
             mode.model_info.Node.AddChild(experiment)

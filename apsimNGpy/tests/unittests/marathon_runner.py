@@ -5,7 +5,7 @@ from tempfile import TemporaryDirectory
 import time
 import unittest
 
-from apsimNGpy.core.marathon import ParallelRunner
+from apsimNGpy.core.mult_cores import MultiCoreManager as ParallelRunner
 from apsimNGpy.core.apsim import ApsimModel
 
 

@@ -1,6 +1,6 @@
 if True:
 
-    from apsimNGpy.core.multi_core import MultiCoreManager
+    from apsimNGpy.core.mult_cores import MultiCoreManager
     from apsimNGpy.core.apsim import ApsimModel
     from pathlib import Path
 

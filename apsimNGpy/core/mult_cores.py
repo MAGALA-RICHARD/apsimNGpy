@@ -6,7 +6,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Union
-
+from apsimNGpy.core_utils.utils import timer
 import pandas as pd
 from apsimNGpy.core.apsim import ApsimModel
 from apsimNGpy.core_utils.database_utils import read_db_table, clear_all_tables
@@ -49,6 +49,12 @@ def simulation_exists(db_path: str, table_name: str, simulation_id: int) -> bool
 #     print("Simulation not found.")
 
 setData = set()
+
+
+@timer
+def insert_data_with_pd(db, table, results, if_exists):
+    engine = create_engine(f'sqlite:///{db}')
+    results.to_sql(table, engine, index=False, if_exists=if_exists)
 
 
 @dataclass(slots=True)
@@ -216,8 +222,10 @@ class MultiCoreManager:
 
 
 if __name__ == '__main__':
-    create_jobs = (ApsimModel('Maize').path for _ in range(100))
+    create_jobs = (ApsimModel('Maize').path for _ in range(10))
 
-    Parallel = MultiCoreManager(db_path='testing.db', agg_func='mean')
+    Parallel = MultiCoreManager(db_path='testing.db', agg_func=None)
     Parallel.run_all_jobs(create_jobs, n_cores=4, threads=False, clear_db=True)
     df = Parallel.get_simulated_output(axis=0)
+
+    insert_data_with_pd('tss.db', 'my', df, 'replace')

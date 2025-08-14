@@ -2,7 +2,7 @@
 if __name__ == '__main__':
     import os
     from matplotlib import pyplot as plt
-    from apsimNGpy.core.experiment import Experiment
+    from apsimNGpy.core.experimentmanager import ExperimentManager as Experiment
     experiment = Experiment("Maize", )
     experiment.init_experiment(permutation=True)
     experiment.add_factor("[Fertilise at sowing].Script.Amount = 0, 300")

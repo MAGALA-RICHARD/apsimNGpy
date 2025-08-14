@@ -134,7 +134,7 @@ class TestModelTools(unittest.TestCase):
     def test_find_all_in_scope_return_emptyforNone(self):
         """test finding all managers"""
         model = ApsimModel('Maize', out_path=os.path.realpath('./find_all_in_scope_simulations.apsimx'))
-        experiments = find_all_in_scope(scope=model.Simulations, child_class='Models.Factorial.ExperimentManager')
+        experiments = find_all_in_scope(scope=model.Simulations, child_class='Models.Factorial.Experiment')
         # ensure that it is empty because experiment does not exist at this node
         test = experiments == []
         self.assertTrue(test, msg='failed to return empty for no existing experiments class models')

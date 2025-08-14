@@ -11,7 +11,7 @@ that abstract most of the setup mechanics for parallezing tasks. Here, let's go 
         from pathlib import Path
 
 
-In this example, we assume your APSIM files are already prepared (or available in various locations) and you simply want a speed boost when running them and processing results.
+In this example (v0.39.03.11+), we assume your APSIM files are already prepared (or available in various locations) and you simply want a speed boost when running them and processing results.
 For demonstration purposes, we’ll generate some example jobs:
 
 .. code-block:: python

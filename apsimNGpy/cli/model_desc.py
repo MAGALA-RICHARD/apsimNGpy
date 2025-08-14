@@ -65,7 +65,7 @@ if __name__ == "__main__":
         nd = ['Models.Core.Simulation', 'Models.Soils.Soil', 'Models.PMF.Plant', 'Models.Manager',
               'Models.Climate.Weather', 'Models.Report', 'Models.Clock', 'Models.Core.Folder', 'Models.Soils.Solute',
               'Models.Soils.Swim3','Models.Soils.SoilCrop', 'Models.Soils.Water','Models.Summary', 'Models.Core.Zone',
-              'Models.Soils.CERESSoilTemperature','Models.Series','Models.Factorial.Experiment', 'Models.Factorial.Permutation',
+              'Models.Soils.CERESSoilTemperature','Models.Series','Models.Factorial.ExperimentManager', 'Models.Factorial.Permutation',
               'Models.Factorial.Factors',
               'Models.Sobol','Models.Operations', 'Models.Morris', 'Models.Fertiliser','Models.Core.Events','Models.Core.VariableComposite',
               'Models.Soils.Physical', 'Models.Soils.Chemical', 'Models.Soils.Organic']

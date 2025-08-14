@@ -13,7 +13,7 @@ else:
     raise ValueError(f"The experiment module is not supported for this type of {apsim_version()} ")
 
 
-class Experiment(ApsimModel):
+class ExperimentManager(ApsimModel):
     def __init__(self, model, out_path=None, out=None):
         super().__init__(model=model, out_path=out_path, out=out)
         self.parent_factor = None
@@ -35,7 +35,7 @@ class Experiment(ApsimModel):
                 permutation (bool): If True, enables permutation mode; otherwise, uses standard factor crossing.
 
             Side Effects:
-                Replaces any existing Experiment node with a new configuration.
+                Replaces any existing ExperimentManager node with a new configuration.
                 Clones the base simulation and adds it under the experiment.
             """
         self.permutation = permutation
@@ -52,7 +52,7 @@ class Experiment(ApsimModel):
                 base = mode.simulations[0]
             except IndexError:
                 pass
-            experiment = Models.Factorial.Experiment()
+            experiment = Models.Factorial.ExperimentManager()
             self.experiment_node = experiment
             factor = Models.Factorial.Factors()
             self.factorial_node = factor
@@ -62,7 +62,7 @@ class Experiment(ApsimModel):
                 factor.AddChild(perm_node)
             experiment.AddChild(factor)
             experiment.AddChild(base)
-            experi = mode.Simulations.FindDescendant[Models.Factorial.Experiment]()
+            experi = mode.Simulations.FindDescendant[Models.Factorial.ExperimentManager]()
             if experi:
                 ModelTools.DELETE(experi)
             mode.model_info.Node.AddChild(experiment)
@@ -166,7 +166,7 @@ class Experiment(ApsimModel):
 
 
 if __name__ == '__main__':
-    exp = Experiment('Maize', out_path='exp.apsimx')
+    exp = ExperimentManager('Maize', out_path='exp.apsimx')
     exp.init_experiment(permutation=True)
     exp.add_factor("[Fertilise at sowing].Script.Amount = 0 to 200 step 20")
     exp.add_factor("[Fertilise at sowing].Script.FertiliserType= DAP,NO3N")

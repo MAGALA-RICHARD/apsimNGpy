@@ -247,9 +247,9 @@ class TestCoreModel(BaseTester):
         self.assertEqual(simulation, Models.Core.Simulation)  # Confirm evaluation matches Core.Simulation model
 
         # Test direct evaluation of just model name
-        experiment = validate_model_obj('ExperimentManager')
+        experiment = validate_model_obj('Experiment')
         self.assertEqual(experiment,
-                         Models.Factorial.ExperimentManager)  # Confirm evaluation matches Models.Factorial.ExperimentManager model
+                         Models.Factorial.Experiment)  # Confirm evaluation matches Models.Factorial.ExperimentManager model
 
         factors = validate_model_obj('Factors')
         self.assertEqual(factors, Models.Factorial.Factors)  # Confirm evaluation matches Models.Factorial.Factors model

@@ -99,8 +99,9 @@ class TestMultiCoreManager(BaseTester):
 def test_multiprocessing():
     """this is being run separately for multiprocessing in test_main"""
     if __name__ == '__main__':
+        import multiprocessing as mp
+        mp.freeze_support()
         unittest.main()
 
 
-if __name__ == '__main__':
-    test_multiprocessing()
+test_multiprocessing()

@@ -143,6 +143,7 @@ class MultiCoreManager:
         if self.ran_ok:
             if os.path.exists(self.db_path) and os.path.isfile(self.db_path) and str(self.db_path).endswith('.db'):
                 dt = read_db_table(self.db_path, report_name='table_names')
+                # get only unique tables
                 return set(dt.table.values)
         else:
             raise ValueError("Attempting to get results from database before running all jobs")
@@ -152,19 +153,27 @@ class MultiCoreManager:
         """
         This is the worker for each simulation.
 
+        The function performs two things; runs the simulation and then inserts the simulated data into a specified
+        database.
+
         :param model: str, dict, or Path object related APSIMX json file
+
+        returns None
         """
-        self.counter += 1
+        # initialize the apsimNGpy model simulation engine
         _model = ApsimModel(model, out_path=None)
         table_names = _model.inspect_model('Models.Report', fullpath=False)
+        # we want a unique report for each crop, because they are likely to have different report schema
         crops = _model.inspect_model('Models.PMF.Plant', fullpath=False)
         crop_table = [f"{a}_{b}" for a, b in zip(table_names, crops)]
         tables = '_'.join(crop_table)
+        # run the model. without specifying report names, they will be detected automatically
         _model.run()
+        # aggregate the data using the aggregated function
         if self.agg_func:
             if self.agg_func not in {'sum', 'mean', 'max', 'min', 'median', 'std'}:
                 raise ValueError(f"unsupported aggregation function {self.agg_func}")
-            dat = _model.results.groupby('source_table')  # if there are more than one table we do not want to
+            dat = _model.results.groupby('source_table')  # if there are more than one table, we do not want to
             # aggregate them together
             out = dat.agg(self.agg_func, numeric_only=True)
 
@@ -172,11 +181,13 @@ class MultiCoreManager:
 
         else:
             out = _model.results
+        # track the model id
         out['modelName'] = model
-
+        # insert the simulated dataset into the specified database
         self.insert_data(out, table=tables)
-
+        # clean up files related _model object
         _model.clean_up()
+        # collect garbage before gc comes in
         gc.collect()
 
     def get_simulated_output(self, axis=0):
@@ -185,6 +196,7 @@ class MultiCoreManager:
         :param axis: if axis =0, concatenation is along the rows and if it is 1 concatenation is along the columns
         """
         if axis not in {0, 1}:
+            # Errors should go silently
             raise ValueError('Wrong value for axis should be either 0 or 1')
 
         data = [read_db_table(self.db_path, report_name=rp) for rp in self.tables]

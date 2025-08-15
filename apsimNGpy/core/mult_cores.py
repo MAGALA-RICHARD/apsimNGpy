@@ -204,7 +204,6 @@ class MultiCoreManager:
                 os.remove(self.db_path)
             except (PermissionError, FileNotFoundError):
                 # if removing it has failed, connect to it and remove all tables
-
                 tables = get_db_table_names(self.db_path)
                 [delete_table(self.db_path, table_name=db) for db in tables]
 

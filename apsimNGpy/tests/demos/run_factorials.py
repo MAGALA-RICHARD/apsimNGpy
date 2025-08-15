@@ -17,7 +17,7 @@ if __name__ == '__main__':
     plt.xlabel('Nitrogen fertilizers (kg ha $^{-1}$)', fontsize=16)
     plt.ylabel(r'Corn grain yield (kg ha $^{-1}$)', fontsize=16)
     plt.savefig("Maize_experiment.png")
-    plt.show()
+
 
     os.startfile("Maize_experiment.png")
     plt.close()

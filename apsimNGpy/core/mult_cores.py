@@ -9,7 +9,7 @@ from typing import Union
 from apsimNGpy.core_utils.utils import timer
 import pandas as pd
 from apsimNGpy.core.apsim import ApsimModel
-from apsimNGpy.core_utils.database_utils import read_db_table, clear_all_tables
+from apsimNGpy.core_utils.database_utils import read_db_table, clear_all_tables, get_db_table_names
 from apsimNGpy.parallel.process import custom_parallel
 from sqlalchemy import MetaData, Table, Column, String, Float, Integer, MetaData
 from sqlalchemy import create_engine, text
@@ -199,10 +199,14 @@ class MultiCoreManager:
         if not str(self.db_path).endswith('.db'):
             raise ValueError(f"Cannot clear invalid db path: {self.db_path}")
         if os.path.exists(self.db_path):
+
             try:
                 os.remove(self.db_path)
             except (PermissionError, FileNotFoundError):
-                clear_all_tables(self.db_path)
+                # if removing it has failed connect to it and remove all tables
+                print('failed')
+                tables  = get_db_table_names(self.db_path)
+                [delete_table(self.db_path, table_name=db) for db in tables]
 
     def clear_scratch(self):
         """clears the scratch directory where apsim files are cloned before being loaded. should be called after all simulations are completed

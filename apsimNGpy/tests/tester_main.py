@@ -1,6 +1,7 @@
 import configparser
 import os
 import stat
+import subprocess
 import sys
 import unittest
 from pathlib import Path
@@ -97,7 +98,7 @@ modules = [m for m in (model_tools,
                        test_config,
                        test_weathermanager,
                        test_get_weather_from_web_filename,
-                       test_multcores
+
                        )]
 if IS_NEW_APSIM:
     modules.append(test_experiment)
@@ -164,5 +165,24 @@ def run_suite(verbosity_level=2):
 
 
 if __name__ == '__main__':
+
+    # run multi_cores test before
+    try:
+        result = subprocess.run(
+            [sys.executable, str(test_multcores.__file__)],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        send_report(result.stdout, subject='Multi Processing Results')  # normal output
+        logger.info(result.stdout)
+    except subprocess.CalledProcessError as e:
+        failed_report = (f"{e.stdout}",
+                         f"Errors: {e.stderr}")
+
+        logger.info("Script failed!")
+        logger.info("STDOUT:\n", e.stdout)
+        logger.info("STDERR:\n", e.stderr)
+        send_report(sms= failed_report, subject='Multi Processing Failure Report')
 
     run_suite(verbosity_level=0)

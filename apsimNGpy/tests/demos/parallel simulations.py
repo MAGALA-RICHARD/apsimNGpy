@@ -6,7 +6,7 @@ if True:
 
     if __name__ == "__main__":
         # create some jobs for the demo
-        create_jobs = [ApsimModel('Maize').path for _ in range(100)]  # substitute with real simulation tasks
+        create_jobs = [ApsimModel('Maize').path for _ in range(1000)]  # substitute with real simulation tasks
         # initialize the multicore manager
         task_manager = MultiCoreManager(db_path=Path('test.db').resolve(), agg_func=None)
         # Run all the jobs

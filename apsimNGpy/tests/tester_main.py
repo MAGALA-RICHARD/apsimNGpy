@@ -85,7 +85,7 @@ def send_report(sms, subject, attachment_path=None):
 if IS_NEW_APSIM:
     from apsimNGpy.tests.unittests import test_experiment
 from apsimNGpy.tests.unittests import test_model_loader, unit_test_apsim, test_cast_helper, unit_tests_core, \
-    test_weathermanager, \
+    test_weathermanager, test_multcores,\
     test_edit_model, test_config, model_tools, test_get_weather_from_web_filename
 
 modules = [m for m in (model_tools,
@@ -96,7 +96,8 @@ modules = [m for m in (model_tools,
                        test_model_loader,
                        test_config,
                        test_weathermanager,
-                       test_get_weather_from_web_filename
+                       test_get_weather_from_web_filename,
+                       test_multcores,
 
                        )]
 if IS_NEW_APSIM:

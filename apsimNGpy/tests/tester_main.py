@@ -165,4 +165,5 @@ def run_suite(verbosity_level=2):
 
 
 if __name__ == '__main__':
+    test_multcores.test_multiprocessing()
     run_suite(verbosity_level=0)

@@ -97,7 +97,7 @@ modules = [m for m in (model_tools,
                        test_config,
                        test_weathermanager,
                        test_get_weather_from_web_filename,
-                       test_multcores,
+
 
                        )]
 if IS_NEW_APSIM:
@@ -162,8 +162,9 @@ def run_suite(verbosity_level=2):
         return report
     finally:
         clean_up()
+        test_multcores.test_multiprocessing()
 
 
 if __name__ == '__main__':
-    test_multcores.test_multiprocessing()
+
     run_suite(verbosity_level=0)

@@ -537,7 +537,7 @@ CoreModel
 
             ``base_name`` is optional but the experiment may not be created if there are more than one base simulations. Therefore, an error is likely.
 
-.. function:: apsimNGpy.core.core.CoreModel.detect_model_type(self, model_instance: Union[str, Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x000001D6F79A7410>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD)])
+.. function:: apsimNGpy.core.core.CoreModel.detect_model_type(self, model_instance: Union[str, Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x0000025B45A27410>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD)])
 
    Detects the model type from a given APSIM model instance or path string.
 
@@ -871,7 +871,7 @@ CoreModel
    Inspect the file by calling ``inspect_model()`` through ``get_model_paths.``
         This method is important in inspecting the ``whole file`` and also getting the ``scripts paths``
 
-.. function:: apsimNGpy.core.core.CoreModel.inspect_model(self, model_type: Union[str, Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x000001D6F79A7410>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD)], fullpath=True, **kwargs)
+.. function:: apsimNGpy.core.core.CoreModel.inspect_model(self, model_type: Union[str, Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x0000025B45A27410>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD)], fullpath=True, **kwargs)
 
    Inspect the model types and returns the model paths or names. usefull if you want to identify the path to the
         model for editing the model.
@@ -967,7 +967,7 @@ CoreModel
             Models can be inspected either by importing the Models namespace or by using string paths. The most reliable approach is to provide the full model path—either as a string or as a Models object.
             However, remembering full paths can be tedious, so allowing partial model names or references can significantly save time during development and exploration.
 
-.. function:: apsimNGpy.core.core.CoreModel.inspect_model_parameters(self, model_type: Union[Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x000001D6F79A7410>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), str], model_name: str, simulations: Union[str, list] = <UserOptionMissing>, parameters: Union[list, set, tuple, str] = 'all', **kwargs)
+.. function:: apsimNGpy.core.core.CoreModel.inspect_model_parameters(self, model_type: Union[Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x0000025B45A27410>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), str], model_name: str, simulations: Union[str, list] = <UserOptionMissing>, parameters: Union[list, set, tuple, str] = 'all', **kwargs)
 
    Inspect the input parameters of a specific ``APSIM`` model type instance within selected simulations.
 
@@ -1234,7 +1234,7 @@ CoreModel
             1. Finds the model object using the given path.
             2. Extracts and returns the requested parameter(s).
 
-.. function:: apsimNGpy.core.core.CoreModel.move_model(self, model_type: Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x000001D6F79A7410>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), new_parent_type: Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x000001D6F79A7410>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), model_name: str = None, new_parent_name: str = None, verbose: bool = False, simulations: Union[str, list] = None)
+.. function:: apsimNGpy.core.core.CoreModel.move_model(self, model_type: Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x0000025B45A27410>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), new_parent_type: Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x0000025B45A27410>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), model_name: str = None, new_parent_name: str = None, verbose: bool = False, simulations: Union[str, list] = None)
 
    Args:
 
@@ -1269,7 +1269,7 @@ CoreModel
    for methods that will alter the simulation objects and need refreshing the second time we call
        @return: self for method chaining
 
-.. function:: apsimNGpy.core.core.CoreModel.remove_model(self, model_class: Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x000001D6F79A7410>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), model_name: str = None)
+.. function:: apsimNGpy.core.core.CoreModel.remove_model(self, model_class: Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x0000025B45A27410>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), model_name: str = None)
 
    Removes a model from the APSIM Models.Simulations namespace.
 
@@ -1820,7 +1820,9 @@ MultiCoreManager
 
 .. function:: apsimNGpy.core.mult_cores.MultiCoreManager.clear_db(self)
 
-   clears the database before any simulations
+   Clears the database before any simulations.
+
+          First attempt a complete ``deletion`` of the database if that fails, existing tables are all deleted
 
 .. function:: apsimNGpy.core.mult_cores.MultiCoreManager.clear_scratch(self)
 
@@ -1829,7 +1831,7 @@ MultiCoreManager
 .. function:: apsimNGpy.core.mult_cores.MultiCoreManager.get_simulated_output(self, axis=0)
 
    Get simulated output from the API
-        :param axis: if axis =0, concatenation is along the rows and if it is 1 concatenation is along the colmns
+        :param axis: if axis =0, concatenation is along the rows and if it is 1 concatenation is along the columns
 
 .. function:: apsimNGpy.core.mult_cores.MultiCoreManager.insert_data(self, results, table)
 
@@ -1839,18 +1841,23 @@ MultiCoreManager
 
 .. function:: apsimNGpy.core.mult_cores.MultiCoreManager.run_all_jobs(self, jobs, n_cores=6, threads=False, clear_db=True, clean_up=False)
 
-   runs all provided jobs using processes
-        :param threads (bool): threads or processes
-        :param jobs (iterable[simulations paths]: jobs to run
-        :param n_cores (int): number of cores to use
-        :param clear_db (bool): clear the database existing data if any. defaults to True
+   runs all provided jobs using ``processes`` or ``threads`` specified
+        :param ``threads (bool)``: threads or processes
+        :param ``jobs (iterable[simulations paths]``: jobs to run
+        :param ``n_cores (int)``: number of cores to use
+        :param ``clear_db (bool)``: clear the database existing data if any. defaults to True
         :return: None
 
 .. function:: apsimNGpy.core.mult_cores.MultiCoreManager.run_parallel(self, model)
 
-   This i the worker for each simulation.
+   This is the worker for each simulation.
 
-        :param model: Str, dict Path object related APSIMX json file
+        The function performs two things; runs the simulation and then inserts the simulated data into a specified
+        database.
+
+        :param model: str, dict, or Path object related APSIMX json file
+
+        returns None
 
 apsimNGpy.core.base_data 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

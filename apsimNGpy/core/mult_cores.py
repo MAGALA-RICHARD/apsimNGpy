@@ -76,7 +76,6 @@ def delete_table(db, table_name):
 @dataclass(slots=True)
 class MultiCoreManager:
     db_path: Union[str, Path]
-    counter: int = 0
     agg_func: Union[str, None] = None
     ran_ok: bool = False
 
@@ -236,10 +235,15 @@ class MultiCoreManager:
     def run_all_jobs(self, jobs, n_cores=6, threads=False, clear_db=True, clean_up=False):
         """
         runs all provided jobs using ``processes`` or ``threads`` specified
+
         :param ``threads (bool)``: threads or processes
+
         :param ``jobs (iterable[simulations paths]``: jobs to run
+
         :param ``n_cores (int)``: number of cores to use
+
         :param ``clear_db (bool)``: clear the database existing data if any. defaults to True
+
         :return: None
         """
         if clear_db:

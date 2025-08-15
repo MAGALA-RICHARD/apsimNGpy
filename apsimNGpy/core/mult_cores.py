@@ -139,6 +139,7 @@ class MultiCoreManager:
 
     @property
     def tables(self):
+        "Summarizes all the tables that have been created from the simulations"
         if self.ran_ok:
             if os.path.exists(self.db_path) and os.path.isfile(self.db_path) and str(self.db_path).endswith('.db'):
                 dt = read_db_table(self.db_path, report_name='table_names')
@@ -149,9 +150,9 @@ class MultiCoreManager:
 
     def run_parallel(self, model):
         """
-        This i the worker for each simulation.
+        This is the worker for each simulation.
 
-        :param model: Str, dict Path object related APSIMX json file
+        :param model: str, dict, or Path object related APSIMX json file
         """
         self.counter += 1
         _model = ApsimModel(model, out_path=None)
@@ -181,7 +182,7 @@ class MultiCoreManager:
     def get_simulated_output(self, axis=0):
         """
         Get simulated output from the API
-        :param axis: if axis =0, concatenation is along the rows and if it is 1 concatenation is along the colmns
+        :param axis: if axis =0, concatenation is along the rows and if it is 1 concatenation is along the columns
         """
         if axis not in {0, 1}:
             raise ValueError('Wrong value for axis should be either 0 or 1')
@@ -195,7 +196,9 @@ class MultiCoreManager:
         return self.get_simulated_output(axis=0)
 
     def clear_db(self):
-        """clears the database before any simulations   """
+        """Clears the database before any simulations.
+
+          First attempt a complete ``deletion`` of the database if that fails, existing tables are all deleted"""
         if not str(self.db_path).endswith('.db'):
             raise ValueError(f"Cannot clear invalid db path: {self.db_path}")
         if os.path.exists(self.db_path):
@@ -220,11 +223,11 @@ class MultiCoreManager:
 
     def run_all_jobs(self, jobs, n_cores=6, threads=False, clear_db=True, clean_up=False):
         """
-        runs all provided jobs using processes
-        :param threads (bool): threads or processes
-        :param jobs (iterable[simulations paths]: jobs to run
-        :param n_cores (int): number of cores to use
-        :param clear_db (bool): clear the database existing data if any. defaults to True
+        runs all provided jobs using ``processes`` or ``threads`` specified
+        :param ``threads (bool)``: threads or processes
+        :param ``jobs (iterable[simulations paths]``: jobs to run
+        :param ``n_cores (int)``: number of cores to use
+        :param ``clear_db (bool)``: clear the database existing data if any. defaults to True
         :return: None
         """
         if clear_db:

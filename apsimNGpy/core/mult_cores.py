@@ -192,7 +192,8 @@ class MultiCoreManager:
     def get_simulated_output(self, axis=0):
         """
         Get simulated output from the API
-        :param axis: if axis =0, concatenation is along the rows and if it is 1 concatenation is along the columns
+
+        :param axis: if axis =0, concatenation is along the ``rows`` and if it is 1 concatenation is along the ``columns``
         """
         if axis not in {0, 1}:
             # Errors should go silently
@@ -245,6 +246,7 @@ class MultiCoreManager:
         :param ``clear_db (bool)``: clear the database existing data if any. defaults to True
 
         :return: None
+
         """
         if clear_db:
             self.clear_db()  # each simulation is fresh,

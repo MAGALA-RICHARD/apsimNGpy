@@ -237,13 +237,13 @@ class MultiCoreManager:
         """
         runs all provided jobs using ``processes`` or ``threads`` specified
 
-        :param ``threads (bool)``: threads or processes
+        ``threads (bool)``: threads or processes
 
-        :param ``jobs (iterable[simulations paths]``: jobs to run
+        ``jobs (iterable[simulations paths]``: jobs to run
 
-        :param ``n_cores (int)``: number of cores to use
+        ``n_cores (int)``: number of cores to use
 
-        :param ``clear_db (bool)``: clear the database existing data if any. defaults to True
+        ``clear_db (bool)``: clear the database existing data if any. defaults to True
 
         :return: None
 

@@ -174,7 +174,7 @@ if __name__ == '__main__':
             text=True,
             check=True
         )
-        send_report(result.stdout, subject='Multi Processing Results')  # normal output
+        send_report('✅ Passed', 'Multi Processing Results')  # normal output
         logger.info(result.stdout)
     except subprocess.CalledProcessError as e:
         failed_report = (f"{e.stdout}",

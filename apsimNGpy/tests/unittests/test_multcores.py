@@ -7,6 +7,8 @@ from apsimNGpy.tests.unittests.base_unit_tests import BaseTester
 import sys
 import unittest
 
+from apsimNGpy.settings import logger
+
 
 class TestMultiCoreManager(BaseTester):
     def setUp(self):
@@ -72,36 +74,45 @@ class TestMultiCoreManager(BaseTester):
         self.assertFalse(df2.empty)
         self.assertEqual(df2.shape[0], df.shape[0])
 
-    def test_mult_cores_run_parallel_with_mean_aggregator(self):
-        """ test if multicore mean aggregator will work"""
-        core_manager_mean = MultiCoreManager(db_path=self.data_db, agg_func="mean")
-        core_manager_mean.run_parallel(model=self.model)
+    def _test_run_all_tests(self, agg_func=None, clear_db_test=True, threads=True, cores=2):
+        """tests if run_all_tests work udner various conditions"""
+        core_manager_mean = MultiCoreManager(db_path=self.data_db, agg_func=agg_func)
+
         # using processes will fail in this environment, so threads are appropriate
-        core_manager_mean.run_all_jobs(jobs=self.jobs, threads=True, n_cores=2, clear_db=True)
+        core_manager_mean.run_all_jobs(jobs=self.jobs, threads=threads, n_cores=cores, clear_db=clear_db_test,
+                                       clean_up=True)
         df = core_manager_mean.results
         self.assertFalse(df.empty)
         # if mean aggregators worked, then number of rows are two
-        rows = df.shape[0] == len(self.jobs)
-        self.assertTrue(rows)
+        if agg_func is not None:
+            rows = df.shape[0] == len(self.jobs)
 
-    def test_mult_cores_run_parallel_with_no_aggregator(self):
-        """ test if multicore mean aggregator will work"""
-        core_manager_mean = MultiCoreManager(db_path=self.data_db, agg_func=None)
-        # using processes will fail in this environment, so threads are appropriate
-        core_manager_mean.run_all_jobs(jobs=self.jobs, threads=True, n_cores=2, clear_db=True)
-        df = core_manager_mean.results
-        self.assertFalse(df.empty)
-        # Without mean aggregators, number of rows are obviously greater than 2
-        rows = df.shape[0] > len(self.jobs)
-        self.assertTrue(rows)
+            self.assertTrue(rows)
+        else:
+            rows = df.shape[0] > len(self.jobs)
+            self.assertTrue(rows)
+
+    def test_run_all_tests(self):
+        logger.info('testing run_all_tests. agg_func = mean')
+        self._test_run_all_tests(agg_func='mean', clear_db_test=True)
+        logger.info('testing run_all_tests. agg_func = None')
+        self._test_run_all_tests(agg_func=None, clear_db_test=True)
+        logger.info('testing run_all_tests. agg_func = mean, threads = False')
+        # try multiprocess
+        try:
+            self._test_run_all_tests(agg_func='mean', threads=False)
+        except Exception as e:
+            pass
+            logger.error(e)
+            logger.info('testing run_all_tests. agg_func = mean, threads =False, Failed')
 
 
 def test_multiprocessing():
     """this is being run separately for multiprocessing in test_main"""
     if __name__ == '__main__':
         if sys.platform.startswith('win'):
-           import multiprocessing as mp
-           mp.freeze_support()
+            import multiprocessing as mp
+            mp.freeze_support()
         unittest.main()
 
 

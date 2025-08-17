@@ -97,8 +97,6 @@ modules = [m for m in (model_tools,
                        test_model_loader,
                        test_config,
                        test_weathermanager,
-
-                       test_multcores,
                        test_get_weather_from_web_filename,
 
                        )]
@@ -168,7 +166,7 @@ def run_suite(verbosity_level=2):
 
 if __name__ == '__main__':
 
-    # run multi_cores test before
+   # run multi_cores test before
     try:
         result = subprocess.run(
             [sys.executable, str(test_multcores.__file__)],

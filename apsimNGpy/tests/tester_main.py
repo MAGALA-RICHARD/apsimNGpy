@@ -97,6 +97,8 @@ modules = [m for m in (model_tools,
                        test_model_loader,
                        test_config,
                        test_weathermanager,
+
+                       test_multcores,
                        test_get_weather_from_web_filename,
 
                        )]

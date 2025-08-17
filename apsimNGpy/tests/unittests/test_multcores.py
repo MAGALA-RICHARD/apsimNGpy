@@ -17,7 +17,7 @@ class TestMultiCoreManager(BaseTester):
         self.db_path_agg_func = Path('test22.db').resolve()
         self.out_path_no_agg = os.path.realpath('maize_multi_core_test_no_agg.apsimx')
         self.out_path_mean = os.path.realpath('maize_multi_core_test_mean.apsimx')
-        self.jobs = ['Maize', "Soybean"]
+        self.jobs = ['Maize', "Soybean", 'Barley', 'Canola']
         self.core_manager_no_agg = MultiCoreManager(db_path=self.data_db, agg_func='mean')
         self.insert_data_db = os.path.realpath('test313.db')
 
@@ -74,7 +74,7 @@ class TestMultiCoreManager(BaseTester):
         self.assertFalse(df2.empty)
         self.assertEqual(df2.shape[0], df.shape[0])
 
-    def _test_run_all_tests(self, agg_func=None, clear_db_test=True, threads=True, cores=2):
+    def _test_run_all_jobs(self, agg_func=None, clear_db_test=True, threads=True, cores=2):
         """tests if run_all_tests work udner various conditions"""
         core_manager_mean = MultiCoreManager(db_path=self.data_db, agg_func=agg_func)
 
@@ -87,24 +87,24 @@ class TestMultiCoreManager(BaseTester):
         if agg_func is not None:
             rows = df.shape[0] == len(self.jobs)
 
-            self.assertTrue(rows)
+            self.assertTrue(rows, f"agg function {agg_func} failed")
         else:
             rows = df.shape[0] > len(self.jobs)
             self.assertTrue(rows)
 
-    def test_run_all_tests(self):
+    def test_run_all_jobs(self):
         logger.info('testing run_all_tests. agg_func = mean')
-        self._test_run_all_tests(agg_func='mean', clear_db_test=True)
+        self._test_run_all_jobs(agg_func='mean', clear_db_test=True)
         logger.info('testing run_all_tests. agg_func = None')
-        self._test_run_all_tests(agg_func=None, clear_db_test=True)
+        self._test_run_all_jobs(agg_func=None, clear_db_test=True)
         logger.info('testing run_all_tests. agg_func = mean, threads = False')
         # try multiprocess
         try:
-            self._test_run_all_tests(agg_func='mean', threads=False)
+            self._test_run_all_jobs(agg_func='mean', threads=False)
         except Exception as e:
             pass
             logger.error(e)
-            logger.info('testing run_all_tests. agg_func = mean, threads =False, Failed')
+            logger.info(f'testing run_all_tests. agg_func = mean, threads =False, Failed\n because of {e}')
 
 
 def test_multiprocessing():

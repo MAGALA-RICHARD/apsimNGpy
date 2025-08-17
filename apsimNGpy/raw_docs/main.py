@@ -2,7 +2,7 @@ import os
 import shutil
 from pathlib import Path
 from typing import Union
-
+from apsimNGpy.optimizer.moo import MultiObjectiveProblem
 import apsimNGpy
 import inspect
 from apsimNGpy.core.apsim import ApsimModel
@@ -150,7 +150,7 @@ if __name__ == '__main__':
     from apsimNGpy.core import core
 
     docs([apsim.ApsimModel,single.ContinuousVariable, exceptions,
-          ExperimentManager, MultiCoreManager,
+          ExperimentManager, MultiCoreManager, MultiObjectiveProblem,
           single.MixedVariable, process, database_utils, core.CoreModel, core.ModelTools, evaluator, runner, base_data, weathermanager, soilmanager, load_model],
          output_file="api.rst")
 

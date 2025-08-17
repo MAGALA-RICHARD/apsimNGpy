@@ -97,14 +97,14 @@ class TestMultiCoreManager(BaseTester):
         self._test_run_all_jobs(agg_func='mean', clear_db_test=True)
         logger.info('testing run_all_tests. agg_func = None')
         self._test_run_all_jobs(agg_func=None, clear_db_test=True)
-        # logger.info('testing run_all_tests. agg_func = mean, threads = False')
-        # # try multiprocess
-        # try:
-        #     self._test_run_all_jobs(agg_func='mean', threads=False)
-        # except Exception as e:
-        #     pass
-        #     logger.error(e)
-        #     logger.info(f'testing run_all_tests. agg_func = mean, threads =False, Failed\n because of {e}')
+        logger.info('testing run_all_tests. agg_func = mean, threads = False')
+        # try multiprocess
+        try:
+            self._test_run_all_jobs(agg_func='mean', threads=False)
+        except Exception as e:
+            pass
+            logger.error(e)
+            logger.info(f'testing run_all_tests. agg_func = mean, threads =False, Failed\n because of {e}')
 
 
 def test_multiprocessing():

@@ -28,8 +28,11 @@ import sys
 from apsimNGpy.settings import logger
 from platform import system
 from subprocess import call, run, Popen
+
+
 def select_process(use_thread, ncores):
     return ThreadPoolExecutor(ncores) if use_thread else ProcessPoolExecutor(ncores)
+
 
 def open_file_in_window(filepath):
     if system() == 'Darwin':  # macOS
@@ -40,6 +43,8 @@ def open_file_in_window(filepath):
         call(['xdg-open', filepath])
     else:
         raise OSError('Unsupported operating system')
+
+
 # to avoid breaking old versions. am repeating it here
 
 
@@ -386,36 +391,6 @@ def moving_average(iterable, n=3):
         yield s / n
 
 
-def Cache(func):
-    """
-
-    This is a function decorator for class attributes. It just remembers the result of the FIRST function call
-    and returns this from there on.
-    """
-
-    func_name = func.__name__
-
-    def wrapper(self, *args, use_cache=True, set_cache=True, **kwargs):
-
-        if "cache" not in self.__dict__:
-            self.__dict__["cache"] = {}
-
-        cache = self.__dict__["cache"]
-
-        if use_cache and func_name in cache:
-            return cache[func_name]
-        else:
-
-            obj = func(self, *args, **kwargs)
-
-            if set_cache:
-                cache[func_name] = obj
-
-            return obj
-
-    return wrapper
-
-
 def add_wheat(string_object, word_to_insert="Wheat"):
     result = []
     words = string_object.split(', ')
@@ -475,7 +450,6 @@ def threaded_weather_download(self, iter_arable):
     # Wait for all threads to finish
     for thread in threads:
         thread.join()
-
 
 
 # we can constrain the sample size of each management practice every time we sample
@@ -547,6 +521,7 @@ def timer(func):
         elapsed_time = end_time - start_time
         logger.info(f"{func.__name__} took {elapsed_time:.4f} seconds to execute.")
         return result
+
     return wrapper
 
 
@@ -570,7 +545,6 @@ def filter_df(df, **kwargs):
     #
     for column, value in kwargs.items():
         mask &= (df[column] == value)
-
 
     filtered_df = df[mask]
     return filtered_df

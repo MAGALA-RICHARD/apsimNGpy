@@ -5,9 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="5d471312-8496-4246-98d6-790439318160" name="Changes" comment="change the order of file name evaluation get_weather_from_web">
-      <change beforePath="$PROJECT_DIR$/raw_docs/api.rst" beforeDir="false" afterPath="$PROJECT_DIR$/raw_docs/api.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/raw_docs/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/raw_docs/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/tester_main.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/tester_main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -257,9 +255,6 @@
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests/unittests" />
       <option name="IS_MODULE_SDK" value="true" />
@@ -280,9 +275,6 @@
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests" />
       <option name="IS_MODULE_SDK" value="true" />
@@ -301,10 +293,10 @@
     <recent_temporary>
       <list>
         <item itemvalue="Python.tester_main" />
+        <item itemvalue="Python.test_multcores" />
         <item itemvalue="Python.main" />
         <item itemvalue="Python.mult_cores" />
         <item itemvalue="Python.parallel simulations" />
-        <item itemvalue="Python.test_multcores" />
       </list>
     </recent_temporary>
   </component>
@@ -407,46 +399,7 @@
       <workItem from="1754494576186" duration="197000" />
       <workItem from="1755033638439" duration="2279000" />
       <workItem from="1755035988776" duration="62293000" />
-    </task>
-    <task id="LOCAL-00560" summary="optimizations">
-      <option name="closed" value="true" />
-      <created>1748548267705</created>
-      <option name="number" value="00560" />
-      <option name="presentableId" value="LOCAL-00560" />
-      <option name="project" value="LOCAL" />
-      <updated>1748548267705</updated>
-    </task>
-    <task id="LOCAL-00561" summary="optimizations">
-      <option name="closed" value="true" />
-      <created>1748548720566</created>
-      <option name="number" value="00561" />
-      <option name="presentableId" value="LOCAL-00561" />
-      <option name="project" value="LOCAL" />
-      <updated>1748548720566</updated>
-    </task>
-    <task id="LOCAL-00562" summary="optimizations">
-      <option name="closed" value="true" />
-      <created>1748550766581</created>
-      <option name="number" value="00562" />
-      <option name="presentableId" value="LOCAL-00562" />
-      <option name="project" value="LOCAL" />
-      <updated>1748550766581</updated>
-    </task>
-    <task id="LOCAL-00563" summary="optimizations">
-      <option name="closed" value="true" />
-      <created>1748560010295</created>
-      <option name="number" value="00563" />
-      <option name="presentableId" value="LOCAL-00563" />
-      <option name="project" value="LOCAL" />
-      <updated>1748560010295</updated>
-    </task>
-    <task id="LOCAL-00564" summary="optimizations">
-      <option name="closed" value="true" />
-      <created>1748560033721</created>
-      <option name="number" value="00564" />
-      <option name="presentableId" value="LOCAL-00564" />
-      <option name="project" value="LOCAL" />
-      <updated>1748560033721</updated>
+      <workItem from="1755456103247" duration="4535000" />
     </task>
     <task id="LOCAL-00565" summary="optimizations">
       <option name="closed" value="true" />
@@ -800,7 +753,47 @@
       <option name="project" value="LOCAL" />
       <updated>1755277051271</updated>
     </task>
-    <option name="localTasksCounter" value="609" />
+    <task id="LOCAL-00609" summary="change the order of file name evaluation get_weather_from_web">
+      <option name="closed" value="true" />
+      <created>1755457422058</created>
+      <option name="number" value="00609" />
+      <option name="presentableId" value="LOCAL-00609" />
+      <option name="project" value="LOCAL" />
+      <updated>1755457422058</updated>
+    </task>
+    <task id="LOCAL-00610" summary="change the order of file name evaluation get_weather_from_web">
+      <option name="closed" value="true" />
+      <created>1755458010669</created>
+      <option name="number" value="00610" />
+      <option name="presentableId" value="LOCAL-00610" />
+      <option name="project" value="LOCAL" />
+      <updated>1755458010669</updated>
+    </task>
+    <task id="LOCAL-00611" summary="change the order of file name evaluation get_weather_from_web">
+      <option name="closed" value="true" />
+      <created>1755458371344</created>
+      <option name="number" value="00611" />
+      <option name="presentableId" value="LOCAL-00611" />
+      <option name="project" value="LOCAL" />
+      <updated>1755458371344</updated>
+    </task>
+    <task id="LOCAL-00612" summary="change the order of file name evaluation get_weather_from_web">
+      <option name="closed" value="true" />
+      <created>1755458634860</created>
+      <option name="number" value="00612" />
+      <option name="presentableId" value="LOCAL-00612" />
+      <option name="project" value="LOCAL" />
+      <updated>1755458634860</updated>
+    </task>
+    <task id="LOCAL-00613" summary="change the order of file name evaluation get_weather_from_web">
+      <option name="closed" value="true" />
+      <created>1755526686265</created>
+      <option name="number" value="00613" />
+      <option name="presentableId" value="LOCAL-00613" />
+      <option name="project" value="LOCAL" />
+      <updated>1755526686265</updated>
+    </task>
+    <option name="localTasksCounter" value="614" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

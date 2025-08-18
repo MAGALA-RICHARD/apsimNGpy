@@ -640,6 +640,12 @@ def add_model(_model, parent, model):
 
 
 def add_as_simulation(_model, resource, sim_name):
+    """
+    Get a simulation from another file or model and it to the current apsimNGpy model simulation
+    _model: apsimNgpy.core.apsim.ApsimModel,
+    resource: source of the simulation file,
+    sim_name, new name to name the added simulation
+    """
     model = load_apsim_model(resource)
     sim = model.IModel.FindDescendant[Models.Core.Simulation]()
     if sim is None:

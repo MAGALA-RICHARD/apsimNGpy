@@ -1,3 +1,6 @@
+"""
+Not yet complete
+"""
 from concurrent.futures import as_completed
 
 import geopandas as gpd
@@ -11,8 +14,7 @@ from shapely.geometry import Point
 import os
 from shutil import copy
 from shapely.ops import unary_union
-from apsimNGpy.core.base_data import LoadExampleFiles
-from apsimNGpy.parallel.process import download_soil_tables
+
 from tqdm import tqdm
 import random
 from apsimNGpy.manager.soilmanager import OrganiseSoilProfile, DownloadsurgoSoiltables
@@ -20,7 +22,7 @@ from apsimNGpy.core.weather import daymet_bylocation_nocsv
 from apsimNGpy.parallel.process import custom_parallel
 from apsimNGpy.parallel.safe import initialise
 
-maize = LoadExampleFiles().get_maize
+
 
 WGS84 = 'epsg:4326'
 

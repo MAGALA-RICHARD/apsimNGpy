@@ -3,7 +3,7 @@ if True:
 
     # running factorial experiments
     import os
-    from matplotlib import pyplot as plt
+
     from apsimNGpy.core.experimentmanager import ExperimentManager as Experiment
     if __name__ == '__main__':
         experiment = Experiment("Maize", )
@@ -15,12 +15,15 @@ if True:
         experiment.run()
         df = experiment.results
         g = experiment.cat_plot(x='Amount', y="Yield", kind='bar', aspect=1, height=8, hue='CultivarName')
-        plt.legend(loc='upper left')
-        plt.tight_layout()
-        plt.xlabel('Nitrogen fertilizers (kg ha $^{-1}$)', fontsize=16)
-        plt.ylabel(r'Corn grain yield (kg ha $^{-1}$)', fontsize=16)
-        plt.savefig("Maize_experiment.png")
-        plt.show()
+        experiment.render_plot(ylabel= r'Corn grain yield (kg ha $^{-1}$)',
+                               xlabel= 'Nitrogen fertilizers (kg ha $^{-1}$)',
+                               save_as="Maize_experiment.png", show=True)
+
+
+
+
+
+
 
 
         os.startfile("Maize_experiment.png")

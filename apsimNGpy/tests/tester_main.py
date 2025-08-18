@@ -166,7 +166,7 @@ def run_suite(verbosity_level=2):
 
 if __name__ == '__main__':
 
-   # run multi_cores test before
+    # run multi_cores test before
     try:
         result = subprocess.run(
             [sys.executable, str(test_multcores.__file__)],
@@ -174,8 +174,8 @@ if __name__ == '__main__':
             text=True,
             check=True
         )
-        send_report('✅ Passed', 'Multi Processing Results')  # normal output
-        logger.info(result.stdout)
+        send_report('✅ Passed', 'Multi Processing Results')
+        # logger.info(result.stdout)
     except subprocess.CalledProcessError as e:
         failed_report = (f"{e.stdout}",
                          f"Errors: {e.stderr}")
@@ -183,6 +183,6 @@ if __name__ == '__main__':
         logger.info("Script failed!")
         logger.info("STDOUT:\n", e.stdout)
         logger.info("STDERR:\n", e.stderr)
-        send_report(sms= failed_report, subject='Multi Processing Failure Report')
+        send_report(sms=failed_report, subject='Multi Processing Failure Report')
 
     run_suite(verbosity_level=0)

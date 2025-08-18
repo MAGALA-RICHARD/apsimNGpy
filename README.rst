@@ -14,14 +14,6 @@
    :target: https://pepy.tech/project/apsimNGpy
    :alt: Total PyPI downloads
 
-.. image:: https://static.pepy.tech/badge/apsimNGpy/month
-   :target: https://pepy.tech/project/apsimNGpy
-   :alt: Weekly PyPI downloads
-
-.. image:: https://static.pepy.tech/badge/apsimNGpy/week
-   :target: https://pepy.tech/project/apsimNGpy
-   :alt: Weekly PyPI downloads
-
 .. image:: https://img.shields.io/badge/Join%20Discussions-blue.svg
    :target: https://discord.gg/SU9A6nNv
    :alt: Join Discussions

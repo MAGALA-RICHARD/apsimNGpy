@@ -78,10 +78,10 @@ class TestWeatherDownload(BaseTester):
             end=2001,
             simulations='Simulation',
             source='nasa',
-            filename=self.default_filename
+
         )
 
-        # Check if default filename is used
+        # Check if the default filename is used
         inspect_met_file = self.model.inspect_model_parameters(model_type='Weather', model_name='Weather',
                                                                simulations='Simulation')
         self.assertEqual(self.default_filename, os.path.basename(inspect_met_file),

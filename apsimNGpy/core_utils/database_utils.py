@@ -10,7 +10,7 @@ from apsimNGpy.core_utils.utils import timer
 from pandas import errors
 from pandas import read_sql_query as rsq
 from sqlalchemy import create_engine, inspect
-from apsimNGpy.core_utils.exceptions import TableNotFoundError
+from apsimNGpy.exceptions import TableNotFoundError
 from apsimNGpy.settings import logger
 from apsimNGpy.core.pythonet_config import *
 from pandas import DataFrame

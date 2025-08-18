@@ -8,6 +8,8 @@ from pathlib import Path
 from functools import lru_cache, cache
 from os.path import join, dirname
 import logging
+from subprocess import Popen, PIPE
+
 import psutil
 import uuid
 from shutil import copy2
@@ -256,13 +258,33 @@ class Config:
         return set_apsim_bin_path(_path)
 
 
-def apsim_version():
-    _path = get_apsim_bin_path()
-    dPath = os.path.dirname(_path)
-    return os.path.basename(dPath)
+@cache
+def apsim_version(verbose:bool=False):
+    """ Display version information of the apsim model currently in the apsimNGpy config environment.
 
+    ``verbose``: (bool) Prints the version information ``instantly``
 
-@lru_cache(maxsize=300)
+    Example::
+
+            apsim_version = get_apsim_version()
+
+    """
+    bin_path = Path(get_apsim_bin_path())
+    # Determine executable based on OS
+    if platform.system() == "Windows":
+
+        APSIM_EXEC =  bin_path/ "Models.exe"
+    else:  # Linux or macOS
+        APSIM_EXEC = bin_path / "Models"
+
+    cmd = [APSIM_EXEC, '--version']
+    if verbose:
+        cmd.append("--verbose")
+    res = Popen(cmd, stdout=PIPE, stderr=PIPE, text=True)
+    res.wait()
+    return res.stdout.readlines()[0].strip()
+
+@cache
 def load_crop_from_disk(crop: str, out: str = None, work_space: str = None):
     """
     Load a default APSIM crop simulation file from disk by specifying only the crop name.

@@ -259,7 +259,16 @@ class Config:
 def apsim_version():
     _path = get_apsim_bin_path()
     dPath = os.path.dirname(_path)
-    return os.path.basename(dPath)
+    base = os.path.basename(dPath)
+    if platform.system() == 'Windows' or platform.system() != 'Darwin':
+        return base
+    else:
+        spl = str(_path).split('/')
+        for elem in spl:
+            if elem.endswith('.app'):
+                return elem.strip(".app")
+    return base
+
 
 
 @lru_cache(maxsize=300)

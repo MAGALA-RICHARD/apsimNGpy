@@ -181,7 +181,10 @@ def get_bin_use_history():
     g_CONFIG.read(CONFIG_PATH)
     if g_CONFIG.has_section('PreviousPaths'):
         history = g_CONFIG['PreviousPaths']['BINS']
-        return eval(history)
+        his = eval(history)
+        # return only those currently existing
+        his = [i for i in his if os.path.exists(i)]
+        return his
     else:
         logger.info('No bin path have been set to get generate bin use histories')
 

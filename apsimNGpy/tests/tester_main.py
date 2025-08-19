@@ -123,6 +123,12 @@ suite = unittest.TestSuite()
 for mod in modules:
     suite.addTests(loader.loadTestsFromModule(mod))
 
+def run_multiple_tests():
+    load = unittest.TestLoader()
+    suit = unittest.TestSuite()
+    runner = unittest.TextTestRunner(verbosity=2)
+    suit.addTest(load.loadTestsFromModule(test_multcores))
+    runner.run(suit)
 
 def run_suite(verbosity_level=2):
     try:
@@ -167,22 +173,6 @@ def run_suite(verbosity_level=2):
 if __name__ == '__main__':
 
     # run multi_cores test before
-    try:
-        result = subprocess.run(
-            [sys.executable, str(test_multcores.__file__)],
-            capture_output=True,
-            text=True,
-            check=True
-        )
-        send_report('✅ Passed', 'Multi Processing')
-        # logger.info(result.stdout)
-    except subprocess.CalledProcessError as e:
-        failed_report = (f"{e.stdout}",
-                         f"Errors: {e.stderr}")
-
-        logger.info("Script failed!")
-        logger.info("STDOUT:\n", e.stdout)
-        logger.info("STDERR:\n", e.stderr)
-        send_report(sms=failed_report, subject='Multi Processing Failure Report')
-
+    run_multiple_tests()
     run_suite(verbosity_level=0)
+    from apsimNGpy.core.config import get_bin_use_history

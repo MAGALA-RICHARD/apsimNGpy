@@ -355,7 +355,7 @@ class CoreModel(PlotManager):
         Parameters:
         -----------
         ``report_names`` : Union[str, list]
-            Name or list of names of report tables to read. These should match the
+            Name or list names of report tables to read. These should match the
             report model names in the simulation output.
 
         Returns:

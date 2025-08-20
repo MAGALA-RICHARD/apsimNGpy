@@ -25,7 +25,7 @@ from functools import lru_cache
 from apsimNGpy.core_utils.utils import open_apsimx_file_in_window
 # now we can safely import C# libraries
 from apsimNGpy.core.pythonet_config import *
-from apsimNGpy.core_utils.database_utils import dataview_to_dataframe
+from apsimNGpy.core_utils.database_utils import dataview_to_dataframe, delete_all_tables
 from apsimNGpy.core.config import get_apsim_bin_path
 
 from apsimNGpy.core.model_tools import (get_or_check_model, old_method, _edit_in_cultivar,
@@ -2865,7 +2865,7 @@ class CoreModel(PlotManager):
 
         return self
 
-    def find_simulations(self, simulations: Union[list, tuple, str] = MissingOption):
+    def find_simulations(self, simulations: Union[list, tuple, str, None] = MissingOption):
         simulations_names = simulations
         """Find simulations by name or names in a list
 
@@ -2960,7 +2960,9 @@ class CoreModel(PlotManager):
         except (FileNotFoundError, PermissionError) as e:
             from apsimNGpy.core_utils.database_utils import clear_all_tables
             # if deleting has failed
-            clear_all_tables(self.datastore) if os.path.exists(self.datastore) else None
+            if db:
+              delete_all_tables(self.datastore)
+            #clear_all_tables(self.datastore) if os.path.exists(self.datastore) else None
 
             if verbose:
                 logger.info(e)
@@ -3234,11 +3236,15 @@ class CoreModel(PlotManager):
 
         return filter_out()
 
-    def inspect_file(self, cultivar=False, **kwargs):
+    def inspect_file(self, *, cultivar=False, console=True, **kwargs):
 
         """
         Inspect the file by calling ``inspect_model()`` through ``get_model_paths.``
         This method is important in inspecting the ``whole file`` and also getting the ``scripts paths``
+
+        cultivar: i (bool) includes cultivar paths
+
+        console: (bool) print to the console
         """
         self.save()  # save before compiling for consistent behaviors
         if kwargs.get('indent', None) or kwargs.get('display_full_path', None):
@@ -3279,8 +3285,12 @@ class CoreModel(PlotManager):
                 )
 
         tree = build_tree(self.get_model_paths(cultivar=cultivar))
-        print(tree, 'tree')
-        print_tree_branches(tree)
+        if console:
+
+            print_tree_branches(tree)
+        else:
+            return tree
+            # future implementation
 
     def summarize_numeric(self, data_table: Union[str, tuple, list] = None, columns: list = None,
                           percentiles=(0.25, 0.5, 0.75), round=2) -> pd.DataFrame:

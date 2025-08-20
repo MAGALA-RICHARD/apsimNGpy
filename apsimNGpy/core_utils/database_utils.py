@@ -9,11 +9,48 @@ from pathlib import Path
 from apsimNGpy.core_utils.utils import timer
 from pandas import errors
 from pandas import read_sql_query as rsq
-from sqlalchemy import create_engine, inspect
+from sqlalchemy import create_engine, inspect, Table, MetaData
 from apsimNGpy.exceptions import TableNotFoundError
 from apsimNGpy.settings import logger
 from apsimNGpy.core.pythonet_config import *
 from pandas import DataFrame
+
+
+def delete_table(db, table_name):
+    """deletes the table in a database.
+
+    ⚠️ Proceed with caution: this operation is irreversible.
+    """
+    # database connection
+    db = os.path.realpath(db)
+    engine = create_engine(f"sqlite:///{db}")
+    metadata = MetaData()
+
+    # Load table
+    table_to_drop = Table(f"{table_name}", metadata, autoload_with=engine)
+
+    # Drop it
+    table_to_drop.drop(engine)
+
+
+def delete_all_tables(db: str) -> None:
+    """
+    Deletes all tables in the specified SQLite database.
+
+    ⚠️ Proceed with caution: this operation is irreversible.
+
+    Args:
+        db (str): Path to the SQLite database file.
+    """
+    db_path = os.path.realpath(db)
+    engine = create_engine(f"sqlite:///{db_path}")
+    metadata = MetaData()
+
+    # Reflect the current database schema
+    metadata.reflect(bind=engine)
+
+    # Drop all tables
+    metadata.drop_all(bind=engine)
 
 
 def dataview_to_dataframe(_model, reports):

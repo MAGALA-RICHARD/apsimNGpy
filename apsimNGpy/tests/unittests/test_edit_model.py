@@ -7,18 +7,23 @@ from apsimNGpy.core.base_data import load_default_simulations
 from apsimNGpy.core.apsim import ApsimModel
 import unittest
 from pathlib import Path
+
 wd = Path(__file__).parent.joinpath('test_edits')
 wd.mkdir(parents=True, exist_ok=True)
 from os import chdir
+
 chdir(wd)
 SIMULATION = 'Simulation'
+import os
 
 
 class TestCoreModel(unittest.TestCase):
 
     def setUp(self):
-        self.model = load_default_simulations('Maize')
+        self.out_path = os.path.realpath('test_edits_fixed.apsimx')
+        self.model = ApsimModel('Maize', out_path=self.out_path)
         self.out = 'test_edit_model.apsimx'
+        self.paths = {self.out_path}
 
     def test_edit_soil_organic_matter_module(self):
         toPCarb = 1.233
@@ -205,11 +210,16 @@ class TestCoreModel(unittest.TestCase):
                 '[Maize].Grain.Total.Wt as grain_weight'])
 
     def test_run_model(self):
-        model = ApsimModel(model='Maize')
-        model.run()
-        self.assertTrue(model.ran_ok)
-        model.clean_up(db=True)
+        """finally run model"""
         self.model.run()
+        self.assertTrue(self.model.ran_ok)
+
+    def tearDown(self):
+        """finally teardown"""
+        self.model.clean_up(db=True)
+        for path in self.paths:
+            if os.path.exists(path):
+                os.remove(path)
 
 
 if __name__ == '__main__':

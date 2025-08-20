@@ -262,7 +262,7 @@ class Config:
 
 
 @cache
-def apsim_version(verbose:bool=False):
+def apsim_version(verbose: bool = False):
     """ Display version information of the apsim model currently in the apsimNGpy config environment.
 
     ``verbose``: (bool) Prints the version information ``instantly``
@@ -276,7 +276,7 @@ def apsim_version(verbose:bool=False):
     # Determine executable based on OS
     if platform.system() == "Windows":
 
-        APSIM_EXEC =  bin_path/ "Models.exe"
+        APSIM_EXEC = bin_path / "Models.exe"
     else:  # Linux or macOS
         APSIM_EXEC = bin_path / "Models"
 
@@ -286,6 +286,7 @@ def apsim_version(verbose:bool=False):
     res = Popen(cmd, stdout=PIPE, stderr=PIPE, text=True)
     res.wait()
     return res.stdout.readlines()[0].strip()
+
 
 @cache
 def load_crop_from_disk(crop: str, out: str = None, work_space: str = None):
@@ -344,3 +345,17 @@ def load_crop_from_disk(crop: str, out: str = None, work_space: str = None):
         "Could not find root path for APSIM binaries. "
         "Try reinstalling APSIM or use set_apsim_bin_path() to set the path to an existing APSIM version."
     )
+
+
+def stamp_name_with_version(file_name):
+    """
+    we stamp every file name with the version, which allows the user to open it in the appropriate version it was created
+    @param file_name: path to the would be.apsimx file
+    @return: path to the stamped file
+    """
+    version  = apsim_version()
+    destination = Path(file_name).resolve()
+    dest_path = destination.with_name(
+        destination.name.replace(".apsimx", f"{version}.apsimx")
+    )
+    return dest_path

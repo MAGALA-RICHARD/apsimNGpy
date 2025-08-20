@@ -5,7 +5,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="5d471312-8496-4246-98d6-790439318160" name="Changes" comment="change the order of file name evaluation get_weather_from_web">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/unittests/test_edits/Maize_nasa_1990_2001.met" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/unittests/test_edits/nasa_2.met" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/unittests/test_edits/temp_df684fdb-6cfa-11f0-8f37-089204ded298_MaizeAPSIM2024.5.7493.0.db-wal" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/unittests/test_edits/weatherdata/Maize_daymet_1990_2001.met" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/unittests/test_edits/weatherdata/__met_.met" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/unittests/test_edits/weatherdata/ame_met_test.met" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/unittests/test_edits/weatherdata/ames-test_write-to-file.met" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -62,89 +68,89 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
-    &quot;Python tests.Doctests in CoreModel.executor&quot;: &quot;Profiler&quot;,
-    &quot;Python tests.Python tests for test_core.TestCoreModel.executor&quot;: &quot;Run&quot;,
-    &quot;Python.__init__.executor&quot;: &quot;Run&quot;,
-    &quot;Python._modelhelpers.executor&quot;: &quot;Run&quot;,
-    &quot;Python.api.executor&quot;: &quot;Run&quot;,
-    &quot;Python.apsim.executor&quot;: &quot;Run&quot;,
-    &quot;Python.base.executor&quot;: &quot;Run&quot;,
-    &quot;Python.base_data.executor&quot;: &quot;Run&quot;,
-    &quot;Python.batch_runner.executor&quot;: &quot;Run&quot;,
-    &quot;Python.cleaner.executor&quot;: &quot;Run&quot;,
-    &quot;Python.cli.executor&quot;: &quot;Run&quot;,
-    &quot;Python.client.executor&quot;: &quot;Run&quot;,
-    &quot;Python.config.executor&quot;: &quot;Run&quot;,
-    &quot;Python.core.executor&quot;: &quot;Run&quot;,
-    &quot;Python.cs_resources.executor&quot;: &quot;Run&quot;,
-    &quot;Python.customization of paralel processing.executor&quot;: &quot;Run&quot;,
-    &quot;Python.data_cleaner.executor&quot;: &quot;Run&quot;,
-    &quot;Python.database_utils.executor&quot;: &quot;Run&quot;,
-    &quot;Python.demos.executor&quot;: &quot;Run&quot;,
-    &quot;Python.diagnostics.executor&quot;: &quot;Run&quot;,
-    &quot;Python.do not switch off.executor&quot;: &quot;Run&quot;,
-    &quot;Python.experimentmanager.executor&quot;: &quot;Run&quot;,
-    &quot;Python.glue.executor&quot;: &quot;Run&quot;,
-    &quot;Python.logger.executor&quot;: &quot;Run&quot;,
-    &quot;Python.main.executor&quot;: &quot;Run&quot;,
-    &quot;Python.marathon.executor&quot;: &quot;Run&quot;,
-    &quot;Python.marathon_runner.executor&quot;: &quot;Run&quot;,
-    &quot;Python.met_functions.executor&quot;: &quot;Run&quot;,
-    &quot;Python.mixed.executor&quot;: &quot;Run&quot;,
-    &quot;Python.model_desc.executor&quot;: &quot;Run&quot;,
-    &quot;Python.model_loader.executor&quot;: &quot;Run&quot;,
-    &quot;Python.model_tools.executor&quot;: &quot;Run&quot;,
-    &quot;Python.mult_cores.executor&quot;: &quot;Run&quot;,
-    &quot;Python.new_opt.executor&quot;: &quot;Run&quot;,
-    &quot;Python.one_objective.executor&quot;: &quot;Run&quot;,
-    &quot;Python.optimizer.executor&quot;: &quot;Run&quot;,
-    &quot;Python.parallel simulations.executor&quot;: &quot;Run&quot;,
-    &quot;Python.path_finders.executor&quot;: &quot;Run&quot;,
-    &quot;Python.problem.executor&quot;: &quot;Run&quot;,
-    &quot;Python.process.executor&quot;: &quot;Run&quot;,
-    &quot;Python.progbar.executor&quot;: &quot;Run&quot;,
-    &quot;Python.pythonet_config.executor&quot;: &quot;Run&quot;,
-    &quot;Python.replacements.executor&quot;: &quot;Run&quot;,
-    &quot;Python.resources.executor&quot;: &quot;Run&quot;,
-    &quot;Python.run_factorials.executor&quot;: &quot;Run&quot;,
-    &quot;Python.runner.executor&quot;: &quot;Run&quot;,
-    &quot;Python.senstivity.executor&quot;: &quot;Run&quot;,
-    &quot;Python.server.executor&quot;: &quot;Run&quot;,
-    &quot;Python.set_bin.executor&quot;: &quot;Run&quot;,
-    &quot;Python.set_ups.executor&quot;: &quot;Run&quot;,
-    &quot;Python.settings.executor&quot;: &quot;Run&quot;,
-    &quot;Python.sobol.executor&quot;: &quot;Run&quot;,
-    &quot;Python.soilmanager.executor&quot;: &quot;Run&quot;,
-    &quot;Python.test_apsim.executor&quot;: &quot;Run&quot;,
-    &quot;Python.test_core.executor&quot;: &quot;Run&quot;,
-    &quot;Python.test_experiment.executor&quot;: &quot;Run&quot;,
-    &quot;Python.test_get_weather_from_web_filename.executor&quot;: &quot;Run&quot;,
-    &quot;Python.test_multcores.executor&quot;: &quot;Run&quot;,
-    &quot;Python.tester_main.executor&quot;: &quot;Run&quot;,
-    &quot;Python.tools.executor&quot;: &quot;Run&quot;,
-    &quot;Python.unit_tests_core.executor&quot;: &quot;Run&quot;,
-    &quot;Python.utils.executor&quot;: &quot;Run&quot;,
-    &quot;Python.variable.executor&quot;: &quot;Run&quot;,
-    &quot;Python.variables.executor&quot;: &quot;Run&quot;,
-    &quot;Python.weathermanager.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;last_opened_file_path&quot;: &quot;D:/package/src/apsimNGpy/tests/demos&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.lookFeel&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "Python tests.Doctests in CoreModel.executor": "Profiler",
+    "Python tests.Python tests for test_core.TestCoreModel.executor": "Run",
+    "Python.__init__.executor": "Run",
+    "Python._modelhelpers.executor": "Run",
+    "Python.api.executor": "Run",
+    "Python.apsim.executor": "Run",
+    "Python.base.executor": "Run",
+    "Python.base_data.executor": "Run",
+    "Python.batch_runner.executor": "Run",
+    "Python.cleaner.executor": "Run",
+    "Python.cli.executor": "Run",
+    "Python.client.executor": "Run",
+    "Python.config.executor": "Run",
+    "Python.core.executor": "Run",
+    "Python.cs_resources.executor": "Run",
+    "Python.customization of paralel processing.executor": "Run",
+    "Python.data_cleaner.executor": "Run",
+    "Python.database_utils.executor": "Run",
+    "Python.demos.executor": "Run",
+    "Python.diagnostics.executor": "Run",
+    "Python.do not switch off.executor": "Run",
+    "Python.experimentmanager.executor": "Run",
+    "Python.glue.executor": "Run",
+    "Python.logger.executor": "Run",
+    "Python.main.executor": "Run",
+    "Python.marathon.executor": "Run",
+    "Python.marathon_runner.executor": "Run",
+    "Python.met_functions.executor": "Run",
+    "Python.mixed.executor": "Run",
+    "Python.model_desc.executor": "Run",
+    "Python.model_loader.executor": "Run",
+    "Python.model_tools.executor": "Run",
+    "Python.mult_cores.executor": "Run",
+    "Python.new_opt.executor": "Run",
+    "Python.one_objective.executor": "Run",
+    "Python.optimizer.executor": "Run",
+    "Python.parallel simulations.executor": "Run",
+    "Python.path_finders.executor": "Run",
+    "Python.problem.executor": "Run",
+    "Python.process.executor": "Run",
+    "Python.progbar.executor": "Run",
+    "Python.pythonet_config.executor": "Run",
+    "Python.replacements.executor": "Run",
+    "Python.resources.executor": "Run",
+    "Python.run_factorials.executor": "Run",
+    "Python.runner.executor": "Run",
+    "Python.senstivity.executor": "Run",
+    "Python.server.executor": "Run",
+    "Python.set_bin.executor": "Run",
+    "Python.set_ups.executor": "Run",
+    "Python.settings.executor": "Run",
+    "Python.sobol.executor": "Run",
+    "Python.soilmanager.executor": "Run",
+    "Python.test_apsim.executor": "Run",
+    "Python.test_core.executor": "Run",
+    "Python.test_experiment.executor": "Run",
+    "Python.test_get_weather_from_web_filename.executor": "Run",
+    "Python.test_multcores.executor": "Run",
+    "Python.tester_main.executor": "Run",
+    "Python.tools.executor": "Run",
+    "Python.unit_tests_core.executor": "Run",
+    "Python.utils.executor": "Run",
+    "Python.variable.executor": "Run",
+    "Python.variables.executor": "Run",
+    "Python.weathermanager.executor": "Run",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "git-widget-placeholder": "main",
+    "last_opened_file_path": "D:/apsimNGpy",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "preferences.lookFeel",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="D:\package\src\apsimNGpy\core" />
@@ -255,6 +261,9 @@
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests/unittests" />
       <option name="IS_MODULE_SDK" value="true" />
@@ -400,6 +409,7 @@
       <workItem from="1755033638439" duration="2279000" />
       <workItem from="1755035988776" duration="62293000" />
       <workItem from="1755456103247" duration="4535000" />
+      <workItem from="1755628507721" duration="131000" />
     </task>
     <task id="LOCAL-00565" summary="optimizations">
       <option name="closed" value="true" />

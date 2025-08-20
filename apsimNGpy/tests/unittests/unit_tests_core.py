@@ -5,7 +5,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pandas as pd
-
+from apsimNGpy.core.config import apsim_version, stamp_name_with_version
 from apsimNGpy.core.core import CoreModel, Models
 from apsimNGpy.core.model_tools import find_model, validate_model_obj, find_child
 from apsimNGpy.settings import logger
@@ -13,37 +13,67 @@ from apsimNGpy.settings import logger
 from apsimNGpy.tests.unittests.base_unit_tests import BaseTester
 from apsimNGpy.core.base_data import load_default_simulations
 from apsimNGpy.core.pythonet_config import is_file_format_modified
-from apsimNGpy.core_utils.clean import clean
-import atexit
 
 IS_NEW_APSIM = is_file_format_modified()
 
 wd = Path.cwd() / "test_core"
 wd.mkdir(parents=True, exist_ok=True)
 os.chdir(wd)
+VERSION = apsim_version()
 
 
 class TestCoreModel(BaseTester):
+    def setUp(self):
+        self.user_file_name = stamp_name_with_version(
+            os.path.realpath("test_core_model.apsimx"))  # do not delete at tearing up
+        self.weather_file_nasa = os.path.realpath('test__met_nasa.met')
+        self.weather_file_daymet = os.path.realpath('test_met_daymet.met')
+        self.test_user_out_path = stamp_name_with_version(os.path.realpath('test_user_file_name.path'))
+        self.model = 'Maize'
+        self.test_ap_sim = CoreModel(self.model, out_path=self.user_file_name)
+        self.paths = {self.test_user_out_path,
+                      self.weather_file_nasa,
+                      self.weather_file_daymet,
+                      self.user_file_name}
+
+    def test_out_path(self):
+        """
+        Test that we can provide an output path for the file name
+        @return:
+        """
+        if os.path.exists(self.test_user_out_path):
+            os.remove(self.test_user_out_path)
+        model = CoreModel(self.model, out_path=self.test_user_out_path)
+        in_path = str(model.path)
+        self.assertEqual(in_path, str(self.test_user_out_path))
+        self.assertGreater(os.path.getsize(self.test_user_out_path), 0, 'out_path is empty')
+        model.clean_up()
+
+    def test_random_out_path(self):
+        model = CoreModel(self.model, out_path=None)
+        self.assertTrue(os.path.exists(model.path))
+        self.paths.add(model.path)
+        model.clean_up()
 
     def test_run(self):
 
         """ Test the run method's behavior under normal conditions.
          ==========================================================="""
-        with patch.object(self.test_ap_sim, '_DataStore', create=True) as mock_datastore:
-            # if we just run without
-            """There are several ways to check if the run was successful, here I have tried all of them"""
-            self.test_ap_sim.run(report_name=['Report'])
-            self.assertIsInstance(self.test_ap_sim.results, pd.DataFrame,
-                                  msg="an error occurred while passing  alist "
-                                      "of report names")
-            # one more test
-            # check if the use pass  report name as str a strict a pandas.core.frame.DataFrame' is returned
-            self.test_ap_sim.run(report_name='Report', verbose=False)
-            df = self.test_ap_sim.results
-            self.assertIsInstance(df, pd.DataFrame)
-            # check if it is not empty
-            self.assertEqual(df.empty, False, msg='Model was run, but results are empty')
-            self.assertTrue(self.test_ap_sim.ran_ok, f'something happened in {repr(self.test_ap_sim)}')
+
+        """There are several ways to check if the run was successful, here I have tried all of them"""
+        self.test_ap_sim.run(report_name=['Report'])
+        self.assertIsInstance(self.test_ap_sim.results, pd.DataFrame,
+                              msg="an error occurred while passing  alist "
+                                  "of report names")
+        # one more test
+        # check if the use pass  report name as str a strict a pandas.core.frame.DataFrame' is returned
+        self.test_ap_sim.run(report_name='Report', verbose=False)
+        df = self.test_ap_sim.results
+        self.assertIsInstance(df, pd.DataFrame)
+        # check if it is not empty
+        self.assertEqual(df.empty, False, msg='Model was run, but results are empty')
+        self.assertTrue(self.test_ap_sim.ran_ok, f'something happened in {repr(self.test_ap_sim)}')
+        self.paths.add(self.user_file_name)
 
     #            self.assertTrue(mock_datastore.Close.called)
 
@@ -88,8 +118,6 @@ class TestCoreModel(BaseTester):
         repos = self.test_ap_sim.get_simulated_output(report_names='Report')
         msg = f"expected pd.dataframe but received {type(repos)}"
         self.assertIsInstance(repos, pd.DataFrame, msg=msg)
-        # test if dict not empty
-        msg = 'expected dict is empty'
 
     def test_get_reports(self):
         self.assertIsInstance(self.test_ap_sim.inspect_model('Report'), list)
@@ -101,10 +129,12 @@ class TestCoreModel(BaseTester):
         self.assertIsInstance(self.test_ap_sim.inspect_model('Models.Core.Simulation', fullpath=False), list)
 
     def test_find__simulations(self):
+        # get a list of simulations
         sims = self.test_ap_sim.find_simulations()
         self.assertIsInstance(sims, list)
         self.assertTrue(len(sims) > 0)
         sims = self.test_ap_sim.find_simulations(simulations=None)
+        # ensures simulations are enclosed in a list
         self.assertIsInstance(sims, list)
         self.assertTrue(len(sims) > 0)
 
@@ -163,8 +193,7 @@ class TestCoreModel(BaseTester):
         """
         if IS_NEW_APSIM:
             pass
-            # logger.info(
-            #     f'\n APSIM version is the newest incompatible with this method skipping test... {self.test_create_experiment.__name__}')
+            # being tested else where in another file
         else:
 
             self.test_ap_sim.create_experiment()
@@ -192,7 +221,6 @@ class TestCoreModel(BaseTester):
         self.assertEqual(v, 1.3)
 
     def test_add_db_table(self):
-        # self.test_ap_sim.add_db_table(variable_spec=['[Clock].Today', '[Soil].Nutrient.TotalC[1]/1000 as SOC1'], rename='report2')
         self.test_ap_sim.add_db_table(
             variable_spec=['[Clock].Today', '[Soil].Nutrient.TotalC[1]/1000 as SOC1',
                            '[Maize].Grain.Total.Wt*10 as Yield'],
@@ -210,6 +238,8 @@ class TestCoreModel(BaseTester):
         model = CoreModel(model='Maize')
         model.run()
         self.assertTrue(model.ran_ok, 'simulation was not ran after using default within CoreModel class')
+        self.paths.add(model.path)
+        model.clean_up()
 
     def test_edit_with_path_som(self):
         model = CoreModel(model='Maize')
@@ -221,8 +251,10 @@ class TestCoreModel(BaseTester):
                                               parameters='InitialCNR')
         self.assertEqual(icnr['InitialCNR'], initial_ratio, msg='InitialCNR was not successfully updated by '
                                                                 'edit_model_by_path method')
+        self.paths.add(model.path)
+        model.clean_up()
 
-    def test_find_model_andeval_models(self):
+    def test_find_model_and_eval_models(self):
         """
         Unit test for the `find_model` and `_eval_model` functions.
         Verifies that:
@@ -260,7 +292,7 @@ class TestCoreModel(BaseTester):
             try:
                 self.test_ap_sim.add_model('Simulation', adoptive_parent='Simulations', rename='soybean_replaced',
                                            source='Soybean', override=True)
-                self.test_ap_sim.inspect_file()
+
                 assert 'soybean_replaced' in self.test_ap_sim.inspect_model('Simulation',
                                                                             fullpath=False), 'testing adding simulations was not successful'
             # clean up
@@ -269,20 +301,30 @@ class TestCoreModel(BaseTester):
 
                 self.test_ap_sim.remove_model(model_class='Simulation', model_name='soybean_replaced')
 
+    def test_inspect_file(self):
+        _inspected = self.test_ap_sim.inspect_file(console=False)
+        self.assertTrue(_inspected)
+
     def test_get_weather_from_web_nasa(self):
         model = load_default_simulations('Maize')
         try:
-            model.get_weather_from_web(lonlat=(-93.50456, 42.601247), start=1990, end=2001, source='nasa')
+            model.get_weather_from_web(lonlat=(-93.50456, 42.601247), start=1990, end=2001, source='nasa',
+                                       filename=self.weather_file_nasa)
             model.run()
             self.assertTrue(model.ran_ok)
+            self.paths.add(model.path)
+            model.clean_up()
         except KeyError:
             pass
 
     def test_get_weather_from_web_daymet(self):
         model = load_default_simulations('Maize')
-        model.get_weather_from_web(lonlat=(-93.50456, 42.601247), start=1990, end=2001, source='daymet')
+        model.get_weather_from_web(lonlat=(-93.50456, 42.601247), start=1990, end=2001, source='daymet',
+                                   filename=self.weather_file_daymet)
         model.run()
         self.assertTrue(model.ran_ok)
+        self.paths.add(model.path)
+        model.clean_up()
 
     def test_edit_model(self):
         self.test_ap_sim.edit_model(model_type='Clock', simulations="Simulation", model_name='Clock',
@@ -310,6 +352,8 @@ class TestCoreModel(BaseTester):
         # first we check the current '[Phenology].Juvenile.Target.FixedValue': '211'
         cp = test_ap_sim.inspect_model_parameters(model_type='Cultivar', model_name=out_cultivar)
         self.assertEqual(new_juvenile, float(cp.get(com_path)))
+        self.paths.add(test_ap_sim.path)
+        test_ap_sim.clean_up()
 
     def _test_edit_cultivar(self):
 
@@ -328,7 +372,8 @@ class TestCoreModel(BaseTester):
             juvenile_replacements = float(juvenile_replacements)
         self.assertEqual(new_juvenile, juvenile_replacements)
         test_ap_sim.run()
-        # self.assertGreater(juvenile_replacements, juvenile_original, msg= 'Juvenile target value was not replaced')
+        self.paths.add(test_ap_sim.path)
+        test_ap_sim.clean()
 
     def test_inspect_model_parameters(self):
 
@@ -339,6 +384,12 @@ class TestCoreModel(BaseTester):
         w_file = self.test_ap_sim.inspect_model_parameters(model_type='Weather', simulations=['Simulation'],
                                                            model_name='Weather')
         self.assertIsInstance(w_file, dict, msg='Inspect weather model parameters failed, when simulation is a list')
+
+    def tearDown(self):
+        self.test_ap_sim.clean_up(db=True)
+        for path in self.paths:
+            if os.path.exists(path):
+                os.remove(path)
 
 
 if __name__ == '__main__':

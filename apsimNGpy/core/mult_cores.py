@@ -9,7 +9,8 @@ from typing import Union
 from apsimNGpy.core_utils.utils import timer
 import pandas as pd
 from apsimNGpy.core.apsim import ApsimModel
-from apsimNGpy.core_utils.database_utils import read_db_table, clear_all_tables, get_db_table_names
+from apsimNGpy.core_utils.database_utils import read_db_table, clear_all_tables, get_db_table_names, delete_all_tables, \
+    delete_table
 from apsimNGpy.parallel.process import custom_parallel
 from sqlalchemy import MetaData, Table, Column, String, Float, Integer, MetaData
 from sqlalchemy import create_engine, text
@@ -57,20 +58,6 @@ setData = set()
 def insert_data_with_pd(db, table, results, if_exists):
     engine = create_engine(f'sqlite:///{db}')
     results.to_sql(table, engine, index=False, if_exists=if_exists)
-
-
-def delete_table(db, table_name):
-    """deletes the table in a database. Proceed with caution"""
-    # database connection
-    db = os.path.realpath(db)
-    engine = create_engine(f"sqlite:///{db}")
-    metadata = MetaData()
-
-    # Load table
-    table_to_drop = Table(f"{table_name}", metadata, autoload_with=engine)
-
-    # Drop it
-    table_to_drop.drop(engine)
 
 
 @dataclass(slots=True)
@@ -218,9 +205,8 @@ class MultiCoreManager:
             try:
                 os.remove(self.db_path)
             except (PermissionError, FileNotFoundError):
-                # if removing it has failed, connect to it and remove all tables
-                tables = get_db_table_names(self.db_path)
-                [delete_table(self.db_path, table_name=db) for db in tables]
+                # if removing it has failed due to permission errors, connect to it and remove all tables
+                delete_all_tables(self.db_path)
 
     def clear_scratch(self):
         """clears the scratch directory where apsim files are cloned before being loaded. should be called after all simulations are completed

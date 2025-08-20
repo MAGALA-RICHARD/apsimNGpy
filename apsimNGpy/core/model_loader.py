@@ -21,21 +21,36 @@ import shutil
 from pathlib import Path
 from apsimNGpy.core.config import get_apsim_bin_path, apsim_version, load_crop_from_disk
 import subprocess
-from apsimNGpy.settings import SCRATCH
 from dataclasses import dataclass
 from typing import Any
-
+from pathlib import Path
 from apsimNGpy.core.cs_resources import CastHelper as CastHelpers
 from apsimNGpy.core.pythonet_config import get_apsim_file_reader, get_apsim_file_writer
 from apsimNGpy.core.pythonet_config import is_file_format_modified
 
 GLOBAL_IS_FILE_MODIFIED = is_file_format_modified()
+scratch_dir = Path.cwd().joinpath('scratch')
+scratch_dir.mkdir(exist_ok=True)
+SCRATCH = os.environ.get('WS', str(scratch_dir))
 
 
-def to_model_from_string(json_string, fname):
+def stamp_name_with_version(file_name):
+    """
+    we stamp every file name with the version, which allows the user to open it in the appropriate version it was created
+    @param file_name: path to the would be.apsimx file
+    @return: path to the stamped file
+    """
+    _version = apsim_version()
+    destination = Path(file_name).resolve()
+    dest_path = destination.with_name(
+        destination.name.replace(".apsimx", f"{_version}.apsimx")
+    )
+    return dest_path
+
+
+def to_model_from_string(json_string, file_name):
     loader = get_apsim_file_reader()
-
-    return loader[Models.Core.Simulations](json_string, None, True, fileName=fname)
+    return loader[Models.Core.Simulations](json_string, None, True, fileName=file_name)
 
 
 def to_json_string(_model: Models.Core.Simulation):
@@ -81,15 +96,37 @@ def load_from_dict(dict_data, out):
 version = apsim_version()
 
 
-def copy_file(source: Union[str, Path], destination: Union[str, Path] = None,
-              wd: Union[str, Path] = None) -> Union[str, Path]:
-    if not wd:
-        wd = SCRATCH
+def copy_file(
+        source: Union[str, Path],
+        destination: Union[str, Path] = None,
+        wd: Union[str, Path] = None):
+    """
+    Copy an APSIMX file to a new location with an updated version tag.
 
-    destine_path = f"{str(destination).replace('.apsimx', version)}" + '.apsimx' if destination else os.path.join(wd,
-                                                                                                                  f"temp_{uuid.uuid1()}_{version}.apsimx")
-    shutil.copy2(source, destine_path)
-    return destine_path
+    Args:
+        source (str | Path): Path to the source APSIMX file.
+
+        destination (str | Path, optional): Path to the destination APSIMX file.
+            If None, a temporary file will be created in `wd`.
+
+        wd (str | Path, optional): Working directory for temporary file creation.
+            Defaults to SCRATCH.
+
+    Returns:
+        Path: Path to the copied file.
+    """
+    # Ensure working directory is set. defaults to current working directory
+    wd = Path(wd or SCRATCH)
+
+    # Determine destination path
+    if destination:
+        dest_path = stamp_name_with_version(destination)
+    else:
+        dest_path = wd / f"temp_{uuid.uuid1()}_{version}.apsimx"
+
+    # Perform copy
+    shutil.copy2(source, dest_path)
+    return str(dest_path)
 
 
 def save_model_to_file(_model, out=None):
@@ -251,7 +288,7 @@ def recompile(_model, out=None, met_path=None, ):
     if GLOBAL_IS_FILE_MODIFIED:
         model_node = getattr(_model.Simulations, 'Node', _model.Simulations)
         json_string = model_node.ToJSONString()
-    Model = to_model_from_string(json_string, fname=_model.path)
+    Model = to_model_from_string(json_string, file_name=_model.path)
 
     _Model = False
 
@@ -280,11 +317,19 @@ def recompile(_model, out=None, met_path=None, ):
                      Simulations=Model)
 
 
-def model_from_string(mod):
+def model_from_string(mod, out=None):
+    """
+    try to load a model from string, and it is not converted to the corresponding reference type
+    @param out: out name or path of the model
+    @param mod:
+    @return:
+    """
     if str(mod).endswith('.apsimx'):
         path2file = mod
     else:
-        path2file = load_crop_from_disk(mod, out=os.path.realpath(f'{mod}_testformatx.apsimx'))
+        out = out or os.path.realpath(f'{mod}_testformatx.apsimx')
+        path2file = load_crop_from_disk(mod, out=out)
+
 
     f_name = realpath(path2file)
 

@@ -20,7 +20,7 @@ import os
 class TestCoreModel(unittest.TestCase):
 
     def setUp(self):
-        self.out_path = os.path.realpath('test_edits_fixed.apsimx')
+        self.out_path = Path(f"{self._testMethodName}.apsimx")
         self.model = ApsimModel('Maize', out_path=self.out_path)
         self.out = 'test_edit_model.apsimx'
         self.paths = {self.out_path}

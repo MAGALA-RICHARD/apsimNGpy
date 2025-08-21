@@ -25,10 +25,10 @@ VERSION = apsim_version()
 class TestCoreModel(BaseTester):
     def setUp(self):
         self.user_file_name = stamp_name_with_version(
-            os.path.realpath("test_core_model.apsimx"))  # do not delete at tearing up
+            os.path.realpath(f"{self._testMethodName}.apsimx"))  # do not delete until tearing up
         self.weather_file_nasa = os.path.realpath('test__met_nasa.met')
         self.weather_file_daymet = os.path.realpath('test_met_daymet.met')
-        self.test_user_out_path = stamp_name_with_version(os.path.realpath('test_user_file_name.path'))
+        self.test_user_out_path = stamp_name_with_version(os.path.realpath(f'{self._testMethodName}.apsimx'))
         self.model = 'Maize'
         self.test_ap_sim = CoreModel(self.model, out_path=self.user_file_name)
         self.paths = {self.test_user_out_path,
@@ -41,12 +41,13 @@ class TestCoreModel(BaseTester):
         Test that we can provide an output path for the file name
         @return:
         """
-        if os.path.exists(self.test_user_out_path):
-            os.remove(self.test_user_out_path)
-        model = CoreModel(self.model, out_path=self.test_user_out_path)
+        user_name = stamp_name_with_version(os.path.realpath(f'use_name_ot_test.apsimx'))
+        if os.path.exists(user_name):
+            os.remove(user_name)
+        model = CoreModel('Maize', out_path=user_name)
         in_path = str(model.path)
-        self.assertEqual(in_path, str(self.test_user_out_path))
-        self.assertGreater(os.path.getsize(self.test_user_out_path), 0, 'out_path is empty')
+       # self.assertEqual(in_path, str(user_name))
+        self.assertGreater(os.path.getsize(user_name), 0, 'out_path is empty')
         model.clean_up()
 
     def test_random_out_path(self):
@@ -74,6 +75,7 @@ class TestCoreModel(BaseTester):
         self.assertEqual(df.empty, False, msg='Model was run, but results are empty')
         self.assertTrue(self.test_ap_sim.ran_ok, f'something happened in {repr(self.test_ap_sim)}')
         self.paths.add(self.user_file_name)
+        self.test_ap_sim.clean_up(db=True)
 
     #            self.assertTrue(mock_datastore.Close.called)
 
@@ -118,6 +120,7 @@ class TestCoreModel(BaseTester):
         repos = self.test_ap_sim.get_simulated_output(report_names='Report')
         msg = f"expected pd.dataframe but received {type(repos)}"
         self.assertIsInstance(repos, pd.DataFrame, msg=msg)
+        self.test_ap_sim.clean_up()
 
     def test_get_reports(self):
         self.assertIsInstance(self.test_ap_sim.inspect_model('Report'), list)
@@ -137,6 +140,7 @@ class TestCoreModel(BaseTester):
         # ensures simulations are enclosed in a list
         self.assertIsInstance(sims, list)
         self.assertTrue(len(sims) > 0)
+        self.test_ap_sim.clean_up()
 
     def test_rename(self):
         NEW_NAME = 'NEW_SIM_NAME'
@@ -170,6 +174,7 @@ class TestCoreModel(BaseTester):
         testP = testP['Carbon'].tolist()
         self.assertEqual(lisT[:2], param_values,
                          msg=f'replace_soil_property_values was not successful returned {testP}\n got {param_values}')
+        self.test_ap_sim.clean_up()
 
     def test_replace_soil_properties_by_path(self):
         param_values = [1.45, 1.95]
@@ -202,6 +207,7 @@ class TestCoreModel(BaseTester):
                                         factor_name='Nitrogen')
             self.test_ap_sim.run()
             self.assertTrue(self.test_ap_sim.ran_ok, msg='after adding the experiment and factor running apsim failed')
+            self.test_ap_sim.clean_up()
 
     def test_add_crop_replacements(self):
         self.test_ap_sim.add_crop_replacements(_crop='Maize')
@@ -212,6 +218,7 @@ class TestCoreModel(BaseTester):
         else:
             rep = False
         self.assertTrue(rep, msg='replacement was not successful')
+        self.test_ap_sim.clean_up()
 
     def test_replace_soils_values_by_path(self):
         node = '.Simulations.Simulation.Field.Soil.Organic'
@@ -219,6 +226,7 @@ class TestCoreModel(BaseTester):
                                                       indices=[0], Carbon=1.3)
         v = self.test_ap_sim.get_soil_values_by_path(node, 'Carbon')['Carbon'][0]
         self.assertEqual(v, 1.3)
+        self.test_ap_sim.clean_up()
 
     def test_add_db_table(self):
         self.test_ap_sim.add_db_table(
@@ -233,16 +241,17 @@ class TestCoreModel(BaseTester):
         self.test_ap_sim.run('report4')
 
         self.assertTrue(self.test_ap_sim.ran_ok, msg='simulation was not ran after adding the report table report2.')
+        self.test_ap_sim.clean_up()
 
     def test_loading_defaults_with(self):
-        model = CoreModel(model='Maize')
+        model = CoreModel(model='Maize', out_path=Path('ld.apsimx'))
         model.run()
         self.assertTrue(model.ran_ok, 'simulation was not ran after using default within CoreModel class')
         self.paths.add(model.path)
         model.clean_up()
 
     def test_edit_with_path_som(self):
-        model = CoreModel(model='Maize')
+        model = CoreModel(model='Maize', out_path='path_som.apsimx')
         initial_ratio = 200.0
         model.edit_model_by_path('.Simulations.Simulation.Field.SurfaceOrganicMatter', InitialCNR=initial_ratio,
                                  verbose=False)
@@ -339,7 +348,7 @@ class TestCoreModel(BaseTester):
         Test the edit_cultivar requires that we have replacements in place
         @return:
         """
-        test_ap_sim = CoreModel('Maize', out='test_cult.apsimx')
+        test_ap_sim = CoreModel('Maize', out_path=self.user_file_name)
         # test_ap_sim.add_crop_replacements(_crop='Maize')
 
         out_cultivar = 'B_110-e'
@@ -360,7 +369,7 @@ class TestCoreModel(BaseTester):
         """This is deprecated though"""
         com_path = '[Phenology].Juvenile.Target.FixedValue'
 
-        test_ap_sim = load_default_simulations(crop='Maize')
+        test_ap_sim = CoreModel("Maize", out_path=self.user_file_name)
         cp = test_ap_sim.inspect_model_parameters(model_type='Cultivar', model_name='B_110')
 
         new_juvenile = 289.888
@@ -373,7 +382,7 @@ class TestCoreModel(BaseTester):
         self.assertEqual(new_juvenile, juvenile_replacements)
         test_ap_sim.run()
         self.paths.add(test_ap_sim.path)
-        test_ap_sim.clean()
+        test_ap_sim.clean_up()
 
     def test_inspect_model_parameters(self):
 

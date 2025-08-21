@@ -30,7 +30,7 @@ class TestCoreModel(unittest.TestCase):
 
     def test_cast(self):
         """tests the cast function compiled as .dll"""
-        # ensure that self.model is not target conversion class
+        # ensure that self.model is not the target conversion class
         if NEW_APSIM:
             self.assertNotIsInstance(self.model, Models.Core.Simulations,
                                      f'{self.model} is already a Models.Core.Simulations')
@@ -41,7 +41,7 @@ class TestCoreModel(unittest.TestCase):
     def test_cast_as(self):
         """tests the cast function compiled as .dll the pythonic way"""
         if NEW_APSIM:
-            # ensure that self.model is not target conversion class
+            # ensure that self.model is not the target conversion class
             self.assertNotIsInstance(self.model, Models.Core.Simulations,
                                      f'{self.model} is already a Models.Core.Simulations')
         cast = cast_as(model_class=Models.Core.Simulations, model=self.model)

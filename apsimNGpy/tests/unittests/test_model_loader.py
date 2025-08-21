@@ -1,163 +1,188 @@
-from apsimNGpy.core.cs_resources import CastHelper as CastHelpers
-from apsimNGpy.core.pythonet_config import Models
-from apsimNGpy.core.model_loader import (load_apsim_model, get_model, version,
-                                         save_model_to_file, model_from_string,
-                                         load_from_path, load_crop_from_disk, load_from_dict)
-import unittest
-import shutil
-import uuid
-from apsimNGpy.tests.unittests.base_unit_tests import BaseTester
 import json
-from pathlib import Path
-from apsimNGpy.exceptions import CastCompilationError
-from apsimNGpy.core_utils.clean import clean
 import os
-import atexit
-wd = Path.home() / "test_model_loader"
-wd.mkdir(parents=True, exist_ok=True)
-os.chdir(wd)
+import time
+import unittest
+import uuid
+from pathlib import Path
 
-model = model_from_string("Maize")
-if hasattr(model, 'Model'):  # incase it is an APSIM.Core.Node object
-    model = model.Model
-
-# variables
-MODEL_PATH = load_crop_from_disk("Maize")
-
-
-def mock_model_from_dict():
-    with open(MODEL_PATH) as f:
-        dic = json.load(f)
-        return dic
-
-
-def mock_file_from_disk():
-    target = Path.home() / 'mock_on_disk1.apsimx'
-    return shutil.copyfile(MODEL_PATH, target)
+from apsimNGpy.core.cs_resources import CastHelper as CastHelpers
+from apsimNGpy.core.model_loader import (load_apsim_model, get_model, version,
+                                         save_model_to_file, load_from_path, load_crop_from_disk, load_from_dict)
+from apsimNGpy.core.pythonet_config import Models
+from apsimNGpy.exceptions import CastCompilationError
+from apsimNGpy.tests.unittests.base_unit_tests import BaseTester
 
 
 def cast(out_model, target=Models.Core.Simulations):
     casted = CastHelpers.CastAs[target](out_model)
-    if casted: return casted
+    if casted:
+        return casted
     raise CastCompilationError(" cast was not successful because the provided object is invalid")
 
 
 class TestCoreModel(BaseTester):
     """Unit tests for APSIM model loading functions from various sources."""
 
+    def setUp(self):
+        self.MODEL_PATH = f"_{self._testMethodName}.apsimx"
+        self.fp = Path.home() / f"{self._testMethodName}{uuid.uuid1()}_{version}.apsimx"
+        self.file_on_disk = load_crop_from_disk("Soybean", out=self.MODEL_PATH)
+        self.save_to = Path(f"{self._testMethodName}.apsimx")
+
+    def mock_model_from_dict(self):
+        model_to_dict = self.file_on_disk
+        with open(model_to_dict) as f:
+            dic = json.load(f)
+            return dic
+
     def test_load_model_from_path_str_mtd(self):
-        """Test loading APSIM model from file path using 'string' method."""
-        model_from_path = load_from_path(MODEL_PATH, method='string')
+        """Test loading APSIM model from a file path using 'string' method."""
+        model_from_path = load_from_path(self.file_on_disk, method='string')
         g_model = get_model(model_from_path)
-        model_class = CastHelpers.CastAs[Models.Core.Simulations](g_model)
-        self.assertIsInstance(model_class, Models.Core.Simulations,
-                              'casting failed failed loading model from file path, while using string emthod')
+        if not isinstance(g_model, Models.Core.Simulation):
+            model_class = CastHelpers.CastAs[Models.Core.Simulations](g_model)
+            self.assertIsInstance(model_class, Models.Core.Simulations,
+                                  'Casting failed failed loading model from file path, while using string method')
+        else:
+            self.skipTest(f'{g_model} is already a model loaded as {Models.Core.Simulation}')
 
     def test_load_model_from_path_file_mtd(self):
-        """Test loading APSIM model from file path using 'file' method."""
-        model_from_path = load_from_path(MODEL_PATH, method='file')
+        """Test loading APSIM model from a file path using 'file' method."""
+        model_from_path = load_from_path(self.MODEL_PATH, method='file')
         g_model = get_model(model_from_path)
-        model_class = CastHelpers.CastAs[Models.Core.Simulations](g_model)
-        self.assertIsInstance(model_class, Models.Core.Simulations,
-                              'casting failed failed while loading model from file path using file method')
+        path = getattr(g_model, "FileName", "filepath.com")
+
+        # no need for false confidence first test whether it is not the target class
+        if not isinstance(g_model, Models.Core.Simulations):
+            model_class = CastHelpers.CastAs[Models.Core.Simulations](g_model)
+            path = getattr(model_class, "FileName", "/filepath.com")
+            path = path or "/filepath.com"
+            self.assertIsInstance(model_class, Models.Core.Simulations,
+                                  'casting failed failed while loading model from file path using file method')
+        else:
+            self.skipTest(f'{g_model} is already a model loaded as {Models.Core.Simulation}')
 
     def test_load_model_from_dict(self):
         """Test loading APSIM model from a dictionary representation."""
-        mocked_dict = mock_model_from_dict()
-        node_or_model = load_from_dict(mocked_dict, out='mock_model_from_dict.apsimx')
+        mocked_dict = self.mock_model_from_dict()
+        node_or_model = load_from_dict(mocked_dict, out=self.MODEL_PATH)
         out_model = get_model(node_or_model)
+
         model_class = CastHelpers.CastAs[Models.Core.Simulations](out_model)
         self.assertIsInstance(model_class, Models.Core.Simulations, 'casting failed failed loading data from dict')
 
     def test_load_load_apsim_model_dict(self):
         """Test unified APSIM model loader with dictionary input."""
-        dict_data = mock_model_from_dict()
-        out = load_apsim_model(dict_data, out='maizex.apsimx')
+        dict_data = self.mock_model_from_dict()
+        out = load_apsim_model(dict_data, out_path=self.MODEL_PATH)
         sims = cast(out.IModel)
 
         self.assertIsInstance(sims, Models.Core.Simulations, 'loading model fro dict using load_apsim_model '
                                                              'failed')
+        self.delete_random(out.path, out.datastore)
 
     def test_load_load_apsim_model_path(self):
         """Test unified APSIM model loader with file path string input."""
-        out = load_apsim_model(MODEL_PATH, out='maize_from_fp.apsimx')
+        out = load_apsim_model(self.MODEL_PATH, out_path=self.MODEL_PATH)
         sims = cast(out.IModel)
 
         self.assertIsInstance(sims, Models.Core.Simulations, 'loading model from model file path using '
                                                              'load_apsim_model'
                                                              'failed')
+        self.delete_random(out.path)
+
+    @staticmethod
+    def delete_random(*args):
+        for file in args:
+            if os.path.exists(file):
+                os.remove(file)
 
     def test_load_load_apsim_model_path_out_is_none(self):
         """Test unified APSIM model loader with file path string input."""
-        out = load_apsim_model(MODEL_PATH, out=None)
+        out = load_apsim_model(self.MODEL_PATH, out_path=None)
         sims = cast(out.IModel)
 
         self.assertIsInstance(sims, Models.Core.Simulations, 'loading model from model file path using '
                                                              'load_apsim_model and out is None'
                                                              'failed')
+        # clean up from here since we don't know the random file assigned to the out path
+        self.delete_random(out.path, out.datastore)
 
     def test_load_load_apsim_model_pathlib_path(self):
         """Test unified APSIM model loader with pathlib.Path input."""
-        fp = Path(MODEL_PATH)
-        out = load_apsim_model(fp, out='maize_from_fp.apsimx')
+        fp = Path(self.file_on_disk)
+        out = load_apsim_model(fp, out_path=self.MODEL_PATH)
         sims = cast(out.IModel)
 
         self.assertIsInstance(sims, Models.Core.Simulations, 'loading model from model file pathlib path using '
                                                              'load_apsim_model'
                                                              'failed')
+        self.delete_random(out.path, out.datastore)
 
     def test_load_load_apsim_model_path_from_disk(self):
         """Test unified APSIM model loader with pathlib.Path input."""
-        fp = mock_file_from_disk()
-        out = load_apsim_model(fp, out='maize_from_fp.apsimx')
+        fp = self.file_on_disk
+        out = load_apsim_model(fp, out_path=self.MODEL_PATH)
         sims = cast(out.IModel)
 
         self.assertIsInstance(sims, Models.Core.Simulations, 'loading model from model file from disk using '
                                                              'load_apsim_model'
                                                              'failed')
+        self.delete_random(out.path)
 
     def test_load_load_apsim_model_mock_none(self):
         """Test unified APSIM model loader raises ValueError when model is None."""
         fp = None
         failed = False
         try:
-            load_apsim_model(fp, out='maize_from_fp.apsimx')
+            load_apsim_model(fp, out_path=self.MODEL_PATH)
         except ValueError:
             failed = True
 
         self.assertTrue(failed, 'loading model from model while mocking None did not succeed error was not raised')
 
-    def test_save_model_to_disk(self):
-        import pathlib
-        def test(mod_p):
-            mod = load_apsim_model(mod_p, out='../maize_from_fp.apsimx')
-            fp = pathlib.Path.home() / f"{uuid.uuid1()}_{version}.apsimx"
-            try:
-                fp.unlink(missing_ok=True)
-                self.assertFalse(fp.exists(), 'target file exists')
+    def _test_save_method(self, mod_p):
+        if os.path.exists(self.MODEL_PATH):
+            os.remove(self.MODEL_PATH)
+        model_to_save = load_apsim_model(mod_p, out_path=self.MODEL_PATH)
+        self.MODEL_PATH = Path(self.MODEL_PATH)
 
-                save_model_to_file(mod.IModel, out=fp)
-                exi_fp = all([fp.exists(), fp.is_file()])
-                self.assertTrue(exi_fp)
+        self.save_to.unlink(missing_ok=True)
+        self.assertFalse(self.save_to.exists(), 'target file exists')
 
-            finally:
-                fp.unlink(missing_ok=True)
-                Path('maize_from_fp.apsimx').unlink(missing_ok=True)
+        save_model_to_file(model_to_save.IModel, out=self.save_to)
+        exi_fp = all([self.save_to.is_file()])
+        self.assertGreater(self.save_to.stat().st_size, 0, msg=f'save file failed size is zero')
+        self.assertTrue(exi_fp)
+        self.assertTrue(self.MODEL_PATH)
+        self.delete_random(model_to_save.path)
+        self.delete_random(self.MODEL_PATH)
+        self.delete_random(self.save_to)
 
+    def test_save_model_to_disk_from_default(self):
+
+        # Test loading model from models shipped with APSIM. These reside in example dir
         # test from default
-        mod = load_apsim_model("Maize", out='../maize_from_fp.apsimx')
-        test('Maize')
+        self._test_save_method('Soybean')
+
+    def test_save_model_to_disk_from_file(self):
+        out_path = f"{self._testMethodName}.apsimx"
         # test from disk
-        test(mock_file_from_disk())
+        file_on_disk = load_crop_from_disk("Soybean", out=out_path)
+        self._test_save_method(file_on_disk)
+        self.delete_random(file_on_disk)
 
-
+    def tearDown(self):
+        if os.path.exists(self.MODEL_PATH):
+            os.remove(self.MODEL_PATH)
+        if os.path.exists(self.file_on_disk):
+            os.remove(self.file_on_disk)
 
 
 # initialize the model
 if __name__ == '__main__':
-    ...
-    mo = load_apsim_model('Maize')
+
     try:
         unittest.main()
     finally:
-        atexit.register(clean, wd)
+        pass

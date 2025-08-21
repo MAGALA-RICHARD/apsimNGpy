@@ -13,15 +13,17 @@ os.chdir(wd)
 
 
 class TestCoreModel(BaseTester):
+    def setUp(self):
+        self.out_path = Path(f"{self._testMethodName}.apsimx")
+        self.test_ap_sim = ApsimModel("Maize", out_path=self.out_path)
+
     def test_run(self):
-        model = ApsimModel(model='Maize')
-        model.run()
-        self.test_ap_sim = model
-        self.assertTrue(model.ran_ok)
-        model.clean_up(db=True)
+        self.test_ap_sim.run()
+        self.assertTrue(self.test_ap_sim.ran_ok)
+        self.test_ap_sim.clean_up(db=True)
 
     def test_clone_model(self):
-        model = ApsimModel(model='Maize')
+        model = self.test_ap_sim
         sim_name = 'clone_test'
         model.clone_model('Models.Core.Simulation', 'Simulation',
                           'Models.Core.Simulations', rename=sim_name)
@@ -32,6 +34,9 @@ class TestCoreModel(BaseTester):
         assert sim_name in sims, (f'{sim_name} is not among the current simulations, implying simulation was not '
                                   f'successful')
         model.clean_up(db=True)
+
+    def tearDown(self):
+        pass
 
 
 # initialize the model

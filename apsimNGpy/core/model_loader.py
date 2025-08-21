@@ -90,7 +90,7 @@ def get_model(obj):
 def load_from_dict(dict_data, out):
     str_ = json.dumps(dict_data)
     out = realpath(out)
-    return to_model_from_string(str_, out)
+    return to_model_from_string(str_, file_name=out)
 
 
 version = apsim_version()
@@ -139,7 +139,9 @@ def save_model_to_file(_model, out=None):
         """
     # Determine the output path
     _model = get_model(_model)
+
     final_out_path = out or '_saved_model.apsimx'
+
 
     json_string = to_json_string(_model)
     # Serialize the model to JSON string
@@ -155,10 +157,11 @@ def covert_to_model(object_to_convert):
 
 
 def load_from_path(path2file, method='string'):
-    """"
+    """
 
-    :param path2file: path to apsimx file
-    :param method: str with string, we direct the method to first convert the file
+    path2file: path to apsimx file.
+
+    method: str with string, we direct the method to first convert the file.
     into a string using json and then use the APSIM in-built method to load the file with file, we read directly from
     the file path. This is slower than the former.
     """
@@ -218,7 +221,7 @@ def load_apsim_model(model=None, out_path=None, file_load_method='string', met_f
 
         case str():
             if not model.endswith('.apsimx'):
-                model = load_crop_from_disk(crop=model, out=None, work_space=wd)
+                model = load_crop_from_disk(crop=model, out=out_path, work_space=wd)
             copy_to = copy_file(model, destination=out_path, wd=wd)
             out['path'] = copy_to
             Model = load_from_path(copy_to, file_load_method)

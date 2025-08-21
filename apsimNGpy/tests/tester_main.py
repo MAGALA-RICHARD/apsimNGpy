@@ -83,8 +83,7 @@ def send_report(sms, subject, attachment_path=None):
             print("Error:", e)
 
 
-if IS_NEW_APSIM:
-    from apsimNGpy.tests.unittests import test_experiment
+if IS_NEW_APSIM:    from apsimNGpy.tests.unittests import test_experiment
 from apsimNGpy.tests.unittests import test_model_loader, test_ApsimModel, test_cast_helper, test_CoreModel, \
     test_weathermanager, test_multcores, \
     test_edit_model, test_config, model_tools, test_get_weather_from_web_filename

@@ -399,7 +399,7 @@ class CoreModel(PlotManager):
         # Collect all available data tables
         data_tables = collect_csv_by_model_path(self.path)
         if axis not in {0, 1}:
-            raise ValueError("invalid axis. Only 0 and 1 are allowed")
+            raise ValueError("invalid axis. Only 0 (along rows) and 1 (along columns) are allowed")
         # Normalize report_names to a list
         if isinstance(report_names, str):
             reports = [report_names]

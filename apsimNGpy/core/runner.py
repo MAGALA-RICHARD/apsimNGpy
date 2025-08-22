@@ -1,6 +1,8 @@
 import os.path
+import pathlib
 import platform
 import textwrap
+import warnings
 from pathlib import Path
 from subprocess import *
 from typing import Dict, Any, Union
@@ -12,6 +14,10 @@ from apsimNGpy.settings import logger
 from apsimNGpy.core_utils.utils import timer
 import contextlib
 from apsimNGpy.settings import *
+from core_utils.database_utils import read_db_table, get_db_table_names
+from pathlib import Path
+from typing import Union, List
+
 apsim_bin_path = Path(get_apsim_bin_path())
 
 # Determine executable based on OS
@@ -21,7 +27,7 @@ else:  # Linux or macOS
     APSIM_EXEC = apsim_bin_path / "Models"
 
 
-def get_apsim_version(verbose:bool=False):
+def get_apsim_version(verbose: bool = False):
     """ Display version information of the apsim model currently in the apsimNGpy config environment.
 
     ``verbose``: (bool) Prints the version information ``instantly``
@@ -39,7 +45,7 @@ def get_apsim_version(verbose:bool=False):
     return res.stdout.readlines()[0].strip()
 
 
-def upgrade_apsim_file(file: str, verbose:bool=True):
+def upgrade_apsim_file(file: str, verbose: bool = True):
     """
     Upgrade a file to the latest version of the .apsimx file format without running the file.
 
@@ -74,8 +80,6 @@ def upgrade_apsim_file(file: str, verbose:bool=True):
         return file
 
 
-
-
 def run_model_externally(model: Union[Path, str], verbose: bool = False, to_csv: bool = False) -> Popen[str]:
     """
     Runs an APSIM model externally with cross-platform support and optional CSV output.
@@ -106,10 +110,6 @@ def run_model_externally(model: Union[Path, str], verbose: bool = False, to_csv:
                 result.kill()
 
 
-
-from pathlib import Path
-from typing import Union, List
-
 @lru_cache(maxsize=20)
 def get_matching_files(dir_path: Union[str, Path], pattern: str, recursive: bool = False) -> List[Path]:
     """
@@ -124,7 +124,7 @@ def get_matching_files(dir_path: Union[str, Path], pattern: str, recursive: bool
         List[Path]: A ``list`` of matching Path objects.
 
     Raises:
-        ``ValueError:`` If no matching files are found.
+        ``ValueError: `` If no matching files are found.
     """
     global_path = Path(dir_path)
     if recursive:
@@ -154,6 +154,7 @@ def collect_csv_by_model_path(model_path) -> dict[Any, Any]:
     else:
         report_paths = {}
     return report_paths
+
 
 def collect_csv_from_dir(dir_path, pattern, recursive=False) -> (pd.DataFrame):
     """Collects the csf=v files in a directory using a pattern, usually the pattern resembling the one of the simulations used to generate those csv files
@@ -267,13 +268,16 @@ def run_from_dir(dir_path, pattern, verbose=False,
         out = collect_csv_from_dir(dir_path, pattern)
         return out
 
+
 @lru_cache(maxsize=None)
 def apsim_executable(path, *args):
-    base  = [str(APSIM_EXEC), str(path), '--verbose', '--csv']
+    base = [str(APSIM_EXEC), str(path), '--verbose', '--csv']
     return base
+
 
 def run_p(path):
     run(apsim_executable(path))
+
 
 def run(self, report_name=None,
         simulations=None,
@@ -313,7 +317,7 @@ def run(self, report_name=None,
     try:
         # Set run type
         runtype = Models.Core.Run.Runner.RunTypeEnum.MultiThreaded if multithread \
-                  else Models.Core.Run.Runner.RunTypeEnum.SingleThreaded
+            else Models.Core.Run.Runner.RunTypeEnum.SingleThreaded
 
         # Open and optionally clean the datastore
         self._DataStore.Open()
@@ -360,7 +364,3 @@ def run(self, report_name=None,
         self._DataStore.Close()
 
     return results
-
-if __name__ == "__main__":
-    import doctest
-# doctest.testmod()

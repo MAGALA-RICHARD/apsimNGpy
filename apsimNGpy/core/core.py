@@ -403,6 +403,8 @@ class CoreModel(PlotManager):
         # Normalize report_names to a list
         if isinstance(report_names, str):
             reports = [report_names]
+            # We don't need to alter the data frame when only one table is provided
+            axis = 0
         elif isinstance(report_names, (tuple, set, list)):
             reports = report_names
         else:

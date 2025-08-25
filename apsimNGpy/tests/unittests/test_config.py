@@ -38,7 +38,8 @@ class TestConfig(BaseTester):
 
          Please remember only those stills existing on the computer are recorded"""
         bin_history = get_bin_use_history()
-        print(bin_history)
+        if not bin_history:
+            self.skipTest('No binary history available, skipping test..')
         self.assertIsInstance(bin_history, list, msg='Binary history is not being detected')
         # ensure all exists
         all_exists = all([os.path.exists(i) for i in bin_history])

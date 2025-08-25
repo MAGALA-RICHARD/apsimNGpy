@@ -24,6 +24,8 @@ class TestConfig(BaseTester):
     def test_get_apsim_bin_path(self):
         abp = get_apsim_bin_path()
         p_true = path.exists(abp)
+        if not abp:
+            self.skipTest('Could not find apsim bin. perhaps not yet set')
         self.assertTrue(p_true)
 
     def test_get_apsim_version(self):

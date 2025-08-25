@@ -40,7 +40,7 @@ def open_file(filepath):
 
 def inherit_docstring_from(obj):
     def decorator(func):
-        @wraps(obj)  # applies name, doc, etc., from obj to func
+        @wraps(obj)
         def wrapper(*args, **kwargs):
             return func(*args, **kwargs)
         wrapper.__doc__ = func.__doc__ + "\n" + obj.__doc__
@@ -151,8 +151,7 @@ class PlotManager(ABC):
         return ax
 
     @inherit_docstring_from(sns.histplot)
-    def distribution(self, x, *, stat='density', y=None, xlab=None, ylab=None,
-                          title='', show=False, save_as='', **kwargs):
+    def distribution(self, x, *, data=None, **kwargs):
         """Plot distribution for a numeric variable. It uses ``seaborn.histplot`` function. Please see their documentation below
         =========================================================================================================\n
         """
@@ -165,11 +164,11 @@ class PlotManager(ABC):
         if is_string_dtype(self.results[x]):
             raise ValueError(f"{x} contains strings")
 
+        df = data or self.results
+        sns.histplot(data=df, x=x, kde=True, **kwargs)
 
-        sns.histplot(data=self.results, x=x, kde=True, **kwargs)
 
 
-        self.render_plot(show=show, save_as=save_as, xlabel=xlab, ylabel=ylab,)
 
     def label(self):
         ...
@@ -177,7 +176,7 @@ class PlotManager(ABC):
     def render_plot(
             self,
             *,
-            save_as: str = '',
+            save_as: Union[str, Path] = '',
             dpi: int = 600,
             show: bool = True,
             xlabel: str = '',

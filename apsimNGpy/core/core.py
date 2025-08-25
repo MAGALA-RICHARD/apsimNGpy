@@ -3014,14 +3014,14 @@ class CoreModel(PlotManager):
         self.add_model(model_type='Models.Factorial.Experiment', adoptive_parent='Models.Core.Simulations',
                        **kwargs)
 
-        self.add_model(model_type=Models.Factorial.Factors, adoptive_parent=Models.Factorial.ExperimentManager,
+        self.add_model(model_type=Models.Factorial.Factors, adoptive_parent=Models.Factorial.Experiment,
                        **kwargs)
 
         if permutation:
             self.add_model(model_type=Models.Factorial.Permutation, adoptive_parent=Models.Factorial.Factors, **kwargs)
 
         # Move base simulation under the factorial experiment
-        self.move_model(Models.Core.Simulation, Models.Factorial.ExperimentManager, base_name, None)
+        self.move_model(Models.Core.Simulation, Models.Factorial.Experiment, base_name, None)
 
         self.save()
         # update the experiment status

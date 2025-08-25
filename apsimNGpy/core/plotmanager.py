@@ -11,6 +11,7 @@ from abc import abstractmethod, ABC
 from collections import OrderedDict
 from apsimNGpy.settings import logger
 from functools import wraps
+
 try:
     import seaborn as sns
 except ModuleNotFoundError:
@@ -18,8 +19,6 @@ except ModuleNotFoundError:
     import sys
 
     sys.exit(1)
-
-
 
 HOME = Path.home()
 
@@ -37,17 +36,21 @@ def open_file(filepath):
         raise OSError('Unsupported operating system')
 
 
-
 def inherit_docstring_from(obj):
     def decorator(func):
         @wraps(obj)
         def wrapper(*args, **kwargs):
             return func(*args, **kwargs)
+
         wrapper.__doc__ = func.__doc__ + "\n" + obj.__doc__
         return wrapper
+
     return decorator
 
-added_plots= OrderedDict()
+
+added_plots = OrderedDict()
+
+
 class PlotManager(ABC):
     """"
      Abstract base class for high-level visualization of APSIMNGpy simulation outputs.
@@ -90,24 +93,23 @@ class PlotManager(ABC):
         self.added_plots = None
         self.displayed = False
 
-
-
     @property
     @abstractmethod
     def results(self):
         pass
 
     @abstractmethod
-    def get_simulated_output(self, report_name:str):
+    def get_simulated_output(self, report_name: str):
         pass
 
     @abstractmethod
-    def add_report_variable(self, specification:str):
+    def add_report_variable(self, specification: str):
         pass
 
     @abstractmethod
     def run(self, report_name: Union[str, list, tuple]):
         pass
+
     def _clean_numeric_data(self, exclude_vars=('SimulationID', 'CheckpointID', 'CheckpointName')):
         """Select numeric _variables and remove low-signal columns."""
         df = self.results.select_dtypes(include="number").copy()
@@ -124,6 +126,7 @@ class PlotManager(ABC):
             df.drop(columns=low_info_cols, inplace=True)
 
         return df
+
     @inherit_docstring_from(pd.DataFrame)
     def boxplot(self, column, *,
                 by=None, figsize=(10, 8), grid=False, **kwargs):
@@ -158,7 +161,6 @@ class PlotManager(ABC):
         added_plots['current_plot'] = 'distribution'
         self._refresh()
 
-
         from pandas.api.types import is_string_dtype
 
         if is_string_dtype(self.results[x]):
@@ -166,9 +168,6 @@ class PlotManager(ABC):
 
         df = data or self.results
         sns.histplot(data=df, x=x, kde=True, **kwargs)
-
-
-
 
     def label(self):
         ...
@@ -201,7 +200,6 @@ class PlotManager(ABC):
         # Set optional labels and title
 
         if xlabel:
-
             plt.xlabel(xlabel)
         ylabel
         if ylabel:
@@ -215,7 +213,6 @@ class PlotManager(ABC):
             plt.savefig(str(save_as), dpi=dpi)
 
         if show:
-
             self.show()
             self.displayed = True
 
@@ -293,6 +290,7 @@ class PlotManager(ABC):
             n_boot=n_boot,
             seed=seed, orient=orient, sort=sort, err_style=err_style, err_kws=err_kws, legend=legend,
             ci=ci, ax=ax, **kwargs)
+
     @inherit_docstring_from(sns.scatterplot)
     def scatter_plot(
             self,
@@ -341,50 +339,51 @@ class PlotManager(ABC):
             ax=ax,
             **kwargs
         )
+
     @inherit_docstring_from(sns.catplot)
     def cat_plot(self,
-            data=None,
-            *,
-            x=None,
-            y=None,
-            hue=None,
-            row=None,
-            col=None,
-            kind='strip',
-            estimator='mean',
-            errorbar=('ci', 95),
-            n_boot=1000,
-            seed=None,
-            units=None,
-            weights=None,
-            order=None,
-            hue_order=None,
-            row_order=None,
-            col_order=None,
-            col_wrap=None,
-            height=5,
-            aspect=1,
-            log_scale=None,
-            native_scale=False,
-            formatter=None,
-            orient=None,
-            color=None,
-            palette=None,
-            hue_norm=None,
-            legend='auto',
-            legend_out=True,
-            sharex=True,
-            sharey=True,
-            margin_titles=False,
-            facet_kws=None,
-            **kwargs
-    ):
+                 data=None,
+                 *,
+                 x=None,
+                 y=None,
+                 hue=None,
+                 row=None,
+                 col=None,
+                 kind='strip',
+                 estimator='mean',
+                 errorbar=('ci', 95),
+                 n_boot=1000,
+                 seed=None,
+                 units=None,
+                 weights=None,
+                 order=None,
+                 hue_order=None,
+                 row_order=None,
+                 col_order=None,
+                 col_wrap=None,
+                 height=5,
+                 aspect=1,
+                 log_scale=None,
+                 native_scale=False,
+                 formatter=None,
+                 orient=None,
+                 color=None,
+                 palette=None,
+                 hue_norm=None,
+                 legend='auto',
+                 legend_out=True,
+                 sharex=True,
+                 sharey=True,
+                 margin_titles=False,
+                 facet_kws=None,
+                 **kwargs
+                 ):
         """Wrapper for seaborn.catplot with all keyword arguments.
         reference https://seaborn.pydata.org/generated/seaborn.catplot.html or check seaborn documentation below\n
         =========================================================================================================\n"""
         self._refresh()
         added_plots['cat_plot'] = 'cat_plot'
-        df =   self.results if data is None else data
+        df = self.results if data is None else data
         return sns.catplot(
             data=df,
             x=x,
@@ -409,7 +408,6 @@ class PlotManager(ABC):
             log_scale=log_scale,
             native_scale=native_scale,
             formatter=formatter,
-            orient=orient,
             color=color,
             palette=palette,
             hue_norm=hue_norm,
@@ -422,26 +420,22 @@ class PlotManager(ABC):
             **kwargs
         )
 
-
-
-    def correlation_heatmap(self,columns:list=None, figsize=(10, 8), **kwargs):
+    def correlation_heatmap(self, columns: list = None, figsize=(10, 8), **kwargs):
         self._refresh()
         added_plots['correlation_heatmap'] = 'correlation_heatmap'
         """Plot correlation heatmap for numeric _variables."""
         if columns:
-            df  = self.results[columns]
+            df = self.results[columns]
         else:
             df = self._clean_numeric_data()
             if df.empty:
                 raise EmptyDateFrameError("No valid numeric data for correlation heatmap.")
-
 
         corr = df.corr()
         plt.figure(figsize=figsize)
         sns.heatmap(corr, annot=True, cmap="coolwarm", fmt=".2f", **kwargs)
         plt.title("Correlation Heatmap")
         plt.tight_layout()
-
 
 
 if __name__ == '__main__':

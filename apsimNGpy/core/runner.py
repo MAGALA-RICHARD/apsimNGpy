@@ -14,7 +14,7 @@ from apsimNGpy.settings import logger
 from apsimNGpy.core_utils.utils import timer
 import contextlib
 from apsimNGpy.settings import *
-from core_utils.database_utils import read_db_table, get_db_table_names
+from apsimNGpy.core_utils.database_utils import read_db_table, get_db_table_names
 from pathlib import Path
 from typing import Union, List
 

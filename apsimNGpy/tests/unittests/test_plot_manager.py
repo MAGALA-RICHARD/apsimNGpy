@@ -3,7 +3,9 @@ from apsimNGpy.tests.unittests.base_unit_tests import BaseTester
 from pathlib import Path
 import matplotlib.pyplot as plt
 import unittest
-SHOW = False # use this to turm of interactive plot in the panel
+
+SHOW = False  # use this to turm of interactive plot in the panel
+
 
 class TestPlotting(BaseTester):
 
@@ -18,14 +20,13 @@ class TestPlotting(BaseTester):
         self.model = ApsimModel('Maize', out_path=self.test_path)
         self.model.run()
 
-
     def test_cat_plot(self):
         'test cat_plot for kind=points, default in seaborn'
-        self.model.cat_plot(x="SimulationName", y= 'Yield')
+        self.model.cat_plot(x="SimulationName", y='Yield')
         fig_enum = plt.get_fignums()
         self.assertTrue(fig_enum)
         self.model.render_plot(save_as=self.figure_name, show=SHOW)
-        # check if figure was successfully saved on file
+        # check if the figure was successfully saved on file
         self.assertGreater(self.figure_name.stat().st_size, 0, f'Empty figure detected in: {self._testMethodName}')
         # lastly close
         plt.close()
@@ -40,7 +41,7 @@ class TestPlotting(BaseTester):
         self.assertTrue(fig_enum)
         # labels, saving, and showing plots are aggregated in render_plots
         self.model.render_plot(save_as=self.figure_name, show=SHOW)
-        # check if figure was successfully saved on file
+        # check if a figure was successfully saved on file
         self.assertGreater(self.figure_name.stat().st_size, 0, f'Empty figure detected in: {self._testMethodName}')
         # lastly close
         plt.close()
@@ -50,7 +51,7 @@ class TestPlotting(BaseTester):
         test cat_plot for kind=box
         @return:
         """
-        self.model.cat_plot(x="SimulationName", y='Yield', kind='box',orientation='vertical')
+        self.model.cat_plot(x="SimulationName", y='Yield', kind='box', orientation='vertical')
         fig_enum = plt.get_fignums()
         self.assertTrue(fig_enum)
         self.model.render_plot(save_as=self.figure_name, show=SHOW)
@@ -89,7 +90,7 @@ class TestPlotting(BaseTester):
 
     def test_scatter_plot(self):
         self.figure_name.unlink(missing_ok=True)
-        self.model.scatter_plot(x = 'Maize.Grain.Wt', y= 'Yield')
+        self.model.scatter_plot(x='Maize.Grain.Wt', y='Yield')
         fig_enum = plt.get_fignums()
         self.assertTrue(fig_enum)
         self.model.render_plot(save_as=self.figure_name, show=SHOW)
@@ -99,7 +100,7 @@ class TestPlotting(BaseTester):
 
     def test_scatter_plot_with_external_df(self):
         self.figure_name.unlink(missing_ok=True)
-        df= self.model.results
+        df = self.model.results
         self.model.scatter_plot(x='Maize.Grain.Wt', y='Yield', data=df)
         fig_enum = plt.get_fignums()
         self.assertTrue(fig_enum)
@@ -107,13 +108,13 @@ class TestPlotting(BaseTester):
         self.assertGreater(self.figure_name.stat().st_size, 0, f'Empty figure detected in: {self._testMethodName}')
         plt.close()
 
-
     def tearDown(self):
-            self.test_path.unlink(missing_ok=True)
-            self.figure_name.unlink(missing_ok=True)
-            self.db_path.unlink(missing_ok=True)
-            # cleans up everything related to the model stored on the computer
-            self.model.clean_up(db=True)
+        self.test_path.unlink(missing_ok=True)
+        self.figure_name.unlink(missing_ok=True)
+        self.db_path.unlink(missing_ok=True)
+        # cleans up everything related to the model stored on the computer
+        self.model.clean_up(db=True)
+
 
 if __name__ == '__main__':
     unittest.main()

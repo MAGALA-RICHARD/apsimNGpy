@@ -20,24 +20,27 @@ class TestPlotting(BaseTester):
 
 
     def test_cat_plot(self):
-        'test cat plot for kind=points, default in seaborn'
+        'test cat_plot for kind=points, default in seaborn'
         self.model.cat_plot(x="SimulationName", y= 'Yield')
         fig_enum = plt.get_fignums()
         self.assertTrue(fig_enum)
         self.model.render_plot(save_as=self.figure_name, show=SHOW)
+        # check if figure was successfully saved on file
         self.assertGreater(self.figure_name.stat().st_size, 0, f'Empty figure detected in: {self._testMethodName}')
         # lastly close
         plt.close()
 
     def test_cat_plot_kind_bar(self):
         """
-        test cat plot for kind=bar
+        test cat_plot for kind=bar
         @return:
         """
-        self.model.cat_plot(x="SimulationName", y='Yield', kind='bar')
+        self.model.cat_plot(x="SimulationName", y='Yield', kind='bar', orientation='vertical')
         fig_enum = plt.get_fignums()
         self.assertTrue(fig_enum)
+        # labels, saving, and showing plots are aggregated in render_plots
         self.model.render_plot(save_as=self.figure_name, show=SHOW)
+        # check if figure was successfully saved on file
         self.assertGreater(self.figure_name.stat().st_size, 0, f'Empty figure detected in: {self._testMethodName}')
         # lastly close
         plt.close()
@@ -47,30 +50,40 @@ class TestPlotting(BaseTester):
         test cat_plot for kind=box
         @return:
         """
-        self.model.cat_plot(x="SimulationName", y='Yield', kind='box')
+        self.model.cat_plot(x="SimulationName", y='Yield', kind='box',orientation='vertical')
         fig_enum = plt.get_fignums()
         self.assertTrue(fig_enum)
         self.model.render_plot(save_as=self.figure_name, show=SHOW)
+        # check if figure was successfully saved on file
         self.assertGreater(self.figure_name.stat().st_size, 0, f'Empty figure detected in: {self._testMethodName}')
         # lastly close
         plt.close()
 
     def test_line_plot(self):
+        """test line_plot"""
         self.figure_name.unlink(missing_ok=True)
         self.model.series_plot(y='Yield', x='Clock.Today')
         fig_enum = plt.get_fignums()
         self.assertTrue(fig_enum)
         # render before fig evaluation test because render closes the plot
         self.model.render_plot(save_as=self.figure_name, show=SHOW)
+        # check if figure was successfully saved on file
         self.assertGreater(self.figure_name.stat().st_size, 0, f'Empty figure detected in: {self._testMethodName}')
         plt.close()
 
     def test_distribution_plot(self):
+        """
+        test distribution_plot
+        @return:
+        """
+
         self.figure_name.unlink(missing_ok=True)
         self.model.distribution("Yield")
         fig_enum = plt.get_fignums()
         self.assertTrue(fig_enum)
+        # labels, saving, and showing plots are aggregated in render_plots
         self.model.render_plot(save_as=self.figure_name, show=SHOW)
+        # check if figure was successfully saved on file
         self.assertGreater(self.figure_name.stat().st_size, 0, f'Empty figure detected in: {self._testMethodName}')
         plt.close()
 
@@ -80,6 +93,7 @@ class TestPlotting(BaseTester):
         fig_enum = plt.get_fignums()
         self.assertTrue(fig_enum)
         self.model.render_plot(save_as=self.figure_name, show=SHOW)
+        # check if figure was successfully saved on file
         self.assertGreater(self.figure_name.stat().st_size, 0, f'Empty figure detected in: {self._testMethodName}')
         plt.close()
 
@@ -98,6 +112,7 @@ class TestPlotting(BaseTester):
             self.test_path.unlink(missing_ok=True)
             self.figure_name.unlink(missing_ok=True)
             self.db_path.unlink(missing_ok=True)
+            # cleans up everything related to the model stored on the computer
             self.model.clean_up(db=True)
 
 if __name__ == '__main__':

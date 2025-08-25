@@ -420,6 +420,11 @@ class PlotManager(ABC):
             **kwargs
         )
 
+    def relplot(self, data=None, **kwargs):
+        data = data or self.results
+        g = sns.relplot(data=data, **kwargs)
+        return g
+
     def correlation_heatmap(self, columns: list = None, figsize=(10, 8), **kwargs):
         self._refresh()
         added_plots['correlation_heatmap'] = 'correlation_heatmap'

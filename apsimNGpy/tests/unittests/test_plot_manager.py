@@ -60,6 +60,20 @@ class TestPlotting(BaseTester):
         # lastly close
         plt.close()
 
+    def test_relplot_kind_line(self):
+        """
+        test relative plot for kind=line
+        @return:
+        """
+        self.model.relplot(x='Maize.Grain.Wt', y='Yield', kind='line')
+        fig_enum = plt.get_fignums()
+        self.assertTrue(fig_enum)
+        self.model.render_plot(save_as=self.figure_name, show=SHOW)
+        # check if figure was successfully saved on file
+        self.assertGreater(self.figure_name.stat().st_size, 0, f'Empty figure detected in: {self._testMethodName}')
+        # lastly close
+        plt.close()
+
     def test_line_plot(self):
         """test line_plot"""
         self.figure_name.unlink(missing_ok=True)

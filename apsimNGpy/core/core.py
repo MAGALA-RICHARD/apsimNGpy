@@ -3011,7 +3011,7 @@ class CoreModel(PlotManager):
         self.permutation = permutation
         # Add core experiment structure
 
-        self.add_model(model_type='Models.Factorial.ExperimentManager', adoptive_parent='Models.Core.Simulations',
+        self.add_model(model_type='Models.Factorial.Experiment', adoptive_parent='Models.Core.Simulations',
                        **kwargs)
 
         self.add_model(model_type=Models.Factorial.Factors, adoptive_parent=Models.Factorial.ExperimentManager,

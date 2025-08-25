@@ -20,7 +20,34 @@ class TestPlotting(BaseTester):
 
 
     def test_cat_plot(self):
+        'test cat plot for kind=points, default in seaborn'
         self.model.cat_plot(x="SimulationName", y= 'Yield')
+        fig_enum = plt.get_fignums()
+        self.assertTrue(fig_enum)
+        self.model.render_plot(save_as=self.figure_name, show=SHOW)
+        self.assertGreater(self.figure_name.stat().st_size, 0, f'Empty figure detected in: {self._testMethodName}')
+        # lastly close
+        plt.close()
+
+    def test_cat_plot_kind_bar(self):
+        """
+        test cat plot for kind=bar
+        @return:
+        """
+        self.model.cat_plot(x="SimulationName", y='Yield', kind='bar')
+        fig_enum = plt.get_fignums()
+        self.assertTrue(fig_enum)
+        self.model.render_plot(save_as=self.figure_name, show=SHOW)
+        self.assertGreater(self.figure_name.stat().st_size, 0, f'Empty figure detected in: {self._testMethodName}')
+        # lastly close
+        plt.close()
+
+    def test_cat_plot_kind_box(self):
+        """
+        test cat_plot for kind=box
+        @return:
+        """
+        self.model.cat_plot(x="SimulationName", y='Yield', kind='box')
         fig_enum = plt.get_fignums()
         self.assertTrue(fig_enum)
         self.model.render_plot(save_as=self.figure_name, show=SHOW)

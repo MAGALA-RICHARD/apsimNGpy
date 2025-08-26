@@ -14,6 +14,8 @@ IS_NEW_APSIM = is_file_format_modified()
 
 
 class TestModelTools(unittest.TestCase):
+    def setUp(self) -> None:
+        self.apsim_path = Path(f"{self._testMethodName}.apsimx")
 
     def test_add_a_simulation(self):
         # if IS_NEW_APSIM:
@@ -30,18 +32,17 @@ class TestModelTools(unittest.TestCase):
         self.assertTrue(hasattr(obj, '__class__'))
 
     def test_find_model(self):
-        model = ApsimModel('Maize')
         result = find_model('Clock')
         self.assertIsNotNone(result)
 
     def test_get_or_check_model_get(self):
-        model = ApsimModel('Maize')
+        model = ApsimModel('Maize', out_path=self.apsim_path)
         model_class = find_model("Clock")
         result = get_or_check_model(model.Simulations, model_class, 'Clock', 'get')
         self.assertTrue(result)
 
     def test_get_or_check_model_delete(self):
-        model = ApsimModel('Maize', out=os.path.realpath('get_or_check_model2.apsimx'))
+        model = ApsimModel('Maize', out_path=self.apsim_path)
         results = get_or_check_model(model.Simulations, 'Models.Core.Simulation', 'Simulation', action='delete')
         self.assertIsNone(results)
         # ensure model is deleted
@@ -49,18 +50,18 @@ class TestModelTools(unittest.TestCase):
         self.assertIsNone(child, 'child found implies was not deleted successfully')
 
     def test_get_or_check_model_check(self):
-        model = ApsimModel('Maize', out=os.path.realpath('get_or_check_model3.apsimx'))
+        model = ApsimModel('Maize', out_path=self.apsim_path)
         results = get_or_check_model(model.Simulations, 'Models.Core.Simulation', 'Simulation', action='check')
         res = results == True
         self.assertTrue(res, msg='checking is not doing the desired thing')
 
     def test_detect_sow_manager(self):
-        model = ApsimModel('Maize')
+        model = ApsimModel('Maize', out_path=self.apsim_path)
         sowing_manager = detect_sowing_managers(model)
         self.assertIsNotNone(sowing_manager)
 
     def test_detect_sow_manager_when_none(self):
-        model = ApsimModel('Maize')
+        model = ApsimModel('Maize', out_path=self.apsim_path)
         sowing_manager = detect_sowing_managers(model)
         ModelTools.DELETE(sowing_manager)
         model.save()
@@ -68,73 +69,73 @@ class TestModelTools(unittest.TestCase):
         self.assertIsNone(sowing_manager)
 
     def test_get_or_check_model_delete1(self):
-        model = ApsimModel('Maize')
+        model = ApsimModel('Maize', out_path=self.apsim_path)
         model_class = find_model("Clock")
         result = get_or_check_model(model.Simulations, model_class, 'Clock', 'delete')
         self.assertIsNone(result)
 
     def test_get_or_check_model_check2(self):
-        model = ApsimModel('Maize')
+        model = ApsimModel('Maize', out_path=self.apsim_path)
         model_class = find_model("Clock")
         result = get_or_check_model(model.Simulations, model_class, 'Clock', 'check')
         self.assertTrue(result)
 
     def test_find_child(self):
         """test for find_child for a clock"""
-        model = ApsimModel('Maize', out_path=os.path.realpath('./find_child_clok1.apsimx'))
+        model = ApsimModel('Maize', out_path=self.apsim_path)
         clock = find_child(model.Simulations, 'Models.Clock', 'Clock')
         self.assertIsNotNone(clock, msg='failed to find clock child from simulations')
 
     def test_find_child_cultivar(self):
         """test find_child of Cultivar"""
-        model = ApsimModel('Maize', out_path=os.path.realpath('./find_child_clok2.apsimx'))
+        model = ApsimModel('Maize', out_path=self.apsim_path)
         cultivar = find_child(parent=model.Simulations, child_class='Models.PMF.Cultivar', child_name='B_110')
         self.assertIsNotNone(cultivar, msg='failed to find cultivar child from simulations')
 
     def test_find_child_simulations(self):
         """test finding child simulations"""
-        model = ApsimModel('Maize', out_path=os.path.realpath('./find_child_clok3.apsimx'))
+        model = ApsimModel('Maize', out_path=self.apsim_path)
         simulation = find_child(parent=model.Simulations, child_class='Models.Core.Simulation', child_name='Simulation')
         self.assertIsNotNone(simulation, msg='failed to find simulation child from simulations')
 
     def test_find_child_weather(self):
         """test finding child simulations"""
-        model = ApsimModel('Maize', out_path=os.path.realpath('./find_child_clok4.apsimx'))
+        model = ApsimModel('Maize', out_path=self.apsim_path)
         weather = find_child(parent=model.Simulations, child_class='Models.Climate.Weather', child_name='Weather')
         self.assertIsNotNone(weather, msg='failed to find weather  child from simulations')
 
     def test_find_all_in_scope_managers(self):
         """test finding all managers"""
-        model = ApsimModel('Maize', out_path=os.path.realpath('./find_all_in_scope_manager.apsimx'))
-        manager = find_all_in_scope(scope=model.Simulations, child_class='Models.Manager')
+        model = ApsimModel('Maize', out_path=self.apsim_path)
+        manager = find_all_in_scope(parent=model.Simulations, child_class='Models.Manager')
         # ensure something is found
         self.assertIsNotNone(manager, msg='failed to find weather  child from simulations')
 
     def test_find_all_in_scope_clock(self):
         """test finding all managers"""
-        model = ApsimModel('Maize', out_path=os.path.realpath('./find_all_in_scope_clock.apsimx'))
-        clock = find_all_in_scope(scope=model.Simulations, child_class='Models.Clock')
+        model = ApsimModel('Maize', out_path=self.apsim_path)
+        clock = find_all_in_scope(parent=model.Simulations, child_class='Models.Clock')
         # ensure something is found
         self.assertIsNotNone(clock, msg='failed to find all clock children from simulations')
 
     def test_find_all_in_scope_physical(self):
         """test finding all managers"""
-        model = ApsimModel('Maize', out_path=os.path.realpath('./find_all_in_scope_physical.apsimx'))
-        physical = find_all_in_scope(scope=model.Simulations, child_class='Models.Soils.Physical')
+        model = ApsimModel('Maize', out_path=self.apsim_path)
+        physical = find_all_in_scope(parent=model.Simulations, child_class='Models.Soils.Physical')
         # ensure something is found
         self.assertIsNotNone(physical, msg='failed to find all clock children from simulations')
 
     def test_find_all_in_scope_simulations(self):
         """test finding all managers"""
-        model = ApsimModel('Maize', out_path=os.path.realpath('./find_all_in_scope_simulations.apsimx'))
-        simulations = find_all_in_scope(scope=model.Simulations, child_class='Models.Core.Simulations')
+        model = ApsimModel('Maize', out_path=self.apsim_path)
+        simulations = find_all_in_scope(parent=model.Simulations, child_class='Models.Core.Simulations')
         # ensure something is found
         self.assertIsNotNone(simulations, msg='failed to find all manager children from simulations')
 
     def test_find_all_in_scope_return_emptyforNone(self):
         """test finding all managers"""
-        model = ApsimModel('Maize', out_path=os.path.realpath('./find_all_in_scope_simulations.apsimx'))
-        experiments = find_all_in_scope(scope=model.Simulations, child_class='Models.Factorial.Experiment')
+        model = ApsimModel('Maize', out_path=self.apsim_path)
+        experiments = find_all_in_scope(parent=model.Simulations, child_class='Models.Factorial.Experiment')
         # ensure that it is empty because experiment does not exist at this node
         test = experiments == []
         self.assertTrue(test, msg='failed to return empty for no existing experiments class models')
@@ -147,21 +148,21 @@ class TestModelTools(unittest.TestCase):
         self.assertTrue(folder, 'replacement folder not found')
 
     def test_add_crop_replacement(self):
-        model = ApsimModel('Maize', out=os.path.realpath('replacement3.apsimx'))
+        model = ApsimModel('Maize', out_path=self.apsim_path)
         add_model_as_a_replacement(model.Simulations, 'Models.PMF.Plant', 'Maize')
         folder = find_child(model.Simulations, 'Models.Core.Folder', "Replacements")
         self.assertTrue(folder, 'replacement folder not found')
 
     def test_add_crop_replacement_and_run(self):
         """ensures that model runs after replacement"""
-        model = ApsimModel('Maize', out=os.path.realpath('replacement5.apsimx'))
+        model = ApsimModel('Maize', out_path=self.apsim_path)
         add_model_as_a_replacement(model.Simulations, 'Models.PMF.Plant', 'Maize')
         folder = find_child(model.Simulations, 'Models.Core.Folder', "Replacements")
         model.run()
         self.assertTrue(model.ran_ok, 'after replacement, model did not run properly')
 
     def test_add_clock_replacement(self):
-        model = ApsimModel('Maize', out=os.path.realpath('replacement4.apsimx'))
+        model = ApsimModel('Maize', out_path=self.apsim_path)
         add_model_as_a_replacement(model.Simulations, 'Models.PMF.Plant', 'Maize')
         folder = find_child(model.Simulations, 'Models.Core.Folder', "Replacements")
         self.assertTrue(folder, 'replacement folder not found')
@@ -174,13 +175,16 @@ class TestModelTools(unittest.TestCase):
         self.assertTrue(folder, 'replacement folder not found')
 
     def test_add_what_happens_to_repeat_reps_with_run(self):
-        model = ApsimModel('Maize', out=os.path.realpath('replacement4.apsimx'))
+        model = ApsimModel('Maize', out_path=self.apsim_path)
         add_model_as_a_replacement(model.Simulations, 'Models.Clock', 'Clock')
         add_model_as_a_replacement(model.Simulations, 'Models.Clock', 'Clock')
         folder = find_child(model.Simulations, 'Models.Core.Folder', "Replacements")
         self.assertTrue(folder, 'replacement folder not found')
         model.run()
         self.assertTrue(model.ran_ok)
+
+    def tearDown(self):
+        self.apsim_path.unlink(missing_ok=True)
 
 
 # Optional utility function

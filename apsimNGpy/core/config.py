@@ -262,7 +262,7 @@ class Config:
 
 
 @cache
-def apsim_version(verbose: bool = False):
+def apsim_version(release_number =False, verbose: bool = False):
     """ Display version information of the apsim model currently in the apsimNGpy config environment.
 
     ``verbose``: (bool) Prints the version information ``instantly``
@@ -285,7 +285,10 @@ def apsim_version(verbose: bool = False):
         cmd.append("--verbose")
     res = Popen(cmd, stdout=PIPE, stderr=PIPE, text=True)
     res.wait()
-    return res.stdout.readlines()[0].strip()
+    release = res.stdout.readlines()[0].strip()
+    if release_number:
+        return release.strip('APSIM').strip()
+    return release
 
 
 @cache

@@ -14,11 +14,15 @@ from apsimNGpy.settings import *
 from pathlib import Path
 from apsimNGpy.core.model_loader import load_apsim_model
 from apsimNGpy.core.cs_resources import simple_rotation_code, update_manager_code
+from apsimNGpy.core.config import apsim_version
 
 IS_NEW_APSIM = is_file_format_modified()
 
 from apsimNGpy.core.cs_resources import CastHelper, sow_using_variable_rule, sow_on_fixed_date, harvest, \
     fertilizer_at_sow, cast_as
+
+APSIM_VERSION = apsim_version(True)
+BASE_RELEASE_NO = '2025.8.7837.0'
 
 
 @cache
@@ -57,56 +61,7 @@ def _tools(method):
     return method
 
 
-@dataclass
-class ModelTools:
-    """
-       A utility class providing convenient access to core APSIM model operations and constants.
-
-       Attributes:
-           ``ADD`` (callable): Function or class for adding components to an APSIM model.
-
-           ``DELETE`` (callable): Function or class for deleting components from an APSIM model.
-
-           ``MOVE`` (callable): Function or class for moving components within the model structure.
-
-           ``RENAME`` (callable): Function or class for renaming components.
-
-           ``CLONER`` (callable): Utility to clone APSIM models or components.
-
-           ``REPLACE`` (callable): Function to replace components in the model.
-
-           ``MultiThreaded`` (Enum): Enumeration value to specify multi-threaded APSIM runs.
-
-           ``SingleThreaded`` (Enum): Enumeration value to specify single-threaded APSIM runs.
-
-           ``ModelRUNNER`` (class): APSIM run manager that handles simulation execution.
-
-           ``CLASS_MODEL`` (type): The type of the APSIM Clock model, often used for type checks or instantiation.
-
-           ``ACTIONS`` (tuple): Set of supported string actions ('get', 'delete', 'check').
-
-           ``COLLECT`` (callable): Function for forcing memory checks
-       """
-    ADD = _tools('ADD')
-    DELETE = _tools('DELETE')
-    MOVE = _tools('MOVE')
-    RENAME = _tools('RENAME')
-    CLONER = _tools('CLONER')
-    REPLACE = _tools('REPLACE')
-    MultiThreaded = _tools('MultiThreaded')
-    SingleThreaded = _tools('SingleThreaded')
-    ModelRUNNER = _tools('ModelRUNNER')
-    CLASS_MODEL = _tools('CLASS_MODEL')
-    ACTIONS = _tools('ACTIONS')
-    COLLECT = _tools('COLLECT')
-    String = String
-    Double = Double
-    Array = Array
-    CAST = cast_as
-
-
-ModelTools.ACTIONS
-ModelTools.DELETE
+CLASS_MODEL = _tools('CLASS_MODEL')
 
 
 def find_child(parent, child_class, child_name):
@@ -127,23 +82,53 @@ def find_child(parent, child_class, child_name):
     return None  # Not found
 
 
-def find_all_in_scope(scope, child_class):
-    all_in_scope = []
+def find_all_in_scope(parent, child_class):
+    """
 
+    @param parent: base model scope to search
+    @param child_class: Model class from the Models namespace to search for
+    @return: list[Models.Core.IModel] objects
+    """
+
+    all_in_scope = []
     if isinstance(child_class, str):
         child_class = validate_model_obj(child_class)
 
-    for child in scope.Children:
+    for child in parent.Children:
         cast_child = CastHelper.CastAs[child_class](child)
+
         if cast_child:
-            all_in_scope.append(child)
+            all_in_scope.append(cast_child)
 
         # 🔁 Recursively search in this child's children
         child_results = find_all_in_scope(child, child_class)
         if child_results:
             all_in_scope.extend(child_results)
-
     return all_in_scope
+
+
+def find_descendant(parent, child_class):
+
+    parent = getattr(parent, 'Model', parent)
+    if isinstance(child_class, str):
+        child_class = validate_model_obj(child_class)
+    for child in parent.Children:
+        cast_child = CastHelper.CastAs[child_class](child)
+        if cast_child:
+            # child = CastHelper.CastAs[child_class](child)
+            return child
+        # 🔁 Recursively search in child's children
+        result = find_descendant(child, child_class)
+        if result is not None:
+            return result
+
+
+def find_child_of_class(parent, child_class):
+    """
+    Finds a child with a break. Equivalent to old method of FindDescendant. can return None if no child
+
+    """
+    return find_descendant(parent, child_class)
 
 
 def get_or_check_model(search_scope, model_type, model_name, action='get', cache_size=300):
@@ -207,7 +192,7 @@ def get_or_check_model(search_scope, model_type, model_name, action='get', cache
     return _execute(search_scope, model_type, model_name, action)
 
 
-def _find_model(model_name: str, model_namespace=Models, target_type=ModelTools.CLASS_MODEL) -> ModelTools.CLASS_MODEL:
+def _find_model(model_name: str, model_namespace=Models, target_type=CLASS_MODEL) -> CLASS_MODEL:
     """
     Recursively find a model by name within a namespace.
 
@@ -264,7 +249,7 @@ def find_model(model_name: str):
 
 
 @lru_cache(maxsize=300)
-def validate_model_obj(model__type, evaluate_bound=False) -> ModelTools.CLASS_MODEL:
+def validate_model_obj(model__type, evaluate_bound=False) -> CLASS_MODEL:
     """
     Evaluates the model type from either string or Models namespace
     @param model__type (str,Models, required)
@@ -647,7 +632,10 @@ def add_as_simulation(_model, resource, sim_name):
     sim_name, new name to name the added simulation
     """
     model = load_apsim_model(resource)
-    sim = model.IModel.FindDescendant[Models.Core.Simulation]()
+    if APSIM_VERSION > BASE_RELEASE_NO:
+        sim = find_child_of_class(model.IModel, Models.Core.Simulation)
+    else:
+        sim = model.IModel.FindDescendant[Models.Core.Simulation]()
     if sim is None:
         raise RuntimeError(f'simulation not found {model.IModel}')
     new_sim = sim
@@ -656,7 +644,11 @@ def add_as_simulation(_model, resource, sim_name):
         raise ValueError(f"new '{sim_name}' can not be any of '{",".join(names)}'")
     try:
         if IS_NEW_APSIM:
-            new_sim.Rename(sim_name)
+            try:
+               new_sim.Rename(sim_name)
+            except AttributeError:
+                new_sim.Name = sim_name
+
         else:
             new_sim.Name = sim_name
         model.Simulations.sim_name = sim_name
@@ -669,7 +661,10 @@ def add_as_simulation(_model, resource, sim_name):
 
 
 def detect_sowing_managers(_model):
-    managers = _model.Simulations.FindAllDescendants[Models.Manager]()
+    if APSIM_VERSION > BASE_RELEASE_NO:
+        managers = find_all_in_scope(_model.Simulations, Models.Manager)
+    else:
+        managers = _model.Simulations.FindAllDescendants[Models.Manager]()
     if managers is not None:
         for manager in managers:
             code = manager.Code
@@ -864,7 +859,10 @@ def add_model_as_a_replacement(simulations, model_class, model_name):
         model_class = validate_model_obj(model_class)
     add_replacement_folder(simulations)
     # ensure that model being added as replacement exists
-    model_to_replace = simulations.FindDescendant[model_class](model_name)
+    if APSIM_VERSION > BASE_RELEASE_NO:
+        model_to_replace = find_child(simulations, child_class=model_class, child_name=model_name)
+    else:
+        model_to_replace = simulations.FindDescendant[model_class](model_name)
     fin_all = find_all_in_scope(simulations, model_class)
     names = ','.join([i.Name for i in fin_all])
     if not model_to_replace:
@@ -886,15 +884,67 @@ def add_model_as_a_replacement(simulations, model_class, model_name):
         raise RuntimeError(f"failed to add model of class{model_class} with identification name: {model_name}")
 
 
+@dataclass
+class ModelTools:
+    """
+       A utility class providing convenient access to core APSIM model operations and constants.
+
+       Attributes:
+           ``ADD`` (callable): Function or class for adding components to an APSIM model.
+
+           ``DELETE`` (callable): Function or class for deleting components from an APSIM model.
+
+           ``MOVE`` (callable): Function or class for moving components within the model structure.
+
+           ``RENAME`` (callable): Function or class for renaming components.
+
+           ``CLONER`` (callable): Utility to clone APSIM models or components.
+
+           ``REPLACE`` (callable): Function to replace components in the model.
+
+           ``MultiThreaded`` (Enum): Enumeration value to specify multi-threaded APSIM runs.
+
+           ``SingleThreaded`` (Enum): Enumeration value to specify single-threaded APSIM runs.
+
+           ``ModelRUNNER`` (class): APSIM run manager that handles simulation execution.
+
+           ``CLASS_MODEL`` (type): The type of the APSIM Clock model, often used for type checks or instantiation.
+
+           ``ACTIONS`` (tuple): Set of supported string actions ('get', 'delete', 'check').
+
+           ``COLLECT`` (callable): Function for forcing memory checks
+       """
+    ADD = _tools('ADD')
+    DELETE = _tools('DELETE')
+    MOVE = _tools('MOVE')
+    RENAME = _tools('RENAME')
+    CLONER = _tools('CLONER')
+    REPLACE = _tools('REPLACE')
+    MultiThreaded = _tools('MultiThreaded')
+    SingleThreaded = _tools('SingleThreaded')
+    ModelRUNNER = _tools('ModelRUNNER')
+    CLASS_MODEL = _tools('CLASS_MODEL')
+    ACTIONS = _tools('ACTIONS')
+    COLLECT = _tools('COLLECT')
+    String = String
+    Double = Double
+    Array = Array
+    CAST = cast_as
+    find_child = find_child
+    add_replacement_folder = add_replacement_folder
+    find_all_in_scope = find_all_in_scope
+    find_child_of_class = find_child_of_class
+
+
 collect()
-add_method_to_model_tools(find_child)
-add_method_to_model_tools(find_all_in_scope)
-add_method_to_model_tools(add_replacement_folder)
+# add_method_to_model_tools(find_child)
+# add_method_to_model_tools(find_all_in_scope)
+# add_method_to_model_tools(add_replacement_folder)
 
 if __name__ == "__main__":
     ...
     from apsimNGpy.core.apsim import ApsimModel
 
     model = ApsimModel('Maize')
-    ap = configure(model, 'Maize,Soybean', "Soybean", 'fixed',
-                   10, 50, 10, "Bunya", end_date='15-may',start_date= '12-may', fertilize_crop={'Soybean': 30})
+    # ap = configure(model, 'Maize,Soybean', "Soybean", 'fixed',
+    #                10, 50, 10, "Bunya", end_date='15-may',start_date= '12-may', fertilize_crop={'Soybean': 30})

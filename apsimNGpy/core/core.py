@@ -27,7 +27,7 @@ from apsimNGpy.core_utils.utils import open_apsimx_file_in_window
 from apsimNGpy.core.pythonet_config import *
 from apsimNGpy.core_utils.database_utils import dataview_to_dataframe, delete_all_tables
 from apsimNGpy.core.config import get_apsim_bin_path
-
+from apsimNGpy.exceptions import ModelNotFoundError
 from apsimNGpy.core.model_tools import (get_or_check_model, old_method, _edit_in_cultivar,
                                         inspect_model_inputs, soil_components,
                                         ModelTools, validate_model_obj, replace_variable_by_index)
@@ -35,12 +35,15 @@ from apsimNGpy.core.runner import run_model_externally, collect_csv_by_model_pat
 from apsimNGpy.core.model_loader import (load_apsim_model, save_model_to_file, recompile, get_node_by_path)
 import ast
 from typing import Any
-
+from apsimNGpy.core.config import apsim_version
 from apsimNGpy.settings import SCRATCH, logger, MissingOption
 from apsimNGpy.core.plotmanager import PlotManager
 from apsimNGpy.core.model_tools import find_child
 
+# constants
 IS_NEW_MODEL = is_file_format_modified()
+APSIM_VERSION_NO = apsim_version(release_number=True)
+BASE_RELEASE_NO = '2025.8.7837.0'
 
 
 def _looks_like_path(value: str) -> bool:
@@ -191,6 +194,8 @@ class CoreModel(PlotManager):
         # fixed
         # we can actually specify the simulation name in the bracket
         self.check_model()
+        if APSIM_VERSION_NO > BASE_RELEASE_NO:
+            return ModelTools.find_all_in_scope(self.Simulations, Models.Core.Simulation)
         return list(self.Simulations.FindAllDescendants[Models.Core.Simulation]())
 
     @property
@@ -210,7 +215,7 @@ class CoreModel(PlotManager):
         self._str_model = json.dumps(value)
 
     def initialise_model(self):
-        simulationList = self.Simulations.FindAllDescendants[Simulation]()
+        simulationList = self.Simulations.FindAllDescendants[Models.Core.Simulation]()
         for models in self.Simulations.FindAllDescendants():
             try:
                 models.OnCreated()
@@ -1154,9 +1159,12 @@ class CoreModel(PlotManager):
         for sim in self.find_simulations(simulations):
             # model_instance = get_or_check_model(sim, model_type_class, model_name, action='get', cacheit=cacheit,
             #                                     cache_size=cache_size)
-            model_instance = sim.FindDescendant[model_type_class](model_name)
-            if hasattr(model_instance, 'Model'):
-                model_instance = CastHelper.CastAs[model_type_class](model_instance.Model)
+            if APSIM_VERSION_NO > BASE_RELEASE_NO:
+                model_instance = find_child(sim, model_type_class, model_name)
+            else:
+                model_instance = sim.FindDescendant[model_type_class](model_name)
+            model_to_cast = getattr(model_instance, "Model", model_instance)
+            model_instance = CastHelper.CastAs[model_type_class](model_to_cast)
             match type(model_instance):
                 case Models.Climate.Weather:
                     self._set_weather_path(model_instance, param_values=kwargs, verbose=verbose)
@@ -1235,7 +1243,7 @@ class CoreModel(PlotManager):
                     cultivar = CastHelper.CastAs[Models.PMF.Cultivar](cultivar)
                     cultivar.set_Command(updated_cmds)
 
-                    # Attach cultivar under plant model
+                    # Attach cultivar under a plant model
                     try:
                         plant_model = get_or_check_model(replacements, Models.PMF.Plant, plant_name,
                                                          action='get', cache_size=cache_size)
@@ -1490,9 +1498,12 @@ class CoreModel(PlotManager):
         return rep
 
     def _find_cultivar(self, cultivar_name: str):
+        if APSIM_VERSION_NO > BASE_RELEASE_NO:
+            cultivars = ModelTools.find_all_in_scope(self._find_replacement(), Models.PMF.Cultivar)
+        else:
 
-        rep = self._find_replacement().FindAllDescendants[Models.PMF.Cultivar]()
-        xp = [i for i in rep]
+            cultivars = self._find_replacement().FindAllDescendants[Models.PMF.Cultivar]()
+        xp = [i for i in cultivars]
         for cult in xp:
             if cult.Name == cultivar_name:
                 return cult
@@ -1514,7 +1525,10 @@ class CoreModel(PlotManager):
         :return: System.Collections.Generic.IEnumerable APSIM plant object
         """
         rep = self._find_replacement()
-        crop_rep = rep.FindAllDescendants[Models.PMF.Plant](Crop)
+        if APSIM_VERSION_NO > BASE_RELEASE_NO:
+            crop_rep = ModelTools.find_child(rep, Models.PMF.Plant, Crop)
+        else:
+            crop_rep = rep.FindAllDescendants[Models.PMF.Plant](Crop)
         for i in crop_rep:
             logger.info(i.Name)
             if i.Name == Crop:
@@ -2203,7 +2217,12 @@ class CoreModel(PlotManager):
             management = management,
 
         for sim in self.find_simulations(simulations):
-            zone = sim.FindChild[Models.Core.Zone]()
+            if APSIM_VERSION_NO > BASE_RELEASE_NO:
+                zone = ModelTools.find_child_of_class(sim, Models.Core.Zone)# expect one Model.Core.Zone
+            else:
+                zone = sim.FindChild[Models.Core.Zone]()
+            if not zone:
+                raise ValueError(f'Models.Core.Zone not found in simulation: {sim.Fullpath}')
             zone_path = zone.FullPath
             for mgt in management:
 
@@ -2393,7 +2412,10 @@ class CoreModel(PlotManager):
             if not os.path.isfile(weather_file):
                 raise FileNotFoundError(weather_file)
             for sim_name in self.find_simulations(simulations):
-                weathers = sim_name.FindAllDescendants[Models.Climate.Weather]()
+                if APSIM_VERSION_NO > BASE_RELEASE_NO:
+                    weathers = ModelTools.find_all_in_scope(sim_name, Models.Climate.Weather)
+                else:
+                    weathers = sim_name.FindAllDescendants[Models.Climate.Weather]()
                 for met in weathers:
                     met.FileName = os.path.realpath(weather_file)
             return self
@@ -2449,7 +2471,12 @@ class CoreModel(PlotManager):
         """Show weather file for all simulations"""
         weather_list = {}
         for sim_name in self.find_simulations(simulations):
-            weathers = sim_name.FindAllDescendants[Weather]()
+            if APSIM_VERSION_NO > BASE_RELEASE_NO:
+                weathers = ModelTools.find_all_in_scope(sim_name, Models.Climate.Weather)
+            else:
+                 weathers = sim_name.FindAllDescendants[Models.Climate.Weather]()
+            if not weathers:
+                raise ValueError(f"No weather found for {sim_name.FullPath}")
             for met in weathers:
                 weather_list[sim_name.Name] = met.FileName
         return weather_list
@@ -2479,7 +2506,11 @@ class CoreModel(PlotManager):
         """
         simulations = self.find_simulations(simulations)
         for sim in simulations:
-            i_enum = sim.FindAllDescendants[Models.Report](report_name)
+            if APSIM_VERSION_NO > BASE_RELEASE_NO:
+                i_enum = ModelTools.find_all_in_scope(sim, Models.Report)
+                i_enum = [i for i in i_enum if i.Name == report_name]
+            else:
+                i_enum = sim.FindAllDescendants[Models.Report](report_name)
             for rep in i_enum:
                 rep.set_VariableNames(command.strip().splitlines())
                 if set_DayAfterLastOutput:
@@ -2500,8 +2531,11 @@ class CoreModel(PlotManager):
         """
         sim_physical = {}
         for nn, simu in enumerate(self._find_simulation(simulations)):
-            soil_object = simu.FindDescendant[Soil]()
-            physical_soil = soil_object.FindDescendant[Physical]()
+            if APSIM_VERSION_NO > BASE_RELEASE_NO:
+                physical_soil = ModelTools.find_child_of_class(simu, Models.Soils.Physical)
+            else:
+                soil_object = simu.FindDescendant[Models.Soils]()
+                physical_soil = soil_object.FindDescendant[Models.Soils.Physical]()
             sim_physical[simu.Name] = physical_soil
         return sim_physical
 
@@ -2626,7 +2660,12 @@ class CoreModel(PlotManager):
         if model_type == Models.Core.Simulations:
             obj = [self.Simulations]
         else:
-            obj = self.Simulations.FindAllDescendants[model_type]()
+
+            if APSIM_VERSION_NO > BASE_RELEASE_NO:
+
+                obj = ModelTools.find_all_in_scope(self.Simulations, model_type)
+            else:
+                obj = self.Simulations.FindAllDescendants[model_type]()
 
         if obj:
             fpath = [i.FullPath for i in obj]
@@ -2665,7 +2704,7 @@ class CoreModel(PlotManager):
         Args:
 
         ``node_path`` (str, required): complete path to the soil child of the Simulations e.g.,Simulations.Simulation.Field.Soil.Organic.
-         Use`copy path to node fucntion in the GUI to get the real path of the soil node.
+         Use`copy path to node function in the GUI to get the real path of the soil node.
 
         ``indices`` (list, optional): defaults to none but could be the position of the replacement values for arrays
 
@@ -2852,8 +2891,15 @@ class CoreModel(PlotManager):
         for simu in self.find_simulations(simulations):
             sub_soil = soil_child.capitalize()
             soil_class = self.find_model(sub_soil)
+
             if soil_child != 'soilcrop':
-                _soil_child = simu.FindDescendant[soil_class]()
+                if APSIM_VERSION_NO > BASE_RELEASE_NO:
+                    _soil_child = ModelTools.find_all_in_scope(simu, soil_class)# requires recussion
+                    if not _soil_child:
+                        raise ModelNotFoundError(f"model of class {soil_class} not found in {simu.FullPath}")
+                    _soil_child = _soil_child[0]
+                else:
+                    _soil_child = simu.FindDescendant[soil_class]()
                 # _soil_child = soil_object.FindDescendant[soil_components(soil_child)]()
 
                 param_values_new = list(getattr(_soil_child, parameter))
@@ -2945,10 +2991,11 @@ class CoreModel(PlotManager):
 
         """
         try:
-            if hasattr(self, '_DataStore'):
-                self._DataStore.Close()
-                self._DataStore.Dispose()
+
             try:
+                if hasattr(self, '_DataStore'):
+                    self._DataStore.Close()
+                    self._DataStore.Dispose()
                 del self._DataStore
                 del self.Datastore
             except AttributeError:
@@ -3118,6 +3165,58 @@ class CoreModel(PlotManager):
             self._specifications.append(original_spec)
         return self  # allows method chaining
 
+    def add_fac(self, model_type, parameter, model_name, values, factor_name=None):
+        """
+        Add a factor to the initiated experiment. This should replace add_factor. which has less abstractionn @param
+        model_type: model_class from APSIM Models namespace @param parameter: name of the parameter to fill e.g CNR
+        @param model_name: name of the model @param values: values of the parameter, could be an iterable for case of
+        categorical variables or a string e.g, '0 to 100 step 10 same as [0, 10, 20, 30, ...].
+        @param factor_name: name to identify the factor in question
+        @return:
+        """
+        if not isinstance(values, str) and 'step' not in values:
+            values = ','.join(values)
+        if isinstance(values, str):
+            values = values.strip()
+        if model_type in {'Manager', 'Models.Manager', 'manager', Models.Manager}:
+            model_in = self.Simulations.FindDescendant[Models.Manager](model_name)
+            if not model_in:
+                raise ValueError(f'{model_name} of type Models.Manager does not exist in the current simulations')
+            specification = f"[{model_name}].Script.{parameter}={values}"
+        else:
+            specification = f"[{model_name}].{parameter}={values}"
+        original_spec = specification
+        if factor_name is None:
+            factor_name = parameter
+        if specification not in self._specifications:
+            # Add individual factors
+            if self.permutation:
+                parent_factor = Models.Factorial.Permutation
+            else:
+                parent_factor = Models.Factorial.Factors
+
+            # find if a suggested factor exists
+            factor_in = self.Simulations.FindInScope[Models.Factorial.Factor](factor_name)
+            if factor_in:
+
+                # if already exists, update the specifications
+                factor_in.set_Specification(specification)
+
+            else:
+                # if new factor, add it to the Simulations
+                self.add_model(model_type=Models.Factorial.Factor, adoptive_parent=parent_factor, rename=factor_name)
+
+                _added = self.Simulations.FindInScope[Models.Factorial.Factor](factor_name)
+                # update with specification
+                _added.set_Specification(specification)
+            self.save()
+            self.factor_names.append(factor_name)
+            self.factors[factor_name] = specification
+            self._specifications.append(original_spec)
+        return self  # allows method chaining
+
+    # to be completed
+
     def set_continuous_factor(self, factor_path, lower_bound, upper_bound, interval, factor_name=None):
         """
         Wraps around `add_factor` to add a continuous factor, just for clarity
@@ -3196,7 +3295,10 @@ class CoreModel(PlotManager):
         _FOLDER.Name = "Replacements"
         PARENT = self.Simulations
         # parent replacemnt should be added once
-        target_parent = PARENT.FindDescendant[Models.Core.Folder]('Replacements')
+        if APSIM_VERSION_NO > BASE_RELEASE_NO:
+            target_parent= ModelTools.find_child(PARENT, Models.Core.Folder, 'Replacements')
+        else:
+            target_parent = PARENT.FindDescendant[Models.Core.Folder]('Replacements')
         if not target_parent:
             ModelTools.ADD(_FOLDER, PARENT)
         # assumes that the crop already exists in the simulation
@@ -3234,6 +3336,8 @@ class CoreModel(PlotManager):
             for i in model_classes:
                 try:
                     ans = self.inspect_model(eval(i))
+                    if ans is None:
+                        continue
                 except AttributeError as ae:
                     continue
                 if 'Replacements' not in ans and 'Folder' in i:
@@ -3436,7 +3540,10 @@ class CoreModel(PlotManager):
         # Try to find a Zone in scope and attach the report to it
         sims = self.find_simulations(simulation_name)
         for sim in sims:
-            zone = sim.FindDescendant[Models.Core.Zone]()
+            if APSIM_VERSION_NO > BASE_RELEASE_NO:
+                zone = ModelTools.find_child_of_class(sim, Models.Core.Zone)
+            else:
+                zone = sim.FindDescendant[Models.Core.Zone]()
 
             if zone is None:
                 raise RuntimeError("No Zone found in the Simulation scope to attach the report table.")

@@ -23,6 +23,11 @@ class NodeNotFoundError(ApsimNGpyError):
     pass
 
 
+class ModelNotFoundError(ApsimNGpyError):
+    """Raised when a specified model  cannot be found."""
+    pass
+
+
 class CastCompilationError(ApsimNGpyError):
     """Raised when the C# cast helper DLL fails to compile."""
     pass

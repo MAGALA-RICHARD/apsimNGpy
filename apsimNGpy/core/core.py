@@ -2078,7 +2078,13 @@ class CoreModel(PlotManager):
 
     @staticmethod
     def update_manager(scope, manager_name, **kwargs):
-        manager = scope.FindDescendant[Models.Manager](manager_name)
+        if APSIM_VERSION_NO > BASE_RELEASE_NO:
+            manager = ModelTools.find_child(scope, Models.Manager, manager_name)
+            manager  =CastHelper.CastAs[Models.Manager](manager)
+            if not manager:
+                raise ModelNotFoundError(f"Models.Manager '{manager_name}' not found")
+        else:
+            manager = scope.FindDescendant[Models.Manager](manager_name)
         g_parameters = manager.Parameters
         for i in range(len(list(g_parameters))):
             _param = g_parameters[i].Key
@@ -3302,7 +3308,11 @@ class CoreModel(PlotManager):
         if not target_parent:
             ModelTools.ADD(_FOLDER, PARENT)
         # assumes that the crop already exists in the simulation
-        _crop = PARENT.FindDescendant[Models.PMF.Plant](CROP)
+        if APSIM_VERSION_NO > BASE_RELEASE_NO:
+            _crop = ModelTools.find_child(PARENT, Models.PMF.Plant, CROP)
+        else:
+           _crop = PARENT.FindDescendant[Models.PMF.Plant](CROP)
+
         if _crop is not None:
             ModelTools.ADD(_crop, _FOLDER)
         else:

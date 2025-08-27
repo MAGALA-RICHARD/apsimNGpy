@@ -257,11 +257,13 @@ class CoreModel(PlotManager):
 
         Returns: model object
         """
-        _path = file_name or self.path
+        _path = str(file_name or self.path)
         self.path = _path
         sva = getattr(self.Simulations, 'Node', self.Simulations)
-
-        save_model_to_file(sva, out=_path)
+        try:
+           save_model_to_file(sva, out=_path)
+        except Exception as e:
+            self.Simulations.Write(str(_path))
 
         model_info = recompile(self)  # load_apsim_model(_path)
         self.restart_model(model_info)

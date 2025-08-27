@@ -133,8 +133,23 @@ class TestExperiment(unittest.TestCase):
         if isinstance(t_experiment.results, DataFrame):
             self.assertFalse(t_experiment.results.empty, msg='results are empty')
 
+    def _clean(self):
+        path = Path(self.experiment_path)
+        db = path.with_suffix('.db')
+        bak = path.with_suffix('.bak')
+        db_wal = path.with_suffix('.db-wal')
+        db_shm = path.with_suffix('.db-shm')
+        db_csv = path.with_suffix('.Report.csv')
+        clean_candidates = {bak, db, bak, db_wal, path, db_shm, db_csv}
+        for candidate in clean_candidates:
+            try:
+                candidate.unlink(missing_ok=True)
+                print(candidate)
+            except PermissionError:
+                pass
+
     def tearDown(self):
-        self.experiment_path.unlink(missing_ok=True)
+        self._clean()
 
 
 if __name__ == '__main__':

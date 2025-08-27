@@ -122,7 +122,7 @@ class ExperimentManager(ApsimModel):
         self.init = True
 
         c= gc.collect()
-        print(c)
+
 
     def add_factor(self, specification: str, factor_name: str = None, **kwargs):
         """

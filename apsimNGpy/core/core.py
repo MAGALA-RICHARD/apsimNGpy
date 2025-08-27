@@ -2990,7 +2990,7 @@ class CoreModel(PlotManager):
                 dul_[enum] = d
         return dul_
 
-    def clean_up(self, db=True, verbose=False, coerce=False, csv=True):
+    def clean_up(self, db=True, verbose=False, coerce=True, csv=True):
         """
         Clears the file cloned the datastore and associated csv files are not deleted if db is set to False defaults to True.
 
@@ -3006,37 +3006,46 @@ class CoreModel(PlotManager):
         try:
 
             try:
+                store = ModelTools.find_child_of_class(self.Simulations, Models.Storage.DataStore)
+                # if store:
+                #     store = CastHelper.CastAs[Models.Storage.DataStore](store)
+                #     store.Dispose()
+                #     store.Close()
 
-                self.Datastore.Close()
-                self.Datastore.Dispose()
-                self._DataStore.Close()
                 self._DataStore.Dispose()
-                del self._DataStore
-                del self.Datastore
+                self._DataStore.Close()
 
-            except AttributeError:
+
+            except AttributeError as e:
+                print(e)
                 ...
             path = Path(self.path)
-            db = path.with_suffix('.db') if db else Path("                    ")# keep it spaced otherwise
+            db = path.with_suffix('.db')
             bak = path.with_suffix('.bak')
             db_wal = path.with_suffix('.db-wal')
             db_shm = path.with_suffix('.db-shm')
-            db_csv = {path.with_suffix(f'.{rep}.csv') for rep in self.inspect_model(Models.Report)} if csv else {}
-            clean_candidates = {bak, db, bak, db_wal, path, db_shm, *db_csv}
+            db_csv = {path.with_suffix(f'.{rep}.csv') for rep in
+                      self.inspect_model(Models.Report, fullpath=False)} if csv else {}
+            clean_candidates = {bak, bak, db_wal, path, db_shm, *db_csv}
+            if db:
+                clean_candidates.add(db)
             for candidate in clean_candidates:
                 try:
+                    _exists = candidate.exists()
                     candidate.unlink(missing_ok=True)
-                    if verbose and not candidate.exists() and candidate.is_file():
+                    no_exists = candidate.exists()
+                    if verbose and _exists and not no_exists:
                         logger.info(f'{candidate} cleaned successfully')
 
                 except PermissionError:
                     if verbose:
-                       logger.info(f'{candidate} could not be cleaned due to permission error')
+                        logger.info(f'{candidate} could not be cleaned due to permission error')
                     if db and coerce and candidate.suffix == '.db':
                         try:
                             delete_all_tables(candidate)
                         except Exception as e:
                             pass
+
         finally:
             ModelTools.COLLECT()
 
@@ -3631,3 +3640,4 @@ if __name__ == '__main__':
     # fp = model.Simulations.FindInScope[Models.Factorial.ExperimentManager]().FullPath
 
     # model.preview_simulation()
+    model.clean_up(verbose=True)

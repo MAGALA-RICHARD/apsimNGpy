@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 import sys
 from functools import cache
 
-VERSION = '0.39.3.12'
+VERSION = '0.39.8.14'
 
 DESCRIPTION = 'APSIM next generation package interface'
 LONG_DESCRIPTION = 'Run, edit, download soils and weather and interact with the apsimx file'
@@ -73,6 +73,7 @@ setup(
         'psutil >=6.0.0',
         'tenacity',
         'typer',
+        'python-dotenv>=1.0.1,<2.0.0',
         'pymoo == 0.6.1.5',
         'wrapdisc==2.5.0',
         'summarytools>=0.3.0'

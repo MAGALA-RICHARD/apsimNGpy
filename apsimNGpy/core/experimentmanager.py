@@ -1,3 +1,4 @@
+import os
 import re
 import sys
 
@@ -106,15 +107,12 @@ class ExperimentManager(ApsimModel):
             experiment.AddChild(factor)
             # add simulation before experiment to simulation tree
             sim = self.simulations[0]
-            #simx = NodeUtils.Node.Create(sim)
-            base = ModelTools.CLONER(sim)
-
             siM.AddChild(experiment)
-
+            experiment.AddChild(sim)
+            siM = CastHelper.CastAs[Models.Core.Simulations](siM.Model)
+            siM.Write(self.path)
+            self.Simulations =siM
             # add experiment
-
-
-
         if APSIM_VERSION_NO > BASE_RELEASE_NO:
            refresher()
         else:
@@ -158,6 +156,8 @@ class ExperimentManager(ApsimModel):
         # Choose parent node and parent class
         parent_factor = self.permutation_node if self.permutation else self.factorial_node
         parent_class = Models.Factorial.Permutation if self.permutation else Models.Factorial.Factors
+        if APSIM_VERSION_NO > BASE_RELEASE_NO:
+            parent_factor = ModelTools.find_child_of_class(self.Simulations, parent_class)
 
         new_factor = Models.Factorial.Factor()
         new_factor.Name = factor_name

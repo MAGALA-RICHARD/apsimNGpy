@@ -260,7 +260,7 @@ class CoreModel(PlotManager):
         _path = file_name or self.path
         self.path = _path
         sva = getattr(self.Simulations, 'Node', self.Simulations)
-        print('sva', sva)
+
         save_model_to_file(sva, out=_path)
 
         model_info = recompile(self)  # load_apsim_model(_path)

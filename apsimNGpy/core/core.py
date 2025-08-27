@@ -648,7 +648,11 @@ class CoreModel(PlotManager):
         adoptive_parent_type = validate_model_obj(adoptive_parent_type, evaluate_bound=False)
 
         # Locate the model to be cloned within the simulation scope
-        clone_parent = (self.Simulations.FindDescendant[model_type](model_name) if model_name
+        if APSIM_VERSION_NO > BASE_RELEASE_NO:
+            clone_parent =( ModelTools.find_child(self.Simulations, model_type, model_name) if model_name
+                      else ModelTools.find_child_of_class(self.Simulations, model_type))
+        else:
+             clone_parent = (self.Simulations.FindDescendant[model_type](model_name) if model_name
                         else self.Simulations.FindDescendant[model_type]())
 
         # Create a clone of the model

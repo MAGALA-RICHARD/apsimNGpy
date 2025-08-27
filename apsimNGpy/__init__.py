@@ -1,7 +1,7 @@
 from apsimNGpy.core.config import get_apsim_bin_path
 from apsimNGpy.core.cs_resources import start_pythonnet
 
-#from apsimNGpy.core_utils.cs_utils import CastHelper
+# from apsimNGpy.core_utils.cs_utils import CastHelper
 __all__ = ['start_pythonnet']
 
 from apsimNGpy.core.config import (
@@ -35,7 +35,8 @@ if get_apsim_bin_path():
 
     from apsimNGpy.core import core, apsim, base_data
     from apsimNGpy.core.apsim import ApsimModel
-
+    from apsimNGpy.core.mult_cores import MultiCoreManager
+    from apsimNGpy.core.experimentmanager import ExperimentManager
     from apsimNGpy.validation import evaluator, eval_methods
     from apsimNGpy.parallel.process import (
         custom_parallel,
@@ -49,12 +50,15 @@ if get_apsim_bin_path():
         get_weather
     )
     from apsimNGpy.optimizer.single import ContinuousVariable, MixedVariable
+
     try:
-       from apsimNGpy.optimizer.moo import MultiObjectiveProblem
+        from apsimNGpy.optimizer.moo import MultiObjectiveProblem
     except ImportError:
-        MultiObjectiveProblem =None
+        MultiObjectiveProblem = None
 
     __all__.extend([
+        'MultiCoreManager',
+        'ExperimentManager',
         'core',
         'apsim',
         'base_data',
@@ -68,7 +72,7 @@ if get_apsim_bin_path():
         'get_met_nasa_power',
         'get_iem_by_station',
         'get_weather',
-       "ContinuousVariable",
+        "ContinuousVariable",
         "MixedVariable",
         'MultiObjectiveProblem'
     ])

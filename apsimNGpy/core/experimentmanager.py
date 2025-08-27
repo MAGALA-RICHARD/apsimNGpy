@@ -1,3 +1,4 @@
+import gc
 import os
 import re
 import sys
@@ -92,7 +93,6 @@ class ExperimentManager(ApsimModel):
             # mode.save()
 
         def refresher():
-            sims = Models.Core.Simulations()
             siM = NodeUtils.Node.Create(Models.Core.Simulations())
             siM.AddChild(Models.Storage.DataStore())
             # create experiment
@@ -100,24 +100,29 @@ class ExperimentManager(ApsimModel):
             self.experiment_node = experiment
             factor = Models.Factorial.Factors()
             self.factorial_node = factor
+            # branch if it is a permutation experiment
             if self.permutation:
                 perm_node = Models.Factorial.Permutation()
                 self.permutation_node = perm_node
                 factor.AddChild(perm_node)
             experiment.AddChild(factor)
-            # add simulation before experiment to simulation tree
+            # add simulation before experiment to the simulation tree
             sim = self.simulations[0]
             siM.AddChild(experiment)
             experiment.AddChild(sim)
             siM = CastHelper.CastAs[Models.Core.Simulations](siM.Model)
-            siM.Write(self.path)
-            self.Simulations =siM
+            #siM.Write(self.path)
+            self.Simulations = siM
+
             # add experiment
         if APSIM_VERSION_NO > BASE_RELEASE_NO:
-           refresher()
+            refresher()
         else:
             exp_refresher(self)
         self.init = True
+
+        c= gc.collect()
+        print(c)
 
     def add_factor(self, specification: str, factor_name: str = None, **kwargs):
         """

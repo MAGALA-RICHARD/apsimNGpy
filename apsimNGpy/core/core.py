@@ -1305,11 +1305,17 @@ class CoreModel(PlotManager):
         """
         if isinstance(variable_spec, str):
             variable_spec = [variable_spec]
-
-        if report_name:
-            get_report = self.Simulations.FindDescendant[Models.Report](report_name)
+        if not APSIM_VERSION_NO > BASE_RELEASE_NO:
+            if report_name:
+                get_report = self.Simulations.FindDescendant[Models.Report](report_name)
+            else:
+                get_report = self.Simulations.FindDescendant[Models.Report]()
         else:
-            get_report = self.Simulations.FindDescendant[Models.Report]()
+            if report_name:
+                get_report = ModelTools.find_child(self.Simulations, Models.Report, report_name)
+            else:
+                get_report = ModelTools.find_child_of_class(self.Simulations, Models.Report)
+        get_report  = CastHelper.CastAs[Models.Report](get_report)
         get_cur_variables = list(get_report.VariableNames)
         get_cur_variables.extend(variable_spec)
         final_command = "\n".join(get_cur_variables)

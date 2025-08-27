@@ -23,8 +23,12 @@ class TestCoreModel(BaseTester):
         self.test_ap_sim.clean_up(db=True)
 
     def test_clone_model(self):
+        from apsimNGpy.core.config import BASE_RELEASE_NO, APSIM_VERSION_NO
         model = self.test_ap_sim
         sim_name = 'clone_test'
+        if APSIM_VERSION_NO > BASE_RELEASE_NO:
+            self.skipTest(f"This version of apsimNGpy {APSIM_VERSION_NO} is not supported by clone_method becasue"
+                          f"it is greater than version {BASE_RELEASE_NO}")
         model.clone_model('Models.Core.Simulation', 'Simulation',
                           'Models.Core.Simulations', rename=sim_name)
         model.run()

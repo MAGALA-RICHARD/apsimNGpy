@@ -89,17 +89,17 @@ from apsimNGpy.tests.unittests import test_model_loader, test_ApsimModel, test_c
     test_weathermanager, test_multcores, \
     test_edit_model, test_config, model_tools, test_get_weather_from_web_filename, test_plot_manager
 
-modules =      {model_tools,
-               test_CoreModel,
-               test_ApsimModel,
-               test_edit_model,
-               test_cast_helper,
-               test_model_loader,
-               test_config,
-               test_weathermanager,
-               test_get_weather_from_web_filename,
-               test_plot_manager
-               }
+modules = {model_tools,
+           test_CoreModel,
+           test_ApsimModel,
+           test_edit_model,
+           test_cast_helper,
+           test_model_loader,
+           test_config,
+           test_weathermanager,
+           test_get_weather_from_web_filename,
+           test_plot_manager
+           }
 if IS_NEW_APSIM:
     modules.add(test_experiment)
     modules = (i for i in modules)
@@ -174,7 +174,7 @@ def run_suite(verbosity_level=2):
 
 
 if __name__ == '__main__':
-    #run multi_cores test before
-    #run_multiple_tests()
+    # run multi_cores test before
+    # run_multiple_tests()
     run_suite(verbosity_level=0)
     from apsimNGpy.core.config import get_bin_use_history

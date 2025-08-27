@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "apsimNGpy"
-version = '0.39.3.12'
+version = '0.39.8.14'
 description = "APSIM next generation package interface"
 readme = "README.rst"
 license = { file = "LICENSE" }
@@ -43,6 +43,7 @@ dependencies = [
     "tenacity",
     "typer",
     "wrapdisc==2.5.0",
+    'python-dotenv>=1.0.1,<2.0.0',
     "summarytools>=0.3.0"
 ]
 

@@ -15,7 +15,9 @@ def clean():
     path = Path("../../")
     ax = path.rglob('*.apsimx')
     db = path.rglob('*.db')
-    remove = list(ax) + list(db) + list(path.rglob('*.db-shm')) + list(path.rglob('*.csv'))
+    bak = path.rglob('*.bak')
+    wal = path.rglob('*.db-wal')
+    remove = list(ax) + list(db) + list(path.rglob('*.db-shm')) + list(path.rglob('*.csv')) + list(bak) + list(wal)
     fl = len(remove)
     dist = path / 'dist'
     if os.path.exists(dist):
@@ -31,7 +33,7 @@ def clean():
         print('Removed', 'apsimNgpy egg file')
     for i in remove:
         try:
-            os.remove(str(i))
+            i.unlink(missing_ok=True)
         except PermissionError:
             print(f"skipping '{i}' due to permission error")
     if fl > 0:

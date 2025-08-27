@@ -253,21 +253,15 @@ class CoreModel(PlotManager):
         """
         Save the simulation models to file
 
-        ``file_name``:    The name of the file to save the defaults to none, taking the exising filename
+        ``file_name``: The name of the file to save the defaults to none, taking the exising filename
 
         Returns: model object
         """
         _path = str(file_name or self.path)
         self.path = _path
-        sva = getattr(self.Simulations, 'Node', self.Simulations)
-        try:
-           save_model_to_file(sva, out=_path)
-        except Exception as e:
-            self.Simulations.Write(str(_path))
-
-        model_info = recompile(self)  # load_apsim_model(_path)
+        self.Simulations.Write(str(_path))
+        model_info = recompile(self)
         self.restart_model(model_info)
-
         return self
 
     def save_edited_file(self, out_path: os.PathLike = None, reload: bool = False) -> Union['CoreModel', None]:

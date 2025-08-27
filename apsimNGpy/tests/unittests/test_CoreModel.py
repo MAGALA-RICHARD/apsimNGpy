@@ -46,7 +46,7 @@ class TestCoreModel(BaseTester):
             os.remove(user_name)
         model = CoreModel('Maize', out_path=user_name)
         in_path = str(model.path)
-       # self.assertEqual(in_path, str(user_name))
+        # self.assertEqual(in_path, str(user_name))
         self.assertGreater(os.path.getsize(user_name), 0, 'out_path is empty')
         model.clean_up()
 
@@ -393,6 +393,21 @@ class TestCoreModel(BaseTester):
         w_file = self.test_ap_sim.inspect_model_parameters(model_type='Weather', simulations=['Simulation'],
                                                            model_name='Weather')
         self.assertIsInstance(w_file, dict, msg='Inspect weather model parameters failed, when simulation is a list')
+
+    def test_model_info_attributes(self):
+        self.assertTrue(self.test_ap_sim.datastore, ' datastore is set to to empty or None')
+        self.assertTrue(self.test_ap_sim._DataStore, '_DataStore model is set to to empty or None')
+        self.assertTrue(self.test_ap_sim.Datastore, '_DataStore is set to empty or null')
+
+    def test_model_info_types(self):
+        self.assertIsInstance(self.test_ap_sim.Datastore, Models.Storage.DataStore,
+                              msg='Inspect DataStore, data store was not casted to Models.Storage.DataStore')
+        self.assertIsInstance(self.test_ap_sim._DataStore, Models.Storage.DataStore,
+                              msg='Inspect DataStore, data store was not casted to Models.Storage.DataStore')
+
+    def test_simulation_container(self):
+        self.assertIsInstance(self.test_ap_sim.Simulations, Models.Core.Simulations,
+                msg=f'{self.test_ap_sim.Simulations} is expeced to be a Models.Core.Simulations object perhaps casting was not done')
 
     def tearDown(self):
         self.test_ap_sim.clean_up(db=True)

@@ -142,7 +142,6 @@ def save_model_to_file(_model, out=None):
 
     final_out_path = out or '_saved_model.apsimx'
 
-
     json_string = to_json_string(_model)
     # Serialize the model to JSON string
 
@@ -222,7 +221,9 @@ def load_apsim_model(model=None, out_path=None, file_load_method='string', met_f
         case str():
             if not model.endswith('.apsimx'):
                 model = load_crop_from_disk(crop=model, out=out_path, work_space=wd)
+
             copy_to = copy_file(model, destination=out_path, wd=wd)
+
             out['path'] = copy_to
             Model = load_from_path(copy_to, file_load_method)
 
@@ -241,18 +242,24 @@ def load_apsim_model(model=None, out_path=None, file_load_method='string', met_f
     else:
         out_model = _Model
 
-    out_path = out.get('path')
-    datastore_path = str(Path(out_path).with_suffix('.db')) if out_path else ""
+    _out_path = out.get('path')
+
+    datastore_path = str(Path(_out_path).with_suffix('.db')) if _out_path else ""
 
     if hasattr(out_model, "FindChild"):
         DataStore = out_model.FindChild[Models.Storage.DataStore]()
     else:
-        DataStore = ''
-        datastore_path = ''
+        DataStore = [i for i in out_model.Children if i.Name == 'DataStore']
+        if DataStore:
+            DataStore = DataStore[0]
 
+        else:
+            DataStore = ''
+    if DataStore:
+        DataStore = CastHelpers.CastAs[Models.Storage.DataStore](DataStore)
     return ModelData(
         IModel=out_model,
-        path=out_path,
+        path=str(_out_path),
         datastore=datastore_path,
         DataStore=DataStore,
         results=None,
@@ -300,14 +307,19 @@ def recompile(_model, out=None, met_path=None, ):
         out_model = CastHelpers.CastAs[Models.Core.Simulations](_Model)
     else:
         out_model = _Model
-    try:
-        datastore = str(Path(_model.path).with_suffix('.db'))
 
+    datastore = str(Path(_model.path).with_suffix('.db'))
+
+    try:
         DataStore = out_model.FindChild[Models.Storage.DataStore]()
     except AttributeError:
-        datastore = ''
-        DataStore = ''
-
+        DataStore = [i for i in out_model.Children if i.Name == 'DataStore']
+        if DataStore:
+            DataStore = DataStore[0]
+        else:
+            DataStore = ''
+    if DataStore:
+        DataStore = CastHelpers.CastAs[Models.Storage.DataStore](DataStore)
     # need to make ModelData a constant and named outside the script for consistency across scripts
     # ModelData = namedtuple('model_data', ['IModel', 'path', 'datastore', "DataStore", 'results', 'met_path'])
     return ModelData(IModel=out_model,
@@ -332,7 +344,6 @@ def model_from_string(mod, out=None):
     else:
         out = out or os.path.realpath(f'{mod}_testformatx.apsimx')
         path2file = load_crop_from_disk(mod, out=out)
-
 
     f_name = realpath(path2file)
 
@@ -424,6 +435,7 @@ def get_attributes(obj):
 if __name__ == '__main__':
     pat = load_crop_from_disk('Maize')
     load = load_apsim_model('Maize')
+    print(load.DataStore, 'datastore')
     p, model, model2 = load.Node, load.IModel, load.IModel
 
     getattr(Models.Core.ApsimFile, "FileFormat", None)

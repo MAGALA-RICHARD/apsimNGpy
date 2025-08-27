@@ -645,11 +645,11 @@ class CoreModel(PlotManager):
 
         # Locate the model to be cloned within the simulation scope
         if APSIM_VERSION_NO > BASE_RELEASE_NO:
-            clone_parent =( ModelTools.find_child(self.Simulations, model_type, model_name) if model_name
-                      else ModelTools.find_child_of_class(self.Simulations, model_type))
+            clone_parent = (ModelTools.find_child(self.Simulations, model_type, model_name) if model_name
+                            else ModelTools.find_child_of_class(self.Simulations, model_type))
         else:
-             clone_parent = (self.Simulations.FindDescendant[model_type](model_name) if model_name
-                        else self.Simulations.FindDescendant[model_type]())
+            clone_parent = (self.Simulations.FindDescendant[model_type](model_name) if model_name
+                            else self.Simulations.FindDescendant[model_type]())
 
         # Create a clone of the model
         clone = ModelTools.CLONER(clone_parent)
@@ -1309,7 +1309,7 @@ class CoreModel(PlotManager):
                 get_report = ModelTools.find_child(self.Simulations, Models.Report, report_name)
             else:
                 get_report = ModelTools.find_child_of_class(self.Simulations, Models.Report)
-        get_report  = CastHelper.CastAs[Models.Report](get_report)
+        get_report = CastHelper.CastAs[Models.Report](get_report)
         get_cur_variables = list(get_report.VariableNames)
         get_cur_variables.extend(variable_spec)
         final_command = "\n".join(get_cur_variables)
@@ -2087,7 +2087,7 @@ class CoreModel(PlotManager):
     def update_manager(scope, manager_name, **kwargs):
         if APSIM_VERSION_NO > BASE_RELEASE_NO:
             manager = ModelTools.find_child(scope, Models.Manager, manager_name)
-            manager  =CastHelper.CastAs[Models.Manager](manager)
+            manager = CastHelper.CastAs[Models.Manager](manager)
             if not manager:
                 raise ModelNotFoundError(f"Models.Manager '{manager_name}' not found")
         else:
@@ -2231,7 +2231,7 @@ class CoreModel(PlotManager):
 
         for sim in self.find_simulations(simulations):
             if APSIM_VERSION_NO > BASE_RELEASE_NO:
-                zone = ModelTools.find_child_of_class(sim, Models.Core.Zone)# expect one Model.Core.Zone
+                zone = ModelTools.find_child_of_class(sim, Models.Core.Zone)  # expect one Model.Core.Zone
             else:
                 zone = sim.FindChild[Models.Core.Zone]()
             if not zone:
@@ -2487,7 +2487,7 @@ class CoreModel(PlotManager):
             if APSIM_VERSION_NO > BASE_RELEASE_NO:
                 weathers = ModelTools.find_all_in_scope(sim_name, Models.Climate.Weather)
             else:
-                 weathers = sim_name.FindAllDescendants[Models.Climate.Weather]()
+                weathers = sim_name.FindAllDescendants[Models.Climate.Weather]()
             if not weathers:
                 raise ValueError(f"No weather found for {sim_name.FullPath}")
             for met in weathers:
@@ -2907,7 +2907,7 @@ class CoreModel(PlotManager):
 
             if soil_child != 'soilcrop':
                 if APSIM_VERSION_NO > BASE_RELEASE_NO:
-                    _soil_child = ModelTools.find_all_in_scope(simu, soil_class)# requires recussion
+                    _soil_child = ModelTools.find_all_in_scope(simu, soil_class)  # requires recussion
                     if not _soil_child:
                         raise ModelNotFoundError(f"model of class {soil_class} not found in {simu.FullPath}")
                     _soil_child = _soil_child[0]
@@ -2990,7 +2990,7 @@ class CoreModel(PlotManager):
                 dul_[enum] = d
         return dul_
 
-    def clean_up(self, db=True, verbose=False):
+    def clean_up(self, db=True, verbose=False, coerce=False, csv=True):
         """
         Clears the file cloned the datastore and associated csv files are not deleted if db is set to False defaults to True.
 
@@ -3006,33 +3006,37 @@ class CoreModel(PlotManager):
         try:
 
             try:
-                if hasattr(self, '_DataStore'):
-                    self._DataStore.Close()
-                    self._DataStore.Dispose()
+
+                self.Datastore.Close()
+                self.Datastore.Dispose()
+                self._DataStore.Close()
+                self._DataStore.Dispose()
                 del self._DataStore
                 del self.Datastore
+
             except AttributeError:
                 ...
+            path = Path(self.path)
+            db = path.with_suffix('.db') if db else Path("                    ")# keep it spaced otherwise
+            bak = path.with_suffix('.bak')
+            db_wal = path.with_suffix('.db-wal')
+            db_shm = path.with_suffix('.db-shm')
+            db_csv = {path.with_suffix(f'.{rep}.csv') for rep in self.inspect_model(Models.Report)} if csv else {}
+            clean_candidates = {bak, db, bak, db_wal, path, db_shm, *db_csv}
+            for candidate in clean_candidates:
+                try:
+                    candidate.unlink(missing_ok=True)
+                    if verbose and not candidate.exists() and candidate.is_file():
+                        logger.info(f'{candidate} cleaned successfully')
 
-            Path(self.path).unlink(missing_ok=True)
-            Path(self.path.replace('apsimx', "bak")).unlink(missing_ok=True)
-            if db:
-                if self.datastore:
-                    Path(self.datastore).unlink(missing_ok=True)
-                Path(self.path.replace('apsimx', "db-wal")).unlink(missing_ok=True)
-                Path(self.path.replace('apsimx', "db-shm")).unlink(missing_ok=True)
-                if verbose:
-                    logger.info('database cleaned successfully')
-        except (FileNotFoundError, PermissionError) as e:
-            from apsimNGpy.core_utils.database_utils import clear_all_tables
-            # if deleting has failed
-            if db:
-                delete_all_tables(self.datastore)
-            # clear_all_tables(self.datastore) if os.path.exists(self.datastore) else None
-
-            if verbose:
-                logger.info(e)
-            pass
+                except PermissionError:
+                    if verbose:
+                       logger.info(f'{candidate} could not be cleaned due to permission error')
+                    if db and coerce and candidate.suffix == '.db':
+                        try:
+                            delete_all_tables(candidate)
+                        except Exception as e:
+                            pass
         finally:
             ModelTools.COLLECT()
 
@@ -3309,7 +3313,7 @@ class CoreModel(PlotManager):
         PARENT = self.Simulations
         # parent replacemnt should be added once
         if APSIM_VERSION_NO > BASE_RELEASE_NO:
-            target_parent= ModelTools.find_child(PARENT, Models.Core.Folder, 'Replacements')
+            target_parent = ModelTools.find_child(PARENT, Models.Core.Folder, 'Replacements')
         else:
             target_parent = PARENT.FindDescendant[Models.Core.Folder]('Replacements')
         if not target_parent:
@@ -3318,7 +3322,7 @@ class CoreModel(PlotManager):
         if APSIM_VERSION_NO > BASE_RELEASE_NO:
             _crop = ModelTools.find_child(PARENT, Models.PMF.Plant, CROP)
         else:
-           _crop = PARENT.FindDescendant[Models.PMF.Plant](CROP)
+            _crop = PARENT.FindDescendant[Models.PMF.Plant](CROP)
 
         if _crop is not None:
             ModelTools.ADD(_crop, _FOLDER)

@@ -67,7 +67,7 @@ class TestExperiment(unittest.TestCase):
                                 factor_name='Population')
         filename = str(cwd.joinpath('my_experiment_saved.apsimx'))
         t_experiment.save(file_name=str(self.save_file_name))
-        self.assertTrue(os.path.exists(filename), msg='saving experiment failed')
+
         self.assertGreater(self.experiment_path.stat().st_size, 0, msg='experiment not successfully saved')
         self.assertGreater(self.save_file_name.stat().st_size, 0, msg='experiment not successfully saved')
 

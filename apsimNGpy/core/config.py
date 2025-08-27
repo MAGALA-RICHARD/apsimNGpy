@@ -262,7 +262,7 @@ class Config:
 
 
 @cache
-def apsim_version(release_number =False, verbose: bool = False):
+def apsim_version(release_number=False, verbose: bool = False):
     """ Display version information of the apsim model currently in the apsimNGpy config environment.
 
     ``verbose``: (bool) Prints the version information ``instantly``
@@ -356,9 +356,13 @@ def stamp_name_with_version(file_name):
     @param file_name: path to the would be.apsimx file
     @return: path to the stamped file
     """
-    version  = apsim_version()
+    version = apsim_version()
     destination = Path(file_name).resolve()
     dest_path = destination.with_name(
         destination.name.replace(".apsimx", f"{version}.apsimx")
     )
     return dest_path
+
+
+APSIM_VERSION_NO = apsim_version(release_number=True)
+BASE_RELEASE_NO = '2025.8.7837.0'

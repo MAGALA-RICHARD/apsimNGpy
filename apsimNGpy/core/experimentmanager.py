@@ -1,15 +1,20 @@
 import re
+import sys
 
 from apsimNGpy.core.apsim import ApsimModel
 from collections import OrderedDict
 from apsimNGpy.core.model_tools import ModelTools, Models
 from apsimNGpy.core.cs_resources import CastHelper
 from apsimNGpy.core.pythonet_config import is_file_format_modified
+from apsimNGpy.core.config import APSIM_VERSION_NO, BASE_RELEASE_NO
+from apsimNGpy.core.model_loader import to_json_string
 if is_file_format_modified():
     import APSIM.Core as NodeUtils
     import System
+    structure = Models.Core.ApsimFile.Structure
 else:
     from apsimNGpy.core.config import apsim_version
+
     raise ValueError(f"The experiment module is not supported for this type of {apsim_version()} ")
 
 
@@ -27,7 +32,7 @@ class ExperimentManager(ApsimModel):
         self.init = False
 
     def init_experiment(self, permutation=True):
-        self.factors = OrderedDict()
+
         """
             Initializes the factorial experiment structure inside the APSIM file.
 
@@ -62,18 +67,52 @@ class ExperimentManager(ApsimModel):
                 factor.AddChild(perm_node)
             experiment.AddChild(factor)
             experiment.AddChild(base)
-            experi = mode.Simulations.FindDescendant[Models.Factorial.Experiment]()
+            experi = ModelTools.find_child_of_class(mode.Simulations, Models.Factorial.Experiment)
+
             if experi:
                 ModelTools.DELETE(experi)
             mode.model_info.Node.AddChild(experiment)
             sim_final = CastHelper.CastAs[Models.Core.Simulations](mode.model_info.Node)
-            simx = list(sim_final.FindAllDescendants[Models.Core.Simulation]())
-            if not mode.simulations:
-                mode.simulations.extend(simx)
+
+            if APSIM_VERSION_NO > BASE_RELEASE_NO:
+
+                simx = ModelTools.find_all_in_scope(sim_final, Models.Core.Simulation)
+                simy= [ModelTools.CLONER(i) for i in simx]
+
+                simx = [CastHelper.CastAs[Models.Core.Simulations](i.Node) for i in simy]
+
+                ...
+
+            else:
+                simx = list(sim_final.FindAllDescendants[Models.Core.Simulation]())
+
+                if not mode.simulations:
+                    mode.simulations.extend(simx)
             # mode.save()
 
-        exp_refresher(self)
-        self.init =True
+        def refresher():
+            sims = Models.Core.Simulations()
+            siM = NodeUtils.Node.Create(Models.Core.Simulations())
+            siM.AddChild(Models.Storage.DataStore())
+            # create experiment
+            experiment = Models.Factorial.Experiment()
+            self.experiment_node = experiment
+            factor = Models.Factorial.Factors()
+            self.factorial_node = factor
+            if self.permutation:
+                perm_node = Models.Factorial.Permutation()
+                self.permutation_node = perm_node
+                factor.AddChild(perm_node)
+            experiment.AddChild(factor)
+            # add experiment
+
+
+
+        if APSIM_VERSION_NO > BASE_RELEASE_NO:
+           refresher()
+        else:
+            exp_refresher(self)
+        self.init = True
 
     def add_factor(self, specification: str, factor_name: str = None, **kwargs):
         """
@@ -166,7 +205,7 @@ class ExperimentManager(ApsimModel):
 
 
 if __name__ == '__main__':
-    exp = ExperimentManager('Maize', out_path='exp.apsimx')
+    exp = ExperimentManager('Soybean', out_path='exp.apsimx')
     exp.init_experiment(permutation=True)
     exp.add_factor("[Fertilise at sowing].Script.Amount = 0 to 200 step 20")
     exp.add_factor("[Fertilise at sowing].Script.FertiliserType= DAP,NO3N")

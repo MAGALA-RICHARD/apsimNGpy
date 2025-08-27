@@ -148,7 +148,9 @@ class ExperimentManager(ApsimModel):
                 manager_names = set(self.inspect_model('Models.Manager', fullpath=False))
                 linked = set(matches) & manager_names
                 if not linked:
-                    raise ValueError('Specification has no linked script in the model')
+                    if matches:
+                        matches = ', '.join(matches)
+                    raise ValueError(f'Specification{specification} has no linked script `{matches}` in the model')
 
         # Record factor info
         self.factors[factor_name] = (specification, kwargs)

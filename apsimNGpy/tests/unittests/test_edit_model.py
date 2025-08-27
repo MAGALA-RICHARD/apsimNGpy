@@ -22,7 +22,7 @@ class TestCoreModel(unittest.TestCase):
     def setUp(self):
         self.out_path = Path(f"{self._testMethodName}.apsimx")
         self.model = ApsimModel('Maize', out_path=self.out_path)
-        self.out = 'test_edit_model.apsimx'
+        self.out = f'test_edit_model{self._testMethodName}.apsimx'
         self.paths = {self.out_path}
 
     def test_edit_soil_organic_matter_module(self):

@@ -104,6 +104,13 @@ class ExperimentManager(ApsimModel):
                 self.permutation_node = perm_node
                 factor.AddChild(perm_node)
             experiment.AddChild(factor)
+            # add simulation before experiment to simulation tree
+            sim = self.simulations[0]
+            simx = NodeUtils.Node.Create(sim)
+            base = ModelTools.CLONER(sim)
+            experiment.AddChild(simx)
+            siM.AddChild(experiment)
+
             # add experiment
 
 

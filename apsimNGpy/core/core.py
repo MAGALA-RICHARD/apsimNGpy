@@ -259,7 +259,11 @@ class CoreModel(PlotManager):
         """
         _path = str(file_name or self.path)
         self.path = _path
-        self.Simulations.Write(str(_path))
+        if APSIM_VERSION_NO > BASE_RELEASE_NO:
+            self.Simulations.Write(str(_path))
+        else:
+            sm  = getattr(self.Simulations, 'Node', self.Simulations)
+            save_model_to_file(sm, out=_path)
         model_info = recompile(self)
         self.restart_model(model_info)
         return self

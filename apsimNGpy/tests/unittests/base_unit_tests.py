@@ -22,16 +22,24 @@ def get_files(pattern):
 
 
 class BaseTester(TestCase, ABC):
-
-    # def setUp(self):
-    #     # Mock the model path and other attributes
-    #     self.model_path = Path(load_default_simulations(crop='Maize', simulations_object=False), )
-    #     self.model_path2 = Path(load_default_simulations(crop='Soybean', simulations_object=False), )
-    #     self.logger = logger
-    #     self.out_path = Path.cwd() / 'test_output.apsimx'
-    #     self.test_ap_sim = CoreModel(model=self.model_path)
-    #
-    #     self.out = path.realpath('test_save_output.apsimx')
+    def clean_up_apsim_data(self, apsimx_path) -> None:
+        """
+        Delete all data related to an apsimx path generated during a simulation
+        @param apsimx_path: apsimx path on disk generated during simulation
+        @return: None
+        """
+        path = Path(apsimx_path)
+        db = path.with_suffix('.db')
+        bak = path.with_suffix('.bak')
+        db_wal = path.with_suffix('.db-wal')
+        db_shm = path.with_suffix('.db-shm')
+        db_csv = path.with_suffix('.Report.csv')
+        clean_candidates = {bak, db, bak, db_wal, path, db_shm, db_csv}
+        for candidate in clean_candidates:
+            try:
+                candidate.unlink(missing_ok=True)
+            except PermissionError:
+                pass
 
     # ensure all child classes implement teardown
     @abstractmethod

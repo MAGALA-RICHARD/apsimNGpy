@@ -36,7 +36,7 @@ if get_apsim_bin_path():
     from apsimNGpy.core import core, apsim, base_data
     from apsimNGpy.core.apsim import ApsimModel
     from apsimNGpy.core.mult_cores import MultiCoreManager
-    from apsimNGpy.core.experimentmanager import ExperimentManager
+
     from apsimNGpy.validation import evaluator, eval_methods
     from apsimNGpy.parallel.process import (
         custom_parallel,
@@ -55,10 +55,12 @@ if get_apsim_bin_path():
         from apsimNGpy.optimizer.moo import MultiObjectiveProblem
     except ImportError:
         MultiObjectiveProblem = None
+    from apsimNGpy.core.pythonet_config import is_file_format_modified
+    if is_file_format_modified():
+        from apsimNGpy.core.experimentmanager import ExperimentManager
 
     __all__.extend([
         'MultiCoreManager',
-        'ExperimentManager',
         'core',
         'apsim',
         'base_data',
@@ -76,3 +78,8 @@ if get_apsim_bin_path():
         "MixedVariable",
         'MultiObjectiveProblem'
     ])
+
+if is_file_format_modified():
+    __all__.append(
+     'ExperimentManager'
+    )

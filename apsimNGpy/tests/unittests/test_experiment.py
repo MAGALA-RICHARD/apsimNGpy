@@ -44,7 +44,6 @@ class TestExperiment(BaseTester):
 
         t_experiment = self.experiment_model
         t_experiment.init_experiment(permutation=True)
-        # experiment is initialized in base_tester class SetUp
         t_experiment.add_factor(specification="[Fertilise at sowing].Script.Amount = 0 to 200 step 50",
                                 factor_name='Nitrogen')
         t_experiment.add_factor(specification="[Sow using a variable rule].Script.Population =4 to 8 step 2",
@@ -138,19 +137,7 @@ class TestExperiment(BaseTester):
         if isinstance(t_experiment.results, DataFrame):
             self.assertFalse(t_experiment.results.empty, msg='results are empty')
 
-    def _clean(self, apsimx_file):
-        path = Path(apsimx_file)
-        db = path.with_suffix('.db')
-        bak = path.with_suffix('.bak')
-        db_wal = path.with_suffix('.db-wal')
-        db_shm = path.with_suffix('.db-shm')
-        db_csv = path.with_suffix('.Report.csv')
-        clean_candidates = {bak, db, bak, db_wal, path, db_shm, db_csv}
-        for candidate in clean_candidates:
-            try:
-                candidate.unlink(missing_ok=True)
-            except PermissionError:
-                pass
+
 
     def tearDown(self):
         self.clean_up_apsim_data(self.experiment_path)

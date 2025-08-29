@@ -38,6 +38,7 @@ class BaseTester(TestCase, ABC):
         for candidate in clean_candidates:
             try:
                 candidate.unlink(missing_ok=True)
+
             except PermissionError:
                 pass
 

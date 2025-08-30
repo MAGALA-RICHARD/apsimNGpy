@@ -42,6 +42,7 @@ dependencies = [
     "psutil>=6.0.0",
     "tenacity",
     "typer",
+    'pymoo',
     "wrapdisc==2.5.0",
     'python-dotenv>=1.0.1,<2.0.0',
     "summarytools>=0.3.0"

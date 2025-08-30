@@ -6,6 +6,9 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Union
+
+
+
 from apsimNGpy.core_utils.utils import timer
 import pandas as pd
 from apsimNGpy.core.apsim import ApsimModel
@@ -172,7 +175,7 @@ class MultiCoreManager:
         # insert the simulated dataset into the specified database
         self.insert_data(out, table=tables)
         # clean up files related _model object
-        _model.clean_up()
+        _model.clean_up(coerce=False)
         # collect garbage before gc comes in
         gc.collect()
 
@@ -186,7 +189,7 @@ class MultiCoreManager:
             # Errors should go silently
             raise ValueError('Wrong value for axis should be either 0 or 1')
 
-        data = [read_db_table(self.db_path, report_name=rp) for rp in self.tables]
+        data = (read_db_table(self.db_path, report_name=rp) for rp in self.tables)
         return pd.concat(data, axis=axis)
 
     @property
@@ -216,6 +219,7 @@ class MultiCoreManager:
         for path in paths:
             try:
                 shutil.rmtree(str(path), ignore_errors=True)
+
             except PermissionError:
                 ...
 
@@ -250,7 +254,7 @@ class MultiCoreManager:
 
 if __name__ == '__main__':
     # quick tests
-    create_jobs = (ApsimModel('Maize').path for _ in range(10))
+    create_jobs = (ApsimModel('Maize').path for _ in range(3000))
 
     Parallel = MultiCoreManager(db_path='testing.db', agg_func=None)
     Parallel.run_all_jobs(create_jobs, n_cores=4, threads=False, clear_db=True, clean_up=True)

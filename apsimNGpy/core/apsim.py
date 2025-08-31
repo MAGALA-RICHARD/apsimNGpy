@@ -48,7 +48,8 @@ class ApsimModel(CoreModel):
         >>> model.run(report_name='Report') # report is the default replace as needed
     """
 
-    def __init__(self, model: Union[os.PathLike, dict, str], out_path: Union[str, Path] = None, out: Union[str, Path] = None,
+    def __init__(self, model: Union[os.PathLike, dict, str], out_path: Union[str, Path] = None,
+                 out: Union[str, Path] = None,
                  lonlat: tuple = None, soil_series: str = 'domtcp', thickness: int = 20, bottomdepth: int = 200,
 
                  thickness_values: list = None, run_all_soils: bool = False, set_wd=None, **kwargs):
@@ -612,31 +613,62 @@ class ApsimModel(CoreModel):
                 if missing:
                     raise ValueError(f"Missing required parameter(s): {', '.join(missing)}")
 
-    def get_base_simulations(self):
+    def _get_base_simulations(self):
         if self.base_simulations is None:
             base_sim = self.Simulations.FindInScope[Models.Core.Simulation]()
             base_sim = ModelTools.CLONER(base_sim)
             self.base_simulations = base_sim
         return ModelTools.CLONER(self.base_simulations)
 
-    def create_new_simulation(self, sim_name,lonlat=None):
-        _sim = self.get_base_simulations()
+    def create_new_simulation(self, sim_name, lonlat=None):
+        _sim = self._get_base_simulations()
         _sim.Name = sim_name
         ModelTools.ADD(sim_name, self.Simulations)
 
+    def read_apsimx_data(self, table=None):
 
-    def simulate_different_locations(self, locations: list[tuple]):
-        sim = self.get_base_simulations()
+        """Read APSIM NG datastore for the current model. Raises FileNotFoundError if the model was initialized from 
+        default models because those need to be executed first to generate a database.
 
-        sims = self.Simulations.FindAllInScope[Models.Core.Simulation]()
-        for s in sims:
-            ModelTools.DELETE(s)
-        for lonlat in locations:
-            sim_name = f"sim_{lonlat[0]}_{lonlat[1]}"
-            clone_sim = ModelTools.CLONER(sim)
-            print(clone_sim)
-            clone_sim.Name = sim_name
-            ModelTools.ADD(clone_sim, self.Simulations)
+        The rationale for this method is that you can just access the results from the previous session without running it,
+        if the database is in the same location as the apsimx file.
+
+        Since apsimNGpy clones the apsimx file, the original file is kept with attribute name `_model`, that is what is
+        being used to access the dataset
+
+        table (str): name of the database table to read if none of all tables are returned
+
+         Returns: pandas.DataFrame"""
+        from pathlib import Path
+        from apsimNGpy.core_utils.database_utils import read_db_table, get_db_table_names
+        cls_name = type(self).__name__
+
+        model_path = Path(self._model)
+        if model_path.suffix.lower() != ".apsimx" or not model_path.exists():
+            raise FileNotFoundError(
+                "Data cannot be retrieved from a template/default APSIMX file.\n"
+                f"Please run the model first, then use `{cls_name}.results` or "
+                f"`{cls_name}.get_simulated_output(...)`."
+            )
+        base = Path(self._model)
+        db = base.resolve().with_suffix('.db')
+        try:
+            all_tables = get_db_table_names(db)
+        except FileNotFoundError:
+            all_tables = []
+            pass
+
+        if not all_tables:
+            raise FileNotFoundError("Perhaps loaded model was not yet executed")
+        if table is None and all_tables:
+            res = (read_db_table(db, i) for i in all_tables)
+            res = (df.assign(source_table=t) for df, t in zip(res, all_tables))
+            return pd.concat(res)
+
+        if table in all_tables:
+            return read_db_table(db, table).assign(source_table=table)
+
+        raise ValueError(f"{table} is not a valid table name associated with apsimx {self._model}")
 
 
 if __name__ == '__main__':
@@ -672,6 +704,5 @@ if __name__ == '__main__':
     #     line_number = exc_traceback.tb_lineno
     #     print(f"Error: {type(e).__name__} occurred on line: {line_number} execution value: {exc_value}")
 
-
     mod = ApsimModel('Maize')
-
+    maize_x = Path.home() / 'maize.apsimx'

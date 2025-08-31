@@ -42,7 +42,9 @@ class TestPlotting(BaseTester):
         # labels, saving, and showing plots are aggregated in render_plots
         self.model.render_plot(save_as=self.figure_name, show=SHOW)
         # check if a figure was successfully saved on file
-        self.assertGreater(self.figure_name.stat().st_size, 0, f'Empty figure detected in: {self._testMethodName}')
+        fig_size = self.figure_name.stat().st_size
+
+        self.assertGreater(fig_size, 0, f'Empty figure detected in: {self._testMethodName}')
         # lastly close
         plt.close()
 
@@ -51,11 +53,11 @@ class TestPlotting(BaseTester):
         test cat_plot for kind=box
         @return:
         """
-        self.model.cat_plot(x="SimulationName", y='Yield', kind='box', orientation='vertical')
+        self.model.cat_plot(x="SimulationName", y='Yield', kind='box')
         fig_enum = plt.get_fignums()
         self.assertTrue(fig_enum)
         self.model.render_plot(save_as=self.figure_name, show=SHOW)
-        # check if figure was successfully saved on file
+        # check if a figure was successfully saved on file
         self.assertGreater(self.figure_name.stat().st_size, 0, f'Empty figure detected in: {self._testMethodName}')
         # lastly close
         plt.close()
@@ -69,7 +71,7 @@ class TestPlotting(BaseTester):
         fig_enum = plt.get_fignums()
         self.assertTrue(fig_enum)
         self.model.render_plot(save_as=self.figure_name, show=SHOW)
-        # check if figure was successfully saved on file
+        # check if a figure was successfully saved on file
         self.assertGreater(self.figure_name.stat().st_size, 0, f'Empty figure detected in: {self._testMethodName}')
         # lastly close
         plt.close()
@@ -82,7 +84,7 @@ class TestPlotting(BaseTester):
         self.assertTrue(fig_enum)
         # render before fig evaluation test because render closes the plot
         self.model.render_plot(save_as=self.figure_name, show=SHOW)
-        # check if figure was successfully saved on file
+        # check if a figure was successfully saved on file
         self.assertGreater(self.figure_name.stat().st_size, 0, f'Empty figure detected in: {self._testMethodName}')
         plt.close()
 
@@ -98,7 +100,7 @@ class TestPlotting(BaseTester):
         self.assertTrue(fig_enum)
         # labels, saving, and showing plots are aggregated in render_plots
         self.model.render_plot(save_as=self.figure_name, show=SHOW)
-        # check if figure was successfully saved on file
+        # check if a figure was successfully saved on file
         self.assertGreater(self.figure_name.stat().st_size, 0, f'Empty figure detected in: {self._testMethodName}')
         plt.close()
 
@@ -108,7 +110,7 @@ class TestPlotting(BaseTester):
         fig_enum = plt.get_fignums()
         self.assertTrue(fig_enum)
         self.model.render_plot(save_as=self.figure_name, show=SHOW)
-        # check if figure was successfully saved on file
+        # check if the figure was successfully saved on file
         self.assertGreater(self.figure_name.stat().st_size, 0, f'Empty figure detected in: {self._testMethodName}')
         plt.close()
 
@@ -127,7 +129,8 @@ class TestPlotting(BaseTester):
         self.figure_name.unlink(missing_ok=True)
         self.db_path.unlink(missing_ok=True)
         # cleans up everything related to the model stored on the computer
-        self.model.clean_up(db=True)
+        self.clean_up_apsim_data(self.model.path)
+        self.clean_up_apsim_data(self.test_path)
 
 
 if __name__ == '__main__':

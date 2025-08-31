@@ -26,7 +26,7 @@ experiments, and kicking off optimization or parallel jobs.
 *Expect to find*
   - Typer/Click style app, argument parsing, rich/ANSI output utilities.
   - Subcommands like ``run``, ``experiment``, ``optimize``, ``parallel`` (naming may vary).
-  - Thin wrappers that call into :mod:`core`, :mod:`manager`, :mod:`optimizer`, :mod:`parallel`.
+  - Thin wrappers that call into `core`, `manager`, `optimizer`, `parallel`.
 
 ./core/
 -----
@@ -145,10 +145,10 @@ Citation metadata so others know **how to cite** the package in papers.
 Conventions & contribution notes
 ================================
 
-- **Public API lives in** :mod:`core`, :mod:`manager`, :mod:`optimizer`, :mod:`parallel`, :mod:`visual`.
-- **Internal helpers** live under :mod:`core_utils` and ``utilities`` (spelled here as ``utililies``).
-- Keep notebooks and long-form examples in :mod:`examples` and docs in :mod:`raw_docs`.
-- Tests are first-class citizens—mirror examples with assertions in :mod:`tests`.
+- **Public API lives in** `core`, `manager`, `optimizer`, `parallel`, :mod:`visual`.
+- **General Internal helpers** live under `core_utils`
+- Keep notebooks and long-form examples in `examples` and docs in `raw_docs`.
+- Tests are first-class citizens—mirror examples with assertions in `tests`.
 
 Import quickstart
 =================
@@ -157,7 +157,7 @@ Import quickstart
 
    from apsimNGpy.core import ApsimModel
    from apsimNGpy.manager import ExperimentManager
-   from apsimNGpy.parallel import MultiCoreManager
+   from apsimNGpy.parallel import custom_parallel
    from apsimNGpy.optimizer import MixedVariable, MultiObjectiveProblem
 
    model = ApsimModel("path/to/model.apsimx")

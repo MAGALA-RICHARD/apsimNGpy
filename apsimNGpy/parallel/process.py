@@ -165,17 +165,15 @@ def _read_result_in_parallel(iterable_files: Iterable, ncores: int = None, use_t
     worker = func or read_db_table
     return custom_parallel(worker, iterable_files, report_name, ncores=ncores_2use, progress_message=progress_msg,
                            use_threads=use_threads)
-
+def worker(x):
+    pass
 
 if __name__ == '__main__':
-    from examples import fnn  # the function should not be on the main for some reason
+    # quick example
 
-    lp = [(-92.70166631, 42.26139442), (-92.69581474, 42.26436962), (-92.64634469, 42.33703225)]
-    gen_d = (i for i in range(100000))
-    lm = custom_parallel(fnn, range(10000), use_thread=True, ncores=4)
-    # lm2 = custom_parallel(fnn, gen_d, use_thread=True, ncores=10)
-    # with a custom message
-    lm = custom_parallel(fnn, range(1000000), use_thread=True, ncores=4, void=False)
-    # simple example
+    lm = custom_parallel(worker, range(10000), use_thread=True, ncores=10, void=False)
 
     ap = [i for i in lm]
+
+    for i in lm:
+        pass

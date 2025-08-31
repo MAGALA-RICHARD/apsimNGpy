@@ -10,8 +10,8 @@ API reference—see inline docstrings and package docs for details.
 
 Quick orientation
 =================
-- **Purpose**: Pythonic interface and tooling around **APSIM Next Generation (APSIM NG)**.
-- **Style**: Object-oriented core with managers for scenarios, optimization, and parallel runs.
+- **Purpose**: Pythonic interface for **APSIM Next Generation (APSIM NG)**.
+- **Style**: Primarily Object-oriented
 - **Outputs**: Analysis-ready pandas DataFrames and lightweight artifacts for downstream ML/visualization.
 
 Repository layout (top-level)
@@ -156,7 +156,7 @@ Import quickstart
 .. code-block:: python
 
    from apsimNGpy.core import ApsimModel
-   from apsimNGpy.manager import ExperimentManager
+   from apsimNGpy.manager import weathermanager
    from apsimNGpy.parallel import custom_parallel
    from apsimNGpy.optimizer import MixedVariable, MultiObjectiveProblem
 

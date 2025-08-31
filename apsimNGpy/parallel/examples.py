@@ -1,45 +1,29 @@
 import os
+import shutil
 
-import pandas as pd
-
-from apsimNGpy.parallel.process import run_apsimx_files_in_parallel, _read_result_in_parallel
-from apsimNGpy.core_utils.utils import collect_runfiles
+from apsimNGpy.parallel.process import custom_parallel
 from pathlib import Path
-
+from apsimNGpy.core.apsim import ApsimModel
 hd = Path.home()/'scart'
 hd.mkdir(parents=True, exist_ok=True)
 os.chdir(hd)
-from apsimNGpy.core.base_data import load_default_simulations
-from apsimNGpy.core_utils.utils import make_apsimx_clones
+# create a worker
+def worker(i):
+    model = ApsimModel(i, out_path = i)
+    model.run()
+    model.clean_up(db=True)
 
-# let's duplicate some files
-
-# let's copy two files here
-maize= load_default_simulations(crop='maize', simulations_object= False)
-
-ap = make_apsimx_clones(maize, 20)
-
-
-def fnn(x):
-
-    return x
-
-
-# that is it all these files are now in the dir_path
-files = collect_runfiles(path2files=hd, pattern=["*.apsimx"])  # change path as needed
-
-if __name__ == "__main__":
-    # copy all examples to our workig dir_path
-    # ex = apsim_example.get_all_examples()
-    xp =[i for i in run_apsimx_files_in_parallel(ap, ncores=10, use_threads=False)]
-    # files is an iterable or a generator
-    # ncores is the number of process or threads to use and use_threads will determine wthere we use threads or not
-    # returns nothing
-    rpath = os.path.realpath(hd.joinpath('apsimx_cloned'))
-    # we can now read the results using the .db path as follow
-    files_db = [i for i in collect_runfiles(path2files=rpath, pattern=["*.db"])]
-    dat = _read_result_in_parallel(files_db, ncores=2, use_threads=True, report_name='report')
-    # return a generator object
-    dl = list(dat)
-    # df = pd.concat(dat)
-    print(dl)
+if __name__ == '__main__':
+   # mock some jobs
+    some_jobs  = (ApsimModel('Maize').path for _ in range(10))
+   # use custom parallel to run jobs
+    jobs= custom_parallel(worker, some_jobs, ncores=3, use_thread=False)
+    # finalize jobs
+    try:
+        for _ in jobs:
+            pass
+    finally:
+        try:
+           shutil.rmtree(hd)
+        except PermissionError as e:
+            pass

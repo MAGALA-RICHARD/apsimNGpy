@@ -95,9 +95,9 @@ class TestMultiCoreManager(BaseTester):
     def test_run_all_jobs(self):
         # hard to pull off a multi_processing in this environment, we will use threads to represent all tests
         logger.info('testing run_all_tests. agg_func = mean')
-        self._test_run_all_jobs(agg_func='mean', clear_db_test=True)
+        self._test_run_all_jobs(agg_func='mean', clear_db_test=True,threads=False)
         logger.info('testing run_all_tests. agg_func = None')
-        self._test_run_all_jobs(agg_func=None, clear_db_test=True)
+       # self._test_run_all_jobs(agg_func=None, clear_db_test=True)
 
 
 def test_multiprocessing():

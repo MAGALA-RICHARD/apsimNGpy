@@ -1273,6 +1273,9 @@ class CoreModel(PlotManager):
                         logger.info(f"Edited Cultivar '{model_name}' and saved it as '{new_cultivar_name}'")
 
                 case _:
+                    if not model_instance:
+                        raise ValueError(f"{model_name} of class {model_type} was not found or does not exist in the "
+                                         f"current simulations")
                     raise NotImplementedError(f"No edit method implemented for model type {type(model_instance)}")
         self.ran_ok = False
         return self

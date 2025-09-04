@@ -14,6 +14,7 @@ from apsimNGpy.exceptions import TableNotFoundError
 from apsimNGpy.settings import logger
 from apsimNGpy.core.pythonet_config import *
 from pandas import DataFrame
+from sqlalchemy.exc import NoSuchTableError
 
 
 def delete_table(db, table_name):
@@ -25,12 +26,14 @@ def delete_table(db, table_name):
     db = os.path.realpath(db)
     engine = create_engine(f"sqlite:///{db}")
     metadata = MetaData()
+    try:
+        # Load table
+        table_to_drop = Table(f"{table_name}", metadata, autoload_with=engine)
 
-    # Load table
-    table_to_drop = Table(f"{table_name}", metadata, autoload_with=engine)
-
-    # Drop it
-    table_to_drop.drop(engine)
+        # Drop it
+        table_to_drop.drop(engine)
+    except NoSuchTableError:
+        pass
 
 
 def delete_all_tables(db: str) -> None:
@@ -45,12 +48,14 @@ def delete_all_tables(db: str) -> None:
     db_path = os.path.realpath(db)
     engine = create_engine(f"sqlite:///{db_path}")
     metadata = MetaData()
+    try:
+        # Reflect the current database schema
+        metadata.reflect(bind=engine)
 
-    # Reflect the current database schema
-    metadata.reflect(bind=engine)
-
-    # Drop all tables
-    metadata.drop_all(bind=engine)
+        # Drop all tables
+        metadata.drop_all(bind=engine)
+    except NoSuchTableError:
+        pass
 
 
 def dataview_to_dataframe(_model, reports):

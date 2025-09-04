@@ -25,6 +25,8 @@ from Models.Soils import Solute, Water, Chemical
 from Models.Soils import Soil, Physical, SoilCrop, Organic, LayerStructure
 
 from typing import Union
+from apsimNGpy.core.cs_resources import CastHelper
+from apsimNGpy.core.model_loader import get_node_by_path
 
 # constants
 REPORT_PATH = {'Carbon': '[Soil].Nutrient.TotalC/1000 as dyn', 'DUL': '[Soil].SoilWater.PAW as paw', 'N03':
@@ -571,10 +573,16 @@ class ApsimModel(CoreModel):
         return self
 
     def check_kwargs(self, path, **kwargs):
-        mod_obj = self.Simulations.FindByPath(path)
+        if hasattr(self.Simulations, "FindByPath"):
+            mod_obj = self.Simulations.FindByPath(path)
+        else:
+            mod_obj = get_node_by_path(self.Simulations, path)
+            model = getattr(mod_obj, "Model", mod_obj)
+            model_ty = model.GetType()
+            mod_obj = CastHelper.CastAs[model_ty](model)
         if mod_obj is None:
             raise ValueError(f"Could not find model associated with path {path}")
-        v_mod = mod_obj.Value
+        v_mod = getattr(mod_obj, 'Value', mod_obj)
         kas = set(kwargs.keys())
 
         def _raise_value_error(_path, acceptable, user_info, msg='not a valid attribute'):

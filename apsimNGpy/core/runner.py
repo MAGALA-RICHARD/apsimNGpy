@@ -1,6 +1,7 @@
 import os.path
 import pathlib
 import platform
+import subprocess
 import textwrap
 import warnings
 from pathlib import Path
@@ -364,3 +365,20 @@ def run(self, report_name=None,
         self._DataStore.Close()
 
     return results
+
+
+if __name__ == '__main__':
+    import time
+    apsim_file = r"D:\package\mm.apsimx"
+    cmd =  r"D:\package\mm.apsimx"
+    cmd = [str(APSIM_EXEC), str(apsim_file), '--verbose', '--single-threaded']
+    subprocess.run(cmd)
+    cmd = [str(APSIM_EXEC), str(apsim_file), '--verbose', '--single-threaded',]
+    subprocess.run(cmd)
+    a=time.perf_counter()
+    # Run in multi-threaded mode (omit --single-threaded)
+    cmd2 = [str(APSIM_EXEC), str(apsim_file), "--verbose", "--cpu-count", "-1"]
+    subprocess.run(cmd2, check=True)
+    b= time.perf_counter()
+    print(b-a)
+

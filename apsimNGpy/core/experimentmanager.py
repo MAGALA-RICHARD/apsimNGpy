@@ -10,9 +10,11 @@ from apsimNGpy.core.cs_resources import CastHelper
 from apsimNGpy.core.pythonet_config import is_file_format_modified
 from apsimNGpy.core.config import APSIM_VERSION_NO, BASE_RELEASE_NO
 from apsimNGpy.core.model_loader import to_json_string
+
 if is_file_format_modified():
     import APSIM.Core as NodeUtils
     import System
+
     structure = Models.Core.ApsimFile.Structure
 else:
     from apsimNGpy.core.config import apsim_version
@@ -79,7 +81,7 @@ class ExperimentManager(ApsimModel):
             if APSIM_VERSION_NO > BASE_RELEASE_NO:
 
                 simx = ModelTools.find_all_in_scope(sim_final, Models.Core.Simulation)
-                simy= [ModelTools.CLONER(i) for i in simx]
+                simy = [ModelTools.CLONER(i) for i in simx]
 
                 simx = [CastHelper.CastAs[Models.Core.Simulations](i.Node) for i in simy]
 
@@ -111,18 +113,19 @@ class ExperimentManager(ApsimModel):
             siM.AddChild(experiment)
             experiment.AddChild(sim)
             siM = CastHelper.CastAs[Models.Core.Simulations](siM.Model)
-            #siM.Write(self.path)
+            # siM.Write(self.path)
             self.Simulations = siM
 
             # add experiment
+
         if APSIM_VERSION_NO > BASE_RELEASE_NO:
             refresher()
         else:
             exp_refresher(self)
         self.init = True
-
-        c= gc.collect()
-
+        # compile
+        self.save()
+        c = gc.collect()
 
     def add_factor(self, specification: str, factor_name: str = None, **kwargs):
         """

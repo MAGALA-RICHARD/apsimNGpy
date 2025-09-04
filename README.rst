@@ -43,7 +43,7 @@ Requirements
 2. Python 3.10 +
 3. APSIM: Add the directory containing the models executable to the system's PATH or python path (to locate the required .dll files). This can be achieved in either of the following ways:
 4. Utilize the APSIM installer provided for this purpose.
-5. Minimum; 8GM RAM, CPU Core i7
+5. Minimum; 8GM RAM
 
 .. _Installation:
 

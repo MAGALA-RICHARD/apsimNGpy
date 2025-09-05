@@ -3,6 +3,7 @@ import os
 import stat
 import subprocess
 import sys
+import time
 import unittest
 from pathlib import Path
 from apsimNGpy.core.pythonet_config import is_file_format_modified
@@ -175,6 +176,9 @@ def run_suite(verbosity_level=2):
 
 if __name__ == '__main__':
     # run multi_cores test before
+    for _ in [run_multiple_tests(), run_suite()]:
+        time.sleep(2)
+        pass
     # run_multiple_tests()
-    run_suite(verbosity_level=0)
+   # run_suite(verbosity_level=0)
     from apsimNGpy.core.config import get_bin_use_history

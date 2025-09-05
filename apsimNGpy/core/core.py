@@ -487,14 +487,17 @@ class CoreModel(PlotManager):
 
             self.save()
             if clean_up:
-                _path = Path(self.path)
-                db = _path.with_suffix('.db')
-                # delete or clear all tables
                 try:
-                    self._DataStore.Dispose()
-                    self.Datastore.Dispose()
-                except AttributeError:
-                    delete_all_tables(str(db))
+                    _path = Path(self.path)
+                    db = _path.with_suffix('.db')
+                    # delete or clear all tables
+                    try:
+                        self._DataStore.Dispose()
+                        self.Datastore.Dispose()
+                    except AttributeError:
+                        delete_all_tables(str(db))
+                except PermissionError:
+                        pass
 
             # Run APSIM externally
             res = run_model_externally(
@@ -2755,16 +2758,15 @@ class CoreModel(PlotManager):
         """
         if not kwargs:
             raise ValueError('No parameters are specified')
-        try:
+        if hasattr(self.Simulations, 'FindByPath'):
             _soil_child = self.Simulations.FindByPath(node_path)
-        except AttributeError:
+        else:
             _soil_child = get_node_by_path(self.Simulations, node_path)
-            soil_class = 'Models.Soils.' + '.'.join(node_path.split('.')[-1:])
-            try:
-                soil_class = validate_model_obj(soil_class)
-            except AttributeError:
-                soil_class = Models.Soils.Solute
-            _soil_child = CastHelper.CastAs[soil_class](_soil_child.Model)
+
+            soil_child_class_model = getattr(_soil_child, 'Model', _soil_child)
+            soil_child_model_class = soil_child_class_model.GetType()
+
+            _soil_child = CastHelper.CastAs[soil_child_model_class](soil_child_class_model)
 
         if _soil_child is None:
             raise ValueError(f"No such child: {node_path} exist in the simulation file {self.path}")

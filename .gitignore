@@ -214,4 +214,4 @@ apsimNGpy/scratch/*.apsimx
 apsimNGpy/scratch/*.db-shm
 apsimNGpy/scratch/*.db
 apsimNGpy/scratch/*.db-wal
-/scratch
+*scratch

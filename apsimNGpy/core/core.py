@@ -39,6 +39,7 @@ from apsimNGpy.core.config import apsim_version
 from apsimNGpy.settings import SCRATCH, logger, MissingOption
 from apsimNGpy.core.plotmanager import PlotManager
 from apsimNGpy.core.model_tools import find_child
+import Models
 
 # constants
 IS_NEW_MODEL = is_file_format_modified()
@@ -262,7 +263,7 @@ class CoreModel(PlotManager):
         if APSIM_VERSION_NO > BASE_RELEASE_NO:
             self.Simulations.Write(str(_path))
         else:
-            sm  = getattr(self.Simulations, 'Node', self.Simulations)
+            sm = getattr(self.Simulations, 'Node', self.Simulations)
             save_model_to_file(sm, out=_path)
         model_info = recompile(self)
         self.restart_model(model_info)
@@ -439,7 +440,7 @@ class CoreModel(PlotManager):
 
     def run(self, report_name: Union[tuple, list, str] = None,
             simulations: Union[tuple, list] = None,
-            clean_up: bool = False,
+            clean_up: bool = True,
             verbose: bool = False,
             **kwargs) -> 'CoreModel':
         """
@@ -457,7 +458,7 @@ class CoreModel(PlotManager):
             List of simulation names to run. If None, runs all simulations.
 
         ``clean_up`` : bool, optional
-            If True, removes existing database before running.
+            If True, removes the existing database before running.
 
         ``verbose`` : bool, optional
             If True, enables verbose output for debugging. The method continues with debugging info anyway if the run was unsuccessful
@@ -483,11 +484,17 @@ class CoreModel(PlotManager):
 
              """
         try:
-            # Dispose any existing data store handle
-            #            self._DataStore.Dispose()
 
-            # Save model changes to disk (compile before run)
             self.save()
+            if clean_up:
+                _path = Path(self.path)
+                db = _path.with_suffix('.db')
+                # delete or clear all tables
+                try:
+                    self._DataStore.Dispose()
+                    self.Datastore.Dispose()
+                except AttributeError:
+                    delete_all_tables(str(db))
 
             # Run APSIM externally
             res = run_model_externally(
@@ -495,9 +502,6 @@ class CoreModel(PlotManager):
                 verbose=verbose,
                 to_csv=kwargs.get('to_csv', True)
             )
-
-            if clean_up:
-                self.clean_up()
 
             if res.returncode == 0:
                 self.ran_ok = True
@@ -3354,9 +3358,8 @@ class CoreModel(PlotManager):
         self.save()
 
         def filter_out():
-            import Models
             data = []
-            model_classes = ['Models.Core.Simulation', 'Models.Soils.Soil', 'Models.PMF.Plant', 'Models.Manager',
+            model_classes = {'Models.Core.Simulation', 'Models.Soils.Soil', 'Models.PMF.Plant', 'Models.Manager',
                              'Models.Climate.Weather', 'Models.Report', 'Models.Clock', 'Models.Core.Folder',
                              'Models.Soils.Solute', 'Models.Surface.SurfaceOrganicMatter',
                              'Models.Soils.Swim3', 'Models.Soils.SoilCrop', 'Models.Soils.Water', 'Models.Summary',
@@ -3366,10 +3369,16 @@ class CoreModel(PlotManager):
                              'Models.Factorial.Factors',
                              'Models.Sobol', 'Models.Operations', 'Models.Morris', 'Models.Fertiliser',
                              'Models.Core.Events',
+                             'Models.MicroClimate',
                              'Models.Core.VariableComposite',
-                             'Models.Soils.Physical', 'Models.Soils.Chemical', 'Models.Soils.Organic']
+                             'Models.Zones.RectangularZone',
+                             'Models.Soils.Arbitrator.SoilArbitrator',
+                             'Models.Summary',
+                             'Models.Storage.DataStore',
+                             'Models.Graph',
+                             'Models.Soils.Physical', 'Models.Soils.Chemical', 'Models.Soils.Organic'}
             if cultivar:
-                model_classes.append('Models.PMF.Cultivar')
+                model_classes.add('Models.PMF.Cultivar')
             for i in model_classes:
                 try:
                     ans = self.inspect_model(eval(i))
@@ -3380,7 +3389,7 @@ class CoreModel(PlotManager):
                 if 'Replacements' not in ans and 'Folder' in i:
                     continue
                 data.extend(ans)
-            del Models, model_classes
+            del model_classes
             return [i for i in data if i is not None]
 
         return filter_out()

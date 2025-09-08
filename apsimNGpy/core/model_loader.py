@@ -99,7 +99,8 @@ version = apsim_version()
 def copy_file(
         source: Union[str, Path],
         destination: Union[str, Path] = None,
-        wd: Union[str, Path] = None):
+        wd: Union[str, Path] = None,
+         tag='temp'):
     """
     Copy an APSIMX file to a new location with an updated version tag.
 
@@ -111,6 +112,7 @@ def copy_file(
 
         wd (str | Path, optional): Working directory for temporary file creation.
             Defaults to SCRATCH.
+        tag (str, optional): tag to associate the file with
 
     Returns:
         Path: Path to the copied file.
@@ -122,7 +124,7 @@ def copy_file(
     if destination:
         dest_path = stamp_name_with_version(destination)
     else:
-        dest_path = wd / f"temp_{uuid.uuid1()}_{version}.apsimx"
+        dest_path = wd / f"{tag}_{uuid.uuid1()}_{version}.apsimx"
 
     # Perform copy
     shutil.copy2(source, dest_path)

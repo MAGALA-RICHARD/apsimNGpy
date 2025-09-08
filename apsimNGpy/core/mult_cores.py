@@ -7,8 +7,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Union
 
-
-
 from apsimNGpy.core_utils.utils import timer
 import pandas as pd
 from apsimNGpy.core.apsim import ApsimModel
@@ -68,6 +66,7 @@ class MultiCoreManager:
     db_path: Union[str, Path]
     agg_func: Union[str, None] = None
     ran_ok: bool = False
+    tag = None
 
     def insert_data(self, results, table):
         """
@@ -223,7 +222,10 @@ class MultiCoreManager:
             except PermissionError:
                 ...
 
-    def run_all_jobs(self, jobs, n_cores=6, threads=False, clear_db=True, clean_up=False):
+    def clean_up_data(self):
+        """Clears the data associated with each job. Please call this emthod after run_all_jobs is complete"""
+
+    def run_all_jobs(self, jobs, *, n_cores=6, threads=False, clear_db=True):
         """
         runs all provided jobs using ``processes`` or ``threads`` specified
 
@@ -247,9 +249,8 @@ class MultiCoreManager:
                 ...
             self.ran_ok = True
         finally:
-            time.sleep(0.5)  # buy some time to ensure all resources are released
-            if clean_up:
-                self.clear_scratch()
+            # future implimentation
+            pass
 
 
 if __name__ == '__main__':

@@ -186,7 +186,10 @@ class PlotManager(ABC):
             xticksize: int = 10,
             yticksize: int = 10,
             legend_size: int = 12,
-            figtitle_size: int = 15
+            figtitle_size: int = 15,
+            xlabel_size: int = 16,
+            ylabel_size=16,
+
     ):
 
         # Configure plot aesthetics
@@ -200,12 +203,12 @@ class PlotManager(ABC):
         # Set optional labels and title
 
         if xlabel:
-            plt.xlabel(xlabel)
+            plt.xlabel(xlabel, fontsize=xlabel_size)
         ylabel
         if ylabel:
-            plt.ylabel(ylabel)
+            plt.ylabel(ylabel, fontsize=ylabel_size)
         if title:
-            plt.title(title)
+            plt.title(title,  )
 
         plt.tight_layout()
 

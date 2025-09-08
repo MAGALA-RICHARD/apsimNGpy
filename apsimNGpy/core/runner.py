@@ -1,7 +1,6 @@
 import os.path
 import pathlib
 import platform
-import subprocess
 import textwrap
 import warnings
 from pathlib import Path
@@ -18,7 +17,7 @@ from apsimNGpy.settings import *
 from apsimNGpy.core_utils.database_utils import read_db_table, get_db_table_names
 from pathlib import Path
 from typing import Union, List
-
+import subprocess
 apsim_bin_path = Path(get_apsim_bin_path())
 
 # Determine executable based on OS
@@ -81,9 +80,10 @@ def upgrade_apsim_file(file: str, verbose: bool = True):
         return file
 
 
-def run_model_externally(model: Union[Path, str], verbose: bool = False, to_csv: bool = False) -> Popen[str]:
+def run_model_externally(model: Union[Path, str], verbose: bool = False, to_csv: bool = False) -> subprocess.Popen[str]:
     """
     Runs an APSIM model externally with cross-platform support and optional CSV output.
+    Captures only stderr by default, unless verbose=True.
     """
     apsim_file = model
     cmd = [str(APSIM_EXEC), str(apsim_file), '--verbose']
@@ -91,7 +91,17 @@ def run_model_externally(model: Union[Path, str], verbose: bool = False, to_csv:
         cmd.append('--csv')
 
     with contextlib.ExitStack() as stack:
-        result = stack.enter_context(Popen(cmd, stdout=PIPE, stderr=PIPE, text=True))
+        # stdout is discarded unless verbose is requested
+        stdout_pipe = subprocess.PIPE if verbose else subprocess.DEVNULL
+        result = stack.enter_context(
+            subprocess.Popen(
+                cmd,
+                stdout=stdout_pipe,
+                stderr=subprocess.PIPE,
+                text=True,
+                shell=False  # explicit, though default
+            )
+        )
 
         try:
             out, err = result.communicate()
@@ -100,7 +110,7 @@ def run_model_externally(model: Union[Path, str], verbose: bool = False, to_csv:
                 wrapped_err = textwrap.fill(err.strip(), width=80)
                 logger.error("APSIM Execution Error:\n" + wrapped_err)
 
-            if verbose:
+            if verbose and out:
                 wrapped_out = textwrap.fill(out.strip(), width=80)
                 logger.info(f"APSIM Output from {apsim_file}:\n{wrapped_out}")
 
@@ -365,20 +375,3 @@ def run(self, report_name=None,
         self._DataStore.Close()
 
     return results
-
-
-if __name__ == '__main__':
-    import time
-    apsim_file = r"D:\package\mm.apsimx"
-    cmd =  r"D:\package\mm.apsimx"
-    cmd = [str(APSIM_EXEC), str(apsim_file), '--verbose', '--single-threaded']
-    subprocess.run(cmd)
-    cmd = [str(APSIM_EXEC), str(apsim_file), '--verbose', '--single-threaded',]
-    subprocess.run(cmd)
-    a=time.perf_counter()
-    # Run in multi-threaded mode (omit --single-threaded)
-    cmd2 = [str(APSIM_EXEC), str(apsim_file), "--verbose", "--cpu-count", "-1"]
-    subprocess.run(cmd2, check=True)
-    b= time.perf_counter()
-    print(b-a)
-

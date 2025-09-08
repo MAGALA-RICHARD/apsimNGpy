@@ -116,7 +116,9 @@ APSIM_LOCATION = os.environ.get('APSIM_LOCATION')
 
 SCRATCH = os.environ.get('WS', Path(os.getcwd()) / 'scratch')
 # need to clean up periodically if can
-
-SCRATCH.mkdir(parents=True, exist_ok=True)
+try:
+   SCRATCH.mkdir(parents=True, exist_ok=True)
+except PermissionError:
+    SCRATCH = Path.cwd()
 
 config_internal('version', f"{VERSION}")

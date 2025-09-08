@@ -79,7 +79,3 @@ if get_apsim_bin_path():
         'MultiObjectiveProblem'
     ])
 
-if is_file_format_modified():
-    __all__.append(
-     'ExperimentManager'
-    )

@@ -195,7 +195,7 @@ class CoreModel(PlotManager):
         # fixed
         # we can actually specify the simulation name in the bracket
         self.check_model()
-        if APSIM_VERSION_NO > BASE_RELEASE_NO:
+        if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == '0.0.0.0': # if compiled binaries from github
             return ModelTools.find_all_in_scope(self.Simulations, Models.Core.Simulation)
         return list(self.Simulations.FindAllDescendants[Models.Core.Simulation]())
 
@@ -1315,7 +1315,8 @@ class CoreModel(PlotManager):
             variable_spec = [variable_spec]
         if not APSIM_VERSION_NO > BASE_RELEASE_NO:
             if report_name:
-                get_report = self.Simulations.FindDescendant[Models.Report](report_name)
+                get_report = ModelTools.find_child(self.Simulations, Models.Report, report_name)
+                #get_report = self.Simulations.FindDescendant[Models.Report](report_name)
             else:
                 get_report = self.Simulations.FindDescendant[Models.Report]()
         else:
@@ -2688,7 +2689,7 @@ class CoreModel(PlotManager):
             obj = [self.Simulations]
         else:
 
-            if APSIM_VERSION_NO > BASE_RELEASE_NO:
+            if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == '0.0.0.0':
 
                 obj = ModelTools.find_all_in_scope(self.Simulations, model_type)
             else:
@@ -3588,7 +3589,7 @@ class CoreModel(PlotManager):
         # Try to find a Zone in scope and attach the report to it
         sims = self.find_simulations(simulation_name)
         for sim in sims:
-            if APSIM_VERSION_NO > BASE_RELEASE_NO:
+            if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == '0.0.0.0':
                 zone = ModelTools.find_child_of_class(sim, Models.Core.Zone)
             else:
                 zone = sim.FindDescendant[Models.Core.Zone]()

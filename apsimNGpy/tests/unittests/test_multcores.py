@@ -75,12 +75,12 @@ class TestMultiCoreManager(BaseTester):
         self.assertEqual(df2.shape[0], df.shape[0])
 
     def _test_run_all_jobs(self, agg_func=None, clear_db_test=True, threads=True, cores=2):
-        """tests if run_all_tests work udner various conditions"""
+        """tests if run_all_tests work under various conditions"""
         core_manager_mean = MultiCoreManager(db_path=self.data_db, agg_func=agg_func)
 
         # using processes will fail in this environment, so threads are appropriate
         core_manager_mean.run_all_jobs(jobs=self.jobs, threads=threads, n_cores=cores, clear_db=clear_db_test,
-                                       clean_up=True)
+                                       )
         df = core_manager_mean.results
         self.assertFalse(df.empty)
         # if mean aggregators worked, then number of rows are two
@@ -95,9 +95,9 @@ class TestMultiCoreManager(BaseTester):
     def test_run_all_jobs(self):
         # hard to pull off a multi_processing in this environment, we will use threads to represent all tests
         logger.info('testing run_all_tests. agg_func = mean')
-        self._test_run_all_jobs(agg_func='mean', clear_db_test=True,threads=False)
+        self._test_run_all_jobs(agg_func='mean', clear_db_test=True, threads=False)
         logger.info('testing run_all_tests. agg_func = None')
-       # self._test_run_all_jobs(agg_func=None, clear_db_test=True)
+        self._test_run_all_jobs(agg_func=None, clear_db_test=True)
 
 
 def test_multiprocessing():

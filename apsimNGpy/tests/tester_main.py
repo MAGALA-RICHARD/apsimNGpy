@@ -176,9 +176,4 @@ def run_suite(verbosity_level=2):
 
 if __name__ == '__main__':
     # run multi_cores test before
-    for _ in [run_multiple_tests(), run_suite()]:
-        time.sleep(2)
-        pass
-    # run_multiple_tests()
-   # run_suite(verbosity_level=0)
-    from apsimNGpy.core.config import get_bin_use_history
+    run = {run_multiple_tests(), run_suite()}

@@ -31,6 +31,7 @@ class TestConfig(BaseTester):
     def test_get_apsim_version(self):
         import re
         version = apsim_version(release_number=True)
+        print(version)
         pattern = r"^APSIM \d{4}\.\d+\.\d+\.\d+$"
         match = re.match(pattern, version)
         if version == GITHUB_RELEASE_NO:

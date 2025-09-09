@@ -14,7 +14,7 @@ from apsimNGpy.settings import *
 from pathlib import Path
 from apsimNGpy.core.model_loader import load_apsim_model
 from apsimNGpy.core.cs_resources import simple_rotation_code, update_manager_code
-from apsimNGpy.core.config import apsim_version
+from apsimNGpy.core.config import apsim_version, BASE_RELEASE_NO, GITHUB_RELEASE_NO
 
 IS_NEW_APSIM = is_file_format_modified()
 
@@ -22,7 +22,7 @@ from apsimNGpy.core.cs_resources import CastHelper, sow_using_variable_rule, sow
     fertilizer_at_sow, cast_as
 
 APSIM_VERSION = apsim_version(True)
-BASE_RELEASE_NO = '2025.8.7837.0'
+
 
 
 @cache
@@ -632,7 +632,7 @@ def add_as_simulation(_model, resource, sim_name):
     sim_name, new name to name the added simulation
     """
     model = load_apsim_model(resource)
-    if APSIM_VERSION > BASE_RELEASE_NO:
+    if APSIM_VERSION > BASE_RELEASE_NO or APSIM_VERSION == GITHUB_RELEASE_NO:
         sim = find_child_of_class(model.IModel, Models.Core.Simulation)
     else:
         sim = model.IModel.FindDescendant[Models.Core.Simulation]()
@@ -661,7 +661,7 @@ def add_as_simulation(_model, resource, sim_name):
 
 
 def detect_sowing_managers(_model):
-    if APSIM_VERSION > BASE_RELEASE_NO:
+    if APSIM_VERSION > BASE_RELEASE_NO or APSIM_VERSION == GITHUB_RELEASE_NO:
         managers = find_all_in_scope(_model.Simulations, Models.Manager)
     else:
         managers = _model.Simulations.FindAllDescendants[Models.Manager]()
@@ -859,7 +859,7 @@ def add_model_as_a_replacement(simulations, model_class, model_name):
         model_class = validate_model_obj(model_class)
     add_replacement_folder(simulations)
     # ensure that model being added as replacement exists
-    if APSIM_VERSION > BASE_RELEASE_NO:
+    if APSIM_VERSION > BASE_RELEASE_NO or APSIM_VERSION == GITHUB_RELEASE_NO:
         model_to_replace = find_child(simulations, child_class=model_class, child_name=model_name)
     else:
         model_to_replace = simulations.FindDescendant[model_class](model_name)

@@ -35,7 +35,7 @@ from apsimNGpy.core.runner import run_model_externally, collect_csv_by_model_pat
 from apsimNGpy.core.model_loader import (load_apsim_model, save_model_to_file, recompile, get_node_by_path)
 import ast
 from typing import Any
-from apsimNGpy.core.config import apsim_version
+from apsimNGpy.core.config import apsim_version, BASE_RELEASE_NO, GITHUB_RELEASE_NO
 from apsimNGpy.settings import SCRATCH, logger, MissingOption
 from apsimNGpy.core.plotmanager import PlotManager
 from apsimNGpy.core.model_tools import find_child
@@ -44,7 +44,7 @@ import Models
 # constants
 IS_NEW_MODEL = is_file_format_modified()
 APSIM_VERSION_NO = apsim_version(release_number=True)
-BASE_RELEASE_NO = '2025.8.7837.0'
+
 
 
 def _looks_like_path(value: str) -> bool:
@@ -195,7 +195,7 @@ class CoreModel(PlotManager):
         # fixed
         # we can actually specify the simulation name in the bracket
         self.check_model()
-        if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == '0.0.0.0': # if compiled binaries from github
+        if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO: # if compiled binaries from github
             return ModelTools.find_all_in_scope(self.Simulations, Models.Core.Simulation)
         return list(self.Simulations.FindAllDescendants[Models.Core.Simulation]())
 
@@ -260,7 +260,7 @@ class CoreModel(PlotManager):
         """
         _path = str(file_name or self.path)
         self.path = _path
-        if APSIM_VERSION_NO > BASE_RELEASE_NO:
+        if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO== GITHUB_RELEASE_NO:
             self.Simulations.Write(str(_path))
         else:
             sm = getattr(self.Simulations, 'Node', self.Simulations)
@@ -655,7 +655,7 @@ class CoreModel(PlotManager):
         adoptive_parent_type = validate_model_obj(adoptive_parent_type, evaluate_bound=False)
 
         # Locate the model to be cloned within the simulation scope
-        if APSIM_VERSION_NO > BASE_RELEASE_NO:
+        if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
             clone_parent = (ModelTools.find_child(self.Simulations, model_type, model_name) if model_name
                             else ModelTools.find_child_of_class(self.Simulations, model_type))
         else:
@@ -1171,7 +1171,7 @@ class CoreModel(PlotManager):
         for sim in self.find_simulations(simulations):
             # model_instance = get_or_check_model(sim, model_type_class, model_name, action='get', cacheit=cacheit,
             #                                     cache_size=cache_size)
-            if APSIM_VERSION_NO > BASE_RELEASE_NO:
+            if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
                 model_instance = find_child(sim, model_type_class, model_name)
             else:
                 model_instance = sim.FindDescendant[model_type_class](model_name)
@@ -1313,7 +1313,7 @@ class CoreModel(PlotManager):
         """
         if isinstance(variable_spec, str):
             variable_spec = [variable_spec]
-        if not APSIM_VERSION_NO > BASE_RELEASE_NO:
+        if not APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
             if report_name:
                 get_report = ModelTools.find_child(self.Simulations, Models.Report, report_name)
                 #get_report = self.Simulations.FindDescendant[Models.Report](report_name)
@@ -1520,7 +1520,7 @@ class CoreModel(PlotManager):
         return rep
 
     def _find_cultivar(self, cultivar_name: str):
-        if APSIM_VERSION_NO > BASE_RELEASE_NO:
+        if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
             cultivars = ModelTools.find_all_in_scope(self._find_replacement(), Models.PMF.Cultivar)
         else:
 
@@ -1547,7 +1547,7 @@ class CoreModel(PlotManager):
         :return: System.Collections.Generic.IEnumerable APSIM plant object
         """
         rep = self._find_replacement()
-        if APSIM_VERSION_NO > BASE_RELEASE_NO:
+        if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
             crop_rep = ModelTools.find_child(rep, Models.PMF.Plant, Crop)
         else:
             crop_rep = rep.FindAllDescendants[Models.PMF.Plant](Crop)
@@ -2100,7 +2100,7 @@ class CoreModel(PlotManager):
 
     @staticmethod
     def update_manager(scope, manager_name, **kwargs):
-        if APSIM_VERSION_NO > BASE_RELEASE_NO:
+        if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
             manager = ModelTools.find_child(scope, Models.Manager, manager_name)
             manager = CastHelper.CastAs[Models.Manager](manager)
             if not manager:
@@ -2245,7 +2245,7 @@ class CoreModel(PlotManager):
             management = management,
 
         for sim in self.find_simulations(simulations):
-            if APSIM_VERSION_NO > BASE_RELEASE_NO:
+            if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
                 zone = ModelTools.find_child_of_class(sim, Models.Core.Zone)  # expect one Model.Core.Zone
             else:
                 zone = sim.FindChild[Models.Core.Zone]()
@@ -2440,7 +2440,7 @@ class CoreModel(PlotManager):
             if not os.path.isfile(weather_file):
                 raise FileNotFoundError(weather_file)
             for sim_name in self.find_simulations(simulations):
-                if APSIM_VERSION_NO > BASE_RELEASE_NO:
+                if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
                     weathers = ModelTools.find_all_in_scope(sim_name, Models.Climate.Weather)
                 else:
                     weathers = sim_name.FindAllDescendants[Models.Climate.Weather]()
@@ -2499,7 +2499,7 @@ class CoreModel(PlotManager):
         """Show weather file for all simulations"""
         weather_list = {}
         for sim_name in self.find_simulations(simulations):
-            if APSIM_VERSION_NO > BASE_RELEASE_NO:
+            if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
                 weathers = ModelTools.find_all_in_scope(sim_name, Models.Climate.Weather)
             else:
                 weathers = sim_name.FindAllDescendants[Models.Climate.Weather]()
@@ -2534,7 +2534,7 @@ class CoreModel(PlotManager):
         """
         simulations = self.find_simulations(simulations)
         for sim in simulations:
-            if APSIM_VERSION_NO > BASE_RELEASE_NO:
+            if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
                 i_enum = ModelTools.find_all_in_scope(sim, Models.Report)
                 i_enum = [i for i in i_enum if i.Name == report_name]
             else:
@@ -2559,7 +2559,7 @@ class CoreModel(PlotManager):
         """
         sim_physical = {}
         for nn, simu in enumerate(self._find_simulation(simulations)):
-            if APSIM_VERSION_NO > BASE_RELEASE_NO:
+            if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
                 physical_soil = ModelTools.find_child_of_class(simu, Models.Soils.Physical)
             else:
                 soil_object = simu.FindDescendant[Models.Soils]()
@@ -2689,7 +2689,7 @@ class CoreModel(PlotManager):
             obj = [self.Simulations]
         else:
 
-            if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == '0.0.0.0':
+            if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
 
                 obj = ModelTools.find_all_in_scope(self.Simulations, model_type)
             else:
@@ -2920,7 +2920,7 @@ class CoreModel(PlotManager):
             soil_class = self.find_model(sub_soil)
 
             if soil_child != 'soilcrop':
-                if APSIM_VERSION_NO > BASE_RELEASE_NO:
+                if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
                     _soil_child = ModelTools.find_all_in_scope(simu, soil_class)  # requires recussion
                     if not _soil_child:
                         raise ModelNotFoundError(f"model of class {soil_class} not found in {simu.FullPath}")
@@ -3335,14 +3335,14 @@ class CoreModel(PlotManager):
         _FOLDER.Name = "Replacements"
         PARENT = self.Simulations
         # parent replacemnt should be added once
-        if APSIM_VERSION_NO > BASE_RELEASE_NO:
+        if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
             target_parent = ModelTools.find_child(PARENT, Models.Core.Folder, 'Replacements')
         else:
             target_parent = PARENT.FindDescendant[Models.Core.Folder]('Replacements')
         if not target_parent:
             ModelTools.ADD(_FOLDER, PARENT)
         # assumes that the crop already exists in the simulation
-        if APSIM_VERSION_NO > BASE_RELEASE_NO:
+        if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
             _crop = ModelTools.find_child(PARENT, Models.PMF.Plant, CROP)
         else:
             _crop = PARENT.FindDescendant[Models.PMF.Plant](CROP)
@@ -3589,7 +3589,7 @@ class CoreModel(PlotManager):
         # Try to find a Zone in scope and attach the report to it
         sims = self.find_simulations(simulation_name)
         for sim in sims:
-            if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == '0.0.0.0':
+            if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
                 zone = ModelTools.find_child_of_class(sim, Models.Core.Zone)
             else:
                 zone = sim.FindDescendant[Models.Core.Zone]()

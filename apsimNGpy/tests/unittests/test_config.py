@@ -3,7 +3,7 @@ import shutil
 import unittest
 import os
 # Import the module where CoreModel class is defined
-from apsimNGpy.core.config import (set_apsim_bin_path, get_apsim_bin_path, apsim_version, load_crop_from_disk,
+from apsimNGpy.core.config import (set_apsim_bin_path, get_apsim_bin_path, apsim_version, load_crop_from_disk, GITHUB_RELEASE_NO,
                                    auto_detect_apsim_bin_path, get_bin_use_history)
 from apsimNGpy.tests.unittests.base_unit_tests import BaseTester, path
 from pathlib import Path
@@ -30,9 +30,11 @@ class TestConfig(BaseTester):
 
     def test_get_apsim_version(self):
         import re
-        version = apsim_version()
+        version = apsim_version(release_number=True)
         pattern = r"^APSIM \d{4}\.\d+\.\d+\.\d+$"
         match = re.match(pattern, version)
+        if version == GITHUB_RELEASE_NO:
+            self.skipTest(f'APSIM version is {version} un able to test apsim version number likely compiled from source')
         self.assertTrue(match, 'Failed to detect Current APSIM version')
 
     def test_get_bin_use_history(self):

@@ -8,7 +8,7 @@ from collections import OrderedDict
 from apsimNGpy.core.model_tools import ModelTools, Models
 from apsimNGpy.core.cs_resources import CastHelper
 from apsimNGpy.core.pythonet_config import is_file_format_modified
-from apsimNGpy.core.config import APSIM_VERSION_NO, BASE_RELEASE_NO
+from apsimNGpy.core.config import APSIM_VERSION_NO, BASE_RELEASE_NO, GITHUB_RELEASE_NO
 from apsimNGpy.core.model_loader import to_json_string
 
 if is_file_format_modified():
@@ -78,7 +78,7 @@ class ExperimentManager(ApsimModel):
             mode.model_info.Node.AddChild(experiment)
             sim_final = CastHelper.CastAs[Models.Core.Simulations](mode.model_info.Node)
 
-            if APSIM_VERSION_NO > BASE_RELEASE_NO:
+            if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
 
                 simx = ModelTools.find_all_in_scope(sim_final, Models.Core.Simulation)
                 simy = [ModelTools.CLONER(i) for i in simx]
@@ -118,7 +118,7 @@ class ExperimentManager(ApsimModel):
 
             # add experiment
 
-        if APSIM_VERSION_NO > BASE_RELEASE_NO:
+        if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
             refresher()
         else:
             exp_refresher(self)
@@ -166,7 +166,7 @@ class ExperimentManager(ApsimModel):
         # Choose parent node and parent class
         parent_factor = self.permutation_node if self.permutation else self.factorial_node
         parent_class = Models.Factorial.Permutation if self.permutation else Models.Factorial.Factors
-        if APSIM_VERSION_NO > BASE_RELEASE_NO:
+        if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
             parent_factor = ModelTools.find_child_of_class(self.Simulations, parent_class)
 
         new_factor = Models.Factorial.Factor()

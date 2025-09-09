@@ -366,6 +366,7 @@ def stamp_name_with_version(file_name):
 
 # NOT THE BEST PLACE TO DEFINE BECAUSE IT HAS TO BE SET FIRST YET THIS IS THE CREATING THE SET METHOD
 BASE_RELEASE_NO = '2025.8.7837.0'
+GITHUB_RELEASE_NO = '0.0.0.0'
 try:
     APSIM_VERSION_NO = apsim_version(release_number=True)
 except Exception as e:

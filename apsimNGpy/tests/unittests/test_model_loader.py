@@ -123,7 +123,7 @@ class TestCoreModel(BaseTester):
     def test_load_load_apsim_model_path_from_disk(self):
         """Test unified APSIM model loader with pathlib.Path input."""
         fp = self.file_on_disk
-        print(fp, 'fp', '\n')
+
         out = load_apsim_model(fp, out_path=self.MODEL_PATH)
         sims = cast(out.IModel)
 
@@ -148,7 +148,7 @@ class TestCoreModel(BaseTester):
             try:
                 os.remove(self.MODEL_PATH)
             except PermissionError:
-                self.skipTest('skipping due to permision error')
+                self.skipTest('skipping due to permission error')
         model_to_save = load_apsim_model(mod_p, out_path=self.MODEL_PATH)
         self.MODEL_PATH = Path(self.MODEL_PATH)
 

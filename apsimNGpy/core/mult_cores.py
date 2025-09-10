@@ -165,18 +165,18 @@ class MultiCoreManager:
             # aggregate them together
             out = dat.agg(self.agg_func, numeric_only=True)
 
-            out['modelName'] = str(model)
+            out['source_name'] = Path(model).name
 
         else:
             out = _model.results
         # track the model id
-        out['modelName'] = str(model)
+        out['source_name'] = Path(model).name
         # insert the simulated dataset into the specified database
         self.insert_data(out, table=tables)
         # clean up files related _model object
         _model.clean_up(coerce=False)
         # collect garbage before gc comes in
-        gc.collect()
+
 
     def get_simulated_output(self, axis=0):
         """
@@ -220,7 +220,7 @@ class MultiCoreManager:
                 shutil.rmtree(str(path), ignore_errors=True)
 
             except PermissionError:
-                ...
+                pass
 
     def clean_up_data(self):
         """Clears the data associated with each job. Please call this emthod after run_all_jobs is complete"""
@@ -249,8 +249,8 @@ class MultiCoreManager:
                 ...
             self.ran_ok = True
         finally:
-            # future implimentation
-            pass
+            # future implementation
+            gc.collect()
 
 
 if __name__ == '__main__':

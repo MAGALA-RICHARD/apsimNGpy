@@ -122,9 +122,9 @@ def copy_file(
 
     # Determine destination path
     if destination:
-        dest_path = stamp_name_with_version(destination)
+        dest_path = str(Path(destination).resolve().with_suffix('.apsimx'))
     else:
-        dest_path = wd / f"{tag}_{uuid.uuid1()}_{version}.apsimx"
+        dest_path = wd / f"{tag}_{uuid.uuid1()}_{version[-6:]}.apsimx"
 
     # Perform copy
     shutil.copy2(source, dest_path)

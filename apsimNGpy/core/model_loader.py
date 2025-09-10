@@ -205,14 +205,20 @@ def load_apsim_model(model=None, out_path=None, file_load_method='string', met_f
     if isinstance(model, Path):
         model = str(model)
 
-    out = {}  # Store final output path
+    def _has_no_dir(p) -> bool:
+        p = Path(p)
+        return p.parent == Path('.') or p.parent == Path(p.anchor)
+    out = {}  # Store a final output path
     wd = Path(wd or SCRATCH)
     DEFAULT_PATH = wd/f"{tag}{uuid.uuid1()}_{version[-6:]}_"
+    if out_path:
+        if _has_no_dir(out_path):
+            out_path = Path(SCRATCH)/out_path
     out_ = Path(out_path or DEFAULT_PATH)
     out_path  = out_.with_suffix('.apsimx')
     match model:
         case dict():
-            output = out_path or f"{uuid.uuid1()}.apsimx"
+            output = out_path
             out['path'] = output
             Model = load_from_dict(model, output)
 

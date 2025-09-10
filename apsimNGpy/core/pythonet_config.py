@@ -1,5 +1,6 @@
 import os
 import platform
+import sys
 import sys as system
 from apsimNGpy.core import config
 from apsimNGpy.core.cs_resources import start_pythonnet
@@ -7,9 +8,11 @@ from pathlib import Path
 from apsimNGpy.exceptions import ApsimBinPathConfigError
 from apsimNGpy.core_utils.utils import timer
 
-APSIM_BIN_PATH = config.get_apsim_bin_path()
+APSIM_BIN_PATH = config.get_apsim_bin_path() or config.any_bin_path_from_env()
 
 start_pythonnet()
+
+meta_info = {}
 
 
 def is_file_format_modified():
@@ -26,6 +29,14 @@ def is_file_format_modified():
     return False
 
 
+def _add_bin_to_syspath(bin_path: Path) -> None:
+    # Idempotent: only add if not present (case-insensitive on Windows)
+    bin_path = Path(bin_path).resolve()
+    paths_norm = [Path(p).resolve() for p in sys.path if isinstance(p, str)]
+    if bin_path not in paths_norm:
+        sys.path.append(str(bin_path))
+
+
 def load_pythonnet(bin_path=APSIM_BIN_PATH):
     """
     A method for loading Python for .NET (pythonnet) and APSIM models.
@@ -34,7 +45,7 @@ def load_pythonnet(bin_path=APSIM_BIN_PATH):
     Initialize the Python for .NET (pythonnet) runtime and load APSIM models.
 
         This method attempts to load the 'coreclr' runtime, and if not found, falls back to an alternate runtime.
-        It also sets the APSIM binary path, adds necessary references, and returns a reference to the loaded APSIM models.
+        It also sets the APSIM binary path, adds the necessary references, and returns a reference to the loaded APSIM models.
 
         Returns:
         -------
@@ -51,15 +62,8 @@ def load_pythonnet(bin_path=APSIM_BIN_PATH):
     ----------
     None
     """
-
-    if not os.path.isdir(bin_path):
-        raise ApsimBinPathConfigError(
-            "Bin path configuration error or APSIM is not yet installed, or APSIM was recently uninstalled")
-
-    candidate = os.path.join(bin_path, 'bin')
-    if os.path.basename(bin_path).lower() != 'bin' and os.path.isdir(candidate):
-        bin_path = candidate
-
+    candidate = config.locate_model_bin_path(bin_path)
+    _add_bin_to_syspath(candidate)
     system.path.append(bin_path)
 
     import clr
@@ -86,7 +90,6 @@ import Models
 from System import *
 
 Models = Models
-
 
 
 def get_apsim_file_reader(method: str = 'string'):

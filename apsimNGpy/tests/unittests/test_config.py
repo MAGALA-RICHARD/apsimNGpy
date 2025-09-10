@@ -3,14 +3,30 @@ import shutil
 import unittest
 import os
 # Import the module where CoreModel class is defined
-from apsimNGpy.core.config import (set_apsim_bin_path, get_apsim_bin_path, apsim_version, load_crop_from_disk, GITHUB_RELEASE_NO,
+from apsimNGpy.core.config import (set_apsim_bin_path, get_apsim_bin_path, apsim_version, load_crop_from_disk,
+                                   GITHUB_RELEASE_NO,
                                    auto_detect_apsim_bin_path, get_bin_use_history)
 from apsimNGpy.tests.unittests.base_unit_tests import BaseTester, path
 from pathlib import Path
+from apsimNGpy.exceptions import ApsimBinPathConfigError
 
 TEST_PATH = "/path/to/test/bin"  # apsim bin path to test
 
 auto = auto_detect_apsim_bin_path()
+
+
+def get_dir_size(path: Path) -> int:
+    """Return total size of all files in directory (in bytes)."""
+    total = 0
+    for root, dirs, files in os.walk(path):
+        for name in files:
+            fp = Path(root) / name
+            try:
+                total += fp.stat().st_size
+            except (OSError, FileNotFoundError):
+                # skip files that might disappear during traversal
+                pass
+    return total
 
 
 class TestConfig(BaseTester):
@@ -27,15 +43,20 @@ class TestConfig(BaseTester):
         if not abp:
             self.skipTest('Could not find apsim bin. perhaps not yet set')
         self.assertTrue(p_true)
+        # dir_size = get_dir_size(abp)
+        # self.assertGreater(dir_size, 5, "Bin path is perhaps empty")
 
     def test_get_apsim_version(self):
         import re
-        version = apsim_version(release_number=True)
-        print(version)
+        version = apsim_version(release_number=False)
         pattern = r"^APSIM \d{4}\.\d+\.\d+\.\d+$"
-        match = re.match(pattern, version)
-        if version == GITHUB_RELEASE_NO:
-            self.skipTest(f'APSIM version is {version} un able to test apsim version number likely compiled from source')
+        pattern2 = r"^APSIM\d{4}\.\d+\.\d+\.\d+$"
+        pattern3 = r"^\d{4}\.\d+\.\d+\.\d+$"
+        match = re.match(pattern, version) or re.match(pattern2, version) or re.match(pattern3, version)
+        version1 = apsim_version(release_number=True)
+        if version1 == GITHUB_RELEASE_NO and match is None:
+            self.skipTest(
+                f'APSIM version is {version} un able to test apsim version number likely compiled from source')
         self.assertTrue(match, 'Failed to detect Current APSIM version')
 
     def test_get_bin_use_history(self):
@@ -76,6 +97,22 @@ class TestConfig(BaseTester):
                            msg=f'failed to load using random name and provided work_space {self.work_space}')
         self.paths.add(crop)
 
+    def test_set_apsim_bin_path_invalid(self):
+        """
+        Test that set_apsim_bin_path raises an ApsimBinPathConfigError
+        when given a non-existent APSIM binary path.
+        """
+        invalid_path = Path(f"{self._testMethodName}_invalid_path")
+        if not invalid_path.exists():
+            invalid_path.mkdir(parents=True, exist_ok=True)
+
+        with self.assertRaises(ApsimBinPathConfigError):
+            set_apsim_bin_path(invalid_path, raise_errors=True)
+        try:
+            shutil.rmtree(invalid_path)
+        except PermissionError:
+            pass
+
     def test_set_apsim_bin_path(self):
         """
         Test that set_apsim_bin_path
@@ -83,24 +120,16 @@ class TestConfig(BaseTester):
         @return:
         """
         # Initially retrieve the current APSIM binary path
-        original_path = get_apsim_bin_path()
+        current_path = get_apsim_bin_path()
+        if not current_path:
+            self.skipTest('skipping test_set_apsim_bin_path')
 
-        try:
-            # Set a new test path
+        # Set a new test path
 
-            set_apsim_bin_path(TEST_PATH, raise_errors=False)
+        success = set_apsim_bin_path(current_path, raise_errors=False)
 
-            # Retrieve the path after setting it
-            new_path = get_apsim_bin_path()
-
-            # Check if the new path is as expected
-            self.assertEqual(new_path, new_path, "The APSIM binary path was not updated correctly.")
-        # self.skipTest('The TEST_PATH was not updated')
-
-        finally:
-            # Clean up: restore an original path to avoid side effects in other tests
-            # set_apsim_bin_path(original_path)
-            pass
+        # Check if the new path is as expected
+        self.assertEqual(success, True, "The APSIM binary path was not tested correctly.")
 
     def tearDown(self):
         if os.path.exists(self.work_space):

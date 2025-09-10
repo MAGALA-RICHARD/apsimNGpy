@@ -25,9 +25,10 @@ class TestCoreModel(BaseTester):
 
     def setUp(self):
         self.MODEL_PATH = f"m_{self._testMethodName}.apsimx"
-        self.fp = Path.home() / f"{self._testMethodName}file_path-test.apsimx"
-        self.file_on_disk = load_crop_from_disk("Soybean", out=self.MODEL_PATH)
-        self.save_to = Path(f"{self._testMethodName}.apsimx")
+        out = "m_out_model" + self._testMethodName + '.apsimx'
+        self.fp = Path.home() / f"__{self._testMethodName}file_path-test.apsimx"
+        self.file_on_disk = load_crop_from_disk("Soybean", out=out)
+        self.save_to = Path(f"save_{self._testMethodName}.apsimx")
 
     def mock_model_from_dict(self):
         model_to_dict = self.file_on_disk
@@ -48,7 +49,7 @@ class TestCoreModel(BaseTester):
 
     def test_load_model_from_path_file_mtd(self):
         """Test loading APSIM model from a file path using 'file' method."""
-        model_from_path = load_from_path(self.MODEL_PATH, method='file')
+        model_from_path = load_from_path(self.file_on_disk, method='file')
         g_model = get_model(model_from_path)
         path = getattr(g_model, "FileName", "filepath.com")
 
@@ -83,7 +84,7 @@ class TestCoreModel(BaseTester):
 
     def test_load_load_apsim_model_path(self):
         """Test unified APSIM model loader with file path string input."""
-        out = load_apsim_model(self.MODEL_PATH, out_path=self.MODEL_PATH)
+        out = load_apsim_model(self.file_on_disk, out_path=self.MODEL_PATH)
         sims = cast(out.IModel)
 
         self.assertIsInstance(sims, Models.Core.Simulations, 'loading model from model file path using '
@@ -99,7 +100,7 @@ class TestCoreModel(BaseTester):
 
     def test_load_load_apsim_model_path_out_is_none(self):
         """Test unified APSIM model loader with file path string input."""
-        out = load_apsim_model(self.MODEL_PATH, out_path=None)
+        out = load_apsim_model(self.file_on_disk, out_path=None)
         sims = cast(out.IModel)
 
         self.assertIsInstance(sims, Models.Core.Simulations, 'loading model from model file path using '
@@ -122,6 +123,7 @@ class TestCoreModel(BaseTester):
     def test_load_load_apsim_model_path_from_disk(self):
         """Test unified APSIM model loader with pathlib.Path input."""
         fp = self.file_on_disk
+        print(fp, 'fp', '\n')
         out = load_apsim_model(fp, out_path=self.MODEL_PATH)
         sims = cast(out.IModel)
 
@@ -144,7 +146,7 @@ class TestCoreModel(BaseTester):
     def _test_save_method(self, mod_p):
         if os.path.exists(self.MODEL_PATH):
             try:
-              os.remove(self.MODEL_PATH)
+                os.remove(self.MODEL_PATH)
             except PermissionError:
                 self.skipTest('skipping due to permision error')
         model_to_save = load_apsim_model(mod_p, out_path=self.MODEL_PATH)

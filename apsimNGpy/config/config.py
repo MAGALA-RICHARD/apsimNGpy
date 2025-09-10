@@ -10,15 +10,12 @@ from os.path import join, dirname
 import logging
 from subprocess import Popen, PIPE, run
 import subprocess
-from typing import Union, Optional
-
 import psutil
 import uuid
 from shutil import copy2
 
 logger = logging.getLogger(__name__)
 from apsimNGpy.settings import CONFIG_PATH, create_config, logger
-from apsimNGpy.exceptions import ApsimBinPathConfigError
 from functools import lru_cache
 
 HOME_DATA = Path.home().joinpath('AppData', 'Local', 'Programs')
@@ -37,51 +34,13 @@ def _apsim_model_is_installed(_path: str):
     model_files = False
     path_to_search = Path(_path)
     if platform.system() == 'Windows':
-        model_files = list(path_to_search.glob('*Models.exe*'))  # we tend to avoid recursion here for safety
+        model_files = list(path_to_search.glob('*Models.exe*')) # we tend to avoid recursion here for safety
     if platform.system() == 'Darwin' or platform.system() == 'Linux':
         model_files = list(path_to_search.glob('*Models'))
     if model_files:
         return True
     else:
         return False
-
-
-@lru_cache(maxsize=4)
-def locate_model_bin_path(bin_path: Union[str, Path], recursive: bool = True) -> Optional[Path]:
-    """
-    Search for a directory that contains APSIM binaries.
-
-    A 'match' is any directory containing:
-      - On Windows: Models.dll and Models.exe
-      - On Mac/Linux: Models.dll and Models
-
-    Returns the first matching directory found (depth-first), or None if not found.
-    """
-    bin_path = Path(bin_path).resolve()
-
-    if not bin_path.exists() or not bin_path.is_dir():
-        raise FileNotFoundError(f"{bin_path} is not a directory")
-
-    # Helper to check if this dir has APSIM binaries
-    def has_models(path: Path) -> bool:
-        if platform.system() == "Windows":
-            return (path / "Models.dll").exists() and (path / "Models.exe").exists()
-        else:
-            return (path / "Models.dll").exists() and (path / "Models").exists()
-
-    # Check the provided directory
-    if has_models(bin_path):
-        return bin_path
-
-    # Optionally search subdirectories
-    if recursive:
-        for root, dirs, _ in os.walk(bin_path):
-            for d in dirs:
-                subdir = Path(root) / d
-                if has_models(subdir):
-                    return subdir
-
-    return None
 
 
 def list_drives():
@@ -100,7 +59,6 @@ def list_drives():
 @lru_cache(maxsize=3)
 def scan_dir_for_bin(path: str):
     """
-    @deprecated: use ``locate_model_bin_path``
     Recursively scans directories starting at the given path.
     Stops scanning as soon as a dir_path named 'bin' is encountered and returns its path.
     """
@@ -130,7 +88,7 @@ def scan_drive_for_bin():
     """This function uses scan_dir_for_bin to scan all drive directories.
     for Windows only"""
     for d in list_drives():
-        pp = locate_model_bin_path(d)
+        pp = scan_dir_for_bin(d)
         if pp:
             return pp
 
@@ -169,49 +127,11 @@ def _match_pattern_to_path(pattern):
             return None
 
 
-def any_bin_path_from_env() -> Path:
-    """
-    Finalize resolving the real APSIM bin path or raise a clear error.
-
-    APSIM bin path expected in environment variables:keys include:
-
-            APSIM_BIN_PATH / APSIM_PATH / APSIM/ Models
-    """
-    # 1) Accept None -> try envs
-    bin_path = None
-    env_candidates = {
-        os.getenv("APSIM_BIN_PATH"),
-        os.getenv("APSIM_PATH"),
-        os.getenv("APSIM"),
-        os.getenv('Models')
-    }
-    for c in env_candidates:
-        if c:
-            bin_path = Path(c).resolve()
-            if bin_path.exists():
-                if bin_path.is_file():  # perhaps a models.exe or something executable
-                    bin_path = bin_path.parent
-                else:
-                    bin_path = bin_path
-                break
-
-    if bin_path is not None:
-        # validate this path again
-        try:
-            bin_path = locate_model_bin_path(bin_path)
-        except FileNotFoundError:
-            bin_path = None
-    return bin_path
-
-
 @cache
 def auto_detect_apsim_bin_path():
     """ For Windows, we scan all drives. On macOS, we check the Applications folder, while on Linux, we look in `/usr/local`.
      Additionally, we search the home dir_path, though it is unlikely to be a reliable source.
     """
-    path_from_env = any_bin_path_from_env()
-    if path_from_env is not None:
-        return path_from_env
     if platform.system() == 'Windows':
         return scan_drive_for_bin() or ""
     home_ = os.path.expanduser("~")
@@ -219,10 +139,10 @@ def auto_detect_apsim_bin_path():
         # we search in a few directories home and applications and give up
         apps = '/Applications'
 
-        return locate_model_bin_path(apps) or locate_model_bin_path(home_) or ""
+        return scan_dir_for_bin(apps) or scan_dir_for_bin(home_) or ""
 
-    elif platform.system() == 'Linux':
-        return locate_model_bin_path('/usr/local') or scan_dir_for_bin(home_) or ""
+    if platform.system() == 'Linux':
+        return scan_dir_for_bin('/usr/local') or scan_dir_for_bin(home_) or ""
     else:
         return ""
 
@@ -270,78 +190,42 @@ def get_bin_use_history():
         logger.info('No bin path have been set to get generate bin use histories')
 
 
-def set_apsim_bin_path(path: Union[str, Path],
-                       raise_errors: bool = True,
-                       verbose: bool = False) -> bool:
+def set_apsim_bin_path(path, raise_errors=True, verbose=False):
+    """ Send your desired path to the aPSim binary folder to the config module
+    the path should end with bin as the parent dir_path of the aPSim Model.
+    >> Please be careful with adding an uninstalled path, which does not have model.exe file or unix executable.
+    It won't work and Python with throw an error
+    return true if successful, else false
+    verbose prints the message about each action status
+
+    Example::
+
+         from apsimNGpy.core import config
+         # check the current path
+         config = config.get_apsim_bin_path()
+         # set the desired path
+         config.set_apsim_bin_path(path = '/path/to/APSIM*/bin')
     """
-    Validate and persist the APSIM binary folder path.
-
-    The provided `path` should point to (or contain) the APSIM `bin` directory that
-    includes the required binaries:
-
-      - Windows: Models.dll AND Models.exe
-      - macOS/Linux: Models.dll AND Models (unix executable)
-
-    If `path` is a parent directory, the function will search recursively to locate
-    a matching `bin` directory. The first match is used.
-
-    Returns
-    -------
-    bool
-        True if the configuration was updated (or already valid and set to the same
-        resolved path), False if validation failed and `raise_errors=False`.
-
-    Raises
-    ------
-    ValueError
-        If no valid APSIM binary directory is found and `raise_errors=True`.
-
-    Examples
-    --------
-    >>> from apsimNGpy.core import config
-    >>> # Check the current path
-    >>> current = config.get_apsim_bin_path()
-    >>> # Set the desired path (either the bin folder or a parent)
-    >>> config.set_apsim_bin_path('/path/to/APSIM/2025/bin', verbose=True)
-    """
-    # Normalize user input
-    candidate = Path(path).resolve()
-
-    # Find a valid APSIM bin directory (allows passing a parent folder)
-    validated_bin: Optional[Path] = locate_model_bin_path(candidate, recursive=True)
-
-    if validated_bin is None:
-        msg = (f"No valid APSIM binaries found under '{candidate}'. "
-               f"Expected files: "
-               f"{'Models.dll + Models.exe' if platform.system() == 'Windows' else 'Models.dll + Models (unix executable)'}")
+    _path = realpath(path)
+    if os.path.basename(_path) != 'bin':
+        _path = os.path.join(_path, 'bin')  # this will work only if a base path is valid
+    if not _apsim_model_is_installed(_path):
         if raise_errors:
-            raise ApsimBinPathConfigError(msg)
-        if verbose:
-            logger.warning(msg)
-        return False
-
-    # Compare with existing config (normalize to resolved Path for a fair comparison)
-    try:
-        current = get_apsim_bin_path()
-    except Exception:
-        current = ''
-    current_resolved = Path(current).resolve() if current else None
-
-    if current_resolved and current_resolved == validated_bin:
-        if verbose:
-            logger.info(f"APSIM binary path already set to '{validated_bin}'. No change made.")
-        return True  # Path is already correct
-
-    # Persist the validated bin path
-    create_config(CONFIG_PATH, str(validated_bin))
-
-    if verbose:
-        if current_resolved:
-            logger.info(f"APSIM binary path updated from '{current_resolved}' to '{validated_bin}'.")
+            raise ValueError(f"files might have been uninstalled at this location '{_path}'")
         else:
-            logger.info(f"APSIM binary path set to '{validated_bin}'.")
+            if verbose:
+                logger.warning(f"Attempted to set an invalid path: {_path}")
+            return False  # Optionally, you could return False here to indicate failure
+    current_path = get_apsim_bin_path()
+    if str(_path) != str(current_path):
+        create_config(CONFIG_PATH, _path)
+        if verbose:
+            logger.info(f"APSIM binary path successfully updated from '{current_path}' to '{_path}'")
+        return True
 
-    return True
+    else:
+        if verbose:
+            logger.warning(f"{_path} is similar to exising APSIM binary at this location: '{current_path}'")
 
 
 class Config:

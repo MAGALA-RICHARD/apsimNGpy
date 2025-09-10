@@ -127,6 +127,7 @@ def copy_file(
         dest_path = wd / f"{tag}_{uuid.uuid1()}_{version[-6:]}.apsimx"
 
     # Perform copy
+
     shutil.copy2(source, dest_path)
     return str(dest_path)
 

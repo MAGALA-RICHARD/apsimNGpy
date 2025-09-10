@@ -434,7 +434,7 @@ def apsim_version(release_number: bool = False, verbose: bool = False):
 
 
 @cache
-def load_crop_from_disk(crop: str, out: str = None, work_space: str = None):
+def load_crop_from_disk(crop: str, out: Union[str, Path]):
     """
     Load a default APSIM crop simulation file from disk by specifying only the crop name.
 
@@ -480,9 +480,7 @@ def load_crop_from_disk(crop: str, out: str = None, work_space: str = None):
             loaded_path = target_location[0]
         else:
             raise FileNotFoundError(f"Could not find matching .apsimx file path for crop '{crop}'")
-
-        __wd = Path(work_space) if work_space else Path.cwd()
-        _out_path = out or str(__wd / f"temp_{uuid.uuid1()}_{_version}_{crop}.apsimx")
+        _out_path = Path(out).with_suffix('.apsimx')
         copied_file = copy2(loaded_path, _out_path)
         return copied_file
 

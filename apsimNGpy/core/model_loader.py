@@ -98,9 +98,7 @@ version = apsim_version()
 
 def copy_file(
         source: Union[str, Path],
-        destination: Union[str, Path] = None,
-        wd: Union[str, Path] = None,
-         tag='temp'):
+        destination: Union[str, Path]):
     """
     Copy an APSIMX file to a new location with an updated version tag.
 
@@ -118,16 +116,10 @@ def copy_file(
         Path: Path to the copied file.
     """
     # Ensure working directory is set. defaults to current working directory
-    wd = Path(wd or SCRATCH)
 
-    # Determine destination path
-    if destination:
-        dest_path = str(Path(destination).resolve().with_suffix('.apsimx'))
-    else:
-        dest_path = wd / f"{tag}_{uuid.uuid1()}_{version[-6:]}.apsimx"
 
-    # Perform copy
-
+    # noramlize destination path
+    dest_path = str(Path(destination).resolve().with_suffix('.apsimx'))
     shutil.copy2(source, dest_path)
     return str(dest_path)
 
@@ -193,7 +185,7 @@ def load_from_path(path2file, method='string'):
     return new_model
 
 
-def load_apsim_model(model=None, out_path=None, file_load_method='string', met_file=None, wd=None, **kwargs):
+def load_apsim_model(model=None, out_path=None, file_load_method='string', met_file=None, wd=None, tag='temp_', **kwargs):
     """
     Load an APSIMX model from a file path, dictionary, or in-memory object.
 
@@ -214,7 +206,10 @@ def load_apsim_model(model=None, out_path=None, file_load_method='string', met_f
         model = str(model)
 
     out = {}  # Store final output path
-
+    wd = Path(wd or SCRATCH)
+    DEFAULT_PATH = wd/f"{tag}{uuid.uuid1()}_{version[-6:]}_"
+    out_ = Path(out_path or DEFAULT_PATH)
+    out_path  = out_.with_suffix('.apsimx')
     match model:
         case dict():
             output = out_path or f"{uuid.uuid1()}.apsimx"
@@ -223,9 +218,10 @@ def load_apsim_model(model=None, out_path=None, file_load_method='string', met_f
 
         case str():
             if not model.endswith('.apsimx'):
-                model = load_crop_from_disk(crop=model, out=out_path, work_space=wd)
+                copy_to = load_crop_from_disk(crop=model, out=out_path)
 
-            copy_to = copy_file(model, destination=out_path, wd=wd)
+            else:
+                copy_to = copy_file(model, destination=out_path)
 
             out['path'] = copy_to
             Model = load_from_path(copy_to, file_load_method)
@@ -436,8 +432,8 @@ def get_attributes(obj):
 
 
 if __name__ == '__main__':
-    pat = load_crop_from_disk('Maize')
-    load = load_apsim_model('Maize')
+    pat = load_crop_from_disk('Maize', out='ap')
+    load = load_apsim_model('Maize', 'ap')
     print(load.DataStore, 'datastore')
     p, model, model2 = load.Node, load.IModel, load.IModel
 

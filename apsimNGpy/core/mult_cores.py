@@ -165,12 +165,12 @@ class MultiCoreManager:
             # aggregate them together
             out = dat.agg(self.agg_func, numeric_only=True)
 
-            out['modelName'] = model
+            out['modelName'] = str(model)
 
         else:
             out = _model.results
         # track the model id
-        out['modelName'] = model
+        out['modelName'] = str(model)
         # insert the simulated dataset into the specified database
         self.insert_data(out, table=tables)
         # clean up files related _model object

@@ -95,9 +95,8 @@ class TestConfig(BaseTester):
         self.out_model_path_with_suffix.unlink(missing_ok=True)
 
     def test_loading_not_available_model(self):
-        with self.assertRaises(FileNotFoundError, msg='model not available loaded why'):
-            load_crop_from_disk('Maize_Test',out=self.out_model_path_with_suffix)
-
+        with self.assertRaises(FileNotFoundError, msg='model suspected to be not available loaded why'):
+            load_crop_from_disk(f'Maize_Test-12{self._testMethodName}', out=self.out_model_path_with_suffix)
 
     def _test_work_space_load_crop_from_disk(self):
         """test work space provided actually works"""

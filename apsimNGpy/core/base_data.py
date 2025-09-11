@@ -10,6 +10,7 @@ from apsimNGpy.core.apsim import ApsimModel as SoilModel
 from apsimNGpy.core.config import get_apsim_bin_path, apsim_version
 from apsimNGpy.settings import logger
 from apsimNGpy.settings import SCRATCH
+
 WEATHER_CO = 'NewMetrrr.met'
 # DATA = 'data' after tests, this did not work
 WEA = 'Iem_IA0200.met'
@@ -65,15 +66,16 @@ def __get_example(crop, path=None, simulations_object=True, **kwargs):
         if not simulations_object:
             return copied_file
 
-        aPSim = SoilModel(model =file_path, out_path=target_path, **kwargs)
+        aPSim = SoilModel(model=file_path, out_path=target_path, **kwargs)
 
         return aPSim
     else:
         raise ValueError(f"No crop named:' '{crop}' found at '{example_files_path}'")
 
+
 @lru_cache(maxsize=None)
 def load_default_simulations(crop: str = "Maize", set_wd: [str, Path] = None,
-                             simulations_object: bool = True, **kwargs) :
+                             simulations_object: bool = True, **kwargs):
     """
     Load specific crop default simulation model from the ``APSIM`` Example Folder.
 
@@ -173,5 +175,6 @@ if __name__ == '__main__':
     # sobol.run('Report')
     # mn.run("Report")
 if __name__ == "__main__":
-        import doctest
-        doctest.testmod()
+    import doctest
+
+    doctest.testmod()

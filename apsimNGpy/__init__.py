@@ -33,7 +33,7 @@ __all__.extend([
 # Conditionally import core modules that rely on APSIM binary being available
 if get_apsim_bin_path():
 
-    from apsimNGpy.core import core, apsim, base_data
+    from apsimNGpy.core import core, apsim
     from apsimNGpy.core.apsim import ApsimModel
     from apsimNGpy.core.mult_cores import MultiCoreManager
 
@@ -63,7 +63,6 @@ if get_apsim_bin_path():
         'MultiCoreManager',
         'core',
         'apsim',
-        'base_data',
         'ApsimModel',
         'evaluator',
         'eval_methods',

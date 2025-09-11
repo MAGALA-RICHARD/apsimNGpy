@@ -477,7 +477,7 @@ def load_crop_from_disk(crop: str, out: Union[str, Path]):
         # print(f"{EXa}*/{crop}.{suffix}")
         assert EXa.exists(), (f"failed to located example files folder relative to the location of the {BIN}. Make sure "
                               f"you entered correct bin path")
-        target_location = glob.glob(f"{EXa}/**/*{crop}.{suffix}", recursive=True)  # case-sensitive
+        target_location = glob.glob(f"{str(EXa)}/**/*{crop}.{suffix}", recursive=True)  # case-sensitive
         if target_location:
             loaded_path = target_location[0]
         else:

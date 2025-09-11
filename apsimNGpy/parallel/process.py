@@ -1,7 +1,7 @@
 from concurrent.futures import ProcessPoolExecutor, as_completed, ThreadPoolExecutor
 from multiprocessing import cpu_count
 from typing import Iterable
-from apsimNGpy.core_utils.progbar import ProgressBar
+from apsimNGpy.core_utils.progbar import ProgressBar, enable_vt100_on_windows
 from apsimNGpy.core_utils.database_utils import read_db_table
 from apsimNGpy.core_utils.run_utils import run_model
 from apsimNGpy.settings import NUM_CORES
@@ -41,7 +41,7 @@ def custom_parallel(func, iterable: Iterable, *args, **kwargs):
          such that you dont need to unzip or iterate on such returned data objects.
 
     """
-
+    enable_vt100_on_windows()
     use_thread, cpu_cores = kwargs.get('use_thread', False), kwargs.get('ncores', CORES)
     progress_message = kwargs.get('progress_message', f"Processing via '{func.__name__}' please wait!")
     progress_message += ": "

@@ -1,3 +1,4 @@
+import os
 import sys
 import time
 
@@ -53,12 +54,27 @@ COLOR_CODES = {
 }
 
 
+def enable_vt100_on_windows():
+    if os.name != 'nt':
+        return
+    try:
+        import ctypes
+        kernel32 = ctypes.windll.kernel32
+        h = kernel32.GetStdHandle(-11)  # STD_OUTPUT_HANDLE
+        mode = ctypes.c_uint32()
+        if kernel32.GetConsoleMode(h, ctypes.byref(mode)):
+            kernel32.SetConsoleMode(h, mode.value | 0x0004)  # ENABLE_VIRTUAL_TERMINAL_PROCESSING
+    except Exception:
+        pass
+
+
 def format_time(seconds):
     millis = int((seconds % 1) * 1000)
     seconds = int(seconds)
     mins, sec = divmod(seconds, 60)
     hrs, mins = divmod(mins, 60)
     return f"{hrs:02d}:{mins:02d}:{sec:02d}.{millis:03d}"
+
 
 @dataclass
 class ProgressBar:
@@ -70,7 +86,7 @@ class ProgressBar:
     color: str = 'green'
     leader_head: str = ' '
     show_time: bool = True
-    unit:str = 'iteration'
+    unit: str = 'iteration'
 
     iteration: int = field(default=0, init=False)
     start_time: float = field(default_factory=time.perf_counter, init=False)
@@ -82,10 +98,10 @@ class ProgressBar:
             self.close()
 
     def close(self):
-        self.iteration =0
+        self.iteration = 0
         print()
 
-    def refresh(self, new_total = None):
+    def refresh(self, new_total=None):
         """Force a redraw of the current progress bar without changing the iteration."""
         self.total = new_total or self.total
         self._render()
@@ -102,7 +118,7 @@ class ProgressBar:
         percent_str = color_code + percent + '%' + reset
 
         time_info = ''
-        tasks =''
+        tasks = ''
         if self.show_time and self.iteration > 0:
             elapsed = time.perf_counter() - self.start_time
             avg_time = elapsed / self.iteration
@@ -111,11 +127,11 @@ class ProgressBar:
             tasks = f'{color_code}[{self.iteration}/{self.total}]{reset}'
 
         sys.stdout.write(f'\r{prefix} |{bar}| {percent_str}| {tasks}| {suffix}{time_info}')
-        #sys.stdout.flush()
+        # sys.stdout.flush()
 
 
 def print_progress_bar(iteration, total, prefix='', suffix='', length=10, fill='█', color='green', leader_head=' '):
-    reset_code  = '\033[0m'
+    reset_code = '\033[0m'
     color_code = COLOR_CODES.get(color.lower(), '')
     percent = f"{100 * (iteration / float(total)):.1f}"
     filled_length = int(length * iteration // total)
@@ -125,31 +141,36 @@ def print_progress_bar(iteration, total, prefix='', suffix='', length=10, fill='
     percent = color_code + percent + reset_code
     p_symbol = color_code + '%' + reset_code
 
-    sys.stdout.write(f'\r{prefix} |{bar}| {percent}{p_symbol} {suffix}' )
+    sys.stdout.write(f'\r{prefix} |{bar}| {percent}{p_symbol} {suffix}')
     sys.stdout.flush()
 
-    if total==iteration:
+    if total == iteration:
         print()
 
-def progress(total, color ='blue'):
-    for i in range(total + 1):
 
+def progress(total, color='blue'):
+    for i in range(total + 1):
         print_progress_bar(i, total, prefix='Progress', suffix='Complete', length=10, color=color, fill='.')
         time.sleep(0.03)  # Simulate work
 
+
+enable_vt100_on_windows()
 if __name__ == '__main__':
     # quick tests
-  from apsimNGpy.core.apsim import ApsimModel
-  bar = ProgressBar(total=50, prefix='Progress', suffix='Complete', color='yellow')
-  model = ApsimModel('Maize')
-  def fun(x):
-      xm = x**3/100000000 * 10000000000000000000000000000000000000000
-      time.sleep(1)
-      return xm**3 *5+4*2 * 100000000/1000000 * 10000
-  for y in range(50):
-      model.run()
-      bar.update()
-  bar.close()
-  print(34)
+    from apsimNGpy.core.apsim import ApsimModel
+
+    bar = ProgressBar(total=50, prefix='Progress', suffix='Complete', color='yellow')
+    model = ApsimModel('Maize')
 
 
+    def fun(x):
+        xm = x ** 3 / 100000000 * 10000000000000000000000000000000000000000
+        time.sleep(1)
+        return xm ** 3 * 5 + 4 * 2 * 100000000 / 1000000 * 10000
+
+
+    for y in range(50):
+        model.run()
+        bar.update()
+    bar.close()
+    print(34)

@@ -347,7 +347,7 @@ def model_from_string(mod, out=None):
     if str(mod).endswith('.apsimx'):
         path2file = mod
     else:
-        out = out or os.path.realpath(f'{mod}_testformatx.apsimx')
+        out = out or os.path.realpath(f'{mod}_{uuid.uuid1()}.apsimx')
         path2file = load_crop_from_disk(mod, out=out)
 
     f_name = realpath(path2file)

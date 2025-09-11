@@ -34,6 +34,8 @@ class TestConfig(BaseTester):
         self.model = 'Maize'
         self.user_file_name = os.path.realpath('user_file_name.apsimx')
         self.work_space = 'config_ws'
+        self.out_model_path_with_suffix = Path(f"{self._testMethodName}.apsimx")
+        self.out_model_path_without_suffix = Path(f"w_{self._testMethodName}")
         Path(self.work_space).mkdir(exist_ok=True)
         self.paths = set()  # for storing random paths
 
@@ -82,11 +84,22 @@ class TestConfig(BaseTester):
 
     def test_load_crop_from_disk_default_random_name(self):
         """test if random name is successful"""
-        crop = load_crop_from_disk(self.model)
+        crop = load_crop_from_disk(self.model, out=self.out_model_path_with_suffix)
         self.assertGreater(os.path.getsize(crop), 0, msg='failed to load using random name')
         self.paths.add(crop)
 
-    def test_work_space_load_crop_from_disk(self):
+    def test_loading_model_without_out_path_suffix(self):
+        crop = load_crop_from_disk(self.model, out=self.out_model_path_without_suffix)
+        is_apsimx = crop.suffix == '.apsimx'
+        self.assertTrue(is_apsimx, msg='failed to load model without suffix')
+        self.out_model_path_with_suffix.unlink(missing_ok=True)
+
+    def test_loading_not_available_model(self):
+        with self.assertRaises(FileNotFoundError, msg='model not available loaded why'):
+            load_crop_from_disk('Maize_Test',out=self.out_model_path_with_suffix)
+
+
+    def _test_work_space_load_crop_from_disk(self):
         """test work space provided actually works"""
         # load and return crop path
         crop = load_crop_from_disk(self.model, work_space=self.work_space)
@@ -136,6 +149,8 @@ class TestConfig(BaseTester):
             shutil.rmtree(self.work_space)
         if os.path.exists(self.user_file_name):
             os.remove(self.user_file_name)
+        self.out_model_path_with_suffix.unlink(missing_ok=True)
+        self.out_model_path_without_suffix.unlink(missing_ok=True)
 
         for pa in self.paths:
             if os.path.exists(pa):

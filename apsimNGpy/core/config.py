@@ -461,7 +461,7 @@ def load_crop_from_disk(crop: str, out: Union[str, Path]):
 
     Example::
 
-        >>> load_crop_from_disk("Maize")
+        >>> load_crop_from_disk("Maize", out ='my_maize_example.apsimx')
         'C:/path/to/temp_uuid_Maize.apsimx'
     """
     BIN = get_apsim_bin_path()
@@ -472,11 +472,11 @@ def load_crop_from_disk(crop: str, out: Union[str, Path]):
         suffix = 'apsimx'
 
     if BIN and os.path.exists(BIN):
-        # assumes /Example is in the same parent directory where bins
+        # assumes /Examples dir is in the same parent directory where bins
         EXa = Path(locate_model_bin_path(BIN)).parent/'Examples'
         # print(f"{EXa}*/{crop}.{suffix}")
-        assert EXa.exists(), (f"failed to located example files folder relative to the location of the {BIN}. Make sure "
-                              f"you entered correct bin path")
+        assert EXa.exists(), (f"Failed to located example files folder relative to the location of the {BIN}. Make sure "
+                              f"you entered the correct bin path")
         target_location = glob.glob(f"{str(EXa)}/**/*{crop}.{suffix}", recursive=True)  # case-sensitive
         if target_location:
             loaded_path = target_location[0]

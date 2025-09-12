@@ -79,12 +79,14 @@ If you are using the fleeting uv virtual environment manager.
      pip install git+https://github.com/MAGALA-RICHARD/apsimNGpy.git
 
 
-v0.39.8.14
+v0.4.9.15
 ==============
 Fixes
 ============
-    Additional patches to handle recent APSIM NG file-structure changes.
-    Improved detection and fallback logic in readers/writers.
+
+    Improved detection and fallback logic in find apsim Binaries
+    More strict unittests
+    Ability to build from source
 
 Compatibility
 ==============

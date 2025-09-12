@@ -145,8 +145,7 @@ class TestCoreModel(BaseTester):
     def test_rename(self):
         NEW_NAME = 'NEW_SIM_NAME'
         NEW_SIMs_NAME = 'NEW_SIMULATION_NAME'
-        from apsimNGpy.core.base_data import load_default_simulations
-        model = load_default_simulations(crop='Maize')
+        model = CoreModel(model='Maize')
         model.rename_model(model_type="Simulation", old_name='Simulation', new_name=NEW_NAME)
         # check if it has been successfully renamed
         sims = model.inspect_model(model_type='Simulation', fullpath=False)

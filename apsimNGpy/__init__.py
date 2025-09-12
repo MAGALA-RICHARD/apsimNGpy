@@ -1,5 +1,5 @@
 from apsimNGpy.core.config import get_apsim_bin_path
-from apsimNGpy.core.cs_resources import start_pythonnet
+from apsimNGpy.core.load_clr import start_pythonnet
 
 # from apsimNGpy.core_utils.cs_utils import CastHelper
 __all__ = ['start_pythonnet']
@@ -16,7 +16,7 @@ from apsimNGpy.exceptions import (
     EmptyDateFrameError
 )
 
-__version__ = '0.39.8.14'
+__version__ = '0.4.9.15'
 
 __all__.extend([
     'InvalidInputErrors',

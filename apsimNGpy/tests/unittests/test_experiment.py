@@ -11,8 +11,8 @@ cwd = Path.cwd()
 class TestExperiment(BaseTester):
     def setUp(self):
         # """set up is called before each method"""
-        self.experiment_path = Path(f"exp_{self._testMethodName}.apsimx")
-        self.save_file_name = Path(f"save_{self._testMethodName}.apsimx")
+        self.experiment_path = Path(f"exp_r{self._testMethodName}.apsimx").resolve()
+        self.save_file_name = Path(f"save_r{self._testMethodName}.apsimx").resolve()
         self.experiment_model = Experiment('Maize', out_path=self.experiment_path)
 
     def test_add_factor_with_permutes(self):

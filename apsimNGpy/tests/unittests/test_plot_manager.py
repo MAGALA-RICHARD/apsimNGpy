@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import unittest
 
 SHOW = False  # use this to turm of interactive plot in the panel
-
+import tempfile
 
 class TestPlotting(BaseTester):
 
@@ -14,9 +14,10 @@ class TestPlotting(BaseTester):
         ApsimModel is defined here
         @return:
         """
-        self.test_path = Path(__file__).parent.joinpath(f'test_plots{self._testMethodName}.apsimx')
-        self.figure_name = Path(__file__).parent.joinpath(f'figure{self._testMethodName}.png')
+        self.test_path = Path(f'test_plots{self._testMethodName}.apsimx').resolve()
+        self.figure_name = Path(f'figure{self._testMethodName}.png').resolve()
         self.db_path = self.test_path.with_suffix('.db')
+        self.bak_path = self.db_path.with_suffix('.bak')
         self.model = ApsimModel('Maize', out_path=self.test_path)
         self.model.run()
 
@@ -125,11 +126,13 @@ class TestPlotting(BaseTester):
         plt.close()
 
     def tearDown(self):
-        self.test_path.unlink(missing_ok=True)
-        self.figure_name.unlink(missing_ok=True)
-        self.db_path.unlink(missing_ok=True)
+        try:
+            self.figure_name.unlink(missing_ok=True)
+
+        except PermissionError:
+            pass
+
         # cleans up everything related to the model stored on the computer
-        self.clean_up_apsim_data(self.model.path)
         self.clean_up_apsim_data(self.test_path)
 
 

@@ -3,14 +3,14 @@ import platform
 import sys
 import sys as system
 from apsimNGpy.core import config
-from apsimNGpy.core.cs_resources import start_pythonnet
+from apsimNGpy.core.load_clr import start_pythonnet, dotnet_version
 from pathlib import Path
 from apsimNGpy.exceptions import ApsimBinPathConfigError
 from apsimNGpy.core_utils.utils import timer
 
 APSIM_BIN_PATH = config.get_apsim_bin_path() or config.any_bin_path_from_env()
 
-start_pythonnet()
+pythonnet_start  = start_pythonnet()
 
 meta_info = {}
 
@@ -65,9 +65,7 @@ def load_pythonnet(bin_path=APSIM_BIN_PATH):
     candidate = config.locate_model_bin_path(bin_path)
     _add_bin_to_syspath(candidate)
     system.path.append(bin_path)
-
     import clr
-    start_pythonnet()
     clr.AddReference("System")
     # model_path = os.path.join(bin_path, 'Models.dll')
     # clr.AddReference(model_path)

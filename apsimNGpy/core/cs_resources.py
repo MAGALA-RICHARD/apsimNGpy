@@ -1,20 +1,9 @@
 import os
 from pathlib import Path
 import re
-
+from apsimNGpy.core.load_clr import start_pythonnet
 # Define the path to the config file using pathlib for better cross-platform support
 DLL_DIR = str(Path(__file__).parent.parent / 'dll')
-
-
-def start_pythonnet():
-    import pythonnet
-    try:
-        if pythonnet.get_runtime_info() is None:
-            return pythonnet.load("coreclr")
-    except:
-        print("dotnet not found, trying alternate runtime")
-        return pythonnet.load()
-
 
 start_pythonnet()
 import clr

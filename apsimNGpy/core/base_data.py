@@ -7,10 +7,13 @@ from os.path import join, realpath
 from pathlib import Path
 import uuid
 from apsimNGpy.core.apsim import ApsimModel as SoilModel
-from apsimNGpy.core.config import get_apsim_bin_path, apsim_version
+from apsimNGpy.core.config import get_apsim_bin_path, apsim_version, locate_model_bin_path, load_crop_from_disk
 from apsimNGpy.settings import logger
 from apsimNGpy.settings import SCRATCH
+import warnings
 
+warnings.warn('base_data.py is deprecated and will be removed in future versions of apsimNGpy use ApsimModel instead',
+              DeprecationWarning)
 WEATHER_CO = 'NewMetrrr.met'
 # DATA = 'data' after tests, this did not work
 WEA = 'Iem_IA0200.met'
@@ -18,9 +21,9 @@ APSIM_DATA = 'apsim'
 WEATHER = 'weather'
 from functools import lru_cache
 
-BIN_path = get_apsim_bin_path()
+BIN_path = locate_model_bin_path(get_apsim_bin_path())
 # removed all other functions loading apsim files from the local repository only default apsim simulations
-EXAMPLES_DATA = example_files_path = BIN_path.replace('bin', 'Examples')
+EXAMPLES_DATA = Path(BIN_path).parent / 'Examples'
 version_number = apsim_version()
 useVn = version_number.replace(".", "_")
 
@@ -55,22 +58,12 @@ def __get_example(crop, path=None, simulations_object=True, **kwargs):
         copy_path = Path(path)
 
     target_path = copy_path / f"temp_{uuid.uuid1()}_{crop}.apsimx"
-    target_location = glob.glob(
-        f"{EXAMPLES_DATA}*/{crop}.apsimx")  # no need to capitalize only correct spelling is required
-    # unzip
+    file_path = load_crop_from_disk(crop, out=target_path)
 
-    if target_location:
-        file_path = str(target_location[0])
-        copied_file = shutil.copy2(file_path, target_path)
-
-        if not simulations_object:
-            return copied_file
-
-        aPSim = SoilModel(model=file_path, out_path=target_path, **kwargs)
-
-        return aPSim
+    if simulations_object:
+        return SoilModel(model=file_path, out_path=copy_path/f"temp_c{uuid.uuid1()}_{crop}.apsimx", **kwargs)
     else:
-        raise ValueError(f"No crop named:' '{crop}' found at '{example_files_path}'")
+        return file_path
 
 
 @lru_cache(maxsize=None)

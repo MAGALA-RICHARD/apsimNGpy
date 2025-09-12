@@ -64,7 +64,8 @@ def enable_vt100_on_windows():
         mode = ctypes.c_uint32()
         if kernel32.GetConsoleMode(h, ctypes.byref(mode)):
             kernel32.SetConsoleMode(h, mode.value | 0x0004)  # ENABLE_VIRTUAL_TERMINAL_PROCESSING
-    except Exception:
+    except Exception as e:
+
         pass
 
 

@@ -3,8 +3,16 @@ import os
 from setuptools import setup, find_packages
 import sys
 from functools import cache
+import dotenv
+dotenv.load_dotenv()
 
-VERSION = '0.4.9.15'
+VERSION = os.getenv('VERSION', '0.0.0.0')
+print('Distributing apsimNGVersion: {}'.format(VERSION))
+if VERSION == '0.0.0.0':
+    print('Version not set or loaded')
+else:
+    print(f"writing version: {VERSION} to file")
+
 
 DESCRIPTION = 'APSIM next generation package interface'
 LONG_DESCRIPTION = 'Run, edit, download soils and weather and interact with the apsimx file'

@@ -8,7 +8,7 @@ from collections import OrderedDict
 from apsimNGpy.core.model_tools import ModelTools, Models
 from apsimNGpy.core.cs_resources import CastHelper
 from apsimNGpy.core.pythonet_config import is_file_format_modified
-from apsimNGpy.core.config import APSIM_VERSION_NO, BASE_RELEASE_NO, GITHUB_RELEASE_NO
+from apsimNGpy.core.run_time_info import APSIM_VERSION_NO, BASE_RELEASE_NO, GITHUB_RELEASE_NO
 from apsimNGpy.core.model_loader import to_json_string
 
 if is_file_format_modified():

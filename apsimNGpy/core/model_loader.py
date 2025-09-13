@@ -19,7 +19,7 @@ import json
 from os.path import (realpath)
 import shutil
 from pathlib import Path
-from apsimNGpy.core.config import get_apsim_bin_path, apsim_version, load_crop_from_disk
+from apsimNGpy.core.config import get_apsim_bin_path,load_crop_from_disk
 import subprocess
 from dataclasses import dataclass
 from typing import Any
@@ -27,6 +27,7 @@ from pathlib import Path
 from apsimNGpy.core.cs_resources import CastHelper as CastHelpers
 from apsimNGpy.core.pythonet_config import get_apsim_file_reader, get_apsim_file_writer
 from apsimNGpy.core.pythonet_config import is_file_format_modified
+from apsimNGpy.core.run_time_info import apsim_version
 
 GLOBAL_IS_FILE_MODIFIED = is_file_format_modified()
 scratch_dir = Path.cwd().joinpath('scratch')

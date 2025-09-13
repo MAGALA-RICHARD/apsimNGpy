@@ -46,7 +46,7 @@ def _apsim_model_is_installed(_path: str):
         return False
 
 
-
+@lru_cache(maxsize =1)
 def locate_model_bin_path(bin_path: Union[str, Path], recursive: bool = True) -> Optional[Path]:
     """
     Search for a directory that contains APSIM binaries.
@@ -248,13 +248,18 @@ def get_apsim_bin_path():
         auto_path = auto_detect_apsim_bin_path()
         create_config(CONFIG_PATH, apsim_path=auto_path)
         return auto_path
-
+    if apsim_bin_path:
+        # make sure it has the required binaries
+        try:
+           apsim_bin_path = locate_model_bin_path(apsim_bin_path)
+        except (FileNotFoundError, ValueError, ApsimBinPathConfigError) as e:
+            pass # we are not interested in raising at this point
     return apsim_bin_path
 
 
 def get_bin_use_history():
     """
-    shows the bins that have been used oly those still available on the computer as valid paths are shown.
+    shows the bins that have been used only those still available on the computer as valid paths are shown.
 
     @return: list[paths]
     """
@@ -267,7 +272,7 @@ def get_bin_use_history():
         his = [i for i in his if os.path.exists(i)]
         return his
     else:
-        logger.info('No bin path have been set to get generate bin use histories')
+        logger.info('No bin path have been set to  generate bin use histories')
 
 
 def set_apsim_bin_path(path: Union[str, Path],

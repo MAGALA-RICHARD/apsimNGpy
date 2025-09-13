@@ -30,6 +30,8 @@ def is_file_format_modified():
 
 
 def _add_bin_to_syspath(bin_path: Path) -> None:
+    if not str(bin_path):
+        raise ApsimBinPathConfigError(f'Can not proceed to load pythonnet invalid bin path: {bin_path}')
     # Idempotent: only add if not present (case-insensitive on Windows)
     bin_path = Path(bin_path).resolve()
     paths_norm = [Path(p).resolve() for p in sys.path if isinstance(p, str)]
@@ -63,6 +65,8 @@ def load_pythonnet(bin_path=APSIM_BIN_PATH):
     None
     """
     candidate = config.locate_model_bin_path(bin_path)
+    if not candidate:
+        raise ApsimBinPathConfigError(f'Built APSIM Binaries seems to have been uninstalled from this directory: {bin_path}\n use the config.set_apsim_bin_path')
     _add_bin_to_syspath(candidate)
     system.path.append(bin_path)
     import clr

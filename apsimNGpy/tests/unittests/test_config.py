@@ -101,7 +101,7 @@ class TestConfig(BaseTester):
     def _test_work_space_load_crop_from_disk(self):
         """test work space provided actually works"""
         # load and return crop path
-        crop = load_crop_from_disk(self.model, work_space=self.work_space)
+        crop = load_crop_from_disk(self.model, self.out_model_path_with_suffix)
         dir_name = os.path.dirname(crop)
         self.assertEqual(dir_name, self.work_space)
         # also check that the file has been created

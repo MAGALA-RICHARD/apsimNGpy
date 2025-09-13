@@ -46,7 +46,7 @@ def _apsim_model_is_installed(_path: str):
         return False
 
 
-@lru_cache(maxsize=4)
+
 def locate_model_bin_path(bin_path: Union[str, Path], recursive: bool = True) -> Optional[Path]:
     """
     Search for a directory that contains APSIM binaries.

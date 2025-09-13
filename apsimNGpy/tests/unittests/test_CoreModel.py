@@ -1,6 +1,8 @@
 import os
+import shutil
 import sys
 import unittest
+from functools import lru_cache
 from pathlib import Path
 from unittest.mock import patch
 
@@ -17,6 +19,25 @@ from apsimNGpy.core.pythonet_config import is_file_format_modified
 IS_NEW_APSIM = is_file_format_modified()
 
 wd = Path.cwd() / "test_core"
+
+
+@lru_cache(maxsize=1)  # run once per process
+def prepare():
+    if wd.exists():
+        try:
+            shutil.rmtree(wd)
+            logger.info(f"cleaned up directory {wd}")
+        except PermissionError:
+            for i in wd.iterdir():
+                logger.info(f"removing {i}")
+                if i.is_file():
+                    try:
+                        i.unlink(missing_ok=True)
+                    except PermissionError:
+                        pass
+
+
+prepare()
 wd.mkdir(parents=True, exist_ok=True)
 os.chdir(wd)
 VERSION = apsim_version()
@@ -406,7 +427,7 @@ class TestCoreModel(BaseTester):
 
     def test_simulation_container(self):
         self.assertIsInstance(self.test_ap_sim.Simulations, Models.Core.Simulations,
-                msg=f'{self.test_ap_sim.Simulations} is expeced to be a Models.Core.Simulations object perhaps casting was not done')
+                              msg=f'{self.test_ap_sim.Simulations} is expeced to be a Models.Core.Simulations object perhaps casting was not done')
 
     def tearDown(self):
         self.test_ap_sim.clean_up(db=True)

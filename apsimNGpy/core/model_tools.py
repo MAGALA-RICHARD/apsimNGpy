@@ -14,7 +14,7 @@ from apsimNGpy.settings import *
 from pathlib import Path
 from apsimNGpy.core.model_loader import load_apsim_model
 from apsimNGpy.core.cs_resources import simple_rotation_code, update_manager_code
-from apsimNGpy.core.config import apsim_version, BASE_RELEASE_NO, GITHUB_RELEASE_NO
+from apsimNGpy.core.run_time_info import apsim_version, BASE_RELEASE_NO, GITHUB_RELEASE_NO
 
 IS_NEW_APSIM = is_file_format_modified()
 

@@ -35,7 +35,7 @@ from apsimNGpy.core.runner import run_model_externally, collect_csv_by_model_pat
 from apsimNGpy.core.model_loader import (load_apsim_model, save_model_to_file, recompile, get_node_by_path)
 import ast
 from typing import Any
-from apsimNGpy.core.config import apsim_version, BASE_RELEASE_NO, GITHUB_RELEASE_NO
+from apsimNGpy.core.run_time_info import apsim_version, BASE_RELEASE_NO, GITHUB_RELEASE_NO
 from apsimNGpy.settings import SCRATCH, logger, MissingOption
 from apsimNGpy.core.plotmanager import PlotManager
 from apsimNGpy.core.model_tools import find_child

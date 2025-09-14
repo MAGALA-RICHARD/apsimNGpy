@@ -130,15 +130,22 @@ def get_apsim_file_writer():
         base = Models.Core.ApsimFile.FileFormat
     return getattr(base, 'WriteToString')
 
-def get_apsim_version(bin_path = APSIM_BIN_PATH):
+def get_apsim_version(bin_path = APSIM_BIN_PATH, release_number=False):
     """
     get the APSIM version from the built binaries: models.dll
+    @param release_number: bool,
     @param bin_path: path to the installed apsim_binaries run within python
     @return: str
     """
     from System.Reflection import Assembly
     assembly = Assembly.LoadFrom(os.path.join(bin_path, "Models.dll"))
-    return assembly.GetName().Version.ToString()
+    version = assembly.GetName().Version.ToString()
+    if release_number and version:
+        return version
+    elif version and not release_number:
+        return f"APSIM{version}"
+    else:
+        return version
 
 # Example usage:
 if __name__ == '__main__':

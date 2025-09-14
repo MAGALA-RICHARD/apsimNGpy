@@ -23,7 +23,7 @@ class TestCoreModel(BaseTester):
         self.test_ap_sim.clean_up(db=True)
 
     def test_clone_model(self):
-        from apsimNGpy.core.config import BASE_RELEASE_NO, APSIM_VERSION_NO, GITHUB_RELEASE_NO
+        from apsimNGpy.core.run_time_info import BASE_RELEASE_NO, APSIM_VERSION_NO, GITHUB_RELEASE_NO
         model = self.test_ap_sim
         sim_name = 'clone_test'
         if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:

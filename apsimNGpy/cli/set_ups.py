@@ -2,16 +2,20 @@ import argparse
 import sys
 from os import path
 
+
 def print_msg(msg, normal=True):
     """Print messages with color."""
     color = "\033[96m" if normal else "\033[91m"
     print(f'  {color}{msg}\033[0m')
 
+
 class ColoredHelpFormatter(argparse.HelpFormatter):
     """Custom argparse formatter with colored section headings."""
+
     def start_section(self, heading):
         heading = f"\033[91m{heading}\033[0m"
         super().start_section(heading)
+
 
 def apsim_bin_path():
     parser = argparse.ArgumentParser(
@@ -75,5 +79,7 @@ def apsim_bin_path():
         print_msg(f"APSIM version: {v}")
         sys.exit(0)
 
+
 if __name__ == '__main__':
+    sys.argv.append('-s')
     apsim_bin_path()

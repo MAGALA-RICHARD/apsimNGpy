@@ -11,7 +11,7 @@ from apsimNGpy.core.model_loader import model_from_string
 NEW_APSIM = is_file_format_modified()  # bool
 
 
-class TestCoreModel(unittest.TestCase):
+class TestCastHelper(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # One temp directory for the whole class

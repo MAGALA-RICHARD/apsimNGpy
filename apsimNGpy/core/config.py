@@ -1,3 +1,5 @@
+# nothing should be run here we don't want any errors, as it is sued to set binaries path, which is critical to the
+# application
 import configparser
 import os
 import warnings
@@ -60,7 +62,7 @@ def locate_model_bin_path(bin_path: Union[str, Path], recursive: bool = True) ->
     bin_path = Path(bin_path).resolve()
 
     if not bin_path.exists() or not bin_path.is_dir():
-        raise FileNotFoundError(f"{bin_path} is not a directory")
+        raise NotADirectoryError(f"{bin_path} is not a directory")
 
     # Helper to check if this dir has APSIM binaries
     def has_models(path: Path) -> bool:
@@ -199,7 +201,7 @@ def any_bin_path_from_env() -> Path:
         # validate this path again
         try:
             bin_path = locate_model_bin_path(bin_path)
-        except FileNotFoundError:
+        except NotADirectoryError:
             bin_path = None
     return bin_path
 
@@ -252,7 +254,7 @@ def get_apsim_bin_path():
         # make sure it has the required binaries
         try:
            apsim_bin_path = locate_model_bin_path(apsim_bin_path)
-        except (FileNotFoundError, ValueError, ApsimBinPathConfigError) as e:
+        except (NotADirectoryError, FileNotFoundError, ValueError, ApsimBinPathConfigError) as e:
             pass # we are not interested in raising at this point
     return apsim_bin_path
 
@@ -348,45 +350,6 @@ def set_apsim_bin_path(path: Union[str, Path],
 
     return True
 
-
-class Config:
-    """
-    @deprecated since version 0.2
-
-        The configuration class providing the leeway for the user to change the
-       global variables such as APSIM bin locations. It is deprecated
-        """
-
-    @classmethod
-    def get_aPSim_bin_path(cls):
-        warnings.warn(
-            f'apsimNGpy.config.Config.get_apsim_bin_path for changing apsim binary path is deprecated> '
-            f'use:apsimNGpy.config.get_apsim_bin_path ',
-            FutureWarning)
-        """We can extract the current path from config.ini"""
-        return get_apsim_bin_path()
-
-    @classmethod
-    def set_aPSim_bin_path(cls, path):
-        warnings.warn(
-            f'apsimNGpy.config.Config.set_apsim_bin_path . class for changing apsim binary path is deprecated> '
-            f'use:apsimNGpy.config.set_apsim_bin_path ',
-            FutureWarning)
-
-        """ Send your desired path to the aPSim binary folder to the config module
-        the path should end with bin as the parent dir_path of the aPSim Model.exe
-        >> Please be careful with adding an uninstalled path, which do not have model.exe file.
-        It won't work and python with throw an error
-        >> example from apsimNGpy.config import Config
-        # check the current path
-         config = Config.get_apsim_bin_path()
-         # set the desired path
-         >> Config.set_apsim_bin_path(path = '/path/to/aPSimbinaryfolder/bin')
-        """
-        _path = realpath(path)
-        return set_apsim_bin_path(_path)
-
-
 @cache
 def apsim_version(release_number: bool = False, verbose: bool = False):
     """
@@ -407,7 +370,7 @@ def apsim_version(release_number: bool = False, verbose: bool = False):
     >>> apsim_version(release_number=True)
     '2025.8.7844.0'
     """
-    bin_path = Path(get_apsim_bin_path())
+    bin_path = Path(locate_model_bin_path(get_apsim_bin_path()))
 
     # Determine executable based on OS
     if platform.system() == "Windows":
@@ -430,8 +393,7 @@ def apsim_version(release_number: bool = False, verbose: bool = False):
         release = result.stdout.splitlines()[0].strip()
     except subprocess.CalledProcessError as e:
         raise RuntimeError(
-            f"APSIM version command failed:\n{e.stderr}"
-        ) from e
+            f"APSIM version command failed:\n{e.stderr}")
 
     if release_number:
         return release.replace("APSIM", "").strip()
@@ -511,10 +473,3 @@ def stamp_name_with_version(file_name):
     return dest_path
 
 
-# NOT THE BEST PLACE TO DEFINE BECAUSE IT HAS TO BE SET FIRST YET THIS IS THE CREATING THE SET METHOD
-BASE_RELEASE_NO = '2025.8.7837.0'
-GITHUB_RELEASE_NO = '0.0.0.0'
-try:
-    APSIM_VERSION_NO = apsim_version(release_number=True)
-except Exception as e:
-    APSIM_VERSION_NO = None

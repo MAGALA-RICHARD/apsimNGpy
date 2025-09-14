@@ -4,8 +4,9 @@ import unittest
 import os
 # Import the module where CoreModel class is defined
 from apsimNGpy.core.config import (set_apsim_bin_path, get_apsim_bin_path, apsim_version, load_crop_from_disk,
-                                   GITHUB_RELEASE_NO,
+
                                    auto_detect_apsim_bin_path, get_bin_use_history)
+from apsimNGpy.core.run_time_info import GITHUB_RELEASE_NO
 from apsimNGpy.tests.unittests.base_unit_tests import BaseTester, path
 from pathlib import Path
 from apsimNGpy.exceptions import ApsimBinPathConfigError

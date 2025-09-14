@@ -119,8 +119,56 @@ def get_apsim_file_writer():
         base = Models.Core.ApsimFile.FileFormat
     return getattr(base, 'WriteToString')
 
+def get_apsim_version(bin_path = APSIM_BIN_PATH):
+    """
+    get the APSIM version from the built binaries: models.dll
+    @param bin_path: path to the installed apsim_binaries run within python
+    @return: str
+    """
+    from System.Reflection import Assembly
+    assembly = Assembly.LoadFrom(os.path.join(bin_path, "Models.dll"))
+    return assembly.GetName().Version.ToString()
 
 # Example usage:
 if __name__ == '__main__':
     loader = load_pythonnet()
     loaded_models = loader
+
+
+
+    from System.Reflection import Assembly
+    from System.Diagnostics import FileVersionInfo
+    from System.Reflection import (
+        AssemblyInformationalVersionAttribute,
+        AssemblyFileVersionAttribute,
+        AssemblyCopyrightAttribute,
+    )
+
+    # --- 3) Point to APSIM NG bin and load Models.dll ---
+    APSIM_BIN = os.environ.get("APSIM_BIN_PATH", config.get_apsim_bin_path())
+
+
+    asm = Assembly.LoadFrom(os.path.join(APSIM_BIN, "Models.dll"))
+
+    # --- 4) AssemblyVersion (from [assembly: AssemblyVersion(...)] ) ---
+    assembly_version = asm.GetName().Version.ToString()
+
+    # --- 5) FileVersion (from [AssemblyFileVersion]) ---
+    file_ver = FileVersionInfo.GetVersionInfo(asm.Location).FileVersion  # e.g., "2025.8.7842.0"
+
+
+    # --- 6) Other custom attributes (copyright, informational version) ---
+    def get_attr(asm, attr_type, accessor):
+        attrs = asm.GetCustomAttributes(attr_type, False)
+        return accessor(attrs[0]) if len(attrs) else None
+
+
+    info_ver = get_attr(asm, AssemblyInformationalVersionAttribute, lambda a: a.InformationalVersion)
+    file_attr = get_attr(asm, AssemblyFileVersionAttribute, lambda a: a.Version)
+
+
+    print("AssemblyVersion  :", assembly_version)  # e.g., "0.0.0.0" (from AssemblyVersion)
+    print("FileVersion      :", file_ver)  # e.g., "2025.8.7842.0"
+    print("InformationalVer :", info_ver)  # optional, often includes git/hash
+
+

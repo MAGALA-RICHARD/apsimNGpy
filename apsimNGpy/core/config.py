@@ -354,7 +354,7 @@ def set_apsim_bin_path(path: Union[str, Path],
 def apsim_version(release_number: bool = False, verbose: bool = False):
     """
     Display version information of the APSIM model currently
-    in the apsimNGpy config environment.
+    in the apsimNGpy config environment. runs externally through subprocess module
 
     Parameters
     ----------
@@ -432,7 +432,7 @@ def load_crop_from_disk(crop: str, out: Union[str, Path]):
         'C:/path/to/temp_uuid_Maize.apsimx'
     """
     BIN = get_apsim_bin_path()
-    _version = apsim_version()
+
     if ".apsimx" in crop:
         crop, suffix = crop.split(".")
     else:

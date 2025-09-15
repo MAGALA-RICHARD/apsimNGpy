@@ -3,9 +3,6 @@ import os
 from setuptools import setup, find_packages
 import sys
 from functools import cache
-import dotenv
-
-dotenv.load_dotenv()
 
 VERSION = '0.39.9.15'
 

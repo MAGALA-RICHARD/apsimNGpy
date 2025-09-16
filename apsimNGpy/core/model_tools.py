@@ -14,14 +14,15 @@ from apsimNGpy.settings import *
 from pathlib import Path
 from apsimNGpy.core.model_loader import load_apsim_model
 from apsimNGpy.core.cs_resources import simple_rotation_code, update_manager_code
-from apsimNGpy.core.config import apsim_version, BASE_RELEASE_NO, GITHUB_RELEASE_NO
+from apsimNGpy.core.pythonet_config import get_apsim_version as apsim_version
+from apsimNGpy.core.run_time_info import BASE_RELEASE_NO, GITHUB_RELEASE_NO
 
 IS_NEW_APSIM = is_file_format_modified()
 
 from apsimNGpy.core.cs_resources import CastHelper, sow_using_variable_rule, sow_on_fixed_date, harvest, \
     fertilizer_at_sow, cast_as
 
-APSIM_VERSION = apsim_version(True)
+APSIM_VERSION = apsim_version(release_number=True)
 
 
 

@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 from typing import Any, Dict, Iterable, Iterator, Tuple, Union
 from collections.abc import Mapping, Sequence
+from apsimNGpy.core_utils.utils import timer
 
 JSON = Union[Dict[str, Any], list]
 
@@ -46,7 +47,7 @@ def _all_nodes(root: Mapping):
         if isinstance(ch, Sequence):
             stack.extend(reversed([c for c in ch if isinstance(c, Mapping)]))
 
-
+@timer
 def find_child(model: Union[str, Path, Mapping],
                parent: str,
                model_type: str,
@@ -99,7 +100,7 @@ def _strip_quotes(s: str) -> str:
         return s[1:-1]
     return s
 
-
+@timer
 def find_by_path(
         model: Union[str, Path, Mapping],
         path: str,
@@ -164,10 +165,11 @@ def find_by_path(
         return current
     return current[0] if current else None
 
+@timer
 def list_model_paths(
-    model: Union[str, Path, Mapping],
-    model_type: str,
-    fullpath: bool = True,
+        model: Union[str, Path, Mapping],
+        model_type: str,
+        fullpath: bool = True,
 ) -> List[str]:
     """
     Find all nodes whose $type (before any ', Models, Version=...') equals `model_type`
@@ -195,7 +197,7 @@ def list_model_paths(
         return nm if nm not in (None, "") else (_short_type_name(n.get("$type")) or "<unnamed>")
 
     out: List[str] = []
-    stack: List[Tuple[Tuple[str, ...], Mapping]] = [ ((), tree) ]
+    stack: List[Tuple[Tuple[str, ...], Mapping]] = [((), tree)]
 
     while stack:
         path, node = stack.pop()
@@ -214,6 +216,7 @@ def list_model_paths(
 
     return out
 
+
 from apsimNGpy.core.config import load_crop_from_disk
 
 tree = load_apsimx_dict(load_crop_from_disk('Maize', out='out.apsimx'))
@@ -223,4 +226,4 @@ parent = 'Models.Core.Simulations'
 chid = find_child(tree, parent, model_type=model_type, model_name=model_name)
 print(f"{(parent, model_type, model_name,)}: {chid}")
 node = find_by_path(tree, ".Simulations.Simulation")
-list_model_paths('out.apsimx', 'Models.Report')
+list_model_paths('out.apsimx', 'Models.Climate.Weather', fullpath=False)

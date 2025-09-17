@@ -7,12 +7,15 @@ from functools import lru_cache
 
 
 @lru_cache(maxsize=1)  # runs once during threads
-def start_pythonnet():
+def start_pythonnet(dotnet_root=None):
     import pythonnet
     info = pythonnet.get_runtime_info()
     if info is None:
         try:
-            pythonnet.load("coreclr")
+            if dotnet_root is not None:
+                pythonnet.load("coreclr", dotnet_root=dotnet_root)
+            else:
+                pythonnet.load("coreclr")
         except Exception:
             pythonnet.load()
         info = pythonnet.get_runtime_info()

@@ -170,4 +170,4 @@ if __name__ == '__main__':
 if __name__ == "__main__":
     import doctest
 
-    model = load_default_simulations(crop='Maize', simulations_object=False)
+

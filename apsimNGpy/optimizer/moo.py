@@ -21,9 +21,10 @@ import numpy as np
 # Disable compilation warning
 Config.warnings['not_compiled'] = False
 
+
 class MultiObjectiveProblem(AbstractProblem):
 
-    def __init__(self, apsim_model: Runner, objectives: list, *, decision_vars: list = None, cache_size = 100):
+    def __init__(self, apsim_model: Runner, objectives: list, *, decision_vars: list = None, cache_size=100):
         """
                    Parameters
                    ----------
@@ -43,7 +44,6 @@ class MultiObjectiveProblem(AbstractProblem):
 
         assert all(callable(obj) for obj in objectives), "All objectives must be callable"
 
-
     def evaluate_objectives(self, x, *args, **kwargs):
         for val, spec in zip(x, self.decision_vars):
             edit_runner(self.apsim_model, decision_specs=spec, x_values=val)
@@ -51,8 +51,8 @@ class MultiObjectiveProblem(AbstractProblem):
         df = self.apsim_model.run().results
         return np.array([obj(df) for obj in self.objectives])
 
-    def  optimization_type(self):
-         return 'multi-objective'
+    def optimization_type(self):
+        return 'multi-objective'
 
     def minimize_with_local_solver(self, **kwargs):
         pass  # not needed in this problem
@@ -95,52 +95,34 @@ class MultiObjectiveProblem(AbstractProblem):
         return NSGA2
 
 
-# 1. Setup APSIM model
-runner = Runner("Maize")
-runner.add_report_variable('[Soil].Nutrient.NO3.kgha[1] as nitrate', report_name='Report')
+if __name__ == "__main__":
+    # 1. Setup APSIM model
+    runner = Runner("Maize")
+    runner.add_report_variable('[Soil].Nutrient.NO3.kgha[1] as nitrate', report_name='Report')
 
-# 2. Define decision variables
-decision_vars = [
-    {'name': '.Simulations.Simulation.Field.Fertilise at sowing.Amount', 'v_type': 'float', 'bounds': [50, 300]},
-    {'name': '.Simulations.Simulation.Field.Sow using a variable rule.Population', 'v_type': 'float', 'bounds': [4, 14]}
-]
+    # 2. Define decision variables
+    decision_vars = [
+        {'name': '.Simulations.Simulation.Field.Fertilise at sowing.Amount', 'v_type': 'float', 'bounds': [50, 300]},
+        {'name': '.Simulations.Simulation.Field.Sow using a variable rule.Population', 'v_type': 'float',
+         'bounds': [4, 14]}
+    ]
 
-# below enables defining other parameters that will be required for editing
-_vars = [
-    {'path': '.Simulations.Simulation.Field.Fertilise at sowing', 'Amount': "?", "bounds": [50, 300],
-     "v_type": "float"},
-    {'path': '.Simulations.Simulation.Field.Sow using a variable rule', 'Population': "?", 'v_type': 'float',
-     'bounds': [4, 14]}
-]
-
-
-# 3. Define objective functions
-def negative_yield(df):
-    return -df['Yield'].mean()
+    # below enables defining other parameters that will be required for editing
+    _vars = [
+        {'path': '.Simulations.Simulation.Field.Fertilise at sowing', 'Amount': "?", "bounds": [50, 300],
+         "v_type": "float"},
+        {'path': '.Simulations.Simulation.Field.Sow using a variable rule', 'Population': "?", 'v_type': 'float',
+         'bounds': [4, 14]}
+    ]
 
 
-def nitrate_leaching(df):
-    return df['nitrate'].sum()
+    # 3. Define objective functions
+    def negative_yield(df):
+        return -df['Yield'].mean()
 
 
-objectives = [negative_yield, nitrate_leaching]
+    def nitrate_leaching(df):
+        return df['nitrate'].sum()
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    objectives = [negative_yield, nitrate_leaching]

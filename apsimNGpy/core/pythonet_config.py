@@ -4,6 +4,7 @@ import platform
 import sys
 import sys as system
 from dataclasses import dataclass
+from functools import cache
 from typing import Union
 
 from apsimNGpy.core import config
@@ -12,6 +13,7 @@ from pathlib import Path
 from apsimNGpy.exceptions import ApsimBinPathConfigError
 from apsimNGpy.core_utils.utils import timer
 from apsimNGpy.settings import logger
+
 APSIM_BIN_PATH = config.get_apsim_bin_path() or config.any_bin_path_from_env()
 
 pythonnet_start = start_pythonnet()
@@ -50,6 +52,7 @@ class ConfigRuntimeInfo:
     file_format_modified: bool = is_file_format_modified()
 
 
+@cache
 def load_pythonnet(bin_path=APSIM_BIN_PATH):
     """
     A method for loading Python for .NET (pythonnet) and APSIM models.
@@ -141,6 +144,7 @@ def get_apsim_version(bin_path=APSIM_BIN_PATH, release_number=False):
     @param bin_path: path to the installed apsim_binaries run within python
     @return: str
     """
+
     CI = load_pythonnet(bin_path)
     if not CI.clr_loaded:
         raise ApsimBinPathConfigError(f'Pythonnet and APSIM bin path not yet initialized')

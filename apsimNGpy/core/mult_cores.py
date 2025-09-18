@@ -255,10 +255,10 @@ class MultiCoreManager:
 
 if __name__ == '__main__':
     # quick tests
-    create_jobs = (ApsimModel('Maize').path for _ in range(300))
+    create_jobs = (ApsimModel('Maize').path for _ in range(1000))
 
     Parallel = MultiCoreManager(db_path='testing.db', agg_func=None)
-    Parallel.run_all_jobs(create_jobs, n_cores=4, threads=False, clear_db=True,)
+    Parallel.run_all_jobs(create_jobs, n_cores=16, threads=False, clear_db=True,)
     df = Parallel.get_simulated_output(axis=0)
     Parallel.clear_scratch()
 

@@ -4,11 +4,15 @@ import platform
 import sys
 import sys as system
 from dataclasses import dataclass
+from functools import cache
+from typing import Union
+
 from apsimNGpy.core import config
 from apsimNGpy.core.load_clr import start_pythonnet, dotnet_version
 from pathlib import Path
 from apsimNGpy.exceptions import ApsimBinPathConfigError
 from apsimNGpy.core_utils.utils import timer
+from apsimNGpy.settings import logger
 
 APSIM_BIN_PATH = config.get_apsim_bin_path() or config.any_bin_path_from_env()
 
@@ -44,9 +48,11 @@ def _add_bin_to_syspath(bin_path: Path) -> None:
 @dataclass
 class ConfigRuntimeInfo:
     clr_loaded: bool
+    bin_path: Union[Path, str]
     file_format_modified: bool = is_file_format_modified()
 
 
+@cache
 def load_pythonnet(bin_path=APSIM_BIN_PATH):
     """
     A method for loading Python for .NET (pythonnet) and APSIM models.
@@ -77,7 +83,7 @@ def load_pythonnet(bin_path=APSIM_BIN_PATH):
         raise ApsimBinPathConfigError(
             f'Built APSIM Binaries seems to have been uninstalled from this directory: {bin_path}\n use the config.set_apsim_bin_path')
     _add_bin_to_syspath(candidate)
-    system.path.append(bin_path)
+    # system.path.append(bin_path)
     import clr
     clr.AddReference("System")
     # model_path = os.path.join(bin_path, 'Models.dll')
@@ -86,13 +92,13 @@ def load_pythonnet(bin_path=APSIM_BIN_PATH):
     clr.AddReference("Models")
     if is_file_format_modified():
         clr.AddReference('APSIM.Core')
-        apsim_core= True
-    return ConfigRuntimeInfo(True)
+        apsim_core = True
+    return ConfigRuntimeInfo(True, bin_path=candidate)
 
     # return lm, sys, pythonnet.get_runtime_info()
 
 
-load_pythonnet()
+CI = load_pythonnet()
 # now we can safely import C# libraries
 
 from System.Collections.Generic import *
@@ -130,14 +136,23 @@ def get_apsim_file_writer():
         base = Models.Core.ApsimFile.FileFormat
     return getattr(base, 'WriteToString')
 
-def get_apsim_version(bin_path = APSIM_BIN_PATH, release_number=False):
+
+def get_apsim_version(bin_path=APSIM_BIN_PATH, release_number=False):
     """
     get the APSIM version from the built binaries: models.dll depends on load_pythonnet()
     @param release_number: bool,
     @param bin_path: path to the installed apsim_binaries run within python
     @return: str
     """
-    from System.Reflection import Assembly
+
+    CI = load_pythonnet(bin_path)
+    if not CI.clr_loaded:
+        raise ApsimBinPathConfigError(f'Pythonnet and APSIM bin path not yet initialized')
+    try:
+        from System.Reflection import Assembly
+    except (ModuleNotFoundError, ImportError) as e:
+        logger.error(f"Could not import required system module because apsim_binaries were not set or found")
+        return None
     assembly = Assembly.LoadFrom(os.path.join(bin_path, "Models.dll"))
     version = assembly.GetName().Version.ToString()
     if release_number:
@@ -151,8 +166,6 @@ if __name__ == '__main__':
     loader = load_pythonnet()
     loaded_models = loader
 
-
-
     from System.Reflection import Assembly
     from System.Diagnostics import FileVersionInfo
     from System.Reflection import (
@@ -163,7 +176,6 @@ if __name__ == '__main__':
 
     # --- 3) Point to APSIM NG bin and load Models.dll ---
     APSIM_BIN = os.environ.get("APSIM_BIN_PATH", config.get_apsim_bin_path())
-
 
     asm = Assembly.LoadFrom(os.path.join(APSIM_BIN, "Models.dll"))
 
@@ -183,9 +195,6 @@ if __name__ == '__main__':
     info_ver = get_attr(asm, AssemblyInformationalVersionAttribute, lambda a: a.InformationalVersion)
     file_attr = get_attr(asm, AssemblyFileVersionAttribute, lambda a: a.Version)
 
-
     print("AssemblyVersion  :", assembly_version)  # e.g., "0.0.0.0" (from AssemblyVersion)
     print("FileVersion      :", file_ver)  # e.g., "2025.8.7842.0"
     print("InformationalVer :", info_ver)  # optional, often includes git/hash
-
-

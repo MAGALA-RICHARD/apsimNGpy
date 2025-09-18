@@ -48,7 +48,7 @@ def _apsim_model_is_installed(_path: str):
         return False
 
 
-@lru_cache(maxsize =1)
+@lru_cache(maxsize=1)
 def locate_model_bin_path(bin_path: Union[str, Path], recursive: bool = True) -> Optional[Path]:
     """
     Search for a directory that contains APSIM binaries.
@@ -253,9 +253,9 @@ def get_apsim_bin_path():
     if apsim_bin_path:
         # make sure it has the required binaries
         try:
-           apsim_bin_path = locate_model_bin_path(apsim_bin_path)
+            apsim_bin_path = locate_model_bin_path(apsim_bin_path)
         except (NotADirectoryError, FileNotFoundError, ValueError, ApsimBinPathConfigError) as e:
-            pass # we are not interested in raising at this point
+            pass  # we are not interested in raising at this point
     return apsim_bin_path
 
 
@@ -350,18 +350,21 @@ def set_apsim_bin_path(path: Union[str, Path],
 
     return True
 
+
 @cache
-def apsim_version(release_number: bool = False, verbose: bool = False):
+def apsim_version(bin_path=get_apsim_bin_path(), release_number: bool = False, verbose: bool = False):
     """
     Display version information of the APSIM model currently
     in the apsimNGpy config environment. runs externally through subprocess module
 
     Parameters
     ----------
+    bin_path : str, Path, default to a global bin path in apsimNgpy environmental variables
     release_number : bool, optional
         If True, return only the numeric release version.
     verbose : bool, optional
         If True, prints detailed version information instantly.
+
 
     Example
     -------
@@ -370,7 +373,10 @@ def apsim_version(release_number: bool = False, verbose: bool = False):
     >>> apsim_version(release_number=True)
     '2025.8.7844.0'
     """
-    bin_path = Path(locate_model_bin_path(get_apsim_bin_path()))
+    try:
+        bin_path = Path(locate_model_bin_path(bin_path))
+    except TypeError as e:
+        raise TypeError(f"this error `{e}` has likely occurred because the bin-path `{bin_path}` is invalid or does not exist")
 
     # Determine executable based on OS
     if platform.system() == "Windows":
@@ -378,7 +384,7 @@ def apsim_version(release_number: bool = False, verbose: bool = False):
     else:  # Linux or macOS
         APSIM_EXEC = bin_path / "Models"
 
-    cmd = [str(APSIM_EXEC), "--version"]
+    cmd = [str(APSIM_EXEC),  "--version"]
     if verbose:
         cmd.append("--verbose")
 
@@ -390,6 +396,7 @@ def apsim_version(release_number: bool = False, verbose: bool = False):
             text=True,
             check=True
         )
+        print(result.stdout)
         release = result.stdout.splitlines()[0].strip()
     except subprocess.CalledProcessError as e:
         raise RuntimeError(
@@ -419,6 +426,7 @@ def load_crop_from_disk(crop: str, out: Union[str, Path]):
         ``work_space`` (str, optional): The base directory to use when generating a temporary output path.
                                     If not specified, the current working directory is used.
                                     This path may also contain other simulation or residue files.
+        ``bin_path`` (str, optional): no restriction we can laod from  another path but the verion should
 
     Returns:
         ``str``: The path to the copied `.apsimx` file ready for further manipulation or simulation.
@@ -431,7 +439,7 @@ def load_crop_from_disk(crop: str, out: Union[str, Path]):
         >>> load_crop_from_disk("Maize", out ='my_maize_example.apsimx')
         'C:/path/to/temp_uuid_Maize.apsimx'
     """
-    BIN = get_apsim_bin_path()
+    BIN =  get_apsim_bin_path()
 
     if ".apsimx" in crop:
         crop, suffix = crop.split(".")
@@ -440,10 +448,11 @@ def load_crop_from_disk(crop: str, out: Union[str, Path]):
 
     if BIN and os.path.exists(BIN):
         # assumes /Examples dir is in the same parent directory where bins
-        EXa = Path(locate_model_bin_path(BIN)).parent/'Examples'
+        EXa = Path(locate_model_bin_path(BIN)).parent / 'Examples'
         # print(f"{EXa}*/{crop}.{suffix}")
-        assert EXa.exists(), (f"Failed to located example files folder relative to the location of the {BIN}. Make sure "
-                              f"you entered the correct bin path")
+        assert EXa.exists(), (
+            f"Failed to located example files folder relative to the location of the {BIN}. Make sure "
+            f"you entered the correct bin path")
         target_location = glob.glob(f"{str(EXa)}/**/*{crop}.{suffix}", recursive=True)  # case-sensitive
         if target_location:
             loaded_path = target_location[0]
@@ -471,5 +480,3 @@ def stamp_name_with_version(file_name):
         destination.name.replace(".apsimx", f"{version}.apsimx")
     )
     return dest_path
-
-

@@ -19,7 +19,8 @@ from pathlib import Path
 from typing import Union, List
 import subprocess
 apsim_bin_path = Path(get_apsim_bin_path())
-
+import clr
+import System
 # Determine executable based on OS
 if platform.system() == "Windows":
     APSIM_EXEC = apsim_bin_path / "Models.exe"
@@ -93,32 +94,71 @@ def run_model_externally(model: Union[Path, str], verbose: bool = False, to_csv:
     with contextlib.ExitStack() as stack:
         # stdout is discarded unless verbose is requested
         stdout_pipe = subprocess.PIPE if verbose else subprocess.DEVNULL
-        result = stack.enter_context(
-            subprocess.Popen(
-                cmd,
-                stdout=stdout_pipe,
-                stderr=subprocess.PIPE,
-                text=True,
-                shell=False  # explicit, though default
-            )
-        )
-
         try:
-            out, err = result.communicate()
+            result = stack.enter_context(
+                subprocess.Popen(
+                    cmd,
+                    stdout=stdout_pipe,
+                    stderr=subprocess.PIPE,
+                    text=True,
+                    shell=False  # explicit, though default
+                )
+            )
 
-            if err:
-                wrapped_err = textwrap.fill(err.strip(), width=80)
-                logger.error("APSIM Execution Error:\n" + wrapped_err)
 
-            if verbose and out:
-                wrapped_out = textwrap.fill(out.strip(), width=80)
-                logger.info(f"APSIM Output from {apsim_file}:\n{wrapped_out}")
+            try:
+                out, err = result.communicate()
 
-            return result
+                if err:
+                    wrapped_err = textwrap.fill(err.strip(), width=80)
+                    logger.error("APSIM Execution Error:\n" + wrapped_err)
 
-        finally:
-            if result.poll() is None:
-                result.kill()
+                if verbose and out:
+                    wrapped_out = textwrap.fill(out.strip(), width=80)
+                    logger.info(f"APSIM Output from {apsim_file}:\n{wrapped_out}")
+
+                return result
+
+            finally:
+                if result.poll() is None:
+                    result.kill()
+        except System.IO.FileNotFoundException as e:
+            # Build a robust text to search (message + fusion log; collapse whitespace)
+            msg = f"{e.Message}\n{getattr(e, 'FusionLog', '')}"
+            norm = " ".join(msg.split())
+            fname = getattr(e, "FileName", None) or ""
+
+            if ("System.Text.Encoding.CodePages" in norm or "System.Text.Encoding.CodePages" in fname) \
+                    and ("Version=9.0.0.0" in norm or "Version=9.0.0.0" in fname):
+                print(
+                    "APSIM requires the .NET 9 CodePages assembly.\n"
+                    "Install the .NET 9 Runtime (and Desktop Runtime) and restart:\n"
+                    "  winget install Microsoft.DotNet.Runtime.9\n"
+                    "  winget install Microsoft.DotNet.DesktopRuntime.9"
+                )
+            else:
+                print("Missing file/assembly:")
+                if fname:
+                    print(f"  FileName: {fname}")
+                print(f"  Message : {e.Message}")
+
+            # Re-raise so callers can handle/abort appropriately
+            raise
+
+        except System.BadImageFormatException as e:
+            # Typical when x86/x64 (or ARM/x64) are mixed
+            print(
+                "Architecture mismatch loading .NET/assembly.\n"
+                "Ensure Python, .NET runtime, and APSIM binaries are all 64-bit and match."
+            )
+            print(e.Message)
+            raise
+
+        except Exception as e:
+            # Fallback for anything else
+            print("Unhandled error during APSIM run:")
+            print(e)
+            raise
 
 
 @lru_cache(maxsize=20)

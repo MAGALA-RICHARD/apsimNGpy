@@ -69,8 +69,10 @@ def find_child(parent, child_class, child_name):
     parent = getattr(parent, 'Model', parent)
     if isinstance(child_class, str):
         child_class = validate_model_obj(child_class)
-
-    for child in parent.Children:
+    _children = getattr(parent, "Children", None)
+    if _children is None:
+        _children = parent.GetChildren()
+    for child in _children:
         cast_child = CastHelper.CastAs[child_class](child)
         if child.Name == child_name and cast_child:
             # child = CastHelper.CastAs[child_class](child)

@@ -426,6 +426,7 @@ def load_crop_from_disk(crop: str, out: Union[str, Path]):
         ``work_space`` (str, optional): The base directory to use when generating a temporary output path.
                                     If not specified, the current working directory is used.
                                     This path may also contain other simulation or residue files.
+        ``bin_path`` (str, optional): no restriction we can laod from  another path but the verion should
 
     Returns:
         ``str``: The path to the copied `.apsimx` file ready for further manipulation or simulation.
@@ -438,7 +439,7 @@ def load_crop_from_disk(crop: str, out: Union[str, Path]):
         >>> load_crop_from_disk("Maize", out ='my_maize_example.apsimx')
         'C:/path/to/temp_uuid_Maize.apsimx'
     """
-    BIN = get_apsim_bin_path()
+    BIN =  get_apsim_bin_path()
 
     if ".apsimx" in crop:
         crop, suffix = crop.split(".")

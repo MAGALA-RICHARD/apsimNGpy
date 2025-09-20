@@ -174,13 +174,13 @@ def _read_result_in_parallel(iterable_files: Iterable, ncores: int = None, use_t
 
 
 def worker(x):
-    time.sleep(0.5)
+    time.sleep(0.1)
 
 
 if __name__ == '__main__':
     # quick example
 
-    lm = custom_parallel(worker, range(1000), use_thread=True, ncores=10, void=False)
+    lm = custom_parallel(worker, range(100), use_thread=True, ncores=10, void=True)
 
     ap = [i for i in lm]
 

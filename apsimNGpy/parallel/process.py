@@ -59,7 +59,7 @@ def custom_parallel(func, iterable: Iterable, *args, **kwargs):
                 desc=progress_message,
                 unit="simulation",  # no leading space
                 bar_format=("{desc} {bar} {percentage:3.0f}% "
-                            "<{n_fmt}/{total}=>completed|elapsed=>{elapsed}|eta=>{remaining}|{postfix}"),
+                            "({n_fmt}/{total})=>completed |elapsed=>{elapsed}|eta=>{remaining}|{postfix}"),
                 dynamic_ncols=True,
                 miniters=1, ) as pbar:
             for future in as_completed(futures):
@@ -68,7 +68,7 @@ def custom_parallel(func, iterable: Iterable, *args, **kwargs):
                 elapsed = time.perf_counter() - start
                 avg_rate = elapsed / pbar.n if elapsed > 0 else 0.0
                 sim_rate = pbar.n / elapsed if elapsed > 0 else 0.0
-                pbar.set_postfix_str(f"{avg_rate:.4f} s/simulation or {sim_rate:,.3f} simulation/s")
+                pbar.set_postfix_str(f"({avg_rate:.4f} s/simulation or {sim_rate:,.3f} simulation/s)")
 
                 if not void:
                     yield result

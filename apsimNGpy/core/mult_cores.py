@@ -80,7 +80,8 @@ class MultiCoreManager:
         :return:
         """
         self.db_path = self.db_path or f"{self.tag}_{self.default_db}"
-        self.db_path = Path(self.db_path).resolve()
+        self.db_path = Path(self.db_path).resolve().with_suffix('.db')
+
         try:
             self.db_path.unlink(missing_ok=True)
         except PermissionError:
@@ -309,7 +310,7 @@ class MultiCoreManager:
 
 if __name__ == '__main__':
     # quick tests
-    create_jobs = (ApsimModel('Maize').path for _ in range(1000))
+    create_jobs = (ApsimModel('Maize').path for _ in range(400))
 
     Parallel = MultiCoreManager(db_path='testing.db', agg_func='mean')
     Parallel.run_all_jobs(create_jobs, n_cores=16, threads=False, clear_db=True, )

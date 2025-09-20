@@ -1,13 +1,14 @@
 from concurrent.futures import ProcessPoolExecutor, as_completed, ThreadPoolExecutor
 from multiprocessing import cpu_count
 from typing import Iterable
-from apsimNGpy.core_utils.progbar import ProgressBar, enable_vt100_on_windows
 from apsimNGpy.core_utils.database_utils import read_db_table
 from apsimNGpy.core_utils.run_utils import run_model
 from apsimNGpy.settings import NUM_CORES
+from tqdm import tqdm
 
 CPU = int(int(cpu_count()) * 0.5)
 CORES = NUM_CORES
+import time
 
 
 def select_type(use_thread: bool, n_cores: int):
@@ -41,32 +42,37 @@ def custom_parallel(func, iterable: Iterable, *args, **kwargs):
          such that you dont need to unzip or iterate on such returned data objects.
 
     """
-    enable_vt100_on_windows()
+
     use_thread, cpu_cores = kwargs.get('use_thread', False), kwargs.get('ncores', CORES)
-    progress_message = kwargs.get('progress_message', f"Processing via '{func.__name__}' please wait!")
+    progress_message = kwargs.get('progress_message', f"Processing please wait!")
     progress_message += ": "
     void = kwargs.get('void', False)
     selection = select_type(use_thread=use_thread,
                             n_cores=cpu_cores)
-    bar_format = f"{progress_message}{{l_bar}}{{bar}}| jobs completed: {{n_fmt}}/{{total_fmt}}| Elapsed time: {{elapsed}}"
+
     with selection as pool:
         futures = [pool.submit(func, i, *args) for i in iterable]
-        progress = ProgressBar(total=len(futures), prefix=f"{progress_message}", suffix='Complete', color='green')
-        # with tqdm(
-        #         total=len(futures),
-        #         position=0,
-        #         leave=True,
-        #         bar_format=bar_format
-        # ) as progress:
+        total = len(futures)
+        start = time.perf_counter()
+        with tqdm(
+                total=total,
+                desc=progress_message,
+                unit="simulation",  # no leading space
+                bar_format=("{desc} |{bar}| {percentage:3.0f}% "
+                            "[{n_fmt}/{total}] completed | elapsed {elapsed} | eta {remaining} | {postfix}"),
+                dynamic_ncols=True,
+                miniters=1, ) as pbar:
+            for future in as_completed(futures):
+                result = future.result()
+                pbar.update(1)  # completed so far: pbar.n
+                elapsed = time.perf_counter() - start
+                avg_rate = elapsed / pbar.n if elapsed > 0 else 0.0
+                sim_rate = pbar.n / elapsed if elapsed > 0 else 0.0
+                pbar.set_postfix_str(f"{avg_rate:,.1f} s/simulation or {sim_rate:,.1f} simulation/s")
 
-        if not void:
-            for future in as_completed(futures):
-                yield future.result()
-                progress.update(1)
-        else:
-            for future in as_completed(futures):
-                future.result()
-                progress.update(1)
+                if not void:
+                    yield result
+        if void:
             return None
 
 
@@ -165,13 +171,16 @@ def _read_result_in_parallel(iterable_files: Iterable, ncores: int = None, use_t
     worker = func or read_db_table
     return custom_parallel(worker, iterable_files, report_name, ncores=ncores_2use, progress_message=progress_msg,
                            use_threads=use_threads)
+
+
 def worker(x):
-    pass
+    time.sleep(0.5)
+
 
 if __name__ == '__main__':
     # quick example
 
-    lm = custom_parallel(worker, range(10000), use_thread=True, ncores=10, void=False)
+    lm = custom_parallel(worker, range(1000), use_thread=True, ncores=10, void=False)
 
     ap = [i for i in lm]
 

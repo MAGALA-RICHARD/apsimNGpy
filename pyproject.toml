@@ -43,6 +43,7 @@ dependencies = [
     "tenacity",
     "typer",
     'pymoo',
+    'tqdm==4.67.1',
     "wrapdisc==2.5.0",
     'python-dotenv>=1.0.1,<2.0.0',
     "summarytools>=0.3.0"

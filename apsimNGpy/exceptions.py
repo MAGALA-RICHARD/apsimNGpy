@@ -46,3 +46,8 @@ class ApsimBinPathConfigError(ApsimNGpyError):
 class TableNotFoundError(ApsimNGpyError):
     """table not found error."""
     pass
+
+
+class ApsimRuntimeError(RuntimeError):
+    """occurs when an error occurs during running APSIM models with Models.exe or Models on Mac and linnux"""
+    pass

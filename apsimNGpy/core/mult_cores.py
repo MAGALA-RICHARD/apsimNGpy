@@ -15,10 +15,14 @@ from apsimNGpy.core_utils.database_utils import read_db_table, clear_all_tables,
 from apsimNGpy.parallel.process import custom_parallel
 from sqlalchemy import MetaData, Table, Column, String, Float, Integer, MetaData
 from sqlalchemy import create_engine, text
-
+from apsimNGpy.settings import logger
+from apsimNGpy.exceptions import ApsimRuntimeError
+from apsimNGpy.core.runner import RunError
 # Database connection
+from dataclasses import field
 
 ID = 0
+CORES = max(1, os.cpu_count() // 2)
 
 
 def is_my_iterable(value):
@@ -63,10 +67,25 @@ def insert_data_with_pd(db, table, results, if_exists):
 
 @dataclass(slots=True)
 class MultiCoreManager:
-    db_path: Union[str, Path]
+    db_path: Union[str, Path, None] = None,
     agg_func: Union[str, None] = None
     ran_ok: bool = False
-    tag = None
+    tag = 'multi-core'
+    default_db = 'manager_datastorage.db'
+    incomplete_jobs: list = field(default_factory=list)
+
+    def __post_init__(self):
+        """
+        Initialize the database, note that thhis database is cleaned up everytime the object is called, to avoid table name errors
+        :return:
+        """
+        self.db_path = self.db_path or f"{self.tag}_{self.default_db}"
+        self.db_path = Path(self.db_path).resolve()
+        try:
+            self.db_path.unlink(missing_ok=True)
+        except PermissionError:
+            # failed? no worries, the database is still cleared during clear
+            pass
 
     def insert_data(self, results, table):
         """
@@ -156,27 +175,31 @@ class MultiCoreManager:
         crop_table = [f"{a}_{b}" for a, b in zip(table_names, crops)]
         tables = '_'.join(crop_table)
         # run the model. without specifying report names, they will be detected automatically
-        _model.run()
-        # aggregate the data using the aggregated function
-        if self.agg_func:
-            if self.agg_func not in {'sum', 'mean', 'max', 'min', 'median', 'std'}:
-                raise ValueError(f"unsupported aggregation function {self.agg_func}")
-            dat = _model.results.groupby('source_table')  # if there are more than one table, we do not want to
-            # aggregate them together
-            out = dat.agg(self.agg_func, numeric_only=True)
+        try:
+            _model.run()
+            # aggregate the data using the aggregated function
+            if self.agg_func:
+                if self.agg_func not in {'sum', 'mean', 'max', 'min', 'median', 'std'}:
+                    raise ValueError(f"unsupported aggregation function {self.agg_func}")
+                dat = _model.results.groupby('source_table')  # if there are more than one table, we do not want to
+                # aggregate them together
+                out = dat.agg(self.agg_func, numeric_only=True)
 
+                out['source_name'] = Path(model).name
+
+            else:
+                out = _model.results
+            # track the model id
             out['source_name'] = Path(model).name
-
-        else:
-            out = _model.results
-        # track the model id
-        out['source_name'] = Path(model).name
-        # insert the simulated dataset into the specified database
-        self.insert_data(out, table=tables)
-        # clean up files related _model object
-        _model.clean_up(coerce=False)
-        # collect garbage before gc comes in
-
+            # insert the simulated dataset into the specified database
+            self.insert_data(out, table=tables)
+            # clean up files related _model object
+            _model.clean_up(coerce=False)
+            # collect garbage before gc comes in
+        except ApsimRuntimeError:
+            # print(f"WARNING: could not run {_model.path}")
+            self.incomplete_jobs.append(_model.path)
+            # add the non simulated for a re-try
 
     def get_simulated_output(self, axis=0):
         """
@@ -225,7 +248,7 @@ class MultiCoreManager:
     def clean_up_data(self):
         """Clears the data associated with each job. Please call this emthod after run_all_jobs is complete"""
 
-    def run_all_jobs(self, jobs, *, n_cores=6, threads=False, clear_db=True):
+    def run_all_jobs(self, jobs, *, n_cores=CORES, threads=False, clear_db=True):
         """
         runs all provided jobs using ``processes`` or ``threads`` specified
 
@@ -240,16 +263,47 @@ class MultiCoreManager:
         :return: None
 
         """
+        assert n_cores > 0, 'n_cores must be an integer above zero'
         if clear_db:
             self.clear_db()  # each simulation is fresh,
         # future updates include support for skipping some simulation
         try:
             for _ in custom_parallel(self.run_parallel, jobs, ncores=n_cores, use_threads=threads,
                                      progress_message='Processing all jobs. Please wait!: '):
-                ...
-            self.ran_ok = True
+                pass
+            len_incomplete = len(self.incomplete_jobs)
+
+            if len_incomplete > 0:
+                # Back off if failures exceed core budget; otherwise cap by failures
+                cores = max(1, (n_cores // 2)) if len_incomplete > n_cores else min(len_incomplete, n_cores)
+
+                logger.info(f"Retrying {len_incomplete} failed job(s) with {cores} core(s).")
+
+                for _ in custom_parallel(
+                        self.run_parallel,
+                        self.incomplete_jobs,
+                        ncores=cores,
+                        use_thread=False,
+                        progress_message="Re-running failed jobs",
+                ):
+                    pass
+
+                remaining = len(self.incomplete_jobs)
+                if remaining:
+                    logger.warning(
+                        f"MultiCoreManager exited with {remaining} uncompleted job(s). "
+                        "Inspect `incomplete_jobs` for details."
+                    )
+                else:
+                    logger.info("All previously failed jobs completed on retry.")
+                    # now change the content of incomplete jobs
+                    self.incomplete_jobs.clear()
+
+                gc.collect()
+            else:
+                logger.info(f"MultiCoreManager exited with all jobs completed on first retry")
+                self.ran_ok = True
         finally:
-            # future implementation
             gc.collect()
 
 
@@ -257,8 +311,8 @@ if __name__ == '__main__':
     # quick tests
     create_jobs = (ApsimModel('Maize').path for _ in range(1000))
 
-    Parallel = MultiCoreManager(db_path='testing.db', agg_func=None)
-    Parallel.run_all_jobs(create_jobs, n_cores=16, threads=False, clear_db=True,)
+    Parallel = MultiCoreManager(db_path='testing.db', agg_func='mean')
+    Parallel.run_all_jobs(create_jobs, n_cores=16, threads=False, clear_db=True, )
     df = Parallel.get_simulated_output(axis=0)
     Parallel.clear_scratch()
 

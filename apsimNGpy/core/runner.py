@@ -1,3 +1,4 @@
+from __future__ import annotations
 import os.path
 import pathlib
 import platform
@@ -8,6 +9,14 @@ from subprocess import *
 from typing import Dict, Any, Union
 import contextlib
 import pandas as pd
+
+import logging
+import os
+import shutil
+import subprocess
+from pathlib import Path
+from typing import Mapping, Optional, Union
+
 from functools import lru_cache
 from apsimNGpy.core.config import get_apsim_bin_path
 from apsimNGpy.settings import logger
@@ -18,9 +27,12 @@ from apsimNGpy.core_utils.database_utils import read_db_table, get_db_table_name
 from pathlib import Path
 from typing import Union, List
 import subprocess
+from apsimNGpy.exceptions import ApsimRuntimeError
+
 apsim_bin_path = Path(get_apsim_bin_path())
 import clr
 import System
+
 # Determine executable based on OS
 if platform.system() == "Windows":
     APSIM_EXEC = apsim_bin_path / "Models.exe"
@@ -81,87 +93,115 @@ def upgrade_apsim_file(file: str, verbose: bool = True):
         return file
 
 
-def run_model_externally(model: Union[Path, str], verbose: bool = False, to_csv: bool = False) -> subprocess.Popen[str]:
+class RunError(RuntimeError):
+    """Raised when the APSIM external run fails."""
+
+
+def _ensure_exec(path: Union[str, Path]) -> str:
+    p = Path(path).expanduser().resolve()
+    if not p.is_file():
+        raise FileNotFoundError(f"APSIM executable not found: {p}")
+    if os.name != "nt" and not os.access(p, os.X_OK):
+        raise PermissionError(f"APSIM executable not executable: {p}")
+    return str(p)
+
+
+def _ensure_model(path: Union[str, Path]) -> str:
+    p = Path(path).expanduser().resolve()
+    if not p.is_file():
+        raise FileNotFoundError(f"APSIM model file not found: {p}")
+    # Optional: enforce extension
+    # if p.suffix.lower() != ".apsimx": raise ValueError(f"Expected .apsimx: {p}")
+    return str(p)
+
+
+def run_model_externally(
+        model: Union[Path, str],
+        *,
+        apsim_exec: Optional[Union[Path, str]] = APSIM_EXEC,
+        verbose: bool = False,
+        to_csv: bool = False,
+        timeout: int = 600,
+        cwd: Optional[Union[Path, str]] = None,
+        env: Optional[Mapping[str, str]] = None,
+) -> subprocess.CompletedProcess[str]:
     """
-    Runs an APSIM model externally with cross-platform support and optional CSV output.
-    Captures only stderr by default, unless verbose=True.
+    Run APSIM externally (cross-platform) with safe defaults.
+
+    - Validates an executable and model path.
+    - Captures stderr always; stdout only if verbose.
+    - Uses UTF-8 decoding with error replacement.
+    - Enforces a timeout and returns a CompletedProcess-like object.
+    - Does NOT use shell, eliminating injection risk.
     """
-    apsim_file = model
-    cmd = [str(APSIM_EXEC), str(apsim_file), '--verbose']
+
+    exec_path = _ensure_exec(apsim_exec)
+    model_path = _ensure_model(model)
+
+    cmd = [exec_path, model_path]
+    if verbose:
+        cmd.append("--verbose")
     if to_csv:
-        cmd.append('--csv')
+        cmd.append("--csv")
 
-    with contextlib.ExitStack() as stack:
-        # stdout is discarded unless verbose is requested
-        stdout_pipe = subprocess.PIPE if verbose else subprocess.DEVNULL
-        try:
-            result = stack.enter_context(
-                subprocess.Popen(
-                    cmd,
-                    stdout=stdout_pipe,
-                    stderr=subprocess.PIPE,
-                    text=True,
-                    shell=False  # explicit, though default
-                )
-            )
+    # Working directory default: model’s folder (so relative paths in .apsimx work)
+    if cwd is None:
+        cwd = str(Path(model_path).parent)
 
+    # capture stderr; capture stdout only if verbose
+    stdout_choice = subprocess.PIPE if verbose else subprocess.DEVNULL
 
-            try:
-                out, err = result.communicate()
+    try:
+        proc = subprocess.run(
+            cmd,
+            cwd=cwd,
+            env=dict(os.environ, **(env or {})),
+            stdout=stdout_choice,
+            stderr=subprocess.PIPE,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            shell=False,
+            timeout=timeout,
+        )
+    except FileNotFoundError as e:
+        # Executable or model missing
+        logger.exception("Executable or model file not found for APSIM run.")
+        raise ApsimRuntimeError(str(e)) from e
+    except PermissionError as e:
+        logger.exception("Permission error launching APSIM.")
+        raise ApsimRuntimeError(str(e)) from e
+    except subprocess.TimeoutExpired as e:
+        # `run` already killed the process; include partial output
+        msg = f"APSIM run timed out after {timeout}s: {' '.join(cmd)}"
+        logger.error(msg)
+        if e.stderr:
+            logger.error("stderr (truncated): %s", e.stderr[:4000])
+        if e.stdout and verbose:
+            logger.info("stdout (truncated): %s", e.stdout[:4000])
+        raise ApsimRuntimeError(msg) from e
+    except OSError as e:
+        # Low-level OS error (e.g., exec format error)
+        logger.exception("OS error during APSIM run.")
+        raise ApsimRuntimeError(str(e)) from e
 
-                if err:
-                    wrapped_err = textwrap.fill(err.strip(), width=80)
-                    logger.error("APSIM Execution Error:\n" + wrapped_err)
+    # Log outputs (wrapped to avoid huge lines)
+    if proc.stderr:
+        logger.error("APSIM stderr for %s:\n%s", model_path, proc.stderr.strip())
+    if verbose and proc.stdout:
+        logger.info("APSIM stdout for %s:\n%s", model_path, proc.stdout.strip())
 
-                if verbose and out:
-                    wrapped_out = textwrap.fill(out.strip(), width=80)
-                    logger.info(f"APSIM Output from {apsim_file}:\n{wrapped_out}")
+    # Non-zero exit is treated as failure; caller can relax this if needed
+    if proc.returncode != 0:
+        raise ApsimRuntimeError(
+            f"APSIM exited with code {proc.returncode}. "
+            f"See logs for stderr/stdout."
+        )
 
-                return result
-
-            finally:
-                if result.poll() is None:
-                    result.kill()
-        except System.IO.FileNotFoundException as e:
-            # Build a robust text to search (message + fusion log; collapse whitespace)
-            msg = f"{e.Message}\n{getattr(e, 'FusionLog', '')}"
-            norm = " ".join(msg.split())
-            fname = getattr(e, "FileName", None) or ""
-
-            if ("System.Text.Encoding.CodePages" in norm or "System.Text.Encoding.CodePages" in fname) \
-                    and ("Version=9.0.0.0" in norm or "Version=9.0.0.0" in fname):
-                print(
-                    "APSIM requires the .NET 9 CodePages assembly.\n"
-                    "Install the .NET 9 Runtime (and Desktop Runtime) and restart:\n"
-                    "  winget install Microsoft.DotNet.Runtime.9\n"
-                    "  winget install Microsoft.DotNet.DesktopRuntime.9"
-                )
-            else:
-                print("Missing file/assembly:")
-                if fname:
-                    print(f"  FileName: {fname}")
-                print(f"  Message : {e.Message}")
-
-            # Re-raise so callers can handle/abort appropriately
-            raise
-
-        except System.BadImageFormatException as e:
-            # Typical when x86/x64 (or ARM/x64) are mixed
-            print(
-                "Architecture mismatch loading .NET/assembly.\n"
-                "Ensure Python, .NET runtime, and APSIM binaries are all 64-bit and match."
-            )
-            print(e.Message)
-            raise
-
-        except Exception as e:
-            # Fallback for anything else
-            print("Unhandled error during APSIM run:")
-            print(e)
-            raise
+    return proc
 
 
-@lru_cache(maxsize=20)
+
 def get_matching_files(dir_path: Union[str, Path], pattern: str, recursive: bool = False) -> List[Path]:
     """
     Search for files matching a given pattern in the specified directory.

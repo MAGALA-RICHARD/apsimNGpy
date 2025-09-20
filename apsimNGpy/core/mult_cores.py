@@ -302,7 +302,7 @@ class MultiCoreManager:
 
                 gc.collect()
             else:
-                logger.info(f"MultiCoreManager exited with all jobs completed on first retry")
+                #logger.info(f"MultiCoreManager exited with all jobs completed on first retry")
                 self.ran_ok = True
         finally:
             gc.collect()

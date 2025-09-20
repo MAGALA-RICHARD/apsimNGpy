@@ -47,7 +47,6 @@ IS_NEW_MODEL = is_file_format_modified()
 APSIM_VERSION_NO = apsim_version(release_number=True)
 
 
-
 def _looks_like_path(value: str) -> bool:
     return any(sep in value for sep in (os.sep, '/', '\\')) or value.endswith('.apsimx')
 
@@ -196,7 +195,7 @@ class CoreModel(PlotManager):
         # fixed
         # we can actually specify the simulation name in the bracket
         self.check_model()
-        if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO: # if compiled binaries from github
+        if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:  # if compiled binaries from github
             return ModelTools.find_all_in_scope(self.Simulations, Models.Core.Simulation)
         return list(self.Simulations.FindAllDescendants[Models.Core.Simulation]())
 
@@ -261,7 +260,7 @@ class CoreModel(PlotManager):
         """
         _path = str(file_name or self.path)
         self.path = _path
-        if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO== GITHUB_RELEASE_NO:
+        if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
             self.Simulations.Write(str(_path))
         else:
             sm = getattr(self.Simulations, 'Node', self.Simulations)
@@ -498,7 +497,7 @@ class CoreModel(PlotManager):
                     except AttributeError:
                         delete_all_tables(str(db))
                 except PermissionError:
-                        pass
+                    pass
 
             # Run APSIM externally
             res = run_model_externally(
@@ -514,14 +513,9 @@ class CoreModel(PlotManager):
 
             # If the model failed and verbose was off, rerun to diagnose
             if not self.ran_ok and not verbose:
-                from apsimNGpy.exceptions import InvalidInputErrors
-                self.run(verbose=True)
-
-                raise InvalidInputErrors(f'Invalid inputs encountered. Please diagnose and try again')
+                logger.info('run time errors occured')
 
             return self
-
-
 
         finally:
             ...
@@ -732,7 +726,7 @@ class CoreModel(PlotManager):
 
             ``source`` (Models, str, CoreModel, ApsimModel object): ``defaults`` to Models namespace, implying a fresh non modified model.
             The source can be an existing Models or string name to point to one fo the default model example, which we can extract the model
-            
+
             ``override`` (bool, optional): defaults to `True`. When `True` (recomended) it delete for any model with same name and type at the suggested parent location before adding the new model
             if ``False`` and proposed model to be added exists at the parent location, ``APSIM`` automatically generates a new name for the newly added model. This is not recommended.
         Returns:
@@ -1317,7 +1311,7 @@ class CoreModel(PlotManager):
         if not APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
             if report_name:
                 get_report = ModelTools.find_child(self.Simulations, Models.Report, report_name)
-                #get_report = self.Simulations.FindDescendant[Models.Report](report_name)
+                # get_report = self.Simulations.FindDescendant[Models.Report](report_name)
             else:
                 get_report = self.Simulations.FindDescendant[Models.Report]()
         else:
@@ -1349,7 +1343,7 @@ class CoreModel(PlotManager):
             Returns:
             -------------
                 The name of the simulation to remove
-                
+
         """
         # this is a repetition because I want to deprecate it and maintain simulation_name or use get_simulation_name
         return self.simulation_names
@@ -2432,10 +2426,10 @@ class CoreModel(PlotManager):
             ----------
             ``weather_file``: Union[Path, str], required):
                 Weather file name, path should be relative to simulation or absolute.
-                
+
             ``simulations`` (str, optional)
                 List of simulation names to update, if `None` update all simulations.
-                
+
             """
             # we need to catch file not found errors before it becomes a problem
             if not os.path.isfile(weather_file):
@@ -2857,9 +2851,9 @@ class CoreModel(PlotManager):
             >>> from apsimNGpy.core.base_data import load_default_simulations
             >>> model = load_default_simulations(crop = 'Maize')
             >>> model.replace_soil_properties_by_path(path = 'None.Soil.Organic.None.None.Carbon', param_values= [1.23])
-            
+
             # if we want to replace ``carbon`` at the ``bottom`` of the ``soil profile``, we use a negative index  -1
-            
+
            >>>  model.replace_soil_properties_by_path(path = 'None.Soil.Organic.None.[-1].Carbon', param_values= [1.23])   
         """
 

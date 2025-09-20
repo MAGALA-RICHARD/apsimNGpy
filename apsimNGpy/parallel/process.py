@@ -58,8 +58,8 @@ def custom_parallel(func, iterable: Iterable, *args, **kwargs):
                 total=total,
                 desc=progress_message,
                 unit="simulation",  # no leading space
-                bar_format=("{desc} |{bar}| {percentage:3.0f}% "
-                            "[{n_fmt}/{total}] completed | elapsed {elapsed} | eta {remaining} | {postfix}"),
+                bar_format=("{desc} {bar} {percentage:3.0f}% "
+                            "<{n_fmt}/{total}=>completed|elapsed=>{elapsed}|eta=>{remaining}|{postfix}"),
                 dynamic_ncols=True,
                 miniters=1, ) as pbar:
             for future in as_completed(futures):

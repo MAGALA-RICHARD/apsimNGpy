@@ -41,12 +41,15 @@ def custom_parallel(func, iterable: Iterable, *args, **kwargs):
      ``void`` (bool, optional): if True, it implies that the we start consuming data internally right away, recomended for methods that operates on objects without returning data,
          such that you dont need to unzip or iterate on such returned data objects.
 
+    ``unit`` to display during progress, it is only cosmetic, for showing the iteration rate, defaults to iteration
+
     """
 
     use_thread, cpu_cores = kwargs.get('use_thread', False), kwargs.get('ncores', CORES)
     progress_message = kwargs.get('progress_message', f"Processing please wait!")
     progress_message += ": "
     void = kwargs.get('void', False)
+    unit = kwargs.get('unit', 'iteration')
     selection = select_type(use_thread=use_thread,
                             n_cores=cpu_cores)
 
@@ -57,7 +60,7 @@ def custom_parallel(func, iterable: Iterable, *args, **kwargs):
         with tqdm(
                 total=total,
                 desc=progress_message,
-                unit="simulation",  # no leading space
+                unit=unit,  # no leading space
                 bar_format=("{desc} {bar} {percentage:3.0f}% "
                             "({n_fmt}/{total}) >> completed (elapsed=>{elapsed}, eta=>{remaining}) {postfix}"),
                 dynamic_ncols=True,
@@ -68,7 +71,7 @@ def custom_parallel(func, iterable: Iterable, *args, **kwargs):
                 elapsed = time.perf_counter() - start
                 avg_rate = elapsed / pbar.n if elapsed > 0 else 0.0
                 sim_rate = pbar.n / elapsed if elapsed > 0 else 0.0
-                pbar.set_postfix_str(f"({avg_rate:.4f} s/simulation or {sim_rate:,.3f} simulation/s)")
+                pbar.set_postfix_str(f"({avg_rate:.4f} s/{unit} or {sim_rate:,.3f} {unit}/s)")
 
                 if not void:
                     yield result

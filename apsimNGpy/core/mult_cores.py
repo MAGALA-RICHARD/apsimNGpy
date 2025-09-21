@@ -8,6 +8,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Union
 
+from pyparsing import results
+
 from apsimNGpy.core_utils.utils import timer
 import pandas as pd
 from apsimNGpy.core.apsim import ApsimModel
@@ -22,10 +24,12 @@ from apsimNGpy.core.runner import RunError
 # Database connection
 from dataclasses import field
 import copy
+from typing import Union, Literal
+
 ID = 0
 # default cores to use
 CORES = max(1, math.ceil(os.cpu_count() * 0.85))
-
+csv_doc = pd.DataFrame().to_csv.__doc__
 
 def is_my_iterable(value):
     """Check if a value is an iterable, but not a string."""
@@ -240,7 +244,94 @@ class MultiCoreManager:
                 pass
 
     def clean_up_data(self):
-        """Clears the data associated with each job. Please call this emthod after run_all_jobs is complete"""
+        """Clears the data associated with each job. Please call this method after run_all_jobs is complete"""
+
+
+
+    def save_tosql(
+            self,
+            db_name: Union[str, Path],
+            *,
+            table_name: str = "Report",
+            if_exists: Literal["fail", "replace", "append"] = "append",
+    ) -> None:
+        """
+        Persist simulation results to a SQLite database table.
+
+        This method writes `self.results` (a pandas DataFrame) to the given SQLite
+        database. It is designed to be robust in workflows where some simulations
+        may fail: any successfully simulated rows present in `self.results` are
+        still saved. This is useful when an ephemeral/temporary database was used
+        during simulation and you need a durable copy.
+
+        Parameters
+        ----------
+        db_name : str | pathlib.Path
+            Target database file. If a name without extension is provided, a
+            ``.db`` suffix is appended. If a relative path is given, it resolves
+            against the current working directory.
+        table_name : str, optional
+            Name of the destination table. Defaults to ``"Report"``.
+        if_exists : {"fail", "replace", "append"}, optional
+            Write mode passed through to pandas:
+            - ``"fail"``    : raise if the table already exists.
+            - ``"replace"`` : drop the table, create a new one, then insert.
+            - ``"append"``  : insert rows into existing table (default).
+
+        Raises
+        ------
+        ValueError
+            If `self.results` is missing or empty.
+        TypeError
+            If `self.results` is not a pandas DataFrame.
+        RuntimeError
+            If the underlying database write fails.
+
+        Notes
+        -----
+        - Ensure that `self.results` contains only the rows you intend to persist.
+          If you maintain a separate collection of failed/incomplete jobs, they
+          should not be included in `self.results`.
+        - This method does not mutate `self.results`.
+
+        Examples
+        --------
+        >>> mgr.results.head()
+           sim_id  yield  n2o
+        0       1   10.2  0.8
+        >>> mgr.save("outputs/simulations.db", table_name="maize_runs", if_exists="append")
+        """
+        # --- Validate results
+        results = getattr(self, "results", None)
+        if results is None or (isinstance(results, pd.DataFrame) and results.empty):
+            raise ValueError("No simulation results to save: `self.results` is empty or missing.")
+        if not isinstance(results, pd.DataFrame):
+            raise TypeError(f"`self.results` must be a pandas DataFrame, got {type(results)!r}.")
+
+        # --- Normalize path and ensure .db suffix
+        db_path = Path(db_name)
+
+        db_path = db_path.with_suffix(".db")
+        db_path.parent.mkdir(parents=True, exist_ok=True)
+
+        # --- Write
+        try:
+            insert_data_with_pd(
+                db=str(db_path),
+                table=table_name,
+                results=results,
+                if_exists=if_exists,  # align with pandas convention
+            )
+        except Exception as exc:
+            raise RuntimeError(f"Failed to save results to {db_path} (table={table_name!r}).") from exc
+    def save_tocsv(self, path_or_buf, **kwargs):
+
+        if self.results is not None and not self.results.empty:
+
+            self.results.to_csv(path_or_buf, **kwargs)
+        else:
+            raise ValueError("results are empty or not yet simulated")
+
 
     def run_all_jobs(self, jobs, *, n_cores=CORES, threads=False, clear_db=True, **kwargs):
         """
@@ -274,7 +365,10 @@ class MultiCoreManager:
             for _ in range(retry_rate):
                 # how many jobs were incompleted?
                 len_incomplete = len(self.incomplete_jobs)
-                if len_incomplete > 0:
+                if len_incomplete == 0:
+                    self.ran_ok=  True
+                    return
+                else:
                     # Back off if failures exceed core budget; otherwise cap by failures
                     cores = n_cores if len_incomplete > n_cores else min(len_incomplete, n_cores)
 
@@ -297,8 +391,7 @@ class MultiCoreManager:
                         self.ran_ok = True
                         gc.collect()
                         break # no need to continue
-                else:
-                    self.ran_ok = True
+
             else:
 
                 # at this point the error causing the failures is more than serious, although it's being excepted as runtime error
@@ -311,11 +404,18 @@ class MultiCoreManager:
 
         finally:
             gc.collect()
+MultiCoreManager.save_tocsv.__doc__ = """  Persist simulation results to a SQLite database table.
 
+        This method writes `self.results` (a pandas DataFrame) to the given SQLite
+        database. It is designed to be robust in workflows where some simulations
+        may fail: any successfully simulated rows present in `self.results` are
+        still saved. This is useful when an ephemeral/temporary database was used
+        during simulation and you need a durable copy\n.
+        """ + csv_doc
 
 if __name__ == '__main__':
     # quick tests
-    create_jobs = [ApsimModel('Maize').path for _ in range(16*10)]
+    create_jobs = [ApsimModel('Maize').path for _ in range(16*5)]
 
     Parallel = MultiCoreManager(db_path='testing.db', agg_func='mean')
     Parallel.run_all_jobs(create_jobs, n_cores=16, threads=False, clear_db=True, retry_rate=1)

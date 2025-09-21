@@ -31,6 +31,7 @@ ID = 0
 CORES = max(1, math.ceil(os.cpu_count() * 0.85))
 csv_doc = pd.DataFrame().to_csv.__doc__
 
+
 def is_my_iterable(value):
     """Check if a value is an iterable, but not a string."""
     return isinstance(value, Iterable) and not isinstance(value, str)
@@ -95,7 +96,7 @@ class MultiCoreManager:
         engine = create_engine(f"sqlite:///{str(self.db_path)}")
         metadata = MetaData()
 
-        #there may be need for manual schema in future
+        # there may be need for manual schema in future
         if isinstance(results, pd.DataFrame):
             results_num = results.select_dtypes(include='number')
 
@@ -146,9 +147,9 @@ class MultiCoreManager:
     def tables(self):
         "Summarizes all the tables that have been created from the simulations"
         if os.path.exists(self.db_path) and os.path.isfile(self.db_path) and str(self.db_path).endswith('.db'):
-                dt = read_db_table(self.db_path, report_name='table_names')
-                # get only unique tables
-                return set(dt.table.values)
+            dt = read_db_table(self.db_path, report_name='table_names')
+            # get only unique tables
+            return set(dt.table.values)
         else:
             raise ValueError("Attempting to get results from database before running all jobs")
         return None
@@ -198,7 +199,6 @@ class MultiCoreManager:
 
             self.incomplete_jobs.append(_model.path)
 
-
     def get_simulated_output(self, axis=0):
         """
         Get simulated output from the API
@@ -245,8 +245,6 @@ class MultiCoreManager:
 
     def clean_up_data(self):
         """Clears the data associated with each job. Please call this method after run_all_jobs is complete"""
-
-
 
     def save_tosql(
             self,
@@ -324,6 +322,7 @@ class MultiCoreManager:
             )
         except Exception as exc:
             raise RuntimeError(f"Failed to save results to {db_path} (table={table_name!r}).") from exc
+
     def save_tocsv(self, path_or_buf, **kwargs):
 
         if self.results is not None and not self.results.empty:
@@ -331,7 +330,6 @@ class MultiCoreManager:
             self.results.to_csv(path_or_buf, **kwargs)
         else:
             raise ValueError("results are empty or not yet simulated")
-
 
     def run_all_jobs(self, jobs, *, n_cores=CORES, threads=False, clear_db=True, **kwargs):
         """
@@ -358,7 +356,7 @@ class MultiCoreManager:
         try:
             for _ in custom_parallel(self.run_parallel, jobs, ncores=n_cores, use_threads=threads,
                                      progress_message='Processing all jobs', unit='simulation'):
-                pass # holder to unzip jobs
+                pass  # holder to unzip jobs
 
             retry_rate = kwargs.get("retry_rate", 1)
 
@@ -366,7 +364,7 @@ class MultiCoreManager:
                 # how many jobs were incompleted?
                 len_incomplete = len(self.incomplete_jobs)
                 if len_incomplete == 0:
-                    self.ran_ok=  True
+                    self.ran_ok = True
                     return
                 else:
                     # Back off if failures exceed core budget; otherwise cap by failures
@@ -376,7 +374,7 @@ class MultiCoreManager:
                     # iterable is replaced by the incomplete jobs, but we need to copy first
                     incomplete__jobs = tuple(copy.deepcopy(self.incomplete_jobs))
                     # clear to prepare for new assessments
-                    self.incomplete_jobs.clear() # at every simulation, an incomplete job is appended
+                    self.incomplete_jobs.clear()  # at every simulation, an incomplete job is appended
                     for _ in custom_parallel(
                             self.run_parallel,
                             incomplete__jobs,
@@ -384,26 +382,27 @@ class MultiCoreManager:
                             use_thread=False,
                             progress_message="Re-running failed jobs",
                     ):
-                        pass # holder to unzip jobs
-
+                        pass  # holder to unzip jobs
 
                     if not self.incomplete_jobs:
                         self.ran_ok = True
                         gc.collect()
-                        break # no need to continue
+                        break  # no need to continue
 
             else:
 
                 # at this point the error causing the failures is more than serious, although it's being excepted as runtime error
                 if self.incomplete_jobs:
-                        logger.warning(
-                            f"MultiCoreManager exited with {len(self.incomplete_jobs)} uncompleted job(s). "
-                            "Inspect `incomplete_jobs` for details."
-                        )
+                    logger.warning(
+                        f"MultiCoreManager exited with {len(self.incomplete_jobs)} uncompleted job(s). "
+                        "Inspect `incomplete_jobs` for details."
+                    )
                 gc.collect()
 
         finally:
             gc.collect()
+
+
 MultiCoreManager.save_tocsv.__doc__ = """  Persist simulation results to a SQLite database table.
 
         This method writes `self.results` (a pandas DataFrame) to the given SQLite
@@ -415,11 +414,11 @@ MultiCoreManager.save_tocsv.__doc__ = """  Persist simulation results to a SQLit
 
 if __name__ == '__main__':
     # quick tests
-    create_jobs = [ApsimModel('Maize').path for _ in range(16*5)]
+    create_jobs = [ApsimModel('Maize').path for _ in range(16 * 5)]
 
     Parallel = MultiCoreManager(db_path='testing.db', agg_func='mean')
     Parallel.run_all_jobs(create_jobs, n_cores=16, threads=False, clear_db=True, retry_rate=1)
     df = Parallel.get_simulated_output(axis=0)
     Parallel.clear_scratch()
 
-    #insert_data_with_pd('tss.db', 'my', df, 'replace')
+    # insert_data_with_pd('tss.db', 'my', df, 'replace')

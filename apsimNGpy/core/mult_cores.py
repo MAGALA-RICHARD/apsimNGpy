@@ -78,7 +78,7 @@ class MultiCoreManager:
         try:
             self.db_path.unlink(missing_ok=True)
         except PermissionError:
-            # failed? no worries, the database is still cleared during clear
+            # failed? no worries, the database is still cleared later by deleting all tables this is because inserting data just append
             pass
 
     def insert_data(self, results, table):
@@ -91,7 +91,7 @@ class MultiCoreManager:
         engine = create_engine(f"sqlite:///{str(self.db_path)}")
         metadata = MetaData()
 
-        #there may be need for mannual schema in future
+        #there may be need for manual schema in future
         if isinstance(results, pd.DataFrame):
             results_num = results.select_dtypes(include='number')
 

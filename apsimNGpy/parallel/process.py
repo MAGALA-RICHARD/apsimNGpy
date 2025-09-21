@@ -59,7 +59,7 @@ def custom_parallel(func, iterable: Iterable, *args, **kwargs):
                 desc=progress_message,
                 unit="simulation",  # no leading space
                 bar_format=("{desc} {bar} {percentage:3.0f}% "
-                            "({n_fmt}/{total})=>completed |elapsed=>{elapsed}|eta=>{remaining}|{postfix}"),
+                            "({n_fmt}/{total}) >> completed (elapsed=>{elapsed}, eta=>{remaining}) {postfix}"),
                 dynamic_ncols=True,
                 miniters=1, ) as pbar:
             for future in as_completed(futures):
@@ -74,6 +74,7 @@ def custom_parallel(func, iterable: Iterable, *args, **kwargs):
                     yield result
         if void:
             return None
+        return None
 
 
 # _______________________________________________________________

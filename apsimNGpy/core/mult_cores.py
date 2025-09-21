@@ -141,8 +141,7 @@ class MultiCoreManager:
     @property
     def tables(self):
         "Summarizes all the tables that have been created from the simulations"
-        if self.ran_ok:
-            if os.path.exists(self.db_path) and os.path.isfile(self.db_path) and str(self.db_path).endswith('.db'):
+        if os.path.exists(self.db_path) and os.path.isfile(self.db_path) and str(self.db_path).endswith('.db'):
                 dt = read_db_table(self.db_path, report_name='table_names')
                 # get only unique tables
                 return set(dt.table.values)

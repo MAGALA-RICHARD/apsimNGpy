@@ -1,4 +1,5 @@
 import gc
+import math
 import os.path
 import shutil
 import time
@@ -20,9 +21,10 @@ from apsimNGpy.exceptions import ApsimRuntimeError
 from apsimNGpy.core.runner import RunError
 # Database connection
 from dataclasses import field
-
+import copy
 ID = 0
-CORES = max(1, os.cpu_count() // 2)
+# default cores to use
+CORES = max(1, math.ceil(os.cpu_count() * 0.85))
 
 
 def is_my_iterable(value):
@@ -50,15 +52,6 @@ def simulation_exists(db_path: str, table_name: str, simulation_id: int) -> bool
         return result is not None
 
 
-# Example usage:
-# if simulation_exists("my_database.sqlite", "results", 42):
-#     print("Simulation exists!")
-# else:
-#     print("Simulation not found.")
-
-setData = set()
-
-
 @timer
 def insert_data_with_pd(db, table, results, if_exists):
     engine = create_engine(f'sqlite:///{db}')
@@ -76,7 +69,7 @@ class MultiCoreManager:
 
     def __post_init__(self):
         """
-        Initialize the database, note that thhis database is cleaned up everytime the object is called, to avoid table name errors
+        Initialize the database, note that this database is cleaned up everytime the object is called, to avoid table name errors
         :return:
         """
         self.db_path = self.db_path or f"{self.tag}_{self.default_db}"
@@ -98,7 +91,7 @@ class MultiCoreManager:
         engine = create_engine(f"sqlite:///{str(self.db_path)}")
         metadata = MetaData()
 
-        # Define your schema manually for full control
+        #there may be need for mannual schema in future
         if isinstance(results, pd.DataFrame):
             results_num = results.select_dtypes(include='number')
 
@@ -164,14 +157,14 @@ class MultiCoreManager:
         The function performs two things; runs the simulation and then inserts the simulated data into a specified
         database.
 
-        :param model: str, dict, or Path object related APSIMX json file
+        :param model: str, dict, or Path object related .apsimx json file
 
         returns None
         """
         # initialize the apsimNGpy model simulation engine
         _model = ApsimModel(model, out_path=None)
         table_names = _model.inspect_model('Models.Report', fullpath=False)
-        # we want a unique report for each crop, because they are likely to have different report schema
+        # we want a unique report for each crop, because they are likely to have different database schemas
         crops = _model.inspect_model('Models.PMF.Plant', fullpath=False)
         crop_table = [f"{a}_{b}" for a, b in zip(table_names, crops)]
         tables = '_'.join(crop_table)
@@ -197,6 +190,7 @@ class MultiCoreManager:
             # clean up files related _model object
             _model.clean_up(coerce=False)
             # collect garbage before gc comes in
+
         except ApsimRuntimeError:
             # print(f"WARNING: could not run {_model.path}")
             self.incomplete_jobs.append(_model.path)
@@ -249,7 +243,7 @@ class MultiCoreManager:
     def clean_up_data(self):
         """Clears the data associated with each job. Please call this emthod after run_all_jobs is complete"""
 
-    def run_all_jobs(self, jobs, *, n_cores=CORES, threads=False, clear_db=True):
+    def run_all_jobs(self, jobs, *, n_cores=CORES, threads=False, clear_db=True, **kwargs):
         """
         runs all provided jobs using ``processes`` or ``threads`` specified
 
@@ -261,6 +255,9 @@ class MultiCoreManager:
 
         ``clear_db (bool)``: clear the database existing data if any. defaults to True
 
+        ``kwargs``:
+          retry_rate (int, optional): how many times to retry jobs before giving up
+
         :return: None
 
         """
@@ -270,51 +267,60 @@ class MultiCoreManager:
         # future updates include support for skipping some simulation
         try:
             for _ in custom_parallel(self.run_parallel, jobs, ncores=n_cores, use_threads=threads,
-                                     progress_message='Processing all jobs. Please wait!: '):
-                pass
-            len_incomplete = len(self.incomplete_jobs)
+                                     progress_message='Processing all jobs'):
+                pass # holder to unzip jobs
 
-            if len_incomplete > 0:
-                # Back off if failures exceed core budget; otherwise cap by failures
-                cores = max(1, (n_cores // 2)) if len_incomplete > n_cores else min(len_incomplete, n_cores)
+            retry_rate = kwargs.get("retry_rate", 1)
 
-                logger.info(f"Retrying {len_incomplete} failed job(s) with {cores} core(s).")
+            for _ in range(retry_rate):
+                # how many jobs were incompleted?
+                len_incomplete = len(self.incomplete_jobs)
+                if len_incomplete > 0:
+                    # Back off if failures exceed core budget; otherwise cap by failures
+                    cores = n_cores if len_incomplete > n_cores else min(len_incomplete, n_cores)
 
-                for _ in custom_parallel(
-                        self.run_parallel,
-                        self.incomplete_jobs,
-                        ncores=cores,
-                        use_thread=False,
-                        progress_message="Re-running failed jobs",
-                ):
-                    pass
+                    logger.info(f"Retrying {len_incomplete} failed job(s) with {cores} core(s).")
+                    # iterable is replaced by the incomplete jobs, but we need to copy first
+                    incomplete__jobs = tuple(copy.deepcopy(self.incomplete_jobs))
+                    # clear to prepare for new assessments
+                    self.incomplete_jobs.clear() # at every simulation, an incomplete job is appended
+                    for _ in custom_parallel(
+                            self.run_parallel,
+                            incomplete__jobs,
+                            ncores=cores,
+                            use_thread=False,
+                            progress_message="Re-running failed jobs",
+                    ):
+                        pass # holder to unzip jobs
 
-                remaining = len(self.incomplete_jobs)
-                if remaining:
-                    logger.warning(
-                        f"MultiCoreManager exited with {remaining} uncompleted job(s). "
-                        "Inspect `incomplete_jobs` for details."
-                    )
+                    remaining = len(self.incomplete_jobs)
+                    if remaining == 0:
+                        self.ran_ok = True
+                        gc.collect()
+                        break # no need to continue
                 else:
-                    logger.info("All previously failed jobs completed on retry.")
-                    # now change the content of incomplete jobs
-                    self.incomplete_jobs.clear()
-
-                gc.collect()
+                    self.ran_ok = True
             else:
-                #logger.info(f"MultiCoreManager exited with all jobs completed on first retry")
-                self.ran_ok = True
+
+                # at this point the error causing the failures is more than serious, although it's being excepted as runtime error
+                if self.incomplete_jobs:
+                        logger.warning(
+                            f"MultiCoreManager exited with {len(self.incomplete_jobs)} uncompleted job(s). "
+                            "Inspect `incomplete_jobs` for details."
+                        )
+                gc.collect()
+
         finally:
             gc.collect()
 
 
 if __name__ == '__main__':
     # quick tests
-    create_jobs = (ApsimModel('Maize').path for _ in range(400))
+    create_jobs = [ApsimModel('Maize').path for _ in range(60)]
 
     Parallel = MultiCoreManager(db_path='testing.db', agg_func='mean')
-    Parallel.run_all_jobs(create_jobs, n_cores=16, threads=False, clear_db=True, )
+    Parallel.run_all_jobs(create_jobs, n_cores=16, threads=False, clear_db=True, retry_rate=4)
     df = Parallel.get_simulated_output(axis=0)
     Parallel.clear_scratch()
 
-    insert_data_with_pd('tss.db', 'my', df, 'replace')
+    #insert_data_with_pd('tss.db', 'my', df, 'replace')

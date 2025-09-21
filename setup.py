@@ -76,7 +76,8 @@ setup(
         'python-dotenv>=1.0.1,<2.0.0',
         'pymoo == 0.6.1.5',
         'wrapdisc==2.5.0',
-        'summarytools>=0.3.0'
+        'summarytools>=0.3.0',
+        'tqdm==4.67.1'
 
     ]
 )

@@ -315,7 +315,7 @@ class MultiCoreManager:
 
 if __name__ == '__main__':
     # quick tests
-    create_jobs = [ApsimModel('Maize').path for _ in range(60)]
+    create_jobs = [ApsimModel('Maize').path for _ in range(16*20)]
 
     Parallel = MultiCoreManager(db_path='testing.db', agg_func='mean')
     Parallel.run_all_jobs(create_jobs, n_cores=16, threads=False, clear_db=True, retry_rate=1)

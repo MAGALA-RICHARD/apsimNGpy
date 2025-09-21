@@ -191,9 +191,9 @@ class MultiCoreManager:
             # collect garbage before gc comes in
 
         except ApsimRuntimeError:
-            # print(f"WARNING: could not run {_model.path}")
+
             self.incomplete_jobs.append(_model.path)
-            # add the non simulated for a re-try
+
 
     def get_simulated_output(self, axis=0):
         """
@@ -266,11 +266,11 @@ class MultiCoreManager:
         # future updates include support for skipping some simulation
         try:
             for _ in custom_parallel(self.run_parallel, jobs, ncores=n_cores, use_threads=threads,
-                                     progress_message='Processing all jobs'):
+                                     progress_message='Processing all jobs', unit='simulation'):
                 pass # holder to unzip jobs
 
             retry_rate = kwargs.get("retry_rate", 1)
-
+            self.incomplete_jobs =jobs[:20]
             for _ in range(retry_rate):
                 # how many jobs were incompleted?
                 len_incomplete = len(self.incomplete_jobs)
@@ -292,8 +292,8 @@ class MultiCoreManager:
                     ):
                         pass # holder to unzip jobs
 
-                    remaining = len(self.incomplete_jobs)
-                    if remaining == 0:
+
+                    if not self.incomplete_jobs:
                         self.ran_ok = True
                         gc.collect()
                         break # no need to continue
@@ -318,7 +318,7 @@ if __name__ == '__main__':
     create_jobs = [ApsimModel('Maize').path for _ in range(60)]
 
     Parallel = MultiCoreManager(db_path='testing.db', agg_func='mean')
-    Parallel.run_all_jobs(create_jobs, n_cores=16, threads=False, clear_db=True, retry_rate=4)
+    Parallel.run_all_jobs(create_jobs, n_cores=16, threads=False, clear_db=True, retry_rate=1)
     df = Parallel.get_simulated_output(axis=0)
     Parallel.clear_scratch()
 

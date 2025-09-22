@@ -78,6 +78,10 @@ If you are using the fleeting uv virtual environment manager.
 
      pip install git+https://github.com/MAGALA-RICHARD/apsimNGpy.git
 
+tip:
+============
+Use the pinned release shown on documentation home page/or on this page to avoid forward-compatibility issues. That release features the latest APSIM NG version that has passed all unit tests against apsimNGpy’s programmatic API.
+
 
 v0.39.9.16
 ==============

@@ -391,7 +391,8 @@ class MultiCoreManager:
 
             else:
 
-                # at this point the error causing the failures is more than serious, although it's being excepted as runtime error
+                # at this point the error causing the failures is more than serious, although it's being excepted as
+                # runtime error
                 if self.incomplete_jobs:
                     logger.warning(
                         f"MultiCoreManager exited with {len(self.incomplete_jobs)} uncompleted job(s). "
@@ -405,8 +406,7 @@ class MultiCoreManager:
 
 MultiCoreManager.save_tocsv.__doc__ = """  Persist simulation results to a SQLite database table.
 
-        This method writes `self.results` (a pandas DataFrame) to the given SQLite
-        database. It is designed to be robust in workflows where some simulations
+        This method writes `self.results` (a pandas DataFrame) to the given csv file. It is designed to be robust in workflows where some simulations
         may fail: any successfully simulated rows present in `self.results` are
         still saved. This is useful when an ephemeral/temporary database was used
         during simulation and you need a durable copy\n.

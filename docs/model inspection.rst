@@ -132,12 +132,15 @@ Try finding path to the cultivar model::
 Whole Model inspection
 =====================================
 
-Use ``inspect_file`` method to inspects all simulations in the file. This method displays a tree showing how each model is connected with each other
+Use ``inspect_file`` method to inspects all simulations in the file. This method displays a tree showing how each model is connected with each other.
+``Model Names`` are colored and are followed by their corresponding full paths relative to their parent node; ``Simulations``.
+
+For interactive consoles (e.g., Jupyter Notebook), this is a game changer, you’ll hardly ever need the GUI.
 
 
 .. code-block:: python
 
-    model.inspect_file()
+    model.inspect_file(cultivar =False)
 
 
 
@@ -148,7 +151,7 @@ Use ``inspect_file`` method to inspects all simulations in the file. This method
 
 .. tip::
 
-  To include cultivar paths to the above simulation tree, use ``cultivar =True`` as shown below.
+  To include cultivar paths to the above simulation tree, use ``cultivar =True`` as shown below. For developers who are testing the method using console = False
 
 .. code-block:: python
 

@@ -1,4 +1,3 @@
-.. _api:
 apsimNGpy: API Reference
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -47,6 +46,21 @@ ApsimModel
 
         ``Returns:``
             List[float]: List of layer thicknesses summing to max_depth.
+
+.. function:: apsimNGpy.core.apsim.ApsimModel.read_apsimx_data(self, table=None)
+
+   Read APSIM NG datastore for the current model. Raises FileNotFoundError if the model was initialized from 
+        default models because those need to be executed first to generate a database.
+
+        The rationale for this method is that you can just access the results from the previous session without running it,
+        if the database is in the same location as the apsimx file.
+
+        Since apsimNGpy clones the apsimx file, the original file is kept with attribute name `_model`, that is what is
+        being used to access the dataset
+
+        table (str): name of the database table to read if none of all tables are returned
+
+         Returns: pandas.DataFrame
 
 .. function:: apsimNGpy.core.apsim.ApsimModel.replace_downloaded_soils(self, soil_tables: Union[dict, list], simulation_names: Union[tuple, list], **kwargs)
 
@@ -258,7 +272,7 @@ CoreModel
         ``Raises:``
             - *ValueError*: If the specified crop is not found.
 
-.. function:: apsimNGpy.core.core.CoreModel.add_db_table(self, variable_spec: list = None, set_event_names: list = None, rename: str = 'my_table', simulation_name: Union[str, list, tuple] = <UserOptionMissing>)
+.. function:: apsimNGpy.core.core.CoreModel.add_db_table(self, variable_spec: list = None, set_event_names: list = None, rename: str = None, simulation_name: Union[str, list, tuple] = <UserOptionMissing>)
 
    Adds a new database table, which ``APSIM`` calls ``Report`` (Models.Report) to the ``Simulation`` under a Simulation Zone.
 
@@ -286,6 +300,15 @@ CoreModel
                model = core.base_data.load_default_simulations(crop = 'Maize')
                model.add_db_table(variable_spec=['[Clock].Today', '[Soil].Nutrient.TotalC[1]/1000 as SOC1'], rename='report2')
                model.add_db_table(variable_spec=['[Clock].Today', '[Soil].Nutrient.TotalC[1]/1000 as SOC1', '[Maize].Grain.Total.Wt*10 as Yield'], rename='report2', set_event_names=['[Maize].Harvesting','[Clock].EndOfYear' ])
+
+.. function:: apsimNGpy.core.core.CoreModel.add_fac(self, model_type, parameter, model_name, values, factor_name=None)
+
+   Add a factor to the initiated experiment. This should replace add_factor. which has less abstractionn @param
+        model_type: model_class from APSIM Models namespace @param parameter: name of the parameter to fill e.g CNR
+        @param model_name: name of the model @param values: values of the parameter, could be an iterable for case of
+        categorical variables or a string e.g, '0 to 100 step 10 same as [0, 10, 20, 30, ...].
+        @param factor_name: name to identify the factor in question
+        @return:
 
 .. function:: apsimNGpy.core.core.CoreModel.add_factor(self, specification: str, factor_name: str = None, **kwargs)
 
@@ -323,7 +346,7 @@ CoreModel
         For example, a Clock model cannot be added to a Soil model.
 
         Args:
-            ``model_type`` (str or Models object): The type of model to add, e.g., `Models.Clock` or just `"Clock"`. if the APSIM Models namespace is exposed to the current script, then model_type can be Models.Clock without strings quotes
+            ``model_class`` (str or Models object): The type of model to add, e.g., `Models.Clock` or just `"Clock"`. if the APSIM Models namespace is exposed to the current script, then model_class can be Models.Clock without strings quotes
 
             ``rename`` (str): The new name for the model.
 
@@ -333,7 +356,7 @@ CoreModel
 
             ``source`` (Models, str, CoreModel, ApsimModel object): ``defaults`` to Models namespace, implying a fresh non modified model.
             The source can be an existing Models or string name to point to one fo the default model example, which we can extract the model
-            
+
             ``override`` (bool, optional): defaults to `True`. When `True` (recomended) it delete for any model with same name and type at the suggested parent location before adding the new model
             if ``False`` and proposed model to be added exists at the parent location, ``APSIM`` automatically generates a new name for the newly added model. This is not recommended.
         Returns:
@@ -353,7 +376,7 @@ CoreModel
             model.remove_model(Models.Clock)  # first delete the model
             model.add_model(Models.Clock, adoptive_parent=Models.Core.Simulation, rename='Clock_replaced', verbose=False)
 
-            model.add_model(model_type=Models.Core.Simulation, adoptive_parent=Models.Core.Simulations, rename='Iowa')
+            model.add_model(model_class=Models.Core.Simulation, adoptive_parent=Models.Core.Simulations, rename='Iowa')
 
             model.preview_simulation()  # doctest: +SKIP
 
@@ -469,7 +492,7 @@ CoreModel
 
    @deprecated in versions 0.38+
 
-.. function:: apsimNGpy.core.core.CoreModel.clean_up(self, db=True, verbose=False)
+.. function:: apsimNGpy.core.core.CoreModel.clean_up(self, db=True, verbose=False, coerce=True, csv=True)
 
    Clears the file cloned the datastore and associated csv files are not deleted if db is set to False defaults to True.
 
@@ -491,7 +514,7 @@ CoreModel
 
         Parameters:
         ----------
-        ``model_type`` : Models
+        ``model_class`` : Models
             The type of the model to be cloned, e.g., `Models.Simulation` or `Models.Clock`.
         ``model_name`` : str
             The unique identification name of the model instance to be cloned, e.g., `"clock1"`.
@@ -521,7 +544,7 @@ CoreModel
 
 .. function:: apsimNGpy.core.core.CoreModel.create_experiment(self, permutation: bool = True, base_name: str = None, **kwargs)
 
-   Initialize an ``Experiment`` instance, adding the necessary models and factors.
+   Initialize an ``ExperimentManager`` instance, adding the necessary models and factors.
 
         Args:
 
@@ -538,7 +561,7 @@ CoreModel
 
             ``base_name`` is optional but the experiment may not be created if there are more than one base simulations. Therefore, an error is likely.
 
-.. function:: apsimNGpy.core.core.CoreModel.detect_model_type(self, model_instance: Union[str, Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x110086f30>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD)])
+.. function:: apsimNGpy.core.core.CoreModel.detect_model_type(self, model_instance: Union[str, Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x000001C83D15B3B0>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD)])
 
    Detects the model type from a given APSIM model instance or path string.
 
@@ -568,7 +591,7 @@ CoreModel
 
         Parameters
         ----------
-        ``model_type``: str
+        ``model_class``: str
             Type of the model component to modify (e.g., 'Clock', 'Manager', 'Soils.Physical', etc.).
 
         ``simulations``: Union[str, list], optional
@@ -625,7 +648,7 @@ CoreModel
             ValueError
                 If the model instance is not found, required kwargs are missing, or `kwargs` is empty.
             NotImplementedError
-                If the logic for the specified `model_type` is not implemented.
+                If the logic for the specified `model_class` is not implemented.
 
         Examples::
 
@@ -634,7 +657,7 @@ CoreModel
 
         Example of how to edit a cultivar model::
 
-            model.edit_model(model_type='Cultivar',
+            model.edit_model(model_class='Cultivar',
                  simulations='Simulation',
                  commands='[Phenology].Juvenile.Target.FixedValue',
                  values=256,
@@ -645,7 +668,7 @@ CoreModel
         Edit a soil organic matter module::
 
             model.edit_model(
-                 model_type='Organic',
+                 model_class='Organic',
                  simulations='Simulation',
                  model_name='Organic',
                  Carbon=1.23)
@@ -653,7 +676,7 @@ CoreModel
         Edit multiple soil layers::
 
             model.edit_model(
-                 model_type='Organic',
+                 model_class='Organic',
                  simulations='Simulation',
                  model_name='Organic',
                  Carbon=[1.23, 1.0])
@@ -661,12 +684,12 @@ CoreModel
         Example of how to edit solute models::
 
            model.edit_model(
-                 model_type='Solute',
+                 model_class='Solute',
                  simulations='Simulation',
                  model_name='NH4',
                  InitialValues=0.2)
            model.edit_model(
-                model_type='Solute',
+                model_class='Solute',
                 simulations='Simulation',
                 model_name='Urea',
                 InitialValues=0.002)
@@ -674,7 +697,7 @@ CoreModel
         Edit a manager script::
 
            model.edit_model(
-                model_type='Manager',
+                model_class='Manager',
                 simulations='Simulation',
                 model_name='Sow using a variable rule',
                 population=8.4)
@@ -682,13 +705,13 @@ CoreModel
         Edit surface organic matter parameters::
 
             model.edit_model(
-                model_type='SurfaceOrganicMatter',
+                model_class='SurfaceOrganicMatter',
                 simulations='Simulation',
                 model_name='SurfaceOrganicMatter',
                 InitialResidueMass=2500)
 
             model.edit_model(
-                model_type='SurfaceOrganicMatter',
+                model_class='SurfaceOrganicMatter',
                 simulations='Simulation',
                 model_name='SurfaceOrganicMatter',
                 InitialCNR=85)
@@ -696,7 +719,7 @@ CoreModel
         Edit Clock start and end dates::
 
             model.edit_model(
-                model_type='Clock',
+                model_class='Clock',
                 simulations='Simulation',
                 model_name='Clock',
                 Start='2021-01-01',
@@ -705,7 +728,7 @@ CoreModel
         Edit report _variables::
 
             model.edit_model(
-                model_type='Report',
+                model_class='Report',
                 simulations='Simulation',
                 model_name='Report',
                 variable_spec='[Maize].AboveGround.Wt as abw')
@@ -713,7 +736,7 @@ CoreModel
         Multiple report _variables::
 
             model.edit_model(
-                model_type='Report',
+                model_class='Report',
                 simulations='Simulation',
                 model_name='Report',
                 variable_spec=[
@@ -794,14 +817,14 @@ CoreModel
 
    Select out a few model types to use for building the APSIM file inspections
 
-.. function:: apsimNGpy.core.core.CoreModel.get_simulated_output(self, report_names: Union[str, list], **kwargs) -> pandas.core.frame.DataFrame
+.. function:: apsimNGpy.core.core.CoreModel.get_simulated_output(self, report_names: Union[str, list], axis=0, **kwargs) -> pandas.core.frame.DataFrame
 
    Reads report data from CSV files generated by the simulation.
 
         Parameters:
         -----------
-        ``report_names`` : Union[str, list]
-            Name or list of names of report tables to read. These should match the
+        ``report_names``: Union[str, list]
+            Name or list names of report tables to read. These should match the
             report model names in the simulation output.
 
         Returns:
@@ -816,11 +839,12 @@ CoreModel
 
         ``RuntimeError``
             If the simulation has not been ``run`` successfully before attempting to read data.
+
         Example::
 
           from apsimNGpy.core.apsim import ApsimModel
           model = ApsimModel(model= 'Maize') # replace with your path to the apsim template model
-          model.run() # if we are going to use get_simulated_output, no to need to provide the report name in ``run()`` method
+          ``model.run()`` # if we are going to use get_simulated_output, no to need to provide the report name in ``run()`` method
           df = model.get_simulated_output(report_names = ["Report"])
           print(df)
             SimulationName  SimulationID  CheckpointID  ... Maize.Total.Wt     Yield   Zone
@@ -863,21 +887,25 @@ CoreModel
 
             Changing weather data with unmatching start and end dates in the simulation will lead to ``RuntimeErrors``. To avoid this first check the start and end date before proceedign as follows::
 
-              dt = model.inspect_model_parameters(model_type='Clock', model_name='Clock', simulations='Simulation')
+              dt = model.inspect_model_parameters(model_class='Clock', model_name='Clock', simulations='Simulation')
               start, end = dt['Start'].year, dt['End'].year
               # output: 1990, 2000
 
-.. function:: apsimNGpy.core.core.CoreModel.inspect_file(self, cultivar=False, **kwargs)
+.. function:: apsimNGpy.core.core.CoreModel.inspect_file(self, *, cultivar=False, console=True, **kwargs)
 
    Inspect the file by calling ``inspect_model()`` through ``get_model_paths.``
         This method is important in inspecting the ``whole file`` and also getting the ``scripts paths``
 
-.. function:: apsimNGpy.core.core.CoreModel.inspect_model(self, model_type: Union[str, Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x110086f30>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD)], fullpath=True, **kwargs)
+        cultivar: i (bool) includes cultivar paths
+
+        console: (bool) print to the console
+
+.. function:: apsimNGpy.core.core.CoreModel.inspect_model(self, model_type: Union[str, Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x000001C83D15B3B0>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD)], fullpath=True, **kwargs)
 
    Inspect the model types and returns the model paths or names. usefull if you want to identify the path to the
         model for editing the model.
 
-        ``model_type``: (Models) e.g. ``Models.Clock`` or just ``'Clock'`` will return all fullpath or names
+        ``model_class``: (Models) e.g. ``Models.Clock`` or just ``'Clock'`` will return all fullpath or names
             of models in the type Clock ``-Models.Manager`` returns information about the manager scripts in simulations. strings are allowed
             to, in the case you may not need to import the global namespace, Models. e.g ``Models.Clock`` will still work well.
             ``-Models.Core.Simulation`` returns information about the simulation -Models.Climate.Weather returns a list of
@@ -968,7 +996,7 @@ CoreModel
             Models can be inspected either by importing the Models namespace or by using string paths. The most reliable approach is to provide the full model path—either as a string or as a Models object.
             However, remembering full paths can be tedious, so allowing partial model names or references can significantly save time during development and exploration.
 
-.. function:: apsimNGpy.core.core.CoreModel.inspect_model_parameters(self, model_type: Union[Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x110086f30>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), str], model_name: str, simulations: Union[str, list] = <UserOptionMissing>, parameters: Union[list, set, tuple, str] = 'all', **kwargs)
+.. function:: apsimNGpy.core.core.CoreModel.inspect_model_parameters(self, model_type: Union[Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x000001C83D15B3B0>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), str], model_name: str, simulations: Union[str, list] = <UserOptionMissing>, parameters: Union[list, set, tuple, str] = 'all', **kwargs)
 
    Inspect the input parameters of a specific ``APSIM`` model type instance within selected simulations.
 
@@ -977,7 +1005,7 @@ CoreModel
 
         Parameters
         ----------
-        ``model_type`` : str
+        ``model_class`` : str
             The name of the model class to inspect (e.g., 'Clock', 'Manager', 'Physical', 'Chemical', 'Water', 'Solute').
             Shorthand names are accepted (e.g., 'Clock', 'Weather') as well as fully qualified names (e.g., 'Models.Clock', 'Models.Climate.Weather').
 
@@ -985,7 +1013,7 @@ CoreModel
             A single simulation name or a list of simulation names within the APSIM context to inspect.
 
         ``model_name`` : str
-            The name of the specific model instance within each simulation. For example, if `model_type='Solute'`,
+            The name of the specific model instance within each simulation. For example, if `model_class='Solute'`,
             `model_name` might be 'NH4', 'Urea', or another solute name.
 
         ``parameters`` : Union[str, set, list, tuple], optional
@@ -1235,11 +1263,11 @@ CoreModel
             1. Finds the model object using the given path.
             2. Extracts and returns the requested parameter(s).
 
-.. function:: apsimNGpy.core.core.CoreModel.move_model(self, model_type: Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x110086f30>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), new_parent_type: Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x110086f30>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), model_name: str = None, new_parent_name: str = None, verbose: bool = False, simulations: Union[str, list] = None)
+.. function:: apsimNGpy.core.core.CoreModel.move_model(self, model_type: Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x000001C83D15B3B0>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), new_parent_type: Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x000001C83D15B3B0>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), model_name: str = None, new_parent_name: str = None, verbose: bool = False, simulations: Union[str, list] = None)
 
    Args:
 
-        - ``model_type`` (Models): type of model tied to Models Namespace
+        - ``model_class`` (Models): type of model tied to Models Namespace
 
         - ``new_parent_type``: new model parent type (Models)
 
@@ -1270,13 +1298,13 @@ CoreModel
    for methods that will alter the simulation objects and need refreshing the second time we call
        @return: self for method chaining
 
-.. function:: apsimNGpy.core.core.CoreModel.remove_model(self, model_type: Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x110086f30>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), model_name: str = None)
+.. function:: apsimNGpy.core.core.CoreModel.remove_model(self, model_class: Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x000001C83D15B3B0>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), model_name: str = None)
 
    Removes a model from the APSIM Models.Simulations namespace.
 
         Parameters
         ----------
-        ``model_type`` : Models
+        ``model_class`` : Models
             The type of the model to remove (e.g., `Models.Clock`). This parameter is required.
 
         ``model_name`` : str, optional
@@ -1331,9 +1359,9 @@ CoreModel
             Example::
                from apsimNGpy.core.apsim import ApsimModel
                model = ApsimModel(model = 'Maize')
-               model.rename_model(model_type="Simulation", old_name ='Simulation', new_name='my_simulation')
+               model.rename_model(model_class="Simulation", old_name ='Simulation', new_name='my_simulation')
                # check if it has been successfully renamed
-               model.inspect_model(model_type='Simulation', fullpath = False)
+               model.inspect_model(model_class='Simulation', fullpath = False)
                ['my_simulation']
                # The alternative is to use model.inspect_file to see your changes
                model.inspect_file()
@@ -1347,7 +1375,7 @@ CoreModel
         Args:
             ``model``: Path to the APSIM model file or a CoreModel instance.
 
-            ``model_type`` (str): Class name (as string) of the model to replace (e.g., "Soil").
+            ``model_class`` (str): Class name (as string) of the model to replace (e.g., "Soil").
 
             ``model_name`` (str, optional): Name of the model instance to copy from the source model.
                 If not provided, the first match is used.
@@ -1361,7 +1389,7 @@ CoreModel
             self: To allow method chaining.
 
         ``Raises:``
-            ``ValueError``: If ``model_type`` is "Simulations" which is not allowed for replacement.
+            ``ValueError``: If ``model_class`` is "Simulations" which is not allowed for replacement.
 
 .. function:: apsimNGpy.core.core.CoreModel.replace_soil_property_values(self, *, parameter: str, param_values: list, soil_child: str, simulations: list = <UserOptionMissing>, indices: list = None, crop=None, **kwargs)
 
@@ -1389,7 +1417,7 @@ CoreModel
         Args:
 
         ``node_path`` (str, required): complete path to the soil child of the Simulations e.g.,Simulations.Simulation.Field.Soil.Organic.
-         Use`copy path to node fucntion in the GUI to get the real path of the soil node.
+         Use`copy path to node function in the GUI to get the real path of the soil node.
 
         ``indices`` (list, optional): defaults to none but could be the position of the replacement values for arrays
 
@@ -1447,7 +1475,7 @@ CoreModel
 
         :return: self
 
-.. function:: apsimNGpy.core.core.CoreModel.run(self, report_name: Union[tuple, list, str] = None, simulations: Union[tuple, list] = None, clean_up: bool = False, verbose: bool = False, **kwargs) -> 'CoreModel'
+.. function:: apsimNGpy.core.core.CoreModel.run(self, report_name: Union[tuple, list, str] = None, simulations: Union[tuple, list] = None, clean_up: bool = True, verbose: bool = False, **kwargs) -> 'CoreModel'
 
    Run ``APSIM`` model simulations.
 
@@ -1463,7 +1491,7 @@ CoreModel
             List of simulation names to run. If None, runs all simulations.
 
         ``clean_up`` : bool, optional
-            If True, removes existing database before running.
+            If True, removes the existing database before running.
 
         ``verbose`` : bool, optional
             If True, enables verbose output for debugging. The method continues with debugging info anyway if the run was unsuccessful
@@ -1491,7 +1519,7 @@ CoreModel
 
    Save the simulation models to file
 
-        ``file_name``:    The name of the file to save the defaults to none, taking the exising filename
+        ``file_name``: The name of the file to save the defaults to none, taking the exising filename
 
         Returns: model object
 
@@ -1632,6 +1660,53 @@ CoreModel
 
         return: self
 
+ExperimentManager 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. function:: apsimNGpy.core.experimentmanager.ExperimentManager(model, out_path=None, out=None)
+
+   No documentation available.
+
+.. function:: apsimNGpy.core.experimentmanager.ExperimentManager.add_factor(self, specification: str, factor_name: str = None, **kwargs)
+
+   Adds a new factor to the experiment based on an APSIM script specification.
+
+           Args:
+               specification (str): A script-like APSIM expression that defines the parameter variation.
+               factor_name (str, optional): A unique name for the factor; auto-generated if not provided.
+               **kwargs: Optional metadata or configuration (not yet used internally).
+
+           Raises:
+               ValueError: If a Script-based specification references a non-existent or unlinked manager script.
+
+           Side Effects:
+               Inserts the factor into the appropriate parent node (Permutation or Factors).
+               If a factor at the same index already exists, it is safely deleted before inserting the new one.
+
+.. function:: apsimNGpy.core.experimentmanager.ExperimentManager.finalize(self)
+
+   "
+        Finalizes the experiment setup by re-creating the internal APSIM factor nodes from specs.
+
+        This method is designed as a guard against unintended modifications and ensures that all
+        factor definitions are fully resolved and written before saving.
+
+        Side Effects:
+            Clears existing children from the parent factor node.
+            Re-creates and attaches each factor as a new node.
+            Triggers model saving.
+
+.. function:: apsimNGpy.core.experimentmanager.ExperimentManager.init_experiment(self, permutation=True)
+
+   Initializes the factorial experiment structure inside the APSIM file.
+
+            Args:
+                permutation (bool): If True, enables permutation mode; otherwise, uses standard factor crossing.
+
+            Side Effects:
+                Replaces any existing ExperimentManager node with a new configuration.
+                Clones the base simulation and adds it under the experiment.
+
 MixedVariable 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1747,7 +1822,7 @@ MixedVariable
 ModelTools 
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. function:: apsimNGpy.core._modelhelpers.ModelTools() -> None
+.. function:: apsimNGpy.core.model_tools.ModelTools() -> None
 
    A utility class providing convenient access to core APSIM model operations and constants.
 
@@ -1775,6 +1850,300 @@ ModelTools
            ``ACTIONS`` (tuple): Set of supported string actions ('get', 'delete', 'check').
 
            ``COLLECT`` (callable): Function for forcing memory checks
+
+.. function:: apsimNGpy.core.model_tools.ModelTools.find_all_in_scope(parent, child_class)
+
+   @param parent: base model scope to search
+    @param child_class: Model class from the Models namespace to search for
+    @return: list[Models.Core.IModel] objects
+
+.. function:: apsimNGpy.core.model_tools.ModelTools.find_child_of_class(parent, child_class)
+
+   Finds a child with a break. Equivalent to old method of FindDescendant. can return None if no child
+
+MultiCoreManager 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. function:: apsimNGpy.core.mult_cores.MultiCoreManager(db_path: Union[str, pathlib.Path, NoneType] = (None,), agg_func: Optional[str] = None, ran_ok: bool = False, incomplete_jobs: list = <factory>) -> None
+
+   MultiCoreManager(db_path: Union[str, pathlib.Path, NoneType] = (None,), agg_func: Optional[str] = None, ran_ok: bool = False, incomplete_jobs: list = <factory>)
+
+.. function:: apsimNGpy.core.mult_cores.MultiCoreManager.clean_up_data(self)
+
+   Clears the data associated with each job. Please call this method after run_all_jobs is complete
+
+.. function:: apsimNGpy.core.mult_cores.MultiCoreManager.clear_db(self)
+
+   Clears the database before any simulations.
+
+          First attempt a complete ``deletion`` of the database if that fails, existing tables are all deleted
+
+.. function:: apsimNGpy.core.mult_cores.MultiCoreManager.clear_scratch(self)
+
+   clears the scratch directory where apsim files are cloned before being loaded. should be called after all simulations are completed
+
+.. function:: apsimNGpy.core.mult_cores.MultiCoreManager.get_simulated_output(self, axis=0)
+
+   Get simulated output from the API
+
+        :param axis: if axis =0, concatenation is along the ``rows`` and if it is 1 concatenation is along the ``columns``
+
+.. function:: apsimNGpy.core.mult_cores.MultiCoreManager.insert_data(self, results, table)
+
+   Insert results into the specified table
+        results: (Pd.DataFrame, dict) The results that will be inserted into the table
+        table: str (name of the table to insert)
+
+.. function:: apsimNGpy.core.mult_cores.MultiCoreManager.run_all_jobs(self, jobs, *, n_cores=17, threads=False, clear_db=True, **kwargs)
+
+   runs all provided jobs using ``processes`` or ``threads`` specified
+
+        ``threads (bool)``: threads or processes
+
+        ``jobs (iterable[simulations paths]``: jobs to run
+
+        ``n_cores (int)``: number of cores to use
+
+        ``clear_db (bool)``: clear the database existing data if any. defaults to True
+
+        ``kwargs``:
+          retry_rate (int, optional): how many times to retry jobs before giving up
+
+        :return: None
+
+.. function:: apsimNGpy.core.mult_cores.MultiCoreManager.run_parallel(self, model)
+
+   This is the worker for each simulation.
+
+        The function performs two things; runs the simulation and then inserts the simulated data into a specified
+        database.
+
+        :param model: str, dict, or Path object related .apsimx json file
+
+        returns None
+
+.. function:: apsimNGpy.core.mult_cores.MultiCoreManager.save_tocsv(self, path_or_buf, **kwargs)
+
+   Persist simulation results to a SQLite database table.
+
+        This method writes `self.results` (a pandas DataFrame) to the given csv file. It is designed to be robust in workflows where some simulations
+        may fail: any successfully simulated rows present in `self.results` are
+        still saved. This is useful when an ephemeral/temporary database was used
+        during simulation and you need a durable copy
+.
+        
+Write object to a comma-separated values (csv) file.
+
+Parameters
+----------
+path_or_buf : str, path object, file-like object, or None, default None
+    String, path object (implementing os.PathLike[str]), or file-like
+    object implementing a write() function. If None, the result is
+    returned as a string. If a non-binary file object is passed, it should
+    be opened with `newline=''`, disabling universal newlines. If a binary
+    file object is passed, `mode` might need to contain a `'b'`.
+sep : str, default ','
+    String of length 1. Field delimiter for the output file.
+na_rep : str, default ''
+    Missing data representation.
+float_format : str, Callable, default None
+    Format string for floating point numbers. If a Callable is given, it takes
+    precedence over other numeric formatting parameters, like decimal.
+columns : sequence, optional
+    Columns to write.
+header : bool or list of str, default True
+    Write out the column names. If a list of strings is given it is
+    assumed to be aliases for the column names.
+index : bool, default True
+    Write row names (index).
+index_label : str or sequence, or False, default None
+    Column label for index column(s) if desired. If None is given, and
+    `header` and `index` are True, then the index names are used. A
+    sequence should be given if the object uses MultiIndex. If
+    False do not print fields for index names. Use index_label=False
+    for easier importing in R.
+mode : {'w', 'x', 'a'}, default 'w'
+    Forwarded to either `open(mode=)` or `fsspec.open(mode=)` to control
+    the file opening. Typical values include:
+
+    - 'w', truncate the file first.
+    - 'x', exclusive creation, failing if the file already exists.
+    - 'a', append to the end of file if it exists.
+
+encoding : str, optional
+    A string representing the encoding to use in the output file,
+    defaults to 'utf-8'. `encoding` is not supported if `path_or_buf`
+    is a non-binary file object.
+compression : str or dict, default 'infer'
+    For on-the-fly compression of the output data. If 'infer' and 'path_or_buf' is
+    path-like, then detect compression from the following extensions: '.gz',
+    '.bz2', '.zip', '.xz', '.zst', '.tar', '.tar.gz', '.tar.xz' or '.tar.bz2'
+    (otherwise no compression).
+    Set to ``None`` for no compression.
+    Can also be a dict with key ``'method'`` set
+    to one of {``'zip'``, ``'gzip'``, ``'bz2'``, ``'zstd'``, ``'xz'``, ``'tar'``} and
+    other key-value pairs are forwarded to
+    ``zipfile.ZipFile``, ``gzip.GzipFile``,
+    ``bz2.BZ2File``, ``zstandard.ZstdCompressor``, ``lzma.LZMAFile`` or
+    ``tarfile.TarFile``, respectively.
+    As an example, the following could be passed for faster compression and to create
+    a reproducible gzip archive:
+    ``compression={'method': 'gzip', 'compresslevel': 1, 'mtime': 1}``.
+
+    .. versionadded:: 1.5.0
+        Added support for `.tar` files.
+
+       May be a dict with key 'method' as compression mode
+       and other entries as additional compression options if
+       compression mode is 'zip'.
+
+       Passing compression options as keys in dict is
+       supported for compression modes 'gzip', 'bz2', 'zstd', and 'zip'.
+quoting : optional constant from csv module
+    Defaults to csv.QUOTE_MINIMAL. If you have set a `float_format`
+    then floats are converted to strings and thus csv.QUOTE_NONNUMERIC
+    will treat them as non-numeric.
+quotechar : str, default '\"'
+    String of length 1. Character used to quote fields.
+lineterminator : str, optional
+    The newline character or character sequence to use in the output
+    file. Defaults to `os.linesep`, which depends on the OS in which
+    this method is called ('\\n' for linux, '\\r\\n' for Windows, i.e.).
+
+    .. versionchanged:: 1.5.0
+
+        Previously was line_terminator, changed for consistency with
+        read_csv and the standard library 'csv' module.
+
+chunksize : int or None
+    Rows to write at a time.
+date_format : str, default None
+    Format string for datetime objects.
+doublequote : bool, default True
+    Control quoting of `quotechar` inside a field.
+escapechar : str, default None
+    String of length 1. Character used to escape `sep` and `quotechar`
+    when appropriate.
+decimal : str, default '.'
+    Character recognized as decimal separator. E.g. use ',' for
+    European data.
+errors : str, default 'strict'
+    Specifies how encoding and decoding errors are to be handled.
+    See the errors argument for :func:`open` for a full list
+    of options.
+
+storage_options : dict, optional
+    Extra options that make sense for a particular storage connection, e.g.
+    host, port, username, password, etc. For HTTP(S) URLs the key-value pairs
+    are forwarded to ``urllib.request.Request`` as header options. For other
+    URLs (e.g. starting with "s3://", and "gcs://") the key-value pairs are
+    forwarded to ``fsspec.open``. Please see ``fsspec`` and ``urllib`` for more
+    details, and for more examples on storage options refer `here
+    <https://pandas.pydata.org/docs/user_guide/io.html?
+    highlight=storage_options#reading-writing-remote-files>`_.
+
+Returns
+-------
+None or str
+    If path_or_buf is None, returns the resulting csv format as a
+    string. Otherwise returns None.
+
+See Also
+--------
+read_csv : Load a CSV file into a DataFrame.
+to_excel : Write DataFrame to an Excel file.
+
+Examples
+--------
+Create 'out.csv' containing 'df' without indices
+
+>>> df = pd.DataFrame({'name': ['Raphael', 'Donatello'],
+...                    'mask': ['red', 'purple'],
+...                    'weapon': ['sai', 'bo staff']})
+>>> df.to_csv('out.csv', index=False)  # doctest: +SKIP
+
+Create 'out.zip' containing 'out.csv'
+
+>>> df.to_csv(index=False)
+'name,mask,weapon\nRaphael,red,sai\nDonatello,purple,bo staff\n'
+>>> compression_opts = dict(method='zip',
+...                         archive_name='out.csv')  # doctest: +SKIP
+>>> df.to_csv('out.zip', index=False,
+...           compression=compression_opts)  # doctest: +SKIP
+
+To write a csv file to a new folder or nested folder you will first
+need to create it using either Pathlib or os:
+
+>>> from pathlib import Path  # doctest: +SKIP
+>>> filepath = Path('folder/subfolder/out.csv')  # doctest: +SKIP
+>>> filepath.parent.mkdir(parents=True, exist_ok=True)  # doctest: +SKIP
+>>> df.to_csv(filepath)  # doctest: +SKIP
+
+>>> import os  # doctest: +SKIP
+>>> os.makedirs('folder/subfolder', exist_ok=True)  # doctest: +SKIP
+>>> df.to_csv('folder/subfolder/out.csv')  # doctest: +SKIP
+
+.. function:: apsimNGpy.core.mult_cores.MultiCoreManager.save_tosql(self, db_name: Union[str, pathlib.Path], *, table_name: str = 'Report', if_exists: Literal['fail', 'replace', 'append'] = 'append') -> None
+
+   Persist simulation results to a SQLite database table.
+
+        This method writes `self.results` (a pandas DataFrame) to the given SQLite
+        database. It is designed to be robust in workflows where some simulations
+        may fail: any successfully simulated rows present in `self.results` are
+        still saved. This is useful when an ephemeral/temporary database was used
+        during simulation and you need a durable copy.
+
+        Parameters
+        ----------
+        db_name : str | pathlib.Path
+            Target database file. If a name without extension is provided, a
+            ``.db`` suffix is appended. If a relative path is given, it resolves
+            against the current working directory.
+        table_name : str, optional
+            Name of the destination table. Defaults to ``"Report"``.
+        if_exists : {"fail", "replace", "append"}, optional
+            Write mode passed through to pandas:
+            - ``"fail"``    : raise if the table already exists.
+            - ``"replace"`` : drop the table, create a new one, then insert.
+            - ``"append"``  : insert rows into existing table (default).
+
+        Raises
+        ------
+        ValueError
+            If `self.results` is missing or empty.
+        TypeError
+            If `self.results` is not a pandas DataFrame.
+        RuntimeError
+            If the underlying database write fails.
+
+        Notes
+        -----
+        - Ensure that `self.results` contains only the rows you intend to persist.
+          If you maintain a separate collection of failed/incomplete jobs, they
+          should not be included in `self.results`.
+        - This method does not mutate `self.results`.
+
+        Examples
+        --------
+        >>> mgr.results.head()
+           sim_id  yield  n2o
+        0       1   10.2  0.8
+        >>> mgr.save("outputs/simulations.db", table_name="maize_runs", if_exists="append")
+
+MultiObjectiveProblem 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. function:: apsimNGpy.optimizer.moo.MultiObjectiveProblem(apsim_model: apsimNGpy.core.cal.OptimizationBase, objectives: list, *, decision_vars: list = None, cache_size=100)
+
+   No documentation available.
+
+.. function:: apsimNGpy.optimizer.moo.MultiObjectiveProblem.is_mixed_type_vars(self)
+
+   Detect if decision vars contain types other than float or int.
+
+.. function:: apsimNGpy.optimizer.moo.MultiObjectiveProblem.optimization_type(self)
+
+   No documentation available.
 
 apsimNGpy.core.base_data 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1843,6 +2212,21 @@ apsimNGpy.core.base_data
         ``Returns:``
             List[float]: List of layer thicknesses summing to max_depth.
 
+   .. method::apsimNGpy.core.apsim.ApsimModel.read_apsimx_data(self, table=None)
+
+      Read APSIM NG datastore for the current model. Raises FileNotFoundError if the model was initialized from 
+        default models because those need to be executed first to generate a database.
+
+        The rationale for this method is that you can just access the results from the previous session without running it,
+        if the database is in the same location as the apsimx file.
+
+        Since apsimNGpy clones the apsimx file, the original file is kept with attribute name `_model`, that is what is
+        being used to access the dataset
+
+        table (str): name of the database table to read if none of all tables are returned
+
+         Returns: pandas.DataFrame
+
    .. method::apsimNGpy.core.apsim.ApsimModel.replace_downloaded_soils(self, soil_tables: Union[dict, list], simulation_names: Union[tuple, list], **kwargs)
 
       Updates soil parameters and configurations for downloaded soil data in simulation models.
@@ -1909,11 +2293,11 @@ apsimNGpy.core.load_model
 apsimNGpy.core.runner 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. function:: apsimNGpy.core.runner.collect_csv_by_model_path(model_path) -> dict[typing.Any, typing.Any]
+.. function:: apsimNGpy.core.runner.collect_csv_by_model_path(model_path) -> 'dict[Any, Any]'
 
    Collects the data from the simulated model after run
 
-.. function:: apsimNGpy.core.runner.collect_csv_from_dir(dir_path, pattern, recursive=False) -> pandas.core.frame.DataFrame
+.. function:: apsimNGpy.core.runner.collect_csv_from_dir(dir_path, pattern, recursive=False) -> 'pd.DataFrame'
 
    Collects the csf=v files in a directory using a pattern, usually the pattern resembling the one of the simulations used to generate those csv files
     ``dir_path``: (str) path where to look for csv files
@@ -1933,7 +2317,7 @@ apsimNGpy.core.runner
 
    Stores the apsim version and many others to be used by the app
 
-.. function:: apsimNGpy.core.runner.get_apsim_version(verbose: bool = False)
+.. function:: apsimNGpy.core.runner.get_apsim_version(verbose: 'bool' = False)
 
    Display version information of the apsim model currently in the apsimNGpy config environment.
 
@@ -1943,7 +2327,92 @@ apsimNGpy.core.runner
 
             apsim_version = get_apsim_version()
 
-.. function:: apsimNGpy.core.runner.run_from_dir(dir_path, pattern, verbose=False, recursive=False, write_tocsv=True) -> [<class 'pandas.core.frame.DataFrame'>]
+.. function:: apsimNGpy.core_utils.database_utils.get_db_table_names(d_b)
+
+   ``d_b``: database name or path.
+
+    ``return:`` all names ``SQL`` database table ``names`` existing within the database
+
+.. function:: apsimNGpy.core.runner.get_matching_files(dir_path: 'Union[str, Path]', pattern: 'str', recursive: 'bool' = False) -> 'List[Path]'
+
+   Search for files matching a given pattern in the specified directory.
+
+    Args:
+        ``dir_path`` (Union[str, Path]): The directory path to search in.
+        ``pattern`` (str): The filename pattern to match (e.g., "*.apsimx").
+        ``recursive`` (bool): If True, search recursively; otherwise, search only in the top-level directory.
+
+    Returns:
+        List[Path]: A ``list`` of matching Path objects.
+
+    Raises:
+        ``ValueError: `` If no matching files are found.
+
+.. function:: apsimNGpy.core_utils.database_utils.read_db_table(db, report_name)
+
+   Connects to a specified database, retrieves the entire contents of a specified table,
+        and returns the results as a Pandas DataFrame.
+
+        Args:
+            ``db`` (str): The database file path or identifier to connect to.
+
+            ``report_name`` (str): name of the database table: The name of the table in the database from which to retrieve data.
+
+        Returns:
+            ``pandas.DataFrame``: A DataFrame containing all the records from the specified table.
+
+        The function establishes a connection to the specified SQLite database, constructs and executes a SQL query
+        to select all records from the specified table, fetches the results into a DataFrame, then closes the database connection.
+
+        Examples:
+            # Define the database and the table name
+
+            >>> database_path = 'your_database.sqlite'
+            >>> table_name = 'your_table'
+
+            # Get the table data as a DataFrame
+
+            >>> ddf = read_db_table(database_path, table_name)
+
+            # Work with the DataFrame
+            >>> print(ddf)
+
+        Note:
+            - Ensure that the database path and table name are correct.
+            - The function uses 'sqlite3' for connecting to the database; make sure it is appropriate for your database.
+            - This function retrieves all records from the specified table. Use with caution if the table is very large.
+
+.. function:: apsimNGpy.core.runner.run(self, report_name=None, simulations=None, clean=False, multithread=True, verbose=False, get_dict=False, **kwargs)
+
+   Run APSIM model simulations.
+
+    Parameters
+    ----------
+    report_name : str or list of str, optional
+        Name(s) of report table(s) to retrieve. If not specified or missing in the database,
+        the model still runs and results can be accessed later.
+
+    simulations : list of str, optional
+        Names of simulations to run. If None, all simulations are executed.
+
+    clean : bool, default False
+        If True, deletes the existing database file before running.
+
+    multithread : bool, default True
+        If True, runs simulations using multiple threads.
+
+    verbose : bool, default False
+        If True, prints diagnostic messages (e.g., missing report names).
+
+    get_dict : bool, default False
+        If True, returns results as a dictionary {table_name: DataFrame}.
+
+    Returns
+    -------
+    results : DataFrame or list or dict of DataFrames
+        Simulation output(s) from the specified report table(s).
+
+.. function:: apsimNGpy.core.runner.run_from_dir(dir_path, pattern, verbose=False, recursive=False, write_tocsv=True) -> '[pd.DataFrame]'
 
    This function acts as a wrapper around the ``APSIM`` command line recursive tool, automating
        the execution of APSIM simulations on all files matching a given pattern in a specified
@@ -1982,30 +2451,17 @@ apsimNGpy.core.runner
 
             df = run_from_dir(str(mock_data), pattern="*.apsimx", verbose=True, recursive=True)  # All files that match the pattern
 
-.. function:: apsimNGpy.core.runner.run_model_externally(model: Union[pathlib.Path, str], verbose: bool = False, to_csv: bool = False) -> subprocess.Popen[str]
+.. function:: apsimNGpy.core.runner.run_model_externally(model: 'Union[Path, str]', *, apsim_exec: 'Optional[Union[Path, str]]' = WindowsPath('D:/reproducible/bin_dist/APSIM2025.8.7844.0/bin/Models.exe'), verbose: 'bool' = False, to_csv: 'bool' = False, timeout: 'int' = 600, cwd: 'Optional[Union[Path, str]]' = None, env: 'Optional[Mapping[str, str]]' = None) -> 'subprocess.CompletedProcess[str]'
 
-   Runs an ``APSIM`` model externally, ensuring cross-platform compatibility.
+   Run APSIM externally (cross-platform) with safe defaults.
 
-    Although ``APSIM`` models can be run internally, compatibility issues across different APSIM versions—
-    particularly with compiling manager scripts—led to the introduction of this method.
+    - Validates an executable and model path.
+    - Captures stderr always; stdout only if verbose.
+    - Uses UTF-8 decoding with error replacement.
+    - Enforces a timeout and returns a CompletedProcess-like object.
+    - Does NOT use shell, eliminating injection risk.
 
-    ``model``: (str) Path to the ``APSIM`` model file or a filename pattern.
-
-    ``verbose``: (bool) If ``True``, prints stdout output during execution.
-
-    ``to_csv``: (bool) If ``True``, write the results to a CSV file in the same directory.
-
-    ``returns``: A subprocess.Popen object.
-
-    Example::
-
-        result =run_model_externally("path/to/model.apsimx", verbose=True, to_csv=True)
-        from apsimNGpy.core.base_data import load_default_simulations
-        path_to_model = load_default_simulations(crop ='maize', simulations_object =False)
-        pop_obj = run_model_externally(path_to_model, verbose=False)
-        pop_obj1 = run_model_externally(path_to_model, verbose=True)# when verbose is true, will print the time taken
-
-.. function:: apsimNGpy.core.runner.upgrade_apsim_file(file: str, verbose: bool = True)
+.. function:: apsimNGpy.core.runner.upgrade_apsim_file(file: 'str', verbose: 'bool' = True)
 
    Upgrade a file to the latest version of the .apsimx file format without running the file.
 
@@ -2023,6 +2479,14 @@ apsimNGpy.core.runner
         from apsimNGpy.core.base_data import load_default_simulations
         filep =load_default_simulations(simulations_object= False)# this is just an example perhaps you need to pass a lower verion file because this one is extracted from thecurrent model as the excutor
         upgrade_file =upgrade_apsim_file(filep, verbose=False)
+
+.. class:: apsimNGpy.exceptionsApsimRuntimeError
+
+   occurs when an error occurs during running APSIM models with Models.exe or Models on Mac and linnux
+
+.. class:: apsimNGpy.core.runnerRunError
+
+   Raised when the APSIM external run fails.
 
 apsimNGpy.core_utils.database_utils 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2050,6 +2514,28 @@ apsimNGpy.core_utils.database_utils
     :param apsimng model: CoreModel object or instance
     :return: Pandas DataFrame
 
+.. function:: apsimNGpy.core_utils.database_utils.delete_all_tables(db: str) -> None
+
+   Deletes all tables in the specified SQLite database.
+
+    ⚠️ Proceed with caution: this operation is irreversible.
+
+    Args:
+        db (str): Path to the SQLite database file.
+
+.. function:: apsimNGpy.core_utils.database_utils.delete_table(db, table_name)
+
+   deletes the table in a database.
+
+    ⚠️ Proceed with caution: this operation is irreversible.
+
+.. function:: apsimNGpy.core.pythonet_config.get_apsim_version(bin_path=WindowsPath('D:/reproducible/bin_dist/APSIM2025.8.7844.0/bin'), release_number=False)
+
+   get the APSIM version from the built binaries: models.dll depends on load_pythonnet()
+    @param release_number: bool,
+    @param bin_path: path to the installed apsim_binaries run within python
+    @return: str
+
 .. function:: apsimNGpy.core_utils.database_utils.get_db_table_names(d_b)
 
    ``d_b``: database name or path.
@@ -2060,31 +2546,6 @@ apsimNGpy.core_utils.database_utils
 
    Checks if the APSIM.CORE.dll is present in the bin path
     @return: bool
-
-.. function:: apsimNGpy.core.pythonet_config.load_pythonnet(bin_path='/Applications/APSIM2025.2.7670.0.app/Contents/Resources/bin')
-
-   A method for loading Python for .NET (pythonnet) and APSIM models.
-
-    This class provides a callable method for initializing the Python for .NET (pythonnet) runtime and loading APSIM models.
-    Initialize the Python for .NET (pythonnet) runtime and load APSIM models.
-
-        This method attempts to load the 'coreclr' runtime, and if not found, falls back to an alternate runtime.
-        It also sets the APSIM binary path, adds necessary references, and returns a reference to the loaded APSIM models.
-
-        Returns:
-        -------
-        lm: Reference to the loaded APSIM models
-
-        Raises:
-        ------
-        KeyError: If APSIM path is not found in the system environmental variable.
-        ValueError: If the provided APSIM path is invalid.
-
-        Notes:
-        It raises a KeyError if APSIM path is not found. Please edit the system environmental variable on your computer.
-    Attributes:
-    ----------
-    None
 
 .. function:: apsimNGpy.core_utils.database_utils.read_db_table(db, report_name)
 
@@ -2155,13 +2616,13 @@ apsimNGpy.core_utils.database_utils
 
    Raised when the APSIM bin path is misconfigured or incomplete.
 
-.. class:: apsimNGpy.exceptionsApsimNotFoundError
+.. class:: apsimNGpy.core.pythonet_configConfigRuntimeInfo
 
-   Raised when the APSIM executable or directory is not found.
+   ConfigRuntimeInfo(clr_loaded: bool, bin_path: Union[pathlib.Path, str], file_format_modified: bool = True)
 
-.. class:: apsimNGpy.core_utils.exceptionsTableNotFoundError
+.. class:: apsimNGpy.exceptionsTableNotFoundError
 
-   Exception raised when the specified table cannot be found.
+   table not found error.
 
 apsimNGpy.exceptions 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2177,6 +2638,10 @@ apsimNGpy.exceptions
 .. class:: apsimNGpy.exceptionsApsimNotFoundError
 
    Raised when the APSIM executable or directory is not found.
+
+.. class:: apsimNGpy.exceptionsApsimRuntimeError
+
+   occurs when an error occurs during running APSIM models with Models.exe or Models on Mac and linnux
 
 .. class:: apsimNGpy.exceptionsCastCompilationError
 
@@ -2194,9 +2659,17 @@ apsimNGpy.exceptions
 
    Raised when the input provided is invalid or improperly formatted.
 
+.. class:: apsimNGpy.exceptionsModelNotFoundError
+
+   Raised when a specified model  cannot be found.
+
 .. class:: apsimNGpy.exceptionsNodeNotFoundError
 
    Raised when a specified model node cannot be found.
+
+.. class:: apsimNGpy.exceptionsTableNotFoundError
+
+   table not found error.
 
 apsimNGpy.manager.soilmanager 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2324,6 +2797,8 @@ apsimNGpy.parallel.process
      ``void`` (bool, optional): if True, it implies that the we start consuming data internally right away, recomended for methods that operates on objects without returning data,
          such that you dont need to unzip or iterate on such returned data objects.
 
+    ``unit`` to display during progress, it is only cosmetic, for showing the iteration rate, defaults to iteration
+
 .. function:: apsimNGpy.core_utils.database_utils.read_db_table(db, report_name)
 
    Connects to a specified database, retrieves the entire contents of a specified table,
@@ -2395,14 +2870,6 @@ apsimNGpy.parallel.process
 
    :param path: path to apsimx file
     :return: none
-
-.. class:: apsimNGpy.core_utils.progbarProgressBar
-
-   ProgressBar(total: int, prefix: str = '', suffix: str = '', length: int = 10, fill: str = '█', color: str = 'green', leader_head: str = ' ', show_time: bool = True, unit: str = 'iteration')
-
-   .. method::apsimNGpy.core_utils.progbar.ProgressBar.refresh(self, new_total=None)
-
-      Force a redraw of the current progress bar without changing the iteration.
 
 apsimNGpy.validation.evaluator 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

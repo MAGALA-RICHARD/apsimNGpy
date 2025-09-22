@@ -4,9 +4,9 @@
 .. note::
 
     ⚠️ Note: The Experiment module, introduced in apsimNGpy v0.3.9.7, addresses recent structural changes in APSIM file structure changes. While the older ``create_experiment`` method in ApsimModel is retained for backward compatibility,
-    users working with newer APSIM models should use the ``Experiment`` class for building factorial designs. It offers full support for modern model structures and script-based factors
+    users working with newer APSIM models should use the ``ExperimentManager`` class for building factorial designs. It offers full support for modern model experiment editing
 
-The `Experiment` API in ``apsimNGpy`` provides a high-level interface to build factorial experiments
+The `ExperimentManager` API in ``apsimNGpy`` provides a high-level interface to build factorial experiments
 programmatically using APSIM. It is ideal for users who want to automate the creation of simulation treatments
 by varying input parameters or management scripts — all without manually editing ``.apsimx`` files.
 
@@ -16,7 +16,7 @@ by varying input parameters or management scripts — all without manually editi
 Quick Overview
 ==============
 
-The `Experiment` class wraps an existing APSIM model and allows you to:
+The `ExperimentManager` class wraps an existing APSIM model and allows you to:
 
 - Clone and isolate a base simulation
 - Add multiple input factors (e.g., fertilizer rate, sowing density)
@@ -30,9 +30,9 @@ First, create an `Experiment` object by loading a base model:
 
 .. code-block:: python
 
-   from apsimNGpy.experiment import Experiment
+   from apsimNGpy.core.experimentmanager import ExperimentManager
 
-   exp = Experiment("Maize.apsimx", out_path="Maize_experiment.apsimx")
+   exp = ExperimentManager("Maize", out_path="Maize_experiment.apsimx")
 
 Then initialize the experiment block:
 
@@ -59,7 +59,7 @@ Once all factors are defined, finalize the setup and save the modified model. Pl
 
 .. code-block:: python
 
-   exp.finalize()
+    exp.finalize()
 
 This writes a new `.apsimx` file that contains a complete factorial experiment,
 ready to run in APSIM or via automation tools.
@@ -67,7 +67,7 @@ ready to run in APSIM or via automation tools.
 API Summary
 ===========
 
-- :class:`Experiment`: Main entry point to create and manipulate factorial designs.
+- :class:`ExperimentManager`: Main entry point to create and manipulate factorial designs.
 - :meth:`init_experiment`: Prepares the experiment node structure in the model.
 - :meth:`add_factor`: Adds a new varying parameter or script-defined rule.
 - :meth:`finalize`: Validates and commits the experiment structure to the model.

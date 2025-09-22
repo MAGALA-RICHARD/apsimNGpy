@@ -60,6 +60,7 @@ All versions are currently in development, phase and they can be installed as fo
     pip install apsimNGpy
 
 If you are using the fleeting uv virtual environment manager.
+
 .. code-block:: python
 
     uv pip install apsimNGpy
@@ -78,8 +79,8 @@ If you are using the fleeting uv virtual environment manager.
 
      pip install git+https://github.com/MAGALA-RICHARD/apsimNGpy.git
 
-Tip:
-============
+APSIM Next Generation (NG) installation Tip:
+===============================================
 For APSIM installation, Please use the pinned release shown on documentation home page/or on this page to avoid forward-compatibility issues. That release features the latest APSIM NG version that has passed all unit tests against apsimNGpy’s programmatic API.
 
 

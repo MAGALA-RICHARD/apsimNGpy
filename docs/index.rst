@@ -19,13 +19,6 @@ apsimNGpy: The Next-Generation Agro-ecosystem Simulation Library
    :target: https://pepy.tech/project/apsimNGpy
    :alt: Total PyPI downloads
 
-.. image:: https://static.pepy.tech/badge/apsimNGpy/month
-   :target: https://pepy.tech/project/apsimNGpy
-   :alt: Weekly PyPI downloads
-
-.. image:: https://static.pepy.tech/badge/apsimNGpy/week
-   :target: https://pepy.tech/project/apsimNGpy
-   :alt: Weekly PyPI downloads
 
 .. image:: https://img.shields.io/badge/Join%20Discussions-blue.svg
    :target: https://discord.gg/SU9A6nNv
@@ -35,22 +28,33 @@ apsimNGpy: The Next-Generation Agro-ecosystem Simulation Library
    :target: https://teams.live.com/l/community/FBAbNOQj7y9dPcoaAI
    :alt: Ask Teams
 
+.. image:: https://img.shields.io/badge/Latest--Unittest--APSIM--NG-2025.08.7844-blue?style=flat&logo=apachespark
+   :target: https://registration.apsim.info/?version=2025.08.7844.0&product=APSIM%20Next%20Generation
+   :alt: APSIM Next Generation version
+
 
 
 .. admonition:: Introduction
 
-   apsimNGpy is a cutting-edge, open-source framework designed for advanced agroecosystem modeling.
-   Built on object-oriented principles, it provides:
+   apsimNGpy is a cutting-edge, open-source Python framework designed for advanced modeling with APSIM process-based model.
+   Built on object-oriented principles. apsimNGpy extends and augments APSIM Next Generation functionalities within the Python scientific ecosystem,
+   turning GUI-centric workflows into scriptable, reproducible, and scalable pipelines. apsimNGpy functionalities include, but not limited to the following:
 
-   - Fast batch file simulation
-   - Model prediction and evaluation
-   - Seamless APSIMX file editing
-   - APSIM template model inspection
-   - Weather data retrieval
-   - Efficient soil profile development
-   - Parameter optimization (still undergoing rigorous tests). apsimNGpy support a broad selection of local and global optimization methods., including genetic multi-objective optimizations.
-   - Global and local sensitivity analysis
-   - Distributed computing framework.
+    **Scalable performance.** Run large experiment sets efficiently via ``multiprocessing/multithreading`` (e.g., factorials, ensembles, calibrations) using a clean, high-level API.
+
+    **Spatial & data integration**. Leverage Python’s geospatial stack and built-in helpers to fetch and manage soil/weather inputs, enabling landscape-scale analyses.
+
+    **Optimization & calibration**. Access multi-objective optimization and sensitivity analysis to quantify trade-offs (e.g., yield vs. nitrate loss/GHG) and calibrate parameters.
+
+    **Reproducible automation**. Run ``APSIM`` using Jupyter/CLI/scripts; outputs land in ``pandas DataFrames`` for downstream analysis, plotting, and reporting.
+
+    **Full model manipulation**. A modular, ``object-oriented`` design supports inspection, editing, experiments, and custom reports without manual GUI interface.
+
+    **Version resilience**. rather than tying ``apsimNGpy`` to a fixed APSIM version, ``apsimNGpy`` is developed with forward- and backward-compatibility in mind and is actively synchronized with upstream APSIM.
+
+    **Open and extensible**. ``Apache-2.0`` licensing, clear abstractions, and a plug-friendly architecture make it easy to extend and integrate into existing research pipelines.
+
+    **Diverse model evaluation metrics**. Built-in model prediction evaluation metrics: RMSE, RRMSE, Willmott’s Index of Agreement (WIA), Bias, MAE, Lin's CCC, and R\ :sup:`2`
 
 
 .. toctree::
@@ -69,7 +73,14 @@ apsimNGpy: The Next-Generation Agro-ecosystem Simulation Library
 
 .. toctree::
    :maxdepth: 2
-   :caption: Inspection & Editing
+   :caption: VERSION CONTROL
+
+   version_control
+   manage_env
+
+.. toctree::
+   :maxdepth: 2
+   :caption: EDITING & INSPECTION
 
    model inspection
    inspect_model_parameters
@@ -79,32 +90,38 @@ apsimNGpy: The Next-Generation Agro-ecosystem Simulation Library
 
 .. toctree::
    :maxdepth: 2
-   :caption: Optimization & Trade-off Analysis
+   :caption: DISTRIBUTED COMPUTING
+
+   mult_core
+
+.. toctree::
+   :maxdepth: 2
+   :caption: OPTIMIZATION & TRADE-OFF ANALYSIS
 
    OPT
    moo
 
 .. toctree::
    :maxdepth: 3
-   :caption: Support Development
+   :caption: SUPPORT DEVELOPMENT
 
    how_to_cite
 
 .. toctree::
    :maxdepth: 1
-   :caption: Tutorials
+   :caption: TUTORIALS
 
    comp_cultivar
 
 .. toctree::
    :maxdepth: 1
-   :caption: CheatSheet
+   :caption: CHEATSHEET
 
    cheat
 
 .. toctree::
    :maxdepth: 1
-   :caption: API Reference
+   :caption: API REFERENCE
 
    api
 

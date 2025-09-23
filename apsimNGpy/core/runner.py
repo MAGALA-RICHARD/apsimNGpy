@@ -193,9 +193,10 @@ def run_model_externally(
 
     # Non-zero exit is treated as failure; caller can relax this if needed
     if proc.returncode != 0:
+        #logger.info(f"{proc.stderr} {proc.stdout}")
         raise ApsimRuntimeError(
             f"APSIM exited with code {proc.returncode}. "
-            f"See logs for stderr/stdout."
+            f"See logs for stderr/stdout. or run with verbose option =True."
         )
 
     return proc

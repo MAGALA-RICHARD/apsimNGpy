@@ -159,7 +159,7 @@ class SoilManager:
 
         meta_info = fill_in_meta_info(
             soil_type=mu_name,
-            record_number= int(chkey),
+            record_number=int(chkey),
             latitude=lonlat[0],
             longitude=lonlat[1],
             local_name=soil_series,
@@ -235,30 +235,29 @@ class SoilManager:
         Edits the shared SoilCrop first, then adds explicit crop entries as requested.
         """
         self._ensure_soil_profile()
-
+        df = self.soil_profile.get('soil_crop')
+        if df is None:
+            return
         physical = find_child_of_class(parent=self.simulation_model, child_class=Models.Soils.Physical)
         if not physical:
             return
         physical = CastHelper.CastAs[Models.Soils.Physical](physical) or physical
 
-        crop_soil = find_child_of_class(physical, child_class=Models.Soils.SoilCrop)
+        crop_soil = find_all_in_scope(physical, child_class=Models.Soils.SoilCrop)
         if not crop_soil:
             return
-        crop_soil = CastHelper.CastAs[Models.Soils.SoilCrop](crop_soil) or crop_soil
+        for soilc in crop_soil:
+            crop_soil = CastHelper.CastAs[Models.Soils.SoilCrop](soilc) or crop_soil
 
-        df = self.soil_profile.get('soil_crop')
-        if df is None:
-            return
-
-        attr_set = set(dir(crop_soil))
-        for prop in df.columns:
-            if prop not in attr_set:
-                continue
-            col = df[prop]
-            if prop == 'Depth':
-                setattr(crop_soil, prop, col.values)
-            else:
-                setattr(crop_soil, prop, _to_net_double_array(col.to_numpy(copy=False)))
+            attr_set = set(dir(crop_soil))
+            for prop in df.columns:
+                if prop not in attr_set:
+                    continue
+                col = df[prop]
+                if prop == 'Depth':
+                    setattr(crop_soil, prop, col.values)
+                else:
+                    setattr(crop_soil, prop, _to_net_double_array(col.to_numpy(copy=False)))
 
         # Add explicit crop entries, copying values in bulk
         for crop in crops_in or ():
@@ -294,7 +293,7 @@ class SoilManager:
             if hasattr(cast__a_soil, key):
 
                 if key == 'RecordNumber':
-                   value = int(meta_info[key])
+                    value = int(meta_info[key])
                 else:
                     value = meta_info[key]
 

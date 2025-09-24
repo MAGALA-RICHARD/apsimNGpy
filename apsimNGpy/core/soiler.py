@@ -160,8 +160,8 @@ class SoilManager:
         meta_info = fill_in_meta_info(
             soil_type=mu_name,
             record_number=int(chkey),
-            latitude=lonlat[0],
-            longitude=lonlat[1],
+            latitude=lonlat[1],
+            longitude=lonlat[0],
             local_name=soil_series,
             data_source=(
                 f"{soil_series}: downloaded by apsimNGpy: `DownloadsurgoSoiltables` \n accessed from SSURGO on: {date_str}"

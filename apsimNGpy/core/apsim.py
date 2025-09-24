@@ -78,7 +78,8 @@ class ApsimModel(CoreModel):
                           edit_sections: Optional[Sequence[str]] = None,
                           # attach any missing nodes before editing
                           attach_missing_sections: bool = True,
-                          additional_plants:tuple =None):
+                          additional_plants: tuple = None,
+                          adjust_dul: bool = False):
         """
         Pull SSURGO-derived soil for a given location
         populate the APSIM simulation’s soil sections
@@ -111,8 +112,11 @@ class ApsimModel(CoreModel):
 
         ``additional_plants``: sequence[str]. if there were recently added crops, that need crop soil conditions such as KL
 
+        ``adjust_dul``: sometimes the SAT value(s) is/are above the DUL threshold, so adjustment is needed, else,
+         APSIM with throw an errors, which will also cause apsimNGpy to respond with APsimRuntimeError during runtime
+
         Returns
-        -------
+        ----------
         self for method chaining
 
         Notes
@@ -124,9 +128,11 @@ class ApsimModel(CoreModel):
         Raises
 
         - ValueError
+        -------------------------
          - when a thickness sequence is not auto and has zero  or less than zero values
          - when a thickness sequence is none and thickness value is none
-         -  if thickness value and max depth do not match in-terms of units
+         - if thickness value and max depth do not match in-terms of units
+
         Side Effects
         ------------
         - Mutates the target APSIM simulation tree in place:
@@ -234,6 +240,8 @@ class ApsimModel(CoreModel):
                 mgr.edit_solute_sections()
             if "soil_crop" in edit_sections:
                 mgr.edit_soil_crop(crops_in=add_crop)
+        if adjust_dul:
+            self.adjust_dul(simulation_name)
         return self
 
     def adjust_dul(self, simulations: Union[tuple, list] = None):
@@ -329,8 +337,8 @@ class ApsimModel(CoreModel):
         """
 
         self.thickness_replace = self.thickness_values
-        physical_calculated = soil_tables[0]
-        self.organic_calcualted = soil_tables[1]
+        physical_calculated = soil_tables['physical']
+        self.organic_calcualted = soil_tables['organic']
         self.cropdf = soil_tables[2]
         self.SWICON = soil_tables[6]  # TODO To put these tables in the dictionary isn't soilmanager module
         for simu in self.find_simulations(simulation_names):
@@ -625,8 +633,8 @@ if __name__ == '__main__':
     #     print(f"Error: {type(e).__name__} occurred on line: {line_number} execution value: {exc_value}")
 
     maize_x = Path.home() / 'maize.apsimx'
-    #mod = ApsimModel('Maize', out_path=maize_x)
+    # mod = ApsimModel('Maize', out_path=maize_x)
     model = ApsimModel(maize_x, out_path=Path.home() / 'm.apsimx')
-    model.get_soil_from_web(simulation_name=None, lonlat=(-88.9937, 40.4842), thinnest_layer=150)
-    #mod.get_soil_from_web(simulation_name=None, lonlat=(-93.045, 42.0541))
+    model.get_soil_from_web(simulation_name=None, lonlat=(-89.9937, 40.4842), thinnest_layer=150)
+    # mod.get_soil_from_web(simulation_name=None, lonlat=(-93.045, 42.0541))
     model.preview_simulation()

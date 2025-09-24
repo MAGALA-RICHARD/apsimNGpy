@@ -156,10 +156,13 @@ class SoilManager:
             raise KeyError(f'{soil_series} not any of the available ones: {', '.join(sdf.componentname.unique())}')
 
         soil_profile = OrganiseSoilProfile(sdf, thickness_values=thickness_sequence)
-
+        try:
+            rn = int(int(chkey))
+        except TypeError as e:
+            rn = 0
         meta_info = fill_in_meta_info(
             soil_type=mu_name,
-            record_number=int(chkey),
+            record_number=rn,
             latitude=lonlat[1],
             longitude=lonlat[0],
             local_name=soil_series,

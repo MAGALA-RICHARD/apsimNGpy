@@ -627,6 +627,6 @@ if __name__ == '__main__':
     maize_x = Path.home() / 'maize.apsimx'
     #mod = ApsimModel('Maize', out_path=maize_x)
     model = ApsimModel(maize_x, out_path=Path.home() / 'm.apsimx')
-    model.get_soil_from_web(simulation_name=None, lonlat=(-93.045, 42.0541), thinnest_layer=150)
+    model.get_soil_from_web(simulation_name=None, lonlat=(-88.9937, 40.4842), thinnest_layer=150)
     #mod.get_soil_from_web(simulation_name=None, lonlat=(-93.045, 42.0541))
     model.preview_simulation()

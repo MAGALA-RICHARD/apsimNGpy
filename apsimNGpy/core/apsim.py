@@ -79,7 +79,7 @@ class ApsimModel(CoreModel):
                           # attach any missing nodes before editing
                           attach_missing_sections: bool = True,
                           additional_plants: tuple = None,
-                          adjust_dul: bool = False):
+                          adjust_dul: bool = True):
         """
         Pull SSURGO-derived soil for a given location
         populate the APSIM simulation’s soil sections
@@ -112,7 +112,7 @@ class ApsimModel(CoreModel):
 
         ``additional_plants``: sequence[str]. if there were recently added crops, that need crop soil conditions such as KL
 
-        ``adjust_dul``: sometimes the SAT value(s) is/are above the DUL threshold, so adjustment is needed, else,
+        ``adjust_dul`` (bool, optional): sometimes the SAT value(s) is/are above the DUL threshold, so adjustment is needed, else,
          APSIM with throw an errors, which will also cause apsimNGpy to respond with APsimRuntimeError during runtime
 
         Returns
@@ -254,28 +254,27 @@ class ApsimModel(CoreModel):
         ``returns``:
             model object
         """
-        duL = self.extract_any_soil_physical('DUL', simulations)
+        if simulations is None:
+            simulations = [i.Name for i in self.simulations]
+        for sim_name in simulations:
+            params = self.inspect_model_parameters(model_type='Models.Soils.Physical', simulations=sim_name,
+                                                   parameters={'SAT', 'DUL'}, model_name='Physical')
+            duL = params['DUL'].tolist()
 
-        saT = self.extract_any_soil_physical('SAT', simulations)
-        for sim in duL:
-            duls = duL[sim]
+            saT = params['SAT'].tolist()
 
-            sats = saT[sim]
-            for enum, (s, d) in enumerate(zip(sats, duls)):
+            for enum, (s, d) in enumerate(zip(saT, duL)):
                 # first check if they are equal
                 if d >= s:
                     # if d is greater than s, then by what value, we need this value to add it to 0.02
                     #  to be certain all the time that dul is less than s we subtract the summed value
                     diff = d - s
-                    duls[enum] = d - (diff + 0.02)
+                    duL[enum] = d - (diff + 0.02)
 
                 else:
-                    duls[enum] = d
-            if not simulations:
-                soil_object = self.Simulations.FindDescendant[Soil]()
-
-                soilsy = soil_object.FindDescendant[Physical]()
-                soilsy.DUL = duls
+                    duL[enum] = d
+            self.edit_model(model_type='Models.Soils.Physical', model_name='Physical', **{'DUL': duL, "SAT": saT},
+                            simulations=sim_name)
         self.save()
         # self.replace_any_soil_physical('DUL', simulations, duL)
         return self
@@ -635,6 +634,6 @@ if __name__ == '__main__':
     maize_x = Path.home() / 'maize.apsimx'
     # mod = ApsimModel('Maize', out_path=maize_x)
     model = ApsimModel(maize_x, out_path=Path.home() / 'm.apsimx')
-    model.get_soil_from_web(simulation_name=None, lonlat=(-89.9937, 40.4842), thinnest_layer=150)
+    model.get_soil_from_web(simulation_name=None, lonlat=(-89.9937, 40.4842), thinnest_layer=150, adjust_dul=True)
     # mod.get_soil_from_web(simulation_name=None, lonlat=(-93.045, 42.0541))
     model.preview_simulation()

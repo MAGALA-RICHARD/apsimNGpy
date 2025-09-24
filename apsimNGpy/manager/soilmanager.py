@@ -638,10 +638,11 @@ class OrganiseSoilProfile:
             CSR = None
         # resultdf = pd.concat(frame, join='outer', axis=1)
         # ------------------------ final dict data ------------------------
+        meta_default = {'thickness sequence': self.thickness_values, 'Depth': self.depths}
         if isinstance(metadata, dict):
-            metadata = metadata
+            metadata = metadata | {'thickness sequence': self.thickness_values}
         elif metadata is None:
-            metadata = {}
+            metadata = meta_default
         else:
             raise TypeError("metadata must be a dictionary or None")
 

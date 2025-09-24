@@ -141,8 +141,8 @@ class SoilManager:
                 'Both "thickness_sequence" and "thickness" are provided; only "thickness_sequence" will be used.'
             )
 
-        date_str = dt.date.today().strftime("%Y-%m-%d")
-        sdf = DownloadsurgoSoiltables(lonlat=lonlat, select_componentname=soil_series, summarytable=True)
+        date_str = dt.datetime.now().isoformat(timespec="seconds")
+        sdf = DownloadsurgoSoiltables(lonlat=lonlat, select_componentname=soil_series, summarytable=False)
         if soil_series in sdf.componentname.unique():
             sdf = sdf[sdf['componentname'] == soil_series]
         if soil_series is None:
@@ -167,7 +167,7 @@ class SoilManager:
                 f"{soil_series}: downloaded by apsimNGpy: `DownloadsurgoSoiltables` \n accessed from SSURGO on: {date_str}"
 
             ),
-            comments=f"number of layers: {n_layers}, max depth: {max_depth}"
+            comments=f"number of layers: {n_layers}, max depth: {max_depth}mm"
         )
         return soil_profile.cal_missingFromSurgo(metadata=meta_info)
 
@@ -292,12 +292,12 @@ class SoilManager:
         meta_info = self.soil_profile['meta_info']
         for key in meta_info:
             if hasattr(cast__a_soil, key):
-                print(key)
+
                 if key == 'RecordNumber':
                    value = int(meta_info[key])
                 else:
                     value = meta_info[key]
-                print(value)
+
                 setattr(cast__a_soil, key, value)
 
     def edit_soil_water_balance(self) -> None:

@@ -132,7 +132,7 @@ class ApsimModel(CoreModel):
         # Default: edit all known sections
         if not edit_sections:
             edit_sections = (
-            "physical", "organic", "chemical", "water", "water_balance", "solutes", "soil_crop", 'meta_info')
+                "physical", "organic", "chemical", "water", "water_balance", "solutes", "soil_crop", 'meta_info')
 
         # Helper to ensure a section exists and is attached under the Soil node
         def _ensure_section(sim, cls):
@@ -386,39 +386,6 @@ class ApsimModel(CoreModel):
 
         return self
 
-    # print(self.results)
-
-    def _change_met_file(self, lonlatmet: tuple = None,
-                         simulation_names: Union[tuple, list] = None):  # to be accessed only in this class
-        """_similar to class weather management but just in case we want to change the weather within the subclass
-        # uses existing start and end years to download the weather data
-
-        """
-        if lonlatmet == None:
-            self.lonlat = self.lonlat
-        else:
-            self.lonlat = lonlatmet
-
-        start, end = self.extract_start_end_years()
-        wp = weather.get_met_from_day_met(self.lonlat, start, end)
-        wpath = os.path.join(os.getcwd(), wp)
-        wpath = os.path.join(os.getcwd(), wp)
-        if self.simulation_names:
-            sim_name = list(self.simulation_names)
-        else:
-            sim_name = self.simulation_names  # because it is a property decorator
-        self.replace_met_file(wpath, sim_name)
-        return self
-
-    def run_edited_file(self, table_name=None):
-        # to be deprecated
-        """
-
-            :param table_name (str): repot table name in the database
-
-        """
-        return self.run(report_name=table_name).results
-
     def spin_up(self, report_name: str = 'Report', start=None, end=None, spin_var="Carbon", simulations=None):
         """
         Perform a spin-up operation on the aPSim model.
@@ -497,75 +464,6 @@ class ApsimModel(CoreModel):
         wf = os.path.abspath(w_f)
         self.replace_met_file(weather_file=wf)
         return self
-
-    def auto_gen_thickness_layers(self,
-                                  max_depth, n_layers=10, thin_layers=3, thin_thickness=100,
-                                  growth_type="linear", thick_growth_rate=1.5
-                                  ):
-        """
-        Generate layer thicknesses from surface to depth, starting with thin layers and increasing thickness.
-
-        Args:
-            ``max_depth`` (float): Total depth in mm.
-
-            ``n_layers`` (int): Total number of layers.
-
-            ``thin_layers`` (int): Number of initial thin layers.
-
-            ``thin_thickness`` (float): Thickness of each thin layer.
-
-            ``growth_type`` (str): 'linear' or 'exponential'.
-
-            ``thick_growth_rate`` (float): Growth factor for thick layers (e.g., +50% each layer if exponential).
-
-        ``Returns:``
-            List[float]: List of layer thicknesses summing to max_depth.
-        """
-        from math import pow
-
-        assert 0 < thin_layers < n_layers, "thin_layers must be less than total layers"
-        assert thin_thickness > 0, "thin_thickness must be positive"
-        assert growth_type in ['linear', 'exponential'], "Invalid growth_type"
-
-        thick_layers = n_layers - thin_layers
-        thin_total = thin_layers * thin_thickness
-        remaining_depth = max_depth - thin_total
-
-        if remaining_depth <= 0:
-            raise ValueError("Thin layers consume more than total depth.")
-
-        # --- Step 1: Thin layers ---
-        thin_parts = [thin_thickness] * thin_layers
-
-        # --- Step 2: Thick layers ---
-        if growth_type == "linear":
-            # We'll solve an arithmetic series: a + (a + d) + ... = remaining_depth
-            # Assume a = base_thick, d = constant increment
-            # So: total = thick_layers * a + d * (0 + 1 + ... + thick_layers-1)
-            increments = list(range(thick_layers))
-            sum_increments = sum(increments)
-            base_thick = (remaining_depth - sum_increments * thick_growth_rate) / thick_layers
-            thick_parts = [base_thick + i * thick_growth_rate for i in increments]
-
-        elif growth_type == "exponential":
-            # Geometric series: a*r^0 + a*r^1 + ... = remaining_depth
-            r = thick_growth_rate
-            denom = sum([pow(r, i) for i in range(thick_layers)])
-            a = remaining_depth / denom
-            thick_parts = [a * pow(r, i) for i in range(thick_layers)]
-
-        # Final result
-        layers = thin_parts + thick_parts
-
-        # Precision check
-        total = sum(layers)
-        if abs(total - max_depth) > 1e-6:
-            # Final adjustment to fix floating point error
-            layers[-1] += max_depth - total
-        layers.sort()
-        layers = [int(i) for i in layers]
-
-        return layers
 
     def check_kwargs(self, path, **kwargs):
         if hasattr(self.Simulations, "FindByPath"):
@@ -706,8 +604,8 @@ if __name__ == '__main__':
     #     line_number = exc_traceback.tb_lineno
     #     print(f"Error: {type(e).__name__} occurred on line: {line_number} execution value: {exc_value}")
 
-
     maize_x = Path.home() / 'maize.apsimx'
     mod = ApsimModel('Maize', out_path=maize_x)
     # model = ApsimModel(maize_x)
-   # model.get_soil_from_web(simulation_name=None, lonlat=(-93.045, 42.0541))
+    # model.get_soil_from_web(simulation_name=None, lonlat=(-93.045, 42.0541))
+    mod.get_soil_from_web(simulation_name=None, lonlat=(-93.045, 42.0541))

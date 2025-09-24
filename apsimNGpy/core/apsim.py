@@ -66,7 +66,6 @@ class ApsimModel(CoreModel):
                           *,
                           # location / data source
                           lonlat: Optional[Tuple[float, float]] = None,
-                          soil_tables: Optional[Mapping[str, Any]] = None,
                           soil_series: Optional[str] = None,
                           # layer/thickness controls
                           thickness_sequence: Optional[Sequence[float]] = 'auto',
@@ -77,42 +76,44 @@ class ApsimModel(CoreModel):
                           thickness_growth_rate: float = 1.5,  # unit less
                           # which sections to edit
                           edit_sections: Optional[Sequence[str]] = None,
-                          crops_in: Sequence[str] = (),
                           # attach any missing nodes before editing
-                          attach_missing_sections: bool = True):
+                          attach_missing_sections: bool = True,
+                          additional_plants:tuple =None):
         """
-        Pull SSURGO-derived soil for a location (or use provided tables),
-        populate the APSIM simulation’s soil sections, and return either the
-        SoilManager or the computed soil profile.
+        Pull SSURGO-derived soil for a given location
+        populate the APSIM simulation’s soil sections
 
         Parameters
         ----------
-        simulation : Models.Core.Simulation | ApsimModel
-            Target simulation (or an ApsimModel containing simulations).
-        lonlat : (lon, lat) tuple
+        ``simulation``: simulation names (str, tuple, optional): Target a simulation or simulations. if None all simulations will be updated with the downloaded soil profile
+
+        ``lonlat`` (lon, lat) tuple
             Location for SSURGO download. Ignored if `soil_tables` is given.
-        soil_tables : dict-like
-            Pre-built soil tables (bypass web download).
-        soil_series : str
-            Optional component/series filter for SSURGO selection.
-        thickness_sequence : sequence[float]
-            Explicit thickness layout per layer. If auto, it will be auto-generated.
-        thickness_value if thickness_sequence is None this value must be provided to generate the thickness sequence and together with max_depth m ust be provided
-        max_depth, n_layers, thinnest_layer, thickness_growth_rate :
-            Thickness controls the rate of thickness from the top to the max-depth,
-        edit_sections : sequence[str]
+
+        ``soil_series`` : str
+            Optional component/series filter for SSURGO selection. Be careful if not found an error is raised, safest is to leve it to None, and adormiant one is returned
+
+        ``thickness_sequence`` : sequence[float]
+            Explicit thickness layout per layer. If auto, it will be auto-generated from n_layers, m=thickness_growth_rate, thinnest layer and max_depth
+            thickness_value if thickness_sequence is None this value must be provided to generate the thickness sequence and together with max_depth m ust be provided
+
+       ``thickness_value`` (int, optional): The thickness for all the soil layers. if both thickness_sequence and thickness_value are provided, priority is given to thickness_sequence
+
+        ``max_depth`` (int, optional): Maximum depth of the soil bottom layers. If not provided, it defaults 2400 mm:
+
+        ``edit_sections`` : sequence[str]
             Which sections to edit. Defaults to all:
             ("physical", "organic", "chemical", "water", "water_balance", "solutes", "soil_crop", 'meta_info')
             note that if a few sections are edited with different number of soil layers, APSIm will throw an error during run time
-        crops_in : sequence[str]
-            Extra crop names to add under SoilCrop.
-        attach_missing_sections : bool
+
+        ``attach_missing_sections`` : bool
             If True, create/attach missing section nodes before editing.
 
+        ``additional_plants``: sequence[str]. if there were recently added crops, that need crop soil conditions such as KL
 
         Returns
         -------
-         None
+        self for method chaining
 
         Notes
         -----
@@ -126,7 +127,24 @@ class ApsimModel(CoreModel):
          - when a thickness sequence is not auto and has zero  or less than zero values
          - when a thickness sequence is none and thickness value is none
          -  if thickness value and max depth do not match in-terms of units
-
+        Side Effects
+        ------------
+        - Mutates the target APSIM simulation tree in place:
+          - Creates and attaches a **Soil** node if missing when ``attach_missing_sections=True``.
+          - Creates and/or updates child sections (``Physical``, ``Organic``, ``Chemical``,
+            ``Water``, ``WaterBalance``, ``SoilCrop``) as requested in ``edit_sections``.
+          - Overwrites section properties (e.g., layer arrays such as ``Depth``, ``CLL``, ``SAT``,
+            ``BD``, solute columns, crop KL/XF, etc.) with values derived from the downloaded profile.
+        - May add **SoilCrop** children for any names in ``additional_plants`` (and populate their
+          properties), potentially replacing previously set values.
+        - Performs **network I/O** to retrieve SSURGO tables when ``lonlat`` is provided (runtime and
+          results depend on internet availability and the external service).
+        - Emits **log messages** (warnings/info) via the package logger (e.g., when attaching nodes,
+          when both thickness controls are provided, or when sections/columns are absent).
+        - Caches the computed soil profile **within the helper manager instance** during execution,
+          but does not persist it globally; the APSIM model in memory remains modified after return.
+        - Does **not** write any files or save the APSIM document; call the model’s save method separately
+          if persistence to disk is desired.
         """
 
         # Default: edit all known sections
@@ -188,7 +206,7 @@ class ApsimModel(CoreModel):
             mgr = SoilManager(
                 simulation_model=simulation,
                 lonlat=lonlat,
-                soil_tables=soil_tables,
+                soil_tables=None,
                 soil_series=soil_series,
                 thickness_sequence=thickness_sequence,
                 thickness_value=thickness_value,
@@ -196,9 +214,10 @@ class ApsimModel(CoreModel):
                 n_layers=n_layers,
                 thinnest_layer=thinnest_layer,
                 thickness_growth_rate=thickness_growth_rate,
-                soil_profile=None,  # let it compute/fill once
+                soil_profile=None,
+                # let it compute/fill once
             )
-
+            add_crop = additional_plants if additional_plants is not None else ()
             # Do edits
             mgr.edit_meta_info()
             if "physical" in edit_sections:
@@ -214,7 +233,8 @@ class ApsimModel(CoreModel):
             if "solutes" in edit_sections:
                 mgr.edit_solute_sections()
             if "soil_crop" in edit_sections:
-                mgr.edit_soil_crop(crops_in=crops_in)
+                mgr.edit_soil_crop(crops_in=add_crop)
+        return self
 
     def adjust_dul(self, simulations: Union[tuple, list] = None):
         """
@@ -605,7 +625,8 @@ if __name__ == '__main__':
     #     print(f"Error: {type(e).__name__} occurred on line: {line_number} execution value: {exc_value}")
 
     maize_x = Path.home() / 'maize.apsimx'
-    mod = ApsimModel('Maize', out_path=maize_x)
-    # model = ApsimModel(maize_x)
-    # model.get_soil_from_web(simulation_name=None, lonlat=(-93.045, 42.0541))
-    mod.get_soil_from_web(simulation_name=None, lonlat=(-93.045, 42.0541))
+    #mod = ApsimModel('Maize', out_path=maize_x)
+    model = ApsimModel(maize_x, out_path=Path.home() / 'm.apsimx')
+    model.get_soil_from_web(simulation_name=None, lonlat=(-93.045, 42.0541), thinnest_layer=150)
+    #mod.get_soil_from_web(simulation_name=None, lonlat=(-93.045, 42.0541))
+    model.preview_simulation()

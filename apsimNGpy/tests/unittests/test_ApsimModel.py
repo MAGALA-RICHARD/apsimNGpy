@@ -32,7 +32,7 @@ class TestCoreModel(BaseTester):
         model = self.test_ap_sim
         sim_name = 'clone_test'
         if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
-            self.skipTest(f"This version of apsimNGpy {APSIM_VERSION_NO} is not supported by clone_method becasue"
+            self.skipTest(f"This version of apsimNGpy {APSIM_VERSION_NO} is not supported by clone_method because"
                           f"it is greater than version {BASE_RELEASE_NO}")
         model.clone_model('Models.Core.Simulation', 'Simulation',
                           'Models.Core.Simulations', rename=sim_name)

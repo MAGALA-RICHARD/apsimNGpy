@@ -27,25 +27,53 @@ ApsimModel
         ``returns``:
             model object
 
-.. function:: apsimNGpy.core.apsim.ApsimModel.auto_gen_thickness_layers(self, max_depth, n_layers=10, thin_layers=3, thin_thickness=100, growth_type='linear', thick_growth_rate=1.5)
+.. function:: apsimNGpy.core.apsim.ApsimModel.get_soil_from_web(self, simulation_name: Union[str, tuple, NoneType] = None, *, lonlat: Optional[System.Tuple[Double,Double]] = None, soil_tables: Optional[Mapping[str, Any]] = None, soil_series: Optional[str] = None, thickness_sequence: Optional[Sequence[float]] = 'auto', thickness_value: int = None, max_depth: Optional[int] = 2400, n_layers: int = 10, thinnest_layer: int = 100, thickness_growth_rate: float = 1.5, edit_sections: Optional[Sequence[str]] = None, crops_in: Sequence[str] = (), attach_missing_sections: bool = True)
 
-   Generate layer thicknesses from surface to depth, starting with thin layers and increasing thickness.
+   Pull SSURGO-derived soil for a location (or use provided tables),
+        populate the APSIM simulation’s soil sections, and return either the
+        SoilManager or the computed soil profile.
 
-        Args:
-            ``max_depth`` (float): Total depth in mm.
+        Parameters
+        ----------
+        simulation : Models.Core.Simulation | ApsimModel
+            Target simulation (or an ApsimModel containing simulations).
+        lonlat : (lon, lat) tuple
+            Location for SSURGO download. Ignored if `soil_tables` is given.
+        soil_tables : dict-like
+            Pre-built soil tables (bypass web download).
+        soil_series : str
+            Optional component/series filter for SSURGO selection.
+        thickness_sequence : sequence[float]
+            Explicit thickness layout per layer. If auto, it will be auto-generated.
+        thickness_value if thickness_sequence is None this value must be provided to generate the thickness sequence and together with max_depth m ust be provided
+        max_depth, n_layers, thinnest_layer, thickness_growth_rate :
+            Thickness controls the rate of thickness from the top to the max-depth,
+        edit_sections : sequence[str]
+            Which sections to edit. Defaults to all:
+            ("physical", "organic", "chemical", "water", "water_balance", "solutes", "soil_crop", 'meta_info')
+            note that if a few sections are edited with different number of soil layers, APSIm will throw an error during run time
+        crops_in : sequence[str]
+            Extra crop names to add under SoilCrop.
+        attach_missing_sections : bool
+            If True, create/attach missing section nodes before editing.
 
-            ``n_layers`` (int): Total number of layers.
 
-            ``thin_layers`` (int): Number of initial thin layers.
+        Returns
+        -------
+         None
 
-            ``thin_thickness`` (float): Thickness of each thin layer.
+        Notes
+        -----
+        - Assumes soil sections live under a Soil node; missing sections are attached there when
+          `attach_missing_sections=True`.
+        - Uses your optimized SoilManager methods (vectorized + .NET double[] marshaling).
 
-            ``growth_type`` (str): 'linear' or 'exponential'.
+        Raises
 
-            ``thick_growth_rate`` (float): Growth factor for thick layers (e.g., +50% each layer if exponential).
-
-        ``Returns:``
-            List[float]: List of layer thicknesses summing to max_depth.
+        - ValueError
+         - when a thickness sequence is not auto and has zero  or less than zero values
+         - when a thickness sequence is none and thickness value is none
+         -  if thickness value and max depth do not match in-terms of units
 
 .. function:: apsimNGpy.core.apsim.ApsimModel.read_apsimx_data(self, table=None)
 
@@ -90,10 +118,6 @@ ApsimModel
             ``adJust_kl``:: Bollean, adjust, kl based on productivity index
             ``CultvarName``: cultivar name which is in the sowing module for adjusting the rue
             ``tillage``: specify whether you will be carried to adjust some physical parameters
-
-.. function:: apsimNGpy.core.apsim.ApsimModel.run_edited_file(self, table_name=None)
-
-   :param table_name (str): repot table name in the database
 
 .. function:: apsimNGpy.core.apsim.ApsimModel.spin_up(self, report_name: str = 'Report', start=None, end=None, spin_var='Carbon', simulations=None)
 
@@ -561,7 +585,7 @@ CoreModel
 
             ``base_name`` is optional but the experiment may not be created if there are more than one base simulations. Therefore, an error is likely.
 
-.. function:: apsimNGpy.core.core.CoreModel.detect_model_type(self, model_instance: Union[str, Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x000001C83D15B3B0>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD)])
+.. function:: apsimNGpy.core.core.CoreModel.detect_model_type(self, model_instance: Union[str, Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x0000023F7A7DB440>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD)])
 
    Detects the model type from a given APSIM model instance or path string.
 
@@ -900,7 +924,7 @@ CoreModel
 
         console: (bool) print to the console
 
-.. function:: apsimNGpy.core.core.CoreModel.inspect_model(self, model_type: Union[str, Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x000001C83D15B3B0>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD)], fullpath=True, **kwargs)
+.. function:: apsimNGpy.core.core.CoreModel.inspect_model(self, model_type: Union[str, Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x0000023F7A7DB440>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD)], fullpath=True, **kwargs)
 
    Inspect the model types and returns the model paths or names. usefull if you want to identify the path to the
         model for editing the model.
@@ -996,7 +1020,7 @@ CoreModel
             Models can be inspected either by importing the Models namespace or by using string paths. The most reliable approach is to provide the full model path—either as a string or as a Models object.
             However, remembering full paths can be tedious, so allowing partial model names or references can significantly save time during development and exploration.
 
-.. function:: apsimNGpy.core.core.CoreModel.inspect_model_parameters(self, model_type: Union[Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x000001C83D15B3B0>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), str], model_name: str, simulations: Union[str, list] = <UserOptionMissing>, parameters: Union[list, set, tuple, str] = 'all', **kwargs)
+.. function:: apsimNGpy.core.core.CoreModel.inspect_model_parameters(self, model_type: Union[Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x0000023F7A7DB440>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), str], model_name: str, simulations: Union[str, list] = <UserOptionMissing>, parameters: Union[list, set, tuple, str] = 'all', **kwargs)
 
    Inspect the input parameters of a specific ``APSIM`` model type instance within selected simulations.
 
@@ -1263,7 +1287,7 @@ CoreModel
             1. Finds the model object using the given path.
             2. Extracts and returns the requested parameter(s).
 
-.. function:: apsimNGpy.core.core.CoreModel.move_model(self, model_type: Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x000001C83D15B3B0>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), new_parent_type: Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x000001C83D15B3B0>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), model_name: str = None, new_parent_name: str = None, verbose: bool = False, simulations: Union[str, list] = None)
+.. function:: apsimNGpy.core.core.CoreModel.move_model(self, model_type: Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x0000023F7A7DB440>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), new_parent_type: Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x0000023F7A7DB440>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), model_name: str = None, new_parent_name: str = None, verbose: bool = False, simulations: Union[str, list] = None)
 
    Args:
 
@@ -1298,7 +1322,7 @@ CoreModel
    for methods that will alter the simulation objects and need refreshing the second time we call
        @return: self for method chaining
 
-.. function:: apsimNGpy.core.core.CoreModel.remove_model(self, model_class: Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x000001C83D15B3B0>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), model_name: str = None)
+.. function:: apsimNGpy.core.core.CoreModel.remove_model(self, model_class: Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x0000023F7A7DB440>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), model_name: str = None)
 
    Removes a model from the APSIM Models.Simulations namespace.
 
@@ -2192,25 +2216,53 @@ apsimNGpy.core.base_data
         ``returns``:
             model object
 
-   .. method::apsimNGpy.core.apsim.ApsimModel.auto_gen_thickness_layers(self, max_depth, n_layers=10, thin_layers=3, thin_thickness=100, growth_type='linear', thick_growth_rate=1.5)
+   .. method::apsimNGpy.core.apsim.ApsimModel.get_soil_from_web(self, simulation_name: Union[str, tuple, NoneType] = None, *, lonlat: Optional[System.Tuple[Double,Double]] = None, soil_tables: Optional[Mapping[str, Any]] = None, soil_series: Optional[str] = None, thickness_sequence: Optional[Sequence[float]] = 'auto', thickness_value: int = None, max_depth: Optional[int] = 2400, n_layers: int = 10, thinnest_layer: int = 100, thickness_growth_rate: float = 1.5, edit_sections: Optional[Sequence[str]] = None, crops_in: Sequence[str] = (), attach_missing_sections: bool = True)
 
-      Generate layer thicknesses from surface to depth, starting with thin layers and increasing thickness.
+      Pull SSURGO-derived soil for a location (or use provided tables),
+        populate the APSIM simulation’s soil sections, and return either the
+        SoilManager or the computed soil profile.
 
-        Args:
-            ``max_depth`` (float): Total depth in mm.
+        Parameters
+        ----------
+        simulation : Models.Core.Simulation | ApsimModel
+            Target simulation (or an ApsimModel containing simulations).
+        lonlat : (lon, lat) tuple
+            Location for SSURGO download. Ignored if `soil_tables` is given.
+        soil_tables : dict-like
+            Pre-built soil tables (bypass web download).
+        soil_series : str
+            Optional component/series filter for SSURGO selection.
+        thickness_sequence : sequence[float]
+            Explicit thickness layout per layer. If auto, it will be auto-generated.
+        thickness_value if thickness_sequence is None this value must be provided to generate the thickness sequence and together with max_depth m ust be provided
+        max_depth, n_layers, thinnest_layer, thickness_growth_rate :
+            Thickness controls the rate of thickness from the top to the max-depth,
+        edit_sections : sequence[str]
+            Which sections to edit. Defaults to all:
+            ("physical", "organic", "chemical", "water", "water_balance", "solutes", "soil_crop", 'meta_info')
+            note that if a few sections are edited with different number of soil layers, APSIm will throw an error during run time
+        crops_in : sequence[str]
+            Extra crop names to add under SoilCrop.
+        attach_missing_sections : bool
+            If True, create/attach missing section nodes before editing.
 
-            ``n_layers`` (int): Total number of layers.
 
-            ``thin_layers`` (int): Number of initial thin layers.
+        Returns
+        -------
+         None
 
-            ``thin_thickness`` (float): Thickness of each thin layer.
+        Notes
+        -----
+        - Assumes soil sections live under a Soil node; missing sections are attached there when
+          `attach_missing_sections=True`.
+        - Uses your optimized SoilManager methods (vectorized + .NET double[] marshaling).
 
-            ``growth_type`` (str): 'linear' or 'exponential'.
+        Raises
 
-            ``thick_growth_rate`` (float): Growth factor for thick layers (e.g., +50% each layer if exponential).
-
-        ``Returns:``
-            List[float]: List of layer thicknesses summing to max_depth.
+        - ValueError
+         - when a thickness sequence is not auto and has zero  or less than zero values
+         - when a thickness sequence is none and thickness value is none
+         -  if thickness value and max depth do not match in-terms of units
 
    .. method::apsimNGpy.core.apsim.ApsimModel.read_apsimx_data(self, table=None)
 
@@ -2255,10 +2307,6 @@ apsimNGpy.core.base_data
             ``adJust_kl``:: Bollean, adjust, kl based on productivity index
             ``CultvarName``: cultivar name which is in the sowing module for adjusting the rue
             ``tillage``: specify whether you will be carried to adjust some physical parameters
-
-   .. method::apsimNGpy.core.apsim.ApsimModel.run_edited_file(self, table_name=None)
-
-      :param table_name (str): repot table name in the database
 
    .. method::apsimNGpy.core.apsim.ApsimModel.spin_up(self, report_name: str = 'Report', start=None, end=None, spin_var='Carbon', simulations=None)
 
@@ -2674,24 +2722,145 @@ apsimNGpy.exceptions
 apsimNGpy.manager.soilmanager 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. function:: apsimNGpy.manager.soilmanager.DownloadsurgoSoiltables(lonlat, select_componentname=None, summarytable=False)
+.. function:: apsimNGpy.core_utils.soil_lay_calculator.auto_gen_thickness_layers(max_depth, n_layers=10, thin_layers=3, thin_thickness=100, growth_type='linear', thick_growth_rate=1.5)
 
-   Downloads SSURGO soil tables
+   Generate layer thicknesses from surface to depth, starting with thin layers and increasing thickness.
+
+    Args:
+        ``max_depth`` (float): Total depth in mm.
+
+        ``n_layers`` (int): Total number of layers.
+
+        ``thin_layers`` (int): Number of initial thin layers.
+
+        ``thin_thickness`` (float): Thickness of each thin layer.
+
+        ``growth_type`` (str): 'linear' or 'exponential'.
+
+        ``thick_growth_rate`` (float): Growth factor for thick layers (e.g., +50% each layer if exponential).
+
+    ``Returns:``
+        List[float]: List of layer thicknesses summing to max_depth.
+
+.. function:: apsimNGpy.core_utils.soil_lay_calculator.gen_layer_bounds_from_single_thickness(thickness: float, highest_bottom_depth: float, *, max_layers: int = 30, require_integer_layers: bool = True, atol: float = 1e-09) -> Tuple[numpy.ndarray, numpy.ndarray]
+
+   Generate per-layer (top, bottom) boundaries for uniform soil layers.
 
     Parameters
-    ------------------
-    :param lonlat: tuple of (longitude, latitude)
-    :param select_componentname: specific component name within the map unit, default None
-    :param summarytable: if True, prints summary table of component names and their percentages
+    ----------
+    thickness : float
+        Layer thickness (e.g., mm). Must be > 0.
+    highest_bottom_depth : float
+        Target depth for the bottom of the last layer (same units as `thickness`). Must be > 0.
+    max_layers : int, optional
+        Upper bound on number of layers to guard against mistakes, by default 30.
+    require_integer_layers : bool, optional
+        If True, require that `highest_bottom_depth` is an integer multiple of `thickness`.
+    atol : float, optional
+        Absolute tolerance used in the integer-multiple check (handles float rounding).
+
+    Returns
+    -------
+    tops : np.ndarray
+        Array of layer top depths: [0, t, 2t, ..., (n-1)t]
+    bottoms : np.ndarray
+        Array of layer bottom depths: [t, 2t, 3t, ..., n*t] == highest_bottom_depth (within atol)
+
+.. function:: apsimNGpy.core_utils.soil_lay_calculator.layer_boundaries(thicknesses: Iterable[float]) -> Tuple[List[float], List[float]]
+
+   Return (tops, bottoms) for consecutive layers given their thicknesses.
+    Tops start at 0; bottoms are cumulative sums.
 
 .. function:: apsimNGpy.manager.soilmanager.set_depth(depththickness)
 
    parameters
-  depththickness (array):  an array specifying the thicknness for each layer
+  depth_thickness (array):  an array specifying the thicknness for each layer
   nlayers (int); number of layers just to remind you that you have to consider them
   ------
   return
 bottom depth and top depth in a turple
+
+.. class:: apsimNGpy.manager.soilmanagerOrganiseSoilProfile
+
+   OrganiseSoilProfile(sdf: pandas.core.frame.DataFrame, thickness: int = None, thickness_values: Optional[Sequence[Any]] = None, max_depth: Optional[int] = 2000, state: str = 'Iowa', n_layers: Optional[int] = None, depths: Optional[Sequence[Any]] = None)
+
+   .. method::apsimNGpy.manager.soilmanager.OrganiseSoilProfile.adjust_SAT_BD_DUL(SAT, BD, DUL)
+
+      Adjusts saturation and bulk density values in a NumPy array to meet specific criteria.
+
+        Parameters:
+        SAT: 1-D numpy array
+        BD: 1-D numpy array
+        - target_saturation_a (float): The maximum acceptable saturation value for Soil water Module.
+        - target_saturation_b (float): The maximum acceptable saturation value for SWIM
+        - target_bulk_density (float): The maximum acceptable bulk density value.
+
+        Returns:
+        - np.array: Adjusted 2D NumPy array with saturation and bulk density values.
+
+   .. method::apsimNGpy.manager.soilmanager.OrganiseSoilProfile.decreasing_exponential_function(self, x, a, b)
+
+      Compute the decreasing exponential function y = a * e^(-b * x).
+
+          Parameters:
+              x (array-like): Input values.
+              a (float): Amplitude or scaling factor.
+              b (float): Exponential rate.
+
+          Returns:
+              numpy.ndarray: The computed decreasing exponential values.
+
+   .. method::apsimNGpy.manager.soilmanager.OrganiseSoilProfile.set_depth(depth_thickness)
+
+      parameters
+        depth_thickness (array): an array specifying the thickness for each layer
+        nlayers (int); number of layers just to remind you that you have to consider them
+        ------
+        return
+      bottom depth and top depth in a turple
+
+.. class:: apsimNGpy.manager.soilmanagerOrganizeAPSIMsoil_profile
+
+   OrganiseSoilProfile(sdf: pandas.core.frame.DataFrame, thickness: int = None, thickness_values: Optional[Sequence[Any]] = None, max_depth: Optional[int] = 2000, state: str = 'Iowa', n_layers: Optional[int] = None, depths: Optional[Sequence[Any]] = None)
+
+   .. method::apsimNGpy.manager.soilmanager.OrganiseSoilProfile.adjust_SAT_BD_DUL(SAT, BD, DUL)
+
+      Adjusts saturation and bulk density values in a NumPy array to meet specific criteria.
+
+        Parameters:
+        SAT: 1-D numpy array
+        BD: 1-D numpy array
+        - target_saturation_a (float): The maximum acceptable saturation value for Soil water Module.
+        - target_saturation_b (float): The maximum acceptable saturation value for SWIM
+        - target_bulk_density (float): The maximum acceptable bulk density value.
+
+        Returns:
+        - np.array: Adjusted 2D NumPy array with saturation and bulk density values.
+
+   .. method::apsimNGpy.manager.soilmanager.OrganiseSoilProfile.decreasing_exponential_function(self, x, a, b)
+
+      Compute the decreasing exponential function y = a * e^(-b * x).
+
+          Parameters:
+              x (array-like): Input values.
+              a (float): Amplitude or scaling factor.
+              b (float): Exponential rate.
+
+          Returns:
+              numpy.ndarray: The computed decreasing exponential values.
+
+   .. method::apsimNGpy.manager.soilmanager.OrganiseSoilProfile.set_depth(depth_thickness)
+
+      parameters
+        depth_thickness (array): an array specifying the thickness for each layer
+        nlayers (int); number of layers just to remind you that you have to consider them
+        ------
+        return
+      bottom depth and top depth in a turple
+
+.. class:: apsimNGpy.manager.soilmanagerSoilsProfiles
+
+   A class that that stores calculated soil profile data from gSSURGO
 
 apsimNGpy.manager.weathermanager 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

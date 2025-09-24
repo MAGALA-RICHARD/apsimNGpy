@@ -1,5 +1,8 @@
 import json, os, sys
 from os.path import join as opj
+from functools import lru_cache
+from typing import Optional, Sequence, Any
+
 import numpy as np
 import numpy
 import requests
@@ -15,6 +18,9 @@ import datetime
 import copy
 from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
+from dataclasses import dataclass
+from apsimNGpy.core_utils.soil_lay_calculator import layer_boundaries, auto_gen_thickness_layers, \
+    gen_layer_bounds_from_single_thickness
 
 THICKNESS = [150, 150, 200, 200, 200, 250, 300, 300, 400, 500]
 hydro = {'A': 67, 'B': 78, 'C': 85, 'D': 89}
@@ -23,6 +29,22 @@ import requests
 import xmltodict
 
 
+@dataclass(order=True, slots=True)
+class SoilsProfiles:
+    """
+    A class that that stores calculated soil profile data from gSSURGO
+    """
+    physical_properties: pd.DataFrame
+    chemical_properties: pd.DataFrame
+    organic_properties: pd.DataFrame
+    soil_water_properties: pd.DataFrame
+    meta_properties: pd.DataFrame
+    swicon: pd.DataFrame
+    csr: pd.DataFrame
+    crops: tuple
+
+
+@lru_cache(maxsize=5)
 def DownloadsurgoSoiltables(lonlat, select_componentname=None, summarytable=False):
     '''
     Downloads SSURGO soil tables
@@ -82,7 +104,6 @@ def DownloadsurgoSoiltables(lonlat, select_componentname=None, summarytable=Fals
 
     my_dict = xmltodict.parse(response.content)
 
-
     # Convert from dictionary to dataframe format
     soil_df = None
     try:
@@ -106,9 +127,9 @@ def DownloadsurgoSoiltables(lonlat, select_componentname=None, summarytable=Fals
             return componentdf
         elif select_componentname == 'domtcp':
             return dom_component
-            # print("the following{0} soil components were found". format(list(soil_df.componentname.unique())))
+
         elif select_componentname is None:
-            # print("the following{0} soil components were found". format(list(soil_df.componentname.unique())))
+
             return soil_df
         elif select_componentname != 'domtcp' and select_componentname not in soil_df.componentname.unique() or select_componentname != None:
             print(
@@ -117,11 +138,7 @@ def DownloadsurgoSoiltables(lonlat, select_componentname=None, summarytable=Fals
             return dom_component
 
 
-# test the function
-# aa= DownloadsurgoSoiltables([-90.72704709, 40.93103233],'Osco', summarytable = True)
-
-
-##Making APSIM soil profile starts here=============================
+# ================================Making APSIM soil profile starts here=============================
 len_layers = 10
 a = 1.35
 b = 1.4
@@ -129,19 +146,19 @@ b = 1.4
 
 # create a variable profile constructor
 def soilvar_perdep_cor(nlayers, soil_bottom=200, a=0.5, b=0.5):  # has potential to cythonize
-    depthn = np.arange(1, nlayers + 1, 1)
+    depths = np.arange(1, nlayers + 1, 1)
     if a < 0:
         print("Target parameter can not be negative")  # a * e^(-b * x).
-    elif (a > 0 and b != 0):
-        ep = -b * depthn
-        term1 = (a * depthn) * np.exp(ep)
+    elif a > 0 and b != 0:
+        ep = -b * depths
+        term1 = (a * depths) * np.exp(ep)
         result = term1 / term1.max()
-        return (result)
-    elif (a == 0 and b != 0):
-        ep = -b * depthn
+        return result
+    elif a == 0 and b != 0:
+        ep = -b * depths
         result = np.exp(ep) / np.exp(-b)
         return result
-    elif (a == 0, b == 0):
+    elif a == 0 and b == 0:
         ans = [1] * len_layers
         return ans
 
@@ -149,7 +166,7 @@ def soilvar_perdep_cor(nlayers, soil_bottom=200, a=0.5, b=0.5):  # has potential
 def set_depth(depththickness):
     """
   parameters
-  depththickness (array):  an array specifying the thicknness for each layer
+  depth_thickness (array):  an array specifying the thicknness for each layer
   nlayers (int); number of layers just to remind you that you have to consider them
   ------
   return
@@ -164,10 +181,21 @@ bottom depth and top depth in a turple
 
 distparms = {'a': 0, 'b': 0.2}
 
+from apsimNGpy.core_utils.soil_lay_calculator import layer_boundaries
 
+
+@dataclass
 class OrganiseSoilProfile:
-    # Iinitiate the soil object and covert all into numpy array and change them to floating values
-    def __init__(self, sdf, thickness, thickness_values=None, bottomdepth=200, state='Iowa'):
+    # Initiate the soil object and covert all into numpy array and change them to floating values
+    sdf: pd.DataFrame
+    thickness: int = None  # mm
+    thickness_values: Optional[Sequence[Any]] = None
+    max_depth: Optional[int] = 2000  # cm
+    state: str = "Iowa"
+    n_layers: Optional[int] = None
+    depths: Optional[Sequence[Any]] = None
+
+    def __post_init__(self):
         """_summary_
 
         Args:
@@ -176,13 +204,13 @@ class OrganiseSoilProfile:
             :param bottomdepth (int, optional): _description_. Defaults to 200.
             :param thickness_values: (list or None) optional if provided extrapolation will be based on those vlue and should be the same length as the existing profile depth
          """
-        sdf1 = sdf.drop_duplicates(subset=["topdepth"])
+        sdf1 = self.sdf.drop_duplicates(subset=["topdepth"])
         surgodf = sdf1.sort_values('topdepth', ascending=True)
         csr = surgodf.get("CSR").dropna()
-        if state == 'Iowa':
+        if self.state == 'Iowa':
             if not csr.empty:
                 self.CSR = csr.astype("float")
-                
+
             else:
                 self.CSR = None
         else:
@@ -207,29 +235,44 @@ class OrganiseSoilProfile:
         self.cokey = surgodf.cokey
         self.slope = surgodf.slope_r
         self.componentname = surgodf.componentname
-        self.Nlayers = bottomdepth / thickness
-        self.thickness = thickness * 10
+
         self.wat_r = surgodf.wat_r
         self.chkey = surgodf.chkey
         self.componentpercent = surgodf.prcent
-        self.newtopdepth = np.arange(0, bottomdepth, thickness)
-        self.newbottomdepth = np.arange(thickness, bottomdepth + thickness, thickness)
-        # trial
-        self.thickness_values = np.array(thickness_values)
+        assert any((self.thickness, self.thickness_values)), (f"one of the the thickness and thickness_values must not "
+                                                              f"be {None}")
+        if self.thickness_values:
+            # generate from thickness values
+            top, bottom = layer_boundaries(self.thickness_values)
+            n__layers = len(self.thickness_values)
 
-    # create a function that creates a variable profile of the provide _variables
+        else:
+            # generate from a single thickness values, implying all layers have that thickness
+            top, bottom = gen_layer_bounds_from_single_thickness(self.thickness, self.max_depth)
+            n__layers = len(top)
+            # update thickness for each depth, note that is now uniform everywhere
+            self.thickness_values = list(np.full(n__layers, self.thickness))
+
+        self.newtopdepth = top
+        self.newbottomdepth = bottom
+        self.Nlayers = n__layers
+        self.n_layers = n__layers
+        # update combined soil layer boundaries
+        self.depths = [f"{a}-{b}" for a, b in zip(top, bottom)]
+
+    # Create a function that creates a variable profile of the provided _variables
     @staticmethod
-    def set_depth(depththickness):
+    def set_depth(depth_thickness):
         """
         parameters
-        depththickness (array):  an array specifying the thicknness for each layer
+        depth_thickness (array): an array specifying the thickness for each layer
         nlayers (int); number of layers just to remind you that you have to consider them
         ------
         return
       bottom depth and top depth in a turple
         """
         # thickness  = np.tile(thickness, 10
-        thickness_array = np.array(depththickness)
+        thickness_array = np.array(depth_thickness)
         bottomdepth = np.cumsum(thickness_array)  # bottom depth should not have zero
         top_depth = bottomdepth - thickness_array
         return bottomdepth, top_depth
@@ -334,21 +377,16 @@ class OrganiseSoilProfile:
 
     def cal_Carbon(self):  # has potential to cythonize
         ## Brady and Weil (2016)
-        carbonn = self.variable_profile(self.OM) / 1.72
-        # if carbonans >=3.5:
-        #   carbonn = carbonans *0.3
-        # else:
-        #   carbonn = carbonans
-        # print(carbonn)
-
+        carbon = self.variable_profile(self.OM) / 1.72
+        return carbon
         xdata = self.newbottomdepth
-        try:
-            predicted = self.optimize_exponetial_data(xdata, carbonn)
-
-            return predicted
-        except Exception as e:
-            print("error occured while optimizing soil carbon to the new depth \nplease see:", repr(e))
-            return carbonn
+        # try:
+        #     predicted = self.optimize_exponetial_data(xdata, carbonn)
+        #
+        #     return predicted
+        # except Exception as e:
+        #     print("error occured while optimizing soil carbon to the new depth \nplease see:", repr(e))
+        #     return carbonn
 
     def interpolate_clay(self):
         return self.variable_profile(self.clay)
@@ -427,17 +465,14 @@ class OrganiseSoilProfile:
         """
         # Iterate through each row in the array
         for counter, (sat, dul) in enumerate(zip(SAT, DUL)):
-            if dul>=sat:
-                diff = dul-sat
-                DUL[counter] = sat + diff +0.02
+            if dul >= sat:
+                diff = dul - sat
+                DUL[counter] = sat + diff + 0.02
         return SAT, BD, DUL
 
     def create_soilprofile(self):
         n = int(self.Nlayers)
-        Depth = []
-        for i in range(len(self.newbottomdepth)):
-            Depth.append(str(self.newtopdepth[i]) + "-" + str(self.newbottomdepth[i]))
-        Depth = Depth
+        Depth = self.depths
         Carbon = self.cal_Carbon()
         AirDry = self.get_AirDry()
         L15 = self.get_L15()
@@ -524,31 +559,25 @@ class OrganiseSoilProfile:
         plt.show()
         return predcited
 
-    def cal_missingFromSurgo(self, curveparam_a=0, curveparam_b=0.2, crops=["Wheat", "Maize", "Soybean", "Rye"],
+    def cal_missingFromSurgo(self, curveparam_a=0, curveparam_b=0.2, crops=("Wheat", "Maize", "Soybean", "Rye"),
                              metadata=None, soilwat=None, swim=None, soilorganicmatter=None):
         nlayers = int(self.Nlayers)
-        # ad  = self.get_AirDry()[1]
+
         cropLL = self.get_AirDry()
 
         # Original thought
         # ad * soilvar_perdep_cor(nlayers, a = curveparam_a, b = curveparam_b)
         cropKL = 0.08 * soilvar_perdep_cor(nlayers, a=curveparam_a, b=curveparam_b)
 
-        cropXF = 1 * soilvar_perdep_cor(nlayers, a=curveparam_a, b=0)
+        cropXF = 1 * soilvar_perdep_cor(nlayers, a=curveparam_a, b=0)[:nlayers]
 
         # create a data frame for these three _variables
-        dfs = pd.DataFrame({'kl': cropKL, 'll': cropLL, 'xf': cropXF})
+        # ------------------------ organic data calculation ------------------------
         SoilCNRatio = np.full(shape=nlayers, fill_value=12, dtype=np.int64)
         FOM = 150 * soilvar_perdep_cor(nlayers, a=curveparam_a, b=curveparam_b)
         FOMCN = np.full(shape=nlayers, fill_value=40, dtype=np.int64)
         FBiom = 0.045 * soilvar_perdep_cor(nlayers, a=curveparam_a, b=curveparam_b)
         Fi = 0.83 * soilvar_perdep_cor(nlayers, a=curveparam_a, b=-0.01)
-        # to do later
-        # try:
-        #   predicted= self.optimize_exp_increasing_y_values(np.array(Fi))
-        #   FInert = predicted
-        # except Exception as e:
-        #   print("error optiming FInert value encountered;", repr(e))
         FInert = Fi
 
         NO3N = 0.5 * soilvar_perdep_cor(nlayers, a=curveparam_a, b=0.01)
@@ -564,45 +593,74 @@ class OrganiseSoilProfile:
         # vn = npar
         # PH = 6.5 * soilvar_perdep_cor(nlayers, a = curveparam_a, b = 0)
 
-        organic = pd.DataFrame(
-            {'Carbon': Carbon, 'SoilCNRatio': SoilCNRatio, 'cropLL': cropLL, 'cropKL': cropKL, 'FOM': FOM,
-             'FOM.CN': FOMCN, 'FBiom': FBiom, 'FInert': FInert, 'NO3N': NO3N, 'NH4N': NH4N, 'PH': PH})
-        # create a list to store the crop names
+        # ------------------------ organic df------------------------
+        organic = pd.DataFrame({'Depth': self.depths, 'Thickness': self.thickness_values,
+                                'Carbon': Carbon, 'SoilCNRatio': SoilCNRatio,
+                                'FOM': FOM,
+                                'FOM.CN': FOMCN, 'FBiom': FBiom, 'FInert': FInert, })
+        # ------------------------ chemical df ------------------------
+        chemical = pd.DataFrame(
+            {'Depth': self.depths, 'Thickness': self.thickness_values, 'NO3N': NO3N, 'NH4N': NH4N, 'PH': PH})
+        NO3 = pd.DataFrame({'Depth': self.depths, 'Thickness': self.thickness_values, 'InitialValues': NO3N})
+        NH4 = pd.DataFrame({'Depth': self.depths, 'Thickness': self.thickness_values, 'InitialValues': NH4N})
+        Urea = pd.DataFrame(
+            {'Depth': self.depths, 'Thickness': self.thickness_values, 'InitialValues': np.full(len(self.depths), 0.0)})
+
         names = []
+        # ------------------------crop soil info ------------------------
         for i in crops:
             names.append([i + "KK", i + 'LL ', i + 'XF'])
-        cropframe = []
+        crop_frame = []
+        dfs = pd.DataFrame({'KL': cropKL, 'LL': cropLL, 'XF': cropXF})
         for i in names:
-            cropframe.append(dfs.rename(columns={"kl": i[0], "ll": i[1], "xf": i[2]}))
-        # print(cropframe)
+            crop_frame.append(dfs.rename(columns={"kl": i[0], "ll": i[1], "xf": i[2]}))
+
         # pd.concat is faster
-        cropdf = pd.concat(cropframe, join='outer', axis=1)
+        crop_df = pd.concat(crop_frame, join='outer', axis=1)
         physical = self.create_soilprofile()
+        physical[['KL', 'LL', "XF"]] = dfs[['KL', 'LL', 'XF']]
+        physical['Thickness'] = self.thickness_values
 
         po = 1 - (physical["BD"] / 2.65)
         swi_con = (po - physical['DUL']) / po
+        # ------------------------ initial waters values ------------------------
+        water = pd.DataFrame(
+            {'Depth': self.depths, 'Thickness': self.thickness_values, 'InitialValues': physical['DUL'].values})
+        soil_water = pd.DataFrame({'Depth': self.depths, 'Thickness': self.thickness_values, 'SWCON': swi_con})
 
         # create a alist
-        frame = [physical, organic, cropdf, metadata, swi_con, swi_con]
-        # All soil data frames
+        frame = dict(physical=physical, organic=organic, cropdf=crop_df, metadata=metadata, swicon=swi_con)
+        # ------------------------ corn suitability rating for iowa only ------------------------
+        # this cosmetic, however
         if isinstance(self.CSR, (list, np.ndarray, pd.Series)):
             CSR = np.tile(self.CSR.iloc[0], int(self.Nlayers))
         else:
             CSR = None
-        resultdf = pd.concat(frame, join='outer', axis=1)
-        finalsp = {'soil ': resultdf, 'crops': crops, 'metadata': metadata, 'soilwat': soilwat, 'swim': swim,
-                   'soilorganicmatter ': soilorganicmatter, 'SWCON': swi_con}
-        # return pd.DataFrame(finalsp)
-        frame.insert(3, CSR, )
+        # resultdf = pd.concat(frame, join='outer', axis=1)
+        # ------------------------ final dict data ------------------------
+        if isinstance(metadata, dict):
+            metadata = metadata
+        elif metadata is None:
+            metadata = {}
+        else:
+            raise TypeError("metadata must be a dictionary or None")
 
-        return frame
+        ret_data = {'physical': physical, 'chemical': chemical, 'organic': organic, 'crops': crops,
+                    'meta_info': metadata, 'soilwat': soilwat, 'swim': swim, 'soil_crop': dfs, 'Urea': Urea, 'NH4': NH4,
+                    'NO3': NO3, 'water': water,
+                    'soilorganicmatter ': soilorganicmatter, 'swcon': swi_con, 'csr': pd.Series(CSR),
+                    'soil_water': soil_water}
 
-OrganizeAPSIMsoil_profile = OrganiseSoilProfile #for backward compatibiltiy
+        return ret_data
+
+
+OrganizeAPSIMsoil_profile = OrganiseSoilProfile  # for backward compatibility
 if __name__ == '__main__':
-    lonlat = -92.097702, 41.8780025
+    lonlat = -92.297702, 41.8780025
     dw = DownloadsurgoSoiltables(lonlat)
-    sop = OrganiseSoilProfile(dw, 20)
-    data = sop.cal_missingFromSurgo()
+    sop = OrganiseSoilProfile(dw, thickness_values=[200, 200, 200, 200, 200, 200, 200, 200, 200])
+    sop2 = OrganiseSoilProfile(dw, thickness=200)
+    data = sop.cal_missingFromSurgo(metadata={'lonlat': lonlat})
     from apsimNGpy.core.apsim import ApsimModel
     from apsimNGpy.core.base_data import load_default_simulations
     from pathlib import Path
@@ -611,7 +669,6 @@ if __name__ == '__main__':
     ap_sim = load_default_simulations(simulations_object=False)
 
     m = ApsimModel(ap_sim, thickness_values=settings.SOIL_THICKNESS)
-    m.replace_downloaded_soils(data, m.extract_simulation_name)
+    # m.replace_downloaded_soils(data, m.extract_simulation_name)
 
     m.run("MaizeR")
-

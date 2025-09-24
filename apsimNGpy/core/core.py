@@ -56,7 +56,7 @@ def compile_script(script_code: str, code_model):
     compiler(script_code, code_model)
 
 
-@dataclass(slots=True)
+@dataclass(slots=True, repr=False, order=False)
 class CoreModel(PlotManager):
     """
     Modify and run APSIM Next Generation (APSIM NG) simulation models.
@@ -157,9 +157,6 @@ class CoreModel(PlotManager):
 
         if self.experiment:
             self.create_experiment(permutation=self.permutation, base_name=self.base_name)
-
-    def __repr__(self):
-        return ""
 
     def check_model(self):
         if hasattr(Models.Core.ApsimFile, "ConverterReturnType"):

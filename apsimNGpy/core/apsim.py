@@ -5,13 +5,14 @@ email: magalarich20@gmail.com
 """
 import logging, pathlib
 from builtins import str
-from typing import Union, Any
+from typing import Union, Any, Optional, Tuple, Mapping, Sequence
 import os
 import numpy as np
 import time
 from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganiseSoilProfile
 import apsimNGpy.manager.weathermanager as weather
 import pandas as pd
+from dataclasses import dataclass
 import sys
 # prepare for the C# import
 # from apsimNGpy.core.pythonet_config import start_pythonnet
@@ -27,7 +28,9 @@ from Models.Soils import Soil, Physical, SoilCrop, Organic, LayerStructure
 from typing import Union
 from apsimNGpy.core.cs_resources import CastHelper
 from apsimNGpy.core.model_loader import get_node_by_path
-
+from apsimNGpy.core.model_tools import find_child_of_class
+from apsimNGpy.settings import logger
+from apsimNGpy.core.soiler import SoilManager
 # constants
 REPORT_PATH = {'Carbon': '[Soil].Nutrient.TotalC/1000 as dyn', 'DUL': '[Soil].SoilWater.PAW as paw', 'N03':
     '[Soil].Nutrient.NO3.ppm as N03'}
@@ -35,7 +38,7 @@ REPORT_PATH = {'Carbon': '[Soil].Nutrient.TotalC/1000 as dyn', 'DUL': '[Soil].So
 
 # decorator to monitor performance
 
-
+@dataclass(repr=False, order=False, init=False)
 class ApsimModel(CoreModel):
     """
     Main class for apsimNGpy modules.
@@ -56,52 +59,152 @@ class ApsimModel(CoreModel):
 
                  thickness_values: list = None, run_all_soils: bool = False, set_wd=None, **kwargs):
         super().__init__(model, out_path, set_wd, **kwargs)
-        self.soil_type = None
-        self.SWICON = None
-        self.lonlat = lonlat
-        self.n_layers = bottomdepth / thickness
-        bm = bottomdepth * 10
-        if thickness_values is None:
-            thickness_values = self.auto_gen_thickness_layers(max_depth=bm, n_layers=int(self.n_layers))
-        self.soil_series = soil_series
-        self.thickness = thickness
-        self.out_path = out_path or out
-        self._thickness_values = thickness_values
-        self.copy = True
-        self.run_all_soils = run_all_soils
-        if not isinstance(thickness_values, np.ndarray):
-            self.thickness_values = np.array(self._thickness_values,
-                                             dtype=np.float64)  # apsim uses floating digit number
-        else:
-            self.thickness_values = self._thickness_values
-        if kwargs.get('experiment', False):
-            self.create_experiment()
-        self.base_simulations = None
 
-    @property
-    def thickness_values(self):
-        return self._thickness_values
+    def get_soil_from_web(self,
+                          simulation_name: Union[str, tuple, None]=None,
+                          *,
+                          # location / data source
+                          lonlat: Optional[Tuple[float, float]] = None,
+                          soil_tables: Optional[Mapping[str, Any]] = None,
+                          soil_series: Optional[str] = None,
+                          # layer/thickness controls
+                          thickness_sequence: Optional[Sequence[float]] = 'auto',
+                          thickness_value: int = None,
+                          max_depth: Optional[int] = 2400,
+                          n_layers: int = 10,
+                          thinnest_layer: int = 100,
+                          thickness_growth_rate: float = 1.5,  # unit less
+                          # which sections to edit
+                          edit_sections: Optional[Sequence[str]] = None,
+                          crops_in: Sequence[str] = (),
+                          # attach any missing nodes before editing
+                          attach_missing_sections: bool = True):
+        """
+        Pull SSURGO-derived soil for a location (or use provided tables),
+        populate the APSIM simulation’s soil sections, and return either the
+        SoilManager or the computed soil profile.
 
-    @thickness_values.setter
-    def thickness_values(self, values):
-        self._thickness_values = values
+        Parameters
+        ----------
+        simulation : Models.Core.Simulation | ApsimModel
+            Target simulation (or an ApsimModel containing simulations).
+        lonlat : (lon, lat) tuple
+            Location for SSURGO download. Ignored if `soil_tables` is given.
+        soil_tables : dict-like
+            Pre-built soil tables (bypass web download).
+        soil_series : str
+            Optional component/series filter for SSURGO selection.
+        thickness_sequence : sequence[float]
+            Explicit thickness layout per layer. If None, it will be auto-generated.
+        thickness_value, max_depth, n_layers, thinnest_layer, thickness_growth_rate :
+            Thickness controls (mirrors SoilManager fields).
+        edit_sections : sequence[str]
+            Which sections to edit. Defaults to all:
+            ("physical", "organic", "chemical", "water", "water_balance", "solutes", "soil_crop", 'meta_info')
+            note that if a few sections are edited with different number of soil layers, APSIm will throw an error during run time
+        crops_in : sequence[str]
+            Extra crop names to add under SoilCrop.
+        attach_missing_sections : bool
+            If True, create/attach missing section nodes before editing.
 
-    def show_cropsoil_names(self, simulations):
-        for simu in self.find_simulations(simulations):
-            pysoil = simu.FindDescendant[Physical]()
-            soil_crop = pysoil.FindAllDescendants[SoilCrop]()
-            # can be use to target specific crop
-            for cropLL in soil_crop:
-                print(cropLL.Name)
 
-    def _replace_cropsoil_names(self, simulations, existing_crop_names, new_cropname):
-        for simu in self.find_simulations(simulations):
-            pysoil = simu.FindDescendant[Physical]()
-            soil_crop = pysoil.FindAllDescendants[SoilCrop]()
+        Returns
+        -------
+         None
 
-            for crops in soil_crop:
-                if crops.Name == existing_crop_names:
-                    crops.Name = new_cropname
+        Notes
+        -----
+        - Assumes soil sections live under a Soil node; missing sections are attached there when
+          `attach_missing_sections=True`.
+        - Uses your optimized SoilManager methods (vectorized + .NET double[] marshaling).
+        """
+
+        # Default: edit all known sections
+        if not edit_sections:
+            edit_sections = ("physical", "organic", "chemical", "water", "water_balance", "solutes", "soil_crop", 'meta_info')
+
+        # Helper to ensure a section exists and is attached under the Soil node
+        def _ensure_section(sim, cls):
+            node = find_child_of_class(sim, child_class=cls)
+            if node:
+                return node
+            if not attach_missing_sections:
+                return None
+            # find Soil parent, then attach
+            soil_parent = find_child_of_class(sim, child_class=Models.Soils.Soil)
+            if not soil_parent:
+                # If there is no Soil node at all, create and attach one
+                soil_parent = Models.Soils.Soil()
+                # Attach Soil to the Simulation (APSIM NG usually allows Children.Add)
+                if hasattr(sim, "Children"):
+                    sim.Children.Add(soil_parent)
+                else:
+                    logger.warning("Simulation has no Children collection; cannot attach Soil node.")
+                    return None
+            section = cls()
+            soil_parent.Children.Add(section)
+            return section
+
+        simulations = self.find_simulations(simulations=simulation_name)
+        for simulation in simulations:
+            # Pre-attach requested sections (avoids "created but unreachable" inside editor)
+            if attach_missing_sections:
+                # Core soil sections
+                want = {
+                    "physical": Models.Soils.Physical,
+                    "organic": Models.Soils.Organic,
+                    "chemical": Models.Soils.Chemical,
+                    "water": Models.Soils.Water,
+                    "water_balance": Models.WaterModel.WaterBalance,
+                    # soil_crop is handled below because it's usually a child under Physical
+                }
+                for key, typ in want.items():
+                    if key in edit_sections:
+                        _ensure_section(simulation, typ)
+
+                # Ensure SoilCrop path: Soil -> Physical -> SoilCrop
+                if "soil_crop" in edit_sections:
+                    phys = find_child_of_class(simulation, child_class=Models.Soils.Physical) or _ensure_section(
+                        simulation, Models.Soils.Physical
+                    )
+                    if phys is not None:
+                        sc = find_child_of_class(phys, child_class=Models.Soils.SoilCrop)
+                        if not sc:
+                            phys.Children.Add(Models.Soils.SoilCrop())
+
+            # Build the manager (cached profile happens inside)
+
+
+            mgr = SoilManager(
+                simulation_model=simulation,
+                lonlat=lonlat,
+                soil_tables=soil_tables,
+                soil_series=soil_series,
+                thickness_sequence=thickness_sequence,
+                thickness_value=thickness_value,
+                max_depth=max_depth,
+                n_layers=n_layers,
+                thinnest_layer=thinnest_layer,
+                thickness_growth_rate=thickness_growth_rate,
+                soil_profile=None,  # let it compute/fill once
+            )
+
+            # Do edits
+            mgr.edit_meta_info()
+            if "physical" in edit_sections:
+                mgr.edit_soil_physical()
+            if "organic" in edit_sections:
+                mgr.edit_soil_organic()
+            if "chemical" in edit_sections:
+                mgr.edit_soil_chemical()
+            if "water" in edit_sections:
+                mgr.edit_soil_initial_water()
+            if "water_balance" in edit_sections:
+                mgr.edit_soil_water_balance()
+            if "solutes" in edit_sections:
+                mgr.edit_solute_sections()
+            if "soil_crop" in edit_sections:
+                mgr.edit_soil_crop(crops_in=crops_in)
 
     def adjust_dul(self, simulations: Union[tuple, list] = None):
         """
@@ -139,34 +242,6 @@ class ApsimModel(CoreModel):
         # self.replace_any_soil_physical('DUL', simulations, duL)
         return self
 
-    def _get_SSURGO_soil_profile(self, lonlat: tuple, run_all_soils: bool = False):
-        self.lonlat = None
-        self.lonlat = lonlat
-        self.dict_of_soils_tables = {}
-        if not self.run_all_soils:
-            self.soil_tables = DownloadsurgoSoiltables(self.lonlat, select_componentname=self.soil_series)
-            for ss in self.soil_tables.componentname.unique():
-                self.dict_of_soils_tables[ss] = self.soil_tables[self.soil_tables['componentname'] == ss]
-
-        if self.run_all_soils:
-            self.dict_of_soils_tables = {}
-            self.soil_tables = DownloadsurgoSoiltables(self.lonlat)
-
-            self.percent = self.soil_tables.prcent.unique()
-            # create a dictionary of soil series
-            self.unique_soil_series = self.soil_tables.componentname.unique()
-
-            new_col = []
-            for i in range(len(self.soil_tables['chkey'])):
-                xi = str(list(self.soil_tables['chkey'])[i]) + "-" + list(self.soil_tables['componentname'])[i]
-                new_col.append(xi)
-            self.soil_tables["ch_comp"] = list(new_col)
-            self.grouped = self.soil_tables.groupby('ch_comp')['prcent'].unique().apply(lambda x: x[0])
-            self.component_percent_dict = self.grouped.to_dict()
-            for ss in self.soil_tables.componentname.unique():
-                self.dict_of_soils_tables[ss] = self.soil_tables[self.soil_tables['componentname'] == ss]
-        return self
-
     @staticmethod
     def get_weather_online(lonlat: tuple, start: int, end: int):
         wp = weather.get_met_from_day_met(lonlat, start=start, end=end)
@@ -191,76 +266,6 @@ class ApsimModel(CoreModel):
             return component_percent_dict
         except Exception as e:
             raise
-
-    def replace_soils(self, lonlat: tuple, simulation_names: Union[tuple, list], verbose=False):
-        self.thickness_replace = None
-        if isinstance(self.thickness_values, np.ndarray):  # since it is alreaduy converted to an array
-            self.thickness_replace = self.thickness_values
-
-        else:
-            tv = np.tile(float(self.thickness), int(self.n_layers))
-            self.thickness_replace = tv
-        pss = self._get_SSURGO_soil_profile(lonlat)
-        for keys in pss.dict_of_soils_tables.keys():
-            self.soil_type = keys
-            if verbose:
-                print("Padding variabales for:", keys)
-            self.soil_profile = OrganiseSoilProfile(self.dict_of_soils_tables[keys],
-                                                    thickness_values=self.thickness_values,
-                                                    thickness=self.thickness)
-            missing_properties = self.soil_profile.cal_missingFromSurgo()  # returns a list of physical, organic and cropdf each in a data frame
-            physical_calculated = missing_properties[0]
-            self.organic_calcualted = missing_properties[1]
-            self.cropdf = missing_properties[2]
-            # ps = self._get_SSURGO_soil_profile()
-
-            # self.thickness_replace = list(np.full(shape=int(self.n_layers,), fill_value=self.thickness*10,  dtype=np.float64))
-            for simu in self.find_simulations(simulation_names):
-                pysoil = simu.FindDescendant[Physical]()  # meaning physical soil child
-                soil_crop = pysoil.FindChild[SoilCrop]()
-                water = simu.FindDescendant[Water]()  # for the crop water parameters
-                soil_crop.LL = physical_calculated.AirDry
-                pysoil.DUL = physical_calculated.DUL
-                pysoil.SAT = physical_calculated.SAT
-                pysoil.BD = physical_calculated.BD
-                pysoil.KS = physical_calculated.KS
-                pysoil.LL15 = physical_calculated.LL15
-                pysoil.ParticleSizeClay = physical_calculated.ParticleSizeClay
-                pysoil.ParticleSizeSand = physical_calculated.ParticleSizeSand
-                pysoil.ParticleSizeSilt = physical_calculated.ParticleSizeSilt
-                water.InitialValues = physical_calculated.DUL
-
-                water.Thickness = self.thickness_replace
-                pysoil.AirDry = soil_crop.LL
-                pysoil.Thickness = self.thickness_replace
-                # replace the organic soils
-            for simu in self.find_simulations(simulation_names):
-                organic = simu.FindDescendant[Organic]()
-                organic.Thickness = self.thickness_replace
-                organic.SoilCNRatio = self.organic_calcualted.SoilCNRatio
-                organic.FBiom = self.organic_calcualted.FBiom
-                organic.FOM = self.organic_calcualted.FOM
-                organic.FInert = self.organic_calcualted.FInert
-                organic.Carbon = self.organic_calcualted.Carbon
-                chemical = simu.FindDescendant[Chemical]()
-                chemical.Thickness = self.thickness_replace
-                # to do fix the crop management may use FindAllDescendants. it worked
-                # XF = np.full(shape=self.n_layers, fill_value=1,  dtype=np.float64)
-                XF = np.tile(float(1), int(self.n_layers))
-
-            for simu in self.find_simulations(simulation_names):
-                soil_crop = pysoil.FindAllDescendants[SoilCrop]()
-                # can be use to target specific crop
-                for cropLL in soil_crop:
-                    cropLL.LL = pysoil.AirDry
-                    cropLL.KL = self.organic_calcualted.cropKL
-                    cropLL.XF = XF
-                    cropLL.Thickness = self.thickness_replace
-            if verbose:
-                print("soil replacement complete")
-            # self.run()
-        return self
-        # print(self.results)
 
     def replace_downloaded_soils(self, soil_tables: Union[dict, list], simulation_names: Union[tuple, list], **kwargs):
         """
@@ -552,26 +557,6 @@ class ApsimModel(CoreModel):
 
         return layers
 
-    def replace_soil_profile_from_web(self, **kwargs):
-        from apsimNGpy.manager.weathermanager import _is_within_USA_mainland
-        lon_lat = kwargs.get('lonlat', self.lonlat)
-        if not _is_within_USA_mainland(lon_lat):
-            raise ValueError(f"{lon_lat} is not within USA. coordnates outside USA are not supported yet")
-        thickness = kwargs.get('thickness', 20)
-        sim_name = kwargs.get('sim_name', self.simulation_names)
-        assert lon_lat, 'Please supply the lonlat'
-        sp = DownloadsurgoSoiltables(lon_lat)
-        sop = OrganiseSoilProfile(sp, thickness, thickness_values=self.thickness_values).cal_missingFromSurgo()
-
-        if self.thickness_values is None:
-            self.thickness_values = self.auto_gen_thickness_layers(max_depth=2200, n_layers=int(self.n_layers),
-                                                                   thin_layers=3, thin_thickness=100,
-                                                                   growth_type='linear', thick_growth_rate=50)
-        self.thickness_replace = self.thickness_values.copy()
-        self.replace_downloaded_soils(sop, simulation_names=sim_name)
-        self.save()
-        return self
-
     def check_kwargs(self, path, **kwargs):
         if hasattr(self.Simulations, "FindByPath"):
             mod_obj = self.Simulations.FindByPath(path)
@@ -683,7 +668,6 @@ if __name__ == '__main__':
     # test
 
     os.chdir(Path.home())
-    from apsimNGpy.core.base_data import load_default_simulations
 
     #
     # try:
@@ -714,3 +698,4 @@ if __name__ == '__main__':
 
     mod = ApsimModel('Maize')
     maize_x = Path.home() / 'maize.apsimx'
+    mod.get_soil_from_web(simulation_name=None, lonlat=(-93.045, 42.0541))

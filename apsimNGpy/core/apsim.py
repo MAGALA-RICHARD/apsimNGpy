@@ -31,6 +31,7 @@ from apsimNGpy.core.model_loader import get_node_by_path
 from apsimNGpy.core.model_tools import find_child_of_class
 from apsimNGpy.settings import logger
 from apsimNGpy.core.soiler import SoilManager
+
 # constants
 REPORT_PATH = {'Carbon': '[Soil].Nutrient.TotalC/1000 as dyn', 'DUL': '[Soil].SoilWater.PAW as paw', 'N03':
     '[Soil].Nutrient.NO3.ppm as N03'}
@@ -61,7 +62,7 @@ class ApsimModel(CoreModel):
         super().__init__(model, out_path, set_wd, **kwargs)
 
     def get_soil_from_web(self,
-                          simulation_name: Union[str, tuple, None]=None,
+                          simulation_name: Union[str, tuple, None] = None,
                           *,
                           # location / data source
                           lonlat: Optional[Tuple[float, float]] = None,
@@ -95,9 +96,10 @@ class ApsimModel(CoreModel):
         soil_series : str
             Optional component/series filter for SSURGO selection.
         thickness_sequence : sequence[float]
-            Explicit thickness layout per layer. If None, it will be auto-generated.
-        thickness_value, max_depth, n_layers, thinnest_layer, thickness_growth_rate :
-            Thickness controls (mirrors SoilManager fields).
+            Explicit thickness layout per layer. If auto, it will be auto-generated.
+        thickness_value if thickness_sequence is None this value must be provided to generate the thickness sequence and together with max_depth m ust be provided
+        max_depth, n_layers, thinnest_layer, thickness_growth_rate :
+            Thickness controls the rate of thickness from the top to the max-depth,
         edit_sections : sequence[str]
             Which sections to edit. Defaults to all:
             ("physical", "organic", "chemical", "water", "water_balance", "solutes", "soil_crop", 'meta_info')
@@ -117,11 +119,20 @@ class ApsimModel(CoreModel):
         - Assumes soil sections live under a Soil node; missing sections are attached there when
           `attach_missing_sections=True`.
         - Uses your optimized SoilManager methods (vectorized + .NET double[] marshaling).
+
+        Raises
+
+        - ValueError
+         - when a thickness sequence is not auto and has zero  or less than zero values
+         - when a thickness sequence is none and thickness value is none
+         -  if thickness value and max depth do not match in-terms of units
+
         """
 
         # Default: edit all known sections
         if not edit_sections:
-            edit_sections = ("physical", "organic", "chemical", "water", "water_balance", "solutes", "soil_crop", 'meta_info')
+            edit_sections = (
+            "physical", "organic", "chemical", "water", "water_balance", "solutes", "soil_crop", 'meta_info')
 
         # Helper to ensure a section exists and is attached under the Soil node
         def _ensure_section(sim, cls):
@@ -174,7 +185,6 @@ class ApsimModel(CoreModel):
 
             # Build the manager (cached profile happens inside)
 
-
             mgr = SoilManager(
                 simulation_model=simulation,
                 lonlat=lonlat,
@@ -217,7 +227,7 @@ class ApsimModel(CoreModel):
             model object
         """
         duL = self.extract_any_soil_physical('DUL', simulations)
-        print(duL)
+
         saT = self.extract_any_soil_physical('SAT', simulations)
         for sim in duL:
             duls = duL[sim]
@@ -230,7 +240,7 @@ class ApsimModel(CoreModel):
                     #  to be certain all the time that dul is less than s we subtract the summed value
                     diff = d - s
                     duls[enum] = d - (diff + 0.02)
-                    print(d)
+
                 else:
                     duls[enum] = d
             if not simulations:
@@ -696,6 +706,8 @@ if __name__ == '__main__':
     #     line_number = exc_traceback.tb_lineno
     #     print(f"Error: {type(e).__name__} occurred on line: {line_number} execution value: {exc_value}")
 
-    mod = ApsimModel('Maize')
+
     maize_x = Path.home() / 'maize.apsimx'
-    mod.get_soil_from_web(simulation_name=None, lonlat=(-93.045, 42.0541))
+    mod = ApsimModel('Maize', out_path=maize_x)
+    # model = ApsimModel(maize_x)
+   # model.get_soil_from_web(simulation_name=None, lonlat=(-93.045, 42.0541))

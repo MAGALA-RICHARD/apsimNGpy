@@ -167,7 +167,7 @@ class SoilManager:
                 f"{soil_series}: downloaded by apsimNGpy: `DownloadsurgoSoiltables` \n accessed from SSURGO on: {date_str}"
 
             ),
-            comments=f"number of layers: {n_layers}"
+            comments=f"number of layers: {n_layers}, max depth: {max_depth}"
         )
         return soil_profile.cal_missingFromSurgo(metadata=meta_info)
 

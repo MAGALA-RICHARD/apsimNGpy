@@ -255,13 +255,18 @@ class ApsimModel(CoreModel):
             model object
         """
         if simulations is None:
-            simulations = [i.Name for i in self.simulations]
-        for sim_name in simulations:
-            params = self.inspect_model_parameters(model_type='Models.Soils.Physical', simulations=sim_name,
-                                                   parameters={'SAT', 'DUL'}, model_name='Physical')
-            duL = params['DUL'].tolist()
+            simulations = self.simulations
+        else:
+            simulations = self.find_simulations(simulations)
+        for sim_ in simulations:
+            physical = find_child_of_class(sim_, Models.Soils.Physical)
 
-            saT = params['SAT'].tolist()
+            physical = CastHelper.CastAs[Models.Soils.Physical](physical)
+            if not isinstance(physical, Models.Soils.Physical):
+                raise RuntimeError(f"failed to cast IModel physical to {Models.Soils.Physical}")
+            duL = list(physical.DUL)
+
+            saT = list(physical.SAT)
 
             for enum, (s, d) in enumerate(zip(saT, duL)):
                 # first check if they are equal
@@ -273,8 +278,8 @@ class ApsimModel(CoreModel):
 
                 else:
                     duL[enum] = d
-            self.edit_model(model_type='Models.Soils.Physical', model_name='Physical', **{'DUL': duL, "SAT": saT},
-                            simulations=sim_name)
+            physical.DUL = duL
+            physical.SAT = saT
         self.save()
         # self.replace_any_soil_physical('DUL', simulations, duL)
         return self

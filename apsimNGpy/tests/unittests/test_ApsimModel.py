@@ -8,6 +8,8 @@ from apsimNGpy.tests.unittests.base_unit_tests import BaseTester
 from apsimNGpy.core_utils.clean import clean
 import tempfile
 
+from apsimNGpy.core.pythonet_config import is_file_format_modified
+
 wd = Path.cwd() / "test_apsim"
 wd.mkdir(parents=True, exist_ok=True)
 os.chdir(wd)
@@ -18,7 +20,7 @@ class TestCoreModel(BaseTester):
         self.out_path = Path(f"{self._testMethodName}.apsimx")
 
         self.test_ap_sim = ApsimModel("Maize", out_path=self.out_path)
-
+        self.mock_sim_path_name = Path(f"__mock__{self._testMethodName}.apsimx")
         self.thickness_sequence_test_values = [100, 200, 200, 200, 300, 250, 400, 450]
         self.expect_ts_auto = [100.0, 100.0, 100.0, 295.0, 297.0, 298.0, 300.0, 301.0, 303.0, 304.0]
 
@@ -69,8 +71,14 @@ class TestCoreModel(BaseTester):
         @return:
         """
         import Models
+        if is_file_format_modified():
+            import APSIM.Core as NodeUtils
+            from apsimNGpy.core.cs_resources import CastHelper
+            import System
+        else:
+            self.skipTest('version can not mock simulations object using nodes')
         # creates a Models.Core.Simulations object
-        mock_sims = Models.Core.Simulations()
+        mock_sims =  NodeUtils.Node.Create(Models.Core.Simulations())
         sim = Models.Core.Simulation()
         # add zone
         zone = Models.Core.Zone()
@@ -78,13 +86,15 @@ class TestCoreModel(BaseTester):
         datastore = Models.Storage.DataStore()
         # add simulation and datastore
         for i in (sim, datastore):
-            mock_sims.Children.Add(i)
-        self.test_ap_sim.Simulations = mock_sims
+            mock_sims.AddChild(i)
+        casted_mock_sims = CastHelper.CastAs[Models.Core.Simulations](mock_sims.Model)
+        casted_mock_sims.Write(str(self.mock_sim_path_name))
+        load_mocked = ApsimModel(self.mock_sim_path_name, out_path=self.out_path)
         # test it
-        self.test_ap_sim.get_soil_from_web(simulation_name=None, lonlat=(-93.045, 42.0541),
-                                           thickness_sequence=self.thickness_sequence_test_values)
-        thickness = self.test_ap_sim.inspect_model_parameters(model_type='Models.Soils.Physical', model_name='Physical',
-                                                              parameters='Thickness')
+        load_mocked.get_soil_from_web(simulation_name=None, lonlat=(-93.045, 42.0541),
+                                      thickness_sequence=self.thickness_sequence_test_values)
+        thickness = load_mocked.inspect_model_parameters(model_type='Models.Soils.Physical', model_name='Physical',
+                                                         parameters='Thickness')
         if thickness is not None:
             soil_node = True
         else:

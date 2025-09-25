@@ -10,7 +10,7 @@ from apsimNGpy.core.model_tools import find_child_of_class, find_all_in_scope, C
 from apsimNGpy.settings import logger
 from apsimNGpy.core.model_tools import find_child_of_class
 from apsimNGpy.settings import logger
-
+from pandas import DataFrame
 lp = load_pythonnet()  # ensure CLR
 import numpy as np
 import Models
@@ -176,10 +176,13 @@ class SoilManager:
 
     # ------------------------ Editors ------------------------
 
-    def _edit_soil_section(self, section_key: str, model_type) -> None:
+    def _edit_soil_section(self, section_key: str, model_type, data =None) -> None:
         """
         Generic editor: sets properties on a .NET soil section from a pandas DataFrame
         found in self.soil_profile[section_key]. Uses vectorized conversion and .NET arrays.
+        if not data:
+           then data is loaded from the default soil profile
+        data is used to load ancillary soil info not from self.soil_profile[section_key]
         """
         self._ensure_soil_profile()
 
@@ -191,14 +194,17 @@ class SoilManager:
                 section = tmp
         else:
             section = model_type()  # NOTE: if needed, attach to parent outside
-
-        df = self.soil_profile[section_key]
+        if data:
+            df = data
+        else:
+            df = self.soil_profile[section_key]
 
         # Cache attribute membership to avoid repeated hasattr C-bound lookups
         # (dir() is surprisingly cheap vs many hasattr calls)
         attr_set = set(dir(section))
-
-        for prop in df.columns:
+        if isinstance(df, dict):
+            df = DataFrame.from_dict(df)
+        for prop in df:
             if prop not in attr_set:
                 continue
 

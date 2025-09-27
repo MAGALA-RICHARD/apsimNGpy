@@ -56,7 +56,7 @@ def compile_script(script_code: str, code_model):
     compiler(script_code, code_model)
 
 
-@dataclass(slots=True, repr=False, order=False)
+@dataclass(slots=True, repr=False, order=True)
 class CoreModel(PlotManager):
     """
     Modify and run APSIM Next Generation (APSIM NG) simulation models.
@@ -1279,6 +1279,22 @@ class CoreModel(PlotManager):
         self.ran_ok = False
         return self
 
+    def _get_report(self, report_name):
+        """just fetches the report from the simulations database """
+        if not APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
+            if report_name:
+                get_report = ModelTools.find_child(self.Simulations, Models.Report, report_name)
+                # get_report = self.Simulations.FindDescendant[Models.Report](report_name)
+            else:
+                get_report = self.Simulations.FindDescendant[Models.Report]()
+        else:
+            if report_name:
+                get_report = ModelTools.find_child(self.Simulations, Models.Report, report_name)
+            else:
+                get_report = ModelTools.find_child_of_class(self.Simulations, Models.Report)
+        get_report = CastHelper.CastAs[Models.Report](get_report)
+        return get_report
+
     def add_report_variable(self, variable_spec: Union[list, str, tuple], report_name: str = None,
                             set_event_names: Union[str, list] = None):
         """
@@ -1297,28 +1313,36 @@ class CoreModel(PlotManager):
             returns instance of apsimNGpy.core.core.apsim.ApsimModel or apsimNGpy.core.core.apsim.CoreModel
            raises an erros if a report is not found
 
-        Example::
+        Examples:
 
-            from apsimNGpy import core
-            model = core.base_data.load_default_simulations('Maize')
-            model.add_report_variable(variable_spec = '[Clock].Today as Date', report_name = 'Report')
+            >>> from apsimNGpy.core.apsim import ApsimModel
+            >>> model = ApsimModel('Maize')
+            >>> model.add_report_variable(variable_spec = '[Clock].Today as Date', report_name = 'Report')
+            # isnepct the report
+            >>> model.inspect_model_parameters(model_type='Models.Report', model_name='Report')
+            {'EventNames': ['[Maize].Harvesting'],
+                 'VariableNames': ['[Clock].Today',
+                  '[Maize].Phenology.CurrentStageName',
+                  '[Maize].AboveGround.Wt',
+                  '[Maize].AboveGround.N',
+                  '[Maize].Grain.Total.Wt*10 as Yield',
+                  '[Maize].Grain.Wt',
+                  '[Maize].Grain.Size',
+                  '[Maize].Grain.NumberFunction',
+                  '[Maize].Grain.Total.Wt',
+                  '[Maize].Grain.N',
+                  '[Maize].Total.Wt',
+                  '[Clock].Today as Date']}
+        The new report variable is appended at the end of the existing ones
         """
         if isinstance(variable_spec, str):
             variable_spec = [variable_spec]
-        if not APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
-            if report_name:
-                get_report = ModelTools.find_child(self.Simulations, Models.Report, report_name)
-                # get_report = self.Simulations.FindDescendant[Models.Report](report_name)
-            else:
-                get_report = self.Simulations.FindDescendant[Models.Report]()
-        else:
-            if report_name:
-                get_report = ModelTools.find_child(self.Simulations, Models.Report, report_name)
-            else:
-                get_report = ModelTools.find_child_of_class(self.Simulations, Models.Report)
-        get_report = CastHelper.CastAs[Models.Report](get_report)
+        get_report = self._get_report(report_name)
         get_cur_variables = list(get_report.VariableNames)
         get_cur_variables.extend(variable_spec)
+        # remove any duplicate after appending
+        de_duped = list(dict.fromkeys(get_cur_variables))
+        get_cur_variables = de_duped
         final_command = "\n".join(get_cur_variables)
         get_report.set_VariableNames(final_command.strip().splitlines())
         if set_event_names:
@@ -1329,6 +1353,84 @@ class CoreModel(PlotManager):
             get_report.set_EventNames(final_command.strip().splitlines())
 
         self.save()
+
+    def remove_report_variable(self,
+                               variable_spec: Union[list, tuple, str],
+                               report_name: str | None = None):
+        """
+        Remove one or more variable expressions from an APSIM Report component.
+
+        Parameters
+        ----------
+        variable_spec : str | list[str] | tuple[str, ...]
+            Variable expression(s) to remove, e.g. ``"[Clock].Today"`` or
+            ``"[Clock].Today as Date"``. You may pass a single string or a list/tuple.
+            Matching is done by exact text **after whitespace normalization**
+            (consecutive spaces collapsed), so minor spacing differences are tolerated.
+        report_name : str, optional
+            Name of the Report component to modify. If ``None``, the default
+            resolver (``self._get_report``) is used to locate the target report.
+
+        Returns
+        -------
+        list[str]
+            The updated list of variable expressions remaining in the report
+            (in original order, without duplicates).
+
+        Notes
+        -----
+        - Variables not present are ignored (no error raised).
+        - Order is preserved; duplicates are removed.
+        - The model is saved at the end of this call.
+
+        Examples
+        --------
+        >>> model= CoreModel('Maize')
+        >>> model.add_report_variable(variable_spec='[Clock].Today as Date', report_name='Report')
+        >>> model.remove_report_variable(variable_spec='[Clock].Today as Date', report_name='Report')
+        >>> model.inspect_model_parameters('Models.Report', 'Report')['VariableNames']
+        ['[Clock].Today',
+         '[Maize].Phenology.CurrentStageName',
+         '[Maize].AboveGround.Wt',
+         '[Maize].AboveGround.N',
+         '[Maize].Grain.Total.Wt*10 as Yield',
+         '[Maize].Grain.Wt',
+         '[Maize].Grain.Size',
+         '[Maize].Grain.NumberFunction',
+         '[Maize].Grain.Total.Wt',
+         '[Maize].Grain.N',
+         '[Maize].Total.Wt']
+        """
+
+        # Normalize input to a list
+        if isinstance(variable_spec, str):
+            to_remove = [variable_spec]
+        else:
+            to_remove = list(variable_spec)
+
+        # Whitespace-normalize for comparison
+        def _norm(s: str) -> str:
+            return " ".join(str(s).split())
+
+        remove_set = {_norm(s) for s in to_remove}
+
+        # Locate report and get current variables
+        report = self._get_report(report_name)
+        cur_vars = list(report.VariableNames or [])
+
+        # De-duplicate while preserving order
+        cur_vars = list(dict.fromkeys(cur_vars))
+
+        # Keep those not slated for removal (compare on a normalized text)
+        kept = [v for v in cur_vars if _norm(v) not in remove_set]
+
+        # Update the report; setter may accept a list directly
+        report.set_VariableNames(kept)
+
+        # Persist changes
+        self.save()
+
+        return self
 
     @property
     def extract_simulation_name(self):
@@ -1560,26 +1662,26 @@ class CoreModel(PlotManager):
 
         Parameters
         ----------
-        ``model_class`` : str
+        ``model_class``: str
             The name of the model class to inspect (e.g., 'Clock', 'Manager', 'Physical', 'Chemical', 'Water', 'Solute').
             Shorthand names are accepted (e.g., 'Clock', 'Weather') as well as fully qualified names (e.g., 'Models.Clock', 'Models.Climate.Weather').
 
-        ``simulations`` : Union[str, list]
+        ``simulations``: Union[str, list]
             A single simulation name or a list of simulation names within the APSIM context to inspect.
 
-        ``model_name`` : str
+        ``model_name``: str
             The name of the specific model instance within each simulation. For example, if `model_class='Solute'`,
             `model_name` might be 'NH4', 'Urea', or another solute name.
 
-        ``parameters`` : Union[str, set, list, tuple], optional
+        ``parameters``: Union[str, set, list, tuple], optional
             A specific parameter or a collection of parameters to inspect. Defaults to `'all'`, in which case all accessible attributes are returned.
             For layered models like Solute, valid parameters include `Depth`, `InitialValues`, `SoluteBD`, `Thickness`, etc.
 
-        ``kwargs`` : dict
+        ``kwargs``: dict
             Reserved for future compatibility; currently unused.
 
         ``Returns``
-        -------
+        ----------
             Union[dict, list, pd.DataFrame, Any]
             The format depends on the model type:
             ``Weather``: file path(s) as string(s)
@@ -1610,7 +1712,12 @@ class CoreModel(PlotManager):
 
         Examples::
 
+           from apsimNGpy.core.core import CoreModel
            model_instance = CoreModel('Maize')
+
+           or:
+           from apsimNGpy.core.apsim import ApsimModel
+           model_instance = ApsimModel('Maize')
 
         Inspect full soil ``Organic`` profile::
 
@@ -1912,101 +2019,6 @@ class CoreModel(PlotManager):
 
             self.cultivar_command = params
 
-    def examine_management_info(self, simulations: Union[list, tuple] = None):
-        """
-         @deprecated in versions 0.38+
-        This will show the current management scripts in the simulation root
-
-        Parameters
-        ----------
-        ``simulations``, optional
-            List or tuple of simulation names to update, if `None` show all simulations.
-
-        """
-        old_method('examine_management_info', new_method='inspect_model_parameters')
-        try:
-            for sim in self.find_simulations(simulations):
-                zone = sim.FindChild[Models.Core.Zone]()
-                logger.info("Zone:", zone.Name)
-                for action in zone.FindAllChildren[Models.Manager]():
-                    logger.info("\t", action.Name, ":")
-                    for param in action.Parameters:
-                        logger.info("\t\t", param.Key, ":", param.Value)
-        except Exception as e:
-            logger.info(repr(e))
-            raise Exception(repr(e))
-
-    def check_som(self, simulations=None):
-        """
-        @deprecated in versions 0.38+
-        """
-        old_method('check_som', new_method='inspect_model_parameters')
-        simus = {}
-        for sim in self.find_simulations(simulations):
-            zone = sim.FindChild[Models.Core.Zone]()
-
-            som1 = zone.FindChild('SurfaceOrganicMatter')
-
-            field = zone.Name
-            sname = sim.Name
-
-            som_path = f'{zone.FullPath}.SurfaceOrganicMatter'
-            if som_path:
-                try:
-                    som = zone.FindByPath(som_path)
-                except AttributeError as ae:
-                    som = get_node_by_path(zone, som_path)
-                if som:
-                    simus[sim.Name] = som.Value.InitialResidueMass, som.Value.InitialCNR
-            else:
-                raise ValueError("File child structure is not supported at a moment")
-        return simus
-
-    def change_som(self, *, simulations: Union[tuple, list] = None, inrm: int = None, icnr: int = None,
-                   surface_om_name='SurfaceOrganicMatter', **kwargs):
-        """
-        @deprecated in v0.38 +
-
-         Change ``Surface Organic Matter`` (``SOM``) properties in specified simulations.
-
-    Parameters:
-        ``simulations`` (str ort list): List of simulation names to target (default: None).
-
-        ``inrm`` (int): New value for Initial Residue Mass (default: 1250).
-
-        ``icnr``` (int): New value for Initial Carbon to Nitrogen Ratio (default: 27).
-
-        ``surface_om_name`` (str, optional): name of the surface organic matter child defaults to ='SurfaceOrganicMatter'
-
-    Returns:
-        self: The current instance of the class.
-
-        """
-        old_method('change_som', new_method='edit_model')
-        som = None
-        for sim in self.find_simulations(simulations):
-            zone = sim.FindChild[Models.Core.Zone]()
-            som1 = zone.FindChild(surface_om_name)
-            field = zone.Name
-            sname = sim.Name
-
-            som_path = f'{zone.FullPath}.SurfaceOrganicMatter'
-            if som_path:
-                som = zone.FindByPath(som_path)
-            if som:
-                if inrm is not None:
-                    som.Value.InitialResidueMass = inrm
-                if icnr is not None:
-                    som.Value.InitialCNR = icnr
-            else:
-                raise NotImplementedError(
-                    f"File child structure is not supported at a moment. or {surface_om_name} not found in the file "
-                    f"rename your SOM module to"
-                    "SurfaceOrganicMatter")
-            # mp.Value.InitialResidueMass
-
-            return self
-
     def convert_to_IModel(self):
         if isinstance(self.Simulations, Models.Core.ApsimFile.ConverterReturnType):
             return self.Simulations.get_NewModel()
@@ -2124,8 +2136,11 @@ class CoreModel(PlotManager):
             simulations: str = None
     ):
         """
-        Replace a model e.g., a soil model with another soil model from another APSIM model.
-        The method assumes that the model to replace is already loaded in the current model and is is the same class as source model.
+        @deprecated and will be removed
+        function has not been maintained for a long time, use it at your own risk
+
+        Replace a model, e.g., a soil model with another soil model from another APSIM model.
+        The method assumes that the model to replace is already loaded in the current model and the same class as a source model.
         e.g., a soil node to soil node, clock node to clock node, et.c
 
         Args:
@@ -2208,16 +2223,16 @@ class CoreModel(PlotManager):
 
             Parameters
             ----------
-            ``management`` : dict or tuple
+            ``management``: dict or tuple
                 A dictionary or tuple of management parameters to update. The dictionary should have 'Name' as the key
                 for the management script's name and corresponding values to update. Lists are not allowed as they are mutable
                 and may cause issues with parallel processing. If a tuple is provided, it should be in the form (param_name, param_value).
 
-            ``simulations`` : list of str, optional
+            ``simulations``: list of str, optional
                 List of simulation names to update. If `None`, updates all simulations. This is not recommended for large
                 numbers of simulations as it may result in a high computational load.
 
-            ``out`` : str or pathlike, optional
+            ``out``: str or pathlike, optional
                 Path to save the edited model. If `None`, uses the default output path specified in `self.out_path` or
                 `self.model_info.path`. No need to call `save_edited_file` after updating, as this method handles saving.
 
@@ -2277,11 +2292,35 @@ class CoreModel(PlotManager):
     def preview_simulation(self):
 
         """
-        Preview the simulation file in the apsimNGpy object in the APSIM graphical user interface.
+            Open the current simulation in the APSIM Next Gen GUI.
 
-        ``return``: opens the simulation file
+            This first saves the in-memory simulation to ``self.path`` and then launches
+            the APSIM NG GUI (via: func:`get_apsim_bin_path`) so you can inspect the model
+            tree and make quick edits side-by-side.
 
-        """
+            Returns
+            -------
+            None
+                This function is for its side effect (opening the GUI); it does not return a value.
+
+            Raises
+            ------
+            FileNotFoundError
+                If the file does not exist after ``save()``.
+            RuntimeError
+                If the APSIM NG executable cannot be located or the GUI fails to start.
+
+            Notes
+            -----
+            **Important:** The file opened in the GUI is a *saved copy* of this Python object.
+            Changes made in the GUI are **not** propagated back to this instance. To continue
+            in Python with GUI edits, save in APSIM and re-load the file (e.g.,
+            ``ApsimModel('gui_edited_file_path)').
+
+            Examples
+            --------
+            >>> model.preview_simulation()
+            """
         self.save()
         open_apsimx_file_in_window(self.path, bin_path=get_apsim_bin_path())
 
@@ -2295,10 +2334,10 @@ class CoreModel(PlotManager):
                                 simulations: Union[tuple, list] = None):
         """Set simulation dates.
 
-        @deprecated
+        @deprecated and will be removed in future versions use: :func:`edit_method` isntead
 
         Parameters
-        -----------------------------------
+        -----------------------
 
         ``start_date``: (str) optional
             Start date as string, by default ``None``.
@@ -2307,17 +2346,19 @@ class CoreModel(PlotManager):
             End date as string, by default ``None``.
 
         ``simulations`` (str), optional
-            List of simulation names to update, if ``None`` update all simulations.
-        Note
-        ________
-        one of the ``start_date`` or ``end_date`` parameters should at least not be None
+            List of simulation names to update if ``None`` update all simulations.
+
+        .. note::
+
+             one of the ``start_date`` or ``end_date`` parameters should at least not be None
 
         raises assertion error if all dates are None
 
-        ``return``: ``none``
+        ``return``: ``None``
 
-        Example:
-        ---------
+        Examples::
+
+
             >>> from apsimNGpy.core.base_data import load_default_simulations
             >>> model = load_default_simulations(crop='maize')
             >>> model.change_simulation_dates(start_date='2021-01-01', end_date='2021-01-12')
@@ -2447,34 +2488,41 @@ class CoreModel(PlotManager):
     def get_weather_from_web(self, lonlat: tuple, start: int, end: int, simulations=MissingOption, source='nasa',
                              filename=None):
         """
-            Replaces the meteorological (met) file in the model using weather data fetched from an online source.
+            Replaces the weather (met) file in the model using weather data fetched from an online source.
 
-            ``lonlat``: ``tuple`` containing the longitude and latitude coordinates.
+            ``lonlat``: ``tuple``
+                 A tuple containing the longitude and latitude coordinates.
 
-            ``start``: Start date for the weather data retrieval.
+            ``start``: int
+                  Start date for the weather data retrieval.
 
-            ``end``: End date for the weather data retrieval.
+            ``end``: int
+                  End date for the weather data retrieval.
 
-            ``simulations``: str, list of simulations to place the weather data, defaults to ``all`` as a string
+            ``simulations``: str | list[str] default is all or None list of simulations or a singular simulation
+                  name, where to place the weather data, defaults to None, implying ``all`` the available simulations
 
-            ``source``: Source of the weather data. Defaults to 'nasa'.
+            ``source``: str default is 'nasa'
+                 Source of the weather data.
 
-            ``filename``: Name of the file to save the retrieved data. If None, a default name is generated.
+            ``filename``: str default is generated using the base name of the apsimx file in use, and the start and
+                    end years Name of the file to save the retrieved data. If None, a default name is generated.
 
-            ``Returns:``
-             self. replace the weather data with the fetched data.
+            ``Returns: ``
+             model object with the corresponding file replaced with the fetched weather data.
 
-            Example::
+            ..code-block:: python
 
-              from apsimNgpy.core.apsim import ApsimModel
-              model = ApsimModel(model= "Maize")
-              model.get_weather_from_web(lonlat = (-93.885490, 42.060650), start = 1990, end  =2001)
+                  from apsimNgpy.core.apsim import ApsimModel
+                  model = ApsimModel(model= "Maize")
+                  model.get_weather_from_web(lonlat = (-93.885490, 42.060650), start = 1990, end  =2001)
 
-            Changing weather data with unmatching start and end dates in the simulation will lead to ``RuntimeErrors``. To avoid this first check the start and end date before proceedign as follows::
+            Changing weather data with non-matching start and end dates in the simulation will lead to ``RuntimeErrors``.
+            To avoid this, first check the start and end date before proceeding as follows::
 
-              dt = model.inspect_model_parameters(model_class='Clock', model_name='Clock', simulations='Simulation')
-              start, end = dt['Start'].year, dt['End'].year
-              # output: 1990, 2000
+                  dt = model.inspect_model_parameters(model_class='Clock', model_name='Clock', simulations='Simulation')
+                  start, end = dt['Start'].year, dt['End'].year
+                  # output: 1990, 2000
             """
 
         # start, end = self.inspect_model_parameters(model_class='Clock', model_name='Clock', start=start, end=end)
@@ -2582,30 +2630,41 @@ class CoreModel(PlotManager):
 
     def inspect_model(self, model_type: Union[str, Models], fullpath=True, **kwargs):
         """
-        Inspect the model types and returns the model paths or names. usefull if you want to identify the path to the
-        model for editing the model.
+        Inspect the model types and returns the model paths or names.
 
-        ``model_class``: (Models) e.g. ``Models.Clock`` or just ``'Clock'`` will return all fullpath or names
-            of models in the type Clock ``-Models.Manager`` returns information about the manager scripts in simulations. strings are allowed
-            to, in the case you may not need to import the global namespace, Models. e.g ``Models.Clock`` will still work well.
-            ``-Models.Core.Simulation`` returns information about the simulation -Models.Climate.Weather returns a list of
-            paths or names pertaining to weather models ``-Models.Core.IPlant``  returns a list of paths or names pertaining
-            to all crops models available in the simulation.
+        When is it needed?
+        --------------------
+         useful if you want to identify the paths or name of the model for further editing the model.
 
-        ``fullpath``: (bool) return the full path of the model
-        relative to the parent simulations node. please note the difference between simulations and simulation.
+        Parameters
+        --------------
 
-        Return: list[str]: list of all full paths or names of the model relative to the parent simulations node \n
+        model_class : type | str
+            The APSIM model type to search for. You may pass either a class (e.g.,
+            Models.Clock, Models.Manager) or a string. Strings can be short names
+            (e.g., "Clock", "Manager") or fully qualified (e.g., "Models.Core.Simulation",
+            "Models.Climate.Weather", "Models.Core.IPlant").
+
+        fullpath : bool, optional (default: False)
+            If False, return the model *name* only.
+            If True, return the model’s *full path* relative to the Simulations root.
+
+        Returns
+        -------
+        list[str]
+            A list of model names or full paths, depending on `fullpath`.
 
         Examples::
 
-             from apsimNGpy.core import base_data
+             from apsimNGpy.core.apsim import ApsimModel
              from apsimNGpy.core.core import Models
+
+
         load default ``maize`` module::
 
-             model = base_data.load_default_simulations(crop ='maize')
+             model = ApsimModel('Maize')
 
-        Find the path to all the manager script in the simulation::
+        Find the path to all the manager scripts in the simulation::
 
              model.inspect_model(Models.Manager, fullpath=True)
              [.Simulations.Simulation.Field.Sow using a variable rule', '.Simulations.Simulation.Field.Fertilise at
@@ -2621,11 +2680,11 @@ class CoreModel(PlotManager):
              model.inspect_model(Models.Core.IPlant) # gets the path to the crop model
              ['.Simulations.Simulation.Field.Maize']
 
-        Or use full string path as follows::
+        Or use the full string path as follows::
 
              model.inspect_model(Models.Core.IPlant, fullpath=False) # gets you the name of the crop Models
              ['Maize']
-        Get full path to the fertiliser model::
+        Get the full path to the fertilizer model::
 
              model.inspect_model(Models.Fertiliser, fullpath=True)
              ['.Simulations.Simulation.Field.Fertiliser']
@@ -2645,11 +2704,11 @@ class CoreModel(PlotManager):
              model.inspect_model('IPlant')
              ['.Simulations.Simulation.Field.Maize']
 
-        Inspect using full model namespace path::
+        Inspect using the full model namespace path::
 
              model.inspect_model('Models.Core.IPlant')
 
-        What about weather model?::
+        What about the weather model?::
 
              model.inspect_model('Weather') # inspects the weather module
              ['.Simulations.Simulation.Weather']
@@ -2660,20 +2719,32 @@ class CoreModel(PlotManager):
              model.inspect_model('Models.Climate.Weather')
              ['.Simulations.Simulation.Weather']
 
-        Try finding path to the cultivar model::
+        Try finding the path to the cultivar model::
 
              model.inspect_model('Cultivar', fullpath=False) # list all available cultivar names
-             ['Hycorn_53',  'Pioneer_33M54', 'Pioneer_38H20',  'Pioneer_34K77',  'Pioneer_39V43',  'Atrium', 'Laila', 'GH_5019WX']
+             ['Hycorn_53', 'Pioneer_33M54', 'Pioneer_38H20','Pioneer_34K77', 'Pioneer_39V43','Atrium', 'Laila', 'GH_5019WX']
 
         # we can get only the names of the cultivar models using the full string path::
 
              model.inspect_model('Models.PMF.Cultivar', fullpath = False)
-             ['Hycorn_53',  'Pioneer_33M54', 'Pioneer_38H20',  'Pioneer_34K77',  'Pioneer_39V43',  'Atrium', 'Laila', 'GH_5019WX']
+             ['Hycorn_53','Pioneer_33M54', 'Pioneer_38H20','Pioneer_34K77', 'Pioneer_39V43','Atrium', 'Laila', 'GH_5019WX']
 
         .. tip::
 
-            Models can be inspected either by importing the Models namespace or by using string paths. The most reliable approach is to provide the full model path—either as a string or as a Models object.
-            However, remembering full paths can be tedious, so allowing partial model names or references can significantly save time during development and exploration.
+            Models can be inspected either by importing the Models namespace or by using string paths. The most reliable
+             approach is to provide the full model path—either as a string or as the ``Models`` object.
+
+            However, remembering full paths can be tedious, so allowing partial model names or references can significantly
+             save time during development and exploration.
+
+
+        .. note::
+
+            - You do not need to import `Models` if you pass a string; both short and
+              fully qualified names are supported.
+            - “Full path” is the APSIM tree path **relative to the Simulations node**
+              (be mindful of the difference between *Simulations* (root) and an individual
+              *Simulation*).
         """
 
         model_type = validate_model_obj(model_type)

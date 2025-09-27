@@ -640,7 +640,8 @@ CoreModel
           - CultivarName (str, required): Name of the cultivar (e.g., 'laila').
 
           - variable_spec (str, required): A strings representing the parameter paths to be edited.
-                         Example: ('[Grain].MaximumGrainsPerCob.FixedValue', '[Phenology].GrainFilling.Target.FixedValue')
+        Example:
+            ('[Grain].MaximumGrainsPerCob.FixedValue', '[Phenology].GrainFilling.Target.FixedValue')
 
           - values: values for each command (e.g., (721, 760)).
 

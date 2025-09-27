@@ -1387,6 +1387,19 @@ class CoreModel(PlotManager):
         --------
         >>> model= CoreModel('Maize')
         >>> model.add_report_variable(variable_spec='[Clock].Today as Date', report_name='Report')
+        >>> model.inspect_model_parameters('Models.Report', 'Report')['VariableNames']
+        ['[Clock].Today',
+         '[Maize].Phenology.CurrentStageName',
+         '[Maize].AboveGround.Wt',
+         '[Maize].AboveGround.N',
+         '[Maize].Grain.Total.Wt*10 as Yield',
+         '[Maize].Grain.Wt',
+         '[Maize].Grain.Size',
+         '[Maize].Grain.NumberFunction',
+         '[Maize].Grain.Total.Wt',
+         '[Maize].Grain.N',
+         '[Maize].Total.Wt',
+         '[Clock].Today as Date']
         >>> model.remove_report_variable(variable_spec='[Clock].Today as Date', report_name='Report')
         >>> model.inspect_model_parameters('Models.Report', 'Report')['VariableNames']
         ['[Clock].Today',

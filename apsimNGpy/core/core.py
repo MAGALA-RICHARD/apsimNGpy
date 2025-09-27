@@ -4,6 +4,7 @@ author: Richard Magala
 email: magalarich20@gmail.com
 
 """
+from __future__ import annotations
 import gc
 import re
 import random
@@ -65,7 +66,7 @@ class CoreModel(PlotManager):
     It is designed to be base class for all apsimNGpy models.
 
     Parameters:
-
+    -------------
         ``model`` (os.PathLike): The file path to the APSIM NG model. This parameter specifies the model file to be used in the simulation.
 
         ``out_path`` (str, optional): The path where the output file should be saved. If not provided, the output will be saved with the same name as the model file in the current dir_path.
@@ -74,7 +75,9 @@ class CoreModel(PlotManager):
 
         ``experiment`` (bool, optional): Specifies whether to initiate your model as an experiment defaults to false
           by default, the experiment is created with permutation but permutation can be passed as a kewy word argument to change
+
     Keyword parameters:
+    -------------------
       **``copy`` (bool, deprecated)**: Specifies whether to clone the simulation file. This parameter is deprecated because the simulation file is now automatically cloned by default.
 
     .. tip::
@@ -185,11 +188,16 @@ class CoreModel(PlotManager):
         """
         Retrieve simulation nodes in the APSIMx `Model.Core.Simulations` object.
 
-        We search all Models.Core.Simulation in the scope of Model.Core.Simulations. Please note the difference
-        Simulations is the whole json object Simulation is the child with the field zones, crops, soils and managers
-        any structure of apsimx file any structure can be handled
+        We search all-Models.Core.Simulation in the scope of Model.Core.Simulations. Please note the difference
+        Simulations is the whole json object Simulation is the child with the field zones, crops, soils and managers.
+
+        Any structure of apsimx file can be handled.
+
+        ..note::
+
+             The simulations are c# objects, and their manipulation maybe for advanced users only.
         """
-        # fixed
+
         # we can actually specify the simulation name in the bracket
         self.check_model()
         if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:  # if compiled binaries from github
@@ -199,7 +207,9 @@ class CoreModel(PlotManager):
     @property
     def simulation_names(self):
         """
-        retrieves the name of the simulations in the APSIMx `Model.Core
+        @deprecated will be removed in future releases. Please use inspect_model function instead.
+
+        retrieves the name of the simulations in the APSIMx file
         @return: list of simulation names
         """
         return [s.Name for s in self.simulations]
@@ -211,18 +221,6 @@ class CoreModel(PlotManager):
     @str_model.setter
     def str_model(self, value: dict):
         self._str_model = json.dumps(value)
-
-    def initialise_model(self):
-        simulationList = self.Simulations.FindAllDescendants[Models.Core.Simulation]()
-        for models in self.Simulations.FindAllDescendants():
-            try:
-                models.OnCreated()
-            except Exception as e:
-                logger.info(e)
-            finally:
-                for simulation in simulationList:
-                    simulation.IsInitialising = False
-        return self
 
     def restart_model(self, model_info=None):
         """
@@ -247,13 +245,77 @@ class CoreModel(PlotManager):
         self.path = self.model_info.path
         return self
 
-    def save(self, file_name=None):
+    def save(self, file_name: Union[str, Path, None] = None):
         """
-        Save the simulation models to file
+        Saves the current APSIM NG model (``Simulations``) to disk and refresh runtime state.
 
-        ``file_name``: The name of the file to save the defaults to none, taking the exising filename
+        This method writes the model to a file, using a version-aware strategy:
 
-        Returns: model object
+        * If ``APSIM_VERSION_NO > BASE_RELEASE_NO`` **or**
+          ``APSIM_VERSION_NO == GITHUB_RELEASE_NO``: call
+          ``self.Simulations.Write(path)``.
+        * Otherwise: obtain the underlying node via
+          ``getattr(self.Simulations, 'Node', self.Simulations)`` and call
+          :func:`save_model_to_file`.
+
+        After writing, the model is recompiled via :func:`recompile(self)` and the
+        in-memory instance is refreshed using :meth:`restart_model`, ensuring the
+        object graph reflects the just-saved state.
+
+        Parameters
+        ----------
+        file_name : str or pathlib.Path, optional
+            Output path for the saved model file. If omitted (``None``), the method
+            uses the instance's existing ``self.path``. The resolved path is also
+            written back to ``self.path`` for consistency.
+
+        Returns
+        -------
+        Self
+            The same model/manager instance to support method chaining.
+
+        Raises
+        ------
+        OSError
+            If the file cannot be written due to I/O errors, permissions, or invalid path.
+        AttributeError
+            If required attributes (e.g., ``self.Simulations``) or methods are missing.
+        Exception
+            Any exception propagated by :func:`save_model_to_file`, :func:`recompile`,
+            or :meth:`restart_model`.
+
+        Side Effects
+        ------------
+        - Sets ``self.path`` to the resolved output path (string).
+        - Writes the model file to disk (overwrites if it exists).
+        - Recompiles the model and restarts the in-memory instance.
+
+        Notes
+        -----
+        - **Version-aware save:** Uses either ``Simulations.Write`` or the legacy
+          ``save_model_to_file`` depending on version constants.
+        - **Path normalization:** The path is stringified via ``str(file_name)`` /
+          ``str(self.path)`` without additional validation. If you require parent
+          directory creation or suffix checks (e.g., ``.apsimx``), perform them before
+          calling ``save``.
+        - **Reload semantics: ** Post-save recompilation and restart ensure any code
+          generation or cached reflection is refreshed to match the serialized model.
+
+        Examples
+        --------
+        Save to the current file path tracked by the instance::
+
+            model.save()
+
+        Save to a new path and continue working with the refreshed instance::
+
+            model.save("outputs/Scenario_A.apsimx").run()
+
+        See Also
+        --------
+        recompile : Rebuild internal/compiled artifacts for the model.
+        restart_model : Reload/refresh the model instance after recompilation.
+        save_model_to_file : Legacy writer for older APSIM NG versions.
         """
         _path = str(file_name or self.path)
         self.path = _path
@@ -266,32 +328,6 @@ class CoreModel(PlotManager):
         self.restart_model(model_info)
         return self
 
-    def save_edited_file(self, out_path: os.PathLike = None, reload: bool = False) -> Union['CoreModel', None]:
-        """ Saves the model to the local drive.
-            @deprecated: use save() method instead
-
-            Notes: - If `out_path` is None, the `save_model_to_file` function extracts the filename from the
-            `Model.Core.Simulation` object. - `out_path`, however, is given high priority. Therefore,
-            we first evaluate if it is not None before extracting from the file. - This is crucial if you want to
-            give the file a new name different from the original one while saving.
-
-            Parameters
-            - out_path (str): Desired path for the .apsimx file, by default, None.
-            - reload (bool): Whether to load the file using the `out_path` or the model's original file name.
-
-        """
-
-        old_method('save_edited_file', 'save')
-        warnings.warn('The `save_edited_file` method is deprecated use save().', DeprecationWarning)
-        # Determine the output path
-        _out_path = out_path or self.model_info.path
-        save_model_to_file(self.Simulations, out=_out_path)
-        if reload:
-            self.model_info = load_apsim_model(_out_path)
-
-            self.restart_model()
-            return self
-
     @property
     def results(self) -> pd.DataFrame:
         """
@@ -303,11 +339,11 @@ class CoreModel(PlotManager):
     It must be called only after invoking ``run()``. If accessed before the simulation is run, it will raise an error.
 
     Notes:
-    - The ``run()`` method should be called with a valid ``report name`` or a list of report names (i.e., APSIM report table names).
-    - If `report_names` is not provided (i.e., ``None``), the system will inspect the model and automatically detect all available report components.
-      These reports will then be used to collect the data.
-    - If multiple report names are used, their corresponding data tables will be concatenated along the rows.
-    _ after Model run has been called, use can still get results by calling ``get_simulated_output``, it accepts one argument ``report_names``
+        - The ``run()`` method should be called with a valid ``report name`` or a list of report names (i.e., APSIM report table names).
+        - If `report_names` is not provided (i.e., ``None``), the system will inspect the model and automatically detect all available report components.
+          These reports will then be used to collect the data.
+        - If multiple report names are used, their corresponding data tables will be concatenated along the rows.
+        _ after Model run has been called, use can still get results by calling ``get_simulated_output``, it accepts one argument ``report_names``
 
     Returns:
         pd.DataFrame: A DataFrame containing the simulation output results.
@@ -397,8 +433,6 @@ class CoreModel(PlotManager):
          9     Simulation             1             1  ...       1689.966  7370.301  Field
          [10 rows x 16 columns]
 
-
-
         """
         # Collect all available data tables
         data_tables = collect_csv_by_model_path(self.path)
@@ -454,13 +488,13 @@ class CoreModel(PlotManager):
         ``simulations`` : Union[tuple, list], optional
             List of simulation names to run. If None, runs all simulations.
 
-        ``clean_up`` : bool, optional
+        ``clean_up``: bool, optional
             If True, removes the existing database before running.
 
-        ``verbose`` : bool, optional
+        ``verbose``: bool, optional
             If True, enables verbose output for debugging. The method continues with debugging info anyway if the run was unsuccessful
 
-        ``kwargs`` : dict
+        ``kwargs``: dict
             Additional keyword arguments, e.g., to_csv=True
 
         Returns
@@ -521,35 +555,6 @@ class CoreModel(PlotManager):
                 self._DataStore.Close()
             except AttributeError:
                 ...
-
-    @property
-    def simulated_results(self) -> pd.DataFrame:
-        """
-        @deprecated
-
-        @return: pandas data frame containing the data
-        Example::
-
-         >>> from apsimNGpy.core.base_data import load_default_simulations
-         >>> fmodel = load_default_simulations(crop ='Maize', simulations_object=False) # get path only
-         >>> model = CoreModel(fmodel)
-         >>> mn=model.run() #3 run the model before colelcting the results
-         >>> sr = model.simulated_results
-
-        """
-        old_method('simulated_results', 'get_simulated_output')
-        if self.ran_ok:
-            data_tables = collect_csv_by_model_path(self.path)
-            # reports = get_db_table_names(self.datastore)
-            bag = []
-            for tab, path in data_tables.items():
-                _df = pd.read_csv(path)
-                _df['TableName'] = tab
-
-                bag.append(_df)
-            return pd.concat(bag)
-        else:
-            raise ValueError("you cant load data before running the model please call run() first")
 
     def rename_model(self, model_type, *, old_name, new_name):
         """
@@ -620,10 +625,10 @@ class CoreModel(PlotManager):
         ``rename`` : str, optional
             The new name for the cloned model. If not provided, the clone will be renamed using
             the original name with a `_clone` suffix.
-        ``adoptive_parent_name`` : str, optional
+        ``adoptive_parent_name``: str, optional
             The name of the parent model where the cloned model should be moved. If not provided,
             the model will be placed under the default parent of the specified type.
-        ``in_place`` : bool, optional
+        ``in_place``: bool, optional
             If ``True``, the cloned model remains in the same location but is duplicated. Defaults to ``False``.
 
         Returns:
@@ -635,8 +640,8 @@ class CoreModel(PlotManager):
         -------
          Create a cloned version of `"clock1"` and place it under `"Simulation"` with the new name ``"new_clock`"`::
 
-            from apsimNGpy.core.base_data import load_default_simulations
-            model  = load_default_simulations('Maize')
+            from apsimNGpy.core.apsim import ApsimModel
+            model = ApsimModel('Maize')
             model.clone_model('Models.Clock', "clock1", 'Models.Simulation', rename="new_clock",adoptive_parent_type= 'Models.Core.Simulations', adoptive_parent_name="Simulation")
 
 
@@ -918,7 +923,161 @@ class CoreModel(PlotManager):
 
         return type(model)
 
-    def edit_model_by_path(self, path, **kwargs):
+    def edit_model_by_path(self, path: str, **kwargs):
+        """
+        Edit a model component located by an APSIM path, dispatching to type-specific editors.
+
+        This function resolves a node under ``self.Simulations`` using an APSIM path, then
+        edits that node by delegating to the appropriate editor based on the node’s runtime
+        type. It supports common APSIM NG components (e.g., Weather, Manager, Cultivar, Clock,
+        Soil subcomponents, Report, SurfaceOrganicMatter). Unsupported types raise
+        :class:`NotImplementedError`.
+
+        Resolution strategy
+        -------------------
+        1. Try ``self.Simulations.FindByPath(path)``.
+        2. If unavailable (older APIs), fall back to :func:`get_node_by_path(self.Simulations, path)`.
+        3. Extract the concrete model instance from either ``.Value`` or, if absent, attempts
+           to unwrap via ``.Model`` and cast to known APSIM types with
+           :class:`CastHelper.CastAs[T]`. If casting fails, a :class:`ValueError` is raised.
+
+        Parameters
+        ----------
+        path : str
+            APSIM path to a target node under ``self.Simulations`` (e.g.,
+            ``'[Simulations].Ames.Maize.Weather'`` or similar canonical path).
+        **kwargs
+            Keyword arguments controlling the edit. The keys accepted depend on the
+            resolved component type (see **Type-specific editing** below). The following
+            special keys are intercepted and *not* forwarded:
+            - ``simulations`` / ``simulation`` : selector(s) used for cultivar edits
+              and other multi-simulation operations; forwarded where applicable.
+            - ``verbose`` : bool, optional; enables additional logging in some editors.
+
+        Type-specific editing
+        ---------------------
+        The function performs a structural match on the resolved model type and dispatches to
+        the corresponding private helper or inline routine:
+
+        - :class:`Models.Climate.Weather`
+          Calls ``self._set_weather_path(values, param_values=kwargs, verbose=verbose)``.
+          Typical parameters include things such as a new weather file path (implementation-specific).
+
+        - :class:`Models.Manager`
+          Validates that provided keys in ``kwargs`` match the manager script’s
+          ``Parameters[i].Key`` set. On mismatch, raises :class:`ValueError`.
+          On success, updates the corresponding parameter values by constructing
+          ``KeyValuePair[String, String]`` entries. No extra keys are permitted.
+
+        - :class:`Models.PMF.Cultivar`
+          Ensures cultivar replacements exist under ``Replacements`` (creates them if needed).
+          Then calls ``_edit_in_cultivar(self, model_name=values.Name, simulations=simulations, param_values=kwargs, verbose=verbose)``.
+          Expects cultivar-specific keys in ``kwargs`` (implementation-specific).
+
+        - :class:`Models.Clock`
+          Calls ``self._set_clock_vars(values, param_values=kwargs)``. Typical keys:
+          ``StartDate``, ``EndDate`` (exact names depend on your clock editor).
+
+        - Soil components
+          ``Models.Soils.Physical`` | ``Models.Soils.Chemical`` | ``Models.Soils.Organic`` |
+          ``Models.Soils.Water`` | ``Models.Soils.Solute``
+          Delegates to ``self.replace_soils_values_by_path(node_path=path, **kwargs)``.
+          Accepts property/value overrides appropriate to the soil table(s) addressed by ``path``.
+
+        - :class:`Models.Report`
+          Calls ``self._set_report_vars(values, param_values=kwargs, verbose=verbose)``.
+          Typical keys include columns/variables and event names (implementation-specific).
+
+        - :class:`Models.Surface.SurfaceOrganicMatter`
+          Requires at least one of:
+          ``'SurfOM', 'InitialCPR', 'InitialResidueMass', 'InitialCNR', 'IncorporatedP'``.
+          If none supplied, raises: class:`ValueError`.
+          Calls ``self._set_surface_organic_matter(values, param_values=kwargs, verbose=verbose)``.
+
+        Unsupported types
+        -----------------
+        If the resolved type does not match any of the above, a :class:`NotImplementedError`
+        is raised with the concrete type name.
+
+        Behavior of the method
+        ------------------------
+        - Any of ``'simulation'``, ``'simulations'``, and ``'verbose'`` present in ``kwargs``
+          are consumed by this function and not forwarded verbatim (except where explicitly used).
+        - For Manager edits, unknown parameter keys cause a hard failure (strict validation).
+        - For Cultivar edits, the function may mutate the model tree by creating necessary
+          crop replacements under ``Replacements`` if missing.
+
+        Returns
+        -------
+        Self
+            The same model/manager instance (to allow method chaining).
+
+        Raises
+        ------
+        ValueError
+            - If no node is found for ``path``.
+            - If a Manager parameter key is invalid for the target Manager.
+            - If a SurfaceOrganicMatter edit is requested with no supported keys.
+            - If a model is un castable or unsupported for this method.
+        AttributeError
+            If required APIs are missing on ``self.Simulations`` or resolved nodes.
+        NotImplementedError
+            If the resolved node type has no implemented editor.
+        Exception
+            Any error propagated by delegated helpers (e.g., file I/O, parsing).
+
+        Notes
+        -----
+        - **Path semantics: ** The exact path syntax should match what
+          ``FindByPath`` or the fallback ``get_node_by_path`` expects in your APSIM build.
+        - **Type casting: ** When ``.Value`` is absent, the function attempts to unwrap from
+          ``.Model`` and cast across a small set of known APSIM types using ``CastHelper``.
+        - **Non-idempotent operations: ** Some edits (e.g., cultivar replacements creation)
+          may modify the model structure, not only values.
+        - **Concurrency: ** Edits mutate in-memory state; synchronize if calling from
+          multiple threads/processes.
+
+        Examples
+        --------
+        Edit a Manager script parameter::
+
+            model.edit_model_by_path(
+                ".Simulations.Simulation.Field.Sow using a variable rule",
+                verbose=True,
+                Population =10)
+
+        Point a Weather component to a new ``.met`` file::
+
+            model.edit_model_by_path(
+                path='.Simulations.Simulation.Weather'
+                FileName="data/weather/Ames_2020.met"
+            )
+
+        Change Clock dates::
+
+            model.edit_model_by_path(
+               ".Simulations.Simulation.Clock",
+                StartDate="2020-01-01",
+                EndDate="2020-12-31"
+            )
+
+        Update soil water properties at a specific path::
+
+            model.edit_model_by_path(
+                ".Simulations.Simulation.Field.Soil.Physical",
+                LL15="[0.26, 0.18, 0.10, 0.12]",
+            )
+
+        Apply cultivar edits across selected simulations::
+
+            model.edit_model_by_path(
+                ".Simulations.Simulation.Field.Maize.CultivarFolder.mh18",
+                simulations=("Sim_A", "Sim_B"),
+                verbose=True,
+                Phenology.EmergencePhase.Photoperiod="Short",
+            )
+        """
+
         simulations = kwargs.get('simulations', None) or kwargs.get('simulation', None)
         verbose = kwargs.get('verbose', False)
         for p in {'simulation', 'simulations', 'verbose'}:
@@ -1975,7 +2134,8 @@ class CoreModel(PlotManager):
           - CultivarName (str, required): Name of the cultivar (e.g., 'laila').
 
           - variable_spec (str, required): A strings representing the parameter paths to be edited.
-                         Example: ('[Grain].MaximumGrainsPerCob.FixedValue', '[Phenology].GrainFilling.Target.FixedValue')
+        Example:
+            ('[Grain].MaximumGrainsPerCob.FixedValue', '[Phenology].GrainFilling.Target.FixedValue')
 
           - values: values for each command (e.g., (721, 760)).
 
@@ -2464,39 +2624,112 @@ class CoreModel(PlotManager):
             end = clock.End
         return start.Year, end.Year
 
-    def change_met(self):
-        self.replace_met_file(self.met)
+    def replace_met_file(self, *, weather_file: Union[Path, str], simulations=MissingOption, **kwargs) -> "Self":
+        """
+        .. deprecated:: 0.**x**
+           This helper will be removed in a future release. Prefer newer weather
+           configuration utilities or set the ``FileName`` property on weather nodes
+           directly.
+
+        Replace the ``FileName`` of every :class:`Models.Climate.Weather` node under one
+        or more simulations so they point to a new ``.met`` file.
+
+        This method traverses the APSIM NG model tree under each selected simulation and
+        updates the weather component(s) in-place. Version-aware traversal is used:
+
+        * If ``APSIM_VERSION_NO > BASE_RELEASE_NO`` **or**
+          ``APSIM_VERSION_NO == GITHUB_RELEASE_NO``: use
+          :func:`ModelTools.find_all_in_scope` to find
+          :class:`Models.Climate.Weather` nodes.
+        * Otherwise: fall back to ``sim.FindAllDescendants[Models.Climate.Weather]()``.
+
+        Parameters
+        ----------
+        weather_file : Union[pathlib.Path, str]
+            Path to the ``.met`` file. May be absolute or relative to the current
+            working directory. The path must exist at call time; otherwise a
+            :class:`FileNotFoundError` is raised.
+        simulations : Any, optional
+            Simulation selector forwarded to :meth:`find_simulations`. If left as
+            ``MissingOption`` (default) (or if your implementation accepts ``None``),
+            all simulations yielded by :meth:`find_simulations` are updated.
+            Acceptable types depend on your :meth:`find_simulations` contract
+            (e.g., iterable of names, single name, or sentinel).
+        **kwargs
+            Ignored. Reserved for backward compatibility and future extensions.
+
+        Returns
+        -------
+        Self
+            The current model/manager instance to support method chaining.
+
+        Raises
+        ------
+        FileNotFoundError
+            If ``weather_file`` does not exist.
+        Exception
+            Any exception raised by :meth:`find_simulations` or underlying APSIM
+            traversal utilities is propagated unchanged.
+
+        Side Effects
+        ------------
+        Mutates the model by setting ``met.FileName = os.path.realpath(weather_file)``
+        for each matched :class:`Models.Climate.Weather` node.
+
+        Notes
+        -----
+        - **No-op safety:** If a simulation has no Weather nodes, that simulation
+          is silently skipped.
+        - **Path normalization:** The stored path is the canonical real path
+          (``os.path.realpath``).
+        - **Thread/process safety:** This operation mutates in-memory model state
+          and is not inherently thread-safe. Coordinate external synchronization if
+          calling concurrently.
+
+        Examples
+        --------
+        Update all simulations to use a local ``Ames.met``::
+
+            model.replace_met_file(weather_file="data/weather/Ames.met")
+
+        Update only selected simulations::
+
+            model.replace_met_file(
+                weather_file=Path("~/wx/Boone.met").expanduser(),
+                simulations=("Sim_A", "Sim_B")
+            )
+
+        See Also
+        --------
+        find_simulations : Resolve and yield simulation objects by name/selector.
+        ModelTools.find_all_in_scope : Scope-aware traversal utility.
+        Models.Climate.Weather : APSIM NG weather component.
+        """
+        warnings.warn(
+            "replace_met_file() is deprecated and will be removed in a future release. "
+            "Prefer newer weather-configuration helpers or set Weather.FileName directly.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
+        # Normalize & validate the input path early
+        wf = os.fspath(weather_file)
+        if not os.path.isfile(wf):
+            raise FileNotFoundError(wf)
+
+        # Traverse simulations and update weather nodes
+        for sim in self.find_simulations(simulations):
+            if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
+                weathers = ModelTools.find_all_in_scope(sim, Models.Climate.Weather)
+            else:
+                weathers = sim.FindAllDescendants[Models.Climate.Weather]()
+            for met in weathers:
+                met.FileName = os.path.realpath(wf)
+
         return self
 
-    def replace_met_file(self, *, weather_file: Union[Path, str], simulations=MissingOption, **kwargs):
-        try:
-            """
-            Searches the weather child and replaces it with a new one. DEPRECATED
 
-            Parameters
-            ----------
-            ``weather_file``: Union[Path, str], required):
-                Weather file name, path should be relative to simulation or absolute.
 
-            ``simulations`` (str, optional)
-                List of simulation names to update, if `None` update all simulations.
-
-            """
-            # we need to catch file not found errors before it becomes a problem
-            if not os.path.isfile(weather_file):
-                raise FileNotFoundError(weather_file)
-            for sim_name in self.find_simulations(simulations):
-                if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
-                    weathers = ModelTools.find_all_in_scope(sim_name, Models.Climate.Weather)
-                else:
-                    weathers = sim_name.FindAllDescendants[Models.Climate.Weather]()
-                for met in weathers:
-                    met.FileName = os.path.realpath(weather_file)
-            return self
-
-        except Exception as e:
-            logger.info(repr(e))  # this error will be logged to the folder logs in the current working dir_path
-            raise
 
     def get_weather_from_web(self, lonlat: tuple, start: int, end: int, simulations=MissingOption, source='nasa',
                              filename=None):
@@ -2549,7 +2782,9 @@ class CoreModel(PlotManager):
         ...
 
     def show_met_file_in_simulation(self, simulations: list = None):
-        """Show weather file for all simulations"""
+        """Show weather file for all simulations
+
+        @deprecated: use inspect_model_parameters() instead"""
         weather_list = {}
         for sim_name in self.find_simulations(simulations):
             if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
@@ -2647,7 +2882,7 @@ class CoreModel(PlotManager):
 
         When is it needed?
         --------------------
-         useful if you want to identify the paths or name of the model for further editing the model.
+         useful if you want to identify the paths or name of the model for further editing the model e.g., with the ``in edit_model`` method.
 
         Parameters
         --------------
@@ -2656,7 +2891,53 @@ class CoreModel(PlotManager):
             The APSIM model type to search for. You may pass either a class (e.g.,
             Models.Clock, Models.Manager) or a string. Strings can be short names
             (e.g., "Clock", "Manager") or fully qualified (e.g., "Models.Core.Simulation",
-            "Models.Climate.Weather", "Models.Core.IPlant").
+            "Models.Climate.Weather", "Models.Core.IPlant"). Please see from The list of classes
+            or model types from the **Models** Namespace below. Red represents the modules, and this method
+             will throw an error if only a module is supplied. The list constitutes the classes or
+             model types under each module
+
+            ``Models``:
+              - Models.Clock
+              - Models.Fertiliser
+              - Models.Irrigation
+              - Models.Manager
+              - Models.Memo
+              - Models.MicroClimate
+              - Models.Operations
+              - Models.Report
+              - Models.Summary
+            ``Models.Climate``:
+              - Models.Climate.Weather
+            ``Models.Core``:
+              - Models.Core.Folder
+              - Models.Core.Simulation
+              - Models.Core.Simulations
+              - Models.Core.Zone
+            ``Models.Factorial``:
+              - Models.Factorial.Experiment
+              - Models.Factorial.Factors
+              - Models.Factorial.Permutation
+            ``Models.PMF``:
+              - Models.PMF.Cultivar
+              - Models.PMF.Plant
+            ``Models.Soils``:
+              - Models.Soils.Arbitrator.SoilArbitrator
+              - Models.Soils.CERESSoilTemperature
+              - Models.Soils.Chemical
+              - Models.Soils.Nutrients.Nutrient
+              - Models.Soils.Organic
+              - Models.Soils.Physical
+              - Models.Soils.Sample
+              - Models.Soils.Soil
+              - Models.Soils.SoilCrop
+              - Models.Soils.Solute
+              - Models.Soils.Water
+            ``Models.Storage``:
+              - Models.Storage.DataStore
+            ``Models.Surface``:
+              - Models.Surface.SurfaceOrganicMatter
+            ``Models.WaterModel``:
+              - Models.WaterModel.WaterBalance
 
         fullpath : bool, optional (default: False)
             If False, return the model *name* only.

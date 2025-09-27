@@ -2656,7 +2656,53 @@ class CoreModel(PlotManager):
             The APSIM model type to search for. You may pass either a class (e.g.,
             Models.Clock, Models.Manager) or a string. Strings can be short names
             (e.g., "Clock", "Manager") or fully qualified (e.g., "Models.Core.Simulation",
-            "Models.Climate.Weather", "Models.Core.IPlant").
+            "Models.Climate.Weather", "Models.Core.IPlant"). Please see from The list of classes
+            or model types from the **Models** Namespace below. Red represents the modules, and this method
+             will throw an error if only a module is supplied. The list constitutes the classes or
+             model types under each module
+
+            ``Models``:
+              - Models.Clock
+              - Models.Fertiliser
+              - Models.Irrigation
+              - Models.Manager
+              - Models.Memo
+              - Models.MicroClimate
+              - Models.Operations
+              - Models.Report
+              - Models.Summary
+            ``Models.Climate``:
+              - Models.Climate.Weather
+            ``Models.Core``:
+              - Models.Core.Folder
+              - Models.Core.Simulation
+              - Models.Core.Simulations
+              - Models.Core.Zone
+            ``Models.Factorial``:
+              - Models.Factorial.Experiment
+              - Models.Factorial.Factors
+              - Models.Factorial.Permutation
+            ``Models.PMF``:
+              - Models.PMF.Cultivar
+              - Models.PMF.Plant
+            ``Models.Soils``:
+              - Models.Soils.Arbitrator.SoilArbitrator
+              - Models.Soils.CERESSoilTemperature
+              - Models.Soils.Chemical
+              - Models.Soils.Nutrients.Nutrient
+              - Models.Soils.Organic
+              - Models.Soils.Physical
+              - Models.Soils.Sample
+              - Models.Soils.Soil
+              - Models.Soils.SoilCrop
+              - Models.Soils.Solute
+              - Models.Soils.Water
+            ``Models.Storage``:
+              - Models.Storage.DataStore
+            ``Models.Surface``:
+              - Models.Surface.SurfaceOrganicMatter
+            ``Models.WaterModel``:
+              - Models.WaterModel.WaterBalance
 
         fullpath : bool, optional (default: False)
             If False, return the model *name* only.

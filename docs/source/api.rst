@@ -12,9 +12,8 @@ ApsimModel
     This implies that you can still run the model and modify parameters as needed.
     Example:
         >>> from apsimNGpy.core.apsim import ApsimModel
-        >>> from apsimNGpy.core.base_data import load_default_simulations
-        >>> path_model = load_default_simulations(crop='Maize', simulations_object=False)
-        >>> model = ApsimModel(path_model, set_wd=Path.home())# replace with your path
+        >>> from pathlib import Path
+        >>> model = ApsimModel('Maize', out_path=Path.home()/'apsim_model_example.apsimx')
         >>> model.run(report_name='Report') # report is the default, please replace it as needed
 
 .. function:: apsimNGpy.core.apsim.ApsimModel.adjust_dul(self, simulations: Union[tuple, list] = None)
@@ -72,7 +71,7 @@ ApsimModel
             If ``True``, create and attach missing section nodes before editing.
 
         additional_plants : sequence[str] | None, optional
-            Optional plant names for which to create/populate ``SoilCrop`` entries (e.g., to set KL/XF).
+             Plant names for which to create/populate ``SoilCrop`` entries (e.g., to set KL/XF).
 
         adjust_dul : bool, optional
             If ``True``, adjust layer values where ``SAT`` exceeds ``DUL`` to prevent APSIM runtime errors.
@@ -291,7 +290,7 @@ ContinuousVariable
 CoreModel 
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. function:: apsimNGpy.core.core.CoreModel(model: Union[str, pathlib.Path, dict] = None, out_path: Union[str, pathlib.Path, NoneType] = None, out: Union[str, pathlib.Path, NoneType] = None, set_wd: Union[str, pathlib.Path, NoneType] = None, experiment: bool = False, copy: Optional[bool] = None) -> None
+.. function:: apsimNGpy.core.core.CoreModel(model: 'Union[str, Path, dict]' = None, out_path: 'Optional[Union[str, Path]]' = None, out: 'Optional[Union[str, Path]]' = None, set_wd: 'Optional[Union[str, Path]]' = None, experiment: 'bool' = False, copy: 'Optional[bool]' = None) -> None
 
    Modify and run APSIM Next Generation (APSIM NG) simulation models.
 
@@ -299,7 +298,7 @@ CoreModel
     It is designed to be base class for all apsimNGpy models.
 
     Parameters:
-
+    -------------
         ``model`` (os.PathLike): The file path to the APSIM NG model. This parameter specifies the model file to be used in the simulation.
 
         ``out_path`` (str, optional): The path where the output file should be saved. If not provided, the output will be saved with the same name as the model file in the current dir_path.
@@ -308,7 +307,9 @@ CoreModel
 
         ``experiment`` (bool, optional): Specifies whether to initiate your model as an experiment defaults to false
           by default, the experiment is created with permutation but permutation can be passed as a kewy word argument to change
+
     Keyword parameters:
+    -------------------
       **``copy`` (bool, deprecated)**: Specifies whether to clone the simulation file. This parameter is deprecated because the simulation file is now automatically cloned by default.
 
     .. tip::
@@ -321,7 +322,7 @@ CoreModel
        Instead, default simulations can now be retrieved directly via the CoreModel attribute or the ApsimModel class by specifying the name of the crop (e.g., "Maize").
        This means the relevant classes can now accept either a file path or a string representing the crop name.
 
-.. function:: apsimNGpy.core.core.CoreModel.add_crop_replacements(self, _crop: str)
+.. function:: apsimNGpy.core.core.CoreModel.add_crop_replacements(self, _crop: 'str')
 
    Adds a replacement folder as a child of the simulations.
 
@@ -336,7 +337,7 @@ CoreModel
         ``Raises:``
             - *ValueError*: If the specified crop is not found.
 
-.. function:: apsimNGpy.core.core.CoreModel.add_db_table(self, variable_spec: list = None, set_event_names: list = None, rename: str = None, simulation_name: Union[str, list, tuple] = <UserOptionMissing>)
+.. function:: apsimNGpy.core.core.CoreModel.add_db_table(self, variable_spec: 'list' = None, set_event_names: 'list' = None, rename: 'str' = None, simulation_name: 'Union[str, list, tuple]' = <UserOptionMissing>)
 
    Adds a new database table, which ``APSIM`` calls ``Report`` (Models.Report) to the ``Simulation`` under a Simulation Zone.
 
@@ -374,7 +375,7 @@ CoreModel
         @param factor_name: name to identify the factor in question
         @return:
 
-.. function:: apsimNGpy.core.core.CoreModel.add_factor(self, specification: str, factor_name: str = None, **kwargs)
+.. function:: apsimNGpy.core.core.CoreModel.add_factor(self, specification: 'str', factor_name: 'str' = None, **kwargs)
 
    Adds a factor to the created experiment. Thus, this method only works on factorial experiments
 
@@ -450,7 +451,7 @@ CoreModel
                 rename='soybean_replaced',
                 source='Soybean')  # basically adding another simulation from soybean to the maize simulation
 
-.. function:: apsimNGpy.core.core.CoreModel.add_report_variable(self, variable_spec: Union[list, str, tuple], report_name: str = None, set_event_names: Union[str, list] = None)
+.. function:: apsimNGpy.core.core.CoreModel.add_report_variable(self, variable_spec: 'Union[list, str, tuple]', report_name: 'str' = None, set_event_names: 'Union[str, list]' = None)
 
    This adds a report variable to the end of other _variables, if you want to change the whole report use change_report
 
@@ -489,7 +490,7 @@ CoreModel
                   '[Clock].Today as Date']}
         The new report variable is appended at the end of the existing ones
 
-.. function:: apsimNGpy.core.core.CoreModel.change_report(self, *, command: str, report_name='Report', simulations=None, set_DayAfterLastOutput=None, **kwargs)
+.. function:: apsimNGpy.core.core.CoreModel.change_report(self, *, command: 'str', report_name='Report', simulations=None, set_DayAfterLastOutput=None, **kwargs)
 
    Set APSIM report _variables for specified simulations.
 
@@ -510,7 +511,7 @@ CoreModel
         -------
         None
 
-.. function:: apsimNGpy.core.core.CoreModel.change_simulation_dates(self, start_date: str = None, end_date: str = None, simulations: Union[tuple, list] = None)
+.. function:: apsimNGpy.core.core.CoreModel.change_simulation_dates(self, start_date: 'str' = None, end_date: 'str' = None, simulations: 'Union[tuple, list]' = None)
 
    Set simulation dates.
 
@@ -583,10 +584,10 @@ CoreModel
         ``rename`` : str, optional
             The new name for the cloned model. If not provided, the clone will be renamed using
             the original name with a `_clone` suffix.
-        ``adoptive_parent_name`` : str, optional
+        ``adoptive_parent_name``: str, optional
             The name of the parent model where the cloned model should be moved. If not provided,
             the model will be placed under the default parent of the specified type.
-        ``in_place`` : bool, optional
+        ``in_place``: bool, optional
             If ``True``, the cloned model remains in the same location but is duplicated. Defaults to ``False``.
 
         Returns:
@@ -598,11 +599,11 @@ CoreModel
         -------
          Create a cloned version of `"clock1"` and place it under `"Simulation"` with the new name ``"new_clock`"`::
 
-            from apsimNGpy.core.base_data import load_default_simulations
-            model  = load_default_simulations('Maize')
+            from apsimNGpy.core.apsim import ApsimModel
+            model = ApsimModel('Maize')
             model.clone_model('Models.Clock', "clock1", 'Models.Simulation', rename="new_clock",adoptive_parent_type= 'Models.Core.Simulations', adoptive_parent_name="Simulation")
 
-.. function:: apsimNGpy.core.core.CoreModel.create_experiment(self, permutation: bool = True, base_name: str = None, **kwargs)
+.. function:: apsimNGpy.core.core.CoreModel.create_experiment(self, permutation: 'bool' = True, base_name: 'str' = None, **kwargs)
 
    Initialize an ``ExperimentManager`` instance, adding the necessary models and factors.
 
@@ -621,11 +622,11 @@ CoreModel
 
             ``base_name`` is optional but the experiment may not be created if there are more than one base simulations. Therefore, an error is likely.
 
-.. function:: apsimNGpy.core.core.CoreModel.detect_model_type(self, model_instance: Union[str, Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x00000237926B7290>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD)])
+.. function:: apsimNGpy.core.core.CoreModel.detect_model_type(self, model_instance: 'Union[str, Models]')
 
    Detects the model type from a given APSIM model instance or path string.
 
-.. function:: apsimNGpy.core.core.CoreModel.edit_cultivar(self, *, CultivarName: str, commands: str, values: Any, **kwargs)
+.. function:: apsimNGpy.core.core.CoreModel.edit_cultivar(self, *, CultivarName: 'str', commands: 'str', values: 'Any', **kwargs)
 
    @deprecated
         Edits the parameters of a given cultivar. we don't need a simulation name for this unless if you are defining it in the
@@ -645,7 +646,7 @@ CoreModel
 
         Returns: instance of the class CoreModel or ApsimModel
 
-.. function:: apsimNGpy.core.core.CoreModel.edit_model(self, model_type: str, model_name: str, simulations: Union[str, list] = 'all', cacheit=False, cache_size=300, verbose=False, **kwargs)
+.. function:: apsimNGpy.core.core.CoreModel.edit_model(self, model_type: 'str', model_name: 'str', simulations: 'Union[str, list]' = 'all', cacheit=False, cache_size=300, verbose=False, **kwargs)
 
    Modify various APSIM model components by specifying the model type and name across given simulations.
 
@@ -803,7 +804,161 @@ CoreModel
                 '[Maize].AboveGround.Wt as abw',
                 '[Maize].Grain.Total.Wt as grain_weight'])
 
-.. function:: apsimNGpy.core.core.CoreModel.extract_any_soil_physical(self, parameter, simulations: [<class 'list'>, <class 'tuple'>] = <UserOptionMissing>)
+.. function:: apsimNGpy.core.core.CoreModel.edit_model_by_path(self, path: 'str', **kwargs)
+
+   Edit a model component located by an APSIM path, dispatching to type-specific editors.
+
+        This function resolves a node under ``self.Simulations`` using an APSIM path, then
+        edits that node by delegating to the appropriate editor based on the node’s runtime
+        type. It supports common APSIM NG components (e.g., Weather, Manager, Cultivar, Clock,
+        Soil subcomponents, Report, SurfaceOrganicMatter). Unsupported types raise
+        :class:`NotImplementedError`.
+
+        Resolution strategy
+        -------------------
+        1. Try ``self.Simulations.FindByPath(path)``.
+        2. If unavailable (older APIs), fall back to :func:`get_node_by_path(self.Simulations, path)`.
+        3. Extract the concrete model instance from either ``.Value`` or, if absent, attempts
+           to unwrap via ``.Model`` and cast to known APSIM types with
+           :class:`CastHelper.CastAs[T]`. If casting fails, a :class:`ValueError` is raised.
+
+        Parameters
+        ----------
+        path : str
+            APSIM path to a target node under ``self.Simulations`` (e.g.,
+            ``'[Simulations].Ames.Maize.Weather'`` or similar canonical path).
+        **kwargs
+            Keyword arguments controlling the edit. The keys accepted depend on the
+            resolved component type (see **Type-specific editing** below). The following
+            special keys are intercepted and *not* forwarded:
+            - ``simulations`` / ``simulation`` : selector(s) used for cultivar edits
+              and other multi-simulation operations; forwarded where applicable.
+            - ``verbose`` : bool, optional; enables additional logging in some editors.
+
+        Type-specific editing
+        ---------------------
+        The function performs a structural match on the resolved model type and dispatches to
+        the corresponding private helper or inline routine:
+
+        - :class:`Models.Climate.Weather`
+          Calls ``self._set_weather_path(values, param_values=kwargs, verbose=verbose)``.
+          Typical parameters include things such as a new weather file path (implementation-specific).
+
+        - :class:`Models.Manager`
+          Validates that provided keys in ``kwargs`` match the manager script’s
+          ``Parameters[i].Key`` set. On mismatch, raises :class:`ValueError`.
+          On success, updates the corresponding parameter values by constructing
+          ``KeyValuePair[String, String]`` entries. No extra keys are permitted.
+
+        - :class:`Models.PMF.Cultivar`
+          Ensures cultivar replacements exist under ``Replacements`` (creates them if needed).
+          Then calls ``_edit_in_cultivar(self, model_name=values.Name, simulations=simulations, param_values=kwargs, verbose=verbose)``.
+          Expects cultivar-specific keys in ``kwargs`` (implementation-specific).
+
+        - :class:`Models.Clock`
+          Calls ``self._set_clock_vars(values, param_values=kwargs)``. Typical keys:
+          ``StartDate``, ``EndDate`` (exact names depend on your clock editor).
+
+        - Soil components
+          ``Models.Soils.Physical`` | ``Models.Soils.Chemical`` | ``Models.Soils.Organic`` |
+          ``Models.Soils.Water`` | ``Models.Soils.Solute``
+          Delegates to ``self.replace_soils_values_by_path(node_path=path, **kwargs)``.
+          Accepts property/value overrides appropriate to the soil table(s) addressed by ``path``.
+
+        - :class:`Models.Report`
+          Calls ``self._set_report_vars(values, param_values=kwargs, verbose=verbose)``.
+          Typical keys include columns/variables and event names (implementation-specific).
+
+        - :class:`Models.Surface.SurfaceOrganicMatter`
+          Requires at least one of:
+          ``'SurfOM', 'InitialCPR', 'InitialResidueMass', 'InitialCNR', 'IncorporatedP'``.
+          If none supplied, raises: class:`ValueError`.
+          Calls ``self._set_surface_organic_matter(values, param_values=kwargs, verbose=verbose)``.
+
+        Unsupported types
+        -----------------
+        If the resolved type does not match any of the above, a :class:`NotImplementedError`
+        is raised with the concrete type name.
+
+        Behavior of the method
+        ------------------------
+        - Any of ``'simulation'``, ``'simulations'``, and ``'verbose'`` present in ``kwargs``
+          are consumed by this function and not forwarded verbatim (except where explicitly used).
+        - For Manager edits, unknown parameter keys cause a hard failure (strict validation).
+        - For Cultivar edits, the function may mutate the model tree by creating necessary
+          crop replacements under ``Replacements`` if missing.
+
+        Returns
+        -------
+        Self
+            The same model/manager instance (to allow method chaining).
+
+        Raises
+        ------
+        ValueError
+            - If no node is found for ``path``.
+            - If a Manager parameter key is invalid for the target Manager.
+            - If a SurfaceOrganicMatter edit is requested with no supported keys.
+            - If a model is un castable or unsupported for this method.
+        AttributeError
+            If required APIs are missing on ``self.Simulations`` or resolved nodes.
+        NotImplementedError
+            If the resolved node type has no implemented editor.
+        Exception
+            Any error propagated by delegated helpers (e.g., file I/O, parsing).
+
+        Notes
+        -----
+        - **Path semantics: ** The exact path syntax should match what
+          ``FindByPath`` or the fallback ``get_node_by_path`` expects in your APSIM build.
+        - **Type casting: ** When ``.Value`` is absent, the function attempts to unwrap from
+          ``.Model`` and cast across a small set of known APSIM types using ``CastHelper``.
+        - **Non-idempotent operations: ** Some edits (e.g., cultivar replacements creation)
+          may modify the model structure, not only values.
+        - **Concurrency: ** Edits mutate in-memory state; synchronize if calling from
+          multiple threads/processes.
+
+        Examples
+        --------
+        Edit a Manager script parameter::
+
+            model.edit_model_by_path(
+                ".Simulations.Simulation.Field.Sow using a variable rule",
+                verbose=True,
+                Population =10)
+
+        Point a Weather component to a new ``.met`` file::
+
+            model.edit_model_by_path(
+                path='.Simulations.Simulation.Weather'
+                FileName="data/weather/Ames_2020.met"
+            )
+
+        Change Clock dates::
+
+            model.edit_model_by_path(
+               ".Simulations.Simulation.Clock",
+                StartDate="2020-01-01",
+                EndDate="2020-12-31"
+            )
+
+        Update soil water properties at a specific path::
+
+            model.edit_model_by_path(
+                ".Simulations.Simulation.Field.Soil.Physical",
+                LL15="[0.26, 0.18, 0.10, 0.12]",
+            )
+
+        Apply cultivar edits across selected simulations::
+
+            model.edit_model_by_path(
+                ".Simulations.Simulation.Field.Maize.CultivarFolder.mh18",
+                simulations=("Sim_A", "Sim_B"),
+                verbose=True,
+                Phenology.EmergencePhase.Photoperiod="Short",
+            )
+
+.. function:: apsimNGpy.core.core.CoreModel.extract_any_soil_physical(self, parameter, simulations: '[list, tuple]' = <UserOptionMissing>)
 
    Extracts soil physical parameters in the simulation
 
@@ -813,7 +968,7 @@ CoreModel
         ---------------------------------------------------------------------------
         returns an array of the parameter values
 
-.. function:: apsimNGpy.core.core.CoreModel.extract_soil_physical(self, simulations: [<class 'tuple'>, <class 'list'>] = None)
+.. function:: apsimNGpy.core.core.CoreModel.extract_soil_physical(self, simulations: '[tuple, list]' = None)
 
    Find physical soil
 
@@ -825,7 +980,7 @@ CoreModel
         -------
             APSIM Models.Soils.Physical object
 
-.. function:: apsimNGpy.core.core.CoreModel.extract_start_end_years(self, simulations: str = None)
+.. function:: apsimNGpy.core.core.CoreModel.extract_start_end_years(self, simulations: 'str' = None)
 
    Get simulation dates. deprecated
 
@@ -837,7 +992,7 @@ CoreModel
         ``Returns``
             Dictionary of simulation names with dates.
 
-.. function:: apsimNGpy.core.core.CoreModel.find_model(model_name: str)
+.. function:: apsimNGpy.core.core.CoreModel.find_model(model_name: 'str')
 
    Find a model from the Models namespace and return its path.
 
@@ -863,11 +1018,11 @@ CoreModel
    :param Crop: crop to get the replacement
         :return: System.Collections.Generic.IEnumerable APSIM plant object
 
-.. function:: apsimNGpy.core.core.CoreModel.get_model_paths(self, cultivar=False) -> list[str]
+.. function:: apsimNGpy.core.core.CoreModel.get_model_paths(self, cultivar=False) -> 'list[str]'
 
    Select out a few model types to use for building the APSIM file inspections
 
-.. function:: apsimNGpy.core.core.CoreModel.get_simulated_output(self, report_names: Union[str, list], axis=0, **kwargs) -> pandas.core.frame.DataFrame
+.. function:: apsimNGpy.core.core.CoreModel.get_simulated_output(self, report_names: 'Union[str, list]', axis=0, **kwargs) -> 'pd.DataFrame'
 
    Reads report data from CSV files generated by the simulation.
 
@@ -910,7 +1065,7 @@ CoreModel
          9     Simulation             1             1  ...       1689.966  7370.301  Field
          [10 rows x 16 columns]
 
-.. function:: apsimNGpy.core.core.CoreModel.get_weather_from_web(self, lonlat: tuple, start: int, end: int, simulations=<UserOptionMissing>, source='nasa', filename=None)
+.. function:: apsimNGpy.core.core.CoreModel.get_weather_from_web(self, lonlat: 'tuple', start: 'int', end: 'int', simulations=<UserOptionMissing>, source='nasa', filename=None)
 
    Replaces the weather (met) file in the model using weather data fetched from an online source.
 
@@ -957,13 +1112,13 @@ CoreModel
 
         console: (bool) print to the console
 
-.. function:: apsimNGpy.core.core.CoreModel.inspect_model(self, model_type: Union[str, Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x00000237926B7290>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD)], fullpath=True, **kwargs)
+.. function:: apsimNGpy.core.core.CoreModel.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, **kwargs)
 
    Inspect the model types and returns the model paths or names.
 
         When is it needed?
         --------------------
-         useful if you want to identify the paths or name of the model for further editing the model.
+         useful if you want to identify the paths or name of the model for further editing the model e.g., with the ``in edit_model`` method.
 
         Parameters
         --------------
@@ -989,7 +1144,7 @@ CoreModel
               - Models.Summary
             ``Models.Climate``:
               - Models.Climate.Weather
-           `` Models.Core``:
+            ``Models.Core``:
               - Models.Core.Folder
               - Models.Core.Simulation
               - Models.Core.Simulations
@@ -1121,7 +1276,7 @@ CoreModel
               (be mindful of the difference between *Simulations* (root) and an individual
               *Simulation*).
 
-.. function:: apsimNGpy.core.core.CoreModel.inspect_model_parameters(self, model_type: Union[Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x00000237926B7290>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), str], model_name: str, simulations: Union[str, list] = <UserOptionMissing>, parameters: Union[list, set, tuple, str] = 'all', **kwargs)
+.. function:: apsimNGpy.core.core.CoreModel.inspect_model_parameters(self, model_type: 'Union[Models, str]', model_name: 'str', simulations: 'Union[str, list]' = <UserOptionMissing>, parameters: 'Union[list, set, tuple, str]' = 'all', **kwargs)
 
    Inspect the input parameters of a specific ``APSIM`` model type instance within selected simulations.
 
@@ -1369,7 +1524,7 @@ CoreModel
             5 0.1
             6 0.1
 
-.. function:: apsimNGpy.core.core.CoreModel.inspect_model_parameters_by_path(self, path, *, parameters: Union[list, set, tuple, str] = None)
+.. function:: apsimNGpy.core.core.CoreModel.inspect_model_parameters_by_path(self, path, *, parameters: 'Union[list, set, tuple, str]' = None)
 
    Inspect and extract parameters from a model component specified by its path.
 
@@ -1393,7 +1548,7 @@ CoreModel
             1. Finds the model object using the given path.
             2. Extracts and returns the requested parameter(s).
 
-.. function:: apsimNGpy.core.core.CoreModel.move_model(self, model_type: Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x00000237926B7290>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), new_parent_type: Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x00000237926B7290>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), model_name: str = None, new_parent_name: str = None, verbose: bool = False, simulations: Union[str, list] = None)
+.. function:: apsimNGpy.core.core.CoreModel.move_model(self, model_type: 'Models', new_parent_type: 'Models', model_name: 'str' = None, new_parent_name: 'str' = None, verbose: 'bool' = False, simulations: 'Union[str, list]' = None)
 
    Args:
 
@@ -1440,7 +1595,7 @@ CoreModel
             --------
             >>> model.preview_simulation()
 
-.. function:: apsimNGpy.core.core.CoreModel.recompile_edited_model(self, out_path: os.PathLike)
+.. function:: apsimNGpy.core.core.CoreModel.recompile_edited_model(self, out_path: 'os.PathLike')
 
    Args:
         ______________
@@ -1453,7 +1608,7 @@ CoreModel
    for methods that will alter the simulation objects and need refreshing the second time we call
        @return: self for method chaining
 
-.. function:: apsimNGpy.core.core.CoreModel.remove_model(self, model_class: Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x00000237926B7290>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), model_name: str = None)
+.. function:: apsimNGpy.core.core.CoreModel.remove_model(self, model_class: 'Models', model_name: 'str' = None)
 
    Removes a model from the APSIM Models.Simulations namespace.
 
@@ -1478,7 +1633,7 @@ CoreModel
                model.remove_model(Models.Clock) #deletes the clock node
                model.remove_model(Models.Climate.Weather) #deletes the weather node
 
-.. function:: apsimNGpy.core.core.CoreModel.remove_report_variable(self, variable_spec: Union[list, tuple, str], report_name: str | None = None)
+.. function:: apsimNGpy.core.core.CoreModel.remove_report_variable(self, variable_spec: 'Union[list, tuple, str]', report_name: 'str | None' = None)
 
    Remove one or more variable expressions from an APSIM Report component.
 
@@ -1579,7 +1734,88 @@ CoreModel
                # The alternative is to use model.inspect_file to see your changes
                model.inspect_file()
 
-.. function:: apsimNGpy.core.core.CoreModel.replace_model_from(self, model, model_type: str, model_name: str = None, target_model_name: str = None, simulations: str = None)
+.. function:: apsimNGpy.core.core.CoreModel.replace_met_file(self, *, weather_file: 'Union[Path, str]', simulations=<UserOptionMissing>, **kwargs) -> "'Self'"
+
+   .. deprecated:: 0.**x**
+           This helper will be removed in a future release. Prefer newer weather
+           configuration utilities or set the ``FileName`` property on weather nodes
+           directly.
+
+        Replace the ``FileName`` of every :class:`Models.Climate.Weather` node under one
+        or more simulations so they point to a new ``.met`` file.
+
+        This method traverses the APSIM NG model tree under each selected simulation and
+        updates the weather component(s) in-place. Version-aware traversal is used:
+
+        * If ``APSIM_VERSION_NO > BASE_RELEASE_NO`` **or**
+          ``APSIM_VERSION_NO == GITHUB_RELEASE_NO``: use
+          :func:`ModelTools.find_all_in_scope` to find
+          :class:`Models.Climate.Weather` nodes.
+        * Otherwise: fall back to ``sim.FindAllDescendants[Models.Climate.Weather]()``.
+
+        Parameters
+        ----------
+        weather_file : Union[pathlib.Path, str]
+            Path to the ``.met`` file. May be absolute or relative to the current
+            working directory. The path must exist at call time; otherwise a
+            :class:`FileNotFoundError` is raised.
+        simulations : Any, optional
+            Simulation selector forwarded to :meth:`find_simulations`. If left as
+            ``MissingOption`` (default) (or if your implementation accepts ``None``),
+            all simulations yielded by :meth:`find_simulations` are updated.
+            Acceptable types depend on your :meth:`find_simulations` contract
+            (e.g., iterable of names, single name, or sentinel).
+        **kwargs
+            Ignored. Reserved for backward compatibility and future extensions.
+
+        Returns
+        -------
+        Self
+            The current model/manager instance to support method chaining.
+
+        Raises
+        ------
+        FileNotFoundError
+            If ``weather_file`` does not exist.
+        Exception
+            Any exception raised by :meth:`find_simulations` or underlying APSIM
+            traversal utilities is propagated unchanged.
+
+        Side Effects
+        ------------
+        Mutates the model by setting ``met.FileName = os.path.realpath(weather_file)``
+        for each matched :class:`Models.Climate.Weather` node.
+
+        Notes
+        -----
+        - **No-op safety:** If a simulation has no Weather nodes, that simulation
+          is silently skipped.
+        - **Path normalization:** The stored path is the canonical real path
+          (``os.path.realpath``).
+        - **Thread/process safety:** This operation mutates in-memory model state
+          and is not inherently thread-safe. Coordinate external synchronization if
+          calling concurrently.
+
+        Examples
+        --------
+        Update all simulations to use a local ``Ames.met``::
+
+            model.replace_met_file(weather_file="data/weather/Ames.met")
+
+        Update only selected simulations::
+
+            model.replace_met_file(
+                weather_file=Path("~/wx/Boone.met").expanduser(),
+                simulations=("Sim_A", "Sim_B")
+            )
+
+        See Also
+        --------
+        find_simulations : Resolve and yield simulation objects by name/selector.
+        ModelTools.find_all_in_scope : Scope-aware traversal utility.
+        Models.Climate.Weather : APSIM NG weather component.
+
+.. function:: apsimNGpy.core.core.CoreModel.replace_model_from(self, model, model_type: 'str', model_name: 'str' = None, target_model_name: 'str' = None, simulations: 'str' = None)
 
    @deprecated and will be removed
         function has not been maintained for a long time, use it at your own risk
@@ -1607,7 +1843,7 @@ CoreModel
         ``Raises:``
             ``ValueError``: If ``model_class`` is "Simulations" which is not allowed for replacement.
 
-.. function:: apsimNGpy.core.core.CoreModel.replace_soil_property_values(self, *, parameter: str, param_values: list, soil_child: str, simulations: list = <UserOptionMissing>, indices: list = None, crop=None, **kwargs)
+.. function:: apsimNGpy.core.core.CoreModel.replace_soil_property_values(self, *, parameter: 'str', param_values: 'list', soil_child: 'str', simulations: 'list' = <UserOptionMissing>, indices: 'list' = None, crop=None, **kwargs)
 
    Replaces values in any soil property array. The soil property array.
 
@@ -1624,7 +1860,7 @@ CoreModel
 
         ``crop`` (str, optional): string for soil water replacement. Default is None
 
-.. function:: apsimNGpy.core.core.CoreModel.replace_soils_values_by_path(self, node_path: str, indices: list = None, **kwargs)
+.. function:: apsimNGpy.core.core.CoreModel.replace_soils_values_by_path(self, node_path: 'str', indices: 'list' = None, **kwargs)
 
    set the new values of the specified soil object by path. only layers parameters are supported.
 
@@ -1656,7 +1892,7 @@ CoreModel
               sv= model.get_soil_values_by_path('.Simulations.Simulation.Field.Soil.Organic', 'Carbon')
               output # {'Carbon': [1.3, 0.96, 0.6, 0.3, 0.18, 0.12, 0.12]}
 
-.. function:: apsimNGpy.core.core.CoreModel.replicate_file(self, k: int, path: os.PathLike = None, suffix: str = 'replica')
+.. function:: apsimNGpy.core.core.CoreModel.replicate_file(self, k: 'int', path: 'os.PathLike' = None, suffix: 'str' = 'replica')
 
    Replicates a file ``k`` times.
 
@@ -1691,7 +1927,7 @@ CoreModel
 
         :return: self
 
-.. function:: apsimNGpy.core.core.CoreModel.run(self, report_name: Union[tuple, list, str] = None, simulations: Union[tuple, list] = None, clean_up: bool = True, verbose: bool = False, **kwargs) -> 'CoreModel'
+.. function:: apsimNGpy.core.core.CoreModel.run(self, report_name: 'Union[tuple, list, str]' = None, simulations: 'Union[tuple, list]' = None, clean_up: 'bool' = True, verbose: 'bool' = False, **kwargs) -> "'CoreModel'"
 
    Run ``APSIM`` model simulations.
 
@@ -1706,13 +1942,13 @@ CoreModel
         ``simulations`` : Union[tuple, list], optional
             List of simulation names to run. If None, runs all simulations.
 
-        ``clean_up`` : bool, optional
+        ``clean_up``: bool, optional
             If True, removes the existing database before running.
 
-        ``verbose`` : bool, optional
+        ``verbose``: bool, optional
             If True, enables verbose output for debugging. The method continues with debugging info anyway if the run was unsuccessful
 
-        ``kwargs`` : dict
+        ``kwargs``: dict
             Additional keyword arguments, e.g., to_csv=True
 
         Returns
@@ -1731,29 +1967,79 @@ CoreModel
               model = ApsimModel(model= 'Maize')# replace with your path to the apsim template model
               model.run(report_name = "Report")
 
-.. function:: apsimNGpy.core.core.CoreModel.save(self, file_name=None)
+.. function:: apsimNGpy.core.core.CoreModel.save(self, file_name: 'Union[str, Path, None]' = None)
 
-   Save the simulation models to file
+   Saves the current APSIM NG model (``Simulations``) to disk and refresh runtime state.
 
-        ``file_name``: The name of the file to save the defaults to none, taking the exising filename
+        This method writes the model to a file, using a version-aware strategy:
 
-        Returns: model object
+        * If ``APSIM_VERSION_NO > BASE_RELEASE_NO`` **or**
+          ``APSIM_VERSION_NO == GITHUB_RELEASE_NO``: call
+          ``self.Simulations.Write(path)``.
+        * Otherwise: obtain the underlying node via
+          ``getattr(self.Simulations, 'Node', self.Simulations)`` and call
+          :func:`save_model_to_file`.
 
-.. function:: apsimNGpy.core.core.CoreModel.save_edited_file(self, out_path: os.PathLike = None, reload: bool = False) -> Optional[ForwardRef('CoreModel')]
+        After writing, the model is recompiled via :func:`recompile(self)` and the
+        in-memory instance is refreshed using :meth:`restart_model`, ensuring the
+        object graph reflects the just-saved state.
 
-   Saves the model to the local drive.
-            @deprecated: use save() method instead
+        Parameters
+        ----------
+        file_name : str or pathlib.Path, optional
+            Output path for the saved model file. If omitted (``None``), the method
+            uses the instance's existing ``self.path``. The resolved path is also
+            written back to ``self.path`` for consistency.
 
-            Notes: - If `out_path` is None, the `save_model_to_file` function extracts the filename from the
-            `Model.Core.Simulation` object. - `out_path`, however, is given high priority. Therefore,
-            we first evaluate if it is not None before extracting from the file. - This is crucial if you want to
-            give the file a new name different from the original one while saving.
+        Returns
+        -------
+        Self
+            The same model/manager instance to support method chaining.
 
-            Parameters
-            - out_path (str): Desired path for the .apsimx file, by default, None.
-            - reload (bool): Whether to load the file using the `out_path` or the model's original file name.
+        Raises
+        ------
+        OSError
+            If the file cannot be written due to I/O errors, permissions, or invalid path.
+        AttributeError
+            If required attributes (e.g., ``self.Simulations``) or methods are missing.
+        Exception
+            Any exception propagated by :func:`save_model_to_file`, :func:`recompile`,
+            or :meth:`restart_model`.
 
-.. function:: apsimNGpy.core.core.CoreModel.set_categorical_factor(self, factor_path: str, categories: Union[list, tuple], factor_name: str = None)
+        Side Effects
+        ------------
+        - Sets ``self.path`` to the resolved output path (string).
+        - Writes the model file to disk (overwrites if it exists).
+        - Recompiles the model and restarts the in-memory instance.
+
+        Notes
+        -----
+        - **Version-aware save:** Uses either ``Simulations.Write`` or the legacy
+          ``save_model_to_file`` depending on version constants.
+        - **Path normalization:** The path is stringified via ``str(file_name)`` /
+          ``str(self.path)`` without additional validation. If you require parent
+          directory creation or suffix checks (e.g., ``.apsimx``), perform them before
+          calling ``save``.
+        - **Reload semantics: ** Post-save recompilation and restart ensure any code
+          generation or cached reflection is refreshed to match the serialized model.
+
+        Examples
+        --------
+        Save to the current file path tracked by the instance::
+
+            model.save()
+
+        Save to a new path and continue working with the refreshed instance::
+
+            model.save("outputs/Scenario_A.apsimx").run()
+
+        See Also
+        --------
+        recompile : Rebuild internal/compiled artifacts for the model.
+        restart_model : Reload/refresh the model instance after recompilation.
+        save_model_to_file : Legacy writer for older APSIM NG versions.
+
+.. function:: apsimNGpy.core.core.CoreModel.set_categorical_factor(self, factor_path: 'str', categories: 'Union[list, tuple]', factor_name: 'str' = None)
 
    wraps around ``add_factor()`` to add a continuous factor, just for clarity.
 
@@ -1800,11 +2086,13 @@ CoreModel
             apsim.create_experiment(permutation=False)
             apsim.set_continuous_factor(factor_path = "[Fertilise at sowing].Script.Amount", lower_bound=100, upper_bound=300, interval=10)
 
-.. function:: apsimNGpy.core.core.CoreModel.show_met_file_in_simulation(self, simulations: list = None)
+.. function:: apsimNGpy.core.core.CoreModel.show_met_file_in_simulation(self, simulations: 'list' = None)
 
    Show weather file for all simulations
 
-.. function:: apsimNGpy.core.core.CoreModel.summarize_numeric(self, data_table: Union[str, tuple, list] = None, columns: list = None, percentiles=(0.25, 0.5, 0.75), round=2) -> pandas.core.frame.DataFrame
+        @deprecated: use inspect_model_parameters() instead
+
+.. function:: apsimNGpy.core.core.CoreModel.summarize_numeric(self, data_table: 'Union[str, tuple, list]' = None, columns: 'list' = None, percentiles=(0.25, 0.5, 0.75), round=2) -> 'pd.DataFrame'
 
    Summarize numeric columns in a simulated pandas DataFrame. Useful when you want to quickly look at the simulated data
 
@@ -1819,7 +2107,7 @@ CoreModel
 
             pd.DataFrame: A summary DataFrame with statistics for each numeric column.
 
-.. function:: apsimNGpy.core.core.CoreModel.update_cultivar(self, *, parameters: dict, simulations: Union[list, tuple] = None, clear=False, **kwargs)
+.. function:: apsimNGpy.core.core.CoreModel.update_cultivar(self, *, parameters: 'dict', simulations: 'Union[list, tuple]' = None, clear=False, **kwargs)
 
    Update cultivar parameters
 
@@ -1833,7 +2121,7 @@ CoreModel
        ``clear`` (bool, optional)
             If `True` remove all existing parameters, by default `False`.
 
-.. function:: apsimNGpy.core.core.CoreModel.update_mgt(self, *, management: Union[dict, tuple], simulations: [<class 'list'>, <class 'tuple'>] = <UserOptionMissing>, out: [<class 'pathlib.Path'>, <class 'str'>] = None, reload: bool = True, **kwargs)
+.. function:: apsimNGpy.core.core.CoreModel.update_mgt(self, *, management: 'Union[dict, tuple]', simulations: '[list, tuple]' = <UserOptionMissing>, out: '[Path, str]' = None, reload: 'bool' = True, **kwargs)
 
    Update management settings in the model. This method handles one management parameter at a time.
 
@@ -1861,7 +2149,7 @@ CoreModel
             This method does not perform ``validation`` on the provided ``management`` dictionary beyond checking for key
             existence. - If the specified management script or parameters do not exist, they will be ignored.
 
-.. function:: apsimNGpy.core.core.CoreModel.update_mgt_by_path(self, *, path: str, fmt='.', **kwargs)
+.. function:: apsimNGpy.core.core.CoreModel.update_mgt_by_path(self, *, path: 'str', fmt='.', **kwargs)
 
    Args:
         _________________
@@ -2393,9 +2681,8 @@ apsimNGpy.core.base_data
     This implies that you can still run the model and modify parameters as needed.
     Example:
         >>> from apsimNGpy.core.apsim import ApsimModel
-        >>> from apsimNGpy.core.base_data import load_default_simulations
-        >>> path_model = load_default_simulations(crop='Maize', simulations_object=False)
-        >>> model = ApsimModel(path_model, set_wd=Path.home())# replace with your path
+        >>> from pathlib import Path
+        >>> model = ApsimModel('Maize', out_path=Path.home()/'apsim_model_example.apsimx')
         >>> model.run(report_name='Report') # report is the default, please replace it as needed
 
    .. method::apsimNGpy.core.apsim.ApsimModel.adjust_dul(self, simulations: Union[tuple, list] = None)
@@ -2453,7 +2740,7 @@ apsimNGpy.core.base_data
             If ``True``, create and attach missing section nodes before editing.
 
         additional_plants : sequence[str] | None, optional
-            Optional plant names for which to create/populate ``SoilCrop`` entries (e.g., to set KL/XF).
+             Plant names for which to create/populate ``SoilCrop`` entries (e.g., to set KL/XF).
 
         adjust_dul : bool, optional
             If ``True``, adjust layer values where ``SAT`` exceeds ``DUL`` to prevent APSIM runtime errors.

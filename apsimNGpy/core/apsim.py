@@ -48,9 +48,8 @@ class ApsimModel(CoreModel):
     This implies that you can still run the model and modify parameters as needed.
     Example:
         >>> from apsimNGpy.core.apsim import ApsimModel
-        >>> from apsimNGpy.core.base_data import load_default_simulations
-        >>> path_model = load_default_simulations(crop='Maize', simulations_object=False)
-        >>> model = ApsimModel(path_model, set_wd=Path.home())# replace with your path
+        >>> from pathlib import Path
+        >>> model = ApsimModel('Maize', out_path=Path.home()/'apsim_model_example.apsimx')
         >>> model.run(report_name='Report') # report is the default, please replace it as needed
     """
 
@@ -119,7 +118,7 @@ class ApsimModel(CoreModel):
             If ``True``, create and attach missing section nodes before editing.
 
         additional_plants : sequence[str] | None, optional
-            Optional plant names for which to create/populate ``SoilCrop`` entries (e.g., to set KL/XF).
+             Plant names for which to create/populate ``SoilCrop`` entries (e.g., to set KL/XF).
 
         adjust_dul : bool, optional
             If ``True``, adjust layer values where ``SAT`` exceeds ``DUL`` to prevent APSIM runtime errors.

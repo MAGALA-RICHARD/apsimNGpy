@@ -259,7 +259,7 @@ def _normalize_result(
     )
 
 
-def collect_returned_results(
+def write_results_to_sql(
         db_path: Union[str, Path],
         table: str = "Report",
         *,
@@ -335,7 +335,7 @@ def collect_returned_results(
       is driver-dependent.
     - **Schema drift:** `to_sql` infers SQL schema from the DataFrame's dtypes each call.
       Ensure stable dtypes or manage schema explicitly in your `insert_fn`.
-    - **Timezones: ** Pandas may localize/naivify datetime on write; verify round-trips
+    - **Timezones: ** Pandas may localize/naivify datetime on writing; verify round-trips
       if timezone fidelity matters.
     - **Performance: ** Creating a new engine/connection per insert is simple but not optimal.
       For high-volume pipelines, supply an `insert_fn` that reuses a connection and commits

@@ -30,14 +30,8 @@ class CollectReturnedResultsTests(unittest.TestCase):
 
         self.collector = InsertCollector()
 
-        def make_decorator(default_table="Report"):
-            return collect_returned_results(
-                db_path=self.db_base,
-                table=default_table,
-                insert_fn=self.collector,   # inject stub, no real DB
-                ensure_parent=True,
-            )
-        self.make_decorator = make_decorator
+
+        self.make_decorator = collect_returned_results
 
     def test_worker_df(self):
         @self.make_decorator(default_table="Report")

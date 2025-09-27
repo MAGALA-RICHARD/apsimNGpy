@@ -4,7 +4,7 @@ apsimNGpy: API Reference
 ApsimModel 
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. function:: apsimNGpy.core.apsim.ApsimModel(model: Union[os.PathLike, dict, str], out_path: Union[str, pathlib.Path] = None, out: Union[str, pathlib.Path] = None, lonlat: tuple = None, soil_series: str = 'domtcp', thickness: int = 20, bottomdepth: int = 200, thickness_values: list = None, run_all_soils: bool = False, set_wd=None, **kwargs)
+.. function:: apsimNGpy.core.apsim.ApsimModel(model: Union[os.PathLike, dict, str], out_path: Union[str, pathlib.Path] = None, set_wd=None, **kwargs)
 
    Main class for apsimNGpy modules.
     It inherits from the CoreModel class and therefore has access to a repertoire of methods from it.
@@ -15,98 +15,108 @@ ApsimModel
         >>> from apsimNGpy.core.base_data import load_default_simulations
         >>> path_model = load_default_simulations(crop='Maize', simulations_object=False)
         >>> model = ApsimModel(path_model, set_wd=Path.home())# replace with your path
-        >>> model.run(report_name='Report') # report is the default replace as needed
+        >>> model.run(report_name='Report') # report is the default, please replace it as needed
 
 .. function:: apsimNGpy.core.apsim.ApsimModel.adjust_dul(self, simulations: Union[tuple, list] = None)
 
    - This method checks whether the soil ``SAT`` is above or below ``DUL`` and decreases ``DUL``  values accordingly
+
         - Need to call this method everytime ``SAT`` is changed, or ``DUL`` is changed accordingly.
 
         ``simulations``: str, name of the simulation where we want to adjust DUL and SAT according.
 
         ``returns``:
-            model object
 
-.. function:: apsimNGpy.core.apsim.ApsimModel.get_soil_from_web(self, simulation_name: Union[str, tuple, NoneType] = None, *, lonlat: Optional[System.Tuple[Double,Double]] = None, soil_series: Optional[str] = None, thickness_sequence: Optional[Sequence[float]] = 'auto', thickness_value: int = None, max_depth: Optional[int] = 2400, n_layers: int = 10, thinnest_layer: int = 100, thickness_growth_rate: float = 1.5, edit_sections: Optional[Sequence[str]] = None, attach_missing_sections: bool = True, additional_plants: tuple = None, adjust_dul: bool = False)
+            model the object for method chaining
 
-   Pull SSURGO-derived soil for a given location
-        populate the APSIM simulation’s soil sections
+.. function:: apsimNGpy.core.apsim.ApsimModel.get_soil_from_web(self, simulation_name: Union[str, tuple, NoneType] = None, *, lonlat: Optional[System.Tuple[Double,Double]] = None, soil_series: Optional[str] = None, thickness_sequence: Optional[Sequence[float]] = 'auto', thickness_value: int = None, max_depth: Optional[int] = 2400, n_layers: int = 10, thinnest_layer: int = 100, thickness_growth_rate: float = 1.5, edit_sections: Optional[Sequence[str]] = None, attach_missing_sections: bool = True, additional_plants: tuple = None, adjust_dul: bool = True)
+
+   Download SSURGO-derived soil for a given location and populate the APSIM NG
+        soil sections in the current model.
+
+        This method updates the target Simulation(s) in-place by attaching a Soil node
+        (if missing) and writing section properties from the downloaded profile.
 
         Parameters
         ----------
-        ``simulation``: simulation names (str, tuple, optional): Target a simulation or simulations. if None all simulations will be updated with the downloaded soil profile
+        simulation : str | sequence[str] | None, default None
+            Target simulation name(s). If ``None``, all simulations are updated.
 
-        ``lonlat`` (lon, lat) tuple
-            Location for SSURGO download. Ignored if `soil_tables` is given.
+        lonlat : tuple[float, float] | None
+            Location for SSURGO download, as ``(lon, lat)`` in decimal degrees
+            (e.g., ``(-93.045, 42.012)``).
 
-        ``soil_series`` : str
-            Optional component/series filter for SSURGO selection. Be careful if not found an error is raised, safest is to leve it to None, and adormiant one is returned
+        soil_series : str | None, optional
+            Optional component/series filter. If ``None``, the dominant series
+            by area is used. If a non-existent series is supplied, an error is raised.
 
-        ``thickness_sequence`` : sequence[float]
-            Explicit thickness layout per layer. If auto, it will be auto-generated from n_layers, m=thickness_growth_rate, thinnest layer and max_depth
-            thickness_value if thickness_sequence is None this value must be provided to generate the thickness sequence and together with max_depth m ust be provided
+        thickness_sequence : sequence[float] | str | None, default "auto"
+            Explicit layer thicknesses (mm). If ``"auto"``, thicknesses are generated
+            from the layer controls (e.g., number of layers, growth rate, thinnest layer,
+            and ``max_depth``). If ``None``, you must provide ``thickness_value`` and
+            ``max_depth`` to construct a uniform sequence.
 
-       ``thickness_value`` (int, optional): The thickness for all the soil layers. if both thickness_sequence and thickness_value are provided, priority is given to thickness_sequence
+        thickness_value : int | None, optional
+            Uniform thickness (mm) for all layers. Ignored if ``thickness_sequence`` is
+            provided; used only when ``thickness_sequence`` is ``None``.
 
-        ``max_depth`` (int, optional): Maximum depth of the soil bottom layers. If not provided, it defaults 2400 mm:
+        max_depth : int, default 2400
+            Maximum soil depth (mm) to cover with the thickness sequence.
 
-        ``edit_sections`` : sequence[str]
-            Which sections to edit. Defaults to all:
-            ("physical", "organic", "chemical", "water", "water_balance", "solutes", "soil_crop", 'meta_info')
-            note that if a few sections are edited with different number of soil layers, APSIm will throw an error during run time
+        edit_sections : sequence[str], optional
+            Sections to edit. Default:
+            ``("physical", "organic", "chemical", "water", "water_balance", "solutes", "soil_crop", "meta_info")``.
+            Note: if sections are edited with differing layer counts, APSIM may error at run time.
 
-        ``attach_missing_sections`` : bool
-            If True, create/attach missing section nodes before editing.
+        attach_missing_sections : bool, default True
+            If ``True``, create and attach missing section nodes before editing.
 
-        ``additional_plants``: sequence[str]. if there were recently added crops, that need crop soil conditions such as KL
+        additional_plants : sequence[str] | None, optional
+            Optional plant names for which to create/populate ``SoilCrop`` entries (e.g., to set KL/XF).
 
-        ``adjust_dul``: sometimes the SAT value(s) is/are above the DUL threshold, so adjustment is needed, else,
-         APSIM with throw an errors, which will also cause apsimNGpy to respond with APsimRuntimeError during runtime
+        adjust_dul : bool, optional
+            If ``True``, adjust layer values where ``SAT`` exceeds ``DUL`` to prevent APSIM runtime errors.
 
         Returns
-        ----------
-        self for method chaining
+        -------
+        self
+            The same instance, to allow method chaining.
+
+        Raises
+        ------
+        ValueError
+            - ``thickness_sequence`` provided with any non-positive value(s).
+            - ``thickness_sequence`` is ``None`` **and** ``thickness_value`` is ``None``.
+            - Units mismatch or inconsistency between ``thickness_value`` and ``max_depth``.
 
         Notes
         -----
-        - Assumes soil sections live under a Soil node; missing sections are attached there when
-          `attach_missing_sections=True`.
-        - Uses your optimized SoilManager methods (vectorized + .NET double[] marshaling).
-
-        Raises
-
-        - ValueError
-        -------------------------
-         - when a thickness sequence is not auto and has zero  or less than zero values
-         - when a thickness sequence is none and thickness value is none
-         - if thickness value and max depth do not match in-terms of units
-
-        Side Effects
-        ------------
-        - Mutates the target APSIM simulation tree in place:
-          - Creates and attaches a **Soil** node if missing when ``attach_missing_sections=True``.
-          - Creates and/or updates child sections (``Physical``, ``Organic``, ``Chemical``,
-            ``Water``, ``WaterBalance``, ``SoilCrop``) as requested in ``edit_sections``.
-          - Overwrites section properties (e.g., layer arrays such as ``Depth``, ``CLL``, ``SAT``,
-            ``BD``, solute columns, crop KL/XF, etc.) with values derived from the downloaded profile.
-        - May add **SoilCrop** children for any names in ``additional_plants`` (and populate their
-          properties), potentially replacing previously set values.
-        - Performs **network I/O** to retrieve SSURGO tables when ``lonlat`` is provided (runtime and
-          results depend on internet availability and the external service).
-        - Emits **log messages** (warnings/info) via the package logger (e.g., when attaching nodes,
-          when both thickness controls are provided, or when sections/columns are absent).
-        - Caches the computed soil profile **within the helper manager instance** during execution,
-          but does not persist it globally; the APSIM model in memory remains modified after return.
-        - Does **not** write any files or save the APSIM document; call the model’s save method separately
-          if persistence to disk is desired.
+        - Assumes soil sections live under a **Soil** node; when
+          ``attach_missing_sections=True`` a Soil node is created if missing.
+        - Uses the optimized SoilManager routines (vectorized assignments / .NET double[] marshaling).
+        - Side effects (in place on the APSIM model):
+            1. Creates/attaches **Soil** when needed.
+            2. Creates/updates child sections (``Physical``, ``Organic``, ``Chemical``,
+               ``Water``, ``WaterBalance``, ``SoilCrop``) as listed in ``edit_sections``.
+            3. Overwrites section properties (e.g., layer arrays such as ``Depth``, ``BD``,
+               ``LL15``, ``DUL``, ``SAT``; solutes; crop KL/XF) with downloaded values.
+            4. Add **SoilCrop** children for any names in ``additional_plants``.
+            5. Performs **network I/O** to retrieve SSURGO tables when ``lonlat`` is provided.
+            6. Emits log messages (warnings/info) when attaching nodes, resolving thickness controls,
+               or skipping missing columns.
+            7. Caches the computed soil profile in the helper during execution; the in-memory APSIM
+               tree remains modified after return.
+            8. Does **not** write files; call ``save()`` on the model if you want to persist changes.
+            9. The existing soil-profile structure is completed override by the newly generated soil profile.
+               So, variables like soil thickness, number of soil layers, etc. might be different from the old one.
 
 .. function:: apsimNGpy.core.apsim.ApsimModel.read_apsimx_data(self, table=None)
 
-   Read APSIM NG datastore for the current model. Raises FileNotFoundError if the model was initialized from 
+   Read APSIM NG datastore for the current model. Raises FileNotFoundError if the model was initialized from
         default models because those need to be executed first to generate a database.
 
-        The rationale for this method is that you can just access the results from the previous session without running it,
-        if the database is in the same location as the apsimx file.
+        The rationale for this method is that you can just access the results from the previous session without
+        running it, if the database is in the same location as the apsimx file.
 
         Since apsimNGpy clones the apsimx file, the original file is kept with attribute name `_model`, that is what is
         being used to access the dataset
@@ -115,9 +125,14 @@ ApsimModel
 
          Returns: pandas.DataFrame
 
+         Raises
+         ------------
+          KeyError: if table is not found in the database
+
 .. function:: apsimNGpy.core.apsim.ApsimModel.replace_downloaded_soils(self, soil_tables: Union[dict, list], simulation_names: Union[tuple, list], **kwargs)
 
-   Updates soil parameters and configurations for downloaded soil data in simulation models.
+   @deprecated and will be removed in the future versions
+            Updates soil parameters and configurations for downloaded soil data in simulation models.
 
             This method adjusts soil physical and organic parameters based on provided soil tables and applies these
             adjustments to specified simulation models.
@@ -452,11 +467,27 @@ CoreModel
             returns instance of apsimNGpy.core.core.apsim.ApsimModel or apsimNGpy.core.core.apsim.CoreModel
            raises an erros if a report is not found
 
-        Example::
+        Examples:
 
-            from apsimNGpy import core
-            model = core.base_data.load_default_simulations('Maize')
-            model.add_report_variable(variable_spec = '[Clock].Today as Date', report_name = 'Report')
+            >>> from apsimNGpy.core.apsim import ApsimModel
+            >>> model = ApsimModel('Maize')
+            >>> model.add_report_variable(variable_spec = '[Clock].Today as Date', report_name = 'Report')
+            # isnepct the report
+            >>> model.inspect_model_parameters(model_type='Models.Report', model_name='Report')
+            {'EventNames': ['[Maize].Harvesting'],
+                 'VariableNames': ['[Clock].Today',
+                  '[Maize].Phenology.CurrentStageName',
+                  '[Maize].AboveGround.Wt',
+                  '[Maize].AboveGround.N',
+                  '[Maize].Grain.Total.Wt*10 as Yield',
+                  '[Maize].Grain.Wt',
+                  '[Maize].Grain.Size',
+                  '[Maize].Grain.NumberFunction',
+                  '[Maize].Grain.Total.Wt',
+                  '[Maize].Grain.N',
+                  '[Maize].Total.Wt',
+                  '[Clock].Today as Date']}
+        The new report variable is appended at the end of the existing ones
 
 .. function:: apsimNGpy.core.core.CoreModel.change_report(self, *, command: str, report_name='Report', simulations=None, set_DayAfterLastOutput=None, **kwargs)
 
@@ -483,10 +514,10 @@ CoreModel
 
    Set simulation dates.
 
-        @deprecated
+        @deprecated and will be removed in future versions use: :func:`edit_method` isntead
 
         Parameters
-        -----------------------------------
+        -----------------------
 
         ``start_date``: (str) optional
             Start date as string, by default ``None``.
@@ -495,17 +526,19 @@ CoreModel
             End date as string, by default ``None``.
 
         ``simulations`` (str), optional
-            List of simulation names to update, if ``None`` update all simulations.
-        Note
-        ________
-        one of the ``start_date`` or ``end_date`` parameters should at least not be None
+            List of simulation names to update if ``None`` update all simulations.
+
+        .. note::
+
+             one of the ``start_date`` or ``end_date`` parameters should at least not be None
 
         raises assertion error if all dates are None
 
-        ``return``: ``none``
+        ``return``: ``None``
 
-        Example:
-        ---------
+        Examples::
+
+
             >>> from apsimNGpy.core.base_data import load_default_simulations
             >>> model = load_default_simulations(crop='maize')
             >>> model.change_simulation_dates(start_date='2021-01-01', end_date='2021-01-12')
@@ -518,28 +551,6 @@ CoreModel
 
                 It is possible to target a specific simulation by specifying simulation name for this case the name is Simulations, so, it could appear as follows
                  model.change_simulation_dates(start_date='2021-01-01', end_date='2021-01-12', simulation = 'Simulation')
-
-.. function:: apsimNGpy.core.core.CoreModel.change_som(self, *, simulations: Union[tuple, list] = None, inrm: int = None, icnr: int = None, surface_om_name='SurfaceOrganicMatter', **kwargs)
-
-   @deprecated in v0.38 +
-
-         Change ``Surface Organic Matter`` (``SOM``) properties in specified simulations.
-
-    Parameters:
-        ``simulations`` (str ort list): List of simulation names to target (default: None).
-
-        ``inrm`` (int): New value for Initial Residue Mass (default: 1250).
-
-        ``icnr``` (int): New value for Initial Carbon to Nitrogen Ratio (default: 27).
-
-        ``surface_om_name`` (str, optional): name of the surface organic matter child defaults to ='SurfaceOrganicMatter'
-
-    Returns:
-        self: The current instance of the class.
-
-.. function:: apsimNGpy.core.core.CoreModel.check_som(self, simulations=None)
-
-   @deprecated in versions 0.38+
 
 .. function:: apsimNGpy.core.core.CoreModel.clean_up(self, db=True, verbose=False, coerce=True, csv=True)
 
@@ -610,7 +621,7 @@ CoreModel
 
             ``base_name`` is optional but the experiment may not be created if there are more than one base simulations. Therefore, an error is likely.
 
-.. function:: apsimNGpy.core.core.CoreModel.detect_model_type(self, model_instance: Union[str, Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x000001C44731B470>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD)])
+.. function:: apsimNGpy.core.core.CoreModel.detect_model_type(self, model_instance: Union[str, Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x000002AC4AEFB5F0>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD)])
 
    Detects the model type from a given APSIM model instance or path string.
 
@@ -792,16 +803,6 @@ CoreModel
                 '[Maize].AboveGround.Wt as abw',
                 '[Maize].Grain.Total.Wt as grain_weight'])
 
-.. function:: apsimNGpy.core.core.CoreModel.examine_management_info(self, simulations: Union[list, tuple] = None)
-
-   @deprecated in versions 0.38+
-        This will show the current management scripts in the simulation root
-
-        Parameters
-        ----------
-        ``simulations``, optional
-            List or tuple of simulation names to update, if `None` show all simulations.
-
 .. function:: apsimNGpy.core.core.CoreModel.extract_any_soil_physical(self, parameter, simulations: [<class 'list'>, <class 'tuple'>] = <UserOptionMissing>)
 
    Extracts soil physical parameters in the simulation
@@ -911,34 +912,41 @@ CoreModel
 
 .. function:: apsimNGpy.core.core.CoreModel.get_weather_from_web(self, lonlat: tuple, start: int, end: int, simulations=<UserOptionMissing>, source='nasa', filename=None)
 
-   Replaces the meteorological (met) file in the model using weather data fetched from an online source.
+   Replaces the weather (met) file in the model using weather data fetched from an online source.
 
-            ``lonlat``: ``tuple`` containing the longitude and latitude coordinates.
+            ``lonlat``: ``tuple``
+                 A tuple containing the longitude and latitude coordinates.
 
-            ``start``: Start date for the weather data retrieval.
+            ``start``: int
+                  Start date for the weather data retrieval.
 
-            ``end``: End date for the weather data retrieval.
+            ``end``: int
+                  End date for the weather data retrieval.
 
-            ``simulations``: str, list of simulations to place the weather data, defaults to ``all`` as a string
+            ``simulations``: str | list[str] default is all or None list of simulations or a singular simulation
+                  name, where to place the weather data, defaults to None, implying ``all`` the available simulations
 
-            ``source``: Source of the weather data. Defaults to 'nasa'.
+            ``source``: str default is 'nasa'
+                 Source of the weather data.
 
-            ``filename``: Name of the file to save the retrieved data. If None, a default name is generated.
+            ``filename``: str default is generated using the base name of the apsimx file in use, and the start and
+                    end years Name of the file to save the retrieved data. If None, a default name is generated.
 
-            ``Returns:``
-             self. replace the weather data with the fetched data.
+            ``Returns: ``
+             model object with the corresponding file replaced with the fetched weather data.
 
-            Example::
+            ..code-block:: python
 
-              from apsimNgpy.core.apsim import ApsimModel
-              model = ApsimModel(model= "Maize")
-              model.get_weather_from_web(lonlat = (-93.885490, 42.060650), start = 1990, end  =2001)
+                  from apsimNgpy.core.apsim import ApsimModel
+                  model = ApsimModel(model= "Maize")
+                  model.get_weather_from_web(lonlat = (-93.885490, 42.060650), start = 1990, end  =2001)
 
-            Changing weather data with unmatching start and end dates in the simulation will lead to ``RuntimeErrors``. To avoid this first check the start and end date before proceedign as follows::
+            Changing weather data with non-matching start and end dates in the simulation will lead to ``RuntimeErrors``.
+            To avoid this, first check the start and end date before proceeding as follows::
 
-              dt = model.inspect_model_parameters(model_class='Clock', model_name='Clock', simulations='Simulation')
-              start, end = dt['Start'].year, dt['End'].year
-              # output: 1990, 2000
+                  dt = model.inspect_model_parameters(model_class='Clock', model_name='Clock', simulations='Simulation')
+                  start, end = dt['Start'].year, dt['End'].year
+                  # output: 1990, 2000
 
 .. function:: apsimNGpy.core.core.CoreModel.inspect_file(self, *, cultivar=False, console=True, **kwargs)
 
@@ -949,33 +957,43 @@ CoreModel
 
         console: (bool) print to the console
 
-.. function:: apsimNGpy.core.core.CoreModel.inspect_model(self, model_type: Union[str, Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x000001C44731B470>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD)], fullpath=True, **kwargs)
+.. function:: apsimNGpy.core.core.CoreModel.inspect_model(self, model_type: Union[str, Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x000002AC4AEFB5F0>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD)], fullpath=True, **kwargs)
 
-   Inspect the model types and returns the model paths or names. usefull if you want to identify the path to the
-        model for editing the model.
+   Inspect the model types and returns the model paths or names.
 
-        ``model_class``: (Models) e.g. ``Models.Clock`` or just ``'Clock'`` will return all fullpath or names
-            of models in the type Clock ``-Models.Manager`` returns information about the manager scripts in simulations. strings are allowed
-            to, in the case you may not need to import the global namespace, Models. e.g ``Models.Clock`` will still work well.
-            ``-Models.Core.Simulation`` returns information about the simulation -Models.Climate.Weather returns a list of
-            paths or names pertaining to weather models ``-Models.Core.IPlant``  returns a list of paths or names pertaining
-            to all crops models available in the simulation.
+        When is it needed?
+        --------------------
+         useful if you want to identify the paths or name of the model for further editing the model.
 
-        ``fullpath``: (bool) return the full path of the model
-        relative to the parent simulations node. please note the difference between simulations and simulation.
+        Parameters
+        --------------
 
-        Return: list[str]: list of all full paths or names of the model relative to the parent simulations node 
+        model_class : type | str
+            The APSIM model type to search for. You may pass either a class (e.g.,
+            Models.Clock, Models.Manager) or a string. Strings can be short names
+            (e.g., "Clock", "Manager") or fully qualified (e.g., "Models.Core.Simulation",
+            "Models.Climate.Weather", "Models.Core.IPlant").
 
+        fullpath : bool, optional (default: False)
+            If False, return the model *name* only.
+            If True, return the model’s *full path* relative to the Simulations root.
+
+        Returns
+        -------
+        list[str]
+            A list of model names or full paths, depending on `fullpath`.
 
         Examples::
 
-             from apsimNGpy.core import base_data
+             from apsimNGpy.core.apsim import ApsimModel
              from apsimNGpy.core.core import Models
+
+
         load default ``maize`` module::
 
-             model = base_data.load_default_simulations(crop ='maize')
+             model = ApsimModel('Maize')
 
-        Find the path to all the manager script in the simulation::
+        Find the path to all the manager scripts in the simulation::
 
              model.inspect_model(Models.Manager, fullpath=True)
              [.Simulations.Simulation.Field.Sow using a variable rule', '.Simulations.Simulation.Field.Fertilise at
@@ -991,11 +1009,11 @@ CoreModel
              model.inspect_model(Models.Core.IPlant) # gets the path to the crop model
              ['.Simulations.Simulation.Field.Maize']
 
-        Or use full string path as follows::
+        Or use the full string path as follows::
 
              model.inspect_model(Models.Core.IPlant, fullpath=False) # gets you the name of the crop Models
              ['Maize']
-        Get full path to the fertiliser model::
+        Get the full path to the fertilizer model::
 
              model.inspect_model(Models.Fertiliser, fullpath=True)
              ['.Simulations.Simulation.Field.Fertiliser']
@@ -1015,11 +1033,11 @@ CoreModel
              model.inspect_model('IPlant')
              ['.Simulations.Simulation.Field.Maize']
 
-        Inspect using full model namespace path::
+        Inspect using the full model namespace path::
 
              model.inspect_model('Models.Core.IPlant')
 
-        What about weather model?::
+        What about the weather model?::
 
              model.inspect_model('Weather') # inspects the weather module
              ['.Simulations.Simulation.Weather']
@@ -1030,22 +1048,34 @@ CoreModel
              model.inspect_model('Models.Climate.Weather')
              ['.Simulations.Simulation.Weather']
 
-        Try finding path to the cultivar model::
+        Try finding the path to the cultivar model::
 
              model.inspect_model('Cultivar', fullpath=False) # list all available cultivar names
-             ['Hycorn_53',  'Pioneer_33M54', 'Pioneer_38H20',  'Pioneer_34K77',  'Pioneer_39V43',  'Atrium', 'Laila', 'GH_5019WX']
+             ['Hycorn_53', 'Pioneer_33M54', 'Pioneer_38H20','Pioneer_34K77', 'Pioneer_39V43','Atrium', 'Laila', 'GH_5019WX']
 
         # we can get only the names of the cultivar models using the full string path::
 
              model.inspect_model('Models.PMF.Cultivar', fullpath = False)
-             ['Hycorn_53',  'Pioneer_33M54', 'Pioneer_38H20',  'Pioneer_34K77',  'Pioneer_39V43',  'Atrium', 'Laila', 'GH_5019WX']
+             ['Hycorn_53','Pioneer_33M54', 'Pioneer_38H20','Pioneer_34K77', 'Pioneer_39V43','Atrium', 'Laila', 'GH_5019WX']
 
         .. tip::
 
-            Models can be inspected either by importing the Models namespace or by using string paths. The most reliable approach is to provide the full model path—either as a string or as a Models object.
-            However, remembering full paths can be tedious, so allowing partial model names or references can significantly save time during development and exploration.
+            Models can be inspected either by importing the Models namespace or by using string paths. The most reliable
+             approach is to provide the full model path—either as a string or as the ``Models`` object.
 
-.. function:: apsimNGpy.core.core.CoreModel.inspect_model_parameters(self, model_type: Union[Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x000001C44731B470>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), str], model_name: str, simulations: Union[str, list] = <UserOptionMissing>, parameters: Union[list, set, tuple, str] = 'all', **kwargs)
+            However, remembering full paths can be tedious, so allowing partial model names or references can significantly
+             save time during development and exploration.
+
+
+        .. note::
+
+            - You do not need to import `Models` if you pass a string; both short and
+              fully qualified names are supported.
+            - “Full path” is the APSIM tree path **relative to the Simulations node**
+              (be mindful of the difference between *Simulations* (root) and an individual
+              *Simulation*).
+
+.. function:: apsimNGpy.core.core.CoreModel.inspect_model_parameters(self, model_type: Union[Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x000002AC4AEFB5F0>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), str], model_name: str, simulations: Union[str, list] = <UserOptionMissing>, parameters: Union[list, set, tuple, str] = 'all', **kwargs)
 
    Inspect the input parameters of a specific ``APSIM`` model type instance within selected simulations.
 
@@ -1054,26 +1084,26 @@ CoreModel
 
         Parameters
         ----------
-        ``model_class`` : str
+        ``model_class``: str
             The name of the model class to inspect (e.g., 'Clock', 'Manager', 'Physical', 'Chemical', 'Water', 'Solute').
             Shorthand names are accepted (e.g., 'Clock', 'Weather') as well as fully qualified names (e.g., 'Models.Clock', 'Models.Climate.Weather').
 
-        ``simulations`` : Union[str, list]
+        ``simulations``: Union[str, list]
             A single simulation name or a list of simulation names within the APSIM context to inspect.
 
-        ``model_name`` : str
+        ``model_name``: str
             The name of the specific model instance within each simulation. For example, if `model_class='Solute'`,
             `model_name` might be 'NH4', 'Urea', or another solute name.
 
-        ``parameters`` : Union[str, set, list, tuple], optional
+        ``parameters``: Union[str, set, list, tuple], optional
             A specific parameter or a collection of parameters to inspect. Defaults to `'all'`, in which case all accessible attributes are returned.
             For layered models like Solute, valid parameters include `Depth`, `InitialValues`, `SoluteBD`, `Thickness`, etc.
 
-        ``kwargs`` : dict
+        ``kwargs``: dict
             Reserved for future compatibility; currently unused.
 
         ``Returns``
-        -------
+        ----------
             Union[dict, list, pd.DataFrame, Any]
             The format depends on the model type:
             ``Weather``: file path(s) as string(s)
@@ -1104,7 +1134,12 @@ CoreModel
 
         Examples::
 
+           from apsimNGpy.core.core import CoreModel
            model_instance = CoreModel('Maize')
+
+           or:
+           from apsimNGpy.core.apsim import ApsimModel
+           model_instance = ApsimModel('Maize')
 
         Inspect full soil ``Organic`` profile::
 
@@ -1312,7 +1347,7 @@ CoreModel
             1. Finds the model object using the given path.
             2. Extracts and returns the requested parameter(s).
 
-.. function:: apsimNGpy.core.core.CoreModel.move_model(self, model_type: Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x000001C44731B470>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), new_parent_type: Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x000001C44731B470>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), model_name: str = None, new_parent_name: str = None, verbose: bool = False, simulations: Union[str, list] = None)
+.. function:: apsimNGpy.core.core.CoreModel.move_model(self, model_type: Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x000002AC4AEFB5F0>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), new_parent_type: Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x000002AC4AEFB5F0>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), model_name: str = None, new_parent_name: str = None, verbose: bool = False, simulations: Union[str, list] = None)
 
    Args:
 
@@ -1330,9 +1365,34 @@ CoreModel
 
 .. function:: apsimNGpy.core.core.CoreModel.preview_simulation(self)
 
-   Preview the simulation file in the apsimNGpy object in the APSIM graphical user interface.
+   Open the current simulation in the APSIM Next Gen GUI.
 
-        ``return``: opens the simulation file
+            This first saves the in-memory simulation to ``self.path`` and then launches
+            the APSIM NG GUI (via: func:`get_apsim_bin_path`) so you can inspect the model
+            tree and make quick edits side-by-side.
+
+            Returns
+            -------
+            None
+                This function is for its side effect (opening the GUI); it does not return a value.
+
+            Raises
+            ------
+            FileNotFoundError
+                If the file does not exist after ``save()``.
+            RuntimeError
+                If the APSIM NG executable cannot be located or the GUI fails to start.
+
+            Notes
+            -----
+            **Important:** The file opened in the GUI is a *saved copy* of this Python object.
+            Changes made in the GUI are **not** propagated back to this instance. To continue
+            in Python with GUI edits, save in APSIM and re-load the file (e.g.,
+            ``ApsimModel('gui_edited_file_path)').
+
+            Examples
+            --------
+            >>> model.preview_simulation()
 
 .. function:: apsimNGpy.core.core.CoreModel.recompile_edited_model(self, out_path: os.PathLike)
 
@@ -1347,7 +1407,7 @@ CoreModel
    for methods that will alter the simulation objects and need refreshing the second time we call
        @return: self for method chaining
 
-.. function:: apsimNGpy.core.core.CoreModel.remove_model(self, model_class: Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x000001C44731B470>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), model_name: str = None)
+.. function:: apsimNGpy.core.core.CoreModel.remove_model(self, model_class: Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x000002AC4AEFB5F0>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), model_name: str = None)
 
    Removes a model from the APSIM Models.Simulations namespace.
 
@@ -1371,6 +1431,51 @@ CoreModel
                model = core.base_data.load_default_simulations(crop = 'Maize')
                model.remove_model(Models.Clock) #deletes the clock node
                model.remove_model(Models.Climate.Weather) #deletes the weather node
+
+.. function:: apsimNGpy.core.core.CoreModel.remove_report_variable(self, variable_spec: Union[list, tuple, str], report_name: str | None = None)
+
+   Remove one or more variable expressions from an APSIM Report component.
+
+        Parameters
+        ----------
+        variable_spec : str | list[str] | tuple[str, ...]
+            Variable expression(s) to remove, e.g. ``"[Clock].Today"`` or
+            ``"[Clock].Today as Date"``. You may pass a single string or a list/tuple.
+            Matching is done by exact text **after whitespace normalization**
+            (consecutive spaces collapsed), so minor spacing differences are tolerated.
+        report_name : str, optional
+            Name of the Report component to modify. If ``None``, the default
+            resolver (``self._get_report``) is used to locate the target report.
+
+        Returns
+        -------
+        list[str]
+            The updated list of variable expressions remaining in the report
+            (in original order, without duplicates).
+
+        Notes
+        -----
+        - Variables not present are ignored (no error raised).
+        - Order is preserved; duplicates are removed.
+        - The model is saved at the end of this call.
+
+        Examples
+        --------
+        >>> model= CoreModel('Maize')
+        >>> model.add_report_variable(variable_spec='[Clock].Today as Date', report_name='Report')
+        >>> model.remove_report_variable(variable_spec='[Clock].Today as Date', report_name='Report')
+        >>> model.inspect_model_parameters('Models.Report', 'Report')['VariableNames']
+        ['[Clock].Today',
+         '[Maize].Phenology.CurrentStageName',
+         '[Maize].AboveGround.Wt',
+         '[Maize].AboveGround.N',
+         '[Maize].Grain.Total.Wt*10 as Yield',
+         '[Maize].Grain.Wt',
+         '[Maize].Grain.Size',
+         '[Maize].Grain.NumberFunction',
+         '[Maize].Grain.Total.Wt',
+         '[Maize].Grain.N',
+         '[Maize].Total.Wt']
 
 .. function:: apsimNGpy.core.core.CoreModel.rename_model(self, model_type, *, old_name, new_name)
 
@@ -1417,8 +1522,11 @@ CoreModel
 
 .. function:: apsimNGpy.core.core.CoreModel.replace_model_from(self, model, model_type: str, model_name: str = None, target_model_name: str = None, simulations: str = None)
 
-   Replace a model e.g., a soil model with another soil model from another APSIM model.
-        The method assumes that the model to replace is already loaded in the current model and is is the same class as source model.
+   @deprecated and will be removed
+        function has not been maintained for a long time, use it at your own risk
+
+        Replace a model, e.g., a soil model with another soil model from another APSIM model.
+        The method assumes that the model to replace is already loaded in the current model and the same class as a source model.
         e.g., a soil node to soil node, clock node to clock node, et.c
 
         Args:
@@ -1672,16 +1780,16 @@ CoreModel
 
             Parameters
             ----------
-            ``management`` : dict or tuple
+            ``management``: dict or tuple
                 A dictionary or tuple of management parameters to update. The dictionary should have 'Name' as the key
                 for the management script's name and corresponding values to update. Lists are not allowed as they are mutable
                 and may cause issues with parallel processing. If a tuple is provided, it should be in the form (param_name, param_value).
 
-            ``simulations`` : list of str, optional
+            ``simulations``: list of str, optional
                 List of simulation names to update. If `None`, updates all simulations. This is not recommended for large
                 numbers of simulations as it may result in a high computational load.
 
-            ``out`` : str or pathlike, optional
+            ``out``: str or pathlike, optional
                 Path to save the edited model. If `None`, uses the default output path specified in `self.out_path` or
                 `self.model_info.path`. No need to call `save_edited_file` after updating, as this method handles saving.
 
@@ -2229,98 +2337,108 @@ apsimNGpy.core.base_data
         >>> from apsimNGpy.core.base_data import load_default_simulations
         >>> path_model = load_default_simulations(crop='Maize', simulations_object=False)
         >>> model = ApsimModel(path_model, set_wd=Path.home())# replace with your path
-        >>> model.run(report_name='Report') # report is the default replace as needed
+        >>> model.run(report_name='Report') # report is the default, please replace it as needed
 
    .. method::apsimNGpy.core.apsim.ApsimModel.adjust_dul(self, simulations: Union[tuple, list] = None)
 
       - This method checks whether the soil ``SAT`` is above or below ``DUL`` and decreases ``DUL``  values accordingly
+
         - Need to call this method everytime ``SAT`` is changed, or ``DUL`` is changed accordingly.
 
         ``simulations``: str, name of the simulation where we want to adjust DUL and SAT according.
 
         ``returns``:
-            model object
 
-   .. method::apsimNGpy.core.apsim.ApsimModel.get_soil_from_web(self, simulation_name: Union[str, tuple, NoneType] = None, *, lonlat: Optional[System.Tuple[Double,Double]] = None, soil_series: Optional[str] = None, thickness_sequence: Optional[Sequence[float]] = 'auto', thickness_value: int = None, max_depth: Optional[int] = 2400, n_layers: int = 10, thinnest_layer: int = 100, thickness_growth_rate: float = 1.5, edit_sections: Optional[Sequence[str]] = None, attach_missing_sections: bool = True, additional_plants: tuple = None, adjust_dul: bool = False)
+            model the object for method chaining
 
-      Pull SSURGO-derived soil for a given location
-        populate the APSIM simulation’s soil sections
+   .. method::apsimNGpy.core.apsim.ApsimModel.get_soil_from_web(self, simulation_name: Union[str, tuple, NoneType] = None, *, lonlat: Optional[System.Tuple[Double,Double]] = None, soil_series: Optional[str] = None, thickness_sequence: Optional[Sequence[float]] = 'auto', thickness_value: int = None, max_depth: Optional[int] = 2400, n_layers: int = 10, thinnest_layer: int = 100, thickness_growth_rate: float = 1.5, edit_sections: Optional[Sequence[str]] = None, attach_missing_sections: bool = True, additional_plants: tuple = None, adjust_dul: bool = True)
+
+      Download SSURGO-derived soil for a given location and populate the APSIM NG
+        soil sections in the current model.
+
+        This method updates the target Simulation(s) in-place by attaching a Soil node
+        (if missing) and writing section properties from the downloaded profile.
 
         Parameters
         ----------
-        ``simulation``: simulation names (str, tuple, optional): Target a simulation or simulations. if None all simulations will be updated with the downloaded soil profile
+        simulation : str | sequence[str] | None, default None
+            Target simulation name(s). If ``None``, all simulations are updated.
 
-        ``lonlat`` (lon, lat) tuple
-            Location for SSURGO download. Ignored if `soil_tables` is given.
+        lonlat : tuple[float, float] | None
+            Location for SSURGO download, as ``(lon, lat)`` in decimal degrees
+            (e.g., ``(-93.045, 42.012)``).
 
-        ``soil_series`` : str
-            Optional component/series filter for SSURGO selection. Be careful if not found an error is raised, safest is to leve it to None, and adormiant one is returned
+        soil_series : str | None, optional
+            Optional component/series filter. If ``None``, the dominant series
+            by area is used. If a non-existent series is supplied, an error is raised.
 
-        ``thickness_sequence`` : sequence[float]
-            Explicit thickness layout per layer. If auto, it will be auto-generated from n_layers, m=thickness_growth_rate, thinnest layer and max_depth
-            thickness_value if thickness_sequence is None this value must be provided to generate the thickness sequence and together with max_depth m ust be provided
+        thickness_sequence : sequence[float] | str | None, default "auto"
+            Explicit layer thicknesses (mm). If ``"auto"``, thicknesses are generated
+            from the layer controls (e.g., number of layers, growth rate, thinnest layer,
+            and ``max_depth``). If ``None``, you must provide ``thickness_value`` and
+            ``max_depth`` to construct a uniform sequence.
 
-       ``thickness_value`` (int, optional): The thickness for all the soil layers. if both thickness_sequence and thickness_value are provided, priority is given to thickness_sequence
+        thickness_value : int | None, optional
+            Uniform thickness (mm) for all layers. Ignored if ``thickness_sequence`` is
+            provided; used only when ``thickness_sequence`` is ``None``.
 
-        ``max_depth`` (int, optional): Maximum depth of the soil bottom layers. If not provided, it defaults 2400 mm:
+        max_depth : int, default 2400
+            Maximum soil depth (mm) to cover with the thickness sequence.
 
-        ``edit_sections`` : sequence[str]
-            Which sections to edit. Defaults to all:
-            ("physical", "organic", "chemical", "water", "water_balance", "solutes", "soil_crop", 'meta_info')
-            note that if a few sections are edited with different number of soil layers, APSIm will throw an error during run time
+        edit_sections : sequence[str], optional
+            Sections to edit. Default:
+            ``("physical", "organic", "chemical", "water", "water_balance", "solutes", "soil_crop", "meta_info")``.
+            Note: if sections are edited with differing layer counts, APSIM may error at run time.
 
-        ``attach_missing_sections`` : bool
-            If True, create/attach missing section nodes before editing.
+        attach_missing_sections : bool, default True
+            If ``True``, create and attach missing section nodes before editing.
 
-        ``additional_plants``: sequence[str]. if there were recently added crops, that need crop soil conditions such as KL
+        additional_plants : sequence[str] | None, optional
+            Optional plant names for which to create/populate ``SoilCrop`` entries (e.g., to set KL/XF).
 
-        ``adjust_dul``: sometimes the SAT value(s) is/are above the DUL threshold, so adjustment is needed, else,
-         APSIM with throw an errors, which will also cause apsimNGpy to respond with APsimRuntimeError during runtime
+        adjust_dul : bool, optional
+            If ``True``, adjust layer values where ``SAT`` exceeds ``DUL`` to prevent APSIM runtime errors.
 
         Returns
-        ----------
-        self for method chaining
+        -------
+        self
+            The same instance, to allow method chaining.
+
+        Raises
+        ------
+        ValueError
+            - ``thickness_sequence`` provided with any non-positive value(s).
+            - ``thickness_sequence`` is ``None`` **and** ``thickness_value`` is ``None``.
+            - Units mismatch or inconsistency between ``thickness_value`` and ``max_depth``.
 
         Notes
         -----
-        - Assumes soil sections live under a Soil node; missing sections are attached there when
-          `attach_missing_sections=True`.
-        - Uses your optimized SoilManager methods (vectorized + .NET double[] marshaling).
-
-        Raises
-
-        - ValueError
-        -------------------------
-         - when a thickness sequence is not auto and has zero  or less than zero values
-         - when a thickness sequence is none and thickness value is none
-         - if thickness value and max depth do not match in-terms of units
-
-        Side Effects
-        ------------
-        - Mutates the target APSIM simulation tree in place:
-          - Creates and attaches a **Soil** node if missing when ``attach_missing_sections=True``.
-          - Creates and/or updates child sections (``Physical``, ``Organic``, ``Chemical``,
-            ``Water``, ``WaterBalance``, ``SoilCrop``) as requested in ``edit_sections``.
-          - Overwrites section properties (e.g., layer arrays such as ``Depth``, ``CLL``, ``SAT``,
-            ``BD``, solute columns, crop KL/XF, etc.) with values derived from the downloaded profile.
-        - May add **SoilCrop** children for any names in ``additional_plants`` (and populate their
-          properties), potentially replacing previously set values.
-        - Performs **network I/O** to retrieve SSURGO tables when ``lonlat`` is provided (runtime and
-          results depend on internet availability and the external service).
-        - Emits **log messages** (warnings/info) via the package logger (e.g., when attaching nodes,
-          when both thickness controls are provided, or when sections/columns are absent).
-        - Caches the computed soil profile **within the helper manager instance** during execution,
-          but does not persist it globally; the APSIM model in memory remains modified after return.
-        - Does **not** write any files or save the APSIM document; call the model’s save method separately
-          if persistence to disk is desired.
+        - Assumes soil sections live under a **Soil** node; when
+          ``attach_missing_sections=True`` a Soil node is created if missing.
+        - Uses the optimized SoilManager routines (vectorized assignments / .NET double[] marshaling).
+        - Side effects (in place on the APSIM model):
+            1. Creates/attaches **Soil** when needed.
+            2. Creates/updates child sections (``Physical``, ``Organic``, ``Chemical``,
+               ``Water``, ``WaterBalance``, ``SoilCrop``) as listed in ``edit_sections``.
+            3. Overwrites section properties (e.g., layer arrays such as ``Depth``, ``BD``,
+               ``LL15``, ``DUL``, ``SAT``; solutes; crop KL/XF) with downloaded values.
+            4. Add **SoilCrop** children for any names in ``additional_plants``.
+            5. Performs **network I/O** to retrieve SSURGO tables when ``lonlat`` is provided.
+            6. Emits log messages (warnings/info) when attaching nodes, resolving thickness controls,
+               or skipping missing columns.
+            7. Caches the computed soil profile in the helper during execution; the in-memory APSIM
+               tree remains modified after return.
+            8. Does **not** write files; call ``save()`` on the model if you want to persist changes.
+            9. The existing soil-profile structure is completed override by the newly generated soil profile.
+               So, variables like soil thickness, number of soil layers, etc. might be different from the old one.
 
    .. method::apsimNGpy.core.apsim.ApsimModel.read_apsimx_data(self, table=None)
 
-      Read APSIM NG datastore for the current model. Raises FileNotFoundError if the model was initialized from 
+      Read APSIM NG datastore for the current model. Raises FileNotFoundError if the model was initialized from
         default models because those need to be executed first to generate a database.
 
-        The rationale for this method is that you can just access the results from the previous session without running it,
-        if the database is in the same location as the apsimx file.
+        The rationale for this method is that you can just access the results from the previous session without
+        running it, if the database is in the same location as the apsimx file.
 
         Since apsimNGpy clones the apsimx file, the original file is kept with attribute name `_model`, that is what is
         being used to access the dataset
@@ -2329,9 +2447,14 @@ apsimNGpy.core.base_data
 
          Returns: pandas.DataFrame
 
+         Raises
+         ------------
+          KeyError: if table is not found in the database
+
    .. method::apsimNGpy.core.apsim.ApsimModel.replace_downloaded_soils(self, soil_tables: Union[dict, list], simulation_names: Union[tuple, list], **kwargs)
 
-      Updates soil parameters and configurations for downloaded soil data in simulation models.
+      @deprecated and will be removed in the future versions
+            Updates soil parameters and configurations for downloaded soil data in simulation models.
 
             This method adjusts soil physical and organic parameters based on provided soil tables and applies these
             adjustments to specified simulation models.

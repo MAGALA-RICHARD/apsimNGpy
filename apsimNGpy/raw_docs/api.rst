@@ -621,7 +621,7 @@ CoreModel
 
             ``base_name`` is optional but the experiment may not be created if there are more than one base simulations. Therefore, an error is likely.
 
-.. function:: apsimNGpy.core.core.CoreModel.detect_model_type(self, model_instance: Union[str, Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x000001BB1940B5F0>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD)])
+.. function:: apsimNGpy.core.core.CoreModel.detect_model_type(self, model_instance: Union[str, Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x00000237926B7290>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD)])
 
    Detects the model type from a given APSIM model instance or path string.
 
@@ -957,7 +957,7 @@ CoreModel
 
         console: (bool) print to the console
 
-.. function:: apsimNGpy.core.core.CoreModel.inspect_model(self, model_type: Union[str, Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x000001BB1940B5F0>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD)], fullpath=True, **kwargs)
+.. function:: apsimNGpy.core.core.CoreModel.inspect_model(self, model_type: Union[str, Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x00000237926B7290>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD)], fullpath=True, **kwargs)
 
    Inspect the model types and returns the model paths or names.
 
@@ -972,7 +972,53 @@ CoreModel
             The APSIM model type to search for. You may pass either a class (e.g.,
             Models.Clock, Models.Manager) or a string. Strings can be short names
             (e.g., "Clock", "Manager") or fully qualified (e.g., "Models.Core.Simulation",
-            "Models.Climate.Weather", "Models.Core.IPlant").
+            "Models.Climate.Weather", "Models.Core.IPlant"). Please see from The list of classes
+            or model types from the **Models** Namespace below. Red represents the modules, and this method
+             will throw an error if only a module is supplied. The list constitutes the classes or
+             model types under each module
+
+            ``Models``:
+              - Models.Clock
+              - Models.Fertiliser
+              - Models.Irrigation
+              - Models.Manager
+              - Models.Memo
+              - Models.MicroClimate
+              - Models.Operations
+              - Models.Report
+              - Models.Summary
+            ``Models.Climate``:
+              - Models.Climate.Weather
+           `` Models.Core``:
+              - Models.Core.Folder
+              - Models.Core.Simulation
+              - Models.Core.Simulations
+              - Models.Core.Zone
+            ``Models.Factorial``:
+              - Models.Factorial.Experiment
+              - Models.Factorial.Factors
+              - Models.Factorial.Permutation
+            ``Models.PMF``:
+              - Models.PMF.Cultivar
+              - Models.PMF.Plant
+            ``Models.Soils``:
+              - Models.Soils.Arbitrator.SoilArbitrator
+              - Models.Soils.CERESSoilTemperature
+              - Models.Soils.Chemical
+              - Models.Soils.Nutrients.Nutrient
+              - Models.Soils.Organic
+              - Models.Soils.Physical
+              - Models.Soils.Sample
+              - Models.Soils.Soil
+              - Models.Soils.SoilCrop
+              - Models.Soils.Solute
+              - Models.Soils.Water
+            ``Models.Storage``:
+              - Models.Storage.DataStore
+            ``Models.Surface``:
+              - Models.Surface.SurfaceOrganicMatter
+            ``Models.WaterModel``:
+              - Models.WaterModel.WaterBalance
 
         fullpath : bool, optional (default: False)
             If False, return the model *name* only.
@@ -1075,7 +1121,7 @@ CoreModel
               (be mindful of the difference between *Simulations* (root) and an individual
               *Simulation*).
 
-.. function:: apsimNGpy.core.core.CoreModel.inspect_model_parameters(self, model_type: Union[Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x000001BB1940B5F0>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), str], model_name: str, simulations: Union[str, list] = <UserOptionMissing>, parameters: Union[list, set, tuple, str] = 'all', **kwargs)
+.. function:: apsimNGpy.core.core.CoreModel.inspect_model_parameters(self, model_type: Union[Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x00000237926B7290>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), str], model_name: str, simulations: Union[str, list] = <UserOptionMissing>, parameters: Union[list, set, tuple, str] = 'all', **kwargs)
 
    Inspect the input parameters of a specific ``APSIM`` model type instance within selected simulations.
 
@@ -1347,7 +1393,7 @@ CoreModel
             1. Finds the model object using the given path.
             2. Extracts and returns the requested parameter(s).
 
-.. function:: apsimNGpy.core.core.CoreModel.move_model(self, model_type: Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x000001BB1940B5F0>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), new_parent_type: Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x000001BB1940B5F0>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), model_name: str = None, new_parent_name: str = None, verbose: bool = False, simulations: Union[str, list] = None)
+.. function:: apsimNGpy.core.core.CoreModel.move_model(self, model_type: Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x00000237926B7290>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), new_parent_type: Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x00000237926B7290>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), model_name: str = None, new_parent_name: str = None, verbose: bool = False, simulations: Union[str, list] = None)
 
    Args:
 
@@ -1407,7 +1453,7 @@ CoreModel
    for methods that will alter the simulation objects and need refreshing the second time we call
        @return: self for method chaining
 
-.. function:: apsimNGpy.core.core.CoreModel.remove_model(self, model_class: Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x000001BB1940B5F0>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), model_name: str = None)
+.. function:: apsimNGpy.core.core.CoreModel.remove_model(self, model_class: Field(name='Models',type=<class 'object'>,default=<module 'Models'>,default_factory=<dataclasses._MISSING_TYPE object at 0x00000237926B7290>,init=False,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD), model_name: str = None)
 
    Removes a model from the APSIM Models.Simulations namespace.
 

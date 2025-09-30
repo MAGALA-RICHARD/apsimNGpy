@@ -327,6 +327,7 @@ class CoreModel(PlotManager):
             save_model_to_file(sm, out=_path)
         model_info = recompile(self)
         self.restart_model(model_info)
+        self.ran_ok =False
         return self
 
     @property
@@ -354,7 +355,11 @@ class CoreModel(PlotManager):
         _reports = self.report_names or self.inspect_model('Models.Report',
                                                            fullpath=False)  # false returns all names other than fullpath of the models in that type
         db_path = Path(self.path).with_suffix('.db')
-        return self._get_results(_reports, db_path)
+        if not self.ran_ok:
+            logger.info('attempting to access results without calling bound method: `run()`')
+            return
+        else:
+            return self._get_results(_reports, db_path)
 
     def _get_results(self, _reports, _db_path):
         from collections.abc import Iterable

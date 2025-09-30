@@ -10,6 +10,7 @@ import re
 import random
 import pathlib
 import string
+from collections.abc import Sequence
 from typing import Union
 import shutil
 import pandas as pd
@@ -26,7 +27,7 @@ from functools import lru_cache
 from apsimNGpy.core_utils.utils import open_apsimx_file_in_window
 # now we can safely import C# libraries
 from apsimNGpy.core.pythonet_config import *
-from apsimNGpy.core_utils.database_utils import dataview_to_dataframe, delete_all_tables
+from apsimNGpy.core_utils.database_utils import dataview_to_dataframe, delete_all_tables, read_db_table
 from apsimNGpy.core.config import get_apsim_bin_path
 from apsimNGpy.exceptions import ModelNotFoundError
 from apsimNGpy.core.model_tools import (get_or_check_model, old_method, _edit_in_cultivar,
@@ -348,47 +349,28 @@ class CoreModel(PlotManager):
     Returns:
         pd.DataFrame: A DataFrame containing the simulation output results.
     """
+
+        # _____________ Collect all available data tables _____________________
         _reports = self.report_names or self.inspect_model('Models.Report',
                                                            fullpath=False)  # false returns all names other than fullpath of the models in that type
-        if self.run_method == run_model_externally:
+        db_path = Path(self.path).with_suffix('.db')
+        return self._get_results(_reports, db_path)
 
-            # Collect all available data tables
-            if self.ran_ok:  # If run was not successfully, then the tables are not populated
-                data_tables = collect_csv_by_model_path(self.path)
-
-                # Normalize report_names to a list
-                if isinstance(_reports, str):
-                    reports = [_reports]
-                elif isinstance(_reports, (tuple, list)):
-                    reports = _reports
-                else:
-                    raise TypeError("report_names must be a string, tuple of strings or a list of strings.")
-
-                # Check for missing report names
-                missing = [r for r in reports if r not in data_tables]
-                if missing:
-                    if data_tables:
-                        raise ValueError(
-                            f"The following report names were not found: {missing}. "
-                            f"Available tables include: {list(data_tables.keys())}"
-                        )
-                    else:
-                        raise RuntimeError('some thing happened that is not right')
-
-                datas = [
-                    (dif := pd.read_csv(data_tables[i])).assign(source_table=i)
-                    for i in reports
-                ]
-                out_df = pd.concat(datas, axis=0, ignore_index=True)
-                return out_df
+    def _get_results(self, _reports, _db_path):
+        from collections.abc import Iterable
+        # Normalize report_names to a list
+        if isinstance(_reports, str):
+            reports = [_reports]
+        elif isinstance(_reports, Iterable):  # if iterable, back off
+            reports = _reports
+        else:
+            raise TypeError(f"report_names must be an iterable of strings, not {type(_reports)}.")
+        if _reports:
+            if self.ran_ok:
+                data = (read_db_table(_db_path, rep) for rep in reports)
+                return pd.concat(data, axis=0, ignore_index=True)
             else:
-                msg = "Attempting to get results before running the model"
-                logger.info(msg)
-                raise RuntimeError(msg)
-        if self.run_method == run_p:
-            dfs = [dataview_to_dataframe(self, rp) for rp in _reports]
-            out_df = pd.concat(dfs, axis=0, ignore_index=True)
-            return out_df
+                logger.info('attempting to access results without calling bound method: `run()`')
 
     def get_simulated_output(self, report_names: Union[str, list], axis=0, **kwargs) -> pd.DataFrame:
         """
@@ -434,40 +416,11 @@ class CoreModel(PlotManager):
          [10 rows x 16 columns]
 
         """
-        # Collect all available data tables
-        data_tables = collect_csv_by_model_path(self.path)
-        if axis not in {0, 1}:
-            raise ValueError("invalid axis. Only 0 (along rows) and 1 (along columns) are allowed")
-        # Normalize report_names to a list
-        if isinstance(report_names, str):
-            reports = [report_names]
-            # We don't need to alter the data frame when only one table is provided
-            axis = 0
-        elif isinstance(report_names, (tuple, set, list)):
-            reports = report_names
-        else:
-            raise TypeError("report_names must be a string or a list, tuple, set of strings.")
-
-        # Check for missing report names
-        missing = {r for r in reports if r not in data_tables}
-        if missing:
-            decide = 'Did you mean' if len(data_tables) == 1 else 'Did you mean any of the following'
-            raise ValueError(
-                f"The following report names were not found: {missing}. "
-                f"{decide}: '{', '.join(list(data_tables.keys()))}'?"
-            )
-
-        # Check if simulation ran successfully
-        if not self.ran_ok:
-            logging.error("Attempted to retrieve results before running the model.")
-            raise RuntimeError("Attempting to get results before running the model.")
-
-        # Load and concatenate requested report data
-        datas = (
-            (data_f := pd.read_csv(data_tables[i])).assign(source_table=i)
-            for i in reports
-        )
-        return pd.concat(datas, ignore_index=True, axis=axis)
+        from collections.abc import Iterable
+        db_path = Path(self.path).with_suffix('.db')
+        _reports = self.report_names or self.inspect_model('Models.Report',
+                                                           fullpath=False)
+        return self._get_results(_reports, db_path)
 
     def run(self, report_name: Union[tuple, list, str] = None,
             simulations: Union[tuple, list] = None,
@@ -495,7 +448,13 @@ class CoreModel(PlotManager):
             If True, enables verbose output for debugging. The method continues with debugging info anyway if the run was unsuccessful
 
         ``kwargs``: dict
-            Additional keyword arguments, e.g., to_csv=True
+            Additional keyword arguments, e.g., to_csv=True, use this flag to correct results from
+            a csv file directly stored at the location of the running apsimx file.
+
+        Warning:
+        --------------
+        In my experience with Models.exe, CSV outputs are not always overwritten; after edits, stale results can persist. Proceed with caution.
+
 
         Returns
         -------
@@ -534,7 +493,7 @@ class CoreModel(PlotManager):
             res = run_model_externally(
                 self.model_info.path,
                 verbose=verbose,
-                to_csv=kwargs.get('to_csv', True)
+                to_csv=kwargs.get('to_csv', False)
             )
 
             if res.returncode == 0:
@@ -605,6 +564,11 @@ class CoreModel(PlotManager):
         mtn.Name = f"{new_name}"
         self.save()
         return self
+
+    def add_memo(self, memo_text):
+        memo = Models.Memo()
+        memo.set_Text(memo_text.strip())
+        self.Simulations.Children.Add(memo)
 
     def clone_model(self, model_type, model_name, adoptive_parent_type, rename=None, adoptive_parent_name=None):
         """
@@ -2138,12 +2102,16 @@ class CoreModel(PlotManager):
           - CultivarName (str, required): Name of the cultivar (e.g., 'laila').
 
           - variable_spec (str, required): A strings representing the parameter paths to be edited.
-        Example:
+
+        Returns: instance of the class CoreModel or ApsimModel
+
+        Example::
+
             ('[Grain].MaximumGrainsPerCob.FixedValue', '[Phenology].GrainFilling.Target.FixedValue')
 
           - values: values for each command (e.g., (721, 760)).
 
-        Returns: instance of the class CoreModel or ApsimModel
+
 
         """
         old_method('edit_cultivar', 'edit_model')
@@ -3999,22 +3967,3 @@ if __name__ == '__main__':
     logger.info(f"{b - a}, 'seconds")
     model.add_db_table(variable_spec=['[Clock].Today', '[Soil].Nutrient.TotalC[1]/1000 as SOC1'], rename='reporterte')
     a = perf_counter()
-    # model.clean_up(db=True)
-    # clone test
-    # for i in range(100):
-    #     model.clone_model('Models.Core.Simulation', 'Simulation',
-    #                       'Models.Core.Simulations', rename=f"sim_{i}")
-    # # doctest.testmod()
-    from model_loader import get_node_by_path
-
-    # Node = model.model_info.Node
-    # Node.AddChild(Models.Factorial.ExperimentManager())
-    # proto = CastHelper.CastAs[Models.Core.Simulations](Node)
-    # fp1 = model.Simulations.FindInScope[Models.Factorial.ExperimentManager]()
-    # si = ModelTools.CLONER(model.simulations[0])
-    # Node.RemoveChild(model.simulations[0])
-    # model.save()
-    # fp = model.Simulations.FindInScope[Models.Factorial.ExperimentManager]().FullPath
-
-    # model.preview_simulation()
-    model.clean_up(verbose=True)

@@ -418,8 +418,7 @@ class CoreModel(PlotManager):
         """
         from collections.abc import Iterable
         db_path = Path(self.path).with_suffix('.db')
-        _reports = self.report_names or self.inspect_model('Models.Report',
-                                                           fullpath=False)
+        _reports = report_names
         return self._get_results(_reports, db_path)
 
     def run(self, report_name: Union[tuple, list, str] = None,

@@ -910,6 +910,7 @@ class CoreModel(PlotManager):
         if not isinstance(model_instance, str):
             model = model_instance
 
+
         else:
             # Otherwise, assume it's a path and try to retrieve the model
             path = model_instance
@@ -919,9 +920,11 @@ class CoreModel(PlotManager):
                 model = get_node_by_path(self.Simulations, path)
             if model is None:
                 raise ValueError(f"No model found associated with: {model_instance}")
-            model = model.Value
 
-        return type(model)
+        model = getattr(model, 'Model', model)
+        model_type = model.GetType()
+        model = CastHelper.CastAs[model_type](model)
+        return model_type
 
     def edit_model_by_path(self, path: str, **kwargs):
         """
@@ -2115,8 +2118,9 @@ class CoreModel(PlotManager):
         except AttributeError as ae:
             model_by_path = get_node_by_path(self.Simulations, path)
         _model_type = self.detect_model_type(path)
+        model_by_path = CastHelper.CastAs[_model_type](getattr(model_by_path, "Model", model_by_path))
 
-        mod_obj = model_by_path.Value
+        mod_obj = model_by_path
 
         return extract_value(mod_obj, parameters=parameters)
 
@@ -2727,9 +2731,6 @@ class CoreModel(PlotManager):
                 met.FileName = os.path.realpath(wf)
 
         return self
-
-
-
 
     def get_weather_from_web(self, lonlat: tuple, start: int, end: int, simulations=MissingOption, source='nasa',
                              filename=None):

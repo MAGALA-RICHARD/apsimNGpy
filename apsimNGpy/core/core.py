@@ -424,7 +424,10 @@ class CoreModel(PlotManager):
         from collections.abc import Iterable
         db_path = Path(self.path).with_suffix('.db')
         _reports = report_names
-        return self._get_results(_reports, db_path)
+        if self.ran_ok:
+            return self._get_results(_reports, db_path)
+        else:
+            logger.info('Model not ran sue other means to read data if that is the goal')
 
     def run(self, report_name: Union[tuple, list, str] = None,
             simulations: Union[tuple, list] = None,

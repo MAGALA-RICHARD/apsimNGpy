@@ -23,8 +23,8 @@ else:
 
 
 class ExperimentManager(ApsimModel):
-    def __init__(self, model, out_path=None, out=None):
-        super().__init__(model=model, out_path=out_path, out=out)
+    def __init__(self, model, out_path=None):
+        super().__init__(model=model, out_path=out_path)
         self.parent_factor = None
         self.experiment_node = None
         self.factorial_node = None

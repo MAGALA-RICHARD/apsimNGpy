@@ -1,17 +1,14 @@
-import dataclasses
 import os
-import platform
+import os
 import sys
-import sys as system
 from dataclasses import dataclass
 from functools import cache
+from pathlib import Path
 from typing import Union
 
 from apsimNGpy.core import config
-from apsimNGpy.core.load_clr import start_pythonnet, dotnet_version
-from pathlib import Path
+from apsimNGpy.core.load_clr import start_pythonnet
 from apsimNGpy.exceptions import ApsimBinPathConfigError
-from apsimNGpy.core_utils.utils import timer
 from apsimNGpy.settings import logger
 
 APSIM_BIN_PATH = config.get_apsim_bin_path() or config.any_bin_path_from_env()
@@ -102,7 +99,6 @@ CI = load_pythonnet()
 # now we can safely import C# libraries
 
 from System.Collections.Generic import *
-from Models.Core import Simulation
 
 import Models
 
@@ -171,7 +167,6 @@ if __name__ == '__main__':
     from System.Reflection import (
         AssemblyInformationalVersionAttribute,
         AssemblyFileVersionAttribute,
-        AssemblyCopyrightAttribute,
     )
 
     # --- 3) Point to APSIM NG bin and load Models.dll ---

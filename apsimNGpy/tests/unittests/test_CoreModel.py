@@ -429,6 +429,22 @@ class TestCoreModel(BaseTester):
         self.assertIsInstance(self.test_ap_sim.Simulations, Models.Core.Simulations,
                               msg=f'{self.test_ap_sim.Simulations} is expeced to be a Models.Core.Simulations object perhaps casting was not done')
 
+    def test_remove_variable_spec(self):
+        variable_spec = '[Clock].Today as Date'
+        vs= self.test_ap_sim.inspect_model_parameters('Models.Report', 'Report')['VariableNames']
+        vsIn = variable_spec in vs
+        self.assertFalse(vsIn, msg=f'Variable {variable_spec} already in report')
+        # safe to add it now
+        self.test_ap_sim.add_report_variable(variable_spec=variable_spec, report_name='Report')
+        vs = self.test_ap_sim.inspect_model_parameters('Models.Report', 'Report')['VariableNames']
+        vsIn = variable_spec in vs
+        self.assertTrue(vsIn, msg=f'Variable {variable_spec} successfully added')
+        # remove it
+        self.test_ap_sim.remove_report_variable(variable_spec='[Clock].Today as Date', report_name='Report')
+        vs = self.test_ap_sim.inspect_model_parameters('Models.Report', 'Report')['VariableNames']
+        vsIn = variable_spec in vs
+        self.assertFalse(vsIn, msg=f'Variable {variable_spec} was not successfully removed')
+
     def tearDown(self):
         self.test_ap_sim.clean_up(db=True)
         for path in self.paths:

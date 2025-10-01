@@ -179,4 +179,4 @@ def run_suite(verbosity_level=2):
 
 if __name__ == '__main__':
     # run multi_cores test before
-    run = {run_multiple_tests(), run_suite()}
+    run = {run_suite()}

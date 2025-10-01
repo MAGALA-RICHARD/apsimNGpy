@@ -396,7 +396,7 @@ def apsim_version(bin_path=get_apsim_bin_path(), release_number: bool = False, v
             text=True,
             check=True
         )
-        print(result.stdout)
+
         release = result.stdout.splitlines()[0].strip()
     except subprocess.CalledProcessError as e:
         raise RuntimeError(

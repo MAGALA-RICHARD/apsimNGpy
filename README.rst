@@ -100,7 +100,9 @@ multi-core processing made better and thread-safe, with real time tracking of fa
 to allow for re-runs based on number of user specified retries; currently defaults to one retry
 
 The **add_report_variables** from ApsimModel class has been fixed to avoid un mistaken duplicates
-the opposite method **remove_report_variable** has been added; it allows users to remove some variables from their reporting tables
+the opposite method **remove_report_variable** has been added; it allows users to remove some variables from their reporting tables.
+
+Split seemingly large simulations into chunks to avoid resource overload.
 
 
 Plot polish:

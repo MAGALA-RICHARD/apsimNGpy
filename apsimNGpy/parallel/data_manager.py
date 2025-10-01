@@ -1,7 +1,11 @@
 from __future__ import annotations
+
+import gc
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence, Tuple, Union, Literal, Callable, List
 from functools import wraps
+
+import numpy as np
 import pandas as pd
 
 InsertFn = Callable[[str, pd.DataFrame, str, str], None]  # (db_path, df, table, if_exists)
@@ -398,11 +402,91 @@ def write_results_to_sql(
                     continue
                 try:
                     insert_impl(dbp_str, df, tbl, if_exists)
+                    del df, tbl
+                    gc.collect()
                 except Exception as exc:
+
                     raise RuntimeError(f"Failed to insert into table '{tbl}' in '{dbp_str}'.") from exc
 
-            return result
+            # return result
 
         return wrapper
 
     return decorator
+
+
+from itertools import islice, repeat
+from typing import Iterable, Iterator, List, Optional, TypeVar
+
+T = TypeVar("T")
+
+
+def chunker(
+        data: Iterable[T],
+        *,
+        chunk_size: Optional[int] = None,
+        n_chunks: Optional[int] = None,
+        pad: bool = False,
+        fillvalue: Optional[T] = None) -> Iterator[List[T]]:
+    """
+    Yield chunks from `data`.
+
+    Choose exactly one of:
+      - `chunk_size`: yield consecutive chunks of length `chunk_size`
+        (last chunk may be shorter unless `pad=True`)
+      - `n_chunks`: split data into `n_chunks` nearly equal parts
+        (sizes differ by at most 1)
+
+    Args
+    ----
+    data : Iterable[T]
+        The input data (list, generator, etc.)
+    chunk_size : int, optional
+        Fixed size for each chunk (>=1).
+    n_chunks : int, optional
+        Number of chunks to create (>=1). Uses nearly equal sizes.
+    pad : bool, default False
+        If True and using `chunk_size`, pad the last chunk to length `chunk_size`.
+    fill value : T, optional
+        Value to use when padding.
+
+    Yields
+    ------
+    List[T]
+        Chunks of the input data.
+
+    Raises
+    ------
+    ValueError
+        If neither or both of `chunk_size` and `n_chunks` are provided,
+        or if provided values are invalid.
+    """
+    # exactly one of chunk_size / n_chunks
+    if (chunk_size is None) == (n_chunks is None):
+        raise ValueError("Provide exactly one of `chunk_size` or `n_chunks`.")
+
+    if n_chunks is not None:
+        if n_chunks <= 0:
+            raise ValueError("`n_chunks` must be >= 1.")
+        # Need length to distribute evenly
+        seq = list(data)
+        n = len(seq)
+        base, rem = divmod(n, n_chunks)
+        start = 0
+        for i in range(n_chunks):
+            size = base + (1 if i < rem else 0)
+            yield seq[start:start + size]
+            start += size
+        return
+
+    # chunk_size mode
+    if chunk_size <= 0:
+        raise ValueError("`chunk_size` must be >= 1.")
+    it = iter(data)
+    while True:
+        chunk = list(islice(it, chunk_size))
+        if not chunk:
+            break
+        if pad and len(chunk) < chunk_size:
+            chunk.extend(repeat(fillvalue, chunk_size - len(chunk)))
+        yield chunk

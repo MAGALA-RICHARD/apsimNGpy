@@ -84,30 +84,89 @@ APSIM Next Generation (NG) installation Tip:
 For APSIM installation, Please use the pinned release shown on documentation home page/or on this page to avoid forward-compatibility issues. That release features the latest APSIM NG version that has passed all unit tests against apsimNGpy’s programmatic API.
 
 
-v0.39.9.16
+v0.39.9.17
 ==============
-Fixes
-============
 
-    Improved detection and fallback logic in find apsim Binaries
-    More strict unittests
-    Ability to build from source
+Release notes
+==========================
+This build is stable for day-to-day work, although API improvement continues to take shape
+
+Highlights
+===================
+Whole-profile replacement remains possible but is limited to the U.S mainland only.
+the get_soil_from_web method from ApsimModel class is flagged as ready for this purpose.
+
+multi-core processing made better and thread-safe, with real time tracking of failed jobs,
+to allow for re-runs based on number of user specified retries; currently defaults to one retry
+
+The **add_report_variables** from ApsimModel class has been fixed to avoid un mistaken duplicates
+the opposite method **remove_report_variable** has been added; it allows users to remove some variables from their reporting tables
+
+
+Plot polish:
+=============
+Cleaner figure-level labeling utilities for multi-facet plots; fewer overlaps and nicer defaults.
+
+Optimization hooks:
+====================
+Smoother integration points for multi-objective runs (e.g., NSGA-II/III), with simpler objective setups.
+
+Stability & perf:
+==================
+More robust multicore execution, chunking and progress signaling; lighter memory footprint on large scenario batches.
+
+Docs & warnings:
+=====================
+Clear warnings for soil layer mismatches (Physical/Organic/Chemical) and guidance to use get_soil_from_web as a consistent starting point.
+
+Breaking changes / deprecations
+
+ -A few legacy utilities are marked Deprecated.
+  Final removal will be announced in the next tagged release. replace_downloaded soils from the ApsimModel will soon be deprecated
+
+- The plotting and visualisation API has slightly changed, it now requires supplying the database table or leaving it to None,
+   if the latter, is true the x and y columns are drawn from all tables in the simulation database, after concatenating the results.
+
+- The execution to csv file via the kwargs in ``ApsimModel.run`` is now set to False by default
+
+Upgrade
+============
+>>> pip install -U apsimNGpy
+
+Which version is safe to install?
+====================================
+Use the APSIM NG version pinned on the apsimNGpy homepage to avoid runtime mismatches.
+
+
+Call for feedback
+================================
+    Soil profile edits across mixed layer structures
+
+    Large multi-objective runs (performance & logging)
+
+    Open an issue with a minimal repro + platform details. Your notes now shape the final release.
+
+    logging model activities from apsim Models summary module
+
+    Managing multi-core runs and their associated simulated datasets
+
+Known issues (seeking cases)
+====================================
+Newer version of APSIM may not be compatible with the current versions. Please use the pinned versions or below it
+
+Some soil locations may not have all the required data for building APSIM soil profiles, be careful, as this may raise ApsimRunTimeError during model runs
+
 
 Compatibility
+=========================
+
+Python: 3.10–3.13 (tested).
+
+APSIM NG: use the version pinned on the apsimNGpy homepage to avoid API/runtime mismatches.
+
+Thanks
 ==============
-
-    Works with recent APSIM NG builds that modified file layout.
-    If you hit issues, please open an issue with your APSIM build number and a minimal .apsimx.
-
-Deprecated
-====================
-Config is deprecated
-
-
-Notes
-=============
-
-    No API changes; backward-compatible.
+Huge thanks to early testers for stress-testing soil edits and optimization paths. Your feedback now will harden the final release.
 
 
 Full documentation can be found here; https://magala-richard.github.io/apsimNGpy-documentations/index.html

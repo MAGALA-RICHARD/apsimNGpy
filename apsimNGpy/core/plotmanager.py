@@ -110,9 +110,9 @@ class PlotManager(ABC):
     def run(self, report_name: Union[str, list, tuple]):
         pass
 
-    def _clean_numeric_data(self, exclude_vars=('SimulationID', 'CheckpointID', 'CheckpointName')):
+    def _clean_numeric_data(self, df, exclude_vars=('SimulationID', 'CheckpointID', 'CheckpointName')):
         """Select numeric _variables and remove low-signal columns."""
-        df = self.results.select_dtypes(include="number").copy()
+        df = df.select_dtypes(include="number").copy()
 
         # Drop excluded _variables
         for var in exclude_vars:
@@ -128,7 +128,7 @@ class PlotManager(ABC):
         return df
 
     @inherit_docstring_from(pd.DataFrame)
-    def boxplot(self, column, *,
+    def boxplot(self, column, *,table=None,
                 by=None, figsize=(10, 8), grid=False, **kwargs):
 
         """
@@ -137,9 +137,9 @@ class PlotManager(ABC):
         """
         self._refresh()
 
-        if self.results is None:
+        if self.results is None and table is None:
             raise ForgotToRunError("Results not found.")
-        df = self.results
+        df = self.results if table is None else self.get_simulated_output(table)
 
         if column not in df.columns:
             raise ValueError(f"Column '{column}' not found in results.")
@@ -154,7 +154,7 @@ class PlotManager(ABC):
         return ax
 
     @inherit_docstring_from(sns.histplot)
-    def distribution(self, x, *, data=None, **kwargs):
+    def distribution(self, x, *, table=None, **kwargs):
         """Plot distribution for a numeric variable. It uses ``seaborn.histplot`` function. Please see their documentation below
         =========================================================================================================\n
         """
@@ -166,7 +166,8 @@ class PlotManager(ABC):
         if is_string_dtype(self.results[x]):
             raise ValueError(f"{x} contains strings")
 
-        df = data or self.results
+        df = self.results if table is None else self.get_simulated_output(table)
+        kwargs.pop('show', None)
         sns.histplot(data=df, x=x, kde=True, **kwargs)
 
     def label(self):
@@ -236,7 +237,7 @@ class PlotManager(ABC):
             plt.close()
 
     @inherit_docstring_from(sns.lineplot)
-    def series_plot(self, data=None, *, x: str = None, y: Union[str, list] = None, hue=None, size=None, style=None,
+    def series_plot(self, table=None, *, x: str = None, y: Union[str, list] = None, hue=None, size=None, style=None,
                     units=None, weights=None,
                     palette=None, hue_order=None, hue_norm=None, sizes=None, size_order=None, size_norm=None,
                     dashes=True, markers=None, style_order=None, estimator='mean', errorbar=('ci', 95), n_boot=1000,
@@ -263,7 +264,9 @@ class PlotManager(ABC):
         """
         self._refresh()
         added_plots['current_plot'] = 'series_plot'
-        if data is None:
+        if table:
+            data = self.get_simulated_output(table)
+        else:
             data = self.results
 
         df = data.copy()
@@ -297,7 +300,7 @@ class PlotManager(ABC):
     @inherit_docstring_from(sns.scatterplot)
     def scatter_plot(
             self,
-            data=None,
+            table=None,
             *,
             x=None,
             y=None,
@@ -321,8 +324,10 @@ class PlotManager(ABC):
         reference: https://seaborn.pydata.org/generated/seaborn.scatterplot.html. Check seaborn documentation below for more details \n
         ================================================================================================================================\n"""
         self._refresh()
-        if data is None:
+        if table is None:
             data = self.results
+        else:
+            data = self.get_simulated_output(table)
         sns.scatterplot(
             data=data,
             x=x,
@@ -345,7 +350,7 @@ class PlotManager(ABC):
 
     @inherit_docstring_from(sns.catplot)
     def cat_plot(self,
-                 data=None,
+                 table=None,
                  *,
                  x=None,
                  y=None,
@@ -386,7 +391,7 @@ class PlotManager(ABC):
         =========================================================================================================\n"""
         self._refresh()
         added_plots['cat_plot'] = 'cat_plot'
-        df = self.results if data is None else data
+        df = self.results if not table else self.get_simulated_output(table)
         return sns.catplot(
             data=df,
             x=x,
@@ -423,19 +428,20 @@ class PlotManager(ABC):
             **kwargs
         )
 
-    def relplot(self, data=None, **kwargs):
-        data = data or self.results
+    def relplot(self, table=None, **kwargs):
+        data = self.get_simulated_output(table) if table is not None else self.results
         g = sns.relplot(data=data, **kwargs)
         return g
 
-    def correlation_heatmap(self, columns: list = None, figsize=(10, 8), **kwargs):
+    def correlation_heatmap(self, columns: list = None, table=None, figsize=(10, 8), **kwargs):
         self._refresh()
         added_plots['correlation_heatmap'] = 'correlation_heatmap'
         """Plot correlation heatmap for numeric _variables."""
+        df =  self.get_simulated_output(table) if table is not None else self.results
         if columns:
-            df = self.results[columns]
+            df = df[columns]
         else:
-            df = self._clean_numeric_data()
+            df = self._clean_numeric_data(df)
             if df.empty:
                 raise EmptyDateFrameError("No valid numeric data for correlation heatmap.")
 
@@ -459,7 +465,7 @@ if __name__ == '__main__':
                               set_event_names=['[Clock].EndOfYear', '[Maize].Harvesting'])
     model.add_db_table(
         variable_spec=['[Soil].Nutrient.TotalC[1]/1000 as SOC1', '[Soil].Nutrient.TotalC[2]/1000 as SOC2',
-                       '[Clock].Today.Year as Year'])
+                       '[Clock].Today.Year as Year'], rename='my_table')
     # model.add_db_table(variable_spec=['[Soil].Nutrient.TotalC[2]/1000 as SOC2',])
     model.update_mgt(management=({"Name": 'Sow using a variable rule', 'Population': 8},))
     model.run(report_name='my_table')

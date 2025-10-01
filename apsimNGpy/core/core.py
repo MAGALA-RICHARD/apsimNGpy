@@ -327,6 +327,7 @@ class CoreModel(PlotManager):
             save_model_to_file(sm, out=_path)
         model_info = recompile(self)
         self.restart_model(model_info)
+        # there is a big risk of a loading results from already simualted database existing if saved with the same name, so we reset ran_ok to falso to avoid this problem
         self.ran_ok =False
         return self
 

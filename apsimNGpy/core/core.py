@@ -328,7 +328,7 @@ class CoreModel(PlotManager):
         model_info = recompile(self)
         self.restart_model(model_info)
         # there is a big risk of a loading results from already simualted database existing if saved with the same name, so we reset ran_ok to falso to avoid this problem
-        self.ran_ok =False
+        self.ran_ok = False
         return self
 
     @property
@@ -362,7 +362,7 @@ class CoreModel(PlotManager):
 
             logger.info(f"{self} not yet executed. Please call `run()`")
 
-    def _get_results(self, _reports, _db_path, axis =0):
+    def _get_results(self, _reports, _db_path, axis=0):
         from collections.abc import Iterable
         # Normalize report_names to a list
         if isinstance(_reports, str):
@@ -1130,8 +1130,9 @@ class CoreModel(PlotManager):
 
         return self
 
-    def edit_model(self, model_type: str, model_name: str, simulations: Union[str, list] = 'all', cacheit=False,
-                   cache_size=300, verbose=False, **kwargs):
+    def edit_model(self, model_type: str, model_name: str,
+                   simulations: Union[str, list] = 'all',
+                   verbose=False, **kwargs):
         """
         Modify various APSIM model components by specifying the model type and name across given simulations.
 
@@ -1288,6 +1289,7 @@ class CoreModel(PlotManager):
                 variable_spec=[
                 '[Maize].AboveGround.Wt as abw',
                 '[Maize].Grain.Total.Wt as grain_weight'])
+                @param simulations:
 
         """
         if simulations == 'all' or simulations is None or simulations == MissingOption:
@@ -1359,12 +1361,12 @@ class CoreModel(PlotManager):
 
                     # Get replacement folder and source cultivar model
                     replacements = get_or_check_model(self.Simulations, Models.Core.Folder, 'Replacements',
-                                                      action='get', cache_size=cache_size)
+                                                      action='get')
 
                     get_or_check_model(replacements, Models.Core.Folder, 'Replacements',
-                                       action='delete', cache_size=cache_size)
+                                       action='delete')
                     cultivar_fallback = get_or_check_model(self.Simulations, Models.PMF.Cultivar, model_name,
-                                                           action='get', cache_size=cache_size)
+                                                           action='get')
                     cultivar = ModelTools.CLONER(cultivar_fallback)
 
                     # Update cultivar parameters
@@ -1386,7 +1388,7 @@ class CoreModel(PlotManager):
                     # Attach cultivar under a plant model
                     try:
                         plant_model = get_or_check_model(replacements, Models.PMF.Plant, plant_name,
-                                                         action='get', cache_size=cache_size)
+                                                         action='get')
                     except ValueError:
                         pl_model = find_child(parent=replacements, child_class=Models.PMF.Plant, child_name='Maize')
                         plant_model = pl_model
@@ -1399,8 +1401,8 @@ class CoreModel(PlotManager):
                     ModelTools.ADD(cultivar, plant_model)
 
                     # Update cultivar manager script
-                    self.edit_model(model_type=Models.Manager, simulations=sim.Name,
-                                    model_name=cultivar_manager, **{cultivar_manager_param: new_cultivar_name})
+                    self.edit_model(model_type=Models.Manager, model_name=cultivar_manager, simulations=sim.Name,
+                                    **{cultivar_manager_param: new_cultivar_name})
 
                     self.save()
 
@@ -2142,7 +2144,6 @@ class CoreModel(PlotManager):
 
         return self
 
-
     def run2(self, simulations='all', clean=True, verbose=True, multithread=True):
         self.run_method = run_p
         run_p(self.path)
@@ -2276,7 +2277,6 @@ class CoreModel(PlotManager):
                 kwargs.pop(_param)
         if len(kwargs.keys()) > 0:
             logger.error(f"The following {kwargs} were not found in {manager.FullPath}")
-
 
     def exchange_model(self, model, model_type: str, model_name=None, target_model_name=None, simulations: str = None):
         old_method('exchange_model', new_method='replace_model_from')
@@ -2710,10 +2710,152 @@ class CoreModel(PlotManager):
 
         return self
 
+    def _resolve_editable_candidate_models(self, simulations, model_type) -> [Models.__class__]:
+        """
+            Resolve candidate APSIM NG nodes of a given type for downstream edits.
+
+            This helper walks either the entire model tree under ``self.Simulations`` or a
+            subset of named simulations and returns a flat list of nodes whose type matches
+            ``model_type``. It **does not** mutate the document, nor does it verify per-node
+            editability flags (e.g., ``ReadOnly``); callers are expected to perform those checks.
+
+            Parameters
+            ----------
+            simulations : None | str | Iterable[str]
+                Which simulations to search:
+                - ``None`` (default): Search **all** simulations under ``self.Simulations``.
+                - ``str`` or iterable of names: Search only within the named simulation(s).
+                  If a provided name is unknown, ``self.find_simulations`` will raise.
+            model_type : str | types
+                The APSIM node type to locate. Accepts either:
+                - A fully qualified type name string (e.g., ``"Models.Climate.Weather"``), or
+                - A concrete .NET/Models type (e.g., ``Models.Climate.Weather``),
+                as supported by ``ModelTools.find_all_in_scope(..., child_class=...)``.
+
+            Returns
+            -------
+            list
+                A list of matching model nodes (order corresponds to discovery order).
+
+            Raises
+            ------
+            ValueError
+                If one of the requested simulations exists but contains **no** nodes
+                of the requested ``model_type``.
+            Exception
+                Any exception propagated by ``self.find_simulations`` for unknown
+                simulation names.
+
+            Notes
+            -----
+            - This function only **discovers** candidates; it does not check or enforce
+              edit permissions. If you must ensure nodes are editable, filter the result
+              (e.g., by ``getattr(node, "ReadOnly", False)``) before applying modifications.
+            - When ``simulations`` is ``None``, replacement folders and nested scopes
+              reachable from ``self.Simulations`` are included in the search.
+
+            Examples
+            --------
+            Search all simulations:
+
+            >>> mgr._resolve_editable_candidate_models(
+            ...     simulations=None,
+            ...     model_type="Models.Climate.Weather"
+            ... )
+            [<Weather ...>, <Weather ...>, ...]
+
+            Search a subset by name using a concrete type:
+
+            >>> mgr._resolve_editable_candidate_models(
+            ...     simulations=("Baseline", "Treatment-A"),
+            ...     model_type=Models.Climate.Weather
+            ... )
+            [<Weather ...>, <Weather ...>]
+            """
+
+        weather_models = ModelTools.find_all_in_scope(self.Simulations, child_class=model_type)
+        editable_candidates = []
+        if simulations is None:
+            editable_candidates.extend({i for i in weather_models})
+            return editable_candidates
+        else:
+            editable_candidates = []
+            sim_s = self.find_simulations(simulations)  # it raises if the suggested simulation(s) are not found
+            for sim in sim_s:
+                edita_models = ModelTools.find_all_in_scope(sim, model_type)
+                if not edita_models:
+                    raise ValueError(
+                        f'No model of type {model_type} found at the suggested simulations: {sim.Fullpath}')
+                editable_candidates.extend(edita_models)
+        return editable_candidates
+
+    def get_weather_from_file(self, weather_file, simulations=None) -> 'self':
+        """
+            Point targeted APSIM Weather nodes to a local ``.met`` file.
+
+            The function name mirrors the semantics of ``get_weather_from_web`` but sources the weather
+            from disk. If the provided path lacks the ``.met`` suffix, it is appended.
+            The file **must** exist on disk.
+
+            Parameters
+            ----------
+            weather_file : str | Path
+                Path (absolute or relative) to a ``.met`` file. If the suffix is missing,
+                ``.met`` is appended. A ``FileNotFoundError`` is raised if the final path
+                does not exist. The path is resolved to an absolute path to avoid ambiguity.
+            simulations : None | str | Iterable[str], optional
+                Which simulations to update:
+                - ``None`` (default): update **all** Weather nodes found under ``self.Simulations``.
+                - ``str`` or iterable of names: only update Weather nodes within the named
+                  simulation(s). A ``ValueError`` is raised if a requested simulation has
+                  no Weather nodes.
+
+            Returns
+            -------
+            Self
+                ``self`` (for method chaining).
+
+            Raises
+            ------
+            FileNotFoundError
+                If the resolved ``.met`` file does not exist.
+            ValueError
+                If any requested simulation exists but contains no Weather nodes.
+
+            Side Effects
+            ------------
+            Sets ``w.FileName`` for each targeted ``Models.Climate.Weather`` node to the
+            resolved path of ``weather_file``. The file is **not** copied; only the path
+            inside the APSIM document is changed.
+
+            Notes
+            -----
+            - APSIM resolves relative paths relative to the ``.apsimx`` file. Using an
+              absolute path (the default here) reduces surprises across working directories.
+            - Replacement folders that contain Weather nodes are also updated when
+              ``simulations`` is ``None`` (i.e., “update everything in scope”).
+
+            Examples
+            --------
+            Update all Weather nodes:
+
+            >>> model.get_weather_from_file("data/ames_2020.met")
+
+            Update only two simulations (suffix added automatically):
+
+            >>> model.get_weather_from_file("data/ames_2020", simulations=("SimA", "SimB"))# amke sure they exists
+            """
+        weather_file = Path(weather_file).with_suffix('.met').resolve()
+        if not weather_file.exists():
+            raise FileNotFoundError(f"{weather_file} does not exist")
+        for w in self._resolve_editable_candidate_models(model_type='Models.Climate.Weather', simulations=simulations):
+            w.FileName = str(weather_file)
+        # at
+
     def get_weather_from_web(self, lonlat: tuple, start: int, end: int, simulations=MissingOption, source='nasa',
                              filename=None):
         """
-            Replaces the weather (met) file in the model using weather data fetched from an online source.
+            Replaces the weather (met) file in the model using weather data fetched from an online source. Internally, calls get_weather_from_file after downloading the weather
 
             ``lonlat``: ``tuple``
                  A tuple containing the longitude and latitude coordinates.
@@ -2756,7 +2898,7 @@ class CoreModel(PlotManager):
         name = filename or file_name  # if filename is not None, use filename. Otherwise, file_name.
         file = get_weather(lonlat, start=start, end=end, source=source, filename=name)
 
-        self.replace_met_file(weather_file=file, simulations=simulations)
+        self.get_weather_from_file(weather_file=file, simulations=simulations)
 
         ...
 
@@ -2786,11 +2928,11 @@ class CoreModel(PlotManager):
 
         Parameters
         ----------
-        ``command`` : str
+        ``command``: str
             The new report string that contains variable names.
-        ``report_name`` : str
+        ``report_name``: str
             The name of the APSIM report to update defaults to Report.
-        ``simulations`` : list of str, optional
+        ``simulations``: list of str, optional
             A list of simulation names to update. If `None`, the function will
             update the report for all simulations.
 
@@ -3866,7 +4008,7 @@ class CoreModel(PlotManager):
         Adds a new database table, which ``APSIM`` calls ``Report`` (Models.Report) to the ``Simulation`` under a Simulation Zone.
 
         This is different from ``add_report_variable`` in that it creates a new, named report
-        table that collects data based on a given list of _variables and events.
+        table that collects data based on a given list of _variables and events. actu
 
         :Args:
             ``variable_spec`` (list or str): A list of APSIM variable paths to include in the report table.
@@ -3895,22 +4037,16 @@ class CoreModel(PlotManager):
         import Models
         report_table = Models.Report()
         report_table.Name = rename
-        if rename in self.inspect_model('Models.Report', fullpath=False):
-            logger.info(f"{rename} is a database table already ")
-
         # Default events if not specified
         if not set_event_names:
             set_event_names = ['[Clock].EndOfYear']
-
-        # Ensure variable_spec is a list
+            # Ensure variable_spec is a list
         if variable_spec is None:
             raise ValueError("Please specify at least one variable to include in the report table.")
         if isinstance(variable_spec, str):
             variable_spec = [variable_spec]
-
-        # Remove duplicates
-        variable_spec = list(set(variable_spec))
-
+            # Remove duplicates
+        variable_spec = list(dict.fromkeys(variable_spec))  # preserves the order
         # Ensure event names is a list and remove duplicates
         if isinstance(set_event_names, str):
             set_event_names = [set_event_names]
@@ -3923,7 +4059,13 @@ class CoreModel(PlotManager):
         final_command = "\n".join(set_event_names)
         report_table.set_EventNames(final_command.strip().splitlines())
         # Try to find a Zone in scope and attach the report to it
+        if rename in self.inspect_model('Models.Report', fullpath=False):
+            logger.info(f"{rename} is a database table already only variable specs and events were updated ")
+            self.add_report_variable(variable_spec=variable_spec, report_name=rename, set_event_names=set_event_names)
+            self.save()
+            return self
         sims = self.find_simulations(simulation_name)
+
         for sim in sims:
             if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
                 zone = ModelTools.find_child_of_class(sim, Models.Core.Zone)
@@ -3933,12 +4075,9 @@ class CoreModel(PlotManager):
             if zone is None:
                 raise RuntimeError("No Zone found in the Simulation scope to attach the report table.")
             # check_repo = sim.FindDescendant[Models.Report](rename)
-            check_repo = find_child(zone, Models.Report, rename)
-            if check_repo:  # because this is intended to create an entirely new db table
-                zone.Children.remove(check_repo)
             zone.Children.Add(report_table)
-
         # save the results to recompile
+        self.save()
 
     @simulations.setter
     def simulations(self, value):
@@ -3959,21 +4098,13 @@ if __name__ == '__main__':
 
     # model = load_default_simulations('maize')
     model = CoreModel(model='Maize', out=home / 'tesit_.apsimx')
-
-    # for rn in ['Maize, Soybean, Wheat', 'Maize', 'Soybean, Wheat']:
     a = perf_counter()
-    # model.RevertCheckpoint()
-    # model.update_mgt(management=({"Name": 'Sow using a variable rule', 'Population': 10},))
-    # model.replace_soil_properties_by_path(path='None.Soil.Organic.None.None.Carbon', param_values=[N])
-    # model.replace_any_soil_physical(parameter='BD', param_values=[1.23],)
-    # model.save_edited_file(reload=True)
     model.run('Report', verbose=True)
-    df = model.results
-
-    print(df['Maize.Total.Wt'].mean())
-    print(df.describe())
-    # logger.info(model.results.mean(numeric_only=True))
     b = perf_counter()
     logger.info(f"{b - a}, 'seconds")
-    model.add_db_table(variable_spec=['[Clock].Today', '[Soil].Nutrient.TotalC[1]/1000 as SOC1'], rename='reporterte')
-    a = perf_counter()
+    df = model.results
+    model.add_db_table(variable_spec=['[Clock].Today.Year as year', '[Soil].Nutrient.TotalC[1]/1000 as SOC1'], rename='soc_table')
+    model.inspect_model_parameters('Models.Report', model_name='soc_table')
+    model.run()
+    model.relplot(x='year', y= 'SOC1', table ='soc_table', kind='line')
+    model.render_plot(show=True)

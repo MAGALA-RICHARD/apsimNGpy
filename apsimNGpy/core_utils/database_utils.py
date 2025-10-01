@@ -253,7 +253,6 @@ def clear_table(db, table_name):
         conn.commit()
 
 
-@timer
 def clear_all_tables(db):
     """
     Deletes all rows from all user-defined tables in the given SQLite database.
@@ -786,4 +785,6 @@ if __name__ == "__main__":
     @write_results_to_sql(db_path='db.db', table='Report')
     def get_report():
         return DataFrame(dict(x=2, y=4))
+
+
     ch = list(chunker(range(100), n_chunks=10))

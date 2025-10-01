@@ -142,7 +142,7 @@ class TestModelTools(unittest.TestCase):
 
     def test_add_folder(self):
         'Ensure that replacement folder is added'
-        model = ApsimModel('Maize', out=os.path.realpath('replacement2.apsimx'))
+        model = ApsimModel('Maize', out_path=os.path.realpath('replacement2.apsimx'))
         add_replacement_folder(model.Simulations)
         folder = find_child(model.Simulations, 'Models.Core.Folder', "Replacements")
         self.assertTrue(folder, 'replacement folder not found')
@@ -168,7 +168,7 @@ class TestModelTools(unittest.TestCase):
         self.assertTrue(folder, 'replacement folder not found')
 
     def test_add_what_happens_to_repeat_reps(self):
-        model = ApsimModel('Maize', out=os.path.realpath('replacement4.apsimx'))
+        model = ApsimModel('Maize', out_path=os.path.realpath('replacement4.apsimx'))
         add_model_as_a_replacement(model.Simulations, 'Models.Clock', 'Clock')
         add_model_as_a_replacement(model.Simulations, 'Models.Clock', 'Clock')
         folder = find_child(model.Simulations, 'Models.Core.Folder', "Replacements")

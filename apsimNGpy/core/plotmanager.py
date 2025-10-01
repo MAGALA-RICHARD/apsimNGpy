@@ -252,12 +252,12 @@ class PlotManager(ABC):
            model = ApsimModel(model= 'Maize')
            # run the results
            model.run(report_names='Report')
-           model.series_plot(x='Maize.Grain.Size', y='Yield')
+           model.series_plot(x='Maize.Grain.Size', y='Yield', table='Report')
            model.render_plot(show=True, ylabel = 'Maize yield', xlabel ='Maize grain size')
 
         Plot two variables::
 
-           model.series_plot(x='Yield', y=['Maize.Grain.N', 'Maize.Grain.Size'])
+           model.series_plot(x='Yield', y=['Maize.Grain.N', 'Maize.Grain.Size'], table= 'Report')
 
          see below or https://seaborn.pydata.org/generated/seaborn.lineplot.html \n
         =============================================================================================================================================\n

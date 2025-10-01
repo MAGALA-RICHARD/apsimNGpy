@@ -102,7 +102,7 @@ to allow for re-runs based on number of user specified retries; currently defaul
 The **add_report_variables** from ApsimModel class has been fixed to avoid un mistaken duplicates
 the opposite method **remove_report_variable** has been added; it allows users to remove some variables from their reporting tables.
 
-Split seemingly large simulations into chunks to avoid resource overload.
+Split seemingly large simulations into chunks to avoid resource overload during multi-processing.
 
 
 Plot polish:

@@ -1,30 +1,26 @@
+import copy
 import gc
 import math
 import os.path
 import shutil
-import time
 from collections.abc import Iterable
 from dataclasses import dataclass
-from pathlib import Path
-from typing import Union
-
-from pyparsing import results
-
-from apsimNGpy.core_utils.utils import timer
-import pandas as pd
-from apsimNGpy.core.apsim import ApsimModel
-from apsimNGpy.core_utils.database_utils import read_db_table, clear_all_tables, get_db_table_names, delete_all_tables, \
-    delete_table
-from apsimNGpy.parallel.process import custom_parallel
-from sqlalchemy import MetaData, Table, Column, String, Float, Integer, MetaData
-from sqlalchemy import create_engine, text
-from apsimNGpy.settings import logger
-from apsimNGpy.exceptions import ApsimRuntimeError
-from apsimNGpy.core.runner import RunError
 # Database connection
 from dataclasses import field
-import copy
+from pathlib import Path
 from typing import Union, Literal
+
+import pandas as pd
+from sqlalchemy import Table, Column, String, Float, Integer, MetaData
+from sqlalchemy import create_engine, text
+
+from apsimNGpy.core.apsim import ApsimModel
+from apsimNGpy.core_utils.database_utils import read_db_table, delete_all_tables
+from apsimNGpy.core_utils.utils import timer
+from apsimNGpy.exceptions import ApsimRuntimeError
+from apsimNGpy.parallel.process import custom_parallel
+from apsimNGpy.settings import logger
+from apsimNGpy.core_utils.database_utils import write_results_to_sql
 
 ID = 0
 # default cores to use
@@ -196,7 +192,6 @@ class MultiCoreManager:
             # collect garbage before gc comes in
 
         except ApsimRuntimeError:
-
             self.incomplete_jobs.append(_model.path)
 
     def get_simulated_output(self, axis=0):
@@ -250,8 +245,8 @@ class MultiCoreManager:
             self,
             db_name: Union[str, Path],
             *,
-            table_name: str = "Report",
-            if_exists: Literal["fail", "replace", "append"] = "append",
+            table_name: str = "aggregated_tables",
+            if_exists: Literal["fail", "replace", "append"] = "fail",
     ) -> None:
         """
         Persist simulation results to a SQLite database table.
@@ -270,11 +265,13 @@ class MultiCoreManager:
             against the current working directory.
         table_name : str, optional
             Name of the destination table. Defaults to ``"Report"``.
-        if_exists : {"fail", "replace", "append"}, optional
+        if_exists: {"fail", "replace", "append"}, optional.
             Write mode passed through to pandas:
-            - ``"fail"``    : raise if the table already exists.
-            - ``"replace"`` : drop the table, create a new one, then insert.
-            - ``"append"``  : insert rows into existing table (default).
+            - ``"fail"``: raise if the table already exists.
+            - ``"replace"``: drop the table, create a new one, then insert.
+            - ``"append"``: insert rows into existing table (default).
+            (defaults to fail if table exists, more secure for the users to know
+         what they are doing)
 
         Raises
         ------
@@ -283,11 +280,11 @@ class MultiCoreManager:
         TypeError
             If `self.results` is not a pandas DataFrame.
         RuntimeError
-            If the underlying database write fails.
+            If the underlying database writes fails.
 
         Notes
         -----
-        - Ensure that `self.results` contains only the rows you intend to persist.
+        - Ensure that `self.results` contain only the rows you intend to persist with.
           If you maintain a separate collection of failed/incomplete jobs, they
           should not be included in `self.results`.
         - This method does not mutate `self.results`.
@@ -299,29 +296,18 @@ class MultiCoreManager:
         0       1   10.2  0.8
         >>> mgr.save("outputs/simulations.db", table_name="maize_runs", if_exists="append")
         """
+
         # --- Validate results
-        results = getattr(self, "results", None)
-        if results is None or (isinstance(results, pd.DataFrame) and results.empty):
-            raise ValueError("No simulation results to save: `self.results` is empty or missing.")
-        if not isinstance(results, pd.DataFrame):
-            raise TypeError(f"`self.results` must be a pandas DataFrame, got {type(results)!r}.")
+        @write_results_to_sql(db_path=db_name, table=table_name, if_exists=if_exists)
+        def _write():
+            results = getattr(self, "results", None)
+            if results is None or (isinstance(results, pd.DataFrame) and results.empty):
+                raise ValueError("No simulation results to save: `self.results` is empty or missing.")
+            if not isinstance(results, (pd.DataFrame, dict)):
+                raise TypeError(f"`self.results` must be a pandas DataFrame,or dict  got {type(results)!r}.")
+            return results
 
-        # --- Normalize path and ensure .db suffix
-        db_path = Path(db_name)
-
-        db_path = db_path.with_suffix(".db")
-        db_path.parent.mkdir(parents=True, exist_ok=True)
-
-        # --- Write
-        try:
-            insert_data_with_pd(
-                db=str(db_path),
-                table=table_name,
-                results=results,
-                if_exists=if_exists,  # align with pandas convention
-            )
-        except Exception as exc:
-            raise RuntimeError(f"Failed to save results to {db_path} (table={table_name!r}).") from exc
+        _ = _write()
 
     def save_tocsv(self, path_or_buf, **kwargs):
 
@@ -361,7 +347,7 @@ class MultiCoreManager:
             retry_rate = kwargs.get("retry_rate", 1)
 
             for _ in range(retry_rate):
-                # how many jobs were incompleted?
+                # how many jobs were uncompleted?
                 len_incomplete = len(self.incomplete_jobs)
                 if len_incomplete == 0:
                     self.ran_ok = True
@@ -391,8 +377,8 @@ class MultiCoreManager:
 
             else:
 
-                # at this point the error causing the failures is more than serious, although it's being excepted as
-                # runtime error
+                # at this point, the error causing the failures is more than serious, although it's being excepted as
+                # an `ApsimRuntimeError`
                 if self.incomplete_jobs:
                     logger.warning(
                         f"MultiCoreManager exited with {len(self.incomplete_jobs)} uncompleted job(s). "
@@ -413,12 +399,47 @@ MultiCoreManager.save_tocsv.__doc__ = """  Persist simulation results to a SQLit
         """ + csv_doc
 
 if __name__ == '__main__':
+    import os, uuid, tempfile
+    from tempfile import NamedTemporaryFile
+
     # quick tests
-    create_jobs = [ApsimModel('Maize').path for _ in range(16 * 5)]
+    create_jobs = [ApsimModel('Maize').path for _ in range(16 * 2)]
+    with tempfile.TemporaryDirectory() as td:
+        db_path = Path(td) / f"{uuid.uuid4().hex}.db"
+        test_agg_db = Path(td) / f"{uuid.uuid4().hex}.db"
 
-    Parallel = MultiCoreManager(db_path='testing.db', agg_func='mean')
-    Parallel.run_all_jobs(create_jobs, n_cores=16, threads=False, clear_db=True, retry_rate=1)
-    df = Parallel.get_simulated_output(axis=0)
-    Parallel.clear_scratch()
+        Parallel = MultiCoreManager(db_path=test_agg_db, agg_func='mean')
+        Parallel.run_all_jobs(create_jobs, n_cores=16, threads=False, clear_db=False, retry_rate=1)
+        df = Parallel.get_simulated_output(axis=0)
+        Parallel.clear_scratch()
+        # test saving to already an existing table
+        ve = False
+        db_path.unlink(missing_ok=True)
+        try:
+            try:
+                # ___________________first__________________________________
+                Parallel.save_tosql(db_path, table_name='results', if_exists='replace')
+                # ______________________ then _________________________________
+                Parallel.save_tosql(db_path, table_name='results', if_exists='fail')
+            except ValueError:
+                ve = True
+            assert ve == True, 'fail method is not raising value error'
 
-    # insert_data_with_pd('tss.db', 'my', df, 'replace')
+            # ____________test saving by replacing existing table _______________
+            ve = False
+            try:
+
+                Parallel.save_tosql(db_path, table_name='results', if_exists='replace')
+            except ValueError:
+                ve = True
+            assert ve == False, 'replace method failed'
+
+            # ____________test appending to an existing table _______________
+            ve = False
+            try:
+                Parallel.save_tosql(db_path, table_name='results', if_exists='append')
+            except ValueError:
+                ve = True
+            assert ve == False, 'append method failed'
+        finally:
+           pass

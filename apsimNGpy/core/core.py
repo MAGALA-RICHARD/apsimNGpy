@@ -356,13 +356,13 @@ class CoreModel(PlotManager):
         _reports = self.report_names or self.inspect_model('Models.Report',
                                                            fullpath=False)  # false returns all names other than fullpath of the models in that type
         db_path = Path(self.path).with_suffix('.db')
-        if not self.ran_ok:
-            logger.info('attempting to access results without calling bound method: `run()`')
-            return
+        if self.ran_ok:
+            return self._get_results(_reports, db_path, axis=0)
         else:
-            return self._get_results(_reports, db_path)
 
-    def _get_results(self, _reports, _db_path):
+            logger.info(f"{self} not yet executed. Please call `run()`")
+
+    def _get_results(self, _reports, _db_path, axis =0):
         from collections.abc import Iterable
         # Normalize report_names to a list
         if isinstance(_reports, str):
@@ -373,7 +373,9 @@ class CoreModel(PlotManager):
             raise TypeError(f"report_names must be an iterable of strings, not {type(_reports)}.")
         if _reports:
             if self.ran_ok:
-                data = (read_db_table(_db_path, rep) for rep in reports)
+                # lazy generator (adds a column with the report name)
+                data = (read_db_table(_db_path, rep).assign(source_table=rep) for rep in reports)
+
                 return pd.concat(data, axis=0, ignore_index=True)
             else:
                 logger.info('attempting to access results without calling bound method: `run()`')
@@ -426,7 +428,7 @@ class CoreModel(PlotManager):
         db_path = Path(self.path).with_suffix('.db')
         _reports = report_names
         if self.ran_ok:
-            return self._get_results(_reports, db_path)
+            return self._get_results(_reports, db_path, axis=axis)
         else:
             logger.info('Model not ran sue other means to read data if that is the goal')
 
@@ -2140,7 +2142,7 @@ class CoreModel(PlotManager):
 
         return self
 
-    @timer
+
     def run2(self, simulations='all', clean=True, verbose=True, multithread=True):
         self.run_method = run_p
         run_p(self.path)
@@ -2275,7 +2277,7 @@ class CoreModel(PlotManager):
         if len(kwargs.keys()) > 0:
             logger.error(f"The following {kwargs} were not found in {manager.FullPath}")
 
-    @timer
+
     def exchange_model(self, model, model_type: str, model_name=None, target_model_name=None, simulations: str = None):
         old_method('exchange_model', new_method='replace_model_from')
         self.replace_model_from(model, model_type, model_name, target_model_name, simulations)
@@ -2738,13 +2740,13 @@ class CoreModel(PlotManager):
 
                   from apsimNgpy.core.apsim import ApsimModel
                   model = ApsimModel(model= "Maize")
-                  model.get_weather_from_web(lonlat = (-93.885490, 42.060650), start = 1990, end  =2001)
+                  model.get_weather_from_web(lonlat = (-93.885490, 42.060650), start = 1990, end = 2001)
 
-            Changing weather data with non-matching start and end dates in the simulation will lead to ``RuntimeErrors``.
-            To avoid this, first check the start and end date before proceeding as follows::
+            Changing weather data with non-matching start and end dates in the simulation will lead to RuntimeErrors.
+            To avoid this, first check the start and end date before proceeding as follows:
 
-                  dt = model.inspect_model_parameters(model_class='Clock', model_name='Clock', simulations='Simulation')
-                  start, end = dt['Start'].year, dt['End'].year
+                  >>> dt = model.inspect_model_parameters(model_class='Clock', model_name='Clock', simulations='Simulation')
+                  >>> start, end = dt['Start'].year, dt['End'].year
                   # output: 1990, 2000
             """
 

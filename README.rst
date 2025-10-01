@@ -152,7 +152,7 @@ Call for feedback
 
 Known issues (seeking cases)
 ====================================
-Newer version of APSIM may not be compatible with the current versions. Please use the pinned versions or below it
+Newer version of APSIM may not be compatible with the current versions. Please use the pinned versions lower versions before the pinned version.
 
 Some soil locations may not have all the required data for building APSIM soil profiles, be careful, as this may raise ApsimRunTimeError during model runs
 

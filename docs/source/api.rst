@@ -342,7 +342,7 @@ CoreModel
    Adds a new database table, which ``APSIM`` calls ``Report`` (Models.Report) to the ``Simulation`` under a Simulation Zone.
 
         This is different from ``add_report_variable`` in that it creates a new, named report
-        table that collects data based on a given list of _variables and events.
+        table that collects data based on a given list of _variables and events. actu
 
         :Args:
             ``variable_spec`` (list or str): A list of APSIM variable paths to include in the report table.
@@ -499,11 +499,11 @@ CoreModel
 
         Parameters
         ----------
-        ``command`` : str
+        ``command``: str
             The new report string that contains variable names.
-        ``report_name`` : str
+        ``report_name``: str
             The name of the APSIM report to update defaults to Report.
-        ``simulations`` : list of str, optional
+        ``simulations``: list of str, optional
             A list of simulation names to update. If `None`, the function will
             update the report for all simulations.
 
@@ -640,14 +640,16 @@ CoreModel
           - CultivarName (str, required): Name of the cultivar (e.g., 'laila').
 
           - variable_spec (str, required): A strings representing the parameter paths to be edited.
-        Example:
+
+        Returns: instance of the class CoreModel or ApsimModel
+
+        Example::
+
             ('[Grain].MaximumGrainsPerCob.FixedValue', '[Phenology].GrainFilling.Target.FixedValue')
 
           - values: values for each command (e.g., (721, 760)).
 
-        Returns: instance of the class CoreModel or ApsimModel
-
-.. function:: apsimNGpy.core.core.CoreModel.edit_model(self, model_type: 'str', model_name: 'str', simulations: 'Union[str, list]' = 'all', cacheit=False, cache_size=300, verbose=False, **kwargs)
+.. function:: apsimNGpy.core.core.CoreModel.edit_model(self, model_type: 'str', model_name: 'str', simulations: 'Union[str, list]' = 'all', verbose=False, **kwargs)
 
    Modify various APSIM model components by specifying the model type and name across given simulations.
 
@@ -804,6 +806,7 @@ CoreModel
                 variable_spec=[
                 '[Maize].AboveGround.Wt as abw',
                 '[Maize].Grain.Total.Wt as grain_weight'])
+                @param simulations:
 
 .. function:: apsimNGpy.core.core.CoreModel.edit_model_by_path(self, path: 'str', **kwargs)
 
@@ -1066,9 +1069,65 @@ CoreModel
          9     Simulation             1             1  ...       1689.966  7370.301  Field
          [10 rows x 16 columns]
 
+.. function:: apsimNGpy.core.core.CoreModel.get_weather_from_file(self, weather_file, simulations=None) -> "'self'"
+
+   Point targeted APSIM Weather nodes to a local ``.met`` file.
+
+            The function name mirrors the semantics of ``get_weather_from_web`` but sources the weather
+            from disk. If the provided path lacks the ``.met`` suffix, it is appended.
+            The file **must** exist on disk.
+
+            Parameters
+            ----------
+            weather_file : str | Path
+                Path (absolute or relative) to a ``.met`` file. If the suffix is missing,
+                ``.met`` is appended. A ``FileNotFoundError`` is raised if the final path
+                does not exist. The path is resolved to an absolute path to avoid ambiguity.
+            simulations : None | str | Iterable[str], optional
+                Which simulations to update:
+                - ``None`` (default): update **all** Weather nodes found under ``self.Simulations``.
+                - ``str`` or iterable of names: only update Weather nodes within the named
+                  simulation(s). A ``ValueError`` is raised if a requested simulation has
+                  no Weather nodes.
+
+            Returns
+            -------
+            Self
+                ``self`` (for method chaining).
+
+            Raises
+            ------
+            FileNotFoundError
+                If the resolved ``.met`` file does not exist.
+            ValueError
+                If any requested simulation exists but contains no Weather nodes.
+
+            Side Effects
+            ------------
+            Sets ``w.FileName`` for each targeted ``Models.Climate.Weather`` node to the
+            resolved path of ``weather_file``. The file is **not** copied; only the path
+            inside the APSIM document is changed.
+
+            Notes
+            -----
+            - APSIM resolves relative paths relative to the ``.apsimx`` file. Using an
+              absolute path (the default here) reduces surprises across working directories.
+            - Replacement folders that contain Weather nodes are also updated when
+              ``simulations`` is ``None`` (i.e., “update everything in scope”).
+
+            Examples
+            --------
+            Update all Weather nodes:
+
+            >>> model.get_weather_from_file("data/ames_2020.met")
+
+            Update only two simulations (suffix added automatically):
+
+            >>> model.get_weather_from_file("data/ames_2020", simulations=("SimA", "SimB"))# amke sure they exists
+
 .. function:: apsimNGpy.core.core.CoreModel.get_weather_from_web(self, lonlat: 'tuple', start: 'int', end: 'int', simulations=<UserOptionMissing>, source='nasa', filename=None)
 
-   Replaces the weather (met) file in the model using weather data fetched from an online source.
+   Replaces the weather (met) file in the model using weather data fetched from an online source. Internally, calls get_weather_from_file after downloading the weather
 
             ``lonlat``: ``tuple``
                  A tuple containing the longitude and latitude coordinates.
@@ -1095,13 +1154,13 @@ CoreModel
 
                   from apsimNgpy.core.apsim import ApsimModel
                   model = ApsimModel(model= "Maize")
-                  model.get_weather_from_web(lonlat = (-93.885490, 42.060650), start = 1990, end  =2001)
+                  model.get_weather_from_web(lonlat = (-93.885490, 42.060650), start = 1990, end = 2001)
 
-            Changing weather data with non-matching start and end dates in the simulation will lead to ``RuntimeErrors``.
-            To avoid this, first check the start and end date before proceeding as follows::
+            Changing weather data with non-matching start and end dates in the simulation will lead to RuntimeErrors.
+            To avoid this, first check the start and end date before proceeding as follows:
 
-                  dt = model.inspect_model_parameters(model_class='Clock', model_name='Clock', simulations='Simulation')
-                  start, end = dt['Start'].year, dt['End'].year
+                  >>> dt = model.inspect_model_parameters(model_class='Clock', model_name='Clock', simulations='Simulation')
+                  >>> start, end = dt['Start'].year, dt['End'].year
                   # output: 1990, 2000
 
 .. function:: apsimNGpy.core.core.CoreModel.inspect_file(self, *, cultivar=False, console=True, **kwargs)
@@ -1950,7 +2009,13 @@ CoreModel
             If True, enables verbose output for debugging. The method continues with debugging info anyway if the run was unsuccessful
 
         ``kwargs``: dict
-            Additional keyword arguments, e.g., to_csv=True
+            Additional keyword arguments, e.g., to_csv=True, use this flag to correct results from
+            a csv file directly stored at the location of the running apsimx file.
+
+        Warning:
+        --------------
+        In my experience with Models.exe, CSV outputs are not always overwritten; after edits, stale results can persist. Proceed with caution.
+
 
         Returns
         -------
@@ -2168,7 +2233,7 @@ CoreModel
 ExperimentManager 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. function:: apsimNGpy.core.experimentmanager.ExperimentManager(model, out_path=None, out=None)
+.. function:: apsimNGpy.core.experimentmanager.ExperimentManager(model, out_path=None)
 
    No documentation available.
 
@@ -2588,7 +2653,7 @@ need to create it using either Pathlib or os:
 >>> os.makedirs('folder/subfolder', exist_ok=True)  # doctest: +SKIP
 >>> df.to_csv('folder/subfolder/out.csv')  # doctest: +SKIP
 
-.. function:: apsimNGpy.core.mult_cores.MultiCoreManager.save_tosql(self, db_name: Union[str, pathlib.Path], *, table_name: str = 'Report', if_exists: Literal['fail', 'replace', 'append'] = 'append') -> None
+.. function:: apsimNGpy.core.mult_cores.MultiCoreManager.save_tosql(self, db_name: Union[str, pathlib.Path], *, table_name: str = 'aggregated_tables', if_exists: Literal['fail', 'replace', 'append'] = 'fail') -> None
 
    Persist simulation results to a SQLite database table.
 
@@ -2606,11 +2671,13 @@ need to create it using either Pathlib or os:
             against the current working directory.
         table_name : str, optional
             Name of the destination table. Defaults to ``"Report"``.
-        if_exists : {"fail", "replace", "append"}, optional
+        if_exists: {"fail", "replace", "append"}, optional.
             Write mode passed through to pandas:
-            - ``"fail"``    : raise if the table already exists.
-            - ``"replace"`` : drop the table, create a new one, then insert.
-            - ``"append"``  : insert rows into existing table (default).
+            - ``"fail"``: raise if the table already exists.
+            - ``"replace"``: drop the table, create a new one, then insert.
+            - ``"append"``: insert rows into existing table (default).
+            (defaults to fail if table exists, more secure for the users to know
+         what they are doing)
 
         Raises
         ------
@@ -2619,11 +2686,11 @@ need to create it using either Pathlib or os:
         TypeError
             If `self.results` is not a pandas DataFrame.
         RuntimeError
-            If the underlying database write fails.
+            If the underlying database writes fails.
 
         Notes
         -----
-        - Ensure that `self.results` contains only the rows you intend to persist.
+        - Ensure that `self.results` contain only the rows you intend to persist with.
           If you maintain a separate collection of failed/incomplete jobs, they
           should not be included in `self.results`.
         - This method does not mutate `self.results`.
@@ -3059,6 +3126,40 @@ apsimNGpy.core.runner
 apsimNGpy.core_utils.database_utils 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+.. function:: apsimNGpy.core_utils.database_utils.chunker(data: 'Iterable[T]', *, chunk_size: 'Optional[int]' = None, n_chunks: 'Optional[int]' = None, pad: 'bool' = False, fillvalue: 'Optional[T]' = None) -> 'Iterator[List[T]]'
+
+   Yield chunks from `data`.
+
+    Choose exactly one of:
+      - `chunk_size`: yield consecutive chunks of length `chunk_size`
+        (last chunk may be shorter unless `pad=True`)
+      - `n_chunks`: split data into `n_chunks` nearly equal parts
+        (sizes differ by at most 1)
+
+    Args
+    ----
+    data : Iterable[T]
+        The input data (list, generator, etc.)
+    chunk_size : int, optional
+        Fixed size for each chunk (>=1).
+    n_chunks : int, optional
+        Number of chunks to create (>=1). Uses nearly equal sizes.
+    pad : bool, default False
+        If True and using `chunk_size`, pad the last chunk to length `chunk_size`.
+    fill value : T, optional
+        Value to use when padding.
+
+    Yields
+    ------
+    List[T]
+        Chunks of the input data.
+
+    Raises
+    ------
+    ValueError
+        If neither or both of `chunk_size` and `n_chunks` are provided,
+        or if provided values are invalid.
+
 .. function:: apsimNGpy.core_utils.database_utils.clear_all_tables(db)
 
    Deletes all rows from all user-defined tables in the given SQLite database.
@@ -3082,7 +3183,7 @@ apsimNGpy.core_utils.database_utils
     :param apsimng model: CoreModel object or instance
     :return: Pandas DataFrame
 
-.. function:: apsimNGpy.core_utils.database_utils.delete_all_tables(db: str) -> None
+.. function:: apsimNGpy.core_utils.database_utils.delete_all_tables(db: 'str') -> 'None'
 
    Deletes all tables in the specified SQLite database.
 
@@ -3179,6 +3280,127 @@ apsimNGpy.core_utils.database_utils
 
         Note: Ensure that the database path and the query are correct and that the query is a proper SQL SELECT statement.
         The function uses ``sqlite3`` for connecting to the database; make sure it is appropriate for your database.
+
+.. function:: apsimNGpy.core_utils.database_utils.write_results_to_sql(db_path: 'Union[str, Path]', table: 'str' = 'Report', *, if_exists: "Literal['fail', 'replace', 'append']" = 'append', insert_fn: 'InsertFn | None' = None, ensure_parent: 'bool' = True) -> 'Callable'
+
+   Decorator factory: collect the wrapped function's returned data and insert it or saves it into SQLite database.
+
+    After the wrapped function executes, its return value is normalized to a list of
+    `(table, DataFrame)` pairs via `_normalize_result` and inserted into `db_path` using
+    either the provided `insert_fn` or the default `_default_insert_fn` (which relies on
+    `pandas.DataFrame.to_sql` + SQLAlchemy). The original return value is passed through
+    unchanged to the caller.
+
+    Accepted return shapes
+    ----------------------
+    - `pd.DataFrame`                          -> appended to `table`
+    - `(table_name: str, df: pd.DataFrame)`   -> appended to `table_name`
+    - `list[pd.DataFrame]`                    -> each appended to `table`
+    - `list[(table_name, df)]`                -> routed per pair
+    - `{"data": <df|list[dict]|dict-of-cols>, "table": "MyTable"}` -> to "MyTable"
+    - `{"TblA": df_or_records, "TblB": df2}`  -> multiple tables
+    - `list[dict]` or `dict-of-columns`       -> coerced to DataFrame -> appended to `table`
+    - `None`                                  -> no-op
+
+    Parameters
+    ----------
+    db_path : str | pathlib.Path
+        Destination SQLite file. A `.db` suffix is enforced if missing. If `ensure_parent`
+        is True, parent directories are created.
+    table : str, default "Report"
+        Default table name when the return shape does not carry one.
+    if_exists: {"fail", "replace", "append"}, default "append"
+        Passed to `to_sql` by the inserter. See panda docs for semantics.
+    insert_fn : callable, optional
+        Custom inserter `(db_path, df, table, if_exists) -> None`. Use this to:
+        - reuse a single connection/transaction across multiple tables,
+        - enable SQLite WAL mode and retry on lock,
+        - control dtype mapping or target a different DBMS.
+    ensure_parent : bool, default True
+        If True, create missing parent directories for `db_path`.
+
+    Returns
+    -------
+    Callable
+        A decorator that, when applied to a function, performs the persistence step
+        after the function returns and then yields the original result.
+
+    Raises
+    ------
+    TypeError
+        If the wrapped function's result cannot be normalized by `_normalize_result`.
+    RuntimeError
+        If any insert operation fails (original exception is chained as `__cause__`).
+    OSError
+        On path or filesystem errors when creating the database directory/file.
+
+    Side Effects
+    ------------
+    - Creates parent directories for `db_path` (when `ensure_parent=True`).
+    - Creates/opens the SQLite database and writes one or more tables.
+    - **Skips empty frames**: pairs where `df` is `None` or `df.empty` are ignored.
+    - May DROP + CREATE the table when `if_exists="replace"`.
+
+    Cautions
+    --------
+    - **SQLite concurrency: ** Concurrent writers can trigger "database is locked".
+      Consider a custom `insert_fn` enabling WAL mode, retries, and transactional
+      batching for robustness.
+    - **Table name safety: ** Avoid propagating untrusted table names; identifier quoting
+      is driver-dependent.
+    - **Schema drift:** `to_sql` infers SQL schema from the DataFrame's dtypes each call.
+      Ensure stable dtypes or manage schema explicitly in your `insert_fn`.
+    - **Timezones: ** Pandas may localize/naivify datetime on writing; verify round-trips
+      if timezone fidelity matters.
+    - **Performance: ** Creating a new engine/connection per insert is simple but not optimal.
+      For high-volume pipelines, supply an `insert_fn` that reuses a connection and commits
+      once per batch.
+
+    Design rationale
+    ----------------
+    Separates computation from persistence. The decorator is explicit about *where* data
+    goes (db path, table names) and flexible about *what* callers return, reducing boilerplate
+    in the business logic while still allowing power users to override insertion strategy.
+
+    Examples
+    --------
+    Basic usage, single table with default appends::
+
+        @collect_returned_results("outputs/results.db", table="Report")
+        def run_analysis(...):
+            return df  # a DataFrame
+
+    Multiple tables using a mapping shape::
+
+        @collect_returned_results("outputs/results.db")
+        def summarize(...):
+            return {"Summary": df1, "Metrics": df2}
+
+    Custom inserter enabling WAL mode and a single transaction::
+
+        def wal_insert(db, df, table, if_exists):
+            import sqlite3
+            con = sqlite3.connect(db, isolation_level="DEFERRED")
+            try:
+                con.execute("PRAGMA journal_mode=WAL;")
+                df.to_sql(table, con, if_exists=if_exists, index=False)
+                con.commit()
+            finally:
+                con.close()
+    Examples:
+
+    >>> from pandas import DataFrame
+    >>> from apsimNGpy.core_utils.database_utils import write_results_to_sql, read_db_table
+    >>> @write_results_to_sql(db_path="db.db", table="Report", if_exists="replace")
+    ... def get_report():
+    ...     # Return a DataFrame to be written to SQLite
+    ...     return DataFrame({"x": [2], "y": [4]})
+
+    >>> _ = get_report()  # executes and writes to db.db::Report
+    >>> db = read_db_table("db.db", report_name="Report")
+    >>> print(db.to_string(index=False))
+     x  y
+     2  4
 
 .. class:: apsimNGpy.exceptionsApsimBinPathConfigError
 

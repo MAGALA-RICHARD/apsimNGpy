@@ -210,7 +210,7 @@ class PlotManager(ABC):
             grouping: Optional[Union[Hashable, _Sequence[Hashable]]] = None,
             preserve_start: bool = True,
             kind: str = "line",
-            estimator=None,  # avoid aggregation by default (pass-through to seaborn)
+            estimator= 'mean',
             plot_raw: bool = False,  # overlay original (unsmoothed) series
             raw_alpha: float = 0.35,
             raw_linewidth: float = 1.0,

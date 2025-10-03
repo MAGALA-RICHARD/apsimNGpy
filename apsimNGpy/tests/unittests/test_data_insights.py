@@ -76,7 +76,7 @@ class TestMVA(unittest.TestCase):
                 "y": [1, 2, 3, 4, 5] * 2,
             }
         )
-        print(df)
+
         res = mva(df, time_col="t", response="y", window=3, grouping=("Residue", "Nitrogen"))
         expected = [1.0, 2.0, 3.0, 4.0, 4.5] * 2  # preserve_start=True by default
         self.assertTrue(np.allclose(res["y_roll_mean"].to_numpy(), np.array(expected), equal_nan=False))

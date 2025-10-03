@@ -27,11 +27,7 @@ class TestCoreModel(unittest.TestCase):
 
     def test_edit_soil_organic_matter_module(self):
         toPCarb = 1.233
-        self.model.edit_model(
-            model_type='Organic',
-            simulations=SIMULATION,
-            model_name='Organic',
-            Carbon=toPCarb)
+        self.model.edit_model(model_type='Organic', model_name='Organic', simulations=SIMULATION, Carbon=toPCarb)
         out = self.model.inspect_model_parameters(
             model_type='Organic',
             simulations=SIMULATION,
@@ -48,17 +44,9 @@ class TestCoreModel(unittest.TestCase):
 
         """
         toPCarbList = [1.23, 1.0]
-        self.model.edit_model(
-            model_type='Organic',
-            simulations=SIMULATION,
-            model_name='Organic',
-            Carbon=toPCarbList)
+        self.model.edit_model(model_type='Organic', model_name='Organic', simulations=SIMULATION, Carbon=toPCarbList)
 
-        self.model.edit_model(
-            model_type='Organic',
-            simulations=SIMULATION,
-            model_name='Organic',
-            Carbon=toPCarbList)
+        self.model.edit_model(model_type='Organic', model_name='Organic', simulations=SIMULATION, Carbon=toPCarbList)
         out = self.model.inspect_model_parameters(
             model_type='Organic',
             simulations=SIMULATION,
@@ -74,22 +62,15 @@ class TestCoreModel(unittest.TestCase):
 
         Edit NH4 soil top layer
         """
-        self.model.edit_model(
-            model_type='Solute',
-            simulations=SIMULATION,
-            model_name='NH4',
-            InitialValues=0.2)
+        self.model.edit_model(model_type='Solute', model_name='NH4', simulations=SIMULATION, InitialValues=0.2)
 
     def test_editing_lower_layer(self):
         """
             Edit NH4 soil top layer 
             """
         initialValues = 0.34
-        self.model.edit_model(
-            model_type='Solute',
-            simulations=SIMULATION,
-            model_name='NH4',
-            InitialValues=[initialValues], indices=[-1])
+        self.model.edit_model(model_type='Solute', model_name='NH4', simulations=SIMULATION,
+                              InitialValues=[initialValues], indices=[-1])
         out = self.model.inspect_model_parameters(
             model_type='Solute',
             model_name='NH4',
@@ -102,11 +83,7 @@ class TestCoreModel(unittest.TestCase):
     def test_edit_solute_urea(self):
         """"edits urea module"""
         urea = 0.03
-        self.model.edit_model(
-            model_type='Solute',
-            simulations=SIMULATION,
-            model_name='Urea',
-            InitialValues=urea)
+        self.model.edit_model(model_type='Solute', model_name='Urea', simulations=SIMULATION, InitialValues=urea)
         out = self.model.inspect_model_parameters(
             model_type='Solute',
             model_name='Urea',
@@ -118,11 +95,8 @@ class TestCoreModel(unittest.TestCase):
     def test_edit_manager_script(self):
         """edits manager_script module"""
         population = 8.4
-        self.model.edit_model(
-            model_type='Manager',
-            simulations=SIMULATION,
-            model_name='Sow using a variable rule',
-            Population=population)
+        self.model.edit_model(model_type='Manager', model_name='Sow using a variable rule', simulations=SIMULATION,
+                              Population=population)
         out = self.model.inspect_model_parameters(
             model_type='Models.Manager',
             model_name='Sow using a variable rule',
@@ -134,11 +108,8 @@ class TestCoreModel(unittest.TestCase):
 
     def test_edit_surface_organic_mass(self):
         InitialResidueMass = 2500
-        self.model.edit_model(
-            model_type='SurfaceOrganicMatter',
-            simulations=SIMULATION,
-            model_name='SurfaceOrganicMatter',
-            InitialResidueMass=InitialResidueMass)
+        self.model.edit_model(model_type='SurfaceOrganicMatter', model_name='SurfaceOrganicMatter',
+                              simulations=SIMULATION, InitialResidueMass=InitialResidueMass)
         out = self.model.inspect_model_parameters(
             model_type='SurfaceOrganicMatter',
             model_name='SurfaceOrganicMatter',
@@ -149,11 +120,8 @@ class TestCoreModel(unittest.TestCase):
 
     def test_edit_surface_organic_cnr(self):
         InitialCNR = 85
-        self.model.edit_model(
-            model_type='SurfaceOrganicMatter',
-            simulations=SIMULATION,
-            model_name='SurfaceOrganicMatter',
-            InitialCNR=InitialCNR)
+        self.model.edit_model(model_type='SurfaceOrganicMatter', model_name='SurfaceOrganicMatter',
+                              simulations=SIMULATION, InitialCNR=InitialCNR)
         out = self.model.inspect_model_parameters(
             model_type='SurfaceOrganicMatter',
             model_name='SurfaceOrganicMatter',
@@ -165,12 +133,8 @@ class TestCoreModel(unittest.TestCase):
     def test_edit_clock_dates(self):
         start_year, end_year = 1990, 2000
         import datetime
-        self.model.edit_model(
-            model_type='Clock',
-            simulations=SIMULATION,
-            model_name='Clock',
-            Start=f'{start_year}-01-01',
-            End=f'{end_year}-01-12')
+        self.model.edit_model(model_type='Clock', model_name='Clock', simulations=SIMULATION,
+                              Start=f'{start_year}-01-01', End=f'{end_year}-01-12')
 
         out = self.model.inspect_model_parameters(
             model_type='Clock',
@@ -185,12 +149,8 @@ class TestCoreModel(unittest.TestCase):
         self.assertEqual(out['End'], expected_end, "Clock end date did not match expected value.")
 
     def test_edit_report_variable(self):
-        self.model.edit_model(
-            model_type='Report',
-            simulations=SIMULATION,
-            model_name='Report',
-            variable_spec='[Maize].AboveGround.Wt as abw'
-        )
+        self.model.edit_model(model_type='Report', model_name='Report', simulations=SIMULATION,
+                              variable_spec='[Maize].AboveGround.Wt as abw')
         out = self.model.inspect_model_parameters(
             model_type='Report',
             model_name='Report',
@@ -201,13 +161,9 @@ class TestCoreModel(unittest.TestCase):
         self.assertIn('[Maize].AboveGround.Wt as abw', out['VariableNames'], 'editing report was not successful')
 
     def test_edit_multiple_report_variables(self):
-        self.model.edit_model(
-            model_type='Report',
-            simulations=SIMULATION,
-            model_name='Report',
-            variable_spec=[
-                '[Maize].AboveGround.Wt as abw',
-                '[Maize].Grain.Total.Wt as grain_weight'])
+        self.model.edit_model(model_type='Report', model_name='Report', simulations=SIMULATION, variable_spec=[
+            '[Maize].AboveGround.Wt as abw',
+            '[Maize].Grain.Total.Wt as grain_weight'])
 
     def test_run_model(self):
         """finally run model"""

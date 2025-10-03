@@ -356,7 +356,7 @@ class TestCoreModel(BaseTester):
         model.clean_up()
 
     def test_edit_model(self):
-        self.test_ap_sim.edit_model(model_type='Clock', simulations="Simulation", model_name='Clock',
+        self.test_ap_sim.edit_model(model_type='Clock', model_name='Clock', simulations="Simulation",
                                     Start='1900-01-01', End='1990-01-12')
         start = self.test_ap_sim.Start != 'unknown'
         end = self.test_ap_sim.End != 'unknown'
@@ -375,8 +375,7 @@ class TestCoreModel(BaseTester):
         new_juvenile = 289.777729777
         com_path = '[Phenology].Juvenile.Target.FixedValue'
         test_ap_sim.edit_model(model_type='Cultivar', model_name='B_110', new_cultivar_name=out_cultivar,
-                               commands=com_path, values=new_juvenile,
-                               cultivar_manager='Sow using a variable rule')
+                               commands=com_path, values=new_juvenile, cultivar_manager='Sow using a variable rule')
 
         # first we check the current '[Phenology].Juvenile.Target.FixedValue': '211'
         cp = test_ap_sim.inspect_model_parameters(model_type='Cultivar', model_name=out_cultivar)

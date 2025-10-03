@@ -253,10 +253,6 @@ class PlotManager(ABC):
             raise KeyError(f"Smoothed column `{y_smooth}` not found after mva().")
 
         # choose hue if user did not supply one
-        if "hue" not in kwargs and group_cols:
-            hue_col = _maybe_make_group_label(smoothed, group_cols)
-            if hue_col is not None:
-                kwargs["hue"] = hue_col
 
         # seaborn.relplot defaults to kind='scatter'; for time series we use line
         kwargs.setdefault("kind", kind)

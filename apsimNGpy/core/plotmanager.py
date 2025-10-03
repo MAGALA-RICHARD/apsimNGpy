@@ -192,11 +192,14 @@ class PlotManager(ABC):
         return df
 
     def _harmonize_df(self, table):
-        if table is not None:
-            data = self.get_simulated_output(table)
+        if isinstance(table, pd.DataFrame):
+            return table
+        elif table is not None and not isinstance(table, pd.DataFrame):
+            return self.get_simulated_output(table)
+        elif table is None:
+            return self.results
         else:
-            data = self.results
-        return data
+            raise ValueError(f"Un supported table table {type(table)}")
 
     @inherit_docstring_from(sns.relplot)  # keep your original decorator if available
     def plot_mva(
@@ -210,7 +213,7 @@ class PlotManager(ABC):
             grouping: Optional[Union[Hashable, _Sequence[Hashable]]] = None,
             preserve_start: bool = True,
             kind: str = "line",
-            estimator= 'mean',
+            estimator='mean',
             plot_raw: bool = False,  # overlay original (unsmoothed) series
             raw_alpha: float = 0.35,
             raw_linewidth: float = 1.0,
@@ -300,14 +303,15 @@ class PlotManager(ABC):
                 by=None, figsize=(10, 8), grid=False, **kwargs):
 
         """
-        Plot a boxplot from the simulation results using ``pandas.DataFrame.boxplot`` \n
+        Plot a boxplot from the simulation results using ``pandas.DataFrame.boxplot`` see more documentation below\n
         =======================================================================.
+        column: str required
+        table: str optional str of the database table or data frame to use if ``table`` is provided, otherwise the self.results`` table is used
         """
         self._refresh()
-
-        if self.results is None and table is None:
+        df = self._harmonize_df(table)
+        if df is None:
             raise ForgotToRunError("Results not found.")
-        df = self.results if table is None else self.get_simulated_output(table)
 
         if column not in df.columns:
             raise ValueError(f"Column '{column}' not found in results.")
@@ -325,6 +329,7 @@ class PlotManager(ABC):
     def distribution(self, x, *, table=None, **kwargs):
         """Plot distribution for a numeric variable. It uses ``seaborn.histplot`` function. Please see their documentation below
         =========================================================================================================\n
+
         """
         added_plots['current_plot'] = 'distribution'
         self._refresh()
@@ -334,7 +339,7 @@ class PlotManager(ABC):
         if is_string_dtype(self.results[x]):
             raise ValueError(f"{x} contains strings")
 
-        df = self.results if table is None else self.get_simulated_output(table)
+        df = self._harmonize_df(table)
         kwargs.pop('show', None)
         sns.histplot(data=df, x=x, kde=True, **kwargs)
 
@@ -432,10 +437,7 @@ class PlotManager(ABC):
         """
         self._refresh()
         added_plots['current_plot'] = 'series_plot'
-        if table:
-            data = self.get_simulated_output(table)
-        else:
-            data = self.results
+        data = self._harmonize_df(table)
 
         df = data.copy()
 
@@ -492,10 +494,7 @@ class PlotManager(ABC):
         reference: https://seaborn.pydata.org/generated/seaborn.scatterplot.html. Check seaborn documentation below for more details \n
         ================================================================================================================================\n"""
         self._refresh()
-        if table is None:
-            data = self.results
-        else:
-            data = self.get_simulated_output(table)
+        data =self._harmonize_df(table)
         sns.scatterplot(
             data=data,
             x=x,
@@ -559,7 +558,7 @@ class PlotManager(ABC):
         =========================================================================================================\n"""
         self._refresh()
         added_plots['cat_plot'] = 'cat_plot'
-        df = self.results if not table else self.get_simulated_output(table)
+        df = self._harmonize_df(table)
         return sns.catplot(
             data=df,
             x=x,
@@ -597,7 +596,7 @@ class PlotManager(ABC):
         )
 
     def relplot(self, table=None, **kwargs):
-        data = self.get_simulated_output(table) if table is not None else self.results
+        data = self._harmonize_df(table=table)
         g = sns.relplot(data=data, **kwargs)
         return g
 
@@ -605,7 +604,7 @@ class PlotManager(ABC):
         self._refresh()
         added_plots['correlation_heatmap'] = 'correlation_heatmap'
         """Plot correlation heatmap for numeric _variables."""
-        df = self.get_simulated_output(table) if table is not None else self.results
+        df = self._harmonize_df(table)
         if columns:
             df = df[columns]
         else:

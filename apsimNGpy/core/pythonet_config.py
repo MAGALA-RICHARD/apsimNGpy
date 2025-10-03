@@ -20,7 +20,7 @@ meta_info = {}
 
 def is_file_format_modified():
     """
-    Checks if the APSIM.CORE.dll is present in the bin path
+    Checks if the APSIM.CORE.dll is present in the bin path. Normally, the new APSIM version has this dll
     @return: bool
     """
     patterns = {"*APSIM.CORE.dll", "*APSIM.Core.dll"}
@@ -52,7 +52,7 @@ class ConfigRuntimeInfo:
 @cache
 def load_pythonnet(bin_path=APSIM_BIN_PATH):
     """
-    A method for loading Python for .NET (pythonnet) and APSIM models.
+    A method for loading Python for .NET (pythonnet) and APSIM models. It is also cached to avoid rerunning many times
 
     This class provides a callable method for initializing the Python for .NET (pythonnet) runtime and loading APSIM models.
     Initialize the Python for .NET (pythonnet) runtime and load APSIM models.
@@ -108,6 +108,59 @@ Models = Models
 
 
 def get_apsim_file_reader(method: str = 'string'):
+    """
+        Return an APSIM file reader callable based on the requested method.
+
+        This helper selects the appropriate APSIM NG ``FileFormat`` implementation,
+        accounting for runtime changes in the file format (via
+        :func:`is_file_format_modified`) and whether the managed type is available
+        under ``Models.Core.ApsimFile.FileFormat`` or ``APSIM.Core.FileFormat``.
+        It then returns the corresponding static method to read an APSIM file
+        either **from a string** or **from a file path**.
+
+        Parameters
+        ----------
+        method: {"string", "file"}, optional
+            Which reader to return:
+            - ``"string"`` >>> returns ``FileFormat.ReadFromString``.
+            - ``"file"``   >>> returns ``FileFormat.ReadFromFile``.
+            Defaults to ``"string"``.
+
+        Returns
+        -------
+        Callable
+            A .NET static method (callable from Python) that performs the read:
+            either ``ReadFromString(text: str)`` or ``ReadFromFile(path: str)``.
+
+        Raises
+        ------
+        NotImplementedError
+            If ``method`` is not one of ``"string"`` or ``"file"``.
+        AttributeError
+            If the underlying APSIM ``FileFormat`` type does not expose the
+            expected reader method (environment/binaries misconfigured).
+
+        Notes
+        -----
+        - When : func:`is_file_format_modified` returns ``bool``.If False, then
+          ``Models.Core.ApsimFile.FileFormat`` is unavailable, the function falls
+          back to ``APSIM.Core.FileFormat``.
+        - The returned callable is a .NET method; typical usage is
+          ``reader = get_apsim_file_reader("file"); model = reader(path)``.
+
+        Examples
+        --------
+        Read from a file path:
+
+        >>> reader = get_apsim_file_reader("file")      # doctest: +SKIP
+        >>> sims = reader("/path/to/model.apsimx")      # doctest: +SKIP
+
+        Read from a string (APSXML/JSON depending on APSIM NG):
+
+        >>> text = "...apsimx content..."               # doctest: +SKIP
+        >>> reader = get_apsim_file_reader("string")    # doctest: +SKIP
+        >>> sims = reader(text)                         # doctest: +SKIP
+        """
     if is_file_format_modified() or not getattr(Models.Core.ApsimFile, "FileFormat", None):
         import APSIM.Core
         base = APSIM.Core.FileFormat
@@ -133,28 +186,73 @@ def get_apsim_file_writer():
     return getattr(base, 'WriteToString')
 
 
-def get_apsim_version(bin_path=APSIM_BIN_PATH, release_number=False):
-    """
-    get the APSIM version from the built binaries: models.dll depends on load_pythonnet()
-    @param release_number: bool,
-    @param bin_path: path to the installed apsim_binaries run within python
-    @return: str
-    """
+from pathlib import Path
+from typing import Optional, Union
 
+
+def get_apsim_version(bin_path: Union[str, Path] = APSIM_BIN_PATH, release_number: bool = False) -> Optional[str]:
+    """
+    Return the APSIM version string detected from the installed binaries.
+
+    The function initializes pythonnet for the given APSIM binaries path (via
+    ``load_pythonnet(bin_path)``), then loads ``Models.dll`` and reads its
+    assembly version. By default, the returned string is prefixed with ``"APSIM"``;
+    set ``release_number=True`` to get the raw semantic version.
+
+    Parameters
+    ----------
+    bin_path : str or pathlib.Path, optional
+        Filesystem path to the APSIM **binaries** directory that contains
+        ``Models.dll``. Defaults to ``APSIM_BIN_PATH``.
+    release_number : bool, optional
+        If ``True``, returns only the assembly version (e.g., ``"2024.6.123"``).
+        If ``False`` (default), prefix with ``"APSIM"`` (e.g., ``"APSIM 2024.6.123"``).
+
+    Returns
+    -------
+    str or None
+        The version string if detected successfully; otherwise ``None`` when
+        required system modules are unavailable (e.g., if the binaries path is
+        not correctly configured).
+
+    Raises
+    ------
+    ApsimBinPathConfigError
+        If pythonnet/CLR is not initialized for the provided ``bin_path`` (i.e.,
+        APSIM binaries path has not been set up).
+
+    Notes
+    -----
+    - This call requires a valid APSIM NG binaries folder and a loadable
+      ``Models.dll`` at ``bin_path/Models.dll``.
+    - ``load_pythonnet`` must succeed so that the CLR is available; otherwise
+      the version cannot be queried.
+
+    Examples
+    --------
+    >>> get_apsim_version("/opt/apsim/bin")           # doctest: +SKIP
+    'APSIM2024.6.123'
+    >>> get_apsim_version("/opt/apsim/bin", True)     # doctest: +SKIP
+    '2024.6.123'
+
+    See Also
+    --------
+    load_pythonnet : Initialize pythonnet/CLR for APSIM binaries.
+    """
+    bin_path =str(bin_path)
     CI = load_pythonnet(bin_path)
     if not CI.clr_loaded:
-        raise ApsimBinPathConfigError(f'Pythonnet and APSIM bin path not yet initialized')
+        raise ApsimBinPathConfigError("Pythonnet and APSIM bin path not yet initialized")
+
     try:
         from System.Reflection import Assembly
-    except (ModuleNotFoundError, ImportError) as e:
-        logger.error(f"Could not import required system module because apsim_binaries were not set or found")
+    except (ModuleNotFoundError, ImportError):
+        logger.error("Could not import required System.Reflection module; APSIM binaries may be unset or missing.")
         return None
-    assembly = Assembly.LoadFrom(os.path.join(bin_path, "Models.dll"))
+
+    assembly = Assembly.LoadFrom(os.path.join(str(bin_path), "Models.dll"))
     version = assembly.GetName().Version.ToString()
-    if release_number:
-        return version
-    else:
-        return f"APSIM{version}"
+    return version if release_number else f"APSIM{version}"
 
 
 # Example usage:

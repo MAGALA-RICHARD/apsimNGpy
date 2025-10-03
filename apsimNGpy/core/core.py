@@ -6,6 +6,7 @@ email: magalarich20@gmail.com
 """
 from __future__ import annotations
 import gc
+import os
 import re
 import random
 import pathlib
@@ -1047,8 +1048,7 @@ class CoreModel(PlotManager):
 
         Apply cultivar edits across selected simulations::
 
-            model.edit_model_by_path(
-                ".Simulations.Simulation.Field.Maize.CultivarFolder.mh18",
+            model.edit_model_by_path(".Simulations.Simulation.Field.Maize.CultivarFolder.mh18",
                 simulations=("Sim_A", "Sim_B"),
                 verbose=True,
                 Phenology.EmergencePhase.Photoperiod="Short",
@@ -1056,7 +1056,8 @@ class CoreModel(PlotManager):
         """
 
         simulations = kwargs.get('simulations', None) or kwargs.get('simulation', None)
-        verbose = kwargs.get('verbose', False)
+        default = kwargs.setdefault('verbose', False)
+        verbose = kwargs.get('verbose')
         for p in {'simulation', 'simulations', 'verbose'}:
             kwargs.pop(p, None)
         try:
@@ -4103,8 +4104,54 @@ if __name__ == '__main__':
     b = perf_counter()
     logger.info(f"{b - a}, 'seconds")
     df = model.results
-    model.add_db_table(variable_spec=['[Clock].Today.Year as year', '[Soil].Nutrient.TotalC[1]/1000 as SOC1'], rename='soc_table')
+    model.add_db_table(variable_spec=['[Clock].Today.Year as year', '[Soil].Nutrient.TotalC[1]/1000 as SOC1'],
+                       rename='soc_table')
     model.inspect_model_parameters('Models.Report', model_name='soc_table')
     model.run()
-    model.relplot(x='year', y= 'SOC1', table ='soc_table', kind='line')
-    model.render_plot(show=True)
+    model.relplot(x='year', y='SOC1', table='soc_table', kind='line')
+    model.render_plot(show=False)
+    from APSIM.Core import Node
+    from apsimNGpy.core.config import load_crop_from_disk
+
+    sim = Node.Clone(model.Simulations.Node)
+    simulations = Models.Core.Simulations()
+    imodel = CastHelper.CastAs[Models.Core.Simulations](model.Simulations)
+    mo = load_apsim_model(model.path)
+    sim = Models.Core.Simulation()
+    clock = Models.Clock()
+    from System import DateTime
+
+    # ___________ clock__________________
+    clock.StartDate = DateTime(1980, 1, 1)
+    clock.EndDate = DateTime(2020, 1, 1)
+    sim.Children.Add(clock)
+
+
+    def add_model(parent, model_type):
+        if callable(model_type):
+            model = model_type()
+        else:
+            model = model_type
+        parent.Children.Add(model)
+
+
+    # ______________report____________________
+    report = Models.Report()
+    report.VariableNames = ["[Clock].Today"]
+    report.EventNames = ["[Clock].DoReport"]
+    sim.Children.Add(report)
+
+    # _____________weather___________
+    wf = Models.Climate.Weather()
+    wf.FileName = r"D:\My_BOX\Box\PhD thesis\Objective two\morrow plots 20250821\APSIM2025.8.7844.0\Examples\WeatherFiles\AU_Dalby.met"
+    add_model(sim, Models.Climate.Weather)
+    # _________________________zone___________
+    zone = Models.Core.Zone()
+    add_model(sim, zone)
+    # ____________fertilizer______________
+    add_model(sim, Models.Fertiliser)
+    # ____________summary_____________
+    add_model(sim, Models.Summary)
+    # ____________datastorage__________
+    add_model(simulations, Models.Storage.DataStore)
+    simulations.Children.Add(sim)

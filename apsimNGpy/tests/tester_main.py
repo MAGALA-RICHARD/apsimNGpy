@@ -89,7 +89,7 @@ if IS_NEW_APSIM:
 from apsimNGpy.tests.unittests import test_model_loader, test_ApsimModel, test_cast_helper, test_CoreModel, \
     test_weathermanager, test_multcores, \
     test_edit_model, test_config, model_tools, test_get_weather_from_web_filename, test_plot_manager, \
-     test_loading_pythonnet, test_soil_manager
+     test_loading_pythonnet, test_soil_manager, test_data_insights
 
 modules = {test_loading_pythonnet,
            model_tools,
@@ -102,7 +102,8 @@ modules = {test_loading_pythonnet,
            test_weathermanager,
            test_get_weather_from_web_filename,
            test_plot_manager,
-           test_soil_manager
+           test_soil_manager,
+           test_data_insights
            }
 if IS_NEW_APSIM:
     modules.add(test_experiment)

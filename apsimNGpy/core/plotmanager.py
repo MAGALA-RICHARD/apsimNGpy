@@ -2,7 +2,10 @@ import os
 import subprocess
 from pathlib import Path
 from platform import system
-from typing import Union
+from typing import Union, Hashable, Optional
+
+from numba.typed.typedlist import _Sequence
+
 from apsimNGpy.exceptions import ForgotToRunError, EmptyDateFrameError
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -11,6 +14,7 @@ from abc import abstractmethod, ABC
 from collections import OrderedDict
 from apsimNGpy.settings import logger
 from functools import wraps
+from apsimNGpy.stats.data_insights import mva
 
 try:
     import seaborn as sns
@@ -49,6 +53,66 @@ def inherit_docstring_from(obj):
 
 
 added_plots = OrderedDict()
+
+
+def _ensure_sequence(x) -> list:
+    if x is None:
+        return []
+    if isinstance(x, str):
+        return [x]
+    if isinstance(x, _Sequence):
+        return list(x)
+    return [x]
+
+
+def _maybe_make_group_label(df: pd.DataFrame, group_cols: list[Hashable]) -> Optional[str]:
+    """
+    If multiple grouping columns are used and the caller didn't provide hue,
+    create a compact label column to use as hue.
+    """
+    if not group_cols:
+        return None
+    if len(group_cols) == 1:
+        return group_cols[0]
+    label_col = "_group_label_"
+    if label_col not in df.columns:
+        df[label_col] = df[group_cols].astype(str).agg(" | ".join, axis=1)
+    return label_col
+
+
+def _maybe_to_datetime(df: pd.DataFrame, col: Hashable, auto: bool) -> None:
+    if auto and not pd.api.types.is_datetime64_any_dtype(df[col]):
+        try:
+            df[col] = pd.to_datetime(df[col], errors="raise")
+        except Exception:
+            # Leave as-is if conversion fails
+            pass
+
+
+def _sort_for_ts(df: pd.DataFrame, time_col: Hashable, group_cols: list[Hashable]) -> pd.DataFrame:
+    sort_cols = group_cols + [time_col] if group_cols else [time_col]
+    return df.sort_values(sort_cols, kind="mergesort")
+
+
+def _coerce_to_str(x: Hashable) -> str:
+    return str(x)
+
+
+def _default_ylabel(response: Hashable, window: int, centered: bool = True) -> str:
+    center_txt = "centered" if centered else "trailing"
+    return f"{_coerce_to_str(response)} ({window}-pt {center_txt} moving average)"
+
+
+def _add_raw_overlay(g: sns.FacetGrid, time_col: Hashable, response: Hashable, **line_kws) -> None:
+    # Draw raw lines on top of each facet, respecting hue mapping from the grid
+    import seaborn as sns  # local import to avoid namespace surprises
+    g.map_dataframe(
+        sns.lineplot,
+        x=time_col,
+        y=response,
+        estimator=None,
+        **line_kws
+    )
 
 
 class PlotManager(ABC):
@@ -127,8 +191,116 @@ class PlotManager(ABC):
 
         return df
 
+    def _harmonize_df(self, table):
+        if table is not None:
+            data = self.get_simulated_output(table)
+        else:
+            data = self.results
+        return data
+
+    @inherit_docstring_from(sns.relplot)  # keep your original decorator if available
+    def plot_mva(
+            self,
+            table: pd.DataFrame,
+            time_col: Hashable,
+            response: Hashable,
+            *,
+            window: int = 5,
+            min_period: int = 1,
+            grouping: Optional[Union[Hashable, _Sequence[Hashable]]] = None,
+            preserve_start: bool = True,
+            kind: str = "line",
+            estimator=None,  # avoid aggregation by default (pass-through to seaborn)
+            plot_raw: bool = False,  # overlay original (unsmoothed) series
+            raw_alpha: float = 0.35,
+            raw_linewidth: float = 1.0,
+            auto_datetime: bool = False,  # attempt to convert time_col to datetime
+            ylabel: Optional[str] = None,  # override auto y-label
+            return_data: bool = False,  # optionally return (FacetGrid, smoothed_df)
+            **kwargs,
+    ) -> sns.FacetGrid | tuple[sns.FacetGrid, pd.DataFrame]:
+        """
+        Plot a centered moving average (MVA) of `response` using seaborn.relplot.
+
+        Enhancements over a direct relplot call:
+          - Computes MVA with `mva(...)` and **plots the smoothed series**
+          - Auto-assigns `hue` from `grouping` (supports multi-column grouping)
+          - Optional overlay of the **raw** series for comparison
+          - Preserves original row order and handles NaN groups
+        """
+
+        group_cols = _ensure_sequence(grouping)
+
+        # harmonize & optional datetime conversion
+        data = self._harmonize_df(table)
+        _maybe_to_datetime(data, time_col, auto_datetime)
+
+        # compute moving average on a sorted copy for determinism
+        data_sorted = _sort_for_ts(data.copy(), time_col, group_cols)
+        smoothed = mva(
+            data_sorted,
+            time_col=time_col,
+            response=response,
+            window=window,
+            min_period=min_period,
+            grouping=grouping,
+            preserve_start=preserve_start,
+        )
+
+        # relplot should see the smoothed data, not the raw table
+        y_smooth = f"{response}_roll_mean"
+        if y_smooth not in smoothed.columns:
+            raise KeyError(f"Smoothed column `{y_smooth}` not found after mva().")
+
+        # choose hue if user did not supply one
+        if "hue" not in kwargs and group_cols:
+            hue_col = _maybe_make_group_label(smoothed, group_cols)
+            if hue_col is not None:
+                kwargs["hue"] = hue_col
+
+        # seaborn.relplot defaults to kind='scatter'; for time series we use line
+        kwargs.setdefault("kind", kind)
+        kwargs.setdefault("estimator", estimator)  # None → draw each observation
+        kwargs.setdefault("marker", None)
+
+        # wire x/y; do not let user override `data` accidentally
+        kwargs.pop("data", None)
+        kwargs['x'] = time_col
+        kwargs["y"] = y_smooth
+
+        g = sns.relplot(data=smoothed, **kwargs)
+
+        # y-label
+        if ylabel is None:
+            ylabel = _default_ylabel(response, window, centered=True)
+        try:
+            g.set_ylabels(ylabel)
+        except Exception:
+            pass  # older seaborn: ignore
+
+        # Optional raw overlay
+        if plot_raw:
+            # We need raw data with same sorting & hue semantics as smoothed
+            raw = data_sorted.copy()
+            # If we created a composite hue, replicate it on raw
+            if "hue" in kwargs and kwargs["hue"] not in raw.columns and kwargs["hue"] in smoothed.columns:
+                raw[kwargs["hue"]] = smoothed[kwargs["hue"]].values
+
+            _add_raw_overlay(
+                g,
+                time_col=time_col,
+                response=response,
+                alpha=raw_alpha,
+                linewidth=raw_linewidth,
+                hue=kwargs.get("hue", None),
+            )
+
+        if return_data:
+            return g, smoothed
+        return g
+
     @inherit_docstring_from(pd.DataFrame)
-    def boxplot(self, column, *,table=None,
+    def boxplot(self, column, *, table=None,
                 by=None, figsize=(10, 8), grid=False, **kwargs):
 
         """
@@ -209,7 +381,7 @@ class PlotManager(ABC):
         if ylabel:
             plt.ylabel(ylabel, fontsize=ylabel_size)
         if title:
-            plt.title(title,  )
+            plt.title(title, )
 
         plt.tight_layout()
 
@@ -437,7 +609,7 @@ class PlotManager(ABC):
         self._refresh()
         added_plots['correlation_heatmap'] = 'correlation_heatmap'
         """Plot correlation heatmap for numeric _variables."""
-        df =  self.get_simulated_output(table) if table is not None else self.results
+        df = self.get_simulated_output(table) if table is not None else self.results
         if columns:
             df = df[columns]
         else:

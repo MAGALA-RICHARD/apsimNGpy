@@ -122,6 +122,7 @@ def run_model_externally(
         verbose: bool = False,
         to_csv: bool = False,
         timeout: int = 600,
+
         cwd: Optional[Union[Path, str]] = None,
         env: Optional[Mapping[str, str]] = None,
 ) -> subprocess.CompletedProcess[str]:
@@ -138,7 +139,7 @@ def run_model_externally(
     exec_path = _ensure_exec(apsim_exec)
     model_path = _ensure_model(model)
 
-    cmd = [exec_path, model_path]
+    cmd = [exec_path, model_path, 'cpu_count', '19']
     if verbose:
         cmd.append("--verbose")
     if to_csv:

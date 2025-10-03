@@ -150,6 +150,11 @@ class PlotManager(ABC):
         - seaborn.catplot
         - seaborn.scatterplot
         - pandas.DataFrame.boxplot
+
+    This API uses Seaborn (BSD-3-Clause).
+    Copyright (c) 2012-2024, Michael L. Waskom and contributors.
+    License: https://github.com/mwaskom/seaborn/blob/main/LICENSE
+
     """
 
     def __init__(self):
@@ -201,7 +206,6 @@ class PlotManager(ABC):
         else:
             raise ValueError(f"Un supported table table {type(table)}")
 
-    @inherit_docstring_from(sns.relplot)  # keep your original decorator if available
     def plot_mva(
             self,
             table: pd.DataFrame,
@@ -223,14 +227,58 @@ class PlotManager(ABC):
             **kwargs,
     ) -> sns.FacetGrid | tuple[sns.FacetGrid, pd.DataFrame]:
         """
-        Plot a centered moving average (MVA) of `response` using seaborn.relplot.
+                Plot a centered moving-average (MVA) of a response using ``seaborn.relplot``.
 
-        Enhancements over a direct relplot call:
-          - Computes MVA with `mva(...)` and **plots the smoothed series**
-          - Auto-assigns `hue` from `grouping` (supports multi-column grouping)
-          - Optional overlay of the **raw** series for comparison
-          - Preserves original row order and handles NaN groups
-        """
+                Enhancements over a direct ``relplot`` call:
+                - Computes and plots a smoothed series via :func:`apsimNGpy.stats.data_insights.mva`.
+                - Supports multi-column grouping; will auto-construct a composite hue if needed.
+                - Optional overlay of the raw (unsmoothed) series for comparison.
+                - Stable (mergesort) time ordering.
+
+                Parameters
+                ----------
+                table : pandas.DataFrame or str
+                    Data source or table name; if ``None``, use :pyattr:`results`.
+                time_col : hashable
+                    Time (x-axis) column.
+                response : hashable
+                    Response (y) column to smooth.
+                window : int, default=5
+                    MVA window size.
+                min_period : int, default=1
+                    Minimum periods for the rolling mean.
+                grouping : hashable or sequence of hashable, optional
+                    One or more grouping columns.
+                preserve_start : bool, default=True
+                    Preserve initial values when centering.
+                kind : {"line","scatter"}, default="line"
+                    Passed to ``sns.relplot``.
+                estimator : str or None, default="mean"
+                    Passed to ``sns.relplot`` (set to ``None`` to plot raw observations).
+                plot_raw : bool, default=False
+                    Overlay the raw series on each facet.
+                raw_alpha : float, default=0.35
+                    Alpha for the raw overlay.
+                raw_linewidth : float, default=1.0
+                    Line width for the raw overlay.
+                auto_datetime : bool, default=False
+                    Attempt to convert ``time_col`` to datetime.
+                ylabel : str, optional
+                    Custom y-axis label; default is generated from window/response.
+                return_data : bool, default=False
+                    If ``True``, return ``(FacetGrid, smoothed_df)``.
+
+                Returns
+                -------
+                seaborn.FacetGrid
+                    The relplot grid, or ``(grid, smoothed_df)`` if ``return_data=True``.
+
+                Notes
+                -----
+                This function calls :func:`seaborn.relplot` and accepts its keyword arguments
+                via ``**kwargs``. See:
+                https://seaborn.pydata.org/generated/seaborn/relplot.html
+                """
 
         group_cols = _ensure_sequence(grouping)
 
@@ -298,12 +346,11 @@ class PlotManager(ABC):
             return g, smoothed
         return g
 
-    @inherit_docstring_from(pd.DataFrame)
     def boxplot(self, column, *, table=None,
                 by=None, figsize=(10, 8), grid=False, **kwargs):
 
         """
-        Plot a boxplot from the simulation results using ``pandas.DataFrame.boxplot`` see more documentation below\n
+        Plot a boxplot from the simulation results using ``pandas.DataFrame.boxplot`` see more documentation at pandas heren
         =======================================================================.
         column: str required
         table: str optional str of the database table or data frame to use if ``table`` is provided, otherwise the self.results`` table is used
@@ -327,8 +374,15 @@ class PlotManager(ABC):
 
     @inherit_docstring_from(sns.histplot)
     def distribution(self, x, *, table=None, **kwargs):
-        """Plot distribution for a numeric variable. It uses ``seaborn.histplot`` function. Please see their documentation below
+        """Plot distribution for a numeric variable. It uses ``seaborn.histplot`` function.
+        x is the numeric variable in the specified table
         =========================================================================================================\n
+        Notes
+          -----
+            This function uses :func:`seaborn.histplot` and inherits its keyword
+            arguments via **kwargs. See Seaborn docs for details:
+            https://seaborn.pydata.org/generated/seaborn.histplot.html
+
 
         """
         added_plots['current_plot'] = 'distribution'
@@ -494,7 +548,7 @@ class PlotManager(ABC):
         reference: https://seaborn.pydata.org/generated/seaborn.scatterplot.html. Check seaborn documentation below for more details \n
         ================================================================================================================================\n"""
         self._refresh()
-        data =self._harmonize_df(table)
+        data = self._harmonize_df(table)
         sns.scatterplot(
             data=data,
             x=x,

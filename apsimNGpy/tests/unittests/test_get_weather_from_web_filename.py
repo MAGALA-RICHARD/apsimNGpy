@@ -11,13 +11,8 @@ class TestWeatherDownload(BaseTester):
     def setUp(self):
         self.model = ApsimModel('Maize')
         self.out = 'test_edit_model.apsimx'
-        self.model.edit_model(
-            model_type='Clock',
-            model_name='Clock',
-            simulations='Simulation',
-            start='1990-01-01',
-            end='2000-01-01'
-        )
+        self.model.edit_model(model_type='Clock', model_name='Clock', simulations='Simulation', start='1990-01-01',
+                              end='2000-01-01')
         self.LONLAT = 35.582520, 0.347596
         self.test_filename = 'test_nasa_download.met'
         self.default_filename = 'Maize_nasa_2000_2001.met'

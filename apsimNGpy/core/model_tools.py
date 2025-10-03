@@ -604,8 +604,8 @@ def _edit_in_cultivar(_model, model_name, param_values, simulations=None, verbos
 
     for sim in _model.find_simulations(simulations):
         # Update cultivar manager script
-        _model.edit_model(model_type=Models.Manager, simulations=sim.Name,
-                          model_name=cultivar_manager, **{cultivar_manager_param: new_cultivar_name})
+        _model.edit_model(model_type=Models.Manager, model_name=cultivar_manager, simulations=sim.Name,
+                          **{cultivar_manager_param: new_cultivar_name})
 
     if verbose:
         logger.info(f"\nEdited Cultivar '{model_name}' and saved it as '{new_cultivar_name}'")

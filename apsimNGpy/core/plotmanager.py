@@ -4,7 +4,7 @@ from pathlib import Path
 from platform import system
 from typing import Union, Hashable, Optional
 
-from numba.typed.typedlist import _Sequence
+from collections.abc import Sequence as _Sequence
 
 from apsimNGpy.exceptions import ForgotToRunError, EmptyDateFrameError
 import pandas as pd

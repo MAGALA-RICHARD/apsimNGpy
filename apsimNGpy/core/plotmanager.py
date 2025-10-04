@@ -350,11 +350,25 @@ class PlotManager(ABC):
                 by=None, figsize=(10, 8), grid=False, **kwargs):
 
         """
-        Plot a boxplot from the simulation results using ``pandas.DataFrame.boxplot`` see more documentation at pandas heren
-        =======================================================================.
-        column: str required
-        table: str optional str of the database table or data frame to use if ``table`` is provided, otherwise the self.results`` table is used
-        """
+                Plot a boxplot from simulation results using ``pandas.DataFrame.boxplot``.
+
+                Parameters
+                ----------
+                column : str
+                    Column to plot.
+                table : str or pandas.DataFrame, optional
+                    Table name or DataFrame; if omitted, use :pyattr:`results`.
+                by : str, optional
+                    Grouping column.
+                figsize : tuple, default=(10, 8)
+                grid : bool, default=False
+                **kwargs
+                    Forwarded to :meth:`pandas.DataFrame.boxplot`.
+
+                Returns
+                -------
+                matplotlib.axes.Axes
+                """
         self._refresh()
         df = self._harmonize_df(table)
         if df is None:
@@ -372,18 +386,29 @@ class PlotManager(ABC):
 
         return ax
 
-    @inherit_docstring_from(sns.histplot)
     def distribution(self, x, *, table=None, **kwargs):
-        """Plot distribution for a numeric variable. It uses ``seaborn.histplot`` function.
-        x is the numeric variable in the specified table
-        =========================================================================================================\n
+        """
+        Plot a univariate distribution/histogram using :func:`seaborn.histplot`.
+
+        Parameters
+        ----------
+        x : str
+            Numeric column to plot.
+        table : str or pandas.DataFrame, optional
+            Table name or DataFrame; if omitted, use :pyattr:`results`.
+        **kwargs
+            Forwarded to :func:`seaborn.histplot`.
+
+        Raises
+        ------
+        ValueError
+            If ``x`` is a string-typed column.
+
         Notes
-          -----
-            This function uses :func:`seaborn.histplot` and inherits its keyword
-            arguments via **kwargs. See Seaborn docs for details:
-            https://seaborn.pydata.org/generated/seaborn.histplot.html
-
-
+        -----
+        This function calls :func:`seaborn.histplot` and accepts its keyword arguments
+        via ``**kwargs``. See:
+        https://seaborn.pydata.org/generated/seaborn/histplot.html
         """
         added_plots['current_plot'] = 'distribution'
         self._refresh()
@@ -463,7 +488,6 @@ class PlotManager(ABC):
         if plt.get_fignums():
             plt.close()
 
-    @inherit_docstring_from(sns.lineplot)
     def series_plot(self, table=None, *, x: str = None, y: Union[str, list] = None, hue=None, size=None, style=None,
                     units=None, weights=None,
                     palette=None, hue_order=None, hue_norm=None, sizes=None, size_order=None, size_norm=None,
@@ -473,20 +497,42 @@ class PlotManager(ABC):
         """
         Just a wrapper for seaborn.lineplot that supports multiple y columns that could be provided as a list
 
-        Examples::
+         table : str | [str] |None | None| pandas.DataFrame, optional. Default is None
+            If the table names are provided, results are collected from the simulated data, using that table names.
+            If None, results will be all the table names inside concatenated along the axis 0 (not recommended)
 
-           from apsimNGpy.core.apsim import ApsimModel
-           model = ApsimModel(model= 'Maize')
+         If ``y`` is a list of columns, the data are melted into long form and
+        the different series are colored by variable name.
+
+        **Kwargs
+            Additional keyword args and all other arguments are for Seaborn.lineplot.
+        See the reference below for all the kwargs.
+        reference; https://seaborn.pydata.org/generated/seaborn.lineplot.html
+
+        Examples
+        --------
+        >>> model.series_plot(x='Year', y='Yield', table='Report')  # doctest: +SKIP
+        >>> model.series_plot(x='Year', y=['SOC1', 'SOC2'], table='Report')  # doctest: +SKIP
+
+        Examples:
+        ------------
+
+           >>>from apsimNGpy.core.apsim import ApsimModel
+           >>> model = ApsimModel(model= 'Maize')
            # run the results
-           model.run(report_names='Report')
-           model.series_plot(x='Maize.Grain.Size', y='Yield', table='Report')
-           model.render_plot(show=True, ylabel = 'Maize yield', xlabel ='Maize grain size')
+           >>> model.run(report_names='Report')
+           >>>model.series_plot(x='Maize.Grain.Size', y='Yield', table='Report')
+           >>>model.render_plot(show=True, ylabel = 'Maize yield', xlabel ='Maize grain size')
 
-        Plot two variables::
+        Plot two variables:
 
-           model.series_plot(x='Yield', y=['Maize.Grain.N', 'Maize.Grain.Size'], table= 'Report')
+           >>>model.series_plot(x='Yield', y=['Maize.Grain.N', 'Maize.Grain.Size'], table= 'Report')
 
-         see below or https://seaborn.pydata.org/generated/seaborn.lineplot.html \n
+        Notes
+        -----
+        This function calls :func:`seaborn.lineplot` and accepts its keyword arguments
+        via ``**kwargs``. See:
+        https://seaborn.pydata.org/generated/seaborn/lineplot.html see below or https://seaborn.pydata.org/generated/seaborn.lineplot.html \n
         =============================================================================================================================================\n
         """
         self._refresh()
@@ -521,7 +567,6 @@ class PlotManager(ABC):
             seed=seed, orient=orient, sort=sort, err_style=err_style, err_kws=err_kws, legend=legend,
             ci=ci, ax=ax, **kwargs)
 
-    @inherit_docstring_from(sns.scatterplot)
     def scatter_plot(
             self,
             table=None,
@@ -544,8 +589,20 @@ class PlotManager(ABC):
             **kwargs
     ):
         """
-        Plot scatter plot using seaborn with flexible aesthetic mappings.
-        reference: https://seaborn.pydata.org/generated/seaborn.scatterplot.html. Check seaborn documentation below for more details \n
+
+        Scatter plot using :func:`seaborn.scatterplot` with flexible aesthetic mappings.
+
+        Parameters
+        ----------
+        table : str | [str] |None | None| pandas.DataFrame, optional. Default is None
+            If the table names are provided, results are collected from the simulated data, using that table names.
+            If None, results will be all the table names inside concatenated along the axis 0 (not recommended)
+        x, y, hue, size, style, palette, hue_order, hue_norm, sizes, size_order, size_norm, markers, style_order, legend, ax
+            Passed through to :func:`seaborn.scatterplot`.
+        **Kwargs
+            Additional keyword args for Seaborn.
+        See the reference below for all the kwargs.
+        reference; https://seaborn.pydata.org/generated/seaborn.scatterplot.html \n
         ================================================================================================================================\n"""
         self._refresh()
         data = self._harmonize_df(table)
@@ -569,7 +626,6 @@ class PlotManager(ABC):
             **kwargs
         )
 
-    @inherit_docstring_from(sns.catplot)
     def cat_plot(self,
                  table=None,
                  *,
@@ -607,8 +663,24 @@ class PlotManager(ABC):
                  facet_kws=None,
                  **kwargs
                  ):
-        """Wrapper for seaborn.catplot with all keyword arguments.
-        reference https://seaborn.pydata.org/generated/seaborn.catplot.html or check seaborn documentation below\n
+        """
+         Categorical plot wrapper over :func:`seaborn.catplot`.
+
+        Parameters
+        ----------
+        table : str or pandas.DataFrame, optional
+        x, y, hue, row, col, kind, estimator, errorbar, n_boot, seed, units, weights, order,
+        hue_order, row_order, col_order, col_wrap, height, aspect, log_scale, native_scale, formatter,
+        orient, color, palette, hue_norm, legend, legend_out, sharex, sharey, margin_titles, facet_kws
+            Passed through to :func:`seaborn.catplot`.
+        **kwargs
+            Additional keyword args for Seaborn.
+
+        Returns
+        -------
+        seaborn.axisgrid.FacetGrid
+
+        reference https://seaborn.pydata.org/generated/seaborn.catplot.html\n
         =========================================================================================================\n"""
         self._refresh()
         added_plots['cat_plot'] = 'cat_plot'

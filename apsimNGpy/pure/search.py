@@ -226,4 +226,5 @@ parent = 'Models.Core.Simulations'
 chid = find_child(tree, parent, model_type=model_type, model_name=model_name)
 print(f"{(parent, model_type, model_name,)}: {chid}")
 node = find_by_path(tree, ".Simulations.Simulation", return_all=True)
-list_model_paths('out.apsimx', 'Models.Climate.Weather', fullpath=False)
+pp = list_model_paths('out.apsimx', 'Models.PMF.Cultivar', fullpath=True)
+print(pp)

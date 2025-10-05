@@ -1,5 +1,5 @@
 ===============================
-Example Jupyter Notebooks (APSIM)
+Example Jupyter Notebooks (apsimNGpy)
 ===============================
 
 This folder contains small, self-contained notebooks and helper files for
@@ -99,7 +99,7 @@ Troubleshooting
 
 Some tools strip required fields from code cells. Fix with the provided helper::
 
-  python repair_notebooks.py path/to/notebook.ipynb
+  python repair.py path/to/notebook.ipynb out_new_path.ipynb
 
 (Internally this ensures each code cell has ``execution_count: null`` and
 ``outputs: []`` at minimum.)

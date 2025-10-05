@@ -115,6 +115,5 @@ Reproducibility
 See also
 --------
 
-- APSIM NG documentation
-- apsimNGpy API reference
-- Example notebooks in APSIM’s ``Examples/`` directory
+- `apsimNGpy documentation <https://magala-richard.github.io/apsimNGpy-documentations/index.html>`_
+- `apsimNGpy API reference <https://magala-richard.github.io/apsimNGpy-documentations/api.html>`_

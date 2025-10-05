@@ -35,16 +35,13 @@ Directory contents
   Working directory used by examples. Temporary files may be created here
   when you do not specify an absolute ``out_path`` for APSIM models.
 
-- **configs.ini**
-  Optional configuration used by notebooks/scripts (e.g., paths, defaults).
-
 - **data_plotting_and_visualization.ipynb**
   Walkthrough for plotting simulation outputs (time series, comparisons,
   derived indicators).
 
 - **instantiate_model.ipynb**
   Minimal example showing how to load a built-in APSIM template
-  (e.g., ``Maize``), set weather/report nodes, and run a simulation.
+  (e.g., ``Maize``), and run a simulation.
 
 - **method_chain.ipynb**
   Fluent API example: instantiate → configure → run → collect results in a

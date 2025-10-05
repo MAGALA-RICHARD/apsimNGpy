@@ -56,10 +56,3 @@ def run_model():
 
     # ⚠️ don’t dispose immediately if you want to read afterwards
     return db_path
-import clr
-clr.AddReference(r'D:\package\apsimNGpy\apsimNGpy\dll\ApsimRunnerBridge\bin\Release\net6.0\ApsimRunnerBridge.dll')
-import ApsimRunnerBridge
-RunnerBridge = ApsimRunnerBridge.Bridge
-os.environ["APSIM_BIN_PATH"] = str(lp.bin_path)
-db = RunnerBridge.RunApsim(r"C:\Users\rmagala\Downloads\miguez.apsimx")
-print("Output DB:", db)

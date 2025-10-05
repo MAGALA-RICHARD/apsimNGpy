@@ -51,22 +51,21 @@ Directory contents
   single chain.
 
 - **maize.apsimx**
-  Working copy of a Maize simulation produced by the notebooks.
+  will be produced if you run the `instantiate_model.ipynb` note book.
 
 - **maize.apsimx.bak**
-  Backup of the APSIM file. Keep under version control if you want a clean
-  rollback point.
+  will be produced if you run the `instantiate_model.ipynb` note book.
 
 - **maize.db**, **maize.db-shm**, **maize.db-wal**
   APSIM ``DataStore`` (SQLite) and its journaling files. The ``*.db-shm`` and
   ``*.db-wal`` files are transient; they disappear when the database is closed
-  cleanly. Do not delete them while APSIM/Jupyter is writing.
+  cleanly. Do not delete them while APSIM/Jupyter is writing. Will be produced if you run the `instantiate_model.ipynb` note book.
 
 - **repair.py**
   Utility for fixing general notebook or file issues.
 
 - **repair_notebooks.py**
-  Repairs invalid notebooks (e.g., adds missing ``execution_count`` / ``outputs``).
+  Repairs invalid notebooks (e.g., adds missing ``execution_count`` / ``outputs``) imports repair.py. repair.py takes in sys.args, therefore, can be executed on the command line
 
 Hints & conventions
 -------------------

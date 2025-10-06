@@ -1,6 +1,6 @@
 from apsimNGpy.example_jupiter_notebooks.repair import repair_ipynb
 from pathlib import Path
-
+import pandoc
 cwd = Path(__file__).parent
 notebooks = cwd.glob('**/*.ipynb')
 for i in notebooks:

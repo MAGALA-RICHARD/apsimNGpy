@@ -116,7 +116,7 @@ def _add_raw_overlay(g: sns.FacetGrid, time_col: Hashable, response: Hashable, *
 
 
 class PlotManager(ABC):
-    """"
+    """
      Abstract base class for high-level visualization of APSIMNGpy simulation outputs.
 
     The Goal of this class is to provide quick and high level plotting functions for apsimNGpy simulations. Wraps around seaborn and pandas plotting fucntions
@@ -275,8 +275,9 @@ class PlotManager(ABC):
 
                 Notes
                 -----
-                This function calls :func:`seaborn.relplot` and accepts its keyword arguments
-                via ``**kwargs``. See:
+                   This function calls :func:`seaborn.relplot` and accepts its keyword arguments
+                   via ``**kwargs``. See link below for details:
+
                 https://seaborn.pydata.org/generated/seaborn/relplot.html
                 """
 
@@ -388,7 +389,7 @@ class PlotManager(ABC):
 
     def distribution(self, x, *, table=None, **kwargs):
         """
-        Plot a univariate distribution/histogram using :func:`seaborn.histplot`.
+        Plot a uni-variate distribution/histogram using :func:`seaborn.histplot`.
 
         Parameters
         ----------
@@ -407,8 +408,11 @@ class PlotManager(ABC):
         Notes
         -----
         This function calls :func:`seaborn.histplot` and accepts its keyword arguments
-        via ``**kwargs``. See:
-        https://seaborn.pydata.org/generated/seaborn/histplot.html
+        via ``**kwargs``. See link below for details:
+
+        https://seaborn.pydata.org/generated/seaborn/histplot.html \n
+
+        =================================================================
         """
         added_plots['current_plot'] = 'distribution'
         self._refresh()
@@ -506,7 +510,8 @@ class PlotManager(ABC):
 
         **Kwargs
             Additional keyword args and all other arguments are for Seaborn.lineplot.
-        See the reference below for all the kwargs.
+            See the reference below for all the kwargs.
+
         reference; https://seaborn.pydata.org/generated/seaborn.lineplot.html
 
         Examples
@@ -531,9 +536,10 @@ class PlotManager(ABC):
         Notes
         -----
         This function calls :func:`seaborn.lineplot` and accepts its keyword arguments
-        via ``**kwargs``. See:
-        https://seaborn.pydata.org/generated/seaborn/lineplot.html see below or https://seaborn.pydata.org/generated/seaborn.lineplot.html \n
-        =============================================================================================================================================\n
+        via ``**kwargs``. See link below for detailed explanations:
+
+        https://seaborn.pydata.org/generated/seaborn/lineplot.html \n
+        =============================================================================================================================================
         """
         self._refresh()
         added_plots['current_plot'] = 'series_plot'

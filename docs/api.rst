@@ -2123,6 +2123,174 @@ need to create it using either Pathlib or os:
           should not be included in `self.results`.
         - This method does not mutate `self.results`.
 
+                        Examples
+                        --------
+                        >>> mgr.results.head()
+                           sim_id  yield  n2o
+                        0       1   10.2  0.8
+                        >>> mgr.save("outputs/simulations.db")
+
+                        Examples
+                        --------
+                        >>> mgr.results.head()
+                           sim_id  yield  n2o
+                        0       1   10.2  0.8
+                        >>> mgr.save("outputs/simulations.db")
+
+                        Examples
+                        --------
+                        >>> mgr.results.head()
+                           sim_id  yield  n2o
+                        0       1   10.2  0.8
+                        >>> mgr.save("outputs/simulations.db")
+
+                        Examples
+                        --------
+                        >>> mgr.results.head()
+                           sim_id  yield  n2o
+                        0       1   10.2  0.8
+                        >>> mgr.save("outputs/simulations.db")
+
+                Examples
+                --------
+                >>> mgr.results.head()
+                   sim_id  yield  n2o
+                0       1   10.2  0.8
+                >>> mgr.save("outputs/simulations.db")
+
+                        Examples
+                        --------
+                        >>> mgr.results.head()
+                           sim_id  yield  n2o
+                        0       1   10.2  0.8
+                        >>> mgr.save("outputs/simulations.db")
+
+                        Examples
+                        --------
+                        >>> mgr.results.head()
+                           sim_id  yield  n2o
+                        0       1   10.2  0.8
+                        >>> mgr.save("outputs/simulations.db")
+
+                        Examples
+                        --------
+                        >>> mgr.results.head()
+                           sim_id  yield  n2o
+                        0       1   10.2  0.8
+                        >>> mgr.save("outputs/simulations.db")
+
+                        Examples
+                        --------
+                        >>> mgr.results.head()
+                           sim_id  yield  n2o
+                        0       1   10.2  0.8
+                        >>> mgr.save("outputs/simulations.db")
+
+                Examples
+                --------
+                >>> mgr.results.head()
+                   sim_id  yield  n2o
+                0       1   10.2  0.8
+                >>> mgr.save("outputs/simulations.db")
+
+                        Examples
+                        --------
+                        >>> mgr.results.head()
+                           sim_id  yield  n2o
+                        0       1   10.2  0.8
+                        >>> mgr.save("outputs/simulations.db")
+
+                        Examples
+                        --------
+                        >>> mgr.results.head()
+                           sim_id  yield  n2o
+                        0       1   10.2  0.8
+                        >>> mgr.save("outputs/simulations.db")
+
+                        Examples
+                        --------
+                        >>> mgr.results.head()
+                           sim_id  yield  n2o
+                        0       1   10.2  0.8
+                        >>> mgr.save("outputs/simulations.db")
+
+                        Examples
+                        --------
+                        >>> mgr.results.head()
+                           sim_id  yield  n2o
+                        0       1   10.2  0.8
+                        >>> mgr.save("outputs/simulations.db")
+
+                Examples
+                --------
+                >>> mgr.results.head()
+                   sim_id  yield  n2o
+                0       1   10.2  0.8
+                >>> mgr.save("outputs/simulations.db")
+
+                        Examples
+                        --------
+                        >>> mgr.results.head()
+                           sim_id  yield  n2o
+                        0       1   10.2  0.8
+                        >>> mgr.save("outputs/simulations.db")
+
+                        Examples
+                        --------
+                        >>> mgr.results.head()
+                           sim_id  yield  n2o
+                        0       1   10.2  0.8
+                        >>> mgr.save("outputs/simulations.db")
+
+                        Examples
+                        --------
+                        >>> mgr.results.head()
+                           sim_id  yield  n2o
+                        0       1   10.2  0.8
+                        >>> mgr.save("outputs/simulations.db")
+
+                        Examples
+                        --------
+                        >>> mgr.results.head()
+                           sim_id  yield  n2o
+                        0       1   10.2  0.8
+                        >>> mgr.save("outputs/simulations.db")
+
+                Examples
+                --------
+                >>> mgr.results.head()
+                   sim_id  yield  n2o
+                0       1   10.2  0.8
+                >>> mgr.save("outputs/simulations.db")
+
+                Examples
+                --------
+                >>> mgr.results.head()
+                   sim_id  yield  n2o
+                0       1   10.2  0.8
+                >>> mgr.save("outputs/simulations.db")
+
+                Examples
+                --------
+                >>> mgr.results.head()
+                   sim_id  yield  n2o
+                0       1   10.2  0.8
+                >>> mgr.save("outputs/simulations.db")
+
+                Examples
+                --------
+                >>> mgr.results.head()
+                   sim_id  yield  n2o
+                0       1   10.2  0.8
+                >>> mgr.save("outputs/simulations.db")
+
+                Examples
+                --------
+                >>> mgr.results.head()
+                   sim_id  yield  n2o
+                0       1   10.2  0.8
+                >>> mgr.save("outputs/simulations.db")
+
         Examples
         --------
         >>> mgr.results.head()

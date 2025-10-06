@@ -18,15 +18,16 @@ pythonnet_start = start_pythonnet()
 meta_info = {}
 
 
-def is_file_format_modified():
+def is_file_format_modified(bin_path: Union[str, Path] = APSIM_BIN_PATH) -> bool:
     """
     Checks if the APSIM.CORE.dll is present in the bin path. Normally, the new APSIM version has this dll
     @return: bool
     """
+    bp = Path(bin_path)
     patterns = {"*APSIM.CORE.dll", "*APSIM.Core.dll"}
     path = []
     for pat in patterns:
-        path.extend(Path(APSIM_BIN_PATH).rglob(pat))
+        path.extend(Path(bp).rglob(pat))
     if len(path) > 0:
         return True
     return False
@@ -80,6 +81,8 @@ def load_pythonnet(bin_path=APSIM_BIN_PATH):
         raise ApsimBinPathConfigError(
             f'Built APSIM Binaries seems to have been uninstalled from this directory: {bin_path}\n use the config.set_apsim_bin_path')
     _add_bin_to_syspath(candidate)
+
+
     # system.path.append(bin_path)
     import clr
     clr.AddReference("System")
@@ -90,6 +93,12 @@ def load_pythonnet(bin_path=APSIM_BIN_PATH):
     if is_file_format_modified():
         clr.AddReference('APSIM.Core')
         apsim_core = True
+    # apsimNG engine
+    if set(Path(candidate).glob("*ApsimNG.dll")):
+        clr.AddReference("ApsimNG")
+    else:
+        logger.warning(f'Could not find ApsimNG.dll in {candidate}')
+
     return ConfigRuntimeInfo(True, bin_path=candidate)
 
     # return lm, sys, pythonnet.get_runtime_info()

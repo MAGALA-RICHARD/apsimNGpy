@@ -2146,8 +2146,9 @@ email: magalarich20@gmail.com
 
    Notes
    -----
-   This function calls :func:`seaborn.relplot` and accepts its keyword arguments
-   via ``**kwargs``. See:
+      This function calls :func:`seaborn.relplot` and accepts its keyword arguments
+      via ``**kwargs``. See link below for details:
+
    https://seaborn.pydata.org/generated/seaborn/relplot.html
 
 .. py:method:: apsimNGpy.core.apsim.ApsimModel.boxplot(self, column, *, table=None, by=None, figsize=(10, 8), grid=False, **kwargs) (inherited)
@@ -2173,7 +2174,7 @@ email: magalarich20@gmail.com
 
 .. py:method:: apsimNGpy.core.apsim.ApsimModel.distribution(self, x, *, table=None, **kwargs) (inherited)
 
-   Plot a univariate distribution/histogram using :func:`seaborn.histplot`.
+   Plot a uni-variate distribution/histogram using :func:`seaborn.histplot`.
 
    Parameters
    ----------
@@ -2192,8 +2193,12 @@ email: magalarich20@gmail.com
    Notes
    -----
    This function calls :func:`seaborn.histplot` and accepts its keyword arguments
-   via ``**kwargs``. See:
-   https://seaborn.pydata.org/generated/seaborn/histplot.html
+   via ``**kwargs``. See link below for details:
+
+   https://seaborn.pydata.org/generated/seaborn/histplot.html 
+
+
+   =================================================================
 
 .. py:method:: apsimNGpy.core.apsim.ApsimModel.series_plot(self, table=None, *, x: str = None, y: Union[str, list] = None, hue=None, size=None, style=None, units=None, weights=None, palette=None, hue_order=None, hue_norm=None, sizes=None, size_order=None, size_norm=None, dashes=True, markers=None, style_order=None, estimator='mean', errorbar=('ci', 95), n_boot=1000, seed=None, orient='x', sort=True, err_style='band', err_kws=None, legend='auto', ci='deprecated', ax=None, **kwargs) (inherited)
 
@@ -2208,7 +2213,8 @@ email: magalarich20@gmail.com
 
    **Kwargs
        Additional keyword args and all other arguments are for Seaborn.lineplot.
-   See the reference below for all the kwargs.
+       See the reference below for all the kwargs.
+
    reference; https://seaborn.pydata.org/generated/seaborn.lineplot.html
 
    Examples
@@ -2233,8 +2239,9 @@ email: magalarich20@gmail.com
    Notes
    -----
    This function calls :func:`seaborn.lineplot` and accepts its keyword arguments
-   via ``**kwargs``. See:
-   https://seaborn.pydata.org/generated/seaborn/lineplot.html see below or https://seaborn.pydata.org/generated/seaborn.lineplot.html 
+   via ``**kwargs``. See link below for detailed explanations:
+
+   https://seaborn.pydata.org/generated/seaborn/lineplot.html 
 
    =============================================================================================================================================
 
@@ -4496,8 +4503,9 @@ apsimNGpy.core.experimentmanager
 
    Notes
    -----
-   This function calls :func:`seaborn.relplot` and accepts its keyword arguments
-   via ``**kwargs``. See:
+      This function calls :func:`seaborn.relplot` and accepts its keyword arguments
+      via ``**kwargs``. See link below for details:
+
    https://seaborn.pydata.org/generated/seaborn/relplot.html
 
 .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.boxplot(self, column, *, table=None, by=None, figsize=(10, 8), grid=False, **kwargs) (inherited)
@@ -4523,7 +4531,7 @@ apsimNGpy.core.experimentmanager
 
 .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.distribution(self, x, *, table=None, **kwargs) (inherited)
 
-   Plot a univariate distribution/histogram using :func:`seaborn.histplot`.
+   Plot a uni-variate distribution/histogram using :func:`seaborn.histplot`.
 
    Parameters
    ----------
@@ -4542,8 +4550,12 @@ apsimNGpy.core.experimentmanager
    Notes
    -----
    This function calls :func:`seaborn.histplot` and accepts its keyword arguments
-   via ``**kwargs``. See:
-   https://seaborn.pydata.org/generated/seaborn/histplot.html
+   via ``**kwargs``. See link below for details:
+
+   https://seaborn.pydata.org/generated/seaborn/histplot.html 
+
+
+   =================================================================
 
 .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.series_plot(self, table=None, *, x: str = None, y: Union[str, list] = None, hue=None, size=None, style=None, units=None, weights=None, palette=None, hue_order=None, hue_norm=None, sizes=None, size_order=None, size_norm=None, dashes=True, markers=None, style_order=None, estimator='mean', errorbar=('ci', 95), n_boot=1000, seed=None, orient='x', sort=True, err_style='band', err_kws=None, legend='auto', ci='deprecated', ax=None, **kwargs) (inherited)
 
@@ -4558,7 +4570,8 @@ apsimNGpy.core.experimentmanager
 
    **Kwargs
        Additional keyword args and all other arguments are for Seaborn.lineplot.
-   See the reference below for all the kwargs.
+       See the reference below for all the kwargs.
+
    reference; https://seaborn.pydata.org/generated/seaborn.lineplot.html
 
    Examples
@@ -4583,8 +4596,9 @@ apsimNGpy.core.experimentmanager
    Notes
    -----
    This function calls :func:`seaborn.lineplot` and accepts its keyword arguments
-   via ``**kwargs``. See:
-   https://seaborn.pydata.org/generated/seaborn/lineplot.html see below or https://seaborn.pydata.org/generated/seaborn.lineplot.html 
+   via ``**kwargs``. See link below for detailed explanations:
+
+   https://seaborn.pydata.org/generated/seaborn/lineplot.html 
 
    =============================================================================================================================================
 
@@ -4729,6 +4743,174 @@ apsimNGpy.core.mult_cores
      If you maintain a separate collection of failed/incomplete jobs, they
      should not be included in `self.results`.
    - This method does not mutate `self.results`.
+
+         Examples
+         --------
+         >>> mgr.results.head()
+            sim_id  yield  n2o
+         0       1   10.2  0.8
+         >>> mgr.save("outputs/simulations.db")
+
+         Examples
+         --------
+         >>> mgr.results.head()
+            sim_id  yield  n2o
+         0       1   10.2  0.8
+         >>> mgr.save("outputs/simulations.db")
+
+         Examples
+         --------
+         >>> mgr.results.head()
+            sim_id  yield  n2o
+         0       1   10.2  0.8
+         >>> mgr.save("outputs/simulations.db")
+
+         Examples
+         --------
+         >>> mgr.results.head()
+            sim_id  yield  n2o
+         0       1   10.2  0.8
+         >>> mgr.save("outputs/simulations.db")
+
+      Examples
+      --------
+      >>> mgr.results.head()
+         sim_id  yield  n2o
+      0       1   10.2  0.8
+      >>> mgr.save("outputs/simulations.db")
+
+         Examples
+         --------
+         >>> mgr.results.head()
+            sim_id  yield  n2o
+         0       1   10.2  0.8
+         >>> mgr.save("outputs/simulations.db")
+
+         Examples
+         --------
+         >>> mgr.results.head()
+            sim_id  yield  n2o
+         0       1   10.2  0.8
+         >>> mgr.save("outputs/simulations.db")
+
+         Examples
+         --------
+         >>> mgr.results.head()
+            sim_id  yield  n2o
+         0       1   10.2  0.8
+         >>> mgr.save("outputs/simulations.db")
+
+         Examples
+         --------
+         >>> mgr.results.head()
+            sim_id  yield  n2o
+         0       1   10.2  0.8
+         >>> mgr.save("outputs/simulations.db")
+
+      Examples
+      --------
+      >>> mgr.results.head()
+         sim_id  yield  n2o
+      0       1   10.2  0.8
+      >>> mgr.save("outputs/simulations.db")
+
+         Examples
+         --------
+         >>> mgr.results.head()
+            sim_id  yield  n2o
+         0       1   10.2  0.8
+         >>> mgr.save("outputs/simulations.db")
+
+         Examples
+         --------
+         >>> mgr.results.head()
+            sim_id  yield  n2o
+         0       1   10.2  0.8
+         >>> mgr.save("outputs/simulations.db")
+
+         Examples
+         --------
+         >>> mgr.results.head()
+            sim_id  yield  n2o
+         0       1   10.2  0.8
+         >>> mgr.save("outputs/simulations.db")
+
+         Examples
+         --------
+         >>> mgr.results.head()
+            sim_id  yield  n2o
+         0       1   10.2  0.8
+         >>> mgr.save("outputs/simulations.db")
+
+      Examples
+      --------
+      >>> mgr.results.head()
+         sim_id  yield  n2o
+      0       1   10.2  0.8
+      >>> mgr.save("outputs/simulations.db")
+
+         Examples
+         --------
+         >>> mgr.results.head()
+            sim_id  yield  n2o
+         0       1   10.2  0.8
+         >>> mgr.save("outputs/simulations.db")
+
+         Examples
+         --------
+         >>> mgr.results.head()
+            sim_id  yield  n2o
+         0       1   10.2  0.8
+         >>> mgr.save("outputs/simulations.db")
+
+         Examples
+         --------
+         >>> mgr.results.head()
+            sim_id  yield  n2o
+         0       1   10.2  0.8
+         >>> mgr.save("outputs/simulations.db")
+
+         Examples
+         --------
+         >>> mgr.results.head()
+            sim_id  yield  n2o
+         0       1   10.2  0.8
+         >>> mgr.save("outputs/simulations.db")
+
+      Examples
+      --------
+      >>> mgr.results.head()
+         sim_id  yield  n2o
+      0       1   10.2  0.8
+      >>> mgr.save("outputs/simulations.db")
+
+      Examples
+      --------
+      >>> mgr.results.head()
+         sim_id  yield  n2o
+      0       1   10.2  0.8
+      >>> mgr.save("outputs/simulations.db")
+
+      Examples
+      --------
+      >>> mgr.results.head()
+         sim_id  yield  n2o
+      0       1   10.2  0.8
+      >>> mgr.save("outputs/simulations.db")
+
+      Examples
+      --------
+      >>> mgr.results.head()
+         sim_id  yield  n2o
+      0       1   10.2  0.8
+      >>> mgr.save("outputs/simulations.db")
+
+      Examples
+      --------
+      >>> mgr.results.head()
+         sim_id  yield  n2o
+      0       1   10.2  0.8
+      >>> mgr.save("outputs/simulations.db")
 
    Examples
    --------
@@ -5444,7 +5626,7 @@ apsimNGpy.exceptions
 
 .. py:class:: apsimNGpy.exceptions.TableNotFoundError
 
-   table not found error.
+   the table was not found error.
 
 .. py:method:: apsimNGpy.exceptions.TableNotFoundError.with_traceback() (inherited)
 

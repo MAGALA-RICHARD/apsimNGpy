@@ -294,7 +294,7 @@ class MultiCoreManager:
         >>> mgr.results.head()
            sim_id  yield  n2o
         0       1   10.2  0.8
-        >>> mgr.save("outputs/simulations.db", table_name="maize_runs", if_exists="append")
+        >>> mgr.save("outputs/simulations.db")
         """
 
         # --- Validate results

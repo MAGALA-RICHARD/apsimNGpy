@@ -247,7 +247,7 @@ class CoreModel(PlotManager):
         self.path = self.model_info.path
         return self
 
-    def save(self, file_name: Union[str, Path, None] = None):
+    def save(self, file_name: Union[str, Path, None] = None, reload=True):
         """
         Saves the current APSIM NG model (``Simulations``) to disk and refresh runtime state.
 
@@ -271,6 +271,9 @@ class CoreModel(PlotManager):
             uses the instance's existing ``self.path``. The resolved path is also
             written back to ``self.path`` for consistency.
 
+        reload: bool Optional default is True
+             resets the reference path to the one provided after serializing to disk. this implies that the self.path will be the provided file_name
+
         Returns
         -------
         Self
@@ -290,7 +293,7 @@ class CoreModel(PlotManager):
         ------------
         - Sets ``self.path`` to the resolved output path (string).
         - Writes the model file to disk (overwrites if it exists).
-        - Recompiles the model and restarts the in-memory instance.
+        - If reload is True (default), recompiles the model and restarts the in-memory instance.
 
         Notes
         -----
@@ -306,10 +309,25 @@ class CoreModel(PlotManager):
         Examples
         --------
         Save to the current file path tracked by the instance::
+            >>> from apsimNGpy.core.apsim import ApsimModel
+            >>> from pathlib import Path
+            >>> model = ApsimModel("Maize", out_path='saved_maize.apsimx')
+            >>> model.path
+            scratch\\saved_maize.apsimx
+             Save to a new path and continue working with the refreshed instance::
+            >>> model.save(file_name='out_maize.apsimx', reload=True)
+            >>> model.path
+            >>> 'out_maize.apsimx'
+            # relaod = False
+            >>> model = ApsimModel("Maize", out_path='saved_maize.apsimx')
+            >>> model.save(file_name='out_maize.apsimx', reload=False)
+            # check the current reference path for the model
+            >>>model.path
+            scratch\\saved_maize.apsimx
+        When reload is False, it the original referenced path remains as shown above
 
-            model.save()
 
-        Save to a new path and continue working with the refreshed instance::
+
 
             model.save("outputs/Scenario_A.apsimx").run()
 
@@ -320,16 +338,17 @@ class CoreModel(PlotManager):
         save_model_to_file : Legacy writer for older APSIM NG versions.
         """
         _path = str(file_name or self.path)
-        self.path = _path
+
         if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
             self.Simulations.Write(str(_path))
         else:
             sm = getattr(self.Simulations, 'Node', self.Simulations)
             save_model_to_file(sm, out=_path)
-        model_info = recompile(self)
-        self.restart_model(model_info)
-        # there is a big risk of a loading results from already simualted database existing if saved with the same name, so we reset ran_ok to falso to avoid this problem
-        self.ran_ok = False
+        # rest the reference path to the saved filename or path
+        if reload:
+            model_info = recompile(self)
+            self.restart_model(model_info)
+            self.path = _path
         return self
 
     @property

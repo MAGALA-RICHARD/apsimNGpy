@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "dgSpecHash": "xv7KHugF/DA=",
+  "success": true,
+  "projectFilePath": "D:\\package\\apsimNGpy\\apsimNGpy\\dll\\ApsimRunnerBridge\\ApsimRunnerBridge.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\rmagala\\.nuget\\packages\\microsoft.netcore.app.ref\\6.0.36\\microsoft.netcore.app.ref.6.0.36.nupkg.sha512",
+    "C:\\Users\\rmagala\\.nuget\\packages\\microsoft.windowsdesktop.app.ref\\6.0.36\\microsoft.windowsdesktop.app.ref.6.0.36.nupkg.sha512",
+    "C:\\Users\\rmagala\\.nuget\\packages\\microsoft.aspnetcore.app.ref\\6.0.36\\microsoft.aspnetcore.app.ref.6.0.36.nupkg.sha512"
+  ],
+  "logs": []
+}

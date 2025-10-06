@@ -51,11 +51,34 @@ class TestCoreModel(BaseTester):
         self.weather_file_daymet = os.path.realpath('test_met_daymet.met')
         self.test_user_out_path = stamp_name_with_version(os.path.realpath(f'{self._testMethodName}.apsimx'))
         self.model = 'Maize'
+        self.test_save_path = Path(f"save_{self._testMethodName}.apsimx")
         self.test_ap_sim = CoreModel(self.model, out_path=self.user_file_name)
         self.paths = {self.test_user_out_path,
                       self.weather_file_nasa,
                       self.weather_file_daymet,
                       self.user_file_name}
+
+    def test_save_reload_false(self):
+
+        try:
+            self.test_save_path.unlink(missing_ok=True)
+        except PermissionError:
+            pass
+        cp = self.test_ap_sim.path
+        self.test_ap_sim.save(file_name=self.test_save_path, reload= False)
+        self.assertGreater(self.test_save_path.stat().st_size, 0, 'saving the model failed when reload =False')
+        self.assertEqual(cp, self.test_ap_sim.path)
+
+    def test_save_reload_true(self):
+
+        try:
+            self.test_save_path.unlink(missing_ok=True)
+        except PermissionError:
+            pass
+        cp = self.test_ap_sim.path
+        self.test_ap_sim.save(file_name=self.test_save_path, reload=True)
+        self.assertGreater(self.test_save_path.stat().st_size, 0, 'saving the model failed when reload =True')
+        self.assertNotEqual(cp, self.test_ap_sim.path)
 
     def test_out_path(self):
         """
@@ -430,7 +453,7 @@ class TestCoreModel(BaseTester):
 
     def test_remove_variable_spec(self):
         variable_spec = '[Clock].Today as Date'
-        vs= self.test_ap_sim.inspect_model_parameters('Models.Report', 'Report')['VariableNames']
+        vs = self.test_ap_sim.inspect_model_parameters('Models.Report', 'Report')['VariableNames']
         vsIn = variable_spec in vs
         self.assertFalse(vsIn, msg=f'Variable {variable_spec} already in report')
         # safe to add it now
@@ -449,6 +472,10 @@ class TestCoreModel(BaseTester):
         for path in self.paths:
             if os.path.exists(path):
                 os.remove(path)
+        try:
+            self.test_save_path.unlink(missing_ok=True)
+        except PermissionError:
+            pass
 
 
 if __name__ == '__main__':

@@ -1671,37 +1671,42 @@ class CoreModel(PlotManager):
 
         Parameters
         -------------------
+        variable_spec: str, required.
+            list of text commands for the report _variables e.g., '[Clock].Today as Date'
+        param report_name: str, optional.
+            Name of the report variable if not specified, the first accessed report object will be altered
+        set_event_names: list or str, optional.
+            A list of APSIM events that trigger the recording of _variables.
+            Defaults to ['[Clock].EndOfYear'] if not provided.
 
-        ``variable_spec``: (str, required): list of text commands for the report _variables e.g., '[Clock].Today as Date'
+        Returns
+        _______
+        returns instance of apsimNGpy.core.core.apsim.ApsimModel or apsimNGpy.core.core.apsim.CoreModel
 
-        ``param report_name``: (str, optional): name of the report variable if not specified the first accessed report object will be altered
+        Raise
+        ---------
+           raises an `ValueError` if a report is not found
 
-        ``set_event_names`` (list or str, optional): A list of APSIM events that trigger the recording of _variables.
-                                                     Defaults to ['[Clock].EndOfYear'] if not provided.
-        :Returns:
-            returns instance of apsimNGpy.core.core.apsim.ApsimModel or apsimNGpy.core.core.apsim.CoreModel
-           raises an erros if a report is not found
-
-        Examples:
-
-            >>> from apsimNGpy.core.apsim import ApsimModel
-            >>> model = ApsimModel('Maize')
-            >>> model.add_report_variable(variable_spec = '[Clock].Today as Date', report_name = 'Report')
-            # isnepct the report
-            >>> model.inspect_model_parameters(model_type='Models.Report', model_name='Report')
-            {'EventNames': ['[Maize].Harvesting'],
-                 'VariableNames': ['[Clock].Today',
-                  '[Maize].Phenology.CurrentStageName',
-                  '[Maize].AboveGround.Wt',
-                  '[Maize].AboveGround.N',
-                  '[Maize].Grain.Total.Wt*10 as Yield',
-                  '[Maize].Grain.Wt',
-                  '[Maize].Grain.Size',
-                  '[Maize].Grain.NumberFunction',
-                  '[Maize].Grain.Total.Wt',
-                  '[Maize].Grain.N',
-                  '[Maize].Total.Wt',
-                  '[Clock].Today as Date']}
+        Examples
+        -------------
+        >>> from apsimNGpy.core.apsim import ApsimModel
+        >>> model = ApsimModel('Maize')
+        >>> model.add_report_variable(variable_spec = '[Clock].Today as Date', report_name = 'Report')
+        # isnepct the report
+        >>> model.inspect_model_parameters(model_type='Models.Report', model_name='Report')
+        {'EventNames': ['[Maize].Harvesting'],
+             'VariableNames': ['[Clock].Today',
+              '[Maize].Phenology.CurrentStageName',
+              '[Maize].AboveGround.Wt',
+              '[Maize].AboveGround.N',
+              '[Maize].Grain.Total.Wt*10 as Yield',
+              '[Maize].Grain.Wt',
+              '[Maize].Grain.Size',
+              '[Maize].Grain.NumberFunction',
+              '[Maize].Grain.Total.Wt',
+              '[Maize].Grain.N',
+              '[Maize].Total.Wt',
+              '[Clock].Today as Date']}
         The new report variable is appended at the end of the existing ones
         """
         if isinstance(variable_spec, str):

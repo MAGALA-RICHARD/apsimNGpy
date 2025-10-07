@@ -847,73 +847,58 @@ Classes
    path : str
        APSIM path to a target node under `self.Simulations` (e.g.,
        '.Simulations.Simulations.Weather' or a similar canonical path).
-   **kwargs
-       Editor-specific keyword arguments. Accepted keys depend on the resolved model or component type
 
-
-   Type-specific editing
-   ---------------------
-   Dispatch is based on the resolved model type:
-
-   - :class:`Models.Climate.Weather`
-     Calls `self._set_weather_path(values, param_values=kwargs, verbose=verbose)`.
-     Typical parameters include a new weather_file or met_file
-
-   - :class:`Models.Manager`
-     Validates that provided keys in `kwargs` match the manager script’s
-     `Parameters x keys set; unknown keys raise :class:`ValueError`. On success,
-
-
-   - :class:`Models.PMF.Cultivar`
-     Ensures cultivar replacements exist under `Replacements` (creates as needed), then calls
-     `_edit_in_cultivar(model_name=values.Name, simulations=simulations, param_values=kwargs, verbose=verbose)`.
-
-   - :class:`Models.Clock`
-     Calls `self._set_clock_vars(values, param_values=kwargs)` (e.g., `StartDate`, `EndDate`).
-
-   Soil components:
-     Models.Soils.Physical | Models.Soils.Chemical | Models.Soils.Organic |
-     Models.Soils.Water | Models.Soils.Solute
-
-
-   - :class:`Models.Report`:
-    accepts key word arguments such as as variable_spec.
-
-   - :class:`Models.Surface.SurfaceOrganicMatter`
-     Requires at least one of:
-     `'SurfOM'`, `'InitialCPR'`, `'InitialResidueMass'`, `'InitialCNR'`, `'IncorporatedP'`.
-     If none supplied, raises :class:`ValueError`. Calls
-
-   ..note::
-
-       - Manager edits validate keys strictly (unknown keys fail).
-       - Cultivar edits may mutate the model tree (creating entries under ``Replacements``).
-
-   Returns
-   -------
-   instance of ApsimModel or CoreModel class
-
-   Raises
+   kwargs
    ------
-   ValueError
-       If no node is found for ``path``; if a Manager parameter key is invalid;
-       if a SurfaceOrganicMatter edit has no supported keys; or if casting fails.
-   AttributeError
-       If required APIs are missing on ``self.Simulations`` or on resolved nodes.
-   NotImplementedError
-       If the resolved node type has no implemented editor.
-   Exception
-       Propagated errors from delegated helpers (e.g., I/O, parsing).
 
-   Notes
-   -----
-   - *Path semantics.* The path syntax must match what ``FindByPath`` or the fallback
-     `get_node_by_path` expects in your APSIM build.
-   - *Type casting.* When `.Value`` is absent, the method attempts to unwrap from
-     `.Model` and cast across a small set of known APSIM types via ``CastHelper``.
-   - *Non-idempotent operations.* Some edits (e.g., cultivar replacements) modify the model structure.
-   - *Concurrency.* Edits mutate in-memory state; synchronize if using multiple threads/processes.
+   Additional keyword arguments specific to the model type. Atleast one key word argument is required. These vary by component:
 
+   Models.Climate.Weather:
+       `weather_file` (str): Path to the weather `.met` file.
+
+   Models.Clock:
+       Date properties such as `Start` and `End` in ISO format (e.g., '2021-01-01').
+
+   Models.Manager:
+       Variables to update in the Manager script using `update_mgt_by_path`.
+
+   Soils.Physical | Soils.Chemical | Soils.Organic | Soils.Water:
+       Variables to replace using `replace_soils_values_by_path`.
+
+       Valid `parameters` are shown below;
+
+       +------------------+--------------------------------------------------------------------------------------------------------------------------------------+
+       | Soil Model Type  | **Supported key word arguments**                                                                                                     |
+       +==================+======================================================================================================================================+
+       | Physical         | AirDry, BD, DUL, DULmm, Depth, DepthMidPoints, KS, LL15, LL15mm, PAWC, PAWCmm, SAT, SATmm, SW, SWmm, Thickness, ThicknessCumulative  |
+       +------------------+--------------------------------------------------------------------------------------------------------------------------------------+
+       | Organic          | CNR, Carbon, Depth, FBiom, FInert, FOM, Nitrogen, SoilCNRatio, Thickness                                                             |
+       +------------------+--------------------------------------------------------------------------------------------------------------------------------------+
+       | Chemical         | Depth, PH, Thickness                                                                                                                 |
+       +------------------+--------------------------------------------------------------------------------------------------------------------------------------+
+
+   Models.Report:
+     report_name (str):
+        Name of the report model (optional depending on structure).
+     variable_spec`   (list[str] or str):
+        Variables to include in the report.
+     set_event_names` (list[str], optional):
+        Events that trigger the report.
+
+   Models.PMF.Cultivar:
+       commands (str):
+          APSIM path to the cultivar parameter to update.
+       values: (Any)
+          Value to assign.
+       cultivar_manager: (str)
+          Name of the Manager script managing the cultivar, which must contain the `CultivarName` parameter. Required to propagate updated cultivar values, as APSIM treats cultivars as read-only.
+
+   .. warning::
+
+       ValueError
+           If the model instance is not found, required kwargs are missing, or `kwargs` is empty.
+       NotImplementedError
+           If the logic for the specified `model_class` is not implemented.
    Examples
    --------
    Edit a Manager script parameter::
@@ -1119,37 +1104,42 @@ Classes
 
    Parameters
    -------------------
+   variable_spec: str, required.
+       list of text commands for the report _variables e.g., '[Clock].Today as Date'
+   param report_name: str, optional.
+       Name of the report variable if not specified, the first accessed report object will be altered
+   set_event_names: list or str, optional.
+       A list of APSIM events that trigger the recording of _variables.
+       Defaults to ['[Clock].EndOfYear'] if not provided.
 
-   ``variable_spec``: (str, required): list of text commands for the report _variables e.g., '[Clock].Today as Date'
+   Returns
+   _______
+   returns instance of apsimNGpy.core.core.apsim.ApsimModel or apsimNGpy.core.core.apsim.CoreModel
 
-   ``param report_name``: (str, optional): name of the report variable if not specified the first accessed report object will be altered
+   Raise
+   ---------
+      raises an `ValueError` if a report is not found
 
-   ``set_event_names`` (list or str, optional): A list of APSIM events that trigger the recording of _variables.
-                                                Defaults to ['[Clock].EndOfYear'] if not provided.
-   :Returns:
-       returns instance of apsimNGpy.core.core.apsim.ApsimModel or apsimNGpy.core.core.apsim.CoreModel
-      raises an erros if a report is not found
-
-   Examples:
-
-       >>> from apsimNGpy.core.apsim import ApsimModel
-       >>> model = ApsimModel('Maize')
-       >>> model.add_report_variable(variable_spec = '[Clock].Today as Date', report_name = 'Report')
-       # isnepct the report
-       >>> model.inspect_model_parameters(model_type='Models.Report', model_name='Report')
-       {'EventNames': ['[Maize].Harvesting'],
-            'VariableNames': ['[Clock].Today',
-             '[Maize].Phenology.CurrentStageName',
-             '[Maize].AboveGround.Wt',
-             '[Maize].AboveGround.N',
-             '[Maize].Grain.Total.Wt*10 as Yield',
-             '[Maize].Grain.Wt',
-             '[Maize].Grain.Size',
-             '[Maize].Grain.NumberFunction',
-             '[Maize].Grain.Total.Wt',
-             '[Maize].Grain.N',
-             '[Maize].Total.Wt',
-             '[Clock].Today as Date']}
+   Examples
+   -------------
+   >>> from apsimNGpy.core.apsim import ApsimModel
+   >>> model = ApsimModel('Maize')
+   >>> model.add_report_variable(variable_spec = '[Clock].Today as Date', report_name = 'Report')
+   # isnepct the report
+   >>> model.inspect_model_parameters(model_type='Models.Report', model_name='Report')
+   {'EventNames': ['[Maize].Harvesting'],
+        'VariableNames': ['[Clock].Today',
+         '[Maize].Phenology.CurrentStageName',
+         '[Maize].AboveGround.Wt',
+         '[Maize].AboveGround.N',
+         '[Maize].Grain.Total.Wt*10 as Yield',
+         '[Maize].Grain.Wt',
+         '[Maize].Grain.Size',
+         '[Maize].Grain.NumberFunction',
+         '[Maize].Grain.Total.Wt',
+         '[Maize].Grain.N',
+         '[Maize].Total.Wt',
+         '[Clock].Today as Date']}
    The new report variable is appended at the end of the existing ones
 
    .. py:method:: apsimNGpy.core.apsim.ApsimModel.remove_report_variable(self, variable_spec: 'Union[list, tuple, str]', report_name: 'str | None' = None) (inherited)
@@ -3658,73 +3648,58 @@ Classes
    path : str
        APSIM path to a target node under `self.Simulations` (e.g.,
        '.Simulations.Simulations.Weather' or a similar canonical path).
-   **kwargs
-       Editor-specific keyword arguments. Accepted keys depend on the resolved model or component type
 
-
-   Type-specific editing
-   ---------------------
-   Dispatch is based on the resolved model type:
-
-   - :class:`Models.Climate.Weather`
-     Calls `self._set_weather_path(values, param_values=kwargs, verbose=verbose)`.
-     Typical parameters include a new weather_file or met_file
-
-   - :class:`Models.Manager`
-     Validates that provided keys in `kwargs` match the manager script’s
-     `Parameters x keys set; unknown keys raise :class:`ValueError`. On success,
-
-
-   - :class:`Models.PMF.Cultivar`
-     Ensures cultivar replacements exist under `Replacements` (creates as needed), then calls
-     `_edit_in_cultivar(model_name=values.Name, simulations=simulations, param_values=kwargs, verbose=verbose)`.
-
-   - :class:`Models.Clock`
-     Calls `self._set_clock_vars(values, param_values=kwargs)` (e.g., `StartDate`, `EndDate`).
-
-   Soil components:
-     Models.Soils.Physical | Models.Soils.Chemical | Models.Soils.Organic |
-     Models.Soils.Water | Models.Soils.Solute
-
-
-   - :class:`Models.Report`:
-    accepts key word arguments such as as variable_spec.
-
-   - :class:`Models.Surface.SurfaceOrganicMatter`
-     Requires at least one of:
-     `'SurfOM'`, `'InitialCPR'`, `'InitialResidueMass'`, `'InitialCNR'`, `'IncorporatedP'`.
-     If none supplied, raises :class:`ValueError`. Calls
-
-   ..note::
-
-       - Manager edits validate keys strictly (unknown keys fail).
-       - Cultivar edits may mutate the model tree (creating entries under ``Replacements``).
-
-   Returns
-   -------
-   instance of ApsimModel or CoreModel class
-
-   Raises
+   kwargs
    ------
-   ValueError
-       If no node is found for ``path``; if a Manager parameter key is invalid;
-       if a SurfaceOrganicMatter edit has no supported keys; or if casting fails.
-   AttributeError
-       If required APIs are missing on ``self.Simulations`` or on resolved nodes.
-   NotImplementedError
-       If the resolved node type has no implemented editor.
-   Exception
-       Propagated errors from delegated helpers (e.g., I/O, parsing).
 
-   Notes
-   -----
-   - *Path semantics.* The path syntax must match what ``FindByPath`` or the fallback
-     `get_node_by_path` expects in your APSIM build.
-   - *Type casting.* When `.Value`` is absent, the method attempts to unwrap from
-     `.Model` and cast across a small set of known APSIM types via ``CastHelper``.
-   - *Non-idempotent operations.* Some edits (e.g., cultivar replacements) modify the model structure.
-   - *Concurrency.* Edits mutate in-memory state; synchronize if using multiple threads/processes.
+   Additional keyword arguments specific to the model type. Atleast one key word argument is required. These vary by component:
 
+   Models.Climate.Weather:
+       `weather_file` (str): Path to the weather `.met` file.
+
+   Models.Clock:
+       Date properties such as `Start` and `End` in ISO format (e.g., '2021-01-01').
+
+   Models.Manager:
+       Variables to update in the Manager script using `update_mgt_by_path`.
+
+   Soils.Physical | Soils.Chemical | Soils.Organic | Soils.Water:
+       Variables to replace using `replace_soils_values_by_path`.
+
+       Valid `parameters` are shown below;
+
+       +------------------+--------------------------------------------------------------------------------------------------------------------------------------+
+       | Soil Model Type  | **Supported key word arguments**                                                                                                     |
+       +==================+======================================================================================================================================+
+       | Physical         | AirDry, BD, DUL, DULmm, Depth, DepthMidPoints, KS, LL15, LL15mm, PAWC, PAWCmm, SAT, SATmm, SW, SWmm, Thickness, ThicknessCumulative  |
+       +------------------+--------------------------------------------------------------------------------------------------------------------------------------+
+       | Organic          | CNR, Carbon, Depth, FBiom, FInert, FOM, Nitrogen, SoilCNRatio, Thickness                                                             |
+       +------------------+--------------------------------------------------------------------------------------------------------------------------------------+
+       | Chemical         | Depth, PH, Thickness                                                                                                                 |
+       +------------------+--------------------------------------------------------------------------------------------------------------------------------------+
+
+   Models.Report:
+     report_name (str):
+        Name of the report model (optional depending on structure).
+     variable_spec`   (list[str] or str):
+        Variables to include in the report.
+     set_event_names` (list[str], optional):
+        Events that trigger the report.
+
+   Models.PMF.Cultivar:
+       commands (str):
+          APSIM path to the cultivar parameter to update.
+       values: (Any)
+          Value to assign.
+       cultivar_manager: (str)
+          Name of the Manager script managing the cultivar, which must contain the `CultivarName` parameter. Required to propagate updated cultivar values, as APSIM treats cultivars as read-only.
+
+   .. warning::
+
+       ValueError
+           If the model instance is not found, required kwargs are missing, or `kwargs` is empty.
+       NotImplementedError
+           If the logic for the specified `model_class` is not implemented.
    Examples
    --------
    Edit a Manager script parameter::
@@ -3930,37 +3905,42 @@ Classes
 
    Parameters
    -------------------
+   variable_spec: str, required.
+       list of text commands for the report _variables e.g., '[Clock].Today as Date'
+   param report_name: str, optional.
+       Name of the report variable if not specified, the first accessed report object will be altered
+   set_event_names: list or str, optional.
+       A list of APSIM events that trigger the recording of _variables.
+       Defaults to ['[Clock].EndOfYear'] if not provided.
 
-   ``variable_spec``: (str, required): list of text commands for the report _variables e.g., '[Clock].Today as Date'
+   Returns
+   _______
+   returns instance of apsimNGpy.core.core.apsim.ApsimModel or apsimNGpy.core.core.apsim.CoreModel
 
-   ``param report_name``: (str, optional): name of the report variable if not specified the first accessed report object will be altered
+   Raise
+   ---------
+      raises an `ValueError` if a report is not found
 
-   ``set_event_names`` (list or str, optional): A list of APSIM events that trigger the recording of _variables.
-                                                Defaults to ['[Clock].EndOfYear'] if not provided.
-   :Returns:
-       returns instance of apsimNGpy.core.core.apsim.ApsimModel or apsimNGpy.core.core.apsim.CoreModel
-      raises an erros if a report is not found
-
-   Examples:
-
-       >>> from apsimNGpy.core.apsim import ApsimModel
-       >>> model = ApsimModel('Maize')
-       >>> model.add_report_variable(variable_spec = '[Clock].Today as Date', report_name = 'Report')
-       # isnepct the report
-       >>> model.inspect_model_parameters(model_type='Models.Report', model_name='Report')
-       {'EventNames': ['[Maize].Harvesting'],
-            'VariableNames': ['[Clock].Today',
-             '[Maize].Phenology.CurrentStageName',
-             '[Maize].AboveGround.Wt',
-             '[Maize].AboveGround.N',
-             '[Maize].Grain.Total.Wt*10 as Yield',
-             '[Maize].Grain.Wt',
-             '[Maize].Grain.Size',
-             '[Maize].Grain.NumberFunction',
-             '[Maize].Grain.Total.Wt',
-             '[Maize].Grain.N',
-             '[Maize].Total.Wt',
-             '[Clock].Today as Date']}
+   Examples
+   -------------
+   >>> from apsimNGpy.core.apsim import ApsimModel
+   >>> model = ApsimModel('Maize')
+   >>> model.add_report_variable(variable_spec = '[Clock].Today as Date', report_name = 'Report')
+   # isnepct the report
+   >>> model.inspect_model_parameters(model_type='Models.Report', model_name='Report')
+   {'EventNames': ['[Maize].Harvesting'],
+        'VariableNames': ['[Clock].Today',
+         '[Maize].Phenology.CurrentStageName',
+         '[Maize].AboveGround.Wt',
+         '[Maize].AboveGround.N',
+         '[Maize].Grain.Total.Wt*10 as Yield',
+         '[Maize].Grain.Wt',
+         '[Maize].Grain.Size',
+         '[Maize].Grain.NumberFunction',
+         '[Maize].Grain.Total.Wt',
+         '[Maize].Grain.N',
+         '[Maize].Total.Wt',
+         '[Clock].Today as Date']}
    The new report variable is appended at the end of the existing ones
 
    .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.remove_report_variable(self, variable_spec: 'Union[list, tuple, str]', report_name: 'str | None' = None) (inherited)

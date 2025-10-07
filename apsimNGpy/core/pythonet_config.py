@@ -20,7 +20,7 @@ meta_info = {}
 
 def is_file_format_modified(bin_path: Union[str, Path] = APSIM_BIN_PATH) -> bool:
     """
-    Checks if the APSIM.CORE.dll is present in the bin path. Normally, the new APSIM version has this dll
+    Checks if the APSIM.CORE.dll is present in the bin path. Normally, the new APSIM version has this dll file
     @return: bool
     """
     bp = Path(bin_path)
@@ -72,9 +72,7 @@ def load_pythonnet(bin_path=APSIM_BIN_PATH):
 
         Notes:
         It raises a KeyError if APSIM path is not found. Please edit the system environmental variable on your computer.
-    Attributes:
-    ----------
-    None
+
     """
     candidate = config.locate_model_bin_path(bin_path)
     if not candidate:
@@ -131,8 +129,8 @@ def get_apsim_file_reader(method: str = 'string'):
         ----------
         method: {"string", "file"}, optional
             Which reader to return:
-            - ``"string"`` >>> returns ``FileFormat.ReadFromString``.
-            - ``"file"``   >>> returns ``FileFormat.ReadFromFile``.
+            - "string" >>> returns ``FileFormat.ReadFromString``.
+            - "file" >>> returns ``FileFormat.ReadFromFile``.
             Defaults to ``"string"``.
 
         Returns

@@ -290,12 +290,6 @@ class ApsimModel(CoreModel):
         # self.replace_any_soil_physical('DUL', simulations, duL)
         return self
 
-    @staticmethod
-    def get_weather_online(lonlat: tuple, start: int, end: int):
-        wp = weather.get_met_from_day_met(lonlat, start=start, end=end)
-        wpath = os.path.join(os.getcwd(), wp)
-        return wpath
-
     def replace_downloaded_soils(self, soil_tables: Union[dict, list], simulation_names: Union[tuple, list], **kwargs):
         """ @deprecated and will be removed in the future versions
             Updates soil parameters and configurations for downloaded soil data in simulation models.
@@ -414,19 +408,19 @@ class ApsimModel(CoreModel):
 
         Parameters:
         ----------
-        ``report_name`` : str, optional (default: 'Report')
+        report_name: str, optional (default: 'Report')
             The name of the aPSim report to be used for simulation results.
 
-        ``start`` : str, optional
+        start: str, optional
             The start date for the simulation (e.g., '01-01-2023'). If provided, it will change the simulation start date.
 
-        ``end`` : str, optional
+        end: str, optional
             The end date for the simulation (e.g., '3-12-2023'). If provided, it will change the simulation end date.
 
-        ``spin_var`` : str, optional (default: 'Carbon'). the difference between the start and end date will determine the spin-up period
+        spin_var: str, optional (default: 'Carbon'). the difference between the start and end date will determine the spin-up period
             The variable representing the child of spin-up operation. Supported values are 'Carbon' or 'DUL'.
 
-        ``Returns:``
+        Returns:
         -------
         self : ApsimModel
             The modified ``ApsimModel`` object after the spin-up operation.
@@ -544,12 +538,12 @@ class ApsimModel(CoreModel):
         default models because those need to be executed first to generate a database.
 
         The rationale for this method is that you can just access the results from the previous session without
-        running it, if the database is in the same location as the apsimx file.
+        running it if the database is in the same location as the apsimx file.
 
         Since apsimNGpy clones the apsimx file, the original file is kept with attribute name `_model`, that is what is
         being used to access the dataset
 
-        table (str): name of the database table to read if none of all tables are returned
+        table: (str) name of the database table to read if none of all tables are returned
 
          Returns: pandas.DataFrame
 

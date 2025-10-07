@@ -820,7 +820,9 @@ class CoreModel(PlotManager):
 
             >>> from apsimNGpy.core.apsim import ApsimModel
             >>> model = ApsimModel('Maize', out_path='my_maize.apsimx')
-            >>> model.clone_model(model_type='Models.Core.Simulation', model_name="Simulation",  rename="Sim2", adoptive_parent_type = 'Models.Core.Simulations', adoptive_parent_name='Simulations')
+            >>> model.clone_model(model_type='Models.Core.Simulation', model_name="Simulation",
+            ... rename="Sim2", adoptive_parent_type = 'Models.Core.Simulations',
+            ... adoptive_parent_name='Simulations')
             >>> model.inspect_file()
             └── Simulations: .Simulations
                 ├── DataStore: .Simulations.DataStore
@@ -922,21 +924,25 @@ class CoreModel(PlotManager):
         """
         Find a model from the Models namespace and return its path.
 
-        Args:
-            model_name (str): The name of the model to find.
-            model_namespace (object, optional): The root namespace (defaults to Models).
-            path (str, optional): The accumulated path to the model.
+        Parameters:
+        -----------
+        model_name: (str)
+          The name of the model to find.
+        model_namespace: (object, optional):
+           The root namespace (defaults to Models).
+        path: (str, optional)
+           The accumulated path to the model.
 
         Returns:
             str: The full path to the model if found, otherwise None.
 
-        Example::
-
-             from apsimNGpy import core  # doctest:
-             model =core.base_data.load_default_simulations(crop = "Maize")
-             model.find_model("Weather")  # doctest: +SKIP
+        Example:
+        --------
+             >>> from apsimNGpy import core  # doctest:
+             >>> model =core.apsim.ApsimModel(model = "Maize", out_path ='my_maize.apsimx')
+             >>> model.find_model("Weather")  # doctest: +SKIP
              'Models.Climate.Weather'
-             model.find_model("Clock")  # doctest: +SKIP
+             >>> model.find_model("Clock")  # doctest: +SKIP
              'Models.Clock'
 
         """
@@ -952,46 +958,56 @@ class CoreModel(PlotManager):
         Some models are restricted to specific parent models, meaning they can only be added to compatible models.
         For example, a Clock model cannot be added to a Soil model.
 
-        Args:
-            ``model_class`` (str or Models object): The type of model to add, e.g., `Models.Clock` or just `"Clock"`. if the APSIM Models namespace is exposed to the current script, then model_class can be Models.Clock without strings quotes
+        Parameters:
+        -----------
+        model_class: (str or Models object)
+           The type of model to add, e.g., `Models.Clock` or just `"Clock"`. if the APSIM Models namespace is exposed to the current script, then model_class can be Models.Clock without strings quotes
 
-            ``rename`` (str): The new name for the model.
+        rename (str):
+          The new name for the model.
 
-            ``adoptive_parent`` (Models object): The target parent where the model will be added or moved e.g ``Models.Clock`` or ``Clock`` as string all are valid
+        adoptive_parent: (Models object)
+            The target parent where the model will be added or moved e.g `Models.Clock` or `Clock` as string all are valid
 
-            ``adoptive_parent_name`` (Models object, optional): Specifies the parent name for precise location. e.g ``Models.Core.Simulation`` or ``Simulations`` all are valid
+        adoptive_parent_name: (Models object, optional)
+            Specifies the parent name for precise location. e.g., `Models.Core.Simulation` or ``Simulations`` all are valid
 
-            ``source`` (Models, str, CoreModel, ApsimModel object): ``defaults`` to Models namespace, implying a fresh non modified model.
-            The source can be an existing Models or string name to point to one fo the default model example, which we can extract the model
+        source: Models, str, CoreModel, ApsimModel object: defaults to Models namespace.
+           The source can be an existing Models or string name to point to one of the
+           default model examples, which we can extract the model from
 
-            ``override`` (bool, optional): defaults to `True`. When `True` (recomended) it delete for any model with same name and type at the suggested parent location before adding the new model
-            if ``False`` and proposed model to be added exists at the parent location, ``APSIM`` automatically generates a new name for the newly added model. This is not recommended.
+        override: bool, optional defaults to `True`.
+            When `True` (recommended), it deletes
+            any model with the same name and type at the suggested parent location before adding the new model
+            if ``False`` and proposed model to be added exists at the parent location;
+            `APSIM` automatically generates a new name for the newly added model. This is not recommended.
         Returns:
-            None: ``Models`` are modified in place, so models retains the same reference.
+            None:
+
+        `Models` are modified in place, so models retains the same reference.
 
         .. caution::
             Added models from ``Models namespace`` are initially empty. Additional configuration is required to set parameters.
             For example, after adding a Clock module, you must set the start and end dates.
 
-        Example::
+        Example
+        -------------
 
-            from apsimNGpy import core
-            from apsimNGpy.core.core import Models
+        >>> from apsimNGpy import core
+        >>> from apsimNGpy.core.core import Models
+        >>> model = core.apsim.ApsimModel("Maize")
+        >>> model.remove_model(Models.Clock)  # first delete the model
+        >>> model.add_model(Models.Clock, adoptive_parent=Models.Core.Simulation, rename='Clock_replaced', verbose=False)
 
-            model = core.base_data.load_default_simulations(crop="Maize")
+        >>> model.add_model(model_class=Models.Core.Simulation, adoptive_parent=Models.Core.Simulations, rename='Iowa')
 
-            model.remove_model(Models.Clock)  # first delete the model
-            model.add_model(Models.Clock, adoptive_parent=Models.Core.Simulation, rename='Clock_replaced', verbose=False)
+        >>> model.preview_simulation()  # doctest: +SKIP
 
-            model.add_model(model_class=Models.Core.Simulation, adoptive_parent=Models.Core.Simulations, rename='Iowa')
-
-            model.preview_simulation()  # doctest: +SKIP
-
-            model.add_model(
-                Models.Core.Simulation,
-                adoptive_parent='Simulations',
-                rename='soybean_replaced',
-                source='Soybean')  # basically adding another simulation from soybean to the maize simulation
+        >>> model.add_model(
+        ... Models.Core.Simulation,
+        ... adoptive_parent='Simulations',
+        ... rename='soybean_replaced',
+        ... source='Soybean')  # basically adding another simulation from soybean to the maize simulation
         """
         import Models
 
@@ -1165,9 +1181,9 @@ class CoreModel(PlotManager):
         """
         Edit a model component located by an APSIM path, dispatching to type-specific editors.
 
-        This function resolves a node under ``self.Simulations`` using an APSIM path, then
-        edits that node by delegating to the appropriate editor based on the node’s runtime
-        type. It supports common APSIM NG components (e.g., Weather, Manager, Cultivar, Clock,
+        This method resolves a node under ``self.Simulations`` using an APSIM path, then
+        edits that node by delegating to an editor based on the node’s runtime type.
+        It supports common APSIM NG components (e.g., Weather, Manager, Cultivar, Clock,
         Soil subcomponents, Report, SurfaceOrganicMatter). Unsupported types raise
         :class:`NotImplementedError`.
 
@@ -1175,105 +1191,87 @@ class CoreModel(PlotManager):
         -------------------
         1. Try ``self.Simulations.FindByPath(path)``.
         2. If unavailable (older APIs), fall back to :func:`get_node_by_path(self.Simulations, path)`.
-        3. Extract the concrete model instance from either ``.Value`` or, if absent, attempts
-           to unwrap via ``.Model`` and cast to known APSIM types with
-           :class:`CastHelper.CastAs[T]`. If casting fails, a :class:`ValueError` is raised.
+        3. Extract the concrete model instance from ``.Value`` or, if absent, unwrap via ``.Model`` and
+           cast to known APSIM types with ``CastHelper.CastAs[T]``. If casting fails, a :class:`ValueError` is raised.
 
         Parameters
         ----------
         path : str
-            APSIM path to a target node under ``self.Simulations`` (e.g.,
-            ``'[Simulations].Ames.Maize.Weather'`` or similar canonical path).
+            APSIM path to a target node under `self.Simulations` (e.g.,
+            `'[Simulations].Ames.Maize.Weather'` or a similar canonical path).
         **kwargs
-            Keyword arguments controlling the edit. The keys accepted depend on the
-            resolved component type (see **Type-specific editing** below). The following
-            special keys are intercepted and *not* forwarded:
-            - ``simulations`` / ``simulation`` : selector(s) used for cultivar edits
-              and other multi-simulation operations; forwarded where applicable.
-            - ``verbose`` : bool, optional; enables additional logging in some editors.
+            Editor-specific keyword arguments. Accepted keys depend on the resolved model or component type
+            (see *Type-specific editing*). The following special keys are intercepted and **not**
+            forwarded verbatim:
+            - `simulation` / `simulations` : selector(s) for cultivar or multi-simulation edits.
+            - `verbose`: bool; enable additional logging in some editors.
 
         Type-specific editing
         ---------------------
-        The function performs a structural match on the resolved model type and dispatches to
-        the corresponding private helper or inline routine:
+        Dispatch is based on the resolved model type:
 
         - :class:`Models.Climate.Weather`
           Calls ``self._set_weather_path(values, param_values=kwargs, verbose=verbose)``.
-          Typical parameters include things such as a new weather file path (implementation-specific).
+          Typical parameters include a new weather file path (implementation-specific).
 
         - :class:`Models.Manager`
           Validates that provided keys in ``kwargs`` match the manager script’s
-          ``Parameters[i].Key`` set. On mismatch, raises :class:`ValueError`.
-          On success, updates the corresponding parameter values by constructing
-          ``KeyValuePair[String, String]`` entries. No extra keys are permitted.
+          ``Parameters[i].Key`` set; unknown keys raise :class:`ValueError`. On success,
+          updates parameter values via ``KeyValuePair[String, String]``.
 
         - :class:`Models.PMF.Cultivar`
-          Ensures cultivar replacements exist under ``Replacements`` (creates them if needed).
-          Then calls ``_edit_in_cultivar(self, model_name=values.Name, simulations=simulations, param_values=kwargs, verbose=verbose)``.
-          Expects cultivar-specific keys in ``kwargs`` (implementation-specific).
+          Ensures cultivar replacements exist under ``Replacements`` (creates as needed), then calls
+          ``_edit_in_cultivar(self, model_name=values.Name, simulations=simulations, param_values=kwargs, verbose=verbose)``.
 
         - :class:`Models.Clock`
-          Calls ``self._set_clock_vars(values, param_values=kwargs)``. Typical keys:
-          ``StartDate``, ``EndDate`` (exact names depend on your clock editor).
+          Calls ``self._set_clock_vars(values, param_values=kwargs)`` (e.g., ``StartDate``, ``EndDate``).
 
         - Soil components
           ``Models.Soils.Physical`` | ``Models.Soils.Chemical`` | ``Models.Soils.Organic`` |
           ``Models.Soils.Water`` | ``Models.Soils.Solute``
           Delegates to ``self.replace_soils_values_by_path(node_path=path, **kwargs)``.
-          Accepts property/value overrides appropriate to the soil table(s) addressed by ``path``.
 
         - :class:`Models.Report`
-          Calls ``self._set_report_vars(values, param_values=kwargs, verbose=verbose)``.
-          Typical keys include columns/variables and event names (implementation-specific).
+          Calls ``self._set_report_vars(values, param_values=kwargs, verbose=verbose)`` (variables, events, etc.).
 
         - :class:`Models.Surface.SurfaceOrganicMatter`
           Requires at least one of:
-          ``'SurfOM', 'InitialCPR', 'InitialResidueMass', 'InitialCNR', 'IncorporatedP'``.
-          If none supplied, raises: class:`ValueError`.
-          Calls ``self._set_surface_organic_matter(values, param_values=kwargs, verbose=verbose)``.
+          ``'SurfOM'``, ``'InitialCPR'``, ``'InitialResidueMass'``, ``'InitialCNR'``, ``'IncorporatedP'``.
+          If none supplied, raises :class:`ValueError`. Calls
+          ``self._set_surface_organic_matter(values, param_values=kwargs, verbose=verbose)``.
 
-        Unsupported types
-        -----------------
-        If the resolved type does not match any of the above, a :class:`NotImplementedError`
-        is raised with the concrete type name.
-
-        Behavior of the method
-        ------------------------
-        - Any of ``'simulation'``, ``'simulations'``, and ``'verbose'`` present in ``kwargs``
-          are consumed by this function and not forwarded verbatim (except where explicitly used).
-        - For Manager edits, unknown parameter keys cause a hard failure (strict validation).
-        - For Cultivar edits, the function may mutate the model tree by creating necessary
-          crop replacements under ``Replacements`` if missing.
+        Behavior
+        --------
+        - Keys ``'simulation'``, ``'simulations'``, and ``'verbose'`` are consumed by this method
+          and only forwarded where explicitly supported.
+        - Manager edits validate keys strictly (unknown keys fail).
+        - Cultivar edits may mutate the model tree (creating entries under ``Replacements``).
 
         Returns
         -------
-        Self
-            The same model/manager instance (to allow method chaining).
+        self
+            Enables method chaining.
 
         Raises
         ------
         ValueError
-            - If no node is found for ``path``.
-            - If a Manager parameter key is invalid for the target Manager.
-            - If a SurfaceOrganicMatter edit is requested with no supported keys.
-            - If a model is un castable or unsupported for this method.
+            If no node is found for ``path``; if a Manager parameter key is invalid;
+            if a SurfaceOrganicMatter edit has no supported keys; or if casting fails.
         AttributeError
-            If required APIs are missing on ``self.Simulations`` or resolved nodes.
+            If required APIs are missing on ``self.Simulations`` or on resolved nodes.
         NotImplementedError
             If the resolved node type has no implemented editor.
         Exception
-            Any error propagated by delegated helpers (e.g., file I/O, parsing).
+            Propagated errors from delegated helpers (e.g., I/O, parsing).
 
         Notes
         -----
-        - **Path semantics: ** The exact path syntax should match what
-          ``FindByPath`` or the fallback ``get_node_by_path`` expects in your APSIM build.
-        - **Type casting: ** When ``.Value`` is absent, the function attempts to unwrap from
-          ``.Model`` and cast across a small set of known APSIM types using ``CastHelper``.
-        - **Non-idempotent operations: ** Some edits (e.g., cultivar replacements creation)
-          may modify the model structure, not only values.
-        - **Concurrency: ** Edits mutate in-memory state; synchronize if calling from
-          multiple threads/processes.
+        - *Path semantics.* The path syntax must match what ``FindByPath`` or the fallback
+          `get_node_by_path` expects in your APSIM build.
+        - *Type casting.* When `.Value`` is absent, the method attempts to unwrap from
+          `.Model` and cast across a small set of known APSIM types via ``CastHelper``.
+        - *Non-idempotent operations.* Some edits (e.g., cultivar replacements) modify the model structure.
+        - *Concurrency.* Edits mutate in-memory state; synchronize if using multiple threads/processes.
 
         Examples
         --------
@@ -1282,21 +1280,22 @@ class CoreModel(PlotManager):
             model.edit_model_by_path(
                 ".Simulations.Simulation.Field.Sow using a variable rule",
                 verbose=True,
-                Population =10)
+                Population=10,
+            )
 
-        Point a Weather component to a new ``.met`` file::
+        Point a Weather component to a new `.met` file::
 
             model.edit_model_by_path(
-                path='.Simulations.Simulation.Weather'
-                FileName="data/weather/Ames_2020.met"
+                path=".Simulations.Simulation.Weather",
+                FileName="data/weather/Ames_2020.met",
             )
 
         Change Clock dates::
 
             model.edit_model_by_path(
-               ".Simulations.Simulation.Clock",
+                ".Simulations.Simulation.Clock",
                 StartDate="2020-01-01",
-                EndDate="2020-12-31"
+                EndDate="2020-12-31",
             )
 
         Update soil water properties at a specific path::
@@ -1308,13 +1307,14 @@ class CoreModel(PlotManager):
 
         Apply cultivar edits across selected simulations::
 
-            model.edit_model_by_path(".Simulations.Simulation.Field.Maize.CultivarFolder.mh18",
+            model.edit_model_by_path(
+                ".Simulations.Simulation.Field.Maize.CultivarFolder.mh18",
                 simulations=("Sim_A", "Sim_B"),
                 verbose=True,
-                Phenology.EmergencePhase.Photoperiod="Short",
+                **{"Phenology.EmergencePhase.Photoperiod": "Short"},
             )
-        """
 
+        """
         simulations = kwargs.get('simulations', None) or kwargs.get('simulation', None)
         default = kwargs.setdefault('verbose', False)
         verbose = kwargs.get('verbose')

@@ -12,7 +12,7 @@ from os.path import join, dirname
 import logging
 from subprocess import Popen, PIPE, run
 import subprocess
-from typing import Union, Optional
+from typing import Union, Optional, Any
 
 import psutil
 import uuid
@@ -240,6 +240,10 @@ def get_apsim_bin_path():
     Example::
 
       bin_path = get_apsim_bin_path()
+
+    .. seealso::
+
+        Related API: :meth:`set_apsim_bin_path`.
     """
     # if it does not exist, we create it and try to load from the auto-detected pass
     g_CONFIG = configparser.ConfigParser()
@@ -281,16 +285,24 @@ def set_apsim_bin_path(path: Union[str, Path],
                        raise_errors: bool = True,
                        verbose: bool = False) -> bool:
     """
-    Validate and persist the APSIM binary folder path.
+    Validate and write the bin path to the config file, where it is accessed by ``get_apsim_bin_path``.
 
-    The provided `path` should point to (or contain) the APSIM `bin` directory that
-    includes the required binaries:
+    Parameters
+    ___________
+    path : Union[str, Path]
+        The provided `path` should point to (or contain) the APSIM `bin` directory that
+        includes the required binaries:
+          - Windows: Models.dll AND Models.exe
+          - macOS/Linux: Models.dll AND Models (unix executable)
+        If `path` is a parent directory, the function will search recursively to locate
+        a matching `bin` directory. The first match is used.
 
-      - Windows: Models.dll AND Models.exe
-      - macOS/Linux: Models.dll AND Models (unix executable)
+    raise_errors : bool, default is True
+        Whether to raise an error in case of errors. for testing purposes only
 
-    If `path` is a parent directory, the function will search recursively to locate
-    a matching `bin` directory. The first match is used.
+    verbose: bool
+       whether to print messages to the console or not
+
 
     Returns
     -------
@@ -310,6 +322,11 @@ def set_apsim_bin_path(path: Union[str, Path],
     >>> current = config.get_apsim_bin_path()
     >>> # Set the desired path (either the bin folder or a parent)
     >>> config.set_apsim_bin_path('/path/to/APSIM/2025/bin', verbose=True)
+
+    .. seealso::
+
+      - :py:meth:`get_apsim_bin_path` — returns the APSIM bin directory.
+
     """
     # Normalize user input
     candidate = Path(path).resolve()
@@ -359,7 +376,8 @@ def apsim_version(bin_path=get_apsim_bin_path(), release_number: bool = False, v
 
     Parameters
     ----------
-    bin_path : str, Path, default to a global bin path in apsimNgpy environmental variables
+    bin_path : str, Path,
+        default to a global bin path in apsimNGpy environmental variables
     release_number : bool, optional
         If True, return only the numeric release version.
     verbose : bool, optional
@@ -376,7 +394,8 @@ def apsim_version(bin_path=get_apsim_bin_path(), release_number: bool = False, v
     try:
         bin_path = Path(locate_model_bin_path(bin_path))
     except TypeError as e:
-        raise TypeError(f"this error `{e}` has likely occurred because the bin-path `{bin_path}` is invalid or does not exist")
+        raise TypeError(
+            f"this error `{e}` has likely occurred because the bin-path `{bin_path}` is invalid or does not exist")
 
     # Determine executable based on OS
     if platform.system() == "Windows":
@@ -384,7 +403,7 @@ def apsim_version(bin_path=get_apsim_bin_path(), release_number: bool = False, v
     else:  # Linux or macOS
         APSIM_EXEC = bin_path / "Models"
 
-    cmd = [str(APSIM_EXEC),  "--version"]
+    cmd = [str(APSIM_EXEC), "--version"]
     if verbose:
         cmd.append("--verbose")
 
@@ -407,39 +426,11 @@ def apsim_version(bin_path=get_apsim_bin_path(), release_number: bool = False, v
     return release
 
 
-@cache
-def load_crop_from_disk(crop: str, out: Union[str, Path]):
-    """
-    Load a default APSIM crop simulation file from disk by specifying only the crop name.
+_memory_cache: dict[tuple, Any] = {}
 
-    This function locates and copies an `.apsimx` file associated with the specified crop from the APSIM
-    Examples directory into a working directory. It is useful when programmatically running default
-    simulations for different crops without manually opening them in GUI.
 
-    Args:
-        ``crop`` (str): The name of the crop to load (e.g., 'Maize', 'Soybean', 'Barley', 'Mungbean', 'Pinus', 'Eucalyptus').
-                    The name is case-insensitive and must match an existing `.apsimx` file in the APSIM Examples folder.
-
-        ``out`` (str, optional): A custom output path where the `.apsimx` file should be copied.
-                             If not provided, a temporary file will be created in the working directory. this is stamped with the APSIM version being used
-
-        ``work_space`` (str, optional): The base directory to use when generating a temporary output path.
-                                    If not specified, the current working directory is used.
-                                    This path may also contain other simulation or residue files.
-        ``bin_path`` (str, optional): no restriction we can laod from  another path but the verion should
-
-    Returns:
-        ``str``: The path to the copied `.apsimx` file ready for further manipulation or simulation.
-
-    Raises:
-        ``FileNotFoundError``: If the APSIM binary path cannot be resolved or the crop simulation file does not exist.
-
-    Example::
-
-        >>> load_crop_from_disk("Maize", out ='my_maize_example.apsimx')
-        'C:/path/to/temp_uuid_Maize.apsimx'
-    """
-    BIN =  get_apsim_bin_path()
+def _load_crop_from_disk(crop: str, out: Union[str, Path], bin_path: Union[str, Path]) -> None:
+    BIN = bin_path or get_apsim_bin_path()
 
     if ".apsimx" in crop:
         crop, suffix = crop.split(".")
@@ -466,6 +457,59 @@ def load_crop_from_disk(crop: str, out: Union[str, Path]):
         "Could not find root path for APSIM binaries. "
         "Try reinstalling APSIM or use set_apsim_bin_path() to set the path to an existing APSIM version."
     )
+
+
+def load_crop_from_disk(crop: str, out: Union[str, Path], bin_path=None, cache_path=True):
+    """
+    Load a default APSIM crop simulation file from disk by specifying only the crop name.
+
+    This function locates and copies an `.apsimx` file associated with the specified crop from the APSIM
+    Examples directory into a working directory. It is useful when programmatically running default
+    simulations for different crops without manually opening them in GUI.
+
+    Parameters
+    ----------
+    crop: (str)
+        The name of the crop to load (e.g., 'Maize', 'Soybean', 'Barley', 'Mungbean', 'Pinus', 'Eucalyptus').
+        The name is case-insensitive and must-match an existing `.apsimx` file in the APSIM Examples folder.
+
+    out: (str, optional)
+         A custom output path where the `.apsimx` file should be copied.
+         If not provided, a temporary file will be created in the working directory. this is stamped with the APSIM version being used
+
+
+    bin_path: (str, optional):
+       no restriction we can laod from  another bin path
+    cache_path: (str, optional):
+
+        keep the path in memory for the next request
+
+    Returns
+    ________
+        `str`: The path to the copied `.apsimx` file ready for further manipulation or simulation.
+
+    .. caution::
+
+      The method catches the results, so if the file is removed from the disk, there may be issues> If this case
+      is anticipated, turn off the cach_path to False.
+
+    Raises
+    ________
+        ``FileNotFoundError``: If the APSIM binary path cannot be resolved or the crop simulation file does not exist.
+
+    Example::
+
+        >>> load_crop_from_disk("Maize", out ='my_maize_example.apsimx')
+        'C:/path/to/temp_uuid_Maize.apsimx'
+
+    """
+    keys = f"{crop}{out}-{str(bin_path)}",
+    if cache_path and keys in _memory_cache:
+        return _memory_cache[keys]
+    else:
+        path = _load_crop_from_disk(crop, out, bin_path)
+        _memory_cache[keys] = path
+        return path
 
 
 def stamp_name_with_version(file_name):

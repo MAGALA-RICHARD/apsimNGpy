@@ -369,6 +369,10 @@ class PlotManager(ABC):
                 Returns
                 -------
                 matplotlib.axes.Axes
+
+                .. seealso::
+
+                       Related APIs: :meth:`cat_plot`.
                 """
         self._refresh()
         df = self._harmonize_df(table)
@@ -540,6 +544,10 @@ class PlotManager(ABC):
 
         https://seaborn.pydata.org/generated/seaborn/lineplot.html \n
         =============================================================================================================================================
+
+        .. seealso::
+
+           Related APIs: :meth:`plot_mva`.
         """
         self._refresh()
         added_plots['current_plot'] = 'series_plot'
@@ -605,7 +613,7 @@ class PlotManager(ABC):
             If None, results will be all the table names inside concatenated along the axis 0 (not recommended)
         x, y, hue, size, style, palette, hue_order, hue_norm, sizes, size_order, size_norm, markers, style_order, legend, ax
             Passed through to :func:`seaborn.scatterplot`.
-        **Kwargs
+        ** Kwargs
             Additional keyword args for Seaborn.
         See the reference below for all the kwargs.
         reference; https://seaborn.pydata.org/generated/seaborn.scatterplot.html \n
@@ -675,7 +683,7 @@ class PlotManager(ABC):
         Parameters
         ----------
         table : str or pandas.DataFrame, optional
-        x, y, hue, row, col, kind, estimator, errorbar, n_boot, seed, units, weights, order,
+             x, y, hue, row, col, kind, estimator, errorbar, n_boot, seed, units, weights, order,
         hue_order, row_order, col_order, col_wrap, height, aspect, log_scale, native_scale, formatter,
         orient, color, palette, hue_norm, legend, legend_out, sharex, sharey, margin_titles, facet_kws
             Passed through to :func:`seaborn.catplot`.
@@ -687,7 +695,11 @@ class PlotManager(ABC):
         seaborn.axisgrid.FacetGrid
 
         reference https://seaborn.pydata.org/generated/seaborn.catplot.html\n
-        =========================================================================================================\n"""
+        =========================================================================================================
+        .. seealso::
+
+             Related APIs: :meth:`distribution`.
+        """
         self._refresh()
         added_plots['cat_plot'] = 'cat_plot'
         df = self._harmonize_df(table)

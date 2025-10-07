@@ -197,7 +197,7 @@ class CoreModel(PlotManager):
 
         ..note::
 
-             The simulations are c# objects, and their manipulation maybe for advanced users only.
+             The simulations are c# referenced objects, and their manipulation maybe for advanced users only.
         """
 
         # we can actually specify the simulation name in the bracket
@@ -253,26 +253,19 @@ class CoreModel(PlotManager):
 
         This method writes the model to a file, using a version-aware strategy:
 
-        * If ``APSIM_VERSION_NO > BASE_RELEASE_NO`` **or**
-          ``APSIM_VERSION_NO == GITHUB_RELEASE_NO``: call
-          ``self.Simulations.Write(path)``.
-        * Otherwise: obtain the underlying node via
-          ``getattr(self.Simulations, 'Node', self.Simulations)`` and call
-          :func:`save_model_to_file`.
-
         After writing, the model is recompiled via :func:`recompile(self)` and the
         in-memory instance is refreshed using :meth:`restart_model`, ensuring the
-        object graph reflects the just-saved state.
+        object graph reflects the just-saved state. This is now only impozed if the user specified `relaod = True`.
 
         Parameters
         ----------
         file_name : str or pathlib.Path, optional
             Output path for the saved model file. If omitted (``None``), the method
-            uses the instance's existing ``self.path``. The resolved path is also
-            written back to ``self.path`` for consistency.
+            uses the instance's existing ``path``. The resolved path is also
+            written back to instance `path` attribute for consistency if reload is True.
 
         reload: bool Optional default is True
-             resets the reference path to the one provided after serializing to disk. this implies that the self.path will be the provided file_name
+             resets the reference path to the one provided after serializing to disk. This implies that the instance `path` will be the provided `file_name`
 
         Returns
         -------
@@ -297,39 +290,49 @@ class CoreModel(PlotManager):
 
         Notes
         -----
-        - **Version-aware save:** Uses either ``Simulations.Write`` or the legacy
-          ``save_model_to_file`` depending on version constants.
-        - **Path normalization:** The path is stringified via ``str(file_name)`` /
-          ``str(self.path)`` without additional validation. If you require parent
-          directory creation or suffix checks (e.g., ``.apsimx``), perform them before
-          calling ``save``.
-        - **Reload semantics: ** Post-save recompilation and restart ensure any code
+        - *Path normalization:* The path is stringified via ``str(file_name)`` just in case it is a pathlib object.
+
+        - *Reload semantics:* Post-save recompilation and restart ensure any code
           generation or cached reflection is refreshed to match the serialized model.
 
         Examples
         --------
-        Save to the current file path tracked by the instance::
+        check the current path before saving the model
             >>> from apsimNGpy.core.apsim import ApsimModel
             >>> from pathlib import Path
             >>> model = ApsimModel("Maize", out_path='saved_maize.apsimx')
             >>> model.path
             scratch\\saved_maize.apsimx
-             Save to a new path and continue working with the refreshed instance::
+
+        Save to a new path and continue working with the refreshed instance
             >>> model.save(file_name='out_maize.apsimx', reload=True)
+            # check the path
             >>> model.path
-            >>> 'out_maize.apsimx'
-            # relaod = False
-            >>> model = ApsimModel("Maize", out_path='saved_maize.apsimx')
-            >>> model.save(file_name='out_maize.apsimx', reload=False)
-            # check the current reference path for the model
-            >>>model.path
-            scratch\\saved_maize.apsimx
-        When reload is False, it the original referenced path remains as shown above
+            'out_maize.apsimx'
+            # possible to run again the refreshed model.
+            >>> model.run()
 
+        Save to a new path without refreshing the instance path
+          >>> model = ApsimModel("Maize",  out_path='saved_maize.apsimx')
+          >>> model.save(file_name='out_maize.apsimx', reload=False)
+          # check the current reference path for the model.
+           >>> model.path 'scratch\\saved_maize.apsimx'
+           # When reload is False, the original referenced path remains as shown above
 
+        As shown above, everything is saved in the scratch folder; if
+        the path is not abolutely provided, e.g., a relative path. If the path is not provided as shown below,
+        the reference path is the current path for the isntance model.
+           >>> model = ApsimModel("Maize",  out_path='saved_maize.apsimx')
+           >>> model.path
+           'scratch\\saved_maize.apsimx'
+           # save the model without providing the path.
+           >>> model.save()# uses the default, in this case the defaul path is the existing path
+           >>> model.path
+           'scratch\\saved_maize.apsimx'
 
+        In the above case, both reload = `False` or `True`, will produce the same reference path for the live
+        instance class.
 
-            model.save("outputs/Scenario_A.apsimx").run()
 
         See Also
         --------
@@ -354,23 +357,118 @@ class CoreModel(PlotManager):
     @property
     def results(self) -> pd.DataFrame:
         """
-    Legacy method for retrieving simulation results.
+        Legacy method for retrieving simulation results.
 
-    This method is implemented as a ``property`` to enable lazy loading—results are only loaded into memory when explicitly accessed.
-    This design helps optimize ``memory`` usage, especially for ``large`` simulations.
+        This method is implemented as a ``property`` to enable lazy loading—results are
+        only loaded into memory when explicitly accessed. This design helps optimize
+        ``memory`` usage, especially for ``large`` simulations.
 
-    It must be called only after invoking ``run()``. If accessed before the simulation is run, it will raise an error.
+        It must be called only after invoking ``run()``. If accessed before the simulation
+        is run, it will raise an error.
 
-    Notes:
-        - The ``run()`` method should be called with a valid ``report name`` or a list of report names (i.e., APSIM report table names).
-        - If `report_names` is not provided (i.e., ``None``), the system will inspect the model and automatically detect all available report components.
-          These reports will then be used to collect the data.
-        - If multiple report names are used, their corresponding data tables will be concatenated along the rows.
-        _ after Model run has been called, use can still get results by calling ``get_simulated_output``, it accepts one argument ``report_names``
+        Notes
+        -----
+        - The ``run()`` method should be called with a valid ``report name`` or a list of
+          report names.
+        - If ``report_names`` is not provided (i.e., ``None``), the system will inspect
+          the model and automatically detect all available report components. These
+          reports will then be used to collect the data.
+        - If multiple report names are used, their corresponding data tables will be
+          concatenated along the rows.
 
-    Returns:
-        pd.DataFrame: A DataFrame containing the simulation output results.
-    """
+        Returns
+        -------
+        pd.DataFrame
+            A DataFrame containing the simulation output results.
+
+        Examples
+        --------
+        >>> from apsimNGpy.core.apsim import ApsimModel
+        # create an instance of ApsimModel class
+        >>> model = ApsimModel("Maize", out_path="my_maize_model.apsimx")
+        # run the simulation
+        >>> model.run()
+        # get the results
+        >>> df = model.results
+        # do something with the results e.g. get the mean of numeric columns
+        >>> df.mean(numeric_only=True)
+        Out[12]:
+        CheckpointID                     1.000000
+        SimulationID                     1.000000
+        Maize.AboveGround.Wt          1225.099950
+        Maize.AboveGround.N             12.381196
+        Yield                         5636.529504
+        Maize.Grain.Wt                 563.652950
+        Maize.Grain.Size                 0.284941
+        Maize.Grain.NumberFunction    1986.770519
+        Maize.Grain.Total.Wt           563.652950
+        Maize.Grain.N                    7.459296
+        Maize.Total.Wt                1340.837427
+
+        If there are more than one database tables or `reports` as called in APSIM,
+        results are concatenated along the axis 0, implying along rows.
+        The example below mimics this scenario.
+
+        >>> model.add_db_table(
+        ...     variable_spec=['[Clock].Today.Year as year',
+        ...                    'sum([Soil].Nutrient.TotalC)/1000 from 01-jan to [clock].Today as soc'],
+        ...     rename='soc'
+        ... )
+        # inspect the reports
+        >>> model.inspect_model('Models.Report', fullpath=False)
+        ['Report', 'soc']
+        >>> model.run()
+        >>> model.results
+            CheckpointID  SimulationID   Zone  ... source_table    year        soc
+        0              1             1  Field  ...       Report     NaN        NaN
+        1              1             1  Field  ...       Report     NaN        NaN
+        2              1             1  Field  ...       Report     NaN        NaN
+        3              1             1  Field  ...       Report     NaN        NaN
+        4              1             1  Field  ...       Report     NaN        NaN
+        5              1             1  Field  ...       Report     NaN        NaN
+        6              1             1  Field  ...       Report     NaN        NaN
+        7              1             1  Field  ...       Report     NaN        NaN
+        8              1             1  Field  ...       Report     NaN        NaN
+        9              1             1  Field  ...       Report     NaN        NaN
+        10             1             1  Field  ...          soc  1990.0  77.831512
+        11             1             1  Field  ...          soc  1991.0  78.501766
+        12             1             1  Field  ...          soc  1992.0  78.916339
+        13             1             1  Field  ...          soc  1993.0  78.707094
+        14             1             1  Field  ...          soc  1994.0  78.191686
+        15             1             1  Field  ...          soc  1995.0  78.573085
+        16             1             1  Field  ...          soc  1996.0  78.724598
+        17             1             1  Field  ...          soc  1997.0  79.043935
+        18             1             1  Field  ...          soc  1998.0  78.343111
+        19             1             1  Field  ...          soc  1999.0  78.872767
+        20             1             1  Field  ...          soc  2000.0  79.916413
+        [21 rows x 17 columns]
+
+        By default all the tables are returned and the column ``source_table`` tells us
+        the source table for each row. Since ``results`` is a property attribute,
+        which does not take in any argument, we can only decide this when calling the
+        ``run`` method as shown below.
+
+        >>> model.run(report_name='soc')
+        >>> model.results
+            CheckpointID  SimulationID   Zone    year        soc source_table
+        0              1             1  Field  1990.0  77.831512          soc
+        1              1             1  Field  1991.0  78.501766          soc
+        2              1             1  Field  1992.0  78.916339          soc
+        3              1             1  Field  1993.0  78.707094          soc
+        4              1             1  Field  1994.0  78.191686          soc
+        5              1             1  Field  1995.0  78.573085          soc
+        6              1             1  Field  1996.0  78.724598          soc
+        7              1             1  Field  1997.0  79.043935          soc
+        8              1             1  Field  1998.0  78.343111          soc
+        9              1             1  Field  1999.0  78.872767          soc
+        10             1             1  Field  2000.0  79.916413          soc
+
+        The above example has dataset only from one database table specified at run time.
+
+        See also
+        --------
+        `get_simulated_output`
+        """
 
         # _____________ Collect all available data tables _____________________
         _reports = self.report_names or self.inspect_model('Models.Report',
@@ -394,11 +492,15 @@ class CoreModel(PlotManager):
         if _reports:
             if self.ran_ok:
                 # lazy generator (adds a column with the report name)
-                data = (read_db_table(_db_path, rep).assign(source_table=rep) for rep in reports)
+                if axis ==0:
+                   data = (read_db_table(_db_path, rep).assign(source_table=rep) for rep in reports)
+                else:
+                    data = (read_db_table(_db_path, rep) for rep in reports)
 
-                return pd.concat(data, axis=0, ignore_index=True)
+                return pd.concat(data, axis=axis)
             else:
                 logger.info('attempting to access results without calling bound method: `run()`')
+                raise RuntimeError(f"attempting to access results without executingg the model. Please call `run()`")
 
     def get_simulated_output(self, report_names: Union[str, list], axis=0, **kwargs) -> pd.DataFrame:
         """
@@ -408,7 +510,10 @@ class CoreModel(PlotManager):
         -----------
         ``report_names``: Union[str, list]
             Name or list names of report tables to read. These should match the
-            report model names in the simulation output.
+            report names in the simulation output.
+
+        ``axis`` int, Optional. Default to 0
+            concatenation axis numbers for multiple reports or database tables. if axis is 0, source_table column is populated to show source of the data for each row
 
         Returns:
         --------
@@ -422,26 +527,78 @@ class CoreModel(PlotManager):
 
         ``RuntimeError``
             If the simulation has not been ``run`` successfully before attempting to read data.
+        Examples
+        --------
+        >>> from apsimNGpy.core.apsim import ApsimModel
+        >>> model = ApsimModel(model='Maize')  # replace with your path to the apsim template model
+        >>> model.run()  # if we are going to use get_simulated_output, no need to provide the report name in ``run()`` method
+        >>> df = model.get_simulated_output(report_names="Report")
+            SimulationName  SimulationID  CheckpointID  ...  Maize.Total.Wt     Yield   Zone
+        0       Simulation             1             1  ...        1728.427  8469.616  Field
+        1       Simulation             1             1  ...         920.854  4668.505  Field
+        2       Simulation             1             1  ...         204.118   555.047  Field
+        3       Simulation             1             1  ...         869.180  3504.000  Field
+        4       Simulation             1             1  ...        1665.475  7820.075  Field
+        5       Simulation             1             1  ...        2124.740  8823.517  Field
+        6       Simulation             1             1  ...        1235.469  3587.101  Field
+        7       Simulation             1             1  ...         951.808  2939.152  Field
+        8       Simulation             1             1  ...        1986.968  8379.435  Field
+        9       Simulation             1             1  ...        1689.966  7370.301  Field
+        [10 rows x 16 columns]
 
-        Example::
+        This method also handles more than one reports as shown below.
 
-          from apsimNGpy.core.apsim import ApsimModel
-          model = ApsimModel(model= 'Maize') # replace with your path to the apsim template model
-          ``model.run()`` # if we are going to use get_simulated_output, no to need to provide the report name in ``run()`` method
-          df = model.get_simulated_output(report_names = ["Report"])
-          print(df)
-            SimulationName  SimulationID  CheckpointID  ... Maize.Total.Wt     Yield   Zone
-         0     Simulation             1             1  ...       1728.427  8469.616  Field
-         1     Simulation             1             1  ...        920.854  4668.505  Field
-         2     Simulation             1             1  ...        204.118   555.047  Field
-         3     Simulation             1             1  ...        869.180  3504.000  Field
-         4     Simulation             1             1  ...       1665.475  7820.075  Field
-         5     Simulation             1             1  ...       2124.740  8823.517  Field
-         6     Simulation             1             1  ...       1235.469  3587.101  Field
-         7     Simulation             1             1  ...        951.808  2939.152  Field
-         8     Simulation             1             1  ...       1986.968  8379.435  Field
-         9     Simulation             1             1  ...       1689.966  7370.301  Field
-         [10 rows x 16 columns]
+        >>> model.add_db_table(
+        ...     variable_spec=[
+        ...         '[Clock].Today.Year as year',
+        ...         'sum([Soil].Nutrient.TotalC)/1000 from 01-jan to [clock].Today as soc'
+        ...     ],
+        ...     rename='soc'
+        ... )
+        # inspect the reports
+        >>> model.inspect_model('Models.Report', fullpath=False)
+        ['Report', 'soc']
+        >>> model.run()
+        >>> model.get_simulated_output(["soc", "Report"], axis=0)
+            CheckpointID  SimulationID  ...  Maize.Grain.N  Maize.Total.Wt
+        0              1             1  ...            NaN             NaN
+        1              1             1  ...            NaN             NaN
+        2              1             1  ...            NaN             NaN
+        3              1             1  ...            NaN             NaN
+        4              1             1  ...            NaN             NaN
+        5              1             1  ...            NaN             NaN
+        6              1             1  ...            NaN             NaN
+        7              1             1  ...            NaN             NaN
+        8              1             1  ...            NaN             NaN
+        9              1             1  ...            NaN             NaN
+        10             1             1  ...            NaN             NaN
+        11             1             1  ...      11.178291     1728.427114
+        12             1             1  ...       6.226327      922.393712
+        13             1             1  ...       0.752357      204.108770
+        14             1             1  ...       4.886844      869.242545
+        15             1             1  ...      10.463854     1665.483701
+        16             1             1  ...      11.253916     2124.739830
+        17             1             1  ...       5.044417     1261.674967
+        18             1             1  ...       3.955080      951.303260
+        19             1             1  ...      11.080878     1987.106980
+        20             1             1  ...       9.751001     1693.893386
+        [21 rows x 17 columns]
+
+        >>> model.get_simulated_output(['soc', 'Report'], axis=1)
+            CheckpointID  SimulationID  ...  Maize.Grain.N  Maize.Total.Wt
+        0              1             1  ...      11.178291     1728.427114
+        1              1             1  ...       6.226327      922.393712
+        2              1             1  ...       0.752357      204.108770
+        3              1             1  ...       4.886844      869.242545
+        4              1             1  ...      10.463854     1665.483701
+        5              1             1  ...      11.253916     2124.739830
+        6              1             1  ...       5.044417     1261.674967
+        7              1             1  ...       3.955080      951.303260
+        8              1             1  ...      11.080878     1987.106980
+        9              1             1  ...       9.751001     1693.893386
+        10             1             1  ...            NaN             NaN
+        [11 rows x 19 columns]
+
 
         """
         from collections.abc import Iterable
@@ -572,21 +729,49 @@ class CoreModel(PlotManager):
             ValueError
                 If the model of the specified type and name is not found.
 
-            .. Note::
+           .. tip::
 
                 This method uses ``get_or_check_model`` with action='get' to locate the model,
-                and then updates the model's `Name` attribute. ``save()`` is called
+                and then updates the model's `Name` attribute. The model is serialized using the `save()`
                 immediately after to apply and enfoce the change.
 
-            Example::
-               from apsimNGpy.core.apsim import ApsimModel
-               model = ApsimModel(model = 'Maize')
-               model.rename_model(model_class="Simulation", old_name ='Simulation', new_name='my_simulation')
+            Examples
+            ---------
+               >>> from apsimNGpy.core.apsim import ApsimModel
+               >>> model = ApsimModel(model = 'Maize', out_path='my_maize.apsimx')
+               >>> model.rename_model(model_type="Models.Core.Simulation", old_name ='Simulation', new_name='my_simulation')
                # check if it has been successfully renamed
-               model.inspect_model(model_class='Simulation', fullpath = False)
-               ['my_simulation']
+               >>> model.inspect_model(model_type='Models.Core.Simulation', fullpath = False)
+                ['my_simulation']
                # The alternative is to use model.inspect_file to see your changes
-               model.inspect_file()
+               >>> model.inspect_file()
+               └── Simulations: .Simulations
+                ├── DataStore: .Simulations.DataStore
+                └── my_simulation: .Simulations.my_simulation
+                    ├── Clock: .Simulations.my_simulation.Clock
+                    ├── Field: .Simulations.my_simulation.Field
+                    │   ├── Fertilise at sowing: .Simulations.my_simulation.Field.Fertilise at sowing
+                    │   ├── Fertiliser: .Simulations.my_simulation.Field.Fertiliser
+                    │   ├── Harvest: .Simulations.my_simulation.Field.Harvest
+                    │   ├── Maize: .Simulations.my_simulation.Field.Maize
+                    │   ├── Report: .Simulations.my_simulation.Field.Report
+                    │   ├── Soil: .Simulations.my_simulation.Field.Soil
+                    │   │   ├── Chemical: .Simulations.my_simulation.Field.Soil.Chemical
+                    │   │   ├── NH4: .Simulations.my_simulation.Field.Soil.NH4
+                    │   │   ├── NO3: .Simulations.my_simulation.Field.Soil.NO3
+                    │   │   ├── Organic: .Simulations.my_simulation.Field.Soil.Organic
+                    │   │   ├── Physical: .Simulations.my_simulation.Field.Soil.Physical
+                    │   │   │   └── MaizeSoil: .Simulations.my_simulation.Field.Soil.Physical.MaizeSoil
+                    │   │   ├── Urea: .Simulations.my_simulation.Field.Soil.Urea
+                    │   │   └── Water: .Simulations.my_simulation.Field.Soil.Water
+                    │   ├── Sow using a variable rule: .Simulations.my_simulation.Field.Sow using a variable rule
+                    │   └── SurfaceOrganicMatter: .Simulations.my_simulation.Field.SurfaceOrganicMatter
+                    ├── Graph: .Simulations.my_simulation.Graph
+                    │   └── Series: .Simulations.my_simulation.Graph.Series
+                    ├── MicroClimate: .Simulations.my_simulation.MicroClimate
+                    ├── SoilArbitrator: .Simulations.my_simulation.SoilArbitrator
+                    ├── Summary: .Simulations.my_simulation.Summary
+                    └── Weather: .Simulations.my_simulation.Weather
 
             """
         model_type = validate_model_obj(model_type)
@@ -602,44 +787,95 @@ class CoreModel(PlotManager):
 
     def clone_model(self, model_type, model_name, adoptive_parent_type, rename=None, adoptive_parent_name=None):
         """
-        Clone an existing  ``model`` and move it to a specified parent within the simulation structure.
-        The function modifies the simulation structure by adding the cloned model to the ``designated parent``.
+        Clone an existing ``model`` and move it to a specified parent within the simulation structure.
+        The function modifies the simulation structure by adding the cloned model to the designated parent.
 
-        This function is useful when a model instance needs to be duplicated and repositioned in the ``APSIM`` simulation
+        This function is useful when a model instance needs to be duplicated and repositioned in the `APSIM` simulation
         hierarchy without manually redefining its structure.
 
         Parameters:
         ----------
-        ``model_class`` : Models
+        model_type: Models
             The type of the model to be cloned, e.g., `Models.Simulation` or `Models.Clock`.
-        ``model_name`` : str
+        model_name: str
             The unique identification name of the model instance to be cloned, e.g., `"clock1"`.
-        ``adoptive_parent_type`` : Models
+        adoptive_parent_type: Models
             The type of the new parent model where the cloned model will be placed.
-        ``rename`` : str, optional
+        rename: str, optional
             The new name for the cloned model. If not provided, the clone will be renamed using
             the original name with a `_clone` suffix.
-        ``adoptive_parent_name``: str, optional
+        adoptive_parent_name: str, optional
             The name of the parent model where the cloned model should be moved. If not provided,
             the model will be placed under the default parent of the specified type.
-        ``in_place``: bool, optional
+        in_place: bool, optional
             If ``True``, the cloned model remains in the same location but is duplicated. Defaults to ``False``.
 
         Returns:
         -------
         None
 
-
         Example:
         -------
-         Create a cloned version of `"clock1"` and place it under `"Simulation"` with the new name ``"new_clock`"`::
+         Create a cloned version of `"clock1"` and place it under `"Simulation"` with the new name `"new_clock`:
 
-            from apsimNGpy.core.apsim import ApsimModel
-            model = ApsimModel('Maize')
-            model.clone_model('Models.Clock', "clock1", 'Models.Simulation', rename="new_clock",adoptive_parent_type= 'Models.Core.Simulations', adoptive_parent_name="Simulation")
-
-
-
+            >>> from apsimNGpy.core.apsim import ApsimModel
+            >>> model = ApsimModel('Maize', out_path='my_maize.apsimx')
+            >>> model.clone_model(model_type='Models.Core.Simulation', model_name="Simulation",  rename="Sim2", adoptive_parent_type = 'Models.Core.Simulations', adoptive_parent_name='Simulations')
+            >>> model.inspect_file()
+            └── Simulations: .Simulations
+                ├── DataStore: .Simulations.DataStore
+                ├── Sim2: .Simulations.Sim2
+                │   ├── Clock: .Simulations.Sim2.Clock
+                │   ├── Field: .Simulations.Sim2.Field
+                │   │   ├── Fertilise at sowing: .Simulations.Sim2.Field.Fertilise at sowing
+                │   │   ├── Fertiliser: .Simulations.Sim2.Field.Fertiliser
+                │   │   ├── Harvest: .Simulations.Sim2.Field.Harvest
+                │   │   ├── Maize: .Simulations.Sim2.Field.Maize
+                │   │   ├── Report: .Simulations.Sim2.Field.Report
+                │   │   ├── Soil: .Simulations.Sim2.Field.Soil
+                │   │   │   ├── Chemical: .Simulations.Sim2.Field.Soil.Chemical
+                │   │   │   ├── NH4: .Simulations.Sim2.Field.Soil.NH4
+                │   │   │   ├── NO3: .Simulations.Sim2.Field.Soil.NO3
+                │   │   │   ├── Organic: .Simulations.Sim2.Field.Soil.Organic
+                │   │   │   ├── Physical: .Simulations.Sim2.Field.Soil.Physical
+                │   │   │   │   └── MaizeSoil: .Simulations.Sim2.Field.Soil.Physical.MaizeSoil
+                │   │   │   ├── Urea: .Simulations.Sim2.Field.Soil.Urea
+                │   │   │   └── Water: .Simulations.Sim2.Field.Soil.Water
+                │   │   ├── Sow using a variable rule: .Simulations.Sim2.Field.Sow using a variable rule
+                │   │   ├── SurfaceOrganicMatter: .Simulations.Sim2.Field.SurfaceOrganicMatter
+                │   │   └── soc_table: .Simulations.Sim2.Field.soc_table
+                │   ├── Graph: .Simulations.Sim2.Graph
+                │   │   └── Series: .Simulations.Sim2.Graph.Series
+                │   ├── MicroClimate: .Simulations.Sim2.MicroClimate
+                │   ├── SoilArbitrator: .Simulations.Sim2.SoilArbitrator
+                │   ├── Summary: .Simulations.Sim2.Summary
+                │   └── Weather: .Simulations.Sim2.Weather
+                └── Simulation: .Simulations.Simulation
+                    ├── Clock: .Simulations.Simulation.Clock
+                    ├── Field: .Simulations.Simulation.Field
+                    │   ├── Fertilise at sowing: .Simulations.Simulation.Field.Fertilise at sowing
+                    │   ├── Fertiliser: .Simulations.Simulation.Field.Fertiliser
+                    │   ├── Harvest: .Simulations.Simulation.Field.Harvest
+                    │   ├── Maize: .Simulations.Simulation.Field.Maize
+                    │   ├── Report: .Simulations.Simulation.Field.Report
+                    │   ├── Soil: .Simulations.Simulation.Field.Soil
+                    │   │   ├── Chemical: .Simulations.Simulation.Field.Soil.Chemical
+                    │   │   ├── NH4: .Simulations.Simulation.Field.Soil.NH4
+                    │   │   ├── NO3: .Simulations.Simulation.Field.Soil.NO3
+                    │   │   ├── Organic: .Simulations.Simulation.Field.Soil.Organic
+                    │   │   ├── Physical: .Simulations.Simulation.Field.Soil.Physical
+                    │   │   │   └── MaizeSoil: .Simulations.Simulation.Field.Soil.Physical.MaizeSoil
+                    │   │   ├── Urea: .Simulations.Simulation.Field.Soil.Urea
+                    │   │   └── Water: .Simulations.Simulation.Field.Soil.Water
+                    │   ├── Sow using a variable rule: .Simulations.Simulation.Field.Sow using a variable rule
+                    │   ├── SurfaceOrganicMatter: .Simulations.Simulation.Field.SurfaceOrganicMatter
+                    │   └── soc_table: .Simulations.Simulation.Field.soc_table
+                    ├── Graph: .Simulations.Simulation.Graph
+                    │   └── Series: .Simulations.Simulation.Graph.Series
+                    ├── MicroClimate: .Simulations.Simulation.MicroClimate
+                    ├── SoilArbitrator: .Simulations.Simulation.SoilArbitrator
+                    ├── Summary: .Simulations.Simulation.Summary
+                    └── Weather: .Simulations.Simulation.Weather
         """
         # Reference to the APSIM cloning function
         model_type = validate_model_obj(model_type, evaluate_bound=True)
@@ -654,26 +890,31 @@ class CoreModel(PlotManager):
                             else self.Simulations.FindDescendant[model_type]())
 
         # Create a clone of the model
-        clone = ModelTools.CLONER(clone_parent)
+        from APSIM.Core import Node
 
+        clone = Node.Clone(clone_parent.Node)
+
+        # Add the cloned model to the new parent
+        model_clone = self.find_model(model_type)
+        mod = getattr(clone,"Model", clone)
+        clone = CastHelper.CastAs[model_clone](mod)
         # Assign a new name to the cloned model
         new_name = rename if rename else f"{clone.Name}_clone"
         clone.Name = new_name
+        print(clone.Name)
         # check_exists = self.Simulations.FindInScope[model_class](new_name)
         get_or_check_model(self.Simulations, model_type, new_name, action='delete')
-
         # Find the adoptive parent where the cloned model should be placed
         if adoptive_parent_type == Models.Core.Simulations or adoptive_parent_type == 'Models.Core.Simulations':
-            parent = self.Simulations
+            self.Simulations.Children.Add(clone)
         else:
-            parent = (
-                self.Simulations.FindDescendant[adoptive_parent_type](adoptive_parent_name) if adoptive_parent_name
-                else self.Simulations.FindDescendant[adoptive_parent_type]())
+            parent = ModelTools.find_child(self.Simulations, child_class=adoptive_parent_type,
+                                           child_name=adoptive_parent_name)
+            # parent = CastHelper.CastAs[adoptive_parent_type](parent)
 
-        # Add the cloned model to the new parent
-        parent.Children.Add(clone)
+            parent.Children.Add(clone)
 
-        # Save the changes to the simulation structure
+        # Serialize simulation structure
         self.save()
 
     @staticmethod

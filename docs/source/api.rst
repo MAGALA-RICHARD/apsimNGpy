@@ -685,7 +685,9 @@ Classes
 
        >>> from apsimNGpy.core.apsim import ApsimModel
        >>> model = ApsimModel('Maize', out_path='my_maize.apsimx')
-       >>> model.clone_model(model_type='Models.Core.Simulation', model_name="Simulation",  rename="Sim2", adoptive_parent_type = 'Models.Core.Simulations', adoptive_parent_name='Simulations')
+       >>> model.clone_model(model_type='Models.Core.Simulation', model_name="Simulation",
+       ... rename="Sim2", adoptive_parent_type = 'Models.Core.Simulations',
+       ... adoptive_parent_name='Simulations')
        >>> model.inspect_file()
        └── Simulations: .Simulations
            ├── DataStore: .Simulations.DataStore
@@ -746,21 +748,25 @@ Classes
 
    Find a model from the Models namespace and return its path.
 
-   Args:
-       model_name (str): The name of the model to find.
-       model_namespace (object, optional): The root namespace (defaults to Models).
-       path (str, optional): The accumulated path to the model.
+   Parameters:
+   -----------
+   model_name: (str)
+     The name of the model to find.
+   model_namespace: (object, optional):
+      The root namespace (defaults to Models).
+   path: (str, optional)
+      The accumulated path to the model.
 
    Returns:
        str: The full path to the model if found, otherwise None.
 
-   Example::
-
-        from apsimNGpy import core  # doctest:
-        model =core.base_data.load_default_simulations(crop = "Maize")
-        model.find_model("Weather")  # doctest: +SKIP
+   Example:
+   --------
+        >>> from apsimNGpy import core  # doctest:
+        >>> model =core.apsim.ApsimModel(model = "Maize", out_path ='my_maize.apsimx')
+        >>> model.find_model("Weather")  # doctest: +SKIP
         'Models.Climate.Weather'
-        model.find_model("Clock")  # doctest: +SKIP
+        >>> model.find_model("Clock")  # doctest: +SKIP
         'Models.Clock'
 
    .. py:method:: apsimNGpy.core.apsim.ApsimModel.add_model(self, model_type, adoptive_parent, rename=None, adoptive_parent_name=None, verbose=False, source='Models', source_model_name=None, override=True, **kwargs) (inherited)
@@ -770,46 +776,56 @@ Classes
    Some models are restricted to specific parent models, meaning they can only be added to compatible models.
    For example, a Clock model cannot be added to a Soil model.
 
-   Args:
-       ``model_class`` (str or Models object): The type of model to add, e.g., `Models.Clock` or just `"Clock"`. if the APSIM Models namespace is exposed to the current script, then model_class can be Models.Clock without strings quotes
+   Parameters:
+   -----------
+   model_class: (str or Models object)
+      The type of model to add, e.g., `Models.Clock` or just `"Clock"`. if the APSIM Models namespace is exposed to the current script, then model_class can be Models.Clock without strings quotes
 
-       ``rename`` (str): The new name for the model.
+   rename (str):
+     The new name for the model.
 
-       ``adoptive_parent`` (Models object): The target parent where the model will be added or moved e.g ``Models.Clock`` or ``Clock`` as string all are valid
+   adoptive_parent: (Models object)
+       The target parent where the model will be added or moved e.g `Models.Clock` or `Clock` as string all are valid
 
-       ``adoptive_parent_name`` (Models object, optional): Specifies the parent name for precise location. e.g ``Models.Core.Simulation`` or ``Simulations`` all are valid
+   adoptive_parent_name: (Models object, optional)
+       Specifies the parent name for precise location. e.g., `Models.Core.Simulation` or ``Simulations`` all are valid
 
-       ``source`` (Models, str, CoreModel, ApsimModel object): ``defaults`` to Models namespace, implying a fresh non modified model.
-       The source can be an existing Models or string name to point to one fo the default model example, which we can extract the model
+   source: Models, str, CoreModel, ApsimModel object: defaults to Models namespace.
+      The source can be an existing Models or string name to point to one of the
+      default model examples, which we can extract the model from
 
-       ``override`` (bool, optional): defaults to `True`. When `True` (recomended) it delete for any model with same name and type at the suggested parent location before adding the new model
-       if ``False`` and proposed model to be added exists at the parent location, ``APSIM`` automatically generates a new name for the newly added model. This is not recommended.
+   override: bool, optional defaults to `True`.
+       When `True` (recommended), it deletes
+       any model with the same name and type at the suggested parent location before adding the new model
+       if ``False`` and proposed model to be added exists at the parent location;
+       `APSIM` automatically generates a new name for the newly added model. This is not recommended.
    Returns:
-       None: ``Models`` are modified in place, so models retains the same reference.
+       None:
+
+   `Models` are modified in place, so models retains the same reference.
 
    .. caution::
        Added models from ``Models namespace`` are initially empty. Additional configuration is required to set parameters.
        For example, after adding a Clock module, you must set the start and end dates.
 
-   Example::
+   Example
+   -------------
 
-       from apsimNGpy import core
-       from apsimNGpy.core.core import Models
+   >>> from apsimNGpy import core
+   >>> from apsimNGpy.core.core import Models
+   >>> model = core.apsim.ApsimModel("Maize")
+   >>> model.remove_model(Models.Clock)  # first delete the model
+   >>> model.add_model(Models.Clock, adoptive_parent=Models.Core.Simulation, rename='Clock_replaced', verbose=False)
 
-       model = core.base_data.load_default_simulations(crop="Maize")
+   >>> model.add_model(model_class=Models.Core.Simulation, adoptive_parent=Models.Core.Simulations, rename='Iowa')
 
-       model.remove_model(Models.Clock)  # first delete the model
-       model.add_model(Models.Clock, adoptive_parent=Models.Core.Simulation, rename='Clock_replaced', verbose=False)
+   >>> model.preview_simulation()  # doctest: +SKIP
 
-       model.add_model(model_class=Models.Core.Simulation, adoptive_parent=Models.Core.Simulations, rename='Iowa')
-
-       model.preview_simulation()  # doctest: +SKIP
-
-       model.add_model(
-           Models.Core.Simulation,
-           adoptive_parent='Simulations',
-           rename='soybean_replaced',
-           source='Soybean')  # basically adding another simulation from soybean to the maize simulation
+   >>> model.add_model(
+   ... Models.Core.Simulation,
+   ... adoptive_parent='Simulations',
+   ... rename='soybean_replaced',
+   ... source='Soybean')  # basically adding another simulation from soybean to the maize simulation
 
    .. py:method:: apsimNGpy.core.apsim.ApsimModel.detect_model_type(self, model_instance: 'Union[str, Models]') (inherited)
 
@@ -3510,7 +3526,9 @@ Classes
 
        >>> from apsimNGpy.core.apsim import ApsimModel
        >>> model = ApsimModel('Maize', out_path='my_maize.apsimx')
-       >>> model.clone_model(model_type='Models.Core.Simulation', model_name="Simulation",  rename="Sim2", adoptive_parent_type = 'Models.Core.Simulations', adoptive_parent_name='Simulations')
+       >>> model.clone_model(model_type='Models.Core.Simulation', model_name="Simulation",
+       ... rename="Sim2", adoptive_parent_type = 'Models.Core.Simulations',
+       ... adoptive_parent_name='Simulations')
        >>> model.inspect_file()
        └── Simulations: .Simulations
            ├── DataStore: .Simulations.DataStore
@@ -3571,21 +3589,25 @@ Classes
 
    Find a model from the Models namespace and return its path.
 
-   Args:
-       model_name (str): The name of the model to find.
-       model_namespace (object, optional): The root namespace (defaults to Models).
-       path (str, optional): The accumulated path to the model.
+   Parameters:
+   -----------
+   model_name: (str)
+     The name of the model to find.
+   model_namespace: (object, optional):
+      The root namespace (defaults to Models).
+   path: (str, optional)
+      The accumulated path to the model.
 
    Returns:
        str: The full path to the model if found, otherwise None.
 
-   Example::
-
-        from apsimNGpy import core  # doctest:
-        model =core.base_data.load_default_simulations(crop = "Maize")
-        model.find_model("Weather")  # doctest: +SKIP
+   Example:
+   --------
+        >>> from apsimNGpy import core  # doctest:
+        >>> model =core.apsim.ApsimModel(model = "Maize", out_path ='my_maize.apsimx')
+        >>> model.find_model("Weather")  # doctest: +SKIP
         'Models.Climate.Weather'
-        model.find_model("Clock")  # doctest: +SKIP
+        >>> model.find_model("Clock")  # doctest: +SKIP
         'Models.Clock'
 
    .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.add_model(self, model_type, adoptive_parent, rename=None, adoptive_parent_name=None, verbose=False, source='Models', source_model_name=None, override=True, **kwargs) (inherited)
@@ -3595,46 +3617,56 @@ Classes
    Some models are restricted to specific parent models, meaning they can only be added to compatible models.
    For example, a Clock model cannot be added to a Soil model.
 
-   Args:
-       ``model_class`` (str or Models object): The type of model to add, e.g., `Models.Clock` or just `"Clock"`. if the APSIM Models namespace is exposed to the current script, then model_class can be Models.Clock without strings quotes
+   Parameters:
+   -----------
+   model_class: (str or Models object)
+      The type of model to add, e.g., `Models.Clock` or just `"Clock"`. if the APSIM Models namespace is exposed to the current script, then model_class can be Models.Clock without strings quotes
 
-       ``rename`` (str): The new name for the model.
+   rename (str):
+     The new name for the model.
 
-       ``adoptive_parent`` (Models object): The target parent where the model will be added or moved e.g ``Models.Clock`` or ``Clock`` as string all are valid
+   adoptive_parent: (Models object)
+       The target parent where the model will be added or moved e.g `Models.Clock` or `Clock` as string all are valid
 
-       ``adoptive_parent_name`` (Models object, optional): Specifies the parent name for precise location. e.g ``Models.Core.Simulation`` or ``Simulations`` all are valid
+   adoptive_parent_name: (Models object, optional)
+       Specifies the parent name for precise location. e.g., `Models.Core.Simulation` or ``Simulations`` all are valid
 
-       ``source`` (Models, str, CoreModel, ApsimModel object): ``defaults`` to Models namespace, implying a fresh non modified model.
-       The source can be an existing Models or string name to point to one fo the default model example, which we can extract the model
+   source: Models, str, CoreModel, ApsimModel object: defaults to Models namespace.
+      The source can be an existing Models or string name to point to one of the
+      default model examples, which we can extract the model from
 
-       ``override`` (bool, optional): defaults to `True`. When `True` (recomended) it delete for any model with same name and type at the suggested parent location before adding the new model
-       if ``False`` and proposed model to be added exists at the parent location, ``APSIM`` automatically generates a new name for the newly added model. This is not recommended.
+   override: bool, optional defaults to `True`.
+       When `True` (recommended), it deletes
+       any model with the same name and type at the suggested parent location before adding the new model
+       if ``False`` and proposed model to be added exists at the parent location;
+       `APSIM` automatically generates a new name for the newly added model. This is not recommended.
    Returns:
-       None: ``Models`` are modified in place, so models retains the same reference.
+       None:
+
+   `Models` are modified in place, so models retains the same reference.
 
    .. caution::
        Added models from ``Models namespace`` are initially empty. Additional configuration is required to set parameters.
        For example, after adding a Clock module, you must set the start and end dates.
 
-   Example::
+   Example
+   -------------
 
-       from apsimNGpy import core
-       from apsimNGpy.core.core import Models
+   >>> from apsimNGpy import core
+   >>> from apsimNGpy.core.core import Models
+   >>> model = core.apsim.ApsimModel("Maize")
+   >>> model.remove_model(Models.Clock)  # first delete the model
+   >>> model.add_model(Models.Clock, adoptive_parent=Models.Core.Simulation, rename='Clock_replaced', verbose=False)
 
-       model = core.base_data.load_default_simulations(crop="Maize")
+   >>> model.add_model(model_class=Models.Core.Simulation, adoptive_parent=Models.Core.Simulations, rename='Iowa')
 
-       model.remove_model(Models.Clock)  # first delete the model
-       model.add_model(Models.Clock, adoptive_parent=Models.Core.Simulation, rename='Clock_replaced', verbose=False)
+   >>> model.preview_simulation()  # doctest: +SKIP
 
-       model.add_model(model_class=Models.Core.Simulation, adoptive_parent=Models.Core.Simulations, rename='Iowa')
-
-       model.preview_simulation()  # doctest: +SKIP
-
-       model.add_model(
-           Models.Core.Simulation,
-           adoptive_parent='Simulations',
-           rename='soybean_replaced',
-           source='Soybean')  # basically adding another simulation from soybean to the maize simulation
+   >>> model.add_model(
+   ... Models.Core.Simulation,
+   ... adoptive_parent='Simulations',
+   ... rename='soybean_replaced',
+   ... source='Soybean')  # basically adding another simulation from soybean to the maize simulation
 
    .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.detect_model_type(self, model_instance: 'Union[str, Models]') (inherited)
 

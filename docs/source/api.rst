@@ -846,12 +846,10 @@ Classes
    ----------
    path : str
        APSIM path to a target node under `self.Simulations` (e.g.,
-       `'[Simulations].Ames.Maize.Weather'` or a similar canonical path).
+       '.Simulations.Simulations.Weather' or a similar canonical path).
    **kwargs
        Editor-specific keyword arguments. Accepted keys depend on the resolved model or component type
-       (see *Type-specific editing*). The following special keys are intercepted and **not**
-       forwarded verbatim:
-       - `verbose`: bool; enable additional logging in some editors.
+
 
    Type-specific editing
    ---------------------
@@ -859,12 +857,12 @@ Classes
 
    - :class:`Models.Climate.Weather`
      Calls `self._set_weather_path(values, param_values=kwargs, verbose=verbose)`.
-     Typical parameters include a new weather file path (implementation-specific).
+     Typical parameters include a new weather_file or met_file
 
    - :class:`Models.Manager`
      Validates that provided keys in `kwargs` match the manager script’s
-     `Parameters[i].Key` set; unknown keys raise :class:`ValueError`. On success,
-     updates parameter values via `KeyValuePair[String, String]`.
+     `Parameters x keys set; unknown keys raise :class:`ValueError`. On success,
+
 
    - :class:`Models.PMF.Cultivar`
      Ensures cultivar replacements exist under `Replacements` (creates as needed), then calls
@@ -876,26 +874,24 @@ Classes
    Soil components:
      Models.Soils.Physical | Models.Soils.Chemical | Models.Soils.Organic |
      Models.Soils.Water | Models.Soils.Solute
-     Delegates to ``self.replace_soils_values_by_path(node_path=path, **kwargs)``.
+
 
    - :class:`Models.Report`:
-     Calls self._set_report_vars(values, param_values=kwargs, verbose=verbose) (variables, events, etc.).
+    accepts key word arguments such as as variable_spec.
 
    - :class:`Models.Surface.SurfaceOrganicMatter`
      Requires at least one of:
      `'SurfOM'`, `'InitialCPR'`, `'InitialResidueMass'`, `'InitialCNR'`, `'IncorporatedP'`.
      If none supplied, raises :class:`ValueError`. Calls
 
+   ..note::
 
-   Behavior
-   --------
-   - Manager edits validate keys strictly (unknown keys fail).
-   - Cultivar edits may mutate the model tree (creating entries under ``Replacements``).
+       - Manager edits validate keys strictly (unknown keys fail).
+       - Cultivar edits may mutate the model tree (creating entries under ``Replacements``).
 
    Returns
    -------
-   self
-       Enables method chaining.
+   instance of ApsimModel or CoreModel class
 
    Raises
    ------
@@ -938,7 +934,7 @@ Classes
        model.edit_model_by_path(
            ".Simulations.Simulation.Clock",
            StartDate="2020-01-01",
-           EndDate="2020-12-31" )
+           EndDate="2020-12-31")
 
    Update soil water properties at a specific path::
 
@@ -953,6 +949,8 @@ Classes
            simulations=("Sim_A", "Sim_B"),
            verbose=True,
            **{"Phenology.EmergencePhase.Photoperiod": "Short"} )
+   See also:
+      `edit_model`
 
    .. py:method:: apsimNGpy.core.apsim.ApsimModel.edit_model(self, model_type: 'str', model_name: 'str', simulations: 'Union[str, list]' = 'all', verbose=False, **kwargs) (inherited)
 
@@ -3659,12 +3657,10 @@ Classes
    ----------
    path : str
        APSIM path to a target node under `self.Simulations` (e.g.,
-       `'[Simulations].Ames.Maize.Weather'` or a similar canonical path).
+       '.Simulations.Simulations.Weather' or a similar canonical path).
    **kwargs
        Editor-specific keyword arguments. Accepted keys depend on the resolved model or component type
-       (see *Type-specific editing*). The following special keys are intercepted and **not**
-       forwarded verbatim:
-       - `verbose`: bool; enable additional logging in some editors.
+
 
    Type-specific editing
    ---------------------
@@ -3672,12 +3668,12 @@ Classes
 
    - :class:`Models.Climate.Weather`
      Calls `self._set_weather_path(values, param_values=kwargs, verbose=verbose)`.
-     Typical parameters include a new weather file path (implementation-specific).
+     Typical parameters include a new weather_file or met_file
 
    - :class:`Models.Manager`
      Validates that provided keys in `kwargs` match the manager script’s
-     `Parameters[i].Key` set; unknown keys raise :class:`ValueError`. On success,
-     updates parameter values via `KeyValuePair[String, String]`.
+     `Parameters x keys set; unknown keys raise :class:`ValueError`. On success,
+
 
    - :class:`Models.PMF.Cultivar`
      Ensures cultivar replacements exist under `Replacements` (creates as needed), then calls
@@ -3689,26 +3685,24 @@ Classes
    Soil components:
      Models.Soils.Physical | Models.Soils.Chemical | Models.Soils.Organic |
      Models.Soils.Water | Models.Soils.Solute
-     Delegates to ``self.replace_soils_values_by_path(node_path=path, **kwargs)``.
+
 
    - :class:`Models.Report`:
-     Calls self._set_report_vars(values, param_values=kwargs, verbose=verbose) (variables, events, etc.).
+    accepts key word arguments such as as variable_spec.
 
    - :class:`Models.Surface.SurfaceOrganicMatter`
      Requires at least one of:
      `'SurfOM'`, `'InitialCPR'`, `'InitialResidueMass'`, `'InitialCNR'`, `'IncorporatedP'`.
      If none supplied, raises :class:`ValueError`. Calls
 
+   ..note::
 
-   Behavior
-   --------
-   - Manager edits validate keys strictly (unknown keys fail).
-   - Cultivar edits may mutate the model tree (creating entries under ``Replacements``).
+       - Manager edits validate keys strictly (unknown keys fail).
+       - Cultivar edits may mutate the model tree (creating entries under ``Replacements``).
 
    Returns
    -------
-   self
-       Enables method chaining.
+   instance of ApsimModel or CoreModel class
 
    Raises
    ------
@@ -3751,7 +3745,7 @@ Classes
        model.edit_model_by_path(
            ".Simulations.Simulation.Clock",
            StartDate="2020-01-01",
-           EndDate="2020-12-31" )
+           EndDate="2020-12-31")
 
    Update soil water properties at a specific path::
 
@@ -3766,6 +3760,8 @@ Classes
            simulations=("Sim_A", "Sim_B"),
            verbose=True,
            **{"Phenology.EmergencePhase.Photoperiod": "Short"} )
+   See also:
+      `edit_model`
 
    .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.edit_model(self, model_type: 'str', model_name: 'str', simulations: 'Union[str, list]' = 'all', verbose=False, **kwargs) (inherited)
 

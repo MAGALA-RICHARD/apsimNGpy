@@ -18,11 +18,20 @@ pythonnet_start = start_pythonnet()
 meta_info = {}
 
 
-def is_file_format_modified(bin_path: Union[str, Path] = APSIM_BIN_PATH) -> bool:
+def is_file_format_modified(bin_path: Union[str, Path, None] = None) -> bool:
     """
-    Checks if the APSIM.CORE.dll is present in the bin path. Normally, the new APSIM version has this dll file
-    @return: bool
+    Checks if the APSIM.CORE.dll is present in the bin path. Normally, the new APSIM version has this dll file.
+
+    Parameters
+    ---------
+    bin_path: Union[str, Path, None].
+         Default is the current bin_path for apsimNGpy, used only when bin_path is None.
+
+    :returns:
+      bool
     """
+    if bin_path is None:
+        bin_path = APSIM_BIN_PATH
     bp = Path(bin_path)
     patterns = {"*APSIM.CORE.dll", "*APSIM.Core.dll"}
     path = []
@@ -51,29 +60,32 @@ class ConfigRuntimeInfo:
 
 
 @cache
-def load_pythonnet(bin_path=APSIM_BIN_PATH):
+def load_pythonnet(bin_path: Union[str, Path] = None):
     """
-    A method for loading Python for .NET (pythonnet) and APSIM models. It is also cached to avoid rerunning many times
+    A method for loading Python for .NET (pythonnet) and APSIM models from the binary path. It is also cached to
+    avoid rerunning many times.
 
-    This class provides a callable method for initializing the Python for .NET (pythonnet) runtime and loading APSIM models.
-    Initialize the Python for .NET (pythonnet) runtime and load APSIM models.
+    It initializes the Python for .NET (pythonnet) runtime and load APSIM models.
 
-        This method attempts to load the 'coreclr' runtime, and if not found, falls back to an alternate runtime.
-        It also sets the APSIM binary path, adds the necessary references, and returns a reference to the loaded APSIM models.
+    Loads the 'coreclr' runtime, and if not found, falls back to an alternate runtime.
+    It also sets the APSIM binary path, adds the necessary references, and returns a reference to the loaded APSIM models.
 
-        Returns:
-        -------
-        lm: Reference to the loaded APSIM models
+    Returns:
+    -------
+    ConfigRuntimeInfo:
+         an instance of ConfigRuntimeInfo with reference to the loaded APSIM models
 
-        Raises:
-        ------
-        KeyError: If APSIM path is not found in the system environmental variable.
-        ValueError: If the provided APSIM path is invalid.
+    Raises:
+    ------
+    KeyError: If APSIM path is not found in the system environmental variable.
+    ValueError: If the provided APSIM path is invalid.
 
-        Notes:
-        It raises a KeyError if APSIM path is not found. Please edit the system environmental variable on your computer.
+    Notes:
+    It raises a KeyError if APSIM path is not found. Please edit the system environmental variable on your computer.
 
     """
+    if bin_path is None:
+        bin_path = APSIM_BIN_PATH
     candidate = config.locate_model_bin_path(bin_path)
     if not candidate:
         raise ApsimBinPathConfigError(
@@ -142,7 +154,7 @@ def get_apsim_file_reader(method: str = 'string'):
         Raises
         ------
         NotImplementedError
-            If ``method`` is not one of ``"string"`` or ``"file"``.
+            If `method` is not one of `string` or `file`.
         AttributeError
             If the underlying APSIM ``FileFormat`` type does not expose the
             expected reader method (environment/binaries misconfigured).

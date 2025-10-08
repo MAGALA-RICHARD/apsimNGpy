@@ -342,12 +342,6 @@ class CoreModel(PlotManager):
         In the above case, both reload = `False` or `True`, will produce the same reference path for the live
         instance class.
 
-
-        See Also
-        --------
-        recompile : Rebuild internal/compiled artifacts for the model.
-        restart_model : Reload/refresh the model instance after recompilation.
-        save_model_to_file : Legacy writer for older APSIM NG versions.
         """
         _path = str(file_name or self.path)
 

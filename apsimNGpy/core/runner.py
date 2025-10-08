@@ -194,14 +194,13 @@ def run_model_externally(
 
     # Non-zero exit is treated as failure; caller can relax this if needed
     if proc.returncode != 0:
-        #logger.info(f"{proc.stderr} {proc.stdout}")
+        # logger.info(f"{proc.stderr} {proc.stdout}")
         raise ApsimRuntimeError(
             f"APSIM exited with code {proc.returncode}. "
             f"See logs for stderr/stdout. or run with verbose option =True."
         )
 
     return proc
-
 
 
 def get_matching_files(dir_path: Union[str, Path], pattern: str, recursive: bool = False) -> List[Path]:
@@ -300,21 +299,20 @@ def run_from_dir(dir_path, pattern, verbose=False,
        What this function does is that it makes it easy to retrieve the simulated files, returning a generator that
        yields data frames
 
-       :Parameters:
-       __________________
-       ``dir_path``: (str or Path, required). The path to the directory where the
-           simulation files are located.
-       ``pattern``: (str, required): The file pattern to match for simulation files
-           (e.g., "*.apsimx").
-       ``recursive``: (bool, optional):  Recursively search through subdirectories for files
-           matching the file specification.
-       ``write_tocsv``: (bool, optional): specify whether to write the
-           simulation results to a csv. if true, the exported csv files bear the same name as the input apsimx file name
-           with suffix reportname.csv. if it is ``False``,
-          - if ``verbose``, the progress is printed as the elapsed time and the successfully saved csv
+       Parameters
+       ____________
+       dir_path: (str or Path, required).
+          The path to the directory where the simulation files are located.
+       pattern: (str, required)
+          The file pattern to match for simulation files (e.g., "*.apsimx").
+       recursive: (bool, optional)
+         Recursively search through subdirectories for files matching the file specification.
+       write_tocsv: (bool, optional)
+         specify whether to write the simulation results to a csv. if true, the exported csv files bear the same name as the input apsimx file name
+           with suffix reportname.csv. if it is ``False``. If ``verbose``, the progress is printed as the elapsed time and the successfully saved csv
 
-       ``returns``
-        -- a ``generator`` that yields data frames knitted by pandas
+       :returns:
+           generator that yields data frames knitted by pandas
 
 
        Example::

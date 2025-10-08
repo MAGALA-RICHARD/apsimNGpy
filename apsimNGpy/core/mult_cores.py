@@ -87,6 +87,10 @@ class MultiCoreManager:
         Insert results into the specified table
         results: (Pd.DataFrame, dict) The results that will be inserted into the table
         table: str (name of the table to insert)
+
+        .. seealso::
+
+           :func:`~apsimNGpy.core_utils.database_utils.write_results_to_sql`
         """
 
         engine = create_engine(f"sqlite:///{str(self.db_path)}")
@@ -249,13 +253,13 @@ class MultiCoreManager:
             if_exists: Literal["fail", "replace", "append"] = "fail",
     ) -> None:
         """
-        Persist simulation results to a SQLite database table.
+        Write simulation results to an SQLite database table.
 
         This method writes `self.results` (a pandas DataFrame) to the given SQLite
         database. It is designed to be robust in workflows where some simulations
         may fail: any successfully simulated rows present in `self.results` are
         still saved. This is useful when an ephemeral/temporary database was used
-        during simulation and you need a durable copy.
+        during simulation, and you need a durable copy.
 
         Parameters
         ----------
@@ -295,6 +299,10 @@ class MultiCoreManager:
            sim_id  yield  n2o
         0       1   10.2  0.8
         >>> mgr.save("outputs/simulations.db")
+
+        .. seealso::
+
+           :func:`~apsimNGpy.core_utils.database_utils.write_results_to_sql`
         """
 
         # --- Validate results
@@ -321,18 +329,27 @@ class MultiCoreManager:
         """
         runs all provided jobs using ``processes`` or ``threads`` specified
 
-        ``threads (bool)``: threads or processes
+        Parameters
+        -----------
 
-        ``jobs (iterable[simulations paths]``: jobs to run
+        threads: (bool) default is False
+            Threads or processes, recommended is to use processes
 
-        ``n_cores (int)``: number of cores to use
+        jobs: (iterable[simulations paths]
+             jobs to run
 
-        ``clear_db (bool)``: clear the database existing data if any. defaults to True
+        n_cores: (int)
+            number of cores to use
 
-        ``kwargs``:
-          retry_rate (int, optional): how many times to retry jobs before giving up
+        clear_db: (bool)
+           For clearing the database existing data if any. Defaults is True
 
-        :return: None
+        kwargs:
+          retry_rate: (int, optional)
+            how many times to retry jobs before giving up
+
+        :returns: None
+        :rtype: None
 
         """
         assert n_cores > 0, 'n_cores must be an integer above zero'

@@ -229,7 +229,6 @@ def auto_detect_apsim_bin_path():
         return ""
 
 
-@cache
 def get_apsim_bin_path():
     """
     Returns the path to the apsim bin folder from either auto-detection or from the path already supplied by the user
@@ -243,24 +242,30 @@ def get_apsim_bin_path():
 
     .. seealso::
 
-        Related API: :meth:`set_apsim_bin_path`.
+           :func:`~apsimNGpy.core.config.set_apsim_bin_path`
     """
-    # if it does not exist, we create it and try to load from the auto-detected pass
-    g_CONFIG = configparser.ConfigParser()
-    g_CONFIG.read(CONFIG_PATH)
-    # """We can extract the current path from apsimNGpyconfig.ini"""
-    apsim_bin_path = g_CONFIG['Paths']['APSIM_LOCATION']
-    if not exists(apsim_bin_path):
-        auto_path = auto_detect_apsim_bin_path()
-        create_config(CONFIG_PATH, apsim_path=auto_path)
-        return auto_path
-    if apsim_bin_path:
-        # make sure it has the required binaries
-        try:
-            apsim_bin_path = locate_model_bin_path(apsim_bin_path)
-        except (NotADirectoryError, FileNotFoundError, ValueError, ApsimBinPathConfigError) as e:
-            pass  # we are not interested in raising at this point
-    return apsim_bin_path
+
+    @cache  # better to cache them here, because it externally hides the internal namespace of the function through the
+    # cache wrapper
+    def _get_bin():
+        # if it does not exist, we create it and try to load from the auto-detected pass
+        g_CONFIG = configparser.ConfigParser()
+        g_CONFIG.read(CONFIG_PATH)
+        # """We can extract the current path from apsimNGpyconfig.ini"""
+        apsim_bin_path = g_CONFIG['Paths']['APSIM_LOCATION']
+        if not exists(apsim_bin_path):
+            auto_path = auto_detect_apsim_bin_path()
+            create_config(CONFIG_PATH, apsim_path=auto_path)
+            return auto_path
+        if apsim_bin_path:
+            # make sure it has the required binaries
+            try:
+                apsim_bin_path = locate_model_bin_path(apsim_bin_path)
+            except (NotADirectoryError, FileNotFoundError, ValueError, ApsimBinPathConfigError) as e:
+                pass  # we are not interested in raising at this point
+        return apsim_bin_path
+
+    return _get_bin()
 
 
 def get_bin_use_history():
@@ -323,9 +328,9 @@ def set_apsim_bin_path(path: Union[str, Path],
     >>> # Set the desired path (either the bin folder or a parent)
     >>> config.set_apsim_bin_path('/path/to/APSIM/2025/bin', verbose=True)
 
-    .. seealso::
+   .. seealso::
 
-      - :py:meth:`get_apsim_bin_path` — returns the APSIM bin directory.
+           :func:`~apsimNGpy.core.config.get_apsim_bin_path`
 
     """
     # Normalize user input

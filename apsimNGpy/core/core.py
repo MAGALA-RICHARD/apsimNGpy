@@ -788,7 +788,10 @@ class CoreModel(PlotManager):
 
          .. seealso::
 
-             Related APIs: :meth:`add_model`, :meth:`clone_model`and :meth:`move_model`.
+             Related APIs: :meth:`~apsimNGpy.core.apsim.ApsimModel.add_model`,
+             :meth:`~apsimNGpy.core.apsim.ApsimModel.clone_model`, and
+             :meth:`~apsimNGpy.core.apsim.ApsimModel.move_model`.
+
             """
         model_type = validate_model_obj(model_type)
         mtn = get_or_check_model(self.Simulations, model_type=model_type, model_name=old_name, action='get')
@@ -2391,9 +2394,10 @@ class CoreModel(PlotManager):
         - APSIM Next Generation Python bindings (`apsimNGpy`)
         - Python 3.10+
 
-      .. seealso::
+       .. seealso::
 
             Related API: :meth:`inspect_model_parameters`
+            Others: :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_model`, :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_file`
         """
         from apsimNGpy.core.model_tools import extract_value
         try:
@@ -3482,6 +3486,13 @@ class CoreModel(PlotManager):
             - “Full path” is the APSIM tree path **relative to the Simulations node**
               (be mindful of the difference between *Simulations* (root) and an individual
               *Simulation*).
+
+        .. seealso::
+
+               Related APIs:
+               :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_file`,
+               :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_model_parameters`,
+               :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_model_parameters_by_path`
         """
 
         model_type = validate_model_obj(model_type)
@@ -3869,6 +3880,8 @@ class CoreModel(PlotManager):
 
     def create_experiment(self, permutation: bool = True, base_name: str = None, **kwargs):
         """
+         @deprecated and will be removed in future versions for this class.
+
         Initialize an ``ExperimentManager`` instance, adding the necessary models and factors.
 
         Args:
@@ -3943,13 +3956,17 @@ class CoreModel(PlotManager):
         Parameters:
         ----------
 
-        ``specification``: *(str), required*
-        A specification can be:
-                - 1. multiple values or categories e.g., "[Sow using a variable rule].Script.Population =4, 66, 9, 10"
-                - 2. Range of values e.g, "[Fertilise at sowing].Script.Amount = 0 to 200 step 20",
+        specification``: (str), required*
+            A specification can be:
+                    - 1. multiple values or categories e.g., "[Sow using a variable rule].Script.Population =4, 66, 9, 10"
+                    - 2. Range of values e.g, "[Fertilise at sowing].Script.Amount = 0 to 200 step 20",
 
-        ``factor_name``: *(str), required*
-        - expected to be the user-desired name of the factor being specified e.g., population
+        factor_name: (str), required
+            expected to be the user-desired name of the factor being specified e.g., population
+
+        This method is overwritten in :class:`~apsimNGpy.core.experimentmanager.ExperimentManager` class.
+
+        @deprecated and will be removed in future versions for this class.
 
         Example::
 
@@ -4203,11 +4220,19 @@ class CoreModel(PlotManager):
 
         """
         Inspect the file by calling ``inspect_model()`` through ``get_model_paths.``
-        This method is important in inspecting the ``whole file`` and also getting the ``scripts paths``
+        This method is important in inspecting the `whole file` and also getting the `scripts paths`.
 
-        cultivar: i (bool) includes cultivar paths
+        Parameters
+        ----------
+        cultivar: (bool)
+           To includes cultivar paths.
 
-        console: (bool) print to the console
+        console: (bool)
+           Prints to the console if True
+
+        .. seealso::
+
+            Related APIs: :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_model`, :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_model_parameters`
         """
         self.save()  # save before compiling for consistent behaviors
         if kwargs.get('indent', None) or kwargs.get('display_full_path', None):

@@ -84,32 +84,36 @@ def load_pythonnet(bin_path: Union[str, Path] = None):
     It raises a KeyError if APSIM path is not found. Please edit the system environmental variable on your computer.
 
     """
-    if bin_path is None:
-        bin_path = APSIM_BIN_PATH
-    candidate = config.locate_model_bin_path(bin_path)
-    if not candidate:
-        raise ApsimBinPathConfigError(
-            f'Built APSIM Binaries seems to have been uninstalled from this directory: {bin_path}\n use the config.set_apsim_bin_path')
-    _add_bin_to_syspath(candidate)
+    @cache
+    def _load(bin_path):
+        if bin_path is None:
+            bin_path = APSIM_BIN_PATH
+        candidate = config.locate_model_bin_path(bin_path)
+        if not candidate:
+            raise ApsimBinPathConfigError(
+                f'Built APSIM Binaries seems to have been uninstalled from this directory: {bin_path}\n use the config.set_apsim_bin_path')
+        _add_bin_to_syspath(candidate)
 
 
-    # system.path.append(bin_path)
-    import clr
-    clr.AddReference("System")
-    # model_path = os.path.join(bin_path, 'Models.dll')
-    # clr.AddReference(model_path)
-    # apsimNG = clr.AddReference('ApsimNG')
-    clr.AddReference("Models")
-    if is_file_format_modified():
-        clr.AddReference('APSIM.Core')
-        apsim_core = True
-    # apsimNG engine
-    if set(Path(candidate).glob("*ApsimNG.dll")):
-        clr.AddReference("ApsimNG")
-    else:
-        logger.warning(f'Could not find ApsimNG.dll in {candidate}')
 
-    return ConfigRuntimeInfo(True, bin_path=candidate)
+        # system.path.append(bin_path)
+        import clr
+        clr.AddReference("System")
+        # model_path = os.path.join(bin_path, 'Models.dll')
+        # clr.AddReference(model_path)
+        # apsimNG = clr.AddReference('ApsimNG')
+        clr.AddReference("Models")
+        if is_file_format_modified():
+            clr.AddReference('APSIM.Core')
+            apsim_core = True
+        # apsimNG engine
+        if set(Path(candidate).glob("*ApsimNG.dll")):
+            clr.AddReference("ApsimNG")
+        else:
+            logger.warning(f'Could not find ApsimNG.dll in {candidate}')
+
+        return ConfigRuntimeInfo(True, bin_path=candidate)
+    return _load(bin_path)
 
     # return lm, sys, pythonnet.get_runtime_info()
 

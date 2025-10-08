@@ -35,24 +35,88 @@ class ExperimentManager(ApsimModel):
         self.sims = self.simulations
         self.init = False
 
-    def init_experiment(self, permutation=True):
+    # noinspection GrazieInspection
+    def init_experiment(self, permutation: bool = True, base_simulation: str = None):
 
         """
             Initializes the factorial experiment structure inside the APSIM file.
 
-            Args:
-                permutation (bool): If True, enables permutation mode; otherwise, uses standard factor crossing.
+            Parameters
+            _____________
+            permutation: (bool)
+              If True, enables permutation mode; otherwise, uses standard factor crossing.
+            base_simulation: (str)
+               The base simulation name to use for the experiment. If None, the base simulation is selected
+               from the available simulations
 
             Side Effects:
+            ____________
                 Replaces any existing ExperimentManager node with a new configuration.
                 Clones the base simulation and adds it under the experiment.
+                Never mind, though all this edits are made on a cloned model.
+
+            Examples::
+
+               from apsimNGpy.core.experimentmanager import ExperimentManager
+               # initialize the model
+               experiment = ExperimentManager('Maize', out_path = 'my_experiment.apsimx')
+               # initialize experiment without permutation crossing of the factors
+               experiment.init_experiment(permutation=False)
+               # initialize experiment with permutation =True
+               experiment.init_experiment(permutation=True)
+               # initialize experiment with a preferred base simulation name
+               experiment.init_experiment(permutation=False, base_simulation='Simulation')
+               # view the simulation tree
+               experiment.inspect_file()
+
+            The method :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.inspect_file` is inherited from the
+            :class:`~apsimNGpy.core.apsim.ApsimModel` class , but it is still useful here, for example, you can see
+            that we added an experiment Model under Simulations as shown below.
+
+            .. code-block:: None
+
+               └── Simulations: .Simulations
+                ├── DataStore: .Simulations.DataStore
+                └── Experiment: .Simulations.Experiment
+                    ├── Factors: .Simulations.Experiment.Factors
+                    └── Simulation: .Simulations.Experiment.Simulation
+                        ├── Clock: .Simulations.Experiment.Simulation.Clock
+                        ├── Field: .Simulations.Experiment.Simulation.Field
+                        │   ├── Fertilise at sowing: .Simulations.Experiment.Simulation.Field.Fertilise at sowing
+                        │   ├── Fertiliser: .Simulations.Experiment.Simulation.Field.Fertiliser
+                        │   ├── Harvest: .Simulations.Experiment.Simulation.Field.Harvest
+                        │   ├── Maize: .Simulations.Experiment.Simulation.Field.Maize
+                        │   ├── Report: .Simulations.Experiment.Simulation.Field.Report
+                        │   ├── Soil: .Simulations.Experiment.Simulation.Field.Soil
+                        │   │   ├── Chemical: .Simulations.Experiment.Simulation.Field.Soil.Chemical
+                        │   │   ├── NH4: .Simulations.Experiment.Simulation.Field.Soil.NH4
+                        │   │   ├── NO3: .Simulations.Experiment.Simulation.Field.Soil.NO3
+                        │   │   ├── Organic: .Simulations.Experiment.Simulation.Field.Soil.Organic
+                        │   │   ├── Physical: .Simulations.Experiment.Simulation.Field.Soil.Physical
+                        │   │   │   └── MaizeSoil: .Simulations.Experiment.Simulation.Field.Soil.Physical.MaizeSoil
+                        │   │   ├── Urea: .Simulations.Experiment.Simulation.Field.Soil.Urea
+                        │   │   └── Water: .Simulations.Experiment.Simulation.Field.Soil.Water
+                        │   ├── Sow using a variable rule: .Simulations.Experiment.Simulation.Field.Sow using a variable rule
+                        │   └── SurfaceOrganicMatter: .Simulations.Experiment.Simulation.Field.SurfaceOrganicMatter
+                        ├── Graph: .Simulations.Experiment.Simulation.Graph
+                        │   └── Series: .Simulations.Experiment.Simulation.Graph.Series
+                        ├── MicroClimate: .Simulations.Experiment.Simulation.MicroClimate
+                        ├── SoilArbitrator: .Simulations.Experiment.Simulation.SoilArbitrator
+                        ├── Summary: .Simulations.Experiment.Simulation.Summary
+                        └── Weather: .Simulations.Experiment.Simulation.Weather
+
+            .. seealso::
+
+               :meth:`add_factor`
+
+
             """
         self.permutation = permutation
 
         def exp_refresher(mode):
             sim = mode.simulations[0]
             base = ModelTools.CLONER(sim)
-            for simx in mode.simulations:  # it does not matter how many experiments exist, we need only one
+            for simx in mode.simulations:  # it does not matter how many experiments exist; we need only one
                 ModelTools.DELETE(simx)
             # replace before delete
 
@@ -109,7 +173,15 @@ class ExperimentManager(ApsimModel):
                 factor.AddChild(perm_node)
             experiment.AddChild(factor)
             # add simulation before experiment to the simulation tree
-            sim = self.simulations[0]
+            if base_simulation:
+                for _sim in self.simulations:
+                    if _sim.Name == base_simulation:
+                        sim = _sim
+                        break
+                else:
+                    raise ValueError(f"No base simulation found for this name {base_simulation}")
+            else:
+                sim = self.simulations[0]
             siM.AddChild(experiment)
             experiment.AddChild(sim)
             siM = CastHelper.CastAs[Models.Core.Simulations](siM.Model)
@@ -131,17 +203,125 @@ class ExperimentManager(ApsimModel):
         """
            Adds a new factor to the experiment based on an APSIM script specification.
 
-           Args:
-               specification (str): A script-like APSIM expression that defines the parameter variation.
-               factor_name (str, optional): A unique name for the factor; auto-generated if not provided.
-               **kwargs: Optional metadata or configuration (not yet used internally).
+          Parameters
+          ----------
+           specification: (str)
+               A script-like APSIM expression that defines the parameter variation.
 
-           Raises:
+           factor_name: (str, optional)
+               A unique name for the factor. If not provided, factor_name auto-generated as the variable parameter name,
+               usually the last string before real variables in specification string.
+
+           **kwargs: Optional metadata or configuration (not yet used internally).
+
+           Raises
+           _______
                ValueError: If a Script-based specification references a non-existent or unlinked manager script.
 
            Side Effects:
                Inserts the factor into the appropriate parent node (Permutation or Factors).
                If a factor at the same index already exists, it is safely deleted before inserting the new one.
+
+          Examples::
+
+               from apsimNGpy.core.experimentmanager import ExperimentManager
+               # initialize the model
+               experiment = ExperimentManager('Maize', out_path = 'my_experiment.apsimx')
+               # initialize experiment without permutation crossing of the factors
+               experiment.init_experiment(permutation=True)
+
+        All methods from :class:`~apsimNGpy.core.apsim.ApsimModel` are available in this
+        class and are not altered in any way. For example, we can still inspect, run,
+        and visualize the results:
+
+        .. code-block:: python
+
+           experiment.inspect_model('Models.Manager')
+
+        .. code-block:: none
+
+           ['.Simulations.Experiment.Simulation.Field.Sow using a variable rule',
+            '.Simulations.Experiment.Simulation.Field.Fertilise at sowing',
+            '.Simulations.Experiment.Simulation.Field.Harvest']
+
+        .. code-block:: python
+
+           experiment.inspect_model('Models.Factorial.Experiment')
+
+        .. code-block:: none
+
+           ['.Simulations.Experiment']
+
+        Now we are ready to add factors
+
+        1. Add a factor associated with a manager script
+        ------------------------------------------------
+
+        .. code-block:: python
+
+             experiment.add_factor(specification=f"[Sow using a variable rule].Script.Population = 6, 10", factor_name='Population')
+
+        2. Add a factor associated with a soil sode e.g., soil organic like initial soil organic carbon
+        -----------------------------------------------------------------------------------------------
+
+        .. code-block:: python
+
+            experiment.add_factor(specification='[Organic].Carbon[1] = 1.2, 1.8', factor_name='initial_carbon')
+
+        Check how many factors have been added to the model
+
+        .. code-block:: python
+
+          experiment.n_factors
+            2
+        it is possible to inspect the factors
+
+        .. code-block:: python
+
+          experiment.inspect_model('Models.Factorial.Factor')
+
+        .. code-block:: none
+
+            ['.Simulations.Experiment.Factors.Permutation.Nitrogen',
+            '.Simulations.Experiment.Factors.Permutation.'initial_carbon']
+
+        Checking the names of the factors as given
+
+        .. code-block:: python
+
+           experiment.inspect_model('Models.Factorial.Factor', fullpath=False)
+
+        .. code-block:: none
+           ['Nitrogen', 'initial_carbon']
+
+        We are ready to :meth:`~apsimNGpy.experimentmanager.ExperimentManager.run` the model
+
+        .. code-block:: python
+
+             experiment.run()
+             # get results
+             df = experiment.results
+             # compute the mean across each experiment
+             df.groupby(['Population', 'initial_carbon'])['Yield'].mean()
+
+        .. code-block:: none
+
+                     Population  initial_carbon
+            10          1.2               6287.538183
+                        1.8               6225.861601
+            6           1.2               5636.529504
+                        1.8               5608.971306
+            Name: Yield, dtype: float64
+
+        Saving the experiment is the same as in :class:`~apsimNGpy.core.apsim.ApsimModel`
+
+       .. code-block:: python
+
+           experiment.save()
+
+       See more details in:
+       :meth:`~apsimNGpy.core.apsim.ApsimModel.save`
+
            """
         if not self.init:
             raise ValueError("Please initialize the experiment first by calling: self.init_experiment method")

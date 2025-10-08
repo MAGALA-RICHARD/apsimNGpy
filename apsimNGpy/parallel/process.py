@@ -36,7 +36,7 @@ def custom_parallel(func, iterable: Iterable, *args, **kwargs):
     Any
         The result of ``func`` for each item in ``iterable``.
 
-    Other Parameters
+   kwargs
     ----------------
     use_thread : bool, optional, default=False
         If ``True``, use threads; if ``False``, use processes (recommended for CPU-bound work).
@@ -63,8 +63,13 @@ def custom_parallel(func, iterable: Iterable, *args, **kwargs):
 
     >>> for _ in run_parallel(download, urls, use_thread=True, verbose=True):
     ...     pass
-    """
 
+    .. seealso::
+
+           :func:`~apsimNGpy.parallel.process.custom_parallel_chunks`
+    """
+    if isinstance(iterable, str):
+        raise ValueError('jobs must an iterable but not strings')
     use_thread, cpu_cores = kwargs.get('use_thread', False), kwargs.get('ncores', CORES)
     progress_message = kwargs.get('progress_message', f"Processing please wait!")
     progress_message += ": "
@@ -242,7 +247,13 @@ def custom_parallel_chunks(
     >>> for _ in run_parallel(download, urls, use_thread=True, verbose=True):
     ...     pass
 
+    .. seealso::
+
+           :func:`~apsimNGpy.parallel.process.custom_parallel`
+
     """
+    if isinstance(jobs, str):
+        raise ValueError('jobs must an iterable but not strings')
 
     use_thread: bool = kwargs.pop("use_thread", False)
     ncores_kw: Optional[int] = kwargs.pop("ncores", None)

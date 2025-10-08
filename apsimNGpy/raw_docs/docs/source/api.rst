@@ -318,13 +318,6 @@ Classes
    In the above case, both reload = `False` or `True`, will produce the same reference path for the live
    instance class.
 
-
-   See Also
-   --------
-   recompile : Rebuild internal/compiled artifacts for the model.
-   restart_model : Reload/refresh the model instance after recompilation.
-   save_model_to_file : Legacy writer for older APSIM NG versions.
-
    .. py:property:: apsimNGpy.core.apsim.ApsimModel.results (inherited)
 
    Legacy method for retrieving simulation results.
@@ -2884,7 +2877,6 @@ Functions
 
        >>> load_crop_from_disk("Maize", out ='my_maize_example.apsimx')
        'C:/path/to/temp_uuid_Maize.apsimx'
-       @param cache:
 
 .. py:function:: apsimNGpy.core.config.scan_drive_for_bin()
 
@@ -2933,7 +2925,7 @@ Functions
 
    .. seealso::
 
-       Related API: :meth:`get_apsim_bin_path`.
+     - :py:meth:`get_apsim_bin_path` — returns the APSIM bin directory.
 
 .. py:function:: apsimNGpy.core.config.stamp_name_with_version(file_name)
 
@@ -3298,13 +3290,6 @@ Classes
 
    In the above case, both reload = `False` or `True`, will produce the same reference path for the live
    instance class.
-
-
-   See Also
-   --------
-   recompile : Rebuild internal/compiled artifacts for the model.
-   restart_model : Reload/refresh the model instance after recompilation.
-   save_model_to_file : Legacy writer for older APSIM NG versions.
 
    .. py:property:: apsimNGpy.core.experimentmanager.ExperimentManager.results (inherited)
 
@@ -5817,6 +5802,10 @@ Classes
    results: (Pd.DataFrame, dict) The results that will be inserted into the table
    table: str (name of the table to insert)
 
+   .. seealso::
+
+      :func:`~apsimNGpy.core_utils.database_utils.write_results_to_sql`
+
    .. py:property:: apsimNGpy.core.mult_cores.MultiCoreManager.tables
 
    Summarizes all the tables that have been created from the simulations
@@ -5858,13 +5847,13 @@ Classes
 
    .. py:method:: apsimNGpy.core.mult_cores.MultiCoreManager.save_tosql(self, db_name: Union[str, pathlib.Path], *, table_name: str = 'aggregated_tables', if_exists: Literal['fail', 'replace', 'append'] = 'fail') -> None
 
-   Persist simulation results to a SQLite database table.
+   Write simulation results to an SQLite database table.
 
    This method writes `self.results` (a pandas DataFrame) to the given SQLite
    database. It is designed to be robust in workflows where some simulations
    may fail: any successfully simulated rows present in `self.results` are
    still saved. This is useful when an ephemeral/temporary database was used
-   during simulation and you need a durable copy.
+   during simulation, and you need a durable copy.
 
    Parameters
    ----------
@@ -5904,6 +5893,10 @@ Classes
       sim_id  yield  n2o
    0       1   10.2  0.8
    >>> mgr.save("outputs/simulations.db")
+
+   .. seealso::
+
+      :func:`~apsimNGpy.core_utils.database_utils.write_results_to_sql`
 
    .. py:method:: apsimNGpy.core.mult_cores.MultiCoreManager.save_tocsv(self, path_or_buf, **kwargs)
 
@@ -6070,18 +6063,27 @@ Classes
 
    runs all provided jobs using ``processes`` or ``threads`` specified
 
-   ``threads (bool)``: threads or processes
+   Parameters
+   -----------
 
-   ``jobs (iterable[simulations paths]``: jobs to run
+   threads: (bool) default is False
+       Threads or processes, recommended is to use processes
 
-   ``n_cores (int)``: number of cores to use
+   jobs: (iterable[simulations paths]
+        jobs to run
 
-   ``clear_db (bool)``: clear the database existing data if any. defaults to True
+   n_cores: (int)
+       number of cores to use
 
-   ``kwargs``:
-     retry_rate (int, optional): how many times to retry jobs before giving up
+   clear_db: (bool)
+      For clearing the database existing data if any. Defaults is True
 
-   :return: None
+   kwargs:
+     retry_rate: (int, optional)
+       how many times to retry jobs before giving up
+
+   :returns: None
+   :rtype: None
 
    .. py:attribute:: apsimNGpy.core.mult_cores.MultiCoreManager.agg_func
 
@@ -6140,7 +6142,7 @@ Functions
    Raises
    ------
    NotImplementedError
-       If ``method`` is not one of ``"string"`` or ``"file"``.
+       If `method` is not one of `string` or `file`.
    AttributeError
        If the underlying APSIM ``FileFormat`` type does not expose the
        expected reader method (environment/binaries misconfigured).
@@ -6215,10 +6217,17 @@ Functions
    --------
    load_pythonnet : Initialize pythonnet/CLR for APSIM binaries.
 
-.. py:function:: apsimNGpy.core.pythonet_config.is_file_format_modified(bin_path: Union[str, pathlib.Path] = WindowsPath('D:/My_BOX/Box/PhD thesis/Objective two/morrow plots 20250821/APSIM2025.8.7844.0/bin')) -> bool
+.. py:function:: apsimNGpy.core.pythonet_config.is_file_format_modified(bin_path: Union[str, pathlib.Path, NoneType] = None) -> bool
 
-   Checks if the APSIM.CORE.dll is present in the bin path. Normally, the new APSIM version has this dll file
-   @return: bool
+   Checks if the APSIM.CORE.dll is present in the bin path. Normally, the new APSIM version has this dll file.
+
+   Parameters
+   ---------
+   bin_path: Union[str, Path, None].
+        Default is the current bin_path for apsimNGpy, used only when bin_path is None.
+
+   :returns:
+     bool
 
 Classes
 ^^^^^^^
@@ -7304,49 +7313,53 @@ Functions
 
 .. py:function:: apsimNGpy.parallel.process.custom_parallel(func, iterable: 'Iterable', *args, **kwargs)
 
-   Run a function in parallel using threads or processes.
+    Run a function in parallel using threads or processes.
 
-   Parameters
-   ----------
-   func : callable
-       The function to run in parallel.
-   iterable : iterable
-       An iterable of items to be processed by ``func``.
-   *args
-       Additional positional arguments to pass to ``func``.
+    Parameters
+    ----------
+    func : callable
+        The function to run in parallel.
+    iterable : iterable
+        An iterable of items to be processed by ``func``.
+    *args
+        Additional positional arguments to pass to ``func``.
 
-   Yields
-   ------
-   Any
-       The result of ``func`` for each item in ``iterable``.
+    Yields
+    ------
+    Any
+        The result of ``func`` for each item in ``iterable``.
 
-   Other Parameters
-   ----------------
-   use_thread : bool, optional, default=False
-       If ``True``, use threads; if ``False``, use processes (recommended for CPU-bound work).
-   ncores : int, optional
-       Number of worker threads/processes. Defaults to ~50% of available CPU cores.
-   verbose : bool, optional, default=True
-       Whether to display a progress indicator.
-   progress_message : str, optional
-       Message shown alongside the progress indicator.
-       Defaults to ``f"Processing multiple jobs via {func.__name__}, please wait!"``.
-   void : bool, optional, default=False
-       If ``True``, consume results internally (do not yield). Useful for
-       side-effect–only functions.
-   unit : str, optional, default="iteration"
-       Label for the progress indicator (cosmetic only).
+   kwargs
+    ----------------
+    use_thread : bool, optional, default=False
+        If ``True``, use threads; if ``False``, use processes (recommended for CPU-bound work).
+    ncores : int, optional
+        Number of worker threads/processes. Defaults to ~50% of available CPU cores.
+    verbose : bool, optional, default=True
+        Whether to display a progress indicator.
+    progress_message : str, optional
+        Message shown alongside the progress indicator.
+        Defaults to ``f"Processing multiple jobs via {func.__name__}, please wait!"``.
+    void : bool, optional, default=False
+        If ``True``, consume results internally (do not yield). Useful for
+        side-effect–only functions.
+    unit : str, optional, default="iteration"
+        Label for the progress indicator (cosmetic only).
 
-   Examples
-   --------
-   Run with processes (CPU-bound):
+    Examples
+    --------
+    Run with processes (CPU-bound):
 
-   >>> list(run_parallel(work, range(5), use_thread=False, ncores=4))
+    >>> list(run_parallel(work, range(5), use_thread=False, ncores=4))
 
-   Run with threads (I/O-bound):
+    Run with threads (I/O-bound):
 
-   >>> for _ in run_parallel(download, urls, use_thread=True, verbose=True):
-   ...     pass
+    >>> for _ in run_parallel(download, urls, use_thread=True, verbose=True):
+    ...     pass
+
+    .. seealso::
+
+           :func:`~apsimNGpy.parallel.process.custom_parallel_chunks`
 
 .. py:function:: apsimNGpy.parallel.process.custom_parallel_chunks(func: 'Callable[..., Any]', jobs: 'Iterable[Iterable[Any]]', *args, **kwargs)
 
@@ -7415,6 +7428,10 @@ Functions
 
    >>> for _ in run_parallel(download, urls, use_thread=True, verbose=True):
    ...     pass
+
+   .. seealso::
+
+          :func:`~apsimNGpy.parallel.process.custom_parallel`
 
 apsimNGpy.validation.evaluator
 ------------------------------

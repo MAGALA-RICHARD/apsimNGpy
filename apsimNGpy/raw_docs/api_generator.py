@@ -302,7 +302,7 @@ if __name__ == "__main__":
     SENDTO2.mkdir(parents=True, exist_ok=True)
 
     import shutil, os
-    from apsimNGpy.core import config, base_data, apsim, mult_cores, pythonet_config, experimentmanager
+    from apsimNGpy.core import config, base_data, apsim, mult_cores, pythonet_config, experimentmanager, runner
     from apsimNGpy.optimizer import moo, single
     from apsimNGpy.core_utils import database_utils
     from apsimNGpy.parallel import process
@@ -311,7 +311,7 @@ if __name__ == "__main__":
 
     modules = (
         process, apsim, mult_cores, experimentmanager, moo,
-        evaluator, exceptions, single, database_utils, pythonet_config, config
+        evaluator, exceptions, single, database_utils, pythonet_config, config, runner
     )
 
     OUT = Path("docs/source/api.rst")

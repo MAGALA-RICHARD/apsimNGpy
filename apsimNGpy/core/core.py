@@ -3160,13 +3160,18 @@ class CoreModel(PlotManager):
             Examples
             --------
             Update all Weather nodes:
-            >>> from apsimNGpy.core.apsim import ApsimModel
-            >>> model = ApsimModel("Maize")
-            >>> model.get_weather_from_file("data/ames_2020.met")
+
+            .. code-block:: python
+
+                from apsimNGpy.core.apsim import ApsimModel
+                model = ApsimModel("Maize")
+                model.get_weather_from_file("data/ames_2020.met")
 
             Update only two simulations (suffix added automatically):
 
-            >>> model.get_weather_from_file("data/ames_2020", simulations=("SimA", "SimB"))# amke sure they exists
+            .. code-block:: python
+
+                 model.get_weather_from_file("data/ames_2020", simulations=("Simulation",))
 
             .. seealso::
 

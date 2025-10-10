@@ -27,9 +27,10 @@ from typing import Type
 
 
 class ExperimentManager(ApsimModel):
-    """This class runs APSIM Experiments with pure factors or permutations. You first need to initiate the instance of this
-    class and then initialize the experiment itself with: :meth:`init_experiment`,
-    which creates a new experiment from the suggested base simulation and ``permutation`` type
+    """
+    This class inherits methods and attributes from: :class:`~apsimNGpy.core.apsim.ApsimModel` to manage APSIM Experiments
+    with pure factors or permutations. You first need to initiate the instance of this class and then initialize the
+    experiment itself with: :meth:`init_experiment`, which creates a new experiment from the suggested base simulation and ``permutation`` type
     """
 
     def __init__(self, model, out_path=None):
@@ -501,8 +502,6 @@ class ExperimentManager(ApsimModel):
             self.parent_factor.AddChild(node.Model)
         self.save()
 
-
-add_outline(ExperimentManager, include_inherited=True, base_path='apsimNGpy.core.experimentmanager.ExperimentManager')
 
 if __name__ == '__main__':
     exp = ExperimentManager('Soybean', out_path='exp.apsimx')

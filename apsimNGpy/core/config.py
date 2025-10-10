@@ -232,9 +232,11 @@ def auto_detect_apsim_bin_path():
 def get_apsim_bin_path():
     """
     Returns the path to the apsim bin folder from either auto-detection or from the path already supplied by the user
-    through the apsimNgp config.ini file in the user home dir_path. the location folder is called
-    The function is silent does not raise any exception but return empty string in all cases
-    :return:
+    through the apsimNGpy config.ini file in the user home directory.
+
+    This function is silent does not raise any exception but return empty string in all
+    cases if bin_path is empty or was not found.
+
 
     Example::
 

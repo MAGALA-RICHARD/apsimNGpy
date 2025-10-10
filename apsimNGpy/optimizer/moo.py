@@ -26,15 +26,17 @@ class MultiObjectiveProblem(AbstractProblem):
 
     def __init__(self, apsim_model: Runner, objectives: list, *, decision_vars: list = None, cache_size=100):
         """
-                   Parameters
-                   ----------
-                   apsim_runner : apsimNGpy.core.cal.OptimizationBase
-                       Instance to run APSIM simulations.
-                   objectives : list of callable
-                       List of functions that take simulation output (DataFrame) and return scalar objective values.
-                   decision_vars : list of dict, optional
-                       Each dict must have: 'path', 'bounds', 'v_type', 'kwargs'.
-                   """
+       Parameters
+       ----------
+       apsim_runner : apsimNGpy.core.cal.OptimizationBase
+           Instance to run APSIM simulations.
+
+       objectives : list of callable.
+           List of functions that take simulation output (DataFrame) and return scalar objective values.
+
+       decision_vars : list of dict, optional
+           Each dict must have: 'path', 'bounds', 'v_type', 'kwargs'.
+       """
         AbstractProblem.__init__(self, apsim_model, max_cache_size=cache_size)
         self.apsim_model = apsim_model
         self.objectives = objectives
@@ -89,6 +91,42 @@ class MultiObjectiveProblem(AbstractProblem):
         return any(var['v_type'] not in {'int', 'float'} for var in self.decision_vars)
 
     def minimize(self, **kwargs):
+        """ Minimization of function of one or more variables, objectives and constraints. wraps around Pymoo
+
+        Parameters
+        ----------
+
+        kwargs : dict
+         - problem: instance of ``pymoo.core.problem.Problem``
+             A problem object which is defined using pymoo.
+
+         - algorithm: instance of ``pymoo.core.algorithm.Algorithm``
+              The algorithm object that should be used for the optimization.
+
+         - termination: ``pymoo.core.termination.Termination`` or tuple default is None
+            Usually the termination criterion that is used to stop the algorithm.
+
+         - seed : integer
+            The random seed to be used.
+
+         - verbose : bool
+                Whether output should be printed or not.
+
+         - display : :class:`~pymoo.util.display.Display`
+                Each algorithm has a default display object for printouts. However, it can be overwritten if desired.
+
+         - callback : `pymoo.core.callback.Callback`
+                A callback object which is called each iteration of the algorithm.
+
+         - save_history : bool
+                Whether the history should be stored or not.
+
+        - copy_algorithm : bool
+                Whether the algorithm object should be copied before optimization.
+
+        """
+
+
         return minimize
 
     def NSG2(self):

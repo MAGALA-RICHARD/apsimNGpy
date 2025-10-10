@@ -31,7 +31,6 @@ from apsimNGpy.core.model_loader import get_node_by_path
 from apsimNGpy.core.model_tools import find_child_of_class
 from apsimNGpy.settings import logger
 from apsimNGpy.core.soiler import SoilManager
-
 # constants
 REPORT_PATH = {'Carbon': '[Soil].Nutrient.TotalC/1000 as dyn', 'DUL': '[Soil].SoilWater.PAW as paw', 'N03':
     '[Soil].Nutrient.NO3.ppm as N03'}
@@ -42,10 +41,10 @@ REPORT_PATH = {'Carbon': '[Soil].Nutrient.TotalC/1000 as dyn', 'DUL': '[Soil].So
 @dataclass(repr=False, order=False, init=False)
 class ApsimModel(CoreModel):
     """
-    Main class for apsimNGpy modules.
-    It inherits from the CoreModel class and therefore has access to a repertoire of methods from it.
+    It inherits from the CoreModel classes, and extends its capabilities.
 
     This implies that you can still run the model and modify parameters as needed.
+
     Example:
         >>> from apsimNGpy.core.apsim import ApsimModel
         >>> from pathlib import Path

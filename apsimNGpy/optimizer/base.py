@@ -24,6 +24,7 @@ from collections import OrderedDict
 SING_OBJ_CONT_VAR = 'single-continuous-vars'
 SING_OBJ_MIXED_VAR = 'single-mixed-vars'
 
+
 @lru_cache(maxsize=None)
 def get_function_param_names(func):
     """
@@ -39,7 +40,7 @@ def _evaluate_args(*args, **kwargs):
 
 
 class AbstractProblem(ABC):
-    def __init__(self, apsim_model, max_cache_size=400, objectives = None, decision_vars=None, **kwargs):
+    def __init__(self, apsim_model, max_cache_size=400, objectives=None, decision_vars=None, **kwargs):
         self.apsim_model = apsim_model
         self._cache = OrderedDict()
         self.max_cache_size = max_cache_size
@@ -55,6 +56,7 @@ class AbstractProblem(ABC):
     def optimization_type(self):
         """Must be implemented as a property in subclass"""
         pass
+
     def _insert_cache_result(self, *args, result):
 
         args = tuple(args)
@@ -68,7 +70,6 @@ class AbstractProblem(ABC):
         key = tuple(args)
 
         return self._cache.get(key, None)
-
 
     @cache
     def _get_editable_model(self):
@@ -166,13 +167,13 @@ class AbstractProblem(ABC):
             'path': path,
             'bounds': bounds,
             'v_type': v_type,
-            'q':q,
+            'q': q,
             'categories': categories,
             'start_value': start_value,
             'kwargs': kwargs
         }
         tp = to_fill[0]
-        self.target_parameters[tp] = var_spec # if the parameter changes, then it is a new control
+        self.target_parameters[tp] = var_spec  # if the parameter changes, then it is a new control
         # update decissions vars
         self.decision_vars = [self.target_parameters[i] for i in self.target_parameters]
 
@@ -180,13 +181,11 @@ class AbstractProblem(ABC):
     def evaluate_objectives(self):
         pass
 
-
-
     def __str__(self):
         opt_type = self.optimization_type
         if isinstance(self.objectives, Iterable):
-           ob_names = [i.__name__ for i in self.objectives ]
-           ob_names = ', '.join(ob_names)
+            ob_names = [i.__name__ for i in self.objectives]
+            ob_names = ', '.join(ob_names)
         if callable(self.objectives):
             ob_names = self.objectives.__name__
         else:
@@ -198,13 +197,13 @@ class AbstractProblem(ABC):
         summary += f"Number of Control Variables: {len(self.decision_vars)}\n"
         summary += "Control Variables:\n"
         for count, var in enumerate(self.decision_vars):
-             count += 1
-             vard = var.copy()
-             vark = vard.pop('kwargs', var).copy()
+            count += 1
+            vard = var.copy()
+            vark = vard.pop('kwargs', var).copy()
 
-             data  = vard | vark
+            data = vard | vark
 
-             for key, value in data.items():
+            for key, value in data.items():
                 if key in self.labels and self.outcomes:
                     x_var = getattr(self.outcomes, 'x_vars')[key]
                     summary += (
@@ -220,6 +219,7 @@ class AbstractProblem(ABC):
 
     def __repr__(self):
         return self.__str__()
+
     @property
     def labels(self):
         labels = []
@@ -228,15 +228,14 @@ class AbstractProblem(ABC):
             data = var | vark
             for key, value in data.items():
                 if value in ['?', ""]:
-                 labels.append(key)
+                    labels.append(key)
         return labels
-
-
 
     @property
     def indicators(self) -> List[str]:
         inds = ['mse', 'mae', 'rmse', 'rrmse', 'r2', 'wia', 'ccc', 'bias', 'slope', 'me', 'hv']
         return [i for i in inds if getattr(self, i, None) is not None]
+
     @property
     def outcomes(self):
         return self._outcomes
@@ -244,9 +243,11 @@ class AbstractProblem(ABC):
     @outcomes.setter
     def outcomes(self, value):
         self._outcomes = value
+
     @staticmethod
     def hv(F, reference_point=None, normalize=False, normalization_bounds=None):
         return compute_hyper_volume(F, reference_point=None, normalize=False, normalization_bounds=None)
+
     @staticmethod
     def rrmse(actual, predicted) -> float:
         return AbstractProblem.rmse(actual, predicted) / np.mean(actual)
@@ -380,4 +381,5 @@ if __name__ == '__main__':
                slope=AbstractProblem.slope(obs, pred_data),
                r2=AbstractProblem.r2(obs, pred_data))
     import pprint
+
     pprint.pprint(val, indent=4, width=4)

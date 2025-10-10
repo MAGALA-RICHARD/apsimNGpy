@@ -13,8 +13,7 @@ Classes
 
 .. py:class:: apsimNGpy.core.apsim.ApsimModel
 
-   Main class for apsimNGpy modules.
-   It inherits from the CoreModel class and therefore has access to a repertoire of methods from it.
+   It inherits from the CoreModel classes.
 
    This implies that you can still run the model and modify parameters as needed.
    Example:
@@ -1651,12 +1650,13 @@ Classes
 
     Parameters
     ----------
-   ``parameters`` (dict, required) dictionary of cultivar parameters to update.
+   parameters:  (dict, required)
+      dictionary of cultivar parameters to update.
 
-   ``simulations``, optional
+   simulations : str optional
         List or tuples of simulation names to update if `None` update all simulations.
 
-   ``clear`` (bool, optional)
+   clear (bool, optional)
         If `True` remove all existing parameters, by default `False`.
 
    .. py:method:: apsimNGpy.core.apsim.ApsimModel.recompile_edited_model(self, out_path: 'os.PathLike') (inherited)
@@ -2980,15 +2980,135 @@ Classes
 
 .. py:class:: apsimNGpy.core.experimentmanager.ExperimentManager
 
-   Main class for apsimNGpy modules.
-   It inherits from the CoreModel class and therefore has access to a repertoire of methods from it.
+   This class runs APSIM Experiments with pure factors or permutations. You first need to initiate the instance of this
+       class and then initialize the experiment itself with: :meth:`init_experiment`,
+       which creates a new experiment from the suggested base simulation and ``permutation`` type
 
-   This implies that you can still run the model and modify parameters as needed.
-   Example:
-       >>> from apsimNGpy.core.apsim import ApsimModel
-       >>> from pathlib import Path
-       >>> model = ApsimModel('Maize', out_path=Path.home()/'apsim_model_example.apsimx')
-       >>> model.run(report_name='Report') # report is the default, please replace it as needed
+   Outline
+   =======
+
+   Properties
+   ----------
+   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.Datastore`
+   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.End`
+   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.Models`
+   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.Simulations`
+   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.Start`
+   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.base_name`
+   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.configs`
+   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.copy`
+   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.datastore`
+   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.experiment`
+   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.experiment_created`
+   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.extract_dates`
+   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.factor_names`
+   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.factors`
+   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.model`
+   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.model_info`
+   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.n_factors`
+   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.others`
+   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.out`
+   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.out_path`
+   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.path`
+   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.permutation`
+   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.ran_ok`
+   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.report_names`
+   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.results`
+   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.run_method`
+   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.set_wd`
+   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.simulation_names`
+   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.simulations`
+   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.str_model`
+   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.wk_info`
+   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.work_space`
+
+   Methods
+   -------
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.add_crop_replacements`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.add_db_table`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.add_fac`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.add_factor`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.add_memo`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.add_model`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.add_report_variable`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.adjustSatDul`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.adjust_dul`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.boxplot`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.cat_plot`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.change_report`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.change_simulation_dates`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.check_kwargs`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.check_model`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.clean_up`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.clone_model`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.convert_to_IModel`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.correlation_heatmap`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.create_experiment`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.create_experiment_for_node`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.create_new_simulation`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.detect_model_type`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.distribution`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.edit_cultivar`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.edit_model`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.edit_model_by_path`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.exchange_model`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.extract_any_soil_physical`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.extract_soil_physical`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.extract_start_end_years`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.finalize`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.find_model`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.find_simulations`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.generate_unique_name`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.get_crop_replacement`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.get_model_paths`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.get_simulated_output`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.get_soil_from_web`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.get_soil_values_by_path`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.get_weather_from_file`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.get_weather_from_web`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.init_experiment`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.inspect_file`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.inspect_model`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.inspect_model_parameters`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.inspect_model_parameters_by_path`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.label`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.move_model`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.plot_mva`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.preview_simulation`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.read_apsimx_data`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.read_cultivar_params`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.recompile_edited_model`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.refresh_model`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.relplot`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.remove_model`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.remove_report_variable`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.rename_model`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.render_plot`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.replace_downloaded_soils`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.replace_met_file`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.replace_model_from`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.replace_soil_properties_by_path`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.replace_soil_property_values`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.replace_soils_values_by_path`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.replicate_file`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.restart_model`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.run`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.run2`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.save`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.scatter_plot`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.series_plot`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.set_categorical_factor`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.set_continuous_factor`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.show`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.show_met_file_in_simulation`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.spin_up`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.stop`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.strip_time`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.summarize_numeric`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.update_cultivar`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.update_manager`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.update_mgt`
+   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.update_mgt_by_path`
 
    .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.__init__(self, model, out_path=None)
 
@@ -3068,126 +3188,214 @@ Classes
 
    .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.add_factor(self, specification: str, factor_name: str = None, **kwargs)
 
-       Adds a new factor to the experiment based on an APSIM script specification.
+   Add a new factor to the experiment from an APSIM-style script specification.
 
-      Parameters
-      ----------
-       specification: (str)
-           A script-like APSIM expression that defines the parameter variation.
+   Parameters
+   ----------
+   specification : str
+       An APSIM script-like expression that defines the parameter variation,
+       e.g. ``"[Organic].Carbon[1] = 1.2, 1.8"`` or
+       ``"[Sow using a variable rule].Script.Population = 6, 10"``.
+   factor_name : str, optional
+       A unique name for the factor. If not provided, a name is auto-generated
+       from the target variable in ``specification`` (typically the last token).
+   **kwargs
+       Optional metadata or configuration (currently unused).
 
-       factor_name: (str, optional)
-           A unique name for the factor. If not provided, factor_name auto-generated as the variable parameter name,
-           usually the last string before real variables in specification string.
+   Raises
+   ------
+   ValueError
+       If a script-based specification references a non-existent or unlinked
+       manager script.
 
-       **kwargs: Optional metadata or configuration (not yet used internally).
+   Side Effects
+   ------------
+   - Inserts the factor into the appropriate parent node (``Permutation`` or ``Factors``).
+   - If a factor at the same index already exists, it is safely deleted before inserting
+     the new one.
 
-       Raises
-       _______
-           ValueError: If a Script-based specification references a non-existent or unlinked manager script.
+   Notes
+   -----
+   All methods from :class:`~apsimNGpy.core.apsim.ApsimModel` remain available on this
+   class. You can still inspect, run, and visualize results.
 
-       Side Effects:
-           Inserts the factor into the appropriate parent node (Permutation or Factors).
-           If a factor at the same index already exists, it is safely deleted before inserting the new one.
-
-      Examples::
-
-           from apsimNGpy.core.experimentmanager import ExperimentManager
-           # initialize the model
-           experiment = ExperimentManager('Maize', out_path = 'my_experiment.apsimx')
-           # initialize experiment without permutation crossing of the factors
-           experiment.init_experiment(permutation=True)
-
-    All methods from :class:`~apsimNGpy.core.apsim.ApsimModel` are available in this
-    class and are not altered in any way. For example, we can still inspect, run,
-    and visualize the results:
-
-    .. code-block:: python
-
-       experiment.inspect_model('Models.Manager')
-
-    .. code-block:: none
-
-       ['.Simulations.Experiment.Simulation.Field.Sow using a variable rule',
-        '.Simulations.Experiment.Simulation.Field.Fertilise at sowing',
-        '.Simulations.Experiment.Simulation.Field.Harvest']
-
-    .. code-block:: python
-
-       experiment.inspect_model('Models.Factorial.Experiment')
-
-    .. code-block:: none
-
-       ['.Simulations.Experiment']
-
-    Now we are ready to add factors
-
-    1. Add a factor associated with a manager script
-    ------------------------------------------------
-
-    .. code-block:: python
-
-         experiment.add_factor(specification=f"[Sow using a variable rule].Script.Population = 6, 10", factor_name='Population')
-
-    2. Add a factor associated with a soil sode e.g., soil organic like initial soil organic carbon
-    -----------------------------------------------------------------------------------------------
-
-    .. code-block:: python
-
-        experiment.add_factor(specification='[Organic].Carbon[1] = 1.2, 1.8', factor_name='initial_carbon')
-
-    Check how many factors have been added to the model
-
-    .. code-block:: python
-
-      experiment.n_factors
-        2
-    it is possible to inspect the factors
-
-    .. code-block:: python
-
-      experiment.inspect_model('Models.Factorial.Factor')
-
-    .. code-block:: none
-
-        ['.Simulations.Experiment.Factors.Permutation.Nitrogen',
-        '.Simulations.Experiment.Factors.Permutation.'initial_carbon']
-
-    Checking the names of the factors as given
-
-    .. code-block:: python
-
-       experiment.inspect_model('Models.Factorial.Factor', fullpath=False)
-
-    .. code-block:: none
-       ['Nitrogen', 'initial_carbon']
-
-    We are ready to :meth:`~apsimNGpy.experimentmanager.ExperimentManager.run` the model
-
-    .. code-block:: python
-
-         experiment.run()
-         # get results
-         df = experiment.results
-         # compute the mean across each experiment
-         df.groupby(['Population', 'initial_carbon'])['Yield'].mean()
-
-    .. code-block:: none
-
-                 Population  initial_carbon
-        10          1.2               6287.538183
-                    1.8               6225.861601
-        6           1.2               5636.529504
-                    1.8               5608.971306
-        Name: Yield, dtype: float64
-
-    Saving the experiment is the same as in :class:`~apsimNGpy.core.apsim.ApsimModel`
+   Examples
+   --------
+   Initialize an experiment:
 
    .. code-block:: python
 
-       experiment.save()
+      from apsimNGpy.core.experimentmanager import ExperimentManager
 
-   See more details in:
-   :meth:`~apsimNGpy.core.apsim.ApsimModel.save`
+      # initialize the model
+      experiment = ExperimentManager('Maize', out_path='my_experiment.apsimx')
+
+      # initialize experiment with permutation crossing of factors
+      experiment.init_experiment(permutation=True)
+
+   Inspect model components:
+
+   .. code-block:: python
+
+      experiment.inspect_model('Models.Manager')
+
+   .. code-block:: none
+
+      ['.Simulations.Experiment.Simulation.Field.Sow using a variable rule',
+       '.Simulations.Experiment.Simulation.Field.Fertilise at sowing',
+       '.Simulations.Experiment.Simulation.Field.Harvest']
+
+   .. code-block:: python
+
+      experiment.inspect_model('Models.Factorial.Experiment')
+
+   .. code-block:: none
+
+      ['.Simulations.Experiment']
+
+   1) Add a factor associated with a manager script
+   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+   .. code-block:: python
+
+      experiment.add_factor(
+          specification='[Sow using a variable rule].Script.Population = 6, 10',
+          factor_name='Population'
+      )
+
+   2) Add a factor associated with a soil node (e.g., initial soil organic carbon)
+   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+   .. code-block:: python
+
+      experiment.add_factor(
+          specification='[Organic].Carbon[1] = 1.2, 1.8',
+          factor_name='initial_carbon'
+      )
+
+   Check how many factors have been added:
+
+   .. code-block:: python
+
+      experiment.n_factors
+      # 2
+
+   Inspect factors:
+
+   .. code-block:: python
+
+      experiment.inspect_model('Models.Factorial.Factor')
+
+   .. code-block:: none
+
+      ['.Simulations.Experiment.Factors.Permutation.Nitrogen',
+       '.Simulations.Experiment.Factors.Permutation.initial_carbon']
+
+   Get factor names only:
+
+   .. code-block:: python
+
+      experiment.inspect_model('Models.Factorial.Factor', fullpath=False)
+
+   .. code-block:: none
+
+      ['Nitrogen', 'initial_carbon']
+
+   Run the model and summarize results:
+
+   .. code-block:: python
+
+      experiment.run()
+      df = experiment.results
+      df.groupby(['Population', 'initial_carbon'])['Yield'].mean()
+
+   .. code-block:: none
+
+                  Population  initial_carbon
+      10          1.2         6287.538183
+                  1.8         6225.861601
+      6           1.2         5636.529504
+                  1.8         5608.971306
+      Name: Yield, dtype: float64
+
+   Save the experiment (same as :class:`~apsimNGpy.core.apsim.ApsimModel`):
+
+   .. code-block:: python
+
+      experiment.save()
+
+   See also :meth:`~apsimNGpy.core.apsim.ApsimModel.save`.
+
+   Common Pitfalls
+   ---------------
+   1) Adding the same specification with only a different ``factor_name``
+   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+   .. code-block:: python
+
+      experiment.add_factor(
+          specification='[Organic].Carbon[1] = 1.2, 1.8',
+          factor_name='initial_carbon'
+      )
+      experiment.add_factor(
+          specification='[Organic].Carbon[1] = 1.2, 1.8',
+          factor_name='carbon'
+      )
+
+   By default, specifications are evaluated on their arguments, so the example above
+   creates two identical factors—usually not desired.
+
+   .. code-block:: python
+
+      experiment.save()
+      experiment.inspect_model('Models.Factorial.Factor')
+
+   .. code-block:: none
+
+      ['.Simulations.Experiment.Factors.Permutation.initial_carbon',
+       '.Simulations.Experiment.Factors.Permutation.carbon']
+
+   2) Invalid specification path to target parameters
+   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+   Common causes include referencing models not present in the script, adding quotes
+   around numeric levels, or inserting stray spaces in paths.
+
+   Invalid (extra quotes):
+
+   .. code-block:: python
+
+      experiment.add_factor(
+          specification='[Organic].Carbon[1] = "1.2, 1.8"',
+          factor_name='initial_carbon'
+      )
+
+   Correct:
+
+   .. code-block:: python
+
+      experiment.add_factor(
+          specification='[Organic].Carbon[1] = 1.2, 1.8',
+          factor_name='initial_carbon'
+      )
+
+   Invalid (extra space in path):
+
+   .. code-block:: python
+
+      experiment.add_factor(
+          specification='[Organic]. Carbon[1] = 1.2, 1.8',
+          factor_name='initial_carbon'
+      )
+
+   Correct:
+
+   .. code-block:: python
+
+      experiment.add_factor(
+          specification='[Organic].Carbon[1] = 1.2, 1.8',
+          factor_name='initial_carbon'
+      )
 
    .. py:property:: apsimNGpy.core.experimentmanager.ExperimentManager.n_factors
 
@@ -4831,12 +5039,13 @@ Classes
 
     Parameters
     ----------
-   ``parameters`` (dict, required) dictionary of cultivar parameters to update.
+   parameters:  (dict, required)
+      dictionary of cultivar parameters to update.
 
-   ``simulations``, optional
+   simulations : str optional
         List or tuples of simulation names to update if `None` update all simulations.
 
-   ``clear`` (bool, optional)
+   clear (bool, optional)
         If `True` remove all existing parameters, by default `False`.
 
    .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.recompile_edited_model(self, out_path: 'os.PathLike') (inherited)
@@ -6497,6 +6706,28 @@ Functions
         df1= list(collect_csv_from_dir(mock_data, '*.apsimx', recursive=True)) # collects all csf file produced by apsimx recursively
         df2= list(collect_csv_from_dir(mock_data, '*.apsimx',  recursive=False)) # collects all csf file produced by apsimx only in the specified directory directory
 
+.. py:function:: apsimNGpy.core.runner.collect_db_from_dir(dir_path, pattern, recursive=False) -> 'pd.DataFrame'
+
+   Collects the data in a directory using a pattern, usually the pattern resembling the one of the simulations
+     used to generate those csv files
+   Parameters
+   ----------
+   dir_path : (str)
+      path where to look for csv files
+   recursive : (bool)
+      whether to recursively search through the directory defaults to false:
+   pattern :(str)
+       pattern of the apsim files that produced the csv files through simulations
+
+   returns
+       a generator object with pandas data frames
+
+   Example::
+
+        mock_data = Path.home() / 'mock_data' # this a mock directory substitute accordingly
+        df1= list(collect_csv_from_dir(mock_data, '*.apsimx', recursive=True)) # collects all csf file produced by apsimx recursively
+        df2= list(collect_csv_from_dir(mock_data, '*.apsimx',  recursive=False)) # collects all csf file produced by apsimx only in the specified directory directory
+
 .. py:function:: apsimNGpy.core.runner.get_apsim_version(verbose: 'bool' = False)
 
    Display version information of the apsim model currently in the apsimNGpy config environment.
@@ -6521,36 +6752,6 @@ Functions
 
    Raises:
        ``ValueError: `` If no matching files are found.
-
-.. py:function:: apsimNGpy.core.runner.run(self, report_name=None, simulations=None, clean=False, multithread=True, verbose=False, get_dict=False, **kwargs)
-
-   Run APSIM model simulations.
-
-   Parameters
-   ----------
-   report_name : str or list of str, optional
-       Name(s) of report table(s) to retrieve. If not specified or missing in the database,
-       the model still runs and results can be accessed later.
-
-   simulations : list of str, optional
-       Names of simulations to run. If None, all simulations are executed.
-
-   clean : bool, default False
-       If True, deletes the existing database file before running.
-
-   multithread : bool, default True
-       If True, runs simulations using multiple threads.
-
-   verbose : bool, default False
-       If True, prints diagnostic messages (e.g., missing report names).
-
-   get_dict : bool, default False
-       If True, returns results as a dictionary {table_name: DataFrame}.
-
-   Returns
-   -------
-   results : DataFrame or list or dict of DataFrames
-       Simulation output(s) from the specified report table(s).
 
 .. py:function:: apsimNGpy.core.runner.run_from_dir(dir_path, pattern, verbose=False, recursive=False, write_tocsv=True) -> '[pd.DataFrame]'
 
@@ -6590,6 +6791,10 @@ Functions
 
         df = run_from_dir(str(mock_data), pattern="*.apsimx", verbose=True, recursive=True)  # All files that match the pattern
 
+   .. seealso::
+
+      Related API: :func:`~apsimNGpy.core.runner.run_model_externally`
+
 .. py:function:: apsimNGpy.core.runner.run_model_externally(model: 'Union[Path, str]', *, apsim_exec: 'Optional[Union[Path, str]]' = WindowsPath('D:/My_BOX/Box/PhD thesis/Objective two/morrow plots 20250821/APSIM2025.8.7844.0/bin/Models.exe'), verbose: 'bool' = False, to_csv: 'bool' = False, timeout: 'int' = 600, cwd: 'Optional[Union[Path, str]]' = None, env: 'Optional[Mapping[str, str]]' = None) -> 'subprocess.CompletedProcess[str]'
 
    Run APSIM externally (cross-platform) with safe defaults.
@@ -6599,6 +6804,10 @@ Functions
    - Uses UTF-8 decoding with error replacement.
    - Enforces a timeout and returns a CompletedProcess-like object.
    - Does NOT use shell, eliminating injection risk.
+
+   .. seealso::
+
+         Related API: :func:`~apsimNGpy.core.runner.run_from_dir`
 
 .. py:function:: apsimNGpy.core.runner.upgrade_apsim_file(file: 'str', verbose: 'bool' = True)
 
@@ -6693,17 +6902,40 @@ Functions
 
    Deletes all rows from all user-defined tables in the given SQLite database.
 
-   ``db``: Path to the SQLite database file.
+   Parameters
+   ----------
+   db : str | Path
+       Path to the SQLite database file.
 
-   ``return``: None
+   Returns
+   -------
+   None
+       This function does not return a value.
 
-.. py:function:: apsimNGpy.core_utils.database_utils.clear_table(db, table_name)
+   .. seealso::
 
-   ``db``: path to db.
+      Related API: :meth:`~apsimNGpy.core_utils.database_utils.clear_table`
 
-   ``table_name``: name of the table to clear.
+.. py:function:: apsimNGpy.core_utils.database_utils.clear_table(db: 'Union[str, Path]', table_name: 'str')
 
-   ``return``: None
+   Deletes all rows from all user-defined tables in the given SQLite database.
+
+   Parameters
+   ----------
+   db : str | Path
+       Path to the SQLite database file.
+
+   table_name : str
+        Name of the target table to delete from the database `db`
+
+   Returns
+   -------
+   None
+       This function does not return a value.
+
+   .. seealso::
+
+      Related API: :meth:`~apsimNGpy.core_utils.database_utils.clear_all_tables`
 
 .. py:function:: apsimNGpy.core_utils.database_utils.dataview_to_dataframe(_model, reports)
 
@@ -6727,76 +6959,88 @@ Functions
 
    ⚠️ Proceed with caution: this operation is irreversible.
 
-.. py:function:: apsimNGpy.core_utils.database_utils.get_db_table_names(d_b)
+.. py:function:: apsimNGpy.core_utils.database_utils.get_db_table_names(db)
 
-   ``d_b``: database name or path.
+   Parameter
+   -----------
+   db : database name or path.
 
-   ``return:`` all names ``SQL`` database table ``names`` existing within the database
+   return: list of table names
+      All names ``SQL`` database table ``names`` existing within the database
 
-.. py:function:: apsimNGpy.core_utils.database_utils.read_db_table(db, report_name)
+.. py:function:: apsimNGpy.core_utils.database_utils.read_db_table(db: 'Union[str, Path]', report_name: 'str')
 
-   Connects to a specified database, retrieves the entire contents of a specified table,
-   and returns the results as a Pandas DataFrame.
+   Connects to a specified SQLite database, retrieves the entire contents of a
+   specified table, and returns the results as a pandas DataFrame.
 
-   Args:
-       ``db`` (str): The database file path or identifier to connect to.
+   Parameters
+   ----------
+   db : str | Path
+       Path to the SQLite database file.
+   report_name : str
+       Name of the table in the database from which to retrieve data.
 
-       ``report_name`` (str): name of the database table: The name of the table in the database from which to retrieve data.
+   Returns
+   -------
+   pandas.DataFrame
+       A DataFrame containing all records from the specified table.
 
-   Returns:
-       ``pandas.DataFrame``: A DataFrame containing all the records from the specified table.
+   Examples
+   --------
+   >>> database_path = 'your_database.sqlite'
+   >>> table_name = 'your_table'
+   >>> ddf = read_db_table(database_path, table_name)
+   >>> print(ddf)
 
-   The function establishes a connection to the specified SQLite database, constructs and executes a SQL query
-   to select all records from the specified table, fetches the results into a DataFrame, then closes the database connection.
-
-   Examples:
-       # Define the database and the table name
-
-       >>> database_path = 'your_database.sqlite'
-       >>> table_name = 'your_table'
-
-       # Get the table data as a DataFrame
-
-       >>> ddf = read_db_table(database_path, table_name)
-
-       # Work with the DataFrame
-       >>> print(ddf)
-
-   Note:
-       - Ensure that the database path and table name are correct.
-       - The function uses 'sqlite3' for connecting to the database; make sure it is appropriate for your database.
-       - This function retrieves all records from the specified table. Use with caution if the table is very large.
+   Notes
+   -----
+   - Establishes a connection to the SQLite database, executes ``SELECT *`` on the
+     specified table, loads the result into a DataFrame, and then closes the
+     connection.
+   - Ensure that the database path and table name are correct.
+   - This function retrieves **all** records; use with caution for very large
+     tables.
 
 .. py:function:: apsimNGpy.core_utils.database_utils.read_with_query(db, query)
 
-   Executes an SQL query on a specified database and returns the result as a Pandas DataFrame.
+   Executes an SQL query on a specified SQLite database and returns the result as a
+   pandas DataFrame.
 
-   Args:
-   ``db`` (str): The database file path or identifier to connect to.
+   Parameters
+   ----------
+   db : str
+       Database file path or identifier to connect to.
+   query : str
+       SQL query string to execute. Must be a valid ``SELECT`` statement.
 
-   ``query`` (str): The SQL query string to be executed. The query should be a valid SQL SELECT statement.
+   Returns
+   -------
+   pandas.DataFrame
+       A DataFrame containing the results of the SQL query.
 
-   ``Returns:``
-   ``pandas.DataFrame``: A DataFrame containing the results of the SQL query.
+   Examples
+   --------
+   Define the database and the query
 
-   The function opens a connection to the specified SQLite database, executes the given SQL query,
-   fetches the results into a DataFrame, then closes the database connection.
+   .. code-block:: python
 
-   Example:
-       # Define the database and the query
-
-       >>> database_path = 'your_database.sqlite'
-       >>> sql_query = 'SELECT * FROM your_table WHERE condition = values'
+       database_path = 'your_database.sqlite'
+       sql_query = 'SELECT * FROM your_table WHERE condition = values'
 
        # Get the query result as a DataFrame
+       df = read_with_query(database_path, sql_query)
 
-       >>>df = read_with_query(database_path, sql_query)
+   Notes
+   -----
+   - Opens a connection to the SQLite database, executes the given query,
+     loads the results into a DataFrame, and then closes the connection.
+   - Ensure that the database path and query are correct and that the query
+     is a proper SQL ``SELECT`` statement.
+   - Uses `sqlite3` for the connection; confirm it is appropriate for your database.
 
-       # Work with the DataFrame
-       >>> print(df)
+   .. seealso::
 
-   Note: Ensure that the database path and the query are correct and that the query is a proper SQL SELECT statement.
-   The function uses ``sqlite3`` for connecting to the database; make sure it is appropriate for your database.
+      Related API: :meth:`~apsimNGpy.core_utils.database_utils.read_db_table`
 
 .. py:function:: apsimNGpy.core_utils.database_utils.write_results_to_sql(db_path: 'Union[str, Path]', table: 'str' = 'Report', *, if_exists: "Literal['fail', 'replace', 'append']" = 'append', insert_fn: 'InsertFn | None' = None, ensure_parent: 'bool' = True) -> 'Callable'
 
@@ -6906,18 +7150,24 @@ Functions
                con.close()
    Examples:
 
-   >>> from pandas import DataFrame
-   >>> from apsimNGpy.core_utils.database_utils import write_results_to_sql, read_db_table
-   >>> @write_results_to_sql(db_path="db.db", table="Report", if_exists="replace")
-   ... def get_report():
-   ...     # Return a DataFrame to be written to SQLite
-   ...     return DataFrame({"x": [2], "y": [4]})
+       >>> from pandas import DataFrame
+       >>> from apsimNGpy.core_utils.database_utils import write_results_to_sql, read_db_table
+       >>> @write_results_to_sql(db_path="db.db", table="Report", if_exists="replace")
+       ... def get_report():
+       ...     # Return a DataFrame to be written to SQLite
+       ...     return DataFrame({"x": [2], "y": [4]})
 
-   >>> _ = get_report()  # executes and writes to db.db::Report
-   >>> db = read_db_table("db.db", report_name="Report")
-   >>> print(db.to_string(index=False))
-    x  y
-    2  4
+       >>> _ = get_report()  # executes and writes to db.db::Report
+       >>> db = read_db_table("db.db", report_name="Report")
+       >>> print(db.to_string(index=False))
+        x  y
+        2  4
+
+   .. seealso::
+
+         Related API:
+         :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.save_tosql`,
+         :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.insert_data`
 
 apsimNGpy.exceptions
 --------------------

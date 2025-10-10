@@ -47,57 +47,82 @@ def _variable_type(type_name: str) -> str:
 
 class MixedVarProblem(ContVarProblem):
     """
-           Defines an optimization problem for continuous variables in APSIM simulations.
+    Defines an optimization problem for continuous variables in APSIM simulations.
 
-           This class enables the user to configure and solve optimization problems involving continuous
-           control variables in APSIM models. It provides methods for setting up control variables,
-           applying bounds and starting values, inserting variable values into APSIM model configurations,
-           and running optimization routines using local solvers or differential evolution.
+    This class configure and solves optimization problems involving continuous
+    control variables in APSIM models. It provides utilities to declare variables,
+    set bounds and starting values, inject values into APSIM configurations, and run
+    optimization with local solvers or Differential Evolution.
 
-           Inherits from:
-               ``ContinuousVariableProblem``
+    Inherits From
+    -------------
+    :class:`~apsimNGpy.Optimizer.single.ContinuousVariableProblem`
 
-           Parameters:
-               ``model (str):`` The name or path of the APSIM template file.
-               .
-               ``simulation (str or list, optional)``: The name(s) of the APSIM simulation(s) to target.
-                                                   Defaults to all simulations.
+    Parameters
+    ----------
+    model : str
+        Name or path to the APSIM template file.
+    simulation : str | list[str] | None, optional
+        Name(s) of the APSIM simulation(s) to target. Defaults to all simulations.
+    decision_vars : list[VarDesc] | None, optional
+        Variable descriptors defining the optimization variables.
+    labels : list[str] | None, optional
+        Human-readable labels used in displays and result tracking.
+    cache_size : int, optional
+        Maximum number of results to store in the evaluation cache.
 
-               ``decision_vars`` (list, optional): A list of VarDesc instances defining variable metadata.
+    Attributes
+    ----------
+    model : str
+        APSIM model template file name or path.
+    simulation : str | list[str] | None
+        Target simulation(s).
+    decision_vars : list[VarDesc]
+        Defined control variables for optimization.
+    labels : list[str]
+        Labels corresponding to the decision variables.
+    pbar : tqdm.tqdm | None
+        Progress bar instance (opened during optimization when enabled).
+    cache : bool
+        Whether evaluation results are cached.
+    cache_size : int
+        Size of the local evaluation cache.
 
-               ``labels (list, optional)``: Variable labels for display and results tracking.
+    Methods
+    -------
+    :meth:`add_control`
+        Add a new control variable to the optimization problem.
+    :attr:`bounds` -> tuple[list[float], list[float]]
+        Return lower and upper bounds for all control variables.
+    :attr:`starting_values` -> list[float]
+        Return the initial values for all control variables.
+    :meth:`minimize_with_local_solver`
+        Optimize with :func:`scipy.optimize.minimize`.
+    :meth:`optimize_with_differential_evolution`
+        Optimize with :func:`scipy.optimize.differential_evolution`.
 
-               ``cache_size (int):`` Maximum number of results to store in the evaluation cache.
 
-           Attributes:
-               ``model (str):`` The APSIM model template file name.
-               ``simulation (str):`` Target simulation(s).
-               ``decision_vars (list):`` Defined control variables.
-               ``decision_vars (list):`` List of VarDesc instances for optimization.
-               ``labels (list): Labels`` for variables.
-               ``pbar (tqdm):`` Progress bar instance.
-               ```cache (bool):`` Whether to cache evaluation results.
-               ```cache_size (int):`` Size of the local cache.
+    Examples
+    --------
+    .. code-block:: python
 
-           Methods:
-               ``add_control(...):`` Add a new control variable to the optimization problem.
-               ``bounds:`` Return the bounds for all control variables as a tuple.
-               ``starting_values():`` Return the initial values for all control variables.
-               ``minimize_with_local_solver(...):`` Optimize using `scipy.optimize.minimize`.
-               ``optimize_with_differential_evolution(...):`` Optimize using `scipy.optimize.differential_evolution`.
-               ``_open_pbar(labels, maxiter):`` Open a progress bar.
-               ``_close_pbar():`` Close the progress bar.
+        class Problem(ContinuousVariableProblem):
+            def evaluate(self, x):
+                # Example objective: maximize mean yield (hence the negative sign)
+                return -self.run(verbose=False).results.Yield.mean()
 
-           Example:
-               >>> class Problem(ContVarProblem):
-               ...     def evaluate(self, x):
-               ...         return -self.run(verbose=False).results.Yield.mean()
+        problem = Problem(model="Maize", simulation="Sim")
+        problem.add_control(
+            model_path="Manager/Sow using a rule",
+            var_name="Population",
+            dtype=int,
+            start=5,
+            bounds=(2, 15),
+        )
 
-               >>> problem = Problem(model="Maize", simulation="Sim")
-               >>> problem.add_control("Manager", "Sow using a rule", "Population", int, 5, bounds=[2, 15])
-               >>> result = problem.minimize_with_local_solver(method='Powell')
-               >>> print(result.x_vars)
-           """
+        result = problem.minimize_with_local_solver(method="Powell")
+        print(result.x_vars)
+    """
 
     def __init__(self, apsim_model: 'ApsimNGpy.Core.Model', max_cache_size=400, objectives=None, decision_vars=None):
 

@@ -196,15 +196,21 @@ class PlotManager(ABC):
 
         return df
 
-    def _harmonize_df(self, table):
+    def _harmonize_df(self, table, expression=None):
         if isinstance(table, pd.DataFrame):
-            return table
+            data = table
         elif table is not None and not isinstance(table, pd.DataFrame):
-            return self.get_simulated_output(table)
+            data = self.get_simulated_output(table)
         elif table is None:
-            return self.results
+            data = self.results
         else:
-            raise ValueError(f"Un supported table table {type(table)}")
+            raise ValueError("un supported table type")
+        if expression:
+            if "=" not in expression:
+                raise ValueError(f"expression should be in the format of 'z= x/y' where z = is the response variable, "
+                                 f"if x or are strings, they should be columns in the data")
+            data.eval(expression, inplace=True)
+        return data
 
     def plot_mva(
             self,
@@ -212,6 +218,7 @@ class PlotManager(ABC):
             time_col: Hashable,
             response: Hashable,
             *,
+            expression:str = None,
             window: int = 5,
             min_period: int = 1,
             grouping: Optional[Union[Hashable, _Sequence[Hashable]]] = None,
@@ -243,6 +250,8 @@ class PlotManager(ABC):
                     Time (x-axis) column.
                 response : hashable
                     Response (y) column to smooth.
+                expression: str default is None
+                    simple mathematical expression to create new columns from existing columns
                 window : int, default=5
                     MVA window size.
                 min_period : int, default=1
@@ -284,7 +293,7 @@ class PlotManager(ABC):
         group_cols = _ensure_sequence(grouping)
 
         # harmonize & optional datetime conversion
-        data = self._harmonize_df(table)
+        data = self._harmonize_df(table, expression=expression)
         _maybe_to_datetime(data, time_col, auto_datetime)
 
         # compute moving average on a sorted copy for determinism
@@ -347,7 +356,7 @@ class PlotManager(ABC):
             return g, smoothed
         return g
 
-    def boxplot(self, column, *, table=None,
+    def boxplot(self, column, *, table=None, expression:str=None,
                 by=None, figsize=(10, 8), grid=False, **kwargs):
 
         """
@@ -375,7 +384,7 @@ class PlotManager(ABC):
                        Related APIs: :meth:`cat_plot`.
                 """
         self._refresh()
-        df = self._harmonize_df(table)
+        df = self._harmonize_df(table, expression=expression)
         if df is None:
             raise ForgotToRunError("Results not found.")
 
@@ -391,7 +400,7 @@ class PlotManager(ABC):
 
         return ax
 
-    def distribution(self, x, *, table=None, **kwargs):
+    def distribution(self, x, *, table=None, expression:str=None, **kwargs):
         """
         Plot a uni-variate distribution/histogram using :func:`seaborn.histplot`.
 
@@ -401,6 +410,9 @@ class PlotManager(ABC):
             Numeric column to plot.
         table : str or pandas.DataFrame, optional
             Table name or DataFrame; if omitted, use :pyattr:`results`.
+
+        expression: str default is None
+                    simple mathematical expression to create new columns from existing columns
         **kwargs
             Forwarded to :func:`seaborn.histplot`.
 
@@ -426,7 +438,7 @@ class PlotManager(ABC):
         if is_string_dtype(self.results[x]):
             raise ValueError(f"{x} contains strings")
 
-        df = self._harmonize_df(table)
+        df = self._harmonize_df(table, expression=expression)
         kwargs.pop('show', None)
         sns.histplot(data=df, x=x, kde=True, **kwargs)
 
@@ -496,7 +508,7 @@ class PlotManager(ABC):
         if plt.get_fignums():
             plt.close()
 
-    def series_plot(self, table=None, *, x: str = None, y: Union[str, list] = None, hue=None, size=None, style=None,
+    def series_plot(self, table=None, expression:str =None, *, x: str = None, y: Union[str, list] = None, hue=None, size=None, style=None,
                     units=None, weights=None,
                     palette=None, hue_order=None, hue_norm=None, sizes=None, size_order=None, size_norm=None,
                     dashes=True, markers=None, style_order=None, estimator='mean', errorbar=('ci', 95), n_boot=1000,
@@ -507,7 +519,10 @@ class PlotManager(ABC):
 
          table : str | [str] |None | None| pandas.DataFrame, optional. Default is None
             If the table names are provided, results are collected from the simulated data, using that table names.
-            If None, results will be all the table names inside concatenated along the axis 0 (not recommended)
+            If None, results will be all the table names inside concatenated along the axis 0 (not recommended).
+
+        expression: str default is None
+                    simple mathematical expression to create new columns from existing columns
 
          If ``y`` is a list of columns, the data are melted into long form and
         the different series are colored by variable name.
@@ -526,7 +541,7 @@ class PlotManager(ABC):
         Examples:
         ------------
 
-           >>>from apsimNGpy.core.apsim import ApsimModel
+           >>> from apsimNGpy.core.apsim import ApsimModel
            >>> model = ApsimModel(model= 'Maize')
            # run the results
            >>> model.run(report_names='Report')
@@ -551,7 +566,7 @@ class PlotManager(ABC):
         """
         self._refresh()
         added_plots['current_plot'] = 'series_plot'
-        data = self._harmonize_df(table)
+        data = self._harmonize_df(table, expression=expression)
 
         df = data.copy()
 
@@ -584,6 +599,7 @@ class PlotManager(ABC):
     def scatter_plot(
             self,
             table=None,
+            expression:str=None,
             *,
             x=None,
             y=None,
@@ -610,16 +626,20 @@ class PlotManager(ABC):
         ----------
         table : str | [str] |None | None| pandas.DataFrame, optional. Default is None
             If the table names are provided, results are collected from the simulated data, using that table names.
-            If None, results will be all the table names inside concatenated along the axis 0 (not recommended)
+            If None, results will be all the table names inside concatenated along the axis 0 (not recommended).
+
         x, y, hue, size, style, palette, hue_order, hue_norm, sizes, size_order, size_norm, markers, style_order, legend, ax
             Passed through to :func:`seaborn.scatterplot`.
+
+        expression: str default is None
+                    simple mathematical expression to create new columns from existing columns
         ** Kwargs
             Additional keyword args for Seaborn.
         See the reference below for all the kwargs.
         reference; https://seaborn.pydata.org/generated/seaborn.scatterplot.html \n
         ================================================================================================================================\n"""
         self._refresh()
-        data = self._harmonize_df(table)
+        data = self._harmonize_df(table, expression=expression)
         sns.scatterplot(
             data=data,
             x=x,
@@ -642,6 +662,7 @@ class PlotManager(ABC):
 
     def cat_plot(self,
                  table=None,
+                 exression=None,
                  *,
                  x=None,
                  y=None,
@@ -683,7 +704,11 @@ class PlotManager(ABC):
         Parameters
         ----------
         table : str or pandas.DataFrame, optional
-             x, y, hue, row, col, kind, estimator, errorbar, n_boot, seed, units, weights, order,
+
+        expression: str default is None
+                    simple mathematical expression to create new columns from existing columns
+
+        x, y, hue, row, col, kind, estimator, errorbar, n_boot, seed, units, weights, order,
         hue_order, row_order, col_order, col_wrap, height, aspect, log_scale, native_scale, formatter,
         orient, color, palette, hue_norm, legend, legend_out, sharex, sharey, margin_titles, facet_kws
             Passed through to :func:`seaborn.catplot`.
@@ -702,7 +727,7 @@ class PlotManager(ABC):
         """
         self._refresh()
         added_plots['cat_plot'] = 'cat_plot'
-        df = self._harmonize_df(table)
+        df = self._harmonize_df(table, expression=exression)
         return sns.catplot(
             data=df,
             x=x,

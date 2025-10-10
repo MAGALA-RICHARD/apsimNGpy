@@ -300,6 +300,7 @@ if __name__ == "__main__":
     SENDTO.mkdir(parents=True, exist_ok=True)
     SENDTO2 = Path.cwd().parent.parent.parent / 'apsimNGpy-documentations/doc'
     SENDTO2.mkdir(parents=True, exist_ok=True)
+    from apsimNGpy.core_utils.deco import add_outline
 
     import shutil, os
     from apsimNGpy.core import config, base_data, apsim, mult_cores, pythonet_config, experimentmanager, runner
@@ -308,7 +309,17 @@ if __name__ == "__main__":
     from apsimNGpy.parallel import process
     from apsimNGpy import exceptions
     from apsimNGpy.validation import evaluator
+    # ________________________add outline!!_________________________________________
 
+    add_outline(experimentmanager.ExperimentManager, include_inherited=True,
+                base_path='apsimNGpy.core.experimentmanager.ExperimentManager')
+    add_outline(apsim.ApsimModel, include_inherited=True, base_path='apsimNGpy.core.apsim.ApsimModel')
+    add_outline(moo.MultiObjectiveProblem, include_inherited=True,
+                base_path='apsimNGpy.optimizer.moo.MultiObjectiveProblem')
+    add_outline(single.MixedVariable, include_inherited=True,
+                base_path='apsimNGpy.optimizer.single.MixedVariableProblem')
+    add_outline(mult_cores.MultiCoreManager, include_inherited=True,
+                )
     modules = (
         process, apsim, mult_cores, experimentmanager, moo,
         evaluator, exceptions, single, database_utils, pythonet_config, config, runner

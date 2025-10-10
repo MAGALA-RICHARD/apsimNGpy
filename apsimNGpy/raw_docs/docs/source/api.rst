@@ -13,14 +13,113 @@ Classes
 
 .. py:class:: apsimNGpy.core.apsim.ApsimModel
 
-   It inherits from the CoreModel classes.
+       It inherits from the CoreModel classes, and extends its capabilities.
 
-   This implies that you can still run the model and modify parameters as needed.
-   Example:
-       >>> from apsimNGpy.core.apsim import ApsimModel
-       >>> from pathlib import Path
-       >>> model = ApsimModel('Maize', out_path=Path.home()/'apsim_model_example.apsimx')
-       >>> model.run(report_name='Report') # report is the default, please replace it as needed
+       This implies that you can still run the model and modify parameters as needed.
+
+       Example:
+           >>> from apsimNGpy.core.apsim import ApsimModel
+           >>> from pathlib import Path
+           >>> model = ApsimModel('Maize', out_path=Path.home()/'apsim_model_example.apsimx')
+           >>> model.run(report_name='Report') # report is the default, please replace it as needed
+
+   List of Documented Attributes:
+   __________________________________
+
+   - :attr:`~apsimNGpy.core.apsim.ApsimModel.Datastore`
+   - :attr:`~apsimNGpy.core.apsim.ApsimModel.End`
+   - :attr:`~apsimNGpy.core.apsim.ApsimModel.Models`
+   - :attr:`~apsimNGpy.core.apsim.ApsimModel.Simulations`
+   - :attr:`~apsimNGpy.core.apsim.ApsimModel.Start`
+   - :attr:`~apsimNGpy.core.apsim.ApsimModel.base_name`
+   - :attr:`~apsimNGpy.core.apsim.ApsimModel.configs`
+   - :attr:`~apsimNGpy.core.apsim.ApsimModel.copy`
+   - :attr:`~apsimNGpy.core.apsim.ApsimModel.datastore`
+   - :attr:`~apsimNGpy.core.apsim.ApsimModel.experiment`
+   - :attr:`~apsimNGpy.core.apsim.ApsimModel.experiment_created`
+   - :attr:`~apsimNGpy.core.apsim.ApsimModel.extract_dates`
+   - :attr:`~apsimNGpy.core.apsim.ApsimModel.factor_names`
+   - :attr:`~apsimNGpy.core.apsim.ApsimModel.factors`
+   - :attr:`~apsimNGpy.core.apsim.ApsimModel.model`
+   - :attr:`~apsimNGpy.core.apsim.ApsimModel.model_info`
+   - :attr:`~apsimNGpy.core.apsim.ApsimModel.others`
+   - :attr:`~apsimNGpy.core.apsim.ApsimModel.out`
+   - :attr:`~apsimNGpy.core.apsim.ApsimModel.out_path`
+   - :attr:`~apsimNGpy.core.apsim.ApsimModel.path`
+   - :attr:`~apsimNGpy.core.apsim.ApsimModel.permutation`
+   - :attr:`~apsimNGpy.core.apsim.ApsimModel.ran_ok`
+   - :attr:`~apsimNGpy.core.apsim.ApsimModel.report_names`
+   - :attr:`~apsimNGpy.core.apsim.ApsimModel.results`
+   - :attr:`~apsimNGpy.core.apsim.ApsimModel.run_method`
+   - :attr:`~apsimNGpy.core.apsim.ApsimModel.set_wd`
+   - :attr:`~apsimNGpy.core.apsim.ApsimModel.simulation_names`
+   - :attr:`~apsimNGpy.core.apsim.ApsimModel.simulations`
+   - :attr:`~apsimNGpy.core.apsim.ApsimModel.str_model`
+   - :attr:`~apsimNGpy.core.apsim.ApsimModel.wk_info`
+   - :attr:`~apsimNGpy.core.apsim.ApsimModel.work_space`
+   List of Documented Methods
+   -----------------------------
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.add_crop_replacements`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.add_db_table`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.add_fac`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.add_factor`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.add_model`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.add_report_variable`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.adjust_dul`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.boxplot`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.cat_plot`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.change_report`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.change_simulation_dates`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.clean_up`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.clone_model`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.create_experiment`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.detect_model_type`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.distribution`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.edit_cultivar`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.edit_model`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.edit_model_by_path`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.extract_any_soil_physical`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.extract_soil_physical`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.extract_start_end_years`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.find_model`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.get_crop_replacement`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.get_model_paths`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.get_simulated_output`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.get_soil_from_web`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.get_weather_from_file`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.get_weather_from_web`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_file`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_model`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_model_parameters`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_model_parameters_by_path`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.move_model`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.plot_mva`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.preview_simulation`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.read_apsimx_data`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.recompile_edited_model`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.refresh_model`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.remove_model`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.remove_report_variable`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.rename_model`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.replace_downloaded_soils`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.replace_met_file`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.replace_model_from`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.replace_soil_property_values`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.replace_soils_values_by_path`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.replicate_file`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.restart_model`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.run`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.save`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.scatter_plot`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.series_plot`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.set_categorical_factor`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.set_continuous_factor`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.show_met_file_in_simulation`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.spin_up`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.summarize_numeric`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.update_cultivar`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.update_mgt`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.update_mgt_by_path`
 
    .. py:method:: apsimNGpy.core.apsim.ApsimModel.__init__(self, model: Union[os.PathLike, dict, str], out_path: Union[str, pathlib.Path] = None, set_wd=None, **kwargs)
 
@@ -1992,13 +2091,18 @@ Classes
    Examples
    --------
    Update all Weather nodes:
-   >>> from apsimNGpy.core.apsim import ApsimModel
-   >>> model = ApsimModel("Maize")
-   >>> model.get_weather_from_file("data/ames_2020.met")
+
+   .. code-block:: python
+
+       from apsimNGpy.core.apsim import ApsimModel
+       model = ApsimModel("Maize")
+       model.get_weather_from_file("data/ames_2020.met")
 
    Update only two simulations (suffix added automatically):
 
-   >>> model.get_weather_from_file("data/ames_2020", simulations=("SimA", "SimB"))# amke sure they exists
+   .. code-block:: python
+
+        model.get_weather_from_file("data/ames_2020", simulations=("Simulation",))
 
    .. seealso::
 
@@ -2634,7 +2738,7 @@ Classes
 
    Default: ``<member 'work_space' of 'CoreModel' objects>``
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.plot_mva(self, table: pandas.core.frame.DataFrame, time_col: Hashable, response: Hashable, *, window: int = 5, min_period: int = 1, grouping: Union[Hashable, collections.abc.Sequence[Hashable], NoneType] = None, preserve_start: bool = True, kind: str = 'line', estimator='mean', plot_raw: bool = False, raw_alpha: float = 0.35, raw_linewidth: float = 1.0, auto_datetime: bool = False, ylabel: Optional[str] = None, return_data: bool = False, **kwargs) -> seaborn.axisgrid.FacetGrid | tuple[seaborn.axisgrid.FacetGrid, pandas.core.frame.DataFrame] (inherited)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.plot_mva(self, table: pandas.core.frame.DataFrame, time_col: Hashable, response: Hashable, *, expression: str = None, window: int = 5, min_period: int = 1, grouping: Union[Hashable, collections.abc.Sequence[Hashable], NoneType] = None, preserve_start: bool = True, kind: str = 'line', estimator='mean', plot_raw: bool = False, raw_alpha: float = 0.35, raw_linewidth: float = 1.0, auto_datetime: bool = False, ylabel: Optional[str] = None, return_data: bool = False, **kwargs) -> seaborn.axisgrid.FacetGrid | tuple[seaborn.axisgrid.FacetGrid, pandas.core.frame.DataFrame] (inherited)
 
    Plot a centered moving-average (MVA) of a response using ``seaborn.relplot``.
 
@@ -2652,6 +2756,8 @@ Classes
        Time (x-axis) column.
    response : hashable
        Response (y) column to smooth.
+   expression: str default is None
+       simple mathematical expression to create new columns from existing columns
    window : int, default=5
        MVA window size.
    min_period : int, default=1
@@ -2689,7 +2795,7 @@ Classes
 
    https://seaborn.pydata.org/generated/seaborn/relplot.html
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.boxplot(self, column, *, table=None, by=None, figsize=(10, 8), grid=False, **kwargs) (inherited)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.boxplot(self, column, *, table=None, expression: str = None, by=None, figsize=(10, 8), grid=False, **kwargs) (inherited)
 
    Plot a boxplot from simulation results using ``pandas.DataFrame.boxplot``.
 
@@ -2714,7 +2820,7 @@ Classes
 
           Related APIs: :meth:`cat_plot`.
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.distribution(self, x, *, table=None, **kwargs) (inherited)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.distribution(self, x, *, table=None, expression: str = None, **kwargs) (inherited)
 
    Plot a uni-variate distribution/histogram using :func:`seaborn.histplot`.
 
@@ -2724,6 +2830,9 @@ Classes
        Numeric column to plot.
    table : str or pandas.DataFrame, optional
        Table name or DataFrame; if omitted, use :pyattr:`results`.
+
+   expression: str default is None
+               simple mathematical expression to create new columns from existing columns
    **kwargs
        Forwarded to :func:`seaborn.histplot`.
 
@@ -2742,13 +2851,16 @@ Classes
 
    =================================================================
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.series_plot(self, table=None, *, x: str = None, y: Union[str, list] = None, hue=None, size=None, style=None, units=None, weights=None, palette=None, hue_order=None, hue_norm=None, sizes=None, size_order=None, size_norm=None, dashes=True, markers=None, style_order=None, estimator='mean', errorbar=('ci', 95), n_boot=1000, seed=None, orient='x', sort=True, err_style='band', err_kws=None, legend='auto', ci='deprecated', ax=None, **kwargs) (inherited)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.series_plot(self, table=None, expression: str = None, *, x: str = None, y: Union[str, list] = None, hue=None, size=None, style=None, units=None, weights=None, palette=None, hue_order=None, hue_norm=None, sizes=None, size_order=None, size_norm=None, dashes=True, markers=None, style_order=None, estimator='mean', errorbar=('ci', 95), n_boot=1000, seed=None, orient='x', sort=True, err_style='band', err_kws=None, legend='auto', ci='deprecated', ax=None, **kwargs) (inherited)
 
    Just a wrapper for seaborn.lineplot that supports multiple y columns that could be provided as a list
 
     table : str | [str] |None | None| pandas.DataFrame, optional. Default is None
        If the table names are provided, results are collected from the simulated data, using that table names.
-       If None, results will be all the table names inside concatenated along the axis 0 (not recommended)
+       If None, results will be all the table names inside concatenated along the axis 0 (not recommended).
+
+   expression: str default is None
+               simple mathematical expression to create new columns from existing columns
 
     If ``y`` is a list of columns, the data are melted into long form and
    the different series are colored by variable name.
@@ -2767,7 +2879,7 @@ Classes
    Examples:
    ------------
 
-      >>>from apsimNGpy.core.apsim import ApsimModel
+      >>> from apsimNGpy.core.apsim import ApsimModel
       >>> model = ApsimModel(model= 'Maize')
       # run the results
       >>> model.run(report_names='Report')
@@ -2791,7 +2903,7 @@ Classes
 
       Related APIs: :meth:`plot_mva`.
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.scatter_plot(self, table=None, *, x=None, y=None, hue=None, size=None, style=None, palette=None, hue_order=None, hue_norm=None, sizes=None, size_order=None, size_norm=None, markers=True, style_order=None, legend='auto', ax=None, **kwargs) (inherited)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.scatter_plot(self, table=None, expression: str = None, *, x=None, y=None, hue=None, size=None, style=None, palette=None, hue_order=None, hue_norm=None, sizes=None, size_order=None, size_norm=None, markers=True, style_order=None, legend='auto', ax=None, **kwargs) (inherited)
 
    Scatter plot using :func:`seaborn.scatterplot` with flexible aesthetic mappings.
 
@@ -2799,9 +2911,13 @@ Classes
    ----------
    table : str | [str] |None | None| pandas.DataFrame, optional. Default is None
        If the table names are provided, results are collected from the simulated data, using that table names.
-       If None, results will be all the table names inside concatenated along the axis 0 (not recommended)
+       If None, results will be all the table names inside concatenated along the axis 0 (not recommended).
+
    x, y, hue, size, style, palette, hue_order, hue_norm, sizes, size_order, size_norm, markers, style_order, legend, ax
        Passed through to :func:`seaborn.scatterplot`.
+
+   expression: str default is None
+               simple mathematical expression to create new columns from existing columns
    ** Kwargs
        Additional keyword args for Seaborn.
    See the reference below for all the kwargs.
@@ -2809,14 +2925,18 @@ Classes
 
    ================================================================================================================================
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.cat_plot(self, table=None, *, x=None, y=None, hue=None, row=None, col=None, kind='strip', estimator='mean', errorbar=('ci', 95), n_boot=1000, seed=None, units=None, weights=None, order=None, hue_order=None, row_order=None, col_order=None, col_wrap=None, height=5, aspect=1, log_scale=None, native_scale=False, formatter=None, orient=None, color=None, palette=None, hue_norm=None, legend='auto', legend_out=True, sharex=True, sharey=True, margin_titles=False, facet_kws=None, **kwargs) (inherited)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.cat_plot(self, table=None, exression=None, *, x=None, y=None, hue=None, row=None, col=None, kind='strip', estimator='mean', errorbar=('ci', 95), n_boot=1000, seed=None, units=None, weights=None, order=None, hue_order=None, row_order=None, col_order=None, col_wrap=None, height=5, aspect=1, log_scale=None, native_scale=False, formatter=None, orient=None, color=None, palette=None, hue_norm=None, legend='auto', legend_out=True, sharex=True, sharey=True, margin_titles=False, facet_kws=None, **kwargs) (inherited)
 
     Categorical plot wrapper over :func:`seaborn.catplot`.
 
    Parameters
    ----------
    table : str or pandas.DataFrame, optional
-        x, y, hue, row, col, kind, estimator, errorbar, n_boot, seed, units, weights, order,
+
+   expression: str default is None
+               simple mathematical expression to create new columns from existing columns
+
+   x, y, hue, row, col, kind, estimator, errorbar, n_boot, seed, units, weights, order,
    hue_order, row_order, col_order, col_wrap, height, aspect, log_scale, native_scale, formatter,
    orient, color, palette, hue_norm, legend, legend_out, sharex, sharey, margin_titles, facet_kws
        Passed through to :func:`seaborn.catplot`.
@@ -2851,9 +2971,11 @@ Functions
 .. py:function:: apsimNGpy.core.config.get_apsim_bin_path()
 
    Returns the path to the apsim bin folder from either auto-detection or from the path already supplied by the user
-   through the apsimNgp config.ini file in the user home dir_path. the location folder is called
-   The function is silent does not raise any exception but return empty string in all cases
-   :return:
+   through the apsimNGpy config.ini file in the user home directory.
+
+   This function is silent does not raise any exception but return empty string in all
+   cases if bin_path is empty or was not found.
+
 
    Example::
 
@@ -2980,135 +3102,110 @@ Classes
 
 .. py:class:: apsimNGpy.core.experimentmanager.ExperimentManager
 
-   This class runs APSIM Experiments with pure factors or permutations. You first need to initiate the instance of this
-       class and then initialize the experiment itself with: :meth:`init_experiment`,
-       which creates a new experiment from the suggested base simulation and ``permutation`` type
+       This class inherits methods and attributes from: :class:`~apsimNGpy.core.apsim.ApsimModel` to manage APSIM Experiments
+       with pure factors or permutations. You first need to initiate the instance of this class and then initialize the
+       experiment itself with: :meth:`init_experiment`, which creates a new experiment from the suggested base simulation and ``permutation`` type
 
-   Outline
-   =======
+   List of Documented Attributes:
+   __________________________________
 
-   Properties
-   ----------
-   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.Datastore`
-   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.End`
-   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.Models`
-   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.Simulations`
-   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.Start`
-   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.base_name`
-   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.configs`
-   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.copy`
-   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.datastore`
-   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.experiment`
-   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.experiment_created`
-   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.extract_dates`
-   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.factor_names`
-   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.factors`
-   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.model`
-   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.model_info`
-   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.n_factors`
-   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.others`
-   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.out`
-   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.out_path`
-   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.path`
-   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.permutation`
-   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.ran_ok`
-   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.report_names`
-   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.results`
-   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.run_method`
-   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.set_wd`
-   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.simulation_names`
-   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.simulations`
-   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.str_model`
-   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.wk_info`
-   >>> :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.work_space`
-
-   Methods
-   -------
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.add_crop_replacements`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.add_db_table`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.add_fac`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.add_factor`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.add_memo`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.add_model`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.add_report_variable`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.adjustSatDul`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.adjust_dul`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.boxplot`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.cat_plot`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.change_report`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.change_simulation_dates`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.check_kwargs`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.check_model`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.clean_up`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.clone_model`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.convert_to_IModel`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.correlation_heatmap`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.create_experiment`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.create_experiment_for_node`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.create_new_simulation`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.detect_model_type`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.distribution`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.edit_cultivar`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.edit_model`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.edit_model_by_path`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.exchange_model`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.extract_any_soil_physical`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.extract_soil_physical`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.extract_start_end_years`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.finalize`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.find_model`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.find_simulations`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.generate_unique_name`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.get_crop_replacement`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.get_model_paths`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.get_simulated_output`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.get_soil_from_web`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.get_soil_values_by_path`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.get_weather_from_file`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.get_weather_from_web`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.init_experiment`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.inspect_file`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.inspect_model`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.inspect_model_parameters`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.inspect_model_parameters_by_path`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.label`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.move_model`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.plot_mva`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.preview_simulation`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.read_apsimx_data`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.read_cultivar_params`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.recompile_edited_model`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.refresh_model`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.relplot`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.remove_model`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.remove_report_variable`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.rename_model`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.render_plot`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.replace_downloaded_soils`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.replace_met_file`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.replace_model_from`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.replace_soil_properties_by_path`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.replace_soil_property_values`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.replace_soils_values_by_path`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.replicate_file`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.restart_model`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.run`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.run2`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.save`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.scatter_plot`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.series_plot`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.set_categorical_factor`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.set_continuous_factor`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.show`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.show_met_file_in_simulation`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.spin_up`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.stop`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.strip_time`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.summarize_numeric`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.update_cultivar`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.update_manager`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.update_mgt`
-   >>> :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.update_mgt_by_path`
+   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.Datastore`
+   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.End`
+   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.Models`
+   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.Simulations`
+   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.Start`
+   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.base_name`
+   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.configs`
+   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.copy`
+   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.datastore`
+   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.experiment`
+   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.experiment_created`
+   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.extract_dates`
+   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.factor_names`
+   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.factors`
+   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.model`
+   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.model_info`
+   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.n_factors`
+   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.others`
+   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.out`
+   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.out_path`
+   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.path`
+   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.permutation`
+   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.ran_ok`
+   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.report_names`
+   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.results`
+   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.run_method`
+   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.set_wd`
+   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.simulation_names`
+   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.simulations`
+   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.str_model`
+   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.wk_info`
+   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.work_space`
+   List of Documented Methods
+   -----------------------------
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.add_crop_replacements`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.add_db_table`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.add_fac`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.add_factor`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.add_model`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.add_report_variable`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.adjust_dul`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.boxplot`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.cat_plot`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.change_report`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.change_simulation_dates`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.clean_up`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.clone_model`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.create_experiment`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.detect_model_type`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.distribution`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.edit_cultivar`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.edit_model`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.edit_model_by_path`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.extract_any_soil_physical`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.extract_soil_physical`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.extract_start_end_years`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.finalize`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.find_model`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.get_crop_replacement`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.get_model_paths`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.get_simulated_output`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.get_soil_from_web`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.get_weather_from_file`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.get_weather_from_web`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.init_experiment`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.inspect_file`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.inspect_model`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.inspect_model_parameters`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.inspect_model_parameters_by_path`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.move_model`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.plot_mva`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.preview_simulation`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.read_apsimx_data`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.recompile_edited_model`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.refresh_model`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.remove_model`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.remove_report_variable`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.rename_model`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.replace_downloaded_soils`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.replace_met_file`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.replace_model_from`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.replace_soil_property_values`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.replace_soils_values_by_path`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.replicate_file`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.restart_model`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.run`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.save`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.scatter_plot`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.series_plot`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.set_categorical_factor`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.set_continuous_factor`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.show_met_file_in_simulation`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.spin_up`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.summarize_numeric`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.update_cultivar`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.update_mgt`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.update_mgt_by_path`
 
    .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.__init__(self, model, out_path=None)
 
@@ -5381,13 +5478,18 @@ Classes
    Examples
    --------
    Update all Weather nodes:
-   >>> from apsimNGpy.core.apsim import ApsimModel
-   >>> model = ApsimModel("Maize")
-   >>> model.get_weather_from_file("data/ames_2020.met")
+
+   .. code-block:: python
+
+       from apsimNGpy.core.apsim import ApsimModel
+       model = ApsimModel("Maize")
+       model.get_weather_from_file("data/ames_2020.met")
 
    Update only two simulations (suffix added automatically):
 
-   >>> model.get_weather_from_file("data/ames_2020", simulations=("SimA", "SimB"))# amke sure they exists
+   .. code-block:: python
+
+        model.get_weather_from_file("data/ames_2020", simulations=("Simulation",))
 
    .. seealso::
 
@@ -5991,7 +6093,7 @@ Classes
 
    Default: ``<member 'work_space' of 'CoreModel' objects>``
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.plot_mva(self, table: pandas.core.frame.DataFrame, time_col: Hashable, response: Hashable, *, window: int = 5, min_period: int = 1, grouping: Union[Hashable, collections.abc.Sequence[Hashable], NoneType] = None, preserve_start: bool = True, kind: str = 'line', estimator='mean', plot_raw: bool = False, raw_alpha: float = 0.35, raw_linewidth: float = 1.0, auto_datetime: bool = False, ylabel: Optional[str] = None, return_data: bool = False, **kwargs) -> seaborn.axisgrid.FacetGrid | tuple[seaborn.axisgrid.FacetGrid, pandas.core.frame.DataFrame] (inherited)
+   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.plot_mva(self, table: pandas.core.frame.DataFrame, time_col: Hashable, response: Hashable, *, expression: str = None, window: int = 5, min_period: int = 1, grouping: Union[Hashable, collections.abc.Sequence[Hashable], NoneType] = None, preserve_start: bool = True, kind: str = 'line', estimator='mean', plot_raw: bool = False, raw_alpha: float = 0.35, raw_linewidth: float = 1.0, auto_datetime: bool = False, ylabel: Optional[str] = None, return_data: bool = False, **kwargs) -> seaborn.axisgrid.FacetGrid | tuple[seaborn.axisgrid.FacetGrid, pandas.core.frame.DataFrame] (inherited)
 
    Plot a centered moving-average (MVA) of a response using ``seaborn.relplot``.
 
@@ -6009,6 +6111,8 @@ Classes
        Time (x-axis) column.
    response : hashable
        Response (y) column to smooth.
+   expression: str default is None
+       simple mathematical expression to create new columns from existing columns
    window : int, default=5
        MVA window size.
    min_period : int, default=1
@@ -6046,7 +6150,7 @@ Classes
 
    https://seaborn.pydata.org/generated/seaborn/relplot.html
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.boxplot(self, column, *, table=None, by=None, figsize=(10, 8), grid=False, **kwargs) (inherited)
+   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.boxplot(self, column, *, table=None, expression: str = None, by=None, figsize=(10, 8), grid=False, **kwargs) (inherited)
 
    Plot a boxplot from simulation results using ``pandas.DataFrame.boxplot``.
 
@@ -6071,7 +6175,7 @@ Classes
 
           Related APIs: :meth:`cat_plot`.
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.distribution(self, x, *, table=None, **kwargs) (inherited)
+   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.distribution(self, x, *, table=None, expression: str = None, **kwargs) (inherited)
 
    Plot a uni-variate distribution/histogram using :func:`seaborn.histplot`.
 
@@ -6081,6 +6185,9 @@ Classes
        Numeric column to plot.
    table : str or pandas.DataFrame, optional
        Table name or DataFrame; if omitted, use :pyattr:`results`.
+
+   expression: str default is None
+               simple mathematical expression to create new columns from existing columns
    **kwargs
        Forwarded to :func:`seaborn.histplot`.
 
@@ -6099,13 +6206,16 @@ Classes
 
    =================================================================
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.series_plot(self, table=None, *, x: str = None, y: Union[str, list] = None, hue=None, size=None, style=None, units=None, weights=None, palette=None, hue_order=None, hue_norm=None, sizes=None, size_order=None, size_norm=None, dashes=True, markers=None, style_order=None, estimator='mean', errorbar=('ci', 95), n_boot=1000, seed=None, orient='x', sort=True, err_style='band', err_kws=None, legend='auto', ci='deprecated', ax=None, **kwargs) (inherited)
+   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.series_plot(self, table=None, expression: str = None, *, x: str = None, y: Union[str, list] = None, hue=None, size=None, style=None, units=None, weights=None, palette=None, hue_order=None, hue_norm=None, sizes=None, size_order=None, size_norm=None, dashes=True, markers=None, style_order=None, estimator='mean', errorbar=('ci', 95), n_boot=1000, seed=None, orient='x', sort=True, err_style='band', err_kws=None, legend='auto', ci='deprecated', ax=None, **kwargs) (inherited)
 
    Just a wrapper for seaborn.lineplot that supports multiple y columns that could be provided as a list
 
     table : str | [str] |None | None| pandas.DataFrame, optional. Default is None
        If the table names are provided, results are collected from the simulated data, using that table names.
-       If None, results will be all the table names inside concatenated along the axis 0 (not recommended)
+       If None, results will be all the table names inside concatenated along the axis 0 (not recommended).
+
+   expression: str default is None
+               simple mathematical expression to create new columns from existing columns
 
     If ``y`` is a list of columns, the data are melted into long form and
    the different series are colored by variable name.
@@ -6124,7 +6234,7 @@ Classes
    Examples:
    ------------
 
-      >>>from apsimNGpy.core.apsim import ApsimModel
+      >>> from apsimNGpy.core.apsim import ApsimModel
       >>> model = ApsimModel(model= 'Maize')
       # run the results
       >>> model.run(report_names='Report')
@@ -6148,7 +6258,7 @@ Classes
 
       Related APIs: :meth:`plot_mva`.
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.scatter_plot(self, table=None, *, x=None, y=None, hue=None, size=None, style=None, palette=None, hue_order=None, hue_norm=None, sizes=None, size_order=None, size_norm=None, markers=True, style_order=None, legend='auto', ax=None, **kwargs) (inherited)
+   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.scatter_plot(self, table=None, expression: str = None, *, x=None, y=None, hue=None, size=None, style=None, palette=None, hue_order=None, hue_norm=None, sizes=None, size_order=None, size_norm=None, markers=True, style_order=None, legend='auto', ax=None, **kwargs) (inherited)
 
    Scatter plot using :func:`seaborn.scatterplot` with flexible aesthetic mappings.
 
@@ -6156,9 +6266,13 @@ Classes
    ----------
    table : str | [str] |None | None| pandas.DataFrame, optional. Default is None
        If the table names are provided, results are collected from the simulated data, using that table names.
-       If None, results will be all the table names inside concatenated along the axis 0 (not recommended)
+       If None, results will be all the table names inside concatenated along the axis 0 (not recommended).
+
    x, y, hue, size, style, palette, hue_order, hue_norm, sizes, size_order, size_norm, markers, style_order, legend, ax
        Passed through to :func:`seaborn.scatterplot`.
+
+   expression: str default is None
+               simple mathematical expression to create new columns from existing columns
    ** Kwargs
        Additional keyword args for Seaborn.
    See the reference below for all the kwargs.
@@ -6166,14 +6280,18 @@ Classes
 
    ================================================================================================================================
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.cat_plot(self, table=None, *, x=None, y=None, hue=None, row=None, col=None, kind='strip', estimator='mean', errorbar=('ci', 95), n_boot=1000, seed=None, units=None, weights=None, order=None, hue_order=None, row_order=None, col_order=None, col_wrap=None, height=5, aspect=1, log_scale=None, native_scale=False, formatter=None, orient=None, color=None, palette=None, hue_norm=None, legend='auto', legend_out=True, sharex=True, sharey=True, margin_titles=False, facet_kws=None, **kwargs) (inherited)
+   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.cat_plot(self, table=None, exression=None, *, x=None, y=None, hue=None, row=None, col=None, kind='strip', estimator='mean', errorbar=('ci', 95), n_boot=1000, seed=None, units=None, weights=None, order=None, hue_order=None, row_order=None, col_order=None, col_wrap=None, height=5, aspect=1, log_scale=None, native_scale=False, formatter=None, orient=None, color=None, palette=None, hue_norm=None, legend='auto', legend_out=True, sharex=True, sharey=True, margin_titles=False, facet_kws=None, **kwargs) (inherited)
 
     Categorical plot wrapper over :func:`seaborn.catplot`.
 
    Parameters
    ----------
    table : str or pandas.DataFrame, optional
-        x, y, hue, row, col, kind, estimator, errorbar, n_boot, seed, units, weights, order,
+
+   expression: str default is None
+               simple mathematical expression to create new columns from existing columns
+
+   x, y, hue, row, col, kind, estimator, errorbar, n_boot, seed, units, weights, order,
    hue_order, row_order, col_order, col_wrap, height, aspect, log_scale, native_scale, formatter,
    orient, color, palette, hue_norm, legend, legend_out, sharex, sharey, margin_titles, facet_kws
        Passed through to :func:`seaborn.catplot`.
@@ -6219,6 +6337,29 @@ Classes
 .. py:class:: apsimNGpy.core.mult_cores.MultiCoreManager
 
    MultiCoreManager(db_path: Union[str, pathlib.Path, NoneType] = (None,), agg_func: Optional[str] = None, ran_ok: bool = False, incomplete_jobs: list = <factory>)
+
+   List of Documented Attributes:
+   __________________________________
+
+   - :attr:`~apsimNGpy.core.mult_cores.MultiCoreManager.agg_func`
+   - :attr:`~apsimNGpy.core.mult_cores.MultiCoreManager.db_path`
+   - :attr:`~apsimNGpy.core.mult_cores.MultiCoreManager.default_db`
+   - :attr:`~apsimNGpy.core.mult_cores.MultiCoreManager.incomplete_jobs`
+   - :attr:`~apsimNGpy.core.mult_cores.MultiCoreManager.ran_ok`
+   - :attr:`~apsimNGpy.core.mult_cores.MultiCoreManager.results`
+   - :attr:`~apsimNGpy.core.mult_cores.MultiCoreManager.tables`
+   - :attr:`~apsimNGpy.core.mult_cores.MultiCoreManager.tag`
+   List of Documented Methods
+   -----------------------------
+   - :meth:`~apsimNGpy.core.mult_cores.MultiCoreManager.clean_up_data`
+   - :meth:`~apsimNGpy.core.mult_cores.MultiCoreManager.clear_db`
+   - :meth:`~apsimNGpy.core.mult_cores.MultiCoreManager.clear_scratch`
+   - :meth:`~apsimNGpy.core.mult_cores.MultiCoreManager.get_simulated_output`
+   - :meth:`~apsimNGpy.core.mult_cores.MultiCoreManager.insert_data`
+   - :meth:`~apsimNGpy.core.mult_cores.MultiCoreManager.run_all_jobs`
+   - :meth:`~apsimNGpy.core.mult_cores.MultiCoreManager.run_parallel`
+   - :meth:`~apsimNGpy.core.mult_cores.MultiCoreManager.save_tocsv`
+   - :meth:`~apsimNGpy.core.mult_cores.MultiCoreManager.save_tosql`
 
    .. py:method:: apsimNGpy.core.mult_cores.MultiCoreManager.__init__(self, db_path: Union[str, pathlib.Path, NoneType] = (None,), agg_func: Optional[str] = None, ran_ok: bool = False, incomplete_jobs: list = <factory>) -> None
 
@@ -6753,7 +6894,7 @@ Functions
    Raises:
        ``ValueError: `` If no matching files are found.
 
-.. py:function:: apsimNGpy.core.runner.run_from_dir(dir_path, pattern, verbose=False, recursive=False, write_tocsv=True) -> '[pd.DataFrame]'
+.. py:function:: apsimNGpy.core.runner.run_from_dir(dir_path, pattern, verbose=False, recursive=False, write_tocsv=True, run_only=False) -> '[pd.DataFrame]'
 
    This function acts as a wrapper around the ``APSIM`` command line recursive tool, automating
    the execution of APSIM simulations on all files matching a given pattern in a specified
@@ -6774,9 +6915,11 @@ Functions
    write_tocsv: (bool, optional)
      specify whether to write the simulation results to a csv. if true, the exported csv files bear the same name as the input apsimx file name
        with suffix reportname.csv. if it is ``False``. If ``verbose``, the progress is printed as the elapsed time and the successfully saved csv
+   run_only: (bool, optional)
+       If True no results are loaded in memory.
 
    :returns:
-       generator that yields data frames knitted by pandas
+       generator that yields data frames knitted by pandas if ran_only is False else None
 
 
    Example::
@@ -7381,8 +7524,17 @@ Classes
 
 .. py:class:: apsimNGpy.optimizer.moo.MultiObjectiveProblem
 
-   Helper class that provides a standard way to create an ABC using
-   inheritance.
+   List of Documented Attributes:
+   __________________________________
+
+   - :attr:`~apsimNGpy.optimizer.moo.MultiObjectiveProblem.indicators`
+   - :attr:`~apsimNGpy.optimizer.moo.MultiObjectiveProblem.labels`
+   - :attr:`~apsimNGpy.optimizer.moo.MultiObjectiveProblem.outcomes`
+   List of Documented Methods
+   -----------------------------
+   - :meth:`~apsimNGpy.optimizer.moo.MultiObjectiveProblem.add_control`
+   - :meth:`~apsimNGpy.optimizer.moo.MultiObjectiveProblem.is_mixed_type_vars`
+   - :meth:`~apsimNGpy.optimizer.moo.MultiObjectiveProblem.minimize`
 
    .. py:method:: apsimNGpy.optimizer.moo.MultiObjectiveProblem.__init__(self, apsim_model: apsimNGpy.core.cal.OptimizationBase, objectives: list, *, decision_vars: list = None, cache_size=100)
 
@@ -7390,8 +7542,10 @@ Classes
    ----------
    apsim_runner : apsimNGpy.core.cal.OptimizationBase
        Instance to run APSIM simulations.
-   objectives : list of callable
+
+   objectives : list of callable.
        List of functions that take simulation output (DataFrame) and return scalar objective values.
+
    decision_vars : list of dict, optional
        Each dict must have: 'path', 'bounds', 'v_type', 'kwargs'.
 
@@ -7402,6 +7556,41 @@ Classes
    .. py:method:: apsimNGpy.optimizer.moo.MultiObjectiveProblem.is_mixed_type_vars(self)
 
    Detect if decision vars contain types other than float or int.
+
+   .. py:method:: apsimNGpy.optimizer.moo.MultiObjectiveProblem.minimize(self, **kwargs)
+
+   Minimization of function of one or more variables, objectives and constraints. wraps around Pymoo
+
+   Parameters
+   ----------
+
+   kwargs : dict
+    - problem: instance of ``pymoo.core.problem.Problem``
+        A problem object which is defined using pymoo.
+
+    - algorithm: instance of ``pymoo.core.algorithm.Algorithm``
+         The algorithm object that should be used for the optimization.
+
+    - termination: ``pymoo.core.termination.Termination`` or tuple default is None
+       Usually the termination criterion that is used to stop the algorithm.
+
+    - seed : integer
+       The random seed to be used.
+
+    - verbose : bool
+           Whether output should be printed or not.
+
+    - display : :class:`~pymoo.util.display.Display`
+           Each algorithm has a default display object for printouts. However, it can be overwritten if desired.
+
+    - callback : `pymoo.core.callback.Callback`
+           A callback object which is called each iteration of the algorithm.
+
+    - save_history : bool
+           Whether the history should be stored or not.
+
+   - copy_algorithm : bool
+           Whether the algorithm object should be copied before optimization.
 
    .. py:method:: apsimNGpy.optimizer.moo.MultiObjectiveProblem.add_control(self, path: str, *, bounds, v_type, q=None, start_value=None, categories=None, **kwargs) (inherited)
 
@@ -7713,56 +7902,20 @@ Classes
 
 .. py:class:: apsimNGpy.optimizer.single.MixedVariable
 
-   Defines an optimization problem for continuous variables in APSIM simulations.
+   List of Documented Attributes:
+   __________________________________
 
-   This class enables the user to configure and solve optimization problems involving continuous
-   control variables in APSIM models. It provides methods for setting up control variables,
-   applying bounds and starting values, inserting variable values into APSIM model configurations,
-   and running optimization routines using local solvers or differential evolution.
-
-   Inherits from:
-       ``ContinuousVariableProblem``
-
-   Parameters:
-       ``model (str):`` The name or path of the APSIM template file.
-       .
-       ``simulation (str or list, optional)``: The name(s) of the APSIM simulation(s) to target.
-                                           Defaults to all simulations.
-
-       ``decision_vars`` (list, optional): A list of VarDesc instances defining variable metadata.
-
-       ``labels (list, optional)``: Variable labels for display and results tracking.
-
-       ``cache_size (int):`` Maximum number of results to store in the evaluation cache.
-
-   Attributes:
-       ``model (str):`` The APSIM model template file name.
-       ``simulation (str):`` Target simulation(s).
-       ``decision_vars (list):`` Defined control variables.
-       ``decision_vars (list):`` List of VarDesc instances for optimization.
-       ``labels (list): Labels`` for variables.
-       ``pbar (tqdm):`` Progress bar instance.
-       ```cache (bool):`` Whether to cache evaluation results.
-       ```cache_size (int):`` Size of the local cache.
-
-   Methods:
-       ``add_control(...):`` Add a new control variable to the optimization problem.
-       ``bounds:`` Return the bounds for all control variables as a tuple.
-       ``starting_values():`` Return the initial values for all control variables.
-       ``minimize_with_local_solver(...):`` Optimize using `scipy.optimize.minimize`.
-       ``optimize_with_differential_evolution(...):`` Optimize using `scipy.optimize.differential_evolution`.
-       ``_open_pbar(labels, maxiter):`` Open a progress bar.
-       ``_close_pbar():`` Close the progress bar.
-
-   Example:
-       >>> class Problem(ContVarProblem):
-       ...     def evaluate(self, x):
-       ...         return -self.run(verbose=False).results.Yield.mean()
-
-       >>> problem = Problem(model="Maize", simulation="Sim")
-       >>> problem.add_control("Manager", "Sow using a rule", "Population", int, 5, bounds=[2, 15])
-       >>> result = problem.minimize_with_local_solver(method='Powell')
-       >>> print(result.x_vars)
+   - :attr:`~apsimNGpy.optimizer.single.MixedVariableProblem.bounds`
+   - :attr:`~apsimNGpy.optimizer.single.MixedVariableProblem.indicators`
+   - :attr:`~apsimNGpy.optimizer.single.MixedVariableProblem.labels`
+   - :attr:`~apsimNGpy.optimizer.single.MixedVariableProblem.outcomes`
+   List of Documented Methods
+   -----------------------------
+   - :meth:`~apsimNGpy.optimizer.single.MixedVariableProblem.add_control`
+   - :meth:`~apsimNGpy.optimizer.single.MixedVariableProblem.minimize_with_a_local_solver`
+   - :meth:`~apsimNGpy.optimizer.single.MixedVariableProblem.minimize_with_alocal_solver`
+   - :meth:`~apsimNGpy.optimizer.single.MixedVariableProblem.minimize_with_de`
+   - :meth:`~apsimNGpy.optimizer.single.MixedVariableProblem.update_pbar`
 
    .. py:method:: apsimNGpy.optimizer.single.MixedVariable.__init__(self, apsim_model: 'ApsimNGpy.Core.Model', max_cache_size=400, objectives=None, decision_vars=None)
 

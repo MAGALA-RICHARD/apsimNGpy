@@ -134,6 +134,10 @@ def run_model_externally(
     - Uses UTF-8 decoding with error replacement.
     - Enforces a timeout and returns a CompletedProcess-like object.
     - Does NOT use shell, eliminating injection risk.
+
+    .. seealso::
+
+          Related API: :func:`~apsimNGpy.core.runner.run_from_dir`
     """
 
     exec_path = _ensure_exec(apsim_exec)
@@ -287,9 +291,56 @@ def collect_csv_from_dir(dir_path, pattern, recursive=False) -> (pd.DataFrame):
                         logger.warning(f"{base_name} is not a csv file or itis empty")
 
 
+def collect_db_from_dir(dir_path, pattern, recursive=False) -> (pd.DataFrame):
+    """Collects the data in a directory using a pattern, usually the pattern resembling the one of the simulations
+      used to generate those csv files
+    Parameters
+    ----------
+    dir_path : (str)
+       path where to look for csv files
+    recursive : (bool)
+       whether to recursively search through the directory defaults to false:
+    pattern :(str)
+        pattern of the apsim files that produced the csv files through simulations
+
+    returns
+        a generator object with pandas data frames
+
+    Example::
+
+         mock_data = Path.home() / 'mock_data' # this a mock directory substitute accordingly
+         df1= list(collect_csv_from_dir(mock_data, '*.apsimx', recursive=True)) # collects all csf file produced by apsimx recursively
+         df2= list(collect_csv_from_dir(mock_data, '*.apsimx',  recursive=False)) # collects all csf file produced by apsimx only in the specified directory directory
+
+
+    """
+    global_path = Path(dir_path)
+    if recursive:
+        matching_apsimx_patterns = global_path.rglob(pattern)
+    else:
+        matching_apsimx_patterns = global_path.glob(pattern)
+    if matching_apsimx_patterns:
+        for file_path in matching_apsimx_patterns:
+
+            # Strip the '.apsimx' extension and prepare to match CSV files
+            base_name = str(file_path.stem)
+
+            # Search for CSV files in the same directory as the original file
+            for csv_file in global_path.rglob(f"*{base_name}*.db"):
+                file = csv_file.with_suffix('.db')
+                if file.is_file():
+                    reports = set(get_db_table_names(file))
+                    reports = {i for i in reports if not i.startswith('_')}
+                    if reports:
+                        df = tuple(read_db_table(file, report) for report in reports)
+                        yield {base_name: df}
+                    else:
+                        logging.warning(f"Skipping {base_name} it is empty")
+
+
 def run_from_dir(dir_path, pattern, verbose=False,
                  recursive=False,  # set to false because the data collector is also set to false
-                 write_tocsv=True) -> [pd.DataFrame]:
+                 write_tocsv=True, run_only=False) -> [pd.DataFrame]:
     """
        This function acts as a wrapper around the ``APSIM`` command line recursive tool, automating
        the execution of APSIM simulations on all files matching a given pattern in a specified
@@ -310,9 +361,11 @@ def run_from_dir(dir_path, pattern, verbose=False,
        write_tocsv: (bool, optional)
          specify whether to write the simulation results to a csv. if true, the exported csv files bear the same name as the input apsimx file name
            with suffix reportname.csv. if it is ``False``. If ``verbose``, the progress is printed as the elapsed time and the successfully saved csv
+       run_only: (bool, optional)
+           If True no results are loaded in memory.
 
        :returns:
-           generator that yields data frames knitted by pandas
+           generator that yields data frames knitted by pandas if ran_only is False else None
 
 
        Example::
@@ -327,7 +380,9 @@ def run_from_dir(dir_path, pattern, verbose=False,
 
             df = run_from_dir(str(mock_data), pattern="*.apsimx", verbose=True, recursive=True)  # All files that match the pattern
 
+       .. seealso::
 
+          Related API: :func:`~apsimNGpy.core.runner.run_model_externally`
        """
     dir_path = str(dir_path)
 
@@ -354,10 +409,15 @@ def run_from_dir(dir_path, pattern, verbose=False,
             if process.poll() is None:
                 process.kill()
 
-    if write_tocsv and ran_ok:
+    if write_tocsv and ran_ok and not run_only:
         logger.info(f"Loading data into memory.")
-        out = collect_csv_from_dir(dir_path, pattern)
+        out = collect_csv_from_dir(dir_path, pattern, recursive=recursive)
         return out
+    elif not write_tocsv and ran_ok and not run_only:
+        out = collect_db_from_dir(dir_path, pattern, recursive=recursive)
+        return out
+    else:
+        return process
 
 
 @lru_cache(maxsize=None)
@@ -370,7 +430,7 @@ def run_p(path):
     run(apsim_executable(path))
 
 
-def run(self, report_name=None,
+def _run(self, report_name=None,
         simulations=None,
         clean=False,
         multithread=True,
@@ -404,7 +464,13 @@ def run(self, report_name=None,
     -------
     results : DataFrame or list or dict of DataFrames
         Simulation output(s) from the specified report table(s).
+
+    .. seealso::
+
+          Related API: :func:`~apsimNGpy.core.runner.run_model_externally`
     """
+    from apsimNGpy.core.pythonet_config import load_pythonnet
+    import Models
     try:
         # Set run type
         runtype = Models.Core.Run.Runner.RunTypeEnum.MultiThreaded if multithread \
@@ -455,3 +521,33 @@ def run(self, report_name=None,
         self._DataStore.Close()
 
     return results
+
+
+if __name__ == '__main__':
+    import time
+    a = time.perf_counter()
+    dat= collect_db_from_dir('.', '*.apsimx')
+    df = list(dat)
+    b = time.perf_counter()
+    print(b-a, 'seconds')
+
+    a = time.perf_counter()
+    run_model_externally(model=r'D:\package\apsimNGpy\apsimNGpy\core\maize1.apsimx')
+    b = time.perf_counter()
+    print(b-a, 'seconds')
+    from apsimNGpy.core.apsim import ApsimModel
+    model = ApsimModel('Maize')
+    from pathlib import Path
+    mod = Path(__file__).parent.parent/'testing_run'
+    import shutil
+    if mod.exists(): shutil.rmtree(mod)
+    mod.mkdir(parents=True, exist_ok=True)
+    total = 200
+    [shutil.copy(r'D:\package\apsimNGpy\apsimNGpy\core\maize1.apsimx', mod/f"__{i}.apsimx") for i in [0,1]]
+    a = time.perf_counter()
+    g = run_from_dir(mod, pattern="*.apsimx")
+    gd = list(g)
+    b = time.perf_counter()
+    print(b-a, 'seconds' f'to run {total} apsim')
+    shutil.rmtree(mod)
+

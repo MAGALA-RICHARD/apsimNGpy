@@ -816,8 +816,8 @@
                 "[Maize].Grain.Total.Wt*10 as Yield"
               ],
               "EventNames": [
-                "[Maize].Harvesting",
-                "[Clock].EndOfYear"
+                "[Clock].EndOfYear",
+                "[Maize].Harvesting"
               ],
               "GroupByVariableName": null,
               "Name": "report4",

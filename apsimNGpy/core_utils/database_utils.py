@@ -96,35 +96,46 @@ def dataview_to_dataframe(_model, reports):
 
 def read_with_query(db, query):
     """
-        Executes an SQL query on a specified database and returns the result as a Pandas DataFrame.
+    Executes an SQL query on a specified SQLite database and returns the result as a
+    pandas DataFrame.
 
-        Args:
-        ``db`` (str): The database file path or identifier to connect to.
+    Parameters
+    ----------
+    db : str
+        Database file path or identifier to connect to.
+    query : str
+        SQL query string to execute. Must be a valid ``SELECT`` statement.
 
-        ``query`` (str): The SQL query string to be executed. The query should be a valid SQL SELECT statement.
+    Returns
+    -------
+    pandas.DataFrame
+        A DataFrame containing the results of the SQL query.
 
-        ``Returns:``
-        ``pandas.DataFrame``: A DataFrame containing the results of the SQL query.
+    Examples
+    --------
+    Define the database and the query
 
-        The function opens a connection to the specified SQLite database, executes the given SQL query,
-        fetches the results into a DataFrame, then closes the database connection.
+    .. code-block:: python
 
-        Example:
-            # Define the database and the query
+        database_path = 'your_database.sqlite'
+        sql_query = 'SELECT * FROM your_table WHERE condition = values'
 
-            >>> database_path = 'your_database.sqlite'
-            >>> sql_query = 'SELECT * FROM your_table WHERE condition = values'
+        # Get the query result as a DataFrame
+        df = read_with_query(database_path, sql_query)
 
-            # Get the query result as a DataFrame
+    Notes
+    -----
+    - Opens a connection to the SQLite database, executes the given query,
+      loads the results into a DataFrame, and then closes the connection.
+    - Ensure that the database path and query are correct and that the query
+      is a proper SQL ``SELECT`` statement.
+    - Uses `sqlite3` for the connection; confirm it is appropriate for your database.
 
-            >>>df = read_with_query(database_path, sql_query)
+    .. seealso::
 
-            # Work with the DataFrame
-            >>> print(df)
+       Related API: :meth:`~apsimNGpy.core_utils.database_utils.read_db_table`
+    """
 
-        Note: Ensure that the database path and the query are correct and that the query is a proper SQL SELECT statement.
-        The function uses ``sqlite3`` for connecting to the database; make sure it is appropriate for your database.
-        """
     # table = kwargs.get("table")
     conn = sqlite3.connect(db)
     try:
@@ -134,14 +145,16 @@ def read_with_query(db, query):
         conn.close()
 
 
-def get_db_table_names(d_b):
+def get_db_table_names(db):
     """
+    Parameter
+    -----------
+    db : database name or path.
 
-    ``d_b``: database name or path.
-
-    ``return:`` all names ``SQL`` database table ``names`` existing within the database
+    return: list of table names
+       All names ``SQL`` database table ``names`` existing within the database
     """
-    d_b = f'sqlite:///{d_b}'
+    d_b = f'sqlite:///{db}'
     # engine = create_engine(mssql+pymssql://sa:saPassword@localhost:52865/{d_b})')
     engine = create_engine(d_b)
     insp = inspect(engine)
@@ -168,41 +181,40 @@ def custom_remove_file(file):
         os.remove(file)
 
 
-def read_db_table(db, report_name):
+def read_db_table(db: Union[str, Path], report_name:str):
     """
-        Connects to a specified database, retrieves the entire contents of a specified table,
-        and returns the results as a Pandas DataFrame.
+    Connects to a specified SQLite database, retrieves the entire contents of a
+    specified table, and returns the results as a pandas DataFrame.
 
-        Args:
-            ``db`` (str): The database file path or identifier to connect to.
+    Parameters
+    ----------
+    db : str | Path
+        Path to the SQLite database file.
+    report_name : str
+        Name of the table in the database from which to retrieve data.
 
-            ``report_name`` (str): name of the database table: The name of the table in the database from which to retrieve data.
+    Returns
+    -------
+    pandas.DataFrame
+        A DataFrame containing all records from the specified table.
 
-        Returns:
-            ``pandas.DataFrame``: A DataFrame containing all the records from the specified table.
+    Examples
+    --------
+    >>> database_path = 'your_database.sqlite'
+    >>> table_name = 'your_table'
+    >>> ddf = read_db_table(database_path, table_name)
+    >>> print(ddf)
 
-        The function establishes a connection to the specified SQLite database, constructs and executes a SQL query
-        to select all records from the specified table, fetches the results into a DataFrame, then closes the database connection.
+    Notes
+    -----
+    - Establishes a connection to the SQLite database, executes ``SELECT *`` on the
+      specified table, loads the result into a DataFrame, and then closes the
+      connection.
+    - Ensure that the database path and table name are correct.
+    - This function retrieves **all** records; use with caution for very large
+      tables.
+    """
 
-        Examples:
-            # Define the database and the table name
-
-            >>> database_path = 'your_database.sqlite'
-            >>> table_name = 'your_table'
-
-            # Get the table data as a DataFrame
-
-            >>> ddf = read_db_table(database_path, table_name)
-
-            # Work with the DataFrame
-            >>> print(ddf)
-
-        Note:
-            - Ensure that the database path and table name are correct.
-            - The function uses 'sqlite3' for connecting to the database; make sure it is appropriate for your database.
-            - This function retrieves all records from the specified table. Use with caution if the table is very large.
-            
-        """
     # table = kwargs.get("table")
     DB = f'sqlite:///{db}'
     ENGINE = create_engine(DB)
@@ -238,15 +250,28 @@ def load_database(path):
         raise
 
 
-def clear_table(db, table_name):
+def clear_table(db: Union[str,Path], table_name: str):
+    """
+    Deletes all rows from all user-defined tables in the given SQLite database.
+
+    Parameters
+    ----------
+    db : str | Path
+        Path to the SQLite database file.
+
+    table_name : str
+         Name of the target table to delete from the database `db`
+
+    Returns
+    -------
+    None
+        This function does not return a value.
+
+    .. seealso::
+
+       Related API: :meth:`~apsimNGpy.core_utils.database_utils.clear_all_tables`
     """
 
-    ``db``: path to db.
-
-    ``table_name``: name of the table to clear.
-
-    ``return``: None
-    """
     with sqlite3.connect(db) as conn:
         cursor = conn.cursor()
         cursor.execute(f"DELETE FROM {table_name}")
@@ -257,10 +282,21 @@ def clear_all_tables(db):
     """
     Deletes all rows from all user-defined tables in the given SQLite database.
 
-    ``db``: Path to the SQLite database file.
+    Parameters
+    ----------
+    db : str | Path
+        Path to the SQLite database file.
 
-    ``return``: None
+    Returns
+    -------
+    None
+        This function does not return a value.
+
+    .. seealso::
+
+       Related API: :meth:`~apsimNGpy.core_utils.database_utils.clear_table`
     """
+
     with sqlite3.connect(db) as conn:
         cursor = conn.cursor()
 
@@ -663,19 +699,24 @@ def write_results_to_sql(
                 con.close()
     Examples:
 
-    >>> from pandas import DataFrame
-    >>> from apsimNGpy.core_utils.database_utils import write_results_to_sql, read_db_table
-    >>> @write_results_to_sql(db_path="db.db", table="Report", if_exists="replace")
-    ... def get_report():
-    ...     # Return a DataFrame to be written to SQLite
-    ...     return DataFrame({"x": [2], "y": [4]})
+        >>> from pandas import DataFrame
+        >>> from apsimNGpy.core_utils.database_utils import write_results_to_sql, read_db_table
+        >>> @write_results_to_sql(db_path="db.db", table="Report", if_exists="replace")
+        ... def get_report():
+        ...     # Return a DataFrame to be written to SQLite
+        ...     return DataFrame({"x": [2], "y": [4]})
 
-    >>> _ = get_report()  # executes and writes to db.db::Report
-    >>> db = read_db_table("db.db", report_name="Report")
-    >>> print(db.to_string(index=False))
-     x  y
-     2  4
+        >>> _ = get_report()  # executes and writes to db.db::Report
+        >>> db = read_db_table("db.db", report_name="Report")
+        >>> print(db.to_string(index=False))
+         x  y
+         2  4
 
+    .. seealso::
+
+          Related API:
+          :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.save_tosql`,
+          :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.insert_data`
     """
 
     insert_impl = insert_fn or _default_insert_fn

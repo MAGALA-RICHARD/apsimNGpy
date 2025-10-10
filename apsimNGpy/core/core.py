@@ -25,7 +25,7 @@ from apsimNGpy.core.cs_resources import CastHelper
 from apsimNGpy.manager.weathermanager import get_weather
 from functools import lru_cache
 # prepare for the C# import
-from apsimNGpy.core_utils.utils import open_apsimx_file_in_window
+from apsimNGpy.core_utils.utils import open_apsimx_file_in_window, timer
 # now we can safely import C# libraries
 from apsimNGpy.core.pythonet_config import *
 from apsimNGpy.core_utils.database_utils import dataview_to_dataframe, delete_all_tables, read_db_table
@@ -44,7 +44,7 @@ from apsimNGpy.core.plotmanager import PlotManager
 from apsimNGpy.core.model_tools import find_child
 import Models
 from apsimNGpy.core.pythonet_config import get_apsim_version as apsim_version
-
+from apsimNGpy.core_utils.deco import add_outline
 # constants
 IS_NEW_MODEL = is_file_format_modified()
 APSIM_VERSION_NO = apsim_version(release_number=True)
@@ -60,6 +60,7 @@ def compile_script(script_code: str, code_model):
 
 
 @dataclass(slots=True, repr=False, order=True)
+
 class CoreModel(PlotManager):
     """
     Modify and run APSIM Next Generation (APSIM NG) simulation models.
@@ -2465,12 +2466,13 @@ class CoreModel(PlotManager):
 
         Parameters
         ----------
-       ``parameters`` (dict, required) dictionary of cultivar parameters to update.
+       parameters:  (dict, required)
+          dictionary of cultivar parameters to update.
 
-       ``simulations``, optional
+       simulations : str optional
             List or tuples of simulation names to update if `None` update all simulations.
 
-       ``clear`` (bool, optional)
+       clear (bool, optional)
             If `True` remove all existing parameters, by default `False`.
 
         """

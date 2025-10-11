@@ -277,5 +277,11 @@ Maize yield variability by population density (bar plot).
    :alt: bar plot population and nitrogen  effect
    :width: 70%
 
+
+Changing statistical estimators.
+The example below shows how to switch estimators, and after the change to sum, the y-axis is now inflated
+
 .. code-block:: python
+
+ model.cat_plot(table = 'Report', y='Yield', x= 'Population', kind = 'bar', estimator='sum')
 

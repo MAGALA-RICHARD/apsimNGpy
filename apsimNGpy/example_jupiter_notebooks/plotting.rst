@@ -320,3 +320,24 @@ Maize yield labeled plot (bar plot).
 ---------------------------------------------------------
 .. figure:: ./images/styled.png
    :alt: bar plot expression of kg to mg estimator sum
+
+
+Passing a custom dataset
+==========================
+
+Because apsimNGpy plotting wraps Seaborn, you don’t need extra imports for most advanced visuals
+or after some advanced calculation on your dataset.
+
+When you want to pre-compute values or reshape data yourself, use the table argument: it accepts None, a table name (str) from the model’s database, or a pandas.DataFrame.
+
+table=None :  uses self.results from the model.
+
+table="Report" :  (str): loads that table from the DB.
+
+table=df (DataFrame) :  uses your custom, in-memory data.
+
+Below shows how to convert a numeric nitrogen Amount to an ordered categorical (for cleaner legends/ordering) and pass it straight into any plotter:
+
+
+.. code-block:: python
+

@@ -242,13 +242,21 @@ Categorical Plots
 
 Maize yield variability by population density.
 ----------------------------------------------
-.. figure:: ./images/'cat_plot_no_hue.png'.png
-   :alt: Nitrogen group N-P MVA plot
+.. figure:: ./images/'cat_plot_no_hue.png'
+   :alt: cat plot no hue
    :width: 70%
 
 Add Nitrogen fertilizer as hue for contrast across the nitrogen treatments
 
 .. code-block:: python
 
+    model.cat_plot(table = 'Report', y='Yield', x= 'Population', palette='tab10',
+               kind = 'box', hue= 'Nitrogen', height=8, aspect=1.5)
+plt.savefig(dir_p/'hue_nitrogen.png', dpi=600)
 
+Maize yield variability by population density.
+----------------------------------------------
+.. figure:: ./images/'cat_plot_no_hue.png'.png
+   :alt: Nitrogen group N-P MVA plot
+   :width: 70%
 

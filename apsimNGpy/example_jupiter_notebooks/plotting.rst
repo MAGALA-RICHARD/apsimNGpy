@@ -336,8 +336,53 @@ table="Report" :  (str): loads that table from the DB.
 
 table=df (DataFrame) :  uses your custom, in-memory data.
 
-Below shows how to convert a numeric nitrogen Amount to an ordered categorical (for cleaner legends/ordering) and pass it straight into any plotter:
+The example below shows how to convert a numeric nitrogen Amount to an ordered categorical (for cleaner legends/ordering) and pass it straight into any plotter:
 
 
 .. code-block:: python
+
+   import pandas as pd
+
+    # Example: start from model results (or load a table)
+    df = model.results.copy()  # or: df = model.get_simulated_output("Report")
+
+    # Convert nitrogen rate to an ordered categorical for consistent ordering/legend
+    bins = [0, 50, 100, 150, 200, 250]
+    labels = ["0–50", "51–100", "101–150", "151–200"]
+    # 1) Coerce to numeric
+    df = df.copy()
+    df["Nitrogen"] = pd.to_numeric(df["Nitrogen"], errors="coerce")
+
+    # 2) Handle NaNs (drop or label them)
+    # Option A: drop rows with invalid Amount
+    df = df.dropna(subset=["Nitrogen"])
+    # Option B: keep them and fill a placeholder after cut
+
+    # 3) Define consistent bins & labels
+    bins   = [0, 50, 100, 150, 200]           # strictly increasing
+    labels = ["0–50", "51–100", "101–150", "151–200"]  # len=4 = len(bins)-1
+
+    # 4) Cut (older pandas? remove ordered= and set later)
+    df["N_rate_class"] = pd.cut(
+        df["Nitrogen"],
+        bins=bins,
+        labels=labels,
+        include_lowest=True,
+        right=True,  )         # default; change to False if you want left-closed intervals
+        # ordered=True  )      # comment out if your pandas
+
+    # Optionally, sort by the new category
+    df = df.sort_values("N_rate_class")
+
+    # Use the custom DataFrame directly via `table=...`
+    # Example 1: line series
+    model.series_plot(
+        table=df,
+        x="year",
+        y="Yield",
+        hue="N_rate_class", errorbar=None
+
+    )
+    plt.tight_layout()
+    plt.savefig("series_ordered.png")
 

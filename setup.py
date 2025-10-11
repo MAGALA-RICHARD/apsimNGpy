@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 import sys
 from functools import cache
 
-VERSION = '0.39.9.16'
+VERSION = '0.39.10.17'
 
 DESCRIPTION = 'APSIM next generation package interface'
 LONG_DESCRIPTION = 'Run, edit, download soils and weather and interact with the apsimx file'

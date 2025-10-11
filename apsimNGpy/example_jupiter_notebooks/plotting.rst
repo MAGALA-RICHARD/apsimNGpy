@@ -254,9 +254,9 @@ Add Nitrogen fertilizer as hue for contrast across the nitrogen treatments
                kind = 'box', hue= 'Nitrogen', height=8, aspect=1.5)
 plt.savefig(dir_p/'hue_nitrogen.png', dpi=600)
 
-Maize yield variability by population density.
+Maize yield variability by population density and nitrogen fertilizer.
 ----------------------------------------------
 .. figure:: ./images/'cat_plot_no_hue.png'.png
-   :alt: Nitrogen group N-P MVA plot
+   :alt: Nitrogen and population effect
    :width: 70%
 

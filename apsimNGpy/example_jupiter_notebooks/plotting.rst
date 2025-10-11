@@ -385,3 +385,7 @@ The example below shows how to convert a numeric nitrogen Amount to an ordered c
     plt.tight_layout()
     plt.savefig("series_ordered.png")
 
+Maize yield ordered plot (bar plot).
+---------------------------------------------------------
+.. figure:: ./images/series_ordered.png
+   :alt: series data after ordering

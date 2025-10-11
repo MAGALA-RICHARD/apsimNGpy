@@ -387,5 +387,5 @@ The example below shows how to convert a numeric nitrogen Amount to an ordered c
 
 Maize yield ordered plot (bar plot).
 ---------------------------------------------------------
-.. figure:: ./images/series_ordered.png
+.. figure:: ./images/series_ordered.pn
    :alt: series data after ordering

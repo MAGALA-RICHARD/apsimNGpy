@@ -140,6 +140,36 @@ Inspect the simulated results
 
     model.results.info()
 
+.. code-block:: python
+
+   <class 'pandas.core.frame.DataFrame'>
+    RangeIndex: 200 entries, 0 to 199
+    Data columns (total 19 columns):
+     #   Column                            Non-Null Count  Dtype
+    ---  ------                            --------------  -----
+     0   CheckpointID                      200 non-null    int64
+     1   SimulationID                      200 non-null    int64
+     2   Experiment                        200 non-null    object
+     3   Population                        200 non-null    object
+     4   Nitrogen                          200 non-null    object
+     5   Zone                              200 non-null    object
+     6   Clock.Today                       200 non-null    object
+     7   Maize.Phenology.CurrentStageName  200 non-null    object
+     8   Maize.AboveGround.Wt              200 non-null    float64
+     9   Maize.AboveGround.N               200 non-null    float64
+     10  Yield                             200 non-null    float64
+     11  Maize.Grain.Wt                    200 non-null    float64
+     12  Maize.Grain.Size                  200 non-null    float64
+     13  Maize.Grain.NumberFunction        200 non-null    float64
+     14  Maize.Grain.Total.Wt              200 non-null    float64
+     15  Maize.Grain.N                     200 non-null    float64
+     16  Maize.Total.Wt                    200 non-null    float64
+     17  year                              200 non-null    int64
+     18  source_table                      200 non-null    object
+    dtypes: float64(9), int64(3), object(7)
+    memory usage: 29.8+ KB
+
+
 # By default, the parameter name of each factor is also populated in the data frame.
 
 .. code-block:: python

@@ -288,5 +288,8 @@ The example below shows how to switch estimators, and after the change to sum, t
 Maize yield variability by population density (bar plot, estimator =sum).
 ---------------------------------------------------------
 .. figure:: ./images/bar_plots_with_estimator.png
-   :alt: bar plot population and nitrogen  effect
-   :width: 70%
+   :alt: bar plot population estimator sum
+
+.. code-block:: python
+
+  model.cat_plot(table = 'Report', y='Yield', expression ='Yield(Mg) = Yield/1000', x= 'Population', kind = 'bar', errorbar=None)

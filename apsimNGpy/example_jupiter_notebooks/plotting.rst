@@ -295,4 +295,14 @@ methods allow simple mathematical expressions to be passed, as shown below.
 
 .. code-block:: python
 
-  model.cat_plot(table = 'Report', y='Yield', expression ='Yield(Mg) = Yield/1000', x= 'Population', kind = 'bar', errorbar=None)
+  model.cat_plot(table = 'Report', y='Yield',
+   expression ='Yield(Mg) = Yield/1000', x= 'Population', kind = 'bar', errorbar=None)
+
+
+Tidy up the plots for reporting
+===============================
+
+The heavy lifting is done; now polish the figure—adjust labels, titles, and size.
+All plotting methods on ApsimModel and ExperimentManager return a seaborn.axisgrid.FacetGrid, so you can keep customizing afterward. Because Seaborn sits on Matplotlib,
+any Matplotlib styling you pass (or apply later) still works.
+

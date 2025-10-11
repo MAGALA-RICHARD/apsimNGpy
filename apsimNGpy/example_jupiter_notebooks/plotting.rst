@@ -368,8 +368,7 @@ The example below shows how to convert a numeric nitrogen Amount to an ordered c
         bins=bins,
         labels=labels,
         include_lowest=True,
-        right=True,  )         # default; change to False if you want left-closed intervals
-        # ordered=True  )      # comment out if your pandas
+        right=True,  )
 
     # Optionally, sort by the new category
     df = df.sort_values("N_rate_class")

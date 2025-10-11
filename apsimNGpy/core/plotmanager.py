@@ -662,7 +662,7 @@ class PlotManager(ABC):
 
     def cat_plot(self,
                  table=None,
-                 exression=None,
+                 expression=None,
                  *,
                  x=None,
                  y=None,
@@ -727,7 +727,7 @@ class PlotManager(ABC):
         """
         self._refresh()
         added_plots['cat_plot'] = 'cat_plot'
-        df = self._harmonize_df(table, expression=exression)
+        df = self._harmonize_df(table, expression=expression)
         return sns.catplot(
             data=df,
             x=x,

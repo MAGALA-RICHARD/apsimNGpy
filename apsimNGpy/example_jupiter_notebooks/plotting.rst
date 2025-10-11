@@ -404,4 +404,4 @@ Maize yield ordered plot (Line plot)
 Binned Maize yield (bar plot).
 ---------------------------------------------------------
 .. figure:: ./images/binned_cat_plot.png
-   :alt: series data after ordering
+   :alt: binned plot

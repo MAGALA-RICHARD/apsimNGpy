@@ -234,13 +234,15 @@ Multi-year moving average for each experiment.
    :width: 70%
 
 
-
-
 Categorical Plots
 ------------------
 .. code-block:: python
 
   model.cat_plot(table = 'Report', y='Yield', x= 'Population', kind = 'box')
 
-
+Maize yield variability by population density.
+----------------------------------------------
+.. figure:: ./images/'cat_plot_no_hue.png'.png
+   :alt: Nitrogen group N-P MVA plot
+   :width: 70%
 

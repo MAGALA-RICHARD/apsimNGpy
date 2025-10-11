@@ -246,3 +246,9 @@ Maize yield variability by population density.
    :alt: Nitrogen group N-P MVA plot
    :width: 70%
 
+Add Nitrogen fertilizer as hue for contrast across the nitrogen treatments
+
+.. code-block:: python
+
+
+

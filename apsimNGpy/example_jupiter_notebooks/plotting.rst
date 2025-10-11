@@ -310,3 +310,13 @@ The heavy lifting is done; now polish the figure—adjust labels, titles, and si
 All plotting methods on ApsimModel and ExperimentManager return a seaborn.axisgrid.FacetGrid, so you can keep customizing afterward. Because Seaborn sits on Matplotlib,
 any Matplotlib styling you pass (or apply later) still works.
 
+.. code-block:: python
+
+    g= model.cat_plot(table = 'Report', y='Yield', x= 'Population', kind='bar')
+    g.set_axis_labels(r"Population density (m$^{-2}$)", r"Maize yield (kg ha$^{-1}$)")
+    g.set_titles("Yield vs population density")
+
+Maize yield labeled plot (bar plot).
+---------------------------------------------------------
+.. figure:: ./images/styled.png
+   :alt: bar plot expression of kg to mg estimator sum

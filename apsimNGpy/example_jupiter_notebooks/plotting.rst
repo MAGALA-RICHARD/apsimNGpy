@@ -259,7 +259,7 @@ plt.savefig(dir_p/'hue_nitrogen.png', dpi=600)
 
 Maize yield variability by population density and nitrogen fertilizer.
 ----------------------------------------------
-.. figure:: ./images/'hue_nitrogen.png'
+.. figure:: ./images/hue_nitrogen.png
    :alt: Nitrogen and population effect
    :width: 70%
 

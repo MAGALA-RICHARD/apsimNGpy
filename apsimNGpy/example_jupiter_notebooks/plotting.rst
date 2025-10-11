@@ -270,10 +270,11 @@ Bar Plots
   model.cat_plot(table = 'Report', y='Yield',
     x= 'Population', kind = 'bar', hue= 'Nitrogen', height=8, aspect=1.5)
 
+
 Maize yield variability by population density (bar plot).
-----------------------------------------------
+---------------------------------------------------------
 .. figure:: ./images/bar_plots_with_hue.png
-   :alt: bar plot population effect
+   :alt: bar plot population and nitrogen  effect
    :width: 70%
 
 .. code-block:: python

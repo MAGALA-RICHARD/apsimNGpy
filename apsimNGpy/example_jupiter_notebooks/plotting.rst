@@ -245,7 +245,7 @@ Box plots
 
 Maize yield variability by population density.
 ----------------------------------------------
-.. figure:: ./images/'cat_plot_no_hue.png'
+.. figure:: ./images/cat_plot_no_hue.png
    :alt: cat plot no hue
    :width: 70%
 

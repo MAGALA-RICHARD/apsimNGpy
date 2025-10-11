@@ -290,6 +290,9 @@ Maize yield variability by population density (bar plot, estimator =sum).
 .. figure:: ./images/bar_plots_with_estimator.png
    :alt: bar plot population estimator sum
 
+If you want to plot in a different unit or apply on-the-fly calculations, all plotting
+methods allow simple mathematical expressions to be passed, as shown below.
+
 .. code-block:: python
 
   model.cat_plot(table = 'Report', y='Yield', expression ='Yield(Mg) = Yield/1000', x= 'Population', kind = 'bar', errorbar=None)

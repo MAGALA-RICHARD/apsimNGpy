@@ -385,7 +385,23 @@ The example below shows how to convert a numeric nitrogen Amount to an ordered c
     plt.tight_layout()
     plt.savefig("series_ordered.png")
 
-Maize yield ordered plot (bar plot).
+Maize yield ordered plot (Line plot)
 ---------------------------------------------------------
-.. figure:: ./images/series_ordered.pn
+.. figure:: ./images/series_ordered.png
+   :alt: series data after ordering
+
+.. code-block:: python
+
+    # Example 2: categorical plot (e.g., box/violin via catplot)
+    model.cat_plot(
+        table=df,
+        x="N_rate_class",
+        y="Yield",
+        kind="box"
+    )
+    plt.savefig(p/"binned_cat_plot.png", dpi =600)
+
+Binned Maize yield (bar plot).
+---------------------------------------------------------
+.. figure:: ./images/binned_cat_plot.png
    :alt: series data after ordering

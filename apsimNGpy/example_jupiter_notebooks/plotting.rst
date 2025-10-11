@@ -230,11 +230,15 @@ Statistical results for each column
 .. figure:: ./images/mva_hue_nitrogen_grp_n_p.png
    :alt: Nitrogen group N-P MVA plot
    :width: 70%
-
-   Multi-year moving average for each experiment.
+   :title:  Multi-year moving average for each experiment.
 
 
 
 Categorical Plots
 ------------------
+.. code-block:: python
+
+  model.cat_plot(table = 'Report', y='Yield', x= 'Population', kind = 'box')
+
+
 

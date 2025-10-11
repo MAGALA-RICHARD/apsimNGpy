@@ -272,6 +272,9 @@ Bar Plots
 
 Maize yield variability by population density (bar plot).
 ----------------------------------------------
-.. figure:: ./bar_plots_no_hue.png
-   :alt: Nitrogen and population effect
+.. figure:: ./images/bar_plots_no_hue.png
+   :alt: bar plot population effect
    :width: 70%
+
+.. code-block:: python
+

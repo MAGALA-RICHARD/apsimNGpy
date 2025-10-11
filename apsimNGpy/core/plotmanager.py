@@ -727,7 +727,7 @@ class PlotManager(ABC):
         """
         self._refresh()
         added_plots['cat_plot'] = 'cat_plot'
-        df = self._harmonize_df(table, expression=expression)
+        df = self._harmonize_df(table, expression)
         return sns.catplot(
             data=df,
             x=x,
@@ -806,7 +806,7 @@ if __name__ == '__main__':
     model.update_mgt(management=({"Name": 'Sow using a variable rule', 'Population': 8},))
     model.run(report_name='my_table')
 
-    model.cat_plot(y='SOC1', x='Zone')
+    model.cat_plot(y='yy', x='Zone', expression='yy=SOC1/100')
 
     model.series_plot(y='SOC2', x='Year')
     model.distribution('SOC1', show=True)

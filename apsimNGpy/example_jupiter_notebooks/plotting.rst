@@ -295,9 +295,13 @@ methods allow simple mathematical expressions to be passed, as shown below.
 
 .. code-block:: python
 
-  model.cat_plot(table = 'Report', y='Yield',
-   expression ='Yield(Mg) = Yield/1000', x= 'Population', kind = 'bar', errorbar=None)
+    model.cat_plot('Report', expression="Yield_in_Mg = Yield/1000",
+               y='Yield_in_Mg', x= 'Population', kind = 'bar', errorbar=None)
 
+Maize yield variability by population density in Mg (bar plot, estimator =sum).
+---------------------------------------------------------
+.. figure:: ./images/exp.png
+   :alt: bar plot expression of kg to mg estimator sum
 
 Tidy up the plots for reporting
 ===============================

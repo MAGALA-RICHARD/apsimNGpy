@@ -235,7 +235,10 @@ Multi-year moving average for each experiment.
 
 
 Categorical Plots
-------------------
+-----------------
+
+Box plots
+==========
 .. code-block:: python
 
   model.cat_plot(table = 'Report', y='Yield', x= 'Population', kind = 'box')
@@ -259,4 +262,9 @@ Maize yield variability by population density and nitrogen fertilizer.
 .. figure:: ./images/'hue_nitrogen.png'
    :alt: Nitrogen and population effect
    :width: 70%
+
+Bar Plots
+==========
+.. code-block:: python
+
 

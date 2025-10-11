@@ -172,6 +172,55 @@ Inspect the simulated results
 
 # By default, the parameter name of each factor is also populated in the data frame.
 
+Statistical results for each column
+
+.. code-block:: python
+
+   model.results.describe()
+
+.. code-block:: python
+
+          CheckpointID  SimulationID  Maize.AboveGround.Wt  Maize.AboveGround.N  \
+        count         200.0    200.000000            200.000000           200.000000
+        mean            1.0     10.500000           1067.600206            10.239469
+        std             0.0      5.780751            607.686584             6.299485
+        min             1.0      1.000000             51.423456             0.320986
+        25%             1.0      5.750000            708.023479             5.095767
+        50%             1.0     10.500000            987.749088             9.423852
+        75%             1.0     15.250000           1579.116949            15.402366
+        max             1.0     20.000000           2277.481374            22.475693
+
+                      Yield  Maize.Grain.Wt  Maize.Grain.Size  \
+        count    200.000000      200.000000        200.000000
+        mean    4765.995363      476.599536          0.245769
+        std     3093.295392      309.329539          0.073753
+        min        0.000000        0.000000          0.000000
+        25%     2535.993006      253.599301          0.223099
+        50%     3894.863108      389.486311          0.274101
+        75%     7819.712885      781.971288          0.299073
+        max    10881.111792     1088.111179          0.315281
+
+               Maize.Grain.NumberFunction  Maize.Grain.Total.Wt  Maize.Grain.N  \
+        count                  200.000000            200.000000     200.000000
+        mean                  1890.470249            476.599536       6.187685
+        std                   1077.127429            309.329539       4.118276
+        min                      0.000000              0.000000       0.000000
+        25%                    979.352980            253.599301       3.051965
+        50%                   1855.994293            389.486311       5.112196
+        75%                   2861.250716            781.971288      10.372698
+        max                   3726.740206           1088.111179      13.852686
+
+               Maize.Total.Wt         year
+        count      200.000000   200.000000
+        mean      1167.632796  1995.500000
+        std        656.486381     2.879489
+        min         53.721510  1991.000000
+        25%        774.862931  1993.000000
+        50%       1104.093752  1995.500000
+        75%       1705.820275  1998.000000
+        max       2457.083319  2000.000000
+
+
 .. code-block:: python
 
    model.plot_mva(table='Report', response='Yield', time_col='year', col_wrap=2, palette='tab10',

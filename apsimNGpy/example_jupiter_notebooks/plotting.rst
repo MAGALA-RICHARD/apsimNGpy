@@ -227,10 +227,12 @@ Statistical results for each column
       errorbar=None, estimator='mean', grouping=('Amount', 'Population'), hue='Nitrogen', col='Population')
 
 
+Multi-year moving average for each experiment.
+----------------------------------------------
 .. figure:: ./images/mva_hue_nitrogen_grp_n_p.png
    :alt: Nitrogen group N-P MVA plot
    :width: 70%
-   :title:  Multi-year moving average for each experiment.
+
 
 
 

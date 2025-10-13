@@ -2592,7 +2592,7 @@ Classes
 
    # output
 
-   .. code-block:: python
+   .. code-block:: none
 
        ── Simulations: .Simulations
        ├── DataStore: .Simulations.DataStore
@@ -2630,7 +2630,7 @@ Classes
 
    # output
 
-   .. code-block:: python
+   .. code-block::none
 
        └── Simulations: .Simulations
        ├── DataStore: .Simulations.DataStore
@@ -6090,7 +6090,7 @@ Classes
 
    # output
 
-   .. code-block:: python
+   .. code-block:: none
 
        ── Simulations: .Simulations
        ├── DataStore: .Simulations.DataStore
@@ -6128,7 +6128,7 @@ Classes
 
    # output
 
-   .. code-block:: python
+   .. code-block::none
 
        └── Simulations: .Simulations
        ├── DataStore: .Simulations.DataStore

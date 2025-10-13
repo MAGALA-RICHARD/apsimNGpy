@@ -4286,7 +4286,7 @@ class CoreModel(PlotManager):
 
         # output
 
-        .. code-block::none
+        .. code-block:: none
 
             └── Simulations: .Simulations
             ├── DataStore: .Simulations.DataStore

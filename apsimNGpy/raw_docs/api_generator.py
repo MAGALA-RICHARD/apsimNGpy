@@ -197,6 +197,8 @@ def docs(
             seen_objects.add(id(obj))
 
     with output_file.open("w", encoding="utf-8") as f:
+        ref = f".. _api_ref:"
+        f.write(f"{ref}\n")
         title = f"{main_package}: API Reference"
         f.write(title + "\n")
         f.write("=" * len(title) + "\n\n")

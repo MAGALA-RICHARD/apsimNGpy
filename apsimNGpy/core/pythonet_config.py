@@ -59,7 +59,6 @@ class ConfigRuntimeInfo:
     file_format_modified: bool = is_file_format_modified()
 
 
-@cache
 def load_pythonnet(bin_path: Union[str, Path] = None):
     """
     A method for loading Python for .NET (pythonnet) and APSIM models from the binary path. It is also cached to
@@ -80,10 +79,13 @@ def load_pythonnet(bin_path: Union[str, Path] = None):
     KeyError: If APSIM path is not found in the system environmental variable.
     ValueError: If the provided APSIM path is invalid.
 
-    Notes:
-    It raises a KeyError if APSIM path is not found. Please edit the system environmental variable on your computer.
+    .. important::
+
+     This function is called internally by apsimNGpy modules, but it is dependent on correct configuration of the bin
+     path. Please edit the system environmental variable on your computer or set it using: :func:`~apsimNGpy.core.config.set_apsim_bin_path`
 
     """
+
     @cache
     def _load(bin_path):
         if bin_path is None:
@@ -93,8 +95,6 @@ def load_pythonnet(bin_path: Union[str, Path] = None):
             raise ApsimBinPathConfigError(
                 f'Built APSIM Binaries seems to have been uninstalled from this directory: {bin_path}\n use the config.set_apsim_bin_path')
         _add_bin_to_syspath(candidate)
-
-
 
         # system.path.append(bin_path)
         import clr
@@ -113,6 +113,7 @@ def load_pythonnet(bin_path: Union[str, Path] = None):
             logger.warning(f'Could not find ApsimNG.dll in {candidate}')
 
         return ConfigRuntimeInfo(True, bin_path=candidate)
+
     return _load(bin_path)
 
     # return lm, sys, pythonnet.get_runtime_info()
@@ -262,7 +263,7 @@ def get_apsim_version(bin_path: Union[str, Path] = APSIM_BIN_PATH, release_numbe
     --------
     load_pythonnet : Initialize pythonnet/CLR for APSIM binaries.
     """
-    bin_path =str(bin_path)
+    bin_path = str(bin_path)
     CI = load_pythonnet(bin_path)
     if not CI.clr_loaded:
         raise ApsimBinPathConfigError("Pythonnet and APSIM bin path not yet initialized")

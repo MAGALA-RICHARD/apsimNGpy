@@ -1,3 +1,4 @@
+.. _api_ref:
 apsimNGpy: API Reference
 ========================
 
@@ -2925,7 +2926,7 @@ Classes
 
    ================================================================================================================================
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.cat_plot(self, table=None, exression=None, *, x=None, y=None, hue=None, row=None, col=None, kind='strip', estimator='mean', errorbar=('ci', 95), n_boot=1000, seed=None, units=None, weights=None, order=None, hue_order=None, row_order=None, col_order=None, col_wrap=None, height=5, aspect=1, log_scale=None, native_scale=False, formatter=None, orient=None, color=None, palette=None, hue_norm=None, legend='auto', legend_out=True, sharex=True, sharey=True, margin_titles=False, facet_kws=None, **kwargs) (inherited)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.cat_plot(self, table=None, expression=None, *, x=None, y=None, hue=None, row=None, col=None, kind='strip', estimator='mean', errorbar=('ci', 95), n_boot=1000, seed=None, units=None, weights=None, order=None, hue_order=None, row_order=None, col_order=None, col_wrap=None, height=5, aspect=1, log_scale=None, native_scale=False, formatter=None, orient=None, color=None, palette=None, hue_norm=None, legend='auto', legend_out=True, sharex=True, sharey=True, margin_titles=False, facet_kws=None, **kwargs) (inherited)
 
     Categorical plot wrapper over :func:`seaborn.catplot`.
 
@@ -6280,7 +6281,7 @@ Classes
 
    ================================================================================================================================
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.cat_plot(self, table=None, exression=None, *, x=None, y=None, hue=None, row=None, col=None, kind='strip', estimator='mean', errorbar=('ci', 95), n_boot=1000, seed=None, units=None, weights=None, order=None, hue_order=None, row_order=None, col_order=None, col_wrap=None, height=5, aspect=1, log_scale=None, native_scale=False, formatter=None, orient=None, color=None, palette=None, hue_norm=None, legend='auto', legend_out=True, sharex=True, sharey=True, margin_titles=False, facet_kws=None, **kwargs) (inherited)
+   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.cat_plot(self, table=None, expression=None, *, x=None, y=None, hue=None, row=None, col=None, kind='strip', estimator='mean', errorbar=('ci', 95), n_boot=1000, seed=None, units=None, weights=None, order=None, hue_order=None, row_order=None, col_order=None, col_wrap=None, height=5, aspect=1, log_scale=None, native_scale=False, formatter=None, orient=None, color=None, palette=None, hue_norm=None, legend='auto', legend_out=True, sharex=True, sharey=True, margin_titles=False, facet_kws=None, **kwargs) (inherited)
 
     Categorical plot wrapper over :func:`seaborn.catplot`.
 
@@ -6805,6 +6806,31 @@ Functions
 
    :returns:
      bool
+
+.. py:function:: apsimNGpy.core.pythonet_config.load_pythonnet(bin_path: Union[str, pathlib.Path] = None)
+
+   A method for loading Python for .NET (pythonnet) and APSIM models from the binary path. It is also cached to
+   avoid rerunning many times.
+
+   It initializes the Python for .NET (pythonnet) runtime and load APSIM models.
+
+   Loads the 'coreclr' runtime, and if not found, falls back to an alternate runtime.
+   It also sets the APSIM binary path, adds the necessary references, and returns a reference to the loaded APSIM models.
+
+   Returns:
+   -------
+   ConfigRuntimeInfo:
+        an instance of ConfigRuntimeInfo with reference to the loaded APSIM models
+
+   Raises:
+   ------
+   KeyError: If APSIM path is not found in the system environmental variable.
+   ValueError: If the provided APSIM path is invalid.
+
+   .. important::
+
+    This function is called internally by apsimNGpy modules, but it is dependent on correct configuration of the bin
+    path. Please edit the system environmental variable on your computer or set it using: :func:`~apsimNGpy.core.config.set_apsim_bin_path`
 
 Classes
 ^^^^^^^

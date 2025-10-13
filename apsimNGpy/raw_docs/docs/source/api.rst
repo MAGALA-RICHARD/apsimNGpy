@@ -2570,20 +2570,163 @@ Classes
 
    .. py:method:: apsimNGpy.core.apsim.ApsimModel.inspect_file(self, *, cultivar=False, console=True, **kwargs) (inherited)
 
-   Inspect the file by calling ``inspect_model()`` through ``get_model_paths.``
+   Inspects the file by traversing the entire simulation tree, using :meth:`inspect_model` under the hood
+
    This method is important in inspecting the `whole file` and also getting the `scripts paths`.
 
    Parameters
    ----------
    cultivar: (bool)
-      To includes cultivar paths.
+      To include cultivar paths.
 
    console: (bool)
       Prints to the console if True
 
+   Examples
+   -----------
+   .. code-block:: python
+
+      from apsimNGpy.core.apsim import ApsimModel
+      model = ApsimModel('Maize')
+      model.inspect_file(cultivar=False)
+
+   # output
+
+   .. code-block:: python
+
+       ── Simulations: .Simulations
+       ├── DataStore: .Simulations.DataStore
+       └── Simulation: .Simulations.Simulation
+           ├── Clock: .Simulations.Simulation.Clock
+           ├── Field: .Simulations.Simulation.Field
+           │   ├── Fertilise at sowing: .Simulations.Simulation.Field.Fertilise at sowing
+           │   ├── Fertiliser: .Simulations.Simulation.Field.Fertiliser
+           │   ├── Harvest: .Simulations.Simulation.Field.Harvest
+           │   ├── Maize: .Simulations.Simulation.Field.Maize
+           │   ├── Report: .Simulations.Simulation.Field.Report
+           │   ├── Soil: .Simulations.Simulation.Field.Soil
+           │   │   ├── Chemical: .Simulations.Simulation.Field.Soil.Chemical
+           │   │   ├── NH4: .Simulations.Simulation.Field.Soil.NH4
+           │   │   ├── NO3: .Simulations.Simulation.Field.Soil.NO3
+           │   │   ├── Organic: .Simulations.Simulation.Field.Soil.Organic
+           │   │   ├── Physical: .Simulations.Simulation.Field.Soil.Physical
+           │   │   │   └── MaizeSoil: .Simulations.Simulation.Field.Soil.Physical.MaizeSoil
+           │   │   ├── Urea: .Simulations.Simulation.Field.Soil.Urea
+           │   │   └── Water: .Simulations.Simulation.Field.Soil.Water
+           │   ├── Sow using a variable rule: .Simulations.Simulation.Field.Sow using a variable rule
+           │   └── SurfaceOrganicMatter: .Simulations.Simulation.Field.SurfaceOrganicMatter
+           ├── Graph: .Simulations.Simulation.Graph
+           │   └── Series: .Simulations.Simulation.Graph.Series
+           ├── MicroClimate: .Simulations.Simulation.MicroClimate
+           ├── SoilArbitrator: .Simulations.Simulation.SoilArbitrator
+           ├── Summary: .Simulations.Simulation.Summary
+           └── Weather: .Simulations.Simulation.Weather
+
+   Turn cultivar paths on as follows:
+
+   .. code-block:: python
+
+     model.inspect_file(cultivar=True)
+
+   # output
+
+   .. code-block:: python
+
+       └── Simulations: .Simulations
+       ├── DataStore: .Simulations.DataStore
+       └── Simulation: .Simulations.Simulation
+           ├── Clock: .Simulations.Simulation.Clock
+           ├── Field: .Simulations.Simulation.Field
+           │   ├── Fertilise at sowing: .Simulations.Simulation.Field.Fertilise at sowing
+           │   ├── Fertiliser: .Simulations.Simulation.Field.Fertiliser
+           │   ├── Harvest: .Simulations.Simulation.Field.Harvest
+           │   ├── Maize: .Simulations.Simulation.Field.Maize
+           │   │   └── CultivarFolder: .Simulations.Simulation.Field.Maize.CultivarFolder
+           │   │       ├── Atrium: .Simulations.Simulation.Field.Maize.CultivarFolder.Atrium
+           │   │       ├── CG4141: .Simulations.Simulation.Field.Maize.CultivarFolder.CG4141
+           │   │       ├── Dekalb_XL82: .Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82
+           │   │       ├── GH_5009: .Simulations.Simulation.Field.Maize.CultivarFolder.GH_5009
+           │   │       ├── GH_5019WX: .Simulations.Simulation.Field.Maize.CultivarFolder.GH_5019WX
+           │   │       ├── Generic: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic
+           │   │       │   ├── A_100: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_100
+           │   │       │   ├── A_103: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_103
+           │   │       │   ├── A_105: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_105
+           │   │       │   ├── A_108: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_108
+           │   │       │   ├── A_110: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_110
+           │   │       │   ├── A_112: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_112
+           │   │       │   ├── A_115: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_115
+           │   │       │   ├── A_120: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_120
+           │   │       │   ├── A_130: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_130
+           │   │       │   ├── A_80: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_80
+           │   │       │   ├── A_90: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_90
+           │   │       │   ├── A_95: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_95
+           │   │       │   ├── B_100: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_100
+           │   │       │   ├── B_103: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_103
+           │   │       │   ├── B_105: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_105
+           │   │       │   ├── B_108: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_108
+           │   │       │   ├── B_110: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_110
+           │   │       │   ├── B_112: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_112
+           │   │       │   ├── B_115: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_115
+           │   │       │   ├── B_120: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_120
+           │   │       │   ├── B_130: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_130
+           │   │       │   ├── B_80: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_80
+           │   │       │   ├── B_90: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_90
+           │   │       │   ├── B_95: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_95
+           │   │       │   ├── HY_110: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.HY_110
+           │   │       │   ├── LY_110: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.LY_110
+           │   │       │   └── P1197: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.P1197
+           │   │       ├── Hycorn_40: .Simulations.Simulation.Field.Maize.CultivarFolder.Hycorn_40
+           │   │       ├── Hycorn_53: .Simulations.Simulation.Field.Maize.CultivarFolder.Hycorn_53
+           │   │       ├── Katumani: .Simulations.Simulation.Field.Maize.CultivarFolder.Katumani
+           │   │       ├── Laila: .Simulations.Simulation.Field.Maize.CultivarFolder.Laila
+           │   │       ├── Makueni: .Simulations.Simulation.Field.Maize.CultivarFolder.Makueni
+           │   │       ├── Melkassa: .Simulations.Simulation.Field.Maize.CultivarFolder.Melkassa
+           │   │       ├── NSCM_41: .Simulations.Simulation.Field.Maize.CultivarFolder.NSCM_41
+           │   │       ├── Pioneer_3153: .Simulations.Simulation.Field.Maize.CultivarFolder.Pioneer_3153
+           │   │       ├── Pioneer_33M54: .Simulations.Simulation.Field.Maize.CultivarFolder.Pioneer_33M54
+           │   │       ├── Pioneer_34K77: .Simulations.Simulation.Field.Maize.CultivarFolder.Pioneer_34K77
+           │   │       ├── Pioneer_38H20: .Simulations.Simulation.Field.Maize.CultivarFolder.Pioneer_38H20
+           │   │       ├── Pioneer_39G12: .Simulations.Simulation.Field.Maize.CultivarFolder.Pioneer_39G12
+           │   │       ├── Pioneer_39V43: .Simulations.Simulation.Field.Maize.CultivarFolder.Pioneer_39V43
+           │   │       ├── malawi_local: .Simulations.Simulation.Field.Maize.CultivarFolder.malawi_local
+           │   │       ├── mh12: .Simulations.Simulation.Field.Maize.CultivarFolder.mh12
+           │   │       ├── mh16: .Simulations.Simulation.Field.Maize.CultivarFolder.mh16
+           │   │       ├── mh17: .Simulations.Simulation.Field.Maize.CultivarFolder.mh17
+           │   │       ├── mh18: .Simulations.Simulation.Field.Maize.CultivarFolder.mh18
+           │   │       ├── mh19: .Simulations.Simulation.Field.Maize.CultivarFolder.mh19
+           │   │       ├── r201: .Simulations.Simulation.Field.Maize.CultivarFolder.r201
+           │   │       ├── r215: .Simulations.Simulation.Field.Maize.CultivarFolder.r215
+           │   │       ├── sc401: .Simulations.Simulation.Field.Maize.CultivarFolder.sc401
+           │   │       ├── sc501: .Simulations.Simulation.Field.Maize.CultivarFolder.sc501
+           │   │       ├── sc601: .Simulations.Simulation.Field.Maize.CultivarFolder.sc601
+           │   │       ├── sc623: .Simulations.Simulation.Field.Maize.CultivarFolder.sc623
+           │   │       ├── sc625: .Simulations.Simulation.Field.Maize.CultivarFolder.sc625
+           │   │       └── sr52: .Simulations.Simulation.Field.Maize.CultivarFolder.sr52
+           │   ├── Report: .Simulations.Simulation.Field.Report
+           │   ├── Soil: .Simulations.Simulation.Field.Soil
+           │   │   ├── Chemical: .Simulations.Simulation.Field.Soil.Chemical
+           │   │   ├── NH4: .Simulations.Simulation.Field.Soil.NH4
+           │   │   ├── NO3: .Simulations.Simulation.Field.Soil.NO3
+           │   │   ├── Organic: .Simulations.Simulation.Field.Soil.Organic
+           │   │   ├── Physical: .Simulations.Simulation.Field.Soil.Physical
+           │   │   │   └── MaizeSoil: .Simulations.Simulation.Field.Soil.Physical.MaizeSoil
+           │   │   ├── Urea: .Simulations.Simulation.Field.Soil.Urea
+           │   │   └── Water: .Simulations.Simulation.Field.Soil.Water
+           │   ├── Sow using a variable rule: .Simulations.Simulation.Field.Sow using a variable rule
+           │   └── SurfaceOrganicMatter: .Simulations.Simulation.Field.SurfaceOrganicMatter
+           ├── Graph: .Simulations.Simulation.Graph
+           │   └── Series: .Simulations.Simulation.Graph.Series
+           ├── MicroClimate: .Simulations.Simulation.MicroClimate
+           ├── SoilArbitrator: .Simulations.Simulation.SoilArbitrator
+           ├── Summary: .Simulations.Simulation.Summary
+           └── Weather: .Simulations.Simulation.Weather
+
+
+
    .. seealso::
 
-       Related APIs: :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_model`, :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_model_parameters`
+       - Related APIs: :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_model`, :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_model_parameters`
+       - :ref:`Model inspections <plain_inspect>`
 
    .. py:method:: apsimNGpy.core.apsim.ApsimModel.summarize_numeric(self, data_table: 'Union[str, tuple, list]' = None, columns: 'list' = None, percentiles=(0.25, 0.5, 0.75), round=2) -> 'pd.DataFrame' (inherited)
 
@@ -5925,20 +6068,163 @@ Classes
 
    .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.inspect_file(self, *, cultivar=False, console=True, **kwargs) (inherited)
 
-   Inspect the file by calling ``inspect_model()`` through ``get_model_paths.``
+   Inspects the file by traversing the entire simulation tree, using :meth:`inspect_model` under the hood
+
    This method is important in inspecting the `whole file` and also getting the `scripts paths`.
 
    Parameters
    ----------
    cultivar: (bool)
-      To includes cultivar paths.
+      To include cultivar paths.
 
    console: (bool)
       Prints to the console if True
 
+   Examples
+   -----------
+   .. code-block:: python
+
+      from apsimNGpy.core.apsim import ApsimModel
+      model = ApsimModel('Maize')
+      model.inspect_file(cultivar=False)
+
+   # output
+
+   .. code-block:: python
+
+       ── Simulations: .Simulations
+       ├── DataStore: .Simulations.DataStore
+       └── Simulation: .Simulations.Simulation
+           ├── Clock: .Simulations.Simulation.Clock
+           ├── Field: .Simulations.Simulation.Field
+           │   ├── Fertilise at sowing: .Simulations.Simulation.Field.Fertilise at sowing
+           │   ├── Fertiliser: .Simulations.Simulation.Field.Fertiliser
+           │   ├── Harvest: .Simulations.Simulation.Field.Harvest
+           │   ├── Maize: .Simulations.Simulation.Field.Maize
+           │   ├── Report: .Simulations.Simulation.Field.Report
+           │   ├── Soil: .Simulations.Simulation.Field.Soil
+           │   │   ├── Chemical: .Simulations.Simulation.Field.Soil.Chemical
+           │   │   ├── NH4: .Simulations.Simulation.Field.Soil.NH4
+           │   │   ├── NO3: .Simulations.Simulation.Field.Soil.NO3
+           │   │   ├── Organic: .Simulations.Simulation.Field.Soil.Organic
+           │   │   ├── Physical: .Simulations.Simulation.Field.Soil.Physical
+           │   │   │   └── MaizeSoil: .Simulations.Simulation.Field.Soil.Physical.MaizeSoil
+           │   │   ├── Urea: .Simulations.Simulation.Field.Soil.Urea
+           │   │   └── Water: .Simulations.Simulation.Field.Soil.Water
+           │   ├── Sow using a variable rule: .Simulations.Simulation.Field.Sow using a variable rule
+           │   └── SurfaceOrganicMatter: .Simulations.Simulation.Field.SurfaceOrganicMatter
+           ├── Graph: .Simulations.Simulation.Graph
+           │   └── Series: .Simulations.Simulation.Graph.Series
+           ├── MicroClimate: .Simulations.Simulation.MicroClimate
+           ├── SoilArbitrator: .Simulations.Simulation.SoilArbitrator
+           ├── Summary: .Simulations.Simulation.Summary
+           └── Weather: .Simulations.Simulation.Weather
+
+   Turn cultivar paths on as follows:
+
+   .. code-block:: python
+
+     model.inspect_file(cultivar=True)
+
+   # output
+
+   .. code-block:: python
+
+       └── Simulations: .Simulations
+       ├── DataStore: .Simulations.DataStore
+       └── Simulation: .Simulations.Simulation
+           ├── Clock: .Simulations.Simulation.Clock
+           ├── Field: .Simulations.Simulation.Field
+           │   ├── Fertilise at sowing: .Simulations.Simulation.Field.Fertilise at sowing
+           │   ├── Fertiliser: .Simulations.Simulation.Field.Fertiliser
+           │   ├── Harvest: .Simulations.Simulation.Field.Harvest
+           │   ├── Maize: .Simulations.Simulation.Field.Maize
+           │   │   └── CultivarFolder: .Simulations.Simulation.Field.Maize.CultivarFolder
+           │   │       ├── Atrium: .Simulations.Simulation.Field.Maize.CultivarFolder.Atrium
+           │   │       ├── CG4141: .Simulations.Simulation.Field.Maize.CultivarFolder.CG4141
+           │   │       ├── Dekalb_XL82: .Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82
+           │   │       ├── GH_5009: .Simulations.Simulation.Field.Maize.CultivarFolder.GH_5009
+           │   │       ├── GH_5019WX: .Simulations.Simulation.Field.Maize.CultivarFolder.GH_5019WX
+           │   │       ├── Generic: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic
+           │   │       │   ├── A_100: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_100
+           │   │       │   ├── A_103: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_103
+           │   │       │   ├── A_105: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_105
+           │   │       │   ├── A_108: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_108
+           │   │       │   ├── A_110: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_110
+           │   │       │   ├── A_112: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_112
+           │   │       │   ├── A_115: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_115
+           │   │       │   ├── A_120: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_120
+           │   │       │   ├── A_130: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_130
+           │   │       │   ├── A_80: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_80
+           │   │       │   ├── A_90: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_90
+           │   │       │   ├── A_95: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_95
+           │   │       │   ├── B_100: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_100
+           │   │       │   ├── B_103: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_103
+           │   │       │   ├── B_105: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_105
+           │   │       │   ├── B_108: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_108
+           │   │       │   ├── B_110: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_110
+           │   │       │   ├── B_112: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_112
+           │   │       │   ├── B_115: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_115
+           │   │       │   ├── B_120: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_120
+           │   │       │   ├── B_130: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_130
+           │   │       │   ├── B_80: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_80
+           │   │       │   ├── B_90: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_90
+           │   │       │   ├── B_95: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_95
+           │   │       │   ├── HY_110: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.HY_110
+           │   │       │   ├── LY_110: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.LY_110
+           │   │       │   └── P1197: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.P1197
+           │   │       ├── Hycorn_40: .Simulations.Simulation.Field.Maize.CultivarFolder.Hycorn_40
+           │   │       ├── Hycorn_53: .Simulations.Simulation.Field.Maize.CultivarFolder.Hycorn_53
+           │   │       ├── Katumani: .Simulations.Simulation.Field.Maize.CultivarFolder.Katumani
+           │   │       ├── Laila: .Simulations.Simulation.Field.Maize.CultivarFolder.Laila
+           │   │       ├── Makueni: .Simulations.Simulation.Field.Maize.CultivarFolder.Makueni
+           │   │       ├── Melkassa: .Simulations.Simulation.Field.Maize.CultivarFolder.Melkassa
+           │   │       ├── NSCM_41: .Simulations.Simulation.Field.Maize.CultivarFolder.NSCM_41
+           │   │       ├── Pioneer_3153: .Simulations.Simulation.Field.Maize.CultivarFolder.Pioneer_3153
+           │   │       ├── Pioneer_33M54: .Simulations.Simulation.Field.Maize.CultivarFolder.Pioneer_33M54
+           │   │       ├── Pioneer_34K77: .Simulations.Simulation.Field.Maize.CultivarFolder.Pioneer_34K77
+           │   │       ├── Pioneer_38H20: .Simulations.Simulation.Field.Maize.CultivarFolder.Pioneer_38H20
+           │   │       ├── Pioneer_39G12: .Simulations.Simulation.Field.Maize.CultivarFolder.Pioneer_39G12
+           │   │       ├── Pioneer_39V43: .Simulations.Simulation.Field.Maize.CultivarFolder.Pioneer_39V43
+           │   │       ├── malawi_local: .Simulations.Simulation.Field.Maize.CultivarFolder.malawi_local
+           │   │       ├── mh12: .Simulations.Simulation.Field.Maize.CultivarFolder.mh12
+           │   │       ├── mh16: .Simulations.Simulation.Field.Maize.CultivarFolder.mh16
+           │   │       ├── mh17: .Simulations.Simulation.Field.Maize.CultivarFolder.mh17
+           │   │       ├── mh18: .Simulations.Simulation.Field.Maize.CultivarFolder.mh18
+           │   │       ├── mh19: .Simulations.Simulation.Field.Maize.CultivarFolder.mh19
+           │   │       ├── r201: .Simulations.Simulation.Field.Maize.CultivarFolder.r201
+           │   │       ├── r215: .Simulations.Simulation.Field.Maize.CultivarFolder.r215
+           │   │       ├── sc401: .Simulations.Simulation.Field.Maize.CultivarFolder.sc401
+           │   │       ├── sc501: .Simulations.Simulation.Field.Maize.CultivarFolder.sc501
+           │   │       ├── sc601: .Simulations.Simulation.Field.Maize.CultivarFolder.sc601
+           │   │       ├── sc623: .Simulations.Simulation.Field.Maize.CultivarFolder.sc623
+           │   │       ├── sc625: .Simulations.Simulation.Field.Maize.CultivarFolder.sc625
+           │   │       └── sr52: .Simulations.Simulation.Field.Maize.CultivarFolder.sr52
+           │   ├── Report: .Simulations.Simulation.Field.Report
+           │   ├── Soil: .Simulations.Simulation.Field.Soil
+           │   │   ├── Chemical: .Simulations.Simulation.Field.Soil.Chemical
+           │   │   ├── NH4: .Simulations.Simulation.Field.Soil.NH4
+           │   │   ├── NO3: .Simulations.Simulation.Field.Soil.NO3
+           │   │   ├── Organic: .Simulations.Simulation.Field.Soil.Organic
+           │   │   ├── Physical: .Simulations.Simulation.Field.Soil.Physical
+           │   │   │   └── MaizeSoil: .Simulations.Simulation.Field.Soil.Physical.MaizeSoil
+           │   │   ├── Urea: .Simulations.Simulation.Field.Soil.Urea
+           │   │   └── Water: .Simulations.Simulation.Field.Soil.Water
+           │   ├── Sow using a variable rule: .Simulations.Simulation.Field.Sow using a variable rule
+           │   └── SurfaceOrganicMatter: .Simulations.Simulation.Field.SurfaceOrganicMatter
+           ├── Graph: .Simulations.Simulation.Graph
+           │   └── Series: .Simulations.Simulation.Graph.Series
+           ├── MicroClimate: .Simulations.Simulation.MicroClimate
+           ├── SoilArbitrator: .Simulations.Simulation.SoilArbitrator
+           ├── Summary: .Simulations.Simulation.Summary
+           └── Weather: .Simulations.Simulation.Weather
+
+
+
    .. seealso::
 
-       Related APIs: :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_model`, :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_model_parameters`
+       - Related APIs: :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_model`, :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_model_parameters`
+       - :ref:`Model inspections <plain_inspect>`
 
    .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.summarize_numeric(self, data_table: 'Union[str, tuple, list]' = None, columns: 'list' = None, percentiles=(0.25, 0.5, 0.75), round=2) -> 'pd.DataFrame' (inherited)
 

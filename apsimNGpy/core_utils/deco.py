@@ -64,10 +64,10 @@ def add_outline(cls: Type, include_inherited=True, base_path=None) -> type:
 
     outline = (
         "\n\n"
-         f"List of Documented Attributes:\n"
+         f"List of Public Attributes:\n"
         "__________________________________\n\n"
          f"{props_lines}\n"
-        f"List of Documented Methods\n"
+        f"List of Public Methods\n"
         "-----------------------------\n"
         f"{meths_lines}\n"
     )

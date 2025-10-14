@@ -632,7 +632,7 @@ Classes
 
       Related API: :attr:`results`.
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.run(self, report_name: 'Union[tuple, list, str]' = None, simulations: 'Union[tuple, list]' = None, clean_up: 'bool' = True, verbose: 'bool' = False, **kwargs) -> "'CoreModel'" (inherited)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.run(self, report_name: 'Union[tuple, list, str]' = None, simulations: 'Union[tuple, list]' = None, clean_up: 'bool' = True, verbose: 'bool' = False, timeout: 'int' = 800, **kwargs) -> "'CoreModel'" (inherited)
 
     Run APSIM model simulations to write the results either to SQLite data base or csv file. Does not collect the
      simulated output inot memory. For this purpose. Please see  related APIs: :attr:`results` and :meth:`get_simulated_output`.
@@ -651,6 +651,9 @@ Classes
 
     verbose: bool, optional
         If True, enables verbose output for debugging. The method continues with debugging info anyway if the run was unsuccessful
+
+    timeout: int, defualt is 800 seconds
+          Enforces a timeout and returns a CompletedProcess-like object.
 
     kwargs: **dict
         Additional keyword arguments, e.g., to_csv=True, use this flag to correct results from
@@ -4162,7 +4165,7 @@ Classes
 
       Related API: :attr:`results`.
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.run(self, report_name: 'Union[tuple, list, str]' = None, simulations: 'Union[tuple, list]' = None, clean_up: 'bool' = True, verbose: 'bool' = False, **kwargs) -> "'CoreModel'" (inherited)
+   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.run(self, report_name: 'Union[tuple, list, str]' = None, simulations: 'Union[tuple, list]' = None, clean_up: 'bool' = True, verbose: 'bool' = False, timeout: 'int' = 800, **kwargs) -> "'CoreModel'" (inherited)
 
     Run APSIM model simulations to write the results either to SQLite data base or csv file. Does not collect the
      simulated output inot memory. For this purpose. Please see  related APIs: :attr:`results` and :meth:`get_simulated_output`.
@@ -4181,6 +4184,9 @@ Classes
 
     verbose: bool, optional
         If True, enables verbose output for debugging. The method continues with debugging info anyway if the run was unsuccessful
+
+    timeout: int, defualt is 800 seconds
+          Enforces a timeout and returns a CompletedProcess-like object.
 
     kwargs: **dict
         Additional keyword arguments, e.g., to_csv=True, use this flag to correct results from

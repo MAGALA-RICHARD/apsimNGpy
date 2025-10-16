@@ -181,8 +181,13 @@ class ExperimentManager(ApsimModel):
             # mode.save()
 
         def refresher():
+            replace_ments = ModelTools.find_child(self.Simulations, child_class=Models.Core.Folder,
+                                                  child_name='Replacements')
+
             siM = NodeUtils.Node.Create(Models.Core.Simulations())
             siM.AddChild(Models.Storage.DataStore())
+            if replace_ments:
+                siM.AddChild(replace_ments)
             # create experiment
             experiment = Models.Factorial.Experiment()
             self.experiment_node = experiment

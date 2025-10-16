@@ -1568,8 +1568,13 @@ class CoreModel(PlotManager):
             simulations = [str(i) for i in simulations]
 
         model_type_class = validate_model_obj(model_type)
-
-        for sim in self.find_simulations(simulations):
+        replace_ments = ModelTools.find_child(self.Simulations, child_class='Models.Core.Folder',
+                                              child_name='Replacements')
+        edit_candidate_objects = self.find_simulations(simulations)
+        # TODO add unittest when replacement node is available
+        if replace_ments is not None:
+            edit_candidate_objects.append(replace_ments)
+        for sim in edit_candidate_objects:
             # model_instance = get_or_check_model(sim, model_type_class, model_name, action='get', cacheit=cacheit,
             #                                     cache_size=cache_size)
             if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
@@ -1681,10 +1686,11 @@ class CoreModel(PlotManager):
                         logger.info(f"Edited Cultivar '{model_name}' and saved it as '{new_cultivar_name}'")
 
                 case _:
-                    if not model_instance:
+                    if not model_instance and not replace_ments:
                         raise ValueError(f"{model_name} of class {model_type} was not found or does not exist in the "
                                          f"current simulations")
-                    raise NotImplementedError(f"No edit method implemented for model type {type(model_instance)}")
+                    if not replace_ments and not isinstance(model_type, Models.Core.Folder):
+                        raise NotImplementedError(f"No edit method implemented for model type {type(model_instance)}")
         self.ran_ok = False
         return self
 

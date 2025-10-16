@@ -61,9 +61,11 @@ class ExperimentManager(ApsimModel):
 
             Side Effects:
             ____________
-                Replaces any existing ExperimentManager node with a new configuration.
-                Clones the base simulation and adds it under the experiment.
-                Never mind, though all this edits are made on a cloned model.
+                - Replaces any existing ExperimentManager node with a new configuration.
+                - Clones the base simulation and adds it under the experiment.
+                - Never mind, though all this edits are made on a cloned model.
+                - In the presence of replacements, they are moved or retained directly at the simulations node
+
 
             Examples::
 

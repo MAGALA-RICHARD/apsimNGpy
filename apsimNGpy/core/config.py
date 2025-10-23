@@ -462,16 +462,17 @@ def _load_crop_from_disk(crop: str, out: Union[str, Path], bin_path: Union[str, 
 
     raise FileNotFoundError(
         "Could not find root path for APSIM binaries. "
-        "Try reinstalling APSIM or use set_apsim_bin_path() to set the path to an existing APSIM version."
+        "Try reinstalling APSIM or use :meth:`set_apsim_bin_path` to set the path to an existing APSIM version."
     )
 
 
 def load_crop_from_disk(crop: str, out: Union[str, Path], bin_path=None, cache_path=True):
     """
-    Load a default APSIM crop simulation file from disk by specifying only the crop name.
+    Load a default APSIM crop simulation file from disk by specifying only the crop name. This fucntion can literally
+    load anything that resides under the /Examples directory.
 
-    This function locates and copies an `.apsimx` file associated with the specified crop from the APSIM
-    Examples directory into a working directory. It is useful when programmatically running default
+    Locates and copies an `.apsimx` file associated with the specified crop from the APSIM
+    /Examples directory into a working directory. It is useful when programmatically running default
     simulations for different crops without manually opening them in GUI.
 
     Parameters
@@ -521,9 +522,17 @@ def load_crop_from_disk(crop: str, out: Union[str, Path], bin_path=None, cache_p
 
 def stamp_name_with_version(file_name):
     """
-    we stamp every file name with the version, which allows the user to open it in the appropriate version it was created
-    @param file_name: path to the would be.apsimx file
-    @return: path to the stamped file
+    Stamp every file name with the version, which allows the user to associate the file name with its appropriate
+    version it was created.
+
+    Parameters
+    ------------
+    file_name: str
+          path to the would be.apsimx file.
+
+    Returns
+    -------
+    str path with the apsim version stamp
     """
     version = apsim_version()
     destination = Path(file_name).resolve()

@@ -1876,11 +1876,11 @@ Classes
    RuntimeError
        If the APSIM NG executable cannot be located or the GUI fails to start.
 
-   Notes
-   -----
-   The file opened in the GUI is a *saved copy* of this Python object.
-   Changes made in the GUI are **not** propagated back to this instance unless you set watch =True or to continue
-   in Python with GUI edits, save in APSIM and re-load the file (e.g.
+   .. tip::
+
+       The file opened in the GUI is a *saved copy* of this Python object. Changes made in the GUI
+       are **not propagated** back to :class:`~apsimNGpy.core.apsim.ApsimModel` instance unless you set ``watch =True`` or to continue
+       in Python with GUI edits, save in APSIM and re-load the file (e.g.
 
    .. code-block:: python
 
@@ -1900,7 +1900,7 @@ Classes
 
       model.preview_simulation(watch =True)
 
-   When watch = True, follow instructions in the console, one critical one is that you need to press Ctrl + C to stop watching
+   When watch = True, follow instructions in the console, one critical one is that you need to press ``Ctrl + C`` to stop watching
 
    .. py:method:: apsimNGpy.core.apsim.ApsimModel.change_simulation_dates(self, start_date: 'str' = None, end_date: 'str' = None, simulations: 'Union[tuple, list]' = None) (inherited)
 
@@ -5440,11 +5440,11 @@ Classes
    RuntimeError
        If the APSIM NG executable cannot be located or the GUI fails to start.
 
-   Notes
-   -----
-   The file opened in the GUI is a *saved copy* of this Python object.
-   Changes made in the GUI are **not** propagated back to this instance unless you set watch =True or to continue
-   in Python with GUI edits, save in APSIM and re-load the file (e.g.
+   .. tip::
+
+       The file opened in the GUI is a *saved copy* of this Python object. Changes made in the GUI
+       are **not propagated** back to :class:`~apsimNGpy.core.apsim.ApsimModel` instance unless you set ``watch =True`` or to continue
+       in Python with GUI edits, save in APSIM and re-load the file (e.g.
 
    .. code-block:: python
 
@@ -5464,7 +5464,7 @@ Classes
 
       model.preview_simulation(watch =True)
 
-   When watch = True, follow instructions in the console, one critical one is that you need to press Ctrl + C to stop watching
+   When watch = True, follow instructions in the console, one critical one is that you need to press ``Ctrl + C`` to stop watching
 
    .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.change_simulation_dates(self, start_date: 'str' = None, end_date: 'str' = None, simulations: 'Union[tuple, list]' = None) (inherited)
 

@@ -2827,7 +2827,18 @@ class CoreModel(PlotManager):
 
                model.preview_simulation(watch =True)
 
-            When watch = True, follow instructions in the console, one critical one is that you need to press ``Ctrl + C`` to stop watching
+            .. code-block:: python
+
+                2025-10-24 13:05:08,480 - C:\Users\username/apsimNGpy_sim.log - INFO - Watching for GUI edits... Save in APSIM to sync back.
+                2025-10-24 13:05:08,490 - C:\Users\username/apsimNGpy_sim.log - INFO - Watching for GUI edits. Press Ctrl+C in this cell to stop.
+                APSIM GUI saved. Syncing model...
+                ^C2025-10-24 13:05:24,112 - C:\Users\username/apsimNGpy_sim.log - INFO - watching terminated successfully
+
+            When ``watch = True``, follow instructions in the console, one critical one is that you need to press ``Ctrl + C`` to stop watching
+
+            Depending on the circumstances, you may need to close the GUi file to contine or follow the prompts afterwards
+
+
 
             """
         self.save()
@@ -2850,7 +2861,7 @@ class CoreModel(PlotManager):
 
                 def on_modified(self, event):
                     if event.src_path == self.path:
-                        print("APSIM GUI saved. Syncing model...")
+                        logger.info("APSIM GUI saved. Syncing model...")
                         mi = load_apsim_model(self.model.path)
                         self.model.restart_model(mi)
                         self.model.path = self.path
@@ -2867,6 +2878,7 @@ class CoreModel(PlotManager):
             except KeyboardInterrupt:
                 observer.stop()
             observer.join()
+            logger.info('watching terminated successfully')
 
     def check_gui_edit_changes(self):
         fs = Path(self.path).stat().st_size

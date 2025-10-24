@@ -2827,6 +2827,8 @@ class CoreModel(PlotManager):
 
                model.preview_simulation(watch =True)
 
+            When watch = True, follow instructions in the console, one critical one is that you need to press Ctrl + C to stop watching
+
             """
         self.save()
         open_apsimx_file_in_window(self.path, bin_path=get_apsim_bin_path())

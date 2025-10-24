@@ -2827,7 +2827,7 @@ class CoreModel(PlotManager):
 
                model.preview_simulation(watch =True)
 
-            When watch = True, follow instructions in the console, one critical one is that you need to press Ctrl + C to stop watching
+            When watch = True, follow instructions in the console, one critical one is that you need to press ``Ctrl + C`` to stop watching
 
             """
         self.save()

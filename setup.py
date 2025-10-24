@@ -77,7 +77,8 @@ setup(
         'pymoo == 0.6.1.5',
         'wrapdisc==2.5.0',
         'summarytools>=0.3.0',
-        'tqdm==4.67.1'
+        'tqdm==4.67.1',
+        'watchdog==6.0.0'
 
     ]
 )

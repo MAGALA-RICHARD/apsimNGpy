@@ -2852,7 +2852,6 @@ class CoreModel(PlotManager):
         # record current modification time
         if watch:
             import time
-            last_mtime = os.path.getmtime(self.path)
 
             logger.info("Watching for GUI edits... Save in APSIM to sync back.")
             tp = time.process_time()
@@ -2886,135 +2885,13 @@ class CoreModel(PlotManager):
             observer.join()
             logger.info('watching terminated successfully')
 
-    def check_gui_edit_changes(self):
-        fs = Path(self.path).stat().st_size
+
 
     @staticmethod
     def strip_time(date_string):
         date_object = datetime.datetime.strptime(date_string, "%Y-%m-%d")
         formatted_date_string = date_object.strftime("%Y-%m-%dT%H:%M:%S")
         return formatted_date_string  # Output: 2010-01-01T00:00:00
-
-    def change_simulation_dates(self, start_date: str = None, end_date: str = None,
-                                simulations: Union[tuple, list] = None):
-        """Set simulation dates.
-
-        @deprecated and will be removed in future versions use: :func:`edit_method` isntead
-
-        Parameters
-        -----------------------
-
-        start_date: (str) optional
-            Start date as string, by default ``None``.
-
-        end_date: str (str) optional.
-            End date as string, by default ``None``.
-
-        simulations: (str), optional
-            List of simulation names to update if ``None`` update all simulations.
-
-        .. note::
-
-             one of the ``start_date`` or ``end_date`` parameters should at least not be None
-
-        raises assertion error if all dates are None
-
-        ``return``: ``None``
-
-        Examples::
-
-
-            >>> from apsimNGpy.core.base_data import load_default_simulations
-            >>> model = load_default_simulations(crop='maize')
-            >>> model.change_simulation_dates(start_date='2021-01-01', end_date='2021-01-12')
-            >>> changed_dates = model.extract_dates #check if it was successful
-            >>> print(changed_dates)
-               {'Simulation': {'start': datetime.date(2021, 1, 1),
-                'end': datetime.date(2021, 1, 12)}}
-
-            .. tip::
-
-                It is possible to target a specific simulation by specifying simulation name for this case the name is Simulations, so, it could appear as follows
-                 model.change_simulation_dates(start_date='2021-01-01', end_date='2021-01-12', simulation = 'Simulation')
-
-        """
-        old_method(old_method='change_simulation_dates', new_method='edit_model')
-        check = start_date or end_date
-        assert check is not None, "One of the start_date or end_date parameters should not be None"
-        for sim in self.find_simulations(simulations):
-            clock = sim.FindChild[Models.Clock]()
-
-            if start_date is not None:
-                dateString1 = start_date
-                self.start = DateTime.Parse(dateString1)
-                clock.Start = self.start
-
-            if end_date is not None:
-                dateString2 = end_date
-                self.end = DateTime.Parse(dateString2)
-                clock.End = self.end
-
-    @property
-    def extract_dates(self, simulations=None):
-
-        """Get simulation dates in the model.
-
-        @deprecated
-
-        Parameters
-        ----------
-        ``simulations``, optional
-            List of simulation names to get, if ``None`` get all simulations.
-
-        ``Returns``
-            ``Dictionary`` of simulation names with dates
-        # Example
-
-            >>> from apsimNGpy.core.base_data import load_default_simulations
-            >>> model = load_default_simulations(crop='maize')
-            >>> changed_dates = model.extract_dates
-            >>> print(changed_dates)
-
-               {'Simulation': {'start': datetime.date(2021, 1, 1),
-                'end': datetime.date(2021, 1, 12)}}
-
-            .. note::
-
-                It is possible to target a specific simulation by specifying simulation name for this case the name is Simulations,
-                 so, it could appear as follows;
-
-             >>>model.change_simulation_dates(start_date='2021-01-01', end_date='2021-01-12', simulation = 'Simulation')
-
-        """
-        dates = {}
-        for sim in self.find_simulations(simulations):
-            clock = sim.FindChild[Models.Clock]()
-            st = clock.Start
-            et = clock.End
-            dates[sim.Name] = {}
-            dates[sim.Name]["start"] = datetime.date(st.Year, st.Month, st.Day)
-            dates[sim.Name]["end"] = datetime.date(et.Year, et.Month, et.Day)
-        return dates
-
-    def extract_start_end_years(self, simulations: str = None):
-        """Get simulation dates. deprecated
-
-        Parameters
-        ----------
-        ``simulations``: (str) optional
-            List of simulation names to use if `None` get all simulations.
-
-        ``Returns``
-            Dictionary of simulation names with dates.
-
-        """
-        old_method(old_method='extract_start_end_years', new_method='edit_model')
-        dates = {}
-        for sim in self.find_simulations(simulations):
-            clock = sim.FindChild[Models.Clock]()
-            start = clock.Start
-            end = clock.End
-        return start.Year, end.Year
 
     def replace_met_file(self, *, weather_file: Union[Path, str], simulations=MissingOption, **kwargs) -> "Self":
         """

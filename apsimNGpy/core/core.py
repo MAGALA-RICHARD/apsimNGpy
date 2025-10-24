@@ -45,6 +45,7 @@ from apsimNGpy.core.model_tools import find_child
 import Models
 from apsimNGpy.core.pythonet_config import get_apsim_version as apsim_version
 from apsimNGpy.core_utils.deco import add_outline
+
 # constants
 IS_NEW_MODEL = is_file_format_modified()
 APSIM_VERSION_NO = apsim_version(release_number=True)
@@ -60,7 +61,6 @@ def compile_script(script_code: str, code_model):
 
 
 @dataclass(slots=True, repr=False, order=True)
-
 class CoreModel(PlotManager):
     """
     Modify and run APSIM Next Generation (APSIM NG) simulation models.
@@ -496,8 +496,8 @@ class CoreModel(PlotManager):
         if _reports:
             if self.ran_ok:
                 # lazy generator (adds a column with the report name)
-                if axis ==0:
-                   data = (read_db_table(_db_path, rep).assign(source_table=rep) for rep in reports)
+                if axis == 0:
+                    data = (read_db_table(_db_path, rep).assign(source_table=rep) for rep in reports)
                 else:
                     data = (read_db_table(_db_path, rep) for rep in reports)
 
@@ -699,7 +699,7 @@ class CoreModel(PlotManager):
                 self.model_info.path,
                 verbose=verbose,
                 to_csv=kwargs.get('to_csv', False),
-                timeout = timeout
+                timeout=timeout
             )
 
             if res.returncode == 0:
@@ -926,7 +926,7 @@ class CoreModel(PlotManager):
 
         # Add the cloned model to the new parent
         model_clone = self.find_model(model_type)
-        mod = getattr(clone,"Model", clone)
+        mod = getattr(clone, "Model", clone)
         clone = CastHelper.CastAs[model_clone](mod)
         # Assign a new name to the cloned model
         new_name = rename if rename else f"{clone.Name}_clone"
@@ -1873,7 +1873,6 @@ class CoreModel(PlotManager):
 
         return self
 
-
     def remove_model(self, model_type: Models, model_name: str = None):
         """
        Removes a model from the APSIM Models.Simulations namespace.
@@ -2778,7 +2777,7 @@ class CoreModel(PlotManager):
         return self
 
     # immediately open the file in GUI
-    def preview_simulation(self, edit=False):
+    def preview_simulation(self, watch=False):
 
         """
             Open the current simulation in the APSIM Next Gen GUI.
@@ -2812,8 +2811,44 @@ class CoreModel(PlotManager):
             """
         self.save()
         open_apsimx_file_in_window(self.path, bin_path=get_apsim_bin_path())
-        if edit:
-            self.save()
+        # record current modification time
+        if watch:
+            import time
+            last_mtime = os.path.getmtime(self.path)
+
+            logger.info("Watching for GUI edits... Save in APSIM to sync back.")
+            tp = time.process_time()
+            from watchdog.observers import Observer
+            from watchdog.events import FileSystemEventHandler
+            import time
+            # being tested
+            class APSIMFileHandler(FileSystemEventHandler):
+                def __init__(self, model, path):
+                    self.model = model
+                    self.path = path
+
+                def on_modified(self, event):
+                    if event.src_path == self.path:
+                        print("APSIM GUI saved. Syncing model...")
+                        mi = load_apsim_model(self.model.path)
+                        self.model.restart_model(mi)
+                        self.model.path = self.path
+
+            handler = APSIMFileHandler(self, self.path)
+            observer = Observer()
+            observer.schedule(handler, path=os.path.dirname(self.path), recursive=False)
+            observer.start()
+
+            logger.info("Watching for GUI edits. Press Ctrl+C in this cell to stop.")
+            try:
+                while True:
+                    time.sleep(1)
+            except KeyboardInterrupt:
+                observer.stop()
+            observer.join()
+
+    def check_gui_edit_changes(self):
+        fs = Path(self.path).stat().st_size
 
     @staticmethod
     def strip_time(date_string):

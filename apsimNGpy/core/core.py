@@ -2819,11 +2819,24 @@ class CoreModel(PlotManager):
 
         Examples
         --------
+        Initializing an APSIM Next model
+
+        .. code-block:: python
+
+            from apsimNGpy.core.apsim import ApsimModel
+            model = ApsimModel("Maize", out_path= 'tesit_.apsimx')
+
         Preview only:
 
         .. code-block:: python
 
             model.preview_simulation()
+
+        .. image:: ../images/gui.png
+        :alt: Tree structure of the APSIM model
+        :align: center
+        :width: 98%
+        :name: gui_tree_structure_model
 
         Preview and edit at the same time:
 
@@ -2835,8 +2848,10 @@ class CoreModel(PlotManager):
 
         .. code-block:: none
 
-            2025-10-24 13:05:08,480 - C:/Users/username/apsimNGpy_sim.log - INFO - Watching for GUI edits... Save in APSIM to sync back.
-            2025-10-24 13:05:08,490 - C:/Users/username/apsimNGpy_sim.log - INFO - Watching for GUI edits. Press Ctrl+C in this cell to stop.
+            2025-10-24 13:05:08,480 - C:/Users/username/apsimNGpy_sim.log - INFO - Watching for
+            GUI edits... Save in APSIM to sync back.
+            2025-10-24 13:05:08,490 - C:/Users/username/apsimNGpy_sim.log - INFO - Watching for
+             GUI edits. Press Ctrl+C in this cell to stop.
             APSIM GUI saved. Syncing model...
             2025-10-24 13:05:24,112 - C:/Users/username/apsimNGpy_sim.log - INFO - Watching terminated successfully.
 
@@ -2845,6 +2860,7 @@ class CoreModel(PlotManager):
 
         Depending on your environment, you may need to close the GUI window to continue
         or follow the prompts shown after termination.
+
         """
 
         self.save()

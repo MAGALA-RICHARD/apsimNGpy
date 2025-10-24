@@ -1897,8 +1897,8 @@ Classes
        from apsimNGpy.core.apsim import ApsimModel
        model = ApsimModel("Maize", out_path= 'tesit_.apsimx')
 
-   Preview only:
-
+   1. Preview only:
+   -----------------
    .. code-block:: python
 
        model.preview_simulation()
@@ -1909,7 +1909,8 @@ Classes
        :width: 98%
        :name: gui_tree_structure_model
 
-   Preview and edit at the same time.
+   2. Preview and edit at the same time.
+   -------------------------------------
    Here, I changed the `planting population`, `cultivar to be sown`, `row Spacing` in the **Sow using variable rule script**,
    and finally checked whether the change was successful by inspecting the model.
 
@@ -1917,7 +1918,7 @@ Classes
 
        model.preview_simulation(watch=True)
 
-   .. image:: ../images/gui.png
+   .. image:: ../images/gui_watch_changes.png
        :alt: Tree structure of the APSIM model
        :align: center
        :width: 98%
@@ -1934,8 +1935,28 @@ Classes
        APSIM GUI saved. Syncing model...
        2025-10-24 13:05:24,112 - C:/Users/username/apsimNGpy_sim.log - INFO - Watching terminated successfully.
 
-   When ``watch=True``, follow the instructions printed in the console. One critical
-   step is that you MUST press ``Ctrl+C`` to stop watching.
+    When ``watch=True``, follow the instructions printed in the console. One critical
+    step is that you MUST press ``Ctrl+C`` to stop watching.
+
+    Check if the changes above were successfully propagated back to the model instance.
+
+    .. code-block:: python
+
+       model.inspect_model_parameters('Models.Manager', 'Sow using a variable rule')
+
+    .. code-block:: bash
+
+         {'Crop': '[Maize]',
+        'StartDate': '1-nov',
+        'EndDate': '10-jan',
+        'MinESW': '100',
+        'MinRain': '25',
+        'RainDays': '7',
+        'CultivarName': 'B_95',
+        'SowingDepth': '25',
+        'RowSpacing': '700',
+        'Population': '4'}
+
 
    Depending on your environment, you may need to close the GUI window to continue
    or follow the prompts shown after termination.
@@ -5415,8 +5436,8 @@ Classes
        from apsimNGpy.core.apsim import ApsimModel
        model = ApsimModel("Maize", out_path= 'tesit_.apsimx')
 
-   Preview only:
-
+   1. Preview only:
+   -----------------
    .. code-block:: python
 
        model.preview_simulation()
@@ -5427,7 +5448,8 @@ Classes
        :width: 98%
        :name: gui_tree_structure_model
 
-   Preview and edit at the same time.
+   2. Preview and edit at the same time.
+   -------------------------------------
    Here, I changed the `planting population`, `cultivar to be sown`, `row Spacing` in the **Sow using variable rule script**,
    and finally checked whether the change was successful by inspecting the model.
 
@@ -5435,7 +5457,7 @@ Classes
 
        model.preview_simulation(watch=True)
 
-   .. image:: ../images/gui.png
+   .. image:: ../images/gui_watch_changes.png
        :alt: Tree structure of the APSIM model
        :align: center
        :width: 98%
@@ -5452,8 +5474,28 @@ Classes
        APSIM GUI saved. Syncing model...
        2025-10-24 13:05:24,112 - C:/Users/username/apsimNGpy_sim.log - INFO - Watching terminated successfully.
 
-   When ``watch=True``, follow the instructions printed in the console. One critical
-   step is that you MUST press ``Ctrl+C`` to stop watching.
+    When ``watch=True``, follow the instructions printed in the console. One critical
+    step is that you MUST press ``Ctrl+C`` to stop watching.
+
+    Check if the changes above were successfully propagated back to the model instance.
+
+    .. code-block:: python
+
+       model.inspect_model_parameters('Models.Manager', 'Sow using a variable rule')
+
+    .. code-block:: bash
+
+         {'Crop': '[Maize]',
+        'StartDate': '1-nov',
+        'EndDate': '10-jan',
+        'MinESW': '100',
+        'MinRain': '25',
+        'RainDays': '7',
+        'CultivarName': 'B_95',
+        'SowingDepth': '25',
+        'RowSpacing': '700',
+        'Population': '4'}
+
 
    Depending on your environment, you may need to close the GUI window to continue
    or follow the prompts shown after termination.

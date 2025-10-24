@@ -2840,8 +2840,10 @@ class CoreModel(PlotManager):
 
         2. Preview and edit at the same time.
         -------------------------------------
-        Here, I changed the `planting population`, `cultivar to be sown`, `row Spacing` in the **Sow using variable rule script**,
-        and finally checked whether the change was successful by inspecting the model.
+
+        Here, After opening the apsimx file in the GUI, I changed the **planting population**,
+        **cultivar to be sown**, **row Spacing** in the **Sow using a variable rule** script.
+        Finally, I checked the model to see whether the changes were successful by inspecting the model.
 
         .. code-block:: python
 

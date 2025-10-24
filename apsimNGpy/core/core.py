@@ -2806,13 +2806,27 @@ class CoreModel(PlotManager):
             Notes
             -----
             The file opened in the GUI is a *saved copy* of this Python object.
-            Changes made in the GUI are **not** propagated back to this instance. To continue
-            in Python with GUI edits, save in APSIM and re-load the file (e.g.,
-            ``ApsimModel('gui_edited_file_path)').
+            Changes made in the GUI are **not** propagated back to this instance unless you set watch =True or to continue
+            in Python with GUI edits, save in APSIM and re-load the file (e.g.
+
+            .. code-block:: python
+
+                ApsimModel('gui_edited_file_path.apsimx')
 
             Examples
             --------
-            >>> model.preview_simulation()
+            Preview only
+
+            .. code-block:: python
+
+                model.preview_simulation()
+
+            Preview and edit at the same time
+
+            .. code-block:: python
+
+               model.preview_simulation(watch =True)
+
             """
         self.save()
         open_apsimx_file_in_window(self.path, bin_path=get_apsim_bin_path())

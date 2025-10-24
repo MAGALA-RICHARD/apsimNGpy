@@ -2803,11 +2803,11 @@ class CoreModel(PlotManager):
             RuntimeError
                 If the APSIM NG executable cannot be located or the GUI fails to start.
 
-            Notes
-            -----
-            The file opened in the GUI is a *saved copy* of this Python object.
-            Changes made in the GUI are **not** propagated back to this instance unless you set watch =True or to continue
-            in Python with GUI edits, save in APSIM and re-load the file (e.g.
+            .. tip::
+
+                The file opened in the GUI is a *saved copy* of this Python object. Changes made in the GUI
+                are **not propagated** back to :class:`ApsimModel` instance unless you set ``watch =True`` or to continue
+                in Python with GUI edits, save in APSIM and re-load the file (e.g.
 
             .. code-block:: python
 

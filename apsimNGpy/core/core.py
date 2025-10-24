@@ -2864,13 +2864,16 @@ class CoreModel(PlotManager):
             APSIM GUI saved. Syncing model...
             2025-10-24 13:05:24,112 - C:/Users/username/apsimNGpy_sim.log - INFO - Watching terminated successfully.
 
-        Check if the changes above were successfully propagated back to the model instance.
+         When ``watch=True``, follow the instructions printed in the console. One critical
+         step is that you MUST press ``Ctrl+C`` to stop watching.
 
-        .. code-block:: python
+         Check if the changes above were successfully propagated back to the model instance.
+
+         .. code-block:: python
 
             model.inspect_model_parameters('Models.Manager', 'Sow using a variable rule')
 
-        .. code-block:: bash
+         .. code-block:: bash
 
               {'Crop': '[Maize]',
              'StartDate': '1-nov',
@@ -2883,9 +2886,6 @@ class CoreModel(PlotManager):
              'RowSpacing': '700',
              'Population': '4'}
 
-
-        When ``watch=True``, follow the instructions printed in the console. One critical
-        step is that you MUST press ``Ctrl+C`` to stop watching.
 
         Depending on your environment, you may need to close the GUI window to continue
         or follow the prompts shown after termination.

@@ -1851,13 +1851,18 @@ Classes
        This method does not perform `validation` on the provided `management` dictionary beyond checking for key
        existence. - If the specified management script or parameters do not exist, they will be ignored.
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.preview_simulation(self) (inherited)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.preview_simulation(self, watch=False) (inherited)
 
    Open the current simulation in the APSIM Next Gen GUI.
 
    This first saves the in-memory simulation to ``self.path`` and then launches
    the APSIM NG GUI (via: func:`get_apsim_bin_path`) so you can inspect the model
    tree and make quick edits side-by-side.
+
+   parameters
+   -----------
+   watch: bool, default is False
+       Allows python to listen to your GUI edits and update them in the model instance instantenously. This is a new addition
 
    Returns
    -------
@@ -5395,13 +5400,18 @@ Classes
        This method does not perform `validation` on the provided `management` dictionary beyond checking for key
        existence. - If the specified management script or parameters do not exist, they will be ignored.
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.preview_simulation(self) (inherited)
+   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.preview_simulation(self, watch=False) (inherited)
 
    Open the current simulation in the APSIM Next Gen GUI.
 
    This first saves the in-memory simulation to ``self.path`` and then launches
    the APSIM NG GUI (via: func:`get_apsim_bin_path`) so you can inspect the model
    tree and make quick edits side-by-side.
+
+   parameters
+   -----------
+   watch: bool, default is False
+       Allows python to listen to your GUI edits and update them in the model instance instantenously. This is a new addition
 
    Returns
    -------

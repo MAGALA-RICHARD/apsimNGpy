@@ -2778,7 +2778,7 @@ class CoreModel(PlotManager):
         return self
 
     # immediately open the file in GUI
-    def preview_simulation(self):
+    def preview_simulation(self, edit=False):
 
         """
             Open the current simulation in the APSIM Next Gen GUI.
@@ -2812,6 +2812,8 @@ class CoreModel(PlotManager):
             """
         self.save()
         open_apsimx_file_in_window(self.path, bin_path=get_apsim_bin_path())
+        if edit:
+            self.save()
 
     @staticmethod
     def strip_time(date_string):

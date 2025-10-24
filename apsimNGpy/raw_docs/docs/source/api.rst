@@ -1890,24 +1890,47 @@ Classes
 
    Examples
    --------
+   Initializing an APSIM Next model
+
+   .. code-block:: python
+
+       from apsimNGpy.core.apsim import ApsimModel
+       model = ApsimModel("Maize", out_path= 'tesit_.apsimx')
+
    Preview only:
 
    .. code-block:: python
 
        model.preview_simulation()
 
-   Preview and edit at the same time:
+   .. image:: ../images/gui.png
+       :alt: Tree structure of the APSIM model
+       :align: center
+       :width: 98%
+       :name: gui_tree_structure_model
+
+   Preview and edit at the same time.
+   Here, I changed the `planting population`, `cultivar to be sown`, `row Spacing` in the **Sow using variable rule script**,
+   and finally checked whether the change was successful by inspecting the model.
 
    .. code-block:: python
 
        model.preview_simulation(watch=True)
 
+   .. image:: ../images/gui.png
+       :alt: Tree structure of the APSIM model
+       :align: center
+       :width: 98%
+       :name: gui_tree_structure_model_watch
+
    Example console output when watch=True:
 
    .. code-block:: none
 
-       2025-10-24 13:05:08,480 - C:/Users/username/apsimNGpy_sim.log - INFO - Watching for GUI edits... Save in APSIM to sync back.
-       2025-10-24 13:05:08,490 - C:/Users/username/apsimNGpy_sim.log - INFO - Watching for GUI edits. Press Ctrl+C in this cell to stop.
+       2025-10-24 13:05:08,480 - C:/Users/username/apsimNGpy_sim.log - INFO - Watching for
+       GUI edits... Save in APSIM to sync back.
+       2025-10-24 13:05:08,490 - C:/Users/username/apsimNGpy_sim.log - INFO - Watching for
+        GUI edits. Press Ctrl+C in this cell to stop.
        APSIM GUI saved. Syncing model...
        2025-10-24 13:05:24,112 - C:/Users/username/apsimNGpy_sim.log - INFO - Watching terminated successfully.
 
@@ -5385,24 +5408,47 @@ Classes
 
    Examples
    --------
+   Initializing an APSIM Next model
+
+   .. code-block:: python
+
+       from apsimNGpy.core.apsim import ApsimModel
+       model = ApsimModel("Maize", out_path= 'tesit_.apsimx')
+
    Preview only:
 
    .. code-block:: python
 
        model.preview_simulation()
 
-   Preview and edit at the same time:
+   .. image:: ../images/gui.png
+       :alt: Tree structure of the APSIM model
+       :align: center
+       :width: 98%
+       :name: gui_tree_structure_model
+
+   Preview and edit at the same time.
+   Here, I changed the `planting population`, `cultivar to be sown`, `row Spacing` in the **Sow using variable rule script**,
+   and finally checked whether the change was successful by inspecting the model.
 
    .. code-block:: python
 
        model.preview_simulation(watch=True)
 
+   .. image:: ../images/gui.png
+       :alt: Tree structure of the APSIM model
+       :align: center
+       :width: 98%
+       :name: gui_tree_structure_model_watch
+
    Example console output when watch=True:
 
    .. code-block:: none
 
-       2025-10-24 13:05:08,480 - C:/Users/username/apsimNGpy_sim.log - INFO - Watching for GUI edits... Save in APSIM to sync back.
-       2025-10-24 13:05:08,490 - C:/Users/username/apsimNGpy_sim.log - INFO - Watching for GUI edits. Press Ctrl+C in this cell to stop.
+       2025-10-24 13:05:08,480 - C:/Users/username/apsimNGpy_sim.log - INFO - Watching for
+       GUI edits... Save in APSIM to sync back.
+       2025-10-24 13:05:08,490 - C:/Users/username/apsimNGpy_sim.log - INFO - Watching for
+        GUI edits. Press Ctrl+C in this cell to stop.
        APSIM GUI saved. Syncing model...
        2025-10-24 13:05:24,112 - C:/Users/username/apsimNGpy_sim.log - INFO - Watching terminated successfully.
 

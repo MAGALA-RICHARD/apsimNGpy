@@ -2833,16 +2833,24 @@ class CoreModel(PlotManager):
             model.preview_simulation()
 
         .. image:: ../images/gui.png
-        :alt: Tree structure of the APSIM model
-        :align: center
-        :width: 98%
-        :name: gui_tree_structure_model
+            :alt: Tree structure of the APSIM model
+            :align: center
+            :width: 98%
+            :name: gui_tree_structure_model
 
-        Preview and edit at the same time:
+        Preview and edit at the same time.
+        Here, I changed the `planting population`, `cultivar to be sown`, `row Spacing` in the **Sow using variable rule script**,
+        and finally checked whether the change was successful by inspecting the model.
 
         .. code-block:: python
 
             model.preview_simulation(watch=True)
+
+        .. image:: ../images/gui.png
+            :alt: Tree structure of the APSIM model
+            :align: center
+            :width: 98%
+            :name: gui_tree_structure_model_watch
 
         Example console output when watch=True:
 

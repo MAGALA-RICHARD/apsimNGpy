@@ -2786,6 +2786,11 @@ class CoreModel(PlotManager):
             the APSIM NG GUI (via: func:`get_apsim_bin_path`) so you can inspect the model
             tree and make quick edits side-by-side.
 
+            parameters
+            -----------
+            watch: bool, default is False
+                Allows python to listen to your GUI edits and update them in the model instance instantenously. This is a new addition
+
             Returns
             -------
             None

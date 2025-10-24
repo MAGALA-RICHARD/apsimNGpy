@@ -2852,13 +2852,10 @@ class CoreModel(PlotManager):
         # record current modification time
         if watch:
             import time
-
-            logger.info("Watching for GUI edits... Save in APSIM to sync back.")
-            tp = time.process_time()
             from watchdog.observers import Observer
             from watchdog.events import FileSystemEventHandler
             import time
-            # being tested
+            # being tested but so far very cool
             class APSIMFileHandler(FileSystemEventHandler):
                 def __init__(self, model, path):
                     self.model = model

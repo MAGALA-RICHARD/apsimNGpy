@@ -1853,54 +1853,49 @@ Classes
    Open the current simulation in the APSIM Next Gen GUI.
 
    This first saves the in-memory simulation to ``out_path`` and then launches
-   the APSIM Next Gen GUI (via :func:`get_apsim_bin_path`) so you can inspect the
-   model tree and make quick edits side by side.
+   the APSIM Next Gen GUI (via :func:`get_apsim_bin_path`) so you can inspect
+   the model tree and make quick edits side by side.
 
    Parameters
    ----------
    watch : bool, default False
-       If True, Python will listen for your GUI edits and sync them back into the
-       model instance in (near) real time. This is experimental.
+       If True, Python will listen for GUI edits and sync them back into the
+       model instance in (near) real time. This feature is experimental.
 
    Returns
    -------
    None
-       This function is for its side effect (opening the GUI); it does not return
-       a value.
+       This function performs a side effect (opening the GUI) and does not
+       return a value.
 
    Raises
    ------
    FileNotFoundError
        If the file does not exist after ``save()``.
    RuntimeError
-       If the APSIM Next Gen executable cannot be located or the GUI fails to
-       start.
+       If the APSIM Next Gen executable cannot be located or the GUI fails to start.
 
    .. tip::
 
-       The file opened in the GUI is a saved copy of this Python object. Changes
-       made in the GUI are NOT propagated back to the
-       :class:`~apsimNGpy.core.apsim.ApsimModel` instance unless you set
-       ``watch=True``. Otherwise, to continue in Python with GUI edits, save in
-       APSIM and re-load the file, e.g.:
+      The file opened in the GUI is a *saved copy* of this Python object.
+      Changes made in the GUI are **not** propagated back to the
+      :class:`~apsimNGpy.core.apsim.ApsimModel` instance unless you set
+      ``watch=True``.
+      Otherwise, to continue working in Python with GUI edits, save the file in APSIM
+      and re-load it, for example:
 
-       .. code-block:: python
+      .. code-block:: python
 
-           ApsimModel("gui_edited_file_path.apsimx")
+         ApsimModel("gui_edited_file_path.apsimx")
 
    Examples
    --------
-   Initializing an APSIM Next model
+   **1. Preview only**
 
    .. code-block:: python
 
        from apsimNGpy.core.apsim import ApsimModel
-       model = ApsimModel("Maize", out_path= 'tesit_.apsimx')
-
-   1. Preview only:
-   -----------------
-   .. code-block:: python
-
+       model = ApsimModel("Maize", out_path="test_.apsimx")
        model.preview_simulation()
 
    .. image:: ../images/gui.png
@@ -1909,46 +1904,45 @@ Classes
        :width: 98%
        :name: gui_tree_structure_model
 
-   2. Preview and edit at the same time.
-   -------------------------------------
+   **2. Preview and edit simultaneously**
 
-   Here, After opening the apsimx file in the GUI, I changed the **planting population**,
-   **cultivar to be sown**, **row Spacing** in the **Sow using a variable rule** script.
-   Finally, I checked the model to see whether the changes were successful by inspecting the model.
+   After opening the APSIMX file in the GUI, you can modify parameters such as
+   **Plant population (/m²)**, **Cultivar to be sown**, and **Row spacing (mm)**
+   in the *Sow using a variable rule* script.
+   Finally, check whether the change was successful by inspecting the model.
 
    .. code-block:: python
 
        model.preview_simulation(watch=True)
 
    .. image:: ../images/gui_watch_changes.png
-       :alt: Tree structure of the APSIM model
+       :alt: Tree structure of the APSIM model (watch mode)
        :align: center
        :width: 98%
        :name: gui_tree_structure_model_watch
 
-   Example console output when watch=True:
+   **Example console output when** ``watch=True``:
 
    .. code-block:: none
 
-       2025-10-24 13:05:08,480 - C:/Users/username/apsimNGpy_sim.log - INFO - Watching for
-       GUI edits... Save in APSIM to sync back.
-       2025-10-24 13:05:08,490 - C:/Users/username/apsimNGpy_sim.log - INFO - Watching for
-        GUI edits. Press Ctrl+C in this cell to stop.
+       2025-10-24 13:05:08,480 - INFO - Watching for GUI edits...
+       Save in APSIM to sync back.
+       2025-10-24 13:05:08,490 - INFO - Press Ctrl+C in this cell to stop.
        APSIM GUI saved. Syncing model...
-       2025-10-24 13:05:24,112 - C:/Users/username/apsimNGpy_sim.log - INFO - Watching terminated successfully.
+       2025-10-24 13:05:24,112 - INFO - Watching terminated successfully.
 
-    When ``watch=True``, follow the instructions printed in the console. One critical
-    step is that you MUST press ``Ctrl+C`` to stop watching.
+   When ``watch=True``, follow the console instructions.
+   One critical step is that you **must press** ``Ctrl+C`` to stop watching.
 
-    Check if the changes above were successfully propagated back to the model instance.
+   **Checking if changes were successfully propagated back**
 
    .. code-block:: python
 
-          model.inspect_model_parameters('Models.Manager', 'Sow using a variable rule')
+       model.inspect_model_parameters("Models.Manager", "Sow using a variable rule")
 
-   .. code-block:: bash
+   .. code-block:: none
 
-         {'Crop': '[Maize]',
+       {'Crop': '[Maize]',
         'StartDate': '1-nov',
         'EndDate': '10-jan',
         'MinESW': '100',
@@ -1958,7 +1952,6 @@ Classes
         'SowingDepth': '25',
         'RowSpacing': '700',
         'Population': '4'}
-
 
    Depending on your environment, you may need to close the GUI window to continue
    or follow the prompts shown after termination.
@@ -5394,54 +5387,49 @@ Classes
    Open the current simulation in the APSIM Next Gen GUI.
 
    This first saves the in-memory simulation to ``out_path`` and then launches
-   the APSIM Next Gen GUI (via :func:`get_apsim_bin_path`) so you can inspect the
-   model tree and make quick edits side by side.
+   the APSIM Next Gen GUI (via :func:`get_apsim_bin_path`) so you can inspect
+   the model tree and make quick edits side by side.
 
    Parameters
    ----------
    watch : bool, default False
-       If True, Python will listen for your GUI edits and sync them back into the
-       model instance in (near) real time. This is experimental.
+       If True, Python will listen for GUI edits and sync them back into the
+       model instance in (near) real time. This feature is experimental.
 
    Returns
    -------
    None
-       This function is for its side effect (opening the GUI); it does not return
-       a value.
+       This function performs a side effect (opening the GUI) and does not
+       return a value.
 
    Raises
    ------
    FileNotFoundError
        If the file does not exist after ``save()``.
    RuntimeError
-       If the APSIM Next Gen executable cannot be located or the GUI fails to
-       start.
+       If the APSIM Next Gen executable cannot be located or the GUI fails to start.
 
    .. tip::
 
-       The file opened in the GUI is a saved copy of this Python object. Changes
-       made in the GUI are NOT propagated back to the
-       :class:`~apsimNGpy.core.apsim.ApsimModel` instance unless you set
-       ``watch=True``. Otherwise, to continue in Python with GUI edits, save in
-       APSIM and re-load the file, e.g.:
+      The file opened in the GUI is a *saved copy* of this Python object.
+      Changes made in the GUI are **not** propagated back to the
+      :class:`~apsimNGpy.core.apsim.ApsimModel` instance unless you set
+      ``watch=True``.
+      Otherwise, to continue working in Python with GUI edits, save the file in APSIM
+      and re-load it, for example:
 
-       .. code-block:: python
+      .. code-block:: python
 
-           ApsimModel("gui_edited_file_path.apsimx")
+         ApsimModel("gui_edited_file_path.apsimx")
 
    Examples
    --------
-   Initializing an APSIM Next model
+   **1. Preview only**
 
    .. code-block:: python
 
        from apsimNGpy.core.apsim import ApsimModel
-       model = ApsimModel("Maize", out_path= 'tesit_.apsimx')
-
-   1. Preview only:
-   -----------------
-   .. code-block:: python
-
+       model = ApsimModel("Maize", out_path="test_.apsimx")
        model.preview_simulation()
 
    .. image:: ../images/gui.png
@@ -5450,46 +5438,45 @@ Classes
        :width: 98%
        :name: gui_tree_structure_model
 
-   2. Preview and edit at the same time.
-   -------------------------------------
+   **2. Preview and edit simultaneously**
 
-   Here, After opening the apsimx file in the GUI, I changed the **planting population**,
-   **cultivar to be sown**, **row Spacing** in the **Sow using a variable rule** script.
-   Finally, I checked the model to see whether the changes were successful by inspecting the model.
+   After opening the APSIMX file in the GUI, you can modify parameters such as
+   **Plant population (/m²)**, **Cultivar to be sown**, and **Row spacing (mm)**
+   in the *Sow using a variable rule* script.
+   Finally, check whether the change was successful by inspecting the model.
 
    .. code-block:: python
 
        model.preview_simulation(watch=True)
 
    .. image:: ../images/gui_watch_changes.png
-       :alt: Tree structure of the APSIM model
+       :alt: Tree structure of the APSIM model (watch mode)
        :align: center
        :width: 98%
        :name: gui_tree_structure_model_watch
 
-   Example console output when watch=True:
+   **Example console output when** ``watch=True``:
 
    .. code-block:: none
 
-       2025-10-24 13:05:08,480 - C:/Users/username/apsimNGpy_sim.log - INFO - Watching for
-       GUI edits... Save in APSIM to sync back.
-       2025-10-24 13:05:08,490 - C:/Users/username/apsimNGpy_sim.log - INFO - Watching for
-        GUI edits. Press Ctrl+C in this cell to stop.
+       2025-10-24 13:05:08,480 - INFO - Watching for GUI edits...
+       Save in APSIM to sync back.
+       2025-10-24 13:05:08,490 - INFO - Press Ctrl+C in this cell to stop.
        APSIM GUI saved. Syncing model...
-       2025-10-24 13:05:24,112 - C:/Users/username/apsimNGpy_sim.log - INFO - Watching terminated successfully.
+       2025-10-24 13:05:24,112 - INFO - Watching terminated successfully.
 
-    When ``watch=True``, follow the instructions printed in the console. One critical
-    step is that you MUST press ``Ctrl+C`` to stop watching.
+   When ``watch=True``, follow the console instructions.
+   One critical step is that you **must press** ``Ctrl+C`` to stop watching.
 
-    Check if the changes above were successfully propagated back to the model instance.
+   **Checking if changes were successfully propagated back**
 
    .. code-block:: python
 
-          model.inspect_model_parameters('Models.Manager', 'Sow using a variable rule')
+       model.inspect_model_parameters("Models.Manager", "Sow using a variable rule")
 
-   .. code-block:: bash
+   .. code-block:: none
 
-         {'Crop': '[Maize]',
+       {'Crop': '[Maize]',
         'StartDate': '1-nov',
         'EndDate': '10-jan',
         'MinESW': '100',
@@ -5499,7 +5486,6 @@ Classes
         'SowingDepth': '25',
         'RowSpacing': '700',
         'Population': '4'}
-
 
    Depending on your environment, you may need to close the GUI window to continue
    or follow the prompts shown after termination.

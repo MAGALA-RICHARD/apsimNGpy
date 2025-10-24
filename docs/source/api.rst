@@ -1855,52 +1855,70 @@ Classes
 
    Open the current simulation in the APSIM Next Gen GUI.
 
-   This first saves the in-memory simulation to ``self.path`` and then launches
-   the APSIM NG GUI (via: func:`get_apsim_bin_path`) so you can inspect the model
-   tree and make quick edits side-by-side.
+   This first saves the in-memory simulation to ``out_path`` and then launches
+   the APSIM Next Gen GUI (via :func:`get_apsim_bin_path`) so you can inspect the
+   model tree and make quick edits side by side.
 
-   parameters
-   -----------
-   watch: bool, default is False
-       Allows python to listen to your GUI edits and update them in the model instance instantenously. This is a new addition
+   Parameters
+   ----------
+   watch : bool, default False
+       If True, Python will listen for your GUI edits and sync them back into the
+       model instance in (near) real time. This is experimental.
 
    Returns
    -------
    None
-       This function is for its side effect (opening the GUI); it does not return a value.
+       This function is for its side effect (opening the GUI); it does not return
+       a value.
 
    Raises
    ------
    FileNotFoundError
        If the file does not exist after ``save()``.
    RuntimeError
-       If the APSIM NG executable cannot be located or the GUI fails to start.
+       If the APSIM Next Gen executable cannot be located or the GUI fails to
+       start.
 
    .. tip::
 
-       The file opened in the GUI is a *saved copy* of this Python object. Changes made in the GUI
-       are **not propagated** back to :class:`~apsimNGpy.core.apsim.ApsimModel` instance unless you set ``watch =True`` or to continue
-       in Python with GUI edits, save in APSIM and re-load the file (e.g.
+       The file opened in the GUI is a saved copy of this Python object. Changes
+       made in the GUI are NOT propagated back to the
+       :class:`~apsimNGpy.core.apsim.ApsimModel` instance unless you set
+       ``watch=True``. Otherwise, to continue in Python with GUI edits, save in
+       APSIM and re-load the file, e.g.:
 
-   .. code-block:: python
+       .. code-block:: python
 
-       ApsimModel('gui_edited_file_path.apsimx')
+           ApsimModel("gui_edited_file_path.apsimx")
 
    Examples
    --------
-   Preview only
+   Preview only:
 
    .. code-block:: python
 
        model.preview_simulation()
 
-   Preview and edit at the same time
+   Preview and edit at the same time:
 
    .. code-block:: python
 
-      model.preview_simulation(watch =True)
+       model.preview_simulation(watch=True)
 
-   When watch = True, follow instructions in the console, one critical one is that you need to press ``Ctrl + C`` to stop watching
+   Example console output when watch=True:
+
+   .. code-block:: none
+
+       2025-10-24 13:05:08,480 - C:/Users/username/apsimNGpy_sim.log - INFO - Watching for GUI edits... Save in APSIM to sync back.
+       2025-10-24 13:05:08,490 - C:/Users/username/apsimNGpy_sim.log - INFO - Watching for GUI edits. Press Ctrl+C in this cell to stop.
+       APSIM GUI saved. Syncing model...
+       2025-10-24 13:05:24,112 - C:/Users/username/apsimNGpy_sim.log - INFO - Watching terminated successfully.
+
+   When ``watch=True``, follow the instructions printed in the console. One critical
+   step is that you MUST press ``Ctrl+C`` to stop watching.
+
+   Depending on your environment, you may need to close the GUI window to continue
+   or follow the prompts shown after termination.
 
    .. py:method:: apsimNGpy.core.apsim.ApsimModel.change_simulation_dates(self, start_date: 'str' = None, end_date: 'str' = None, simulations: 'Union[tuple, list]' = None) (inherited)
 
@@ -5419,52 +5437,70 @@ Classes
 
    Open the current simulation in the APSIM Next Gen GUI.
 
-   This first saves the in-memory simulation to ``self.path`` and then launches
-   the APSIM NG GUI (via: func:`get_apsim_bin_path`) so you can inspect the model
-   tree and make quick edits side-by-side.
+   This first saves the in-memory simulation to ``out_path`` and then launches
+   the APSIM Next Gen GUI (via :func:`get_apsim_bin_path`) so you can inspect the
+   model tree and make quick edits side by side.
 
-   parameters
-   -----------
-   watch: bool, default is False
-       Allows python to listen to your GUI edits and update them in the model instance instantenously. This is a new addition
+   Parameters
+   ----------
+   watch : bool, default False
+       If True, Python will listen for your GUI edits and sync them back into the
+       model instance in (near) real time. This is experimental.
 
    Returns
    -------
    None
-       This function is for its side effect (opening the GUI); it does not return a value.
+       This function is for its side effect (opening the GUI); it does not return
+       a value.
 
    Raises
    ------
    FileNotFoundError
        If the file does not exist after ``save()``.
    RuntimeError
-       If the APSIM NG executable cannot be located or the GUI fails to start.
+       If the APSIM Next Gen executable cannot be located or the GUI fails to
+       start.
 
    .. tip::
 
-       The file opened in the GUI is a *saved copy* of this Python object. Changes made in the GUI
-       are **not propagated** back to :class:`~apsimNGpy.core.apsim.ApsimModel` instance unless you set ``watch =True`` or to continue
-       in Python with GUI edits, save in APSIM and re-load the file (e.g.
+       The file opened in the GUI is a saved copy of this Python object. Changes
+       made in the GUI are NOT propagated back to the
+       :class:`~apsimNGpy.core.apsim.ApsimModel` instance unless you set
+       ``watch=True``. Otherwise, to continue in Python with GUI edits, save in
+       APSIM and re-load the file, e.g.:
 
-   .. code-block:: python
+       .. code-block:: python
 
-       ApsimModel('gui_edited_file_path.apsimx')
+           ApsimModel("gui_edited_file_path.apsimx")
 
    Examples
    --------
-   Preview only
+   Preview only:
 
    .. code-block:: python
 
        model.preview_simulation()
 
-   Preview and edit at the same time
+   Preview and edit at the same time:
 
    .. code-block:: python
 
-      model.preview_simulation(watch =True)
+       model.preview_simulation(watch=True)
 
-   When watch = True, follow instructions in the console, one critical one is that you need to press ``Ctrl + C`` to stop watching
+   Example console output when watch=True:
+
+   .. code-block:: none
+
+       2025-10-24 13:05:08,480 - C:/Users/username/apsimNGpy_sim.log - INFO - Watching for GUI edits... Save in APSIM to sync back.
+       2025-10-24 13:05:08,490 - C:/Users/username/apsimNGpy_sim.log - INFO - Watching for GUI edits. Press Ctrl+C in this cell to stop.
+       APSIM GUI saved. Syncing model...
+       2025-10-24 13:05:24,112 - C:/Users/username/apsimNGpy_sim.log - INFO - Watching terminated successfully.
+
+   When ``watch=True``, follow the instructions printed in the console. One critical
+   step is that you MUST press ``Ctrl+C`` to stop watching.
+
+   Depending on your environment, you may need to close the GUI window to continue
+   or follow the prompts shown after termination.
 
    .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.change_simulation_dates(self, start_date: 'str' = None, end_date: 'str' = None, simulations: 'Union[tuple, list]' = None) (inherited)
 

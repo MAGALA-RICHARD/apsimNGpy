@@ -2917,7 +2917,7 @@ class CoreModel(PlotManager):
             observer.schedule(handler, path=os.path.dirname(self.path), recursive=False)
             observer.start()
 
-            logger.info("Watching for GUI edits. Press Ctrl+C in this cell to stop.")
+            logger.info("Watching for GUI edits. Press `Ctrl+C` in this cell to stop.")
             try:
                 while True:
                     time.sleep(1)
@@ -2925,8 +2925,6 @@ class CoreModel(PlotManager):
                 observer.stop()
             observer.join()
             logger.info('watching terminated successfully')
-
-
 
     @staticmethod
     def strip_time(date_string):

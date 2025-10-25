@@ -856,15 +856,7 @@ class PlotManager(ABC):
 
         data = self._harmonize_df(table, expression=expression)
         kwargs.setdefault('')
-        return sns.lmplot(data=data, x=None, y=None, hue=None, col=None, row=None, palette=None, col_wrap=None,
-                          height=5,
-                          aspect=1, markers='o', sharex=None, sharey=None, hue_order=None, col_order=None,
-                          row_order=None,
-                          legend=True, legend_out=None, x_estimator=None, x_bins=None, x_ci='ci', scatter=True,
-                          fit_reg=True, ci=95, n_boot=1000, units=None, seed=None, order=1, logistic=False,
-                          lowess=False,
-                          robust=False, logx=False, x_partial=None, y_partial=None, truncate=True, x_jitter=None,
-                          y_jitter=None, scatter_kws=None, line_kws=None, facet_kws=None)
+        return sns.lmplot(data=data, **kwargs)
 
     def relplot(self, table=None, **kwargs):
         """Plots a relation plot"""

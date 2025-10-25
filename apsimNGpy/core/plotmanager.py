@@ -852,10 +852,8 @@ class PlotManager(ABC):
                              https://seaborn.pydata.org/generated/seaborn.lmplot.html
             Tutorial: https://seaborn.pydata.org/tutorial/regression.html#regression-tutorial
             """
-        pass
-
         data = self._harmonize_df(table, expression=expression)
-        kwargs.setdefault('')
+
         return sns.lmplot(data=data, **kwargs)
 
     def relplot(self, table=None, **kwargs):

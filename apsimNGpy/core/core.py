@@ -2901,8 +2901,13 @@ class CoreModel(PlotManager):
                     self.path = path
 
                 def on_modified(self, event):
+                    """
+
+                       Triggered if the save button is pressed or the model is run
+
+                    """
                     if event.src_path == self.path:
-                        logger.info("APSIM GUI saved. Syncing model...")
+                        logger.info("Changes detected. Syncing model...")
                         mi = load_apsim_model(self.model.path)
                         self.model.restart_model(mi)
                         self.model.path = self.path

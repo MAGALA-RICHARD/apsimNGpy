@@ -1,16 +1,16 @@
 import os
+from pathlib import Path
 
 from setuptools import setup, find_packages
 import sys
 from functools import cache
 
-VERSION = '0.39.10.17'
+VERSION = '0.39.10.19'
 
 DESCRIPTION = 'APSIM next generation package interface'
 LONG_DESCRIPTION = 'Run, edit, download soils and weather and interact with the apsimx file'
 
-with open('README.rst') as readme_file:
-    readme = readme_file.read()
+readme = Path("README.rst").read_text(encoding="utf-8")
 
 setup(
     name='apsimNGpy',

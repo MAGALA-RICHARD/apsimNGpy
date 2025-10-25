@@ -328,12 +328,6 @@ class PlotManager(ABC):
         g = sns.relplot(data=smoothed, **kwargs)
 
         # y-label
-        if ylabel is None:
-            ylabel = _default_ylabel(response, window, centered=True)
-        try:
-            g.set_ylabels(ylabel)
-        except Exception:
-            pass  # older seaborn: ignore
 
         # Optional raw overlay
         if plot_raw:

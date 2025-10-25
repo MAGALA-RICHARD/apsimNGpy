@@ -652,8 +652,7 @@ class PlotManager(ABC):
             style_order=style_order,
             legend=legend,
             ax=ax,
-            **kwargs
-        )
+            **kwargs)
 
     def cat_plot(self,
                  table=None,
@@ -719,6 +718,7 @@ class PlotManager(ABC):
         .. seealso::
 
              Related APIs: :meth:`distribution`.
+
         """
         self._refresh()
         added_plots['cat_plot'] = 'cat_plot'
@@ -759,10 +759,10 @@ class PlotManager(ABC):
             **kwargs
         )
 
-    def reg_plot(self, table=None, expression=None, show=False, **kwargs):
+    def reg_plot(self, table=None, expression=None, **kwargs):
 
         """
-            Wrapper around seaborn.lmplot.
+            Wrapper around seaborn.lmplot. V 0.39.10.19+
 
             Kwargs passed to seaborn.lmplot
             -------------------------------

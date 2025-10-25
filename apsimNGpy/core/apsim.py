@@ -41,15 +41,63 @@ REPORT_PATH = {'Carbon': '[Soil].Nutrient.TotalC/1000 as dyn', 'DUL': '[Soil].So
 @dataclass(repr=False, order=False, init=False)
 class ApsimModel(CoreModel):
     """
-    It inherits from the CoreModel classes, and extends its capabilities.
+    This class inherits from :class:`~apsimNGpy.core.core.CoreModel` and extends its capabilities.
 
-    This implies that you can still run the model and modify parameters as needed.
+    High-level data/method/attribute flow between the main components is illustrated below:
 
-    Example:
-        >>> from apsimNGpy.core.apsim import ApsimModel
-        >>> from pathlib import Path
-        >>> model = ApsimModel('Maize', out_path=Path.home()/'apsim_model_example.apsimx')
-        >>> model.run(report_name='Report') # report is the default, please replace it as needed
+    .. mermaid::
+
+       flowchart LR
+           PlotManager["PlotManager"]
+           CoreModel["CoreModel"]
+           ApsimModel["ApsimModel"]
+           ExperimentManager["ExperimentManager"]
+
+           PlotManager --> CoreModel
+           CoreModel --> ApsimModel
+           ApsimModel --> ExperimentManager
+
+
+    Class Roles
+    -----------
+
+    - :class:`~apsimNGpy.core.plotmanager.PlotManager`
+      Produces visual outputs from model results.
+      (Not exposed in the public API reference.)
+
+    - :class:`~apsimNGpy.core.core.CoreModel`
+      Provides core methods for running and manipulating APSIM models.
+      (Not exposed in the public API reference.)
+
+    - :class:`~apsimNGpy.core.apsim.ApsimModel`
+      Extends :class:`~apsimNGpy.core.core.CoreModel` with higher-level functionality.
+
+    - :class:`~apsimNGpy.core.experimentmanager.ExperimentManager`
+      Creates and manages multi-factor experiments from a base scenario.
+
+
+    Examples
+    --------
+
+    .. code-block:: python
+
+        from pathlib import Path
+        from apsimNGpy.core.apsim import ApsimModel
+
+        # Initialize a model
+        model = ApsimModel(
+            'Maize',
+            out_path=Path.home() / 'apsim_model_example.apsimx'
+        )
+
+        # Run the model
+        model.run(report_name='Report')  # 'Report' is the default table name; adjust if needed
+
+        # Get all results
+        res = model.results
+
+        # Or fetch a specific report table from the APSIM database
+        report_df = model.get_simulated_output('Report')
     """
 
     def __init__(self, model: Union[os.PathLike, dict, str], out_path: Union[str, Path] = None,

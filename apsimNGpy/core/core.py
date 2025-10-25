@@ -2899,6 +2899,7 @@ class CoreModel(PlotManager):
                 def __init__(self, model, path):
                     self.model = model
                     self.path = path
+                    self.changed = False
 
                 def on_modified(self, event):
                     """
@@ -2911,6 +2912,20 @@ class CoreModel(PlotManager):
                         mi = load_apsim_model(self.model.path)
                         self.model.restart_model(mi)
                         self.model.path = self.path
+                        self.changed = True
+
+                def on_deleted(self, event):
+
+                    # Ignore directory events
+                    if event.is_directory:
+                        return
+
+                    deleted = Path(event.src_path).resolve()
+                    watched = Path(self.path).resolve()
+
+                    if deleted == watched:
+                        logger.error("APSIM file was deleted; stopping live sync.")
+                        raise RuntimeError("File has been deleted; can't continue watching.")
 
             handler = APSIMFileHandler(self, self.path)
             observer = Observer()
@@ -2922,6 +2937,9 @@ class CoreModel(PlotManager):
                 while True:
                     time.sleep(1)
             except KeyboardInterrupt:
+                if not handler.changed:
+                    logger.warning("Watch session is ending, but not changes detected...")
+
                 observer.stop()
             observer.join()
             logger.info('watching terminated successfully')

@@ -31,6 +31,29 @@ class ExperimentManager(ApsimModel):
     This class inherits methods and attributes from: :class:`~apsimNGpy.core.apsim.ApsimModel` to manage APSIM Experiments
     with pure factors or permutations. You first need to initiate the instance of this class and then initialize the
     experiment itself with: :meth:`init_experiment`, which creates a new experiment from the suggested base simulation and ``permutation`` type
+
+    The flow of method for :class:`ExperimentManager` class is shown in the diagram below:
+
+
+    .. mermaid::
+
+       flowchart LR
+           PlotManager["PlotManager"]
+           CoreModel["CoreModel"]
+           ApsimModel["ApsimModel"]
+           ExperimentManager["ExperimentManager"]
+
+           PlotManager --> CoreModel
+           CoreModel --> ApsimModel
+           ApsimModel --> ExperimentManager
+
+    Class Roles
+    ---------------
+    - :class:`~apsimNGpy.core.plotmanager.PlotManager` → Produces visual outputs from model results (Not exposed in the API reference)
+    - :class:`~apsimNGpy.core.core.CoreModel`  → contains methods for running and manipulating models (Not exposed in the API reference)
+    - :class:`~apsimNGpy.core.apsim.ApsimModel` → Extends :class:`~apsimNGpy.core.core.Coremodel` capabilities with more functionalities
+    - :class:`~apsimNGpy.core.experimentmanager.ExperimentManager` → Manages and creates a new experiment from the suggested base.
+
     """
 
     def __init__(self, model, out_path=None):

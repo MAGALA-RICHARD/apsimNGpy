@@ -26,80 +26,119 @@
    :target: https://registration.apsim.info/?version=2025.08.7844.0&product=APSIM%20Next%20Generation
    :alt: APSIM Next Generation version
 
+===============================================================
+apsimNGpy: The Next Generation Agroecosystem Simulation Library
+===============================================================
 
+**apsimNGpy** is a cutting-edge, open-source framework for advanced agroecosystem modeling, built entirely in Python.
+It enables **object-oriented**, **data-driven** workflows for interacting with APSIM Next Generation models, offering capabilities for:
 
-apsimNGpy: The Next Generation Agroecosytem Simulation Library
-====================================================================
-Our cutting-edge open-source framework, **apsimNGpy**, empowers advanced agroecosystem modeling through the utilization
-of object-oriented principles directly within the `Python`_ environment. It features fast batch file simulation, model prediction, evaluation,
-APSIMX file editing, seamless weather data retrieval, optimization, and efficient soil profile development.
+- Batch file simulation and model evaluation
+- APSIMX file editing and parameter inspection
+- Weather data retrieval and pre-processing
+- Optimization and performance diagnostics
+- Efficient soil profile development and validation
 
-.. _Python: https://www.python.org/
+`Python <https://www.python.org/>`_ serves as the execution environment, integrating scientific computing, data analysis, and automation for sustainable agricultural systems.
 
+---
 
 Requirements
-***********************************************************************************
-1. Dotnet, install from https://learn.microsoft.com/en-us/dotnet/core/install/
-2. Python 3.10 +
-3. APSIM: Add the directory containing the models executable to the system's PATH or python path (to locate the required .dll files). This can be achieved in either of the following ways:
-4. Utilize the APSIM installer provided for this purpose.
-5. Minimum; 8GM RAM
+*************
 
-.. _Installation:
+1. **.NET SDK** — install from https://learn.microsoft.com/en-us/dotnet/core/install/
+2. **Python 3.10+**
+3. **APSIM Next Generation** — ensure the directory containing ``Models.exe`` is added to your system PATH.
+4. (Optional) Use the official APSIM installer for easiest setup.
+5. Minimum 8 GB RAM recommended.
+
+---
 
 Installation
+************
 
-********************************************************************************
+**Option 1 – Install from PyPI (stable)**
 
-All versions are currently in development, phase and they can be installed as follows:
+.. code-block:: bash
 
-- Method 1. Stable versions can be installed from PyPI
+   pip install apsimNGpy
 
-.. code:: bash
+If using the `uv` virtual environment manager:
 
-    pip install apsimNGpy
+.. code-block:: bash
 
-If you are using the fleeting uv virtual environment manager.
+   uv pip install apsimNGpy
 
-.. code-block:: python
+**Option 2 – Clone the development repository**
 
-    uv pip install apsimNGpy
+.. code-block:: bash
 
-- Method 1. clone the current development repository
+   git clone https://github.com/MAGALA-RICHARD/apsimNGpy.git
+   cd apsimNGpy
+   pip install .
 
-.. code:: bash
+**Option 3 – Install directly from GitHub**
 
-    git clone https://github.com/MAGALA-RICHARD/apsimNGpy.git
-    cd apsimNGpy
-    pip install .
+.. code-block:: bash
 
-- Method 2. Use pip straight away and install from github
+   pip install git+https://github.com/MAGALA-RICHARD/apsimNGpy.git
 
-.. code:: bash
+---
 
-     pip install git+https://github.com/MAGALA-RICHARD/apsimNGpy.git
+APSIM Next Generation (NG) Installation Tip
+===========================================
 
-APSIM Next Generation (NG) installation Tip:
-===============================================
-For APSIM installation, Please use the pinned release shown on documentation home page/or on this page to avoid forward-compatibility issues. That release features the latest APSIM NG version that has passed all unit tests against apsimNGpy’s programmatic API.
+Use the **pinned APSIM release** indicated on the documentation homepage to avoid forward-compatibility issues.
+The pinned version represents the latest APSIM NG build verified against apsimNGpy’s API and unit tests.
 
+---
 
-v0.39.10.16
-==============
+v0.39.10.18 (2025-10-24)
+=========================
 
-Release notes
-==========================
-This build is stable for day-to-day work, although API improvement continues to take shape
+Added
+------
+
+- ``preview_simulation(watch=True)`` now supports **interactive edit syncing**:
+  - Opens the ``.apsimx`` file in the APSIM NG GUI and *watches* for saved edits.
+  - When a user saves in the GUI, changes are automatically reloaded into the active ``ApsimModel`` instance.
+  - Console messages guide users during the live session (e.g., *“Watching for GUI edits... Save in APSIM to sync back.”*).
+  - Graceful shutdown supported via ``Ctrl+C``; after termination, the Python model reflects the most recent GUI state.
+  - Users should close the GUI after completing edits before continuing with the Python model instance.
+
+Notes
+------
+
+- This feature is **experimental** but stable in tests.
+- Synchronization assumes that both APSIM GUI and Python edit the same ``.apsimx`` file path.
+- If ``watch=False`` (default), ``preview_simulation`` behaves as before — no live syncing.
+- GUI edits must be **saved** before synchronization occurs. Unsaved edits are ignored.
+
+Developer impact
+----------------
+
+- New function signature: ``preview_simulation(self, watch=False)``
+- Existing scripts calling ``preview_simulation()`` remain fully compatible.
+- File-watching currently uses file modification times; future releases may support event-based detection.
+
+---
+
+v0.39.10.17
+===========
+
+Release Notes
+-------------
+
+This build is stable for day-to-day work, with incremental API refinements.
 
 Highlights
-===================
+----------
 
-- changed save on ApsimModel class API it now accepts a ``reload``  parameter to avoid confusion
-- Documentation upgrades, Effective navigation links to the related API
+- Updated ``save`` method on ``ApsimModel`` to include a ``reload`` parameter.
+- Improved documentation navigation and linked related APIs.
 
-Full documentation can be found here; https://magala-richard.github.io/apsimNGpy-documentations/index.html
+Full Documentation
+------------------
 
-
-
-
+`Read the docs → <https://magala-richard.github.io/apsimNGpy-documentations/index.html>`_
 

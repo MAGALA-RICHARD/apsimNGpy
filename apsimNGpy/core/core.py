@@ -2915,6 +2915,8 @@ class CoreModel(PlotManager):
                         self.changed = True
 
                 def on_deleted(self, event):
+                    class WatchDeletionError(RuntimeError):
+                        pass
 
                     # Ignore directory events
                     if event.is_directory:
@@ -2925,7 +2927,7 @@ class CoreModel(PlotManager):
 
                     if deleted == watched:
                         logger.error("APSIM file was deleted; stopping live sync.")
-                        raise RuntimeError("File has been deleted; can't continue watching.")
+                        raise WatchDeletionError("File has been deleted; can't continue watching.")
 
             handler = APSIMFileHandler(self, self.path)
             observer = Observer()

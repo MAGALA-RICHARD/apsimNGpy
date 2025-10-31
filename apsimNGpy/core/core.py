@@ -1677,7 +1677,7 @@ class CoreModel(PlotManager):
                     ModelTools.ADD(cultivar, plant_model)
 
                     # Update cultivar manager script
-                    self.edit_model(model_type=Models.Manager, model_name=cultivar_manager, simulations=sim.Name,
+                    self.edit_model(model_type=Models.Manager, model_name=cultivar_manager, simulations=simulations,
                                     **{cultivar_manager_param: new_cultivar_name})
 
                     self.save()

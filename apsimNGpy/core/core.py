@@ -1394,7 +1394,7 @@ class CoreModel(PlotManager):
         return self
 
     def edit_model(self, model_type: str, model_name: str,
-                   simulations: Union[str, list] = 'all',
+                   simulations: Union[str, list] = 'all', exclude=None,
                    verbose=False, **kwargs):
         """
         Modify various APSIM model components by specifying the model type and name across given simulations.
@@ -1410,7 +1410,9 @@ class CoreModel(PlotManager):
         model_name: str, required
             Name of the model instance to modify.
         verbose: bool, optional
-            print the status of the editting activities
+            print the status of the editing activities
+        exclude: Union[str, None, Iterable[str]], optional,default is None
+            Added in 'V0.39.10.20'+. It is used to specify which simulation should be skipped during the editing process, in case there are more than simulations
 
         kwargs
         ------
@@ -1556,16 +1558,20 @@ class CoreModel(PlotManager):
                 variable_spec=[
                 '[Maize].AboveGround.Wt as abw',
                 '[Maize].Grain.Total.Wt as grain_weight'])
-                @param simulations:
+
 
         .. seealso::
 
            Related API: :meth:`edit_model_by_path`.
 
         """
+        if isinstance(exclude, str):
+            exclude = {exclude}
+        elif not exclude:
+            exclude =set()
         if simulations == 'all' or simulations is None or simulations == MissingOption:
             simulations = self.inspect_model('Models.Core.Simulation', fullpath=False)
-            simulations = [str(i) for i in simulations]
+            simulations = [str(i) for i in simulations if i not in exclude]
 
         model_type_class = validate_model_obj(model_type)
         replace_ments = ModelTools.find_child(self.Simulations, child_class='Models.Core.Folder',
@@ -1873,7 +1879,7 @@ class CoreModel(PlotManager):
 
         return self
 
-    def remove_model(self, model_type: Models, model_name: str = None):
+    def remove_model(self, model_type: Models, model_name):
         """
        Removes a model from the APSIM Models.Simulations namespace.
 
@@ -1905,7 +1911,7 @@ class CoreModel(PlotManager):
         model_class = validate_model_obj(model_type)
         if not model_name:
             model_name = model_class().Name
-        to_remove = ModelTools.find_child(model_type=model_class, model_name=model_name)
+        to_remove = ModelTools.find_child(self.Simulations, child_class=model_class, child_name=model_name)
         if to_remove:
             try:
                 ModelTools.DELETE(to_remove)

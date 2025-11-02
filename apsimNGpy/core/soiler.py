@@ -11,6 +11,7 @@ from apsimNGpy.settings import logger
 from apsimNGpy.core.model_tools import find_child_of_class
 from apsimNGpy.settings import logger
 from pandas import DataFrame
+
 lp = load_pythonnet()  # ensure CLR
 import numpy as np
 import Models
@@ -145,16 +146,18 @@ class SoilManager:
         sdf = DownloadsurgoSoiltables(lonlat=lonlat, select_componentname=soil_series, summarytable=False)
         if soil_series in sdf.componentname.unique():
             sdf = sdf[sdf['componentname'] == soil_series]
-        if soil_series is None:
+        elif soil_series is None:
             max_compo_value = sdf.prcent.max()
             sdf = sdf[sdf['prcent'] == max_compo_value]
-            # update
-            soil_series = sdf['componentname'].iloc[0]
-            mu_name = sdf['muname'].iloc[0]
-            chkey = sdf['chkey'].iloc[0]
-        else:
-            raise KeyError(f'{soil_series} not any of the available ones: {', '.join(sdf.componentname.unique())}')
 
+        else:
+
+            print(sdf.componentname.unique())
+            raise KeyError(f'{soil_series} not any of the available ones: {', '.join(sdf.componentname.unique())}')
+        # update
+        soil_series = sdf['componentname'].iloc[0]
+        mu_name = sdf['muname'].iloc[0]
+        chkey = sdf['chkey'].iloc[0]
         soil_profile = OrganiseSoilProfile(sdf, thickness_values=thickness_sequence)
         try:
             rn = int(int(chkey))
@@ -176,7 +179,7 @@ class SoilManager:
 
     # ------------------------ Editors ------------------------
 
-    def _edit_soil_section(self, section_key: str, model_type, data =None) -> None:
+    def _edit_soil_section(self, section_key: str, model_type, data=None) -> None:
         """
         Generic editor: sets properties on a .NET soil section from a pandas DataFrame
         found in self.soil_profile[section_key]. Uses vectorized conversion and .NET arrays.

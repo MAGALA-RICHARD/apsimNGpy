@@ -1110,7 +1110,7 @@ Classes
 
       Related API: :meth:`edit_model`.
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.edit_model(self, model_type: 'str', model_name: 'str', simulations: 'Union[str, list]' = 'all', verbose=False, **kwargs) (inherited)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.edit_model(self, model_type: 'str', model_name: 'str', simulations: 'Union[str, list]' = 'all', exclude=None, verbose=False, **kwargs) (inherited)
 
    Modify various APSIM model components by specifying the model type and name across given simulations.
 
@@ -1125,7 +1125,9 @@ Classes
    model_name: str, required
        Name of the model instance to modify.
    verbose: bool, optional
-       print the status of the editting activities
+       print the status of the editing activities
+   exclude: Union[str, None, Iterable[str]], optional,default is None
+       Added in 'V0.39.10.20'+. It is used to specify which simulation should be skipped during the editing process, in case there are more than simulations
 
    kwargs
    ------
@@ -1271,7 +1273,7 @@ Classes
            variable_spec=[
            '[Maize].AboveGround.Wt as abw',
            '[Maize].Grain.Total.Wt as grain_weight'])
-           @param simulations:
+
 
    .. seealso::
 
@@ -4763,7 +4765,7 @@ Classes
 
       Related API: :meth:`edit_model`.
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.edit_model(self, model_type: 'str', model_name: 'str', simulations: 'Union[str, list]' = 'all', verbose=False, **kwargs) (inherited)
+   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.edit_model(self, model_type: 'str', model_name: 'str', simulations: 'Union[str, list]' = 'all', exclude=None, verbose=False, **kwargs) (inherited)
 
    Modify various APSIM model components by specifying the model type and name across given simulations.
 
@@ -4778,7 +4780,9 @@ Classes
    model_name: str, required
        Name of the model instance to modify.
    verbose: bool, optional
-       print the status of the editting activities
+       print the status of the editing activities
+   exclude: Union[str, None, Iterable[str]], optional,default is None
+       Added in 'V0.39.10.20'+. It is used to specify which simulation should be skipped during the editing process, in case there are more than simulations
 
    kwargs
    ------
@@ -4924,7 +4928,7 @@ Classes
            variable_spec=[
            '[Maize].AboveGround.Wt as abw',
            '[Maize].Grain.Total.Wt as grain_weight'])
-           @param simulations:
+
 
    .. seealso::
 

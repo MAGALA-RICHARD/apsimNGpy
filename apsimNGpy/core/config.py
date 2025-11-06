@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import configparser
+import dataclasses
 import glob
 import logging
 import os
@@ -546,6 +547,21 @@ def stamp_name_with_version(file_name):
     return dest_path
 
 
+@dataclasses.dataclass
+class Configuration:
+    bin_path: Union[Path, str] = get_apsim_bin_path()
+
+    def set_temporal_bin_path(self, temporal_bin_path):
+        self.bin_path = locate_model_bin_path(temporal_bin_path)
+
+    def release_temporal_bin_path(self):
+        """release and set back to the global bin path"""
+        self.bin_path = get_apsim_bin_path()
+
+
+configuration = Configuration()
+
+
 class apsim_bin_context(AbstractContextManager):
     """
         Temporarily configure the APSIM-NG *bin* path used by ``apsimNGpy`` so imports
@@ -662,15 +678,12 @@ class apsim_bin_context(AbstractContextManager):
 
     def __enter__(self):
         # Save and set
-        set_apsim_bin_path(self.bin_path)
-        # No return value needed; you’ll import inside the with-block
-        time.sleep(self.timeout)  # delays entry exit to the imports
+        configuration.set_temporal_bin_path(self.bin_path)
         return None
 
     def __exit__(self, exc_type, exc, tb):
         # Restore previous paths (even if it was None/empty)
-        if self._prev_bin_path is not None and str(self._prev_bin_path) not in sys.path:
-            set_apsim_bin_path(self._prev_bin_path)
+        configuration.release_temporal_bin_path()
         return False  # do not suppress exceptions
 
 
@@ -696,4 +709,9 @@ if __name__ == "__main__":
                     pass
 
 
-    unittest.main()
+    print(configuration.bin_path)
+    configuration.set_temporal_bin_path(r"C:\Program Files\APSIM2024.5.7493.0\bin")
+    print(configuration.bin_path)
+    configuration.release_temporal_bin_path()
+    print(configuration.bin_path)
+    # unittest.main()

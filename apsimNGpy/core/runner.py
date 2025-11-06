@@ -154,7 +154,7 @@ def run_model_externally(
         cwd = str(Path(model_path).parent)
 
     # capture stderr; capture stdout only if verbose
-    stdout_choice = subprocess.PIPE if verbose else subprocess.DEVNULL
+    stdout_choice = subprocess.PIPE  # if verbose else subprocess.DEVNULL
 
     try:
         proc = subprocess.run(
@@ -190,18 +190,14 @@ def run_model_externally(
         logger.exception("OS error during APSIM run.")
         raise ApsimRuntimeError(str(e)) from e
 
-    # Log outputs (wrapped to avoid huge lines)
-    if proc.stderr:
-        logger.error("APSIM stderr for %s:\n%s", model_path, proc.stderr.strip())
     if verbose and proc.stdout:
         logger.info("APSIM stdout for %s:\n%s", model_path, proc.stdout.strip())
 
     # Non-zero exit is treated as failure; caller can relax this if needed
-    if proc.returncode != 0:
-        # logger.info(f"{proc.stderr} {proc.stdout}")
+    elif proc.returncode != 0:
         raise ApsimRuntimeError(
-            f"APSIM exited with code {proc.returncode}. "
-            f"See logs for stderr/stdout. or run with verbose option =True."
+            f"APSIM exited with code {proc.returncode}.\n {proc.stdout} "
+            f"See logs for stderr/stdout."
         )
 
     return proc
@@ -431,11 +427,11 @@ def run_p(path):
 
 
 def _run(self, report_name=None,
-        simulations=None,
-        clean=False,
-        multithread=True,
-        verbose=False,
-        get_dict=False, **kwargs):
+         simulations=None,
+         clean=False,
+         multithread=True,
+         verbose=False,
+         get_dict=False, **kwargs):
     """
     Run APSIM model simulations.
 
@@ -525,29 +521,9 @@ def _run(self, report_name=None,
 
 if __name__ == '__main__':
     import time
+
     a = time.perf_counter()
-    dat= collect_db_from_dir('.', '*.apsimx')
+    dat = collect_db_from_dir('.', '*.apsimx')
     df = list(dat)
     b = time.perf_counter()
-    print(b-a, 'seconds')
-
-    a = time.perf_counter()
-    run_model_externally(model=r'D:\package\apsimNGpy\apsimNGpy\core\maize1.apsimx')
-    b = time.perf_counter()
-    print(b-a, 'seconds')
-    from apsimNGpy.core.apsim import ApsimModel
-    model = ApsimModel('Maize')
-    from pathlib import Path
-    mod = Path(__file__).parent.parent/'testing_run'
-    import shutil
-    if mod.exists(): shutil.rmtree(mod)
-    mod.mkdir(parents=True, exist_ok=True)
-    total = 200
-    [shutil.copy(r'D:\package\apsimNGpy\apsimNGpy\core\maize1.apsimx', mod/f"__{i}.apsimx") for i in [0,1]]
-    a = time.perf_counter()
-    g = run_from_dir(mod, pattern="*.apsimx")
-    gd = list(g)
-    b = time.perf_counter()
-    print(b-a, 'seconds' f'to run {total} apsim')
-    shutil.rmtree(mod)
-
+    print(b - a, 'seconds')

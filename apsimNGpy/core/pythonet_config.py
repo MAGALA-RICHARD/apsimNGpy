@@ -6,12 +6,12 @@ from functools import cache
 from pathlib import Path
 from typing import Union
 
-from apsimNGpy.core import config
 from apsimNGpy.core.load_clr import start_pythonnet
 from apsimNGpy.exceptions import ApsimBinPathConfigError
 from apsimNGpy.settings import logger
+from apsimNGpy.core.config import configuration, locate_model_bin_path
 
-APSIM_BIN_PATH = config.get_apsim_bin_path() or config.any_bin_path_from_env()
+APSIM_BIN_PATH = configuration.bin_path
 
 pythonnet_start = start_pythonnet()
 
@@ -90,7 +90,7 @@ def load_pythonnet(bin_path: Union[str, Path] = None):
     def _load(bin_path):
         if bin_path is None:
             bin_path = APSIM_BIN_PATH
-        candidate = config.locate_model_bin_path(bin_path)
+        candidate = locate_model_bin_path(bin_path)
         if not candidate:
             raise ApsimBinPathConfigError(
                 f'Built APSIM Binaries seems to have been uninstalled from this directory: {bin_path}\n use the config.set_apsim_bin_path')
@@ -291,8 +291,7 @@ if __name__ == '__main__':
         AssemblyFileVersionAttribute,
     )
 
-    # --- 3) Point to APSIM NG bin and load Models.dll ---
-    APSIM_BIN = os.environ.get("APSIM_BIN_PATH", config.get_apsim_bin_path())
+    APSIM_BIN = os.environ.get("APSIM_BIN_PATH", APSIM_BIN_PATH)
 
     asm = Assembly.LoadFrom(os.path.join(APSIM_BIN, "Models.dll"))
 

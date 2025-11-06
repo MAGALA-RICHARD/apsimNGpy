@@ -61,6 +61,8 @@ def delete_all_tables(db: str) -> None:
         metadata.drop_all(bind=engine)
     except NoSuchTableError:
         pass
+    finally:
+        engine.dispose()
 
 
 def dataview_to_dataframe(_model, reports):

@@ -170,6 +170,13 @@ class CoreModel(PlotManager):
         if self.experiment:
             self.create_experiment(permutation=self.permutation, base_name=self.base_name)
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc, tb):
+        self.clean_up()
+        return False # Any exception here is not allowed
+
     def check_model(self):
         if hasattr(Models.Core.ApsimFile, "ConverterReturnType"):
 
@@ -607,13 +614,12 @@ class CoreModel(PlotManager):
 
            Related API: :attr:`results`.
         """
-        from collections.abc import Iterable
         db_path = Path(self.path).with_suffix('.db')
         _reports = report_names
         if self.ran_ok:
             return self._get_results(_reports, db_path, axis=axis)
         else:
-            logger.info('Model not ran sue other means to read data if that is the goal')
+            logger.info('Model not ran use other means to read data if that is the goal')
 
     def run(self, report_name: Union[tuple, list, str] = None,
             simulations: Union[tuple, list] = None,
@@ -622,8 +628,8 @@ class CoreModel(PlotManager):
             timeout: int = 800,
             **kwargs) -> 'CoreModel':
         """
-        Run APSIM model simulations to write the results either to SQLite data base or csv file. Does not collect the
-         simulated output inot memory. For this purpose. Please see  related APIs: :attr:`results` and :meth:`get_simulated_output`.
+        Run APSIM model simulations to write the results either to SQLite database or csv file. Does not collect the
+         simulated output into memory. Please see related APIs: :attr:`results` and :meth:`get_simulated_output`.
 
         Parameters
         ----------
@@ -696,7 +702,9 @@ class CoreModel(PlotManager):
 
             # Run APSIM externally
             res = run_model_externally(
-                self.model_info.path,
+                # we run using the copied file
+
+                self.path,
                 verbose=verbose,
                 to_csv=kwargs.get('to_csv', False),
                 timeout=timeout
@@ -718,6 +726,7 @@ class CoreModel(PlotManager):
             # close the datastore
             try:
                 self._DataStore.Close()
+                self.Datastore.Close()
             except AttributeError:
                 ...
 
@@ -1568,7 +1577,7 @@ class CoreModel(PlotManager):
         if isinstance(exclude, str):
             exclude = {exclude}
         elif not exclude:
-            exclude =set()
+            exclude = set()
         if simulations == 'all' or simulations is None or simulations == MissingOption:
             simulations = self.inspect_model('Models.Core.Simulation', fullpath=False)
             simulations = [str(i) for i in simulations if i not in exclude]
@@ -1700,24 +1709,34 @@ class CoreModel(PlotManager):
         self.ran_ok = False
         return self
 
-    def _get_report(self, report_name):
+    def _get_report(self, report_name, parent):
         """just fetches the report from the simulations database """
         if not APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
             if report_name:
-                get_report = ModelTools.find_child(self.Simulations, Models.Report, report_name)
+                get_report = ModelTools.find_child(parent, Models.Report, report_name)
                 # get_report = self.Simulations.FindDescendant[Models.Report](report_name)
             else:
-                get_report = self.Simulations.FindDescendant[Models.Report]()
+                get_report = parent.FindDescendant[Models.Report]()
         else:
             if report_name:
-                get_report = ModelTools.find_child(self.Simulations, Models.Report, report_name)
+                get_report = ModelTools.find_child(parent, Models.Report, report_name)
             else:
-                get_report = ModelTools.find_child_of_class(self.Simulations, Models.Report)
+                get_report = ModelTools.find_child_of_class(parent, Models.Report)
         get_report = CastHelper.CastAs[Models.Report](get_report)
         return get_report
 
+    def get_replacements_node(self):
+        # dont raise when not found, should be decided at the specific use context
+        return ModelTools.find_child(self.Simulations, Models.Core.Folder, child_name='Replacements')
+
+    def find_model_in_replacements(self, model_type, model_name):
+        """checks whether the model to be edited is in the replacement, there is no point to contnue editing from individual simulations"""
+        replacement = self.get_replacement_node()
+        if replacement:
+            return ModelTools.find_child(replacement, model_type, child_name=model_name)
+
     def add_report_variable(self, variable_spec: Union[list, str, tuple], report_name: str = None,
-                            set_event_names: Union[str, list] = None):
+                            set_event_names: Union[str, list] = None, simulations=None):
         """
         This adds a report variable to the end of other _variables, if you want to change the whole report use change_report
 
@@ -1765,22 +1784,29 @@ class CoreModel(PlotManager):
 
             Related APIs: :meth:`remove_report_variable` and :meth:`add_db_table`.
         """
-        if isinstance(variable_spec, str):
-            variable_spec = [variable_spec]
-        get_report = self._get_report(report_name)
-        get_cur_variables = list(get_report.VariableNames)
-        get_cur_variables.extend(variable_spec)
-        # remove any duplicate after appending
-        de_duped = list(dict.fromkeys(get_cur_variables))
-        get_cur_variables = de_duped
-        final_command = "\n".join(get_cur_variables)
-        get_report.set_VariableNames(final_command.strip().splitlines())
-        if set_event_names:
-            if isinstance(set_event_names, str):
-                set_event_names = [set_event_names]
-            set_event_names = list(set(set_event_names))
-            final_command = "\n".join(set_event_names)
-            get_report.set_EventNames(final_command.strip().splitlines())
+        if report_name is None:
+            raise ValueError('report or database table is required via `report_name` parameter')
+        sims = self.find_simulations(simulations)
+        rep = self.get_replacements_node()
+        if rep is not None and self.find_model_in_replacements(rep, model_type=Models.Report, model_name=report_name):
+            sims = {rep}
+        for sim in sims:
+            if isinstance(variable_spec, str):
+                variable_spec = [variable_spec]
+            get_report = self._get_report(report_name, sim)
+            get_cur_variables = list(get_report.VariableNames)
+            get_cur_variables.extend(variable_spec)
+            # remove any duplicate after appending
+            de_duped = list(dict.fromkeys(get_cur_variables))
+            get_cur_variables = de_duped
+            final_command = "\n".join(get_cur_variables)
+            get_report.set_VariableNames(final_command.strip().splitlines())
+            if set_event_names:
+                if isinstance(set_event_names, str):
+                    set_event_names = [set_event_names]
+                set_event_names = list(set(set_event_names))
+                final_command = "\n".join(set_event_names)
+                get_report.set_EventNames(final_command.strip().splitlines())
 
         self.save()
 
@@ -1862,7 +1888,7 @@ class CoreModel(PlotManager):
         remove_set = {_norm(s) for s in to_remove}
 
         # Locate report and get current variables
-        report = self._get_report(report_name)
+        report = self._get_report(report_name, self.Simulations)
         cur_vars = list(report.VariableNames or [])
 
         # De-duplicate while preserving order
@@ -3866,23 +3892,8 @@ class CoreModel(PlotManager):
 
         """
         try:
-
-            try:
-                store = ModelTools.find_child_of_class(self.Simulations, Models.Storage.DataStore)
-                # if store:
-                #     store = CastHelper.CastAs[Models.Storage.DataStore](store)
-                #     store.Dispose()
-                #     store.Close()
-
-                self._DataStore.Dispose()
-                self._DataStore.Close()
-
-
-            except AttributeError as e:
-                print(e)
-                ...
             path = Path(self.path)
-            db = path.with_suffix('.db')
+            _db = path.with_suffix('.db')
             bak = path.with_suffix('.bak')
             db_wal = path.with_suffix('.db-wal')
             db_shm = path.with_suffix('.db-shm')
@@ -3890,7 +3901,7 @@ class CoreModel(PlotManager):
                       self.inspect_model(Models.Report, fullpath=False)} if csv else {}
             clean_candidates = {bak, bak, db_wal, path, db_shm, *db_csv}
             if db:
-                clean_candidates.add(db)
+                clean_candidates.add(_db)
             for candidate in clean_candidates:
                 try:
                     _exists = candidate.exists()
@@ -4641,14 +4652,14 @@ if __name__ == '__main__':
     b = perf_counter()
     logger.info(f"{b - a}, 'seconds")
     df = model.results
-    model.add_db_table(variable_spec=['[Clock].Today.Year as year', '[Soil].Nutrient.TotalC[1]/1000 as SOC1'],
+    model.add_db_table(variable_spec=['[Clock].Today.Year as year', '[Soil].Nutrient.TotalC[1]/x1000 as SOC1'],
                        rename='soc_table')
     model.inspect_model_parameters('Models.Report', model_name='soc_table')
     model.run()
     model.relplot(x='year', y='SOC1', table='soc_table', kind='line')
     model.render_plot(show=False)
     from APSIM.Core import Node
-    from apsimNGpy.core.config import load_crop_from_disk
+
 
     sim = Node.Clone(model.Simulations.Node)
     simulations = Models.Core.Simulations()
@@ -4672,23 +4683,9 @@ if __name__ == '__main__':
         parent.Children.Add(model)
 
 
-    # ______________report____________________
-    report = Models.Report()
-    report.VariableNames = ["[Clock].Today"]
-    report.EventNames = ["[Clock].DoReport"]
-    sim.Children.Add(report)
-
-    # _____________weather___________
-    wf = Models.Climate.Weather()
-    wf.FileName = r"D:\My_BOX\Box\PhD thesis\Objective two\morrow plots 20250821\APSIM2025.8.7844.0\Examples\WeatherFiles\AU_Dalby.met"
-    add_model(sim, Models.Climate.Weather)
-    # _________________________zone___________
-    zone = Models.Core.Zone()
-    add_model(sim, zone)
-    # ____________fertilizer______________
-    add_model(sim, Models.Fertiliser)
-    # ____________summary_____________
-    add_model(sim, Models.Summary)
-    # ____________datastorage__________
-    add_model(simulations, Models.Storage.DataStore)
-    simulations.Children.Add(sim)
+    with CoreModel('Maize') as corep:
+        corep.run()
+        print('Path exists before exit:', Path(corep.path).exists())
+        print('datastore Path exists before exit:', Path(corep.datastore).exists())
+    print('Path exists after exit:', Path(corep.path).exists())
+    print('datastore Path exists after exit:', Path(corep.datastore).exists())

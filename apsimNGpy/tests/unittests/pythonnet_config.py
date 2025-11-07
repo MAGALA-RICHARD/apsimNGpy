@@ -13,20 +13,20 @@ import platform
 from pathlib import Path
 # --------------apsimNGpy related modules________________________
 from apsimNGpy.exceptions import ApsimBinPathConfigError
-from apsimNGpy.core.config import get_apsim_bin_path, locate_model_bin_path
+from apsimNGpy.core.config import get_apsim_bin_path, locate_model_bin_path, configuration
 from apsimNGpy.core import pythonet_config
 from apsimNGpy.core.pythonet_config import start_pythonnet, load_pythonnet, get_apsim_file_reader, \
     get_apsim_file_writer, is_file_format_modified
 
 from apsimNGpy.settings import logger
 
-CURRENT_BIN = get_apsim_bin_path()
+CURRENT_BIN = configuration.bin_path
 
 # ---- Helpers ---------------------------------------------------------------
 
 
 # ---- Test cases ------------------------------------------------------------
-bin = pythonet_config.config.get_apsim_bin_path()
+bin = configuration.bin_path
 
 if not locate_model_bin_path(bin):
     logger.info('Could not locate bin path and thus can not proceed with test pythonnet config module')

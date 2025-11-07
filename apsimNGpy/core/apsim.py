@@ -13,7 +13,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from apsimNGpy.core.core import CoreModel, Models, ModelTools
 
-
 from apsimNGpy.core.inspector import Inspector
 from System.Collections.Generic import *
 from Models.Core import Simulations
@@ -29,7 +28,7 @@ from apsimNGpy.settings import logger
 from apsimNGpy.core.soiler import SoilManager
 from apsimNGpy.core.runner import run_model_externally
 
-#===================================================================================================
+# ===================================================================================================
 
 
 # constants
@@ -295,7 +294,6 @@ class ApsimModel(CoreModel):
         if adjust_dul:
             self.adjust_dul(simulation_name)
         return self
-
 
     def __exit__(self, exc_type, exc, tb):
         # Optional flags on the instance:

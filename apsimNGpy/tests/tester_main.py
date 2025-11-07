@@ -129,14 +129,6 @@ for mod in modules:
     suite.addTests(loader.loadTestsFromModule(mod))
 
 
-def run_multiple_tests():
-    load = unittest.TestLoader()
-    suit = unittest.TestSuite()
-    runner = unittest.TextTestRunner(verbosity=2)
-    suit.addTest(load.loadTestsFromModule(test_multcores))
-    runner.run(suit)
-
-
 def run_suite(verbosity_level=2):
     logger.info('Running all tests')
     try:

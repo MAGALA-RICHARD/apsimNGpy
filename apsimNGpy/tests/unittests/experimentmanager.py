@@ -26,6 +26,17 @@ class TestExperiment(BaseTester):
         if isinstance(t_experiment.results, DataFrame):
             self.assertFalse(t_experiment.results.empty, msg='results are empty')
 
+    def test_context_manager(self):
+        with Experiment("Maize") as model:
+            datastore = Path(model.datastore)
+            model.run()
+            df = model.results
+            self.assertFalse(df.empty, msg=f'Empty data frame encountered')
+            self.assertTrue(Path(model.path).exists())
+        self.assertFalse(Path(model.path).exists(), 'Path exists; context manager not working')
+        self.assertFalse(datastore.exists(), msg=f'data store exists context manager not working')
+        print('context manager working')
+
     def test_add_factor_with_permutes_2_factors(self):
         t_experiment = self.experiment_model
         t_experiment.init_experiment(permutation=True)

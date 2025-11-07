@@ -175,7 +175,7 @@ class CoreModel(PlotManager):
 
     def __exit__(self, exc_type, exc, tb):
         self.clean_up()
-        return False # Any exception here is not allowed
+        return False  # Any exception here is not allowed
 
     def check_model(self):
         if hasattr(Models.Core.ApsimFile, "ConverterReturnType"):
@@ -717,7 +717,7 @@ class CoreModel(PlotManager):
 
             # If the model failed and verbose was off, rerun to diagnose
             if not self.ran_ok and not verbose:
-                logger.info('run time errors occured')
+                logger.info('run time errors occurred')
 
             return self
 
@@ -2120,7 +2120,8 @@ class CoreModel(PlotManager):
 
     def inspect_model_parameters(self, model_type: Union[Models, str], model_name: str,
                                  simulations: Union[str, list] = MissingOption,
-                                 parameters: Union[list, set, tuple, str] = 'all', **kwargs):
+                                 parameters: Union[list, set, tuple, str] = 'all',
+                                 exclude: list | set | tuple | str = None, **kwargs):
         """
         Inspect the input parameters of a specific ``APSIM`` model type instance within selected simulations.
 
@@ -2143,6 +2144,9 @@ class CoreModel(PlotManager):
         parameters: Union[str, set, list, tuple], optional
             A specific parameter or a collection of parameters to inspect. Defaults to `'all'`, in which case all accessible attributes are returned.
             For layered models like Solute, valid parameters include `Depth`, `InitialValues`, `SoluteBD`, `Thickness`, etc.
+        exclude: Union[str, list, tuple], optional
+            used to exclude a few simulations and include only the rest of the simulations
+            Added in v0.39.10.20+
 
         kwargs:
             Reserved for future compatibility; currently unused.
@@ -2374,12 +2378,12 @@ class CoreModel(PlotManager):
 
             Related API: :meth:`inspect_model_parameters_by_path`
         """
-
+        exclude = {exclude} if isinstance(exclude, str) or exclude is None else exclude
         if parameters == 'all':
             parameters = None
         if simulations == MissingOption or simulations is None or simulations == 'all':
             simulations = self.inspect_model(model_type='Models.Core.Simulation', fullpath=False)
-            simulations = [str(sim) for sim in simulations]
+            simulations = [str(sim) for sim in simulations if str(sim) not in exclude]
             simulations = simulations[0] if len(simulations) == 1 else simulations
 
         return inspect_model_inputs(self, model_type=model_type, model_name=model_name, simulations=simulations,
@@ -2983,7 +2987,8 @@ class CoreModel(PlotManager):
         formatted_date_string = date_object.strftime("%Y-%m-%dT%H:%M:%S")
         return formatted_date_string  # Output: 2010-01-01T00:00:00
 
-    def replace_met_file(self, *, weather_file: Union[Path, str], simulations=MissingOption, **kwargs) -> "Self":
+    def replace_met_file(self, *, weather_file: Union[Path, str], simulations=MissingOption,
+                         exclude: set | str | tuple | list = None, **kwargs):
         """
         .. deprecated:: 0.**x**
            This helper will be removed in a future release. Prefer newer weather
@@ -3014,6 +3019,9 @@ class CoreModel(PlotManager):
             all simulations yielded by :meth:`find_simulations` are updated.
             Acceptable types depend on your :meth:`find_simulations` contract
             (e.g., iterable of names, single name, or sentinel).
+        exclude: (str, tuple, list), optional
+           used to eliminate a given simulation from getting updated
+           Added in 0.39.10.20+
         **kwargs
             Ignored. Reserved for backward compatibility and future extensions.
 
@@ -3075,9 +3083,20 @@ class CoreModel(PlotManager):
         wf = os.fspath(weather_file)
         if not os.path.isfile(wf):
             raise FileNotFoundError(wf)
+        exclude = {exclude} if isinstance(exclude, str) or exclude is None else exclude
+        rep = self.get_replacements_node()
+
+        if rep:
+            weather_Nodes = ModelTools.find_all_in_scope(rep, Models.Climate.Weather)
+            if weather_Nodes:
+                for wet in weather_Nodes:
+                    wet.Name = os.path.realpath(wf)
+                return self  # no point continuing as they will not be used if the weather model is under replacements
 
         # Traverse simulations and update weather nodes
-        for sim in self.find_simulations(simulations):
+        simus = self.find_simulations(simulations=simulations)
+        sims = (i for i in simus if i.Name not in exclude)
+        for sim in sims:
             if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
                 weathers = ModelTools.find_all_in_scope(sim, Models.Climate.Weather)
             else:
@@ -3901,6 +3920,8 @@ class CoreModel(PlotManager):
                       self.inspect_model(Models.Report, fullpath=False)} if csv else {}
             clean_candidates = {bak, bak, db_wal, path, db_shm, *db_csv}
             if db:
+                from System import GC
+                GC.Collect()
                 clean_candidates.add(_db)
             for candidate in clean_candidates:
                 try:
@@ -3913,11 +3934,6 @@ class CoreModel(PlotManager):
                 except PermissionError:
                     if verbose:
                         logger.info(f'{candidate} could not be cleaned due to permission error')
-                    if db and coerce and candidate.suffix == '.db':
-                        try:
-                            delete_all_tables(candidate)
-                        except Exception as e:
-                            pass
 
         finally:
             ModelTools.COLLECT()
@@ -4652,14 +4668,13 @@ if __name__ == '__main__':
     b = perf_counter()
     logger.info(f"{b - a}, 'seconds")
     df = model.results
-    model.add_db_table(variable_spec=['[Clock].Today.Year as year', '[Soil].Nutrient.TotalC[1]/x1000 as SOC1'],
+    model.add_db_table(variable_spec=['[Clock].Today.Year as year', '[Soil].Nutrient.TotalC[1]/1000 as SOC1'],
                        rename='soc_table')
     model.inspect_model_parameters('Models.Report', model_name='soc_table')
     model.run()
     model.relplot(x='year', y='SOC1', table='soc_table', kind='line')
     model.render_plot(show=False)
     from APSIM.Core import Node
-
 
     sim = Node.Clone(model.Simulations.Node)
     simulations = Models.Core.Simulations()
@@ -4684,7 +4699,7 @@ if __name__ == '__main__':
 
 
     with CoreModel('Maize') as corep:
-        corep.run()
+        corep.run(verbose=True)
         print('Path exists before exit:', Path(corep.path).exists())
         print('datastore Path exists before exit:', Path(corep.datastore).exists())
     print('Path exists after exit:', Path(corep.path).exists())

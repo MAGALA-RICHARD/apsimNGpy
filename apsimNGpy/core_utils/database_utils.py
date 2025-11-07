@@ -39,6 +39,8 @@ def delete_table(db, table_name):
         table_to_drop.drop(engine)
     except NoSuchTableError:
         pass
+    finally:
+        engine.dispose(close=True)
 
 
 def delete_all_tables(db: str) -> None:
@@ -62,7 +64,7 @@ def delete_all_tables(db: str) -> None:
     except NoSuchTableError:
         pass
     finally:
-        engine.dispose()
+        engine.dispose(close=True)
 
 
 def dataview_to_dataframe(_model, reports):
@@ -139,12 +141,9 @@ def read_with_query(db, query):
     """
 
     # table = kwargs.get("table")
-    conn = sqlite3.connect(db)
-    try:
+    with sqlite3.connect(db) as conn:
         df = rsq(query, conn)
         return df
-    finally:
-        conn.close()
 
 
 def get_db_table_names(db):
@@ -164,18 +163,26 @@ def get_db_table_names(db):
 
 
 def pd_save_todb(datas: dict, database, if_exists):
-    engine = create_engine(f'sqlite:///{database}')
-    table_names, data = datas
 
-    data.to_sql(table_names, engine, if_exists=if_exists, index=False)
+    engine = create_engine(f'sqlite:///{database}')
+    try:
+        table_names, data = datas
+
+        data.to_sql(table_names, engine, if_exists=if_exists, index=False)
+    finally:
+        engine.dispose(close=True)
 
 
 def pl_save_todb(datas: tuple, database: str, if_exists: str):
     engine = create_engine(f'sqlite:///{database}')
-    table_name, data = datas
+    try:
+        table_name, data = datas
 
-    # Convert Polars DataFrame to pandas before saving
-    data.to_pandas().to_sql(table_name, engine, if_exists=if_exists, index=False)
+        # Convert Polars DataFrame to pandas before saving
+        data.to_pandas().to_sql(table_name, engine, if_exists=if_exists, index=False)
+    finally:
+        engine.dispose(close=True)
+
 
 
 def custom_remove_file(file):

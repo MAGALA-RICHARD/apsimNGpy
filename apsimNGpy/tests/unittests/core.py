@@ -65,7 +65,7 @@ class TestCoreModel(BaseTester):
         except PermissionError:
             pass
         cp = self.test_ap_sim.path
-        self.test_ap_sim.save(file_name=self.test_save_path, reload= False)
+        self.test_ap_sim.save(file_name=self.test_save_path, reload=False)
         self.assertGreater(self.test_save_path.stat().st_size, 0, 'saving the model failed when reload =False')
         self.assertEqual(cp, self.test_ap_sim.path)
 
@@ -466,6 +466,16 @@ class TestCoreModel(BaseTester):
         vs = self.test_ap_sim.inspect_model_parameters('Models.Report', 'Report')['VariableNames']
         vsIn = variable_spec in vs
         self.assertFalse(vsIn, msg=f'Variable {variable_spec} was not successfully removed')
+
+    def text_context_manager(self):
+        with CoreModel("Maize") as model:
+            datastore= Path(model.datastore)
+            model.run()
+            df = model.results
+            self.assertFalse(df.empty, msg=f'Empty data frame encountered')
+            self.assertTrue(Path(model.path).exists())
+        self.assertFalse(Path(model.path).exists(), 'Path exist; context manager not working')
+        self.assertFalse(datastore.exists(), msg=f'data store exist context manager not working')
 
     def tearDown(self):
         self.test_ap_sim.clean_up(db=True)

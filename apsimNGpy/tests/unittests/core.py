@@ -467,7 +467,7 @@ class TestCoreModel(BaseTester):
         vsIn = variable_spec in vs
         self.assertFalse(vsIn, msg=f'Variable {variable_spec} was not successfully removed')
 
-    def text_context_manager(self):
+    def test_context_manager(self):
         with CoreModel("Maize") as model:
             datastore= Path(model.datastore)
             model.run()

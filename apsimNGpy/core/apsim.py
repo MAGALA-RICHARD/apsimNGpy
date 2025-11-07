@@ -13,12 +13,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from apsimNGpy.core.core import CoreModel, Models, ModelTools
 
-with CoreModel('Maize', out_path='apl.apsimx') as corep:
-    corep.run(verbose=True)
-    print('Path exists before exit:', Path(corep.path).exists())
-    print('datastore Path exists before exit:', Path(corep.datastore).exists())
-print('Path exists after exit:', Path(corep.path).exists())
-print('datastore Path exists after exit:', Path(corep.datastore).exists())
 
 from apsimNGpy.core.inspector import Inspector
 from System.Collections.Generic import *

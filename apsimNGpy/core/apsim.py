@@ -327,6 +327,9 @@ class ApsimModel(CoreModel):
                 try:
                     from System import GC  # pythonnet
                     GC.Collect()
+                    import gc
+                    gc.collect()
+                    GC.WaitForPendingFinalizers()
                 except Exception:
                     pass
                 clean_candidates.add(_db)
@@ -719,3 +722,8 @@ if __name__ == '__main__':
     model = ApsimModel(maize_x, out_path=Path.home() / 'm.apsimx')
     model.get_soil_from_web(simulation_name=None, lonlat=(-89.9937, 40.4842), thinnest_layer=150, adjust_dul=True)
     # mod.get_soil_from_web(simulation_name=None, lonlat=(-93.045, 42.0541))
+    with ApsimModel("Maize") as model:
+        datastore = Path(model.datastore)
+        model.run()
+        df = model.results
+    print(os.path.exists(model.datastore))

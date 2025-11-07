@@ -38,6 +38,7 @@ class TestCoreModel(BaseTester):
             self.assertTrue(Path(model.path).exists())
         self.assertFalse(Path(model.path).exists(), 'Path exists; context manager not working')
         self.assertFalse(datastore.exists(), msg=f'data store exists context manager not working')
+        print('context manager working in ApsimModel Class')
 
     def test_clone_model(self):
         from apsimNGpy.core.run_time_info import BASE_RELEASE_NO, APSIM_VERSION_NO, GITHUB_RELEASE_NO

@@ -163,10 +163,6 @@ def run_model_externally(
             shell=False,
             timeout=timeout,
         )
-    except FileNotFoundError as e:
-        # Executable or model missing
-        logger.exception("Executable or model file not found for APSIM run.")
-        raise ApsimRuntimeError(str(e)) from e
     except PermissionError as e:
         logger.exception("Permission error launching APSIM.")
         raise ApsimRuntimeError(str(e)) from e
@@ -403,6 +399,8 @@ def run_from_dir(dir_path, pattern, verbose=False,
         finally:
             if process.poll() is None:
                 process.kill()
+            GC.Collect()
+            GC.WaitForPendingFinalizers()
 
     if write_tocsv and ran_ok and not run_only:
         logger.info(f"Loading data into memory.")

@@ -3,16 +3,16 @@ import os
 import unittest
 from pathlib import Path
 import gc
-from apsimNGpy.core.apsim import ApsimModel
+from apsimNGpy.core.apsim import ApsimModel, Models
 from apsimNGpy.tests.unittests.base_unit_tests import BaseTester
-from apsimNGpy.core_utils.clean import clean
-import tempfile
 
 from apsimNGpy.core.pythonet_config import is_file_format_modified
 
 wd = Path.cwd() / "test_apsim"
 wd.mkdir(parents=True, exist_ok=True)
 os.chdir(wd)
+
+Models = Models
 
 
 class TestCoreModel(BaseTester):
@@ -28,6 +28,16 @@ class TestCoreModel(BaseTester):
         self.test_ap_sim.run()
         self.assertTrue(self.test_ap_sim.ran_ok)
         self.test_ap_sim.clean_up(db=True)
+
+    def test_context_manager(self):
+        with ApsimModel("Maize") as model:
+            datastore = Path(model.datastore)
+            model.run()
+            df = model.results
+            self.assertFalse(df.empty, msg=f'Empty data frame encountered')
+            self.assertTrue(Path(model.path).exists())
+        self.assertFalse(Path(model.path).exists(), 'Path exists; context manager not working')
+        self.assertFalse(datastore.exists(), msg=f'data store exists context manager not working')
 
     def test_clone_model(self):
         from apsimNGpy.core.run_time_info import BASE_RELEASE_NO, APSIM_VERSION_NO, GITHUB_RELEASE_NO
@@ -78,7 +88,7 @@ class TestCoreModel(BaseTester):
         else:
             self.skipTest('version can not mock simulations object using nodes')
         # creates a Models.Core.Simulations object
-        mock_sims =  NodeUtils.Node.Create(Models.Core.Simulations())
+        mock_sims = NodeUtils.Node.Create(Models.Core.Simulations())
         sim = Models.Core.Simulation()
         # add zone
         zone = Models.Core.Zone()

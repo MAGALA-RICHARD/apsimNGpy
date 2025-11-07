@@ -4662,32 +4662,15 @@ if __name__ == '__main__':
     home = Path.home()
 
     # model = load_default_simulations('maize')
-    model = CoreModel(model='Maize', out=home / 'tesit_.apsimx')
-    a = perf_counter()
-    model.run('Report', verbose=True)
-    b = perf_counter()
-    logger.info(f"{b - a}, 'seconds")
-    df = model.results
-    model.add_db_table(variable_spec=['[Clock].Today.Year as year', '[Soil].Nutrient.TotalC[1]/1000 as SOC1'],
-                       rename='soc_table')
-    model.inspect_model_parameters('Models.Report', model_name='soc_table')
-    model.run()
-    model.relplot(x='year', y='SOC1', table='soc_table', kind='line')
-    model.render_plot(show=False)
-    from APSIM.Core import Node
-
-    sim = Node.Clone(model.Simulations.Node)
-    simulations = Models.Core.Simulations()
-    imodel = CastHelper.CastAs[Models.Core.Simulations](model.Simulations)
-    mo = load_apsim_model(model.path)
-    sim = Models.Core.Simulation()
-    clock = Models.Clock()
-    from System import DateTime
-
-    # ___________ clock__________________
-    clock.StartDate = DateTime(1980, 1, 1)
-    clock.EndDate = DateTime(2020, 1, 1)
-    sim.Children.Add(clock)
+    with CoreModel(model='Maize') as model:
+        a = perf_counter()
+        model.run('Report', verbose=True)
+        b = perf_counter()
+        logger.info(f"{b - a}, 'seconds")
+        df = model.results
+        model.add_db_table(variable_spec=['[Clock].Today.Year as year', '[Soil].Nutrient.TotalC[1]/1000 as SOC1'],
+                           rename='soc_table')
+        model.inspect_model_parameters('Models.Report', model_name='soc_table')
 
 
     def add_model(parent, model_type):

@@ -10,17 +10,12 @@ from typing import Dict, Any, Union
 import contextlib
 import pandas as pd
 
-import logging
-import os
-import shutil
-import subprocess
-from pathlib import Path
+
 from typing import Mapping, Optional, Union
 
 from functools import lru_cache
 from apsimNGpy.core.config import get_apsim_bin_path
-from apsimNGpy.settings import logger
-from apsimNGpy.core_utils.utils import timer
+
 import contextlib
 from apsimNGpy.settings import *
 from apsimNGpy.core_utils.database_utils import read_db_table, get_db_table_names
@@ -30,9 +25,8 @@ import subprocess
 from apsimNGpy.exceptions import ApsimRuntimeError
 
 apsim_bin_path = Path(get_apsim_bin_path())
-import clr
-import System
 
+from System import GC
 # Determine executable based on OS
 if platform.system() == "Windows":
     APSIM_EXEC = apsim_bin_path / "Models.exe"
@@ -143,7 +137,7 @@ def run_model_externally(
     exec_path = _ensure_exec(apsim_exec)
     model_path = _ensure_model(model)
 
-    cmd = [exec_path, model_path, 'cpu_count', '19']
+    cmd = [exec_path, model_path, 'cpu_count', '-1']
     if verbose:
         cmd.append("--verbose")
     if to_csv:
@@ -189,6 +183,11 @@ def run_model_externally(
         # Low-level OS error (e.g., exec format error)
         logger.exception("OS error during APSIM run.")
         raise ApsimRuntimeError(str(e)) from e
+    finally:
+
+        # clear any external file database locks by using Garbage collector; as a matter of fact, python's gc failed to do the job
+        GC.Collect()
+        GC.WaitForPendingFinalizers()
 
     if verbose and proc.stdout:
         logger.info("APSIM stdout for %s:\n%s", model_path, proc.stdout.strip())

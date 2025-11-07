@@ -275,6 +275,21 @@ def get_apsim_bin_path():
     return _get_bin()
 
 
+@dataclasses.dataclass
+class Configuration:
+    bin_path: Union[Path, str] = get_apsim_bin_path() or any_bin_path_from_env()
+
+    def set_temporal_bin_path(self, temporal_bin_path):
+        self.bin_path = locate_model_bin_path(temporal_bin_path)
+
+    def release_temporal_bin_path(self):
+        """release and set back to the global bin path"""
+        self.bin_path = get_apsim_bin_path() or any_bin_path_from_env()
+
+
+configuration = Configuration()
+
+
 def get_bin_use_history():
     """
     shows the bins that have been used only those still available on the computer as valid paths are shown.
@@ -381,7 +396,7 @@ def set_apsim_bin_path(path: Union[str, Path],
 
 
 @cache
-def apsim_version(bin_path=get_apsim_bin_path(), release_number: bool = False, verbose: bool = False):
+def apsim_version(bin_path=configuration.bin_path, release_number: bool = False, verbose: bool = False):
     """
     Display version information of the APSIM model currently
     in the apsimNGpy config environment. runs externally through subprocess module
@@ -442,7 +457,7 @@ _memory_cache: dict[tuple, Any] = {}
 
 
 def _load_crop_from_disk(crop: str, out: Union[str, Path], bin_path: Union[str, Path]) -> None:
-    BIN = bin_path or get_apsim_bin_path()
+    BIN = bin_path or configuration.bin_path
 
     if ".apsimx" in crop:
         crop, suffix = crop.split(".")
@@ -547,21 +562,6 @@ def stamp_name_with_version(file_name):
     return dest_path
 
 
-@dataclasses.dataclass
-class Configuration:
-    bin_path: Union[Path, str] = get_apsim_bin_path()
-
-    def set_temporal_bin_path(self, temporal_bin_path):
-        self.bin_path = locate_model_bin_path(temporal_bin_path)
-
-    def release_temporal_bin_path(self):
-        """release and set back to the global bin path"""
-        self.bin_path = get_apsim_bin_path()
-
-
-configuration = Configuration()
-
-
 class apsim_bin_context(AbstractContextManager):
     """
         Temporarily configure the APSIM-NG *bin* path used by ``apsimNGpy`` so imports
@@ -638,7 +638,7 @@ class apsim_bin_context(AbstractContextManager):
             apsim_bin_path: str | os.PathLike | None = None,
             dotenv_path: str | os.PathLike | None = None,
             bin_key: str = '',
-            timeout=0.003,
+
     ) -> None:
         bin_path: str | None = None
 
@@ -667,14 +667,12 @@ class apsim_bin_context(AbstractContextManager):
                 "APSIM_BIN_PATH / APSIM_MODEL_PATH via environment/.env."
             )
 
-        # Optional: sanity check the path exists
+        # Optional: check the path exists
         p = Path(bin_path)
         if not p.exists():
             raise FileNotFoundError(f"APSIM bin path not found: {p}")
 
         self.bin_path = str(p)
-        self._prev_bin_path: str | None = get_apsim_bin_path()
-        self.timeout = timeout
 
     def __enter__(self):
         # Save and set
@@ -707,11 +705,3 @@ if __name__ == "__main__":
             with self.assertRaises(FileNotFoundError):
                 with apsim_bin_context(dotenv_path="dot_ev_path"):
                     pass
-
-
-    print(configuration.bin_path)
-    configuration.set_temporal_bin_path(r"C:\Program Files\APSIM2024.5.7493.0\bin")
-    print(configuration.bin_path)
-    configuration.release_temporal_bin_path()
-    print(configuration.bin_path)
-    # unittest.main()

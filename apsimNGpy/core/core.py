@@ -174,8 +174,9 @@ class CoreModel(PlotManager):
         return self
 
     def __exit__(self, exc_type, exc, tb):
+        gc.collect()
         self.clean_up()
-        return False  # Any exception here is not allowed
+        return None
 
     def check_model(self):
         if hasattr(Models.Core.ApsimFile, "ConverterReturnType"):
@@ -723,10 +724,14 @@ class CoreModel(PlotManager):
 
         finally:
             ...
+            from System import GC
+            GC.Collect()
             # close the datastore
             try:
                 self._DataStore.Close()
                 self.Datastore.Close()
+
+
             except AttributeError:
                 ...
 

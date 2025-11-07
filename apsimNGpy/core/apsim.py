@@ -3,21 +3,23 @@ Interface to APSIM simulation models using Python.NET
 author: Richard Magala
 email: magalarich20@gmail.com
 """
-import logging, pathlib
+
 from builtins import str
 from typing import Union, Any, Optional, Tuple, Mapping, Sequence
 import os
 import numpy as np
-import time
-from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganiseSoilProfile
-import apsimNGpy.manager.weathermanager as weather
 import pandas as pd
 from dataclasses import dataclass
-import sys
-# prepare for the C# import
-# from apsimNGpy.core.pythonet_config import start_pythonnet
 from pathlib import Path
 from apsimNGpy.core.core import CoreModel, Models, ModelTools
+
+with CoreModel('Maize', out_path='apl.apsimx') as corep:
+    corep.run(verbose=True)
+    print('Path exists before exit:', Path(corep.path).exists())
+    print('datastore Path exists before exit:', Path(corep.datastore).exists())
+print('Path exists after exit:', Path(corep.path).exists())
+print('datastore Path exists after exit:', Path(corep.datastore).exists())
+
 from apsimNGpy.core.inspector import Inspector
 from System.Collections.Generic import *
 from Models.Core import Simulations
@@ -31,6 +33,11 @@ from apsimNGpy.core.model_loader import get_node_by_path
 from apsimNGpy.core.model_tools import find_child_of_class
 from apsimNGpy.settings import logger
 from apsimNGpy.core.soiler import SoilManager
+from apsimNGpy.core.runner import run_model_externally
+
+#===================================================================================================
+
+
 # constants
 REPORT_PATH = {'Carbon': '[Soil].Nutrient.TotalC/1000 as dyn', 'DUL': '[Soil].SoilWater.PAW as paw', 'N03':
     '[Soil].Nutrient.NO3.ppm as N03'}
@@ -294,6 +301,58 @@ class ApsimModel(CoreModel):
         if adjust_dul:
             self.adjust_dul(simulation_name)
         return self
+
+
+    def __exit__(self, exc_type, exc, tb):
+        # Optional flags on the instance:
+        #   self.db  -> whether to remove the SQLite db sidecar(s) [default: True]
+        #   self.csv -> whether to remove generated .csv report sidecars [default: False]
+        db_flag = getattr(self, "db", True)
+        csv_flag = getattr(self, "csv", True)
+
+        try:
+            path = Path(self.path)
+
+            # Common sidecars we may want to clean
+            _db = path.with_suffix('.db')
+            bak = path.with_suffix('.bak')
+            db_wal = path.with_suffix('.db-wal')
+            db_shm = path.with_suffix('.db-shm')
+
+            clean_candidates = {bak, db_wal, db_shm, path}
+
+            # Optionally include report CSVs like <file>.<ReportName>.csv
+            if csv_flag:
+                try:
+                    reps = self.inspect_model(Models.Report, fullpath=False)
+                    clean_candidates.update({path.with_suffix(f'.{rep}.csv') for rep in reps})
+                except Exception:
+                    # If inspect_model/Models is unavailable, skip CSV cleanup
+                    pass
+
+            # Optionally include the SQLite .db sidecar (force GC on pythonnet/.NET first)
+            if db_flag:
+                try:
+                    from System import GC  # pythonnet
+                    GC.Collect()
+                except Exception:
+                    pass
+                clean_candidates.add(_db)
+
+            # Remove files if present
+            for candidate in clean_candidates:
+                try:
+                    candidate.unlink(missing_ok=True)
+                except PermissionError:
+                    # File locked; leave it
+                    pass
+
+        except PermissionError:
+            # Path itself locked; nothing we can do here
+            pass
+
+        # Do not suppress exceptions from the with-block
+        return False
 
     def adjust_dul(self, simulations: Union[tuple, list] = None):
         """
@@ -668,4 +727,3 @@ if __name__ == '__main__':
     model = ApsimModel(maize_x, out_path=Path.home() / 'm.apsimx')
     model.get_soil_from_web(simulation_name=None, lonlat=(-89.9937, 40.4842), thinnest_layer=150, adjust_dul=True)
     # mod.get_soil_from_web(simulation_name=None, lonlat=(-93.045, 42.0541))
-    model.preview_simulation()

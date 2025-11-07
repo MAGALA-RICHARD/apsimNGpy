@@ -546,3 +546,12 @@ if __name__ == '__main__':
     #                factor_name='Population')
     # exp.finalize()
     # exp.preview_simulation()
+    from pathlib import Path
+    with ExperimentManager('Maize', out_path='aple.apsimx') as corep:
+        corep.run(verbose=True)
+        print('Path exists before exit:', Path(corep.path).exists())
+        print('datastore Path exists before exit:', Path(corep.datastore).exists())
+    print('Path exists after exit:', Path(corep.path).exists())
+    print('datastore Path exists after exit:', Path(corep.datastore).exists())
+
+

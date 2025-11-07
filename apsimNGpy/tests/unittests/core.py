@@ -474,8 +474,8 @@ class TestCoreModel(BaseTester):
             df = model.results
             self.assertFalse(df.empty, msg=f'Empty data frame encountered')
             self.assertTrue(Path(model.path).exists())
-        self.assertFalse(Path(model.path).exists(), 'Path exist; context manager not working')
-        self.assertFalse(datastore.exists(), msg=f'data store exist context manager not working')
+        self.assertFalse(Path(model.path).exists(), 'Path exists; context manager not working')
+        self.assertFalse(datastore.exists(), msg=f'data store exists context manager not working')
 
     def tearDown(self):
         self.test_ap_sim.clean_up(db=True)

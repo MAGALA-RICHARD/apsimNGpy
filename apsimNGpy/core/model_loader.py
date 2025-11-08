@@ -19,7 +19,7 @@ import json
 from os.path import (realpath)
 import shutil
 from pathlib import Path
-from apsimNGpy.core.config import get_apsim_bin_path,load_crop_from_disk
+from apsimNGpy.core.config import get_apsim_bin_path, load_crop_from_disk
 import subprocess
 from dataclasses import dataclass
 from typing import Any
@@ -28,7 +28,7 @@ from apsimNGpy.core.cs_resources import CastHelper as CastHelpers
 from apsimNGpy.core.pythonet_config import get_apsim_file_reader, get_apsim_file_writer
 from apsimNGpy.core.pythonet_config import is_file_format_modified
 from apsimNGpy.core.pythonet_config import get_apsim_version as apsim_version
-
+from System import GC
 GLOBAL_IS_FILE_MODIFIED = is_file_format_modified()
 scratch_dir = Path.cwd().joinpath('scratch')
 scratch_dir.mkdir(exist_ok=True)
@@ -118,7 +118,6 @@ def copy_file(
     """
     # Ensure working directory is set. defaults to current working directory
 
-
     # noramlize destination path
     dest_path = str(Path(destination).resolve().with_suffix('.apsimx'))
     shutil.copy2(source, dest_path)
@@ -186,7 +185,8 @@ def load_from_path(path2file, method='string'):
     return new_model
 
 
-def load_apsim_model(model=None, out_path=None, file_load_method='string', met_file=None, wd=None, tag='temp_', **kwargs):
+def load_apsim_model(model=None, out_path=None, file_load_method='string', met_file=None, wd=None, tag='temp_',
+                     **kwargs):
     """
     Load an APSIMX model from a file path, dictionary, or in-memory object.
 
@@ -209,14 +209,15 @@ def load_apsim_model(model=None, out_path=None, file_load_method='string', met_f
     def _has_no_dir(p) -> bool:
         p = Path(p)
         return p.parent == Path('.') or p.parent == Path(p.anchor)
+
     out = {}  # Store a final output path
     wd = Path(wd or SCRATCH)
-    DEFAULT_PATH = wd/f"{tag}{uuid.uuid1()}_{version[-6:]}_"
+    DEFAULT_PATH = wd / f"{tag}{uuid.uuid1()}_{version[-6:]}_"
     if out_path:
         if _has_no_dir(out_path):
-            out_path = Path(SCRATCH)/out_path
+            out_path = Path(SCRATCH) / out_path
     out_ = Path(out_path or DEFAULT_PATH)
-    out_path  = out_.with_suffix('.apsimx')
+    out_path = out_.with_suffix('.apsimx')
     match model:
         case dict():
             output = out_path
@@ -326,6 +327,8 @@ def recompile(_model, out=None, met_path=None, ):
             DataStore = ''
     if DataStore:
         DataStore = CastHelpers.CastAs[Models.Storage.DataStore](DataStore)
+    GC.Collect()
+    GC.WaitForPendingFinalizers()
     # need to make ModelData a constant and named outside the script for consistency across scripts
     # ModelData = namedtuple('model_data', ['IModel', 'path', 'datastore', "DataStore", 'results', 'met_path'])
     return ModelData(IModel=out_model,
@@ -420,6 +423,15 @@ def get_node_by_path(node, node_path):
     raise NodeNotFoundError(f'Node with supplied path: `{node_path}` was not found')
 
 
+def get_node_and_type(node, node_path):
+    nodel = get_node_by_path(node, node_path=node_path)
+    model = getattr(nodel, 'Model', nodel)
+    model_type = model.GetType()
+    mt = CastHelpers.CastAs[model_type](model)
+    if nodel is not None:
+        return {'node': nodel, 'model_type':type(mt)}
+
+
 def get_node_string(node):
     """
 
@@ -447,3 +459,4 @@ if __name__ == '__main__':
     getattr(Models.Core.ApsimFile, "FileFormat", None)
     # set_apsim_bin_path(r'/Applications/APSIM2025.2.7670.0.app/Contents/Resources/bin')
     to_json_string(model2)
+    get_node_and_type(load.Simulations, '.Simulations.Simulation')

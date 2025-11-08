@@ -174,7 +174,6 @@ class CoreModel(PlotManager):
         return self
 
     def __exit__(self, exc_type, exc, tb):
-        gc.collect()
         self.clean_up()
         return None
 
@@ -352,19 +351,27 @@ class CoreModel(PlotManager):
         instance class.
 
         """
+
         _path = str(file_name or self.path)
 
-        if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
-            self.Simulations.Write(str(_path))
-        else:
-            sm = getattr(self.Simulations, 'Node', self.Simulations)
-            save_model_to_file(sm, out=_path)
-        # rest the reference path to the saved filename or path
-        if reload:
-            model_info = recompile(self)
-            self.restart_model(model_info)
-            self.path = _path
-        return self
+        try:
+            _path = str(file_name or self.path)
+
+            if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
+                #self.Simulations.Write(str(_path))
+                save_model_to_file(getattr(self.Simulations, 'Node', self.Simulations), str(_path))
+            else:
+                sm = getattr(self.Simulations, 'Node', self.Simulations)
+                save_model_to_file(sm, out=_path)
+            # rest the reference path to the saved filename or path
+            if reload:
+                model_info = recompile(self)
+                self.restart_model(model_info)
+                self.path = _path
+            return self
+        finally:
+
+           pass
 
     @property
     def results(self) -> pd.DataFrame:
@@ -697,7 +704,8 @@ class CoreModel(PlotManager):
                         self._DataStore.Dispose()
                         self.Datastore.Dispose()
                     except AttributeError:
-                        delete_all_tables(str(db))
+                        pass
+                        #delete_all_tables(str(db))
                 except PermissionError:
                     pass
 
@@ -724,16 +732,7 @@ class CoreModel(PlotManager):
 
         finally:
             ...
-            from System import GC
-            GC.Collect()
-            # close the datastore
-            try:
-                self._DataStore.Close()
-                self.Datastore.Close()
 
-
-            except AttributeError:
-                ...
 
     def rename_model(self, model_type, *, old_name, new_name):
         """

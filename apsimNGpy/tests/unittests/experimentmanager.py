@@ -3,9 +3,12 @@ import unittest
 from pandas import DataFrame
 from apsimNGpy.tests.unittests.base_unit_tests import BaseTester
 from apsimNGpy.core.experimentmanager import ExperimentManager as Experiment
+from apsimNGpy.core.apsim import ApsimModel
 from pathlib import Path
-
+from apsimNGpy.core.utils_for_experimnet import create
 cwd = Path.cwd()
+
+
 
 
 class TestExperiment(BaseTester):
@@ -29,12 +32,19 @@ class TestExperiment(BaseTester):
     def test_context_manager(self):
         with Experiment("Maize") as model:
             datastore = Path(model.datastore)
+            model.init_experiment(permutation=True)
+            model.add_factor(specification="[Sow using a variable rule].Script.Population =4 to 8 step 2",
+                                    factor_name='Population')
+
+            model.add_factor(specification="[Sow using a variable rule].Script.Population =4 to 8 step 2",
+                                    factor_name='Population')
+
             model.run()
             df = model.results
             self.assertFalse(df.empty, msg=f'Empty data frame encountered')
             self.assertTrue(Path(model.path).exists())
-        self.assertFalse(Path(model.path).exists(), 'Path exists; context manager not working')
-        self.assertFalse(datastore.exists(), msg=f'data store exists context manager not working')
+        self.assertFalse(Path(model.path).exists(), 'Path exists; context manager not working as expected')
+        self.assertFalse(datastore.exists(), msg=f'data store exists context manager not working as expected')
         print('context manager working')
 
     def test_add_factor_with_permutes_2_factors(self):

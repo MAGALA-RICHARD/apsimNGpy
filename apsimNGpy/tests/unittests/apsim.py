@@ -82,10 +82,10 @@ class TestCoreModel(BaseTester):
 
     def test_saving_while_using_auto_context_manager_no_reload(self):
         """
-          Ensure that the simulations are written to file when the .apsimx file is saved and reloaded below  the with block.
+          Ensure that the simulations are written to file when the .apsimx file is saved and reloaded below the with block.
          If the saved filename differs from the current one, that new file should be retained.
          Saving inside the with block, however, defeats the purpose of this context manager,
-          which is intended to use a temporary working file and automatically delete it on exit.
+          which is intended to use a temporary working file and automatically delete it on exit. So, here we are just testing the expected behaviors
             """
 
         with ApsimModel('Maize') as model:
@@ -96,7 +96,7 @@ class TestCoreModel(BaseTester):
             model.save(file_name=fname, reload=False)
             # it will be deleted anyway but just testing
             self.assertTrue(Path(fname).exists(), 'saving failed while in with block')
-            # it must have been deleted by this time
+        # it must still exist on the computer
         try:
             self.assertTrue(Path(fname).exists(), 'saved file does not exists after exiting the with block')
         finally:

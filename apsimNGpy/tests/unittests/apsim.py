@@ -40,6 +40,71 @@ class TestCoreModel(BaseTester):
         self.assertFalse(datastore.exists(), msg=f'data store exists context manager not working')
         print('context manager working in ApsimModel Class')
 
+    def test_model_editing_in_test_context_manager(self):
+        """
+        Ensure that changes are occurring with model editing in test context manager
+        """
+
+        with ApsimModel('Maize') as model:
+            model.edit_model('Models.Manager', 'Sow using a variable rule', Population=4)
+            mn1 = model.run().results.Yield.mean()
+            model.edit_model('Models.Manager', 'Sow using a variable rule', Population=9.2)
+            mn2 = model.run().results.Yield.mean()
+            # expect high-planting density to produce more yield that a lower one hence, asserting greater than lower population density
+            self.assertGreater(mn2, mn1,
+                               'mean corn yield at high population density is not greater than mean at low population density')
+        # should be called after exiting with block
+        self.assertFalse(Path(model.datastore).exists(), 'context manager now working as expected while model editing')
+        self.assertFalse(Path(model.path).exists(), 'context manager now working as expected while model editing')
+
+    def test_saving_while_using_auto_context_manager_reload(self):
+        """
+            Ensure that saving apsimx file and reloading within the with block works correctly, and that the file will still be deleted
+            """
+
+        with ApsimModel('Maize') as model:
+            model.edit_model('Models.Manager', 'Sow using a variable rule', Population=4)
+
+            model.edit_model('Models.Manager', 'Sow using a variable rule', Population=9.2)
+            model.run().results.Yield.mean()
+            fname = f"{self._testMethodName}.apsimx"
+            model.save(file_name=fname, reload=True)
+            # it will be deleted anyway but just testing
+            self.assertTrue(Path(fname).exists(), 'saving failed while in with block')
+            # it must have been deleted by this time
+        try:
+            self.assertFalse(Path(fname).exists(), 'saved file still exists even after exiting the with block')
+        finally:
+            try:
+                Path(fname).unlink(missing_ok=True)
+            except PermissionError:
+                pass
+
+    def test_saving_while_using_auto_context_manager_no_reload(self):
+        """
+          Ensure that the simulations are written to file when the .apsimx file is saved and reloaded below  the with block.
+         If the saved filename differs from the current one, that new file should be retained.
+         Saving inside the with block, however, defeats the purpose of this context manager,
+          which is intended to use a temporary working file and automatically delete it on exit.
+            """
+
+        with ApsimModel('Maize') as model:
+            model.edit_model('Models.Manager', 'Sow using a variable rule', Population=4)
+            mn1 = model.run().results.Yield.mean()
+            model.edit_model('Models.Manager', 'Sow using a variable rule', Population=9.2)
+            fname = f"{self._testMethodName}.apsimx"
+            model.save(file_name=fname, reload=False)
+            # it will be deleted anyway but just testing
+            self.assertTrue(Path(fname).exists(), 'saving failed while in with block')
+            # it must have been deleted by this time
+        try:
+            self.assertTrue(Path(fname).exists(), 'saved file does not exists after exiting the with block')
+        finally:
+            try:
+                Path(fname).unlink(missing_ok=True)
+            except PermissionError:
+                pass
+
     def test_clone_model(self):
         from apsimNGpy.core.run_time_info import BASE_RELEASE_NO, APSIM_VERSION_NO, GITHUB_RELEASE_NO
         model = self.test_ap_sim

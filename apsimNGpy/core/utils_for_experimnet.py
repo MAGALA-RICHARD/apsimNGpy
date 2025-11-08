@@ -522,25 +522,7 @@ class ExperimentManager:
 
 if __name__ == '__main__':
     from runner import trial_run as run_p
-
-    with ApsimModel("Maize") as model:
-        # model.run()
-        tp =run_p(model, )
-        exp = ExperimentManager(model, )
-        exp.init_experiment(permutation=False)
-        # exp.add_factor("[Fertilise at sowing].Script.Amount = 0 to 200 step 20")
-        # exp.add_factor("[Fertilise at sowing].Script.FertiliserType= DAP,NO3N")
-        # exp.add_factor(specification="[Sow using a variable rule].Script.RowSpacing = 100, 450, 700",
-        #                factor_name='Population')
-        # exp.add_factor(specification="[Sow using a variable rule].Script.RowSpacing = 100, 450, 700",
-        #                factor_name='Population')
-        # # exp.add_factor(specification="[Sow using a variable rule].Script.RowSpacing = 100, 450, 700",
-        # #                factor_name='Population')
-        # # exp.finalize()
-        # # exp.preview_simulation()
+    with ApsimModel('Maize') as model:
+        dt = run_p(model, )
 
 
-        print('Path exists before exit:', Path(model.path).exists())
-        print('datastore Path exists before exit:', Path(model.datastore).exists())
-    print('Path exists after exit:', Path(model.path).exists())
-    print('datastore Path exists after exit:', Path(model.datastore).exists())

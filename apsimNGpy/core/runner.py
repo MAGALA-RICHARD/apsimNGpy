@@ -472,12 +472,13 @@ def trial_run(self, report_name=None,
             else Models.Core.Run.Runner.RunTypeEnum.SingleThreaded
 
         # Open and optionally clean the datastore
-        self._DataStore.Open()
+
         if clean:
-            self._DataStore.Dispose()
-            pathlib.Path(self._DataStore.FileName).unlink(missing_ok=True)
+            self._DataStore.Dispose(True)
+            self._DataStore.set_FileName(str(self.datastore))
 
         # Get simulations to run
+        self._DataStore.Open()
         sims = self.find_simulations(simulations) if simulations else self.Simulations
         if simulations:
             cs_sims = List[Models.Core.Simulation]()
@@ -490,19 +491,22 @@ def trial_run(self, report_name=None,
         #file = get_apsim_file_reader('file')[Models.Core.Simulations](self.path).Model
 
 
-        Runner =   Models.Core.Run.Runner(self.Simulations)
-        Runner.Run();
+        Runner =   Models.Core.Run.Runner(self.Simulations.Node.Model)
+        Runner.Run()
         # Run the model
-        _run_model = Models.Core.Run.Runner(sim, wait=True)
-        errors = _run_model.Run()
+        _run_model = Models.Core.Run.Runner(self.path, wait=True)
+        #errors = _run_model.Run()
         invoke_csharp_gc()
 
-        if errors:
-            print(errors[0].ToString())
+
 
         # Determine report names
         if report_name is None:
             report_name = get_db_table_names(self.datastore)
+            if 'Report' in report_name:
+                print('success')
+            else:
+                print('fail')
             if '_Units' in report_name:
                 report_name.remove('_Units')
             if verbose:

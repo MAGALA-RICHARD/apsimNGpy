@@ -73,7 +73,7 @@ class ExperimentManager(ApsimModel):
         self.counter = 0
         self.sims = self.simulations
         self.init = False
-        self._simulations_closed = False
+        self.is_simulations_closed = False
 
     def __enter__(self):
         return self
@@ -88,7 +88,7 @@ class ExperimentManager(ApsimModel):
             invoke_csharp_gc()
 
             self.clean_up(db=True)
-            self._simulations_closed =True
+            self.is_simulations_closed =True
         except PermissionError:
             print(self.model_info.datastore)
     # put here during debugging context db file manager, but sure will be removed after full tests
@@ -156,7 +156,7 @@ class ExperimentManager(ApsimModel):
            Related APIs: :attr:`results` and :meth:`get_simulated_output`.
              """
         try:
-
+            from System import InvalidOperationException
             self.save()
             if clean_up:
                 try:
@@ -166,7 +166,7 @@ class ExperimentManager(ApsimModel):
                     try:
                         self._DataStore.Dispose()
                         self.Datastore.Dispose()
-                    except AttributeError:
+                    except (AttributeError, InvalidOperationException):
                         pass
                         # delete_all_tables(str(db))
                 except PermissionError:

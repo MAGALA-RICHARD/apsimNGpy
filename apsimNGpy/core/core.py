@@ -44,6 +44,7 @@ from apsimNGpy.core.plotmanager import PlotManager
 from apsimNGpy.core.model_tools import find_child
 import Models
 from apsimNGpy.core.pythonet_config import get_apsim_version as apsim_version
+from System import InvalidOperationException
 from apsimNGpy.core_utils.deco import add_outline
 
 # constants
@@ -692,20 +693,21 @@ class CoreModel(PlotManager):
 
            Related APIs: :attr:`results` and :meth:`get_simulated_output`.
              """
+        def dispose_db():
+            try:
+                self._DataStore.Dispose()
+                self.Datastore.Close()
+            except AttributeError:
+                pass
+            except InvalidOperationException:
+                pass
+
         try:
 
             self.save()
             if clean_up:
                 try:
-                    _path = Path(self.path)
-                    db = _path.with_suffix('.db')
-                    # delete or clear all tables
-                    try:
-                        self._DataStore.Dispose(True)
-                        self.Datastore.Close()
-                    except AttributeError:
-                        pass
-
+                    dispose_db()
                 except PermissionError:
                     pass
 

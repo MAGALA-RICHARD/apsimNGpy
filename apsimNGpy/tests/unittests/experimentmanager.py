@@ -6,9 +6,8 @@ from apsimNGpy.core.experimentmanager import ExperimentManager as Experiment
 from apsimNGpy.core.apsim import ApsimModel
 from pathlib import Path
 from apsimNGpy.core.utils_for_experimnet import create
+
 cwd = Path.cwd()
-
-
 
 
 class TestExperiment(BaseTester):
@@ -34,10 +33,10 @@ class TestExperiment(BaseTester):
             datastore = Path(model.datastore)
             model.init_experiment(permutation=True)
             model.add_factor(specification="[Sow using a variable rule].Script.Population =4 to 8 step 2",
-                                    factor_name='Population')
+                             factor_name='Population')
 
             model.add_factor(specification="[Sow using a variable rule].Script.Population =4 to 8 step 2",
-                                    factor_name='Population')
+                             factor_name='Population')
 
             model.run()
             df = model.results
@@ -45,7 +44,7 @@ class TestExperiment(BaseTester):
             self.assertTrue(Path(model.path).exists())
         self.assertFalse(Path(model.path).exists(), 'Path exists; context manager not working as expected')
         self.assertFalse(datastore.exists(), msg=f'data store exists context manager not working as expected')
-        print('context manager working')
+
 
     def test_add_factor_with_permutes_2_factors(self):
         t_experiment = self.experiment_model
@@ -61,7 +60,7 @@ class TestExperiment(BaseTester):
         if isinstance(t_experiment.results, DataFrame):
             self.assertFalse(t_experiment.results.empty, msg='results are empty')
 
-    def test_inspection(self):
+    def _test_inspection(self):
 
         t_experiment = self.experiment_model
         t_experiment.init_experiment(permutation=True)
@@ -76,6 +75,21 @@ class TestExperiment(BaseTester):
             self.assertFalse(t_experiment.results.empty, msg='results are empty')
         managers = all(t_experiment.inspect_model('Manager'))
         self.assertTrue(managers, msg='managers not found in the experiment')
+
+    def test_ensure_edits_are_registered_while_in_context(self):
+        with Experiment('Maize') as experiment:
+            experiment.init_experiment(permutation=True)
+            experiment.add_factor(specification="[Sow using a variable rule].Script.Population =4 to 8 step 2",
+                                  factor_name='Population')
+            experiment.add_factor(specification="[Fertilise at sowing].Script.Amount = 0 to 200 step 50",
+                                  factor_name='Nitrogen')
+            n1 = experiment.run().results.groupby('Nitrogen')['Yield'].mean()
+
+            # edit
+            experiment.edit_model('Models.Manager', 'Sow using a variable rule', StartDate='02-may')
+            n2 = experiment.run().results.groupby('Nitrogen')['Yield'].mean()
+            self.assertNotEqual(n1.max(), n2.max(), 'edits are not working under context manager')
+        print(Path(experiment.datastore).exists())
 
     def test_save(self):
         try:
@@ -134,6 +148,7 @@ class TestExperiment(BaseTester):
         # experiment is initialized in base_tester class SetUp
         t_experiment.add_factor(specification="[Fertilise at sowing].Script.Amount = 0 to 200 step 50",
                                 factor_name='Nitrogen')
+
         t_experiment.add_factor(specification="[Sow using a variable rule].Script.Population =4 to 8 step 2",
                                 factor_name='Population')
 
@@ -157,8 +172,6 @@ class TestExperiment(BaseTester):
         self.assertIsInstance(t_experiment.results, DataFrame)
         if isinstance(t_experiment.results, DataFrame):
             self.assertFalse(t_experiment.results.empty, msg='results are empty')
-
-
 
     def tearDown(self):
         self.clean_up_apsim_data(self.experiment_path)

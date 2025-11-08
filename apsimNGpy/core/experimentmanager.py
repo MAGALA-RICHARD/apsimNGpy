@@ -73,6 +73,7 @@ class ExperimentManager(ApsimModel):
         self.counter = 0
         self.sims = self.simulations
         self.init = False
+        self._simulations_closed = False
 
     def __enter__(self):
         return self
@@ -87,6 +88,7 @@ class ExperimentManager(ApsimModel):
             invoke_csharp_gc()
 
             self.clean_up(db=True)
+            self._simulations_closed =True
         except PermissionError:
             print(self.model_info.datastore)
     # put here during debugging context db file manager, but sure will be removed after full tests

@@ -86,11 +86,11 @@ class ExperimentManager(ApsimModel):
 
             invoke_csharp_gc()
 
-            self.clean_up(db=True, verbose=True)
+            self.clean_up(db=True)
         except PermissionError:
             print(self.model_info.datastore)
-
-    def run(self, report_name: Union[tuple, list, str] = None,
+    # put here during debugging context db file manager, but sure will be removed after full tests
+    def _run(self, report_name: Union[tuple, list, str] = None,
             simulations: Union[tuple, list] = None,
             clean_up: bool = True,
             verbose: bool = False,
@@ -374,7 +374,7 @@ class ExperimentManager(ApsimModel):
             GC.WaitForPendingFinalizers()
 
             self.Simulations = siM
-            # self.save()
+            # self.save() # do not call any saving method here, it is not behaving well in the context manager experiments
 
         if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
             # data = create(self, base_simulation=base_simulation, permutation=permutation)

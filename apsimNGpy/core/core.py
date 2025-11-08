@@ -701,11 +701,11 @@ class CoreModel(PlotManager):
                     db = _path.with_suffix('.db')
                     # delete or clear all tables
                     try:
-                        self._DataStore.Close()
+                        self._DataStore.Dispose(True)
                         self.Datastore.Close()
                     except AttributeError:
                         pass
-                        #delete_all_tables(str(db))
+
                 except PermissionError:
                     pass
 

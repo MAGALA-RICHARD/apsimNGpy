@@ -1,22 +1,19 @@
+import dataclasses
+import gc
 import os
 import re
 import sys
-from pathlib import Path
-from apsimNGpy.core.config import configuration
-
 from apsimNGpy.core.apsim import ApsimModel
 from collections import OrderedDict
-
 from apsimNGpy.core.model_tools import ModelTools, Models
-
 from apsimNGpy.core.cs_resources import CastHelper
 from apsimNGpy.core.pythonet_config import is_file_format_modified
 from apsimNGpy.core.run_time_info import APSIM_VERSION_NO, BASE_RELEASE_NO, GITHUB_RELEASE_NO
-from apsimNGpy.core.model_loader import to_json_string, recompile, get_node_by_path
-
+from apsimNGpy.core.model_loader import to_json_string
 from apsimNGpy.core_utils.deco import add_outline
-from apsimNGpy.core.runner import invoke_csharp_gc, run_model_externally
-from apsimNGpy.core.utils_for_experimnet import create
+from apsimNGpy.core.runner import invoke_csharp_gc
+from pathlib import Path
+from apsimNGpy.core.model_loader import get_node_and_type, get_node_by_path
 
 if is_file_format_modified():
     import APSIM.Core as NodeUtils
@@ -29,10 +26,68 @@ else:
     raise ValueError(f"The experiment module is not supported for this type of {apsim_version()} ")
 
 import inspect
-from typing import Type, Union
+from typing import Type
+
+from System import GC
 
 
-class ExperimentManager(ApsimModel):
+# ________________helpers______________
+def _get_base_sim(_model, base_simulation):
+    if base_simulation:
+        for _sim in _model.simulations:
+            if _sim.Name == base_simulation:
+                sim = _sim
+                break
+        else:
+            raise ValueError(f"No base simulation found for this name {base_simulation}")
+    else:
+        # if not base_simulation, select the first one
+        sim = _model.simulations[0]
+    return sim
+
+
+def create(_model, base_simulation, permutation=True):
+   # mo = NodeUtils.Node.Clone(_model.Simulations.Node)
+    mo = _model.Simulations
+    try:
+        pass
+        data = {'permutation': permutation}
+        if base_simulation:
+            base = _get_base_sim(_model, base_simulation)
+            base_full_path = base.FullPath
+        else:
+            base = _model.simulations[0]
+            base_full_path = base.FullPath
+        base_clone = NodeUtils.Node.Clone(base.Node)
+        base_clone= CastHelper.CastAs[Models.Core.Simulation](base_clone.Model)
+        experiment = Models.Factorial.Experiment()
+        data['experiment_node'] = experiment
+        factor = Models.Factorial.Factors()
+        data['factorial_node'] = factor
+        # branch if it is a permutation experiment
+        if permutation:
+            perm_node = Models.Factorial.Permutation()
+            data['permutation_node'] = perm_node
+            factor.AddChild(perm_node)
+        experiment.AddChild(factor)
+    #     # add simulation before experiment to the simulation tree
+        experiment.AddChild(base_clone)
+        mo.Children.Add(experiment)
+
+    #     # delete base simulation outside the experiment if exists
+        simulation_node = get_node_by_path(mo, node_path=base_full_path)
+        if simulation_node:
+            ModelTools.DELETE(simulation_node.Model)
+
+        #mo.Write(_model.path)
+        data['path'] = _model.path
+        return data
+    finally:
+       GC.Collect()
+
+
+@dataclasses.dataclass(order=True, frozen=False, )
+class ExperimentManager:
     """
     This class inherits methods and attributes from: :class:`~apsimNGpy.core.apsim.ApsimModel` to manage APSIM Experiments
     with pure factors or permutations. You first need to initiate the instance of this class and then initialize the
@@ -62,137 +117,26 @@ class ExperimentManager(ApsimModel):
 
     """
 
-    def __init__(self, model, out_path=None):
-        super().__init__(model=model, out_path=out_path)
-        self.parent_factor = None
-        self.experiment_node = None
-        self.factorial_node = None
-        self.permutation_node = None
+    model: ApsimModel
+    parent_factor = None
+    experiment_node = None
+    factorial_node = None
+    permutation_node = None
+    factors = None
+    specs = None
+    counter = 0
+    sims = None
+    Simulations = None
+    init = False
+    apsim_model = None
+
+    def __post_init__(self):
         self.factors = OrderedDict()
         self.specs = OrderedDict()
         self.counter = 0
-        self.sims = self.simulations
-        self.init = False
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        from System import GC
-
-        from System.IO import File # dont remove I don't know why if imported it works magic
-
-        try:
-
-            invoke_csharp_gc()
-
-            self.clean_up(db=True, verbose=True)
-        except PermissionError:
-            print(self.model_info.datastore)
-
-    def run(self, report_name: Union[tuple, list, str] = None,
-            simulations: Union[tuple, list] = None,
-            clean_up: bool = True,
-            verbose: bool = False,
-            timeout: int = 800,
-            **kwargs) -> 'CoreModel':
-        """
-        Run APSIM model simulations to write the results either to SQLite database or csv file. Does not collect the
-         simulated output into memory. Please see related APIs: :attr:`results` and :meth:`get_simulated_output`.
-
-        Parameters
-        ----------
-        report_name: Union[tuple, list, str], optional
-            Defaults to APSIM default Report Name if not specified.
-            - If iterable, all report tables are read and aggregated into one DataFrame.
-
-        simulations: Union[tuple, list], optional
-            List of simulation names to run. If None, runs all simulations.
-
-        clean_up: bool, optional
-            If True, removes the existing database before running.
-
-        verbose: bool, optional
-            If True, enables verbose output for debugging. The method continues with debugging info anyway if the run was unsuccessful
-
-        timeout: int, defualt is 800 seconds
-              Enforces a timeout and returns a CompletedProcess-like object.
-
-        kwargs: **dict
-            Additional keyword arguments, e.g., to_csv=True, use this flag to correct results from
-            a csv file directly stored at the location of the running apsimx file.
-
-        Warning:
-        --------------
-        In my experience with Models.exe, CSV outputs are not always overwritten; after edits, stale results can persist. Proceed with caution.
-
-
-        Returns
-        -------
-            Instance of the respective model class e.g.,  ApsimModel, ExperimentManager.
-       ``RuntimeError``
-            Raised if the ``APSIM`` run is unsuccessful. Common causes include ``missing meteorological files``,
-            mismatched simulation ``start`` dates with ``weather`` data, or other ``configuration issues``.
-
-       Example:
-
-       Instantiate an ``apsimNGpy.core.apsim.ApsimModel`` object and run::
-
-              from apsimNGpy.core.apsim import ApsimModel
-              model = ApsimModel(model= 'Maize')# replace with your path to the apsim template model
-              model.run(report_name = "Report")
-              # check if the run was successful
-              model.ran_ok
-              'True'
-
-       .. note::
-
-          Updates the ``ran_ok`` flag to ``True`` if no error was encountered.
-
-       .. seealso::
-
-           Related APIs: :attr:`results` and :meth:`get_simulated_output`.
-             """
-        try:
-
-            self.save()
-            if clean_up:
-                try:
-                    _path = Path(self.path)
-                    db = _path.with_suffix('.db')
-                    # delete or clear all tables
-                    try:
-                        self._DataStore.Dispose()
-                        self.Datastore.Dispose()
-                    except AttributeError:
-                        pass
-                        # delete_all_tables(str(db))
-                except PermissionError:
-                    pass
-
-            # Run APSIM externally
-            res = run_model_externally(
-                # we run using the copied file
-
-                self.path,
-                verbose=verbose,
-                to_csv=kwargs.get('to_csv', False),
-                timeout=timeout
-            )
-
-            if res.returncode == 0:
-                self.ran_ok = True
-                self.report_names = report_name
-                self.run_method = run_model_externally
-
-            # If the model failed and verbose was off, rerun to diagnose
-            if not self.ran_ok and not verbose:
-                print('run time errors occurred')
-
-            return self
-
-        finally:
-            ...
+        self.sims = model.simulations
+        self.Simulations = model.Simulations
+        self.apsim_model = model
 
     def init_experiment(self, permutation: bool = True, base_simulation: str = None):
 
@@ -273,120 +217,17 @@ class ExperimentManager(ApsimModel):
             """
         self.permutation = permutation
 
-        def _get_base_sim():
-            if base_simulation:
-                for _sim in self.simulations:
-                    if _sim.Name == base_simulation:
-                        sim = _sim
-                        break
-                else:
-                    raise ValueError(f"No base simulation found for this name {base_simulation}")
-            else:
-                sim = self.simulations[0]
-            return sim
-
-        def exp_refresher(mode):
-            sim = _get_base_sim()
-            base = ModelTools.CLONER(sim)
-            for simx in mode.simulations:  # it does not matter how many experiments exist; we need only one
-                ModelTools.DELETE(simx)
-            # replace before delete
-
-            try:
-                mode.simulations[0] = base
-                base = mode.simulations[0]
-            except IndexError:
-                pass
-            experiment = Models.Factorial.Experiment()
-            self.experiment_node = experiment
-            factor = Models.Factorial.Factors()
-            self.factorial_node = factor
-            if self.permutation:
-                perm_node = Models.Factorial.Permutation()
-                self.permutation_node = perm_node
-                factor.AddChild(perm_node)
-            experiment.AddChild(factor)
-            experiment.AddChild(base)
-            experi = ModelTools.find_child_of_class(mode.Simulations, Models.Factorial.Experiment)
-
-            if experi:
-                ModelTools.DELETE(experi)
-            mode.model_info.Node.AddChild(experiment)
-            sim_final = CastHelper.CastAs[Models.Core.Simulations](mode.model_info.Node)
-
+        try:
             if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
+                create(self.apsim_model,base_simulation=base_simulation, permutation=self.permutation)
 
-                simx = ModelTools.find_all_in_scope(sim_final, Models.Core.Simulation)
-                simy = [ModelTools.CLONER(i) for i in simx]
+                self.init = True
+            # compile
+        finally:
 
-                simx = [CastHelper.CastAs[Models.Core.Simulations](i.Node) for i in simy]
-
-                ...
-
-            else:
-                simx = list(sim_final.FindAllDescendants[Models.Core.Simulation]())
-
-                if not mode.simulations:
-                    mode.simulations.extend(simx)
-            # mode.save()
-
-        def refresher():
-            from apsimNGpy.core.config import load_crop_from_disk
-
-            replace_ments = ModelTools.find_child(self.Simulations, child_class=Models.Core.Folder,
-                                                  child_name='Replacements')
-
-            siM = self.Simulations
-            if replace_ments:
-                siM.AddChild(replace_ments)
-            # create experiment
-            experiment = Models.Factorial.Experiment()
-            experiment.Children.Clear()
-            self.experiment_node = experiment
-            factor = Models.Factorial.Factors()
-            factor.Children.Clear()
-            self.factorial_node = factor
-            # branch if it is a permutation experiment
-            if self.permutation:
-                perm_node = Models.Factorial.Permutation()
-                self.permutation_node = perm_node
-                factor.AddChild(perm_node)
-            experiment.AddChild(factor)
-            # add simulation before experiment to the simulation tree
-            sim = _get_base_sim()
-            base_full_path = sim.FullPath
-            siM.Children.Add(experiment)
-            experiment.Children.Add(sim)
-            # remove base simulation
-            simulation_node = get_node_by_path(siM, node_path=base_full_path)
-            if simulation_node:
-                ModelTools.DELETE(simulation_node.Model)
-            datastore = ModelTools.find_child_of_class(siM, Models.Storage.DataStore)
-            if datastore:
-                datastore = CastHelper.CastAs[Models.Storage.DataStore](datastore)
-            datastore.set_FileName(self.datastore)
-
-            datastore.Dispose()
-            datastore.Close()
-            # siM.Write(self.path)
-            from System import GC
             GC.Collect()
             GC.WaitForPendingFinalizers()
-
-            self.Simulations = siM
-            # self.save()
-
-        if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
-            # data = create(self, base_simulation=base_simulation, permutation=permutation)
-            # print(data)
-            pass
-            refresher()
-
-        else:
-            exp_refresher(self)
-
-        self.init = True
-        # compile
+            gc.collect()
 
     def add_factor(self, specification: str, factor_name: str = None, **kwargs):
         """
@@ -610,7 +451,7 @@ class ExperimentManager(ApsimModel):
         if 'Script' in specification:
             matches = re.findall(r"\[(.*?)\]", specification)
             if matches:
-                manager_names = set(self.inspect_model('Models.Manager', fullpath=False))
+                manager_names = set(self.apsim_model.inspect_model('Models.Manager', fullpath=False))
                 linked = set(matches) & manager_names
                 if not linked:
                     if matches:
@@ -624,7 +465,7 @@ class ExperimentManager(ApsimModel):
         parent_factor = self.permutation_node if self.permutation else self.factorial_node
         parent_class = Models.Factorial.Permutation if self.permutation else Models.Factorial.Factors
         if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
-            parent_factor = ModelTools.find_child_of_class(self.Simulations, parent_class)
+            parent_factor = ModelTools.find_child_of_class(self.apsim_model.Simulations, parent_class)
 
         new_factor = Models.Factorial.Factor()
         new_factor.Name = factor_name
@@ -650,6 +491,7 @@ class ExperimentManager(ApsimModel):
         # Insert a new factor
         parent_factor.Children.Add(new_factor)
         self.parent_factor = parent_factor
+        GC.Collect()
 
     @property
     def n_factors(self):
@@ -674,28 +516,31 @@ class ExperimentManager(ApsimModel):
         self.parent_factor.Children.Clear()
         for name, spec in self.specs.items():
             node = NodeUtils.Node.Create(spec, parent=self.parent_factor)
-            self.parent_factor.Children.Add(node.Model)
-        self.save()
-        invoke_csharp_gc()
+            self.parent_factor.AddChild(node.Model)
+        self.apsim_model.save()
 
 
-import gc
-
-gc.collect()
 if __name__ == '__main__':
-    with ExperimentManager("Maize", out_path='dtb.apsimx') as exp:
-        exp.init_experiment(permutation=True)
-        exp.add_factor("[Fertilise at sowing].Script.Amount = 0 to 200 step 20")
-        exp.add_factor("[Fertilise at sowing].Script.FertiliserType= DAP,NO3N")
-        exp.add_factor(specification="[Sow using a variable rule].Script.RowSpacing = 100, 450, 700",
-                       factor_name='Population')
+    from runner import trial_run as run_p
 
-        exp.add_factor(specification="[Sow using a variable rule].Script.RowSpacing = 100, 450, 700",
-                       factor_name='Population')
-        exp.finalize()
-        exp.run()
+    with ApsimModel("Maize") as model:
+        # model.run()
+        tp =run_p(model, )
+        exp = ExperimentManager(model, )
+        exp.init_experiment(permutation=False)
+        # exp.add_factor("[Fertilise at sowing].Script.Amount = 0 to 200 step 20")
+        # exp.add_factor("[Fertilise at sowing].Script.FertiliserType= DAP,NO3N")
         # exp.add_factor(specification="[Sow using a variable rule].Script.RowSpacing = 100, 450, 700",
         #                factor_name='Population')
-        # exp.finalize()
-        # exp.preview_simulation()
-    print('datastore Path exists after exit:', Path(exp.datastore).exists())
+        # exp.add_factor(specification="[Sow using a variable rule].Script.RowSpacing = 100, 450, 700",
+        #                factor_name='Population')
+        # # exp.add_factor(specification="[Sow using a variable rule].Script.RowSpacing = 100, 450, 700",
+        # #                factor_name='Population')
+        # # exp.finalize()
+        # # exp.preview_simulation()
+
+
+        print('Path exists before exit:', Path(model.path).exists())
+        print('datastore Path exists before exit:', Path(model.datastore).exists())
+    print('Path exists after exit:', Path(model.path).exists())
+    print('datastore Path exists after exit:', Path(model.datastore).exists())

@@ -1,37 +1,40 @@
 from __future__ import annotations
+
+import contextlib
 import os.path
 import pathlib
 import platform
-import textwrap
+import subprocess
 import warnings
+from functools import lru_cache
 from pathlib import Path
 from subprocess import *
-from typing import Dict, Any, Union
-import contextlib
+from typing import Any
+from typing import Mapping, Optional
+from typing import Union, List
+
 import pandas as pd
 
-
-from typing import Mapping, Optional, Union
-
-from functools import lru_cache
-from apsimNGpy.core.config import get_apsim_bin_path
-
-import contextlib
-from apsimNGpy.settings import *
+from apsimNGpy.core.pythonet_config import configuration
 from apsimNGpy.core_utils.database_utils import read_db_table, get_db_table_names
-from pathlib import Path
-from typing import Union, List
-import subprocess
 from apsimNGpy.exceptions import ApsimRuntimeError
+from apsimNGpy.settings import *
 
-apsim_bin_path = Path(get_apsim_bin_path())
+apsim_bin_path = Path(configuration.bin_path)
 
-from System import GC
+
+
 # Determine executable based on OS
 if platform.system() == "Windows":
     APSIM_EXEC = apsim_bin_path / "Models.exe"
 else:  # Linux or macOS
     APSIM_EXEC = apsim_bin_path / "Models"
+
+
+def invoke_csharp_gc():
+    from System import GC
+    GC.Collect()
+    GC.WaitForPendingFinalizers()
 
 
 def get_apsim_version(verbose: bool = False):
@@ -182,8 +185,7 @@ def run_model_externally(
     finally:
 
         # clear any external file database locks by using Garbage collector; as a matter of fact, python's gc failed to do the job
-        GC.Collect()
-        GC.WaitForPendingFinalizers()
+        invoke_csharp_gc()
 
     if verbose and proc.stdout:
         logger.info("APSIM stdout for %s:\n%s", model_path, proc.stdout.strip())
@@ -423,12 +425,12 @@ def run_p(path):
     run(apsim_executable(path))
 
 
-def _run(self, report_name=None,
-         simulations=None,
-         clean=False,
-         multithread=True,
-         verbose=False,
-         get_dict=False, **kwargs):
+def trial_run(self, report_name=None,
+              simulations=None,
+              clean=False,
+              multithread=True,
+              verbose=False,
+              get_dict=False, **kwargs):
     """
     Run APSIM model simulations.
 
@@ -462,8 +464,8 @@ def _run(self, report_name=None,
 
           Related API: :func:`~apsimNGpy.core.runner.run_model_externally`
     """
-    from apsimNGpy.core.pythonet_config import load_pythonnet
     import Models
+    invoke_csharp_gc()
     try:
         # Set run type
         runtype = Models.Core.Run.Runner.RunTypeEnum.MultiThreaded if multithread \
@@ -484,10 +486,17 @@ def _run(self, report_name=None,
             sim = cs_sims
         else:
             sim = sims
+        from apsimNGpy.core.pythonet_config import get_apsim_file_reader
+        #file = get_apsim_file_reader('file')[Models.Core.Simulations](self.path).Model
 
+
+        Runner =   Models.Core.Run.Runner(self.Simulations)
+        Runner.Run();
         # Run the model
-        _run_model = Models.Core.Run.Runner(sim, True, False, False, None, runtype)
+        _run_model = Models.Core.Run.Runner(sim, wait=True)
         errors = _run_model.Run()
+        invoke_csharp_gc()
+
         if errors:
             print(errors[0].ToString())
 
@@ -512,6 +521,7 @@ def _run(self, report_name=None,
                 results = read_db_table(self.datastore, report_name)
     finally:
         self._DataStore.Close()
+        invoke_csharp_gc()
 
     return results
 

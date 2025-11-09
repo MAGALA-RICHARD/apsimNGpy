@@ -287,7 +287,8 @@ class Configuration:
     bin_path: Union[Path, str] = None
 
     def __post_init__(self):
-        self.bin_path = get_apsim_bin_path() or any_bin_path_from_env()
+        """if bin_path is None, this function will normalize to a global one store on the disk"""
+        self.bin_path = get_apsim_bin_path() or any_bin_path_from_env() if self.bin_path is None else self.bin_path
 
     def set_temporal_bin_path(self, temporal_bin_path):
         """

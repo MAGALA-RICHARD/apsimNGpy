@@ -3287,6 +3287,8 @@ Functions
 
           :func:`~apsimNGpy.core.config.set_apsim_bin_path`
 
+          :func:`~apsimNGpy.core.config.set_apsim_bin_path`
+
 .. py:function:: apsimNGpy.core.config.get_bin_use_history()
 
    shows the bins that have been used only those still available on the computer as valid paths are shown.
@@ -3423,11 +3425,59 @@ Classes
 
    .. py:method:: apsimNGpy.core.config.Configuration.set_temporal_bin_path(self, temporal_bin_path)
 
-   Set the temporal bin path for the package module.
+    Set a temporary APSIM-NG binary path for this package/module.
+
+   This updates the module-level resolution of APSIM assemblies to use the
+   provided path for the current process/session. It does **not** permanently
+   change the global APSIM bin path on disk. Use this when you need to pin a
+   workflow to a specific APSIM build for reproducibility.
+
    Parameters
-   ----------------
-   temporal_bin_path: str | Path
-       path to the temporal bin path
+   ----------
+   temporal_bin_path : str | os.PathLike
+       Absolute or relative path to the APSIM ``bin`` directory to use
+       temporarily (e.g., ``C:/APSIM/2025.09.01/bin``).
+
+       Reference (for the *global* fallback, not changed by this method):
+       :func:`get_apsim_bin_path()` typically resolves from configuration or
+       environment variables ``APSIM_BIN_PATH``, ``MODELS``, or ``APSIM``.
+
+   Returns
+   -------
+   None
+
+   Raises
+   ------
+   FileNotFoundError
+       If ``temporal_bin_path`` does not exist.
+   NotADirectoryError
+       If ``temporal_bin_path`` is not a directory.
+   PermissionError
+       If the process lacks read/execute permission on the path.
+   ValueError
+       If the directory does not appear to be a valid APSIM ``bin`` (e.g.,
+       required assemblies are missing).
+
+   Notes
+   -----
+   - Assemblies already loaded after pointing to this path will remain bound
+     in memory for the lifetime of the process.
+   - To limit the override to a block of code, prefer a context manager that
+     restores the prior path on exit.
+
+   Examples
+   --------
+
+   .. code-block:: python
+
+       from apsimNGpy.core.config import configuration
+       configuration.set_temporal_bin_path(r"C:/APSIM/2025.09.01/bin")
+       # proceed with imports/execution; assemblies are resolved from that path
+
+
+    .. seealso::
+
+      :func:`~apsimNGpy.core.config.get_apsim_bin_path`
 
    .. py:method:: apsimNGpy.core.config.Configuration.release_temporal_bin_path(self)
 

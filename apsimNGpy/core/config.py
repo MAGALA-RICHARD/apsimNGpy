@@ -251,7 +251,7 @@ def get_apsim_bin_path():
 
            :func:`~apsimNGpy.core.config.set_apsim_bin_path`
 
-           :func:`~apsimNGpy.core.config.set_apsim_bin_path`
+
     """
 
     @cache  # better to cache them here, because it externally hides the internal namespace of the function through the
@@ -280,8 +280,6 @@ def get_apsim_bin_path():
 @dataclasses.dataclass
 class Configuration:
     """
-
-
   In the future, this module will contain all the constants required by the package.
    Users will be able to override these values if needed by importing this module before running any simulations.
 
@@ -346,6 +344,10 @@ class Configuration:
          .. seealso::
 
            :func:`~apsimNGpy.core.config.get_apsim_bin_path`
+
+           :func:`~apsimNGpy.core.config.set_apsim_bin_path`
+
+
     """
         self.bin_path = locate_model_bin_path(temporal_bin_path)
 

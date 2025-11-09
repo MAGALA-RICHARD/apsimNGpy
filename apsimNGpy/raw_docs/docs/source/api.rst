@@ -128,6 +128,7 @@ Classes
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.extract_any_soil_physical`
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.extract_soil_physical`
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.find_model`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.find_model_in_replacements`
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.get_crop_replacement`
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.get_model_paths`
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.get_simulated_output`
@@ -681,8 +682,8 @@ Classes
 
    .. py:method:: apsimNGpy.core.apsim.ApsimModel.run(self, report_name: 'Union[tuple, list, str]' = None, simulations: 'Union[tuple, list]' = None, clean_up: 'bool' = True, verbose: 'bool' = False, timeout: 'int' = 800, **kwargs) -> "'CoreModel'" (inherited)
 
-    Run APSIM model simulations to write the results either to SQLite data base or csv file. Does not collect the
-     simulated output inot memory. For this purpose. Please see  related APIs: :attr:`results` and :meth:`get_simulated_output`.
+    Run APSIM model simulations to write the results either to SQLite database or csv file. Does not collect the
+     simulated output into memory. Please see related APIs: :attr:`results` and :meth:`get_simulated_output`.
 
     Parameters
     ----------
@@ -1279,7 +1280,11 @@ Classes
 
       Related API: :meth:`edit_model_by_path`.
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.add_report_variable(self, variable_spec: 'Union[list, str, tuple]', report_name: 'str' = None, set_event_names: 'Union[str, list]' = None) (inherited)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.find_model_in_replacements(self, model_type, model_name) (inherited)
+
+   checks whether the model to be edited is in the replacement, there is no point to contnue editing from individual simulations
+
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.add_report_variable(self, variable_spec: 'Union[list, str, tuple]', report_name: 'str' = None, set_event_names: 'Union[str, list]' = None, simulations=None) (inherited)
 
    This adds a report variable to the end of other _variables, if you want to change the whole report use change_report
 
@@ -1389,7 +1394,7 @@ Classes
 
        Related APIs: :meth:`add_report_variable` and :meth:`add_db_table`.
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.remove_model(self, model_type: 'Models', model_name: 'str' = None) (inherited)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.remove_model(self, model_type: 'Models', model_name) (inherited)
 
    Removes a model from the APSIM Models.Simulations namespace.
 
@@ -1463,7 +1468,7 @@ Classes
    :param Crop: crop to get the replacement
    :return: System.Collections.Generic.IEnumerable APSIM plant object
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.inspect_model_parameters(self, model_type: 'Union[Models, str]', model_name: 'str', simulations: 'Union[str, list]' = <UserOptionMissing>, parameters: 'Union[list, set, tuple, str]' = 'all', **kwargs) (inherited)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.inspect_model_parameters(self, model_type: 'Union[Models, str]', model_name: 'str', simulations: 'Union[str, list]' = <UserOptionMissing>, parameters: 'Union[list, set, tuple, str]' = 'all', exclude: 'list | set | tuple | str' = None, **kwargs) (inherited)
 
    Inspect the input parameters of a specific ``APSIM`` model type instance within selected simulations.
 
@@ -1486,6 +1491,9 @@ Classes
    parameters: Union[str, set, list, tuple], optional
        A specific parameter or a collection of parameters to inspect. Defaults to `'all'`, in which case all accessible attributes are returned.
        For layered models like Solute, valid parameters include `Depth`, `InitialValues`, `SoluteBD`, `Thickness`, etc.
+   exclude: Union[str, list, tuple], optional
+       used to exclude a few simulations and include only the rest of the simulations
+       Added in v0.39.10.20+
 
    kwargs:
        Reserved for future compatibility; currently unused.
@@ -2007,7 +2015,7 @@ Classes
    Depending on your environment, you may need to close the GUI window to continue
    or follow the prompts shown after termination.
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.replace_met_file(self, *, weather_file: 'Union[Path, str]', simulations=<UserOptionMissing>, **kwargs) -> "'Self'" (inherited)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.replace_met_file(self, *, weather_file: 'Union[Path, str]', simulations=<UserOptionMissing>, exclude: 'set | str | tuple | list' = None, **kwargs) (inherited)
 
    .. deprecated:: 0.**x**
       This helper will be removed in a future release. Prefer newer weather
@@ -2038,6 +2046,9 @@ Classes
        all simulations yielded by :meth:`find_simulations` are updated.
        Acceptable types depend on your :meth:`find_simulations` contract
        (e.g., iterable of names, single name, or sentinel).
+   exclude: (str, tuple, list), optional
+      used to eliminate a given simulation from getting updated
+      Added in 0.39.10.20+
    **kwargs
        Ignored. Reserved for backward compatibility and future extensions.
 
@@ -3241,10 +3252,17 @@ Classes
 apsimNGpy.core.config
 ---------------------
 
+Module attributes
+^^^^^^^^^^^^^^^^^^
+
+.. py:attribute:: apsimNGpy.core.config.configuration
+
+   Default value: ``Configuration(bin_path=WindowsPath('D:/My_BOX/Box/PhD thesis/Objective two/morr…``
+
 Functions
 ^^^^^^^^^
 
-.. py:function:: apsimNGpy.core.config.any_bin_path_from_env() -> pathlib.Path
+.. py:function:: apsimNGpy.core.config.any_bin_path_from_env() -> 'Path'
 
    Finalize resolving the real APSIM bin path or raise a clear error.
 
@@ -3280,7 +3298,7 @@ Functions
    for windows-only
    @return: list of available drives on windows pc
 
-.. py:function:: apsimNGpy.core.config.load_crop_from_disk(crop: str, out: Union[str, pathlib.Path], bin_path=None, cache_path=True)
+.. py:function:: apsimNGpy.core.config.load_crop_from_disk(crop: 'str', out: 'Union[str, Path]', bin_path=None, cache_path=True)
 
    Load a default APSIM crop simulation file from disk by specifying only the crop name. This fucntion can literally
    load anything that resides under the /Examples directory.
@@ -3329,7 +3347,7 @@ Functions
    This function uses scan_dir_for_bin to scan all drive directories.
    for Windows only
 
-.. py:function:: apsimNGpy.core.config.set_apsim_bin_path(path: Union[str, pathlib.Path], raise_errors: bool = True, verbose: bool = False) -> bool
+.. py:function:: apsimNGpy.core.config.set_apsim_bin_path(path: 'Union[str, Path]', raise_errors: 'bool' = True, verbose: 'bool' = False) -> 'bool'
 
     Validate and write the bin path to the config file, where it is accessed by ``get_apsim_bin_path``.
 
@@ -3386,6 +3404,108 @@ Functions
    Returns
    -------
    str path with the apsim version stamp
+
+Classes
+^^^^^^^
+
+.. py:class:: apsimNGpy.core.config.Configuration
+
+   In the future, this module will contain all the constants required by the package.
+    Users will be able to override these values if needed by importing this module before running any simulations.
+
+   .. py:method:: apsimNGpy.core.config.Configuration.__init__(self, bin_path: 'Union[Path, str]' = None) -> None
+
+   Initialize self.  See help(type(self)) for accurate signature.
+
+   .. py:attribute:: apsimNGpy.core.config.Configuration.bin_path
+
+   Default: ``None``
+
+   .. py:method:: apsimNGpy.core.config.Configuration.set_temporal_bin_path(self, temporal_bin_path)
+
+   Set the temporal bin path for the package module.
+   Parameters
+   ----------------
+   temporal_bin_path: str | Path
+       path to the temporal bin path
+
+   .. py:method:: apsimNGpy.core.config.Configuration.release_temporal_bin_path(self)
+
+   release and set back to the global bin path
+
+.. py:class:: apsimNGpy.core.config.apsim_bin_context
+
+     Temporarily configure the APSIM-NG *bin* path used by ``apsimNGpy`` so imports
+     (e.g., ``ApsimModel``) can resolve APSIM .NET assemblies. Restores the previous
+     configuration on exit.
+
+     Parameters
+     ----------
+     apsim_bin_path : str | os.PathLike | None, optional
+         Explicit path to the APSIM ``bin`` directory (e.g.,
+         ``C:/APSIM/2025.05.1234/bin`` or ``/opt/apsim/2025.05.1234/bin``).
+         Used if no valid value is resolved from ``dotenv_path``.
+     dotenv_path : str | os.PathLike | None, optional
+         Path to a ``.env`` file to load *before* resolution. If provided, the
+         manager will read (in order): ``bin_key`` (if non-empty), then
+         ``APSIM_BIN_PATH``, then ``APSIM_MODEL_PATH`` from that file.
+     bin_key : str, default ''
+         Custom environment variable name to read from the loaded ``.env``
+         (e.g., ``"APSIM_BIN_PATH_2025"``). Ignored when empty.
+     timeout : float, default 0.003
+         Small sleep (seconds) after setting the bin path to avoid races with
+         immediate imports on some filesystems. Set to 0 to disable.
+
+     Returns
+     -------
+     None
+         The context manager returns ``None``; import within the ``with`` block.
+
+     Raises
+     ------
+     ValueError
+         If no path can be resolved from ``dotenv_path``, ``apsim_bin_path``,
+         or the process environment.
+     FileNotFoundError
+         If the resolved path does not exist.
+
+     Notes
+     -----
+     - Python.NET assemblies cannot be unloaded from a running process; this
+       context only restores path configuration for **future** imports.
+     - Do not nest this context across threads; the underlying config is global.
+
+     Examples
+     --------
+     Use an explicit path::
+
+        with apsim_bin_context(r"C:/APSIM/2025.05.1234/bin"):
+          from apsimNGpy.core.apsim import ApsimModel
+          model = ApsimModel(...)
+
+     Use a .env file with a custom key::
+
+         from pathlib import Path
+         with apsim_bin_context(dotenv_path=Path(".env"), bin_key="APSIM_BIN_PATH"):
+              from apsimNGpy.core.apsim import ApsimModel
+
+    If you have .env files located in the root of your script::
+
+      with apsim_bin_context():
+          from apsimNGpy.core.apsim import ApsimModel
+
+     Verify restoration::
+
+         prev = get_apsim_bin_path()
+         with apsim_bin_context(r"C:/APSIM/X.Y.Z/bin"):
+
+         assert get_apsim_bin_path() == prev
+
+   added in v0.39.10.20+
+
+   .. py:method:: apsimNGpy.core.config.apsim_bin_context.__init__(self, apsim_bin_path: 'str | os.PathLike | None' = None, dotenv_path: 'str | os.PathLike | None' = None, bin_key: 'str' = '') -> 'None'
+
+   Initialize self.  See help(type(self)) for accurate signature.
 
 apsimNGpy.core.experimentmanager
 --------------------------------
@@ -3479,6 +3599,7 @@ Classes
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.extract_soil_physical`
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.finalize`
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.find_model`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.find_model_in_replacements`
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.get_crop_replacement`
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.get_model_paths`
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.get_simulated_output`
@@ -4336,8 +4457,8 @@ Classes
 
    .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.run(self, report_name: 'Union[tuple, list, str]' = None, simulations: 'Union[tuple, list]' = None, clean_up: 'bool' = True, verbose: 'bool' = False, timeout: 'int' = 800, **kwargs) -> "'CoreModel'" (inherited)
 
-    Run APSIM model simulations to write the results either to SQLite data base or csv file. Does not collect the
-     simulated output inot memory. For this purpose. Please see  related APIs: :attr:`results` and :meth:`get_simulated_output`.
+    Run APSIM model simulations to write the results either to SQLite database or csv file. Does not collect the
+     simulated output into memory. Please see related APIs: :attr:`results` and :meth:`get_simulated_output`.
 
     Parameters
     ----------
@@ -4934,7 +5055,11 @@ Classes
 
       Related API: :meth:`edit_model_by_path`.
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.add_report_variable(self, variable_spec: 'Union[list, str, tuple]', report_name: 'str' = None, set_event_names: 'Union[str, list]' = None) (inherited)
+   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.find_model_in_replacements(self, model_type, model_name) (inherited)
+
+   checks whether the model to be edited is in the replacement, there is no point to contnue editing from individual simulations
+
+   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.add_report_variable(self, variable_spec: 'Union[list, str, tuple]', report_name: 'str' = None, set_event_names: 'Union[str, list]' = None, simulations=None) (inherited)
 
    This adds a report variable to the end of other _variables, if you want to change the whole report use change_report
 
@@ -5044,7 +5169,7 @@ Classes
 
        Related APIs: :meth:`add_report_variable` and :meth:`add_db_table`.
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.remove_model(self, model_type: 'Models', model_name: 'str' = None) (inherited)
+   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.remove_model(self, model_type: 'Models', model_name) (inherited)
 
    Removes a model from the APSIM Models.Simulations namespace.
 
@@ -5118,7 +5243,7 @@ Classes
    :param Crop: crop to get the replacement
    :return: System.Collections.Generic.IEnumerable APSIM plant object
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.inspect_model_parameters(self, model_type: 'Union[Models, str]', model_name: 'str', simulations: 'Union[str, list]' = <UserOptionMissing>, parameters: 'Union[list, set, tuple, str]' = 'all', **kwargs) (inherited)
+   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.inspect_model_parameters(self, model_type: 'Union[Models, str]', model_name: 'str', simulations: 'Union[str, list]' = <UserOptionMissing>, parameters: 'Union[list, set, tuple, str]' = 'all', exclude: 'list | set | tuple | str' = None, **kwargs) (inherited)
 
    Inspect the input parameters of a specific ``APSIM`` model type instance within selected simulations.
 
@@ -5141,6 +5266,9 @@ Classes
    parameters: Union[str, set, list, tuple], optional
        A specific parameter or a collection of parameters to inspect. Defaults to `'all'`, in which case all accessible attributes are returned.
        For layered models like Solute, valid parameters include `Depth`, `InitialValues`, `SoluteBD`, `Thickness`, etc.
+   exclude: Union[str, list, tuple], optional
+       used to exclude a few simulations and include only the rest of the simulations
+       Added in v0.39.10.20+
 
    kwargs:
        Reserved for future compatibility; currently unused.
@@ -5662,7 +5790,7 @@ Classes
    Depending on your environment, you may need to close the GUI window to continue
    or follow the prompts shown after termination.
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.replace_met_file(self, *, weather_file: 'Union[Path, str]', simulations=<UserOptionMissing>, **kwargs) -> "'Self'" (inherited)
+   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.replace_met_file(self, *, weather_file: 'Union[Path, str]', simulations=<UserOptionMissing>, exclude: 'set | str | tuple | list' = None, **kwargs) (inherited)
 
    .. deprecated:: 0.**x**
       This helper will be removed in a future release. Prefer newer weather
@@ -5693,6 +5821,9 @@ Classes
        all simulations yielded by :meth:`find_simulations` are updated.
        Acceptable types depend on your :meth:`find_simulations` contract
        (e.g., iterable of names, single name, or sentinel).
+   exclude: (str, tuple, list), optional
+      used to eliminate a given simulation from getting updated
+      Added in 0.39.10.20+
    **kwargs
        Ignored. Reserved for backward compatibility and future extensions.
 
@@ -7528,6 +7659,40 @@ Functions
    .. seealso::
 
          Related API: :func:`~apsimNGpy.core.runner.run_from_dir`
+
+.. py:function:: apsimNGpy.core.runner.trial_run(self, report_name=None, simulations=None, clean=False, multithread=True, verbose=False, get_dict=False, **kwargs)
+
+   Run APSIM model simulations.
+
+   Parameters
+   ----------
+   report_name : str or list of str, optional
+       Name(s) of report table(s) to retrieve. If not specified or missing in the database,
+       the model still runs and results can be accessed later.
+
+   simulations : list of str, optional
+       Names of simulations to run. If None, all simulations are executed.
+
+   clean : bool, default False
+       If True, deletes the existing database file before running.
+
+   multithread : bool, default True
+       If True, runs simulations using multiple threads.
+
+   verbose : bool, default False
+       If True, prints diagnostic messages (e.g., missing report names).
+
+   get_dict : bool, default False
+       If True, returns results as a dictionary {table_name: DataFrame}.
+
+   Returns
+   -------
+   results : DataFrame or list or dict of DataFrames
+       Simulation output(s) from the specified report table(s).
+
+   .. seealso::
+
+         Related API: :func:`~apsimNGpy.core.runner.run_model_externally`
 
 .. py:function:: apsimNGpy.core.runner.upgrade_apsim_file(file: 'str', verbose: 'bool' = True)
 

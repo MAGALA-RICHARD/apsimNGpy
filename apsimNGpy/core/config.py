@@ -277,9 +277,27 @@ def get_apsim_bin_path():
 
 @dataclasses.dataclass
 class Configuration:
-    bin_path: Union[Path, str] = get_apsim_bin_path() or any_bin_path_from_env()
+    """
+
+
+  In the future, this module will contain all the constants required by the package.
+   Users will be able to override these values if needed by importing this module before running any simulations.
+
+    """
+    bin_path: Union[Path, str] = None
+
+    def __post_init__(self):
+        self.bin_path = get_apsim_bin_path() or any_bin_path_from_env()
 
     def set_temporal_bin_path(self, temporal_bin_path):
+        """
+        Set the temporal bin path for the package module.
+        Parameters
+        ----------------
+        temporal_bin_path: str | Path
+            path to the temporal bin path
+
+        """
         self.bin_path = locate_model_bin_path(temporal_bin_path)
 
     def release_temporal_bin_path(self):

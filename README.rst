@@ -83,7 +83,6 @@ If using the `uv` virtual environment manager:
 
    pip install git+https://github.com/MAGALA-RICHARD/apsimNGpy.git
 
----
 
 APSIM Next Generation (NG) Installation Tip
 ===========================================
@@ -91,7 +90,6 @@ APSIM Next Generation (NG) Installation Tip
 Use the **pinned APSIM release** indicated on the documentation homepage to avoid forward-compatibility issues.
 The pinned version represents the latest APSIM NG build verified against apsimNGpy’s API and unit tests.
 
----
 
 apsimNGpy 0.39.11.20 – Release Notes
 ======================================
@@ -176,7 +174,7 @@ Developer impact
 - Existing scripts calling ``preview_simulation()`` remain fully compatible.
 - File-watching currently uses file modification times; future releases may support event-based detection.
 
----
+
 
 v0.39.10.17
 ===========

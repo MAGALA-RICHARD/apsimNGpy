@@ -114,8 +114,9 @@ It allows users to specify a local APSIM-NG installation path for a given script
         temp_model.run()   # temporary .apsimx + .db files created
         df= temp_model.results
         print(df)
-# <-- on exit: all temp files are automatically removed
-Immediately after exiting the with block, the temporary .apsimx file (and its associated .db files) are deleted, since only clones of the original model file are used inside the context.
+
+Immediately after exiting the with block, the temporary .apsimx file (and its associated .db files) are deleted,
+since only clones of the original model file are used inside the context.
 
 2) Temporary APSIM-bin path
 ----------------------------

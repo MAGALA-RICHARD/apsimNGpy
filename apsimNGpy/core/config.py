@@ -342,11 +342,11 @@ class Configuration:
             # proceed with imports/execution; assemblies are resolved from that path
 
 
-         .. seealso::
+        .. seealso::
 
            :func:`~apsimNGpy.core.config.get_apsim_bin_path`
-
            :func:`~apsimNGpy.core.config.set_apsim_bin_path`
+
 
 
     """

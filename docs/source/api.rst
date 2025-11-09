@@ -3287,8 +3287,6 @@ Functions
 
           :func:`~apsimNGpy.core.config.set_apsim_bin_path`
 
-          :func:`~apsimNGpy.core.config.set_apsim_bin_path`
-
 .. py:function:: apsimNGpy.core.config.get_bin_use_history()
 
    shows the bins that have been used only those still available on the computer as valid paths are shown.
@@ -3478,6 +3476,8 @@ Classes
     .. seealso::
 
       :func:`~apsimNGpy.core.config.get_apsim_bin_path`
+
+      :func:`~apsimNGpy.core.config.set_apsim_bin_path`
 
    .. py:method:: apsimNGpy.core.config.Configuration.release_temporal_bin_path(self)
 

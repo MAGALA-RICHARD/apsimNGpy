@@ -244,6 +244,7 @@ def read_db_table(db: Union[str, Path], report_name:str):
         logger.error(f"Unexpected error while reading table '{report_name}': {e}")
     finally:
         ENGINE.dispose(close=True)
+        gc.collect()
 
 
 def load_database(path):

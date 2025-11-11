@@ -339,8 +339,8 @@ class ExperimentManager(ApsimModel):
                                                   child_name='Replacements')
 
             siM = self.Simulations
-            if replace_ments:
-                siM.AddChild(replace_ments)
+            # if replace_ments:
+            #     siM.AddChild(replace_ments)
             # create experiment
             experiment = Models.Factorial.Experiment()
             experiment.Children.Clear()
@@ -371,12 +371,9 @@ class ExperimentManager(ApsimModel):
             datastore.Dispose()
             datastore.Close()
             # siM.Write(self.path)
-            from System import GC
-            GC.Collect()
-            GC.WaitForPendingFinalizers()
 
             self.Simulations = siM
-            # self.save() # do not call any saving method here, it is not behaving well in the context manager experiments
+            self.save()
 
         if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
             # data = create(self, base_simulation=base_simulation, permutation=permutation)

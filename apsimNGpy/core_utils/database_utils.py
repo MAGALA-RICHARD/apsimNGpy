@@ -9,6 +9,8 @@ from collections import namedtuple
 from functools import wraps
 from os.path import exists
 from typing import Callable, Literal, Union, List, Tuple, Mapping, Any
+
+import numpy as np
 from pandas import DataFrame
 from pandas import read_sql_query as rsq
 from sqlalchemy import create_engine, inspect, Table, MetaData
@@ -18,6 +20,9 @@ from apsimNGpy.exceptions import TableNotFoundError
 from pandas import DataFrame
 from itertools import islice, repeat
 from typing import Iterable, Iterator, List, Optional, TypeVar, Callable
+import pandas as pd
+from typing import Dict, Tuple, Hashable, List
+from sqlalchemy.engine import Engine  # or use any DB-API connection
 
 T = TypeVar("T")
 
@@ -163,7 +168,6 @@ def get_db_table_names(db):
 
 
 def pd_save_todb(datas: dict, database, if_exists):
-
     engine = create_engine(f'sqlite:///{database}')
     try:
         table_names, data = datas
@@ -184,13 +188,12 @@ def pl_save_todb(datas: tuple, database: str, if_exists: str):
         engine.dispose(close=True)
 
 
-
 def custom_remove_file(file):
     if os.path.exists(file):
         os.remove(file)
 
 
-def read_db_table(db: Union[str, Path], report_name:str):
+def read_db_table(db: Union[str, Path], report_name: str):
     """
     Connects to a specified SQLite database, retrieves the entire contents of a
     specified table, and returns the results as a pandas DataFrame.
@@ -260,7 +263,81 @@ def load_database(path):
         raise
 
 
-def clear_table(db: Union[str,Path], table_name: str):
+def sql_data_from_df(df, con, table_name, chunksize=None, dtype=None,
+                     if_exists='append', index=False, schema=None):
+    sh = df.shape
+    if sh:
+        if sh[0] > 4000:
+            chunksize = int(np.sqrt(sh[0]))
+    df.to_sql(table_name, con, chunksize=chunksize, if_exists=if_exists, index=index, schema=schema, dtype=dtype)
+
+
+
+SchemaKey = Tuple[Tuple[Hashable, str], ...]
+
+
+def write_schema_grouped_tables(
+        schema_to_df: Dict[SchemaKey, pd.DataFrame],
+        engine: Engine,
+        *,
+        base_table_prefix: str = "T",
+        schema_table_name: str = "T",
+        chunksize=None, dtype=None,
+        if_exists='append', index=False, schema=None
+) -> None:
+    """
+    For each (schema, DataFrame) pair:
+      - create a dedicated SQL table and insert the DataFrame,
+      - record its schema and table name in a separate schema table.
+
+    Parameters
+    ----------
+    schema_to_df : dict
+        Mapping from schema signature to concatenated DataFrame.
+        Schema signature format: ((column_name, dtype_str), ...).
+    engine : sqlalchemy.engine.Engine or DB-API connection
+        Database connection/engine to write to.
+    base_table_prefix : str, optional
+        Prefix for generated table names (e.g., 'apsim_group_1', 'apsim_group_2', ...).
+    schema_table_name : str, optional
+        Name of the schema metadata table.
+    """
+    schema_rows: List[dict] = []
+
+    for i, (schema_key, df) in enumerate(schema_to_df.items(), start=1):
+        # 1) Create a table name for this group
+        table_name = f"{base_table_prefix}_{i}"
+
+        # 2) Write the actual data table
+        sql_data_from_df(df, engine, chunksize=chunksize, table_name=table_name, dtype=dtype,
+
+                         if_exists=if_exists, index=index)
+
+        # 3) Record the schema for this table
+        # schema_key looks like: (('CheckpointID','int64'), ('Clock.Today','object'), ...)
+        for col_order, (col_name, dtype_str) in enumerate(schema_key):
+            schema_rows.append(
+                {
+                    "table_name": table_name,
+                    "schema_group": i,  # optional grouping ID
+                    "col_order": col_order,
+                    "column_name": col_name,
+                    "dtype": dtype_str,
+                }
+            )
+
+    # 4) Build the schema DataFrame and write as a separate table
+    schema_df = pd.DataFrame(schema_rows)
+
+    schema_df.to_sql(
+        schema_table_name,
+        engine,
+        if_exists="replace",  # it is expected to be One, so replace is appropriate
+        index=False,
+    )
+
+
+def clear_table(db: Union[str, Path], table_name: str):
     """
     Deletes all rows from all user-defined tables in the given SQLite database.
 

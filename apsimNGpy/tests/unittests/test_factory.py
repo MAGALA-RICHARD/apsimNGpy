@@ -1,47 +1,121 @@
-import shutil
+from apsimNGpy.core.pythonet_config import load_pythonnet, is_file_format_modified
+from apsimNGpy.core.cs_resources import CastHelper
+from apsimNGpy.core.pythonet_config import load_pythonnet, is_file_format_modified
+
+load = load_pythonnet(bin_path=None)
+import Models
+import os
 from pathlib import Path
-
-from apsimNGpy.core.config import configuration, locate_model_bin_path
-
-
-class MimicBinPath:
-    def __init__(self, bin_path: str | None = None, location: str | None = None):
-        self.bin_path = bin_path or configuration.bin_path
-        self.bin_path = locate_model_bin_path(self.bin_path)
-        self.location = location
-        self.created =False
-
-    def __enter__(self):
-        self.dir_bin_new = Path(f'{self.location}/bin_path_testing12').resolve() if self.location else Path("bin_path_testing12").resolve()
-        assert self.dir_bin_new.resolve() != Path(self.bin_path).resolve(), 'please change new bin path location'
-        if self.dir_bin_new.exists():
-
-            shutil.rmtree(self.dir_bin_new, ignore_errors= True)
-
-        self.created_bin_path = shutil.copytree(self.bin_path, self.dir_bin_new)
-        print(self.created_bin_path)
-        self.created = True
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        if self.created:
-           shutil.rmtree(self.dir_bin_new)
+from shutil import copy2, rmtree
+from apsimNGpy.core.config import load_crop_from_disk
 
 
-def mimic_different_bin_path(existing_bin_path: str):
-    bin = locate_model_bin_path(existing_bin_path)
+def mimic_multiple_files(out_file: str | os.PathLike, size: int = 20, mix=True, prefix='__',
+                         suffix='__') -> str | os.PathLike:
+    """
+    Create a directory named <stem of out_file>, write a template .apsimx into it,
+    and clone that file `size` times as __0__.apsimx, __1__.apsimx, ...
 
-    bin = list(bin.rglob('*Models*'))
-    return bin
+    Example:
+        _mimic_multiple_files('output', size=20) -> creates ./output/ with 20 files.
+    """
+    out_file = Path(out_file)
 
-with MimicBinPath() as bin:
-    print(bin.created_bin_path)
+    # Directory to hold the clones (named after the stem)
+    di = Path(out_file.stem).resolve()
 
-print('+++++++++++')
+    # Recreate the directory cleanly
+    if di.exists():
+        if di.is_dir():
+            try:
+                rmtree(di)
+            except PermissionError:
+                # As a fallback, try to remove read-only attrs on Windows or skip files in use
+                raise
+        else:
+            di.unlink()
+    di.mkdir(parents=True, exist_ok=True)
 
-print(configuration.bin_path)
-configuration.set_temporal_bin_path(r"C:\Program Files\APSIM2024.5.7493.0\bin")
-print(configuration.bin_path)
-configuration.release_temporal_bin_path()
-print(configuration.bin_path)
-# unittest.main()
+    # Create a template .apsimx file inside the directory
+    template_path = di / "template.apsimx"
+    template_path2 = di / "template2.apsimx"
+    template = load_crop_from_disk(crop="Maize", out=template_path)
+    if mix:
+        template2 = load_crop_from_disk(crop="Soybean", out=template_path2)
+        template2 = Path(template2)
+
+    # `load_crop_from_disk` may return a str or Path; normalize:
+    template = Path(template)
+
+    # Clone the template N times
+    if mix:
+        size = int(size / 2)
+    for i in range(size):
+        dst = di / f"{prefix}{i}{suffix}.apsimx"
+        copy2(template, dst)
+    if mix:
+        for i in range(size):
+            dst = di / f"_2_{prefix}{i}{suffix}.apsimx"
+            copy2(template2, dst)
+
+    # Open the folder on Windows (no-op elsewhere)
+    size_out = size if not mix else size * 2
+    # print(f"Copied {size_out} files to {di}")
+    return di
+
+
+def create_simulation(name):
+    if is_file_format_modified():
+        import APSIM.Core as NodeUtils
+        from apsimNGpy.core.cs_resources import CastHelper
+    else:
+        return
+        # creates a Models.Core.Simulations object
+    sim = Models.Core.Simulation()
+    # add zone
+    zone = Models.Core.Zone()
+    sim.Children.Add(zone)
+    sim.Name = name
+    return sim
+
+
+def mock_multiple_simulations(n):
+    sims = map(create_simulation, [f"sim_{i}" for i in range(n)])
+    datastore = Models.Storage.DataStore()
+    if is_file_format_modified():
+        import APSIM.Core as NodeUtils
+    mock_sims = NodeUtils.Node.Create(Models.Core.Simulations())
+    mock_sims.AddChild(datastore)
+    for s in sims:
+        mock_sims.AddChild(s)
+    return CastHelper.CastAs[Models.Core.Simulations](mock_sims.Model)
+
+
+import numpy as np
+import pandas as pd
+
+pred_data = np.array([
+    8469.616, 4668.505, 555.047, 3504.000, 7820.075,
+    8823.517, 3587.101, 2939.152, 8379.435, 7370.301
+])
+
+obs = np.array([
+    7000.0, 5000.505, 1000.047, 3504.000, 7820.075,
+    7000.517, 3587.101, 4000.152, 8379.435, 4000.301
+])
+
+years = np.arange(1990, 2000)
+
+obs = pd.DataFrame({
+    "year": years,
+    "observed": obs,
+
+})
+
+pred = pd.DataFrame({
+    "year": years,
+    "predicted": pred_data
+})
+
+if __name__ == "__main__":
+    sim = mock_multiple_simulations(n=5)

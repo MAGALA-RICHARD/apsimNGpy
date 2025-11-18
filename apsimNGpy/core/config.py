@@ -454,7 +454,7 @@ def set_apsim_bin_path(path: Union[str, Path],
         return True  # Path is already correct
 
     # Persist the validated bin path
-    create_config(CONFIG_PATH, str(validated_bin))
+    create_config(CONFIG_PATH, os.path.realpath(validated_bin))
 
     if verbose:
         if current_resolved:
@@ -500,7 +500,7 @@ def apsim_version(bin_path=configuration.bin_path, release_number: bool = False,
     else:  # Linux or macOS
         APSIM_EXEC = bin_path / "Models"
 
-    cmd = [str(APSIM_EXEC), "--version"]
+    cmd = [os.path.realpath(APSIM_EXEC), "--version"]
     if verbose:
         cmd.append("--verbose")
 
@@ -526,14 +526,15 @@ def apsim_version(bin_path=configuration.bin_path, release_number: bool = False,
 _memory_cache: dict[tuple, Any] = {}
 
 
-def _load_crop_from_disk(crop: str, out: Union[str, Path], bin_path: Union[str, Path]) -> None:
+def _load_crop_from_disk(crop: str, out: Union[str, Path], bin_path: Union[str, Path], suffix='.apsimx') -> None:
     BIN = bin_path or configuration.bin_path
-
-    if ".apsimx" in crop:
-        crop, suffix = crop.split(".")
+    crop_path = Path(crop)
+    if crop_path.suffix == ".apsimx" in crop or crop_path.suffix=='.met':
+        crop, suffix = crop_path.stem, crop_path.suffix
     else:
-        suffix = 'apsimx'
-
+        suffix = suffix
+    if not suffix.startswith('.'):
+        raise ValueError(f"Unrecognized suffix '{suffix}'")
     if BIN and os.path.exists(BIN):
         # assumes /Examples dir is in the same parent directory where bins
         EXa = Path(locate_model_bin_path(BIN)).parent / 'Examples'
@@ -541,7 +542,7 @@ def _load_crop_from_disk(crop: str, out: Union[str, Path], bin_path: Union[str, 
         assert EXa.exists(), (
             f"Failed to located example files folder relative to the location of the {BIN}. Make sure "
             f"you entered the correct bin path")
-        target_location = glob.glob(f"{str(EXa)}/**/*{crop}.{suffix}", recursive=True)  # case-sensitive
+        target_location = glob.glob(f"{os.path.realpath(EXa)}/**/*{crop}{suffix}", recursive=True)  # case-sensitive
         if target_location:
             loaded_path = target_location[0]
         else:
@@ -556,7 +557,7 @@ def _load_crop_from_disk(crop: str, out: Union[str, Path], bin_path: Union[str, 
     )
 
 
-def load_crop_from_disk(crop: str, out: Union[str, Path], bin_path=None, cache_path=True):
+def load_crop_from_disk(crop: str, out: Union[str, Path], bin_path=None, cache_path=True, suffix ='.apsimx'):
     """
     Load a default APSIM crop simulation file from disk by specifying only the crop name. This fucntion can literally
     load anything that resides under the /Examples directory.
@@ -601,11 +602,11 @@ def load_crop_from_disk(crop: str, out: Union[str, Path], bin_path=None, cache_p
         'C:/path/to/temp_uuid_Maize.apsimx'
 
     """
-    keys = f"{crop}{out}-{str(bin_path)}",
+    keys = f"{crop}{out}-{os.path.realpath(str(bin_path))}-{suffix}",
     if cache_path and keys in _memory_cache:
         return _memory_cache[keys]
     else:
-        path = _load_crop_from_disk(crop, out, bin_path)
+        path = _load_crop_from_disk(crop, out, bin_path, suffix=suffix)
         _memory_cache[keys] = path
         return path
 
@@ -715,8 +716,8 @@ class apsim_bin_context(AbstractContextManager):
         # If a specific .env path is provided, load it first
         if dotenv_path is not None:
             dp = Path(dotenv_path)
-            if dp.exists() and str(dp).endswith('.env'):
-                load_dotenv(str(dp.resolve()))
+            if dp.exists() and os.path.realpath(dp).endswith('.env'):
+                load_dotenv(os.path.realpath(dp.resolve()))
             else:
                 if dotenv_path is not None:
                     raise FileNotFoundError(f"dotenv_path does not exist or it is invalid .env file: {dp}")
@@ -725,7 +726,7 @@ class apsim_bin_context(AbstractContextManager):
 
         # If no .env bin found, fall back to explicit arg
         if bin_path is None and apsim_bin_path is not None:
-            bin_path = str(Path(apsim_bin_path).resolve())
+            bin_path = os.path.realpath(Path(apsim_bin_path).resolve())
 
         # If still none, try already-loaded env (from top-level load_dotenv)
         if bin_path is None:
@@ -742,7 +743,7 @@ class apsim_bin_context(AbstractContextManager):
         if not p.exists():
             raise FileNotFoundError(f"APSIM bin path not found: {p}")
 
-        self.bin_path = str(p)
+        self.bin_path = os.path.realpath(p)
 
     def __enter__(self):
         # Save and set
@@ -775,3 +776,16 @@ if __name__ == "__main__":
             with self.assertRaises(FileNotFoundError):
                 with apsim_bin_context(dotenv_path="dot_ev_path"):
                     pass
+
+if __name__ == "__main__":
+    ap = os.path.realpath('maizeTT.apsimx')
+    try:
+
+       maize = load_crop_from_disk('Maize', out= ap)
+       print(f'path exists' ) if os.path.exists(ap) else print('file does not exist')
+    finally:
+        try:
+            Path(ap).unlink(missing_ok=True)
+            print('path is cleaned up')
+        except PermissionError:
+            pass

@@ -26,6 +26,28 @@ from sqlalchemy.engine import Engine  # or use any DB-API connection
 
 T = TypeVar("T")
 
+from sqlalchemy.engine import Engine, Connection
+from sqlalchemy.orm import Session
+
+UNKNOWN_FLAG = 'UNKNOWN'
+
+
+def _identify_db_object(obj):
+    if isinstance(obj, (Engine, Connection, Session)):
+        return "sqlalchemy"
+    elif isinstance(obj, sqlite3.Connection) or (
+            hasattr(obj, "cursor") and callable(obj.cursor)
+    ):
+        return "raw_sql"
+    else:
+        return UNKNOWN_FLAG
+
+
+def detect_connection(obj):
+    ob = _identify_db_object(obj)
+    if ob != UNKNOWN_FLAG:
+        return True
+
 
 def delete_table(db, table_name):
     """deletes the table in a database.
@@ -193,17 +215,19 @@ def custom_remove_file(file):
         os.remove(file)
 
 
-def read_db_table(db: Union[str, Path], report_name: str):
+def read_db_table(db: Union[str, Path], report_name: str = None, sql_query=None):
     """
     Connects to a specified SQLite database, retrieves the entire contents of a
     specified table, and returns the results as a pandas DataFrame.
 
     Parameters
     ----------
-    db : str | Path
+    db : str | Path, database connection object
         Path to the SQLite database file.
     report_name : str
         Name of the table in the database from which to retrieve data.
+    sql_query: str default is None
+        if it is none, we assume a table
 
     Returns
     -------
@@ -212,7 +236,7 @@ def read_db_table(db: Union[str, Path], report_name: str):
 
     Examples
     --------
-    >>> database_path = 'your_database.sqlite'
+    >>> database_path = 'your_database.sqlite' # or connection object
     >>> table_name = 'your_table'
     >>> ddf = read_db_table(database_path, table_name)
     >>> print(ddf)
@@ -226,11 +250,14 @@ def read_db_table(db: Union[str, Path], report_name: str):
     - This function retrieves **all** records; use with caution for very large
       tables.
     """
-
+    assert any([report_name, sql_query]), "Please provide at least a table name or a SQL query."
     # table = kwargs.get("table")
-    DB = f'sqlite:///{db}'
-    ENGINE = create_engine(DB)
-    query = f"SELECT * FROM {report_name}"
+    if detect_connection(db):
+        ENGINE = db
+    else:
+        DB = f'sqlite:///{db}'
+        ENGINE = create_engine(DB)
+    query = sql_query or f"SELECT * FROM {report_name}"
     try:
 
         df = rsq(query, ENGINE)
@@ -246,7 +273,13 @@ def read_db_table(db: Union[str, Path], report_name: str):
     except Exception as e:
         logger.error(f"Unexpected error while reading table '{report_name}': {e}")
     finally:
-        ENGINE.dispose(close=True)
+        if hasattr(ENGINE,'dispose'):#sqlalchemy
+
+            ENGINE.dispose(close=True)
+
+        elif hasattr(ENGINE, 'close'):
+            #raw sql
+            ENGINE.close()
         gc.collect()
 
 
@@ -272,7 +305,6 @@ def sql_data_from_df(df, con, table_name, chunksize=None, dtype=None,
     df.to_sql(table_name, con, chunksize=chunksize, if_exists=if_exists, index=index, schema=schema, dtype=dtype)
 
 
-
 SchemaKey = Tuple[Tuple[Hashable, str], ...]
 
 
@@ -280,8 +312,8 @@ def write_schema_grouped_tables(
         schema_to_df: Dict[SchemaKey, pd.DataFrame],
         engine: Engine,
         *,
-        base_table_prefix: str = "T",
-        schema_table_name: str = "T",
+        base_table_prefix: str = "group",
+        schema_table_name: str = "_schema",
         chunksize=None, dtype=None,
         if_exists='append', index=False, schema=None
 ) -> None:
@@ -910,9 +942,17 @@ def chunker(
 
 
 if __name__ == "__main__":
+    #test
     @write_results_to_sql(db_path='db.db', table='Report')
     def get_report():
         return DataFrame(dict(x=2, y=4))
 
 
     ch = list(chunker(range(100), n_chunks=10))
+    conn = create_engine('sqlite:///:memory:')
+    try:
+      assert detect_connection(conn), "detect connection not working with alchemy"
+    finally:
+       conn.dispose(close=True)
+    with sqlite3.connect(":memory:") as sqLconn:
+        assert detect_connection(sqLconn), "detect connection not working on sql raw connection"

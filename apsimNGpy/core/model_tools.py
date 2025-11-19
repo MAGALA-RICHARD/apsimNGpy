@@ -451,15 +451,21 @@ def inspect_model_inputs(scope, model_type: str, model_name: str,
     - APSIM Next Gen Python bindings (apsimNGpy)
     - Python 3.10+
     """
-
     model_type_class = validate_model_obj(model_type)
+    if isinstance(parameters, str):
+        parameters = {parameters}
+    reps = scope.get_replacements_node()
+    if reps:
+        model_ins = find_child(reps, model_type_class, model_name)
+        if model_ins:
+            modelIN = CastHelper.CastAs[model_type_class](model_ins)
+            return extract_value(modelIN, parameters)
 
     is_single_sim = True if isinstance(simulations, str) else False
     sim_list = scope.find_simulations(simulations)
 
     result = {} if not is_single_sim else None
-    if isinstance(parameters, str):
-        parameters = {parameters}
+
     for sim in sim_list:
         model_instance = find_child(sim, child_class=model_type_class, child_name=model_name)
         model_class = validate_model_obj(model_type_class)
@@ -944,6 +950,8 @@ class ModelTools:
 
 
 def find_all_model_type(parent, model_type):
+    if not callable(model_type):
+        model_type = getattr(Models, model_type)
     node_base = getattr(parent, "Node", parent)
     return node_base.FindAll[model_type]()
 

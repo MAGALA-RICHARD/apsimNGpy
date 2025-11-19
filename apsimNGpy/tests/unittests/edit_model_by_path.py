@@ -158,7 +158,7 @@ class TestEditModelByPath(unittest.TestCase):
                 path=cultivar_path_soybean,
                 commands='[Grain].MaximumGrainsPerCob.FixedValue',
                 values=50,
-                update_manager=True,
+                sowedr=False,
                 manager_path='.Simulations.Simulation.Field.Sow using a variable rule',
                 manager_param='CultivarName',
                 rename='edit-added')
@@ -175,7 +175,7 @@ class TestEditModelByPath(unittest.TestCase):
                     path=cultivar_path,
                     commands='[Grain].MaximumGrainsPerCob.FixedValue',
                     values=50,
-                    update_manager=True,
+                    sowed=False,
                     manager_path='.Simulations.Simulation.Field.Sow using a variable rule',
                     manager_param=None,
                     rename='edit-added')

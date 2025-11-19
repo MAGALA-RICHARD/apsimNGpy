@@ -6,35 +6,33 @@ email: magalarich20@gmail.com
 """
 from __future__ import annotations
 import gc
-import os
 import re
 import random
 import pathlib
 import string
-from collections.abc import Sequence
 from typing import Union
 import shutil
 import pandas as pd
 import json
 import datetime
-from dataclasses import dataclass, field
-from typing import Optional, List, Dict
+from dataclasses import field
+from typing import List, Dict
 import warnings
 from sqlalchemy.testing.plugin.plugin_base import logging
 from apsimNGpy.core.cs_resources import CastHelper
 from apsimNGpy.manager.weathermanager import get_weather
 from functools import lru_cache
 # prepare for the C# import
-from apsimNGpy.core_utils.utils import open_apsimx_file_in_window, timer
+from apsimNGpy.core_utils.utils import open_apsimx_file_in_window
 # now we can safely import C# libraries
 from apsimNGpy.core.pythonet_config import *
-from apsimNGpy.core_utils.database_utils import dataview_to_dataframe, delete_all_tables, read_db_table
+from apsimNGpy.core_utils.database_utils import read_db_table
 from apsimNGpy.core.config import get_apsim_bin_path
 from apsimNGpy.exceptions import ModelNotFoundError
 from apsimNGpy.core.model_tools import (get_or_check_model, old_method, _edit_in_cultivar,
-                                        inspect_model_inputs, soil_components,
+                                        inspect_model_inputs,
                                         ModelTools, validate_model_obj, replace_variable_by_index)
-from apsimNGpy.core.runner import run_model_externally, collect_csv_by_model_path, run_p
+from apsimNGpy.core.runner import run_model_externally, run_p
 from apsimNGpy.core.model_loader import (load_apsim_model, save_model_to_file, recompile, get_node_by_path)
 import ast
 from typing import Any
@@ -45,11 +43,34 @@ from apsimNGpy.core.model_tools import find_child
 import Models
 from apsimNGpy.core.pythonet_config import get_apsim_version as apsim_version
 from System import InvalidOperationException
-from apsimNGpy.core_utils.deco import add_outline
 
 # constants
 IS_NEW_MODEL = is_file_format_modified()
 APSIM_VERSION_NO = apsim_version(release_number=True)
+
+
+def edit_cultivar(node, cultivar_name, commands):
+    def validate_commands(cmds):
+        valid = []
+        invalid = []
+        for command in cmds:
+            spc = command.split('=')
+            if '=' in command and len(spc) > 1 and spc[-1]:
+                valid.append(command.strip())
+            else:
+                invalid.append(command)
+        if invalid:
+            raise ValueError(f'{invalid} are not valid cultivar commands')
+        return valid
+
+    cultivar = node.FindChild[Models.PMF.Cultivar](cultivar_name, recurse=True)
+    if isinstance(commands, str):
+        commands = {commands}
+    existing = list(cultivar.Command)
+    valid_commands = validate_commands(commands)
+    update = existing + list(valid_commands)
+    unique_updated = list(dict.fromkeys(update))
+    return unique_updated
 
 
 def _looks_like_path(value: str) -> bool:
@@ -359,7 +380,7 @@ class CoreModel(PlotManager):
             _path = str(file_name or self.path)
 
             if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
-                #self.Simulations.Write(str(_path))
+                # self.Simulations.Write(str(_path))
                 save_model_to_file(getattr(self.Simulations, 'Node', self.Simulations), str(_path))
             else:
                 sm = getattr(self.Simulations, 'Node', self.Simulations)
@@ -372,7 +393,7 @@ class CoreModel(PlotManager):
             return self
         finally:
 
-           pass
+            pass
 
     @property
     def results(self) -> pd.DataFrame:
@@ -635,6 +656,7 @@ class CoreModel(PlotManager):
             clean_up: bool = True,
             verbose: bool = False,
             timeout: int = 800,
+            cpu_count: int = -1,
             **kwargs) -> 'CoreModel':
         """
         Run APSIM model simulations to write the results either to SQLite database or csv file. Does not collect the
@@ -655,8 +677,11 @@ class CoreModel(PlotManager):
         verbose: bool, optional
             If True, enables verbose output for debugging. The method continues with debugging info anyway if the run was unsuccessful
 
-        timeout: int, defualt is 800 seconds
+        timeout: int, default is 800 seconds
               Enforces a timeout and returns a CompletedProcess-like object.
+        cpu_count: int, Optional default is -1, referring to all threads
+            This parameter is useful when the number of simulations are more than 1, below that performance differences are minimal
+            added in 0.39.11.21+
 
         kwargs: **dict
             Additional keyword arguments, e.g., to_csv=True, use this flag to correct results from
@@ -693,6 +718,7 @@ class CoreModel(PlotManager):
 
            Related APIs: :attr:`results` and :meth:`get_simulated_output`.
              """
+
         def dispose_db():
             try:
                 self._DataStore.Dispose()
@@ -718,7 +744,8 @@ class CoreModel(PlotManager):
                 self.path,
                 verbose=verbose,
                 to_csv=kwargs.get('to_csv', False),
-                timeout=timeout
+                timeout=timeout,
+                cpu_count=cpu_count,
             )
 
             if res.returncode == 0:
@@ -734,7 +761,6 @@ class CoreModel(PlotManager):
 
         finally:
             ...
-
 
     def rename_model(self, model_type, *, old_name, new_name):
         """
@@ -1408,6 +1434,29 @@ class CoreModel(PlotManager):
 
         return self
 
+    def add_base_replacements(self):
+        """
+        Add base replacements with all available models of type Plants and then start from there to add more
+        @return: self
+        """
+
+        if not self.get_replacements_node():
+            folder = Models.Core.Folder()
+            folder.Name = 'Replacements'
+            self.Simulations.Children.Add(folder)
+            self.save()
+        available_crops = self.inspect_model(Models.PMF.Plant, fullpath=False)
+        rep = self.get_replacements_node()
+        for crop in available_crops:
+            crop_t = ModelTools.find_child(rep, Models.PMF.Plant, crop)
+            if not crop_t:
+                crop_model = Models.PMF.Plant()
+                crop_model.Name = crop
+                crop_model.ResourceName = crop
+                rep.Children.Add(crop_model)
+        self.save()
+        return self
+
     def edit_model(self, model_type: str, model_name: str,
                    simulations: Union[str, list] = 'all', exclude=None,
                    verbose=False, **kwargs):
@@ -1589,15 +1638,17 @@ class CoreModel(PlotManager):
             simulations = [str(i) for i in simulations if i not in exclude]
 
         model_type_class = validate_model_obj(model_type)
-        replace_ments = ModelTools.find_child(self.Simulations, child_class='Models.Core.Folder',
-                                              child_name='Replacements')
+        replace_ments = self.get_replacements_node()
         edit_candidate_objects = self.find_simulations(simulations)
         # TODO add unittest when replacement node is available
         if replace_ments is not None:
             edit_candidate_objects.append(replace_ments)
-        for sim in edit_candidate_objects:
+
             # model_instance = get_or_check_model(sim, model_type_class, model_name, action='get', cacheit=cacheit,
             #                                     cache_size=cache_size)
+
+        def edit_object(obj):
+            sim = obj
             if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
                 model_instance = find_child(sim, model_type_class, model_name)
             else:
@@ -1625,7 +1676,7 @@ class CoreModel(PlotManager):
                 case Models.PMF.Cultivar:
 
                     # Ensure crop replacements exist under Replacements
-                    if 'Replacements' not in self.inspect_model('Models.Core.Folder'):
+                    if 'Replacements' not in self.inspect_model('Models.Core.Folder', fullpath=False):
                         for crop_name in self.inspect_model(Models.PMF.Plant, fullpath=False):
                             self.add_crop_replacements(_crop=crop_name)
 
@@ -1712,6 +1763,9 @@ class CoreModel(PlotManager):
                                          f"current simulations")
                     if not replace_ments and not isinstance(model_type, Models.Core.Folder):
                         raise NotImplementedError(f"No edit method implemented for model type {type(model_instance)}")
+
+        xe = [i for i in map(edit_object, edit_candidate_objects)]
+        del xe
         self.ran_ok = False
         return self
 
@@ -2083,7 +2137,7 @@ class CoreModel(PlotManager):
         return params
 
     def _find_replacement(self):
-        rep = self.Simulations.FindChild[Models.Core.Folder]()
+        rep = self.get_replacements_node()
         return rep
 
     def _find_cultivar(self, cultivar_name: str):
@@ -2113,15 +2167,15 @@ class CoreModel(PlotManager):
         :param Crop: crop to get the replacement
         :return: System.Collections.Generic.IEnumerable APSIM plant object
         """
-        rep = self._find_replacement()
-        if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
+
+        rep = self.get_replacements_node()
+        if rep:
             crop_rep = ModelTools.find_child(rep, Models.PMF.Plant, Crop)
-        else:
-            crop_rep = rep.FindAllDescendants[Models.PMF.Plant](Crop)
-        for i in crop_rep:
-            logger.info(i.Name)
-            if i.Name == Crop:
-                return i
+            for i in crop_rep:
+                logger.info(i.Name)
+                if i.Name == Crop:
+                    return i
+
         return self
 
     def inspect_model_parameters(self, model_type: Union[Models, str], model_name: str,
@@ -3916,6 +3970,7 @@ class CoreModel(PlotManager):
            but by making copy compulsory, then, we are clearing the edited files
 
         """
+
         try:
             path = Path(self.path)
             _db = path.with_suffix('.db')
@@ -4221,7 +4276,7 @@ class CoreModel(PlotManager):
         CROP = _crop
         _FOLDER.Name = "Replacements"
         PARENT = self.Simulations
-        # parent replacemnt should be added once
+        # parent replacement should be added once
         if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
             target_parent = ModelTools.find_child(PARENT, Models.Core.Folder, 'Replacements')
         else:
@@ -4670,7 +4725,7 @@ if __name__ == '__main__':
     # model = load_default_simulations('maize')
     with CoreModel(model='Maize') as model:
         a = perf_counter()
-        model.run('Report', verbose=True)
+        model.run('Report', verbose=True, cpu_count=1)
         b = perf_counter()
         logger.info(f"{b - a}, 'seconds")
         df = model.results
@@ -4691,5 +4746,7 @@ if __name__ == '__main__':
         corep.run(verbose=True)
         print('Path exists before exit:', Path(corep.path).exists())
         print('datastore Path exists before exit:', Path(corep.datastore).exists())
+        corep.add_base_replacements()
+        corep.inspect_file()
     print('Path exists after exit:', Path(corep.path).exists())
     print('datastore Path exists after exit:', Path(corep.datastore).exists())

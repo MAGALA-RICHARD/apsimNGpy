@@ -27,7 +27,7 @@ from apsimNGpy.core.model_tools import find_child_of_class
 from apsimNGpy.settings import logger
 from apsimNGpy.core.soiler import SoilManager
 from apsimNGpy.core.runner import run_model_externally
-
+from typing import Any
 # ===================================================================================================
 
 
@@ -103,6 +103,54 @@ class ApsimModel(CoreModel):
     def __init__(self, model: Union[os.PathLike, dict, str], out_path: Union[str, Path] = None,
                  set_wd=None, **kwargs):
         super().__init__(model, out_path, set_wd, **kwargs)
+
+
+
+    def set_params(self, params: dict[str, Any] | None = None, **kwargs) -> "ApsimModel":
+        """
+        Set parameters for the given model by passing a dictionary or keyword arguments.
+
+        Parameters
+        ----------
+        params : dict, optional
+            A dictionary mapping APSIM parameter names to their corresponding values.
+            If ``params`` is ``None``, then ``kwargs`` is expected, following the same
+            signature as :meth:`~apsimNGpy.core.ApsimModel.edit_model_by_path`.
+        **kwargs :
+            Additional keyword arguments equivalent to entries in ``params``. These are
+            interpreted according to the same signature as
+            :meth:`~apsimNGpy.core.ApsimModel.edit_model_by_path`.
+
+        Returns
+        -------
+        self : ApsimModel
+            Returns the same instance for method chaining.
+        Raises
+        -------
+        TypeError if any of the above arguments does not resolve to a dictionary. Other errors maybe raised gracefully
+          by :meth:`~apsimNGpy.core.ApsimModel.edit_model_by_path`.
+
+        Notes
+        -----
+        This flexible design allows users to supply parameters either as standard
+        keyword arguments or as dictionary objects.
+        The dictionary-based approach is particularly useful when working with
+        **JSON-compatible data structures**, as commonly required during large-scale
+        model optimization, calibration, or parameter sensitivity analysis workflows.
+        In such cases, parameter sets can be programmatically generated, serialized,
+        and reused without manual modification of code.
+        """
+        pa = params or kwargs
+
+        # Final type safety check
+        if not isinstance(pa, dict):
+            raise TypeError("Resolved parameters must be a dictionary.")
+
+        # the rest of errors are handled by edit_model_path gracefully
+
+        # Apply to model
+        self.edit_model_by_path(**pa)
+        return self
 
     def get_soil_from_web(self,
                           simulation_name: Union[str, tuple, None] = None,
@@ -500,76 +548,6 @@ class ApsimModel(CoreModel):
 
         return self
 
-    def spin_up(self, report_name: str = 'Report', start=None, end=None, spin_var="Carbon", simulations=None):
-        """
-        Perform a spin-up operation on the aPSim model.
-
-        This method is used to simulate a spin-up operation in an aPSim model. During a spin-up, various soil properties or
-        _variables may be adjusted based on the simulation results.
-
-        Parameters:
-        ----------
-        report_name: str, optional (default: 'Report')
-            The name of the aPSim report to be used for simulation results.
-
-        start: str, optional
-            The start date for the simulation (e.g., '01-01-2023'). If provided, it will change the simulation start date.
-
-        end: str, optional
-            The end date for the simulation (e.g., '3-12-2023'). If provided, it will change the simulation end date.
-
-        spin_var: str, optional (default: 'Carbon'). the difference between the start and end date will determine the spin-up period
-            The variable representing the child of spin-up operation. Supported values are 'Carbon' or 'DUL'.
-
-        Returns:
-        -------
-        self : ApsimModel
-            The modified ``ApsimModel`` object after the spin-up operation.
-            you could call ``save_edited`` file and save it to your specified location, but you can also proceed with the simulation
-
-        """
-
-        insert_var = REPORT_PATH.get(spin_var)
-        if start and end:
-            self.change_simulation_dates(start, end)
-        for simu in self.find_simulations(simulations):
-            pysoil = simu.FindDescendant[Physical]()
-        THICKNESS = self.extract_any_soil_physical("Thickness")
-        th = np.array(THICKNESS)
-        self.change_report(insert_var, report_name=report_name)
-        rpn = insert_var.split(" ")[-1]
-        self.run(report_name=report_name)
-        DF = self.results
-
-        df_sel = DF.filter(regex=r'^{0}'.format(rpn), axis=1)
-        df_sel = df_sel.mean(numeric_only=True)
-        print(df_sel)
-        if spin_var == 'Carbon':
-            if 'TotalC' not in insert_var:
-                raise ValueError("wrong report variable path: '{0}' supplied according to requested spin up " \
-                                 "var".format(insert_var))
-
-            bd = list(pysoil.DUL)
-
-            bd = np.array(bd)
-            cf = np.array(bd) * np.array(th)
-            cf = np.divide(cf, 1)  # this convert to percentage
-            per = np.array(df_sel) / cf
-            new_carbon = [i for i in np.array(per).flatten()]
-
-            self.replace_any_soil_organic(spin_var, new_carbon)
-        if spin_var == 'DUL':
-            if 'PAW' not in insert_var:
-                raise ValueError("wrong report variable path: '{0}' supplied according to requested spin up var" \
-                                 .format(insert_var))
-            l_15 = pysoil.LL15
-            ll = np.array(l_15)
-            dul = ll + df_sel
-            dul = list(np.array(dul).flatten())
-
-            pysoil.DUL = dul
-
-            return self
 
     def check_kwargs(self, path, **kwargs):
         if hasattr(self.Simulations, "FindByPath"):

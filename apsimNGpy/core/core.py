@@ -44,7 +44,7 @@ from apsimNGpy.core._cultivar import trace_cultivar
 import Models
 from apsimNGpy.core.pythonet_config import get_apsim_version as apsim_version
 from System import InvalidOperationException
-
+from apsimNGpy.core._cultivar import edit_cultivar_by_path
 # constants
 IS_NEW_MODEL = is_file_format_modified()
 APSIM_VERSION_NO = apsim_version(release_number=True)
@@ -1416,6 +1416,10 @@ class CoreModel(PlotManager):
                         self.add_crop_replacements(_crop=crop_name)
 
                 kwargs['plant'] = trace_cultivar(self.Simulations, values.Name).get(values.Name)
+                edit_cultivar_by_path(self, path = path, commands=kwargs.get('commands'),
+                                      values= kwargs.get('values'), manager_param=kwargs.get('manager_param'),
+                                      manager_path=kwargs.get('manager_path'),
+                                      sowed=kwargs.get('sowed'), rename=kwargs.get('rename'))
                 _edit_in_cultivar(self, model_name=values.Name, simulations=simulations, param_values=kwargs,
                                   verbose=verbose, by_path=True)
                 ...
@@ -1768,8 +1772,9 @@ class CoreModel(PlotManager):
                     if not replace_ments and not isinstance(model_type, Models.Core.Folder):
                         raise NotImplementedError(f"No edit method implemented for model type {type(model_instance)}")
 
-        xe = [i for i in map(edit_object, edit_candidate_objects)]
-        del xe
+        for _  in map(edit_object, edit_candidate_objects):
+            pass
+
         self.ran_ok = False
         return self
 

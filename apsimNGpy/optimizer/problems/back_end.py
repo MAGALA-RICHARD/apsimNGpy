@@ -2,6 +2,8 @@ import pandas as pd
 from apsimNGpy.core.apsim import ApsimModel
 from apsimNGpy.validation.evaluator import Validate
 from apsimNGpy.exceptions import ApsimRuntimeError
+from apsimNGpy.core._cultivar import trace_cultivar, search_cultivar_manager
+import Models
 
 obs_suffix = '_obs'
 pred_suffix = '_pred'
@@ -57,27 +59,6 @@ def eval_observed(obs, pred, index, pred_col, obs_col, method='rmse', exp=None):
     return metric_direction[method.lower()] * out
 
 
-from apsimNGpy.core.model_tools import find_child
-from apsimNGpy.core.cs_resources import CastHelper
-from apsimNGpy.core.model_loader import get_node_by_path
-
-import Models
-from System import Array, String
-
-
-def find_all_model_type(parent, model_type):
-    node = getattr(parent, "Node", parent)
-    return node.FindAll[model_type]()
-
-
-def trace_cultivar(location, cultivar_name):
-    plants = find_all_model_type(location, Models.PMF.Plant)
-    for plant in plants:
-        node = getattr(plant, "Node", plant)
-        if node.FindChild[Models.PMF.Cultivar](cultivar_name, recurse=True):
-            return {cultivar_name: plant.Name}
-
-
 def search_cultivar_loc(model: str, cultivar_name='Dekalb_XL82'):
     get_manager_name = None
     get_manager_param = None
@@ -97,70 +78,18 @@ def search_cultivar_loc(model: str, cultivar_name='Dekalb_XL82'):
                          commands='x',
                          values='2',
                          new_cultivar_name='x')
-        model.inspect_file(cultivar=True)
 
-        tr= trace_cultivar(model.Simulations, 'B_110')
-        print(tr)
+        tr = trace_cultivar(model.Simulations, 'B_110')
+        print(model.inspect_model('Models.PMF.Cultivar', fullpath=True))
         model.edit_model_by_path('.Simulations.Simulation.Field.Maize.x',
                                  commands='34', values=20,
-                                 parameter_name=get_manager_param,)
+                                 parameter_name=get_manager_param, )
+        xc = search_cultivar_manager(model, 'x')
+        x = search_cultivar_manager(model, 'B_110', strict=False)
 
 
 def cultivar_plugin(model):
-    with ApsimModel(model) as model:
-        model.add_base_replacements()
-        node = model.get_replacements_node()
-        b_110 = node.Node.FindChild[Models.PMF.Cultivar]('B_110', recurse=True)
-        b_110
-        b_110 = CastHelper.CastAs[Models.PMF.Cultivar](b_110)
-        lc = list(b_110.Command)
-        lc.extend((['[Phenology].Photosensitive.Target.XYPairs.m = 0, 12.5, 29']))
-        from pathlib import Path
-        par = str(Path(b_110.FullPath).stem)
-        np = get_node_by_path(node, node_path=par)
-        print('/', np)
-
-        print()
-        string_array = Array[String](lc)
-        print(b_110)
-        b_110.Command = string_array
-        for cmd in b_110.Command:
-            print(cmd)
-        print()
-        # node.Children.Add(b_110)
-        for i in node.Children:
-            print(i.Name)
-
-        setattr(b_110, "Command", string_array)
-
-        np.Model.AddChild(b_110)
-        for i in dir(np.Model):
-            print('=', i)
-
-        model.inspect_file(cultivar=True)
-
-        print()
-        node_p = node.Node.FindChild[Models.PMF.Cultivar]('B_110', recurse=True)
-        print(node_p, '===')
-        cc = Models.PMF.Cultivar()
-        lc.append('[Rachis].DMDemands.Structural.DMDemandFunction.MaximumOrganWt.FixedValue2=55')
-        cc.Name = 'B_110'
-        cc.Command = lc
-        cc.set_Command(lc)
-        b_110.set_Command([])
-        np.ReplaceChild(node_p, cc)
-        """this is failing may be employ trick to search the cultvar name in the sowing scripts"""
-        print()
-        print(b_110.FullPath)
-        model.save()
-        cv = model.inspect_model_parameters_by_path(cc.FullPath)
-        for i, v in cv.items():
-            print(i, v)
-        from apsimNGpy.core.model_tools import get_or_check_model
-
-        # model.edit_model_by_path(path='.Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_100',
-        #                                        commands='[Rachis].DMDemands.Structural.DMDemandFunction.MaximumOrganWt.FixedValue',
-        #                                        values =40)
+    pass
 
 
 def runner(model, params, table=None):
@@ -182,5 +111,3 @@ if __name__ == '__main__':
     from apsimNGpy.tests.unittests.test_factory import obs, pred
 
     rt = eval_observed(obs, pred, index='year', obs_col='observed', pred_col='predicted', method='ccc', exp=None)
-
-    search_cultivar_loc('Maize')

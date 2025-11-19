@@ -25,7 +25,6 @@ from apsimNGpy.core.cs_resources import CastHelper, sow_using_variable_rule, sow
 APSIM_VERSION = apsim_version(release_number=True)
 
 
-
 @cache
 def select_thread(multithread):
     if multithread:
@@ -111,7 +110,6 @@ def find_all_in_scope(parent, child_class):
 
 
 def find_descendant(parent, child_class):
-
     parent = getattr(parent, 'Model', parent)
     if isinstance(child_class, str):
         child_class = validate_model_obj(child_class)
@@ -539,7 +537,7 @@ def run_p(_model, simulations='all', clean=False, multithread=True):
         logger.info(e[0].ToString())
 
 
-def _edit_in_cultivar(_model, model_name, param_values, simulations=None, verbose=False):
+def _edit_in_cultivar(_model, model_name, param_values, simulations=None, verbose=False, by_path=False):
     # if there is a need to target a specific simulation in case of changing the current culvar in simulation
 
     _cultivar_names = _model.inspect_model('Cultivar', fullpath=False)
@@ -554,6 +552,8 @@ def _edit_in_cultivar(_model, model_name, param_values, simulations=None, verbos
     plant_name = param_values.get('plant')
     # Input validation
     required_keys = ["commands", "values", "cultivar_manager", "parameter_name", "new_cultivar_name"]
+    if by_path:
+        required_keys = ["commands", "values"]
     # Extract input parameters
     missing = [key for key in required_keys if not param_values.get(key)]
 
@@ -589,7 +589,10 @@ def _edit_in_cultivar(_model, model_name, param_values, simulations=None, verbos
 
     # Apply updated commands
     updated_cmds = [f"{k.strip()}={v}" for k, v in cultivar_params.items()]
-    cultivar.set_Command(updated_cmds)
+    if hasattr(cultivar, 'set_Command'):
+        cultivar.set_Command(updated_cmds)
+    else:
+        cultivar.Command = updated_cmds
 
     # Attach cultivar under a plant model
     plant_model = get_or_check_model(replacements, Models.PMF.Plant, plant_name,
@@ -600,12 +603,13 @@ def _edit_in_cultivar(_model, model_name, param_values, simulations=None, verbos
 
     # Rename and reattach cultivar
     cultivar.Name = new_cultivar_name
-    ModelTools.ADD(cultivar, plant_model)
-
-    for sim in _model.find_simulations(simulations):
-        # Update cultivar manager script
-        _model.edit_model(model_type=Models.Manager, model_name=cultivar_manager, simulations=sim.Name,
-                          **{cultivar_manager_param: new_cultivar_name})
+    if not by_path:
+        ModelTools.ADD(cultivar, plant_model)
+    if not by_path:
+        for sim in _model.find_simulations(simulations):
+            # Update cultivar manager script
+            _model.edit_model(model_type=Models.Manager, model_name=cultivar_manager, simulations=sim.Name,
+                              **{cultivar_manager_param: new_cultivar_name})
 
     if verbose:
         logger.info(f"\nEdited Cultivar '{model_name}' and saved it as '{new_cultivar_name}'")
@@ -648,7 +652,7 @@ def add_as_simulation(_model, resource, sim_name):
     try:
         if IS_NEW_APSIM:
             try:
-               new_sim.Rename(sim_name)
+                new_sim.Rename(sim_name)
             except AttributeError:
                 new_sim.Name = sim_name
 
@@ -939,6 +943,11 @@ class ModelTools:
     find_child_of_class = find_child_of_class
 
 
+def find_all_model_type(parent, model_type):
+    node_base = getattr(parent, "Node", parent)
+    return node_base.FindAll[model_type]()
+
+
 collect()
 # add_method_to_model_tools(find_child)
 # add_method_to_model_tools(find_all_in_scope)
@@ -946,8 +955,59 @@ collect()
 
 if __name__ == "__main__":
     ...
+    from apsimNGpy.core_utils.database_utils import read_db_table, get_db_table_names
+    import time
     from apsimNGpy.core.apsim import ApsimModel
+    from apsimNGpy.core.pythonet_config import get_apsim_file_reader
+    from apsimNGpy.core.config import load_crop_from_disk
 
-    model = ApsimModel('Maize')
-    # ap = configure(model, 'Maize,Soybean', "Soybean", 'fixed',
-    #                10, 50, 10, "Bunya", end_date='15-may',start_date= '12-may', fertilize_crop={'Soybean': 30})
+    maize = load_crop_from_disk(crop='Maize', out='apism_run.apsimx')
+    wf = load_crop_from_disk('AU_Dalby.met', out='AU_Dalby.met')
+    string_name = maize.read_text()
+    reader = get_apsim_file_reader('string')
+    node = reader[Models.Core.Simulations](string_name, None, initInBackground=True, fileName='apsim_rune.apsimx')
+    climate = node.FindChild[Models.Climate.Weather](recurse=True)
+    climate.FileName = str(wf.resolve())
+    print(Path(climate.FileName).resolve().exists())
+    sim = node.FindChild[Models.Core.Simulation](recurse=True)
+    datastore = node.FindChild[Models.Storage.DataStore](recurse=True)
+    db = str(Path(node.FileName).with_suffix('.db'))
+    datastore.FileName = db
+    datastore.UseInMemoryDB = False
+    a = time.perf_counter()
+    sim.Prepare()
+    sim.Run()
+    b = time.perf_counter()
+    print(b - a, 'seconds')
+
+
+    def edit_cultivar(cultivar_name, commands):
+        def validate_commands(cmds):
+            valid = []
+            invalid = []
+            for command in cmds:
+                spc = command.split('=')
+                if '=' in command and len(spc) > 1 and spc[-1]:
+                    valid.append(command.strip())
+                else:
+                    invalid.append(command)
+            if invalid:
+                raise ValueError(f'{invalid} are not valid cultivar commands')
+            return valid
+
+        cultivar = node.FindChild[Models.PMF.Cultivar](cultivar_name, recurse=True)
+        if isinstance(commands, str):
+            commands = {commands}
+        existing = list(cultivar.Command)
+        valid_commands = validate_commands(commands)
+        update = existing + list(valid_commands)
+        unique_updated = list(dict.fromkeys(update))
+        return unique_updated
+
+
+    pp = edit_cultivar('B_110', "1")
+    ppd = edit_cultivar('B_110', "1=")
+    pp1 = edit_cultivar('B_110', commands='[Leaf].Photosynthesis.RUE.FixedValue=2')
+    ppl = edit_cultivar('B_110', commands=['[Phenology].Juvenile.Target.FixedValue = 210',
+                                           '[Phenology].Photosensitive.Target.XYPairs.X = 0, 12.5, 24',
+                                           '[Phenology].Photosensitive.Target.XYPairs.Y = 0, 0, 0', ])

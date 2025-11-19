@@ -19,7 +19,7 @@ from optimizer.problems.vars import (
     validate_user_params,
     filter_apsim_params,
 )
-from apsimNGpy.optimizer.back_end import runner, eval_observed
+from optimizer.problems.back_end import runner, eval_observed
 from wrapdisc import Objective
 from wrapdisc.var import UniformVar  # can be generalized for other variable types
 

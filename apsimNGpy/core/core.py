@@ -40,6 +40,7 @@ from apsimNGpy.core.run_time_info import BASE_RELEASE_NO, GITHUB_RELEASE_NO
 from apsimNGpy.settings import SCRATCH, logger, MissingOption
 from apsimNGpy.core.plotmanager import PlotManager
 from apsimNGpy.core.model_tools import find_child
+from apsimNGpy.core._cultivar import trace_cultivar
 import Models
 from apsimNGpy.core.pythonet_config import get_apsim_version as apsim_version
 from System import InvalidOperationException
@@ -1414,8 +1415,9 @@ class CoreModel(PlotManager):
                     for crop_name in self.inspect_model(Models.PMF.Plant, fullpath=False):
                         self.add_crop_replacements(_crop=crop_name)
 
+                kwargs['plant'] = trace_cultivar(self.Simulations, values.Name).get(values.Name)
                 _edit_in_cultivar(self, model_name=values.Name, simulations=simulations, param_values=kwargs,
-                                  verbose=verbose)
+                                  verbose=verbose, by_path=True)
                 ...
             case Models.Clock:
                 self._set_clock_vars(values, param_values=kwargs)
@@ -1689,7 +1691,9 @@ class CoreModel(PlotManager):
                     cultivar_manager = kwargs.get("cultivar_manager")
                     new_cultivar_name = kwargs.get("new_cultivar_name", None)
                     cultivar_manager_param = kwargs.get("parameter_name", 'CultivarName')
-                    plant_name = kwargs.get('plant')
+
+                    plant_name = (kwargs.get('plant') or
+                                  trace_cultivar(self.Simulations, model_name).get(model_name))
 
                     # Input validation
                     if not new_cultivar_name:
@@ -4270,6 +4274,8 @@ class CoreModel(PlotManager):
         ``Raises:``
             - *ValueError*: If the specified crop is not found.
         """
+        if  self.get_replacements_node():
+            return self
 
         _FOLDER = Models.Core.Folder()
         #  "everything is edited in place"

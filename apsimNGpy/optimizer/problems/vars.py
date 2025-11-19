@@ -170,7 +170,7 @@ def validate_user_params(params: Dict) -> BaseParams:
         for key in (candidates if isinstance(candidates, (list, tuple)) else [candidates]):
             others.pop(key, None)
 
-        logger.info(f"✅ Validation successful\n{validated}")
+        logger.info(f"✅ data type validation succeeded")
         return validated
 
     except ValidationError as e:

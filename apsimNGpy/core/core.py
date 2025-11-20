@@ -43,7 +43,7 @@ from apsimNGpy.core.model_tools import find_child
 from apsimNGpy.core._cultivar import trace_cultivar
 import Models
 from apsimNGpy.core.pythonet_config import get_apsim_version as apsim_version
-from System import InvalidOperationException
+from System import InvalidOperationException, ArgumentOutOfRangeException
 from apsimNGpy.core._cultivar import edit_cultivar_by_path
 # constants
 IS_NEW_MODEL = is_file_format_modified()
@@ -736,6 +736,8 @@ class CoreModel(PlotManager):
                 try:
                     dispose_db()
                 except PermissionError:
+                    pass
+                except ArgumentOutOfRangeException:
                     pass
 
             # Run APSIM externally

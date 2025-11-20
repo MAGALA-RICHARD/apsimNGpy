@@ -93,6 +93,7 @@ def cultivar_plugin(model):
 
 
 def runner(model, params, table=None):
+
     with ApsimModel(model) as model:
         for param in params:
             model.set_params(param)

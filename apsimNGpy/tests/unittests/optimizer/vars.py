@@ -2,7 +2,7 @@ import copy
 import unittest
 from pydantic import ValidationError
 
-from apsimNGpy.optimizer.problems.vars import (
+from apsimNGpy.optimizer.problems.variables import (
     example_param2,
     filter_apsim_params,
     validate_user_params,
@@ -109,7 +109,7 @@ class TestVars(unittest.TestCase):
     # -------------------------------
     def test_merge_params_by_path_combines_other_params(self):
         """Ensure parameters from the same path are merged properly."""
-        from apsimNGpy.optimizer.problems.vars import merge_params_by_path
+        from apsimNGpy.optimizer.problems.variables import merge_params_by_path
 
         merged = merge_params_by_path([self.valid_example, self.valid_example2])
         self.assertIsInstance(merged, list)

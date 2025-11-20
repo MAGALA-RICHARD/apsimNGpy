@@ -142,7 +142,8 @@ class MixedVariableOptimizer:
 
             encoded_initial = wrapped_obj.encode(initial_guess)
             kwargs.setdefault("method", 'Nelder-Mead')
-            logger.info(f"[{kwargs.get('method')}] Starting optimization with {len(bounds)} variables,\n initial values: {initial_guess}")
+            logger.info(
+                f"[{kwargs.get('method')}] Starting optimization with {len(bounds)} variables,\n initial values: {initial_guess}")
             result = minimize(wrapped_obj, x0=encoded_initial, bounds=bounds, **kwargs)
 
             # Attach a labeled solution
@@ -158,7 +159,7 @@ class MixedVariableOptimizer:
             self,
             use_threads=False,
             args=(),
-            strategy='rand1bin', #'rand1bin' is the canonical baseline DE variant described in Storn & Price (1997).
+            strategy='rand1bin',  # 'rand1bin' is the canonical baseline DE variant described in Storn & Price (1997).
             maxiter=1000,
             popsize=15,
             tol=0.01,
@@ -173,7 +174,7 @@ class MixedVariableOptimizer:
             updating='deffered',
             workers=1,
             constraints=(),
-            x0=None,# implimented internally
+            x0=None,  # implimented internally
             seed=1,
             *,
             integrality=None,
@@ -194,8 +195,8 @@ class MixedVariableOptimizer:
         x0 = wrapped_obj.encode(initial_guess) if initial_guess is not None else None
 
         if disp:
-            logger.info(f"[DE] Starting optimization with {len(bounds)} variables,\n mutation: {mutation}"\
-                        f" seed={seed}, popsize={popsize}: strategy: {strategy}, starting values: {initial_guess}")
+            logger.info(f"[DE] Starting optimization with {len(bounds)} variables,\n mutation: {mutation}," \
+                        f" seed={seed}, popsize={popsize}, strategy: {strategy}, starting values: {initial_guess}")
         select_process = ThreadPoolExecutor if use_threads else ProcessPoolExecutor
         with select_process(max_workers=workers) as executor:
             result = differential_evolution(
@@ -236,6 +237,7 @@ class MixedVariableOptimizer:
 
 if __name__ == '__main__':
     from apsimNGpy.optimizer.problems.vars import QrandintVar
+
     example_param3 = {
         # one per factor
         "path": ".Simulations.Simulation.Field.Soil.Organic",
@@ -248,10 +250,11 @@ if __name__ == '__main__':
     cultivar_param = {
         "path": ".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82",
         "vtype": [QrandintVar(400, 600, q=5), ],
-        "start_value": [550,],
-        "candidate_param": ["[Grain].MaximumGrainsPerCob.FixedValue",],
-        "other_params": {"sowed": True},  # other params must be on the same node or associated or extra arguments, e.g taget simulation name classified simulations
-        'cultivar':True
+        "start_value": [550, ],
+        "candidate_param": ["[Grain].MaximumGrainsPerCob.FixedValue", ],
+        "other_params": {"sowed": True},
+        # other params must be on the same node or associated or extra arguments, e.g., target simulation name classified simulations
+        'cultivar': True
     }
 
     if __name__ == '__main__':
@@ -261,9 +264,9 @@ if __name__ == '__main__':
         from apsimNGpy.tests.unittests.test_factory import obs
         from optimizer.problems.smp import MixedProblem
 
-        mp = MixedProblem(model='Maize', trainer_dataset=obs, pred_col='Yield', method='rmse',
+        mp = MixedProblem(model='Maize', trainer_dataset=obs, pred_col='Yield', method='RRMSE',
                           index='year', trainer_col='observed')
-        #mp.submit_factor(**example_param3)
+        # mp.submit_factor(**example_param3)
         mp.submit_factor(**cultivar_param)
         minim = MixedVariableOptimizer(problem=mp)
         # min.minimize_with_de(workers=3, updating='deferred')
@@ -272,4 +275,3 @@ if __name__ == '__main__':
         print(res)
         out = minim.minimize_with_local()
         print(out)
-

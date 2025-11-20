@@ -54,10 +54,10 @@ class Validate:
     def MAE(self) -> float:
         return np.mean(np.abs(self.actual - self.predicted))
 
-    def bias(self) -> float:
+    def BIA(self) -> float:
         return np.mean(self.actual - self.predicted)
 
-    def slope(self) -> float:
+    def SLOPE(self) -> float:
         slope, *_ = linregress(self.actual, self.predicted)
         return slope
 
@@ -110,7 +110,9 @@ class Validate:
         return {'rho_c': ci_result, 's_shift': v, 'l_shift': u, 'C_b': C_b, 'blalt': blalt}
 
     def evaluate(self, metric: str = 'RMSE') -> float:
-        assert metric in self.METRICS, f"Metric '{metric}' is not supported."
+        metrics_lower = {m.lower() for m in self.METRICS}
+        assert metric.lower() in metrics_lower, f"Metric '{metric}' is not supported."
+
         return getattr(self, metric)()
 
     def evaluate_all(self, verbose: bool = False) -> Dict[str, float]:

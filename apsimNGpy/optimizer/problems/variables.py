@@ -24,9 +24,9 @@ Supported Variable Types
 --------------------------------------------------------------------
 Functions Provided
 --------------------------------------------------------------------
-- ``validate_user_params`` : Validate and normalize parameter inputs.
-- ``filter_apsim_params`` : Flatten parameters for APSIM simulation input.
-- ``merge_params_by_path`` : Combine multiple parameter dictionaries with shared paths.
+- validate_user_params: Validate and normalize parameter inputs.
+- filter_apsim_params: Flatten parameters for APSIM simulation input.
+- merge_params_by_path: Combine multiple parameter dictionaries with shared paths.
 --------------------------------------------------------------------
 """
 

@@ -246,7 +246,7 @@ if __name__ == '__main__':
     }
     cultivar_param = {
         "path": ".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82",
-        "vtype": [QrandintVar(400, 550, q=5), ],
+        "vtype": [QrandintVar(400, 600, q=5), ],
         "start_value": [550,],
         "candidate_param": ["[Grain].MaximumGrainsPerCob.FixedValue",],
         "other_params": {"sowed": True},  # other params must be on the same node or associated or extra arguments
@@ -267,7 +267,7 @@ if __name__ == '__main__':
         minim = MixedVariableOptimizer(problem=mp)
         # min.minimize_with_de(workers=3, updating='deferred')
         # minim.minimize_with_alocal_solver(method='Nelder-Mead')
-        res = minim.minimize_with_de(use_threads=True, updating='deferred', workers=15)
+        res = minim.minimize_with_de(use_threads=True, updating='deferred', workers=15, popsize=20)
         print(res)
         out = minim.minimize_with_local()
         print(out)

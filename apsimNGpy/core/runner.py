@@ -48,6 +48,7 @@ def invoke_csharp_gc():
     GC.WaitForPendingFinalizers()
 
 
+
 def get_apsim_version(verbose: bool = False):
     """ Display version information of the apsim model currently in the apsimNGpy config environment.
 
@@ -370,17 +371,17 @@ def aggregate_data(dir_path, pattern, recursive=False):
         print(df_cat.shape)  # concatenated along columns
 
 
-def run_from_dir(dir_path, pattern, verbose=False,
-                 recursive=False,  # set to false because the data collector is also set to false
-                 write_tocsv=False,
-                 run_only=False,
-                 cpu_count=-1,
-                 tables=None, axis=0,
-                 order_sensitive=False,
-                 add_keys=False,
-                 keys_prefix: str = "g",
-                 connection: Engine = None
-                 ) -> [pd.DataFrame]:
+def _run_from_dir(dir_path, pattern, verbose=False,
+                  recursive=False,  # set to false because the data collector is also set to false
+                  write_tocsv=False,
+                  run_only=False,
+                  cpu_count=-1,
+                  tables=None, axis=0,
+                  order_sensitive=False,
+                  add_keys=False,
+                  keys_prefix: str = "g",
+                  connection: Engine = None
+                  ) -> [pd.DataFrame]:
     """
        This function acts as a wrapper around the ``APSIM`` command line recursive tool, automating
        the execution of APSIM simulations on all files matching a given pattern in a specified
@@ -637,6 +638,8 @@ def run_dir_simulations(
     logging output, and ensuring resources are cleaned up. It either completes
     successfully or raises an exception.
 
+    used by: :func:`dir_simulations_to_dfs`, :func:`dir_simulations_to_sql`, :func:`dir_simulations_to_csv`
+
     Returns
     -------
     process : subprocess.Popen
@@ -687,7 +690,7 @@ def run_dir_simulations(
 # -----------------------------------------------------------------------------
 
 
-def run_dir_simulations_to_csv(
+def dir_simulations_to_csv(
         dir_path: str | Path,
         pattern: str,
         *,
@@ -715,6 +718,8 @@ def run_dir_simulations_to_csv(
         If True, search recursively through subdirectories.
     cpu_count : int, optional
         Number of threads to use for APSIM's internal parallel processing.
+     What this function does is that it makes it easy to retrieve the simulated files, returning a generator that
+       yields data frames
 
     Returns
     -------
@@ -725,6 +730,11 @@ def run_dir_simulations_to_csv(
     ------
     RuntimeError
         If the APSIM process fails.
+
+    .. seealso::
+
+       :func:`~apsimNGpy.core.runner.dir_simulations_to_dfs`
+       :func:`~apsimNGpy.core.runner.dir_simulations_to_sql`
     """
     dir_path = str(dir_path)
 
@@ -755,7 +765,7 @@ def dir_simulations_to_dfs(
         verbose: bool = False,
         recursive: bool = False,
         cpu_count: int = -1,
-        tables: Optional[List[str]] = None,
+        tables: Optional[List[str], str] = None,
         axis: int = 0,
         order_sensitive: bool = False,
         add_keys: bool = False,
@@ -789,16 +799,26 @@ def dir_simulations_to_dfs(
     keys_prefix : str, optional
         Prefix for keys used when concatenating grouped DataFrames.
 
+     What this function does is that it makes it easy to retrieve the simulated files, returning a dict that
+       yields data frames
+
     Returns
     -------
     dict
         Mapping from schema signatures to concatenated DataFrames. Each key is
-        a tuple of (column_name, dtype_str) pairs describing the schema.
+        a tuple of (column_name, dtype_str) pairs describing the schema. if all simulations are the same, the key
+         is going to be one, as keys and values are filtered according to data types similarities among data frames
 
     Raises
     ------
     RuntimeError
         If the APSIM process fails.
+
+    .. seealso::
+
+       :func:`~apsimNGpy.core.runner.dir_simulations_to_sql`
+       :func:`~apsimNGpy.core.runner.dir_simulations_to_csv`
+
     """
     dir_path = str(dir_path)
 
@@ -839,12 +859,12 @@ def dir_simulations_to_sql(
         verbose: bool = False,
         recursive: bool = False,
         cpu_count: int = -1,
-        tables: Optional[List[str]] = None,
+        tables: Optional[List[str], str] = None,
         axis: int = 0,
         order_sensitive: bool = False,
         add_keys: bool = False,
         keys_prefix: str = "g",
-        base_table_prefix: str = "T",
+        base_table_prefix: str = "group",
         schema_table_name: str = "_schemas",
 ) -> None:
     """
@@ -880,6 +900,7 @@ def dir_simulations_to_sql(
         Prefix for the generated data table names in SQL.
     schema_table_name : str, optional
         Name of the schema metadata table in SQL.
+     What this function does is that it makes it easy to aggregate the simulated files to an SQL database
 
     Returns
     -------
@@ -889,11 +910,16 @@ def dir_simulations_to_sql(
     ------
     RuntimeError
         If the APSIM process fails.
+
+    .. seealso::
+
+       :func:`~apsimNGpy.core.runner.dir_simulations_to_dfs`
+       :func:`~apsimNGpy.core.runner.dir_simulations_to_csv`
     """
     dir_path = str(dir_path)
 
     # Reuse the in-memory grouping logic
-    groups = run_from_dir_dfs(
+    groups = dir_simulations_to_dfs(
         dir_path=dir_path,
         pattern=pattern,
         verbose=verbose,

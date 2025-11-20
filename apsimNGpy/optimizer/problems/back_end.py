@@ -3,6 +3,8 @@ import pandas as pd
 from apsimNGpy.core.apsim import ApsimModel
 from apsimNGpy.validation.evaluator import Validate
 
+__all__ = ['runner', 'eval_observed']
+
 obs_suffix = '_obs'
 pred_suffix = '_pred'
 

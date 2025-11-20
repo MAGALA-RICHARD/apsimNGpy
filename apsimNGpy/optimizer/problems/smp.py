@@ -583,8 +583,7 @@ class MixedProblem:
                 pred_col=self.predicted_col,
                 obs_col=self.obs_column,
                 index=self.index,
-                method=self.method,
-            )
+                method=self.method )
 
             return eval_out
         except ApsimRuntimeError:

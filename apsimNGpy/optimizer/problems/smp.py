@@ -14,6 +14,9 @@ import gc
 from collections import OrderedDict
 from typing import Optional, List, Dict, Any
 
+import numpy as np
+
+from apsimNGpy.exceptions import ApsimRuntimeError
 import pandas as pd
 from apsimNGpy.optimizer.problems.vars import (
     validate_user_params,
@@ -124,7 +127,7 @@ class MixedProblem:
     # -------------------------------------------------------------------------
     # Factor Submission and Validation
     # -------------------------------------------------------------------------
-    def submit_factor(self, *, path, vtype, start_value, candidate_param, other_params=None):
+    def submit_factor(self, *, path, vtype, start_value, candidate_param, cultivar=False, other_params=None):
         """
         Add a new factor (parameter) to be optimized.
 
@@ -270,6 +273,44 @@ class MixedProblem:
                 start_value=["Medium"],
                 candidate_param=["FertilizerRate"],
             )
+        Submitting cultivar-related variables
+        -------------------------------------------
+        When defining optimization factors for cultivar-specific parameters, users must explicitly signal to the
+         APSIMNGpy API that the parameter belongs to a cultivar node. This is done by including the keyword `cultivar=True` in the factor definition.
+
+        By default, this signal is set to False, meaning the optimizer assumes the factor is not cultivar-related and
+        will treat it as a regular parameter (e.g., soil, management, or plant-level attribute).
+        Internally, this flag is evaluated as a boolean field through Pydantic validation to ensure consistent interpretation
+        and error checking.
+
+        The cultivar flag allows APSIMNGpy to route the parameter to the correct editing pipeline that handles cultivar
+        commands and properties under APSIM’s Replacements or CultivarFolder nodes.
+
+        .. code-block:: python
+
+            from wrapdisc.var import QrandintVar
+
+            cultivar_param = {
+                # Full APSIM path to the target cultivar node
+                "path": ".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82",
+
+                # Quantized integer variable (range: 400–550, step size: 5)
+                "vtype": [QrandintVar(400, 550, q=5)], values will be sampled at an interval of five
+
+                # Starting value for optimization
+                "start_value": [550],
+
+                # APSIM command or property to be optimized within the cultivar
+                "candidate_param": ["[Grain].MaximumGrainsPerCob.FixedValue"],
+
+                # Other fixed attributes or node-level arguments
+                "other_params": {"sowed": True}, # implies that the cultivar with the same name as specified by the path is the one in manager script sowing the crop
+
+                # Signal that this parameter belongs to a cultivar node
+                "cultivar": True
+            }
+
+            mp.submit_factor(**cultivar_param)
         """
         out = validate_user_params(
             dict(
@@ -278,6 +319,7 @@ class MixedProblem:
                 start_value=start_value,
                 candidate_param=candidate_param,
                 other_params=other_params,
+                cultivar=cultivar,
             )
         )
         apsim_out = filter_apsim_params(out)
@@ -390,11 +432,18 @@ class MixedProblem:
         self.start_values.clear()
 
         for _, factor in self.ordered_factors.items():
+
+
             apsim_var = filter_apsim_params(factor)
+
             self.apsim_params.append(apsim_var)
             self.var_types.extend(factor.vtype)
             self.start_values.extend(factor.start_value)
-            self.var_names.extend(factor.candidate_param)
+            if not factor.cultivar:
+               self.var_names.extend(factor.candidate_param)
+            else:
+                self.var_names.extend(factor.candidate_param)
+
 
     # -------------------------------------------------------------------------
     # Optimization Interface
@@ -417,9 +466,22 @@ class MixedProblem:
         name_value_map = dict(zip(self.var_names, x_vars))
         apsim_params = copy.deepcopy(self.apsim_params)
         for param in apsim_params:
-            keys = param.keys() & name_value_map.keys()
-            if keys:
-                param.update({k: name_value_map[k] for k in keys})
+
+            if 'cultivar' not in param:
+                keys = param.keys() & name_value_map.keys()
+                if keys:
+                    param.update({k: name_value_map[k] for k in keys})
+            else:
+                keys = param.keys() & name_value_map.keys()
+                if keys:
+                    param['values'] = [name_value_map[k] for k in keys]
+                    param['commands'] = [k for k in keys]
+                    # pop all keys here
+                    [param.pop(k, None) for k in keys]
+
+        # now we can also pop 'cultivar' key
+            param.pop('cultivar', None)
+
         return apsim_params
 
     def evaluate_objectives(self, x):
@@ -492,20 +554,30 @@ class MixedProblem:
 
             print(f"Model evaluation ({mp.method}):", score)
         """
+        try:
+            predicted = runner(self.model, self._insert_x_vars(x))
+            if callable(self.func):
+                return self.func(predicted)
+            eval_out = eval_observed(
+                self.obs,
+                predicted,
+                pred_col=self.predicted_col,
+                obs_col=self.obs_column,
+                index=self.index,
+                method=self.method,
+            )
 
-        predicted = runner(self.model, self._insert_x_vars(x))
-        if callable(self.func):
-            return self.func(predicted)
-        eval_out = eval_observed(
-            self.obs,
-            predicted,
-            pred_col=self.predicted_col,
-            obs_col=self.obs_column,
-            index=self.index,
-            method=self.method,
-        )
+            return eval_out
+        except ApsimRuntimeError:
+            # not all sampled x inputs will always be APSIM compatible
+            from apsimNGpy.optimizer.problems.back_end import metric_direction
 
-        return eval_out
+            from settings import logger
+            logger.warning(f"Simulation failed for x variables {x} method '{self.method}', returning penalty value.")
+            direction = metric_direction.get(self.method.lower(), -1)
+            # If the metric is minimized, return +inf (bad)
+            # If the metric is maximized, return -inf (bad)
+            return -direction * np.inf
 
     def wrap_objectives(self) -> Objective:
         """

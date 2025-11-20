@@ -236,7 +236,7 @@ class MixedVariableOptimizer:
 
 
 if __name__ == '__main__':
-    from apsimNGpy.optimizer.problems.vars import QrandintVar
+    from apsimNGpy.optimizer.problems.variables import QrandintVar
 
     example_param3 = {
         # one per factor

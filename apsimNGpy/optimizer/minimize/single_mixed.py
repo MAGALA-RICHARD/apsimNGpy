@@ -33,6 +33,9 @@ class MixedVariableOptimizer:
             raise AttributeError("problem_desc must be initialized before calling minimize_with_de")
 
     def minimize_with_alocal_solver(self, **kwargs):
+        return self.minimize_with_local(**kwargs)
+
+    def minimize_with_local(self, **kwargs):
         """
             Run a local optimization solver (e.g., Powell, L-BFGS-B, etc.) on given defined problem.
 

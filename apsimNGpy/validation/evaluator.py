@@ -71,7 +71,7 @@ class Validate:
     actual: ArrayLike
     predicted: ArrayLike
 
-    METRICS = ["RMSE", "MAE", "MSE", "RRMSE", "bias", "ME", "WIA", "R2", "CCC", "slope"]
+    METRICS = ["RMSE", "MAE", "MSE", "RRMSE", "bias", "ME", "WIA", "R2", "CCC", "SLOPE"]
 
     # -------------------------------------------------------------------------
     # Initialization

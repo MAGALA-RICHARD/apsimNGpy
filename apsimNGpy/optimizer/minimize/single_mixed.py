@@ -4,6 +4,7 @@ from apsimNGpy.settings import logger
 from apsimNGpy.optimizer._one_obj import SING_OBJ_MIXED_VAR
 from scipy.optimize import minimize, differential_evolution
 
+__all__ = ['MixedVariableOptimizer']
 try:
     import wrapdisc
 except ModuleNotFoundError as mnf:

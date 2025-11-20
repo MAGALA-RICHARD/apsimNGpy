@@ -26,7 +26,7 @@ from apsimNGpy.optimizer.problems.back_end import runner, eval_observed
 from wrapdisc import Objective
 from wrapdisc.var import UniformVar  # can be generalized for other variable types
 
-
+__all__ = ['MixedProblem']
 class MixedProblem:
     """
     Defines a single-objective mixed-variable optimization problem for APSIM models.

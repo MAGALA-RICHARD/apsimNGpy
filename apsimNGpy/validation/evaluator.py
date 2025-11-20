@@ -120,7 +120,7 @@ class Validate:
 
         return getattr(self, metric)()
 
-    def evaluate_all(self, verbose: bool = False) -> Dict[float]:
+    def evaluate_all(self, verbose: bool = False) -> dict:
         """
         EVALUATE USING ALL METRICS ABOVE
 

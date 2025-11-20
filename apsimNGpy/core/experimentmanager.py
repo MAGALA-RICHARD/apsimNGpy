@@ -79,7 +79,6 @@ class ExperimentManager(ApsimModel):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        from System import GC
 
         from System.IO import File # dont remove I don't know why if imported it works magic
 
@@ -342,6 +341,10 @@ class ExperimentManager(ApsimModel):
             # if replace_ments:
             #     siM.AddChild(replace_ments)
             # create experiment
+            _experiments = list(siM.Node.FindAll[Models.Factorial.Experiment]())
+            if _experiments:
+                raise ValueError('Not supported at the moment, provide a base simulation and build from scratch')
+            # add then new experiment Node
             experiment = Models.Factorial.Experiment()
             experiment.Children.Clear()
             self.experiment_node = experiment

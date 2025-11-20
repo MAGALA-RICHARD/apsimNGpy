@@ -174,5 +174,5 @@ def run_suite(verbosity_level=2):
 
 
 if __name__ == '__main__':
-    # run multi_cores test before
-    run = {run_suite()}
+    # MULTI-CORE TEST IS TESTED ELSE WHERE
+    run = (run_suite(),)

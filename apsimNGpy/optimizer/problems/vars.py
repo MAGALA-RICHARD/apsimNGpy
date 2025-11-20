@@ -101,9 +101,10 @@ class BaseParams(BaseModel):
         ],
         ...,
     ]
-    start_value: Union[Tuple[str], Tuple[int], Tuple[float]]
+    start_value: Union[Tuple[str, ...], Tuple[int, ...], Tuple[float, ...]]
     candidate_param: Union[ Tuple[str, ...]]
-    other_params: Optional[Dict[str, Union[int, float, str]]] = None
+    other_params: Optional[Dict[str, Union[int, float, str, bool]]] = None
+    cultivar: Optional[bool] = False
 
     def __hash__(self):
         """Allow instances to be hashable for OrderedDict or caching."""
@@ -164,6 +165,7 @@ def validate_user_params(params: Dict) -> BaseParams:
         # Ensure matching tuple lengths
         lengths = [len(i) if isinstance(i, (list, tuple)) else 1 for i in [candidates, start_value, vtypes]]
         if len(set(lengths)) > 1:
+
             raise ValueError("Length of 'start_value', 'candidate_param', and 'vtype' must match.")
 
         # Remove overlapping keys from other_params
@@ -202,15 +204,18 @@ def filter_apsim_params(params: BaseParams, place_holder=PLACEHOLDER) -> Dict:
         Flattened dictionary containing APSIM parameter mappings.
     """
     _params = {}
-
+    cultivar= params.cultivar
     for key, value in params.__dict__.items():
         if key == "other_params" and isinstance(value, dict):
             _params.update(value)
         elif key == "candidate_param":
             for v in (value if isinstance(value, (list, tuple)) else [value]):
                 _params[v] = place_holder
+
         elif key == "path":
             _params[key] = value
+    if cultivar:
+        _params['cultivar'] = cultivar
 
     return _params
 

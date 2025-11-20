@@ -158,12 +158,12 @@ class MixedVariableOptimizer:
             self,
             use_threads=False,
             args=(),
-            strategy='best1bin',
+            strategy='rand1bin', #'rand1bin' is the canonical baseline DE variant described in Storn & Price (1997).
             maxiter=1000,
             popsize=15,
             tol=0.01,
             mutation=(0.5, 1),
-            recombination=0.7,
+            recombination=0.9,
             rng=None,
             callback=None,
             disp=True,
@@ -173,7 +173,7 @@ class MixedVariableOptimizer:
             updating='deffered',
             workers=1,
             constraints=(),
-            x0=None,
+            x0=None,# implimented internally
             seed=1,
             *,
             integrality=None,
@@ -260,14 +260,14 @@ if __name__ == '__main__':
         from apsimNGpy.tests.unittests.test_factory import obs
         from optimizer.problems.smp import MixedProblem
 
-        mp = MixedProblem(model='Maize', trainer_dataset=obs, pred_col='Yield', method='ccc',
+        mp = MixedProblem(model='Maize', trainer_dataset=obs, pred_col='Yield', method='rmse',
                           index='year', trainer_col='observed')
         #mp.submit_factor(**example_param3)
         mp.submit_factor(**cultivar_param)
         minim = MixedVariableOptimizer(problem=mp)
         # min.minimize_with_de(workers=3, updating='deferred')
         # minim.minimize_with_alocal_solver(method='Nelder-Mead')
-        res = minim.minimize_with_de(use_threads=True, updating='deferred', workers=15, popsize=20)
+        res = minim.minimize_with_de(use_threads=True, updating='deferred', workers=15, popsize=10)
         print(res)
         out = minim.minimize_with_local()
         print(out)

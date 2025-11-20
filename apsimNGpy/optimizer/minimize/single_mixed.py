@@ -15,6 +15,7 @@ except ModuleNotFoundError as mnf:
 
 from wrapdisc.var import UniformVar
 
+
 class MixedVariableOptimizer:
     def __init__(self, problem):
         """
@@ -241,12 +242,18 @@ if __name__ == '__main__':
     }
 
     if __name__ == '__main__':
+        # _______________________________________
+        # use cases
+        # ---------------------------------------
         from apsimNGpy.tests.unittests.test_factory import obs
         from optimizer.problems.smp import MixedProblem
+
         mp = MixedProblem(model='Maize', trainer_dataset=obs, pred_col='Yield', method='ccc',
                           index='year', trainer_col='observed')
         mp.submit_factor(**example_param3)
 
         minim = MixedVariableOptimizer(problem=mp)
         # min.minimize_with_de(workers=3, updating='deferred')
-        minim.minimize_with_alocal_solver(method='Nelder-Mead')
+        # minim.minimize_with_alocal_solver(method='Nelder-Mead')
+        res = minim.minimize_with_de(use_threads=True, updating='deferred', workers=15)
+        print(res)

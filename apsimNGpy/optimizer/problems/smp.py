@@ -15,11 +15,11 @@ from collections import OrderedDict
 from typing import Optional, List, Dict, Any
 
 import pandas as pd
-from optimizer.problems.vars import (
+from apsimNGpy.optimizer.problems.vars import (
     validate_user_params,
     filter_apsim_params,
 )
-from optimizer.problems.back_end import runner, eval_observed
+from apsimNGpy.optimizer.problems.back_end import runner, eval_observed
 from wrapdisc import Objective
 from wrapdisc.var import UniformVar  # can be generalized for other variable types
 

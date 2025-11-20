@@ -141,8 +141,8 @@ class MixedVariableOptimizer:
             initial_guess = self.problem_desc.start_values
 
             encoded_initial = wrapped_obj.encode(initial_guess)
-
-            logger.info(f"[DE] Starting optimization with {len(bounds)} variables, {[*kwargs.items()]}")
+            kwargs.setdefault("method", 'Nelder-Mead')
+            logger.info(f"[{kwargs.get('method')}] Starting optimization with {len(bounds)} variables,\n initial values: {initial_guess}")
             result = minimize(wrapped_obj, x0=encoded_initial, bounds=bounds, **kwargs)
 
             # Attach a labeled solution
@@ -194,7 +194,8 @@ class MixedVariableOptimizer:
         x0 = wrapped_obj.encode(initial_guess) if initial_guess is not None else None
 
         if disp:
-            logger.info(f"[DE] Starting optimization with {len(bounds)} variables, seed={seed}, popsize={popsize}")
+            logger.info(f"[DE] Starting optimization with {len(bounds)} variables,\n mutation: {mutation}"\
+                        f" seed={seed}, popsize={popsize}. strategy: {strategy}")
         select_process = ThreadPoolExecutor if use_threads else ProcessPoolExecutor
         with select_process(max_workers=workers) as executor:
             result = differential_evolution(
@@ -249,7 +250,7 @@ if __name__ == '__main__':
         "vtype": [QrandintVar(400, 600, q=5), ],
         "start_value": [550,],
         "candidate_param": ["[Grain].MaximumGrainsPerCob.FixedValue",],
-        "other_params": {"sowed": True},  # other params must be on the same node or associated or extra arguments
+        "other_params": {"sowed": True},  # other params must be on the same node or associated or extra arguments, e.g taget simulation name classified simulations
         'cultivar':True
     }
 

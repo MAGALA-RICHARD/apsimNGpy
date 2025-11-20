@@ -11,7 +11,6 @@ from attr import dataclass
 from scipy.stats import norm, linregress
 from typing import Union, List, Dict
 
-
 ArrayLike = Union[np.ndarray, List[float], pd.Series]
 
 
@@ -35,9 +34,10 @@ class Validate:
         self.std_predicted = np.std(self.predicted)
         assert len(self.actual) == len(self.predicted), "Predicted and actual arrays must have the same length."
 
+    # THE METHODS HERE UNDERMINES SOME CONVENTION
     def RRMSE(self) -> float:
-        rmse = self.RMSE()
-        return rmse / np.mean(self.actual)
+        _rm_se = self.RMSE()
+        return _rm_se / np.mean(self.actual)
 
     def WIA(self) -> float:
         mean_obs = np.mean(self.actual)
@@ -74,7 +74,8 @@ class Validate:
         return self.rho_ci()['rho_c']['est'].iloc[0]
 
     def rho_ci(self, ci: str = "z-transform", conf_level: float = 0.95, na_rm: bool = False) -> Dict:
-        dat = pd.DataFrame({'x': self.actual, 'y': self.predicted}).dropna() if na_rm else pd.DataFrame({'x': self.actual, 'y': self.predicted})
+        dat = pd.DataFrame({'x': self.actual, 'y': self.predicted}).dropna() if na_rm else pd.DataFrame(
+            {'x': self.actual, 'y': self.predicted})
         k = len(dat)
         r = dat['x'].corr(dat['y'])
 
@@ -105,17 +106,25 @@ class Validate:
 
         delta = dat['x'] - dat['y']
         rmean = dat.mean(axis=1)
-        blalt = pd.DataFrame({'mean': rmean, 'delta': delta})
+        RBATA = pd.DataFrame({'mean': rmean, 'delta': delta})
 
-        return {'rho_c': ci_result, 's_shift': v, 'l_shift': u, 'C_b': C_b, 'blalt': blalt}
+        return {'rho_c': ci_result, 's_shift': v, 'l_shift': u, 'C_b': C_b, 'blalt': RBATA}
 
     def evaluate(self, metric: str = 'RMSE') -> float:
+        """
+        EVALUATE BASED ON SELECTED METRIC
+
+        """
         metrics_lower = {m.lower() for m in self.METRICS}
         assert metric.lower() in metrics_lower, f"Metric '{metric}' is not supported."
 
         return getattr(self, metric)()
 
-    def evaluate_all(self, verbose: bool = False) -> Dict[str, float]:
+    def evaluate_all(self, verbose: bool = False) -> Dict[float]:
+        """
+        EVALUATE USING ALL METRICS ABOVE
+
+        """
         results = {metric: getattr(self, metric)() for metric in self.METRICS}
         if verbose:
             for k, v in results.items():
@@ -124,6 +133,9 @@ class Validate:
 
 
 if __name__ == "__main__":
+    # __________________________________________
+    # USE CASES
+    # _________________________________________
     x_data = np.array([1.2, 2.4, 3.6, 4.8, 5.0])
     y_data = np.array([2.0, 3.5, 4.2, 5.7, 6.0])
 

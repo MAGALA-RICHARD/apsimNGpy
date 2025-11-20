@@ -312,7 +312,7 @@ if __name__ == "__main__":
     from apsimNGpy import exceptions
     from apsimNGpy.validation import evaluator
     from apsimNGpy.optimizer.minimize import single_mixed
-    from apsimNGpy.optimizer.problems import smp
+    from apsimNGpy.optimizer.problems import smp, back_end, variables
 
     # ________________________________________________________________________________
     # add outline!!
@@ -332,7 +332,7 @@ if __name__ == "__main__":
                 )
     modules = (
         process, apsim, mult_cores, experimentmanager, moo, smp,single_mixed,
-        evaluator, exceptions, database_utils, pythonet_config, config, runner
+        evaluator, exceptions, database_utils, pythonet_config, config, runner, back_end, variables
     )
 
     OUT = Path("docs/source/api.rst")

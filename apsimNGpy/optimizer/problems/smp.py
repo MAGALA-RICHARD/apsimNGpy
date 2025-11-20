@@ -18,7 +18,7 @@ import numpy as np
 
 from apsimNGpy.exceptions import ApsimRuntimeError
 import pandas as pd
-from apsimNGpy.optimizer.problems.vars import (
+from apsimNGpy.optimizer.problems.variables import (
     validate_user_params,
     filter_apsim_params,
 )
@@ -168,6 +168,8 @@ class MixedProblem:
                As a rule of thumb, group all parameters belonging to the same APSIM node
                into a single factor by providing them as lists. Submitting parameters from
                the same node as separate factors will raise a validation error.
+
+               Values must be provided with key word argument style to support json data structures across platforms
 
             .. note::
 
@@ -364,17 +366,19 @@ class MixedProblem:
             A list (or tuple) of dictionaries, where each dictionary defines a single
             optimization factor with the following required keys:
 
-            - ``path`` : str
+            path: str
               The APSIM node path where the variable resides.
-            - ``vtype`` : list or tuple of wrapdisc.var
+            vtype: list or tuple of wrapdisc.var
               The variable type(s) defining the sampling space (e.g., `UniformVar`, `ChoiceVar`).
-            - ``start_value`` : list or tuple of str, int, or float
+            start_value: list or tuple of str, int, or float
               The starting value(s) corresponding to each candidate parameter.
-            - ``candidate_param`` : list or tuple of str
+            candidate_param : list or tuple of str
               The APSIM variable names to optimize.
-            - ``other_params`` : dict, optional
+            other_params: dict, optional
               Any additional parameters belonging to the same APSIM node that
               should remain constant during optimization.
+            cultivar: bool, default=False
+              Whether the factor being submitted is cultivar specific or resides on the cultivar node
 
         Notes
         -----
@@ -424,17 +428,18 @@ class MixedProblem:
         are defined only once unless grouped as tuples.
         """
         seen_paths = set()
-        for idx, factor in enumerate(self.ordered_factors.values()):
-            path = getattr(factor, "path", None)
-            if verbose:
-                print(f"[{idx}] Checking factor path: {path}")
-            if not path:
-                raise ValueError(f"Factor at index {idx} missing 'path'.")
-            if path in seen_paths:
-                raise ValueError(
-                    f"Duplicate path detected: {path!r}. Use tuples for multi-factor nodes."
-                )
-            seen_paths.add(path)
+        if self.n_factors > 1:
+            for idx, factor in enumerate(self.ordered_factors.values()):
+                path = getattr(factor, "path", None)
+                if verbose:
+                    print(f"[{idx}] Checking factor path: {path}")
+                if not path:
+                    raise ValueError(f"Factor at index {idx} missing 'path'.")
+                if path in seen_paths:
+                    raise ValueError(
+                        f"Duplicate path detected: {path!r}. Use tuples for multi-factor nodes."
+                    )
+                seen_paths.add(path)
 
     # -------------------------------------------------------------------------
     # Factor Scanning and Variable Tracking

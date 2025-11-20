@@ -262,13 +262,13 @@ if __name__ == '__main__':
 
         mp = MixedProblem(model='Maize', trainer_dataset=obs, pred_col='Yield', method='ccc',
                           index='year', trainer_col='observed')
-        mp.submit_factor(**example_param3)
+        #mp.submit_factor(**example_param3)
         mp.submit_factor(**cultivar_param)
         minim = MixedVariableOptimizer(problem=mp)
         # min.minimize_with_de(workers=3, updating='deferred')
         # minim.minimize_with_alocal_solver(method='Nelder-Mead')
-
-        out = minim.minimize_with_local()
-        print(out)
         res = minim.minimize_with_de(use_threads=True, updating='deferred', workers=15)
         print(res)
+        out = minim.minimize_with_local()
+        print(out)
+

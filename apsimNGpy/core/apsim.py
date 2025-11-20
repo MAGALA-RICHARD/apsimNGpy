@@ -28,6 +28,7 @@ from apsimNGpy.settings import logger
 from apsimNGpy.core.soiler import SoilManager
 from apsimNGpy.core.runner import run_model_externally
 from typing import Any
+
 # ===================================================================================================
 
 
@@ -100,11 +101,28 @@ class ApsimModel(CoreModel):
         report_df = model.get_simulated_output('Report')
     """
 
-    def __init__(self, model: Union[os.PathLike, dict, str], out_path: Union[str, Path] = None,
+    def __init__(self, model: Union[os.PathLike, dict, str],
+                 out_path: Union[str, Path] = None,
                  set_wd=None, **kwargs):
         super().__init__(model, out_path, set_wd, **kwargs)
+        self._model = model
+        self.out_path = Path(out_path) if out_path else None
+        self._extra_kwargs = kwargs or {}
 
+    def __hash__(self):
+        """
+        Make instances hashable for use in sets, OrderedDicts, or caches.
 
+        Notes
+        -----
+        - Converts unhashable types (like dicts or Paths) into strings.
+        - Includes only stable identifying attributes to avoid collisions.
+        """
+        model_hash = hash(str(self._model))
+        path_hash = hash(str(self.out_path)) if self.out_path else 0
+        extras_hash = hash(tuple(sorted(self._extra_kwargs.items())))
+
+        return hash((model_hash, path_hash, extras_hash))
 
     def set_params(self, params: dict[str, Any] | None = None, **kwargs) -> "ApsimModel":
         """
@@ -547,7 +565,6 @@ class ApsimModel(CoreModel):
                 pass
 
         return self
-
 
     def check_kwargs(self, path, **kwargs):
         if hasattr(self.Simulations, "FindByPath"):

@@ -293,7 +293,7 @@ def docs(
                                               INDENT) + "\n\n")
                             _write_block(f, f"Default: ``{_short_repr(m['value'])}``", indent=INDENT)
 
-    print(f"✅ API reference written to: {output_file}")
+    print(f"API reference written to: {output_file}")
 
 
 # ---------------- CLI demo driver ----------------
@@ -311,8 +311,16 @@ if __name__ == "__main__":
     from apsimNGpy.parallel import process
     from apsimNGpy import exceptions
     from apsimNGpy.validation import evaluator
-    # ________________________add outline!!_________________________________________
+    from apsimNGpy.optimizer.minimize import single_mixed
+    from apsimNGpy.optimizer.problems import smp
 
+    # ________________________________________________________________________________
+    # add outline!!
+    # ----------------------------------------------------------------------------------
+    add_outline(single_mixed.MixedVariableOptimizer, include_inherited=True,
+                base_path='apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer')
+    add_outline(smp.MixedProblem, include_inherited=True,
+                base_path='apsimNGpy.optimizer.problems.smp.MixedProblem')
     add_outline(experimentmanager.ExperimentManager, include_inherited=True,
                 base_path='apsimNGpy.core.experimentmanager.ExperimentManager')
     add_outline(apsim.ApsimModel, include_inherited=True, base_path='apsimNGpy.core.apsim.ApsimModel')
@@ -323,8 +331,8 @@ if __name__ == "__main__":
     add_outline(mult_cores.MultiCoreManager, include_inherited=True,
                 )
     modules = (
-        process, apsim, mult_cores, experimentmanager, moo,
-        evaluator, exceptions, single, database_utils, pythonet_config, config, runner
+        process, apsim, mult_cores, experimentmanager, moo, smp,single_mixed,
+        evaluator, exceptions, database_utils, pythonet_config, config, runner
     )
 
     OUT = Path("docs/source/api.rst")

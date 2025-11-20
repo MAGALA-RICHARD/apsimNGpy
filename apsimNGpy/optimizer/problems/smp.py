@@ -128,206 +128,225 @@ class MixedProblem:
     # Factor Submission and Validation
     # -------------------------------------------------------------------------
     def submit_factor(self, *, path, vtype, start_value, candidate_param, cultivar=False, other_params=None):
-        """
-        Add a new factor (parameter) to be optimized.
+            """
+            Add a new factor (parameter) to be optimized.
 
-        Each factor corresponds to a modifiable APSIM node attribute and its
-        variable type (e.g., UniformVar, RandintVar, ChoiceVar). Factors define
-        the search space and starting points for parameter optimization.
+            Each factor corresponds to a modifiable APSIM node attribute and its
+            variable type (e.g., UniformVar, RandintVar, ChoiceVar). Factors define
+            the search space and starting points for parameter optimization.
 
-        Parameters
-        ----------
-        path : str
-            APSIM node path where the parameter resides, e.g.
-            ``".Simulations.Simulation.Field.Soil.Organic"``.
-            This node typically contains variables like FBiom, Carbon, and FINert.
-        vtype : list or tuple of wrapdisc.var
-            Variable types defining the search domain for each candidate parameter.
-            These can include discrete, quantized, or continuous domains (see table below).
-        start_value : list or tuple of (str | int | float)
-            Initial values for each parameter, in the same order as `candidate_param`.
-        candidate_param : list or tuple of str
-            The names of APSIM variables (e.g., "FOM", "FBiom") to be optimized.
-            These should exist within the APSIM node path provided.
-        other_params : dict, optional
-            Additional APSIM constants to fix during optimization (non-optimized parameters).
-            These must belong to the same node path.
-            For example, when optimizing *FBiom* while also modifying *Carbon*, you can
-            supply *Carbon* as a constant under ``other_params`` (see Example 1 below).
+            Parameters
+            ----------
+            path : str
+                APSIM node path where the parameter resides, e.g.
+                ``".Simulations.Simulation.Field.Soil.Organic"``.
+                This node typically contains variables like FBiom, Carbon, and FINert.
 
-        .. tip::
+            vtype : list or tuple of wrapdisc.var
+                Variable types defining the search domain for each candidate parameter.
+                These can include discrete, quantized, or continuous domains (see table below).
 
-           As a rule of thumb, group all parameters belonging to the same APSIM node
-           into a single factor by providing them as lists. Submitting parameters from
-           the same node as separate factors will raise a validation error.
+            start_value : list or tuple of (str | int | float)
+                Initial values for each parameter, in the same order as ``candidate_param``.
 
-        .. note::
+            candidate_param : list or tuple of str
+                The names of APSIM variables (e.g., ``"FOM"``, ``"FBiom"``) to be optimized.
+                These should exist within the APSIM node path provided.
 
-            All input factors are first validated using **Pydantic** to ensure conformity
-            to the expected data structures and types — for instance, confirming that
-            `vtype` consists of recognized variable types (e.g., `UniformVar`, `GridVar`),
-            that `path` is a valid string, and that numeric tuples follow the expected
-            range conventions. This guarantees type safety and consistency across
-            optimization runs.
+            cultivar : bool, optional, default=False
+                Signal to the API whether the parameter belongs to a cultivar node.
+                Set this flag to ``True`` when defining cultivar-related optimization factors.
 
-            After Pydantic validation, an additional structural check is performed to verify
-            that the **lengths** of the `vtype`, `start_value`, and `candidate_param`
-            collections are identical. This ensures that each parameter to be optimized
-            has a corresponding variable type and initial value.
+            other_params : dict, optional
+                Additional APSIM constants to fix during optimization (non-optimized parameters).
+                These must belong to the same node path.
+                For example, when optimizing *FBiom* while also modifying *Carbon*, you can
+                supply *Carbon* as a constant under ``other_params`` (see Example 1 below).
 
-            In cases where you select an optimization method that **does not rely on
-            bounded or initialized start values**, you may safely provide dummy entries
-            for `start_value`. These placeholders will be accepted without raising errors
-            and will not affect the optimization process. The validation framework is
-            designed to prioritize flexibility for both stochastic (randomized) and
-            deterministic search methods.
+            .. tip::
 
-        .. hint::
+               As a rule of thumb, group all parameters belonging to the same APSIM node
+               into a single factor by providing them as lists. Submitting parameters from
+               the same node as separate factors will raise a validation error.
 
-            The variable types follow the ``wrapdisc`` library conventions.
-            Each type defines how sampling and decoding are handled during optimization.
+            .. note::
 
-            | **Space**      | **Variable Type**              | **Usage / Description**                                       | **Decoder**               | **Examples**                                                                    |
-            | -------------- | ------------------------------ | ------------------------------------------------------------- | ------------------------- | ------------------------------------------------------------------------------- |
-            | **Discrete**   | `ChoiceVar(items)`             | Nominal (unordered categorical)                               | one-hot via *max*         | `ChoiceVar(["USA", "Panama", "Cayman"])`                                        |
-            | **Discrete**   | `GridVar(values)`              | Ordinal (ordered categorical)                                 | round                     | `GridVar([2, 4, 8, 16])`<br>`GridVar(["good", "better", "best"])`               |
-            | **Discrete**   | `RandintVar(lower, upper)`     | Integer from *lower* to *upper*, inclusive                    | round                     | `RandintVar(0, 6)`<br>`RandintVar(3, 9)`<br>`RandintVar(-10, 10)`               |
-            | **Discrete**   | `QrandintVar(lower, upper, q)` | Quantized integer from *lower* to *upper* in multiples of *q* | round to nearest multiple | `QrandintVar(0, 12, 3)`<br>`QrandintVar(1, 10, 2)`<br>`QrandintVar(-10, 10, 4)` |
-            | **Continuous** | `UniformVar(lower, upper)`     | Float from *lower* to *upper*                                 | passthrough               | `UniformVar(0.0, 5.11)`<br>`UniformVar(0.2, 4.6)`<br>`UniformVar(-10.0, 10.0)`  |
-            | **Continuous** | `QuniformVar(lower, upper, q)` | Quantized float from *lower* to *upper* in multiples of *q*   | round to nearest multiple | `QuniformVar(0.0, 5.1, 0.3)`<br>`QuniformVar(-5.1, -0.2, 0.3)`                  |
+               All input factors are first validated using **Pydantic** to ensure conformity
+               to the expected data structures and types — for instance, confirming that
+               ``vtype`` consists of recognized variable types (e.g., ``UniformVar``, ``GridVar``),
+               that ``path`` is a valid string, and that numeric tuples follow expected
+               range conventions. This guarantees type safety and consistency across
+               optimization runs.
 
-        Reference
-        ----------
-        - ``wrapdisc`` documentation: https://pypi.org/project/wrapdisc/
+               After Pydantic validation, an additional structural check verifies
+               that the **lengths** of ``vtype``, ``start_value``, and ``candidate_param``
+               collections are identical. This ensures that each parameter to be optimized
+               has a corresponding variable type and initial value.
 
-        Examples
-        --------
+               If you select an optimization method that **does not rely on bounded or
+               initialized start values**, you may safely provide dummy entries for
+               ``start_value``. These placeholders will be accepted without raising errors
+               and will not affect the optimization process. The validation framework is
+               designed to remain flexible for both stochastic (randomized) and
+               deterministic search methods.
 
-        Some examples maybe made up for demonstrations only.
 
-        Example 1 — Continuous variable (`UniformVar`)
-        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        .. code-block:: python
 
-            mp.submit_factor(
-                path=".Simulations.Simulation.Field.Soil.Organic",
-                vtype=[UniformVar(1, 2)],
-                start_value=["1"],
-                candidate_param=["FOM"],
-                other_params={"FBiom": 2.3, "Carbon": 1.89},
+           The variable types follow the ``wrapdisc`` library conventions.
+           Each type defines how sampling and decoding are handled during optimization.
+
+           +----------------+--------------------------------+-------------------------------------------------------------+---------------------------+--------------------------------------------------------------------------------+
+           | **Space**      | **Variable Type**              | **Usage / Description**                                     | **Decoder**               | **Examples**                                                                    |
+           +================+================================+=============================================================+===========================+================================================================================+
+           | **Discrete**   | ``ChoiceVar(items)``           | Nominal (unordered categorical)                             | one-hot via *max*         | ``ChoiceVar(["USA", "Panama", "Cayman"])``                                     |
+           +----------------+--------------------------------+-------------------------------------------------------------+---------------------------+--------------------------------------------------------------------------------+
+           | **Discrete**   | ``GridVar(values)``            | Ordinal (ordered categorical)                               | round                     | ``GridVar([2, 4, 8, 16])``<br>``GridVar(["good", "better", "best"])``          |
+           +----------------+--------------------------------+-------------------------------------------------------------+---------------------------+--------------------------------------------------------------------------------+
+           | **Discrete**   | ``RandintVar(lower, upper)``   | Integer from *lower* to *upper*, inclusive                  | round                     | ``RandintVar(0, 6)``, ``RandintVar(3, 9)``, ``RandintVar(-10, 10)``            |
+           +----------------+--------------------------------+-------------------------------------------------------------+---------------------------+--------------------------------------------------------------------------------+
+           | **Discrete**   | ``QrandintVar(lower, upper, q)`` | Quantized integer from *lower* to *upper* in multiples of q | round to nearest multiple | ``QrandintVar(0, 12, 3)``, ``QrandintVar(1, 10, 2)``, ``QrandintVar(-10, 10, 4)`` |
+           +----------------+--------------------------------+-------------------------------------------------------------+---------------------------+--------------------------------------------------------------------------------+
+           | **Continuous** | ``UniformVar(lower, upper)``   | Float from *lower* to *upper*                               | passthrough               | ``UniformVar(0.0, 5.11)``, ``UniformVar(0.2, 4.6)``, ``UniformVar(-10.0, 10.0)`` |
+           +----------------+--------------------------------+-------------------------------------------------------------+---------------------------+--------------------------------------------------------------------------------+
+           | **Continuous** | ``QuniformVar(lower, upper, q)`` | Quantized float from *lower* to *upper* in multiples of q   | round to nearest multiple | ``QuniformVar(0.0, 5.1, 0.3)``, ``QuniformVar(-5.1, -0.2, 0.3)``                |
+           +----------------+--------------------------------+-------------------------------------------------------------+---------------------------+--------------------------------------------------------------------------------+
+
+            Reference
+            ----------
+            - ``wrapdisc`` documentation: https://pypi.org/project/wrapdisc/
+
+            Examples
+            --------
+            Example 1 — Continuous variable (``UniformVar``)
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            .. code-block:: python
+
+                mp.submit_factor(
+                    path=".Simulations.Simulation.Field.Soil.Organic",
+                    vtype=[UniformVar(1, 2)],
+                    start_value=["1"],
+                    candidate_param=["FOM"],
+                    other_params={"FBiom": 2.3, "Carbon": 1.89},
+                )
+
+            Example 2 — Quantized continuous variable (``QuniformVar``)
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            .. code-block:: python
+
+                mp.submit_factor(
+                    path=".Simulations.Simulation.Field.Soil.Organic",
+                    vtype=[QuniformVar(0.0, 1.0, 0.005)],  # 0.005 is the quantization interval
+                    start_value=["0.035"],
+                    candidate_param=["FBiom"],
+                )
+
+            Example 3 — Integer variable (``RandintVar``)
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            .. code-block:: python
+
+                mp.submit_factor(
+                    path=".Simulations.Simulation.Field.Soil.Plant",
+                    vtype=[RandintVar(1, 10)],
+                    start_value=[5],
+                    candidate_param=["Population"],
+                )
+
+            Example 4 — Quantized integer variable (``QrandintVar``)
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            .. code-block:: python
+
+                mp.submit_factor(
+                    path=".Simulations.Simulation.Field.Soil.Labile",
+                    vtype=[QrandintVar(0, 12, 3)],
+                    start_value=[3],
+                    candidate_param=["Carbon"],
+                )
+
+            Example 5 — Categorical variable (``ChoiceVar``)
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            This is suitable for exploring categorical management options, such as selecting the best
+            cultivar for a region or testing sowing date strategies.
+
+            .. code-block:: python
+
+                mp.submit_factor(
+                    path=".Simulations.Simulation.Sow using a variable rule",
+                    vtype=[ChoiceVar(["B_100", "A90", "B110"])],
+                    start_value=["B_100"],
+                    candidate_param=["CultivarName"],
+                )
+
+            Example 6 — Ordinal grid variable (``GridVar``)
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            .. code-block:: python
+
+                mp.submit_factor(
+                    path=".Simulations.Simulation.Field.Management",
+                    vtype=[GridVar(["Low", "Medium", "High"])],
+                    start_value=["Medium"],
+                    candidate_param=["FertilizerRate"],
+                )
+
+            Submitting cultivar-related variables
+            -------------------------------------
+            When defining optimization factors for cultivar-specific parameters, you must explicitly
+            signal to the APSIMNGpy API that the parameter belongs to a cultivar node.
+            This is done by including the keyword ``cultivar=True`` in the factor definition.
+
+            By default, this flag is ``False``, meaning the optimizer assumes the factor is not
+            cultivar-related and treats it as a regular parameter (e.g., soil, management, or
+            plant-level attribute).
+
+            Internally, this flag is validated as a boolean field through Pydantic to ensure
+            consistent interpretation and error checking.
+
+            The cultivar flag enables APSIMNGpy to route the parameter to the correct editing
+            pipeline for cultivar commands and properties under APSIM’s *Replacements* or
+            *CultivarFolder* nodes.
+
+            .. code-block:: python
+
+                from wrapdisc.var import QrandintVar
+
+                cultivar_param = {
+                    # Full APSIM path to the target cultivar node
+                    "path": ".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82",
+
+                    # Quantized integer variable (range: 400–550, step size: 5)
+                    "vtype": [QrandintVar(400, 550, q=5)],
+
+                    # Starting value for optimization
+                    "start_value": [550],
+
+                    # APSIM command or property to be optimized within the cultivar
+                    "candidate_param": ["[Grain].MaximumGrainsPerCob.FixedValue"],
+
+                    # Fixed or contextual parameters associated with the same node
+                    "other_params": {"sowed": True},
+
+                    # Signal that this parameter belongs to a cultivar node
+                    "cultivar": True
+                }
+
+                mp.submit_factor(**cultivar_param)
+            """
+
+            out = validate_user_params(
+                dict(
+                    path=path,
+                    vtype=vtype,
+                    start_value=start_value,
+                    candidate_param=candidate_param,
+                    other_params=other_params,
+                    cultivar=cultivar,
+                )
             )
-
-        Example 2 — Quantized continuous variable (`QuniformVar`)
-        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        .. code-block:: python
-
-            mp.submit_factor(
-                path=".Simulations.Simulation.Field.Soil.Organic",
-                vtype=[QuniformVar(0.0, 1.0, 0.005)],  # 0.005 is the quantization interval
-                start_value=["0.035"],
-                candidate_param=["FBiom"],
-            )
-
-        Example 3 — Integer variable (`RandintVar`)
-        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        .. code-block:: python
-
-            mp.submit_factor(
-                path=".Simulations.Simulation.Field.Soil.Plant",
-                vtype=[RandintVar(1, 10)],
-                start_value=[5],
-                candidate_param=["Population"],
-            )
-
-        Example 4 — Quantized integer variable (`QrandintVar`)
-        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        .. code-block:: python
-
-            mp.submit_factor(
-                path=".Simulations.Simulation.Field.Soil.Labile",
-                vtype=[QrandintVar(0, 12, 3),],
-                start_value=[3],
-                candidate_param=["Carbon"],
-            )
-
-        Example 5 — Categorical variable (`ChoiceVar`)
-        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        Thus is suitable for searching the best cultivars for a region, among others categorical variables, or we can also try out sowing dates
-
-        .. code-block:: python
-
-            mp.submit_factor(
-                path=".Simulations.Simulation.Sow using a variable rule",
-                vtype=[ChoiceVar(["B_100", "A90", "B110"])],
-                start_value=["B_100"],
-                candidate_param=["CultivarName"],
-            )
-
-        Example 6 — Ordinal grid variable (`GridVar`)
-        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        .. code-block:: python
-
-            mp.submit_factor(
-                path=".Simulations.Simulation.Field.Management",
-                vtype=[GridVar(["Low", "Medium", "High"])],
-                start_value=["Medium"],
-                candidate_param=["FertilizerRate"],
-            )
-        Submitting cultivar-related variables
-        -------------------------------------------
-        When defining optimization factors for cultivar-specific parameters, users must explicitly signal to the
-         APSIMNGpy API that the parameter belongs to a cultivar node. This is done by including the keyword `cultivar=True` in the factor definition.
-
-        By default, this signal is set to False, meaning the optimizer assumes the factor is not cultivar-related and
-        will treat it as a regular parameter (e.g., soil, management, or plant-level attribute).
-        Internally, this flag is evaluated as a boolean field through Pydantic validation to ensure consistent interpretation
-        and error checking.
-
-        The cultivar flag allows APSIMNGpy to route the parameter to the correct editing pipeline that handles cultivar
-        commands and properties under APSIM’s Replacements or CultivarFolder nodes.
-
-        .. code-block:: python
-
-            from wrapdisc.var import QrandintVar
-
-            cultivar_param = {
-                # Full APSIM path to the target cultivar node
-                "path": ".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82",
-
-                # Quantized integer variable (range: 400–550, step size: 5)
-                "vtype": [QrandintVar(400, 550, q=5)], values will be sampled at an interval of five
-
-                # Starting value for optimization
-                "start_value": [550],
-
-                # APSIM command or property to be optimized within the cultivar
-                "candidate_param": ["[Grain].MaximumGrainsPerCob.FixedValue"],
-
-                # Other fixed attributes or node-level arguments
-                "other_params": {"sowed": True}, # implies that the cultivar with the same name as specified by the path is the one in manager script sowing the crop
-
-                # Signal that this parameter belongs to a cultivar node
-                "cultivar": True
-            }
-
-            mp.submit_factor(**cultivar_param)
-        """
-        out = validate_user_params(
-            dict(
-                path=path,
-                vtype=vtype,
-                start_value=start_value,
-                candidate_param=candidate_param,
-                other_params=other_params,
-                cultivar=cultivar,
-            )
-        )
-        apsim_out = filter_apsim_params(out)
-        key_hashable = (tuple(apsim_out.keys()), tuple(apsim_out.values()))
-        self.ordered_factors[key_hashable] = out
-        self._validate_factor()
-        self._scan()
-        gc.collect()
+            apsim_out = filter_apsim_params(out)
+            key_hashable = (tuple(apsim_out.keys()), tuple(apsim_out.values()))
+            self.ordered_factors[key_hashable] = out
+            self._validate_factor()
+            self._scan()
+            gc.collect()
 
     def submit_all(self, all_factors: List[Dict[str, Any]]):
         """

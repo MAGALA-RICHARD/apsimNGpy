@@ -107,6 +107,7 @@ Classes
    - :attr:`~apsimNGpy.core.apsim.ApsimModel.work_space`
    List of Public Methods
    -----------------------------
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.add_base_replacements`
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.add_crop_replacements`
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.add_db_table`
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.add_fac`
@@ -163,8 +164,8 @@ Classes
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.series_plot`
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.set_categorical_factor`
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.set_continuous_factor`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.set_params`
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.show_met_file_in_simulation`
-   - :meth:`~apsimNGpy.core.apsim.ApsimModel.spin_up`
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.summarize_numeric`
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.update_cultivar`
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.update_mgt`
@@ -173,6 +174,40 @@ Classes
    .. py:method:: apsimNGpy.core.apsim.ApsimModel.__init__(self, model: Union[os.PathLike, dict, str], out_path: Union[str, pathlib.Path] = None, set_wd=None, **kwargs)
 
    Initialize self.  See help(type(self)) for accurate signature.
+
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.set_params(self, params: dict[str, typing.Any] | None = None, **kwargs) -> 'ApsimModel'
+
+   Set parameters for the given model by passing a dictionary or keyword arguments.
+
+   Parameters
+   ----------
+   params : dict, optional
+       A dictionary mapping APSIM parameter names to their corresponding values.
+       If ``params`` is ``None``, then ``kwargs`` is expected, following the same
+       signature as :meth:`~apsimNGpy.core.ApsimModel.edit_model_by_path`.
+   **kwargs :
+       Additional keyword arguments equivalent to entries in ``params``. These are
+       interpreted according to the same signature as
+       :meth:`~apsimNGpy.core.ApsimModel.edit_model_by_path`.
+
+   Returns
+   -------
+   self : ApsimModel
+       Returns the same instance for method chaining.
+   Raises
+   -------
+   TypeError if any of the above arguments does not resolve to a dictionary. Other errors maybe raised gracefully
+     by :meth:`~apsimNGpy.core.ApsimModel.edit_model_by_path`.
+
+   Notes
+   -----
+   This flexible design allows users to supply parameters either as standard
+   keyword arguments or as dictionary objects.
+   The dictionary-based approach is particularly useful when working with
+   **JSON-compatible data structures**, as commonly required during large-scale
+   model optimization, calibration, or parameter sensitivity analysis workflows.
+   In such cases, parameter sets can be programmatically generated, serialized,
+   and reused without manual modification of code.
 
    .. py:method:: apsimNGpy.core.apsim.ApsimModel.get_soil_from_web(self, simulation_name: Union[str, tuple, NoneType] = None, *, lonlat: Optional[System.Tuple[Double,Double]] = None, soil_series: Optional[str] = None, thickness_sequence: Optional[Sequence[float]] = 'auto', thickness_value: int = None, max_depth: Optional[int] = 2400, n_layers: int = 10, thinnest_layer: int = 100, thickness_growth_rate: float = 1.5, edit_sections: Optional[Sequence[str]] = None, attach_missing_sections: bool = True, additional_plants: tuple = None, adjust_dul: bool = True)
 
@@ -296,33 +331,6 @@ Classes
            ``adJust_kl``:: Bollean, adjust, kl based on productivity index
            ``CultvarName``: cultivar name which is in the sowing module for adjusting the rue
            ``tillage``: specify whether you will be carried to adjust some physical parameters
-
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.spin_up(self, report_name: str = 'Report', start=None, end=None, spin_var='Carbon', simulations=None)
-
-   Perform a spin-up operation on the aPSim model.
-
-   This method is used to simulate a spin-up operation in an aPSim model. During a spin-up, various soil properties or
-   _variables may be adjusted based on the simulation results.
-
-   Parameters:
-   ----------
-   report_name: str, optional (default: 'Report')
-       The name of the aPSim report to be used for simulation results.
-
-   start: str, optional
-       The start date for the simulation (e.g., '01-01-2023'). If provided, it will change the simulation start date.
-
-   end: str, optional
-       The end date for the simulation (e.g., '3-12-2023'). If provided, it will change the simulation end date.
-
-   spin_var: str, optional (default: 'Carbon'). the difference between the start and end date will determine the spin-up period
-       The variable representing the child of spin-up operation. Supported values are 'Carbon' or 'DUL'.
-
-   Returns:
-   -------
-   self : ApsimModel
-       The modified ``ApsimModel`` object after the spin-up operation.
-       you could call ``save_edited`` file and save it to your specified location, but you can also proceed with the simulation
 
    .. py:method:: apsimNGpy.core.apsim.ApsimModel.read_apsimx_data(self, table=None)
 
@@ -1113,6 +1121,11 @@ Classes
    .. seealso::
 
       Related API: :meth:`edit_model`.
+
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.add_base_replacements(self) (inherited)
+
+   Add base replacements with all available models of type Plants and then start from there to add more
+   @return: self
 
    .. py:method:: apsimNGpy.core.apsim.ApsimModel.edit_model(self, model_type: 'str', model_name: 'str', simulations: 'Union[str, list]' = 'all', exclude=None, verbose=False, **kwargs) (inherited)
 
@@ -3301,7 +3314,7 @@ Functions
    for windows-only
    @return: list of available drives on windows pc
 
-.. py:function:: apsimNGpy.core.config.load_crop_from_disk(crop: 'str', out: 'Union[str, Path]', bin_path=None, cache_path=True)
+.. py:function:: apsimNGpy.core.config.load_crop_from_disk(crop: 'str', out: 'Union[str, Path]', bin_path=None, cache_path=True, suffix='.apsimx')
 
    Load a default APSIM crop simulation file from disk by specifying only the crop name. This fucntion can literally
    load anything that resides under the /Examples directory.
@@ -3629,6 +3642,7 @@ Classes
    - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.work_space`
    List of Public Methods
    -----------------------------
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.add_base_replacements`
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.add_crop_replacements`
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.add_db_table`
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.add_fac`
@@ -3687,8 +3701,8 @@ Classes
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.series_plot`
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.set_categorical_factor`
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.set_continuous_factor`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.set_params`
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.show_met_file_in_simulation`
-   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.spin_up`
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.summarize_numeric`
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.update_cultivar`
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.update_mgt`
@@ -4001,6 +4015,40 @@ Classes
        Re-creates and attaches each factor as a new node.
        Triggers model saving.
 
+   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.set_params(self, params: dict[str, typing.Any] | None = None, **kwargs) -> 'ApsimModel' (inherited)
+
+   Set parameters for the given model by passing a dictionary or keyword arguments.
+
+   Parameters
+   ----------
+   params : dict, optional
+       A dictionary mapping APSIM parameter names to their corresponding values.
+       If ``params`` is ``None``, then ``kwargs`` is expected, following the same
+       signature as :meth:`~apsimNGpy.core.ApsimModel.edit_model_by_path`.
+   **kwargs :
+       Additional keyword arguments equivalent to entries in ``params``. These are
+       interpreted according to the same signature as
+       :meth:`~apsimNGpy.core.ApsimModel.edit_model_by_path`.
+
+   Returns
+   -------
+   self : ApsimModel
+       Returns the same instance for method chaining.
+   Raises
+   -------
+   TypeError if any of the above arguments does not resolve to a dictionary. Other errors maybe raised gracefully
+     by :meth:`~apsimNGpy.core.ApsimModel.edit_model_by_path`.
+
+   Notes
+   -----
+   This flexible design allows users to supply parameters either as standard
+   keyword arguments or as dictionary objects.
+   The dictionary-based approach is particularly useful when working with
+   **JSON-compatible data structures**, as commonly required during large-scale
+   model optimization, calibration, or parameter sensitivity analysis workflows.
+   In such cases, parameter sets can be programmatically generated, serialized,
+   and reused without manual modification of code.
+
    .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.get_soil_from_web(self, simulation_name: Union[str, tuple, NoneType] = None, *, lonlat: Optional[System.Tuple[Double,Double]] = None, soil_series: Optional[str] = None, thickness_sequence: Optional[Sequence[float]] = 'auto', thickness_value: int = None, max_depth: Optional[int] = 2400, n_layers: int = 10, thinnest_layer: int = 100, thickness_growth_rate: float = 1.5, edit_sections: Optional[Sequence[str]] = None, attach_missing_sections: bool = True, additional_plants: tuple = None, adjust_dul: bool = True) (inherited)
 
    Download SSURGO-derived soil for a given location and populate the APSIM NG
@@ -4123,33 +4171,6 @@ Classes
            ``adJust_kl``:: Bollean, adjust, kl based on productivity index
            ``CultvarName``: cultivar name which is in the sowing module for adjusting the rue
            ``tillage``: specify whether you will be carried to adjust some physical parameters
-
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.spin_up(self, report_name: str = 'Report', start=None, end=None, spin_var='Carbon', simulations=None) (inherited)
-
-   Perform a spin-up operation on the aPSim model.
-
-   This method is used to simulate a spin-up operation in an aPSim model. During a spin-up, various soil properties or
-   _variables may be adjusted based on the simulation results.
-
-   Parameters:
-   ----------
-   report_name: str, optional (default: 'Report')
-       The name of the aPSim report to be used for simulation results.
-
-   start: str, optional
-       The start date for the simulation (e.g., '01-01-2023'). If provided, it will change the simulation start date.
-
-   end: str, optional
-       The end date for the simulation (e.g., '3-12-2023'). If provided, it will change the simulation end date.
-
-   spin_var: str, optional (default: 'Carbon'). the difference between the start and end date will determine the spin-up period
-       The variable representing the child of spin-up operation. Supported values are 'Carbon' or 'DUL'.
-
-   Returns:
-   -------
-   self : ApsimModel
-       The modified ``ApsimModel`` object after the spin-up operation.
-       you could call ``save_edited`` file and save it to your specified location, but you can also proceed with the simulation
 
    .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.read_apsimx_data(self, table=None) (inherited)
 
@@ -4940,6 +4961,11 @@ Classes
    .. seealso::
 
       Related API: :meth:`edit_model`.
+
+   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.add_base_replacements(self) (inherited)
+
+   Add base replacements with all available models of type Plants and then start from there to add more
+   @return: self
 
    .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.edit_model(self, model_type: 'str', model_name: 'str', simulations: 'Union[str, list]' = 'all', exclude=None, verbose=False, **kwargs) (inherited)
 
@@ -8460,6 +8486,130 @@ Classes
 
    Default: ``<attribute 'args' of 'BaseException' objects>``
 
+apsimNGpy.optimizer.minimize.single_mixed
+-----------------------------------------
+
+Classes
+^^^^^^^
+
+.. py:class:: apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer
+
+   List of Public Attributes:
+   __________________________________
+
+   - *(none)*
+   List of Public Methods
+   -----------------------------
+   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.minimize_with_de`
+   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.minimize_with_local`
+
+   .. py:method:: apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.__init__(self, problem)
+
+   @param problem:
+
+   .. py:method:: apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.minimize_with_local(self, **kwargs)
+
+       Run a local optimization solver (e.g., Powell, L-BFGS-B, etc.) on given defined problem.
+
+       This method wraps ``scipy.optimize.minimize`` and handles mixed-variable encoding internally
+       using the `Objective` wrapper from ``wrapdisc``. It supports any method supported by SciPy's
+       `minimize` function and uses the encoded starting values and variable bounds. This decoding implies that you can optimize categorical variable such as start dates or
+       cultivar paramter with xy numerical values.
+
+       Progress is tracked using a progress bar, and results are automatically decoded and stored
+       in ``self.outcomes``.
+
+       Parameters:
+           **kwargs: Keyword arguments passed directly to `scipy.optimize.minimize`.
+                     Important keys include:
+                       - ``method (str)``: Optimization algorithm (e.g., 'Powell', 'L-BFGS-B').
+                       - ``options (dict)``: Dictionary of solver options like maxiter, disp, etc.
+   scipy.optimize.minimize provide a number of optimization algorithms see table below or for details check their website:
+   https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
+
+   +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
+   | Method           | Type                   | Gradient Required | Handles Bounds | Handles Constraints | Notes                                        |
+   +==================+========================+===================+================+=====================+==============================================+
+   | Nelder-Mead      | Local (Derivative-free)| No                | No             | No                  | Simplex algorithm                            |
+   +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
+   | Powell           | Local (Derivative-free)| No                | Yes            | No                  | Direction set method                         |
+   +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
+   | CG               | Local (Gradient-based) | Yes               | No             | No                  | Conjugate Gradient                           |
+   +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
+   | BFGS             | Local (Gradient-based) | Yes               | No             | No                  | Quasi-Newton                                 |
+   +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
+   | Newton-CG        | Local (Gradient-based) | Yes               | No             | No                  | Newton's method                              |
+   +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
+   | L-BFGS-B         | Local (Gradient-based) | Yes               | Yes            | No                  | Limited memory BFGS                          |
+   +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
+   | TNC              | Local (Gradient-based) | Yes               | Yes            | No                  | Truncated Newton                             |
+   +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
+   | COBYLA           | Local (Derivative-free)| No                | No             | Yes                 | Constrained optimization by linear approx.   |
+   +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
+   | SLSQP            | Local (Gradient-based) | Yes               | Yes            | Yes                 | Sequential Least Squares Programming         |
+   +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
+   | trust-constr     | Local (Gradient-based) | Yes               | Yes            | Yes                 | Trust-region constrained                     |
+   +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
+   | dogleg           | Local (Gradient-based) | Yes               | No             | No                  | Requires Hessian                             |
+   +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
+   | trust-ncg        | Local (Gradient-based) | Yes               | No             | No                  | Newton-CG trust region                       |
+   +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
+   | trust-exact      | Local (Gradient-based) | Yes               | No             | No                  | Trust-region, exact Hessian                  |
+   +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
+   | trust-krylov     | Local (Gradient-based) | Yes               | No             | No                  | Trust-region, Hessian-free                   |
+   +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
+
+       Returns:
+           result (OptimizeResult): The result of the optimization, with an additional
+                                    `x_vars` attribute that provides a labeled dict of optimized
+                                    control variable values.
+
+       Raises:
+           Any exceptions raised by `scipy.optimize.minimize`.
+
+       Example:
+       --------
+       The following example shows how to use this method, the evaluation is very basic, but you
+       can add a more advanced evaluation by adding a loss function e.g RMSE os NSE by comparing with the observed and predicted,
+       and changing the control variables::
+
+       class Problem(MixedVarProblem):
+           def __init__(self, model=None, simulation='Simulation'):
+               super().__init__(model, simulation)
+               self.simulation = simulation
+
+           def evaluate(self, x, **kwargs):
+               # All evlauations can be defined inside here, by taking into accound the fact that the results object returns a data frame
+               # Also, you can specify the database table or report name holding the ``results``
+               return -self.run(verbose=False).results.Yield.mean() # A return is based on your objective definition, but as I said this could a ``RRMSE`` error or any other loss function
+
+       # Ready to initialize the problem
+
+       .. code-block:: python
+
+            problem.add_control(
+               path='.Simulations.Simulation.Field.Fertilise at sowing',
+               Amount="?",
+               bounds=[50, 300],
+               v_type="float",
+               start_value =50
+            )
+
+           problem.add_control(
+               path='.Simulations.Simulation.Field.Sow using a variable rule',
+               Population="?",
+               bounds=[4, 14],
+               v_type="float",
+               start_value=5
+           )
+
+   .. py:method:: apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.minimize_with_de(self, use_threads=False, args=(), strategy='rand1bin', maxiter=1000, popsize=15, tol=0.01, mutation=(0.5, 1), recombination=0.9, rng=None, callback=None, disp=True, polish=True, init='latinhypercube', atol=0, updating='deffered', workers=1, constraints=(), x0=None, seed=1, *, integrality=None, vectorized=False)
+
+   Run differential evolution on the wrapped APSIM objective function.
+
+   Reference:
+       https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.differential_evolution.html
+
 apsimNGpy.optimizer.moo
 -----------------------
 
@@ -8602,451 +8752,422 @@ Classes
                **{'path': '.Simulations.Simulation.Field.Sow using a variable rule', 'Population': "?", 'v_type': 'float',
                   'bounds': [4, 14]})
 
-apsimNGpy.optimizer.single
---------------------------
+apsimNGpy.optimizer.problems.smp
+--------------------------------
+
+MixedProblem: a reusable interface for defining mixed-variable optimization problems
+with APSIM Next Generation models and wrapdisc-compatible variable types.
+
+This module supports dynamic factor definition, parameter validation, and
+objective wrapping for use with Python-based optimization solvers such as
+scipy.Optimize and differential evolution.
+
+Author: Richard Magala
 
 Classes
 ^^^^^^^
 
-.. py:class:: apsimNGpy.optimizer.single.ContinuousVariable
-
-   Defines an optimization problem for continuous variables in APSIM simulations.
-
-   This class enables the user to configure and solve optimization problems involving continuous
-   control variables in APSIM models. It provides methods for setting up control variables,
-   applying bounds and starting values, inserting variable values into APSIM model configurations,
-   and running optimization routines using local solvers or differential evolution.
-
-   Inherits from:
-       AbstractProblem: A base class providing caching and model-editing functionality.
-
-   Parameters:
-       ``model (str):`` The name or path of the APSIM template file.
-       .
-       ``simulation (str or list, optional)``: The name(s) of the APSIM simulation(s) to target.
-                                           Defaults to all simulations.
-
-       ``decision_vars`` (list, optional): A list of VarDesc instances defining variable metadata.
-
-       ``labels (list, optional)``: Variable labels for display and results tracking.
-
-       ``cache_size (int):`` Maximum number of results to store in the evaluation cache.
-
-   Attributes:
-       ``model (str):`` The APSIM model template file name.
-
-       ``simulation (str):`` Target simulation(s).
-
-       ``decision_vars (list):`` Defined control variables.
-
-       ``decission_vars (list):`` List of VarDesc instances for optimization.
-
-       ``labels (list): Labels`` for variables.
-
-       ``pbar (tqdm):`` Progress bar instance.
-
-       ```cache (bool):`` Whether to cache evaluation results.
-
-       ```cache_size (int):`` Size of the local cache.
-
-   Methods:
-       ``add_control(...):`` Add a new control variable to the optimization problem.
-
-       ``bounds:`` Return the bounds for all control variables as a tuple.
-
-       ``starting_values():`` Return the initial values for all control variables.
-
-       ``minimize_with_local_solver(...):`` Optimize using `scipy.optimize.minimize`.
-
-       ``optimize_with_differential_evolution(...):`` Optimize using `scipy.optimize.differential_evolution`.
-
-
-   Example:
-       >>> class Problem(ContVarProblem):
-       ...     def evaluate(self, x):
-       ...         return -self.run(verbose=False).results.Yield.mean()
-
-       >>> problem = Problem(model="Maize", simulation="Sim")
-       >>> problem.add_control("Manager", "Sow using a rule", "Population", int, 5, bounds=[2, 15])
-       >>> result = problem.minimize_with_local_solver(method='Powell')
-       >>> print(result.x_vars)
-
-   .. py:method:: apsimNGpy.optimizer.single.ContinuousVariable.__init__(self, apsim_model: 'apsimNGpy.core.apsim.ApsimModel', max_cache_size: int = 400, objectives: list = None, decision_vars: list = None)
-
-   Initialize self.  See help(type(self)) for accurate signature.
-
-   .. py:method:: apsimNGpy.optimizer.single.ContinuousVariable.minimize_with_a_local_solver(self, **kwargs)
-
-   Run a local optimization solver using `scipy.optimize.minimize`.
-
-   This method wraps ``scipy.optimize.minimize`` to solve APSIM optimization problems
-   defined using APSIM control variables and variable encodings. It tracks optimization progress via a progress bar,
-   and decodes results into user-friendly labeled dictionaries.
-
-   Optimization methods avail
-   able in `scipy.optimize.minimize` include:
-
-   +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
-   | Method           | Type                   | Gradient Required | Handles Bounds | Handles Constraints | Notes                                        |
-   +==================+========================+===================+================+=====================+==============================================+
-   | Nelder-Mead      | Local (Derivative-free)| No                | No             | No                  | Simplex algorithm                            |
-   +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
-   | Powell           | Local (Derivative-free)| No                | Yes            | No                  | Direction set method                         |
-   +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
-   | CG               | Local (Gradient-based) | Yes               | No             | No                  | Conjugate Gradient                           |
-   +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
-   | BFGS             | Local (Gradient-based) | Yes               | No             | No                  | Quasi-Newton                                 |
-   +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
-   | Newton-CG        | Local (Gradient-based) | Yes               | No             | No                  | Newton's method                              |
-   +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
-   | L-BFGS-B         | Local (Gradient-based) | Yes               | Yes            | No                  | Limited memory BFGS                          |
-   +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
-   | TNC              | Local (Gradient-based) | Yes               | Yes            | No                  | Truncated Newton                             |
-   +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
-   | COBYLA           | Local (Derivative-free)| No                | No             | Yes                 | Constrained optimization by linear approx.   |
-   +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
-   | SLSQP            | Local (Gradient-based) | Yes               | Yes            | Yes                 | Sequential Least Squares Programming         |
-   +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
-   | trust-constr     | Local (Gradient-based) | Yes               | Yes            | Yes                 | Trust-region constrained                     |
-   +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
-   | dogleg           | Local (Gradient-based) | Yes               | No             | No                  | Requires Hessian                             |
-   +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
-   | trust-ncg        | Local (Gradient-based) | Yes               | No             | No                  | Newton-CG trust region                       |
-   +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
-   | trust-exact      | Local (Gradient-based) | Yes               | No             | No                  | Trust-region, exact Hessian                  |
-   +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
-   | trust-krylov     | Local (Gradient-based) | Yes               | No             | No                  | Trust-region, Hessian-free                   |
-   +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
-
-   Reference:
-
-   https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize.
-
-   Parameters::
-
-   **kwargs:
-
-       Arbitrary keyword arguments passed to `scipy.optimize.minimize`, such as:
-
-       - ``method (str)``: The optimization method to use.
-
-       - ``options (dict)``: Solver-specific options like `disp`, `maxiter`, `gtol`, etc.
-
-       - ``bounds (list of tuple)``: Variable bounds; defaults to self.bounds if not provided.
-
-       - ``x0 (list):`` Optional starting guess (will override default provided values with ``add_control_var`` starting values).
-
-   Returns:
-       result (OptimizeResult):
-           The optimization result object with the following additional field:
-           - result.x_vars (dict): A dictionary of variable labels and optimized values.
-
-   Example::
-
-     from apsimNGpy.optimizer.single import ContinuousVariable
-
-     class Problem(ContVarProblem):
-
-           def __init__(self, model=None, simulation='Simulation'):
-               super().__init__(model, simulation)
-               self.simulation = simulation
-           def evaluate(self, x, **kwargs):
-              return -self.run(verbose=False).results.Yield.mean()
-
-     problem = Problem(model="Maize", simulation="Sim")
-     problem.add_control("Manager", "Sow using a rule", "Population", v_type="grid",
-                           start_value=5, values=[5, 9, 11])
-     problem.add_control("Manager", "Sow using a rule", "RowSpacing", v_type="grid",
-                           start_value=400, values=[400, 800, 1200])
-     result = problem.minimize_with_local_solver(method='Powell', options={"maxiter": 300})
-     print(result.x_vars)
-     {'Population': 9, 'RowSpacing': 800}
-
-   .. py:method:: apsimNGpy.optimizer.single.ContinuousVariable.optimization_type(self)
-
-   Must be implemented as a property in subclass
-
-   .. py:method:: apsimNGpy.optimizer.single.ContinuousVariable.minimize_with_de(self, args=(), strategy='best1bin', maxiter=1000, popsize=15, tol=0.01, mutation=(0.5, 1), recombination=0.7, rng=None, callback=None, disp=True, polish=True, init='latinhypercube', atol=0, updating='immediate', workers=1, constraints=(), x0=None, *, integrality=None, vectorized=False)
-
-   reference; https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.differential_evolution.html
-
-   .. py:method:: apsimNGpy.optimizer.single.ContinuousVariable.update_pbar(self, labels, extend_by=None) (inherited)
-
-   Extends the tqdm progress bar by `extend_by` steps if current progress exceeds the known max.
-
-   Parameters:
-       labels (list): List of variable labels used for tqdm description.
-       extend_by (int): Number of additional steps to extend the progress bar.
-
-   .. py:method:: apsimNGpy.optimizer.single.ContinuousVariable.add_control(self, path: str, *, bounds, v_type, q=None, start_value=None, categories=None, **kwargs) (inherited)
-
-   Adds a single APSIM parameter to be optimized.
-
-   Parameters
-   ----------
-   path : str
-       APSIM component path.
-
-    v_type : type
-       The Python type of the variable. Should be either `int` or `float` for continous variable problem or
-       'uniform', 'choice',  'grid',   'categorical',   'qrandint',  'quniform' for mixed variable problem
-
-   start_value : any (type determined by the variable type.
-       The initial value to use for the parameter in optimization routines. Only required for single objective optimizations
-
-   bounds : tuple of (float, float), optional
-       Lower and upper bounds for the parameter (used in bounded optimization).
-       Must be a tuple like (min, max). If None, the variable is considered unbounded or categorical or the algorithm to be used do not support bounds
-
-   kwargs: dict
-       One of the key-value pairs must contain a value of '?', indicating the parameter to be filled during optimization.
-       Keyword arguments are used because most APSIM models have unique parameter structures, and this approach allows
-       flexible specification of model-specific parameters. It is also possible to pass other parameters associated with the model in question to be changed on the fly.
-
-
-   Returns
-   -------
-   self : object
-       Returns self to support method chaining.
-
-   .. warning::
-
-       Raises a ``ValueError``
-           If the provided arguments do not pass validation via `_evaluate_args`.
-
-
-   .. Note::
-
-       - This method is typically used before running optimization to define which
-         parameters should be tuned.
-
-   Example:
-
-   .. code-block:: python
-
-            from apsimNGpy.core.apsim import ApsimModel
-            from apsimNGpy.core.optimizer import MultiObjectiveProblem
-            runner = ApsimModel("Maize")
-
-           _vars = [
-           {'path': '.Simulations.Simulation.Field.Fertilise at sowing', 'Amount': "?", "bounds": [50, 300],
-            "v_type": "float"},
-           {'path': '.Simulations.Simulation.Field.Sow using a variable rule', 'Population': "?", 'v_type': 'float',
-            'bounds': [4, 14]}
-            ]
-           problem = MultiObjectiveProblem(runner, objectives=objectives, decision_vars=_vars)
-           # or
-           problem = MultiObjectiveProblem(runner, objectives=objectives, None)
-           problem.add_control(
-               **{'path': '.Simulations.Simulation.Field.Fertilise at sowing', 'Amount': "?", "bounds": [50, 300],
-                  "v_type": "float"})
-           problem.add_control(
-               **{'path': '.Simulations.Simulation.Field.Sow using a variable rule', 'Population': "?", 'v_type': 'float',
-                  'bounds': [4, 14]})
-
-.. py:class:: apsimNGpy.optimizer.single.MixedVariable
+.. py:class:: apsimNGpy.optimizer.problems.smp.MixedProblem
+
+       Defines a single-objective mixed-variable optimization problem for APSIM models.
+
+       This class integrates APSIM simulations, observed data comparison,
+       and user-defined factors (parameters) into a single reusable problem description
+       suitable for optimization with scipy or pymoo solvers.
+
+       Parameters
+       ----------
+       model : str
+           APSIM model identifier or path to the .apsimx file.
+       trainer_dataset : pd.DataFrame or None
+           Observed dataset for calibration or evaluation.
+       pred_col : str
+           Column in APSIM output corresponding to predicted values.
+       trainer_col : str
+           Column in observed dataset corresponding to observed values.
+       index : str
+           Column used for aligning predicted and observed values (e.g., 'year').
+       method : str, default='RMSE'
+           Evaluation metric to use (e.g., 'RMSE', 'R2', 'WIA').
+       table : str or None, optional
+           APSIM output table name (if applicable).
+       func : callable or None, optional
+           Custom evaluation function to override the built-in validation workflow. if provided should leave room for predicted argument
+
+       Notes
+       -----
+       - Each factor defines a modifiable APSIM node parameter and can have its own
+         variable type (e.g., continuous, integer, categorical).
+       - The resulting object can be wrapped into a callable Objective
+         via `wrap_objectives()` for integration with optimization solvers.
 
    List of Public Attributes:
    __________________________________
 
-   - :attr:`~apsimNGpy.optimizer.single.MixedVariableProblem.bounds`
-   - :attr:`~apsimNGpy.optimizer.single.MixedVariableProblem.indicators`
-   - :attr:`~apsimNGpy.optimizer.single.MixedVariableProblem.labels`
-   - :attr:`~apsimNGpy.optimizer.single.MixedVariableProblem.outcomes`
+   - :attr:`~apsimNGpy.optimizer.problems.smp.MixedProblem.n_factors`
    List of Public Methods
    -----------------------------
-   - :meth:`~apsimNGpy.optimizer.single.MixedVariableProblem.add_control`
-   - :meth:`~apsimNGpy.optimizer.single.MixedVariableProblem.minimize_with_a_local_solver`
-   - :meth:`~apsimNGpy.optimizer.single.MixedVariableProblem.minimize_with_alocal_solver`
-   - :meth:`~apsimNGpy.optimizer.single.MixedVariableProblem.minimize_with_de`
-   - :meth:`~apsimNGpy.optimizer.single.MixedVariableProblem.update_pbar`
+   - :meth:`~apsimNGpy.optimizer.problems.smp.MixedProblem.evaluate_objectives`
+   - :meth:`~apsimNGpy.optimizer.problems.smp.MixedProblem.submit_all`
+   - :meth:`~apsimNGpy.optimizer.problems.smp.MixedProblem.submit_factor`
+   - :meth:`~apsimNGpy.optimizer.problems.smp.MixedProblem.wrap_objectives`
 
-   .. py:method:: apsimNGpy.optimizer.single.MixedVariable.__init__(self, apsim_model: 'ApsimNGpy.Core.Model', max_cache_size=400, objectives=None, decision_vars=None)
+   .. py:method:: apsimNGpy.optimizer.problems.smp.MixedProblem.__init__(self, model: str, trainer_dataset: Optional[pandas.core.frame.DataFrame] = None, pred_col: str = None, trainer_col: str = None, index: str = None, method: str = 'RMSE', table: Optional[str] = None, func: Optional[Any] = None)
 
    Initialize self.  See help(type(self)) for accurate signature.
 
-   .. py:method:: apsimNGpy.optimizer.single.MixedVariable.minimize_with_alocal_solver(self, **kwargs)
+   .. py:property:: apsimNGpy.optimizer.problems.smp.MixedProblem.n_factors
 
-       Run a local optimization solver (e.g., Powell, L-BFGS-B, etc.) on given defined problem.
+   Number of submitted optimization factors.
 
-       This method wraps ``scipy.optimize.minimize`` and handles mixed-variable encoding internally
-       using the `Objective` wrapper from ``wrapdisc``. It supports any method supported by SciPy's
-       `minimize` function and uses the encoded starting values and variable bounds. This decoding implies that you can optimize categorical variable such as start dates or
-       cultivar paramter with xy numerical values.
+   .. py:method:: apsimNGpy.optimizer.problems.smp.MixedProblem.submit_factor(self, *, path, vtype, start_value, candidate_param, cultivar=False, other_params=None)
 
-       Progress is tracked using a progress bar, and results are automatically decoded and stored
-       in ``self.outcomes``.
+    Add a new factor (parameter) to be optimized.
 
-       Parameters:
-           **kwargs: Keyword arguments passed directly to `scipy.optimize.minimize`.
-                     Important keys include:
-                       - ``method (str)``: Optimization algorithm (e.g., 'Powell', 'L-BFGS-B').
-                       - ``options (dict)``: Dictionary of solver options like maxiter, disp, etc.
-   scipy.optimize.minimize provide a number of optimization algorithms see table below or for details check their website:
-   https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
+    Each factor corresponds to a modifiable APSIM node attribute and its
+    variable type (e.g., UniformVar, RandintVar, ChoiceVar). Factors define
+    the search space and starting points for parameter optimization.
 
-   +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
-   | Method           | Type                   | Gradient Required | Handles Bounds | Handles Constraints | Notes                                        |
-   +==================+========================+===================+================+=====================+==============================================+
-   | Nelder-Mead      | Local (Derivative-free)| No                | No             | No                  | Simplex algorithm                            |
-   +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
-   | Powell           | Local (Derivative-free)| No                | Yes            | No                  | Direction set method                         |
-   +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
-   | CG               | Local (Gradient-based) | Yes               | No             | No                  | Conjugate Gradient                           |
-   +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
-   | BFGS             | Local (Gradient-based) | Yes               | No             | No                  | Quasi-Newton                                 |
-   +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
-   | Newton-CG        | Local (Gradient-based) | Yes               | No             | No                  | Newton's method                              |
-   +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
-   | L-BFGS-B         | Local (Gradient-based) | Yes               | Yes            | No                  | Limited memory BFGS                          |
-   +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
-   | TNC              | Local (Gradient-based) | Yes               | Yes            | No                  | Truncated Newton                             |
-   +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
-   | COBYLA           | Local (Derivative-free)| No                | No             | Yes                 | Constrained optimization by linear approx.   |
-   +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
-   | SLSQP            | Local (Gradient-based) | Yes               | Yes            | Yes                 | Sequential Least Squares Programming         |
-   +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
-   | trust-constr     | Local (Gradient-based) | Yes               | Yes            | Yes                 | Trust-region constrained                     |
-   +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
-   | dogleg           | Local (Gradient-based) | Yes               | No             | No                  | Requires Hessian                             |
-   +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
-   | trust-ncg        | Local (Gradient-based) | Yes               | No             | No                  | Newton-CG trust region                       |
-   +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
-   | trust-exact      | Local (Gradient-based) | Yes               | No             | No                  | Trust-region, exact Hessian                  |
-   +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
-   | trust-krylov     | Local (Gradient-based) | Yes               | No             | No                  | Trust-region, Hessian-free                   |
-   +------------------+------------------------+-------------------+----------------+---------------------+----------------------------------------------+
+    Parameters
+    ----------
+    path : str
+        APSIM node path where the parameter resides, e.g.
+        ``".Simulations.Simulation.Field.Soil.Organic"``.
+        This node typically contains variables like FBiom, Carbon, and FINert.
 
-       Returns:
-           result (OptimizeResult): The result of the optimization, with an additional
-                                    `x_vars` attribute that provides a labeled dict of optimized
-                                    control variable values.
+    vtype : list or tuple of wrapdisc.var
+        Variable types defining the search domain for each candidate parameter.
+        These can include discrete, quantized, or continuous domains (see table below).
 
-       Raises:
-           Any exceptions raised by `scipy.optimize.minimize`.
+    start_value : list or tuple of (str | int | float)
+        Initial values for each parameter, in the same order as ``candidate_param``.
 
-       Example:
-       --------
-       The following example shows how to use this method, the evaluation is very basic, but you
-       can add a more advanced evaluation by adding a loss function e.g RMSE os NSE by comparing with the observed and predicted,
-       and changing the control variables::
+    candidate_param : list or tuple of str
+        The names of APSIM variables (e.g., ``"FOM"``, ``"FBiom"``) to be optimized.
+        These should exist within the APSIM node path provided.
 
-       class Problem(MixedVarProblem):
-           def __init__(self, model=None, simulation='Simulation'):
-               super().__init__(model, simulation)
-               self.simulation = simulation
+    cultivar : bool, optional, default=False
+        Signal to the API whether the parameter belongs to a cultivar node.
+        Set this flag to ``True`` when defining cultivar-related optimization factors.
 
-           def evaluate(self, x, **kwargs):
-               # All evlauations can be defined inside here, by taking into accound the fact that the results object returns a data frame
-               # Also, you can specify the database table or report name holding the ``results``
-               return -self.run(verbose=False).results.Yield.mean() # A return is based on your objective definition, but as I said this could a ``RRMSE`` error or any other loss function
+    other_params : dict, optional
+        Additional APSIM constants to fix during optimization (non-optimized parameters).
+        These must belong to the same node path.
+        For example, when optimizing *FBiom* while also modifying *Carbon*, you can
+        supply *Carbon* as a constant under ``other_params`` (see Example 1 below).
 
-       # Ready to initialise the problem
+    .. tip::
 
-       .. code-block:: python
+       As a rule of thumb, group all parameters belonging to the same APSIM node
+       into a single factor by providing them as lists. Submitting parameters from
+       the same node as separate factors will raise a validation error.
 
-            problem.add_control(
-               path='.Simulations.Simulation.Field.Fertilise at sowing',
-               Amount="?",
-               bounds=[50, 300],
-               v_type="float",
-               start_value =50
-            )
+    .. note::
 
-           problem.add_control(
-               path='.Simulations.Simulation.Field.Sow using a variable rule',
-               Population="?",
-               bounds=[4, 14],
-               v_type="float",
-               start_value=5
-           )
+       All input factors are first validated using **Pydantic** to ensure conformity
+       to the expected data structures and types — for instance, confirming that
+       ``vtype`` consists of recognized variable types (e.g., ``UniformVar``, ``GridVar``),
+       that ``path`` is a valid string, and that numeric tuples follow expected
+       range conventions. This guarantees type safety and consistency across
+       optimization runs.
 
-   .. py:method:: apsimNGpy.optimizer.single.MixedVariable.minimize_with_de(self, args=(), strategy='best1bin', maxiter=1000, popsize=15, tol=0.01, mutation=(0.5, 1), recombination=0.7, rng=None, callback=None, disp=True, polish=True, init='latinhypercube', atol=0, updating='immediate', workers=1, constraints=(), x0=None, seed=1, *, integrality=None, vectorized=False)
+       After Pydantic validation, an additional structural check verifies
+       that the **lengths** of ``vtype``, ``start_value``, and ``candidate_param``
+       collections are identical. This ensures that each parameter to be optimized
+       has a corresponding variable type and initial value.
 
-   Runs differential evolution on the wrapped objective function.
-   Reference: https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.differential_evolution.html
+       If you select an optimization method that **does not rely on bounded or
+       initialized start values**, you may safely provide dummy entries for
+       ``start_value``. These placeholders will be accepted without raising errors
+       and will not affect the optimization process. The validation framework is
+       designed to remain flexible for both stochastic (randomized) and
+       deterministic search methods.
 
-   .. py:method:: apsimNGpy.optimizer.single.MixedVariable.optimization_type(self)
 
-   Must be implemented as a property in subclass
 
-   .. py:method:: apsimNGpy.optimizer.single.MixedVariable.update_pbar(self, labels, extend_by=None) (inherited)
+   The variable types follow the ``wrapdisc`` library conventions.
+   Each type defines how sampling and decoding are handled during optimization.
 
-   Extends the tqdm progress bar by `extend_by` steps if current progress exceeds the known max.
+   +----------------+--------------------------------+-------------------------------------------------------------+---------------------------+--------------------------------------------------------------------------------+
+   | **Space**      | **Variable Type**              | **Usage / Description**                                     | **Decoder**               | **Examples**                                                                    |
+   +================+================================+=============================================================+===========================+================================================================================+
+   | **Discrete**   | ``ChoiceVar(items)``           | Nominal (unordered categorical)                             | one-hot via *max*         | ``ChoiceVar(["USA", "Panama", "Cayman"])``                                     |
+   +----------------+--------------------------------+-------------------------------------------------------------+---------------------------+--------------------------------------------------------------------------------+
+   | **Discrete**   | ``GridVar(values)``            | Ordinal (ordered categorical)                               | round                     | ``GridVar([2, 4, 8, 16])``<br>``GridVar(["good", "better", "best"])``          |
+   +----------------+--------------------------------+-------------------------------------------------------------+---------------------------+--------------------------------------------------------------------------------+
+   | **Discrete**   | ``RandintVar(lower, upper)``   | Integer from *lower* to *upper*, inclusive                  | round                     | ``RandintVar(0, 6)``, ``RandintVar(3, 9)``, ``RandintVar(-10, 10)``            |
+   +----------------+--------------------------------+-------------------------------------------------------------+---------------------------+--------------------------------------------------------------------------------+
+   | **Discrete**   | ``QrandintVar(lower, upper, q)`` | Quantized integer from *lower* to *upper* in multiples of q | round to nearest multiple | ``QrandintVar(0, 12, 3)``, ``QrandintVar(1, 10, 2)``, ``QrandintVar(-10, 10, 4)`` |
+   +----------------+--------------------------------+-------------------------------------------------------------+---------------------------+--------------------------------------------------------------------------------+
+   | **Continuous** | ``UniformVar(lower, upper)``   | Float from *lower* to *upper*                               | passthrough               | ``UniformVar(0.0, 5.11)``, ``UniformVar(0.2, 4.6)``, ``UniformVar(-10.0, 10.0)`` |
+   +----------------+--------------------------------+-------------------------------------------------------------+---------------------------+--------------------------------------------------------------------------------+
+   | **Continuous** | ``QuniformVar(lower, upper, q)`` | Quantized float from *lower* to *upper* in multiples of q   | round to nearest multiple | ``QuniformVar(0.0, 5.1, 0.3)``, ``QuniformVar(-5.1, -0.2, 0.3)``                |
+   +----------------+--------------------------------+-------------------------------------------------------------+---------------------------+--------------------------------------------------------------------------------+
 
-   Parameters:
-       labels (list): List of variable labels used for tqdm description.
-       extend_by (int): Number of additional steps to extend the progress bar.
+    Reference
+    ----------
+    - ``wrapdisc`` documentation: https://pypi.org/project/wrapdisc/
 
-   .. py:method:: apsimNGpy.optimizer.single.MixedVariable.minimize_with_a_local_solver(self, **kwargs) (inherited)
+    Examples
+    --------
+    Example 1 — Continuous variable (``UniformVar``)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    .. code-block:: python
 
-   To be implimneted in sub class
+        mp.submit_factor(
+            path=".Simulations.Simulation.Field.Soil.Organic",
+            vtype=[UniformVar(1, 2)],
+            start_value=["1"],
+            candidate_param=["FOM"],
+            other_params={"FBiom": 2.3, "Carbon": 1.89},
+        )
 
-   .. py:method:: apsimNGpy.optimizer.single.MixedVariable.add_control(self, path: str, *, bounds, v_type, q=None, start_value=None, categories=None, **kwargs) (inherited)
+    Example 2 — Quantized continuous variable (``QuniformVar``)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    .. code-block:: python
 
-   Adds a single APSIM parameter to be optimized.
+        mp.submit_factor(
+            path=".Simulations.Simulation.Field.Soil.Organic",
+            vtype=[QuniformVar(0.0, 1.0, 0.005)],  # 0.005 is the quantization interval
+            start_value=["0.035"],
+            candidate_param=["FBiom"],
+        )
+
+    Example 3 — Integer variable (``RandintVar``)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    .. code-block:: python
+
+        mp.submit_factor(
+            path=".Simulations.Simulation.Field.Soil.Plant",
+            vtype=[RandintVar(1, 10)],
+            start_value=[5],
+            candidate_param=["Population"],
+        )
+
+    Example 4 — Quantized integer variable (``QrandintVar``)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    .. code-block:: python
+
+        mp.submit_factor(
+            path=".Simulations.Simulation.Field.Soil.Labile",
+            vtype=[QrandintVar(0, 12, 3)],
+            start_value=[3],
+            candidate_param=["Carbon"],
+        )
+
+    Example 5 — Categorical variable (``ChoiceVar``)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    This is suitable for exploring categorical management options, such as selecting the best
+    cultivar for a region or testing sowing date strategies.
+
+    .. code-block:: python
+
+        mp.submit_factor(
+            path=".Simulations.Simulation.Sow using a variable rule",
+            vtype=[ChoiceVar(["B_100", "A90", "B110"])],
+            start_value=["B_100"],
+            candidate_param=["CultivarName"],
+        )
+
+    Example 6 — Ordinal grid variable (``GridVar``)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    .. code-block:: python
+
+        mp.submit_factor(
+            path=".Simulations.Simulation.Field.Management",
+            vtype=[GridVar(["Low", "Medium", "High"])],
+            start_value=["Medium"],
+            candidate_param=["FertilizerRate"],
+        )
+
+    Submitting cultivar-related variables
+    -------------------------------------
+    When defining optimization factors for cultivar-specific parameters, you must explicitly
+    signal to the APSIMNGpy API that the parameter belongs to a cultivar node.
+    This is done by including the keyword ``cultivar=True`` in the factor definition.
+
+    By default, this flag is ``False``, meaning the optimizer assumes the factor is not
+    cultivar-related and treats it as a regular parameter (e.g., soil, management, or
+    plant-level attribute).
+
+    Internally, this flag is validated as a boolean field through Pydantic to ensure
+    consistent interpretation and error checking.
+
+    The cultivar flag enables APSIMNGpy to route the parameter to the correct editing
+    pipeline for cultivar commands and properties under APSIM’s *Replacements* or
+    *CultivarFolder* nodes.
+
+    .. code-block:: python
+
+        from wrapdisc.var import QrandintVar
+
+        cultivar_param = {
+            # Full APSIM path to the target cultivar node
+            "path": ".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82",
+
+            # Quantized integer variable (range: 400–550, step size: 5)
+            "vtype": [QrandintVar(400, 550, q=5)],
+
+            # Starting value for optimization
+            "start_value": [550],
+
+            # APSIM command or property to be optimized within the cultivar
+            "candidate_param": ["[Grain].MaximumGrainsPerCob.FixedValue"],
+
+            # Fixed or contextual parameters associated with the same node
+            "other_params": {"sowed": True},
+
+            # Signal that this parameter belongs to a cultivar node
+            "cultivar": True
+        }
+
+        mp.submit_factor(**cultivar_param)
+
+   .. py:method:: apsimNGpy.optimizer.problems.smp.MixedProblem.submit_all(self, all_factors: List[Dict[str, Any]])
+
+   Batch-add multiple factors for optimization.
+
+   This method provides a convenient way to register several parameter factors
+   (e.g., multiple APSIM node attributes) at once, instead of calling
+   :meth:`submit_factor` repeatedly for each parameter.
+   Each item in the input list must follow the same structure expected by
+   :meth:`submit_factor`.
 
    Parameters
    ----------
-   path : str
-       APSIM component path.
+   all_factors : list of dict
+       A list (or tuple) of dictionaries, where each dictionary defines a single
+       optimization factor with the following required keys:
 
-    v_type : type
-       The Python type of the variable. Should be either `int` or `float` for continous variable problem or
-       'uniform', 'choice',  'grid',   'categorical',   'qrandint',  'quniform' for mixed variable problem
+       - ``path`` : str
+         The APSIM node path where the variable resides.
+       - ``vtype`` : list or tuple of wrapdisc.var
+         The variable type(s) defining the sampling space (e.g., `UniformVar`, `ChoiceVar`).
+       - ``start_value`` : list or tuple of str, int, or float
+         The starting value(s) corresponding to each candidate parameter.
+       - ``candidate_param`` : list or tuple of str
+         The APSIM variable names to optimize.
+       - ``other_params`` : dict, optional
+         Any additional parameters belonging to the same APSIM node that
+         should remain constant during optimization.
 
-   start_value : any (type determined by the variable type.
-       The initial value to use for the parameter in optimization routines. Only required for single objective optimizations
+   Notes
+   -----
+   This method internally calls :meth:`submit_factor` for each element in
+   ``all_factors``. Each factor is individually validated using Pydantic
+   type checks and structural consistency rules to ensure that all required
+   fields are properly defined.
 
-   bounds : tuple of (float, float), optional
-       Lower and upper bounds for the parameter (used in bounded optimization).
-       Must be a tuple like (min, max). If None, the variable is considered unbounded or categorical or the algorithm to be used do not support bounds
+   Returns
+   -------
+   self : MixedProblem
+       Returns the same instance for method chaining.
+       This enables expressions like:
+       ``mp.submit_all(factors).wrap_objectives().minimize_with_de()``
 
-   kwargs: dict
-       One of the key-value pairs must contain a value of '?', indicating the parameter to be filled during optimization.
-       Keyword arguments are used because most APSIM models have unique parameter structures, and this approach allows
-       flexible specification of model-specific parameters. It is also possible to pass other parameters associated with the model in question to be changed on the fly.
+   Examples
+   --------
+   .. code-block:: python
+
+       # Define multiple parameter factors
+       all_factors = [
+           {
+               "path": ".Simulations.Simulation.Field.Soil.Organic",
+               "vtype": [UniformVar(1, 2)],
+               "start_value": ["1.0"],
+               "candidate_param": ["FOM"],
+               "other_params": {"FBiom": 2.3, "Carbon": 1.89},
+           },
+           {
+               "path": ".Simulations.Simulation.Field.Plant",
+               "vtype": [RandintVar(1, 10)],
+               "start_value": [5],
+               "candidate_param": ["Population"],
+           },
+       ]
+
+       # Batch register all factors at once
+       mp.submit_all(all_factors)
+
+   .. py:method:: apsimNGpy.optimizer.problems.smp.MixedProblem.evaluate_objectives(self, x)
+
+   Evaluate the APSIM model’s objective function for a given parameter vector.
+
+   This method inserts the provided input parameters into the APSIM model,
+   executes the simulation, and evaluates the predicted outputs against
+   the observed dataset using a selected performance metric
+   (e.g., RMSE, R², ME, CCC).
+   It serves as the core evaluation routine for optimization and
+   sensitivity analysis workflows.
+
+   Parameters
+   ----------
+   x : array-like
+       A numeric vector (list, tuple, or NumPy array) representing parameter values
+       to be inserted into the APSIM model.
+       The vector must match the order and dimensionality of the
+       defined optimization factors (as specified through
+       :meth:`submit_factor` or :meth:`submit_all`).
+
+   Workflow
+   --------
+   1. The provided parameter vector ``x`` is mapped onto APSIM input variables
+      using the internal :meth:`_insert_x_vars` method.
+   2. The model is executed via the :func:`runner` interface, which
+      runs the APSIM simulation with the updated parameters.
+   3. Simulation outputs (predicted data) are compared against the
+      reference observations (``self.obs``) using the
+      :func:`eval_observed` evaluator.
+   4. The chosen performance metric, defined in ``self.method``, is computed
+      and returned.
+
+   Notes
+   -----
+   The supported evaluation metrics include:
+
+   - ``RMSE`` : Root Mean Square Error
+   - ``MAE`` : Mean Absolute Error
+   - ``RRMSE`` : Relative Root Mean Square Error
+   - ``R2`` : Coefficient of Determination
+   - ``ME`` : Modeling Efficiency
+   - ``WIA`` : Willmott’s Index of Agreement
+   - ``CCC`` : Concordance Correlation Coefficient
+   - ``bias`` : Mean Bias Error
+
+   These metrics are implemented in the :class:`apsimNGpy.validation.evaluator.Validate`
+   module and are used to assess how well the simulated values replicate observed data.
+
 
 
    Returns
    -------
-   self : object
-       Returns self to support method chaining.
+   float
+       The computed performance score based on the selected metric.
+       For metrics such as RMSE or MAE, **lower values indicate better performance**,
+       whereas for R², WIA, or CCC, **higher values indicate better model fit**.
 
-   .. warning::
+   The magnitude of the minimization is determined automatically in the back_end.py, thus if you are
+   using eval_observed method, no need to worry about multiplying with -1 for loss function indices such as CCC
 
-       Raises a ``ValueError``
-           If the provided arguments do not pass validation via `_evaluate_args`.
-
-
-   .. Note::
-
-       - This method is typically used before running optimization to define which
-         parameters should be tuned.
-
-   Example:
-
+   Examples
+   --------
    .. code-block:: python
 
-            from apsimNGpy.core.apsim import ApsimModel
-            from apsimNGpy.core.optimizer import MultiObjectiveProblem
-            runner = ApsimModel("Maize")
+       # Evaluate APSIM model performance using a sample parameter vector
+       x = [1.5, 0.8, 3.2, 0.1]
+       score = mp.evaluate_objectives(x)
 
-           _vars = [
-           {'path': '.Simulations.Simulation.Field.Fertilise at sowing', 'Amount': "?", "bounds": [50, 300],
-            "v_type": "float"},
-           {'path': '.Simulations.Simulation.Field.Sow using a variable rule', 'Population': "?", 'v_type': 'float',
-            'bounds': [4, 14]}
-            ]
-           problem = MultiObjectiveProblem(runner, objectives=objectives, decision_vars=_vars)
-           # or
-           problem = MultiObjectiveProblem(runner, objectives=objectives, None)
-           problem.add_control(
-               **{'path': '.Simulations.Simulation.Field.Fertilise at sowing', 'Amount': "?", "bounds": [50, 300],
-                  "v_type": "float"})
-           problem.add_control(
-               **{'path': '.Simulations.Simulation.Field.Sow using a variable rule', 'Population': "?", 'v_type': 'float',
-                  'bounds': [4, 14]})
+       print(f"Model evaluation ({mp.method}):", score)
+
+   .. py:method:: apsimNGpy.optimizer.problems.smp.MixedProblem.wrap_objectives(self) -> wrapdisc.wrapdisc.Objective
+
+   Wrap the evaluation function into a `wrapdisc.Objective`
+   instance compatible with mixed-variable optimizers.
+
+   Returns
+   -------
+   Objective
+       A callable objective that accepts encoded variable vectors.
 
 apsimNGpy.parallel.process
 --------------------------

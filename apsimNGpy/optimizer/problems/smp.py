@@ -27,6 +27,8 @@ from wrapdisc import Objective
 from wrapdisc.var import UniformVar  # can be generalized for other variable types
 
 __all__ = ['MixedProblem']
+
+
 class MixedProblem:
     """
     Defines a single-objective mixed-variable optimization problem for APSIM models.
@@ -91,6 +93,7 @@ class MixedProblem:
         self.method = method
         self.table = table
         self.func = func
+        self.inputs_ok = False
 
         # internal containers
         self.ordered_factors = OrderedDict()
@@ -128,7 +131,7 @@ class MixedProblem:
     # Factor Submission and Validation
     # -------------------------------------------------------------------------
     def submit_factor(self, *, path, vtype, start_value, candidate_param, cultivar=False, other_params=None):
-            """
+        """
             Add a new factor (parameter) to be optimized.
 
             Each factor corresponds to a modifiable APSIM node attribute and its
@@ -333,22 +336,22 @@ class MixedProblem:
                 mp.submit_factor(**cultivar_param)
             """
 
-            out = validate_user_params(
-                dict(
-                    path=path,
-                    vtype=vtype,
-                    start_value=start_value,
-                    candidate_param=candidate_param,
-                    other_params=other_params,
-                    cultivar=cultivar,
-                )
+        out = validate_user_params(
+            dict(
+                path=path,
+                vtype=vtype,
+                start_value=start_value,
+                candidate_param=candidate_param,
+                other_params=other_params,
+                cultivar=cultivar,
             )
-            apsim_out = filter_apsim_params(out)
-            key_hashable = (tuple(apsim_out.keys()), tuple(apsim_out.values()))
-            self.ordered_factors[key_hashable] = out
-            self._validate_factor()
-            self._scan()
-            gc.collect()
+        )
+        apsim_out = filter_apsim_params(out)
+        key_hashable = (tuple(apsim_out.keys()), tuple(apsim_out.values()))
+        self.ordered_factors[key_hashable] = out
+        self._validate_factor()
+        self._scan()
+        gc.collect()
 
     def submit_all(self, all_factors: List[Dict[str, Any]]):
         """
@@ -457,17 +460,15 @@ class MixedProblem:
 
         for _, factor in self.ordered_factors.items():
 
-
             apsim_var = filter_apsim_params(factor)
 
             self.apsim_params.append(apsim_var)
             self.var_types.extend(factor.vtype)
             self.start_values.extend(factor.start_value)
             if not factor.cultivar:
-               self.var_names.extend(factor.candidate_param)
+                self.var_names.extend(factor.candidate_param)
             else:
                 self.var_names.extend(factor.candidate_param)
-
 
     # -------------------------------------------------------------------------
     # Optimization Interface
@@ -503,7 +504,7 @@ class MixedProblem:
                     # pop all keys here
                     [param.pop(k, None) for k in keys]
 
-        # now we can also pop 'cultivar' key
+            # now we can also pop 'cultivar' key
             param.pop('cultivar', None)
 
         return apsim_params
@@ -578,6 +579,8 @@ class MixedProblem:
 
             print(f"Model evaluation ({mp.method}):", score)
         """
+        if not self.inputs_ok:
+            self._test_inputs(x)
         try:
             predicted = runner(self.model, self._insert_x_vars(x))
             if callable(self.func):
@@ -588,19 +591,65 @@ class MixedProblem:
                 pred_col=self.predicted_col,
                 obs_col=self.obs_column,
                 index=self.index,
-                method=self.method )
+                method=self.method)
 
             return eval_out
         except ApsimRuntimeError:
             # not all sampled x inputs will always be APSIM compatible
             from apsimNGpy.optimizer.problems.back_end import metric_direction
 
-            from settings import logger
+            from apsimNGpy.settings import logger
             logger.warning(f"Simulation failed for x variables {x} method '{self.method}', returning penalty value.")
             direction = metric_direction.get(self.method.lower(), -1)
             # If the metric is minimized, return +inf (bad)
             # If the metric is maximized, return -inf (bad)
             return -direction * np.inf
+
+    def _test_inputs(self, x) -> None:
+        """
+        Validate optimization input vector before running the objective function.
+
+        This function performs a pre-execution test by attempting a dry run of
+        the APSIM model with the provided parameter vector ``x``. It ensures that
+        all variables can be successfully inserted into the model and that the
+        model runs without raising a runtime error.
+
+        The test prevents invalid configurations from being passed into the
+        optimization loop, thereby isolating simulation errors from optimizer
+        logic. These include wrong paramters paths, absence of required models in the simulation file etc
+        Parameters
+        ----------
+        x : array-like
+            A parameter vector (sample) to be tested before full optimization.
+
+        Raises
+        ------
+        FailedInputTestError
+            If the test simulation fails due to invalid parameterization or model
+            structure.
+        """
+        from apsimNGpy.exceptions import ApsimRuntimeError
+        from apsimNGpy.settings import logger
+        import pandas as pd
+
+        class FailedInputTestError(ApsimRuntimeError):
+            """Raised when input validation fails before optimization."""
+            pass
+
+        try:
+            res = runner(self.model, self._insert_x_vars(x))
+            self.inputs_ok = True  # update internal validation flag
+
+            if isinstance(res, pd.DataFrame) and not res.empty:
+                logger.info("Input validation passed — proceeding with optimization.")
+
+        except ApsimRuntimeError as ape:
+            self.inputs_ok = False
+            logger.error(
+                "Input validation failed — model could not be executed with the provided parameters.\n"
+                "Ensure that all APSIM node paths and variable types are correctly defined."
+            )
+            raise FailedInputTestError(str(ape)) from ape
 
     def wrap_objectives(self) -> Objective:
         """

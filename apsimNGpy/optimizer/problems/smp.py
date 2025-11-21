@@ -227,6 +227,17 @@ class MixedProblem:
 
             Examples
             --------
+            Initialise mixed variable problem class
+
+            .. code-block:: python
+
+                from apsimNGpy.optimizer.problems.variables import QrandintVar
+                from apsimNGpy.tests.unittests.test_factory import obs
+                from optimizer.problems.smp import MixedProblem
+
+                mp = MixedProblem(model='Maize', trainer_dataset=obs, pred_col='Yield', metric='RRMSE',
+                                  index='year', trainer_col='observed')
+
             Example 1 — Continuous variable (``UniformVar``)
             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             .. code-block:: python
@@ -339,6 +350,22 @@ class MixedProblem:
                 }
 
                 mp.submit_factor(**cultivar_param)
+
+            Submitting more one than one parameter on a single node
+            ---------------------------------------------------------
+            .. code-block:: python
+
+                 cultivar_params = {
+                        "path": ".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82",
+                        "vtype": [QrandintVar(400, 600, q=5), QrandintVar(400, 900, q=5)],  # Discrete step size of 5
+                        "start_value": [500, 550],
+                        "candidate_param": ["[Grain].MaximumGrainsPerCob.FixedValue",
+                                            '[Phenology].GrainFilling.Target.FixedValue'],
+                        "other_params": {"sowed": True},
+                        "cultivar": True,  # Signals to apsimNGpy to treat it as a cultivar parameter
+                    }
+                 mp.submit(cultivar_params)
+
             """
 
         out = validate_user_params(

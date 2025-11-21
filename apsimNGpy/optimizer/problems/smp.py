@@ -123,9 +123,14 @@ class MixedProblem:
         )
 
     @property
+    def n_apsim_nodes(self) -> int:
+        """Number of submitted optimization APSIM factors nodes."""
+        return len(self.ordered_factors)
+
+    @property
     def n_factors(self) -> int:
         """Number of submitted optimization factors."""
-        return len(self.ordered_factors)
+        return len(self.var_names)
 
     # -------------------------------------------------------------------------
     # Factor Submission and Validation

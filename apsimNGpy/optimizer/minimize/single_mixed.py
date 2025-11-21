@@ -151,6 +151,7 @@ class MixedVariableOptimizer:
             decoded_solution = wrapped_obj.decode(result.x)
             result.x_vars = dict(zip(self.problem_desc.var_names, decoded_solution))
             self.results = result
+            self.problem_desc.plug_optimal_values(result)
             return result
 
         finally:
@@ -227,6 +228,7 @@ class MixedVariableOptimizer:
         decoded_solution = wrapped_obj.decode(result.x)
         result.x_vars = dict(zip(self.problem_desc.var_names, decoded_solution))
         self.outcomes = result
+        self.problem_desc.plug_optimal_values(result)
 
         return result
 

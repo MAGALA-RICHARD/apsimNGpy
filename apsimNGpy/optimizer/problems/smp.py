@@ -605,7 +605,7 @@ class MixedProblem:
             # If the metric is maximized, return -inf (bad)
             return -direction * np.inf
 
-    def _test_inputs(self, x) -> None:
+    def _test_inputs(self, x,verbose=False) -> None:
         """
         Validate optimization input vector before running the objective function.
 
@@ -621,6 +621,8 @@ class MixedProblem:
         ----------
         x : array-like
             A parameter vector (sample) to be tested before full optimization.
+        verbose : bool, optional default=False
+            prints success message on the screen if set to true
 
         Raises
         ------
@@ -641,13 +643,15 @@ class MixedProblem:
             self.inputs_ok = True  # update internal validation flag
 
             if isinstance(res, pd.DataFrame) and not res.empty:
-                logger.info("Input validation passed — proceeding with optimization.")
+                if verbose:
+                   logger.info("Input validation passed — proceeding with optimization.")
 
         except ApsimRuntimeError as ape:
             self.inputs_ok = False
             logger.error(
                 "Input validation failed — model could not be executed with the provided parameters.\n"
-                "Ensure that all APSIM node paths and variable types are correctly defined."
+                "Ensure that all APSIM node paths and variable types are correctly defined,"
+                "The model has weather file with correct start dates"
             )
             raise FailedInputTestError(str(ape)) from ape
 

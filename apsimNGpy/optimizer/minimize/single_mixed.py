@@ -242,11 +242,11 @@ if __name__ == '__main__':
     example_param3 = {
         # one per factor
         "path": ".Simulations.Simulation.Field.Soil.Organic",
-        "vtype": [UniformVar(0, 2)],
-        "start_value": [1.0],
-        "candidate_param": ['Carbon'],
+        "vtype": [UniformVar(0, 1)],
+        "start_value": [0.0140],
+        "candidate_param": ['FBiom'],
 
-        'other_params': {'FBiom': 0.03, "Carbon": 1.89}
+        'other_params': { "Carbon": 1.89}
     }
     cultivar_param = {
         "path": ".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82",
@@ -267,8 +267,8 @@ if __name__ == '__main__':
 
         mp = MixedProblem(model='Maize', trainer_dataset=obs, pred_col='Yield', method='RRMSE',
                           index='year', trainer_col='observed')
-        # mp.submit_factor(**example_param3)
-        mp.submit_factor(**cultivar_param)
+        mp.submit_factor(**example_param3)
+       # mp.submit_factor(**cultivar_param)
         minim = MixedVariableOptimizer(problem=mp)
         # min.minimize_with_de(workers=3, updating='deferred')
         # minim.minimize_with_alocal_solver(method='Nelder-Mead')

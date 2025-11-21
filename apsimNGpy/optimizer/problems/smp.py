@@ -49,7 +49,7 @@ class MixedProblem:
         Column in observed dataset corresponding to observed values.
     index : str
         Column used for aligning predicted and observed values (e.g., 'year').
-    method : str, default='RMSE'
+    metric : str, default='RMSE'
         Evaluation metric to use (e.g., 'RMSE', 'R2', 'WIA').
     table : str or None, optional
         APSIM output table name (if applicable).
@@ -71,7 +71,7 @@ class MixedProblem:
             pred_col: str = None,
             trainer_col: str = None,
             index: str = None,
-            method: str = "RMSE",
+            metric: str = "RMSE",
             table: Optional[str] = None,
             func: Optional[Any] = None,
     ):
@@ -90,7 +90,7 @@ class MixedProblem:
         self.predicted_col = pred_col
         self.obs_column = trainer_col
         self.index = index
-        self.method = method
+        self.accuracy_indicator = metric
         self.table = table
         self.func = func
         self.inputs_ok = False
@@ -114,7 +114,7 @@ class MixedProblem:
         return hash(
             (
                 self.model,
-                self.method,
+                self.accuracy_indicator,
                 tuple(self.var_names),
                 tuple(self.start_values),
                 self.predicted_col,
@@ -552,7 +552,7 @@ class MixedProblem:
         - ``ME`` : Modeling Efficiency
         - ``WIA`` : Willmott’s Index of Agreement
         - ``CCC`` : Concordance Correlation Coefficient
-        - ``bias`` : Mean Bias Error
+        - ``BIAS`` : Mean Bias Error
 
         These metrics are implemented in the :class:`apsimNGpy.validation.evaluator.Validate`
         module and are used to assess how well the simulated values replicate observed data.
@@ -591,7 +591,7 @@ class MixedProblem:
                 pred_col=self.predicted_col,
                 obs_col=self.obs_column,
                 index=self.index,
-                method=self.method)
+                method=self.accuracy_indicator)
 
             return eval_out
         except ApsimRuntimeError:
@@ -599,13 +599,13 @@ class MixedProblem:
             from apsimNGpy.optimizer.problems.back_end import metric_direction
 
             from apsimNGpy.settings import logger
-            logger.warning(f"Simulation failed for x variables {x} method '{self.method}', returning penalty value.")
-            direction = metric_direction.get(self.method.lower(), -1)
+            logger.warning(f"Simulation failed for x variables {x} method '{self.accuracy_indicator}', returning penalty value.")
+            direction = metric_direction.get(self.accuracy_indicator.lower(), -1)
             # If the metric is minimized, return +inf (bad)
             # If the metric is maximized, return -inf (bad)
             return -direction * np.inf
 
-    def _test_inputs(self, x,verbose=False) -> None:
+    def _test_inputs(self, x, verbose=False) -> None:
         """
         Validate optimization input vector before running the objective function.
 
@@ -644,7 +644,7 @@ class MixedProblem:
 
             if isinstance(res, pd.DataFrame) and not res.empty:
                 if verbose:
-                   logger.info("Input validation passed — proceeding with optimization.")
+                    logger.info("Input validation passed — proceeding with optimization.")
 
         except ApsimRuntimeError as ape:
             self.inputs_ok = False

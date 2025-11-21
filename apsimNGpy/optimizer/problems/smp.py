@@ -635,7 +635,7 @@ class MixedProblem:
         import pandas as pd
 
         class FailedInputTestError(ApsimRuntimeError):
-            """Raised when input validation fails before optimization."""
+            """Raised when APSIM input validation fails before optimization i.e., APSIM fails to run correctly"""
             pass
 
         try:
@@ -649,7 +649,7 @@ class MixedProblem:
         except ApsimRuntimeError as ape:
             self.inputs_ok = False
             logger.error(
-                "Input validation failed — model could not be executed with the provided parameters.\n"
+                "APSIM Input validation failed — model could not be executed with the provided parameters.\n"
                 "Ensure that all APSIM node paths and variable types are correctly defined,"
                 "The model has weather file with correct start dates"
             )

@@ -265,7 +265,7 @@ if __name__ == '__main__':
         from apsimNGpy.tests.unittests.test_factory import obs
         from optimizer.problems.smp import MixedProblem
 
-        mp = MixedProblem(model='Maize', trainer_dataset=obs, pred_col='Yield', method='RRMSE',
+        mp = MixedProblem(model='Maize', trainer_dataset=obs, pred_col='Yield', metric='RRMSE',
                           index='year', trainer_col='observed')
         mp.submit_factor(**example_param3)
        # mp.submit_factor(**cultivar_param)

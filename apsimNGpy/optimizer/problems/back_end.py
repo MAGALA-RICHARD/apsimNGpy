@@ -9,18 +9,17 @@ obs_suffix = '_obs'
 pred_suffix = '_pred'
 
 metric_direction = {
-    "rmse": -1,
-    "mae": -1,
-    "mse": -1,
-    "rrmse": -1,
-    "bias": -1,
-    "me": 1,
-    "wia": 1,
-    "r2": 1,
-    "ccc": 1,
-    "slope": 1,
+    "rmse": 1,
+    "mae": 1,
+    "mse": 1,
+    "rrmse": 1,
+    "bias": 1,
+    "me": -1,
+    "wia": -1,
+    "r2": -1,
+    "ccc": -1,
+    "slope": -1,
 }
-
 
 def _prepare_eval_data(
         obs: pd.DataFrame,
@@ -156,7 +155,8 @@ def eval_observed(
     metric_value = validator.evaluate(method.upper())
 
     direction = metric_direction[method.lower()]
-    return direction * metric_value
+    out= direction * metric_value
+    return out
 
 
 def final_eval(

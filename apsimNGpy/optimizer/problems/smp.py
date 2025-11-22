@@ -355,6 +355,52 @@ class MixedProblem:
             }
 
             mp.submit_factor(**cultivar_params)
+
+        It is possible to describe your data type using string characters uisng any of the description below, implying no variable descriptor namespace import needed
+        
+        Variable Type Classification
+        ----------------------------
+
+        **Continuous (UniformVar)**
+          - ``UniformVar``
+          - ``uniform``
+          - ``continuous``
+          Represents real-valued continuous parameters.
+
+        **Quantized Continuous (QuniformVar)**
+          - ``QuniformVar``
+          - ``quniform``
+          - ``quantized_continuous``
+          - ``step_uniform_float``
+          Continuous parameters restricted to fixed step sizes.
+
+        **Quantized Integer (QrandintVar)**
+          - ``QrandintVar``
+          - ``qrandint``
+          - ``quantized_int``
+          - ``step_random_int``
+          Integer parameters with fixed quantization.
+
+        **Ordinal / Grid (GridVar)**
+          - ``GridVar``
+          - ``grid``
+          - ``ordinal``
+          - ``ordered_var``
+          Ordered categorical variables with ranked classes.
+
+        **Categorical / Nominal (ChoiceVar)**
+          - ``ChoiceVar``
+          - ``choice``
+          - ``categorical``
+          - ``choice_var``
+          Unordered categorical classes.
+
+        **Integer (RandintVar)**
+          - ``RandintVar``
+          - ``randint``
+          - ``integer``
+          Integer-valued variables.
+
         """
 
         out = validate_user_params(

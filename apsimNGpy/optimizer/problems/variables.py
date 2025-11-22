@@ -49,6 +49,75 @@ from wrapdisc.var import (
 )
 
 PLACEHOLDER = object()
+ALLOWED_NAMES = {
+    # Original canonical names
+    "UniformVar": UniformVar,
+    "QrandintVar": QrandintVar,
+    "QuniformVar": QuniformVar,
+    "GridVar": GridVar,
+    "ChoiceVar": ChoiceVar,
+    "RandintVar": RandintVar,
+
+    # Short aliases
+    "uniform": UniformVar,
+    "quniform": QuniformVar,
+    "qrandint": QrandintVar,
+    "grid": GridVar,
+    "choice": ChoiceVar,
+    "randint": RandintVar,
+
+    # Descriptive aliases (readable English)
+    "continuous": UniformVar,
+    "quantized_continuous": QuniformVar,
+    "quantized_int": QrandintVar,
+    "ordinal": GridVar,
+    "categorical": ChoiceVar,
+    "integer": RandintVar,
+
+    # Alternative descriptive (for domain users)
+    "step_uniform_float": QuniformVar,
+    "step_random_int": QrandintVar,
+    "ordered_var": GridVar,
+    "choice_var": ChoiceVar
+}
+
+
+def string_eval(obj):
+    """
+    Evaluate a string expression using a restricted namespace.
+    Only names defined in ALLOWED_NAMES are permitted.
+
+    Parameters
+    ----------
+    obj : Any
+        A string to be evaluated or any other object that will be returned unchanged.
+
+    Returns
+    -------
+    Any
+        The evaluated object.
+
+    Raises
+    ------
+    ValueError
+        If evaluation fails or expression contains unsupported names or syntax.
+    """
+
+    if not isinstance(obj, str):
+        return obj
+
+    try:
+        out = eval(
+            obj,
+            {"__builtins__": {}},  # secure environment
+            ALLOWED_NAMES  # whitelist
+        )
+    except (NameError, SyntaxError, TypeError, ValueError) as e:
+        raise ValueError(
+            f'Evaluation failed for expression "{obj}":original error: {e}'
+        ) from e
+
+    return out
 
 
 # -------------------------------------------------------------------------
@@ -102,7 +171,7 @@ class BaseParams(BaseModel):
         ...,
     ]
     start_value: Union[Tuple[str, ...], Tuple[int, ...], Tuple[float, ...]]
-    candidate_param: Union[ Tuple[str, ...]]
+    candidate_param: Union[Tuple[str, ...]]
     other_params: Optional[Dict[str, Union[int, float, str, bool]]] = None
     cultivar: Optional[bool] = False
 
@@ -154,7 +223,11 @@ def validate_user_params(params: Dict) -> BaseParams:
     ValueError
         If start_value, candidate_param, and vtype lengths are inconsistent.
     """
-
+    # try factor or variable string evaluation before proceeding to the evaluation section
+    vtype = string_eval(params['vtype'])# if params['vtype'] tuple is a string
+    # deep evaluation
+    vtype = tuple(string_eval(i) for i in vtype)
+    params['vtype'] = vtype
     try:
         validated = BaseParams(**params)
         others = validated.other_params or {}
@@ -165,7 +238,6 @@ def validate_user_params(params: Dict) -> BaseParams:
         # Ensure matching tuple lengths
         lengths = [len(i) if isinstance(i, (list, tuple)) else 1 for i in [candidates, start_value, vtypes]]
         if len(set(lengths)) > 1:
-
             raise ValueError("Length of 'start_value', 'candidate_param', and 'vtype' must match.")
 
         # Remove overlapping keys from other_params
@@ -204,7 +276,7 @@ def filter_apsim_params(params: BaseParams, place_holder=PLACEHOLDER) -> Dict:
         Flattened dictionary containing APSIM parameter mappings.
     """
     _params = {}
-    cultivar= params.cultivar
+    cultivar = params.cultivar
     for key, value in params.__dict__.items():
         if key == "other_params" and isinstance(value, dict):
             _params.update(value)
@@ -278,9 +350,30 @@ example_param2 = {
     "candidate_param": ("Carbon",),
     "other_params": {"FBiom": 2.3, "FOM": 3},
 }
+ev_param = {
+    "path": ".Simulations.Simulation.Field.Soil.Organic",
+    "vtype": ('UniformVar(1, 2)',),
+    "start_value": ("1",),
+    "candidate_param": ("Carbon",),
+    "other_params": {"FBiom": 2.3, "FOM": 3},
+}
+
+
+def search(s):
+    import re
+    name = re.match(r"^[^(]+", s).group()
+    return name
+
+
+import ast
+
 
 if __name__ == "__main__":
     pp = validate_user_params(example_param2)
     print(filter_apsim_params(pp))
     mg = merge_params_by_path([example_param2, example_param])
     print(mg)
+    # test evaluation
+    string_eval('continuous(1, 2)')
+    #test string evaluation
+    pv =validate_user_params(ev_param)

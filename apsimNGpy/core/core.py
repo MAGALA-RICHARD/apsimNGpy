@@ -28,7 +28,7 @@ from apsimNGpy.core_utils.utils import open_apsimx_file_in_window
 from apsimNGpy.core.pythonet_config import *
 from apsimNGpy.core_utils.database_utils import read_db_table
 from apsimNGpy.core.config import get_apsim_bin_path
-from apsimNGpy.exceptions import ModelNotFoundError
+from apsimNGpy.exceptions import ModelNotFoundError, NodeNotFoundError
 from apsimNGpy.core.model_tools import (get_or_check_model, old_method, _edit_in_cultivar,
                                         inspect_model_inputs,
                                         ModelTools, validate_model_obj, replace_variable_by_index)
@@ -4379,33 +4379,35 @@ class CoreModel(PlotManager):
 
         .. code-block:: none
 
-            ── Simulations: .Simulations
-            ├── DataStore: .Simulations.DataStore
-            └── Simulation: .Simulations.Simulation
-                ├── Clock: .Simulations.Simulation.Clock
-                ├── Field: .Simulations.Simulation.Field
-                │   ├── Fertilise at sowing: .Simulations.Simulation.Field.Fertilise at sowing
-                │   ├── Fertiliser: .Simulations.Simulation.Field.Fertiliser
-                │   ├── Harvest: .Simulations.Simulation.Field.Harvest
-                │   ├── Maize: .Simulations.Simulation.Field.Maize
-                │   ├── Report: .Simulations.Simulation.Field.Report
-                │   ├── Soil: .Simulations.Simulation.Field.Soil
-                │   │   ├── Chemical: .Simulations.Simulation.Field.Soil.Chemical
-                │   │   ├── NH4: .Simulations.Simulation.Field.Soil.NH4
-                │   │   ├── NO3: .Simulations.Simulation.Field.Soil.NO3
-                │   │   ├── Organic: .Simulations.Simulation.Field.Soil.Organic
-                │   │   ├── Physical: .Simulations.Simulation.Field.Soil.Physical
-                │   │   │   └── MaizeSoil: .Simulations.Simulation.Field.Soil.Physical.MaizeSoil
-                │   │   ├── Urea: .Simulations.Simulation.Field.Soil.Urea
-                │   │   └── Water: .Simulations.Simulation.Field.Soil.Water
-                │   ├── Sow using a variable rule: .Simulations.Simulation.Field.Sow using a variable rule
-                │   └── SurfaceOrganicMatter: .Simulations.Simulation.Field.SurfaceOrganicMatter
-                ├── Graph: .Simulations.Simulation.Graph
-                │   └── Series: .Simulations.Simulation.Graph.Series
-                ├── MicroClimate: .Simulations.Simulation.MicroClimate
-                ├── SoilArbitrator: .Simulations.Simulation.SoilArbitrator
-                ├── Summary: .Simulations.Simulation.Summary
-                └── Weather: .Simulations.Simulation.Weather
+            └── Models.Core.Simulations: .Simulations
+                ├── Models.Storage.DataStore: .Simulations.DataStore
+                ├── Models.Core.Folder: .Simulations.Replacements
+                │   └── Models.PMF.Plant: .Simulations.Replacements.Maize
+                └── Models.Core.Simulation: .Simulations.Simulation
+                    ├── Models.Clock: .Simulations.Simulation.Clock
+                    ├── Models.Core.Zone: .Simulations.Simulation.Field
+                    │   ├── Models.Manager: .Simulations.Simulation.Field.Fertilise at sowing
+                    │   ├── Models.Fertiliser: .Simulations.Simulation.Field.Fertiliser
+                    │   ├── Models.Manager: .Simulations.Simulation.Field.Harvest
+                    │   ├── Models.PMF.Plant: .Simulations.Simulation.Field.Maize
+                    │   ├── Models.Report: .Simulations.Simulation.Field.Report
+                    │   ├── Models.Soils.Soil: .Simulations.Simulation.Field.Soil
+                    │   │   ├── Models.Soils.Chemical: .Simulations.Simulation.Field.Soil.Chemical
+                    │   │   ├── Models.Soils.Solute: .Simulations.Simulation.Field.Soil.NH4
+                    │   │   ├── Models.Soils.Solute: .Simulations.Simulation.Field.Soil.NO3
+                    │   │   ├── Models.Soils.Organic: .Simulations.Simulation.Field.Soil.Organic
+                    │   │   ├── Models.Soils.Physical: .Simulations.Simulation.Field.Soil.Physical
+                    │   │   │   └── Models.Soils.SoilCrop: .Simulations.Simulation.Field.Soil.Physical.MaizeSoil
+                    │   │   ├── Models.Soils.Solute: .Simulations.Simulation.Field.Soil.Urea
+                    │   │   └── Models.Soils.Water: .Simulations.Simulation.Field.Soil.Water
+                    │   ├── Models.Manager: .Simulations.Simulation.Field.Sow using a variable rule
+                    │   └── Models.Surface.SurfaceOrganicMatter: .Simulations.Simulation.Field.SurfaceOrganicMatter
+                    ├── Models.Graph: .Simulations.Simulation.Graph
+                    │   └── Models.Series: .Simulations.Simulation.Graph.Series
+                    ├── Models.MicroClimate: .Simulations.Simulation.MicroClimate
+                    ├── Models.Soils.Arbitrator.SoilArbitrator: .Simulations.Simulation.SoilArbitrator
+                    ├── Models.Summary: .Simulations.Simulation.Summary
+                    └── Models.Climate.Weather: .Simulations.Simulation.Weather
 
         Turn cultivar paths on as follows:
 
@@ -4538,8 +4540,18 @@ class CoreModel(PlotManager):
                 branch = "└── " if is_last_key else "├── "
                 child_prefix = "    " if is_last_key else "│   "
                 current_path = f"{full_path}.{key}" if full_path else key
-
-                print(f"{prefix}{branch}\033[95m{key}\033[0m: .{current_path}")
+                try:
+                  if not current_path.startswith('.'):
+                      node_path = f".{current_path}"
+                  else:
+                      node_path = current_path
+                  _model_type = get_node_by_path(self.Simulations, node_path)
+                except NodeNotFoundError as nde:
+                    _model_type = ''
+                mo_del = getattr(_model_type, 'Model', _model_type)
+                mod = CastHelper.CastAs[mo_del.GetType()](mo_del)
+                #print(mod)
+                print(f"{prefix}{branch}\033[95m{mod}\033[0m: .{current_path}")
 
                 # else:
                 #     print(f"{prefix}{branch}{key}")

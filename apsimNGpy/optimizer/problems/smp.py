@@ -12,7 +12,7 @@ Author: Richard Magala
 import copy
 import gc
 from collections import OrderedDict
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Union
 
 import numpy as np
 
@@ -70,7 +70,7 @@ class MixedProblem:
             trainer_dataset: Optional[pd.DataFrame] = None,
             pred_col: str = None,
             trainer_col: str = None,
-            index: str = None,
+            index: Union[str, tuple, set,list] = None,
             metric: str = "RMSE",
             table: Optional[str] = None,
             func: Optional[Any] = None,

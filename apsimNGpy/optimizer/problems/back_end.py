@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from typing import Optional, Union, Iterable
 import pandas as pd
 from apsimNGpy.core.apsim import ApsimModel
 from apsimNGpy.validation.evaluator import Validate
@@ -118,7 +118,7 @@ def _prepare_eval_data(
 def eval_observed(
         obs: pd.DataFrame,
         pred: pd.DataFrame,
-        index: Union[str,list],
+        index: Union[str,list, tuple, set],
         pred_col: str,
         obs_col: str,
         method: str = "rmse",
@@ -201,7 +201,18 @@ def runner(model, params, table=None):
     with ApsimModel(model) as model:
         for param in params:
             model.set_params(param)
-        df = model.run(report_name=table).results
+        model.run()
+        reports = model.inspect_model('Models.Report', fullpath=False)
+        if table and isinstance(table, str) and table not in reports:
+            raise ValueError(f"Table {table} not found in the simulation.Avialble tables are `{reports}`")
+        if table and isinstance(table, Iterable):
+            tabs = [i for i in table if i not in reports]
+            if tabs:
+                raise ValueError(f"Tables {tabs} not found in the simulation available tables are; `{reports}`")
+        if not table:
+            df = model.results
+        else:
+            df = model.get_simulated_output(table, axis=0)
         df["date"] = pd.to_datetime(df["Clock.Today"])
 
         # Extract components
@@ -215,4 +226,30 @@ def runner(model, params, table=None):
 if __name__ == '__main__':
     from apsimNGpy.tests.unittests.test_factory import obs, pred
 
-    rt = eval_observed(obs, pred, index=('year',), obs_col='observed', pred_col='predicted', method='ccc', exp=None)
+    from apsimNGpy.tests.unittests.test_factory import obs, pred
+
+    # _____________________________
+    # list index
+    # _______________________________
+    index = ['year']
+    rt = eval_observed(obs, pred, index=index, obs_col='observed', pred_col='predicted', method='ccc', exp=None)
+    assert rt, 'metric is none when list is the index'
+    # _____________________________
+    # tuple index
+    # _______________________________
+    index = tuple(['year'])
+    rt = eval_observed(obs, pred, index=index, obs_col='observed', pred_col='predicted', method='ccc', exp=None)
+    assert rt, 'metric is none when tuple  is the index'
+    # _____________________________
+    # list index
+    # _______________________________
+    index = set(['year'])
+    rt = eval_observed(obs, pred, index=index, obs_col='observed', pred_col='predicted', method='ccc', exp=None)
+    assert rt, 'metric is none when set is the index'
+    # _____________________________
+    # list index
+    # _______________________________
+    index = 'year'
+    rt = eval_observed(obs, pred, index=index, obs_col='observed', pred_col='predicted', method='ccc', exp=None)
+    assert rt, 'metric is none when str is the index'
+

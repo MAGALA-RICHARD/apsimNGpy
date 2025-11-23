@@ -648,8 +648,9 @@ class MixedProblem:
         """
         if not self.inputs_ok:
             self._test_inputs(x)
+
         try:
-            predicted = runner(self.model, self._insert_x_vars(x))
+            predicted = runner(self.model, params=self._insert_x_vars(x), table=self.table)
             if callable(self.func):
                 return self.func(predicted)
             eval_out = eval_observed(
@@ -718,7 +719,7 @@ class MixedProblem:
             pass
 
         try:
-            res = runner(self.model, self._insert_x_vars(x))
+            res = runner(self.model, self._insert_x_vars(x), table=self.table)
             self.inputs_ok = True  # update internal validation flag
 
             if isinstance(res, pd.DataFrame) and not res.empty:
@@ -789,6 +790,7 @@ if __name__ == "__main__":
         pred_col="Yield",
         index="year",
         trainer_col="observed",
+        table= 'Report'
     )
 
     mp.submit_factor(**example_param3)

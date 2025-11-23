@@ -1,4 +1,6 @@
 from typing import Optional, Union, Iterable
+
+import numpy as np
 import pandas as pd
 from apsimNGpy.core.apsim import ApsimModel
 from apsimNGpy.validation.evaluator import Validate
@@ -21,10 +23,93 @@ metric_direction = {
     "slope": -1,
 }
 
+metric_bounds = {
+    "rmse": (0.0, np.inf),  # RMSE ≥ 0
+    "mae": (0.0, np.inf),  # MAE ≥ 0
+    "mse": (0.0, np.inf),  # MSE ≥ 0
+
+    # RRMSE can exceed 1 for poor models → upper bound should be ∞
+    "rrmse": (0.0, np.inf),
+
+    # Bias is unbounded in both directions
+    "bias": (-np.inf, np.inf),
+
+    # Mean error (ME) is signed → can be negative or positive
+    "me": (-np.inf, np.inf),
+
+    # Willmott’s index of agreement: 0–1
+    "wia": (-1, 0.0),
+
+    # R² is between 0 and 1
+    "r2": (-1, 0.0),
+
+    # Lin’s CCC ranges from -1 to 1
+    "ccc": (-1.0, 1.0),
+
+    # Regression slope can be negative, positive, or >1
+    "slope": (-np.inf, np.inf),
+}
+
+def detect_range(metric: str, bounds: tuple):
+    """
+    Check whether user-defined bounds fall within the allowed metric range.
+
+    Parameters
+    ----------
+    metric : str
+        Name of the metric (e.g., "rmse", "wia", "r2").
+    bounds : tuple
+        User-specified (lower, upper) bounds.
+
+    Returns
+    -------
+    bool
+        True if the user-specified bounds are valid and within the global metric range.
+        False otherwise.
+
+    Raises
+    ------
+    KeyError
+        If the metric is unknown.
+    ValueError
+        If bounds is not a valid 2-tuple.
+    """
+
+    # global reference, e.g. your metric_bounds = { "rmse": (0, inf), ... }
+    allowed_range = metric_bounds[metric.lower()]
+
+    if not isinstance(bounds, tuple) or len(bounds) != 2:
+        raise ValueError(
+            f"Bounds must be a 2-tuple (lower, upper). Got: {bounds}"
+        )
+
+    user_low, user_high = bounds
+    assert user_low <= user_high, 'lower boundary should not be higher than upper boundary'
+    allowed_low, allowed_high = allowed_range
+
+    # Comparison:
+    low_ok = user_low >= allowed_low
+    high_ok = user_high <= allowed_high
+
+    return low_ok and high_ok
+
+
+
+def examine_constraints(metric, constraints):
+    if not isinstance(constraints, tuple):
+        raise ValueError("only tuple is allowed")
+    if len(constraints) != 2:
+        raise ValueError("tuple should only be of length 2, with lower and upper boundary, respectively")
+    lower_bound, upper_bound = constraints
+    if lower_bound > upper_bound:
+        raise ValueError("lower bound is higher than upper boudnary")
+
+
+
 def _prepare_eval_data(
         obs: pd.DataFrame,
         pred: pd.DataFrame,
-        index: Union[str,list],
+        index: Union[str, list],
         pred_col: str,
         obs_col: str,
         method: str):
@@ -118,7 +203,7 @@ def _prepare_eval_data(
 def eval_observed(
         obs: pd.DataFrame,
         pred: pd.DataFrame,
-        index: Union[str,list, tuple, set],
+        index: Union[str, list, tuple, set],
         pred_col: str,
         obs_col: str,
         method: str = "rmse",
@@ -159,7 +244,7 @@ def eval_observed(
     metric_value = validator.evaluate(method.upper())
 
     direction = metric_direction[method.lower()]
-    out= direction * metric_value
+    out = direction * metric_value
     return out
 
 
@@ -205,7 +290,7 @@ def runner(model, params, table=None):
         reports = model.inspect_model('Models.Report', fullpath=False)
         if table and isinstance(table, str) and table not in reports:
             raise ValueError(f"Table {table} not found in the simulation.Avialble tables are `{reports}`")
-        if table and isinstance(table, Iterable):
+        if table and isinstance(table, Iterable) and not isinstance(table, str):
             tabs = [i for i in table if i not in reports]
             if tabs:
                 raise ValueError(f"Tables {tabs} not found in the simulation available tables are; `{reports}`")
@@ -252,4 +337,3 @@ if __name__ == '__main__':
     index = 'year'
     rt = eval_observed(obs, pred, index=index, obs_col='observed', pred_col='predicted', method='ccc', exp=None)
     assert rt, 'metric is none when str is the index'
-

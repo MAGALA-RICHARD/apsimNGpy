@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Union
 import pandas as pd
 from apsimNGpy.core.apsim import ApsimModel
 from apsimNGpy.validation.evaluator import Validate
@@ -24,7 +24,7 @@ metric_direction = {
 def _prepare_eval_data(
         obs: pd.DataFrame,
         pred: pd.DataFrame,
-        index: str,
+        index: Union[str,list],
         pred_col: str,
         obs_col: str,
         method: str):
@@ -69,10 +69,13 @@ def _prepare_eval_data(
         If required columns are missing or the metric is unsupported.
 
     """
+    if isinstance(index, str):
+        index = {index}
 
     # Required column validation
-    required_cols_obs = {index, obs_col}
-    required_cols_pred = {index, pred_col}
+    required_cols_obs = {*index, obs_col}
+
+    required_cols_pred = {*index, pred_col}
 
     if not required_cols_obs.issubset(obs.columns):
         raise ValueError(
@@ -94,6 +97,7 @@ def _prepare_eval_data(
         )
 
     # Cast types for alignment
+    index = list(index)
     obs[index] = obs[index].astype(str)
     pred[index] = pred[index].astype(str)
     obs[obs_col] = pd.to_numeric(obs[obs_col], errors="coerce")
@@ -101,8 +105,8 @@ def _prepare_eval_data(
 
     # Merge and drop missing
     data = pd.merge(
-        obs[[index, obs_col]],
-        pred[[index, pred_col]],
+        obs[[*index, obs_col]],
+        pred[[*index, pred_col]],
         on=index,
         how="inner",
     )
@@ -114,7 +118,7 @@ def _prepare_eval_data(
 def eval_observed(
         obs: pd.DataFrame,
         pred: pd.DataFrame,
-        index: str,
+        index: Union[str,list],
         pred_col: str,
         obs_col: str,
         method: str = "rmse",
@@ -211,4 +215,4 @@ def runner(model, params, table=None):
 if __name__ == '__main__':
     from apsimNGpy.tests.unittests.test_factory import obs, pred
 
-    rt = eval_observed(obs, pred, index='year', obs_col='observed', pred_col='predicted', method='ccc', exp=None)
+    rt = eval_observed(obs, pred, index=('year',), obs_col='observed', pred_col='predicted', method='ccc', exp=None)

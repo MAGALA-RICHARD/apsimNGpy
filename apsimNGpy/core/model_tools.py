@@ -209,7 +209,7 @@ def _find_model(model_name: str, model_namespace=Models, target_type=CLASS_MODEL
     if not hasattr(model_namespace, "__dict__"):
         return None
 
-    ITEMS = model_namespace.__dict__
+    ITEMS = model_namespace.__dict__.copy()
     if isinstance(model_name, str):
         model_name = model_name.capitalize()
     for attr, value in ITEMS.items():

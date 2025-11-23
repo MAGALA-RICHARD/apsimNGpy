@@ -357,7 +357,7 @@ class MixedProblem:
             mp.submit_factor(**cultivar_params)
 
         It is possible to describe your data type using string characters uisng any of the description below, implying no variable descriptor namespace import needed
-        
+
         Variable Type Classification
         ----------------------------
 
@@ -670,15 +670,10 @@ class MixedProblem:
                 f"Simulation failed for x variables {x} using metric '{self.accuracy_indicator}'. "
                 "Returning a penalty value."
             )
+            # regardless of the direction  np.inf is always a good penalty for incompatible values
+            penalty = np.inf
 
-            # Determine metric direction (+1 for maximize, -1 for minimize)
-            direction = metric_direction.get(self.accuracy_indicator.lower(), -1)
-
-            # If the metric is minimized → return +inf (penalty)
-            # If the metric is maximized → return -inf (penalty)
-            pena = -direction * np.inf
-
-            self.invalid_fx.append(pena)
+            self.invalid_fx.append(penalty)
 
             # If too many failures occur, stop the process
             if len(self.invalid_fx) > 10:
@@ -688,7 +683,7 @@ class MixedProblem:
                     f"Original error: {ape}"
                 ) from ape
 
-            return pena
+            return penalty
 
     def _test_inputs(self, x, verbose=False) -> None:
         """

@@ -239,28 +239,27 @@ class MixedVariableOptimizer:
 
 
 if __name__ == '__main__':
-    from apsimNGpy.optimizer.problems.variables import QrandintVar
+        from apsimNGpy.optimizer.problems.variables import QrandintVar
 
-    example_param3 = {
-        # one per factor
-        "path": ".Simulations.Simulation.Field.Soil.Organic",
-        "vtype": [UniformVar(0, 1)],
-        "start_value": [0.0140],
-        "candidate_param": ['FBiom'],
 
-        'other_params': { "Carbon": 1.89}
-    }
-    cultivar_param = {
-        "path": ".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82",
-        "vtype": [QrandintVar(400, 600, q=5), ],
-        "start_value": [550, ],
-        "candidate_param": ["[Grain].MaximumGrainsPerCob.FixedValue", ],
-        "other_params": {"sowed": True},
-        # other params must be on the same node or associated or extra arguments, e.g., target simulation name classified simulations
-        'cultivar': True
-    }
+        fom_params = {
+            "path": ".Simulations.Simulation.Field.Soil.Organic",
+            "vtype": ['continuous(1, 500)', 'continuous(0.02, 0.06)'],
+            "start_value": [100, 0.021],
+            "candidate_param": ["FOM", 'FBiom'],
+            "other_params": {"Carbon": 1.2},
+        }
+        cultivar_param = {
+            "path": ".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82",
+            "vtype": [QrandintVar(400, 600, q=5), ],
+            "start_value": [550, ],
+            "candidate_param": ["[Grain].MaximumGrainsPerCob.FixedValue", ],
+            "other_params": {"sowed": True},
+            # other params must be on the same node or associated or extra arguments, e.g., target simulation name classified simulations
+            'cultivar': True
+        }
 
-    if __name__ == '__main__':
+
         # _______________________________________
         # use cases
         # ---------------------------------------
@@ -269,9 +268,11 @@ if __name__ == '__main__':
 
         mp = MixedProblem(model='Maize', trainer_dataset=obs, pred_col='Yield', metric='RRMSE',
                           index='year', trainer_col='observed')
-        mp.submit_factor(**example_param3)
-       # mp.submit_factor(**cultivar_param)
+
+        mp.submit_factor(**fom_params)
+        mp.submit_factor(**cultivar_param)
         minim = MixedVariableOptimizer(problem=mp)
+        print(mp.n_factors, 'factors submitted')
         # min.minimize_with_de(workers=3, updating='deferred')
         # minim.minimize_with_alocal_solver(method='Nelder-Mead')
         res = minim.minimize_with_de(use_threads=True, updating='deferred', workers=15, popsize=10)

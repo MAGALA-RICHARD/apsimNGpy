@@ -200,6 +200,8 @@ class MixedVariableOptimizer:
             logger.info(f"[DE] Starting optimization with {len(bounds)} variables,\n mutation: {mutation}," \
                         f" seed={seed}, popsize={popsize}, strategy: {strategy}, starting values: {initial_guess}")
         select_process = ThreadPoolExecutor if use_threads else ProcessPoolExecutor
+        if workers > 1:
+            updating = 'deferred'
         with select_process(max_workers=workers) as executor:
             result = differential_evolution(
                 wrapped_obj,

@@ -665,18 +665,17 @@ class MixedProblem:
             # Not all sampled x inputs will be APSIM-compatible
             from apsimNGpy.optimizer.problems.back_end import metric_direction
             from apsimNGpy.settings import logger
-
+            penalty = np.inf
             logger.warning(
                 f"Simulation failed for x variables {x} using metric '{self.accuracy_indicator}'. "
-                "Returning a penalty value."
+                f"Returning a penalty value ({penalty})."
             )
             # regardless of the direction  np.inf is always a good penalty for incompatible values
-            penalty = np.inf
 
             self.invalid_fx.append(penalty)
 
             # If too many failures occur, stop the process
-            if len(self.invalid_fx) > 10:
+            if len(self.invalid_fx) > 15:
                 raise RuntimeError(
                     "Repeated simulation failures detected. "
                     "Something may be fundamentally wrong; restarting the session may help. "

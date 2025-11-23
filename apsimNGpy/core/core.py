@@ -1802,7 +1802,7 @@ class CoreModel(PlotManager):
 
     def find_model_in_replacements(self, model_type, model_name):
         """checks whether the model to be edited is in the replacement, there is no point to contnue editing from individual simulations"""
-        replacement = self.get_replacement_node()
+        replacement = self.get_replacements_node()
         if replacement:
             return ModelTools.find_child(replacement, model_type, child_name=model_name)
 
@@ -1859,7 +1859,7 @@ class CoreModel(PlotManager):
             raise ValueError('report or database table is required via `report_name` parameter')
         sims = self.find_simulations(simulations)
         rep = self.get_replacements_node()
-        if rep is not None and self.find_model_in_replacements(rep, model_type=Models.Report, model_name=report_name):
+        if rep is not None and self.find_model_in_replacements( model_type=Models.Report, model_name=report_name):
             sims = {rep}
         for sim in sims:
             if isinstance(variable_spec, str):

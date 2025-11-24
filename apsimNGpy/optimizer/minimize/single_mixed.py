@@ -208,11 +208,10 @@ class MixedVariableOptimizer:
                 raise ValueError(f"constraints must be a tuple of length 2, got {len(constraints)}")
             upper_constraint = constraints[1]
             lower_constraint = constraints[0]
-            constraints = NonlinearConstraint(self.problem_desc.evaluate_objectives, lb=lower_constraint,
-                                              ub=upper_constraint)
+
             if upper_constraint < lower_constraint:
-                raise ValueError(f'Upper constraint `{upper_constraint}` at index 1 is less than the lower constraint `{lower_constraint}` at index 0'
-    )
+                raise ValueError(f'Upper constraint `{upper_constraint}` at index 1 is less than the lower constraint `{lower_constraint}` at index 0')
+            constraints = self.problem_desc.define_nlc(lower_constraint, upper_constraint,)
         popsize = popsize or self.problem_desc.n_factors * 10
         assert popsize > 4, 'popsize must be greater than at least 5'
         with select_process(max_workers=workers) as executor:
@@ -256,7 +255,7 @@ class MixedVariableOptimizer:
 
 if __name__ == '__main__':
     from apsimNGpy.optimizer.problems.variables import QrandintVar
-
+    # define all factors under main if more than one process will be involved
     fom_params = {
         "path": ".Simulations.Simulation.Field.Soil.Organic",
         "vtype": ['continuous(1, 500)', 'continuous(0.02, 0.06)'],

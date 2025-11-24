@@ -15,6 +15,7 @@ from collections import OrderedDict
 from typing import Optional, List, Dict, Any, Union
 
 import numpy as np
+from scipy.optimize import NonlinearConstraint
 
 from apsimNGpy.exceptions import ApsimRuntimeError
 import pandas as pd
@@ -70,7 +71,7 @@ class MixedProblem:
             trainer_dataset: Optional[pd.DataFrame] = None,
             pred_col: str = None,
             trainer_col: str = None,
-            index: Union[str, tuple, set,list] = None,
+            index: Union[str, tuple, set, list] = None,
             metric: str = "RMSE",
             table: Optional[str] = None,
             func: Optional[Any] = None,
@@ -133,6 +134,11 @@ class MixedProblem:
     def n_factors(self) -> int:
         """Number of submitted optimization factors."""
         return len(self.var_names)
+
+    def define_nlc(self, lower_bound: float, upper_bound: float):
+        constraints = NonlinearConstraint(self.evaluate_objectives, lb=lower_bound,
+                                          ub=upper_bound)
+        return constraints
 
     # -------------------------------------------------------------------------
     # Factor Submission and Validation
@@ -790,7 +796,7 @@ if __name__ == "__main__":
         pred_col="Yield",
         index="year",
         trainer_col="observed",
-        table= 'Report'
+        table='Report'
     )
 
     mp.submit_factor(**example_param3)

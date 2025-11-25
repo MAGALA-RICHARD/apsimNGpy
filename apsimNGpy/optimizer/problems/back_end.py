@@ -1,3 +1,4 @@
+import uuid
 from typing import Optional, Union, Iterable
 
 import numpy as np
@@ -50,6 +51,7 @@ metric_bounds = {
     "slope": (-np.inf, np.inf),
 }
 
+
 def detect_range(metric: str, bounds: tuple):
     """
     Check whether user-defined bounds fall within the allowed metric range.
@@ -94,7 +96,6 @@ def detect_range(metric: str, bounds: tuple):
     return low_ok and high_ok
 
 
-
 def examine_constraints(metric, constraints):
     if not isinstance(constraints, tuple):
         raise ValueError("only tuple is allowed")
@@ -103,7 +104,6 @@ def examine_constraints(metric, constraints):
     lower_bound, upper_bound = constraints
     if lower_bound > upper_bound:
         raise ValueError("lower bound is higher than upper boudnary")
-
 
 
 def _prepare_eval_data(
@@ -217,20 +217,32 @@ def eval_observed(
       • applies the metric's optimization direction (min/max),
       • returns a single scalar performance value.
 
-    Supported Metrics
-    -----------------
-    | Metric    | Description                          | Direction | Sign |
-    |---------- |--------------------------------------|-----------|------|
-    | RMSE      | Root Mean Square Error               | Smaller   | -1   |
-    | MAE       | Mean Absolute Error                  | Smaller   | -1   |
-    | MSE       | Mean Square Error                    | Smaller   | -1   |
-    | RRMSE     | Relative RMSE                        | Smaller   | -1   |
-    | bias      | Mean Bias                            | Close 0   | -1   |
-    | ME        | Modeling Efficiency                  | Larger    | +1   |
-    | WIA       | Willmott’s Index of Agreement        | Larger    | +1   |
-    | R2        | Coefficient of Determination         | Larger    | +1   |
-    | CCC       | Concordance Correlation Coefficient  | Larger    | +1   |
-    | slope     | Regression Slope                     | Close 1   | +1   |
+  Supported Metrics
+  -----------------
+
+    +---------+-----------------------------------------------+---------------------+------+
+    | Metric  | Description                                   | Preferred Direction | Sign |
+    +=========+===============================================+=====================+======+
+    | RMSE    | Root Mean Square Error                        | Smaller             | -1   |
+    +---------+-----------------------------------------------+---------------------+------+
+    | MAE     | Mean Absolute Error                           | Smaller             | -1   |
+    +---------+-----------------------------------------------+---------------------+------+
+    | MSE     | Mean Square Error                             | Smaller             | -1   |
+    +---------+-----------------------------------------------+---------------------+------+
+    | RRMSE   | Relative RMSE                                 | Smaller             | -1   |
+    +---------+-----------------------------------------------+---------------------+------+
+    | bias    | Mean Bias                                     | Closer to 0         | -1   |
+    +---------+-----------------------------------------------+---------------------+------+
+    | ME      | Modeling Efficiency                           | Larger              | +1   |
+    +---------+-----------------------------------------------+---------------------+------+
+    | WIA     | Willmott’s Index of Agreement                 | Larger              | +1   |
+    +---------+-----------------------------------------------+---------------------+------+
+    | R2      | Coefficient of Determination                  | Larger              | +1   |
+    +---------+-----------------------------------------------+---------------------+------+
+    | CCC     | Concordance Correlation Coefficient           | Larger              | +1   |
+    +---------+-----------------------------------------------+---------------------+------+
+    | slope   | Regression Slope                              | Closer to 1         | +1   |
+    +---------+-----------------------------------------------+---------------------+------+
 
     Returns
     -------
@@ -258,7 +270,7 @@ def final_eval(
         exp: Optional[str] = None) -> dict:
     """
     Evaluate observed and predicted values and return the full suite of
-    performance metrics supported by the :class:`Validate` class.
+    performance metrics supported by the: class:`Validate` class.
 
     This function:
       • prepares and validates the input data (shared utility),
@@ -270,7 +282,7 @@ def final_eval(
     dict
         {
             "metrics": {metric_name: value, ...},
-            "data":    pd.DataFrame (aligned observed/predicted pairs)
+            "data": pd.DataFrame (aligned observed/predicted pairs)
         }
     """
 
@@ -283,17 +295,18 @@ def final_eval(
 
 
 def runner(model, params, table=None):
+    # ideally out_path not needed, as ApsimNGpy generate random temporal files automatically when out_path is not provided
     with ApsimModel(model) as model:
         for param in params:
             model.set_params(param)
         model.run()
         reports = model.inspect_model('Models.Report', fullpath=False)
         if table and isinstance(table, str) and table not in reports:
-            raise ValueError(f"Table {table} not found in the simulation.Avialble tables are `{reports}`")
+            raise ValueError(f"Table {table} not found in the simulation. Available tables are `{reports}`")
         if table and isinstance(table, Iterable) and not isinstance(table, str):
             tabs = [i for i in table if i not in reports]
             if tabs:
-                raise ValueError(f"Tables {tabs} not found in the simulation available tables are; `{reports}`")
+                raise ValueError(f"Tables `{tabs}` not found in the simulation available tables are; `{reports}`")
         if not table:
             df = model.results
         else:
@@ -306,6 +319,7 @@ def runner(model, params, table=None):
         df["day"] = df["date"].dt.day
 
         return df
+    # all transient files are deleted after exiting this block
 
 
 if __name__ == '__main__':

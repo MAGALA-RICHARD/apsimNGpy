@@ -142,7 +142,7 @@ if __name__ == '__main__':
     runs = [
         runner.collect_csv_by_model_path,
         runner.run_model_externally,
-        runner.run_from_dir,
+        runner._run_from_dir,
         runner.upgrade_apsim_file, ]
 
 

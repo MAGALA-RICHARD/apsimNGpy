@@ -2852,95 +2852,157 @@ Classes
 
    .. code-block:: none
 
-       └── Simulations: .Simulations
-       ├── DataStore: .Simulations.DataStore
-       └── Simulation: .Simulations.Simulation
-           ├── Clock: .Simulations.Simulation.Clock
-           ├── Field: .Simulations.Simulation.Field
-           │   ├── Fertilise at sowing: .Simulations.Simulation.Field.Fertilise at sowing
-           │   ├── Fertiliser: .Simulations.Simulation.Field.Fertiliser
-           │   ├── Harvest: .Simulations.Simulation.Field.Harvest
-           │   ├── Maize: .Simulations.Simulation.Field.Maize
-           │   │   └── CultivarFolder: .Simulations.Simulation.Field.Maize.CultivarFolder
-           │   │       ├── Atrium: .Simulations.Simulation.Field.Maize.CultivarFolder.Atrium
-           │   │       ├── CG4141: .Simulations.Simulation.Field.Maize.CultivarFolder.CG4141
-           │   │       ├── Dekalb_XL82: .Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82
-           │   │       ├── GH_5009: .Simulations.Simulation.Field.Maize.CultivarFolder.GH_5009
-           │   │       ├── GH_5019WX: .Simulations.Simulation.Field.Maize.CultivarFolder.GH_5019WX
-           │   │       ├── Generic: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic
-           │   │       │   ├── A_100: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_100
-           │   │       │   ├── A_103: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_103
-           │   │       │   ├── A_105: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_105
-           │   │       │   ├── A_108: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_108
-           │   │       │   ├── A_110: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_110
-           │   │       │   ├── A_112: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_112
-           │   │       │   ├── A_115: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_115
-           │   │       │   ├── A_120: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_120
-           │   │       │   ├── A_130: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_130
-           │   │       │   ├── A_80: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_80
-           │   │       │   ├── A_90: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_90
-           │   │       │   ├── A_95: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_95
-           │   │       │   ├── B_100: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_100
-           │   │       │   ├── B_103: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_103
-           │   │       │   ├── B_105: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_105
-           │   │       │   ├── B_108: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_108
-           │   │       │   ├── B_110: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_110
-           │   │       │   ├── B_112: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_112
-           │   │       │   ├── B_115: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_115
-           │   │       │   ├── B_120: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_120
-           │   │       │   ├── B_130: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_130
-           │   │       │   ├── B_80: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_80
-           │   │       │   ├── B_90: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_90
-           │   │       │   ├── B_95: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_95
-           │   │       │   ├── HY_110: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.HY_110
-           │   │       │   ├── LY_110: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.LY_110
-           │   │       │   └── P1197: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.P1197
-           │   │       ├── Hycorn_40: .Simulations.Simulation.Field.Maize.CultivarFolder.Hycorn_40
-           │   │       ├── Hycorn_53: .Simulations.Simulation.Field.Maize.CultivarFolder.Hycorn_53
-           │   │       ├── Katumani: .Simulations.Simulation.Field.Maize.CultivarFolder.Katumani
-           │   │       ├── Laila: .Simulations.Simulation.Field.Maize.CultivarFolder.Laila
-           │   │       ├── Makueni: .Simulations.Simulation.Field.Maize.CultivarFolder.Makueni
-           │   │       ├── Melkassa: .Simulations.Simulation.Field.Maize.CultivarFolder.Melkassa
-           │   │       ├── NSCM_41: .Simulations.Simulation.Field.Maize.CultivarFolder.NSCM_41
-           │   │       ├── Pioneer_3153: .Simulations.Simulation.Field.Maize.CultivarFolder.Pioneer_3153
-           │   │       ├── Pioneer_33M54: .Simulations.Simulation.Field.Maize.CultivarFolder.Pioneer_33M54
-           │   │       ├── Pioneer_34K77: .Simulations.Simulation.Field.Maize.CultivarFolder.Pioneer_34K77
-           │   │       ├── Pioneer_38H20: .Simulations.Simulation.Field.Maize.CultivarFolder.Pioneer_38H20
-           │   │       ├── Pioneer_39G12: .Simulations.Simulation.Field.Maize.CultivarFolder.Pioneer_39G12
-           │   │       ├── Pioneer_39V43: .Simulations.Simulation.Field.Maize.CultivarFolder.Pioneer_39V43
-           │   │       ├── malawi_local: .Simulations.Simulation.Field.Maize.CultivarFolder.malawi_local
-           │   │       ├── mh12: .Simulations.Simulation.Field.Maize.CultivarFolder.mh12
-           │   │       ├── mh16: .Simulations.Simulation.Field.Maize.CultivarFolder.mh16
-           │   │       ├── mh17: .Simulations.Simulation.Field.Maize.CultivarFolder.mh17
-           │   │       ├── mh18: .Simulations.Simulation.Field.Maize.CultivarFolder.mh18
-           │   │       ├── mh19: .Simulations.Simulation.Field.Maize.CultivarFolder.mh19
-           │   │       ├── r201: .Simulations.Simulation.Field.Maize.CultivarFolder.r201
-           │   │       ├── r215: .Simulations.Simulation.Field.Maize.CultivarFolder.r215
-           │   │       ├── sc401: .Simulations.Simulation.Field.Maize.CultivarFolder.sc401
-           │   │       ├── sc501: .Simulations.Simulation.Field.Maize.CultivarFolder.sc501
-           │   │       ├── sc601: .Simulations.Simulation.Field.Maize.CultivarFolder.sc601
-           │   │       ├── sc623: .Simulations.Simulation.Field.Maize.CultivarFolder.sc623
-           │   │       ├── sc625: .Simulations.Simulation.Field.Maize.CultivarFolder.sc625
-           │   │       └── sr52: .Simulations.Simulation.Field.Maize.CultivarFolder.sr52
-           │   ├── Report: .Simulations.Simulation.Field.Report
-           │   ├── Soil: .Simulations.Simulation.Field.Soil
-           │   │   ├── Chemical: .Simulations.Simulation.Field.Soil.Chemical
-           │   │   ├── NH4: .Simulations.Simulation.Field.Soil.NH4
-           │   │   ├── NO3: .Simulations.Simulation.Field.Soil.NO3
-           │   │   ├── Organic: .Simulations.Simulation.Field.Soil.Organic
-           │   │   ├── Physical: .Simulations.Simulation.Field.Soil.Physical
-           │   │   │   └── MaizeSoil: .Simulations.Simulation.Field.Soil.Physical.MaizeSoil
-           │   │   ├── Urea: .Simulations.Simulation.Field.Soil.Urea
-           │   │   └── Water: .Simulations.Simulation.Field.Soil.Water
-           │   ├── Sow using a variable rule: .Simulations.Simulation.Field.Sow using a variable rule
-           │   └── SurfaceOrganicMatter: .Simulations.Simulation.Field.SurfaceOrganicMatter
-           ├── Graph: .Simulations.Simulation.Graph
-           │   └── Series: .Simulations.Simulation.Graph.Series
-           ├── MicroClimate: .Simulations.Simulation.MicroClimate
-           ├── SoilArbitrator: .Simulations.Simulation.SoilArbitrator
-           ├── Summary: .Simulations.Simulation.Summary
-           └── Weather: .Simulations.Simulation.Weather
-
+      └── Models.Core.Simulations: .Simulations
+           ├── Models.Storage.DataStore: .Simulations.DataStore
+           ├── Models.Core.Folder: .Simulations.Replacements
+           │   └── Models.PMF.Plant: .Simulations.Replacements.Maize
+           │       └── Models.Core.Folder: .Simulations.Replacements.Maize.CultivarFolder
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Atrium
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.CG4141
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Dekalb_XL82
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.GH_5009
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.GH_5019WX
+           │           ├── Models.Core.Folder: .Simulations.Replacements.Maize.CultivarFolder.Generic
+           │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_100
+           │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_103
+           │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_105
+           │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_108
+           │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_110
+           │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_112
+           │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_115
+           │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_120
+           │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_130
+           │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_80
+           │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_90
+           │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_95
+           │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_100
+           │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_103
+           │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_105
+           │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_108
+           │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_110
+           │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_112
+           │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_115
+           │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_120
+           │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_130
+           │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_80
+           │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_90
+           │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_95
+           │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.HY_110
+           │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.LY_110
+           │           │   └── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.P1197
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Hycorn_40
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Hycorn_53
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Katumani
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Laila
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Makueni
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Melkassa
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.NSCM_41
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Pioneer_3153
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Pioneer_33M54
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Pioneer_34K77
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Pioneer_38H20
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Pioneer_39G12
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Pioneer_39V43
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.malawi_local
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.mh12
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.mh16
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.mh17
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.mh18
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.mh19
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.r201
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.r215
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.sc401
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.sc501
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.sc601
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.sc623
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.sc625
+           │           └── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.sr52
+           └── Models.Core.Simulation: .Simulations.Simulation
+               ├── Models.Clock: .Simulations.Simulation.Clock
+               ├── Models.Core.Zone: .Simulations.Simulation.Field
+               │   ├── Models.Manager: .Simulations.Simulation.Field.Fertilise at sowing
+               │   ├── Models.Fertiliser: .Simulations.Simulation.Field.Fertiliser
+               │   ├── Models.Manager: .Simulations.Simulation.Field.Harvest
+               │   ├── Models.PMF.Plant: .Simulations.Simulation.Field.Maize
+               │   │   └── Models.Core.Folder: .Simulations.Simulation.Field.Maize.CultivarFolder
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Atrium
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.CG4141
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.GH_5009
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.GH_5019WX
+               │   │       ├── Models.Core.Folder: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic
+               │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_100
+               │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_103
+               │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_105
+               │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_108
+               │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_110
+               │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_112
+               │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_115
+               │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_120
+               │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_130
+               │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_80
+               │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_90
+               │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_95
+               │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_100
+               │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_103
+               │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_105
+               │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_108
+               │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_110
+               │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_112
+               │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_115
+               │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_120
+               │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_130
+               │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_80
+               │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_90
+               │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_95
+               │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.HY_110
+               │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.LY_110
+               │   │       │   └── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.P1197
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Hycorn_40
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Hycorn_53
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Katumani
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Laila
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Makueni
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Melkassa
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.NSCM_41
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Pioneer_3153
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Pioneer_33M54
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Pioneer_34K77
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Pioneer_38H20
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Pioneer_39G12
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Pioneer_39V43
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.malawi_local
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.mh12
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.mh16
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.mh17
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.mh18
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.mh19
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.r201
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.r215
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.sc401
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.sc501
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.sc601
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.sc623
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.sc625
+               │   │       └── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.sr52
+               │   ├── Models.Report: .Simulations.Simulation.Field.Report
+               │   ├── Models.Soils.Soil: .Simulations.Simulation.Field.Soil
+               │   │   ├── Models.Soils.Chemical: .Simulations.Simulation.Field.Soil.Chemical
+               │   │   ├── Models.Soils.Solute: .Simulations.Simulation.Field.Soil.NH4
+               │   │   ├── Models.Soils.Solute: .Simulations.Simulation.Field.Soil.NO3
+               │   │   ├── Models.Soils.Organic: .Simulations.Simulation.Field.Soil.Organic
+               │   │   ├── Models.Soils.Physical: .Simulations.Simulation.Field.Soil.Physical
+               │   │   │   └── Models.Soils.SoilCrop: .Simulations.Simulation.Field.Soil.Physical.MaizeSoil
+               │   │   ├── Models.Soils.Solute: .Simulations.Simulation.Field.Soil.Urea
+               │   │   └── Models.Soils.Water: .Simulations.Simulation.Field.Soil.Water
+               │   ├── Models.Manager: .Simulations.Simulation.Field.Sow using a variable rule
+               │   └── Models.Surface.SurfaceOrganicMatter: .Simulations.Simulation.Field.SurfaceOrganicMatter
+               ├── Models.Graph: .Simulations.Simulation.Graph
+               │   └── Models.Series: .Simulations.Simulation.Graph.Series
+               ├── Models.MicroClimate: .Simulations.Simulation.MicroClimate
+               ├── Models.Soils.Arbitrator.SoilArbitrator: .Simulations.Simulation.SoilArbitrator
+               ├── Models.Summary: .Simulations.Simulation.Summary
+               └── Models.Climate.Weather: .Simulations.Simulation.Weather
 
 
    .. seealso::
@@ -6809,95 +6871,157 @@ Classes
 
    .. code-block:: none
 
-       └── Simulations: .Simulations
-       ├── DataStore: .Simulations.DataStore
-       └── Simulation: .Simulations.Simulation
-           ├── Clock: .Simulations.Simulation.Clock
-           ├── Field: .Simulations.Simulation.Field
-           │   ├── Fertilise at sowing: .Simulations.Simulation.Field.Fertilise at sowing
-           │   ├── Fertiliser: .Simulations.Simulation.Field.Fertiliser
-           │   ├── Harvest: .Simulations.Simulation.Field.Harvest
-           │   ├── Maize: .Simulations.Simulation.Field.Maize
-           │   │   └── CultivarFolder: .Simulations.Simulation.Field.Maize.CultivarFolder
-           │   │       ├── Atrium: .Simulations.Simulation.Field.Maize.CultivarFolder.Atrium
-           │   │       ├── CG4141: .Simulations.Simulation.Field.Maize.CultivarFolder.CG4141
-           │   │       ├── Dekalb_XL82: .Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82
-           │   │       ├── GH_5009: .Simulations.Simulation.Field.Maize.CultivarFolder.GH_5009
-           │   │       ├── GH_5019WX: .Simulations.Simulation.Field.Maize.CultivarFolder.GH_5019WX
-           │   │       ├── Generic: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic
-           │   │       │   ├── A_100: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_100
-           │   │       │   ├── A_103: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_103
-           │   │       │   ├── A_105: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_105
-           │   │       │   ├── A_108: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_108
-           │   │       │   ├── A_110: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_110
-           │   │       │   ├── A_112: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_112
-           │   │       │   ├── A_115: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_115
-           │   │       │   ├── A_120: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_120
-           │   │       │   ├── A_130: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_130
-           │   │       │   ├── A_80: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_80
-           │   │       │   ├── A_90: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_90
-           │   │       │   ├── A_95: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_95
-           │   │       │   ├── B_100: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_100
-           │   │       │   ├── B_103: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_103
-           │   │       │   ├── B_105: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_105
-           │   │       │   ├── B_108: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_108
-           │   │       │   ├── B_110: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_110
-           │   │       │   ├── B_112: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_112
-           │   │       │   ├── B_115: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_115
-           │   │       │   ├── B_120: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_120
-           │   │       │   ├── B_130: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_130
-           │   │       │   ├── B_80: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_80
-           │   │       │   ├── B_90: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_90
-           │   │       │   ├── B_95: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_95
-           │   │       │   ├── HY_110: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.HY_110
-           │   │       │   ├── LY_110: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.LY_110
-           │   │       │   └── P1197: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.P1197
-           │   │       ├── Hycorn_40: .Simulations.Simulation.Field.Maize.CultivarFolder.Hycorn_40
-           │   │       ├── Hycorn_53: .Simulations.Simulation.Field.Maize.CultivarFolder.Hycorn_53
-           │   │       ├── Katumani: .Simulations.Simulation.Field.Maize.CultivarFolder.Katumani
-           │   │       ├── Laila: .Simulations.Simulation.Field.Maize.CultivarFolder.Laila
-           │   │       ├── Makueni: .Simulations.Simulation.Field.Maize.CultivarFolder.Makueni
-           │   │       ├── Melkassa: .Simulations.Simulation.Field.Maize.CultivarFolder.Melkassa
-           │   │       ├── NSCM_41: .Simulations.Simulation.Field.Maize.CultivarFolder.NSCM_41
-           │   │       ├── Pioneer_3153: .Simulations.Simulation.Field.Maize.CultivarFolder.Pioneer_3153
-           │   │       ├── Pioneer_33M54: .Simulations.Simulation.Field.Maize.CultivarFolder.Pioneer_33M54
-           │   │       ├── Pioneer_34K77: .Simulations.Simulation.Field.Maize.CultivarFolder.Pioneer_34K77
-           │   │       ├── Pioneer_38H20: .Simulations.Simulation.Field.Maize.CultivarFolder.Pioneer_38H20
-           │   │       ├── Pioneer_39G12: .Simulations.Simulation.Field.Maize.CultivarFolder.Pioneer_39G12
-           │   │       ├── Pioneer_39V43: .Simulations.Simulation.Field.Maize.CultivarFolder.Pioneer_39V43
-           │   │       ├── malawi_local: .Simulations.Simulation.Field.Maize.CultivarFolder.malawi_local
-           │   │       ├── mh12: .Simulations.Simulation.Field.Maize.CultivarFolder.mh12
-           │   │       ├── mh16: .Simulations.Simulation.Field.Maize.CultivarFolder.mh16
-           │   │       ├── mh17: .Simulations.Simulation.Field.Maize.CultivarFolder.mh17
-           │   │       ├── mh18: .Simulations.Simulation.Field.Maize.CultivarFolder.mh18
-           │   │       ├── mh19: .Simulations.Simulation.Field.Maize.CultivarFolder.mh19
-           │   │       ├── r201: .Simulations.Simulation.Field.Maize.CultivarFolder.r201
-           │   │       ├── r215: .Simulations.Simulation.Field.Maize.CultivarFolder.r215
-           │   │       ├── sc401: .Simulations.Simulation.Field.Maize.CultivarFolder.sc401
-           │   │       ├── sc501: .Simulations.Simulation.Field.Maize.CultivarFolder.sc501
-           │   │       ├── sc601: .Simulations.Simulation.Field.Maize.CultivarFolder.sc601
-           │   │       ├── sc623: .Simulations.Simulation.Field.Maize.CultivarFolder.sc623
-           │   │       ├── sc625: .Simulations.Simulation.Field.Maize.CultivarFolder.sc625
-           │   │       └── sr52: .Simulations.Simulation.Field.Maize.CultivarFolder.sr52
-           │   ├── Report: .Simulations.Simulation.Field.Report
-           │   ├── Soil: .Simulations.Simulation.Field.Soil
-           │   │   ├── Chemical: .Simulations.Simulation.Field.Soil.Chemical
-           │   │   ├── NH4: .Simulations.Simulation.Field.Soil.NH4
-           │   │   ├── NO3: .Simulations.Simulation.Field.Soil.NO3
-           │   │   ├── Organic: .Simulations.Simulation.Field.Soil.Organic
-           │   │   ├── Physical: .Simulations.Simulation.Field.Soil.Physical
-           │   │   │   └── MaizeSoil: .Simulations.Simulation.Field.Soil.Physical.MaizeSoil
-           │   │   ├── Urea: .Simulations.Simulation.Field.Soil.Urea
-           │   │   └── Water: .Simulations.Simulation.Field.Soil.Water
-           │   ├── Sow using a variable rule: .Simulations.Simulation.Field.Sow using a variable rule
-           │   └── SurfaceOrganicMatter: .Simulations.Simulation.Field.SurfaceOrganicMatter
-           ├── Graph: .Simulations.Simulation.Graph
-           │   └── Series: .Simulations.Simulation.Graph.Series
-           ├── MicroClimate: .Simulations.Simulation.MicroClimate
-           ├── SoilArbitrator: .Simulations.Simulation.SoilArbitrator
-           ├── Summary: .Simulations.Simulation.Summary
-           └── Weather: .Simulations.Simulation.Weather
-
+      └── Models.Core.Simulations: .Simulations
+           ├── Models.Storage.DataStore: .Simulations.DataStore
+           ├── Models.Core.Folder: .Simulations.Replacements
+           │   └── Models.PMF.Plant: .Simulations.Replacements.Maize
+           │       └── Models.Core.Folder: .Simulations.Replacements.Maize.CultivarFolder
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Atrium
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.CG4141
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Dekalb_XL82
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.GH_5009
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.GH_5019WX
+           │           ├── Models.Core.Folder: .Simulations.Replacements.Maize.CultivarFolder.Generic
+           │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_100
+           │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_103
+           │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_105
+           │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_108
+           │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_110
+           │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_112
+           │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_115
+           │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_120
+           │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_130
+           │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_80
+           │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_90
+           │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_95
+           │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_100
+           │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_103
+           │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_105
+           │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_108
+           │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_110
+           │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_112
+           │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_115
+           │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_120
+           │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_130
+           │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_80
+           │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_90
+           │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_95
+           │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.HY_110
+           │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.LY_110
+           │           │   └── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.P1197
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Hycorn_40
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Hycorn_53
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Katumani
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Laila
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Makueni
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Melkassa
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.NSCM_41
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Pioneer_3153
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Pioneer_33M54
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Pioneer_34K77
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Pioneer_38H20
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Pioneer_39G12
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Pioneer_39V43
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.malawi_local
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.mh12
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.mh16
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.mh17
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.mh18
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.mh19
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.r201
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.r215
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.sc401
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.sc501
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.sc601
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.sc623
+           │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.sc625
+           │           └── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.sr52
+           └── Models.Core.Simulation: .Simulations.Simulation
+               ├── Models.Clock: .Simulations.Simulation.Clock
+               ├── Models.Core.Zone: .Simulations.Simulation.Field
+               │   ├── Models.Manager: .Simulations.Simulation.Field.Fertilise at sowing
+               │   ├── Models.Fertiliser: .Simulations.Simulation.Field.Fertiliser
+               │   ├── Models.Manager: .Simulations.Simulation.Field.Harvest
+               │   ├── Models.PMF.Plant: .Simulations.Simulation.Field.Maize
+               │   │   └── Models.Core.Folder: .Simulations.Simulation.Field.Maize.CultivarFolder
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Atrium
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.CG4141
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.GH_5009
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.GH_5019WX
+               │   │       ├── Models.Core.Folder: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic
+               │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_100
+               │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_103
+               │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_105
+               │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_108
+               │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_110
+               │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_112
+               │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_115
+               │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_120
+               │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_130
+               │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_80
+               │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_90
+               │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_95
+               │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_100
+               │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_103
+               │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_105
+               │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_108
+               │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_110
+               │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_112
+               │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_115
+               │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_120
+               │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_130
+               │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_80
+               │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_90
+               │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_95
+               │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.HY_110
+               │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.LY_110
+               │   │       │   └── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.P1197
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Hycorn_40
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Hycorn_53
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Katumani
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Laila
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Makueni
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Melkassa
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.NSCM_41
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Pioneer_3153
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Pioneer_33M54
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Pioneer_34K77
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Pioneer_38H20
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Pioneer_39G12
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Pioneer_39V43
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.malawi_local
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.mh12
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.mh16
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.mh17
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.mh18
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.mh19
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.r201
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.r215
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.sc401
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.sc501
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.sc601
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.sc623
+               │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.sc625
+               │   │       └── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.sr52
+               │   ├── Models.Report: .Simulations.Simulation.Field.Report
+               │   ├── Models.Soils.Soil: .Simulations.Simulation.Field.Soil
+               │   │   ├── Models.Soils.Chemical: .Simulations.Simulation.Field.Soil.Chemical
+               │   │   ├── Models.Soils.Solute: .Simulations.Simulation.Field.Soil.NH4
+               │   │   ├── Models.Soils.Solute: .Simulations.Simulation.Field.Soil.NO3
+               │   │   ├── Models.Soils.Organic: .Simulations.Simulation.Field.Soil.Organic
+               │   │   ├── Models.Soils.Physical: .Simulations.Simulation.Field.Soil.Physical
+               │   │   │   └── Models.Soils.SoilCrop: .Simulations.Simulation.Field.Soil.Physical.MaizeSoil
+               │   │   ├── Models.Soils.Solute: .Simulations.Simulation.Field.Soil.Urea
+               │   │   └── Models.Soils.Water: .Simulations.Simulation.Field.Soil.Water
+               │   ├── Models.Manager: .Simulations.Simulation.Field.Sow using a variable rule
+               │   └── Models.Surface.SurfaceOrganicMatter: .Simulations.Simulation.Field.SurfaceOrganicMatter
+               ├── Models.Graph: .Simulations.Simulation.Graph
+               │   └── Models.Series: .Simulations.Simulation.Graph.Series
+               ├── Models.MicroClimate: .Simulations.Simulation.MicroClimate
+               ├── Models.Soils.Arbitrator.SoilArbitrator: .Simulations.Simulation.SoilArbitrator
+               ├── Models.Summary: .Simulations.Simulation.Summary
+               └── Models.Climate.Weather: .Simulations.Simulation.Weather
 
 
    .. seealso::
@@ -9707,7 +9831,7 @@ Functions Provided
 Functions
 ^^^^^^^^^
 
-.. py:function:: apsimNGpy.optimizer.problems.variables.filter_apsim_params(params: apsimNGpy.optimizer.problems.variables.BaseParams, place_holder=<object object at 0x000001F0F1E89910>) -> Dict
+.. py:function:: apsimNGpy.optimizer.problems.variables.filter_apsim_params(params: apsimNGpy.optimizer.problems.variables.BaseParams, place_holder=<object object at 0x00000249F1B6D910>) -> Dict
 
    Flatten a validated BaseParams object into a dictionary suitable for APSIM execution.
 

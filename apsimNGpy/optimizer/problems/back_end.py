@@ -223,25 +223,25 @@ def eval_observed(
     +---------+-----------------------------------------------+---------------------+------+
     | Metric  | Description                                   | Preferred Direction | Sign |
     +=========+===============================================+=====================+======+
-    | RMSE    | Root Mean Square Error                        | Smaller             | -1   |
+    | RMSE    | Root Mean Square Error                        | Smaller             | +1   |
     +---------+-----------------------------------------------+---------------------+------+
-    | MAE     | Mean Absolute Error                           | Smaller             | -1   |
+    | MAE     | Mean Absolute Error                           | Smaller             | +1   |
     +---------+-----------------------------------------------+---------------------+------+
-    | MSE     | Mean Square Error                             | Smaller             | -1   |
+    | MSE     | Mean Square Error                             | Smaller             | +1   |
     +---------+-----------------------------------------------+---------------------+------+
-    | RRMSE   | Relative RMSE                                 | Smaller             | -1   |
+    | RRMSE   | Relative RMSE                                 | Smaller             | +1   |
     +---------+-----------------------------------------------+---------------------+------+
-    | bias    | Mean Bias                                     | Closer to 0         | -1   |
+    | BIAS    | Mean Bias                                     | Closer to 0         | +1   |
     +---------+-----------------------------------------------+---------------------+------+
-    | ME      | Modeling Efficiency                           | Larger              | +1   |
+    | ME      | Modeling Efficiency                           | Larger              | -1   |
     +---------+-----------------------------------------------+---------------------+------+
-    | WIA     | Willmott’s Index of Agreement                 | Larger              | +1   |
+    | WIA     | Willmott’s Index of Agreement                 | Larger              | -1   |
     +---------+-----------------------------------------------+---------------------+------+
-    | R2      | Coefficient of Determination                  | Larger              | +1   |
+    | R2      | Coefficient of Determination                  | Larger              | -1   |
     +---------+-----------------------------------------------+---------------------+------+
-    | CCC     | Concordance Correlation Coefficient           | Larger              | +1   |
+    | CCC     | Concordance Correlation Coefficient           | Larger              | -1   |
     +---------+-----------------------------------------------+---------------------+------+
-    | slope   | Regression Slope                              | Closer to 1         | +1   |
+    | SLOPE   | Regression Slope                              | Closer to 1         | -1   |
     +---------+-----------------------------------------------+---------------------+------+
 
     Returns

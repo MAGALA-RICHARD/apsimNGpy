@@ -42,7 +42,8 @@ if __name__ == '__main__':
     problem = Problem(maize_model, obs, objectives=None, decision_vars=None)
 
     # approach 2.
-    # 2. define the objective and supply it directly. what is needed is to access the pandas data and decide on how to evaluate the objective function
+    # 2. define the objective and supply it directly.
+    # what is needed is to access the pandas data and decide on how to evaluate the objective function
     #define objective function, should take in a pandas data frame querry one the columns from the predicted table and return the evaluation results
     def maximize_yield(df):
         ans = -df.Yield.mean()
@@ -59,7 +60,7 @@ if __name__ == '__main__':
 
     # ready to optimize you variables. no need to supply starting values, bounds etc as those are defined with the add_control method but you can concentrate on supplying other arguments such a smethod to use. the method to use depends on the nature of the problem
 
-    resc = problem.minimize_with_alocal_solver( method  ='Powell',  options={
+    resc = problem.minimize_with_a_local_solver( method  ='Powell',  options={
         # 'xatol': 1e-4,      # absolute error in xopt between iterations
         # 'fatol': 1e-4,      # absolute error in func(xopt) between iterations
         'maxiter': 100,    # maximum number of iterations

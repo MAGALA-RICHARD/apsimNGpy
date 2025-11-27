@@ -88,6 +88,7 @@ Classes
    - :attr:`~apsimNGpy.core.apsim.ApsimModel.experiment_created`
    - :attr:`~apsimNGpy.core.apsim.ApsimModel.factor_names`
    - :attr:`~apsimNGpy.core.apsim.ApsimModel.factors`
+   - :attr:`~apsimNGpy.core.apsim.ApsimModel.managers`
    - :attr:`~apsimNGpy.core.apsim.ApsimModel.model`
    - :attr:`~apsimNGpy.core.apsim.ApsimModel.model_info`
    - :attr:`~apsimNGpy.core.apsim.ApsimModel.others`
@@ -103,6 +104,7 @@ Classes
    - :attr:`~apsimNGpy.core.apsim.ApsimModel.simulation_names`
    - :attr:`~apsimNGpy.core.apsim.ApsimModel.simulations`
    - :attr:`~apsimNGpy.core.apsim.ApsimModel.str_model`
+   - :attr:`~apsimNGpy.core.apsim.ApsimModel.tables`
    - :attr:`~apsimNGpy.core.apsim.ApsimModel.wk_info`
    - :attr:`~apsimNGpy.core.apsim.ApsimModel.work_space`
    List of Public Methods
@@ -371,21 +373,39 @@ Classes
    retrieves the name of the simulations in the APSIMx file
    @return: list of simulation names
 
+   .. py:property:: apsimNGpy.core.apsim.ApsimModel.tables (inherited)
+
+   quick property returns available database report tables name
+
+   .. py:property:: apsimNGpy.core.apsim.ApsimModel.managers (inherited)
+
+   quick property returns available database manager script names
+
    .. py:method:: apsimNGpy.core.apsim.ApsimModel.restart_model(self, model_info=None) (inherited)
 
-   Parameters:
+   Reinitialize the APSIM model instance after edits or management updates.
+
+   Parameters
    ----------
-   model_info: collections.NamedTuple.
-      A named tuple object returned by `load_apsim_model` from the `model_loader` module.
+   model_info : collections.NamedTuple, optional
+       A named tuple returned by ``load_apsim_model`` from the ``model_loader``
+       module. Contains references to the APSIM model, datastore, and file path.
+       If not provided, the method reinitializes the model using the existing
+       ``self.model_info`` object.
 
-   Notes:
-   - This parameter is crucial whenever we need to ``reinitialize`` the model, especially after updating management practices or editing the file.
-   - In some cases, this method is executed automatically.
-   - If ``model_info`` is not specified, the simulation will be reinitialized from `self`.
+   Notes
+   -----
+   - This method is essential when the model needs to be **reloaded** after
+     modifying management scripts or saving an edited APSIM file.
+   - It may be invoked automatically by internal methods such as
+     ``save_edited_file``, ``save``, and ``update_mgt``.
+   - Reinitializing ensures that all APSIM NG components and datastore
+     references are refreshed and consistent with the modified file.
 
-   This function is called by ``save_edited_file``, `save' and ``update_mgt``.
-
-   :return: self
+   Returns
+   -------
+   self : object
+       Returns the updated ApsimModel instance.
 
    .. py:method:: apsimNGpy.core.apsim.ApsimModel.save(self, file_name: 'Union[str, Path, None]' = None, reload=True) (inherited)
 
@@ -792,33 +812,160 @@ Classes
           ['my_simulation']
          # The alternative is to use model.inspect_file to see your changes
          >>> model.inspect_file()
-         └── Simulations: .Simulations
-          ├── DataStore: .Simulations.DataStore
-          └── my_simulation: .Simulations.my_simulation
-              ├── Clock: .Simulations.my_simulation.Clock
-              ├── Field: .Simulations.my_simulation.Field
-              │   ├── Fertilise at sowing: .Simulations.my_simulation.Field.Fertilise at sowing
-              │   ├── Fertiliser: .Simulations.my_simulation.Field.Fertiliser
-              │   ├── Harvest: .Simulations.my_simulation.Field.Harvest
-              │   ├── Maize: .Simulations.my_simulation.Field.Maize
-              │   ├── Report: .Simulations.my_simulation.Field.Report
-              │   ├── Soil: .Simulations.my_simulation.Field.Soil
-              │   │   ├── Chemical: .Simulations.my_simulation.Field.Soil.Chemical
-              │   │   ├── NH4: .Simulations.my_simulation.Field.Soil.NH4
-              │   │   ├── NO3: .Simulations.my_simulation.Field.Soil.NO3
-              │   │   ├── Organic: .Simulations.my_simulation.Field.Soil.Organic
-              │   │   ├── Physical: .Simulations.my_simulation.Field.Soil.Physical
-              │   │   │   └── MaizeSoil: .Simulations.my_simulation.Field.Soil.Physical.MaizeSoil
-              │   │   ├── Urea: .Simulations.my_simulation.Field.Soil.Urea
-              │   │   └── Water: .Simulations.my_simulation.Field.Soil.Water
-              │   ├── Sow using a variable rule: .Simulations.my_simulation.Field.Sow using a variable rule
-              │   └── SurfaceOrganicMatter: .Simulations.my_simulation.Field.SurfaceOrganicMatter
-              ├── Graph: .Simulations.my_simulation.Graph
-              │   └── Series: .Simulations.my_simulation.Graph.Series
-              ├── MicroClimate: .Simulations.my_simulation.MicroClimate
-              ├── SoilArbitrator: .Simulations.my_simulation.SoilArbitrator
-              ├── Summary: .Simulations.my_simulation.Summary
-              └── Weather: .Simulations.my_simulation.Weather
+
+   .. code-block:: none
+
+     └── Models.Core.Simulations: .Simulations
+          ├── Models.Storage.DataStore: .Simulations.DataStore
+          ├── Models.Core.Folder: .Simulations.Replacements
+          │   └── Models.PMF.Plant: .Simulations.Replacements.Maize
+          │       └── Models.Core.Folder: .Simulations.Replacements.Maize.CultivarFolder
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Atrium
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.CG4141
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Dekalb_XL82
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.GH_5009
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.GH_5019WX
+          │           ├── Models.Core.Folder: .Simulations.Replacements.Maize.CultivarFolder.Generic
+          │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_100
+          │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_103
+          │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_105
+          │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_108
+          │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_110
+          │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_112
+          │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_115
+          │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_120
+          │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_130
+          │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_80
+          │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_90
+          │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_95
+          │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_100
+          │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_103
+          │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_105
+          │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_108
+          │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_110
+          │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_112
+          │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_115
+          │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_120
+          │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_130
+          │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_80
+          │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_90
+          │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_95
+          │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.HY_110
+          │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.LY_110
+          │           │   └── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.P1197
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Hycorn_40
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Hycorn_53
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Katumani
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Laila
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Makueni
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Melkassa
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.NSCM_41
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Pioneer_3153
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Pioneer_33M54
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Pioneer_34K77
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Pioneer_38H20
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Pioneer_39G12
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Pioneer_39V43
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.malawi_local
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.mh12
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.mh16
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.mh17
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.mh18
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.mh19
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.r201
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.r215
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.sc401
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.sc501
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.sc601
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.sc623
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.sc625
+          │           └── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.sr52
+          └── Models.Core.Simulation: .Simulations.Simulation
+              ├── Models.Clock: .Simulations.Simulation.Clock
+              ├── Models.Core.Zone: .Simulations.Simulation.Field
+              │   ├── Models.Manager: .Simulations.Simulation.Field.Fertilise at sowing
+              │   ├── Models.Fertiliser: .Simulations.Simulation.Field.Fertiliser
+              │   ├── Models.Manager: .Simulations.Simulation.Field.Harvest
+              │   ├── Models.PMF.Plant: .Simulations.Simulation.Field.Maize
+              │   │   └── Models.Core.Folder: .Simulations.Simulation.Field.Maize.CultivarFolder
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Atrium
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.CG4141
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.GH_5009
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.GH_5019WX
+              │   │       ├── Models.Core.Folder: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic
+              │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_100
+              │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_103
+              │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_105
+              │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_108
+              │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_110
+              │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_112
+              │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_115
+              │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_120
+              │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_130
+              │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_80
+              │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_90
+              │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_95
+              │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_100
+              │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_103
+              │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_105
+              │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_108
+              │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_110
+              │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_112
+              │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_115
+              │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_120
+              │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_130
+              │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_80
+              │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_90
+              │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_95
+              │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.HY_110
+              │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.LY_110
+              │   │       │   └── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.P1197
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Hycorn_40
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Hycorn_53
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Katumani
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Laila
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Makueni
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Melkassa
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.NSCM_41
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Pioneer_3153
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Pioneer_33M54
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Pioneer_34K77
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Pioneer_38H20
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Pioneer_39G12
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Pioneer_39V43
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.malawi_local
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.mh12
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.mh16
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.mh17
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.mh18
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.mh19
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.r201
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.r215
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.sc401
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.sc501
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.sc601
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.sc623
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.sc625
+              │   │       └── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.sr52
+              │   ├── Models.Report: .Simulations.Simulation.Field.Report
+              │   ├── Models.Soils.Soil: .Simulations.Simulation.Field.Soil
+              │   │   ├── Models.Soils.Chemical: .Simulations.Simulation.Field.Soil.Chemical
+              │   │   ├── Models.Soils.Solute: .Simulations.Simulation.Field.Soil.NH4
+              │   │   ├── Models.Soils.Solute: .Simulations.Simulation.Field.Soil.NO3
+              │   │   ├── Models.Soils.Organic: .Simulations.Simulation.Field.Soil.Organic
+              │   │   ├── Models.Soils.Physical: .Simulations.Simulation.Field.Soil.Physical
+              │   │   │   └── Models.Soils.SoilCrop: .Simulations.Simulation.Field.Soil.Physical.MaizeSoil
+              │   │   ├── Models.Soils.Solute: .Simulations.Simulation.Field.Soil.Urea
+              │   │   └── Models.Soils.Water: .Simulations.Simulation.Field.Soil.Water
+              │   ├── Models.Manager: .Simulations.Simulation.Field.Sow using a variable rule
+              │   └── Models.Surface.SurfaceOrganicMatter: .Simulations.Simulation.Field.SurfaceOrganicMatter
+              ├── Models.Graph: .Simulations.Simulation.Graph
+              │   └── Models.Series: .Simulations.Simulation.Graph.Series
+              ├── Models.MicroClimate: .Simulations.Simulation.MicroClimate
+              ├── Models.Soils.Arbitrator.SoilArbitrator: .Simulations.Simulation.SoilArbitrator
+              ├── Models.Summary: .Simulations.Simulation.Summary
+              └── Models.Climate.Weather: .Simulations.Simulation.Weather
 
    .. seealso::
 
@@ -2494,7 +2641,7 @@ Classes
 
    ``crop`` (str, optional): string for soil water replacement. Default is None
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.clean_up(self, db=True, verbose=False, coerce=True, csv=True) (inherited)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.clean_up(self, db=True, verbose=False, csv=True) (inherited)
 
    Clears the file cloned the datastore and associated csv files are not deleted if db is set to False defaults to True.
 
@@ -2665,33 +2812,35 @@ Classes
 
    .. code-block:: none
 
-       ── Simulations: .Simulations
-       ├── DataStore: .Simulations.DataStore
-       └── Simulation: .Simulations.Simulation
-           ├── Clock: .Simulations.Simulation.Clock
-           ├── Field: .Simulations.Simulation.Field
-           │   ├── Fertilise at sowing: .Simulations.Simulation.Field.Fertilise at sowing
-           │   ├── Fertiliser: .Simulations.Simulation.Field.Fertiliser
-           │   ├── Harvest: .Simulations.Simulation.Field.Harvest
-           │   ├── Maize: .Simulations.Simulation.Field.Maize
-           │   ├── Report: .Simulations.Simulation.Field.Report
-           │   ├── Soil: .Simulations.Simulation.Field.Soil
-           │   │   ├── Chemical: .Simulations.Simulation.Field.Soil.Chemical
-           │   │   ├── NH4: .Simulations.Simulation.Field.Soil.NH4
-           │   │   ├── NO3: .Simulations.Simulation.Field.Soil.NO3
-           │   │   ├── Organic: .Simulations.Simulation.Field.Soil.Organic
-           │   │   ├── Physical: .Simulations.Simulation.Field.Soil.Physical
-           │   │   │   └── MaizeSoil: .Simulations.Simulation.Field.Soil.Physical.MaizeSoil
-           │   │   ├── Urea: .Simulations.Simulation.Field.Soil.Urea
-           │   │   └── Water: .Simulations.Simulation.Field.Soil.Water
-           │   ├── Sow using a variable rule: .Simulations.Simulation.Field.Sow using a variable rule
-           │   └── SurfaceOrganicMatter: .Simulations.Simulation.Field.SurfaceOrganicMatter
-           ├── Graph: .Simulations.Simulation.Graph
-           │   └── Series: .Simulations.Simulation.Graph.Series
-           ├── MicroClimate: .Simulations.Simulation.MicroClimate
-           ├── SoilArbitrator: .Simulations.Simulation.SoilArbitrator
-           ├── Summary: .Simulations.Simulation.Summary
-           └── Weather: .Simulations.Simulation.Weather
+       └── Models.Core.Simulations: .Simulations
+           ├── Models.Storage.DataStore: .Simulations.DataStore
+           ├── Models.Core.Folder: .Simulations.Replacements
+           │   └── Models.PMF.Plant: .Simulations.Replacements.Maize
+           └── Models.Core.Simulation: .Simulations.Simulation
+               ├── Models.Clock: .Simulations.Simulation.Clock
+               ├── Models.Core.Zone: .Simulations.Simulation.Field
+               │   ├── Models.Manager: .Simulations.Simulation.Field.Fertilise at sowing
+               │   ├── Models.Fertiliser: .Simulations.Simulation.Field.Fertiliser
+               │   ├── Models.Manager: .Simulations.Simulation.Field.Harvest
+               │   ├── Models.PMF.Plant: .Simulations.Simulation.Field.Maize
+               │   ├── Models.Report: .Simulations.Simulation.Field.Report
+               │   ├── Models.Soils.Soil: .Simulations.Simulation.Field.Soil
+               │   │   ├── Models.Soils.Chemical: .Simulations.Simulation.Field.Soil.Chemical
+               │   │   ├── Models.Soils.Solute: .Simulations.Simulation.Field.Soil.NH4
+               │   │   ├── Models.Soils.Solute: .Simulations.Simulation.Field.Soil.NO3
+               │   │   ├── Models.Soils.Organic: .Simulations.Simulation.Field.Soil.Organic
+               │   │   ├── Models.Soils.Physical: .Simulations.Simulation.Field.Soil.Physical
+               │   │   │   └── Models.Soils.SoilCrop: .Simulations.Simulation.Field.Soil.Physical.MaizeSoil
+               │   │   ├── Models.Soils.Solute: .Simulations.Simulation.Field.Soil.Urea
+               │   │   └── Models.Soils.Water: .Simulations.Simulation.Field.Soil.Water
+               │   ├── Models.Manager: .Simulations.Simulation.Field.Sow using a variable rule
+               │   └── Models.Surface.SurfaceOrganicMatter: .Simulations.Simulation.Field.SurfaceOrganicMatter
+               ├── Models.Graph: .Simulations.Simulation.Graph
+               │   └── Models.Series: .Simulations.Simulation.Graph.Series
+               ├── Models.MicroClimate: .Simulations.Simulation.MicroClimate
+               ├── Models.Soils.Arbitrator.SoilArbitrator: .Simulations.Simulation.SoilArbitrator
+               ├── Models.Summary: .Simulations.Simulation.Summary
+               └── Models.Climate.Weather: .Simulations.Simulation.Weather
 
    Turn cultivar paths on as follows:
 
@@ -3273,7 +3422,7 @@ Module attributes
 
 .. py:attribute:: apsimNGpy.core.config.configuration
 
-   Default value: ``Configuration(bin_path=WindowsPath('D:/reproducible/bin_dist/APSIM2025.8.7844.0…``
+   Default value: ``Configuration(bin_path=WindowsPath('D:/My_BOX/Box/PhD thesis/Objective two/morr…``
 
 Functions
 ^^^^^^^^^
@@ -3622,6 +3771,7 @@ Classes
    - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.experiment_created`
    - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.factor_names`
    - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.factors`
+   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.managers`
    - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.model`
    - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.model_info`
    - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.n_factors`
@@ -3638,6 +3788,7 @@ Classes
    - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.simulation_names`
    - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.simulations`
    - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.str_model`
+   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.tables`
    - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.wk_info`
    - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.work_space`
    List of Public Methods
@@ -4211,21 +4362,39 @@ Classes
    retrieves the name of the simulations in the APSIMx file
    @return: list of simulation names
 
+   .. py:property:: apsimNGpy.core.experimentmanager.ExperimentManager.tables (inherited)
+
+   quick property returns available database report tables name
+
+   .. py:property:: apsimNGpy.core.experimentmanager.ExperimentManager.managers (inherited)
+
+   quick property returns available database manager script names
+
    .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.restart_model(self, model_info=None) (inherited)
 
-   Parameters:
+   Reinitialize the APSIM model instance after edits or management updates.
+
+   Parameters
    ----------
-   model_info: collections.NamedTuple.
-      A named tuple object returned by `load_apsim_model` from the `model_loader` module.
+   model_info : collections.NamedTuple, optional
+       A named tuple returned by ``load_apsim_model`` from the ``model_loader``
+       module. Contains references to the APSIM model, datastore, and file path.
+       If not provided, the method reinitializes the model using the existing
+       ``self.model_info`` object.
 
-   Notes:
-   - This parameter is crucial whenever we need to ``reinitialize`` the model, especially after updating management practices or editing the file.
-   - In some cases, this method is executed automatically.
-   - If ``model_info`` is not specified, the simulation will be reinitialized from `self`.
+   Notes
+   -----
+   - This method is essential when the model needs to be **reloaded** after
+     modifying management scripts or saving an edited APSIM file.
+   - It may be invoked automatically by internal methods such as
+     ``save_edited_file``, ``save``, and ``update_mgt``.
+   - Reinitializing ensures that all APSIM NG components and datastore
+     references are refreshed and consistent with the modified file.
 
-   This function is called by ``save_edited_file``, `save' and ``update_mgt``.
-
-   :return: self
+   Returns
+   -------
+   self : object
+       Returns the updated ApsimModel instance.
 
    .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.save(self, file_name: 'Union[str, Path, None]' = None, reload=True) (inherited)
 
@@ -4632,33 +4801,160 @@ Classes
           ['my_simulation']
          # The alternative is to use model.inspect_file to see your changes
          >>> model.inspect_file()
-         └── Simulations: .Simulations
-          ├── DataStore: .Simulations.DataStore
-          └── my_simulation: .Simulations.my_simulation
-              ├── Clock: .Simulations.my_simulation.Clock
-              ├── Field: .Simulations.my_simulation.Field
-              │   ├── Fertilise at sowing: .Simulations.my_simulation.Field.Fertilise at sowing
-              │   ├── Fertiliser: .Simulations.my_simulation.Field.Fertiliser
-              │   ├── Harvest: .Simulations.my_simulation.Field.Harvest
-              │   ├── Maize: .Simulations.my_simulation.Field.Maize
-              │   ├── Report: .Simulations.my_simulation.Field.Report
-              │   ├── Soil: .Simulations.my_simulation.Field.Soil
-              │   │   ├── Chemical: .Simulations.my_simulation.Field.Soil.Chemical
-              │   │   ├── NH4: .Simulations.my_simulation.Field.Soil.NH4
-              │   │   ├── NO3: .Simulations.my_simulation.Field.Soil.NO3
-              │   │   ├── Organic: .Simulations.my_simulation.Field.Soil.Organic
-              │   │   ├── Physical: .Simulations.my_simulation.Field.Soil.Physical
-              │   │   │   └── MaizeSoil: .Simulations.my_simulation.Field.Soil.Physical.MaizeSoil
-              │   │   ├── Urea: .Simulations.my_simulation.Field.Soil.Urea
-              │   │   └── Water: .Simulations.my_simulation.Field.Soil.Water
-              │   ├── Sow using a variable rule: .Simulations.my_simulation.Field.Sow using a variable rule
-              │   └── SurfaceOrganicMatter: .Simulations.my_simulation.Field.SurfaceOrganicMatter
-              ├── Graph: .Simulations.my_simulation.Graph
-              │   └── Series: .Simulations.my_simulation.Graph.Series
-              ├── MicroClimate: .Simulations.my_simulation.MicroClimate
-              ├── SoilArbitrator: .Simulations.my_simulation.SoilArbitrator
-              ├── Summary: .Simulations.my_simulation.Summary
-              └── Weather: .Simulations.my_simulation.Weather
+
+   .. code-block:: none
+
+     └── Models.Core.Simulations: .Simulations
+          ├── Models.Storage.DataStore: .Simulations.DataStore
+          ├── Models.Core.Folder: .Simulations.Replacements
+          │   └── Models.PMF.Plant: .Simulations.Replacements.Maize
+          │       └── Models.Core.Folder: .Simulations.Replacements.Maize.CultivarFolder
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Atrium
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.CG4141
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Dekalb_XL82
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.GH_5009
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.GH_5019WX
+          │           ├── Models.Core.Folder: .Simulations.Replacements.Maize.CultivarFolder.Generic
+          │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_100
+          │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_103
+          │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_105
+          │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_108
+          │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_110
+          │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_112
+          │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_115
+          │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_120
+          │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_130
+          │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_80
+          │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_90
+          │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_95
+          │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_100
+          │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_103
+          │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_105
+          │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_108
+          │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_110
+          │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_112
+          │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_115
+          │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_120
+          │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_130
+          │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_80
+          │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_90
+          │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_95
+          │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.HY_110
+          │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.LY_110
+          │           │   └── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.P1197
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Hycorn_40
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Hycorn_53
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Katumani
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Laila
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Makueni
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Melkassa
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.NSCM_41
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Pioneer_3153
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Pioneer_33M54
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Pioneer_34K77
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Pioneer_38H20
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Pioneer_39G12
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Pioneer_39V43
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.malawi_local
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.mh12
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.mh16
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.mh17
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.mh18
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.mh19
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.r201
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.r215
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.sc401
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.sc501
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.sc601
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.sc623
+          │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.sc625
+          │           └── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.sr52
+          └── Models.Core.Simulation: .Simulations.Simulation
+              ├── Models.Clock: .Simulations.Simulation.Clock
+              ├── Models.Core.Zone: .Simulations.Simulation.Field
+              │   ├── Models.Manager: .Simulations.Simulation.Field.Fertilise at sowing
+              │   ├── Models.Fertiliser: .Simulations.Simulation.Field.Fertiliser
+              │   ├── Models.Manager: .Simulations.Simulation.Field.Harvest
+              │   ├── Models.PMF.Plant: .Simulations.Simulation.Field.Maize
+              │   │   └── Models.Core.Folder: .Simulations.Simulation.Field.Maize.CultivarFolder
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Atrium
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.CG4141
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.GH_5009
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.GH_5019WX
+              │   │       ├── Models.Core.Folder: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic
+              │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_100
+              │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_103
+              │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_105
+              │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_108
+              │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_110
+              │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_112
+              │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_115
+              │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_120
+              │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_130
+              │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_80
+              │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_90
+              │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_95
+              │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_100
+              │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_103
+              │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_105
+              │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_108
+              │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_110
+              │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_112
+              │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_115
+              │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_120
+              │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_130
+              │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_80
+              │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_90
+              │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_95
+              │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.HY_110
+              │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.LY_110
+              │   │       │   └── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.P1197
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Hycorn_40
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Hycorn_53
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Katumani
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Laila
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Makueni
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Melkassa
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.NSCM_41
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Pioneer_3153
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Pioneer_33M54
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Pioneer_34K77
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Pioneer_38H20
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Pioneer_39G12
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Pioneer_39V43
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.malawi_local
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.mh12
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.mh16
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.mh17
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.mh18
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.mh19
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.r201
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.r215
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.sc401
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.sc501
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.sc601
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.sc623
+              │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.sc625
+              │   │       └── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.sr52
+              │   ├── Models.Report: .Simulations.Simulation.Field.Report
+              │   ├── Models.Soils.Soil: .Simulations.Simulation.Field.Soil
+              │   │   ├── Models.Soils.Chemical: .Simulations.Simulation.Field.Soil.Chemical
+              │   │   ├── Models.Soils.Solute: .Simulations.Simulation.Field.Soil.NH4
+              │   │   ├── Models.Soils.Solute: .Simulations.Simulation.Field.Soil.NO3
+              │   │   ├── Models.Soils.Organic: .Simulations.Simulation.Field.Soil.Organic
+              │   │   ├── Models.Soils.Physical: .Simulations.Simulation.Field.Soil.Physical
+              │   │   │   └── Models.Soils.SoilCrop: .Simulations.Simulation.Field.Soil.Physical.MaizeSoil
+              │   │   ├── Models.Soils.Solute: .Simulations.Simulation.Field.Soil.Urea
+              │   │   └── Models.Soils.Water: .Simulations.Simulation.Field.Soil.Water
+              │   ├── Models.Manager: .Simulations.Simulation.Field.Sow using a variable rule
+              │   └── Models.Surface.SurfaceOrganicMatter: .Simulations.Simulation.Field.SurfaceOrganicMatter
+              ├── Models.Graph: .Simulations.Simulation.Graph
+              │   └── Models.Series: .Simulations.Simulation.Graph.Series
+              ├── Models.MicroClimate: .Simulations.Simulation.MicroClimate
+              ├── Models.Soils.Arbitrator.SoilArbitrator: .Simulations.Simulation.SoilArbitrator
+              ├── Models.Summary: .Simulations.Simulation.Summary
+              └── Models.Climate.Weather: .Simulations.Simulation.Weather
 
    .. seealso::
 
@@ -6334,7 +6630,7 @@ Classes
 
    ``crop`` (str, optional): string for soil water replacement. Default is None
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.clean_up(self, db=True, verbose=False, coerce=True, csv=True) (inherited)
+   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.clean_up(self, db=True, verbose=False, csv=True) (inherited)
 
    Clears the file cloned the datastore and associated csv files are not deleted if db is set to False defaults to True.
 
@@ -6473,33 +6769,35 @@ Classes
 
    .. code-block:: none
 
-       ── Simulations: .Simulations
-       ├── DataStore: .Simulations.DataStore
-       └── Simulation: .Simulations.Simulation
-           ├── Clock: .Simulations.Simulation.Clock
-           ├── Field: .Simulations.Simulation.Field
-           │   ├── Fertilise at sowing: .Simulations.Simulation.Field.Fertilise at sowing
-           │   ├── Fertiliser: .Simulations.Simulation.Field.Fertiliser
-           │   ├── Harvest: .Simulations.Simulation.Field.Harvest
-           │   ├── Maize: .Simulations.Simulation.Field.Maize
-           │   ├── Report: .Simulations.Simulation.Field.Report
-           │   ├── Soil: .Simulations.Simulation.Field.Soil
-           │   │   ├── Chemical: .Simulations.Simulation.Field.Soil.Chemical
-           │   │   ├── NH4: .Simulations.Simulation.Field.Soil.NH4
-           │   │   ├── NO3: .Simulations.Simulation.Field.Soil.NO3
-           │   │   ├── Organic: .Simulations.Simulation.Field.Soil.Organic
-           │   │   ├── Physical: .Simulations.Simulation.Field.Soil.Physical
-           │   │   │   └── MaizeSoil: .Simulations.Simulation.Field.Soil.Physical.MaizeSoil
-           │   │   ├── Urea: .Simulations.Simulation.Field.Soil.Urea
-           │   │   └── Water: .Simulations.Simulation.Field.Soil.Water
-           │   ├── Sow using a variable rule: .Simulations.Simulation.Field.Sow using a variable rule
-           │   └── SurfaceOrganicMatter: .Simulations.Simulation.Field.SurfaceOrganicMatter
-           ├── Graph: .Simulations.Simulation.Graph
-           │   └── Series: .Simulations.Simulation.Graph.Series
-           ├── MicroClimate: .Simulations.Simulation.MicroClimate
-           ├── SoilArbitrator: .Simulations.Simulation.SoilArbitrator
-           ├── Summary: .Simulations.Simulation.Summary
-           └── Weather: .Simulations.Simulation.Weather
+       └── Models.Core.Simulations: .Simulations
+           ├── Models.Storage.DataStore: .Simulations.DataStore
+           ├── Models.Core.Folder: .Simulations.Replacements
+           │   └── Models.PMF.Plant: .Simulations.Replacements.Maize
+           └── Models.Core.Simulation: .Simulations.Simulation
+               ├── Models.Clock: .Simulations.Simulation.Clock
+               ├── Models.Core.Zone: .Simulations.Simulation.Field
+               │   ├── Models.Manager: .Simulations.Simulation.Field.Fertilise at sowing
+               │   ├── Models.Fertiliser: .Simulations.Simulation.Field.Fertiliser
+               │   ├── Models.Manager: .Simulations.Simulation.Field.Harvest
+               │   ├── Models.PMF.Plant: .Simulations.Simulation.Field.Maize
+               │   ├── Models.Report: .Simulations.Simulation.Field.Report
+               │   ├── Models.Soils.Soil: .Simulations.Simulation.Field.Soil
+               │   │   ├── Models.Soils.Chemical: .Simulations.Simulation.Field.Soil.Chemical
+               │   │   ├── Models.Soils.Solute: .Simulations.Simulation.Field.Soil.NH4
+               │   │   ├── Models.Soils.Solute: .Simulations.Simulation.Field.Soil.NO3
+               │   │   ├── Models.Soils.Organic: .Simulations.Simulation.Field.Soil.Organic
+               │   │   ├── Models.Soils.Physical: .Simulations.Simulation.Field.Soil.Physical
+               │   │   │   └── Models.Soils.SoilCrop: .Simulations.Simulation.Field.Soil.Physical.MaizeSoil
+               │   │   ├── Models.Soils.Solute: .Simulations.Simulation.Field.Soil.Urea
+               │   │   └── Models.Soils.Water: .Simulations.Simulation.Field.Soil.Water
+               │   ├── Models.Manager: .Simulations.Simulation.Field.Sow using a variable rule
+               │   └── Models.Surface.SurfaceOrganicMatter: .Simulations.Simulation.Field.SurfaceOrganicMatter
+               ├── Models.Graph: .Simulations.Simulation.Graph
+               │   └── Models.Series: .Simulations.Simulation.Graph.Series
+               ├── Models.MicroClimate: .Simulations.Simulation.MicroClimate
+               ├── Models.Soils.Arbitrator.SoilArbitrator: .Simulations.Simulation.SoilArbitrator
+               ├── Models.Summary: .Simulations.Simulation.Summary
+               └── Models.Climate.Weather: .Simulations.Simulation.Weather
 
    Turn cultivar paths on as follows:
 
@@ -7450,7 +7748,7 @@ Module attributes
 
 .. py:attribute:: apsimNGpy.core.pythonet_config.CI
 
-   Default value: ``ConfigRuntimeInfo(clr_loaded=True, bin_path=WindowsPath('D:/reproducible/bin_di…``
+   Default value: ``ConfigRuntimeInfo(clr_loaded=True, bin_path=WindowsPath('D:/My_BOX/Box/PhD thes…``
 
 Functions
 ^^^^^^^^^
@@ -7509,7 +7807,7 @@ Functions
    >>> reader = get_apsim_file_reader("string")    # doctest: +SKIP
    >>> sims = reader(text)                         # doctest: +SKIP
 
-.. py:function:: apsimNGpy.core.pythonet_config.get_apsim_version(bin_path: Union[str, pathlib.Path] = WindowsPath('D:/reproducible/bin_dist/APSIM2025.8.7844.0/bin'), release_number: bool = False) -> Optional[str]
+.. py:function:: apsimNGpy.core.pythonet_config.get_apsim_version(bin_path: Union[str, pathlib.Path] = WindowsPath('D:/My_BOX/Box/PhD thesis/Objective two/morrow plots 20250821/APSIM2025.8.7844.0/bin'), release_number: bool = False) -> Optional[str]
 
    Return the APSIM version string detected from the installed binaries.
 
@@ -7854,7 +8152,7 @@ Functions
    RuntimeError
        If APSIM returns a non-zero exit code.
 
-.. py:function:: apsimNGpy.core.runner.run_model_externally(model: 'Union[Path, str]', *, apsim_exec: 'Optional[Union[Path, str]]' = WindowsPath('D:/reproducible/bin_dist/APSIM2025.8.7844.0/bin/Models.exe'), verbose: 'bool' = False, to_csv: 'bool' = False, timeout: 'int' = 600, cpu_count=-1, cwd: 'Optional[Union[Path, str]]' = None, env: 'Optional[Mapping[str, str]]' = None) -> 'subprocess.CompletedProcess[str]'
+.. py:function:: apsimNGpy.core.runner.run_model_externally(model: 'Union[Path, str]', *, apsim_exec: 'Optional[Union[Path, str]]' = WindowsPath('D:/My_BOX/Box/PhD thesis/Objective two/morrow plots 20250821/APSIM2025.8.7844.0/bin/Models.exe'), verbose: 'bool' = False, to_csv: 'bool' = False, timeout: 'int' = 600, cpu_count=-1, cwd: 'Optional[Union[Path, str]]' = None, env: 'Optional[Mapping[str, str]]' = None) -> 'subprocess.CompletedProcess[str]'
 
    Run APSIM externally (cross-platform) with safe defaults.
 
@@ -8603,7 +8901,7 @@ Classes
                start_value=5
            )
 
-   .. py:method:: apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.minimize_with_de(self, use_threads=False, args=(), strategy='rand1bin', maxiter=1000, popsize=15, tol=0.01, mutation=(0.5, 1), recombination=0.9, rng=None, callback=None, disp=True, polish=True, init='latinhypercube', atol=0, updating='deffered', workers=1, constraints=(), x0=None, seed=1, *, integrality=None, vectorized=False)
+   .. py:method:: apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.minimize_with_de(self, use_threads=False, args=(), strategy='rand1bin', maxiter=1000, popsize=None, tol=0.01, mutation=(0.5, 1), recombination=0.9, rng=None, callback=None, disp=True, polish=True, init='latinhypercube', atol=0, updating='deffered', workers=1, constraints=(), x0=None, seed=1, *, integrality=None, vectorized=False)
 
    Run differential evolution on the wrapped APSIM objective function.
 
@@ -8752,6 +9050,96 @@ Classes
                **{'path': '.Simulations.Simulation.Field.Sow using a variable rule', 'Population': "?", 'v_type': 'float',
                   'bounds': [4, 14]})
 
+apsimNGpy.optimizer.problems.back_end
+-------------------------------------
+
+Functions
+^^^^^^^^^
+
+.. py:function:: apsimNGpy.optimizer.problems.back_end.detect_range(metric: str, bounds: tuple)
+
+   Check whether user-defined bounds fall within the allowed metric range.
+
+   Parameters
+   ----------
+   metric : str
+       Name of the metric (e.g., "rmse", "wia", "r2").
+   bounds : tuple
+       User-specified (lower, upper) bounds.
+
+   Returns
+   -------
+   bool
+       True if the user-specified bounds are valid and within the global metric range.
+       False otherwise.
+
+   Raises
+   ------
+   KeyError
+       If the metric is unknown.
+   ValueError
+       If bounds is not a valid 2-tuple.
+
+.. py:function:: apsimNGpy.optimizer.problems.back_end.eval_observed(obs: pandas.core.frame.DataFrame, pred: pandas.core.frame.DataFrame, index: Union[str, list, tuple, set], pred_col: str, obs_col: str, method: str = 'rmse', exp: Optional[str] = None) -> float
+
+     Evaluate observed and predicted values using a selected performance metric.
+
+     This function:
+       • validates and aligns the datasets,
+       • computes the selected metric through :class:`Validate`,
+       • applies the metric's optimization direction (min/max),
+       • returns a single scalar performance value.
+
+   Supported Metrics
+   -----------------
+
+     +---------+-----------------------------------------------+---------------------+------+
+     | Metric  | Description                                   | Preferred Direction | Sign |
+     +=========+===============================================+=====================+======+
+     | RMSE    | Root Mean Square Error                        | Smaller             | +1   |
+     +---------+-----------------------------------------------+---------------------+------+
+     | MAE     | Mean Absolute Error                           | Smaller             | +1   |
+     +---------+-----------------------------------------------+---------------------+------+
+     | MSE     | Mean Square Error                             | Smaller             | +1   |
+     +---------+-----------------------------------------------+---------------------+------+
+     | RRMSE   | Relative RMSE                                 | Smaller             | +1   |
+     +---------+-----------------------------------------------+---------------------+------+
+     | BIAS    | Mean Bias                                     | Closer to 0         | +1   |
+     +---------+-----------------------------------------------+---------------------+------+
+     | ME      | Modeling Efficiency                           | Larger              | -1   |
+     +---------+-----------------------------------------------+---------------------+------+
+     | WIA     | Willmott’s Index of Agreement                 | Larger              | -1   |
+     +---------+-----------------------------------------------+---------------------+------+
+     | R2      | Coefficient of Determination                  | Larger              | -1   |
+     +---------+-----------------------------------------------+---------------------+------+
+     | CCC     | Concordance Correlation Coefficient           | Larger              | -1   |
+     +---------+-----------------------------------------------+---------------------+------+
+     | SLOPE   | Regression Slope                              | Closer to 1         | -1   |
+     +---------+-----------------------------------------------+---------------------+------+
+
+     Returns
+     -------
+     float
+         Metric value multiplied by the optimization direction.
+
+.. py:function:: apsimNGpy.optimizer.problems.back_end.final_eval(obs: pandas.core.frame.DataFrame, pred: pandas.core.frame.DataFrame, index: str, pred_col: str, obs_col: str, method: str = 'rmse', exp: Optional[str] = None) -> dict
+
+   Evaluate observed and predicted values and return the full suite of
+   performance metrics supported by the: class:`Validate` class.
+
+   This function:
+     • prepares and validates the input data (shared utility),
+     • runs all metrics, not just one,
+     • returns both the metric dictionary and the aligned dataset.
+
+   Returns
+   -------
+   dict
+       {
+           "metrics": {metric_name: value, ...},
+           "data": pd.DataFrame (aligned observed/predicted pairs)
+       }
+
 apsimNGpy.optimizer.problems.smp
 --------------------------------
 
@@ -8787,7 +9175,7 @@ Classes
            Column in observed dataset corresponding to observed values.
        index : str
            Column used for aligning predicted and observed values (e.g., 'year').
-       method : str, default='RMSE'
+       metric : str, default='RMSE'
            Evaluation metric to use (e.g., 'RMSE', 'R2', 'WIA').
        table : str or None, optional
            APSIM output table name (if applicable).
@@ -8804,6 +9192,7 @@ Classes
    List of Public Attributes:
    __________________________________
 
+   - :attr:`~apsimNGpy.optimizer.problems.smp.MixedProblem.n_apsim_nodes`
    - :attr:`~apsimNGpy.optimizer.problems.smp.MixedProblem.n_factors`
    List of Public Methods
    -----------------------------
@@ -8812,9 +9201,13 @@ Classes
    - :meth:`~apsimNGpy.optimizer.problems.smp.MixedProblem.submit_factor`
    - :meth:`~apsimNGpy.optimizer.problems.smp.MixedProblem.wrap_objectives`
 
-   .. py:method:: apsimNGpy.optimizer.problems.smp.MixedProblem.__init__(self, model: str, trainer_dataset: Optional[pandas.core.frame.DataFrame] = None, pred_col: str = None, trainer_col: str = None, index: str = None, method: str = 'RMSE', table: Optional[str] = None, func: Optional[Any] = None)
+   .. py:method:: apsimNGpy.optimizer.problems.smp.MixedProblem.__init__(self, model: str, trainer_dataset: Optional[pandas.core.frame.DataFrame] = None, pred_col: str = None, trainer_col: str = None, index: Union[str, tuple, set, list] = None, metric: str = 'RMSE', table: Optional[str] = None, func: Optional[Any] = None)
 
    Initialize self.  See help(type(self)) for accurate signature.
+
+   .. py:property:: apsimNGpy.optimizer.problems.smp.MixedProblem.n_apsim_nodes
+
+   Number of submitted optimization APSIM factors nodes.
 
    .. py:property:: apsimNGpy.optimizer.problems.smp.MixedProblem.n_factors
 
@@ -8822,206 +9215,313 @@ Classes
 
    .. py:method:: apsimNGpy.optimizer.problems.smp.MixedProblem.submit_factor(self, *, path, vtype, start_value, candidate_param, cultivar=False, other_params=None)
 
-    Add a new factor (parameter) to be optimized.
+   Add a new factor (parameter) to be optimized.
 
-    Each factor corresponds to a modifiable APSIM node attribute and its
-    variable type (e.g., UniformVar, RandintVar, ChoiceVar). Factors define
-    the search space and starting points for parameter optimization.
+   Each factor corresponds to a modifiable APSIM node attribute and its variable
+   type (e.g., ``UniformVar``, ``RandintVar``, ``ChoiceVar``). Factors define the
+   search space and initial values for parameter optimization.
 
-    Parameters
-    ----------
-    path : str
-        APSIM node path where the parameter resides, e.g.
-        ``".Simulations.Simulation.Field.Soil.Organic"``.
-        This node typically contains variables like FBiom, Carbon, and FINert.
+   Parameters
+   ----------
+   path : str
+       APSIM node path where the parameter resides, e.g.
+       ``".Simulations.Simulation.Field.Soil.Organic"``.
+       This node typically contains attributes such as ``FBiom``, ``Carbon``,
+       and ``FINert``.
 
-    vtype : list or tuple of wrapdisc.var
-        Variable types defining the search domain for each candidate parameter.
-        These can include discrete, quantized, or continuous domains (see table below).
+   vtype : list or tuple of wrapdisc.var
+       Variable types defining the search domain for each candidate parameter.
+       These can include discrete, quantized, or continuous domains (see table
+       below).
 
-    start_value : list or tuple of (str | int | float)
-        Initial values for each parameter, in the same order as ``candidate_param``.
+   start_value : list or tuple of (str | int | float)
+       Initial values for each parameter, in the same order as
+       ``candidate_param``.
 
-    candidate_param : list or tuple of str
-        The names of APSIM variables (e.g., ``"FOM"``, ``"FBiom"``) to be optimized.
-        These should exist within the APSIM node path provided.
+   candidate_param : list or tuple of str
+       Names of APSIM variables (e.g., ``"FOM"``, ``"FBiom"``) to be optimized.
+       These must exist within the APSIM node path.
 
-    cultivar : bool, optional, default=False
-        Signal to the API whether the parameter belongs to a cultivar node.
-        Set this flag to ``True`` when defining cultivar-related optimization factors.
+   cultivar : bool, optional, default=False
+       Indicates whether the parameter belongs to a cultivar node. Set to
+       ``True`` when defining cultivar-related optimization factors.
 
-    other_params : dict, optional
-        Additional APSIM constants to fix during optimization (non-optimized parameters).
-        These must belong to the same node path.
-        For example, when optimizing *FBiom* while also modifying *Carbon*, you can
-        supply *Carbon* as a constant under ``other_params`` (see Example 1 below).
+   other_params : dict, optional
+       Additional APSIM constants to fix during optimization (non-optimized).
+       These must belong to the same APSIM node. For example, when optimizing
+       ``FBiom`` but also modifying ``Carbon``, supply ``Carbon`` under
+       ``other_params`` (see Example 1).
 
-    .. tip::
+   .. tip::
 
-       As a rule of thumb, group all parameters belonging to the same APSIM node
-       into a single factor by providing them as lists. Submitting parameters from
-       the same node as separate factors will raise a validation error.
+      As a rule of thumb, group all parameters belonging to the same APSIM node
+      into a single factor by providing them as lists. Submitting parameters from
+      the same node as separate factors triggers a validation error.
 
-    .. note::
+      Values must be provided using keyword-style arguments to support JSON-based
+      cross-platform data structures.
 
-       All input factors are first validated using **Pydantic** to ensure conformity
-       to the expected data structures and types — for instance, confirming that
-       ``vtype`` consists of recognized variable types (e.g., ``UniformVar``, ``GridVar``),
-       that ``path`` is a valid string, and that numeric tuples follow expected
-       range conventions. This guarantees type safety and consistency across
-       optimization runs.
+   .. note::
 
-       After Pydantic validation, an additional structural check verifies
-       that the **lengths** of ``vtype``, ``start_value``, and ``candidate_param``
-       collections are identical. This ensures that each parameter to be optimized
-       has a corresponding variable type and initial value.
+      All submitted factors are validated using **Pydantic** to ensure adherence to
+      expected data structures and variable types — for example checking that
+      ``vtype`` includes valid variable types (``UniformVar``, ``GridVar``),
+      ensuring ``path`` is a valid string, and that numeric constraints follow
+      their expected conventions.
 
-       If you select an optimization method that **does not rely on bounded or
-       initialized start values**, you may safely provide dummy entries for
-       ``start_value``. These placeholders will be accepted without raising errors
-       and will not affect the optimization process. The validation framework is
-       designed to remain flexible for both stochastic (randomized) and
-       deterministic search methods.
+      After Pydantic validation, an additional structural check ensures that the
+      lengths of ``vtype``, ``start_value``, and ``candidate_param`` are identical.
+      Each candidate parameter must have a matching variable type and initial
+      value.
 
+      Optimization methods that do not require bounded or initialized start
+      values allow for dummy entries in ``start_value``. These placeholders are
+      accepted without affecting the optimization process. The system remains
+      flexible across both stochastic and deterministic search methods.
 
+   Variable Types (wrapdisc)
+   -------------------------
+   Each variable type below defines how sampling and decoding occur during
+   optimization.
 
-   The variable types follow the ``wrapdisc`` library conventions.
-   Each type defines how sampling and decoding are handled during optimization.
+   Supported Variable Types
+   ------------------------
 
-   +----------------+--------------------------------+-------------------------------------------------------------+---------------------------+--------------------------------------------------------------------------------+
-   | **Space**      | **Variable Type**              | **Usage / Description**                                     | **Decoder**               | **Examples**                                                                    |
-   +================+================================+=============================================================+===========================+================================================================================+
-   | **Discrete**   | ``ChoiceVar(items)``           | Nominal (unordered categorical)                             | one-hot via *max*         | ``ChoiceVar(["USA", "Panama", "Cayman"])``                                     |
-   +----------------+--------------------------------+-------------------------------------------------------------+---------------------------+--------------------------------------------------------------------------------+
-   | **Discrete**   | ``GridVar(values)``            | Ordinal (ordered categorical)                               | round                     | ``GridVar([2, 4, 8, 16])``<br>``GridVar(["good", "better", "best"])``          |
-   +----------------+--------------------------------+-------------------------------------------------------------+---------------------------+--------------------------------------------------------------------------------+
-   | **Discrete**   | ``RandintVar(lower, upper)``   | Integer from *lower* to *upper*, inclusive                  | round                     | ``RandintVar(0, 6)``, ``RandintVar(3, 9)``, ``RandintVar(-10, 10)``            |
-   +----------------+--------------------------------+-------------------------------------------------------------+---------------------------+--------------------------------------------------------------------------------+
-   | **Discrete**   | ``QrandintVar(lower, upper, q)`` | Quantized integer from *lower* to *upper* in multiples of q | round to nearest multiple | ``QrandintVar(0, 12, 3)``, ``QrandintVar(1, 10, 2)``, ``QrandintVar(-10, 10, 4)`` |
-   +----------------+--------------------------------+-------------------------------------------------------------+---------------------------+--------------------------------------------------------------------------------+
-   | **Continuous** | ``UniformVar(lower, upper)``   | Float from *lower* to *upper*                               | passthrough               | ``UniformVar(0.0, 5.11)``, ``UniformVar(0.2, 4.6)``, ``UniformVar(-10.0, 10.0)`` |
-   +----------------+--------------------------------+-------------------------------------------------------------+---------------------------+--------------------------------------------------------------------------------+
-   | **Continuous** | ``QuniformVar(lower, upper, q)`` | Quantized float from *lower* to *upper* in multiples of q   | round to nearest multiple | ``QuniformVar(0.0, 5.1, 0.3)``, ``QuniformVar(-5.1, -0.2, 0.3)``                |
-   +----------------+--------------------------------+-------------------------------------------------------------+---------------------------+--------------------------------------------------------------------------------+
+   1. **ChoiceVar(items)**
+      Nominal (unordered categorical)
+      Example: ``ChoiceVar(["USA", "Panama", "Cayman"])``
 
-    Reference
-    ----------
-    - ``wrapdisc`` documentation: https://pypi.org/project/wrapdisc/
+   2. **GridVar(values)**
+      Ordinal (ordered categorical)
+      Example: ``GridVar([2, 4, 8, 16])``
 
-    Examples
-    --------
-    Example 1 — Continuous variable (``UniformVar``)
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    .. code-block:: python
+   3. **RandintVar(lower, upper)**
+      Integer in ``[lower, upper]``
+      Example: ``RandintVar(0, 6)``
 
-        mp.submit_factor(
-            path=".Simulations.Simulation.Field.Soil.Organic",
-            vtype=[UniformVar(1, 2)],
-            start_value=["1"],
-            candidate_param=["FOM"],
-            other_params={"FBiom": 2.3, "Carbon": 1.89},
-        )
+   4. **QrandintVar(lower, upper, q)**
+      Quantized integer with step ``q``
+      Example: ``QrandintVar(0, 12, 3)``
 
-    Example 2 — Quantized continuous variable (``QuniformVar``)
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    .. code-block:: python
+   5. **UniformVar(lower, upper)**
+      Continuous float range
+      Example: ``UniformVar(0.0, 5.11)``
 
-        mp.submit_factor(
-            path=".Simulations.Simulation.Field.Soil.Organic",
-            vtype=[QuniformVar(0.0, 1.0, 0.005)],  # 0.005 is the quantization interval
-            start_value=["0.035"],
-            candidate_param=["FBiom"],
-        )
+   6. **QuniformVar(lower, upper, q)**
+      Quantized float with step ``q``
+      Example: ``QuniformVar(0.0, 5.1, 0.3)``
 
-    Example 3 — Integer variable (``RandintVar``)
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    .. code-block:: python
+   Below is a list of available string for each variable
 
-        mp.submit_factor(
-            path=".Simulations.Simulation.Field.Soil.Plant",
-            vtype=[RandintVar(1, 10)],
-            start_value=[5],
-            candidate_param=["Population"],
-        )
+   .. code-block:: python
 
-    Example 4 — Quantized integer variable (``QrandintVar``)
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    .. code-block:: python
+          ALLOWED_VARIABLES = {
+               # Original canonical names
+               "UniformVar": UniformVar,
+               "QrandintVar": QrandintVar,
+               "QuniformVar": QuniformVar,
+               "GridVar": GridVar,
+               "ChoiceVar": ChoiceVar,
+               "RandintVar": RandintVar,
 
-        mp.submit_factor(
-            path=".Simulations.Simulation.Field.Soil.Labile",
-            vtype=[QrandintVar(0, 12, 3)],
-            start_value=[3],
-            candidate_param=["Carbon"],
-        )
+               # Short aliases
+               "uniform": UniformVar,
+               "quniform": QuniformVar,
+               "qrandint": QrandintVar,
+               "grid": GridVar,
+               "choice": ChoiceVar,
+               "randint": RandintVar,
 
-    Example 5 — Categorical variable (``ChoiceVar``)
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    This is suitable for exploring categorical management options, such as selecting the best
-    cultivar for a region or testing sowing date strategies.
+               # Descriptive aliases (readable English)
+               "continuous": UniformVar,
+               "quantized_continuous": QuniformVar,
+               "quantized_int": QrandintVar,
+               "ordinal": GridVar,
+               "categorical": ChoiceVar,
+               "integer": RandintVar,
 
-    .. code-block:: python
+               # Alternative descriptive (for domain users)
+               "step_uniform_float": QuniformVar,
+               "step_random_int": QrandintVar,
+               "ordered_var": GridVar,
+               "choice_var": ChoiceVar}
 
-        mp.submit_factor(
-            path=".Simulations.Simulation.Sow using a variable rule",
-            vtype=[ChoiceVar(["B_100", "A90", "B110"])],
-            start_value=["B_100"],
-            candidate_param=["CultivarName"],
-        )
+   Reference
+   ---------
+   - wrapdisc documentation: https://pypi.org/project/wrapdisc/
 
-    Example 6 — Ordinal grid variable (``GridVar``)
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    .. code-block:: python
+   Examples
+   --------
+   Initialise a mixed-variable problem:
 
-        mp.submit_factor(
-            path=".Simulations.Simulation.Field.Management",
-            vtype=[GridVar(["Low", "Medium", "High"])],
-            start_value=["Medium"],
-            candidate_param=["FertilizerRate"],
-        )
+   .. code-block:: python
 
-    Submitting cultivar-related variables
-    -------------------------------------
-    When defining optimization factors for cultivar-specific parameters, you must explicitly
-    signal to the APSIMNGpy API that the parameter belongs to a cultivar node.
-    This is done by including the keyword ``cultivar=True`` in the factor definition.
+       from apsimNGpy.optimizer.problems.variables import QrandintVar
+       from apsimNGpy.tests.unittests.test_factory import obs
+       from optimizer.problems.smp import MixedProblem
 
-    By default, this flag is ``False``, meaning the optimizer assumes the factor is not
-    cultivar-related and treats it as a regular parameter (e.g., soil, management, or
-    plant-level attribute).
+       mp = MixedProblem(
+           model='Maize', trainer_dataset=obs, pred_col='Yield',
+           metric='RRMSE', index='year', trainer_col='observed'
+       )
 
-    Internally, this flag is validated as a boolean field through Pydantic to ensure
-    consistent interpretation and error checking.
+   Example 1 — Continuous variable (``UniformVar``)
+   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   .. code-block:: python
 
-    The cultivar flag enables APSIMNGpy to route the parameter to the correct editing
-    pipeline for cultivar commands and properties under APSIM’s *Replacements* or
-    *CultivarFolder* nodes.
+       mp.submit_factor(
+           path=".Simulations.Simulation.Field.Soil.Organic",
+           vtype=[UniformVar(1, 2)],
+           start_value=["1"],
+           candidate_param=["FOM"],
+           other_params={"FBiom": 2.3, "Carbon": 1.89},
+       )
 
-    .. code-block:: python
+   Example 2 — Quantized continuous (``QuniformVar``)
+   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   .. code-block:: python
 
-        from wrapdisc.var import QrandintVar
+       mp.submit_factor(
+           path=".Simulations.Simulation.Field.Soil.Organic",
+           vtype=[QuniformVar(0.0, 1.0, 0.005)],
+           start_value=["0.035"],
+           candidate_param=["FBiom"],
+       )
 
-        cultivar_param = {
-            # Full APSIM path to the target cultivar node
-            "path": ".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82",
+   Example 3 — Integer variable (``RandintVar``)
+   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   .. code-block:: python
 
-            # Quantized integer variable (range: 400–550, step size: 5)
-            "vtype": [QrandintVar(400, 550, q=5)],
+       mp.submit_factor(
+           path=".Simulations.Simulation.Field.Soil.Plant",
+           vtype=[RandintVar(1, 10)],
+           start_value=[5],
+           candidate_param=["Population"],
+       )
 
-            # Starting value for optimization
-            "start_value": [550],
+   Example 4 — Quantized integer (``QrandintVar``)
+   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   .. code-block:: python
 
-            # APSIM command or property to be optimized within the cultivar
-            "candidate_param": ["[Grain].MaximumGrainsPerCob.FixedValue"],
+       mp.submit_factor(
+           path=".Simulations.Simulation.Field.Soil.Labile",
+           vtype=[QrandintVar(0, 12, 3)],
+           start_value=[3],
+           candidate_param=["Carbon"],
+       )
 
-            # Fixed or contextual parameters associated with the same node
-            "other_params": {"sowed": True},
+   Example 5 — Categorical variable (``ChoiceVar``)
+   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   .. code-block:: python
 
-            # Signal that this parameter belongs to a cultivar node
-            "cultivar": True
-        }
+       mp.submit_factor(
+           path=".Simulations.Simulation.Sow using a variable rule",
+           vtype=[ChoiceVar(["B_100", "A90", "B110"])],
+           start_value=["B_100"],
+           candidate_param=["CultivarName"],
+       )
 
-        mp.submit_factor(**cultivar_param)
+   Example 6 — Ordinal grid variable (``GridVar``)
+   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   .. code-block:: python
+
+       mp.submit_factor(
+           path=".Simulations.Simulation.Field.Management",
+           vtype=[GridVar(["Low", "Medium", "High"])],
+           start_value=["Medium"],
+           candidate_param=["FertilizerRate"],
+       )
+
+   Submitting cultivar-related variables
+   -------------------------------------
+   When defining optimization factors for cultivar-specific parameters, explicitly
+   set ``cultivar=True``. This routes the parameter to APSIM’s cultivar-editing
+   pipeline under *Replacements* or *CultivarFolder* nodes.
+
+   .. code-block:: python
+
+       from wrapdisc.var import QrandintVar
+
+       cultivar_param = {
+           "path": ".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82",
+           "vtype": [QrandintVar(400, 550, q=5)],
+           "start_value": [550],
+           "candidate_param": ["[Grain].MaximumGrainsPerCob.FixedValue"],
+           "other_params": {"sowed": True},
+           "cultivar": True,
+       }
+
+       mp.submit_factor(**cultivar_param)
+
+   Submitting more than one parameter on a single node
+   ---------------------------------------------------
+   You must specify complete lists for ``vtype``, ``start_value``, and
+   ``candidate_param``. Each list must align so that the element at index *i*
+   corresponds to the same variable across all lists.
+
+   .. code-block:: python
+
+       cultivar_params = {
+           "path": ".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82",
+           "vtype": [
+               QrandintVar(400, 600, q=5),
+               QrandintVar(400, 900, q=5)
+           ],
+           "start_value": [500, 550],
+           "candidate_param": [
+               "[Grain].MaximumGrainsPerCob.FixedValue",
+               "[Phenology].GrainFilling.Target.FixedValue"
+           ],
+           "other_params": {"sowed": True},
+           "cultivar": True,
+       }
+
+       mp.submit_factor(**cultivar_params)
+
+   It is possible to describe your data type using string characters uisng any of the description below, implying no variable descriptor namespace import needed
+
+   Variable Type Classification
+   ----------------------------
+
+   **Continuous (UniformVar)**
+     - ``UniformVar``
+     - ``uniform``
+     - ``continuous``
+     Represents real-valued continuous parameters.
+
+   **Quantized Continuous (QuniformVar)**
+     - ``QuniformVar``
+     - ``quniform``
+     - ``quantized_continuous``
+     - ``step_uniform_float``
+     Continuous parameters restricted to fixed step sizes.
+
+   **Quantized Integer (QrandintVar)**
+     - ``QrandintVar``
+     - ``qrandint``
+     - ``quantized_int``
+     - ``step_random_int``
+     Integer parameters with fixed quantization.
+
+   **Ordinal / Grid (GridVar)**
+     - ``GridVar``
+     - ``grid``
+     - ``ordinal``
+     - ``ordered_var``
+     Ordered categorical variables with ranked classes.
+
+   **Categorical / Nominal (ChoiceVar)**
+     - ``ChoiceVar``
+     - ``choice``
+     - ``categorical``
+     - ``choice_var``
+     Unordered categorical classes.
+
+   **Integer (RandintVar)**
+     - ``RandintVar``
+     - ``randint``
+     - ``integer``
+     Integer-valued variables.
 
    .. py:method:: apsimNGpy.optimizer.problems.smp.MixedProblem.submit_all(self, all_factors: List[Dict[str, Any]])
 
@@ -9039,17 +9539,19 @@ Classes
        A list (or tuple) of dictionaries, where each dictionary defines a single
        optimization factor with the following required keys:
 
-       - ``path`` : str
+       path: str
          The APSIM node path where the variable resides.
-       - ``vtype`` : list or tuple of wrapdisc.var
+       vtype: list or tuple of wrapdisc.var
          The variable type(s) defining the sampling space (e.g., `UniformVar`, `ChoiceVar`).
-       - ``start_value`` : list or tuple of str, int, or float
+       start_value: list or tuple of str, int, or float
          The starting value(s) corresponding to each candidate parameter.
-       - ``candidate_param`` : list or tuple of str
+       candidate_param : list or tuple of str
          The APSIM variable names to optimize.
-       - ``other_params`` : dict, optional
+       other_params: dict, optional
          Any additional parameters belonging to the same APSIM node that
          should remain constant during optimization.
+       cultivar: bool, default=False
+         Whether the factor being submitted is cultivar specific or resides on the cultivar node
 
    Notes
    -----
@@ -9132,7 +9634,7 @@ Classes
    - ``ME`` : Modeling Efficiency
    - ``WIA`` : Willmott’s Index of Agreement
    - ``CCC`` : Concordance Correlation Coefficient
-   - ``bias`` : Mean Bias Error
+   - ``BIAS`` : Mean Bias Error
 
    These metrics are implemented in the :class:`apsimNGpy.validation.evaluator.Validate`
    module and are used to assess how well the simulated values replicate observed data.
@@ -9146,7 +9648,7 @@ Classes
        For metrics such as RMSE or MAE, **lower values indicate better performance**,
        whereas for R², WIA, or CCC, **higher values indicate better model fit**.
 
-   The magnitude of the minimization is determined automatically in the back_end.py, thus if you are
+   The size of the minimization is determined automatically in the back_end.py, thus if you are
    using eval_observed method, no need to worry about multiplying with -1 for loss function indices such as CCC
 
    Examples
@@ -9168,6 +9670,409 @@ Classes
    -------
    Objective
        A callable objective that accepts encoded variable vectors.
+
+apsimNGpy.optimizer.problems.variables
+--------------------------------------
+
+Parameter Definition and Validation Utilities for APSIM Optimization
+====================================================================
+
+This module provides robust validation, normalization, and merging utilities
+for APSIM optimization problems defined through Python.
+
+It uses Pydantic models to ensure consistent parameter structures
+and supports multiple variable types from the ``wrapdisc`` library,
+enabling flexible mixed-variable optimization (continuous, discrete, categorical).
+
+--------------------------------------------------------------------
+Supported Variable Types
+--------------------------------------------------------------------
+| Class         | Type               | Example Input                 | Typical Use                  |
+| --------------| ------------------ | ----------------------------- | ---------------------------- |
+| `ChoiceVar`   | Categorical        | `["A", "B", "C"]`             | Select from discrete options |
+| `GridVar`     | Deterministic grid | `[0, 10]`                     | Grid-based search            |
+| `QrandintVar` | Quantized int      | `lower=0, upper=200, q=25`    | Integer steps                |
+| `QuniformVar` | Quantized float    | `lower=0, upper=100, q=5`     | Continuous with quantization |
+| `RandintVar`  | Random int         | `lower=1, upper=10`           | Random integer sampling      |
+| `UniformVar`  | Random float       | `lower=0.0, upper=1.0`        | Continuous random sampling   |
+
+--------------------------------------------------------------------
+Functions Provided
+--------------------------------------------------------------------
+- validate_user_params: Validate and normalize parameter inputs.
+- filter_apsim_params: Flatten parameters for APSIM simulation input.
+- merge_params_by_path: Combine multiple parameter dictionaries with shared paths.
+--------------------------------------------------------------------
+
+Functions
+^^^^^^^^^
+
+.. py:function:: apsimNGpy.optimizer.problems.variables.filter_apsim_params(params: apsimNGpy.optimizer.problems.variables.BaseParams, place_holder=<object object at 0x000001F0F1E89910>) -> Dict
+
+   Flatten a validated BaseParams object into a dictionary suitable for APSIM execution.
+
+   - Merges 'other_params' into the main structure
+   - Replaces candidate parameters with placeholders
+   - Preserves the APSIM node 'path'
+
+   Parameters
+   ----------
+   params : BaseParams
+       Validated parameter model.
+   place_holder : object, optional
+       A sentinel object to represent unassigned optimization variables.
+
+   Returns
+   -------
+   dict
+       Flattened dictionary containing APSIM parameter mappings.
+
+.. py:function:: apsimNGpy.optimizer.problems.variables.merge_params_by_path(param_list: List[Dict]) -> List[Dict]
+
+   Merge parameter dictionaries that share the same APSIM node path.
+
+   Useful for grouping multiple variable definitions targeting the same node.
+
+   Parameters
+   ----------
+   param_list : list of dict
+       List of parameter dictionaries to merge.
+
+   Returns
+   -------
+   list of dict
+       A list of merged parameter dictionaries, one per unique path.
+
+.. py:function:: apsimNGpy.optimizer.problems.variables.string_eval(obj)
+
+   Evaluate a string expression using a restricted namespace.
+   Only names defined in ALLOWED_NAMES are permitted.
+
+   Parameters
+   ----------
+   obj : Any
+       A string to be evaluated or any other object that will be returned unchanged.
+
+   Returns
+   -------
+   Any
+       The evaluated object.
+
+   Raises
+   ------
+   ValueError
+       If evaluation fails or expression contains unsupported names or syntax.
+
+.. py:function:: apsimNGpy.optimizer.problems.variables.validate_user_params(params: Dict) -> apsimNGpy.optimizer.problems.variables.BaseParams
+
+   Validate user-supplied parameters using the BaseParams schema.
+
+   This function checks structure, length consistency, and conflicts between
+   candidate and other parameters. It does not validate the *existence* of APSIM nodes.
+
+   Parameters
+   ----------
+   params : dict
+       Dictionary with user-defined parameters, e.g.:
+       {
+           "path": ".Simulations.Simulation.Field.Soil.Organic",
+           "vtype": (UniformVar(1, 2),),
+           "start_value": ("1",),
+           "candidate_param": ("Carbon",),
+           "other_params": {"FBiom": 2.3}
+       }
+
+   Returns
+   -------
+   BaseParams
+       A validated BaseParams instance.
+
+   Raises
+   ------
+   ValidationError
+       If schema or data type validation fails.
+   ValueError
+       If start_value, candidate_param, and vtype lengths are inconsistent.
+
+Classes
+^^^^^^^
+
+.. py:class:: apsimNGpy.optimizer.problems.variables.BaseParams
+
+   Base model for defining APSIM optimization parameters.
+
+   Attributes
+   ----------
+   path : str
+       APSIM node path where the parameter resides (e.g., '.Simulations.Simulation.Field.Soil.Organic').
+   vtype : tuple
+       A tuple of variable type instances (from wrapdisc.var), one per candidate parameter.
+
+       Supported Variable Types
+       --------------------------------------------------------------------
+       | Class         | Type               | Example Input                 | Typical Use                  |
+       | --------------| ------------------ | ----------------------------- | ---------------------------- |
+       | `ChoiceVar`   | Categorical        | `["A", "B", "C"]`             | Select from discrete options |
+       | `GridVar`     | Deterministic grid | `[0, 10]`                     | Grid-based search            |
+       | `QrandintVar` | Quantized int      | `lower=0, upper=200, q=25`    | Integer steps                |
+       | `QuniformVar` | Quantized float    | `lower=0, upper=100, q=5`     | Continuous with quantization |
+       | `RandintVar`  | Random int         | `lower=1, upper=10`           | Random integer sampling      |
+       | `UniformVar`  | Random float       | `lower=0.0, upper=1.0`        | Continuous random sampling   |
+
+   start_value : tuple[str | int | float]
+       Initial starting values for each parameter in candidate_param.
+   candidate_param : str | tuple[str]
+       APSIM variable names corresponding to the optimization factors.
+   bounds : tuple[float, float], optional
+       Lower and upper bounds for continuous parameters.
+   other_params : dict, optional
+       Static parameters that should remain fixed during optimization.
+
+   .. py:attribute:: apsimNGpy.optimizer.problems.variables.BaseParams.model_config
+
+   Default: ``{'arbitrary_types_allowed': True}``
+
+   .. py:property:: apsimNGpy.optimizer.problems.variables.BaseParams.model_fields (inherited)
+
+   Get metadata about the fields defined on the model.
+
+   Deprecation warning: you should be getting this information from the model class, not from an instance.
+   In V3, this property will be removed from the `BaseModel` class.
+
+   Returns:
+       A mapping of field names to [`FieldInfo`][pydantic.fields.FieldInfo] objects.
+
+   .. py:property:: apsimNGpy.optimizer.problems.variables.BaseParams.model_computed_fields (inherited)
+
+   Get metadata about the computed fields defined on the model.
+
+   Deprecation warning: you should be getting this information from the model class, not from an instance.
+   In V3, this property will be removed from the `BaseModel` class.
+
+   Returns:
+       A mapping of computed field names to [`ComputedFieldInfo`][pydantic.fields.ComputedFieldInfo] objects.
+
+   .. py:property:: apsimNGpy.optimizer.problems.variables.BaseParams.model_extra (inherited)
+
+   Get extra fields set during validation.
+
+   Returns:
+       A dictionary of extra fields, or `None` if `config.extra` is not set to `"allow"`.
+
+   .. py:property:: apsimNGpy.optimizer.problems.variables.BaseParams.model_fields_set (inherited)
+
+   Returns the set of fields that have been explicitly set on this model instance.
+
+   Returns:
+       A set of strings representing the fields that have been set,
+           i.e. that were not filled from defaults.
+
+   .. py:classmethod:: apsimNGpy.optimizer.problems.variables.BaseParams.model_construct(cls, _fields_set: 'set[str] | None' = None, **values: 'Any') -> 'Self' (inherited)
+
+   Creates a new instance of the `Model` class with validated data.
+
+   Creates a new model setting `__dict__` and `__pydantic_fields_set__` from trusted or pre-validated data.
+   Default values are respected, but no other validation is performed.
+
+   !!! note
+       `model_construct()` generally respects the `model_config.extra` setting on the provided model.
+       That is, if `model_config.extra == 'allow'`, then all extra passed values are added to the model instance's `__dict__`
+       and `__pydantic_extra__` fields. If `model_config.extra == 'ignore'` (the default), then all extra passed values are ignored.
+       Because no validation is performed with a call to `model_construct()`, having `model_config.extra == 'forbid'` does not result in
+       an error if extra values are passed, but they will be ignored.
+
+   Args:
+       _fields_set: A set of field names that were originally explicitly set during instantiation. If provided,
+           this is directly used for the [`model_fields_set`][pydantic.BaseModel.model_fields_set] attribute.
+           Otherwise, the field names from the `values` argument will be used.
+       values: Trusted or pre-validated data dictionary.
+
+   Returns:
+       A new instance of the `Model` class with validated data.
+
+   .. py:method:: apsimNGpy.optimizer.problems.variables.BaseParams.model_copy(self, *, update: 'Mapping[str, Any] | None' = None, deep: 'bool' = False) -> 'Self' (inherited)
+
+   Usage docs: https://docs.pydantic.dev/2.10/concepts/serialization/#model_copy
+
+   Returns a copy of the model.
+
+   Args:
+       update: Values to change/add in the new model. Note: the data is not validated
+           before creating the new model. You should trust this data.
+       deep: Set to `True` to make a deep copy of the model.
+
+   Returns:
+       New model instance.
+
+   .. py:method:: apsimNGpy.optimizer.problems.variables.BaseParams.model_dump(self, *, mode: "Literal['json', 'python'] | str" = 'python', include: 'IncEx | None' = None, exclude: 'IncEx | None' = None, context: 'Any | None' = None, by_alias: 'bool' = False, exclude_unset: 'bool' = False, exclude_defaults: 'bool' = False, exclude_none: 'bool' = False, round_trip: 'bool' = False, warnings: "bool | Literal['none', 'warn', 'error']" = True, serialize_as_any: 'bool' = False) -> 'dict[str, Any]' (inherited)
+
+   Usage docs: https://docs.pydantic.dev/2.10/concepts/serialization/#modelmodel_dump
+
+   Generate a dictionary representation of the model, optionally specifying which fields to include or exclude.
+
+   Args:
+       mode: The mode in which `to_python` should run.
+           If mode is 'json', the output will only contain JSON serializable types.
+           If mode is 'python', the output may contain non-JSON-serializable Python objects.
+       include: A set of fields to include in the output.
+       exclude: A set of fields to exclude from the output.
+       context: Additional context to pass to the serializer.
+       by_alias: Whether to use the field's alias in the dictionary key if defined.
+       exclude_unset: Whether to exclude fields that have not been explicitly set.
+       exclude_defaults: Whether to exclude fields that are set to their default value.
+       exclude_none: Whether to exclude fields that have a value of `None`.
+       round_trip: If True, dumped values should be valid as input for non-idempotent types such as Json[T].
+       warnings: How to handle serialization errors. False/"none" ignores them, True/"warn" logs errors,
+           "error" raises a [`PydanticSerializationError`][pydantic_core.PydanticSerializationError].
+       serialize_as_any: Whether to serialize fields with duck-typing serialization behavior.
+
+   Returns:
+       A dictionary representation of the model.
+
+   .. py:method:: apsimNGpy.optimizer.problems.variables.BaseParams.model_dump_json(self, *, indent: 'int | None' = None, include: 'IncEx | None' = None, exclude: 'IncEx | None' = None, context: 'Any | None' = None, by_alias: 'bool' = False, exclude_unset: 'bool' = False, exclude_defaults: 'bool' = False, exclude_none: 'bool' = False, round_trip: 'bool' = False, warnings: "bool | Literal['none', 'warn', 'error']" = True, serialize_as_any: 'bool' = False) -> 'str' (inherited)
+
+   Usage docs: https://docs.pydantic.dev/2.10/concepts/serialization/#modelmodel_dump_json
+
+   Generates a JSON representation of the model using Pydantic's `to_json` method.
+
+   Args:
+       indent: Indentation to use in the JSON output. If None is passed, the output will be compact.
+       include: Field(s) to include in the JSON output.
+       exclude: Field(s) to exclude from the JSON output.
+       context: Additional context to pass to the serializer.
+       by_alias: Whether to serialize using field aliases.
+       exclude_unset: Whether to exclude fields that have not been explicitly set.
+       exclude_defaults: Whether to exclude fields that are set to their default value.
+       exclude_none: Whether to exclude fields that have a value of `None`.
+       round_trip: If True, dumped values should be valid as input for non-idempotent types such as Json[T].
+       warnings: How to handle serialization errors. False/"none" ignores them, True/"warn" logs errors,
+           "error" raises a [`PydanticSerializationError`][pydantic_core.PydanticSerializationError].
+       serialize_as_any: Whether to serialize fields with duck-typing serialization behavior.
+
+   Returns:
+       A JSON string representation of the model.
+
+   .. py:classmethod:: apsimNGpy.optimizer.problems.variables.BaseParams.model_json_schema(cls, by_alias: 'bool' = True, ref_template: 'str' = '#/$defs/{model}', schema_generator: 'type[GenerateJsonSchema]' = <class 'pydantic.json_schema.GenerateJsonSchema'>, mode: 'JsonSchemaMode' = 'validation') -> 'dict[str, Any]' (inherited)
+
+   Generates a JSON schema for a model class.
+
+   Args:
+       by_alias: Whether to use attribute aliases or not.
+       ref_template: The reference template.
+       schema_generator: To override the logic used to generate the JSON schema, as a subclass of
+           `GenerateJsonSchema` with your desired modifications
+       mode: The mode in which to generate the schema.
+
+   Returns:
+       The JSON schema for the given model class.
+
+   .. py:classmethod:: apsimNGpy.optimizer.problems.variables.BaseParams.model_parametrized_name(cls, params: 'tuple[type[Any], ...]') -> 'str' (inherited)
+
+   Compute the class name for parametrizations of generic classes.
+
+   This method can be overridden to achieve a custom naming scheme for generic BaseModels.
+
+   Args:
+       params: Tuple of types of the class. Given a generic class
+           `Model` with 2 type variables and a concrete model `Model[str, int]`,
+           the value `(str, int)` would be passed to `params`.
+
+   Returns:
+       String representing the new class where `params` are passed to `cls` as type variables.
+
+   Raises:
+       TypeError: Raised when trying to generate concrete names for non-generic models.
+
+   .. py:method:: apsimNGpy.optimizer.problems.variables.BaseParams.model_post_init(self, _BaseModel__context: 'Any') -> 'None' (inherited)
+
+   Override this method to perform additional initialization after `__init__` and `model_construct`.
+   This is useful if you want to do some validation that requires the entire model to be initialized.
+
+   .. py:classmethod:: apsimNGpy.optimizer.problems.variables.BaseParams.model_rebuild(cls, *, force: 'bool' = False, raise_errors: 'bool' = True, _parent_namespace_depth: 'int' = 2, _types_namespace: 'MappingNamespace | None' = None) -> 'bool | None' (inherited)
+
+   Try to rebuild the pydantic-core schema for the model.
+
+   This may be necessary when one of the annotations is a ForwardRef which could not be resolved during
+   the initial attempt to build the schema, and automatic rebuilding fails.
+
+   Args:
+       force: Whether to force the rebuilding of the model schema, defaults to `False`.
+       raise_errors: Whether to raise errors, defaults to `True`.
+       _parent_namespace_depth: The depth level of the parent namespace, defaults to 2.
+       _types_namespace: The types namespace, defaults to `None`.
+
+   Returns:
+       Returns `None` if the schema is already "complete" and rebuilding was not required.
+       If rebuilding _was_ required, returns `True` if rebuilding was successful, otherwise `False`.
+
+   .. py:classmethod:: apsimNGpy.optimizer.problems.variables.BaseParams.model_validate(cls, obj: 'Any', *, strict: 'bool | None' = None, from_attributes: 'bool | None' = None, context: 'Any | None' = None) -> 'Self' (inherited)
+
+   Validate a pydantic model instance.
+
+   Args:
+       obj: The object to validate.
+       strict: Whether to enforce types strictly.
+       from_attributes: Whether to extract data from object attributes.
+       context: Additional context to pass to the validator.
+
+   Raises:
+       ValidationError: If the object could not be validated.
+
+   Returns:
+       The validated model instance.
+
+   .. py:classmethod:: apsimNGpy.optimizer.problems.variables.BaseParams.model_validate_json(cls, json_data: 'str | bytes | bytearray', *, strict: 'bool | None' = None, context: 'Any | None' = None) -> 'Self' (inherited)
+
+   Usage docs: https://docs.pydantic.dev/2.10/concepts/json/#json-parsing
+
+   Validate the given JSON data against the Pydantic model.
+
+   Args:
+       json_data: The JSON data to validate.
+       strict: Whether to enforce types strictly.
+       context: Extra variables to pass to the validator.
+
+   Returns:
+       The validated Pydantic model.
+
+   Raises:
+       ValidationError: If `json_data` is not a JSON string or the object could not be validated.
+
+   .. py:classmethod:: apsimNGpy.optimizer.problems.variables.BaseParams.model_validate_strings(cls, obj: 'Any', *, strict: 'bool | None' = None, context: 'Any | None' = None) -> 'Self' (inherited)
+
+   Validate the given object with string data against the Pydantic model.
+
+   Args:
+       obj: The object containing string data to validate.
+       strict: Whether to enforce types strictly.
+       context: Extra variables to pass to the validator.
+
+   Returns:
+       The validated Pydantic model.
+
+   .. py:method:: apsimNGpy.optimizer.problems.variables.BaseParams.copy(self, *, include: 'AbstractSetIntStr | MappingIntStrAny | None' = None, exclude: 'AbstractSetIntStr | MappingIntStrAny | None' = None, update: 'Dict[str, Any] | None' = None, deep: 'bool' = False) -> 'Self' (inherited)
+
+   Returns a copy of the model.
+
+   !!! warning "Deprecated"
+       This method is now deprecated; use `model_copy` instead.
+
+   If you need `include` or `exclude`, use:
+
+   ```python {test="skip" lint="skip"}
+   data = self.model_dump(include=include, exclude=exclude, round_trip=True)
+   data = {**data, **(update or {})}
+   copied = self.model_validate(data)
+   ```
+
+   Args:
+       include: Optional set or mapping specifying which fields to include in the copied model.
+       exclude: Optional set or mapping specifying which fields to exclude in the copied model.
+       update: Optional dictionary of field-value pairs to override field values in the copied model.
+       deep: If True, the values of fields that are Pydantic models will be deep-copied.
+
+   Returns:
+       A copy of the model with included, excluded and updated fields as specified.
 
 apsimNGpy.parallel.process
 --------------------------
@@ -9301,14 +10206,71 @@ apsimNGpy.validation.evaluator
 ------------------------------
 
 Evaluate predicted vs. observed data using statistical and mathematical metrics.
-For detailed metric definitions, see Archontoulis et al. (2015).
+
+Implements standard model evaluation metrics used in crop modeling and other
+environmental simulation contexts. For detailed metric definitions, see:
+
+    Archontoulis, S. V., & Miguez, F. E. (2015).
+    Nonlinear regression models and applications in agricultural research.
+    *Agronomy Journal*, 107(2), 786–798.
 
 Classes
 ^^^^^^^
 
 .. py:class:: apsimNGpy.validation.evaluator.Validate
 
-   Compares predicted and observed values using various statistical metrics.
+   Compare predicted and observed values using statistical performance metrics.
+
+   Parameters
+   ----------
+   actual : ArrayLike
+       Observed (measured) values.
+   predicted : ArrayLike
+       Model-predicted values of the same length as `actual`.
+
+   Notes
+   -----
+   This class provides a consistent interface for evaluating model performance
+   using commonly used metrics such as RMSE, MAE, R², Willmott’s Index of Agreement,
+   and the Concordance Correlation Coefficient (CCC).
+
+   +---------+-----------------------------------------------+---------------------+
+   | Metric  | Description                                   | Preferred Direction |
+   +=========+===============================================+=====================+
+   | RMSE    | Root Mean Square Error                        | Smaller             |
+   +---------+-----------------------------------------------+---------------------+
+   | MAE     | Mean Absolute Error                           | Smaller             |
+   +---------+-----------------------------------------------+---------------------+
+   | MSE     | Mean Square Error                             | Smaller             |
+   +---------+-----------------------------------------------+---------------------+
+   | RRMSE   | Relative RMSE                                 | Smaller             |
+   +---------+-----------------------------------------------+---------------------+
+   | BIAS    | Mean Bias                                     | Closer to 0         |
+   +---------+-----------------------------------------------+---------------------+
+   | ME      | Modeling Efficiency                           | Larger              |
+   +---------+-----------------------------------------------+---------------------+
+   | WIA     | Willmott’s Index of Agreement                 | Larger              |
+   +---------+-----------------------------------------------+---------------------+
+   | R2      | Coefficient of Determination                  | Larger              |
+   +---------+-----------------------------------------------+---------------------+
+   | CCC     | Concordance Correlation Coefficient           | Larger              |
+   +---------+-----------------------------------------------+---------------------+
+   | SLOPE   | Regression Slope                              | Closer to 1         |
+   +---------+-----------------------------------------------+---------------------+
+
+   Examples
+   --------
+   .. code-block:: python
+
+       from apsimNGpy.optimizer.problems.validation import Validate
+       import numpy as np
+
+       obs = np.array([1.2, 2.4, 3.6, 4.8, 5.0])
+       pred = np.array([2.0, 3.5, 4.2, 5.7, 6.0])
+
+       val = Validate(obs, pred)
+       print(val.RMSE())
+       print(val.evaluate_all(verbose=True))
 
    .. py:method:: apsimNGpy.validation.evaluator.Validate.__init__(self, actual: Union[numpy.ndarray, List[float], pandas.core.series.Series], predicted: Union[numpy.ndarray, List[float], pandas.core.series.Series]) -> None
 
@@ -9316,5 +10278,78 @@ Classes
 
    .. py:attribute:: apsimNGpy.validation.evaluator.Validate.METRICS
 
-   Default: ``['RMSE', 'MAE', 'MSE', 'RRMSE', 'bias', 'ME', 'WIA', 'R2', 'CCC', 'slope']``
+   Default: ``['RMSE', 'MAE', 'MSE', 'RRMSE', 'bias', 'ME', 'WIA', 'R2', 'CCC', 'SLOPE']``
+
+   .. py:method:: apsimNGpy.validation.evaluator.Validate.MSE(self) -> float
+
+   Mean Square Error.
+
+   .. py:method:: apsimNGpy.validation.evaluator.Validate.RMSE(self) -> float
+
+   Root Mean Square Error.
+
+   .. py:method:: apsimNGpy.validation.evaluator.Validate.MAE(self) -> float
+
+   Mean Absolute Error.
+
+   .. py:method:: apsimNGpy.validation.evaluator.Validate.RRMSE(self) -> float
+
+   Relative Root Mean Square Error (normalized by mean of observed).
+
+   .. py:method:: apsimNGpy.validation.evaluator.Validate.bias(self) -> float
+
+   Mean Bias (positive = overestimation, negative = underestimation).
+
+   .. py:method:: apsimNGpy.validation.evaluator.Validate.ME(self) -> float
+
+   Modeling Efficiency (Nash–Sutcliffe Efficiency).
+
+   .. py:method:: apsimNGpy.validation.evaluator.Validate.WIA(self) -> float
+
+   Willmott’s Index of Agreement.
+
+   .. py:method:: apsimNGpy.validation.evaluator.Validate.R2(self) -> float
+
+   Coefficient of Determination.
+
+   .. py:method:: apsimNGpy.validation.evaluator.Validate.SLOPE(self) -> float
+
+   Regression slope between observed and predicted.
+
+   .. py:method:: apsimNGpy.validation.evaluator.Validate.CCC(self) -> float
+
+   Concordance Correlation Coefficient.
+
+   .. py:method:: apsimNGpy.validation.evaluator.Validate.evaluate(self, metric: str = 'RMSE') -> float
+
+   Compute a single metric value.
+
+   Parameters
+   ----------
+   metric : str, default="RMSE"
+       Name of the metric to compute (case-insensitive).
+
+   Returns
+   -------
+   float
+       Metric value.
+
+   Raises
+   ------
+   ValueError
+       If the metric name is not recognized.
+
+   .. py:method:: apsimNGpy.validation.evaluator.Validate.evaluate_all(self, verbose: bool = False) -> Dict[str, float]
+
+   Compute all available metrics at once.
+
+   Parameters
+   ----------
+   verbose : bool, default=False
+       If True, print metrics to console.
+
+   Returns
+   -------
+   dict
+       Dictionary mapping metric names to their computed values.
 

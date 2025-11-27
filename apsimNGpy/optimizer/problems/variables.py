@@ -48,6 +48,7 @@ from wrapdisc.var import (
     UniformVar,
 )
 
+UniformVa = UniformVar,
 PLACEHOLDER = object()
 ALLOWED_NAMES = {
     # Original canonical names

@@ -32,7 +32,7 @@ from apsimNGpy.exceptions import ModelNotFoundError, NodeNotFoundError
 from apsimNGpy.core.model_tools import (get_or_check_model, old_method, _edit_in_cultivar,
                                         inspect_model_inputs,
                                         ModelTools, validate_model_obj, replace_variable_by_index)
-from apsimNGpy.core.runner import run_model_externally, run_p
+from apsimNGpy.core.runner import run_model_externally, run_p, invoke_csharp_gc
 from apsimNGpy.core.model_loader import (load_apsim_model, save_model_to_file, recompile, get_node_by_path)
 import ast
 from typing import Any
@@ -45,6 +45,7 @@ import Models
 from apsimNGpy.core.pythonet_config import get_apsim_version as apsim_version
 from System import InvalidOperationException, ArgumentOutOfRangeException
 from apsimNGpy.core._cultivar import edit_cultivar_by_path
+
 # constants
 IS_NEW_MODEL = is_file_format_modified()
 APSIM_VERSION_NO = apsim_version(release_number=True)
@@ -251,11 +252,25 @@ class CoreModel(PlotManager):
         retrieves the name of the simulations in the APSIMx file
         @return: list of simulation names
         """
-        return [s.Name for s in self.simulations]
+        return model.inspect_model('Models.Core.Simulation', fullpath=False)
 
     @property
     def str_model(self):
         return json.dumps(self._str_model)
+
+    @property
+    def tables(self, ):
+        """
+        quick property returns available database report tables name
+        """
+        return self.inspect_model('Models.Report', fullpath=False)
+
+    @property
+    def managers(self, ):
+        """
+        quick property returns available database manager script names
+        """
+        return self.inspect_model('Models.Manager', fullpath=False)
 
     @str_model.setter
     def str_model(self, value: dict):
@@ -263,28 +278,44 @@ class CoreModel(PlotManager):
 
     def restart_model(self, model_info=None):
         """
-        Parameters:
+        Reinitialize the APSIM model instance after edits or management updates.
+
+        Parameters
         ----------
-        model_info: collections.NamedTuple.
-           A named tuple object returned by `load_apsim_model` from the `model_loader` module.
+        model_info : collections.NamedTuple, optional
+            A named tuple returned by ``load_apsim_model`` from the ``model_loader``
+            module. Contains references to the APSIM model, datastore, and file path.
+            If not provided, the method reinitializes the model using the existing
+            ``self.model_info`` object.
 
-        Notes:
-        - This parameter is crucial whenever we need to ``reinitialize`` the model, especially after updating management practices or editing the file.
-        - In some cases, this method is executed automatically.
-        - If ``model_info`` is not specified, the simulation will be reinitialized from `self`.
+        Notes
+        -----
+        - This method is essential when the model needs to be **reloaded** after
+          modifying management scripts or saving an edited APSIM file.
+        - It may be invoked automatically by internal methods such as
+          ``save_edited_file``, ``save``, and ``update_mgt``.
+        - Reinitializing ensures that all APSIM NG components and datastore
+          references are refreshed and consistent with the modified file.
 
-        This function is called by ``save_edited_file``, `save' and ``update_mgt``.
-
-        :return: self
+        Returns
+        -------
+        self : object
+            Returns the updated ApsimModel instance.
         """
 
-        if model_info:
+        # Update model_info only if explicitly passed
+        if model_info is not None:
             self.model_info = model_info
-        self.Simulations = self.model_info.IModel
-        self.datastore = self.model_info.datastore
-        self.Datastore = self.model_info.DataStore
-        self._DataStore = self.model_info.DataStore
-        self.path = self.model_info.path
+
+        # Use whichever model_info is now active
+        info = self.model_info
+
+        self.Simulations = info.IModel
+        self.datastore = info.datastore
+        self.Datastore = info.DataStore
+        self._DataStore = info.DataStore
+        self.path = info.path
+
         return self
 
     def save(self, file_name: Union[str, Path, None] = None, reload=True):
@@ -808,33 +839,160 @@ class CoreModel(PlotManager):
                 ['my_simulation']
                # The alternative is to use model.inspect_file to see your changes
                >>> model.inspect_file()
-               └── Simulations: .Simulations
-                ├── DataStore: .Simulations.DataStore
-                └── my_simulation: .Simulations.my_simulation
-                    ├── Clock: .Simulations.my_simulation.Clock
-                    ├── Field: .Simulations.my_simulation.Field
-                    │   ├── Fertilise at sowing: .Simulations.my_simulation.Field.Fertilise at sowing
-                    │   ├── Fertiliser: .Simulations.my_simulation.Field.Fertiliser
-                    │   ├── Harvest: .Simulations.my_simulation.Field.Harvest
-                    │   ├── Maize: .Simulations.my_simulation.Field.Maize
-                    │   ├── Report: .Simulations.my_simulation.Field.Report
-                    │   ├── Soil: .Simulations.my_simulation.Field.Soil
-                    │   │   ├── Chemical: .Simulations.my_simulation.Field.Soil.Chemical
-                    │   │   ├── NH4: .Simulations.my_simulation.Field.Soil.NH4
-                    │   │   ├── NO3: .Simulations.my_simulation.Field.Soil.NO3
-                    │   │   ├── Organic: .Simulations.my_simulation.Field.Soil.Organic
-                    │   │   ├── Physical: .Simulations.my_simulation.Field.Soil.Physical
-                    │   │   │   └── MaizeSoil: .Simulations.my_simulation.Field.Soil.Physical.MaizeSoil
-                    │   │   ├── Urea: .Simulations.my_simulation.Field.Soil.Urea
-                    │   │   └── Water: .Simulations.my_simulation.Field.Soil.Water
-                    │   ├── Sow using a variable rule: .Simulations.my_simulation.Field.Sow using a variable rule
-                    │   └── SurfaceOrganicMatter: .Simulations.my_simulation.Field.SurfaceOrganicMatter
-                    ├── Graph: .Simulations.my_simulation.Graph
-                    │   └── Series: .Simulations.my_simulation.Graph.Series
-                    ├── MicroClimate: .Simulations.my_simulation.MicroClimate
-                    ├── SoilArbitrator: .Simulations.my_simulation.SoilArbitrator
-                    ├── Summary: .Simulations.my_simulation.Summary
-                    └── Weather: .Simulations.my_simulation.Weather
+
+         .. code-block:: none
+
+           └── Models.Core.Simulations: .Simulations
+                ├── Models.Storage.DataStore: .Simulations.DataStore
+                ├── Models.Core.Folder: .Simulations.Replacements
+                │   └── Models.PMF.Plant: .Simulations.Replacements.Maize
+                │       └── Models.Core.Folder: .Simulations.Replacements.Maize.CultivarFolder
+                │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Atrium
+                │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.CG4141
+                │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Dekalb_XL82
+                │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.GH_5009
+                │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.GH_5019WX
+                │           ├── Models.Core.Folder: .Simulations.Replacements.Maize.CultivarFolder.Generic
+                │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_100
+                │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_103
+                │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_105
+                │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_108
+                │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_110
+                │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_112
+                │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_115
+                │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_120
+                │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_130
+                │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_80
+                │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_90
+                │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.A_95
+                │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_100
+                │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_103
+                │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_105
+                │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_108
+                │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_110
+                │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_112
+                │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_115
+                │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_120
+                │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_130
+                │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_80
+                │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_90
+                │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.B_95
+                │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.HY_110
+                │           │   ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.LY_110
+                │           │   └── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Generic.P1197
+                │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Hycorn_40
+                │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Hycorn_53
+                │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Katumani
+                │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Laila
+                │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Makueni
+                │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Melkassa
+                │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.NSCM_41
+                │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Pioneer_3153
+                │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Pioneer_33M54
+                │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Pioneer_34K77
+                │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Pioneer_38H20
+                │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Pioneer_39G12
+                │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.Pioneer_39V43
+                │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.malawi_local
+                │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.mh12
+                │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.mh16
+                │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.mh17
+                │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.mh18
+                │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.mh19
+                │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.r201
+                │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.r215
+                │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.sc401
+                │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.sc501
+                │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.sc601
+                │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.sc623
+                │           ├── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.sc625
+                │           └── Models.PMF.Cultivar: .Simulations.Replacements.Maize.CultivarFolder.sr52
+                └── Models.Core.Simulation: .Simulations.Simulation
+                    ├── Models.Clock: .Simulations.Simulation.Clock
+                    ├── Models.Core.Zone: .Simulations.Simulation.Field
+                    │   ├── Models.Manager: .Simulations.Simulation.Field.Fertilise at sowing
+                    │   ├── Models.Fertiliser: .Simulations.Simulation.Field.Fertiliser
+                    │   ├── Models.Manager: .Simulations.Simulation.Field.Harvest
+                    │   ├── Models.PMF.Plant: .Simulations.Simulation.Field.Maize
+                    │   │   └── Models.Core.Folder: .Simulations.Simulation.Field.Maize.CultivarFolder
+                    │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Atrium
+                    │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.CG4141
+                    │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82
+                    │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.GH_5009
+                    │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.GH_5019WX
+                    │   │       ├── Models.Core.Folder: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic
+                    │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_100
+                    │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_103
+                    │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_105
+                    │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_108
+                    │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_110
+                    │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_112
+                    │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_115
+                    │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_120
+                    │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_130
+                    │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_80
+                    │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_90
+                    │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.A_95
+                    │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_100
+                    │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_103
+                    │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_105
+                    │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_108
+                    │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_110
+                    │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_112
+                    │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_115
+                    │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_120
+                    │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_130
+                    │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_80
+                    │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_90
+                    │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_95
+                    │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.HY_110
+                    │   │       │   ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.LY_110
+                    │   │       │   └── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Generic.P1197
+                    │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Hycorn_40
+                    │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Hycorn_53
+                    │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Katumani
+                    │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Laila
+                    │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Makueni
+                    │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Melkassa
+                    │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.NSCM_41
+                    │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Pioneer_3153
+                    │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Pioneer_33M54
+                    │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Pioneer_34K77
+                    │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Pioneer_38H20
+                    │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Pioneer_39G12
+                    │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.Pioneer_39V43
+                    │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.malawi_local
+                    │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.mh12
+                    │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.mh16
+                    │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.mh17
+                    │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.mh18
+                    │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.mh19
+                    │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.r201
+                    │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.r215
+                    │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.sc401
+                    │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.sc501
+                    │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.sc601
+                    │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.sc623
+                    │   │       ├── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.sc625
+                    │   │       └── Models.PMF.Cultivar: .Simulations.Simulation.Field.Maize.CultivarFolder.sr52
+                    │   ├── Models.Report: .Simulations.Simulation.Field.Report
+                    │   ├── Models.Soils.Soil: .Simulations.Simulation.Field.Soil
+                    │   │   ├── Models.Soils.Chemical: .Simulations.Simulation.Field.Soil.Chemical
+                    │   │   ├── Models.Soils.Solute: .Simulations.Simulation.Field.Soil.NH4
+                    │   │   ├── Models.Soils.Solute: .Simulations.Simulation.Field.Soil.NO3
+                    │   │   ├── Models.Soils.Organic: .Simulations.Simulation.Field.Soil.Organic
+                    │   │   ├── Models.Soils.Physical: .Simulations.Simulation.Field.Soil.Physical
+                    │   │   │   └── Models.Soils.SoilCrop: .Simulations.Simulation.Field.Soil.Physical.MaizeSoil
+                    │   │   ├── Models.Soils.Solute: .Simulations.Simulation.Field.Soil.Urea
+                    │   │   └── Models.Soils.Water: .Simulations.Simulation.Field.Soil.Water
+                    │   ├── Models.Manager: .Simulations.Simulation.Field.Sow using a variable rule
+                    │   └── Models.Surface.SurfaceOrganicMatter: .Simulations.Simulation.Field.SurfaceOrganicMatter
+                    ├── Models.Graph: .Simulations.Simulation.Graph
+                    │   └── Models.Series: .Simulations.Simulation.Graph.Series
+                    ├── Models.MicroClimate: .Simulations.Simulation.MicroClimate
+                    ├── Models.Soils.Arbitrator.SoilArbitrator: .Simulations.Simulation.SoilArbitrator
+                    ├── Models.Summary: .Simulations.Simulation.Summary
+                    └── Models.Climate.Weather: .Simulations.Simulation.Weather
 
          .. seealso::
 
@@ -1418,8 +1576,8 @@ class CoreModel(PlotManager):
                         self.add_crop_replacements(_crop=crop_name)
 
                 kwargs['plant'] = trace_cultivar(self.Simulations, values.Name).get(values.Name)
-                edit_cultivar_by_path(self, path = path, commands=kwargs.get('commands'),
-                                      values= kwargs.get('values'), manager_param=kwargs.get('manager_param'),
+                edit_cultivar_by_path(self, path=path, commands=kwargs.get('commands'),
+                                      values=kwargs.get('values'), manager_param=kwargs.get('manager_param'),
                                       manager_path=kwargs.get('manager_path'),
                                       sowed=kwargs.get('sowed'), rename=kwargs.get('rename'))
                 _edit_in_cultivar(self, model_name=values.Name, simulations=simulations, param_values=kwargs,
@@ -1774,7 +1932,7 @@ class CoreModel(PlotManager):
                     if not replace_ments and not isinstance(model_type, Models.Core.Folder):
                         raise NotImplementedError(f"No edit method implemented for model type {type(model_instance)}")
 
-        for _  in map(edit_object, edit_candidate_objects):
+        for _ in map(edit_object, edit_candidate_objects):
             pass
 
         self.ran_ok = False
@@ -1859,7 +2017,7 @@ class CoreModel(PlotManager):
             raise ValueError('report or database table is required via `report_name` parameter')
         sims = self.find_simulations(simulations)
         rep = self.get_replacements_node()
-        if rep is not None and self.find_model_in_replacements( model_type=Models.Report, model_name=report_name):
+        if rep is not None and self.find_model_in_replacements(model_type=Models.Report, model_name=report_name):
             sims = {rep}
         for sim in sims:
             if isinstance(variable_spec, str):
@@ -3968,7 +4126,7 @@ class CoreModel(PlotManager):
                 dul_[enum] = d
         return dul_
 
-    def clean_up(self, db=True, verbose=False, coerce=True, csv=True):
+    def clean_up(self, db=True, verbose=False, csv=True):
         """
         Clears the file cloned the datastore and associated csv files are not deleted if db is set to False defaults to True.
 
@@ -3988,20 +4146,22 @@ class CoreModel(PlotManager):
             bak = path.with_suffix('.bak')
             db_wal = path.with_suffix('.db-wal')
             db_shm = path.with_suffix('.db-shm')
-            db_csv = {path.with_suffix(f'.{rep}.csv') for rep in
-                      self.inspect_model(Models.Report, fullpath=False)} if csv else {}
+            try:
+                db_csv = {path.with_suffix(f'.{rep}.csv') for rep in
+                          self.inspect_model(Models.Report, fullpath=False)} if csv else set()
+            except TypeError:
+                db_csv = set()
             clean_candidates = {bak, bak, db_wal, path, db_shm, *db_csv}
             if db:
-                from System import GC
-                GC.Collect()
                 clean_candidates.add(_db)
             for candidate in clean_candidates:
                 try:
                     _exists = candidate.exists()
                     candidate.unlink(missing_ok=True)
-                    no_exists = candidate.exists()
-                    if verbose and _exists and not no_exists:
-                        logger.info(f'{candidate} cleaned successfully')
+
+                    if verbose and _exists:
+                        if not candidate.exists():
+                            logger.info(f'{candidate} cleaned successfully')
 
                 except PermissionError:
                     if verbose:
@@ -4281,7 +4441,7 @@ class CoreModel(PlotManager):
         ``Raises:``
             - *ValueError*: If the specified crop is not found.
         """
-        if  self.get_replacements_node():
+        if self.get_replacements_node():
             return self
 
         _FOLDER = Models.Core.Folder()
@@ -4541,16 +4701,16 @@ class CoreModel(PlotManager):
                 child_prefix = "    " if is_last_key else "│   "
                 current_path = f"{full_path}.{key}" if full_path else key
                 try:
-                  if not current_path.startswith('.'):
-                      node_path = f".{current_path}"
-                  else:
-                      node_path = current_path
-                  _model_type = get_node_by_path(self.Simulations, node_path)
+                    if not current_path.startswith('.'):
+                        node_path = f".{current_path}"
+                    else:
+                        node_path = current_path
+                    _model_type = get_node_by_path(self.Simulations, node_path)
                 except NodeNotFoundError as nde:
                     _model_type = ''
                 mo_del = getattr(_model_type, 'Model', _model_type)
                 mod = CastHelper.CastAs[mo_del.GetType()](mo_del)
-                #print(mod)
+                # print(mod)
                 print(f"{prefix}{branch}\033[95m{mod}\033[0m: .{current_path}")
 
                 # else:
@@ -4685,7 +4845,7 @@ class CoreModel(PlotManager):
         """
         if not rename:
             raise ValueError(f" please specify rename ")
-        import Models
+
         report_table = Models.Report()
         report_table.Name = rename
         # Default events if not specified
@@ -4772,6 +4932,6 @@ if __name__ == '__main__':
         print('Path exists before exit:', Path(corep.path).exists())
         print('datastore Path exists before exit:', Path(corep.datastore).exists())
         corep.add_base_replacements()
-        corep.inspect_file()
+        corep.inspect_file(cultivar=True)
     print('Path exists after exit:', Path(corep.path).exists())
     print('datastore Path exists after exit:', Path(corep.datastore).exists())

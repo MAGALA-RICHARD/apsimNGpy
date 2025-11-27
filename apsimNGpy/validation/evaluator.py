@@ -38,20 +38,29 @@ class Validate:
     using commonly used metrics such as RMSE, MAE, R², Willmott’s Index of Agreement,
     and the Concordance Correlation Coefficient (CCC).
 
-    Available metrics
-    -----------------
-    | Metric  | Description                          | Goal / Direction | Sign |
-    | :------- | :----------------------------------- | :---------------- | :---- |
-    | **RMSE** | Root Mean Square Error               | Smaller is better | `-1` |
-    | **MAE**  | Mean Absolute Error                  | Smaller is better | `-1` |
-    | **MSE**  | Mean Square Error                    | Smaller is better | `-1` |
-    | **RRMSE**| Relative RMSE                        | Smaller is better | `-1` |
-    | **bias** | Mean Bias                            | Close to 0        | `-1` |
-    | **ME**   | Modeling Efficiency (NSE)            | Larger is better  | `+1` |
-    | **WIA**  | Willmott’s Index of Agreement        | Larger is better  | `+1` |
-    | **R2**   | Coefficient of Determination         | Larger is better  | `+1` |
-    | **CCC**  | Concordance Correlation Coefficient  | Larger is better  | `+1` |
-    | **slope**| Regression slope                     | Close to 1        | `+1` |
+    +---------+-----------------------------------------------+---------------------+
+    | Metric  | Description                                   | Preferred Direction |
+    +=========+===============================================+=====================+
+    | RMSE    | Root Mean Square Error                        | Smaller             |
+    +---------+-----------------------------------------------+---------------------+
+    | MAE     | Mean Absolute Error                           | Smaller             |
+    +---------+-----------------------------------------------+---------------------+
+    | MSE     | Mean Square Error                             | Smaller             |
+    +---------+-----------------------------------------------+---------------------+
+    | RRMSE   | Relative RMSE                                 | Smaller             |
+    +---------+-----------------------------------------------+---------------------+
+    | BIAS    | Mean Bias                                     | Closer to 0         |
+    +---------+-----------------------------------------------+---------------------+
+    | ME      | Modeling Efficiency                           | Larger              |
+    +---------+-----------------------------------------------+---------------------+
+    | WIA     | Willmott’s Index of Agreement                 | Larger              |
+    +---------+-----------------------------------------------+---------------------+
+    | R2      | Coefficient of Determination                  | Larger              |
+    +---------+-----------------------------------------------+---------------------+
+    | CCC     | Concordance Correlation Coefficient           | Larger              |
+    +---------+-----------------------------------------------+---------------------+
+    | SLOPE   | Regression Slope                              | Closer to 1         |
+    +---------+-----------------------------------------------+---------------------+
 
     Examples
     --------

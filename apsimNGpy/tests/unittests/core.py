@@ -193,7 +193,6 @@ class TestCoreModel(BaseTester):
             self.assertIsInstance(sims, list)
             self.assertTrue(len(sims) > 0)
 
-
     def test_find__simulations_when_str(self):
         with CoreModel('Maize') as model:
             # get a list of simulations
@@ -204,7 +203,6 @@ class TestCoreModel(BaseTester):
             # ensures simulations are enclosed in a list
             self.assertIsInstance(sims, list)
             self.assertTrue(len(sims) > 0)
-
 
     def test_rename(self):
         NEW_NAME = 'NEW_SIM_NAME'
@@ -240,7 +238,6 @@ class TestCoreModel(BaseTester):
             testP = testP['Carbon'].tolist()
             self.assertEqual(lisT[:2], param_values,
                              msg=f'replace_soil_property_values was not successful returned {testP}\n got {param_values}')
-
 
     def test_replace_soil_properties_by_path(self):
         param_values = [1.45, 1.95]
@@ -409,7 +406,7 @@ class TestCoreModel(BaseTester):
     def test_edit_model(self):
         with CoreModel("Maize") as model:
             model.edit_model(model_type='Clock', model_name='Clock', simulations="Simulation",
-                                        Start='1900-01-01', End='1990-01-12')
+                             Start='1900-01-01', End='1990-01-12')
             info = model.inspect_model_parameters('Models.Clock', 'Clock')
 
             self.assertEqual(info['Start'].year, 1900, 'Simulation start date was not successfully changed')

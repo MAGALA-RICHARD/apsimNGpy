@@ -45,7 +45,6 @@ class TestExperiment(BaseTester):
         self.assertFalse(Path(model.path).exists(), 'Path exists; context manager not working as expected')
         self.assertFalse(datastore.exists(), msg=f'data store exists context manager not working as expected')
 
-
     def test_add_factor_with_permutes_2_factors(self):
         t_experiment = self.experiment_model
         t_experiment.init_experiment(permutation=True)

@@ -388,7 +388,7 @@ class ExperimentManager(ApsimModel):
             self.save()
 
         if is_higher_apsim_version(self.Simulations):
-            print("Higher Apsim")
+
             refresher()
 
         else:

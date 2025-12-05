@@ -23,7 +23,7 @@
    :alt: Ask Teams
 
 .. image:: https://img.shields.io/badge/Download--APSIM--NG-2025.08.7844-blue?style=flat&logo=apachespark
-   :target: https://registration.apsim.info/?version=2025.08.7844.0&product=APSIM%20Next%20Generation
+   :target: https://registration.apsim.info/?version=2025.12.7939.0&product=APSIM%20Next%20Generation
    :alt: APSIM Next Generation version
 
 ===============================================================

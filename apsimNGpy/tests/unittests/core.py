@@ -172,7 +172,7 @@ class TestCoreModel(BaseTester):
     def test_get_reports(self):
         with CoreModel('Maize') as maize_model:
             self.assertIsInstance(maize_model.inspect_model('Report'), list)
-            self.assertTrue(maize_model.tables)
+            self.assertTrue(maize_model.tables_list)
 
     def test_inspect_clock(self):
         with CoreModel('Maize') as maize_model:

@@ -368,8 +368,6 @@ class ExperimentManager(ApsimModel):
             sim = _get_base_sim()
             base_full_path = sim.FullPath
             siM.Children.Add(experiment)
-            xm =Models.Core.Simulation()
-
             sim.SetParent(experiment)
             experiment.Children.Add(sim)
             # remove base simulation

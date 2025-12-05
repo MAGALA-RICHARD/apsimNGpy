@@ -75,38 +75,14 @@ Classes
    List of Public Attributes:
    __________________________________
 
-   - :attr:`~apsimNGpy.core.apsim.ApsimModel.Datastore`
-   - :attr:`~apsimNGpy.core.apsim.ApsimModel.End`
-   - :attr:`~apsimNGpy.core.apsim.ApsimModel.Models`
-   - :attr:`~apsimNGpy.core.apsim.ApsimModel.Simulations`
-   - :attr:`~apsimNGpy.core.apsim.ApsimModel.Start`
-   - :attr:`~apsimNGpy.core.apsim.ApsimModel.base_name`
    - :attr:`~apsimNGpy.core.apsim.ApsimModel.configs`
-   - :attr:`~apsimNGpy.core.apsim.ApsimModel.copy`
-   - :attr:`~apsimNGpy.core.apsim.ApsimModel.datastore`
-   - :attr:`~apsimNGpy.core.apsim.ApsimModel.experiment`
-   - :attr:`~apsimNGpy.core.apsim.ApsimModel.experiment_created`
-   - :attr:`~apsimNGpy.core.apsim.ApsimModel.factor_names`
-   - :attr:`~apsimNGpy.core.apsim.ApsimModel.factors`
-   - :attr:`~apsimNGpy.core.apsim.ApsimModel.managers`
-   - :attr:`~apsimNGpy.core.apsim.ApsimModel.model`
-   - :attr:`~apsimNGpy.core.apsim.ApsimModel.model_info`
-   - :attr:`~apsimNGpy.core.apsim.ApsimModel.others`
-   - :attr:`~apsimNGpy.core.apsim.ApsimModel.out`
-   - :attr:`~apsimNGpy.core.apsim.ApsimModel.out_path`
-   - :attr:`~apsimNGpy.core.apsim.ApsimModel.path`
-   - :attr:`~apsimNGpy.core.apsim.ApsimModel.permutation`
-   - :attr:`~apsimNGpy.core.apsim.ApsimModel.ran_ok`
-   - :attr:`~apsimNGpy.core.apsim.ApsimModel.report_names`
+   - :attr:`~apsimNGpy.core.apsim.ApsimModel.managers_scripts_list`
    - :attr:`~apsimNGpy.core.apsim.ApsimModel.results`
-   - :attr:`~apsimNGpy.core.apsim.ApsimModel.run_method`
-   - :attr:`~apsimNGpy.core.apsim.ApsimModel.set_wd`
    - :attr:`~apsimNGpy.core.apsim.ApsimModel.simulation_names`
    - :attr:`~apsimNGpy.core.apsim.ApsimModel.simulations`
+   - :attr:`~apsimNGpy.core.apsim.ApsimModel.simulations_list`
    - :attr:`~apsimNGpy.core.apsim.ApsimModel.str_model`
-   - :attr:`~apsimNGpy.core.apsim.ApsimModel.tables`
-   - :attr:`~apsimNGpy.core.apsim.ApsimModel.wk_info`
-   - :attr:`~apsimNGpy.core.apsim.ApsimModel.work_space`
+   - :attr:`~apsimNGpy.core.apsim.ApsimModel.tables_list`
    List of Public Methods
    -----------------------------
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.add_base_replacements`
@@ -373,13 +349,18 @@ Classes
    retrieves the name of the simulations in the APSIMx file
    @return: list of simulation names
 
-   .. py:property:: apsimNGpy.core.apsim.ApsimModel.tables (inherited)
+   .. py:property:: apsimNGpy.core.apsim.ApsimModel.tables_list (inherited)
 
    quick property returns available database report tables name
 
-   .. py:property:: apsimNGpy.core.apsim.ApsimModel.managers (inherited)
+   .. py:property:: apsimNGpy.core.apsim.ApsimModel.managers_scripts_list (inherited)
 
    quick property returns available database manager script names
+
+   .. py:property:: apsimNGpy.core.apsim.ApsimModel.simulations_list (inherited)
+
+   quick property for returning a list of available simulation names
+   @return:
 
    .. py:method:: apsimNGpy.core.apsim.ApsimModel.restart_model(self, model_info=None) (inherited)
 
@@ -1257,13 +1238,12 @@ Classes
            ".Simulations.Simulation.Field.Soil.Physical",
            LL15="[0.26, 0.18, 0.10, 0.12]")
 
-   Apply cultivar edits across selected simulations::
+   Apply cultivar edits::
 
        model.edit_model_by_path(
            ".Simulations.Simulation.Field.Maize.CultivarFolder.mh18",
-           simulations=("Sim_A", "Sim_B"),
-           verbose=True,
-           **{"Phenology.EmergencePhase.Photoperiod": "Short"} )
+           sowed=True,
+           **{"Phenology.EmergencePhase.Photo-period": "Short"} )
 
    .. seealso::
 
@@ -1277,6 +1257,32 @@ Classes
    .. py:method:: apsimNGpy.core.apsim.ApsimModel.edit_model(self, model_type: 'str', model_name: 'str', simulations: 'Union[str, list]' = 'all', exclude=None, verbose=False, **kwargs) (inherited)
 
    Modify various APSIM model components by specifying the model type and name across given simulations.
+
+   .. tip::
+
+      Editing APSIM models in **apsimNGpy** does *not* require placing the
+      target model inside a *Replacements* folder or node. However, when
+      modifying **cultivar parameters**, it can be helpful to include a
+      Replacements folder containing the relevant plant definition hosting
+      that cultivar. In many cases, apsimNGpy will handle this automatically.
+
+   Selective Editing
+   -----------------
+   Selective editing allows you to apply modifications only to certain
+   simulations. This is *not* possible when the same model instance is shared
+   through a common Replacements folder. For reliable selective editing,
+   each simulation should ideally reference a uniquely named model.
+   However, even when model names are not unique, apsimNGpy still enables
+   targeted editing through two mechanisms:
+
+   1. **Exclusion strategy**
+      You can explicitly *exclude* simulations to which the edits should
+      **not** be applied.
+
+   2. **Specification strategy**
+      You can explicitly *specify* which simulations should have their
+      models edited or replaced with new parameters.
+
 
    Parameters
    ----------
@@ -2153,8 +2159,10 @@ Classes
        APSIM GUI saved. Syncing model...
        2025-10-24 13:05:24,112 - INFO - Watching terminated successfully.
 
-   When ``watch=True``, follow the console instructions.
-   One critical step is that you **must press** ``Ctrl+C`` to stop watching.
+   .. tip::
+
+       When ``watch=True``, follow the console instructions.
+       One critical step is that you **must press** ``Ctrl+C`` to stop watching.
 
    **Checking if changes were successfully propagated back**
 
@@ -2175,8 +2183,10 @@ Classes
         'RowSpacing': '700',
         'Population': '4'}
 
-   Depending on your environment, you may need to close the GUI window to continue
-   or follow the prompts shown after termination.
+   .. tip::
+
+       Depending on your environment, you may need to close the GUI window to continue
+       or follow the prompts shown after termination.
 
    .. py:method:: apsimNGpy.core.apsim.ApsimModel.replace_met_file(self, *, weather_file: 'Union[Path, str]', simulations=<UserOptionMissing>, exclude: 'set | str | tuple | list' = None, **kwargs) (inherited)
 
@@ -3064,106 +3074,6 @@ Classes
 
     Related APIs: :meth:`remove_report_variables` and :meth:`add_report_variables`.
 
-   .. py:attribute:: apsimNGpy.core.apsim.ApsimModel.Datastore (inherited)
-
-   Default: ``<member 'Datastore' of 'CoreModel' objects>``
-
-   .. py:attribute:: apsimNGpy.core.apsim.ApsimModel.End (inherited)
-
-   Default: ``<member 'End' of 'CoreModel' objects>``
-
-   .. py:attribute:: apsimNGpy.core.apsim.ApsimModel.Models (inherited)
-
-   Default: ``<member 'Models' of 'CoreModel' objects>``
-
-   .. py:attribute:: apsimNGpy.core.apsim.ApsimModel.Simulations (inherited)
-
-   Default: ``<member 'Simulations' of 'CoreModel' objects>``
-
-   .. py:attribute:: apsimNGpy.core.apsim.ApsimModel.Start (inherited)
-
-   Default: ``<member 'Start' of 'CoreModel' objects>``
-
-   .. py:attribute:: apsimNGpy.core.apsim.ApsimModel.base_name (inherited)
-
-   Default: ``<member 'base_name' of 'CoreModel' objects>``
-
-   .. py:attribute:: apsimNGpy.core.apsim.ApsimModel.copy (inherited)
-
-   Default: ``<member 'copy' of 'CoreModel' objects>``
-
-   .. py:attribute:: apsimNGpy.core.apsim.ApsimModel.datastore (inherited)
-
-   Default: ``<member 'datastore' of 'CoreModel' objects>``
-
-   .. py:attribute:: apsimNGpy.core.apsim.ApsimModel.experiment (inherited)
-
-   Default: ``<member 'experiment' of 'CoreModel' objects>``
-
-   .. py:attribute:: apsimNGpy.core.apsim.ApsimModel.experiment_created (inherited)
-
-   Default: ``<member 'experiment_created' of 'CoreModel' objects>``
-
-   .. py:attribute:: apsimNGpy.core.apsim.ApsimModel.factor_names (inherited)
-
-   Default: ``<member 'factor_names' of 'CoreModel' objects>``
-
-   .. py:attribute:: apsimNGpy.core.apsim.ApsimModel.factors (inherited)
-
-   Default: ``<member 'factors' of 'CoreModel' objects>``
-
-   .. py:attribute:: apsimNGpy.core.apsim.ApsimModel.model (inherited)
-
-   Default: ``<member 'model' of 'CoreModel' objects>``
-
-   .. py:attribute:: apsimNGpy.core.apsim.ApsimModel.model_info (inherited)
-
-   Default: ``<member 'model_info' of 'CoreModel' objects>``
-
-   .. py:attribute:: apsimNGpy.core.apsim.ApsimModel.others (inherited)
-
-   Default: ``<member 'others' of 'CoreModel' objects>``
-
-   .. py:attribute:: apsimNGpy.core.apsim.ApsimModel.out (inherited)
-
-   Default: ``<member 'out' of 'CoreModel' objects>``
-
-   .. py:attribute:: apsimNGpy.core.apsim.ApsimModel.out_path (inherited)
-
-   Default: ``<member 'out_path' of 'CoreModel' objects>``
-
-   .. py:attribute:: apsimNGpy.core.apsim.ApsimModel.path (inherited)
-
-   Default: ``<member 'path' of 'CoreModel' objects>``
-
-   .. py:attribute:: apsimNGpy.core.apsim.ApsimModel.permutation (inherited)
-
-   Default: ``<member 'permutation' of 'CoreModel' objects>``
-
-   .. py:attribute:: apsimNGpy.core.apsim.ApsimModel.ran_ok (inherited)
-
-   Default: ``<member 'ran_ok' of 'CoreModel' objects>``
-
-   .. py:attribute:: apsimNGpy.core.apsim.ApsimModel.report_names (inherited)
-
-   Default: ``<member 'report_names' of 'CoreModel' objects>``
-
-   .. py:attribute:: apsimNGpy.core.apsim.ApsimModel.run_method (inherited)
-
-   Default: ``<member 'run_method' of 'CoreModel' objects>``
-
-   .. py:attribute:: apsimNGpy.core.apsim.ApsimModel.set_wd (inherited)
-
-   Default: ``<member 'set_wd' of 'CoreModel' objects>``
-
-   .. py:attribute:: apsimNGpy.core.apsim.ApsimModel.wk_info (inherited)
-
-   Default: ``<member 'wk_info' of 'CoreModel' objects>``
-
-   .. py:attribute:: apsimNGpy.core.apsim.ApsimModel.work_space (inherited)
-
-   Default: ``<member 'work_space' of 'CoreModel' objects>``
-
    .. py:method:: apsimNGpy.core.apsim.ApsimModel.plot_mva(self, table: pandas.core.frame.DataFrame, time_col: Hashable, response: Hashable, *, expression: str = None, window: int = 5, min_period: int = 1, grouping: Union[Hashable, collections.abc.Sequence[Hashable], NoneType] = None, preserve_start: bool = True, kind: str = 'line', estimator='mean', plot_raw: bool = False, raw_alpha: float = 0.35, raw_linewidth: float = 1.0, auto_datetime: bool = False, ylabel: Optional[str] = None, return_data: bool = False, **kwargs) -> seaborn.axisgrid.FacetGrid | tuple[seaborn.axisgrid.FacetGrid, pandas.core.frame.DataFrame] (inherited)
 
    Plot a centered moving-average (MVA) of a response using ``seaborn.relplot``.
@@ -3820,39 +3730,15 @@ Classes
    List of Public Attributes:
    __________________________________
 
-   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.Datastore`
-   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.End`
-   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.Models`
-   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.Simulations`
-   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.Start`
-   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.base_name`
    - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.configs`
-   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.copy`
-   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.datastore`
-   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.experiment`
-   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.experiment_created`
-   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.factor_names`
-   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.factors`
-   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.managers`
-   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.model`
-   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.model_info`
+   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.managers_scripts_list`
    - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.n_factors`
-   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.others`
-   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.out`
-   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.out_path`
-   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.path`
-   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.permutation`
-   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.ran_ok`
-   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.report_names`
    - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.results`
-   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.run_method`
-   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.set_wd`
    - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.simulation_names`
    - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.simulations`
+   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.simulations_list`
    - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.str_model`
-   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.tables`
-   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.wk_info`
-   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.work_space`
+   - :attr:`~apsimNGpy.core.experimentmanager.ExperimentManager.tables_list`
    List of Public Methods
    -----------------------------
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.add_base_replacements`
@@ -4424,13 +4310,18 @@ Classes
    retrieves the name of the simulations in the APSIMx file
    @return: list of simulation names
 
-   .. py:property:: apsimNGpy.core.experimentmanager.ExperimentManager.tables (inherited)
+   .. py:property:: apsimNGpy.core.experimentmanager.ExperimentManager.tables_list (inherited)
 
    quick property returns available database report tables name
 
-   .. py:property:: apsimNGpy.core.experimentmanager.ExperimentManager.managers (inherited)
+   .. py:property:: apsimNGpy.core.experimentmanager.ExperimentManager.managers_scripts_list (inherited)
 
    quick property returns available database manager script names
+
+   .. py:property:: apsimNGpy.core.experimentmanager.ExperimentManager.simulations_list (inherited)
+
+   quick property for returning a list of available simulation names
+   @return:
 
    .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.restart_model(self, model_info=None) (inherited)
 
@@ -5308,13 +5199,12 @@ Classes
            ".Simulations.Simulation.Field.Soil.Physical",
            LL15="[0.26, 0.18, 0.10, 0.12]")
 
-   Apply cultivar edits across selected simulations::
+   Apply cultivar edits::
 
        model.edit_model_by_path(
            ".Simulations.Simulation.Field.Maize.CultivarFolder.mh18",
-           simulations=("Sim_A", "Sim_B"),
-           verbose=True,
-           **{"Phenology.EmergencePhase.Photoperiod": "Short"} )
+           sowed=True,
+           **{"Phenology.EmergencePhase.Photo-period": "Short"} )
 
    .. seealso::
 
@@ -5328,6 +5218,32 @@ Classes
    .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.edit_model(self, model_type: 'str', model_name: 'str', simulations: 'Union[str, list]' = 'all', exclude=None, verbose=False, **kwargs) (inherited)
 
    Modify various APSIM model components by specifying the model type and name across given simulations.
+
+   .. tip::
+
+      Editing APSIM models in **apsimNGpy** does *not* require placing the
+      target model inside a *Replacements* folder or node. However, when
+      modifying **cultivar parameters**, it can be helpful to include a
+      Replacements folder containing the relevant plant definition hosting
+      that cultivar. In many cases, apsimNGpy will handle this automatically.
+
+   Selective Editing
+   -----------------
+   Selective editing allows you to apply modifications only to certain
+   simulations. This is *not* possible when the same model instance is shared
+   through a common Replacements folder. For reliable selective editing,
+   each simulation should ideally reference a uniquely named model.
+   However, even when model names are not unique, apsimNGpy still enables
+   targeted editing through two mechanisms:
+
+   1. **Exclusion strategy**
+      You can explicitly *exclude* simulations to which the edits should
+      **not** be applied.
+
+   2. **Specification strategy**
+      You can explicitly *specify* which simulations should have their
+      models edited or replaced with new parameters.
+
 
    Parameters
    ----------
@@ -6204,8 +6120,10 @@ Classes
        APSIM GUI saved. Syncing model...
        2025-10-24 13:05:24,112 - INFO - Watching terminated successfully.
 
-   When ``watch=True``, follow the console instructions.
-   One critical step is that you **must press** ``Ctrl+C`` to stop watching.
+   .. tip::
+
+       When ``watch=True``, follow the console instructions.
+       One critical step is that you **must press** ``Ctrl+C`` to stop watching.
 
    **Checking if changes were successfully propagated back**
 
@@ -6226,8 +6144,10 @@ Classes
         'RowSpacing': '700',
         'Population': '4'}
 
-   Depending on your environment, you may need to close the GUI window to continue
-   or follow the prompts shown after termination.
+   .. tip::
+
+       Depending on your environment, you may need to close the GUI window to continue
+       or follow the prompts shown after termination.
 
    .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.replace_met_file(self, *, weather_file: 'Union[Path, str]', simulations=<UserOptionMissing>, exclude: 'set | str | tuple | list' = None, **kwargs) (inherited)
 
@@ -7082,106 +7002,6 @@ Classes
    .. seealso::
 
     Related APIs: :meth:`remove_report_variables` and :meth:`add_report_variables`.
-
-   .. py:attribute:: apsimNGpy.core.experimentmanager.ExperimentManager.Datastore (inherited)
-
-   Default: ``<member 'Datastore' of 'CoreModel' objects>``
-
-   .. py:attribute:: apsimNGpy.core.experimentmanager.ExperimentManager.End (inherited)
-
-   Default: ``<member 'End' of 'CoreModel' objects>``
-
-   .. py:attribute:: apsimNGpy.core.experimentmanager.ExperimentManager.Models (inherited)
-
-   Default: ``<member 'Models' of 'CoreModel' objects>``
-
-   .. py:attribute:: apsimNGpy.core.experimentmanager.ExperimentManager.Simulations (inherited)
-
-   Default: ``<member 'Simulations' of 'CoreModel' objects>``
-
-   .. py:attribute:: apsimNGpy.core.experimentmanager.ExperimentManager.Start (inherited)
-
-   Default: ``<member 'Start' of 'CoreModel' objects>``
-
-   .. py:attribute:: apsimNGpy.core.experimentmanager.ExperimentManager.base_name (inherited)
-
-   Default: ``<member 'base_name' of 'CoreModel' objects>``
-
-   .. py:attribute:: apsimNGpy.core.experimentmanager.ExperimentManager.copy (inherited)
-
-   Default: ``<member 'copy' of 'CoreModel' objects>``
-
-   .. py:attribute:: apsimNGpy.core.experimentmanager.ExperimentManager.datastore (inherited)
-
-   Default: ``<member 'datastore' of 'CoreModel' objects>``
-
-   .. py:attribute:: apsimNGpy.core.experimentmanager.ExperimentManager.experiment (inherited)
-
-   Default: ``<member 'experiment' of 'CoreModel' objects>``
-
-   .. py:attribute:: apsimNGpy.core.experimentmanager.ExperimentManager.experiment_created (inherited)
-
-   Default: ``<member 'experiment_created' of 'CoreModel' objects>``
-
-   .. py:attribute:: apsimNGpy.core.experimentmanager.ExperimentManager.factor_names (inherited)
-
-   Default: ``<member 'factor_names' of 'CoreModel' objects>``
-
-   .. py:attribute:: apsimNGpy.core.experimentmanager.ExperimentManager.factors (inherited)
-
-   Default: ``<member 'factors' of 'CoreModel' objects>``
-
-   .. py:attribute:: apsimNGpy.core.experimentmanager.ExperimentManager.model (inherited)
-
-   Default: ``<member 'model' of 'CoreModel' objects>``
-
-   .. py:attribute:: apsimNGpy.core.experimentmanager.ExperimentManager.model_info (inherited)
-
-   Default: ``<member 'model_info' of 'CoreModel' objects>``
-
-   .. py:attribute:: apsimNGpy.core.experimentmanager.ExperimentManager.others (inherited)
-
-   Default: ``<member 'others' of 'CoreModel' objects>``
-
-   .. py:attribute:: apsimNGpy.core.experimentmanager.ExperimentManager.out (inherited)
-
-   Default: ``<member 'out' of 'CoreModel' objects>``
-
-   .. py:attribute:: apsimNGpy.core.experimentmanager.ExperimentManager.out_path (inherited)
-
-   Default: ``<member 'out_path' of 'CoreModel' objects>``
-
-   .. py:attribute:: apsimNGpy.core.experimentmanager.ExperimentManager.path (inherited)
-
-   Default: ``<member 'path' of 'CoreModel' objects>``
-
-   .. py:attribute:: apsimNGpy.core.experimentmanager.ExperimentManager.permutation (inherited)
-
-   Default: ``<member 'permutation' of 'CoreModel' objects>``
-
-   .. py:attribute:: apsimNGpy.core.experimentmanager.ExperimentManager.ran_ok (inherited)
-
-   Default: ``<member 'ran_ok' of 'CoreModel' objects>``
-
-   .. py:attribute:: apsimNGpy.core.experimentmanager.ExperimentManager.report_names (inherited)
-
-   Default: ``<member 'report_names' of 'CoreModel' objects>``
-
-   .. py:attribute:: apsimNGpy.core.experimentmanager.ExperimentManager.run_method (inherited)
-
-   Default: ``<member 'run_method' of 'CoreModel' objects>``
-
-   .. py:attribute:: apsimNGpy.core.experimentmanager.ExperimentManager.set_wd (inherited)
-
-   Default: ``<member 'set_wd' of 'CoreModel' objects>``
-
-   .. py:attribute:: apsimNGpy.core.experimentmanager.ExperimentManager.wk_info (inherited)
-
-   Default: ``<member 'wk_info' of 'CoreModel' objects>``
-
-   .. py:attribute:: apsimNGpy.core.experimentmanager.ExperimentManager.work_space (inherited)
-
-   Default: ``<member 'work_space' of 'CoreModel' objects>``
 
    .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.plot_mva(self, table: pandas.core.frame.DataFrame, time_col: Hashable, response: Hashable, *, expression: str = None, window: int = 5, min_period: int = 1, grouping: Union[Hashable, collections.abc.Sequence[Hashable], NoneType] = None, preserve_start: bool = True, kind: str = 'line', estimator='mean', plot_raw: bool = False, raw_alpha: float = 0.35, raw_linewidth: float = 1.0, auto_datetime: bool = False, ylabel: Optional[str] = None, return_data: bool = False, **kwargs) -> seaborn.axisgrid.FacetGrid | tuple[seaborn.axisgrid.FacetGrid, pandas.core.frame.DataFrame] (inherited)
 
@@ -9831,7 +9651,7 @@ Functions Provided
 Functions
 ^^^^^^^^^
 
-.. py:function:: apsimNGpy.optimizer.problems.variables.filter_apsim_params(params: apsimNGpy.optimizer.problems.variables.BaseParams, place_holder=<object object at 0x00000249F1B6D910>) -> Dict
+.. py:function:: apsimNGpy.optimizer.problems.variables.filter_apsim_params(params: apsimNGpy.optimizer.problems.variables.BaseParams, place_holder=<object object at 0x000002044E0CD910>) -> Dict
 
    Flatten a validated BaseParams object into a dictionary suitable for APSIM execution.
 

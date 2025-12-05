@@ -48,7 +48,19 @@ from apsimNGpy.core._cultivar import edit_cultivar_by_path
 
 # constants
 IS_NEW_MODEL = is_file_format_modified()
-APSIM_VERSION_NO = apsim_version(release_number=True)
+
+
+def is_higher_apsim_version(simulations_model):
+    try:
+        ap_version = simulations_model.get_ApsimVersion()
+    except AttributeError:
+        ap_version = apsim_version(release_number=True)
+    current_version = float(ap_version.replace(".", ''))
+    base = BASE_RELEASE_NO.replace('.', '')
+    base = float(base)
+    github_version = float(GITHUB_RELEASE_NO.replace('.', ''))
+    if current_version > base or current_version == github_version:
+        return True
 
 
 def edit_cultivar(node, cultivar_name, commands):
@@ -84,97 +96,102 @@ def compile_script(script_code: str, code_model):
     compiler(script_code, code_model)
 
 
-@dataclass(slots=True, repr=False, order=True)
 class CoreModel(PlotManager):
     """
     Modify and run APSIM Next Generation (APSIM NG) simulation models.
 
-    This class serves as the entry point for all apsimNGpy simulations and is inherited by the `ApsimModel` class.
-    It is designed to be base class for all apsimNGpy models.
+    This class is the main entry point for apsimNGpy simulations and acts
+    as the base class for :class:`ApsimModel`. It can load models either
+    from disk or from built-in default crop templates (e.g. ``"Maize"``),
+    beginning with version 0.35.
 
-    Parameters:
-    -------------
-        model: (os.PathLike) The file path to the APSIM NG model. This parameter specifies the model file to be used
-        in the simulation.
+    Parameters
+    ----------
+    model : str | Path | dict
+        Path to the APSIM NG model, or a crop-name string referring to
+        a default built-in simulation.
+    out_path : str | Path, optional
+        Destination path for the cloned model file. Defaults to using
+        the same directory as the input model.
+    experiment : bool, optional
+        If ``True``, initialize the model as an experiment.
+    set_wd : str | Path, optional
+        Working directory for scratch copies and outputs.
 
-        out_path: (str, optional)
-           The path where the output file should be saved. If not provided, the output will be saved with the same name
-           as the model file in the current dir_path.
-
-
-        experiment: (bool, optional)
-           Specifies whether to initiate your model as an experiment defaults to false
-            by default, the experiment is created with permutation but permutation can be passed as a key word argument to change
-
-    Keyword parameters:
-    -------------------
-      copy: (bool, deprecated)*:
-         Specifies whether to clone the simulation file. This parameter is deprecated
-         because the simulation file is now automatically cloned by default.
-
-    .. tip::
-
-          When an `APSIM` file is loaded, it is automatically copied to ensure
-          a fallback to the original file in case of any issues during operations.
-
-   .. Note::
-
-       Starting with version 0.35, accessing default simulations no longer requires the load_default_simulations function from the base_data module.
-       Instead, default simulations can now be retrieved directly via the CoreModel attribute or the ApsimModel class by specifying the name of the crop (e.g., "Maize").
-       This means the relevant classes can now accept either a file path or a string representing the crop name.
-
-
+    Notes
+    -----
+    * APSIM files are automatically cloned on load to protect originals.
+    * The ``copy`` keyword is deprecated; the system now always makes a
+      safe working copy.
     """
-    model: Union[str, Path, dict] = None
-    out_path: Optional[Union[str, Path]] = None
-    out: Optional[Union[str, Path]] = None
-    set_wd: Optional[Union[str, Path]] = None
-    experiment: bool = False
-    copy: Optional[bool] = field(default=None)
 
-    # Initialized in __post_init__
-    base_name: Optional[str] = field(init=False, default=None)
-    others: Dict = field(init=False, default_factory=dict)
-    report_names: Optional[List[str]] = field(init=False, default=None)
-    factor_names: List[str] = field(init=False, default_factory=list)
-    _specifications: List[str] = field(init=False, default_factory=list)
-    _intact_model: List[str] = field(init=False, default_factory=list)
-    permutation: Optional[bool] = field(init=False, default=None)
-    experiment_created: Optional[bool] = field(init=False, default=None)
-    _str_model: Optional[str] = field(init=False, default=None)
-    _model: Union[str, Path, dict] = field(init=False, default=None)
-    model_info: Optional[object] = field(init=False, default=None)
-    datastore: Optional[object] = field(init=False, default=None)
-    Simulations: Optional[object] = field(init=False, default=None)
-    Datastore: Optional[object] = field(init=False, default=None)
-    _DataStore: Optional[object] = field(init=False, default=None)
-    path: Optional[Union[str, Path]] = field(init=False, default=None)
-    _met_file: Optional[str] = field(init=False, default=None)
-    ran_ok: bool = field(init=False, default=False)
-    factors: Dict = field(init=False, default_factory=dict)
-    work_space: Optional[Union[str, Path]] = field(init=False, default=None)
-    Start: str = field(init=False, default=MissingOption)
-    End: str = field(init=False, default=MissingOption)
-    run_method: callable = field(init=False, default=None)
-    Models: object = field(init=False, default=Models)
-    wk_info: Dict = field(init=False, default_factory=dict)
+    # ------------------------------------------------------------------
+    # Construction
+    # ------------------------------------------------------------------
 
-    def __post_init__(self):
-        self._model = self.model
-        self.others = {}
+    def __init__(
+            self,
+            model=None,
+            out_path=None,
+            *,
+            experiment=False,
+            set_wd=None,
+            copy=None,
+            **kwargs
+    ):
+        # User-specified configuration
+        self.model = model
+        self.out_path = out_path
+        self.experiment = experiment
+        self.set_wd = set_wd
+        self.copy = copy  # deprecated but accepted
+        self.others = {}  # additional runtime options
         self.wk_info = {}
-        self.Models = Models
-        if isinstance(self.out_path, (str, Path)):
-            self.out_path = self.out_path
-        else:
-            self.out_path = None
 
-        if self.out is not None:
-            self.out_path = self.out  # `out` overrides `out_path` if both are provided for maintaining previous versions
+        # Runtime APSIM/NET objects (initialized below)
+        self.model_info = None
+        self.Simulations = None
+        self.datastore = None
+        self.Datastore = None
+        self._DataStore = None
+        self.path = None
+        self._str_model = None
 
+        # Metadata and experiment configuration
+        self.base_name = None
+        self.permutation = None
+        self.experiment_created = False
+        self.factor_names = []
+        self.report_names = None
+        self._specifications = []
+        self._intact_model = []
+
+        # Internal state
+        self.ran_ok = False
+        self.factors = {}
+        self.Start = MissingOption
+        self.End = MissingOption
+        self.run_method = None
+
+        # Working directories
         self.work_space = self.set_wd or SCRATCH
+        self._met_file = None
 
-        self._met_file = self.others.get('met_file')
+        # Models namespace handle
+        self.Models = Models
+
+        # Perform actual APSIM loading
+        self._initialize_model()
+
+    # ------------------------------------------------------------------
+    # Internal initialization logic
+    # ------------------------------------------------------------------
+
+    def _initialize_model(self):
+        """Load model, clone it, initialize datastore and metadata."""
+        self._model = self.model
+        self._met_file = self.others.get("met_file")
+
         self.model_info = load_apsim_model(
             self._model,
             out_path=self.out_path,
@@ -188,11 +205,15 @@ class CoreModel(PlotManager):
         self._DataStore = self.model_info.DataStore
         self.path = self.model_info.path
 
-        self.permutation = self.others.get('permutation', True)
-        self.base_name = self.others.get('base_name', None)
+        # Experiment settings
+        self.permutation = self.others.get("permutation", True)
+        self.base_name = self.others.get("base_name")
 
         if self.experiment:
-            self.create_experiment(permutation=self.permutation, base_name=self.base_name)
+            self.create_experiment(
+                permutation=self.permutation,
+                base_name=self.base_name
+            )
 
     def __enter__(self):
         return self
@@ -240,7 +261,8 @@ class CoreModel(PlotManager):
 
         # we can actually specify the simulation name in the bracket
         self.check_model()
-        if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:  # if compiled binaries from github
+
+        if is_higher_apsim_version(self.Simulations):
             return ModelTools.find_all_in_scope(self.Simulations, Models.Core.Simulation)
         return list(self.Simulations.FindAllDescendants[Models.Core.Simulation]())
 
@@ -259,18 +281,26 @@ class CoreModel(PlotManager):
         return json.dumps(self._str_model)
 
     @property
-    def tables(self, ):
+    def tables_list(self, ):
         """
         quick property returns available database report tables name
         """
         return self.inspect_model('Models.Report', fullpath=False)
 
     @property
-    def managers(self, ):
+    def managers_scripts_list(self, ):
         """
         quick property returns available database manager script names
         """
         return self.inspect_model('Models.Manager', fullpath=False)
+
+    @property
+    def simulations_list(self):
+        """
+        quick property for returning a list of available simulation names
+        @return:
+        """
+        return self.inspect_model('Models.Core.Simulation', fullpath=False)
 
     @str_model.setter
     def str_model(self, value: dict):
@@ -411,7 +441,7 @@ class CoreModel(PlotManager):
         try:
             _path = str(file_name or self.path)
 
-            if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
+            if is_higher_apsim_version(self.Simulations):
                 # self.Simulations.Write(str(_path))
                 save_model_to_file(getattr(self.Simulations, 'Node', self.Simulations), str(_path))
             else:
@@ -1114,7 +1144,7 @@ class CoreModel(PlotManager):
         adoptive_parent_type = validate_model_obj(adoptive_parent_type, evaluate_bound=False)
 
         # Locate the model to be cloned within the simulation scope
-        if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
+        if is_higher_apsim_version(self.Simulations):
             clone_parent = (ModelTools.find_child(self.Simulations, model_type, model_name) if model_name
                             else ModelTools.find_child_of_class(self.Simulations, model_type))
         else:
@@ -1507,13 +1537,12 @@ class CoreModel(PlotManager):
                 ".Simulations.Simulation.Field.Soil.Physical",
                 LL15="[0.26, 0.18, 0.10, 0.12]")
 
-        Apply cultivar edits across selected simulations::
+        Apply cultivar edits::
 
             model.edit_model_by_path(
                 ".Simulations.Simulation.Field.Maize.CultivarFolder.mh18",
-                simulations=("Sim_A", "Sim_B"),
-                verbose=True,
-                **{"Phenology.EmergencePhase.Photoperiod": "Short"} )
+                sowed=True,
+                **{"Phenology.EmergencePhase.Photo-period": "Short"} )
 
         .. seealso::
 
@@ -1628,6 +1657,32 @@ class CoreModel(PlotManager):
                    verbose=False, **kwargs):
         """
         Modify various APSIM model components by specifying the model type and name across given simulations.
+
+        .. tip::
+
+           Editing APSIM models in **apsimNGpy** does *not* require placing the
+           target model inside a *Replacements* folder or node. However, when
+           modifying **cultivar parameters**, it can be helpful to include a
+           Replacements folder containing the relevant plant definition hosting
+           that cultivar. In many cases, apsimNGpy will handle this automatically.
+
+        Selective Editing
+        -----------------
+        Selective editing allows you to apply modifications only to certain
+        simulations. This is *not* possible when the same model instance is shared
+        through a common Replacements folder. For reliable selective editing,
+        each simulation should ideally reference a uniquely named model.
+        However, even when model names are not unique, apsimNGpy still enables
+        targeted editing through two mechanisms:
+
+        1. **Exclusion strategy**
+           You can explicitly *exclude* simulations to which the edits should
+           **not** be applied.
+
+        2. **Specification strategy**
+           You can explicitly *specify* which simulations should have their
+           models edited or replaced with new parameters.
+
 
         Parameters
         ----------
@@ -1815,7 +1870,7 @@ class CoreModel(PlotManager):
 
         def edit_object(obj):
             sim = obj
-            if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
+            if is_higher_apsim_version(self.Simulations):
                 model_instance = find_child(sim, model_type_class, model_name)
             else:
                 model_instance = sim.FindDescendant[model_type_class](model_name)
@@ -1940,7 +1995,7 @@ class CoreModel(PlotManager):
 
     def _get_report(self, report_name, parent):
         """just fetches the report from the simulations database """
-        if not APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
+        if not is_higher_apsim_version(self.Simulations):
             if report_name:
                 get_report = ModelTools.find_child(parent, Models.Report, report_name)
                 # get_report = self.Simulations.FindDescendant[Models.Report](report_name)
@@ -1955,7 +2010,7 @@ class CoreModel(PlotManager):
         return get_report
 
     def get_replacements_node(self):
-        # dont raise when not found, should be decided at the specific use context
+        # don't raise when not found, should be decided at the specific use context
         return ModelTools.find_child(self.Simulations, Models.Core.Folder, child_name='Replacements')
 
     def find_model_in_replacements(self, model_type, model_name):
@@ -2849,10 +2904,12 @@ class CoreModel(PlotManager):
         self.recompile_edited_model(out_path=out_mgt_path)
 
         return self
+    @property
+    def is_recent_version(self):
+        return is_higher_apsim_version(self.Simulations)
 
-    @staticmethod
-    def update_manager(scope, manager_name, **kwargs):
-        if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
+    def update_manager(self, scope, manager_name, **kwargs):
+        if is_higher_apsim_version(self.Simulations):
             manager = ModelTools.find_child(scope, Models.Manager, manager_name)
             manager = CastHelper.CastAs[Models.Manager](manager)
             if not manager:
@@ -3005,7 +3062,7 @@ class CoreModel(PlotManager):
             management = management,
 
         for sim in self.find_simulations(simulations):
-            if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
+            if is_higher_apsim_version(self.Simulations):
                 zone = ModelTools.find_child_of_class(sim, Models.Core.Zone)  # expect one Model.Core.Zone
             else:
                 zone = sim.FindChild[Models.Core.Zone]()
@@ -3124,8 +3181,10 @@ class CoreModel(PlotManager):
                APSIM GUI saved. Syncing model...
                2025-10-24 13:05:24,112 - INFO - Watching terminated successfully.
 
-           When ``watch=True``, follow the console instructions.
-           One critical step is that you **must press** ``Ctrl+C`` to stop watching.
+           .. tip::
+
+               When ``watch=True``, follow the console instructions.
+               One critical step is that you **must press** ``Ctrl+C`` to stop watching.
 
            **Checking if changes were successfully propagated back**
 
@@ -3146,8 +3205,10 @@ class CoreModel(PlotManager):
                 'RowSpacing': '700',
                 'Population': '4'}
 
-           Depending on your environment, you may need to close the GUI window to continue
-           or follow the prompts shown after termination.
+           .. tip::
+
+               Depending on your environment, you may need to close the GUI window to continue
+               or follow the prompts shown after termination.
            """
 
         self.save()
@@ -3803,17 +3864,23 @@ class CoreModel(PlotManager):
                :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_model_parameters`,
                :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_model_parameters_by_path`
         """
+        _version = float(self.Simulations.ApsimVersion.replace(".", ''))
+        _base_version = float(BASE_RELEASE_NO.replace(".", ''))
 
         model_type = validate_model_obj(model_type)
         if model_type == Models.Core.Simulations:
             obj = [self.Simulations]
+
         else:
 
-            if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
-
+            if is_higher_apsim_version(self.Simulations):
                 obj = ModelTools.find_all_in_scope(self.Simulations, model_type)
             else:
-                obj = self.Simulations.FindAllDescendants[model_type]()
+                try:
+                    obj = self.Simulations.FindAllDescendants[model_type]()
+                except AttributeError:
+                    logger.info(f"{_version} is not supported by this method install the appropriate APSIM version")
+                    raise
 
         if obj:
             fpath = [i.FullPath for i in obj]
@@ -4042,7 +4109,7 @@ class CoreModel(PlotManager):
             soil_class = self.find_model(sub_soil)
 
             if soil_child != 'soilcrop':
-                if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
+                if is_higher_apsim_version(self.Simulations):
                     _soil_child = ModelTools.find_all_in_scope(simu, soil_class)  # requires recussion
                     if not _soil_child:
                         raise ModelNotFoundError(f"model of class {soil_class} not found in {simu.FullPath}")
@@ -4450,14 +4517,14 @@ class CoreModel(PlotManager):
         _FOLDER.Name = "Replacements"
         PARENT = self.Simulations
         # parent replacement should be added once
-        if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
+        if is_higher_apsim_version(self.Simulations):
             target_parent = ModelTools.find_child(PARENT, Models.Core.Folder, 'Replacements')
         else:
             target_parent = PARENT.FindDescendant[Models.Core.Folder]('Replacements')
         if not target_parent:
             ModelTools.ADD(_FOLDER, PARENT)
         # assumes that the crop already exists in the simulation
-        if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
+        if is_higher_apsim_version(self.Simulations):
             _crop = ModelTools.find_child(PARENT, Models.PMF.Plant, CROP)
         else:
             _crop = PARENT.FindDescendant[Models.PMF.Plant](CROP)
@@ -4940,7 +5007,7 @@ class CoreModel(PlotManager):
         sims = self.find_simulations(simulation_name)
 
         for sim in sims:
-            if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
+            if is_higher_apsim_version(self.Simulations):
                 zone = ModelTools.find_child_of_class(sim, Models.Core.Zone)
             else:
                 zone = sim.FindDescendant[Models.Core.Zone]()

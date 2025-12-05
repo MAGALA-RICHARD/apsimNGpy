@@ -104,7 +104,7 @@ class ApsimModel(CoreModel):
     def __init__(self, model: Union[os.PathLike, dict, str],
                  out_path: Union[str, Path] = None,
                  set_wd=None, **kwargs):
-        super().__init__(model, out_path, set_wd, **kwargs)
+        super().__init__(model=model, out_path=out_path, set_wd=set_wd, **kwargs)
         self._model = model
         self.out_path = Path(out_path) if out_path else None
         self._extra_kwargs = kwargs or {}

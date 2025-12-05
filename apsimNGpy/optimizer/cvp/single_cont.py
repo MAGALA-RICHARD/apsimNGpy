@@ -1,3 +1,6 @@
+from pymoo.optimize import minimize
+from scipy.optimize import differential_evolution
+
 from apsimNGpy.optimizer._one_obj import ContVarProblem, SING_OBJ_CONT_VAR, SING_OBJ_MIXED_VAR
 from apsimNGpy.optimizer._mixed import MixedVarProblem
 class ContinuousVariable(ContVarProblem):

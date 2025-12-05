@@ -45,22 +45,9 @@ import Models
 from apsimNGpy.core.pythonet_config import get_apsim_version as apsim_version
 from System import InvalidOperationException, ArgumentOutOfRangeException
 from apsimNGpy.core._cultivar import edit_cultivar_by_path
-
+from apsimNGpy.core.version_inspector import is_higher_apsim_version
 # constants
 IS_NEW_MODEL = is_file_format_modified()
-
-
-def is_higher_apsim_version(simulations_model):
-    try:
-        ap_version = simulations_model.get_ApsimVersion()
-    except AttributeError:
-        ap_version = apsim_version(release_number=True)
-    current_version = float(ap_version.replace(".", ''))
-    base = BASE_RELEASE_NO.replace('.', '')
-    base = float(base)
-    github_version = float(GITHUB_RELEASE_NO.replace('.', ''))
-    if current_version > base or current_version == github_version:
-        return True
 
 
 def edit_cultivar(node, cultivar_name, commands):

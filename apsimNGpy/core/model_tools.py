@@ -16,7 +16,7 @@ from apsimNGpy.core.model_loader import load_apsim_model
 from apsimNGpy.core.cs_resources import simple_rotation_code, update_manager_code
 from apsimNGpy.core.pythonet_config import get_apsim_version as apsim_version
 from apsimNGpy.core.run_time_info import BASE_RELEASE_NO, GITHUB_RELEASE_NO
-
+from apsimNGpy.core.version_inspector import is_higher_apsim_version
 IS_NEW_APSIM = is_file_format_modified()
 
 from apsimNGpy.core.cs_resources import CastHelper, sow_using_variable_rule, sow_on_fixed_date, harvest, \
@@ -645,10 +645,11 @@ def add_as_simulation(_model, resource, sim_name):
     sim_name, new name to name the added simulation
     """
     model = load_apsim_model(resource)
-    if APSIM_VERSION > BASE_RELEASE_NO or APSIM_VERSION == GITHUB_RELEASE_NO:
-        sim = find_child_of_class(model.IModel, Models.Core.Simulation)
-    else:
+
+    try:
         sim = model.IModel.FindDescendant[Models.Core.Simulation]()
+    except AttributeError:
+        sim = find_child_of_class(model.IModel, Models.Core.Simulation)
     if sim is None:
         raise RuntimeError(f'simulation not found {model.IModel}')
     new_sim = sim
@@ -674,7 +675,7 @@ def add_as_simulation(_model, resource, sim_name):
 
 
 def detect_sowing_managers(_model):
-    if APSIM_VERSION > BASE_RELEASE_NO or APSIM_VERSION == GITHUB_RELEASE_NO:
+    if is_higher_apsim_version(_model.Simulations):
         managers = find_all_in_scope(_model.Simulations, Models.Manager)
     else:
         managers = _model.Simulations.FindAllDescendants[Models.Manager]()
@@ -872,10 +873,10 @@ def add_model_as_a_replacement(simulations, model_class, model_name):
         model_class = validate_model_obj(model_class)
     add_replacement_folder(simulations)
     # ensure that model being added as replacement exists
-    if APSIM_VERSION > BASE_RELEASE_NO or APSIM_VERSION == GITHUB_RELEASE_NO:
-        model_to_replace = find_child(simulations, child_class=model_class, child_name=model_name)
-    else:
+    try:
         model_to_replace = simulations.FindDescendant[model_class](model_name)
+    except AttributeError:
+        model_to_replace = find_child(simulations, child_class=model_class, child_name=model_name)
     fin_all = find_all_in_scope(simulations, model_class)
     names = ','.join([i.Name for i in fin_all])
     if not model_to_replace:

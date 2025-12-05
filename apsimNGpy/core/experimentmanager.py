@@ -30,7 +30,7 @@ else:
 
 import inspect
 from typing import Type, Union
-
+from apsimNGpy.core.version_inspector import is_higher_apsim_version
 
 class ExperimentManager(ApsimModel):
     """
@@ -288,7 +288,14 @@ class ExperimentManager(ApsimModel):
 
         def exp_refresher(mode):
             sim = _get_base_sim()
-            base = ModelTools.CLONER(sim)
+            print(sim.__dir__())
+            print(sim.Children)
+            if not sim:
+                raise ValueError(f"No base simulation found")
+            new_sim =Models.Core.Simulation()
+            new_sim.Name = sim.Name
+            new_sim.Children = sim.Children
+            base = new_sim
             for simx in mode.simulations:  # it does not matter how many experiments exist; we need only one
                 ModelTools.DELETE(simx)
             # replace before delete
@@ -315,7 +322,7 @@ class ExperimentManager(ApsimModel):
             mode.model_info.Node.AddChild(experiment)
             sim_final = CastHelper.CastAs[Models.Core.Simulations](mode.model_info.Node)
 
-            if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
+            if is_higher_apsim_version(self.Simulations):
 
                 simx = ModelTools.find_all_in_scope(sim_final, Models.Core.Simulation)
                 simy = [ModelTools.CLONER(i) for i in simx]
@@ -338,9 +345,9 @@ class ExperimentManager(ApsimModel):
                                                   child_name='Replacements')
 
             siM = self.Simulations
-            # if replace_ments:
-            #     siM.AddChild(replace_ments)
-            # create experiment
+            if replace_ments:
+                siM.AddChild(replace_ments)
+            #create experiment
             _experiments = list(siM.Node.FindAll[Models.Factorial.Experiment]())
             if _experiments:
                 raise ValueError('Not supported at the moment, provide a base simulation and build from scratch')
@@ -361,27 +368,29 @@ class ExperimentManager(ApsimModel):
             sim = _get_base_sim()
             base_full_path = sim.FullPath
             siM.Children.Add(experiment)
+            xm =Models.Core.Simulation()
+
+            sim.SetParent(experiment)
             experiment.Children.Add(sim)
             # remove base simulation
             simulation_node = get_node_by_path(siM, node_path=base_full_path)
-            if simulation_node:
-                ModelTools.DELETE(simulation_node.Model)
+
+            siM.RemoveChild(simulation_node.Model)
+            # if simulation_node:
+            #     ModelTools.DELETE(simulation_node.Model)
             datastore = ModelTools.find_child_of_class(siM, Models.Storage.DataStore)
             if datastore:
                 datastore = CastHelper.CastAs[Models.Storage.DataStore](datastore)
             datastore.set_FileName(self.datastore)
 
-            datastore.Dispose()
-            datastore.Close()
+
             # siM.Write(self.path)
 
             self.Simulations = siM
             self.save()
 
-        if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
-            # data = create(self, base_simulation=base_simulation, permutation=permutation)
-            # print(data)
-            pass
+        if is_higher_apsim_version(self.Simulations):
+            print("Higher Apsim")
             refresher()
 
         else:
@@ -625,7 +634,7 @@ class ExperimentManager(ApsimModel):
         # Choose parent node and parent class
         parent_factor = self.permutation_node if self.permutation else self.factorial_node
         parent_class = Models.Factorial.Permutation if self.permutation else Models.Factorial.Factors
-        if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
+        if is_higher_apsim_version(self.Simulations):
             parent_factor = ModelTools.find_child_of_class(self.Simulations, parent_class)
 
         new_factor = Models.Factorial.Factor()
@@ -694,10 +703,10 @@ if __name__ == '__main__':
 
         exp.add_factor(specification="[Sow using a variable rule].Script.RowSpacing = 100, 450, 700",
                        factor_name='Population')
-        exp.finalize()
+        exp.preview_simulation()
         exp.run()
         # exp.add_factor(specification="[Sow using a variable rule].Script.RowSpacing = 100, 450, 700",
         #                factor_name='Population')
         # exp.finalize()
-        # exp.preview_simulation()
+
     print('datastore Path exists after exit:', Path(exp.datastore).exists())

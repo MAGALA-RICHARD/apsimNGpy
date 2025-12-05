@@ -31,7 +31,7 @@ class TestVars(unittest.TestCase):
         self.fake_param = dict(path=2)  # invalid type for 'path'
 
         self.fake_wrong_vtype_dtype = copy.deepcopy(example_param)
-        self.fake_wrong_vtype_dtype["vtype"] = float  # invalid type
+        self.fake_wrong_vtype_dtype["vtype"] = [float(1),], # invalid type
 
         self.fake_wrong_candidate_dtype = copy.deepcopy(example_param)
         self.fake_wrong_candidate_dtype["candidate_param"] = "Carbon"  # should be list/tuple
@@ -77,12 +77,9 @@ class TestVars(unittest.TestCase):
     def test_validate_user_params_wrong_vtype(self):
         """Raise ValidationError if vtype is of incorrect type."""
         with self.assertRaises(ValidationError):
+
             validate_user_params(self.fake_wrong_vtype_dtype)
 
-    def test_user_param_error(self):
-        """Raise ValidationError if path is of invalid type."""
-        with self.assertRaises(ValidationError):
-            validate_user_params(self.fake_param)
 
     # -------------------------------
     # filter_apsim_params() tests

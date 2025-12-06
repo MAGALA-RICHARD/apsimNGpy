@@ -830,7 +830,7 @@ if __name__ == "__main__":
 
     example_param3 = {
         "path": ".Simulations.Simulation.Field.Soil.Organic1",
-        "vtype": [UniformVar(1, 2)],
+        "vtype": ['UniformVar(1, 2)'],
         "start_value": ["1"],
         "candidate_param": ["FOM"],
         "other_params": {"FBiom": 2.3, "Carbon": 1.89},

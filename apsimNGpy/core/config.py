@@ -253,9 +253,6 @@ def get_apsim_bin_path():
 
 
     """
-
-    @cache  # better to cache them here, because it externally hides the internal namespace of the function through the
-    # cache wrapper
     def _get_bin():
         # if it does not exist, we create it and try to load from the auto-detected pass
         g_CONFIG = configparser.ConfigParser()

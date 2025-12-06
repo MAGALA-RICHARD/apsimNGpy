@@ -366,9 +366,6 @@ def search(s):
     return name
 
 
-import ast
-
-
 if __name__ == "__main__":
     pp = validate_user_params(example_param2)
     print(filter_apsim_params(pp))

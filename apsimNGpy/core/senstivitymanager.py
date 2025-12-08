@@ -100,7 +100,9 @@ class SensitivityManager(ApsimModel):
         except PermissionError:
             print(self.model_info.datastore)
 
-    def setup(self, method: str = 'Morris', base_simulation: str = None,
+    def setup(self, agg_col_name, method: str = 'Morris',
+              table_name: str = 'Report',
+              base_simulation: str = None,
               num_paths=None):
 
         """
@@ -109,7 +111,9 @@ class SensitivityManager(ApsimModel):
             Parameters
             _____________
             method: (str)
-              either morris or sobol are accepted .
+              either morris or sobol are accepted.
+            table_name: (str)
+               for collecting the results
             base_simulation: (str)
                The base simulation name to use for the experiment. If None, the base simulation is selected
                from the available simulations.
@@ -186,6 +190,8 @@ class SensitivityManager(ApsimModel):
             self.sensitivity_node = method_class()
             self.sensitivity_node.Name = self.method
             self.sensitivity_node.Children.Clear()
+            self.sensitivity_node.TableName = table_name
+            self.sensitivity_node.AggregationVariableName = agg_col_name
             if num_paths is None:
                 n_paths = self.default_num_paths()
             else:
@@ -303,7 +309,7 @@ class SensitivityManager(ApsimModel):
         # cap at 50 (optional but practical for APSIM)
         return min(r, 50)
 
-    def finalize(self, method: str, base_simulation:str=None, num_path: int = None):
+    def finalize(self, method: str, aggregation_column_name, base_simulation: str = None, num_path: int = None):
         """"
         Finalizes the experiment setup by re-creating the internal APSIM factor nodes from specs.
 
@@ -315,7 +321,7 @@ class SensitivityManager(ApsimModel):
             Re-creates and attaches each factor as a new node.
             Triggers model saving.
          """
-        self.setup(method=method, base_simulation=base_simulation, num_paths=num_path)
+        self.setup(agg_col_name=aggregation_column_name,method=method, base_simulation=base_simulation, num_paths=num_path)
         invoke_csharp_gc()
 
 
@@ -336,7 +342,7 @@ if __name__ == '__main__':
     exp = SensitivityManager("Maize", out_path='dtb.apsimx')
     exp.add_sens_factor(name='cnr', path='Field.SurfaceOrganicMatter.InitialCNR', lower_bound=10, upper_bound=120)
     exp.add_sens_factor(name='cn2bare', path='Field.Soil.SoilWater.CN2Bare', lower_bound=70, upper_bound=100)
-    exp.finalize(method='Morris')
+    exp.finalize(method='Morris', aggregation_column_name='Clock.Today')
     exp.preview_simulation()
     pp = create_parameter(path='Field.SurfaceOrganicMatter.InitialCNR', lower=80, upper=100, name='cnr')
 

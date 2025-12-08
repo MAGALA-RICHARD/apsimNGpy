@@ -3351,7 +3351,7 @@ class CoreModel(PlotManager):
         """
         warnings.warn(
             "replace_met_file() is deprecated and will be removed in a future release. "
-            "Prefer newer weather-configuration helpers or set Weather.FileName directly.",
+            "Please, use edit_model or edit_model_by_path or set Weather.FileName directly.",
             DeprecationWarning,
             stacklevel=2,
         )

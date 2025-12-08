@@ -808,7 +808,7 @@ class MixedProblem:
             raise ValueError('has no x sequence values')
 
         from apsimNGpy.optimizer.problems.back_end import final_eval
-        predicted = runner(self.model, self._insert_x_vars(res.x))
+        predicted = runner(self.model, self._insert_x_vars(res.x), table=self.table)
 
         eval_out = final_eval(
             self.obs,

@@ -708,3 +708,5 @@ if __name__ == '__main__':
         # exp.finalize()
 
     print('datastore Path exists after exit:', Path(exp.datastore).exists())
+
+

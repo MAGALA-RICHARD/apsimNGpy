@@ -20,7 +20,8 @@ MissingOption = MissingType()
 
 
 def create_config(config_path, apsim_path=""):
-    _CONFIG = create_bin_paths_used(config_path, apsim_path)
+    _CONFIG = configparser.ConfigParser()
+    _CONFIG.read(config_path)
     _CONFIG['Paths'] = {'APSIM_LOCATION': apsim_path}
     with open(config_path, 'w') as configured_file:
         _CONFIG.write(configured_file)
@@ -36,8 +37,8 @@ def create_bin_paths_used(config_path, apsim_path=""):
         binS = set(eval(prev))
         BINS = [i for i in binS if os.path.exists(i)]
         BINS = list(dict.fromkeys(BINS))
-    if os.path.exists(config_path) and str(apsim_path) not in BINS:
-        BINS.append(apsim_path)
+    if os.path.exists(config_path) and os.path.realpath(apsim_path) not in BINS:
+        BINS.append(os.path.realpath(apsim_path))
     _CONFIG['PreviousPaths'] = dict(BINS=str(BINS))
 
     return _CONFIG
@@ -100,12 +101,22 @@ log_file = os.path.expanduser('~/apsimNGpy_sim.log')
 def setup_logger(name: str = None, level: int = logging.INFO) -> logging.Logger:
     if name is None:
         name = log_file
+
     logger = logging.getLogger(name)
+
+    # Avoid adding duplicate handlers
     if not logger.handlers:
         handler = logging.StreamHandler()
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+        # Enhanced formatter showing file, line, function
+        formatter = logging.Formatter(
+            '%(asctime)s - %(name)s - %(levelname)s - '
+            '%(filename)s:%(lineno)d - %(funcName)s() - %(message)s'
+        )
+
         handler.setFormatter(formatter)
         logger.addHandler(handler)
+
     logger.setLevel(level)
     return logger
 
@@ -117,7 +128,7 @@ APSIM_LOCATION = os.environ.get('APSIM_LOCATION')
 SCRATCH = os.environ.get('WS', Path(os.getcwd()) / 'scratch')
 # need to clean up periodically if can
 try:
-   SCRATCH.mkdir(parents=True, exist_ok=True)
+    SCRATCH.mkdir(parents=True, exist_ok=True)
 except PermissionError:
     SCRATCH = Path.cwd()
 

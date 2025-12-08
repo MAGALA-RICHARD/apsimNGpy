@@ -1362,7 +1362,7 @@ class CoreModel(PlotManager):
 
     @staticmethod
     def _set_weather_path(model_instance, param_values: dict, verbose=False):
-        met_file = param_values.get('weather_file') or param_values.get('met_file')
+        met_file = param_values.get('weather_file') or param_values.get('met_file') or param_values.get("FileName")
         if met_file is None:
             raise ValueError('Use key word argument "weather_file" to supply the weather data')
         # To avoid carrying over a silent bug or waiting for the bug to manifest during a model run,
@@ -3374,7 +3374,7 @@ class CoreModel(PlotManager):
         simus = self.find_simulations(simulations=simulations)
         sims = (i for i in simus if i.Name not in exclude)
         for sim in sims:
-            if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
+            if is_higher_apsim_version(self.Simulations):
                 weathers = ModelTools.find_all_in_scope(sim, Models.Climate.Weather)
             else:
                 weathers = sim.FindAllDescendants[Models.Climate.Weather]()

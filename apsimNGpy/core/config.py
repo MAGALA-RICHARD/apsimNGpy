@@ -269,7 +269,7 @@ def get_apsim_bin_path():
                 apsim_bin_path = locate_model_bin_path(apsim_bin_path)
             except (NotADirectoryError, FileNotFoundError, ValueError, ApsimBinPathConfigError) as e:
                 pass  # we are not interested in raising at this point
-        return apsim_bin_path
+        return os.path.realpath(apsim_bin_path) if isinstance(apsim_bin_path, Path) else apsim_bin_path
 
     return _get_bin()
 

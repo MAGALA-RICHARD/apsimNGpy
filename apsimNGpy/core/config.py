@@ -18,6 +18,7 @@ from pathlib import Path
 from shutil import copy2
 from typing import Union, Optional, Any
 import psutil
+from apsimNGpy.core_utils.utils import timer
 from dotenv import load_dotenv
 
 logger = logging.getLogger(__name__)
@@ -253,6 +254,7 @@ def get_apsim_bin_path():
 
 
     """
+
     def _get_bin():
         # if it does not exist, we create it and try to load from the auto-detected pass
         g_CONFIG = configparser.ConfigParser()

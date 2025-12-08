@@ -35,7 +35,7 @@ from apsimNGpy.core.version_inspector import is_higher_apsim_version
 from System.Collections.Generic import List
 
 
-class ExperimentManager(ApsimModel):
+class SensitivityManager(ApsimModel):
     """
     This class inherits methods and attributes from: :class:`~apsimNGpy.core.apsim.ApsimModel` to manage APSIM Experiments
     with pure factors or permutations. You first need to initiate the instance of this class and then initialize the
@@ -67,6 +67,7 @@ class ExperimentManager(ApsimModel):
 
     def __init__(self, model, out_path=None):
         super().__init__(model=model, out_path=out_path)
+        self.method_class = None
         self.sensitivity_node = None
         self.parent_factor = None
         self.experiment_node = None
@@ -81,6 +82,7 @@ class ExperimentManager(ApsimModel):
         self.names_list = set()
         self.hash_name_and_path = []
         self.param_collections = List[Models.Sensitivity.Parameter]()
+        self.method = None
 
     def __enter__(self):
         return self
@@ -98,18 +100,21 @@ class ExperimentManager(ApsimModel):
         except PermissionError:
             print(self.model_info.datastore)
 
-    def init_experiment(self, method: str = 'Morris', base_simulation: str = None):
+    def setup(self, method: str = 'Morris', base_simulation: str = None,
+              num_paths=None):
 
         """
             Initializes the sensitivity experiment structure inside the APSIM file.
 
             Parameters
             _____________
-            permutation: (bool)
-              If True, enables permutation mode; otherwise, uses standard factor crossing.
+            method: (str)
+              either morris or sobol are accepted .
             base_simulation: (str)
                The base simulation name to use for the experiment. If None, the base simulation is selected
-               from the available simulations
+               from the available simulations.
+            num_paths: (int) , optional
+               for morris
 
             Side Effects:
             ____________
@@ -146,6 +151,7 @@ class ExperimentManager(ApsimModel):
 
             """
         method = method.lower()
+        self.method = method
         methods = {'morris': Models.Morris, 'sobol': Models.Sobol, }
         if method not in methods:
             raise NotImplementedError("Method not supported by this method try any of 'sobol' or 'morris'")
@@ -176,19 +182,19 @@ class ExperimentManager(ApsimModel):
             if _experiments:
                 raise ValueError('Not supported at the moment, provide a base simulation and build from scratch')
             # add then new experiment Node
-
+            self.method_class = method_class
             self.sensitivity_node = method_class()
+            self.sensitivity_node.Name = self.method
             self.sensitivity_node.Children.Clear()
-            factor = Models.Factorial.Factors()
-            factor.Children.Clear()
-            self.factorial_node = factor
-            # branch if it is a permutation experiment
-            if self.permutation:
-                perm_node = Models.Factorial.Permutation()
-                self.permutation_node = perm_node
-                factor.AddChild(perm_node)
-
-            # add simulation before experiment to the simulation tree
+            if num_paths is None:
+                n_paths = self.default_num_paths()
+            else:
+                n_paths = num_paths
+            self.sensitivity_node.NumPaths = n_paths
+            if self.names_list:
+                self.sensitivity_node.Parameters = self.param_collections
+            else:
+                raise ValueError(f"No sensitivity  parameter factors set yet")
             sim = _get_base_sim()
             base_full_path = sim.FullPath
             siM.Children.Add(self.sensitivity_node)
@@ -198,15 +204,11 @@ class ExperimentManager(ApsimModel):
             simulation_node = get_node_by_path(siM, node_path=base_full_path)
 
             siM.RemoveChild(simulation_node.Model)
-            # if simulation_node:
-            #     ModelTools.DELETE(simulation_node.Model)
+
             datastore = ModelTools.find_child_of_class(siM, Models.Storage.DataStore)
             if datastore:
                 datastore = CastHelper.CastAs[Models.Storage.DataStore](datastore)
             datastore.set_FileName(self.datastore)
-
-            # siM.Write(self.path)
-
             self.Simulations = siM
             self.save()
 
@@ -259,18 +261,11 @@ class ExperimentManager(ApsimModel):
 
         """
 
-        if not self.sensitivity_node:
-            raise ValueError("Please initialize the experiment first by calling: self.init_experiment method")
-        # Auto-generate factor name from specification if not provided
-
-        hashed = hash((name, path))
         if name in self.names_list:
             raise ValueError(f"Duplicate factor detected or {name} already exists")
         self.names_list.add(name)
         p_p = self.create_parameter(path=path, lower=lower_bound, upper=upper_bound, name=name)
         self.param_collections.Add(p_p)
-        self.sensitivity_node.Parameters = self.param_collections
-        self.save()
 
     def create_parameter(self, name, path, lower, upper):
         param = Models.Sensitivity.Parameter()
@@ -286,9 +281,29 @@ class ExperimentManager(ApsimModel):
             Returns:
                 int: The total number of active factor specifications currently added to the experiment.
             """
-        return len(self.specs)
+        return len(self.names_list)
 
-    def finalize(self):
+    def default_num_paths(self) -> int:
+        """
+        Compute a reasonable default NumPaths for Morris sensitivity analysis.
+
+        Parameters
+        ----------
+        k : int
+            Number of decision variables.
+
+        Returns
+        -------
+        int
+            Recommended number of Morris paths.
+        """
+        # base rule
+        r = 10 + 2 * self.n_factors
+
+        # cap at 50 (optional but practical for APSIM)
+        return min(r, 50)
+
+    def finalize(self, method: str, base_simulation:str=None, num_path: int = None):
         """"
         Finalizes the experiment setup by re-creating the internal APSIM factor nodes from specs.
 
@@ -300,7 +315,7 @@ class ExperimentManager(ApsimModel):
             Re-creates and attaches each factor as a new node.
             Triggers model saving.
          """
-        self.sensitivity_node.Parameters = self.param_collections
+        self.setup(method=method, base_simulation=base_simulation, num_paths=num_path)
         invoke_csharp_gc()
 
 
@@ -318,9 +333,10 @@ def create_parameter(path, lower, upper, name):
 
 gc.collect()
 if __name__ == '__main__':
-    exp = ExperimentManager("Maize", out_path='dtb.apsimx')
-    exp.init_experiment()
+    exp = SensitivityManager("Maize", out_path='dtb.apsimx')
     exp.add_sens_factor(name='cnr', path='Field.SurfaceOrganicMatter.InitialCNR', lower_bound=10, upper_bound=120)
+    exp.add_sens_factor(name='cn2bare', path='Field.Soil.SoilWater.CN2Bare', lower_bound=70, upper_bound=100)
+    exp.finalize(method='Morris')
     exp.preview_simulation()
     pp = create_parameter(path='Field.SurfaceOrganicMatter.InitialCNR', lower=80, upper=100, name='cnr')
 

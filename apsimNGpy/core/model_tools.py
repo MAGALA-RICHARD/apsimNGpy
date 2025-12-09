@@ -375,9 +375,30 @@ def extract_value(model_instance, parameters=None):
             for attr in attributes:
                 value[attr] = list(getattr(model_instance, attr))
         case Models.WaterModel.WaterBalance:
+            to_descr ={}
+            desc = dict(Salib = 'Fraction of incoming solar radiation',
+                        WinterU ='',
+                        SummerU ='',
+                        DiffusSlope= 'effect of soil water storage above the lower limit on on soil water diffusivity',
+                        DischargeWidth='',
+                        DiffusConst='',
+                        CN2Bare ='',
+                        CatchmentArea='Catchment area flow calculations (m2)',
+                        WinterDate= 'Start date to switch to winter parameters',
+                        WinterCona =  'Drying coefficient for stage 2 soil water evaporation in winter',
+                        SummerDate = 'Start date to switch to summer parameters',
+                        )
             collections = {}
             list_params = {'KLAT', 'Depth', 'SWCON'}
-            non_list = {'Salb'}
+            non_list = {'Salb', 'Water', 'WinterU', 'WinterDate', 'WinterCona','SummerCona', 'SummerDate',
+                        'PrecipitationInterception',
+                        'PoreInteractionIndex',
+                        'SummerU', 'DiffusSlope',
+                        'DischargeWidth',
+                        'DiffusConst',
+                        'CN2Bare',
+                        'CatchmentArea',
+                        'PotentialInfiltration'}
 
             if not parameters:
                 parameters = list_params.union(non_list)
@@ -389,6 +410,8 @@ def extract_value(model_instance, parameters=None):
                         collections[p] = list(attrib_val) if attrib_val is not None else None
                     else:
                         collections[p] = getattr(model_instance, p)
+                        to_descr[p] = desc.get(p)
+            collections['dictionary'] = desc
             value= collections
 
         case Models.PMF.Cultivar:

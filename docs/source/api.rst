@@ -8198,7 +8198,7 @@ Classes
        You first need to initialize the class, define parameters and build the sensitivity analysis model
 
 
-       The flow of method for :class:`ExperimentManager` class is shown in the diagram below:
+       The flow of method for :class:`SensitivityManager` class is shown in the diagram below:
 
 
        .. mermaid::
@@ -8300,6 +8300,7 @@ Classes
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.set_params`
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.setup`
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.show_met_file_in_simulation`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.statistics`
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.summarize_numeric`
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.update_cultivar`
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.update_mgt`
@@ -8455,6 +8456,39 @@ Classes
    int
        Recommended number of Morris paths.
 
+   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.statistics(self)
+
+   Retrieve the sensitivity statistics produced by APSIM after running the
+   sensitivity analysis.
+
+   This method reads the appropriate statistics table (Morris or Sobol)
+   from the APSIM datastore once the sensitivity experiment has been executed
+   using :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.run`.
+
+   Returns
+   -------
+   pandas.DataFrame
+       A DataFrame containing the sensitivity statistics computed by APSIM.
+
+   Raises
+   ------
+   RuntimeError
+       If the required statistics table is not present in the datastore. This
+       typically occurs when the sensitivity analysis has not been run or the
+       APSIM output has not yet been generated.
+   KeyError
+       If the sensitivity method was not recognized or improperly set.
+
+   Notes
+   -----
+   The statistics table names expected from APSIM are:
+
+   - ``'MorrisStatistics'`` for the Morris method
+   - ``'SobolStatistics'`` for the Sobol method
+
+   Ensure that the sensitivity analysis has completed successfully before
+   calling this method.
+
    .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.build_sense_model(self, method: str, aggregation_column_name, base_simulation: str = None, num_path: int = None, jumps: int = None, intervals: int = None)
 
    To be released in V0.39.12.21
@@ -8497,7 +8531,7 @@ Classes
 
        .. math::
 
-           N_{\mathrm{sims}} = r , (k + 1)
+           N_{mathrm{sims}} = r , (k + 1)
 
        where ``r`` is the number of paths and ``k`` is the number of parameters.
        If ``jumps`` is not provided, a recommended default is chosen to balance
@@ -13221,7 +13255,7 @@ Functions Provided
 Functions
 ^^^^^^^^^
 
-.. py:function:: apsimNGpy.optimizer.problems.variables.filter_apsim_params(params: apsimNGpy.optimizer.problems.variables.BaseParams, place_holder=<object object at 0x00000131108AD900>) -> Dict
+.. py:function:: apsimNGpy.optimizer.problems.variables.filter_apsim_params(params: apsimNGpy.optimizer.problems.variables.BaseParams, place_holder=<object object at 0x0000020871CFD900>) -> Dict
 
    Flatten a validated BaseParams object into a dictionary suitable for APSIM execution.
 

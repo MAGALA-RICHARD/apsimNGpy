@@ -41,7 +41,7 @@ class SensitivityManager(ApsimModel):
     You first need to initialize the class, define parameters and build the sensitivity analysis model
 
 
-    The flow of method for :class:`ExperimentManager` class is shown in the diagram below:
+    The flow of method for :class:`SensitivityManager` class is shown in the diagram below:
 
 
     .. mermaid::
@@ -352,14 +352,57 @@ class SensitivityManager(ApsimModel):
 
         # cap at 50 (optional but practical for APSIM)
         return min(r, 50)
-
+    @property
     def statistics(self):
-        tables_to_read = {'sobol': 'SobolStatistics', 'morris': 'MorrisStatistics'}
+        """
+        Retrieve the sensitivity statistics produced by APSIM after running the
+        sensitivity analysis.
+
+        This method reads the appropriate statistics table (Morris or Sobol)
+        from the APSIM datastore once the sensitivity experiment has been executed
+        using :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.run`.
+
+        Returns
+        -------
+        pandas.DataFrame
+            A DataFrame containing the sensitivity statistics computed by APSIM.
+
+        Raises
+        ------
+        RuntimeError
+            If the required statistics table is not present in the datastore. This
+            typically occurs when the sensitivity analysis has not been run or the
+            APSIM output has not yet been generated.
+        KeyError
+            If the sensitivity method was not recognized or improperly set.
+
+        Notes
+        -----
+        The statistics table names expected from APSIM are:
+
+        - ``'MorrisStatistics'`` for the Morris method
+        - ``'SobolStatistics'`` for the Sobol method
+
+        Ensure that the sensitivity analysis has completed successfully before
+        calling this method.
+
+        """
+
+        read_table = f"{self.method.capitalize()}Statistics"
+
         from apsimNGpy.core_utils.database_utils import read_db_table, get_db_table_names
-        read_table = tables_to_read[self.method]
+
+        # Fetch all tables from the datastore
         tables_in_store = get_db_table_names(self.datastore)
+
+        # Ensure the output table exists
         if read_table not in tables_in_store:
-            raise RuntimeError(f"table {read_table} is not available for extraction, perhaps not yet run the sensitivity experiment")
+            raise RuntimeError(
+                f"Statistics table '{read_table}' not found in datastore '{self.datastore}'. "
+                f"This usually means the sensitivity experiment has not been run yet."
+            )
+
+        # Read and return the statistics table
         df = read_db_table(self.datastore, read_table)
         return df
 
@@ -464,17 +507,20 @@ if __name__ == '__main__':
     exp.inspect_file()
     # exp.preview_simulation()
     exp.run(verbose=True)
-    print(get_db_table_names(exp.datastore))
+    print(exp.statistics)
+    print(exp.statistics.columns)
 
     # _____________________________
     # Morris
     # ----------------------------------
-    exp = SensitivityManager("Maize", out_path='morris.apsimx')
-    exp.add_sens_factor(name='cnr', path='Field.SurfaceOrganicMatter.InitialCNR', lower_bound=10, upper_bound=120)
-    exp.add_sens_factor(name='cn2bare', path='Field.Soil.SoilWater.CN2Bare', lower_bound=70, upper_bound=100)
-    exp.build_sense_model(method='Morris', aggregation_column_name='Clock.Today')
-    exp.inspect_file()
-    exp.preview_simulation()
+    print('Morris')
+    morris = SensitivityManager("Maize", out_path='morris.apsimx')
+    morris.add_sens_factor(name='cnr', path='Field.SurfaceOrganicMatter.InitialCNR', lower_bound=10, upper_bound=120)
+    morris.add_sens_factor(name='cn2bare', path='Field.Soil.SoilWater.CN2Bare', lower_bound=70, upper_bound=100)
+    morris.build_sense_model(method='Morris', aggregation_column_name='Clock.Today')
+    morris.inspect_file()
+    morris.run()
+    print(morris.statistics.columns)
 
     # mor = Models.Morris()
     #
@@ -484,3 +530,4 @@ if __name__ == '__main__':
     # # assign to Morris
     #
     # mor.Parameters = param_list
+    morris.get_simulated_output('Report')

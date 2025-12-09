@@ -375,14 +375,17 @@ def extract_value(model_instance, parameters=None):
             for attr in attributes:
                 value[attr] = list(getattr(model_instance, attr))
         case Models.WaterModel.WaterBalance:
-            to_descr ={}
+            to_descr = {}
             desc = dict(Salib = 'Fraction of incoming solar radiation',
-                        WinterU ='',
-                        SummerU ='',
-                        DiffusSlope= 'effect of soil water storage above the lower limit on on soil water diffusivity',
+                        WinterU ='Cumulative soil water evaporation to reach end of stage 1 soil water evaporation in winter',
+                        SummerU ='Cumulative soil water evaporation to reach end of stage 1 soil water evaporation in winter',
+                        PSIDul='Matric Pontential at DUL (cm)',
+                        CNCov = 'Cover for maximum curve number reduction',
+                        DiffusSlope= 'effect of soil water storage above the lower limit on on soil water diffusivity (mm)',
                         DischargeWidth='',
-                        DiffusConst='',
-                        CN2Bare ='',
+                        SummerCona= 'Drying coefficient for stage 2 soil water evaporation in summer',
+                        DiffusConst='Constant in soil water diffusivity calculations',
+                        CN2Bare ='Run off curve number ofr bare soil with average moisture',
                         CatchmentArea='Catchment area flow calculations (m2)',
                         WinterDate= 'Start date to switch to winter parameters',
                         WinterCona =  'Drying coefficient for stage 2 soil water evaporation in winter',
@@ -398,6 +401,9 @@ def extract_value(model_instance, parameters=None):
                         'DiffusConst',
                         'CN2Bare',
                         'CatchmentArea',
+                        'CNCov',
+                        'PSIDul',
+                        'SummerCona',
                         'PotentialInfiltration'}
 
             if not parameters:

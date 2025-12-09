@@ -5079,6 +5079,6 @@ if __name__ == '__main__':
         waterb = CastHelper.CastAs[Models.WaterModel.WaterBalance](water)
         corep.edit_model('Models.WaterModel.WaterBalance', 'SoilWater', SWCON=3,)
         corep.edit_model_by_path('.Simulations.Simulation.Field.Soil.SoilWater', SWCON =4)
-        sw = corep.inspect_model_parameters_by_path('.Simulations.Simulation.Field.Soil.SoilWater', parameters='SWCON')
+        sw = corep.inspect_model_parameters_by_path('.Simulations.Simulation.Field.Soil.SoilWater')
     print('Path exists after exit:', Path(corep.path).exists())
     print('datastore Path exists after exit:', Path(corep.datastore).exists())

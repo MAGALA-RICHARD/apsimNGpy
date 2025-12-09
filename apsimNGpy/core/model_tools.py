@@ -17,6 +17,7 @@ from apsimNGpy.core.cs_resources import simple_rotation_code, update_manager_cod
 from apsimNGpy.core.pythonet_config import get_apsim_version as apsim_version
 from apsimNGpy.core.run_time_info import BASE_RELEASE_NO, GITHUB_RELEASE_NO
 from apsimNGpy.core.version_inspector import is_higher_apsim_version
+
 IS_NEW_APSIM = is_file_format_modified()
 
 from apsimNGpy.core.cs_resources import CastHelper, sow_using_variable_rule, sow_on_fixed_date, harvest, \
@@ -374,10 +375,21 @@ def extract_value(model_instance, parameters=None):
             for attr in attributes:
                 value[attr] = list(getattr(model_instance, attr))
         case Models.WaterModel.WaterBalance:
+            collections = {}
+            list_params = {'KLAT', 'Depth', 'SWCON'}
+            non_list = {'Salb'}
+
+            if not parameters:
+                parameters = list_params.union(non_list)
             if parameters:
                 for p in parameters:
                     hasattr(model_instance, p)
-                    value = getattr(model_instance, p)
+                    if p in list_params:
+                        attrib_val = getattr(model_instance, p)
+                        collections[p] = list(attrib_val) if attrib_val is not None else None
+                    else:
+                        collections[p] = getattr(model_instance, p)
+            value= collections
 
         case Models.PMF.Cultivar:
             selected_parameters = set(parameters) if parameters else set()

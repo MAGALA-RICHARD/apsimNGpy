@@ -1,16 +1,17 @@
 from apsimNGpy.optimizer.single import ContinuousVariable, MixedVariable
 from apsimNGpy.core.apsim import ApsimModel
-from apsimNGpy.settings import  logger
-maize_model = ApsimModel("Maize") # replace with the template path
+from apsimNGpy.settings import logger
+
+maize_model = ApsimModel("Maize")  # replace with the template path
 
 obs = [
     7000.0, 5000.505, 1000.047, 3504.000, 7820.075,
     7000.517, 3587.101, 4000.152, 8379.435, 4000.301
 ]
 
+
 class Problem(ContinuousVariable):
     def __init__(self, apsim_model, obs):
-
         super().__init__(apsim_model=apsim_model)
         self.obs = obs
 
@@ -20,13 +21,16 @@ class Problem(ContinuousVariable):
         # Use root-mean-square error or another metric.
         return self.rmse(self.obs, predicted)
 
+
 problem = Problem(maize_model, obs)
+
 
 def maximize_yield(df):
     # Negate yield to convert to a minimization problem
     return -df.Yield.mean()
 
-problem = ContinuousVariable(maize_model, objectives = maximize_yield)
+
+problem = ContinuousVariable(maize_model, objectives=maximize_yield)
 
 problem.add_control(
     path='.Simulations.Simulation.Field.Fertilise at sowing',

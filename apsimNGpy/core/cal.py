@@ -21,8 +21,7 @@ class OptimizationBase(ApsimModel):
         self.lonlat = lonlat
         self.n_layers = bottomdepth / thickness
         bm = bottomdepth * 10
-        if thickness_values is None:
-            thickness_values = self.auto_gen_thickness_layers(max_depth=bm, n_layers=int(self.n_layers))
+
         self.soil_series = soil_series
         self.thickness = thickness
         self.out_path = out_path or out

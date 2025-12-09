@@ -379,10 +379,10 @@ def extract_value(model_instance, parameters=None):
             desc = dict(Salib = 'Fraction of incoming solar radiation',
                         WinterU ='Cumulative soil water evaporation to reach end of stage 1 soil water evaporation in winter',
                         SummerU ='Cumulative soil water evaporation to reach end of stage 1 soil water evaporation in winter',
-                        PSIDul='Matric Pontential at DUL (cm)',
+                        PSIDul='Matric Potential at DUL (cm)',
                         CNCov = 'Cover for maximum curve number reduction',
                         DiffusSlope= 'effect of soil water storage above the lower limit on on soil water diffusivity (mm)',
-                        DischargeWidth='',
+                        DischargeWidth='Basal width of the down slope boundary of the catchment for lateral flow calculations',
                         SummerCona= 'Drying coefficient for stage 2 soil water evaporation in summer',
                         DiffusConst='Constant in soil water diffusivity calculations',
                         CN2Bare ='Run off curve number ofr bare soil with average moisture',
@@ -404,6 +404,8 @@ def extract_value(model_instance, parameters=None):
                         'CNCov',
                         'PSIDul',
                         'SummerCona',
+                         'SWmm',
+                        'Runoff',
                         'PotentialInfiltration'}
 
             if not parameters:

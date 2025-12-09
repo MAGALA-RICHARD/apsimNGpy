@@ -8194,9 +8194,9 @@ Classes
 
 .. py:class:: apsimNGpy.core.senstivitymanager.SensitivityManager
 
-       This class inherits methods and attributes from: :class:`~apsimNGpy.core.apsim.ApsimModel` to manage APSIM Experiments
-       with pure factors or permutations. You first need to initiate the instance of this class and then initialize the
-       experiment itself with: :meth:`init_experiment`, which creates a new experiment from the suggested base simulation and ``permutation`` type
+       This class inherits methods and attributes from: :class:`~apsimNGpy.core.apsim.ApsimModel` to manage APSIM Sensitivity Analysis in apsimNGpy
+       You first need to initialize the class, define parameters and build the sensitivity analysis model
+
 
        The flow of method for :class:`ExperimentManager` class is shown in the diagram below:
 
@@ -8207,107 +8207,109 @@ Classes
               PlotManager["PlotManager"]
               CoreModel["CoreModel"]
               ApsimModel["ApsimModel"]
-              ExperimentManager["ExperimentManager"]
+              SensitivityManager["SensitivityManager"]
 
               PlotManager --> CoreModel
               CoreModel --> ApsimModel
-              ApsimModel --> ExperimentManager
+              ApsimModel --> SensitivityManager
 
        Class Roles
        ---------------
        - :class:`~apsimNGpy.core.plotmanager.PlotManager` → Produces visual outputs from model results (Not exposed in the API reference)
        - :class:`~apsimNGpy.core.core.CoreModel`  → contains methods for running and manipulating models (Not exposed in the API reference)
        - :class:`~apsimNGpy.core.apsim.ApsimModel` → Extends :class:`~apsimNGpy.core.core.Coremodel` capabilities with more functionalities
-       - :class:`~apsimNGpy.core.experimentmanager.ExperimentManager` → Manages and creates a new experiment from the suggested base.
+       - :class:`~apsimNGpy.core.senstivitymanager.SensitivityManager` → Manages and creates a new sensitivity experiment model from the suggested base.
 
    List of Public Attributes:
    __________________________________
 
-   - :attr:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.configs`
-   - :attr:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.is_recent_version`
-   - :attr:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.managers_scripts_list`
-   - :attr:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.n_factors`
-   - :attr:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.results`
-   - :attr:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.simulation_names`
-   - :attr:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.simulations`
-   - :attr:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.simulations_list`
-   - :attr:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.str_model`
-   - :attr:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.tables_list`
+   - :attr:`~apsimNGpy.core.senstivitymanager.SensitivityManager.configs`
+   - :attr:`~apsimNGpy.core.senstivitymanager.SensitivityManager.default_intervals`
+   - :attr:`~apsimNGpy.core.senstivitymanager.SensitivityManager.default_jumps`
+   - :attr:`~apsimNGpy.core.senstivitymanager.SensitivityManager.is_recent_version`
+   - :attr:`~apsimNGpy.core.senstivitymanager.SensitivityManager.managers_scripts_list`
+   - :attr:`~apsimNGpy.core.senstivitymanager.SensitivityManager.n_factors`
+   - :attr:`~apsimNGpy.core.senstivitymanager.SensitivityManager.results`
+   - :attr:`~apsimNGpy.core.senstivitymanager.SensitivityManager.simulation_names`
+   - :attr:`~apsimNGpy.core.senstivitymanager.SensitivityManager.simulations`
+   - :attr:`~apsimNGpy.core.senstivitymanager.SensitivityManager.simulations_list`
+   - :attr:`~apsimNGpy.core.senstivitymanager.SensitivityManager.str_model`
+   - :attr:`~apsimNGpy.core.senstivitymanager.SensitivityManager.tables_list`
    List of Public Methods
    -----------------------------
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.add_base_replacements`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.add_crop_replacements`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.add_db_table`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.add_fac`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.add_factor`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.add_model`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.add_report_variable`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.add_sens_factor`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.adjust_dul`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.boxplot`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.build_sense_model`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.cat_plot`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.change_report`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.clean_up`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.clone_model`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.create_experiment`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.default_num_paths`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.detect_model_type`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.distribution`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.edit_cultivar`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.edit_model`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.edit_model_by_path`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.extract_any_soil_physical`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.extract_soil_physical`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.find_model`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.find_model_in_replacements`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.get_crop_replacement`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.get_model_paths`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.get_simulated_output`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.get_soil_from_web`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.get_weather_from_file`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.get_weather_from_web`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.inspect_file`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.inspect_model`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.inspect_model_parameters`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.inspect_model_parameters_by_path`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.move_model`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.plot_mva`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.preview_simulation`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.read_apsimx_data`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.recompile_edited_model`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.refresh_model`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.reg_plot`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.relplot`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.remove_model`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.remove_report_variable`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.rename_model`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.replace_downloaded_soils`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.replace_met_file`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.replace_model_from`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.replace_soil_property_values`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.replace_soils_values_by_path`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.replicate_file`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.restart_model`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.run`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.save`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.scatter_plot`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.series_plot`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.set_categorical_factor`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.set_continuous_factor`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.set_params`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.setup`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.show_met_file_in_simulation`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.summarize_numeric`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.update_cultivar`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.update_mgt`
-   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.update_mgt_by_path`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.add_base_replacements`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.add_crop_replacements`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.add_db_table`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.add_fac`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.add_factor`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.add_model`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.add_report_variable`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.add_sens_factor`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.adjust_dul`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.boxplot`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.build_sense_model`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.cat_plot`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.change_report`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.clean_up`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.clone_model`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.create_experiment`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.default_num_paths`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.detect_model_type`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.distribution`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.edit_cultivar`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.edit_model`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.edit_model_by_path`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.extract_any_soil_physical`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.extract_soil_physical`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.find_model`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.find_model_in_replacements`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.get_crop_replacement`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.get_model_paths`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.get_simulated_output`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.get_soil_from_web`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.get_weather_from_file`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.get_weather_from_web`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.inspect_file`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.inspect_model`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.inspect_model_parameters`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.inspect_model_parameters_by_path`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.move_model`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.plot_mva`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.preview_simulation`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.read_apsimx_data`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.recompile_edited_model`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.refresh_model`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.reg_plot`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.relplot`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.remove_model`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.remove_report_variable`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.rename_model`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.replace_downloaded_soils`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.replace_met_file`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.replace_model_from`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.replace_soil_property_values`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.replace_soils_values_by_path`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.replicate_file`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.restart_model`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.run`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.save`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.scatter_plot`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.series_plot`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.set_categorical_factor`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.set_continuous_factor`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.set_params`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.setup`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.show_met_file_in_simulation`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.summarize_numeric`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.update_cultivar`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.update_mgt`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.update_mgt_by_path`
 
    .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.__init__(self, model, out_path=None)
 
    Initialize self.  See help(type(self)) for accurate signature.
 
-   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.setup(self, agg_col_name: str, method: str = 'Morris', table_name: str = 'Report', base_simulation: str = None, num_paths=None)
+   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.setup(self, agg_col_name: str, method: str = 'Morris', table_name: str = 'Report', base_simulation: str = None, num_paths=None, jumps=10, intervals=20)
 
        Initialize the sensitivity analysis experiment structure within the APSIM file.
 
@@ -8329,6 +8331,25 @@ Classes
            The number of paths should be sufficiently large to adequately explore the
            parameter space and capture variability in model responses. If ``None``, a
            default value is computed based on the number of decision variables.
+      jumps : int, optional
+           Applicable only to the Morris method. Determines the number of discrete
+           steps (also called “jumps”) each parameter is allowed to move within the
+           defined sampling grid. A higher number of jumps increases the number of
+           possible perturbation positions for a parameter and therefore results in
+           a more detailed exploration of the input space. However, increasing the
+           number of jumps also leads to more computational demand because the total
+           number of model evaluations scales with jumps × paths × (k + 1), where k
+           is the number of parameters. If omitted, a reasonable default based on
+           the number of decision variables is used.
+       intervals : int, optional
+           Applicable only to the Morris method. Specifies the number of levels into
+           which the range of each parameter is discretized. The parameter space is
+           divided into `intervals` equally spaced points, and the Morris trajectories
+           (paths) move across these points to compute elementary effects. A larger
+           number of intervals increases the resolution of the sensitivity analysis,
+           allowing finer distinction between parameter influences, but also expands
+           the computational cost. When not provided, a default value is chosen
+           according to recommended Morris design practices.
 
        Side Effects
        ------------
@@ -8434,18 +8455,18 @@ Classes
    int
        Recommended number of Morris paths.
 
-   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.build_sense_model(self, method: str, aggregation_column_name, base_simulation: str = None, num_path: int = None)
+   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.build_sense_model(self, method: str, aggregation_column_name, base_simulation: str = None, num_path: int = None, jumps: int = None, intervals: int = None)
 
    To be released in V0.39.12.21
 
    Finalize and build the sensitivity analysis experiment inside the APSIM file.
 
-   This method is a convenience wrapper around :meth:`setup`, providing a
-   simplified interface for creating the sensitivity experiment. It configures
+   This method acts as a convenience wrapper around :meth:`setup`, providing a
+   simplified interface for constructing the sensitivity experiment. It configures
    the sensitivity method (Morris or Sobol), assigns the aggregation column,
    selects or infers the base simulation, and applies the number of paths for
-   Morris analyses. After configuration, the APSIM file is updated and a
-   garbage collection call is issued to ensure clean C# object handling.
+   Morris analyses. After configuration, the APSIM file is updated and a garbage
+   collection call is issued to ensure clean C# object management.
 
    Parameters
    ----------
@@ -8456,17 +8477,49 @@ Classes
        Name of the column in the data table used to aggregate values during
        sensitivity analysis.
    base_simulation : str, optional
-       Name of the base simulation for constructing the experiment. If
-       ``None``, the first simulation in the file is used.
+       Name of the base simulation for constructing the experiment. If ``None``,
+       the first available simulation in the APSIM file is used.
    num_path : int, optional
-       Number of parameter paths for the Morris method. If ``None``, a default
-       is computed based on the number of decision variables.
+       Number of parameter paths for the Morris method. If ``None``, a default is
+       computed automatically based on the number of decision variables.
+   jumps : int, optional
+       Morris method only. Specifies the number of discrete step movements
+       (``"jumps"``) allowed along each parameter dimension during the construction
+       of a trajectory. Each Morris trajectory begins at a randomly selected point
+       in the parameter space and perturbs one parameter at a time by a fixed step
+       size ``Δ``. The ``jumps`` value determines how many such perturbations can
+       occur within each trajectory.
+
+       Increasing ``jumps`` improves the diversity of sampled elementary effects,
+       especially in complex models with non-linear interactions. However, higher
+       values also increase computational cost because the total number of model
+       evaluations scales approximately as:
+
+       .. math::
+
+           N_{\mathrm{sims}} = r , (k + 1)
+
+       where ``r`` is the number of paths and ``k`` is the number of parameters.
+       If ``jumps`` is not provided, a recommended default is chosen to balance
+       computational efficiency with adequate exploration of the parameter space.
+   intervals : int, optional
+       Morris method only. Defines the number of discrete levels into which each
+       parameter range is partitioned. The Morris method samples parameters on a
+       ``p``-level grid, where ``p = intervals``. Each parameter range is divided
+       into ``intervals`` equally spaced points, and trajectories move across these
+       grid points to compute elementary effects.
+
+       A larger number of intervals increases the resolution of the sampling grid,
+       enabling more detailed sensitivity insights and reducing discretization
+       error. However, high values also increase computational overhead and may not
+       necessarily improve screening quality. When omitted, a reasonable default is
+       selected according to standard Morris design guidelines.
 
    Side Effects
    ------------
-   - Modifies the APSIM file by adding a sensitivity analysis experiment.
-   - Ensures proper .NET resource cleanup via an explicit garbage collection
-     call.
+   - Modifies the APSIM file by inserting a sensitivity analysis experiment under
+     the ``Simulations`` node.
+   - Ensures proper .NET resource cleanup via an explicit garbage collection call.
 
    .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.set_params(self, params: dict[str, typing.Any] | None = None, **kwargs) -> 'ApsimModel' (inherited)
 
@@ -12259,8 +12312,8 @@ Classes
    - *(none)*
    List of Public Methods
    -----------------------------
-   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.minimize_with_de`
-   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.minimize_with_local`
+   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.minimize_with_de`
+   - :meth:`~apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.minimize_with_local`
 
    .. py:method:: apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.__init__(self, problem)
 
@@ -13168,7 +13221,7 @@ Functions Provided
 Functions
 ^^^^^^^^^
 
-.. py:function:: apsimNGpy.optimizer.problems.variables.filter_apsim_params(params: apsimNGpy.optimizer.problems.variables.BaseParams, place_holder=<object object at 0x000002610C439900>) -> Dict
+.. py:function:: apsimNGpy.optimizer.problems.variables.filter_apsim_params(params: apsimNGpy.optimizer.problems.variables.BaseParams, place_holder=<object object at 0x00000131108AD900>) -> Dict
 
    Flatten a validated BaseParams object into a dictionary suitable for APSIM execution.
 

@@ -37,9 +37,9 @@ from System.Collections.Generic import List
 
 class SensitivityManager(ApsimModel):
     """
-    This class inherits methods and attributes from: :class:`~apsimNGpy.core.apsim.ApsimModel` to manage APSIM Experiments
-    with pure factors or permutations. You first need to initiate the instance of this class and then initialize the
-    experiment itself with: :meth:`init_experiment`, which creates a new experiment from the suggested base simulation and ``permutation`` type
+    This class inherits methods and attributes from: :class:`~apsimNGpy.core.apsim.ApsimModel` to manage APSIM Sensitivity Analysis in apsimNGpy
+    You first need to initialize the class, define parameters and build the sensitivity analysis model
+
 
     The flow of method for :class:`ExperimentManager` class is shown in the diagram below:
 
@@ -50,18 +50,18 @@ class SensitivityManager(ApsimModel):
            PlotManager["PlotManager"]
            CoreModel["CoreModel"]
            ApsimModel["ApsimModel"]
-           ExperimentManager["ExperimentManager"]
+           SensitivityManager["SensitivityManager"]
 
            PlotManager --> CoreModel
            CoreModel --> ApsimModel
-           ApsimModel --> ExperimentManager
+           ApsimModel --> SensitivityManager
 
     Class Roles
     ---------------
     - :class:`~apsimNGpy.core.plotmanager.PlotManager` → Produces visual outputs from model results (Not exposed in the API reference)
     - :class:`~apsimNGpy.core.core.CoreModel`  → contains methods for running and manipulating models (Not exposed in the API reference)
     - :class:`~apsimNGpy.core.apsim.ApsimModel` → Extends :class:`~apsimNGpy.core.core.Coremodel` capabilities with more functionalities
-    - :class:`~apsimNGpy.core.experimentmanager.ExperimentManager` → Manages and creates a new experiment from the suggested base.
+    - :class:`~apsimNGpy.core.senstivitymanager.SensitivityManager` → Manages and creates a new sensitivity experiment model from the suggested base.
 
     """
 
@@ -89,8 +89,6 @@ class SensitivityManager(ApsimModel):
 
     def __exit__(self, exc_type, exc_val, exc_tb):
 
-        from System.IO import File  # dont remove I don't know why if imported it works magic
-
         try:
 
             invoke_csharp_gc()
@@ -100,57 +98,96 @@ class SensitivityManager(ApsimModel):
         except PermissionError:
             print(self.model_info.datastore)
 
-    def setup(self, agg_col_name, method: str = 'Morris',
+    def setup(self, agg_col_name: str, method: str = 'Morris',
               table_name: str = 'Report',
               base_simulation: str = None,
-              num_paths=None):
+              num_paths=None,
+              jumps=10,
+              intervals=20):
 
         """
-            Initializes the sensitivity experiment structure inside the APSIM file.
+        Initialize the sensitivity analysis experiment structure within the APSIM file.
 
-            Parameters
-            _____________
-            method: (str)
-              either morris or sobol are accepted.
-            table_name: (str)
-               for collecting the results
-            base_simulation: (str)
-               The base simulation name to use for the experiment. If None, the base simulation is selected
-               from the available simulations.
-            num_paths: (int) , optional
-               for morris
+        Parameters
+        ----------
+        agg_col_name : str
+            Name of the column in the database table used for aggregating values.
+        method : str, optional
+            Sensitivity method to use. Supported options are ``'morris'`` and ``'sobol'``.
+            Default is ``'Morris'``.
+        table_name : str, optional
+            Name of the table where sensitivity results will be stored.
+        base_simulation : str, optional
+            Name of the base simulation to use for constructing the experiment. If ``None``,
+            the first available simulation is used as the base.
+        num_paths : int, optional
+            Number of parameter paths for the Morris method. The Morris method generates
+            multiple parameter trajectories across the N-dimensional parameter space.
+            The number of paths should be sufficiently large to adequately explore the
+            parameter space and capture variability in model responses. If ``None``, a
+            default value is computed based on the number of decision variables.
+       jumps : int, optional
+            Applicable only to the Morris method. Determines the number of discrete
+            steps (also called “jumps”) each parameter is allowed to move within the
+            defined sampling grid. A higher number of jumps increases the number of
+            possible perturbation positions for a parameter and therefore results in
+            a more detailed exploration of the input space. However, increasing the
+            number of jumps also leads to more computational demand because the total
+            number of model evaluations scales with jumps × paths × (k + 1), where k
+            is the number of parameters. If omitted, a reasonable default based on
+            the number of decision variables is used.
+        intervals : int, optional
+            Applicable only to the Morris method. Specifies the number of levels into
+            which the range of each parameter is discretized. The parameter space is
+            divided into `intervals` equally spaced points, and the Morris trajectories
+            (paths) move across these points to compute elementary effects. A larger
+            number of intervals increases the resolution of the sensitivity analysis,
+            allowing finer distinction between parameter influences, but also expands
+            the computational cost. When not provided, a default value is chosen
+            according to recommended Morris design practices.
 
-            Side Effects:
-            ____________
-                - Replaces any existing ExperimentManager node with a new configuration.
-                - Clones the base simulation and adds it under the experiment.
-                - Never mind, though all this edits are made on a cloned model.
-                - In the presence of replacements, they are moved or retained directly at the simulations node
+        Side Effects
+        ------------
+        - If a Replacements folder is present, it is moved or retained under the
+          ``Simulations`` node as appropriate.
+        - A new sensitivity experiment (Morris or Sobol) is added under ``Simulations``.
 
+        Examples
+        --------
+        Create and initialize a sensitivity experiment:
 
-            Examples::
+        .. code-block:: python
 
-               from apsimNGpy.core.experimentmanager import ExperimentManager
-               # initialize the model
-               experiment = ExperimentManager('Maize', out_path = 'my_experiment.apsimx')
-               # initialize experiment without permutation crossing of the factors
-               experiment.init_experiment(permutation=False)
-               # initialize experiment with permutation =True
-               experiment.init_experiment(permutation=True)
-               # initialize experiment with a preferred base simulation name
-               experiment.init_experiment(permutation=False, base_simulation='Simulation')
-               # view the simulation tree
-               experiment.inspect_file()
+            from apsimNGpy.core.senstivitymanager import SensitivityManager
+            exp = SensitivityManager("Maize", out_path="dtb.apsimx")
 
-            The method :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.inspect_file` is inherited from the
-            :class:`~apsimNGpy.core.apsim.ApsimModel` class , but it is still useful here, for example, you can see
-            that we added an experiment Model under Simulations as shown below.
+        Add sensitivity factors:
 
-            .. code-block:: None
+        .. code-block:: python
 
-            .. seealso::
+            exp.add_sens_factor(name='cnr',
+                                path='Field.SurfaceOrganicMatter.InitialCNR',
+                                lower_bound=10,
+                                upper_bound=120)
 
-               :meth:`add_factor`
+            exp.add_sens_factor(name='cn2bare',
+                                path='Field.Soil.SoilWater.CN2Bare',
+                                lower_bound=70,
+                                upper_bound=100)
+
+            exp.finalize(method='Morris', aggregation_column_name='Clock.Today')
+            exp.run()
+
+        You can inspect the updated APSIM file structure using the
+        :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.inspect_file`
+        method, inherited from
+        :class:`~apsimNGpy.core.apsim.ApsimModel`. This allows you to verify that a
+        sensitivity analysis model has been added under the ``Simulations`` node:
+
+    .. code-block:: python
+
+        exp.inspect_file()
+
 
 
             """
@@ -188,10 +225,14 @@ class SensitivityManager(ApsimModel):
             # add then new experiment Node
             self.method_class = method_class
             self.sensitivity_node = method_class()
-            self.sensitivity_node.Name = self.method
+            self.sensitivity_node.Name = self.method.capitalize()
             self.sensitivity_node.Children.Clear()
             self.sensitivity_node.TableName = table_name
             self.sensitivity_node.AggregationVariableName = agg_col_name
+            if hasattr(self.sensitivity_node, 'Jump'):
+                self.sensitivity_node.Jump = jumps
+            if hasattr(self.sensitivity_node, 'NumIntervals'):
+                self.sensitivity_node.NumIntervals = intervals
             if num_paths is None:
                 n_paths = self.default_num_paths()
             else:
@@ -260,9 +301,12 @@ class SensitivityManager(ApsimModel):
 
         Examples
         --------
-        Initialize an experiment:
+        configure factors:
 
         .. code-block:: python
+
+            exp.add_sens_factor(name='cnr', path='Field.SurfaceOrganicMatter.InitialCNR', lower_bound=10, upper_bound=120)
+            exp.add_sens_factor(name='cn2bare', path='Field.Soil.SoilWater.CN2Bare', lower_bound=70, upper_bound=100)
 
 
         """
@@ -309,48 +353,121 @@ class SensitivityManager(ApsimModel):
         # cap at 50 (optional but practical for APSIM)
         return min(r, 50)
 
-    def finalize(self, method: str, aggregation_column_name, base_simulation: str = None, num_path: int = None):
-        """"
-        Finalizes the experiment setup by re-creating the internal APSIM factor nodes from specs.
+    @property
+    def default_jumps(self) -> int:
+        return min(self.n_factors + 1, 15)
 
-        This method is designed as a guard against unintended modifications and ensures that all
-        factor definitions are fully resolved and written before saving.
+    @property
+    def default_intervals(self) -> int:
+        return min(max(6, self.n_factors), 10)
 
-        Side Effects:
-            Clears existing children from the parent factor node.
-            Re-creates and attaches each factor as a new node.
-            Triggers model saving.
-         """
-        self.setup(agg_col_name=aggregation_column_name,method=method, base_simulation=base_simulation, num_paths=num_path)
+    def build_sense_model(self, method: str, aggregation_column_name, base_simulation: str = None,
+                          num_path: int = None,
+                          jumps: int = None,
+                          intervals: int = None):
+        """
+        To be released in V0.39.12.21
+
+        Finalize and build the sensitivity analysis experiment inside the APSIM file.
+
+        This method acts as a convenience wrapper around :meth:`setup`, providing a
+        simplified interface for constructing the sensitivity experiment. It configures
+        the sensitivity method (Morris or Sobol), assigns the aggregation column,
+        selects or infers the base simulation, and applies the number of paths for
+        Morris analyses. After configuration, the APSIM file is updated and a garbage
+        collection call is issued to ensure clean C# object management.
+
+        Parameters
+        ----------
+        method : str
+            Sensitivity analysis method to apply. Supported values are
+            ``'morris'`` and ``'sobol'``.
+        aggregation_column_name : str
+            Name of the column in the data table used to aggregate values during
+            sensitivity analysis.
+        base_simulation : str, optional
+            Name of the base simulation for constructing the experiment. If ``None``,
+            the first available simulation in the APSIM file is used.
+        num_path : int, optional
+            Number of parameter paths for the Morris method. If ``None``, a default is
+            computed automatically based on the number of decision variables.
+        jumps : int, optional
+            Morris method only. Specifies the number of discrete step movements
+            (``"jumps"``) allowed along each parameter dimension during the construction
+            of a trajectory. Each Morris trajectory begins at a randomly selected point
+            in the parameter space and perturbs one parameter at a time by a fixed step
+            size ``Δ``. The ``jumps`` value determines how many such perturbations can
+            occur within each trajectory.
+
+            Increasing ``jumps`` improves the diversity of sampled elementary effects,
+            especially in complex models with non-linear interactions. However, higher
+            values also increase computational cost because the total number of model
+            evaluations scales approximately as:
+
+            .. math::
+
+                N_{\mathrm{sims}} = r , (k + 1)
+
+            where ``r`` is the number of paths and ``k`` is the number of parameters.
+            If ``jumps`` is not provided, a recommended default is chosen to balance
+            computational efficiency with adequate exploration of the parameter space.
+        intervals : int, optional
+            Morris method only. Defines the number of discrete levels into which each
+            parameter range is partitioned. The Morris method samples parameters on a
+            ``p``-level grid, where ``p = intervals``. Each parameter range is divided
+            into ``intervals`` equally spaced points, and trajectories move across these
+            grid points to compute elementary effects.
+
+            A larger number of intervals increases the resolution of the sampling grid,
+            enabling more detailed sensitivity insights and reducing discretization
+            error. However, high values also increase computational overhead and may not
+            necessarily improve screening quality. When omitted, a reasonable default is
+            selected according to standard Morris design guidelines.
+
+        Side Effects
+        ------------
+        - Modifies the APSIM file by inserting a sensitivity analysis experiment under
+          the ``Simulations`` node.
+        - Ensures proper .NET resource cleanup via an explicit garbage collection call.
+
+        """
+
+        if jumps is None:
+            jumps = self.default_jumps
+        if intervals is None:
+            intervals = self.default_intervals
+        self.setup(agg_col_name=aggregation_column_name, method=method, base_simulation=base_simulation,
+                   num_paths=num_path, jumps=jumps, intervals=intervals)
         invoke_csharp_gc()
 
 
 import gc
 
-
-def create_parameter(path, lower, upper, name):
-    param = Models.Sensitivity.Parameter()
-    param.Path = path
-    param.LowerBound = lower
-    param.UpperBound = upper
-    param.Name = name
-    return param
-
-
 gc.collect()
 if __name__ == '__main__':
-    exp = SensitivityManager("Maize", out_path='dtb.apsimx')
+    exp = SensitivityManager("Maize", out_path='sob.apsimx')
     exp.add_sens_factor(name='cnr', path='Field.SurfaceOrganicMatter.InitialCNR', lower_bound=10, upper_bound=120)
     exp.add_sens_factor(name='cn2bare', path='Field.Soil.SoilWater.CN2Bare', lower_bound=70, upper_bound=100)
-    exp.finalize(method='Morris', aggregation_column_name='Clock.Today')
+    exp.build_sense_model(method='sobol', aggregation_column_name='Clock.Today')
+    exp.inspect_file()
+   # exp.preview_simulation()
+    exp.run(verbose=True)
+
+    # _____________________________
+    # Morris
+    # ----------------------------------
+    exp = SensitivityManager("Maize", out_path='morris.apsimx')
+    exp.add_sens_factor(name='cnr', path='Field.SurfaceOrganicMatter.InitialCNR', lower_bound=10, upper_bound=120)
+    exp.add_sens_factor(name='cn2bare', path='Field.Soil.SoilWater.CN2Bare', lower_bound=70, upper_bound=100)
+    exp.build_sense_model(method='Morris', aggregation_column_name='Clock.Today')
+    exp.inspect_file()
     exp.preview_simulation()
-    pp = create_parameter(path='Field.SurfaceOrganicMatter.InitialCNR', lower=80, upper=100, name='cnr')
 
-    mor = Models.Morris()
-
-    param_list = List[Models.Sensitivity.Parameter]()
-    param_list.Add(pp)
-
-    # assign to Morris
-
-    mor.Parameters = param_list
+    # mor = Models.Morris()
+    #
+    # param_list = List[Models.Sensitivity.Parameter]()
+    # param_list.Add(pp)
+    #
+    # # assign to Morris
+    #
+    # mor.Parameters = param_list

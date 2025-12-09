@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from apsimNGpy.core.runner import run_from_dir, get_matching_files
+from apsimNGpy.core.runner import _run_from_dir, get_matching_files
 import pandas as pd
 import polars as pl
 from apsimNGpy.core_utils.database_utils import (read_db_table, get_db_table_names,custom_remove_file,
@@ -22,8 +22,8 @@ class BatchRunner:
     verbose: bool = False
     results: pd.DataFrame = None
     def run(self, results = True):
-        df = run_from_dir(self.path, pattern=self.pattern, write_tocsv=self.export_csv,
-                          verbose=self.verbose,recursive=self.recursive)
+        df = _run_from_dir(self.path, pattern=self.pattern, write_tocsv=self.export_csv,
+                           verbose=self.verbose, recursive=self.recursive)
         self.results = list(df)
     def edit_run_model(self):
         find_files = []

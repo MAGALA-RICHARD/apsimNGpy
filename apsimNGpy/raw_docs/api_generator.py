@@ -313,10 +313,13 @@ if __name__ == "__main__":
     from apsimNGpy.validation import evaluator
     from apsimNGpy.optimizer.minimize import single_mixed
     from apsimNGpy.optimizer.problems import smp, back_end, variables
+    from apsimNGpy.core import senstivitymanager
 
     # ________________________________________________________________________________
     # add outline!!
     # ----------------------------------------------------------------------------------
+    add_outline(senstivitymanager.SensitivityManager, include_inherited=True,
+                base_path='apsimNGpy.core.senstivitymanager.SensitivityManager')
     add_outline(single_mixed.MixedVariableOptimizer, include_inherited=True,
                 base_path='apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer')
     add_outline(smp.MixedProblem, include_inherited=True,
@@ -331,7 +334,7 @@ if __name__ == "__main__":
     add_outline(mult_cores.MultiCoreManager, include_inherited=True,
                 )
     modules = (
-        process, apsim, mult_cores, experimentmanager, moo, smp,single_mixed,
+        process, apsim, mult_cores, experimentmanager, moo, smp,single_mixed,senstivitymanager,
         evaluator, exceptions, database_utils, pythonet_config, config, runner, back_end, variables
     )
 

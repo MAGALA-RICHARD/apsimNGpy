@@ -9,8 +9,10 @@ from apsimNGpy.core_utils.utils import timer
 from scipy.optimize import minimize, differential_evolution
 import subprocess
 
-from apsimNGpy.optimizer._one_obj import AbstractProblem, SIMULATIONS, ContVarProblem, cache, VarDesc, SING_OBJ_MIXED_VAR
+from apsimNGpy.optimizer._one_obj import AbstractProblem, SIMULATIONS, ContVarProblem, cache, VarDesc, \
+    SING_OBJ_MIXED_VAR
 from apsimNGpy.core_utils.progbar import ProgressBar
+
 try:
     import wrapdisc
 except ModuleNotFoundError as mnf:
@@ -186,7 +188,6 @@ class MixedVarProblem(ContVarProblem):
             wrapped_variables.append(wrapped)
             # this is the last time we need them
 
-
         return wrapped_variables
 
     @property
@@ -199,8 +200,8 @@ class MixedVarProblem(ContVarProblem):
         SCORE = self.evaluate_objectives()
         return SCORE
 
-    def  optimization_type(self):
-         return SING_OBJ_MIXED_VAR
+    def optimization_type(self):
+        return SING_OBJ_MIXED_VAR
 
     @abstractmethod
     def minimize_with_alocal_solver(self, **kwargs):
@@ -212,6 +213,8 @@ class MixedVarProblem(ContVarProblem):
         """
         To be implimented in sub-class
         """
+
+
 if __name__ == "__main__":
     maize_model = "Maize"
 
@@ -227,6 +230,8 @@ if __name__ == "__main__":
         8379.435,
         4000.301
     ]
+
+
     class Problem(MixedVarProblem):
         def __init__(self, apsim_model: 'ApsimNGpy.Core.Model', obs, max_cache_size=400, objectives=None,
                      decision_vars=None):
@@ -252,10 +257,10 @@ if __name__ == "__main__":
     problem = Problem(maize_model, obs, objectives=maximize_yield)
     problem.add_control(
         **{'path': '.Simulations.Simulation.Field.Fertilise at sowing', 'Amount': "?", "bounds": None,
-           "v_type": "choice"}, start_value=100,  categories= [100, 200, 250, 300])
+           "v_type": "choice"}, start_value=100, categories=[100, 200, 250, 300])
     problem.add_control(
         **{'path': '.Simulations.Simulation.Field.Sow using a variable rule', 'Population': "?", 'v_type': 'qrandint',
            'bounds': [4, 14]}, start_value=8, q=2, )
     # de_res = problem.optimize_with_differential_evolution()
     res = problem.minimize_with_alocal_solver(method='Powell', )
-    de = problem.minimize_with_differential_evolution(popsize=20, polish =True)
+    de = problem.minimize_with_differential_evolution(popsize=20, polish=True)

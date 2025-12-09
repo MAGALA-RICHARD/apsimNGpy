@@ -218,8 +218,3 @@ class ContVarProblem(AbstractProblem):
         df = self.apsim_model.run().results
         ans = self.objectives(df)
         return ans
-
-
-
-
-

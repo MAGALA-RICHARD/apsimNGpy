@@ -373,6 +373,11 @@ def extract_value(model_instance, parameters=None):
             value = {}
             for attr in attributes:
                 value[attr] = list(getattr(model_instance, attr))
+        case Models.WaterModel.WaterBalance:
+            if parameters:
+                for p in parameters:
+                    hasattr(model_instance, p)
+                    value = getattr(model_instance, p)
 
         case Models.PMF.Cultivar:
             selected_parameters = set(parameters) if parameters else set()

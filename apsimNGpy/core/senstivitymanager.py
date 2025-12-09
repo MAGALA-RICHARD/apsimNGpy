@@ -352,13 +352,14 @@ class SensitivityManager(ApsimModel):
 
         # cap at 50 (optional but practical for APSIM)
         return min(r, 50)
+
     @property
     def statistics(self):
         """
         Retrieve the sensitivity statistics produced by APSIM after running the
         sensitivity analysis.
 
-        This method reads the appropriate statistics table (Morris or Sobol)
+        This attribute reads the appropriate statistics table (Morris or Sobol)
         from the APSIM datastore once the sensitivity experiment has been executed
         using :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.run`.
 
@@ -373,16 +374,10 @@ class SensitivityManager(ApsimModel):
             If the required statistics table is not present in the datastore. This
             typically occurs when the sensitivity analysis has not been run or the
             APSIM output has not yet been generated.
-        KeyError
-            If the sensitivity method was not recognized or improperly set.
+
 
         Notes
         -----
-        The statistics table names expected from APSIM are:
-
-        - ``'MorrisStatistics'`` for the Morris method
-        - ``'SobolStatistics'`` for the Sobol method
-
         Ensure that the sensitivity analysis has completed successfully before
         calling this method.
 

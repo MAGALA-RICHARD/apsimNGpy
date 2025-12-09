@@ -8233,6 +8233,7 @@ Classes
    - :attr:`~apsimNGpy.core.senstivitymanager.SensitivityManager.simulation_names`
    - :attr:`~apsimNGpy.core.senstivitymanager.SensitivityManager.simulations`
    - :attr:`~apsimNGpy.core.senstivitymanager.SensitivityManager.simulations_list`
+   - :attr:`~apsimNGpy.core.senstivitymanager.SensitivityManager.statistics`
    - :attr:`~apsimNGpy.core.senstivitymanager.SensitivityManager.str_model`
    - :attr:`~apsimNGpy.core.senstivitymanager.SensitivityManager.tables_list`
    List of Public Methods
@@ -8300,7 +8301,6 @@ Classes
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.set_params`
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.setup`
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.show_met_file_in_simulation`
-   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.statistics`
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.summarize_numeric`
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.update_cultivar`
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.update_mgt`
@@ -8456,12 +8456,12 @@ Classes
    int
        Recommended number of Morris paths.
 
-   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.statistics(self)
+   .. py:property:: apsimNGpy.core.senstivitymanager.SensitivityManager.statistics
 
    Retrieve the sensitivity statistics produced by APSIM after running the
    sensitivity analysis.
 
-   This method reads the appropriate statistics table (Morris or Sobol)
+   This attribute reads the appropriate statistics table (Morris or Sobol)
    from the APSIM datastore once the sensitivity experiment has been executed
    using :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.run`.
 
@@ -8476,16 +8476,10 @@ Classes
        If the required statistics table is not present in the datastore. This
        typically occurs when the sensitivity analysis has not been run or the
        APSIM output has not yet been generated.
-   KeyError
-       If the sensitivity method was not recognized or improperly set.
+
 
    Notes
    -----
-   The statistics table names expected from APSIM are:
-
-   - ``'MorrisStatistics'`` for the Morris method
-   - ``'SobolStatistics'`` for the Sobol method
-
    Ensure that the sensitivity analysis has completed successfully before
    calling this method.
 
@@ -13255,7 +13249,7 @@ Functions Provided
 Functions
 ^^^^^^^^^
 
-.. py:function:: apsimNGpy.optimizer.problems.variables.filter_apsim_params(params: apsimNGpy.optimizer.problems.variables.BaseParams, place_holder=<object object at 0x0000020871CFD900>) -> Dict
+.. py:function:: apsimNGpy.optimizer.problems.variables.filter_apsim_params(params: apsimNGpy.optimizer.problems.variables.BaseParams, place_holder=<object object at 0x000002478B309900>) -> Dict
 
    Flatten a validated BaseParams object into a dictionary suitable for APSIM execution.
 

@@ -43,9 +43,10 @@ from apsimNGpy.core.model_tools import find_child
 from apsimNGpy.core._cultivar import trace_cultivar
 import Models
 from apsimNGpy.core.pythonet_config import get_apsim_version as apsim_version
-from System import InvalidOperationException, ArgumentOutOfRangeException
+from System import InvalidOperationException, ArgumentOutOfRangeException, Array, Double
 from apsimNGpy.core._cultivar import edit_cultivar_by_path
 from apsimNGpy.core.version_inspector import is_higher_apsim_version
+
 # constants
 IS_NEW_MODEL = is_file_format_modified()
 
@@ -1550,21 +1551,27 @@ class CoreModel(PlotManager):
             values = v_obj.Value
         except AttributeError:
             values = v_obj.Model
+            print(values.GetType())
             for model_class in {Models.Manager, Models.Climate.Weather,
                                 Models.PMF.Cultivar, Models.Clock, Models.Report,
                                 Models.Surface.SurfaceOrganicMatter,
                                 Models.Soils.Physical, Models.Soils.Chemical, Models.Soils.Organic, Models.Soils.Water,
-                                Models.Soils.Solute
+                                Models.Soils.Solute, Models.WaterModel.WaterBalance,
                                 }:
                 cast_model = CastHelper.CastAs[model_class](values)
+
                 if cast_model is not None:
                     values = cast_model
                     break
+
             else:
                 raise ValueError(
                     f"Could not find model instance associated with `{path}\n or {path} is not supported by this method")
 
         match type(values):
+            case Models.WaterModel.WaterBalance:
+                self.edit_model(Models.WaterModel.WaterBalance, model_name= values.Name, **kwargs)
+
             case Models.Climate.Weather:
                 self._set_weather_path(values, param_values=kwargs, verbose=verbose)
                 ...
@@ -1864,6 +1871,22 @@ class CoreModel(PlotManager):
             model_to_cast = getattr(model_instance, "Model", model_instance)
             model_instance = CastHelper.CastAs[model_type_class](model_to_cast)
             match type(model_instance):
+                case Models.WaterModel.WaterBalance:
+                    for k, v in kwargs.items():
+                        if hasattr(model_instance, k):
+                            att_value = getattr(model_instance, k)
+                            if isinstance(att_value, Array[Double]):
+                                att_value = list(att_value)
+                                if isinstance(v, (str, float, int)):
+                                    v = [v]
+                                    for index, vv in enumerate(v):
+                                        att_value[index] = vv
+                                    setattr(model_instance, k, att_value)
+                            else:
+                                setattr(model_instance, k, v)
+                        else:
+                            raise AttributeError(f'Specified attributee: {k} not found on {model_instance.FullPath} of model type: Models.WaterModel.WaterBalance')
+
                 case Models.Climate.Weather:
                     self._set_weather_path(model_instance, param_values=kwargs, verbose=verbose)
                 case Models.Clock:
@@ -2891,6 +2914,7 @@ class CoreModel(PlotManager):
         self.recompile_edited_model(out_path=out_mgt_path)
 
         return self
+
     @property
     def is_recent_version(self):
         return is_higher_apsim_version(self.Simulations)
@@ -4548,6 +4572,7 @@ class CoreModel(PlotManager):
                              'Models.Summary',
                              'Models.Storage.DataStore',
                              'Models.Graph',
+                             'Models.WaterModel.WaterBalance',
                              'Models.Soils.Physical', 'Models.Soils.Chemical', 'Models.Soils.Organic'}
             if cultivar:
                 model_classes.add('Models.PMF.Cultivar')
@@ -5049,5 +5074,11 @@ if __name__ == '__main__':
         print('datastore Path exists before exit:', Path(corep.datastore).exists())
         corep.add_base_replacements()
         corep.inspect_file(cultivar=True)
+        water = ModelTools.find_child(corep.Simulations, child_class=Models.WaterModel.WaterBalance,
+                                      child_name='SoilWater')
+        waterb = CastHelper.CastAs[Models.WaterModel.WaterBalance](water)
+        corep.edit_model('Models.WaterModel.WaterBalance', 'SoilWater', SWCON=3,)
+        corep.edit_model_by_path('.Simulations.Simulation.Field.Soil.SoilWater', SWCON =4)
+        sw = corep.inspect_model_parameters_by_path('.Simulations.Simulation.Field.Soil.SoilWater', parameters='SWCON')
     print('Path exists after exit:', Path(corep.path).exists())
     print('datastore Path exists after exit:', Path(corep.datastore).exists())

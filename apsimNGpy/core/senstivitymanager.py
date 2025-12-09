@@ -353,6 +353,16 @@ class SensitivityManager(ApsimModel):
         # cap at 50 (optional but practical for APSIM)
         return min(r, 50)
 
+    def statistics(self):
+        tables_to_read = {'sobol': 'SobolStatistics', 'morris': 'MorrisStatistics'}
+        from apsimNGpy.core_utils.database_utils import read_db_table, get_db_table_names
+        read_table = tables_to_read[self.method]
+        tables_in_store = get_db_table_names(self.datastore)
+        if read_table not in tables_in_store:
+            raise RuntimeError(f"table {read_table} is not available for extraction, perhaps not yet run the sensitivity experiment")
+        df = read_db_table(self.datastore, read_table)
+        return df
+
     @property
     def default_jumps(self) -> int:
         return min(self.n_factors + 1, 15)
@@ -406,7 +416,7 @@ class SensitivityManager(ApsimModel):
 
             .. math::
 
-                N_{\mathrm{sims}} = r , (k + 1)
+                N_{mathrm{sims}} = r , (k + 1)
 
             where ``r`` is the number of paths and ``k`` is the number of parameters.
             If ``jumps`` is not provided, a recommended default is chosen to balance
@@ -445,13 +455,16 @@ import gc
 
 gc.collect()
 if __name__ == '__main__':
+    from apsimNGpy.core_utils.database_utils import get_db_table_names
+
     exp = SensitivityManager("Maize", out_path='sob.apsimx')
     exp.add_sens_factor(name='cnr', path='Field.SurfaceOrganicMatter.InitialCNR', lower_bound=10, upper_bound=120)
     exp.add_sens_factor(name='cn2bare', path='Field.Soil.SoilWater.CN2Bare', lower_bound=70, upper_bound=100)
     exp.build_sense_model(method='sobol', aggregation_column_name='Clock.Today')
     exp.inspect_file()
-   # exp.preview_simulation()
+    # exp.preview_simulation()
     exp.run(verbose=True)
+    print(get_db_table_names(exp.datastore))
 
     # _____________________________
     # Morris

@@ -40,6 +40,7 @@ class SensitivityManager(ApsimModel):
     This class inherits methods and attributes from: :class:`~apsimNGpy.core.apsim.ApsimModel` to manage APSIM Sensitivity Analysis in apsimNGpy
     You first need to initialize the class, define parameters and build the sensitivity analysis model
 
+    Added in V0.39.12.21+
 
     The flow of method for :class:`SensitivityManager` class is shown in the diagram below:
 

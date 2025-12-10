@@ -44,17 +44,11 @@ class SensitivityManager(ApsimModel):
 
     The flow of method for :class:`SensitivityManager` class is shown in the diagram below:
 
-    .. mermaid::
+    ::
 
-       flowchart LR
-           PlotManager["PlotManager"]
-           CoreModel["CoreModel"]
-           ApsimModel["ApsimModel"]
-           SensitivityManager["SensitivityManager"]
-
-           PlotManager --> CoreModel
-           CoreModel --> ApsimModel
-           ApsimModel --> SensitivityManager
+    +-------------+     +-----------+     +-------------+     +----------------------+
+    | PlotManager | --> | CoreModel | --> | ApsimModel  | --> | SensitivityManager   |
+    +-------------+     +-----------+     +-------------+     +----------------------+
 
     Class Roles
     ---------------

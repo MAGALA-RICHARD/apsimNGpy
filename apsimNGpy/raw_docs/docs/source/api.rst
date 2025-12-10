@@ -167,6 +167,8 @@ Classes
    evaluation metrics (e.g., RMSE, RRMSE, WIA, CCC, bias), depending on the
    implementation of ``final_eval``.
 
+   Added in v0.39.12.21+
+
    Parameters
    ----------
    ref_data : pandas.DataFrame
@@ -222,6 +224,8 @@ Classes
       from apsimNGpy.core.apsim import ApsimModel
       from apsimNGpy.tests.unittests.test_factory import obs
       model = ApsimModel('Maize')
+      # need to add column year to act as common index with observed data
+      model.add_report_variable(variable_spec='[Clock].Today.Year as year', report_name='Report')
       model.evaluate_simulated_output(ref_data=obs, table='Report', index_col=['year'],
                                    target_col='Yield', ref_data_col='observed')
    .. code-block:: none
@@ -4214,6 +4218,8 @@ Classes
    evaluation metrics (e.g., RMSE, RRMSE, WIA, CCC, bias), depending on the
    implementation of ``final_eval``.
 
+   Added in v0.39.12.21+
+
    Parameters
    ----------
    ref_data : pandas.DataFrame
@@ -4269,6 +4275,8 @@ Classes
       from apsimNGpy.core.apsim import ApsimModel
       from apsimNGpy.tests.unittests.test_factory import obs
       model = ApsimModel('Maize')
+      # need to add column year to act as common index with observed data
+      model.add_report_variable(variable_spec='[Clock].Today.Year as year', report_name='Report')
       model.evaluate_simulated_output(ref_data=obs, table='Report', index_col=['year'],
                                    target_col='Yield', ref_data_col='observed')
    .. code-block:: none
@@ -8732,6 +8740,8 @@ Classes
    evaluation metrics (e.g., RMSE, RRMSE, WIA, CCC, bias), depending on the
    implementation of ``final_eval``.
 
+   Added in v0.39.12.21+
+
    Parameters
    ----------
    ref_data : pandas.DataFrame
@@ -8787,6 +8797,8 @@ Classes
       from apsimNGpy.core.apsim import ApsimModel
       from apsimNGpy.tests.unittests.test_factory import obs
       model = ApsimModel('Maize')
+      # need to add column year to act as common index with observed data
+      model.add_report_variable(variable_spec='[Clock].Today.Year as year', report_name='Report')
       model.evaluate_simulated_output(ref_data=obs, table='Report', index_col=['year'],
                                    target_col='Yield', ref_data_col='observed')
    .. code-block:: none
@@ -13504,7 +13516,7 @@ Functions Provided
 Functions
 ^^^^^^^^^
 
-.. py:function:: apsimNGpy.optimizer.problems.variables.filter_apsim_params(params: apsimNGpy.optimizer.problems.variables.BaseParams, place_holder=<object object at 0x000002A1858A5900>) -> Dict
+.. py:function:: apsimNGpy.optimizer.problems.variables.filter_apsim_params(params: apsimNGpy.optimizer.problems.variables.BaseParams, place_holder=<object object at 0x000002D3058A5900>) -> Dict
 
    Flatten a validated BaseParams object into a dictionary suitable for APSIM execution.
 

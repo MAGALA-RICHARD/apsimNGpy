@@ -46,9 +46,7 @@ class SensitivityManager(ApsimModel):
 
     ::
 
-    +-------------+     +-----------+     +-------------+     +----------------------+
-    | PlotManager | --> | CoreModel | --> | ApsimModel  | --> | SensitivityManager   |
-    +-------------+     +-----------+     +-------------+     +----------------------+
+    PlotManager --> CoreModel  --> ApsimModel -->  SensitivityManager
 
     Class Roles
     ---------------

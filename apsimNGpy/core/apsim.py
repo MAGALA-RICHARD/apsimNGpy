@@ -52,20 +52,12 @@ class ApsimModel(CoreModel):
 
     Class Roles
     -----------
-
-    - :class:`~apsimNGpy.core.plotmanager.PlotManager`
-      Produces visual outputs from model results.
+    - :class:`~apsimNGpy.core.plotmanager.PlotManager`. Produces visual outputs from model results.
       (Not exposed in the public API reference.)
-
-    - :class:`~apsimNGpy.core.core.CoreModel`
-      Provides core methods for running and manipulating APSIM models.
+    - :class:`~apsimNGpy.core.core.CoreModel`. Provides core methods for running and manipulating APSIM models.
       (Not exposed in the public API reference.)
-
-    - :class:`~apsimNGpy.core.apsim.ApsimModel`
-      Extends :class:`~apsimNGpy.core.core.CoreModel` with higher-level functionality.
-
-    - :class:`~apsimNGpy.core.experimentmanager.ExperimentManager`
-      Creates and manages multi-factor experiments from a base scenario.
+    - :class:`~apsimNGpy.core.apsim.ApsimModel`. Extends :class:`~apsimNGpy.core.core.CoreModel` with higher-level functionality.
+    - :class:`~apsimNGpy.core.experimentmanager.ExperimentManager`. Creates and manages multi-factor experiments from a base scenario.
 
 
     Examples

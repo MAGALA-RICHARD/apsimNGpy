@@ -29,6 +29,26 @@ class TestCoreModel(BaseTester):
         self.assertTrue(self.test_ap_sim.ran_ok)
         self.test_ap_sim.clean_up(db=True)
 
+    def test_evaluate_simulated_output(self):
+        from apsimNGpy.tests.unittests.test_factory import obs
+
+        with ApsimModel('Maize') as model:
+            model.add_report_variable(variable_spec='[Clock].Today.Year as year', report_name='Report')
+            model.run()
+            metrics = model.evaluate_simulated_output(ref_data=obs, table='Report', index_col=['year'],
+                                                      target_col='Yield', ref_data_col='observed')
+            self.assertIsInstance(metrics, dict, f'Metrics should be a dictionary, got {type(metrics)}')
+            self.assertIn('data', metrics.keys(), f'data  key not found in {metrics.keys()}')
+
+    def test_evaluate_simulated_output_runtime_error(self):
+        from apsimNGpy.tests.unittests.test_factory import obs
+
+        with ApsimModel('Maize') as model:
+            model.add_report_variable(variable_spec='[Clock].Today.Year as year', report_name='Report')
+
+            with self.assertRaises(RuntimeError, msg="expected to raise runtime error"):
+                metrics = model.evaluate_simulated_output(ref_data=obs, table='Report', index_col=['year'],
+                                                          target_col='Yield', ref_data_col='observed')
     def test_context_manager(self):
         with ApsimModel("Maize") as model:
             datastore = Path(model.datastore)

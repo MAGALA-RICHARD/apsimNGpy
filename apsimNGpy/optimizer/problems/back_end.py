@@ -112,7 +112,7 @@ def _prepare_eval_data(
         index: Union[str, list],
         pred_col: str,
         obs_col: str,
-        method: str):
+        ):
     """
     Shared utility to validate inputs, cast types, align datasets,
     and return the cleaned merged evaluation DataFrame.
@@ -174,12 +174,7 @@ def _prepare_eval_data(
             f"{required_cols_pred - set(pred.columns)}"
         )
 
-    # Metric validation
-    if method.lower() not in metric_direction:
-        raise ValueError(
-            f"Unsupported metric method: '{method}'. "
-            f"Choose from {list(metric_direction.keys())}"
-        )
+
 
     # Cast types for alignment
     index = list(index)
@@ -249,7 +244,12 @@ def eval_observed(
     float
         Metric value multiplied by the optimization direction.
     """
-
+    # Metric validation
+    if method.lower() not in metric_direction:
+        raise ValueError(
+            f"Unsupported metric method: '{method}'. "
+            f"Choose from {list(metric_direction.keys())}"
+        )
     data = _prepare_eval_data(obs, pred, index, pred_col, obs_col, method)
 
     validator = Validate(data[obs_col], data[pred_col])
@@ -266,7 +266,6 @@ def final_eval(
         index: str,
         pred_col: str,
         obs_col: str,
-        method: str = "rmse",
         exp: Optional[str] = None) -> dict:
     """
     Evaluate observed and predicted values and return the full suite of
@@ -286,7 +285,9 @@ def final_eval(
         }
     """
 
-    data = _prepare_eval_data(obs, pred, index, pred_col, obs_col, method)
+    data = _prepare_eval_data(obs, pred, index, pred_col, obs_col)
+    if exp:
+        data.eval(exp, inplace=True)
 
     validator = Validate(data[obs_col], data[pred_col])
     metric_dict = validator.evaluate_all(verbose=True)

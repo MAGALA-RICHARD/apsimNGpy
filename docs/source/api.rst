@@ -18,9 +18,9 @@ Classes
 
        High-level methods/attributes flow between the :class:`~apsimNGpy.core.apsim.ApsimModel` class and its parents, and child class is illustrated below:
 
-      ::
+       .. code-block:: none
 
-       PlotManager ---> CoreModel ---> ApsimModel ---> ExperimentManager
+         PlotManager ---> CoreModel ---> ApsimModel ---> ExperimentManager
 
        Class Roles
        -----------
@@ -3787,9 +3787,10 @@ Classes
        experiment itself with: :meth:`init_experiment`, which creates a new experiment from the suggested base simulation and ``permutation`` type
 
        The flow of method for :class:`ExperimentManager` class is shown in the diagram below:
-       ::
 
-       PlotManager ---> CoreModel ---> ApsimModel ---> ExperimentManager
+       .. code-block:: none
+
+         PlotManager ---> CoreModel ---> ApsimModel ---> ExperimentManager
 
        Class Roles
        ---------------
@@ -8362,9 +8363,7 @@ Classes
 
        ::
 
-       +-------------+     +-----------+     +-------------+     +----------------------+
-       | PlotManager | --> | CoreModel | --> | ApsimModel  | --> | SensitivityManager   |
-       +-------------+     +-----------+     +-------------+     +----------------------+
+       PlotManager --> CoreModel  --> ApsimModel -->  SensitivityManager
 
        Class Roles
        ---------------
@@ -13491,7 +13490,7 @@ Functions Provided
 Functions
 ^^^^^^^^^
 
-.. py:function:: apsimNGpy.optimizer.problems.variables.filter_apsim_params(params: apsimNGpy.optimizer.problems.variables.BaseParams, place_holder=<object object at 0x00000195C76C5900>) -> Dict
+.. py:function:: apsimNGpy.optimizer.problems.variables.filter_apsim_params(params: apsimNGpy.optimizer.problems.variables.BaseParams, place_holder=<object object at 0x000001C9D54A1900>) -> Dict
 
    Flatten a validated BaseParams object into a dictionary suitable for APSIM execution.
 

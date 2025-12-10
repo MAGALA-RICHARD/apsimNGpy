@@ -39,9 +39,10 @@ class ExperimentManager(ApsimModel):
     experiment itself with: :meth:`init_experiment`, which creates a new experiment from the suggested base simulation and ``permutation`` type
 
     The flow of method for :class:`ExperimentManager` class is shown in the diagram below:
-    ::
 
-    PlotManager ---> CoreModel ---> ApsimModel ---> ExperimentManager
+    .. code-block:: none
+
+      PlotManager ---> CoreModel ---> ApsimModel ---> ExperimentManager
 
     Class Roles
     ---------------

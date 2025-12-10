@@ -44,7 +44,6 @@ class SensitivityManager(ApsimModel):
 
     The flow of method for :class:`SensitivityManager` class is shown in the diagram below:
 
-
     .. mermaid::
 
        flowchart LR

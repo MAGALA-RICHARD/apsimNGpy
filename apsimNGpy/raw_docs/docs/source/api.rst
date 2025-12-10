@@ -8375,6 +8375,7 @@ Classes
        This class inherits methods and attributes from: :class:`~apsimNGpy.core.apsim.ApsimModel` to manage APSIM Sensitivity Analysis in apsimNGpy
        You first need to initialize the class, define parameters and build the sensitivity analysis model
 
+       Added in V0.39.12.21+
 
        The flow of method for :class:`SensitivityManager` class is shown in the diagram below:
 
@@ -13516,7 +13517,7 @@ Functions Provided
 Functions
 ^^^^^^^^^
 
-.. py:function:: apsimNGpy.optimizer.problems.variables.filter_apsim_params(params: apsimNGpy.optimizer.problems.variables.BaseParams, place_holder=<object object at 0x000002D3058A5900>) -> Dict
+.. py:function:: apsimNGpy.optimizer.problems.variables.filter_apsim_params(params: apsimNGpy.optimizer.problems.variables.BaseParams, place_holder=<object object at 0x0000025C1EE6D900>) -> Dict
 
    Flatten a validated BaseParams object into a dictionary suitable for APSIM execution.
 

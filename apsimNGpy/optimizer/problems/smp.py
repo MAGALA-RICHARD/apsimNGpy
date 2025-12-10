@@ -815,8 +815,7 @@ class MixedProblem:
             predicted,
             pred_col=self.predicted_col,
             obs_col=self.obs_column,
-            index=self.index,
-            method=self.accuracy_indicator)
+            index=self.index)
         setattr(res, 'all_metrics', eval_out['metrics'], )
         setattr(res, 'data', eval_out['data'])
         return eval_out

@@ -250,8 +250,9 @@ def eval_observed(
             f"Unsupported metric method: '{method}'. "
             f"Choose from {list(metric_direction.keys())}"
         )
-    data = _prepare_eval_data(obs, pred, index, pred_col, obs_col, method)
-
+    data = _prepare_eval_data(obs, pred, index, pred_col, obs_col)
+    if exp:
+        data.eval(exp, inplace=True)
     validator = Validate(data[obs_col], data[pred_col])
     metric_value = validator.evaluate(method.upper())
 

@@ -124,6 +124,108 @@ class ApsimModel(CoreModel):
 
         return hash((model_hash, path_hash, extras_hash))
 
+    def evaluate_simulated_output(
+            self,
+            ref_data: pd.DataFrame,
+            table,
+            ref_data_col,
+            target_col,
+            index_col,
+            expr=None
+    ):
+        """
+        Evaluate APSIM-simulated output against a reference (observed) dataset.
+
+        This method compares observed data (`ref_data`) with simulated predictions
+        obtained either from a provided DataFrame or from a table name that is used
+        to extract simulation output through :meth:`~apsimNGpy.core.apsim.ApsimModel.get_simulated_output`.
+        The comparison is performed through ``final_eval`` from
+        ``apsimNGpy.optimizer.problems.back_end``, which computes common
+        evaluation metrics (e.g., RMSE, RRMSE, WIA, CCC, bias), depending on the
+        implementation of ``final_eval``.
+
+        Parameters
+        ----------
+        ref_data : pandas.DataFrame
+            The reference or observed dataset against which predictions will
+            be evaluated. Must contain at least the column specified by
+            ``ref_data_col`` and the index column.
+
+        table : str or pandas.DataFrame
+            Either:
+                - A **string** referring to an APSIM output table name.
+                  In this case, simulated output is retrieved using
+                  :meth:`~apsimNGpy.core.apsim.ApsimModel.get_simulated_output`(table).
+                - A **DataFrame** containing simulated predictions directly.
+            Any other type will raise a ``TypeError``.
+
+        ref_data_col : str
+            Column name in ``ref_data`` containing the observed values.
+
+        target_col : str
+            Column name in the simulated dataset indicating the predicted values
+            to be compared against the observations.
+
+        index_col : str
+            Column used to join observed and simulated data (e.g., date,
+            sample number, simulation ID). Both datasets must contain this column.
+
+        expr : callable or str, optional
+            An optional transformation or expression to apply before comparison.
+            Can be a lambda function, a string expression, or ``None``.
+            Default is ``None``.
+
+        Returns
+        -------
+        dict or pandas.DataFrame
+            The output of ``final_eval``, typically containing evaluation metrics
+            such as RMSE, RRMSE, WIA, CCC, ME, and bias.
+
+        Raises
+        ------
+        TypeError
+            If ``table`` is neither a string nor a pandas DataFrame.
+
+        Notes
+        -----
+        This method streamlines comparison between observed and simulated APSIM
+        outputs during model calibration or performance assessment. It allows the
+        user to directly pass simulation tables or retrieve them automatically by
+        name, ensuring a consistent evaluation workflow.
+        Examples
+        --------
+        .. code-block:: python
+
+           from apsimNGpy.core.apsim import ApsimModel
+           from apsimNGpy.tests.unittests.test_factory import obs
+           model = ApsimModel('Maize')
+           model.evaluate_simulated_output(ref_data=obs, table='Report', index_col=['year'],
+                                        target_col='Yield', ref_data_col='observed')
+        .. code-block:: none
+
+            Model Evaluation Metrics
+            ----------------------------------------
+            RMSE    :     0.0003
+            MAE     :     0.0003
+            MSE     :     0.0000
+            RRMSE   :     0.0000
+            bias    :    -0.0001
+            ME      :     1.0000
+            WIA     :     1.0000
+            R2      :     1.0000
+            CCC     :     1.0000
+            SLOPE   :     1.0000
+        """
+        from apsimNGpy.optimizer.problems.back_end import final_eval
+        if not isinstance(table, pd.DataFrame) and isinstance(table, str):
+            predicted = self.get_simulated_output(table)
+        elif isinstance(table, pd.DataFrame):
+            predicted = table
+        else:
+            raise TypeError(f"un supported type {type(table)}")
+        return final_eval(ref_data, predicted, pred_col=target_col, index=index_col,
+                          obs_col=ref_data_col, exp=expr)
+
     def set_params(self, params: dict[str, Any] | None = None, **kwargs) -> "ApsimModel":
         """
         Set parameters for the given model by passing a dictionary or keyword arguments.
@@ -717,8 +819,12 @@ if __name__ == '__main__':
     model = ApsimModel(maize_x, out_path=Path.home() / 'm.apsimx')
     model.get_soil_from_web(simulation_name=None, lonlat=(-89.9937, 40.4842), thinnest_layer=150, adjust_dul=True)
     # mod.get_soil_from_web(simulation_name=None, lonlat=(-93.045, 42.0541))
+    from apsimNGpy.tests.unittests.test_factory import obs
     with ApsimModel("Maize") as model:
         datastore = Path(model.datastore)
+        model.add_report_variable(variable_spec='[Clock].Today.Year as year', report_name='Report')
         model.run()
+        model.evaluate_simulated_output(ref_data=obs, table='Report', index_col=['year'],
+                                        target_col='Yield', ref_data_col='observed')
         df = model.results
     print(os.path.exists(model.datastore))

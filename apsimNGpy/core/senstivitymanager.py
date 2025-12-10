@@ -44,9 +44,9 @@ class SensitivityManager(ApsimModel):
 
     The flow of method for :class:`SensitivityManager` class is shown in the diagram below:
 
-    ::
+     .. code-block:: none
 
-    PlotManager --> CoreModel  --> ApsimModel -->  SensitivityManager
+         PlotManager --> CoreModel  --> ApsimModel -->  SensitivityManager
 
     Class Roles
     ---------------

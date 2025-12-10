@@ -46,9 +46,9 @@ class ApsimModel(CoreModel):
 
     High-level methods/attributes flow between the :class:`~apsimNGpy.core.apsim.ApsimModel` class and its parents, and child class is illustrated below:
 
-   ::
+    .. code-block:: none
 
-    PlotManager ---> CoreModel ---> ApsimModel ---> ExperimentManager
+      PlotManager ---> CoreModel ---> ApsimModel ---> ExperimentManager
 
     Class Roles
     -----------

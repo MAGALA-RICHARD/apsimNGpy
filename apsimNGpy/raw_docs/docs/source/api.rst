@@ -8379,18 +8379,11 @@ Classes
 
        The flow of method for :class:`SensitivityManager` class is shown in the diagram below:
 
+       ::
 
-       .. mermaid::
-
-          flowchart LR
-              PlotManager["PlotManager"]
-              CoreModel["CoreModel"]
-              ApsimModel["ApsimModel"]
-              SensitivityManager["SensitivityManager"]
-
-              PlotManager --> CoreModel
-              CoreModel --> ApsimModel
-              ApsimModel --> SensitivityManager
+       +-------------+     +-----------+     +-------------+     +----------------------+
+       | PlotManager | --> | CoreModel | --> | ApsimModel  | --> | SensitivityManager   |
+       +-------------+     +-----------+     +-------------+     +----------------------+
 
        Class Roles
        ---------------
@@ -13517,7 +13510,7 @@ Functions Provided
 Functions
 ^^^^^^^^^
 
-.. py:function:: apsimNGpy.optimizer.problems.variables.filter_apsim_params(params: apsimNGpy.optimizer.problems.variables.BaseParams, place_holder=<object object at 0x0000025C1EE6D900>) -> Dict
+.. py:function:: apsimNGpy.optimizer.problems.variables.filter_apsim_params(params: apsimNGpy.optimizer.problems.variables.BaseParams, place_holder=<object object at 0x00000251057D9900>) -> Dict
 
    Flatten a validated BaseParams object into a dictionary suitable for APSIM execution.
 

@@ -49,6 +49,31 @@ class TestCoreModel(BaseTester):
             with self.assertRaises(RuntimeError, msg="expected to raise runtime error"):
                 metrics = model.evaluate_simulated_output(ref_data=obs, table='Report', index_col=['year'],
                                                           target_col='Yield', ref_data_col='observed')
+
+    def test_evaluate_simulated_output_direct_predicted_data_as_table(self):
+        from apsimNGpy.tests.unittests.test_factory import obs
+
+        with ApsimModel('Maize') as model:
+            model.add_report_variable(variable_spec='[Clock].Today.Year as year', report_name='Report')
+            model.run('Report')
+            metrics = model.evaluate_simulated_output(ref_data=obs, table=model.results, index_col=['year'],
+                                                      target_col='Yield', ref_data_col='observed')
+            self.assertIsInstance(metrics, dict, f'Metrics should be a dictionary, got {type(metrics)}')
+            self.assertIn('data', metrics.keys(), f'data  key not found in {metrics.keys()}')
+
+    def test_evaluate_simulated_output_type_error(self):
+        from apsimNGpy.tests.unittests.test_factory import obs
+
+        with ApsimModel('Maize') as model:
+            model.add_report_variable(variable_spec='[Clock].Today.Year as year', report_name='Report')
+            model.run()
+            with self.assertRaises(TypeError, msg="expected to raise  TypeError"):
+                metrics = model.evaluate_simulated_output(ref_data=[obs], table='Report', index_col=['year'],
+                                                          target_col='Yield', ref_data_col='observed')
+            with self.assertRaises(TypeError, msg="expected to raise TypeError"):
+                metrics = model.evaluate_simulated_output(ref_data=obs, table=[model.results], index_col=['year'],
+                                                          target_col='Yield', ref_data_col='observed')
+
     def test_context_manager(self):
         with ApsimModel("Maize") as model:
             datastore = Path(model.datastore)

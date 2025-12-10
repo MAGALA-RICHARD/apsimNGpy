@@ -229,6 +229,8 @@ class ApsimModel(CoreModel):
             predicted = table
         else:
             raise TypeError(f"un supported type {type(table)}")
+        if not isinstance(ref_data, pd.DataFrame):
+            raise TypeError(f"Expected {pd.DataFrame}, got {type(ref_data)}")
         return final_eval(ref_data, predicted, pred_col=target_col, index=index_col,
                           obs_col=ref_data_col, exp=expr)
 

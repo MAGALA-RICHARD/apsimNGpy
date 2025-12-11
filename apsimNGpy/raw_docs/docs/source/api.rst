@@ -103,6 +103,7 @@ Classes
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_model`
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_model_parameters`
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_model_parameters_by_path`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_settable_attributes`
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.move_model`
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.plot_mva`
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.preview_simulation`
@@ -1521,6 +1522,62 @@ Classes
    .. seealso::
 
       Related API: :meth:`edit_model_by_path`.
+
+   .. py:staticmethod:: apsimNGpy.core.apsim.ApsimModel.inspect_settable_attributes(model_type) (inherited)
+
+   Inspect and return all settable attributes for a given APSIM model type.
+
+   This method identifies which attributes of a model can be modified by
+   the user. APSIM model classes typically expose writable parameters through
+   setter methods following the naming convention ``set_<AttributeName>()``.
+   This function extracts all such attributes and returns them in a clean,
+   user-friendly list.
+
+   Added in v0.39.12.21
+
+   Parameters
+   ----------
+   model_type : type or str
+       The APSIM model class or the registered model name. This value is
+       validated and resolved to a concrete APSIM model class via
+       :func:`validate_model_obj`.
+
+   Returns
+   -------
+   list of str
+       A list of attribute names that can be set on the specified model.
+       These correspond to all public APSIM parameters for which a
+       ``set_<AttributeName>`` method exists. The ``set_`` prefix is removed
+       for clarity, so the list contains clean parameter names.
+
+   Notes
+   -----
+   - This method does *not* set or modify any attributes—its purpose is
+     diagnostic and introspective.
+   - Useful for error reporting, documentation, and informing users which
+     parameters are valid inputs for :meth:`edit_model` or related methods.
+
+   Examples
+   --------
+   .. code-block:: python
+
+       from apsimNGpy.core.apsim import ApsimModel
+       sm = ApsimModel('Maize')
+       sm.inspect_settable_attributes(model_type='Models.Surface.SurfaceOrganicMatter')
+
+   .. code-block:: none
+
+       ['Canopies', 'Children', 'Enabled', 'InitialCNR', 'InitialCPR', 'InitialResidueMass', 'InitialResidueName', 'InitialResidueType',
+        'InitialStandingFraction', 'IsHidden', 'Name', 'Node', 'Parent', 'ReadOnly', 'ResourceName', 'Structure']
+
+   .. code-block:: python
+
+         sm.inspect_settable_attributes(Models.WaterModel.WaterBalance)
+
+   .. code-block:: none
+
+       ['CN2Bare', 'CNCov', 'CNRed', 'CatchmentArea', 'Children', 'Depth', 'DiffusConst', 'DiffusSlope', 'DischargeWidth',
+       'Enabled', 'Eo', 'IsHidden', 'KLAT', 'Name', 'Node', 'PSIDul', 'Parent', 'PoreInteractionIndex', 'PotentialInfiltration', 'PrecipitationInterception', 'ReadOnly', 'ResourceName', 'Runon', 'SW', 'SWCON', 'Salb', 'Structure', 'SummerCona', 'SummerDate', 'SummerU', 'Thickness', 'Water', 'WaterTable', 'WinterCona', 'WinterDate', 'WinterU']
 
    .. py:method:: apsimNGpy.core.apsim.ApsimModel.find_model_in_replacements(self, model_type, model_name) (inherited)
 
@@ -3467,7 +3524,7 @@ Module attributes
 
 .. py:attribute:: apsimNGpy.core.config.configuration
 
-   Default value: ``Configuration(bin_path='C:\\Users\\rmagala\\AppData\\Local\\Programs\\APSIM2025…``
+   Default value: ``Configuration(bin_path='D:\\My_BOX\\Box\\PhD thesis\\Objective two\\morrow plot…``
 
 Functions
 ^^^^^^^^^
@@ -3842,6 +3899,7 @@ Classes
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.inspect_model`
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.inspect_model_parameters`
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.inspect_model_parameters_by_path`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.inspect_settable_attributes`
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.move_model`
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.plot_mva`
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.preview_simulation`
@@ -5563,6 +5621,62 @@ Classes
    .. seealso::
 
       Related API: :meth:`edit_model_by_path`.
+
+   .. py:staticmethod:: apsimNGpy.core.experimentmanager.ExperimentManager.inspect_settable_attributes(model_type) (inherited)
+
+   Inspect and return all settable attributes for a given APSIM model type.
+
+   This method identifies which attributes of a model can be modified by
+   the user. APSIM model classes typically expose writable parameters through
+   setter methods following the naming convention ``set_<AttributeName>()``.
+   This function extracts all such attributes and returns them in a clean,
+   user-friendly list.
+
+   Added in v0.39.12.21
+
+   Parameters
+   ----------
+   model_type : type or str
+       The APSIM model class or the registered model name. This value is
+       validated and resolved to a concrete APSIM model class via
+       :func:`validate_model_obj`.
+
+   Returns
+   -------
+   list of str
+       A list of attribute names that can be set on the specified model.
+       These correspond to all public APSIM parameters for which a
+       ``set_<AttributeName>`` method exists. The ``set_`` prefix is removed
+       for clarity, so the list contains clean parameter names.
+
+   Notes
+   -----
+   - This method does *not* set or modify any attributes—its purpose is
+     diagnostic and introspective.
+   - Useful for error reporting, documentation, and informing users which
+     parameters are valid inputs for :meth:`edit_model` or related methods.
+
+   Examples
+   --------
+   .. code-block:: python
+
+       from apsimNGpy.core.apsim import ApsimModel
+       sm = ApsimModel('Maize')
+       sm.inspect_settable_attributes(model_type='Models.Surface.SurfaceOrganicMatter')
+
+   .. code-block:: none
+
+       ['Canopies', 'Children', 'Enabled', 'InitialCNR', 'InitialCPR', 'InitialResidueMass', 'InitialResidueName', 'InitialResidueType',
+        'InitialStandingFraction', 'IsHidden', 'Name', 'Node', 'Parent', 'ReadOnly', 'ResourceName', 'Structure']
+
+   .. code-block:: python
+
+         sm.inspect_settable_attributes(Models.WaterModel.WaterBalance)
+
+   .. code-block:: none
+
+       ['CN2Bare', 'CNCov', 'CNRed', 'CatchmentArea', 'Children', 'Depth', 'DiffusConst', 'DiffusSlope', 'DischargeWidth',
+       'Enabled', 'Eo', 'IsHidden', 'KLAT', 'Name', 'Node', 'PSIDul', 'Parent', 'PoreInteractionIndex', 'PotentialInfiltration', 'PrecipitationInterception', 'ReadOnly', 'ResourceName', 'Runon', 'SW', 'SWCON', 'Salb', 'Structure', 'SummerCona', 'SummerDate', 'SummerU', 'Thickness', 'Water', 'WaterTable', 'WinterCona', 'WinterDate', 'WinterU']
 
    .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.find_model_in_replacements(self, model_type, model_name) (inherited)
 
@@ -7846,7 +7960,7 @@ Module attributes
 
 .. py:attribute:: apsimNGpy.core.pythonet_config.CI
 
-   Default value: ``ConfigRuntimeInfo(clr_loaded=True, bin_path=WindowsPath('C:/Users/rmagala/AppDa…``
+   Default value: ``ConfigRuntimeInfo(clr_loaded=True, bin_path=WindowsPath('D:/My_BOX/Box/PhD thes…``
 
 Functions
 ^^^^^^^^^
@@ -7905,7 +8019,7 @@ Functions
    >>> reader = get_apsim_file_reader("string")    # doctest: +SKIP
    >>> sims = reader(text)                         # doctest: +SKIP
 
-.. py:function:: apsimNGpy.core.pythonet_config.get_apsim_version(bin_path: Union[str, pathlib.Path] = 'C:\\Users\\rmagala\\AppData\\Local\\Programs\\APSIM2025.12.7939.0\\bin', release_number: bool = False) -> Optional[str]
+.. py:function:: apsimNGpy.core.pythonet_config.get_apsim_version(bin_path: Union[str, pathlib.Path] = 'D:\\My_BOX\\Box\\PhD thesis\\Objective two\\morrow plots 20250821\\APSIM2025.8.7844.0\\bin', release_number: bool = False) -> Optional[str]
 
    Return the APSIM version string detected from the installed binaries.
 
@@ -8250,7 +8364,7 @@ Functions
    RuntimeError
        If APSIM returns a non-zero exit code.
 
-.. py:function:: apsimNGpy.core.runner.run_model_externally(model: 'Union[Path, str]', *, apsim_exec: 'Optional[Union[Path, str]]' = WindowsPath('C:/Users/rmagala/AppData/Local/Programs/APSIM2025.12.7939.0/bin/Models.exe'), verbose: 'bool' = False, to_csv: 'bool' = False, timeout: 'int' = 600, cpu_count=-1, cwd: 'Optional[Union[Path, str]]' = None, env: 'Optional[Mapping[str, str]]' = None) -> 'subprocess.CompletedProcess[str]'
+.. py:function:: apsimNGpy.core.runner.run_model_externally(model: 'Union[Path, str]', *, apsim_exec: 'Optional[Union[Path, str]]' = WindowsPath('D:/My_BOX/Box/PhD thesis/Objective two/morrow plots 20250821/APSIM2025.8.7844.0/bin/Models.exe'), verbose: 'bool' = False, to_csv: 'bool' = False, timeout: 'int' = 600, cpu_count=-1, cwd: 'Optional[Union[Path, str]]' = None, env: 'Optional[Mapping[str, str]]' = None) -> 'subprocess.CompletedProcess[str]'
 
    Run APSIM externally (cross-platform) with safe defaults.
 
@@ -8419,6 +8533,7 @@ Classes
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.inspect_model`
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.inspect_model_parameters`
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.inspect_model_parameters_by_path`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.inspect_settable_attributes`
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.move_model`
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.plot_mva`
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.preview_simulation`
@@ -10077,6 +10192,62 @@ Classes
    .. seealso::
 
       Related API: :meth:`edit_model_by_path`.
+
+   .. py:staticmethod:: apsimNGpy.core.senstivitymanager.SensitivityManager.inspect_settable_attributes(model_type) (inherited)
+
+   Inspect and return all settable attributes for a given APSIM model type.
+
+   This method identifies which attributes of a model can be modified by
+   the user. APSIM model classes typically expose writable parameters through
+   setter methods following the naming convention ``set_<AttributeName>()``.
+   This function extracts all such attributes and returns them in a clean,
+   user-friendly list.
+
+   Added in v0.39.12.21
+
+   Parameters
+   ----------
+   model_type : type or str
+       The APSIM model class or the registered model name. This value is
+       validated and resolved to a concrete APSIM model class via
+       :func:`validate_model_obj`.
+
+   Returns
+   -------
+   list of str
+       A list of attribute names that can be set on the specified model.
+       These correspond to all public APSIM parameters for which a
+       ``set_<AttributeName>`` method exists. The ``set_`` prefix is removed
+       for clarity, so the list contains clean parameter names.
+
+   Notes
+   -----
+   - This method does *not* set or modify any attributes—its purpose is
+     diagnostic and introspective.
+   - Useful for error reporting, documentation, and informing users which
+     parameters are valid inputs for :meth:`edit_model` or related methods.
+
+   Examples
+   --------
+   .. code-block:: python
+
+       from apsimNGpy.core.apsim import ApsimModel
+       sm = ApsimModel('Maize')
+       sm.inspect_settable_attributes(model_type='Models.Surface.SurfaceOrganicMatter')
+
+   .. code-block:: none
+
+       ['Canopies', 'Children', 'Enabled', 'InitialCNR', 'InitialCPR', 'InitialResidueMass', 'InitialResidueName', 'InitialResidueType',
+        'InitialStandingFraction', 'IsHidden', 'Name', 'Node', 'Parent', 'ReadOnly', 'ResourceName', 'Structure']
+
+   .. code-block:: python
+
+         sm.inspect_settable_attributes(Models.WaterModel.WaterBalance)
+
+   .. code-block:: none
+
+       ['CN2Bare', 'CNCov', 'CNRed', 'CatchmentArea', 'Children', 'Depth', 'DiffusConst', 'DiffusSlope', 'DischargeWidth',
+       'Enabled', 'Eo', 'IsHidden', 'KLAT', 'Name', 'Node', 'PSIDul', 'Parent', 'PoreInteractionIndex', 'PotentialInfiltration', 'PrecipitationInterception', 'ReadOnly', 'ResourceName', 'Runon', 'SW', 'SWCON', 'Salb', 'Structure', 'SummerCona', 'SummerDate', 'SummerU', 'Thickness', 'Water', 'WaterTable', 'WinterCona', 'WinterDate', 'WinterU']
 
    .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.find_model_in_replacements(self, model_type, model_name) (inherited)
 
@@ -13482,7 +13653,7 @@ Functions Provided
 Functions
 ^^^^^^^^^
 
-.. py:function:: apsimNGpy.optimizer.problems.variables.filter_apsim_params(params: apsimNGpy.optimizer.problems.variables.BaseParams, place_holder=<object object at 0x00000159058F5900>) -> Dict
+.. py:function:: apsimNGpy.optimizer.problems.variables.filter_apsim_params(params: apsimNGpy.optimizer.problems.variables.BaseParams, place_holder=<object object at 0x0000027A2B4E9900>) -> Dict
 
    Flatten a validated BaseParams object into a dictionary suitable for APSIM execution.
 

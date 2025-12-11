@@ -542,6 +542,10 @@ class TestCoreModel(BaseTester):
                              KS=[1, 2, 3, 4, 5, 6, 7])
             ks3 = model.inspect_model_parameters('Models.Soils.Physical', 'Physical', parameters='KS')
             self.assertEqual(ks3.KS.tolist(), ks_123, msg=f'KS is not equal to input expected to be {ks_123}')
+            with self.assertRaises(AttributeError, msg=f'Expected to raise AttributeError for BDDD'):
+                model.edit_model(model_type='Models.Soils.Physical', model_name='Physical',
+                                 simulations='Simulation',
+                                 KS=[1, 2, 3, 4, 5, 6, 7], BDDD=1.23),
 
     def test_edit_cultivar_edit_model_method(self):
         """

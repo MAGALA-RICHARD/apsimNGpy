@@ -3979,7 +3979,7 @@ class CoreModel(PlotManager):
             if isinstance(v, (int, float)):
                 v = [v]
             if indices is None:
-                indices = [v.index(i) for i in v]
+                indices = range(len(v))
             val_p = getattr(_soil_child, 'Value', _soil_child)
             param_values_new = list(getattr(val_p, parameter))
             _param_new = replace_variable_by_index(param_values_new, v, indices)

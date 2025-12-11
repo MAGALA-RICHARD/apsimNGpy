@@ -159,6 +159,9 @@ def search_cultivar_manager(
     cultivar_key = cultivar_name.strip().lower()
     sims = model.simulations if simulations is None else model.find_simulations(simulations)
     results: Dict[str, Dict[str, str]] = {}
+    reps = model.get_replacements_node()
+    if reps:
+        sims.append(reps)
 
     if verbose:
         logger.debug(f"Searching for cultivar '{cultivar_name}' across {len(sims)} simulation(s)...")

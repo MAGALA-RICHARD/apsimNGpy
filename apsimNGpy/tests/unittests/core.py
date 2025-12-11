@@ -508,6 +508,13 @@ class TestCoreModel(BaseTester):
             self.assertIsInstance(sw4["SWCON"], list,
                 msg="SWCON should always be stored as list after edits")
 
+            with self.assertRaises(AssertionError, msg=f'expected to raise AssertionError'):
+                corep.edit_model_by_path(
+                    '.Simulations.Simulation.Field.Soil.SoilWater',
+                    SWCON=5,
+                    indices=[-1, 2]
+                )
+
     def test_edit_soils_physical(self):
         with CoreModel("Maize") as model:
             ks = model.inspect_model_parameters('Models.Soils.Physical', 'Physical', parameters='KS')

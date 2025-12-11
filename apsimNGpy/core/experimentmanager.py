@@ -336,8 +336,8 @@ class ExperimentManager(ApsimModel):
                                                   child_name='Replacements')
 
             siM = self.Simulations
-            if replace_ments:
-                siM.AddChild(replace_ments)
+            # if replace_ments:
+            #     siM.AddChild(replace_ments)
             #create experiment
             _experiments = list(siM.Node.FindAll[Models.Factorial.Experiment]())
             if _experiments:

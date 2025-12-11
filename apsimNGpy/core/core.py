@@ -1872,21 +1872,7 @@ class CoreModel(PlotManager):
             model_instance = CastHelper.CastAs[model_type_class](model_to_cast)
             match type(model_instance):
                 case Models.WaterModel.WaterBalance:
-                    for k, v in kwargs.items():
-                        if hasattr(model_instance, k):
-                            att_value = getattr(model_instance, k)
-                            if isinstance(att_value, Array[Double]):
-                                att_value = list(att_value)
-                                if isinstance(v, (str, float, int)):
-                                    v = [v]
-                                    for index, vv in enumerate(v):
-                                        att_value[index] = vv
-                                    setattr(model_instance, k, att_value)
-                            else:
-                                setattr(model_instance, k, v)
-                        else:
-                            raise AttributeError(f'Specified attributee: {k} not found on {model_instance.FullPath} of model type: Models.WaterModel.WaterBalance')
-
+                    ModelTools.edit_instance(model_instance, **kwargs)
                 case Models.Climate.Weather:
                     self._set_weather_path(model_instance, param_values=kwargs, verbose=verbose)
                 case Models.Clock:
@@ -1896,10 +1882,18 @@ class CoreModel(PlotManager):
                     self.update_manager(scope=sim, manager_name=model_name, **kwargs)
 
                 case Models.Soils.Physical | Models.Soils.Chemical | Models.Soils.Organic | Models.Soils.Water | Models.Soils.Solute:
-
-                    self.replace_soils_values_by_path(node_path=model_instance.FullPath, **kwargs)
+                    ModelTools.edit_instance(model_instance, **kwargs)
+                    #self.replace_soils_values_by_path(node_path=model_instance.FullPath, **kwargs)
                 case Models.Surface.SurfaceOrganicMatter:
-                    self._set_surface_organic_matter(model_instance, param_values=kwargs, verbose=verbose)
+                    try:
+                        ModelTools.edit_instance(model_instance, **kwargs)
+                    except AttributeError:
+                        accepted_attributes = {'SurfOM',
+                                               'InitialCPR', 'InitialResidueMass',
+                                               'InitialCNR', 'IncorporatedP', }
+                        logger.info(f'some of accepted attributes are {",".join(accepted_attributes)}')
+                        raise
+                    #self._set_surface_organic_matter(model_instance, param_values=kwargs, verbose=verbose)
 
                 case Models.Report:
                     self._set_report_vars(model_instance, param_values=kwargs, verbose=verbose)
@@ -3976,7 +3970,7 @@ class CoreModel(PlotManager):
             return self
         for k, v in kwargs.items():
             parameter = k
-            if isinstance(v, (int, float)):
+            if isinstance(v, (int, float, str)):
                 v = [v]
             if indices is None:
                 indices = range(len(v))
@@ -5077,9 +5071,13 @@ if __name__ == '__main__':
         water = ModelTools.find_child(corep.Simulations, child_class=Models.WaterModel.WaterBalance,
                                       child_name='SoilWater')
         waterb = CastHelper.CastAs[Models.WaterModel.WaterBalance](water)
-        corep.edit_model('Models.WaterModel.WaterBalance', 'SoilWater', SWCON=3,)
-        corep.edit_model_by_path('.Simulations.Simulation.Field.Soil.SoilWater', SWCON =4)
+        corep.edit_model('Models.WaterModel.WaterBalance', 'SoilWater', SWCON=[3,3,5, 50, 60],)
+        inp = corep.inspect_model_parameters('Models.WaterModel.WaterBalance', 'SoilWater')
+        print(inp['SWCON'])
+        corep.save()
+        corep.edit_model_by_path('.Simulations.Simulation.Field.Soil.SoilWater', SWCON =5, indices =[-1])
         inp =corep.inspect_model_parameters('Models.WaterModel.WaterBalance', 'SoilWater')
         sw = corep.inspect_model_parameters_by_path('.Simulations.Simulation.Field.Soil.SoilWater')
+        print(sw['SWCON'])
     print('Path exists after exit:', Path(corep.path).exists())
     print('datastore Path exists after exit:', Path(corep.datastore).exists())

@@ -6,7 +6,7 @@ import Models
 from System.Collections import IEnumerable
 from System import String, Double, Array
 from functools import lru_cache, cache
-from typing import Union, Dict, Any
+from typing import Union, Dict, Any, Iterable
 from Models.Soils import Physical, SoilCrop, Organic, Solute, Chemical
 import warnings
 from System.Collections.Generic import List, KeyValuePair
@@ -17,6 +17,7 @@ from apsimNGpy.core.cs_resources import simple_rotation_code, update_manager_cod
 from apsimNGpy.core.pythonet_config import get_apsim_version as apsim_version
 from apsimNGpy.core.run_time_info import BASE_RELEASE_NO, GITHUB_RELEASE_NO
 from apsimNGpy.core.version_inspector import is_higher_apsim_version
+from array import array
 
 IS_NEW_APSIM = is_file_format_modified()
 
@@ -24,6 +25,14 @@ from apsimNGpy.core.cs_resources import CastHelper, sow_using_variable_rule, sow
     fertilizer_at_sow, cast_as
 
 APSIM_VERSION = apsim_version(release_number=True)
+
+from collections.abc import Iterable
+
+
+def is_scalar(x):
+    if isinstance(x, (str, bytes)):  # treat strings as scalar
+        return True
+    return not isinstance(x, Iterable)
 
 
 @cache
@@ -376,24 +385,24 @@ def extract_value(model_instance, parameters=None):
                 value[attr] = list(getattr(model_instance, attr))
         case Models.WaterModel.WaterBalance:
             to_descr = {}
-            desc = dict(Salib = 'Fraction of incoming solar radiation',
-                        WinterU ='Cumulative soil water evaporation to reach end of stage 1 soil water evaporation in winter',
-                        SummerU ='Cumulative soil water evaporation to reach end of stage 1 soil water evaporation in winter',
+            desc = dict(Salib='Fraction of incoming solar radiation',
+                        WinterU='Cumulative soil water evaporation to reach end of stage 1 soil water evaporation in winter',
+                        SummerU='Cumulative soil water evaporation to reach end of stage 1 soil water evaporation in winter',
                         PSIDul='Matric Potential at DUL (cm)',
-                        CNCov = 'Cover for maximum curve number reduction',
-                        DiffusSlope= 'effect of soil water storage above the lower limit on on soil water diffusivity (mm)',
+                        CNCov='Cover for maximum curve number reduction',
+                        DiffusSlope='effect of soil water storage above the lower limit on on soil water diffusivity (mm)',
                         DischargeWidth='Basal width of the down slope boundary of the catchment for lateral flow calculations',
-                        SummerCona= 'Drying coefficient for stage 2 soil water evaporation in summer',
+                        SummerCona='Drying coefficient for stage 2 soil water evaporation in summer',
                         DiffusConst='Constant in soil water diffusivity calculations',
-                        CN2Bare ='Run off curve number ofr bare soil with average moisture',
+                        CN2Bare='Run off curve number ofr bare soil with average moisture',
                         CatchmentArea='Catchment area flow calculations (m2)',
-                        WinterDate= 'Start date to switch to winter parameters',
-                        WinterCona =  'Drying coefficient for stage 2 soil water evaporation in winter',
-                        SummerDate = 'Start date to switch to summer parameters',
+                        WinterDate='Start date to switch to winter parameters',
+                        WinterCona='Drying coefficient for stage 2 soil water evaporation in winter',
+                        SummerDate='Start date to switch to summer parameters',
                         )
             collections = {}
             list_params = {'KLAT', 'Depth', 'SWCON'}
-            non_list = {'Salb', 'Water', 'WinterU', 'WinterDate', 'WinterCona','SummerCona', 'SummerDate',
+            non_list = {'Salb', 'Water', 'WinterU', 'WinterDate', 'WinterCona', 'SummerCona', 'SummerDate',
                         'PrecipitationInterception',
                         'PoreInteractionIndex',
                         'SummerU', 'DiffusSlope',
@@ -404,7 +413,7 @@ def extract_value(model_instance, parameters=None):
                         'CNCov',
                         'PSIDul',
                         'SummerCona',
-                         'SWmm',
+                        'SWmm',
                         'Runoff',
                         'PotentialInfiltration'}
 
@@ -420,7 +429,7 @@ def extract_value(model_instance, parameters=None):
                         collections[p] = getattr(model_instance, p)
                         to_descr[p] = desc.get(p)
             collections['dictionary'] = desc
-            value= collections
+            value = collections
 
         case Models.PMF.Cultivar:
             selected_parameters = set(parameters) if parameters else set()
@@ -527,10 +536,157 @@ def inspect_model_inputs(scope, model_type: str, model_name: str,
     return result
 
 
-def replace_variable_by_index(old_list: list, new_value: list, indices: list):
-    for idx, new_val in zip(indices, new_value):
-        old_list[idx] = new_val
+def replace_variable_by_index(
+        old_list: List,
+        new_value: Union[List, str, array, int, float],
+        indices: Union[List[int], None]
+) -> List:
+    """
+    Replace one or more values in a list-like structure at the specified indices.
+
+    This utility is designed for editing APSIM array-style attributes (e.g.,
+    ``double[]`` arrays exposed through pythonnet). It supports replacing
+    individual elements or slices of the array when calibrating or manipulating
+    parameters programmatically.
+
+    Parameters
+    ----------
+    old_list : list
+        The original Python list to be modified. In typical APSIM workflows,
+        this is produced by converting a ``System.Double[]`` into a native list.
+    new_value : list, str, array, int, or float
+        The new value(s) to insert into ``old_list``. If a scalar (str, int,
+        float), it is automatically wrapped into a list. ``set`` objects are not
+        allowed because sets are unordered.
+    indices : list of int or None
+        The list of indices at which to apply the new values. If ``None``,
+        replacement proceeds from the beginning of the list in order.
+
+    Returns
+    -------
+    list
+        The modified list with updated values.
+
+    Raises
+    ------
+    TypeError
+        If ``new_value`` is a set (unordered and therefore invalid).
+    AssertionError
+        If ``indices`` is provided and the number of indices does not match
+        the number of replacement values.
+
+    Notes
+    -----
+    - When editing APSIM arrays (``System.Double[]``), they must first be
+      converted to Python lists before assignment.
+    - The caller is responsible for reassigning the edited list back to
+      the APSIM model attribute.
+    """
+
+    if isinstance(new_value, set):
+        raise TypeError("`set` data type is not allowed because it is not ordered.")
+
+    # normalize scalar values into a list
+    if is_scalar(new_value):
+        new_value = [new_value]
+    if indices is not None and is_scalar(indices) and len(new_value) == 1:
+
+        indices = [indices]
+    # indexed replacement
+    if len(new_value) > len(old_list):
+        raise ValueError(
+            f' length of new_values{new_value} are more than the current values {old_list} expected not more than {len(old_list)}\n got {len(new_value)} values')
+    if indices is not None:
+        assert len(indices) == len(new_value), (
+            "If indices are provided, the number of indices must match "
+            "the number of replacement values."
+        )
+        for idx, new_val in zip(indices, new_value):
+            old_list[idx] = new_val
+    else:
+        # sequential replacement
+        for idx, v in enumerate(new_value):
+            old_list[idx] = v
     return old_list
+
+
+def edit_instance_attributes(model_instance: "Models", **kwargs):
+    """
+    Edit attributes on an APSIM model instance, including APSIM array attributes.
+
+    This function provides a unified interface for modifying both scalar and
+    array-type attributes on APSIM model objects accessed via pythonnet. It
+    automatically handles conversion of ``System.Double[]`` attributes into
+    Python lists, performs indexed replacements when required, and reassigns
+    modified values back to the model instance.
+
+    Parameters
+    ----------
+    model_instance : Models
+        The APSIM model instance whose attributes should be modified.
+    **kwargs :
+        Arbitrary keyword arguments representing attribute names and their new
+        values. An optional ``indices`` argument may be supplied to specify
+        which positions in an array attribute should be edited.
+
+        Examples
+        --------
+        ``edit_instance_attributes(model, KLAT=[0.1, 0.2, 0.3])``
+
+        ``edit_instance_attributes(model, SWCON=[0.3], indices=[2])``
+
+    Special Keyword Arguments
+    -------------------------
+    indices : list of int, optional
+        If provided, applies the new value(s) only at the specified positions
+        within the attribute (used for APSIM arrays).
+
+    Returns
+    -------
+    None
+
+    Raises
+    ------
+    AttributeError
+        If an attribute specified in ``kwargs`` does not exist on the APSIM
+        model instance.
+    TypeError
+        If a provided value is invalid (e.g., a set where ordering matters).
+
+    Notes
+    -----
+    - APSIM ``double[]`` arrays exposed through pythonnet appear as
+      ``System.Double[]``. These arrays must be converted into Python lists
+      before editing and reassigned back after modification.
+    - Scalar attributes are assigned directly.
+    """
+    indices = kwargs.get("indices", None)
+    kwargs.pop("indices", None)  # prevent interference with actual attribute names
+
+    for attr_name, new_value in kwargs.items():
+
+        if not hasattr(model_instance, attr_name):
+            raise AttributeError(
+                f"Attribute '{attr_name}' not found on model instance at path "
+                f"{model_instance.FullPath} (type: {type(model_instance).__name__})"
+            )
+
+        current_value = getattr(model_instance, attr_name)
+
+        # APSIM array attribute → System.Double[]
+        if isinstance(current_value, Array[Double]):
+            # convert APSIM array → Python list
+            py_list = list(current_value)
+
+            # edit the list
+            edited = replace_variable_by_index(py_list, new_value, indices=indices)
+
+            # assign back as a list; APSIM model will accept it and convert internally
+            setattr(model_instance, attr_name, edited)
+
+        else:
+            # scalar attribute → assign directly
+            setattr(model_instance, attr_name, new_value)
 
 
 @lru_cache(maxsize=None)
@@ -946,7 +1102,7 @@ def add_model_as_a_replacement(simulations, model_class, model_name):
         raise RuntimeError(f"failed to add model of class{model_class} with identification name: {model_name}")
 
 
-@dataclass
+@dataclass(slots=True)
 class ModelTools:
     """
        A utility class providing convenient access to core APSIM model operations and constants.
@@ -996,6 +1152,7 @@ class ModelTools:
     add_replacement_folder = add_replacement_folder
     find_all_in_scope = find_all_in_scope
     find_child_of_class = find_child_of_class
+    edit_instance = edit_instance_attributes
 
 
 def find_all_model_type(parent, model_type):

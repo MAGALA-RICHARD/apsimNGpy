@@ -412,6 +412,125 @@ class TestCoreModel(BaseTester):
             self.assertEqual(info['Start'].year, 1900, 'Simulation start date was not successfully changed')
             self.assertEqual(info['End'].year, 1990, 'Simulation end date was not successfully changed')
 
+    def test_edit_water_model_water_balance(self):
+        # Context manager loads the APSIM model and ensures cleanup
+        with CoreModel('Maize') as corep:
+            # ------------------------------------------------------------
+            # 1. Test layered attribute when provided as a list
+            # ------------------------------------------------------------
+            replace_with = [3, 3, 5, 50, 60]
+            corep.edit_model(
+                'Models.WaterModel.WaterBalance',
+                'SoilWater',
+                SWCON=replace_with
+            )
+
+            inp = corep.inspect_model_parameters(
+                'Models.WaterModel.WaterBalance',
+                'SoilWater'
+            )
+            out_list = inp["SWCON"][:len(replace_with)]
+
+            self.assertEqual(out_list, replace_with, msg="List-based SWCON update failed")
+
+            # ------------------------------------------------------------
+            # 2. Test scalar update for an array attribute
+            #    (should broadcast scalar to entire array or update index 0)
+            # ------------------------------------------------------------
+            corep.edit_model_by_path(
+                '.Simulations.Simulation.Field.Soil.SoilWater',
+                SWCON=5
+            )
+
+            sw1 = corep.inspect_model_parameters_by_path(
+                '.Simulations.Simulation.Field.Soil.SoilWater'
+            )
+
+            self.assertIsInstance(sw1["SWCON"], list,
+                                  msg="SWCON should be converted to a list internally")
+
+            self.assertEqual(sw1["SWCON"][0], 5.0, msg=
+            "Scalar-to-array update failed: SWCON not filled with scalar value")
+
+            # ------------------------------------------------------------
+            # 3. Test updating typical scalar attributes
+            # ------------------------------------------------------------
+            corep.edit_model_by_path(
+                '.Simulations.Simulation.Field.Soil.SoilWater',
+                SWCON=5,
+                DiffusConst=35
+            )
+
+            sw2 = corep.inspect_model_parameters_by_path(
+                '.Simulations.Simulation.Field.Soil.SoilWater'
+            )
+
+            self.assertEqual(sw2["DiffusConst"], 35.0,
+                             "Scalar update for DiffusConst failed")
+
+            # ------------------------------------------------------------
+            # 4. Test updating only the bottom soil layer (index -1)
+            # ------------------------------------------------------------
+            corep.edit_model_by_path(
+                '.Simulations.Simulation.Field.Soil.SoilWater',
+                SWCON=5,
+                indices=[-1]
+            )
+
+            sw3 = corep.inspect_model_parameters_by_path(
+                '.Simulations.Simulation.Field.Soil.SoilWater'
+            )
+
+            self.assertTrue(sw3["SWCON"][-1] == 5,
+                "Bottom-layer update for SWCON failed")
+
+            # ------------------------------------------------------------
+            # 5. Test scalar index update
+            #    SWCON=5, indices=-1 → convert to list internally
+            # ------------------------------------------------------------
+            corep.edit_model_by_path(
+                '.Simulations.Simulation.Field.Soil.SoilWater',
+                SWCON= 5,
+                indices= -1
+            )
+
+            sw4 = corep.inspect_model_parameters_by_path(
+                '.Simulations.Simulation.Field.Soil.SoilWater'
+            )
+
+            self.assertTrue(sw4["SWCON"][-1] == 5,
+                "SWCON update with scalar index failed")
+
+            # ------------------------------------------------------------
+            # 6. Extra: ensure no unexpected attributes remain
+            # ------------------------------------------------------------
+
+            self.assertIsInstance(sw4["SWCON"], list,
+                msg="SWCON should always be stored as list after edits")
+
+    def test_edit_soils_physical(self):
+        with CoreModel("Maize") as model:
+            ks = model.inspect_model_parameters('Models.Soils.Physical', 'Physical', parameters='KS')
+            length = ks.shape[0]
+            #  The top two lines of codes here only modify the KS value for the first layer, but the third line updates all values
+            ks_in = [4.752] * length
+            model.edit_model(model_type='Models.Soils.Physical', model_name='Physical', simulations='Simulation',
+                             KS=ks_in)
+            ks1 = model.inspect_model_parameters('Models.Soils.Physical', 'Physical', parameters='KS')
+            self.assertEqual(ks_in, ks1.KS.tolist())
+
+            model.edit_model(model_type='Models.Soils.Physical', model_name='Physical', simulations='Simulation',
+                             KS=[5, 5, 5, 5, 5, 5, 5, ])
+            ref_ks = [5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0]
+            ks2 = model.inspect_model_parameters('Models.Soils.Physical', 'Physical', parameters='KS', )
+            self.assertEqual(ks2.KS.tolist(), ref_ks)
+
+            ks_123 = [1, 2, 3, 4, 5, 6, 7]
+            model.edit_model(model_type='Models.Soils.Physical', model_name='Physical', simulations='Simulation',
+                             KS=[1, 2, 3, 4, 5, 6, 7])
+            ks3 = model.inspect_model_parameters('Models.Soils.Physical', 'Physical', parameters='KS')
+            self.assertEqual(ks3.KS.tolist(), ks_123, msg=f'KS is not equal to input expected to be {ks_123}')
+
     def test_edit_cultivar_edit_model_method(self):
         """
         Test the edit_cultivar requires that we have replacements in place

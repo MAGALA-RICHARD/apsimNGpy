@@ -1151,7 +1151,7 @@ class CoreModel(PlotManager):
         # Assign a new name to the cloned model
         new_name = rename if rename else f"{clone.Name}_clone"
         clone.Name = new_name
-        print(clone.Name)
+
         # check_exists = self.Simulations.FindInScope[model_class](new_name)
         get_or_check_model(self.Simulations, model_type, new_name, action='delete')
         # Find the adoptive parent where the cloned model should be placed
@@ -1551,7 +1551,6 @@ class CoreModel(PlotManager):
             values = v_obj.Value
         except AttributeError:
             values = v_obj.Model
-            print(values.GetType())
             for model_class in {Models.Manager, Models.Climate.Weather,
                                 Models.PMF.Cultivar, Models.Clock, Models.Report,
                                 Models.Surface.SurfaceOrganicMatter,

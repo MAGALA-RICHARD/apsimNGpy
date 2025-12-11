@@ -4,7 +4,7 @@ from datetime import datetime
 import datetime
 import urllib
 from pathlib import Path
-from typing import Union
+from typing import Union, Tuple, List
 import gc
 from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception, retry_if_exception_type
 import requests
@@ -59,16 +59,17 @@ def generate_unique_name(base_name, length=6):
 def get_iem_by_station(dates_tuple, station, path, met_tag):
     """
       ``dates_tuple``: (tuple, list) is a tupple/list of strings with date ranges
-      
+
       - an example date string should look like this: ``dates`` = ["01-01-2012","12-31-2012"]
       ``station``: (str) is the station where toe xtract the data from
       -If ``station`` is given data will be downloaded directly from the station the default is false.
-      
+
       :param met_tag: your preferred suffix to save on file
 
       """
     # access the elements in the metdate class above
     weather_dates = MetDate(dates_tuple)
+    print(weather_dates.year_start)
     stationX = station[:2]
     state_clim = stationX + "CLIMATE"
     str0 = "http://mesonet.agron.iastate.edu/cgi-bin/request/coop.py?network="
@@ -92,6 +93,110 @@ def get_iem_by_station(dates_tuple, station, path, met_tag):
             print(rep.content)
     else:
         print("Failed to download the data web request returned code: ", rep)
+
+
+def nearest_iem_station(lonlat, network="IA_COOP"):
+    """
+    Return nearest IEM station using GIS distance.
+    """
+    import requests
+    import math
+
+    url = f"https://mesonet.agron.iastate.edu/geojson/network/{network}.geojson"
+
+    resp = requests.get(url)
+    resp.raise_for_status()
+
+    data = resp.json()
+
+    best_station = None
+    best_dist = 1e12
+    lon, lat = lonlat
+    for feat in data["features"]:
+        props = feat["properties"]
+        s_lon, s_lat = feat["geometry"]["coordinates"]
+
+        # calculate simple Euclidean distance in lat/lon
+        dist = math.hypot(s_lon - lon, s_lat - lat)
+
+        if dist < best_dist:
+            best_dist = dist
+            best_station = props["sid"]
+
+    if not best_station:
+        raise Exception("No station found in network.")
+
+    return best_station
+
+
+def get_iem_by_lonlat(
+        dates_tuple: Union[Tuple[str, str], List[str]],
+        lonlat: tuple,
+        path: str,
+        met_tag: str = "",
+        radius_km: int = 50
+):
+    """
+    Download APSIM-compatible weather data from the Iowa Mesonet (IEM)
+    using geographic coordinates (latitude/longitude). The function first
+    performs a nearest-station lookup, then downloads weather data as
+    APSIM ``.met`` format.
+
+    Parameters
+    ----------
+    dates_tuple : tuple/list of str
+        Start and end dates in ``["MM-DD-YYYY", "MM-DD-YYYY"]`` format.
+    lonlat: tuple
+        Longitude and Latitude of the target location.
+
+    path : str
+        Directory in which to save the downloaded file.
+    met_tag : str, optional
+        Optional suffix for the output filename.
+    radius_km : int, optional
+        Search radius for nearest-station lookup.
+
+    Returns
+    -------
+    dict
+        Contains:
+        - ``station`` : str → nearest station ID
+        - ``filepath`` : str → path to saved ``.met`` file
+
+    Raises
+    ------
+    Exception
+        If no station is found or download fails.
+    """
+    from datetime import datetime
+
+    # Nearest-station lookup
+    start, end = dates_tuple
+    start = datetime.strptime(start, "%m-%d-%Y")
+    end = datetime.strptime(end, "%m-%d-%Y")
+    lon, lat = lonlat
+    lookup_url = (
+        f"https://mesonet.agron.iastate.edu/cgi-bin/request/asos.py?"
+        f"lat={lat}&lon={lon}&radius={radius_km}&fmt=json"
+        f"&year1={start.year}&month1={start.month}&day1={start.day}&year2={end.year}&month2={end.month}&day2={end.day}"
+        "&vars%5B%5D=apsim&what=view&delim=comma&gis=yes"
+    )
+    print(lookup_url)
+
+    lookup_resp = requests.get(lookup_url)
+    lookup_resp.raise_for_status()
+
+    stations = lookup_resp.json().get("stations", [])
+    if not stations:
+        raise Exception("No IEM stations found within the specified radius.")
+
+    # Select closest station
+    station_id = stations[0]["station"]
+
+    # Use existing function to download data
+    met_file = get_iem_by_station(dates_tuple, station_id, path, met_tag)
+
+    return {"station": station_id, "filepath": met_file}
 
 
 class MetDate:

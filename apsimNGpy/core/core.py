@@ -2070,14 +2070,25 @@ class CoreModel(PlotManager):
 
         Examples
         --------
-        from apsimNGpy.core.apsim import ApsimModel
-        >>> sm = ApsimModel('Maize')
-        >>> sm.inspect_settable_attributes(model_type='Models.Surface.SurfaceOrganicMatter')
-        ['Canopies', 'Children', 'Enabled', 'InitialCNR', 'InitialCPR', 'InitialResidueMass', 'InitialResidueName', 'InitialResidueType',
-         'InitialStandingFraction', 'IsHidden', 'Name', 'Node', 'Parent', 'ReadOnly', 'ResourceName', 'Structure']
-        >>> sm.inspect_settable_attributes(Models.WaterModel.WaterBalance)
-        ['CN2Bare', 'CNCov', 'CNRed', 'CatchmentArea', 'Children', 'Depth', 'DiffusConst', 'DiffusSlope', 'DischargeWidth',
-        'Enabled', 'Eo', 'IsHidden', 'KLAT', 'Name', 'Node', 'PSIDul', 'Parent', 'PoreInteractionIndex', 'PotentialInfiltration', 'PrecipitationInterception', 'ReadOnly', 'ResourceName', 'Runon', 'SW', 'SWCON', 'Salb', 'Structure', 'SummerCona', 'SummerDate', 'SummerU', 'Thickness', 'Water', 'WaterTable', 'WinterCona', 'WinterDate', 'WinterU']
+        .. code-block:: python
+
+            from apsimNGpy.core.apsim import ApsimModel
+            sm = ApsimModel('Maize')
+            sm.inspect_settable_attributes(model_type='Models.Surface.SurfaceOrganicMatter')
+
+        .. code-block:: none
+
+            ['Canopies', 'Children', 'Enabled', 'InitialCNR', 'InitialCPR', 'InitialResidueMass', 'InitialResidueName', 'InitialResidueType',
+             'InitialStandingFraction', 'IsHidden', 'Name', 'Node', 'Parent', 'ReadOnly', 'ResourceName', 'Structure']
+
+        .. code-block:: python
+
+              sm.inspect_settable_attributes(Models.WaterModel.WaterBalance)
+
+        .. code-block:: none
+
+            ['CN2Bare', 'CNCov', 'CNRed', 'CatchmentArea', 'Children', 'Depth', 'DiffusConst', 'DiffusSlope', 'DischargeWidth',
+            'Enabled', 'Eo', 'IsHidden', 'KLAT', 'Name', 'Node', 'PSIDul', 'Parent', 'PoreInteractionIndex', 'PotentialInfiltration', 'PrecipitationInterception', 'ReadOnly', 'ResourceName', 'Runon', 'SW', 'SWCON', 'Salb', 'Structure', 'SummerCona', 'SummerDate', 'SummerU', 'Thickness', 'Water', 'WaterTable', 'WinterCona', 'WinterDate', 'WinterU']
         """
         model_type_class = validate_model_obj(model_type)
         mc = model_type_class()

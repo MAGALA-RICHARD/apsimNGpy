@@ -306,12 +306,12 @@ def runner(model, params, table=None):
                 print(ValueError, f'occurred while setting parameters{param}', e)
                 raise ValueError(f"{str(e)} e") from e
             except AttributeError as ate:
-                print(AttributeError, f'occurred while setting params in APSIM. {param}', ate)
+                print(AttributeError, f'occurred while setting params in APSIM {param}', ate)
                 raise AttributeError(f'occurred while setting params in APSIM {param}') from ate
             except ApsimRuntimeError as ape:
-                print(ApsimRuntimeError, f'occurred with setting pram{param}', ape)
+                print(ApsimRuntimeError, f'occurred with setting params: {param}', ape)
             except NodeNotFoundError as nfe:
-                print(NodeNotFoundError, f'occurred while setting params {param}', nfe)
+                print(NodeNotFoundError, f'occurred while setting params: {param}', nfe)
                 raise NodeNotFoundError(f'Occurred while trying to edit parameters{param}', nfe) from nfe
 
         model.run()

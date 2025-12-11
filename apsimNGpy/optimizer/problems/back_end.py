@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 from apsimNGpy.core.apsim import ApsimModel
 from apsimNGpy.validation.evaluator import Validate
+from apsimNGpy.exceptions import NodeNotFoundError, ApsimRuntimeError
 
 __all__ = ['runner', 'eval_observed']
 
@@ -112,7 +113,7 @@ def _prepare_eval_data(
         index: Union[str, list],
         pred_col: str,
         obs_col: str,
-        ):
+):
     """
     Shared utility to validate inputs, cast types, align datasets,
     and return the cleaned merged evaluation DataFrame.
@@ -173,8 +174,6 @@ def _prepare_eval_data(
             f"Missing required columns in predicted DataFrame: "
             f"{required_cols_pred - set(pred.columns)}"
         )
-
-
 
     # Cast types for alignment
     index = list(index)
@@ -300,7 +299,21 @@ def runner(model, params, table=None):
     # ideally out_path not needed, as ApsimNGpy generate random temporal files automatically when out_path is not provided
     with ApsimModel(model) as model:
         for param in params:
-            model.set_params(param)
+            try:
+                model.set_params(param)
+            # There is a need at least to present to the user what is going on, because some errors maybe excepted breaking the program
+            except ValueError as e:
+                print(ValueError, f'occurred while setting parameters{param}', e)
+                raise ValueError(f"{str(e)} e") from e
+            except AttributeError as ate:
+                print(AttributeError, f'occurred while setting params in APSIM. {param}', ate)
+                raise AttributeError(f'occurred while setting params in APSIM {param}') from ate
+            except ApsimRuntimeError as ape:
+                print(ApsimRuntimeError, f'occurred with setting pram{param}', ape)
+            except NodeNotFoundError as nfe:
+                print(NodeNotFoundError, f'occurred while setting params {param}', nfe)
+                raise NodeNotFoundError(f'Occurred while trying to edit parameters{param}', nfe) from nfe
+
         model.run()
         reports = model.inspect_model('Models.Report', fullpath=False)
         if table and isinstance(table, str) and table not in reports:

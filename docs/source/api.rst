@@ -24,20 +24,12 @@ Classes
 
        Class Roles
        -----------
-
-       - :class:`~apsimNGpy.core.plotmanager.PlotManager`
-         Produces visual outputs from model results.
+       - :class:`~apsimNGpy.core.plotmanager.PlotManager`. Produces visual outputs from model results.
          (Not exposed in the public API reference.)
-
-       - :class:`~apsimNGpy.core.core.CoreModel`
-         Provides core methods for running and manipulating APSIM models.
+       - :class:`~apsimNGpy.core.core.CoreModel`. Provides core methods for running and manipulating APSIM models.
          (Not exposed in the public API reference.)
-
-       - :class:`~apsimNGpy.core.apsim.ApsimModel`
-         Extends :class:`~apsimNGpy.core.core.CoreModel` with higher-level functionality.
-
-       - :class:`~apsimNGpy.core.experimentmanager.ExperimentManager`
-         Creates and manages multi-factor experiments from a base scenario.
+       - :class:`~apsimNGpy.core.apsim.ApsimModel`. Extends :class:`~apsimNGpy.core.core.CoreModel` with higher-level functionality.
+       - :class:`~apsimNGpy.core.experimentmanager.ExperimentManager`. Creates and manages multi-factor experiments from a base scenario.
 
 
        Examples
@@ -13490,7 +13482,7 @@ Functions Provided
 Functions
 ^^^^^^^^^
 
-.. py:function:: apsimNGpy.optimizer.problems.variables.filter_apsim_params(params: apsimNGpy.optimizer.problems.variables.BaseParams, place_holder=<object object at 0x000001DC97B29900>) -> Dict
+.. py:function:: apsimNGpy.optimizer.problems.variables.filter_apsim_params(params: apsimNGpy.optimizer.problems.variables.BaseParams, place_holder=<object object at 0x00000159058F5900>) -> Dict
 
    Flatten a validated BaseParams object into a dictionary suitable for APSIM execution.
 

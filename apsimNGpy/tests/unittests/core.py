@@ -514,6 +514,11 @@ class TestCoreModel(BaseTester):
                     SWCON=5,
                     indices=[-1, 2]
                 )
+            with self.assertRaises(AttributeError, msg=f'expected to raise AttributeError'):
+                corep.edit_model_by_path(
+                    '.Simulations.Simulation.Field.Soil.SoilWater',
+                    SWCON=5, SYON=30
+                )
 
     def test_edit_soils_physical(self):
         with CoreModel("Maize") as model:

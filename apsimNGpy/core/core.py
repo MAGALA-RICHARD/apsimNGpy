@@ -1570,7 +1570,7 @@ class CoreModel(PlotManager):
 
         match type(values):
             case Models.WaterModel.WaterBalance:
-                self.edit_model(Models.WaterModel.WaterBalance, model_name= values.Name, **kwargs)
+                self.edit_model(Models.WaterModel.WaterBalance, model_name=values.Name, **kwargs)
 
             case Models.Climate.Weather:
                 self._set_weather_path(values, param_values=kwargs, verbose=verbose)
@@ -1872,7 +1872,16 @@ class CoreModel(PlotManager):
             model_instance = CastHelper.CastAs[model_type_class](model_to_cast)
             match type(model_instance):
                 case Models.WaterModel.WaterBalance:
-                    ModelTools.edit_instance(model_instance, **kwargs)
+                    try:
+                        ModelTools.edit_instance(model_instance, **kwargs)
+                    except AttributeError as ate:
+                        accepted_attributes = self.inspect_settable_attributes(Models.WaterModel.WaterBalance)
+                        ap = '\n'.join(accepted_attributes)
+                        logger.info(f'some of the accepted attributes are {ap}')
+                        raise AttributeError(
+                            f"{str(ate)}. Allowed {model_instance} attributes are: {ap}"
+                        ) from ate
+
                 case Models.Climate.Weather:
                     self._set_weather_path(model_instance, param_values=kwargs, verbose=verbose)
                 case Models.Clock:
@@ -1882,21 +1891,48 @@ class CoreModel(PlotManager):
                     self.update_manager(scope=sim, manager_name=model_name, **kwargs)
 
                 case Models.Soils.Physical | Models.Soils.Chemical | Models.Soils.Organic | Models.Soils.Water | Models.Soils.Solute:
-                    ModelTools.edit_instance(model_instance, **kwargs)
-                    #self.replace_soils_values_by_path(node_path=model_instance.FullPath, **kwargs)
+                    try:
+                        ModelTools.edit_instance(model_instance, **kwargs)
+                    except AttributeError as ate:
+                        lp = [attr[len('set_'):] for attr in dir(model_instance) if attr.startswith('set_')]
+                        accepted_attributes = '\n'.join(lp)
+                        logger.info(f'some of the accepted attributes are {accepted_attributes}')
+                        raise AttributeError(
+                            f"{str(ate)}. Allowed {model_instance} attributes are: {accepted_attributes}"
+                        ) from ate
+                    # self.replace_soils_values_by_path(node_path=model_instance.FullPath, **kwargs)
                 case Models.Surface.SurfaceOrganicMatter:
                     try:
                         ModelTools.edit_instance(model_instance, **kwargs)
-                    except AttributeError:
-                        accepted_attributes = {'SurfOM',
-                                               'InitialCPR', 'InitialResidueMass',
-                                               'InitialCNR', 'IncorporatedP', }
-                        logger.info(f'some of accepted attributes are {",".join(accepted_attributes)}')
-                        raise
-                    #self._set_surface_organic_matter(model_instance, param_values=kwargs, verbose=verbose)
+                    except AttributeError as ate:
+                        accepted_attributes = self.inspect_settable_attributes(Models.Surface.SurfaceOrganicMatter)
+                        accept= "\n".join(accepted_attributes)
+                        logger.info(f'some of the accepted attributes are {accept}')
+                        raise AttributeError(
+                            f"{str(ate)}. Allowed {model_instance} attributes are: {accept}"
+                        ) from ate
+                    # self._set_surface_organic_matter(model_instance, param_values=kwargs, verbose=verbose)
 
                 case Models.Report:
                     self._set_report_vars(model_instance, param_values=kwargs, verbose=verbose)
+
+                case Models.MicroClimate:
+                    try:
+                        ModelTools.edit_instance(model_instance, **kwargs)
+                    except AttributeError as e:
+                        attribs = self.inspect_settable_attributes(model_type=Models.MicroClimate)
+                        at = ', '.join(attribs)
+
+                        # Log helpful information BEFORE raising the error
+                        logger.error(
+                            f"Invalid attribute in MicroClimate model. "
+                            f"Allowed attributes include: {at}"
+                        )
+
+                        # Re-raise with additional context
+                        raise AttributeError(
+                            f"{str(e)}. Allowed MicroClimate attributes are: {at}"
+                        ) from e
 
                 case Models.PMF.Cultivar:
 
@@ -1996,6 +2032,57 @@ class CoreModel(PlotManager):
 
         self.ran_ok = False
         return self
+
+    @staticmethod
+    def inspect_settable_attributes(model_type):
+        """
+        Inspect and return all settable attributes for a given APSIM model type.
+
+        This method identifies which attributes of a model can be modified by
+        the user. APSIM model classes typically expose writable parameters through
+        setter methods following the naming convention ``set_<AttributeName>()``.
+        This function extracts all such attributes and returns them in a clean,
+        user-friendly list.
+
+        Added in v0.39.12.21
+
+        Parameters
+        ----------
+        model_type : type or str
+            The APSIM model class or the registered model name. This value is
+            validated and resolved to a concrete APSIM model class via
+            :func:`validate_model_obj`.
+
+        Returns
+        -------
+        list of str
+            A list of attribute names that can be set on the specified model.
+            These correspond to all public APSIM parameters for which a
+            ``set_<AttributeName>`` method exists. The ``set_`` prefix is removed
+            for clarity, so the list contains clean parameter names.
+
+        Notes
+        -----
+        - This method does *not* set or modify any attributes—its purpose is
+          diagnostic and introspective.
+        - Useful for error reporting, documentation, and informing users which
+          parameters are valid inputs for :meth:`edit_model` or related methods.
+
+        Examples
+        --------
+        from apsimNGpy.core.apsim import ApsimModel
+        >>> sm = ApsimModel('Maize')
+        >>> sm.inspect_settable_attributes(model_type='Models.Surface.SurfaceOrganicMatter')
+        ['Canopies', 'Children', 'Enabled', 'InitialCNR', 'InitialCPR', 'InitialResidueMass', 'InitialResidueName', 'InitialResidueType',
+         'InitialStandingFraction', 'IsHidden', 'Name', 'Node', 'Parent', 'ReadOnly', 'ResourceName', 'Structure']
+        >>> sm.inspect_settable_attributes(Models.WaterModel.WaterBalance)
+        ['CN2Bare', 'CNCov', 'CNRed', 'CatchmentArea', 'Children', 'Depth', 'DiffusConst', 'DiffusSlope', 'DischargeWidth',
+        'Enabled', 'Eo', 'IsHidden', 'KLAT', 'Name', 'Node', 'PSIDul', 'Parent', 'PoreInteractionIndex', 'PotentialInfiltration', 'PrecipitationInterception', 'ReadOnly', 'ResourceName', 'Runon', 'SW', 'SWCON', 'Salb', 'Structure', 'SummerCona', 'SummerDate', 'SummerU', 'Thickness', 'Water', 'WaterTable', 'WinterCona', 'WinterDate', 'WinterU']
+        """
+        model_type_class = validate_model_obj(model_type)
+        mc = model_type_class()
+        lp = [attr[len('set_'):] for attr in dir(mc) if attr.startswith('set_')]
+        return lp
 
     def _get_report(self, report_name, parent):
         """just fetches the report from the simulations database """
@@ -5071,12 +5158,12 @@ if __name__ == '__main__':
         water = ModelTools.find_child(corep.Simulations, child_class=Models.WaterModel.WaterBalance,
                                       child_name='SoilWater')
         waterb = CastHelper.CastAs[Models.WaterModel.WaterBalance](water)
-        corep.edit_model('Models.WaterModel.WaterBalance', 'SoilWater', SWCON=[3,3,5, 50, 60],)
+        corep.edit_model('Models.WaterModel.WaterBalance', 'SoilWater', SWCON=[3, 3, 5, 50, 60],  )
         inp = corep.inspect_model_parameters('Models.WaterModel.WaterBalance', 'SoilWater')
         print(inp['SWCON'])
         corep.save()
-        corep.edit_model_by_path('.Simulations.Simulation.Field.Soil.SoilWater', SWCON =5, indices =[-1])
-        inp =corep.inspect_model_parameters('Models.WaterModel.WaterBalance', 'SoilWater')
+        corep.edit_model_by_path('.Simulations.Simulation.Field.Soil.SoilWater', SWCON=5, indices=[-1])
+        inp = corep.inspect_model_parameters('Models.WaterModel.WaterBalance', 'SoilWater')
         sw = corep.inspect_model_parameters_by_path('.Simulations.Simulation.Field.Soil.SoilWater')
         print(sw['SWCON'])
     print('Path exists after exit:', Path(corep.path).exists())

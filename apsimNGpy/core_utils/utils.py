@@ -1,5 +1,6 @@
 import logging
 from collections import deque
+from typing import Iterable
 
 import numpy as np
 import glob
@@ -32,6 +33,44 @@ from subprocess import call, run, Popen
 
 def select_process(use_thread, ncores):
     return ThreadPoolExecutor(ncores) if use_thread else ProcessPoolExecutor(ncores)
+
+
+def is_scalar(x):
+    if isinstance(x, (str, bytes)):  # treat strings as scalar
+        return True
+    return not isinstance(x, Iterable)
+
+
+def evaluate_commands_and_values_types(commands, values):
+    """
+    Validate that `commands` and `values` are either BOTH scalars
+    or BOTH non-scalars. Mixed types are not allowed.
+
+    Returns
+    -------
+    'ok' if both are scalars or both are non-scalars
+    Raises TypeError otherwise.
+    """
+    if commands is None or values is None:
+        raise TypeError("`commands` and `values` cannot be None")
+    if isinstance(commands, set) or isinstance(commands, set):
+        raise TypeError("`commands` and `values` must not be a set only ordered or scalars are allowed")
+    cmd_scalar = is_scalar(commands)
+    val_scalar = is_scalar(values)
+
+    # Case 1: both scalars
+    if cmd_scalar and val_scalar:
+        return "ok"
+
+    # Case 2: both non-scalars
+    if not cmd_scalar and not val_scalar:
+        assert len(commands) == len(values), "both commands and values length must must"
+        return "ok"
+    # Otherwise mismatched types
+    raise TypeError(
+        f"Type mismatch: commands_scalar={cmd_scalar}, values_scalar={val_scalar}. "
+        "Both must be scalars or both must be iterables."
+    )
 
 
 def open_file_in_window(filepath):

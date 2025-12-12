@@ -6,6 +6,7 @@ from apsimNGpy.settings import logger
 from apsimNGpy.core.model_loader import get_node_by_path
 from apsimNGpy.core.cs_resources import CastHelper
 from apsimNGpy.core.model_tools import ModelTools
+from apsimNGpy.core_utils.utils import is_scalar, evaluate_commands_and_values_types
 
 
 def trace_cultivar(
@@ -83,7 +84,7 @@ def trace_cultivar(
 
     if strict:
         raise ValueError(
-            f"❌ Cultivar '{cultivar_name}' not found in {location}. "
+            f" Cultivar '{cultivar_name}' not found in {location}. "
             "Ensure the cultivar name matches one defined in the APSIM simulation."
         )
     return None
@@ -227,15 +228,10 @@ def inspect_cultivars(simulation: Models.Core.Simulation, full_path: bool = True
 
 
 def _set_commands(_model, selected_cultivar, commands, values):
-    # Align types and sizes early
-    if isinstance(commands, (list, tuple)):
-        if not isinstance(values, (list, tuple)):
-            raise TypeError("If 'commands' is iterable, 'values' must also be iterable.")
-        if len(commands) != len(values):
-            raise ValueError("Length of 'commands' and 'values' must match.")
+    evaluate_commands_and_values_types(commands, values)
     cultivar_params = _model._cultivar_params(selected_cultivar)
 
-    if isinstance(values, (str, int, float)):
+    if is_scalar(commands):
         cultivar_params[commands] = values
     else:
         for cmd, val in zip(commands, values):
@@ -412,7 +408,7 @@ def edit_cultivar_by_path(
         model_obj, *,
         path: str,
         commands,
-        values,
+        values=None,
         rename: str | None = None,
         manager_path: str | None = None,
         manager_param: str | None = None,
@@ -470,6 +466,8 @@ def edit_cultivar_by_path(
 
     original_name = cultivar.Name
     cultivar_name = rename or f"{original_name}___edited"
+    if isinstance(commands, dict):
+        commands, values = commands.items()
 
     # ---- Apply parameter updates ----
     updated_cultivar = _set_commands(model_obj, cultivar, commands, values)
@@ -498,17 +496,17 @@ def edit_cultivar_by_path(
             raise ValueError(
                 "Manager path and corresponding `cultivar_param' holder must be provided if sowed=False.")
         else:
-            model_obj.edit_model_by_path(path=manager_path, **{manager_param:cultivar_name})
+            model_obj.edit_model_by_path(path=manager_path, **{manager_param: cultivar_name})
 
     else:
         if not manager_path or not manager_param:
-            mns = search_cultivar_manager(model_obj, cultivar_name=original_name, simulations=kwargs.get('simulations'), verbose=verbose)
+            mns = search_cultivar_manager(model_obj, cultivar_name=original_name, simulations=kwargs.get('simulations'),
+                                          verbose=verbose)
             for k, v in mns.items():
-                model_obj.edit_model_by_path(v['manager_path'], **{v['param']:cultivar_name})
+                model_obj.edit_model_by_path(v['manager_path'], **{v['param']: cultivar_name})
         else:
             # if a user has provided them well and good, some overhead in searching is mitigated.
             model_obj.edit_model_by_path(manager_path, **{manager_param: cultivar_name})
-
 
     # ---- Save once ----
     model_obj.save()

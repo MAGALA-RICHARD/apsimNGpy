@@ -1842,7 +1842,28 @@ class CoreModel(PlotManager):
                 variable_spec=[
                 '[Maize].AboveGround.Wt as abw',
                 '[Maize].Grain.Total.Wt as grain_weight'])
+        the best way to edit cultivar with minimal error is to use a dict of commands as follows.
 
+        .. code-block:: python
+
+             params = {
+            "[Leaf].Photosynthesis.RUE.FixedValue": 1.8984705340394,
+            "[Phenology].GrainFilling.Target.FixedValue": 710,
+            "[Grain].MaximumGrainsPerCob.FixedValue": 810,
+            "[Phenology].FloweringToGrainFilling.Target.FixedValue": 215,
+            "[Phenology].MaturityToHarvestRipe.Target.FixedValue": 100,
+            "[Maize].Grain.MaximumPotentialGrainSize.FixedValue": 0.867411373063701,
+            "[Grain].MaximumNConc.InitialPhase.InitialNconc.FixedValue": 0.05,
+            '[Maize].Root.SpecificRootLength.FixedValue': 135,
+            '[Maize].Root.RootFrontVelocity.PotentialRootFrontVelocity.PreFlowering.RootFrontVelocity.FixedValue': 22,
+            '[Rachis].DMDemands.Structural.DMDemandFunction.MaximumOrganWt.FixedValue': 36
+        }
+
+        model.edit_model_by_path(model_type='Models.PMF.Cultivar, model_name='Dekalb_XL82',
+                                         commands=params,
+                                         cultivar_manager='Sow using a variable rule,
+                                         parameter_name='CultivarName'
+                                         )
 
         .. seealso::
 
@@ -1964,7 +1985,7 @@ class CoreModel(PlotManager):
 
                     # Input validation
                     if not new_cultivar_name:
-                        raise ValueError("Please specify a new cultivar name using 'new_cultivar_name=\"your_name\"'")
+                        new_cultivar_name = f"{model_name}-{plant_name}-edited01"
 
                     if not cultivar_manager:
                         raise ValueError("Please specify a cultivar manager using 'cultivar_manager=\"your_manager\"'")

@@ -18,7 +18,7 @@ from apsimNGpy.core.pythonet_config import get_apsim_version as apsim_version
 from apsimNGpy.core.run_time_info import BASE_RELEASE_NO, GITHUB_RELEASE_NO
 from apsimNGpy.core.version_inspector import is_higher_apsim_version
 from array import array
-
+from apsimNGpy.core_utils.utils import is_scalar
 IS_NEW_APSIM = is_file_format_modified()
 
 from apsimNGpy.core.cs_resources import CastHelper, sow_using_variable_rule, sow_on_fixed_date, harvest, \
@@ -27,13 +27,6 @@ from apsimNGpy.core.cs_resources import CastHelper, sow_using_variable_rule, sow
 APSIM_VERSION = apsim_version(release_number=True)
 
 from collections.abc import Iterable
-
-
-def is_scalar(x):
-    if isinstance(x, (str, bytes)):  # treat strings as scalar
-        return True
-    return not isinstance(x, Iterable)
-
 
 @cache
 def select_thread(multithread):
@@ -590,7 +583,6 @@ def replace_variable_by_index(
     if is_scalar(new_value):
         new_value = [new_value]
     if indices is not None and is_scalar(indices) and len(new_value) == 1:
-
         indices = [indices]
     # indexed replacement
     if len(new_value) > len(old_list):
@@ -754,6 +746,12 @@ def _edit_in_cultivar(_model, model_name, param_values, simulations=None, verbos
 
     # Extract input parameters
     commands = param_values.get("commands")
+    if isinstance(commands, dict):
+        commands, values = commands.items()
+    if not isinstance(commands, dict):
+        values = param_values.get("values")
+        if values is None:
+            raise ValueError(f"expected values to be a str or a sequence of values provided {values}")
     values = param_values.get("values")
 
     cultivar_manager = param_values.get("cultivar_manager")
@@ -790,11 +788,11 @@ def _edit_in_cultivar(_model, model_name, param_values, simulations=None, verbos
     cultivar_params = _model._cultivar_params(cultivar)
 
     if isinstance(values, str):
-        cultivar_params[commands] = values.strip()
-    elif isinstance(values, (int, float)):
-        cultivar_params[commands] = values
+        cultivar_params[commands] = values.strip() # direct update
+    elif is_scalar(values) and isinstance(values, str):
+        cultivar_params[commands] = values # direct update
     else:
-        for cmd, val in zip(commands, values):
+        for cmd, val in zip(commands, values):# esle iterate
             cultivar_params[cmd.strip()] = val.strip() if isinstance(val, str) else val
 
     # Apply updated commands

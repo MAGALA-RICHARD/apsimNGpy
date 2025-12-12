@@ -23,7 +23,7 @@ from apsimNGpy.core.cs_resources import CastHelper
 from apsimNGpy.manager.weathermanager import get_weather
 from functools import lru_cache
 # prepare for the C# import
-from apsimNGpy.core_utils.utils import open_apsimx_file_in_window
+from apsimNGpy.core_utils.utils import open_apsimx_file_in_window, evaluate_commands_and_values_types, is_scalar
 # now we can safely import C# libraries
 from apsimNGpy.core.pythonet_config import *
 from apsimNGpy.core_utils.database_utils import read_db_table
@@ -1598,8 +1598,14 @@ class CoreModel(PlotManager):
                         self.add_crop_replacements(_crop=crop_name)
 
                 kwargs['plant'] = trace_cultivar(self.Simulations, values.Name).get(values.Name)
-                edit_cultivar_by_path(self, path=path, commands=kwargs.get('commands'),
-                                      values=kwargs.get('values'), manager_param=kwargs.get('manager_param'),
+                commands = kwargs.get('commands')
+                if isinstance(commands, dict):
+                    commands, values = commands.items()  # no need to extract values
+                else:
+
+                    values = kwargs.get('commands')
+                edit_cultivar_by_path(self, path=path, commands=commands,
+                                      values=values, manager_param=kwargs.get('manager_param'),
                                       manager_path=kwargs.get('manager_path'),
                                       sowed=kwargs.get('sowed'), rename=kwargs.get('rename'))
                 _edit_in_cultivar(self, model_name=values.Name, simulations=simulations, param_values=kwargs,
@@ -1905,7 +1911,7 @@ class CoreModel(PlotManager):
                         ModelTools.edit_instance(model_instance, **kwargs)
                     except AttributeError as ate:
                         accepted_attributes = self.inspect_settable_attributes(Models.Surface.SurfaceOrganicMatter)
-                        accept= "\n".join(accepted_attributes)
+                        accept = "\n".join(accepted_attributes)
                         logger.info(f'some of the accepted attributes are {accept}')
                         raise AttributeError(
                             f"{str(ate)}. Allowed {model_instance} attributes are: {accept}"
@@ -1944,7 +1950,10 @@ class CoreModel(PlotManager):
 
                     # Extract input parameters
                     commands = kwargs.get("commands")
-                    values = kwargs.get("values")
+                    if isinstance(commands, dict):
+                        commands, values = commands.items()
+                    else:
+                        values = kwargs.get("values")
 
                     cultivar_manager = kwargs.get("cultivar_manager")
                     new_cultivar_name = kwargs.get("new_cultivar_name", None)
@@ -1960,14 +1969,7 @@ class CoreModel(PlotManager):
                     if not cultivar_manager:
                         raise ValueError("Please specify a cultivar manager using 'cultivar_manager=\"your_manager\"'")
 
-                    if not commands or values is None:
-                        raise ValueError("Both 'commands' and 'values' must be provided for editing a cultivar")
-
-                    if isinstance(commands, (list, tuple)) or isinstance(values, (list, tuple)):
-                        assert isinstance(commands, (list, tuple)) and isinstance(values, (list, tuple)), \
-                            ("Both `commands` and `values` must be iterables (list or tuple), not sets or mismatched "
-                             "types")
-                        assert len(commands) == len(values), "`commands` and `values` must have the same length"
+                    evaluate_commands_and_values_types(commands=commands, values=values)
 
                     # Get replacement folder and source cultivar model
                     replacements = get_or_check_model(self.Simulations, Models.Core.Folder, 'Replacements',
@@ -5168,7 +5170,7 @@ if __name__ == '__main__':
         water = ModelTools.find_child(corep.Simulations, child_class=Models.WaterModel.WaterBalance,
                                       child_name='SoilWater')
         waterb = CastHelper.CastAs[Models.WaterModel.WaterBalance](water)
-        corep.edit_model('Models.WaterModel.WaterBalance', 'SoilWater', SWCON=[3, 3, 5, 50, 60],  )
+        corep.edit_model('Models.WaterModel.WaterBalance', 'SoilWater', SWCON=[3, 3, 5, 50, 60], )
         inp = corep.inspect_model_parameters('Models.WaterModel.WaterBalance', 'SoilWater')
         print(inp['SWCON'])
         corep.save()

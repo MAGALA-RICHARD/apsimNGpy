@@ -27,7 +27,7 @@ from apsimNGpy.core_utils.utils import open_apsimx_file_in_window, evaluate_comm
 # now we can safely import C# libraries
 from apsimNGpy.core.pythonet_config import *
 from apsimNGpy.core_utils.database_utils import read_db_table
-from apsimNGpy.core.config import get_apsim_bin_path
+from apsimNGpy.core.config import configuration
 from apsimNGpy.exceptions import ModelNotFoundError, NodeNotFoundError
 from apsimNGpy.core.model_tools import (get_or_check_model, old_method, _edit_in_cultivar,
                                         inspect_model_inputs,
@@ -3337,7 +3337,7 @@ class CoreModel(PlotManager):
            """
 
         self.save()
-        open_apsimx_file_in_window(self.path, bin_path=get_apsim_bin_path())
+        open_apsimx_file_in_window(self.path, bin_path=configuration.bin_path)
         # record current modification time
         if watch:
             import time

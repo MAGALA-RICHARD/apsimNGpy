@@ -1517,7 +1517,28 @@ Classes
            variable_spec=[
            '[Maize].AboveGround.Wt as abw',
            '[Maize].Grain.Total.Wt as grain_weight'])
+   the best way to edit cultivar with minimal error is to use a dict of commands as follows.
 
+   .. code-block:: python
+
+        params = {
+       "[Leaf].Photosynthesis.RUE.FixedValue": 1.8984705340394,
+       "[Phenology].GrainFilling.Target.FixedValue": 710,
+       "[Grain].MaximumGrainsPerCob.FixedValue": 810,
+       "[Phenology].FloweringToGrainFilling.Target.FixedValue": 215,
+       "[Phenology].MaturityToHarvestRipe.Target.FixedValue": 100,
+       "[Maize].Grain.MaximumPotentialGrainSize.FixedValue": 0.867411373063701,
+       "[Grain].MaximumNConc.InitialPhase.InitialNconc.FixedValue": 0.05,
+       '[Maize].Root.SpecificRootLength.FixedValue': 135,
+       '[Maize].Root.RootFrontVelocity.PotentialRootFrontVelocity.PreFlowering.RootFrontVelocity.FixedValue': 22,
+       '[Rachis].DMDemands.Structural.DMDemandFunction.MaximumOrganWt.FixedValue': 36
+   }
+
+   model.edit_model_by_path(model_type='Models.PMF.Cultivar, model_name='Dekalb_XL82',
+                                    commands=params,
+                                    cultivar_manager='Sow using a variable rule,
+                                    parameter_name='CultivarName'
+                                    )
 
    .. seealso::
 
@@ -5616,7 +5637,28 @@ Classes
            variable_spec=[
            '[Maize].AboveGround.Wt as abw',
            '[Maize].Grain.Total.Wt as grain_weight'])
+   the best way to edit cultivar with minimal error is to use a dict of commands as follows.
 
+   .. code-block:: python
+
+        params = {
+       "[Leaf].Photosynthesis.RUE.FixedValue": 1.8984705340394,
+       "[Phenology].GrainFilling.Target.FixedValue": 710,
+       "[Grain].MaximumGrainsPerCob.FixedValue": 810,
+       "[Phenology].FloweringToGrainFilling.Target.FixedValue": 215,
+       "[Phenology].MaturityToHarvestRipe.Target.FixedValue": 100,
+       "[Maize].Grain.MaximumPotentialGrainSize.FixedValue": 0.867411373063701,
+       "[Grain].MaximumNConc.InitialPhase.InitialNconc.FixedValue": 0.05,
+       '[Maize].Root.SpecificRootLength.FixedValue': 135,
+       '[Maize].Root.RootFrontVelocity.PotentialRootFrontVelocity.PreFlowering.RootFrontVelocity.FixedValue': 22,
+       '[Rachis].DMDemands.Structural.DMDemandFunction.MaximumOrganWt.FixedValue': 36
+   }
+
+   model.edit_model_by_path(model_type='Models.PMF.Cultivar, model_name='Dekalb_XL82',
+                                    commands=params,
+                                    cultivar_manager='Sow using a variable rule,
+                                    parameter_name='CultivarName'
+                                    )
 
    .. seealso::
 
@@ -10187,7 +10229,28 @@ Classes
            variable_spec=[
            '[Maize].AboveGround.Wt as abw',
            '[Maize].Grain.Total.Wt as grain_weight'])
+   the best way to edit cultivar with minimal error is to use a dict of commands as follows.
 
+   .. code-block:: python
+
+        params = {
+       "[Leaf].Photosynthesis.RUE.FixedValue": 1.8984705340394,
+       "[Phenology].GrainFilling.Target.FixedValue": 710,
+       "[Grain].MaximumGrainsPerCob.FixedValue": 810,
+       "[Phenology].FloweringToGrainFilling.Target.FixedValue": 215,
+       "[Phenology].MaturityToHarvestRipe.Target.FixedValue": 100,
+       "[Maize].Grain.MaximumPotentialGrainSize.FixedValue": 0.867411373063701,
+       "[Grain].MaximumNConc.InitialPhase.InitialNconc.FixedValue": 0.05,
+       '[Maize].Root.SpecificRootLength.FixedValue': 135,
+       '[Maize].Root.RootFrontVelocity.PotentialRootFrontVelocity.PreFlowering.RootFrontVelocity.FixedValue': 22,
+       '[Rachis].DMDemands.Structural.DMDemandFunction.MaximumOrganWt.FixedValue': 36
+   }
+
+   model.edit_model_by_path(model_type='Models.PMF.Cultivar, model_name='Dekalb_XL82',
+                                    commands=params,
+                                    cultivar_manager='Sow using a variable rule,
+                                    parameter_name='CultivarName'
+                                    )
 
    .. seealso::
 
@@ -13653,7 +13716,7 @@ Functions Provided
 Functions
 ^^^^^^^^^
 
-.. py:function:: apsimNGpy.optimizer.problems.variables.filter_apsim_params(params: apsimNGpy.optimizer.problems.variables.BaseParams, place_holder=<object object at 0x0000027A2B4E9900>) -> Dict
+.. py:function:: apsimNGpy.optimizer.problems.variables.filter_apsim_params(params: apsimNGpy.optimizer.problems.variables.BaseParams, place_holder=<object object at 0x000002400D581900>) -> Dict
 
    Flatten a validated BaseParams object into a dictionary suitable for APSIM execution.
 

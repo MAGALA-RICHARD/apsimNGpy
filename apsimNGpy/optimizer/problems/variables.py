@@ -190,6 +190,72 @@ class BaseParams(BaseModel):
         )
 
 
+from typing import Optional, Tuple, Union, Dict
+from pydantic import BaseModel, ConfigDict
+
+Number = Union[int, float]
+BoundsPair = Tuple[Number, Number]
+
+BoundsInput = Union[
+    BoundsPair,                  # (0, 10)
+    List[BoundsPair],            # [(0, 10), (1, 5)]
+    Tuple[BoundsPair, ...],      # ((0, 10), (1, 5))
+]
+class BaseParamsContinuous(BaseModel):
+    """
+    A base parameter container for continuous or bounded optimization variables.
+
+    This class is intended to support APSIM-NG parameter definitions for
+    optimization or calibration tasks. It handles:
+      - APSIM model path references
+      - Candidate parameters to modify
+      - Starting values
+      - Optional cultivar-specific parameters
+      - Additional constraints or auxiliary arguments
+    """
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    bounds: Optional[BoundsInput] = None
+
+    path: str
+
+    # Start values can be ints, floats, or strings but MUST be a tuple
+    start_value: Tuple[Union[str, int, float], ...]
+
+    # Candidate parameter names must also be a tuple
+    candidate_param: Tuple[str, ...]
+
+    other_params: Optional[Dict[str, Union[int, float, str, bool]]] = None
+    cultivar: Optional[bool] = False
+
+    def __hash__(self):
+        """Allow instances to be hashable (e.g., for OrderedDict, caching, set)."""
+        return hash(
+            (
+                self.path,
+                self.candidate_param,
+                self.start_value,
+                tuple((self.other_params or {}).items()),  # safer than .values()
+                self.bounds,
+            )
+        )
+
+    def additional_evaluation(self):
+        """Override in subclasses to evaluate parameter validity or custom logic."""
+        assert len(self.start_value) == len(self.candidate_param)
+        if self.bounds:
+            assert len(self.bounds) == len(self.candidate_param)
+            # Remove overlapping keys from other_params
+        for key in (
+                self.candidate_param if isinstance(self.candidate_param, (list, tuple)) else [self.candidate_param]):
+            others = self.other_params or {}
+            others.pop(key, None)
+
+        logger.info(f"Data type validation succeeded")
+        return self
+
+
 # -------------------------------------------------------------------------
 # Validation Utilities
 # -------------------------------------------------------------------------
@@ -225,12 +291,68 @@ def validate_user_params(params: Dict) -> BaseParams:
         If start_value, candidate_param, and vtype lengths are inconsistent.
     """
     # try factor or variable string evaluation before proceeding to the evaluation section
-    vtype = string_eval(params['vtype'])# if params['vtype'] tuple is a string
+    vtype = string_eval(params['vtype'])  # if params['vtype'] tuple is a string
     # deep evaluation
     vtype = tuple(string_eval(i) for i in vtype)
     params['vtype'] = vtype
     try:
         validated = BaseParams(**params)
+        others = validated.other_params or {}
+        candidates = validated.candidate_param
+        start_value = validated.start_value
+        vtypes = validated.vtype
+
+        # Ensure matching tuple lengths
+        lengths = [len(i) if isinstance(i, (list, tuple)) else 1 for i in [candidates, start_value, vtypes]]
+        if len(set(lengths)) > 1:
+            raise ValueError("Length of 'start_value', 'candidate_param', and 'vtype' must match.")
+
+        # Remove overlapping keys from other_params
+        for key in (candidates if isinstance(candidates, (list, tuple)) else [candidates]):
+            others.pop(key, None)
+
+        logger.info(f"Data type validation succeeded")
+        return validated
+
+    except ValidationError as e:
+        logger.error(f"Validation failed for params: {params}")
+        raise
+
+
+def validate_user_params_cont(params: Dict) -> BaseParams:
+    """
+    Validate user-supplied parameters using the BaseParams schema.
+
+    This function checks structure, length consistency, and conflicts between
+    candidate and other parameters. It does not validate the *existence* of APSIM nodes.
+
+    Parameters
+    ----------
+    params : dict
+        Dictionary with user-defined parameters, e.g.:
+        {
+            "path": ".Simulations.Simulation.Field.Soil.Organic",
+            "vtype": (UniformVar(1, 2),),
+            "start_value": ("1",),
+            "candidate_param": ("Carbon",),
+            "other_params": {"FBiom": 2.3}
+        }
+
+    Returns
+    -------
+    BaseParams
+        A validated BaseParams instance.
+
+    Raises
+    ------
+    ValidationError
+        If schema or data type validation fails.
+    ValueError
+        If start_value, candidate_param, and vtype lengths are inconsistent.
+    """
+
+    try:
+        validated = BaseParamsContinuous(**params)
         others = validated.other_params or {}
         candidates = validated.candidate_param
         start_value = validated.start_value
@@ -373,5 +495,5 @@ if __name__ == "__main__":
     print(mg)
     # test evaluation
     string_eval('continuous(1, 2)')
-    #test string evaluation
-    pv =validate_user_params(ev_param)
+    # test string evaluation
+    pv = validate_user_params(ev_param)

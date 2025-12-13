@@ -135,13 +135,11 @@ class ContinuousVariableOptimizer:
             """
         try:
 
-            wrapped_obj = self.problem_desc.wrap_objectives
-            bounds = self.problem_desc.boubds
+            wrapped_obj = self.problem_desc.evaluate_objectives
+            bounds = self.problem_desc.bounds
 
             # Handle initial guess
             initial_guess = self.problem_desc.start_values
-
-
             kwargs.setdefault("method", 'Nelder-Mead')
             logger.info(
                 f"[{kwargs.get('method')}] Starting optimization with {len(bounds)} variables,\n initial values: {initial_guess}")
@@ -240,16 +238,16 @@ class ContinuousVariableOptimizer:
             )
 
         # Attach a labeled, decoded solution
-        decoded_solution = wrapped_obj.decode(result.x)
-        result.x_vars = dict(zip(self.problem_desc.var_names, decoded_solution))
-        result.x = decoded_solution
+
+        result.x_vars = dict(zip(self.problem_desc.var_names, result.x))
+
         self.outcomes = result
         self.problem_desc.plug_optimal_values(result)
 
         return result
 
     def optimization_type(self):
-        return SING_OBJ_MIXED_VAR
+        return 'cont'
 
     # tests
 
@@ -289,7 +287,7 @@ if __name__ == '__main__':
     print(mp.n_factors, 'factors submitted')
     # min.minimize_with_de(workers=3, updating='deferred')
     # minim.minimize_with_alocal_solver(method='Nelder-Mead')
-    res = minim.minimize_with_de(use_threads=True, updating='deferred', workers=15, popsize=10, constraints=(0,0.2))
-    print(res)
+    # res = minim.minimize_with_de(use_threads=True, updating='deferred', workers=15, popsize=10, constraints=(0,0.2))
+    # print(res)
     out = minim.minimize_with_local()
     print(out)

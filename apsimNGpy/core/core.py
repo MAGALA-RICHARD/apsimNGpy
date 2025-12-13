@@ -3723,22 +3723,6 @@ class CoreModel(PlotManager):
 
         ...
 
-    def show_met_file_in_simulation(self, simulations: list = None):
-        """Show weather file for all simulations
-
-        @deprecated: use inspect_model_parameters() instead"""
-        weather_list = {}
-        for sim_name in self.find_simulations(simulations):
-            if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
-                weathers = ModelTools.find_all_in_scope(sim_name, Models.Climate.Weather)
-            else:
-                weathers = sim_name.FindAllDescendants[Models.Climate.Weather]()
-            if not weathers:
-                raise ValueError(f"No weather found for {sim_name.FullPath}")
-            for met in weathers:
-                weather_list[sim_name.Name] = met.FileName
-        return weather_list
-
     def change_report(self, *, command: str, report_name='Report', simulations=None, set_DayAfterLastOutput=None,
                       **kwargs):
         """
@@ -3764,7 +3748,7 @@ class CoreModel(PlotManager):
         """
         simulations = self.find_simulations(simulations)
         for sim in simulations:
-            if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
+            if is_higher_apsim_version(self.Simulations):
                 i_enum = ModelTools.find_all_in_scope(sim, Models.Report)
                 i_enum = [i for i in i_enum if i.Name == report_name]
             else:
@@ -3789,7 +3773,7 @@ class CoreModel(PlotManager):
         """
         sim_physical = {}
         for nn, simu in enumerate(self._find_simulation(simulations)):
-            if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
+            if is_higher_apsim_version(self.Simulations):
                 physical_soil = ModelTools.find_child_of_class(simu, Models.Soils.Physical)
             else:
                 soil_object = simu.FindDescendant[Models.Soils]()

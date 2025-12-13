@@ -3802,6 +3802,10 @@ class CoreModel(PlotManager):
             data[sim] = list(soil_p_param)
         return data
 
+    def inspect_children_by_path(self, path):
+        ch_model = get_node_by_path(self.Simulations, path)
+        return [i.Model.FullPath for i in ch_model.Children]
+
     def inspect_model(self, model_type: Union[str, Models], fullpath=True, **kwargs):
         """
         Inspect the model types and returns the model paths or names.
@@ -5182,6 +5186,7 @@ if __name__ == '__main__':
         corep.edit_model_by_path('.Simulations.Simulation.Field.Soil.SoilWater', SWCON=5, indices=[-1])
         inp = corep.inspect_model_parameters('Models.WaterModel.WaterBalance', 'SoilWater')
         sw = corep.inspect_model_parameters_by_path('.Simulations.Simulation.Field.Soil.SoilWater')
+        print(corep.inspect_children_by_path('.Simulations.Simulation.Field.Maize'))
         print(sw['SWCON'])
     print('Path exists after exit:', Path(corep.path).exists())
     print('datastore Path exists after exit:', Path(corep.datastore).exists())

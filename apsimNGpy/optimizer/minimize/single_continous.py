@@ -266,8 +266,8 @@ if __name__ == '__main__':
     }
     cultivar_param = {
         "path": ".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82",
-         'bounds':[(400, 600)],
-        "start_value": [550, ],
+         'bounds':[(400.0, 600.0)],
+        "start_value": [550.0, ],
         "candidate_param": ["[Grain].MaximumGrainsPerCob.FixedValue", ],
         "other_params": {"sowed": True},
         # other params must be on the same node or associated or extra arguments, e.g., target simulation name classified simulations

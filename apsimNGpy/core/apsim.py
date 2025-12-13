@@ -260,6 +260,7 @@ class ApsimModel(CoreModel):
         # the rest of errors are handled by edit_model_path gracefully
 
         # Apply to model
+
         self.edit_model_by_path(**pa)
         return self
 
@@ -819,3 +820,8 @@ if __name__ == '__main__':
                                         target_col='Yield', ref_data_col='observed')
         df = model.results
     print(os.path.exists(model.datastore))
+
+    with ApsimModel('Maize') as model:
+        model.set_params(
+            {'path': '.Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82', 'sowed': True, 'values': [550.0],
+             'commands': ['[Grain].MaximumGrainsPerCob.FixedValue']})

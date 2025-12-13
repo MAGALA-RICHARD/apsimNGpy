@@ -1603,7 +1603,7 @@ class CoreModel(PlotManager):
                     commands, pa_values = commands.items()  # no need to extract values
                 else:
 
-                    pa_values = kwargs.get('commands')
+                    pa_values = kwargs.get('values')
                 edit_cultivar_by_path(self, path=path, commands=commands,
                                       values=pa_values, manager_param=kwargs.get('manager_param'),
                                       manager_path=kwargs.get('manager_path'),

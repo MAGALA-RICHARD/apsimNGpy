@@ -314,8 +314,9 @@ def runner(model, params, table=None):
             except NodeNotFoundError as nfe:
                 print(NodeNotFoundError, f'occurred while setting params: {param}', nfe)
                 raise NodeNotFoundError(f'Occurred while trying to edit parameters{param}', nfe) from nfe
-
+        model.preview_simulation()
         model.run()
+
         reports = model.inspect_model('Models.Report', fullpath=False)
         if table and isinstance(table, str) and table not in reports:
             raise ValueError(f"Table {table} not found in the simulation. Available tables are `{reports}`")

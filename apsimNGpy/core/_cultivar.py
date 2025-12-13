@@ -457,10 +457,12 @@ def edit_cultivar_by_path(
 
     # ---- Retrieve target cultivar node ----
     cultivar_node = get_node_by_path(model_obj.Simulations.Node, node_path=path)
+
     if not cultivar_node:
         raise ValueError(f"Specified cultivar path '{path}' not found in model '{model_obj}'.")
     cut = getattr(cultivar_node, 'Model', cultivar_node)
     cultivar = CastHelper.CastAs[Models.PMF.Cultivar](cut)
+    print(cultivar.get_Parent())
     if cultivar is None:
         raise ValueError(f"Node at path '{path}' is not a Cultivar model.")
 

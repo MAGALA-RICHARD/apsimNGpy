@@ -314,7 +314,7 @@ def runner(model, params, table=None):
             except NodeNotFoundError as nfe:
                 print(NodeNotFoundError, f'occurred while setting params: {param}', nfe)
                 raise NodeNotFoundError(f'Occurred while trying to edit parameters{param}', nfe) from nfe
-        model.preview_simulation()
+
         model.run()
 
         reports = model.inspect_model('Models.Report', fullpath=False)

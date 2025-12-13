@@ -1600,12 +1600,12 @@ class CoreModel(PlotManager):
                 kwargs['plant'] = trace_cultivar(self.Simulations, values.Name).get(values.Name)
                 commands = kwargs.get('commands')
                 if isinstance(commands, dict):
-                    commands, values = commands.items()  # no need to extract values
+                    commands, pa_values = commands.items()  # no need to extract values
                 else:
 
-                    values = kwargs.get('commands')
+                    pa_values = kwargs.get('commands')
                 edit_cultivar_by_path(self, path=path, commands=commands,
-                                      values=values, manager_param=kwargs.get('manager_param'),
+                                      values=pa_values, manager_param=kwargs.get('manager_param'),
                                       manager_path=kwargs.get('manager_path'),
                                       sowed=kwargs.get('sowed'), rename=kwargs.get('rename'))
                 _edit_in_cultivar(self, model_name=values.Name, simulations=simulations, param_values=kwargs,

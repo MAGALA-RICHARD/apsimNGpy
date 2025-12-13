@@ -21,7 +21,7 @@ from apsimNGpy.exceptions import ApsimRuntimeError
 import pandas as pd
 from apsimNGpy.optimizer.problems.variables import (
     validate_user_params,
-    filter_apsim_params,
+    filter_apsim_params, validate_user_params_cont, BaseParamsContinuous
 )
 from apsimNGpy.optimizer.problems.back_end import runner, eval_observed
 from wrapdisc import Objective
@@ -104,6 +104,7 @@ class ContinuousProblem:
         self.candidate_params: List[str] = []
         self.start_values: List[Any] = []
         self.apsim_params: List[Dict[str, Any]] = []
+        self.bounds = []
 
         # objective wrapper
         self.wrapped_objectives = None
@@ -143,7 +144,7 @@ class ContinuousProblem:
     # -------------------------------------------------------------------------
     # Factor Submission and Validation
     # -------------------------------------------------------------------------
-    def submit_factor(self, *, path, vtype, start_value, candidate_param, cultivar=False, other_params=None):
+    def submit_factor(self, *, path, start_value, candidate_param, bounds=None, cultivar=False, other_params=None):
         """
         Add a new factor (parameter) to be optimized.
 
@@ -410,61 +411,18 @@ class ContinuousProblem:
 
         It is possible to describe your data type using string characters uisng any of the description below, implying no variable descriptor namespace import needed
 
-        Variable Type Classification
-        ----------------------------
-
-        **Continuous (UniformVar)**
-          - ``UniformVar``
-          - ``uniform``
-          - ``continuous``
-          Represents real-valued continuous parameters.
-
-        **Quantized Continuous (QuniformVar)**
-          - ``QuniformVar``
-          - ``quniform``
-          - ``quantized_continuous``
-          - ``step_uniform_float``
-          Continuous parameters restricted to fixed step sizes.
-
-        **Quantized Integer (QrandintVar)**
-          - ``QrandintVar``
-          - ``qrandint``
-          - ``quantized_int``
-          - ``step_random_int``
-          Integer parameters with fixed quantization.
-
-        **Ordinal / Grid (GridVar)**
-          - ``GridVar``
-          - ``grid``
-          - ``ordinal``
-          - ``ordered_var``
-          Ordered categorical variables with ranked classes.
-
-        **Categorical / Nominal (ChoiceVar)**
-          - ``ChoiceVar``
-          - ``choice``
-          - ``categorical``
-          - ``choice_var``
-          Unordered categorical classes.
-
-        **Integer (RandintVar)**
-          - ``RandintVar``
-          - ``randint``
-          - ``integer``
-          Integer-valued variables.
 
         """
-
-        out = validate_user_params(
-            dict(
+        out = BaseParamsContinuous(
+            **dict(
                 path=path,
-                vtype=vtype,
                 start_value=start_value,
                 candidate_param=candidate_param,
+                bounds=bounds,
                 other_params=other_params,
                 cultivar=cultivar,
-            )
-        )
+            ))
+        out = out.additional_evaluation()
         apsim_out = filter_apsim_params(out)
         key_hashable = (tuple(apsim_out.keys()), tuple(apsim_out.values()))
         self.ordered_factors[key_hashable] = out
@@ -576,13 +534,16 @@ class ContinuousProblem:
         self.var_types.clear()
         self.var_names.clear()
         self.start_values.clear()
+        self.bounds.clear()
 
         for _, factor in self.ordered_factors.items():
+            self.bounds.extend(factor.bounds) if factor.bounds else []
+            print(self.bounds)
 
             apsim_var = filter_apsim_params(factor)
 
             self.apsim_params.append(apsim_var)
-            self.var_types.extend(factor.vtype)
+
             self.start_values.extend(factor.start_value)
             if not factor.cultivar:
                 self.var_names.extend(factor.candidate_param)
@@ -812,13 +773,13 @@ if __name__ == "__main__":
 
     example_param3 = {
         "path": ".Simulations.Simulation.Field.Soil.Organic1",
-        "vtype": [UniformVar(1, 2)],
+        'bounds': [(1, 500),],
         "start_value": ["1"],
         "candidate_param": ["FOM"],
         "other_params": {"FBiom": 2.3, "Carbon": 1.89},
     }
 
-    mp = MixedProblem(
+    mp = ContinuousProblem(
         model="Maize",
         trainer_dataset=obs,
         pred_col="Yield",

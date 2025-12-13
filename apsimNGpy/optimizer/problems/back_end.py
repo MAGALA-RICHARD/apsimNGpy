@@ -306,6 +306,7 @@ def runner(model, params, table=None):
                 print(ValueError, f'occurred while setting parameters{param}', e)
                 raise ValueError(f"{str(e)} e") from e
             except AttributeError as ate:
+                print(ate)
                 print(AttributeError, f'occurred while setting params in APSIM {param}', ate)
                 raise AttributeError(f'occurred while setting params in APSIM {param}') from ate
             except ApsimRuntimeError as ape:

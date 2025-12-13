@@ -135,22 +135,22 @@ class ContinuousVariableOptimizer:
             """
         try:
 
-            wrapped_obj = self.problem_desc.wrap_objectives()
-            bounds = wrapped_obj.bounds
+            wrapped_obj = self.problem_desc.wrap_objectives
+            bounds = self.problem_desc.boubds
 
             # Handle initial guess
             initial_guess = self.problem_desc.start_values
 
-            encoded_initial = wrapped_obj.encode(initial_guess)
+
             kwargs.setdefault("method", 'Nelder-Mead')
             logger.info(
                 f"[{kwargs.get('method')}] Starting optimization with {len(bounds)} variables,\n initial values: {initial_guess}")
-            result = minimize(wrapped_obj, x0=encoded_initial, bounds=bounds, **kwargs)
+            result = minimize(wrapped_obj, x0=initial_guess, bounds=bounds, **kwargs)
 
             # Attach a labeled solution
-            decoded_solution = wrapped_obj.decode(result.x)
-            result.x_vars = dict(zip(self.problem_desc.var_names, decoded_solution))
-            result.x = decoded_solution
+
+            result.x_vars = dict(zip(self.problem_desc.var_names, result.x))
+
             self.results = result
             self.problem_desc.plug_optimal_values(result)
             return result
@@ -190,12 +190,13 @@ class ContinuousVariableOptimizer:
             https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.differential_evolution.html
         """
 
-        wrapped_obj = self.problem_desc.wrap_objectives()
+        wrapped_obj = self.problem_desc.evaluate_objectives
         initial_guess = self.problem_desc.start_values
-        bounds = wrapped_obj.bounds
+        bounds = self.problem_desc.bounds
+        print(bounds)
 
         # Prepare initial population if given
-        x0 = wrapped_obj.encode(initial_guess) if initial_guess is not None else None
+        x0 =initial_guess if initial_guess is not None else None
 
         if disp:
             logger.info(f"[DE] Starting optimization with {len(bounds)} variables,\n mutation: {mutation}," \
@@ -258,14 +259,14 @@ if __name__ == '__main__':
     # define all factors under main if more than one process will be involved
     fom_params = {
         "path": ".Simulations.Simulation.Field.Soil.Organic",
-        "vtype": ['continuous(1, 500)', 'continuous(0.02, 0.06)'],
+        'bounds':[(1, 500), (0.02, 0.06)],
         "start_value": [100, 0.021],
         "candidate_param": ["FOM", 'FBiom'],
         "other_params": {"Carbon": 1.2},
     }
     cultivar_param = {
         "path": ".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82",
-        "vtype": [QrandintVar(400, 600, q=5), ],
+         'bounds':[(400, 600)],
         "start_value": [550, ],
         "candidate_param": ["[Grain].MaximumGrainsPerCob.FixedValue", ],
         "other_params": {"sowed": True},
@@ -277,14 +278,14 @@ if __name__ == '__main__':
     # use cases
     # ---------------------------------------
     from apsimNGpy.tests.unittests.test_factory import obs
-    from optimizer.problems.smp import MixedProblem
+    from optimizer.problems.scp import ContinuousProblem
 
-    mp = MixedProblem(model='Maize', trainer_dataset=obs, pred_col='Yield', metric='RRMSE', table='Report',
+    mp = ContinuousProblem(model='Maize', trainer_dataset=obs, pred_col='Yield', metric='RRMSE', table='Report',
                       index='year', trainer_col='observed')
 
     mp.submit_factor(**fom_params)
     mp.submit_factor(**cultivar_param)
-    minim = MixedVariableOptimizer(problem=mp)
+    minim = ContinuousVariableOptimizer(problem=mp)
     print(mp.n_factors, 'factors submitted')
     # min.minimize_with_de(workers=3, updating='deferred')
     # minim.minimize_with_alocal_solver(method='Nelder-Mead')

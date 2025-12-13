@@ -230,7 +230,7 @@ def inspect_cultivars(simulation: Models.Core.Simulation, full_path: bool = True
 def _set_commands(_model, selected_cultivar, commands, values):
     evaluate_commands_and_values_types(commands, values)
     cultivar_params = _model._cultivar_params(selected_cultivar)
-    print(values)
+
     if is_scalar(commands):
         cultivar_params[commands] = values
     else:

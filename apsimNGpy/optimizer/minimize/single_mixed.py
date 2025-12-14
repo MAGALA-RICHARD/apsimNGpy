@@ -135,28 +135,45 @@ class MixedVariableOptimizer:
             """
         try:
 
-            wrapped_obj = self.problem_desc.wrap_objectives()
-            bounds = wrapped_obj.bounds
 
+            wrapped_obj, x0, bounds = self._submit_objective()
             # Handle initial guess
             initial_guess = self.problem_desc.start_values
-
-            encoded_initial = wrapped_obj.encode(initial_guess)
             kwargs.setdefault("method", 'Nelder-Mead')
             logger.info(
                 f"[{kwargs.get('method')}] Starting optimization with {len(bounds)} variables,\n initial values: {initial_guess}")
-            result = minimize(wrapped_obj, x0=encoded_initial, bounds=bounds, **kwargs)
+            result = minimize(wrapped_obj, x0=x0, bounds=bounds, **kwargs)
 
-            # Attach a labeled solution
-            decoded_solution = wrapped_obj.decode(result.x)
-            result.x_vars = dict(zip(self.problem_desc.var_names, decoded_solution))
-            result.x = decoded_solution
-            self.results = result
-            self.problem_desc.plug_optimal_values(result)
+            result = self._extract_solution(result)
             return result
 
         finally:
             pass
+
+    def _submit_objective(self):
+        if not self.problem_desc._detect_pure_vars():
+            objective = self.problem_desc.wrap_objectives()
+            initial_guess = self.problem_desc.start_values
+            bounds = objective.bounds
+            # Prepare initial population if given
+            x0 = objective.encode(initial_guess) if initial_guess is not None else None
+
+        else:
+            objective = self.problem_desc.evaluate_objective()
+            bounds = self.problem_desc.bounds
+            x0 = self.problem_desc.start_values
+        return objective, x0, bounds
+
+    def _extract_solution(self, result):
+        wrapped_obj = self._submit_objective()
+        if not self.problem_desc._detect_pure_vars():
+            decoded_solution = wrapped_obj[0].decode(result.x)
+            result.x_vars = dict(zip(self.problem_desc.var_names, decoded_solution))
+            result.x = decoded_solution
+
+        self.outcomes = result
+        self.problem_desc.plug_optimal_values(result)
+        return result
 
     def minimize_with_de(
             self,
@@ -190,12 +207,8 @@ class MixedVariableOptimizer:
             https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.differential_evolution.html
         """
 
-        wrapped_obj = self.problem_desc.wrap_objectives()
+        wrapped_obj, x0, bounds = self._submit_objective()
         initial_guess = self.problem_desc.start_values
-        bounds = wrapped_obj.bounds
-
-        # Prepare initial population if given
-        x0 = wrapped_obj.encode(initial_guess) if initial_guess is not None else None
 
         if disp:
             logger.info(f"[DE] Starting optimization with {len(bounds)} variables,\n mutation: {mutation}," \
@@ -210,8 +223,9 @@ class MixedVariableOptimizer:
             lower_constraint = constraints[0]
 
             if upper_constraint < lower_constraint:
-                raise ValueError(f'Upper constraint `{upper_constraint}` at index 1 is less than the lower constraint `{lower_constraint}` at index 0')
-            constraints = self.problem_desc.define_nlc(lower_constraint, upper_constraint,)
+                raise ValueError(
+                    f'Upper constraint `{upper_constraint}` at index 1 is less than the lower constraint `{lower_constraint}` at index 0')
+            constraints = self.problem_desc.define_nlc(lower_constraint, upper_constraint, )
         popsize = popsize or self.problem_desc.n_factors * 10
         assert popsize > 4, 'popsize must be greater than at least 5'
         with select_process(max_workers=workers) as executor:
@@ -238,14 +252,8 @@ class MixedVariableOptimizer:
                 vectorized=vectorized,
             )
 
-        # Attach a labeled, decoded solution
-        decoded_solution = wrapped_obj.decode(result.x)
-        result.x_vars = dict(zip(self.problem_desc.var_names, decoded_solution))
-        result.x = decoded_solution
-        self.outcomes = result
-        self.problem_desc.plug_optimal_values(result)
+        return self._extract_solution(result)
 
-        return result
 
     def optimization_type(self):
         return SING_OBJ_MIXED_VAR
@@ -255,6 +263,7 @@ class MixedVariableOptimizer:
 
 if __name__ == '__main__':
     from apsimNGpy.optimizer.problems.variables import QrandintVar
+
     # define all factors under main if more than one process will be involved
     fom_params = {
         "path": ".Simulations.Simulation.Field.Soil.Organic",
@@ -283,12 +292,12 @@ if __name__ == '__main__':
                       index='year', trainer_col='observed')
 
     mp.submit_factor(**fom_params)
-    mp.submit_factor(**cultivar_param)
+    #mp.submit_factor(**cultivar_param)
     minim = MixedVariableOptimizer(problem=mp)
     print(mp.n_factors, 'factors submitted')
     # min.minimize_with_de(workers=3, updating='deferred')
     # minim.minimize_with_alocal_solver(method='Nelder-Mead')
-    res = minim.minimize_with_de(use_threads=True, updating='deferred', workers=15, popsize=10, constraints=(0,0.2))
+    res = minim.minimize_with_de(use_threads=True, updating='deferred', workers=15, popsize=10, constraints=(0, 0.2))
     print(res)
     out = minim.minimize_with_local()
     print(out)

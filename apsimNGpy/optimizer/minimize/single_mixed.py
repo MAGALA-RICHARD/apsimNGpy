@@ -3,6 +3,7 @@ from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from apsimNGpy.settings import logger
 from apsimNGpy.optimizer._one_obj import SING_OBJ_MIXED_VAR
 from scipy.optimize import minimize, differential_evolution, NonlinearConstraint
+from tqdm import tqdm
 
 __all__ = ['MixedVariableOptimizer']
 try:
@@ -134,8 +135,18 @@ class MixedVariableOptimizer:
 
             """
         try:
+            options = kwargs.get('options')
+            if options:
+                maxiter= options.get('maxiter', self.problem_desc.n_factors * 200)
+            else:
+                maxiter= self.problem_desc.n_factors * 200
 
+            pbar = tqdm(total=maxiter)
 
+            def callback(xk):
+                pbar.update(1)
+
+            kwargs.setdefault('callback', callback)
             wrapped_obj, x0, bounds = self._submit_objective()
             # Handle initial guess
             initial_guess = self.problem_desc.start_values
@@ -213,6 +224,8 @@ class MixedVariableOptimizer:
         if disp:
             logger.info(f"[DE] Starting optimization with {len(bounds)} variables,\n mutation: {mutation}," \
                         f" seed={seed}, popsize={popsize}, strategy: {strategy}, starting values: {initial_guess}")
+        from tqdm.contrib.concurrent import thread_map
+        from tqdm.contrib.concurrent import process_map
         select_process = ThreadPoolExecutor if use_threads else ProcessPoolExecutor
         if workers > 1:
             updating = 'deferred'
@@ -227,7 +240,15 @@ class MixedVariableOptimizer:
                     f'Upper constraint `{upper_constraint}` at index 1 is less than the lower constraint `{lower_constraint}` at index 0')
             constraints = self.problem_desc.define_nlc(lower_constraint, upper_constraint, )
         popsize = popsize or self.problem_desc.n_factors * 10
-        assert popsize > 4, 'popsize must be greater than at least 5'
+        if popsize < 4:
+            logger.error(f"[DE] Population size {popsize}, is too loo")
+        from tqdm import tqdm
+
+        pbar = tqdm(total=maxiter)
+
+        def callback(xk, convergence):
+            pbar.update(1)
+
         with select_process(max_workers=workers) as executor:
             result = differential_evolution(
                 wrapped_obj,
@@ -245,6 +266,7 @@ class MixedVariableOptimizer:
                 init=init,
                 atol=atol,
                 updating=updating,
+                callback=callback,
                 workers=executor.map,
                 constraints=constraints,
                 x0=x0,
@@ -253,7 +275,6 @@ class MixedVariableOptimizer:
             )
 
         return self._extract_solution(result)
-
 
     def optimization_type(self):
         return SING_OBJ_MIXED_VAR
@@ -300,23 +321,25 @@ if __name__ == '__main__':
                       index='year', trainer_col='observed')
 
     mp.submit_factor(**fom_params)
-    #mp.submit_factor(**cultivar_param)
+    # mp.submit_factor(**cultivar_param)
     minim = MixedVariableOptimizer(problem=mp)
     print(mp.n_factors, 'factors submitted')
     # min.minimize_with_de(workers=3, updating='deferred')
     # minim.minimize_with_alocal_solver(method='Nelder-Mead')
-    res = minim.minimize_with_de(use_threads=True, updating='deferred', workers=15, popsize=10, constraints=(0, 0.2))
-    print(res)
     out = minim.minimize_with_local()
     print(out)
+    res = minim.minimize_with_de(use_threads=True, updating='deferred', workers=15, popsize=10, constraints=(0, 0.2))
+    print(res)
+
     # _____________________
     # no vtyped variables
     # _____________________
     mp = MixedProblem(model='Maize', trainer_dataset=obs, pred_col='Yield', metric='RRMSE', table='Report',
                       index='year', trainer_col='observed')
     mp.submit_factor(**cultivar_param_p)
-    print(mp.n_factors, 'factors submitted')
-    res = minim.minimize_with_de(use_threads=False, updating='deferred', workers=15, popsize=10, constraints=(0, 0.2))
-    print(res)
+    print(mp.n_factors, 'factors submitted for the pure variables')
     out = minim.minimize_with_local()
     print(out)
+    res = minim.minimize_with_de(use_threads=False, updating='deferred', workers=15, popsize=10, constraints=(0, 0.2))
+    print(res)
+

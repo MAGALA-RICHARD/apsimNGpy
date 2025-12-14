@@ -132,14 +132,49 @@ class MixedVariableOptimizer:
                     v_type="float",
                     start_value=5
                 )
+             Attributes of the returned object
+            ------------------------------------
+            x : ndarray
+                The solution of the optimization.
+            success : bool
+                Whether or not the optimizer exited successfully.
+            status : int
+                Termination status of the optimizer. Its value depends on the
+                underlying solver. Refer to `message` for details.
+            message : str
+                Description of the cause of the termination.
+            fun, jac, hess: ndarray
+                Values of objective function, its Jacobian and its Hessian (if
+                available). The Hessians may be approximations, see the documentation
+                of the function in question.
+            hess_inv : object
+                Inverse of the objective function's Hessian; may be an approximation.
+                Not available for all solvers. The type of this attribute may be
+                either np.ndarray or scipy.sparse.linalg.LinearOperator.
+            nfev, njev, nhev : int
+                Number of evaluations of the objective functions and of its
+                Jacobian and Hessian.
+            nit : int
+                Number of iterations performed by the optimizer.
+            maxcv : float
+                The maximum constraint violation.
+            data: DataFrame
+                 This DataFrame represents the index columns, with the predicted and observed values
 
+            Notes
+            -----
+            Depending on the specific solver being used, `OptimizeResult` may
+            not have all attributes listed here, and they may have additional
+            attributes not listed here. Since this class is essentially a
+            subclass of dict with attribute accessors, one can see which
+            attributes are available using the `OptimizeResult.keys` method.
             """
         try:
             options = kwargs.get('options')
             if options:
-                maxiter= options.get('maxiter', self.problem_desc.n_factors * 200)
+                maxiter = options.get('maxiter', self.problem_desc.n_factors * 200)
             else:
-                maxiter= self.problem_desc.n_factors * 200
+                maxiter = self.problem_desc.n_factors * 200
 
             pbar = tqdm(total=maxiter)
 
@@ -226,9 +261,7 @@ class MixedVariableOptimizer:
                         f" seed={seed}, popsize={popsize}, strategy: {strategy}, starting values: {initial_guess}")
         from tqdm.contrib.concurrent import thread_map
         from tqdm.contrib.concurrent import process_map
-        select_process = ThreadPoolExecutor if use_threads else ProcessPoolExecutor
-        if workers > 1:
-            updating = 'deferred'
+
         if isinstance(constraints, tuple) and constraints:
             if len(constraints) != 2:
                 raise ValueError(f"constraints must be a tuple of length 2, got {len(constraints)}")
@@ -245,34 +278,34 @@ class MixedVariableOptimizer:
         from tqdm import tqdm
 
         pbar = tqdm(total=maxiter)
+        x=1
+        if not callback:
+            def callback(xk, convergence):
+                print(xk)
+                pbar.update(1)
 
-        def callback(xk, convergence):
-            pbar.update(1)
-
-        with select_process(max_workers=workers) as executor:
+        arguments = dict(bounds=bounds, args=args, strategy=strategy,
+                         maxiter=maxiter, popsize=popsize, tol=tol, mutation=mutation,
+                         recombination=recombination, seed=seed, disp=disp,
+                         polish=polish, init=init,
+                         atol=atol,updating=updating,callback=callback,
+                         workers=1,constraints=constraints, x0=x0, integrality=integrality,
+                         vectorized=vectorized,
+                         )
+        if workers == 1:
             result = differential_evolution(
                 wrapped_obj,
-                bounds=bounds,
-                args=args,
-                strategy=strategy,
-                maxiter=maxiter,
-                popsize=popsize,
-                tol=tol,
-                mutation=mutation,
-                recombination=recombination,
-                seed=seed,
-                disp=disp,
-                polish=polish,
-                init=init,
-                atol=atol,
-                updating=updating,
-                callback=callback,
-                workers=executor.map,
-                constraints=constraints,
-                x0=x0,
-                integrality=integrality,
-                vectorized=vectorized,
-            )
+                **arguments)
+        else:
+            select_process = ThreadPoolExecutor if use_threads else ProcessPoolExecutor
+            updating = 'deferred'
+            with select_process(max_workers=workers) as executor:
+                workers = executor.map
+                arguments['workers'] = workers
+                arguments['updating'] = updating
+                result = differential_evolution(
+                    wrapped_obj,
+                    **arguments)
 
         return self._extract_solution(result)
 
@@ -326,10 +359,11 @@ if __name__ == '__main__':
     print(mp.n_factors, 'factors submitted')
     # min.minimize_with_de(workers=3, updating='deferred')
     # minim.minimize_with_alocal_solver(method='Nelder-Mead')
+
+    res = minim.minimize_with_de(use_threads=False, updating='deferred', workers=14, popsize=10, constraints=(0, 0.2))
+    print(res)
     out = minim.minimize_with_local()
     print(out)
-    res = minim.minimize_with_de(use_threads=True, updating='deferred', workers=15, popsize=10, constraints=(0, 0.2))
-    print(res)
 
     # _____________________
     # no vtyped variables
@@ -342,4 +376,3 @@ if __name__ == '__main__':
     print(out)
     res = minim.minimize_with_de(use_threads=False, updating='deferred', workers=15, popsize=10, constraints=(0, 0.2))
     print(res)
-

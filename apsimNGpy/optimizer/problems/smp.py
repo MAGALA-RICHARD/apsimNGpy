@@ -22,6 +22,7 @@ import pandas as pd
 from apsimNGpy.optimizer.problems.variables import (
     validate_user_params,
     filter_apsim_params,
+    BaseParamsContinuous,
 )
 from apsimNGpy.optimizer.problems.back_end import runner, eval_observed
 from wrapdisc import Objective
@@ -143,7 +144,7 @@ class MixedProblem:
     # -------------------------------------------------------------------------
     # Factor Submission and Validation
     # -------------------------------------------------------------------------
-    def submit_factor(self, *, path, vtype, start_value, candidate_param, cultivar=False, other_params=None):
+    def submit_factor(self, *, path, start_value, candidate_param, vtype=None, cultivar=False, bounds=None, other_params=None):
         """
         Add a new factor (parameter) to be optimized.
 
@@ -454,17 +455,27 @@ class MixedProblem:
           Integer-valued variables.
 
         """
-
-        out = validate_user_params(
-            dict(
+        if vtype:
+            out = validate_user_params(
+                dict(
+                    path=path,
+                    vtype=vtype,
+                    start_value=start_value,
+                    candidate_param=candidate_param,
+                    other_params=other_params,
+                    cultivar=cultivar,
+                )
+            )
+        else:
+            out = BaseParamsContinuous(**dict(
                 path=path,
-                vtype=vtype,
                 start_value=start_value,
                 candidate_param=candidate_param,
                 other_params=other_params,
+                bounds=bounds,
                 cultivar=cultivar,
-            )
-        )
+            )).additional_evaluation()
+
         apsim_out = filter_apsim_params(out)
         key_hashable = (tuple(apsim_out.keys()), tuple(apsim_out.values()))
         self.ordered_factors[key_hashable] = out
@@ -566,6 +577,41 @@ class MixedProblem:
     # -------------------------------------------------------------------------
     # Factor Scanning and Variable Tracking
     # -------------------------------------------------------------------------
+    def _detect_pure_vars(self):
+        """
+        Detect whether submitted factors are pure (no explicit vtype specified)
+        or explicitly typed (all factors define vtype).
+
+        This method must be called after all factors have been submitted.
+
+        Returns
+        -------
+        bool
+            True  -> pure variables (no vtype specified on any factor)
+            False -> all factors explicitly define vtype
+
+        Raises
+        ------
+        TypeError
+            If factors are mixed (some define vtype, others do not).
+        """
+        has_vtype = [getattr(factor, "vtype", None) is not None
+                     for _, factor in self.ordered_factors.items()]
+
+        if all(has_vtype):
+            # All factors define vtype --> not pure (explicitly typed)
+            return False
+
+        if not any(has_vtype):
+            # No factor defines vtype --> pure variables
+            return True
+
+        # Mixed case: some factors define vtype, others do not
+        raise TypeError(
+            "Mixed variable definitions detected: either define `vtype` for all "
+            "factors or don't define at all (implying that the submitted factors may not be cached and may not be encoded and decoded). Do not mix pure and typed variables."
+        )
+
     def _scan(self):
         """
         Rebuild variable arrays (types, names, start values) from submitted factors.
@@ -582,12 +628,14 @@ class MixedProblem:
             apsim_var = filter_apsim_params(factor)
 
             self.apsim_params.append(apsim_var)
-            self.var_types.extend(factor.vtype)
+            if hasattr(factor, "vtype"):
+                self.var_types.extend(factor.vtype)
             self.start_values.extend(factor.start_value)
             if not factor.cultivar:
                 self.var_names.extend(factor.candidate_param)
             else:
                 self.var_names.extend(factor.candidate_param)
+        self._detect_pure_vars()
 
     # -------------------------------------------------------------------------
     # Optimization Interface
@@ -845,5 +893,16 @@ if __name__ == "__main__":
     )
 
     mp.submit_factor(**example_param3)
+    example_param_pure = {
+        "path": ".Simulations.Simulation.Field.Soil.Organic2",
+        'bounds': [(1, 500), ],
+        "start_value": ["1"],
+        "candidate_param": ["FOM"],
+        "other_params": {"FBiom": 2.3, "Carbon": 1.89},
+    }
+    mp.submit_factor(**example_param_pure)
+    print(mp.n_factors, 'factors submitted')
     mp._insert_x_vars([1.88])
     print(mp.var_names, mp.start_values)
+
+

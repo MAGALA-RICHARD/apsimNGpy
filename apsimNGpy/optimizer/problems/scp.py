@@ -502,6 +502,41 @@ class ContinuousProblem:
             self.submit_factor(**factor)
         return self
 
+    def _detect_pure_vars(self):
+        """
+        Detect whether submitted factors are pure (no explicit vtype specified)
+        or explicitly typed (all factors define vtype).
+
+        This method must be called after all factors have been submitted.
+
+        Returns
+        -------
+        bool
+            True  -> pure variables (no vtype specified on any factor)
+            False -> all factors explicitly define vtype
+
+        Raises
+        ------
+        TypeError
+            If factors are mixed (some define vtype, others do not).
+        """
+        has_vtype = [getattr(factor, "vtype", None) is not None
+                     for factor in self.ordered_factors.values()]
+
+        if all(has_vtype):
+            # All factors define vtype → not pure (explicitly typed)
+            return False
+
+        if not any(has_vtype):
+            # No factor defines vtype → pure variables
+            return True
+
+        # Mixed case: some factors define vtype, others do not
+        raise TypeError(
+            "Mixed variable definitions detected: either define `vtype` for all "
+            "factors or for none. Do not mix pure and typed variables."
+        )
+
     def _validate_factor(self, verbose=False):
         """
         Ensure that multiple factors belonging to the same APSIM node
@@ -538,7 +573,7 @@ class ContinuousProblem:
 
         for _, factor in self.ordered_factors.items():
             self.bounds.extend(factor.bounds) if factor.bounds else []
-            print(self.bounds)
+
 
             apsim_var = filter_apsim_params(factor)
 
@@ -773,7 +808,15 @@ if __name__ == "__main__":
 
     example_param3 = {
         "path": ".Simulations.Simulation.Field.Soil.Organic1",
-        'bounds': [(1, 500),],
+        'bounds': [(1, 500), ],
+        "start_value": ["1"],
+        "candidate_param": ["FOM"],
+        "other_params": {"FBiom": 2.3, "Carbon": 1.89},
+    }
+    example_param3_v = {
+        "path": ".Simulations.Simulation.Field.Soil.Organic1",
+        'vtype': UniformVar(0, 2),
+        'bounds': [(1, 500), ],
         "start_value": ["1"],
         "candidate_param": ["FOM"],
         "other_params": {"FBiom": 2.3, "Carbon": 1.89},
@@ -789,5 +832,6 @@ if __name__ == "__main__":
     )
 
     mp.submit_factor(**example_param3)
+
     mp._insert_x_vars([1.88])
     print(mp.var_names, mp.start_values)

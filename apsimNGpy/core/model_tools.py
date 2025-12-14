@@ -18,7 +18,8 @@ from apsimNGpy.core.pythonet_config import get_apsim_version as apsim_version
 from apsimNGpy.core.run_time_info import BASE_RELEASE_NO, GITHUB_RELEASE_NO
 from apsimNGpy.core.version_inspector import is_higher_apsim_version
 from array import array
-from apsimNGpy.core_utils.utils import is_scalar
+from apsimNGpy.core_utils.utils import is_scalar, timer
+
 IS_NEW_APSIM = is_file_format_modified()
 
 from apsimNGpy.core.cs_resources import CastHelper, sow_using_variable_rule, sow_on_fixed_date, harvest, \

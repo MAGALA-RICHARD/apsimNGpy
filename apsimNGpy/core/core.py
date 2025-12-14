@@ -1641,13 +1641,18 @@ class CoreModel(PlotManager):
             self.save()
         available_crops = self.inspect_model(Models.PMF.Plant, fullpath=False)
         rep = self.get_replacements_node()
+        existing = {
+            child.Name
+            for child in rep.Children
+            if isinstance(child, Models.PMF.Plant)
+        }
         for crop in available_crops:
-            crop_t = ModelTools.find_child(rep, Models.PMF.Plant, crop)
-            if not crop_t:
+            if crop not in existing:
                 crop_model = Models.PMF.Plant()
                 crop_model.Name = crop
                 crop_model.ResourceName = crop
                 rep.Children.Add(crop_model)
+
         self.save()
         return self
 
@@ -2470,6 +2475,7 @@ class CoreModel(PlotManager):
             b_name = os.path.basename(self.path).rsplit('.apsimx', 1)[0]
             return (shutil.copy(self.model_info.path, os.path.join(path, f"{b_name}_{suffix}_{i}.apsimx")) for i in
                     range(k))
+
 
     def _cultivar_params(self, cultivar):
         """

@@ -281,6 +281,14 @@ if __name__ == '__main__':
         # other params must be on the same node or associated or extra arguments, e.g., target simulation name classified simulations
         'cultivar': True
     }
+    cultivar_param_p = {
+        "path": ".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82",
+        "start_value": [550, ],
+        "candidate_param": ["[Grain].MaximumGrainsPerCob.FixedValue", ],
+        "other_params": {"sowed": True},
+        # other params must be on the same node or associated or extra arguments, e.g., target simulation name classified simulations
+        'cultivar': True
+    }
 
     # _______________________________________
     # use cases
@@ -298,6 +306,17 @@ if __name__ == '__main__':
     # min.minimize_with_de(workers=3, updating='deferred')
     # minim.minimize_with_alocal_solver(method='Nelder-Mead')
     res = minim.minimize_with_de(use_threads=True, updating='deferred', workers=15, popsize=10, constraints=(0, 0.2))
+    print(res)
+    out = minim.minimize_with_local()
+    print(out)
+    # _____________________
+    # no vtyped variables
+    # _____________________
+    mp = MixedProblem(model='Maize', trainer_dataset=obs, pred_col='Yield', metric='RRMSE', table='Report',
+                      index='year', trainer_col='observed')
+    mp.submit_factor(**cultivar_param_p)
+    print(mp.n_factors, 'factors submitted')
+    res = minim.minimize_with_de(use_threads=False, updating='deferred', workers=15, popsize=10, constraints=(0, 0.2))
     print(res)
     out = minim.minimize_with_local()
     print(out)

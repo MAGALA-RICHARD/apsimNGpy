@@ -741,7 +741,7 @@ def run_p(_model, simulations='all', clean=False, multithread=True):
 
 
 def _edit_in_cultivar(_model, model_name, param_values, simulations=None, verbose=False, by_path=False):
-    # if there is a need to target a specific simulation in case of changing the current culvar in simulation
+    # if there is a need to target a specific simulation in case of changing the current cultvar in simulation
 
     _cultivar_names = _model.inspect_model('Cultivar', fullpath=False)
 

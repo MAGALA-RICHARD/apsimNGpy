@@ -329,7 +329,8 @@ def validate_user_params_cont(params: Dict) -> BaseParams:
     Parameters
     ----------
     params : dict
-        Dictionary with user-defined parameters, e.g.:
+        Dictionary with user-defined parameters, e.g.::
+
         {
             "path": ".Simulations.Simulation.Field.Soil.Organic",
             "vtype": (UniformVar(1, 2),),

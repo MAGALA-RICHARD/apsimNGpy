@@ -129,7 +129,6 @@ Classes
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.set_categorical_factor`
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.set_continuous_factor`
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.set_params`
-   - :meth:`~apsimNGpy.core.apsim.ApsimModel.show_met_file_in_simulation`
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.summarize_numeric`
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.update_cultivar`
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.update_mgt`
@@ -226,6 +225,8 @@ Classes
        R2      :     1.0000
        CCC     :     1.0000
        SLOPE   :     1.0000
+
+   .. versionadded:: v0.39.12.21+
 
    .. py:method:: apsimNGpy.core.apsim.ApsimModel.set_params(self, params: dict[str, typing.Any] | None = None, **kwargs) -> 'ApsimModel'
 
@@ -1600,6 +1601,8 @@ Classes
        ['CN2Bare', 'CNCov', 'CNRed', 'CatchmentArea', 'Children', 'Depth', 'DiffusConst', 'DiffusSlope', 'DischargeWidth',
        'Enabled', 'Eo', 'IsHidden', 'KLAT', 'Name', 'Node', 'PSIDul', 'Parent', 'PoreInteractionIndex', 'PotentialInfiltration', 'PrecipitationInterception', 'ReadOnly', 'ResourceName', 'Runon', 'SW', 'SWCON', 'Salb', 'Structure', 'SummerCona', 'SummerDate', 'SummerU', 'Thickness', 'Water', 'WaterTable', 'WinterCona', 'WinterDate', 'WinterU']
 
+   .. versionadded:: 0.39.12.21
+
    .. py:method:: apsimNGpy.core.apsim.ApsimModel.find_model_in_replacements(self, model_type, model_name) (inherited)
 
    checks whether the model to be edited is in the replacement, there is no point to contnue editing from individual simulations
@@ -2526,12 +2529,6 @@ Classes
       >>> dt = model.inspect_model_parameters(model_class='Clock', model_name='Clock', simulations='Simulation')
       >>> start, end = dt['Start'].year, dt['End'].year
       # output: 1990, 2000
-
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.show_met_file_in_simulation(self, simulations: 'list' = None) (inherited)
-
-   Show weather file for all simulations
-
-   @deprecated: use inspect_model_parameters() instead
 
    .. py:method:: apsimNGpy.core.apsim.ApsimModel.change_report(self, *, command: 'str', report_name='Report', simulations=None, set_DayAfterLastOutput=None, **kwargs) (inherited)
 
@@ -3946,7 +3943,6 @@ Classes
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.set_categorical_factor`
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.set_continuous_factor`
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.set_params`
-   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.show_met_file_in_simulation`
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.summarize_numeric`
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.update_cultivar`
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.update_mgt`
@@ -4346,6 +4342,8 @@ Classes
        R2      :     1.0000
        CCC     :     1.0000
        SLOPE   :     1.0000
+
+   .. versionadded:: v0.39.12.21+
 
    .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.set_params(self, params: dict[str, typing.Any] | None = None, **kwargs) -> 'ApsimModel' (inherited)
 
@@ -5720,6 +5718,8 @@ Classes
        ['CN2Bare', 'CNCov', 'CNRed', 'CatchmentArea', 'Children', 'Depth', 'DiffusConst', 'DiffusSlope', 'DischargeWidth',
        'Enabled', 'Eo', 'IsHidden', 'KLAT', 'Name', 'Node', 'PSIDul', 'Parent', 'PoreInteractionIndex', 'PotentialInfiltration', 'PrecipitationInterception', 'ReadOnly', 'ResourceName', 'Runon', 'SW', 'SWCON', 'Salb', 'Structure', 'SummerCona', 'SummerDate', 'SummerU', 'Thickness', 'Water', 'WaterTable', 'WinterCona', 'WinterDate', 'WinterU']
 
+   .. versionadded:: 0.39.12.21
+
    .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.find_model_in_replacements(self, model_type, model_name) (inherited)
 
    checks whether the model to be edited is in the replacement, there is no point to contnue editing from individual simulations
@@ -6646,12 +6646,6 @@ Classes
       >>> dt = model.inspect_model_parameters(model_class='Clock', model_name='Clock', simulations='Simulation')
       >>> start, end = dt['Start'].year, dt['End'].year
       # output: 1990, 2000
-
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.show_met_file_in_simulation(self, simulations: 'list' = None) (inherited)
-
-   Show weather file for all simulations
-
-   @deprecated: use inspect_model_parameters() instead
 
    .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.change_report(self, *, command: 'str', report_name='Report', simulations=None, set_DayAfterLastOutput=None, **kwargs) (inherited)
 
@@ -8602,7 +8596,6 @@ Classes
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.set_continuous_factor`
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.set_params`
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.setup`
-   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.show_met_file_in_simulation`
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.summarize_numeric`
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.update_cultivar`
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.update_mgt`
@@ -8938,6 +8931,8 @@ Classes
        R2      :     1.0000
        CCC     :     1.0000
        SLOPE   :     1.0000
+
+   .. versionadded:: v0.39.12.21+
 
    .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.set_params(self, params: dict[str, typing.Any] | None = None, **kwargs) -> 'ApsimModel' (inherited)
 
@@ -10312,6 +10307,8 @@ Classes
        ['CN2Bare', 'CNCov', 'CNRed', 'CatchmentArea', 'Children', 'Depth', 'DiffusConst', 'DiffusSlope', 'DischargeWidth',
        'Enabled', 'Eo', 'IsHidden', 'KLAT', 'Name', 'Node', 'PSIDul', 'Parent', 'PoreInteractionIndex', 'PotentialInfiltration', 'PrecipitationInterception', 'ReadOnly', 'ResourceName', 'Runon', 'SW', 'SWCON', 'Salb', 'Structure', 'SummerCona', 'SummerDate', 'SummerU', 'Thickness', 'Water', 'WaterTable', 'WinterCona', 'WinterDate', 'WinterU']
 
+   .. versionadded:: 0.39.12.21
+
    .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.find_model_in_replacements(self, model_type, model_name) (inherited)
 
    checks whether the model to be edited is in the replacement, there is no point to contnue editing from individual simulations
@@ -11238,12 +11235,6 @@ Classes
       >>> dt = model.inspect_model_parameters(model_class='Clock', model_name='Clock', simulations='Simulation')
       >>> start, end = dt['Start'].year, dt['End'].year
       # output: 1990, 2000
-
-   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.show_met_file_in_simulation(self, simulations: 'list' = None) (inherited)
-
-   Show weather file for all simulations
-
-   @deprecated: use inspect_model_parameters() instead
 
    .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.change_report(self, *, command: 'str', report_name='Report', simulations=None, set_DayAfterLastOutput=None, **kwargs) (inherited)
 
@@ -12909,13 +12900,391 @@ Classes
                v_type="float",
                start_value=5
            )
+        Attributes of the returned object
+       ------------------------------------
+       x : ndarray
+           The solution of the optimization.
+       success : bool
+           Whether or not the optimizer exited successfully.
+       status : int
+           Termination status of the optimizer. Its value depends on the
+           underlying solver. Refer to `message` for details.
+       message : str
+           Description of the cause of the termination.
+       fun, jac, hess: ndarray
+           Values of objective function, its Jacobian and its Hessian (if
+           available). The Hessians may be approximations, see the documentation
+           of the function in question.
+       hess_inv : object
+           Inverse of the objective function's Hessian; may be an approximation.
+           Not available for all solvers. The type of this attribute may be
+           either np.ndarray or scipy.sparse.linalg.LinearOperator.
+       nfev, njev, nhev : int
+           Number of evaluations of the objective functions and of its
+           Jacobian and Hessian.
+       nit : int
+           Number of iterations performed by the optimizer.
+       maxcv : float
+           The maximum constraint violation.
+       data: DataFrame
+            This DataFrame represents the index columns, with the predicted and observed values
+
+       Notes
+       -----
+       Depending on the specific solver being used, `OptimizeResult` may
+       not have all attributes listed here, and they may have additional
+       attributes not listed here. Since this class is essentially a
+       subclass of dict with attribute accessors, one can see which
+       attributes are available using the `OptimizeResult.keys` method.
 
    .. py:method:: apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.minimize_with_de(self, use_threads=False, args=(), strategy='rand1bin', maxiter=1000, popsize=None, tol=0.01, mutation=(0.5, 1), recombination=0.9, rng=None, callback=None, disp=True, polish=True, init='latinhypercube', atol=0, updating='deffered', workers=1, constraints=(), x0=None, seed=1, *, integrality=None, vectorized=False)
 
-   Run differential evolution on the wrapped APSIM objective function.
+       Run differential evolution on the wrapped APSIM objective function.
+       Finds the global minimum of a multivariate function.
 
-   Reference:
-       https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.differential_evolution.html
+       The differential evolution method [1]_ is stochastic in nature. It does
+       not use gradient methods to find the minimum, and can search large areas
+       of candidate space, but often requires larger numbers of function
+       evaluations than conventional gradient-based techniques.
+
+       The algorithm is due to Storn and Price [2]_.
+
+       Parameters
+       ----------
+       func : callable
+           The objective function to be minimized. Must be in the form
+           ``f(x, *args)``, where ``x`` is the argument in the form of a 1-D array
+           and ``args`` is a tuple of any additional fixed parameters needed to
+           completely specify the function. The number of parameters, N, is equal
+           to ``len(x)``.
+       bounds : sequence or `Bounds`
+           Bounds for variables. There are two ways to specify the bounds:
+
+               1. Instance of `Bounds` class.
+               2. ``(min, max)`` pairs for each element in ``x``, defining the
+                  finite lower and upper bounds for the optimizing argument of
+                  `func`.
+
+           The total number of bounds is used to determine the number of
+           parameters, N. If there are parameters whose bounds are equal the total
+           number of free parameters is ``N - N_equal``.
+
+       args : tuple, optional
+           Any additional fixed parameters needed to
+           completely specify the objective function.
+       strategy : {str, callable}, optional
+           The differential evolution strategy to use. Should be one of:
+
+               - 'best1bin'
+               - 'best1exp'
+               - 'rand1bin'
+               - 'rand1exp'
+               - 'rand2bin'
+               - 'rand2exp'
+               - 'randtobest1bin'
+               - 'randtobest1exp'
+               - 'currenttobest1bin'
+               - 'currenttobest1exp'
+               - 'best2exp'
+               - 'best2bin'
+
+           The default is 'best1bin'. Strategies that may be implemented are
+           outlined in 'Notes'.
+           Alternatively the differential evolution strategy can be customized by
+           providing a callable that constructs a trial vector. The callable must
+           have the form ``strategy(candidate: int, population: np.ndarray, rng=None)``,
+           where ``candidate`` is an integer specifying which entry of the
+           population is being evolved, ``population`` is an array of shape
+           ``(S, N)`` containing all the population members (where S is the
+           total population size), and ``rng`` is the random number generator
+           being used within the solver.
+           ``candidate`` will be in the range ``[0, S)``.
+           ``strategy`` must return a trial vector with shape `(N,)`. The
+           fitness of this trial vector is compared against the fitness of
+           ``population[candidate]``.
+
+           .. versionchanged:: 1.12.0
+               Customization of evolution strategy via a callable.
+
+       maxiter : int, optional
+           The maximum number of generations over which the entire population is
+           evolved. The maximum number of function evaluations (with no polishing)
+           is: ``(maxiter + 1) * popsize * (N - N_equal)``
+       popsize : int, optional
+           A multiplier for setting the total population size. The population has
+           ``popsize * (N - N_equal)`` individuals. This keyword is overridden if
+           an initial population is supplied via the `init` keyword. When using
+           ``init='sobol'`` the population size is calculated as the next power
+           of 2 after ``popsize * (N - N_equal)``.
+       tol : float, optional
+           Relative tolerance for convergence, the solving stops when
+           ``np.std(pop) <= atol + tol * np.abs(np.mean(population_energies))``,
+           where and `atol` and `tol` are the absolute and relative tolerance
+           respectively.
+       mutation : float or tuple(float, float), optional
+           The mutation constant. In the literature this is also known as
+           differential weight, being denoted by F.
+           If specified as a float it should be in the range [0, 2].
+           If specified as a tuple ``(min, max)`` dithering is employed. Dithering
+           randomly changes the mutation constant on a generation by generation
+           basis. The mutation constant for that generation is taken from
+           ``U[min, max)``. Dithering can help speed convergence significantly.
+           Increasing the mutation constant increases the search radius, but will
+           slow down convergence.
+       recombination : float, optional
+           The recombination constant, should be in the range [0, 1]. In the
+           literature this is also known as the crossover probability, being
+           denoted by CR. Increasing this value allows a larger number of mutants
+           to progress into the next generation, but at the risk of population
+           stability.
+       seed : {None, int, `numpy.random.Generator`, `numpy.random.RandomState`}, optional
+           If `seed` is None (or `np.random`), the `numpy.random.RandomState`
+           singleton is used.
+           If `seed` is an int, a new ``RandomState`` instance is used,
+           seeded with `seed`.
+           If `seed` is already a ``Generator`` or ``RandomState`` instance then
+           that instance is used.
+           Specify `seed` for repeatable minimizations.
+       disp : bool, optional
+           Prints the evaluated `func` at every iteration.
+       callback : callable, optional
+           A callable called after each iteration. Has the signature:
+
+               ``callback(intermediate_result: OptimizeResult)``
+
+           where ``intermediate_result`` is a keyword parameter containing an
+           `OptimizeResult` with attributes ``x`` and ``fun``, the best solution
+           found so far and the objective function. Note that the name
+           of the parameter must be ``intermediate_result`` for the callback
+           to be passed an `OptimizeResult`.
+
+           The callback also supports a signature like:
+
+               ``callback(x, convergence: float=val)``
+
+           ``val`` represents the fractional value of the population convergence.
+           When ``val`` is greater than ``1.0``, the function halts.
+
+           Introspection is used to determine which of the signatures is invoked.
+
+           Global minimization will halt if the callback raises ``StopIteration``
+           or returns ``True``; any polishing is still carried out.
+
+           .. versionchanged:: 1.12.0
+               callback accepts the ``intermediate_result`` keyword.
+
+       polish : bool, optional
+           If True (default), then `scipy.optimize.minimize` with the `L-BFGS-B`
+           method is used to polish the best population member at the end, which
+           can improve the minimization slightly. If a constrained problem is
+           being studied then the `trust-constr` method is used instead. For large
+           problems with many constraints, polishing can take a long time due to
+           the Jacobian computations.
+       init : str or array-like, optional
+           Specify which type of population initialization is performed. Should be
+           one of:
+
+               - 'latinhypercube'
+               - 'sobol'
+               - 'halton'
+               - 'random'
+               - array specifying the initial population. The array should have
+                 shape ``(S, N)``, where S is the total population size and N is
+                 the number of parameters.
+                 `init` is clipped to `bounds` before use.
+
+           The default is 'latinhypercube'. Latin Hypercube sampling tries to
+           maximize coverage of the available parameter space.
+
+           'sobol' and 'halton' are superior alternatives and maximize even more
+           the parameter space. 'sobol' will enforce an initial population
+           size which is calculated as the next power of 2 after
+           ``popsize * (N - N_equal)``. 'halton' has no requirements but is a bit
+           less efficient. See `scipy.stats.qmc` for more details.
+
+           'random' initializes the population randomly - this has the drawback
+           that clustering can occur, preventing the whole of parameter space
+           being covered. Use of an array to specify a population could be used,
+           for example, to create a tight bunch of initial guesses in an location
+           where the solution is known to exist, thereby reducing time for
+           convergence.
+       atol : float, optional
+           Absolute tolerance for convergence, the solving stops when
+           ``np.std(pop) <= atol + tol * np.abs(np.mean(population_energies))``,
+           where and `atol` and `tol` are the absolute and relative tolerance
+           respectively.
+       updating : {'immediate', 'deferred'}, optional
+           If ``'immediate'``, the best solution vector is continuously updated
+           within a single generation [4]_. This can lead to faster convergence as
+           trial vectors can take advantage of continuous improvements in the best
+           solution.
+           With ``'deferred'``, the best solution vector is updated once per
+           generation. Only ``'deferred'`` is compatible with parallelization or
+           vectorization, and the `workers` and `vectorized` keywords can
+           over-ride this option.
+
+           .. versionadded:: 1.2.0
+
+       workers : int or map-like callable, optional
+           If `workers` is an int the population is subdivided into `workers`
+           sections and evaluated in parallel
+           (uses `multiprocessing.Pool <multiprocessing>`).
+           Supply -1 to use all available CPU cores.
+           Alternatively supply a map-like callable, such as
+           `multiprocessing.Pool.map` for evaluating the population in parallel.
+           This evaluation is carried out as ``workers(func, iterable)``.
+           This option will override the `updating` keyword to
+           ``updating='deferred'`` if ``workers != 1``.
+           This option overrides the `vectorized` keyword if ``workers != 1``.
+           Requires that `func` be pickleable.
+
+           .. versionadded:: 1.2.0
+
+       constraints : {NonLinearConstraint, LinearConstraint, Bounds}
+           Constraints on the solver, over and above those applied by the `bounds`
+           kwd. Uses the approach by Lampinen [5]_.
+
+           .. versionadded:: 1.4.0
+
+       x0 : None or array-like, optional
+           Provides an initial guess to the minimization. Once the population has
+           been initialized this vector replaces the first (best) member. This
+           replacement is done even if `init` is given an initial population.
+           ``x0.shape == (N,)``.
+
+           .. versionadded:: 1.7.0
+
+       integrality : 1-D array, optional
+           For each decision variable, a boolean value indicating whether the
+           decision variable is constrained to integer values. The array is
+           broadcast to ``(N,)``.
+           If any decision variables are constrained to be integral, they will not
+           be changed during polishing.
+           Only integer values lying between the lower and upper bounds are used.
+           If there are no integer values lying between the bounds then a
+           `ValueError` is raised.
+
+           .. versionadded:: 1.9.0
+
+       vectorized : bool, optional
+           If ``vectorized is True``, `func` is sent an `x` array with
+           ``x.shape == (N, S)``, and is expected to return an array of shape
+           ``(S,)``, where `S` is the number of solution vectors to be calculated.
+           If constraints are applied, each of the functions used to construct
+           a `Constraint` object should accept an `x` array with
+           ``x.shape == (N, S)``, and return an array of shape ``(M, S)``, where
+           `M` is the number of constraint components.
+           This option is an alternative to the parallelization offered by
+           `workers`, and may help in optimization speed by reducing interpreter
+           overhead from multiple function calls. This keyword is ignored if
+           ``workers != 1``.
+           This option will override the `updating` keyword to
+           ``updating='deferred'``.
+           See the notes section for further discussion on when to use
+           ``'vectorized'``, and when to use ``'workers'``.
+
+           .. versionadded:: 1.9.0
+
+       Returns
+       -------
+       res : OptimizeResult
+           The optimization result represented as a `OptimizeResult` object.
+           Important attributes are: ``x`` the solution array, ``success`` a
+           Boolean flag indicating if the optimizer exited successfully,
+           ``message`` which describes the cause of the termination,
+           ``population`` the solution vectors present in the population, and
+           ``population_energies`` the value of the objective function for each
+           entry in ``population``.
+           See `OptimizeResult` for a description of other attributes. If `polish`
+           was employed, and a lower minimum was obtained by the polishing, then
+           OptimizeResult also contains the ``jac`` attribute.
+           If the eventual solution does not satisfy the applied constraints
+           ``success`` will be `False`.
+
+   Notes
+   -----
+   Differential evolution is a stochastic population based method that is
+   useful for global optimization problems. At each pass through the
+   population the algorithm mutates each candidate solution by mixing with
+   other candidate solutions to create a trial candidate. There are several
+   strategies [3]_ for creating trial candidates, which suit some problems
+   more than others. The 'best1bin' strategy is a good starting point for
+   many systems. In this strategy two members of the population are randomly
+   chosen. Their difference is used to mutate the best member (the 'best' in
+   'best1bin'), :math:`x_0`, so far:
+
+   .. math::
+
+       b' = x_0 + mutation * (x_{r_0} - x_{r_1})
+
+   A trial vector is then constructed. Starting with a randomly chosen ith
+   parameter the trial is sequentially filled (in modulo) with parameters
+   from ``b'`` or the original candidate. The choice of whether to use ``b'``
+   or the original candidate is made with a binomial distribution (the 'bin'
+   in 'best1bin') - a random number in [0, 1) is generated. If this number is
+   less than the `recombination` constant then the parameter is loaded from
+   ``b'``, otherwise it is loaded from the original candidate. The final
+   parameter is always loaded from ``b'``. Once the trial candidate is built
+   its fitness is assessed. If the trial is better than the original candidate
+   then it takes its place. If it is also better than the best overall
+   candidate it also replaces that.
+
+   The other strategies available are outlined in Qiang and
+   Mitchell (2014) [3]_.
+
+   .. math::
+           rand1* : b' = x_{r_0} + mutation*(x_{r_1} - x_{r_2})
+
+           rand2* : b' = x_{r_0} + mutation*(x_{r_1} + x_{r_2}
+                                               - x_{r_3} - x_{r_4})
+
+           best1* : b' = x_0 + mutation*(x_{r_0} - x_{r_1})
+
+           best2* : b' = x_0 + mutation*(x_{r_0} + x_{r_1}
+                                           - x_{r_2} - x_{r_3})
+
+           currenttobest1* : b' = x_i + mutation*(x_0 - x_i
+                                                    + x_{r_0} - x_{r_1})
+
+           randtobest1* : b' = x_{r_0} + mutation*(x_0 - x_{r_0}
+                                                     + x_{r_1} - x_{r_2})
+
+   where the integers :math:`r_0, r_1, r_2, r_3, r_4` are chosen randomly
+   from the interval [0, NP) with `NP` being the total population size and
+   the original candidate having index `i`. The user can fully customize the
+   generation of the trial candidates by supplying a callable to ``strategy``.
+
+   To improve your chances of finding a global minimum use higher `popsize`
+   values, with higher `mutation` and (dithering), but lower `recombination`
+   values. This has the effect of widening the search radius, but slowing
+   convergence.
+
+   By default the best solution vector is updated continuously within a single
+   iteration (``updating='immediate'``). This is a modification [4]_ of the
+   original differential evolution algorithm which can lead to faster
+   convergence as trial vectors can immediately benefit from improved
+   solutions. To use the original Storn and Price behaviour, updating the best
+   solution once per iteration, set ``updating='deferred'``.
+   The ``'deferred'`` approach is compatible with both parallelization and
+   vectorization (``'workers'`` and ``'vectorized'`` keywords). These may
+   improve minimization speed by using computer resources more efficiently.
+   The ``'workers'`` distribute calculations over multiple processors. By
+   default the Python `multiprocessing` module is used, but other approaches
+   are also possible, such as the Message Passing Interface (MPI) used on
+   clusters [6]_ [7]_. The overhead from these approaches (creating new
+   Processes, etc) may be significant, meaning that computational speed
+   doesn't necessarily scale with the number of processors used.
+   Parallelization is best suited to computationally expensive objective
+   functions. If the objective function is less expensive, then
+   ``'vectorized'`` may aid by only calling the objective function once per
+   iteration, rather than multiple times for all the population members; the
+   interpreter overhead is reduced.
+
+   .. versionadded:: 0.15.0
+
+
+       Reference:
+           https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.differential_evolution.html
 
 apsimNGpy.optimizer.moo
 -----------------------
@@ -13131,7 +13500,7 @@ Functions
      float
          Metric value multiplied by the optimization direction.
 
-.. py:function:: apsimNGpy.optimizer.problems.back_end.final_eval(obs: pandas.core.frame.DataFrame, pred: pandas.core.frame.DataFrame, index: str, pred_col: str, obs_col: str, exp: Optional[str] = None) -> dict
+.. py:function:: apsimNGpy.optimizer.problems.back_end.final_eval(obs: pandas.core.frame.DataFrame, pred: pandas.core.frame.DataFrame, index: Union[str, tuple, list], pred_col: str, obs_col: str, exp: Optional[str] = None) -> dict
 
    Evaluate observed and predicted values and return the full suite of
    performance metrics supported by the: class:`Validate` class.
@@ -13222,7 +13591,7 @@ Classes
 
    Number of submitted optimization factors.
 
-   .. py:method:: apsimNGpy.optimizer.problems.smp.MixedProblem.submit_factor(self, *, path, vtype, start_value, candidate_param, cultivar=False, other_params=None)
+   .. py:method:: apsimNGpy.optimizer.problems.smp.MixedProblem.submit_factor(self, *, path, start_value, candidate_param, vtype=None, cultivar=False, bounds=None, other_params=None)
 
    Add a new factor (parameter) to be optimized.
 
@@ -13487,7 +13856,35 @@ Classes
 
        mp.submit_factor(**cultivar_params)
 
-   It is possible to describe your data type using string characters uisng any of the description below, implying no variable descriptor namespace import needed
+   It is possible to describe your data type using string characters uisng any of the description below,
+    implying no variable descriptor namespace import needed.
+
+   Skip variable typing
+   -----------------------
+   You can skip typing variables, implying that only continuous variables will be allowed.
+
+   .. code-block:: python
+
+      cultivar_params = {
+           "path": ".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82",
+           "bounds": [
+               (400, 600),
+               (400, 900)
+           ],
+           "start_value": [500, 550],
+           "candidate_param": [
+               "[Grain].MaximumGrainsPerCob.FixedValue",
+               "[Phenology].GrainFilling.Target.FixedValue"
+           ],
+           "other_params": {"sowed": True},
+           "cultivar": True}
+       mp.submit_factor(**cultivar_params)
+
+   .. versionadded:: 0.39.12.21
+
+   .. warning::
+
+     The use of both vtype-specified variables and unrestricted continuous variables within the same configuration is unsupported and will not satisfy Pydantic validation requirements.
 
    Variable Type Classification
    ----------------------------
@@ -13679,409 +14076,6 @@ Classes
    -------
    Objective
        A callable objective that accepts encoded variable vectors.
-
-apsimNGpy.optimizer.problems.variables
---------------------------------------
-
-Parameter Definition and Validation Utilities for APSIM Optimization
-====================================================================
-
-This module provides robust validation, normalization, and merging utilities
-for APSIM optimization problems defined through Python.
-
-It uses Pydantic models to ensure consistent parameter structures
-and supports multiple variable types from the ``wrapdisc`` library,
-enabling flexible mixed-variable optimization (continuous, discrete, categorical).
-
---------------------------------------------------------------------
-Supported Variable Types
---------------------------------------------------------------------
-| Class         | Type               | Example Input                 | Typical Use                  |
-| --------------| ------------------ | ----------------------------- | ---------------------------- |
-| `ChoiceVar`   | Categorical        | `["A", "B", "C"]`             | Select from discrete options |
-| `GridVar`     | Deterministic grid | `[0, 10]`                     | Grid-based search            |
-| `QrandintVar` | Quantized int      | `lower=0, upper=200, q=25`    | Integer steps                |
-| `QuniformVar` | Quantized float    | `lower=0, upper=100, q=5`     | Continuous with quantization |
-| `RandintVar`  | Random int         | `lower=1, upper=10`           | Random integer sampling      |
-| `UniformVar`  | Random float       | `lower=0.0, upper=1.0`        | Continuous random sampling   |
-
---------------------------------------------------------------------
-Functions Provided
---------------------------------------------------------------------
-- validate_user_params: Validate and normalize parameter inputs.
-- filter_apsim_params: Flatten parameters for APSIM simulation input.
-- merge_params_by_path: Combine multiple parameter dictionaries with shared paths.
---------------------------------------------------------------------
-
-Functions
-^^^^^^^^^
-
-.. py:function:: apsimNGpy.optimizer.problems.variables.filter_apsim_params(params: apsimNGpy.optimizer.problems.variables.BaseParams, place_holder=<object object at 0x000002400D581900>) -> Dict
-
-   Flatten a validated BaseParams object into a dictionary suitable for APSIM execution.
-
-   - Merges 'other_params' into the main structure
-   - Replaces candidate parameters with placeholders
-   - Preserves the APSIM node 'path'
-
-   Parameters
-   ----------
-   params : BaseParams
-       Validated parameter model.
-   place_holder : object, optional
-       A sentinel object to represent unassigned optimization variables.
-
-   Returns
-   -------
-   dict
-       Flattened dictionary containing APSIM parameter mappings.
-
-.. py:function:: apsimNGpy.optimizer.problems.variables.merge_params_by_path(param_list: List[Dict]) -> List[Dict]
-
-   Merge parameter dictionaries that share the same APSIM node path.
-
-   Useful for grouping multiple variable definitions targeting the same node.
-
-   Parameters
-   ----------
-   param_list : list of dict
-       List of parameter dictionaries to merge.
-
-   Returns
-   -------
-   list of dict
-       A list of merged parameter dictionaries, one per unique path.
-
-.. py:function:: apsimNGpy.optimizer.problems.variables.string_eval(obj)
-
-   Evaluate a string expression using a restricted namespace.
-   Only names defined in ALLOWED_NAMES are permitted.
-
-   Parameters
-   ----------
-   obj : Any
-       A string to be evaluated or any other object that will be returned unchanged.
-
-   Returns
-   -------
-   Any
-       The evaluated object.
-
-   Raises
-   ------
-   ValueError
-       If evaluation fails or expression contains unsupported names or syntax.
-
-.. py:function:: apsimNGpy.optimizer.problems.variables.validate_user_params(params: Dict) -> apsimNGpy.optimizer.problems.variables.BaseParams
-
-   Validate user-supplied parameters using the BaseParams schema.
-
-   This function checks structure, length consistency, and conflicts between
-   candidate and other parameters. It does not validate the *existence* of APSIM nodes.
-
-   Parameters
-   ----------
-   params : dict
-       Dictionary with user-defined parameters, e.g.:
-       {
-           "path": ".Simulations.Simulation.Field.Soil.Organic",
-           "vtype": (UniformVar(1, 2),),
-           "start_value": ("1",),
-           "candidate_param": ("Carbon",),
-           "other_params": {"FBiom": 2.3}
-       }
-
-   Returns
-   -------
-   BaseParams
-       A validated BaseParams instance.
-
-   Raises
-   ------
-   ValidationError
-       If schema or data type validation fails.
-   ValueError
-       If start_value, candidate_param, and vtype lengths are inconsistent.
-
-Classes
-^^^^^^^
-
-.. py:class:: apsimNGpy.optimizer.problems.variables.BaseParams
-
-   Base model for defining APSIM optimization parameters.
-
-   Attributes
-   ----------
-   path : str
-       APSIM node path where the parameter resides (e.g., '.Simulations.Simulation.Field.Soil.Organic').
-   vtype : tuple
-       A tuple of variable type instances (from wrapdisc.var), one per candidate parameter.
-
-       Supported Variable Types
-       --------------------------------------------------------------------
-       | Class         | Type               | Example Input                 | Typical Use                  |
-       | --------------| ------------------ | ----------------------------- | ---------------------------- |
-       | `ChoiceVar`   | Categorical        | `["A", "B", "C"]`             | Select from discrete options |
-       | `GridVar`     | Deterministic grid | `[0, 10]`                     | Grid-based search            |
-       | `QrandintVar` | Quantized int      | `lower=0, upper=200, q=25`    | Integer steps                |
-       | `QuniformVar` | Quantized float    | `lower=0, upper=100, q=5`     | Continuous with quantization |
-       | `RandintVar`  | Random int         | `lower=1, upper=10`           | Random integer sampling      |
-       | `UniformVar`  | Random float       | `lower=0.0, upper=1.0`        | Continuous random sampling   |
-
-   start_value : tuple[str | int | float]
-       Initial starting values for each parameter in candidate_param.
-   candidate_param : str | tuple[str]
-       APSIM variable names corresponding to the optimization factors.
-   bounds : tuple[float, float], optional
-       Lower and upper bounds for continuous parameters.
-   other_params : dict, optional
-       Static parameters that should remain fixed during optimization.
-
-   .. py:attribute:: apsimNGpy.optimizer.problems.variables.BaseParams.model_config
-
-   Default: ``{'arbitrary_types_allowed': True}``
-
-   .. py:property:: apsimNGpy.optimizer.problems.variables.BaseParams.model_fields (inherited)
-
-   Get metadata about the fields defined on the model.
-
-   Deprecation warning: you should be getting this information from the model class, not from an instance.
-   In V3, this property will be removed from the `BaseModel` class.
-
-   Returns:
-       A mapping of field names to [`FieldInfo`][pydantic.fields.FieldInfo] objects.
-
-   .. py:property:: apsimNGpy.optimizer.problems.variables.BaseParams.model_computed_fields (inherited)
-
-   Get metadata about the computed fields defined on the model.
-
-   Deprecation warning: you should be getting this information from the model class, not from an instance.
-   In V3, this property will be removed from the `BaseModel` class.
-
-   Returns:
-       A mapping of computed field names to [`ComputedFieldInfo`][pydantic.fields.ComputedFieldInfo] objects.
-
-   .. py:property:: apsimNGpy.optimizer.problems.variables.BaseParams.model_extra (inherited)
-
-   Get extra fields set during validation.
-
-   Returns:
-       A dictionary of extra fields, or `None` if `config.extra` is not set to `"allow"`.
-
-   .. py:property:: apsimNGpy.optimizer.problems.variables.BaseParams.model_fields_set (inherited)
-
-   Returns the set of fields that have been explicitly set on this model instance.
-
-   Returns:
-       A set of strings representing the fields that have been set,
-           i.e. that were not filled from defaults.
-
-   .. py:classmethod:: apsimNGpy.optimizer.problems.variables.BaseParams.model_construct(cls, _fields_set: 'set[str] | None' = None, **values: 'Any') -> 'Self' (inherited)
-
-   Creates a new instance of the `Model` class with validated data.
-
-   Creates a new model setting `__dict__` and `__pydantic_fields_set__` from trusted or pre-validated data.
-   Default values are respected, but no other validation is performed.
-
-   !!! note
-       `model_construct()` generally respects the `model_config.extra` setting on the provided model.
-       That is, if `model_config.extra == 'allow'`, then all extra passed values are added to the model instance's `__dict__`
-       and `__pydantic_extra__` fields. If `model_config.extra == 'ignore'` (the default), then all extra passed values are ignored.
-       Because no validation is performed with a call to `model_construct()`, having `model_config.extra == 'forbid'` does not result in
-       an error if extra values are passed, but they will be ignored.
-
-   Args:
-       _fields_set: A set of field names that were originally explicitly set during instantiation. If provided,
-           this is directly used for the [`model_fields_set`][pydantic.BaseModel.model_fields_set] attribute.
-           Otherwise, the field names from the `values` argument will be used.
-       values: Trusted or pre-validated data dictionary.
-
-   Returns:
-       A new instance of the `Model` class with validated data.
-
-   .. py:method:: apsimNGpy.optimizer.problems.variables.BaseParams.model_copy(self, *, update: 'Mapping[str, Any] | None' = None, deep: 'bool' = False) -> 'Self' (inherited)
-
-   Usage docs: https://docs.pydantic.dev/2.10/concepts/serialization/#model_copy
-
-   Returns a copy of the model.
-
-   Args:
-       update: Values to change/add in the new model. Note: the data is not validated
-           before creating the new model. You should trust this data.
-       deep: Set to `True` to make a deep copy of the model.
-
-   Returns:
-       New model instance.
-
-   .. py:method:: apsimNGpy.optimizer.problems.variables.BaseParams.model_dump(self, *, mode: "Literal['json', 'python'] | str" = 'python', include: 'IncEx | None' = None, exclude: 'IncEx | None' = None, context: 'Any | None' = None, by_alias: 'bool' = False, exclude_unset: 'bool' = False, exclude_defaults: 'bool' = False, exclude_none: 'bool' = False, round_trip: 'bool' = False, warnings: "bool | Literal['none', 'warn', 'error']" = True, serialize_as_any: 'bool' = False) -> 'dict[str, Any]' (inherited)
-
-   Usage docs: https://docs.pydantic.dev/2.10/concepts/serialization/#modelmodel_dump
-
-   Generate a dictionary representation of the model, optionally specifying which fields to include or exclude.
-
-   Args:
-       mode: The mode in which `to_python` should run.
-           If mode is 'json', the output will only contain JSON serializable types.
-           If mode is 'python', the output may contain non-JSON-serializable Python objects.
-       include: A set of fields to include in the output.
-       exclude: A set of fields to exclude from the output.
-       context: Additional context to pass to the serializer.
-       by_alias: Whether to use the field's alias in the dictionary key if defined.
-       exclude_unset: Whether to exclude fields that have not been explicitly set.
-       exclude_defaults: Whether to exclude fields that are set to their default value.
-       exclude_none: Whether to exclude fields that have a value of `None`.
-       round_trip: If True, dumped values should be valid as input for non-idempotent types such as Json[T].
-       warnings: How to handle serialization errors. False/"none" ignores them, True/"warn" logs errors,
-           "error" raises a [`PydanticSerializationError`][pydantic_core.PydanticSerializationError].
-       serialize_as_any: Whether to serialize fields with duck-typing serialization behavior.
-
-   Returns:
-       A dictionary representation of the model.
-
-   .. py:method:: apsimNGpy.optimizer.problems.variables.BaseParams.model_dump_json(self, *, indent: 'int | None' = None, include: 'IncEx | None' = None, exclude: 'IncEx | None' = None, context: 'Any | None' = None, by_alias: 'bool' = False, exclude_unset: 'bool' = False, exclude_defaults: 'bool' = False, exclude_none: 'bool' = False, round_trip: 'bool' = False, warnings: "bool | Literal['none', 'warn', 'error']" = True, serialize_as_any: 'bool' = False) -> 'str' (inherited)
-
-   Usage docs: https://docs.pydantic.dev/2.10/concepts/serialization/#modelmodel_dump_json
-
-   Generates a JSON representation of the model using Pydantic's `to_json` method.
-
-   Args:
-       indent: Indentation to use in the JSON output. If None is passed, the output will be compact.
-       include: Field(s) to include in the JSON output.
-       exclude: Field(s) to exclude from the JSON output.
-       context: Additional context to pass to the serializer.
-       by_alias: Whether to serialize using field aliases.
-       exclude_unset: Whether to exclude fields that have not been explicitly set.
-       exclude_defaults: Whether to exclude fields that are set to their default value.
-       exclude_none: Whether to exclude fields that have a value of `None`.
-       round_trip: If True, dumped values should be valid as input for non-idempotent types such as Json[T].
-       warnings: How to handle serialization errors. False/"none" ignores them, True/"warn" logs errors,
-           "error" raises a [`PydanticSerializationError`][pydantic_core.PydanticSerializationError].
-       serialize_as_any: Whether to serialize fields with duck-typing serialization behavior.
-
-   Returns:
-       A JSON string representation of the model.
-
-   .. py:classmethod:: apsimNGpy.optimizer.problems.variables.BaseParams.model_json_schema(cls, by_alias: 'bool' = True, ref_template: 'str' = '#/$defs/{model}', schema_generator: 'type[GenerateJsonSchema]' = <class 'pydantic.json_schema.GenerateJsonSchema'>, mode: 'JsonSchemaMode' = 'validation') -> 'dict[str, Any]' (inherited)
-
-   Generates a JSON schema for a model class.
-
-   Args:
-       by_alias: Whether to use attribute aliases or not.
-       ref_template: The reference template.
-       schema_generator: To override the logic used to generate the JSON schema, as a subclass of
-           `GenerateJsonSchema` with your desired modifications
-       mode: The mode in which to generate the schema.
-
-   Returns:
-       The JSON schema for the given model class.
-
-   .. py:classmethod:: apsimNGpy.optimizer.problems.variables.BaseParams.model_parametrized_name(cls, params: 'tuple[type[Any], ...]') -> 'str' (inherited)
-
-   Compute the class name for parametrizations of generic classes.
-
-   This method can be overridden to achieve a custom naming scheme for generic BaseModels.
-
-   Args:
-       params: Tuple of types of the class. Given a generic class
-           `Model` with 2 type variables and a concrete model `Model[str, int]`,
-           the value `(str, int)` would be passed to `params`.
-
-   Returns:
-       String representing the new class where `params` are passed to `cls` as type variables.
-
-   Raises:
-       TypeError: Raised when trying to generate concrete names for non-generic models.
-
-   .. py:method:: apsimNGpy.optimizer.problems.variables.BaseParams.model_post_init(self, _BaseModel__context: 'Any') -> 'None' (inherited)
-
-   Override this method to perform additional initialization after `__init__` and `model_construct`.
-   This is useful if you want to do some validation that requires the entire model to be initialized.
-
-   .. py:classmethod:: apsimNGpy.optimizer.problems.variables.BaseParams.model_rebuild(cls, *, force: 'bool' = False, raise_errors: 'bool' = True, _parent_namespace_depth: 'int' = 2, _types_namespace: 'MappingNamespace | None' = None) -> 'bool | None' (inherited)
-
-   Try to rebuild the pydantic-core schema for the model.
-
-   This may be necessary when one of the annotations is a ForwardRef which could not be resolved during
-   the initial attempt to build the schema, and automatic rebuilding fails.
-
-   Args:
-       force: Whether to force the rebuilding of the model schema, defaults to `False`.
-       raise_errors: Whether to raise errors, defaults to `True`.
-       _parent_namespace_depth: The depth level of the parent namespace, defaults to 2.
-       _types_namespace: The types namespace, defaults to `None`.
-
-   Returns:
-       Returns `None` if the schema is already "complete" and rebuilding was not required.
-       If rebuilding _was_ required, returns `True` if rebuilding was successful, otherwise `False`.
-
-   .. py:classmethod:: apsimNGpy.optimizer.problems.variables.BaseParams.model_validate(cls, obj: 'Any', *, strict: 'bool | None' = None, from_attributes: 'bool | None' = None, context: 'Any | None' = None) -> 'Self' (inherited)
-
-   Validate a pydantic model instance.
-
-   Args:
-       obj: The object to validate.
-       strict: Whether to enforce types strictly.
-       from_attributes: Whether to extract data from object attributes.
-       context: Additional context to pass to the validator.
-
-   Raises:
-       ValidationError: If the object could not be validated.
-
-   Returns:
-       The validated model instance.
-
-   .. py:classmethod:: apsimNGpy.optimizer.problems.variables.BaseParams.model_validate_json(cls, json_data: 'str | bytes | bytearray', *, strict: 'bool | None' = None, context: 'Any | None' = None) -> 'Self' (inherited)
-
-   Usage docs: https://docs.pydantic.dev/2.10/concepts/json/#json-parsing
-
-   Validate the given JSON data against the Pydantic model.
-
-   Args:
-       json_data: The JSON data to validate.
-       strict: Whether to enforce types strictly.
-       context: Extra variables to pass to the validator.
-
-   Returns:
-       The validated Pydantic model.
-
-   Raises:
-       ValidationError: If `json_data` is not a JSON string or the object could not be validated.
-
-   .. py:classmethod:: apsimNGpy.optimizer.problems.variables.BaseParams.model_validate_strings(cls, obj: 'Any', *, strict: 'bool | None' = None, context: 'Any | None' = None) -> 'Self' (inherited)
-
-   Validate the given object with string data against the Pydantic model.
-
-   Args:
-       obj: The object containing string data to validate.
-       strict: Whether to enforce types strictly.
-       context: Extra variables to pass to the validator.
-
-   Returns:
-       The validated Pydantic model.
-
-   .. py:method:: apsimNGpy.optimizer.problems.variables.BaseParams.copy(self, *, include: 'AbstractSetIntStr | MappingIntStrAny | None' = None, exclude: 'AbstractSetIntStr | MappingIntStrAny | None' = None, update: 'Dict[str, Any] | None' = None, deep: 'bool' = False) -> 'Self' (inherited)
-
-   Returns a copy of the model.
-
-   !!! warning "Deprecated"
-       This method is now deprecated; use `model_copy` instead.
-
-   If you need `include` or `exclude`, use:
-
-   ```python {test="skip" lint="skip"}
-   data = self.model_dump(include=include, exclude=exclude, round_trip=True)
-   data = {**data, **(update or {})}
-   copied = self.model_validate(data)
-   ```
-
-   Args:
-       include: Optional set or mapping specifying which fields to include in the copied model.
-       exclude: Optional set or mapping specifying which fields to exclude in the copied model.
-       update: Optional dictionary of field-value pairs to override field values in the copied model.
-       deep: If True, the values of fields that are Pydantic models will be deep-copied.
-
-   Returns:
-       A copy of the model with included, excluded and updated fields as specified.
 
 apsimNGpy.parallel.process
 --------------------------

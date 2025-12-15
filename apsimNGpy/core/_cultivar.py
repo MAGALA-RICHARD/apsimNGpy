@@ -425,7 +425,7 @@ def _edit_in_cultivar(
 def get_parent(model_instance):
     parent = model_instance.get_Parent()
     mtype = parent.GetType()
-    ac= CastHelper.CastAs[mtype](parent)
+    ac = CastHelper.CastAs[mtype](parent)
     return ac
 
 
@@ -454,21 +454,74 @@ def update_cultivar(
     return updated_cultivar
 
 
-def strict_edit_cultivar(cultivar:Models.PMF.Cultivar,
+def strict_edit_cultivar(cultivar: Models.PMF.Cultivar,
                          commands: Union[dict, Sequence[str]],
                          values: Optional[Union[Scalar, Sequence[Scalar]]],
                          rename: Optional[str] = None
                          ):
     """
-    assumes that cultivar is sowed,and that the plant belonging to the cultivar is provided, we want to reduced on expensive searches
-    @param model_obj:
-    @param cultivar_path:
-    @return:
+
+
+    Strictly edit a cultivar assuming it is already sown and attached
+    directly to its parent plant.
+
+    This function is a performance-optimized variant of cultivar editing.
+    It assumes that:
+
+    - The target cultivar already exists in the APSIM model tree
+    - The cultivar is actively associated with a ``Models.PMF.Plant`` node
+    - No expensive model-tree searches are required
+
+    Because of these assumptions, this function should only be used when
+    the caller is certain that the cultivar has been correctly instantiated
+    and attached to its plant. If these conditions are not met, the function
+    will fail explicitly.
+
+    Parameters
+    ----------
+    cultivar : Models.PMF.Cultivar
+        The cultivar object to be edited. The cultivar must have a
+        ``Models.PMF.Plant`` as its direct parent.
+    commands : dict or sequence of str
+        Cultivar parameter paths or setter names to be updated.
+        If a dictionary is provided, keys represent parameter paths and
+        values represent the corresponding new values.
+    values : scalar or sequence of scalar, optional
+        New values to apply to the specified commands. If a scalar is
+        provided, it is broadcast where applicable.
+    rename : str, optional
+        Optional new name for the cultivar after modification.
+
+    Returns
+    -------
+    Models.PMF.Cultivar
+        The updated cultivar instance.
+
+    Raises
+    ------
+    TypeError
+        If ``cultivar`` is ``None`` or is not a ``Models.PMF.Cultivar``.
+    ValueError
+        If the cultivar is not directly parented by a
+        ``Models.PMF.Plant`` node.
+
+    Notes
+    -----
+    - This function does **not** perform model discovery or fallback
+      searches.
+
+    - Intended for advanced users and performance-critical calibration
+      workflows.
+
+    .. versionadded:: 0.39.12.21
+
     """
+
     cultivar_node = cultivar
 
     if not cultivar_node and not isinstance(cultivar_node, Models.PMF.Cultvar):
-        raise TypeError(f"Specified cultivar  is None or not the correct type: expected {Models.PMF.Cultvar} got {type(cultivar_node)}.")
+        raise TypeError(
+            f"Specified cultivar  is None or not the correct type: expected {Models.PMF.Cultvar} got {type(cultivar_node)}.")
     cut = getattr(cultivar_node, 'Model', cultivar_node)
     cultivar = CastHelper.CastAs[Models.PMF.Cultivar](cut)
 
@@ -479,7 +532,6 @@ def strict_edit_cultivar(cultivar:Models.PMF.Cultivar,
     raise ValueError("Not supported when Models.PMF.Plant is not the direct parent to the target cultivar")
 
 
-@timer
 def edit_cultivar_by_path(
         model_obj, *,
         path: str,
@@ -501,7 +553,7 @@ def edit_cultivar_by_path(
         The active APSIM model instance.
     path : str
         Full APSIM node path to the cultivar (e.g., ".Simulations.Replacements.Maize.B_110").
-    commands : str | list[str]
+    commands : str | list[str] | dict[str, int, str, float]
         APSIM command(s) or property path(s) to modify (e.g., "[Phenology].CAMP.FLNparams.VxPLN").
     values : str | float | list
         Corresponding value(s) to apply for each command.
@@ -523,12 +575,14 @@ def edit_cultivar_by_path(
     - The function edits a cultivar node defined by `path`, updates its internal parameterization,
       and optionally adds it to the corresponding plant’s cultivar list under the Replacements node.
     - If `update_manager=True`, the associated manager script must be provided via `manager_path`.
+    -  using dicts for commands was added in 0.39.12.21
 
     Returns
     -------
     updated_cultivar : Models.PMF.Cultivar
         The updated cultivar node.
         @param manager_param:
+
     """
 
     # ---- Retrieve target cultivar node ----
@@ -553,7 +607,7 @@ def edit_cultivar_by_path(
 
     if added_cultivar:
         added_cultivar = CastHelper.CastAs[Models.PMF.Cultivar](added_cultivar)
-        updated_cultivar=strict_edit_cultivar(cultivar=added_cultivar, commands=commands, values=values, rename=None)
+        updated_cultivar = strict_edit_cultivar(cultivar=added_cultivar, commands=commands, values=values, rename=None)
         if hasattr(updated_cultivar, "Name") and verbose:
             print(f" Cultivar '{original_name}' updated as '{updated_cultivar.Name}'")
         model_obj.save()
@@ -614,23 +668,24 @@ if __name__ == "__main__":
         for _ in [2, 3]:
             cv = model.inspect_model('Models.PMF.Cultivar', 'Simulation_Davis')
 
-            upc =edit_cultivar_by_path(model, path='.Simulations.Simulation.Field.Soybean.Cultivars.Generic.Generic_MG3',
-                                  commands='[Grain].MaximumGrainsPerCob.FixedValue', values=20,
-                                  manager_path='.Simulations.Simulation.Field.Sow using a variable rule',
-                                  manager_param='CultivarName',
+            upc = edit_cultivar_by_path(model,
+                                        path='.Simulations.Simulation.Field.Soybean.Cultivars.Generic.Generic_MG3',
+                                        commands='[Grain].MaximumGrainsPerCob.FixedValue', values=20,
+                                        manager_path='.Simulations.Simulation.Field.Sow using a variable rule',
+                                        manager_param='CultivarName',
 
-                                  sowed=False, rename='my_cultivar')
+                                        sowed=False, rename='my_cultivar')
             mp = model.inspect_model_parameters('Models.PMF.Cultivar', 'my_cultivar')
             print(mp['[Grain].MaximumGrainsPerCob.FixedValue'], sep='\n')
             edit_cultivar_by_path(model, path='.Simulations.Simulation.Field.Soybean.Cultivars.Generic.Generic_MG3',
                                   commands='[Grain].MaximumGrainsPerCob.FixedValue', values=25,
                                   manager_path='.Simulations.Simulation.Field.Sow using a variable rule',
-                                  manager_param='CultivarName',rename='my_cultivar',
+                                  manager_param='CultivarName', rename='my_cultivar',
                                   sowed=False, )
             mp = model.inspect_model_parameters('Models.PMF.Cultivar', 'my_cultivar')
             print(mp['[Grain].MaximumGrainsPerCob.FixedValue'], sep='\n')
 
-            #model.inspect_file(cultivar=True)
+            # model.inspect_file(cultivar=True)
             print('success')
 
         model.save()
@@ -639,5 +694,3 @@ if __name__ == "__main__":
         #                           update_manager=False, rename='edavis')
         if 're00000000000000000000000000000000000' in model.inspect_model('Models.PMF.Cultivar', fullpath=False):
             print('re00000000000000000000000000000000000')
-
-

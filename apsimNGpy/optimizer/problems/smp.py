@@ -409,7 +409,35 @@ class MixedProblem:
 
             mp.submit_factor(**cultivar_params)
 
-        It is possible to describe your data type using string characters uisng any of the description below, implying no variable descriptor namespace import needed
+        It is possible to describe your data type using string characters uisng any of the description below,
+         implying no variable descriptor namespace import needed.
+
+        Skip variable typing
+        -----------------------
+        You can skip typing variables, implying that only continuous variables will be allowed.
+
+        .. code-block:: python
+
+           cultivar_params = {
+                "path": ".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82",
+                "bounds": [
+                    (400, 600),
+                    (400, 900)
+                ],
+                "start_value": [500, 550],
+                "candidate_param": [
+                    "[Grain].MaximumGrainsPerCob.FixedValue",
+                    "[Phenology].GrainFilling.Target.FixedValue"
+                ],
+                "other_params": {"sowed": True},
+                "cultivar": True}
+            mp.submit_factor(**cultivar_params)
+
+        .. versionadded:: 0.39.12.21
+
+        .. warning::
+
+          The use of both vtype-specified variables and unrestricted continuous variables within the same configuration is unsupported and will not satisfy Pydantic validation requirements.
 
         Variable Type Classification
         ----------------------------
@@ -594,6 +622,9 @@ class MixedProblem:
         ------
         TypeError
             If factors are mixed (some define vtype, others do not).
+
+        .. versionadded:: 0.39.12.21
+
         """
         has_vtype = [getattr(factor, "vtype", None) is not None
                      for _, factor in self.ordered_factors.items()]
@@ -900,7 +931,7 @@ if __name__ == "__main__":
         "candidate_param": ["FOM"],
         "other_params": {"FBiom": 2.3, "Carbon": 1.89},
     }
-    mp.submit_factor(**example_param_pure)
+   # mp.submit_factor(**example_param_pure)
     print(mp.n_factors, 'factors submitted')
     mp._insert_x_vars([1.88])
     print(mp.var_names, mp.start_values)

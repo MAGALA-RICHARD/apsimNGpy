@@ -436,7 +436,6 @@ def is_cultivar_parent_plant(cultivar):
     return False
 
 
-@lru_cache(maxsize=100)
 def update_cultivar(
         cultivar: Models.PMF.Cultivar,
         commands: Union[dict, Sequence[str]],

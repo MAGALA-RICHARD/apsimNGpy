@@ -6,6 +6,7 @@ import pandas as pd
 from apsimNGpy.core.apsim import ApsimModel
 from apsimNGpy.validation.evaluator import Validate
 from apsimNGpy.exceptions import NodeNotFoundError, ApsimRuntimeError
+from apsimNGpy.core_utils.utils import is_scalar
 
 __all__ = ['runner', 'eval_observed']
 
@@ -263,10 +264,10 @@ def eval_observed(
 def final_eval(
         obs: pd.DataFrame,
         pred: pd.DataFrame,
-        index: str,
+        index: Union[str, tuple, list],
         pred_col: str,
         obs_col: str,
-        exp: Optional[str] = None) -> dict:
+        exp: Optional[Iterable[str]] = None) -> dict:
     """
     Evaluate observed and predicted values and return the full suite of
     performance metrics supported by the: class:`Validate` class.
@@ -286,8 +287,13 @@ def final_eval(
     """
 
     data = _prepare_eval_data(obs, pred, index, pred_col, obs_col)
+
     if exp:
-        data.eval(exp, inplace=True)
+        if is_scalar(exp) and isinstance(exp, str):
+            data.eval(exp, inplace=True)
+        else:
+            for expr in exp:
+                data.eval(expr, inplace=True)
 
     validator = Validate(data[obs_col], data[pred_col])
     metric_dict = validator.evaluate_all(verbose=True)

@@ -202,6 +202,9 @@ class ApsimModel(CoreModel):
             R2      :     1.0000
             CCC     :     1.0000
             SLOPE   :     1.0000
+
+        .. versionadded:: v0.39.12.21+
+
         """
         from apsimNGpy.optimizer.problems.back_end import final_eval
         if not isinstance(table, pd.DataFrame) and isinstance(table, str):

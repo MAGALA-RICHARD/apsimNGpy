@@ -205,7 +205,7 @@ class MixedVariableOptimizer:
             x0 = objective.encode(initial_guess) if initial_guess is not None else None
 
         else:
-            objective = self.problem_desc.evaluate_objective()
+            objective = self.problem_desc.evaluate_objective
             bounds = self.problem_desc.bounds
             x0 = self.problem_desc.start_values
         return objective, x0, bounds
@@ -699,13 +699,13 @@ if __name__ == '__main__':
     # mp.submit_factor(**cultivar_param)
     minim = MixedVariableOptimizer(problem=mp)
     print(mp.n_factors, 'factors submitted')
-    # min.minimize_with_de(workers=3, updating='deferred')
-    # minim.minimize_with_alocal_solver(method='Nelder-Mead')
-
-    res = minim.minimize_with_de(use_threads=False, updating='deferred', workers=14, popsize=10, constraints=(0, 0.2))
-    print(res)
-    out = minim.minimize_with_local()
-    print(out)
+    # # min.minimize_with_de(workers=3, updating='deferred')
+    # # minim.minimize_with_alocal_solver(method='Nelder-Mead')
+    #
+    # res = minim.minimize_with_de(use_threads=False, updating='deferred', workers=14, popsize=10, constraints=(0, 0.2))
+    # print(res)
+    # out = minim.minimize_with_local()
+    # print(out)
 
     # _____________________
     # no vtyped variables

@@ -78,6 +78,7 @@ class MixedProblem:
             func: Optional[Any] = None,
 
     ):
+
         datas = all([trainer_dataset is not None, pred_col, trainer_col, index]) or callable(func)
         if not datas:
             raise ValueError(
@@ -105,6 +106,7 @@ class MixedProblem:
         self.candidate_params: List[str] = []
         self.start_values: List[Any] = []
         self.apsim_params: List[Dict[str, Any]] = []
+        self.bounds = []
 
         # objective wrapper
         self.wrapped_objectives = None
@@ -144,7 +146,7 @@ class MixedProblem:
     # -------------------------------------------------------------------------
     # Factor Submission and Validation
     # -------------------------------------------------------------------------
-    def submit_factor(self, *, path, start_value, candidate_param, vtype=None, cultivar=False, bounds=None, other_params=None):
+    def submit_factor(self, *, path, start_value, candidate_param, vtype=None, cultivar=False, bounds=(), other_params=None):
         """
         Add a new factor (parameter) to be optimized.
 
@@ -653,12 +655,17 @@ class MixedProblem:
         self.var_types.clear()
         self.var_names.clear()
         self.start_values.clear()
+        self.bounds.clear()
 
         for _, factor in self.ordered_factors.items():
+
 
             apsim_var = filter_apsim_params(factor)
 
             self.apsim_params.append(apsim_var)
+            if factor.bounds:
+
+                self.bounds.extend(factor.bounds)
             if hasattr(factor, "vtype"):
                 self.var_types.extend(factor.vtype)
             self.start_values.extend(factor.start_value)

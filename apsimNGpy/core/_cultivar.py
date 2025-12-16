@@ -612,7 +612,7 @@ def edit_cultivar_by_path(
         model_obj.save()
         return updated_cultivar
     # ---- Apply parameter updates ----
-    print('Updating cultivar')
+
     updated_cultivar = update_cultivar(cultivar, commands, values, rename=cultivar_name)
 
     # ---- Trace parent plant efficiently ----

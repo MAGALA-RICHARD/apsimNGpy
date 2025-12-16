@@ -205,7 +205,7 @@ class MixedVariableOptimizer:
             x0 = objective.encode(initial_guess) if initial_guess is not None else None
 
         else:
-            objective = self.problem_desc.evaluate_objective
+            objective = self.problem_desc.evaluate_objectives
             bounds = self.problem_desc.bounds
             x0 = self.problem_desc.start_values
         return objective, x0, bounds

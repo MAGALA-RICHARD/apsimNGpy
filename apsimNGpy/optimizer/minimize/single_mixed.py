@@ -216,9 +216,12 @@ class MixedVariableOptimizer:
             decoded_solution = wrapped_obj[0].decode(result.x)
             result.x_vars = dict(zip(self.problem_desc.var_names, decoded_solution))
             result.x = decoded_solution
-
+        else:
+            result.x_vars = dict(zip(self.problem_desc.var_names, result.x))
+        values = self.problem_desc.plug_optimal_values(result)
+        setattr(result, 'obs_pred_data', values.get('data'))
+        setattr(result, 'all_metrics', values.get('metrics'))
         self.outcomes = result
-        self.problem_desc.plug_optimal_values(result)
         return result
 
     def minimize_with_de(

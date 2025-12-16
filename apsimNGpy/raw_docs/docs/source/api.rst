@@ -13500,7 +13500,7 @@ Functions
      float
          Metric value multiplied by the optimization direction.
 
-.. py:function:: apsimNGpy.optimizer.problems.back_end.final_eval(obs: pandas.core.frame.DataFrame, pred: pandas.core.frame.DataFrame, index: Union[str, tuple, list], pred_col: str, obs_col: str, exp: Optional[str] = None) -> dict
+.. py:function:: apsimNGpy.optimizer.problems.back_end.final_eval(obs: pandas.core.frame.DataFrame, pred: pandas.core.frame.DataFrame, index: Union[str, tuple, list], pred_col: str, obs_col: str, exp: Optional[Iterable[str]] = None) -> dict
 
    Evaluate observed and predicted values and return the full suite of
    performance metrics supported by the: class:`Validate` class.
@@ -13591,7 +13591,7 @@ Classes
 
    Number of submitted optimization factors.
 
-   .. py:method:: apsimNGpy.optimizer.problems.smp.MixedProblem.submit_factor(self, *, path, start_value, candidate_param, vtype=None, cultivar=False, bounds=None, other_params=None)
+   .. py:method:: apsimNGpy.optimizer.problems.smp.MixedProblem.submit_factor(self, *, path, start_value, candidate_param, vtype=None, cultivar=False, bounds=(), other_params=None)
 
    Add a new factor (parameter) to be optimized.
 

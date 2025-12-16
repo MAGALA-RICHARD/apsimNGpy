@@ -365,7 +365,7 @@ if __name__ == '__main__':
     # _____________________________
     # list index
     # _______________________________
-    index = set(['year'])
+    index = {'year'}
     rt = eval_observed(obs, pred, index=index, obs_col='observed', pred_col='predicted', method='ccc', exp=None)
     assert rt, 'metric is none when set is the index'
     # _____________________________

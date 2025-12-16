@@ -680,6 +680,7 @@ if __name__ == '__main__':
     cultivar_param_p = {
         "path": ".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82",
         "start_value": [550, ],
+        'bounds':[(400, 800)],
         "candidate_param": ["[Grain].MaximumGrainsPerCob.FixedValue", ],
         "other_params": {"sowed": True},
         # other params must be on the same node or associated or extra arguments, e.g., target simulation name classified simulations
@@ -707,14 +708,13 @@ if __name__ == '__main__':
     # out = minim.minimize_with_local()
     # print(out)
 
-    # _____________________
-    # no vtyped variables
-    # _____________________
     mp = MixedProblem(model='Maize', trainer_dataset=obs, pred_col='Yield', metric='RRMSE', table='Report',
                       index='year', trainer_col='observed')
+    optimizer = MixedVariableOptimizer(problem=mp)
     mp.submit_factor(**cultivar_param_p)
     print(mp.n_factors, 'factors submitted for the pure variables')
-    out = minim.minimize_with_local()
+    out = optimizer.minimize_with_local()
     print(out)
-    res = minim.minimize_with_de(use_threads=False, updating='deferred', workers=15, popsize=10, constraints=(0, 0.2))
+    res = optimizer.minimize_with_de(use_threads=False, updating='deferred', workers=15, popsize=10,
+                                     constraints=(0, 0.2))
     print(res)

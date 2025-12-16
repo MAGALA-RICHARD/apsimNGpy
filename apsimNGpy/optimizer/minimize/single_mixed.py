@@ -211,13 +211,15 @@ class MixedVariableOptimizer:
         return objective, x0, bounds
 
     def _extract_solution(self, result):
+        calibrated_param_names= 'cal_param_values'
         wrapped_obj = self._submit_objective()
         if not self.problem_desc._detect_pure_vars():
             decoded_solution = wrapped_obj[0].decode(result.x)
-            result.x_vars = dict(zip(self.problem_desc.var_names, decoded_solution))
+            xy_pairs = dict(zip(self.problem_desc.var_names, decoded_solution))
             result.x = decoded_solution
         else:
-            result.x_vars = dict(zip(self.problem_desc.var_names, result.x))
+            xy_pairs = dict(zip(self.problem_desc.var_names, result.x))
+        setattr(result, calibrated_param_names, xy_pairs)
         values = self.problem_desc.plug_optimal_values(result)
         setattr(result, 'obs_pred_data', values.get('data'))
         setattr(result, 'all_metrics', values.get('metrics'))
@@ -244,7 +246,7 @@ class MixedVariableOptimizer:
             workers=1,
             constraints=(),
             x0=None,  # implimented internally
-            seed=1,
+            seed=44,
             *,
             integrality=None,
             vectorized=False,
@@ -623,11 +625,11 @@ class MixedVariableOptimizer:
         from tqdm import tqdm
 
         pbar = tqdm(total=maxiter)
-        x=1
-        if not callback:
-            def callback(xk, convergence):
-                print(xk)
-                pbar.update(1)
+        # x=1
+        # if not callback:
+        #     def callback(xk, convergence):
+        #         print(xk)
+        #         pbar.update(1)
 
         arguments = dict(bounds=bounds, args=args, strategy=strategy,
                          maxiter=maxiter, popsize=popsize, tol=tol, mutation=mutation,

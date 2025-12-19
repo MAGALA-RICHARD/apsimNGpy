@@ -622,9 +622,7 @@ class MixedVariableOptimizer:
         popsize = popsize or self.problem_desc.n_factors * 10
         if popsize < 4:
             logger.error(f"[DE] Population size {popsize}, is too loo")
-        from tqdm import tqdm
 
-        pbar = tqdm(total=maxiter)
         # x=1
         # if not callback:
         #     def callback(xk, convergence):
@@ -656,8 +654,6 @@ class MixedVariableOptimizer:
 
         return self._extract_solution(result)
 
-    def optimization_type(self):
-        return SING_OBJ_MIXED_VAR
 
     # tests
 

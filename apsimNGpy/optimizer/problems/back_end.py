@@ -1,4 +1,5 @@
 import uuid
+from functools import cache
 from typing import Optional, Union, Iterable
 
 import numpy as np
@@ -301,6 +302,17 @@ def final_eval(
     return {"metrics": metric_dict, "data": data}
 
 
+@cache
+def get_table(reports, table):
+    if table and isinstance(table, str) and table not in reports:
+        raise ValueError(f"Table {table} not found in the simulation. Available tables are `{reports}`")
+    if table and isinstance(table, Iterable) and not isinstance(table, str):
+        tabs = [i for i in table if i not in reports]
+        if tabs:
+            raise ValueError(f"Tables `{tabs}` not found in the simulation available tables are; `{reports}`")
+    return tabs
+
+
 def runner(model, params, table=None):
     # ideally out_path not needed, as ApsimNGpy generate random temporal files automatically when out_path is not provided
     with ApsimModel(model) as model:
@@ -308,38 +320,20 @@ def runner(model, params, table=None):
             try:
                 model.set_params(param)
             # There is a need at least to present to the user what is going on, because some errors maybe excepted breaking the program
-            except ValueError as e:
+            except Exception as e:
                 print(ValueError, f'occurred while setting parameters{param}', e)
                 raise ValueError(f"{str(e)} e") from e
-            except AttributeError as ate:
-                print(ate)
-                print(AttributeError, f'occurred while setting params in APSIM {param}', ate)
-                raise AttributeError(f'occurred while setting params in APSIM {param}') from ate
-            except ApsimRuntimeError as ape:
-                print(ApsimRuntimeError, f'occurred with setting params: {param}', ape)
-            except NodeNotFoundError as nfe:
-                print(NodeNotFoundError, f'occurred while setting params: {param}', nfe)
-                raise NodeNotFoundError(f'Occurred while trying to edit parameters{param}', nfe) from nfe
-
         model.run()
-
-        reports = model.inspect_model('Models.Report', fullpath=False)
-        if table and isinstance(table, str) and table not in reports:
-            raise ValueError(f"Table {table} not found in the simulation. Available tables are `{reports}`")
-        if table and isinstance(table, Iterable) and not isinstance(table, str):
-            tabs = [i for i in table if i not in reports]
-            if tabs:
-                raise ValueError(f"Tables `{tabs}` not found in the simulation available tables are; `{reports}`")
         if not table:
             df = model.results
         else:
             df = model.get_simulated_output(table, axis=0)
-        df["date"] = pd.to_datetime(df["Clock.Today"])
-
-        # Extract components
-        df["year"] = df["date"].dt.year
-        df["month"] = df["date"].dt.month
-        df["day"] = df["date"].dt.day
+        if "Clock.Today" in df.columns and not 'year' in df.columns:
+            df["date"] = pd.to_datetime(df["Clock.Today"])
+            # Extract components
+            df["year"] = df["date"].dt.year
+            df["month"] = df["date"].dt.month
+            df["day"] = df["date"].dt.day
 
         return df
     # all transient files are deleted after exiting this block

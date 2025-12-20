@@ -5169,6 +5169,7 @@ if __name__ == '__main__':
         model.add_db_table(variable_spec=['[Clock].Today.Year as year', '[Soil].Nutrient.TotalC[1]/1000 as SOC1'],
                            rename='soc_table')
         model.inspect_model_parameters('Models.Report', model_name='soc_table')
+        print(model.results)
 
 
     def add_model(parent, model_type):

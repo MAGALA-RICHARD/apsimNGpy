@@ -7,7 +7,7 @@ import platform
 import sqlite3
 import subprocess
 import warnings
-from functools import lru_cache
+from functools import lru_cache, cache
 from pathlib import Path
 from subprocess import *
 from subprocess import Popen, PIPE
@@ -26,8 +26,11 @@ from apsimNGpy.core_utils.database_utils import read_db_table, get_db_table_name
 from apsimNGpy.core_utils.database_utils import write_schema_grouped_tables
 from apsimNGpy.exceptions import ApsimRuntimeError
 from apsimNGpy.settings import *
+from apsimNGpy.core_utils.utils import timer
 
 SchemaKey = Tuple[Tuple[Hashable, str], ...]  # ((column_name, dtype_str), ...)
+
+
 def is_connection(obj):
     """Return True if obj looks like a DB connection."""
     return isinstance(obj, (sqlite3.Connection, SAConnection, Engine, Session))
@@ -46,7 +49,6 @@ def invoke_csharp_gc():
     from System import GC
     GC.Collect()
     GC.WaitForPendingFinalizers()
-
 
 
 def get_apsim_version(verbose: bool = False):
@@ -124,31 +126,16 @@ def _ensure_model(path: Union[str, Path]) -> str:
     return str(p)
 
 
-def run_model_externally(
-        model: Union[Path, str],
-        *,
-        apsim_exec: Optional[Union[Path, str]] = APSIM_EXEC,
-        verbose: bool = False,
-        to_csv: bool = False,
-        timeout: int = 600,
-        cpu_count=-1,
-        cwd: Optional[Union[Path, str]] = None,
-        env: Optional[Mapping[str, str]] = None,
-) -> subprocess.CompletedProcess[str]:
-    """
-    Run APSIM externally (cross-platform) with safe defaults.
-
-    - Validates an executable and model path.
-    - Captures stderr always; stdout only if verbose.
-    - Uses UTF-8 decoding with error replacement.
-    - Enforces a timeout and returns a CompletedProcess-like object.
-    - Does NOT use shell, eliminating injection risk.
-
-    .. seealso::
-
-          Related API: :func:`~apsimNGpy.core.runner.run_from_dir`
-    """
-
+@cache
+def _get_arguments(model: Union[Path, str],
+                   *,
+                   apsim_exec: Optional[Union[Path, str]] = APSIM_EXEC,
+                   verbose: bool = False,
+                   to_csv: bool = False,
+                   timeout: int = 600,
+                   cpu_count=-1,
+                   cwd: Optional[Union[Path, str]] = None,
+                   env: Optional[Mapping[str, str]] = None):
     exec_path = _ensure_exec(apsim_exec)
     model_path = _ensure_model(model)
 
@@ -164,49 +151,67 @@ def run_model_externally(
 
     # capture stderr; capture stdout only if verbose
     stdout_choice = subprocess.PIPE  # if verbose else subprocess.DEVNULL
+    return cmd, {'stdout': stdout_choice,
+                 'text': True,
+                 'shell': False,
+                 'timeout': timeout,
+                 'encoding': "utf-8",
+                 'stderr': subprocess.PIPE,
+                 'env': dict(os.environ, **(env or {})),
+                 'errors': 'replace'
+                 }
+
+
+def run_model_externally(
+        model: Union[Path, str],
+        *,
+        apsim_exec: Optional[Union[Path, str]] = APSIM_EXEC,
+        verbose: bool = False,
+        to_csv: bool = False,
+        timeout: int = 600,
+        cpu_count=-1,
+        cwd: Optional[Union[Path, str]] = None,
+        env: Optional[Mapping[str, str]] = None, ) -> subprocess.CompletedProcess[str]:
+    """
+    Run APSIM externally (cross-platform) with safe defaults.
+
+    - Validates an executable and model path.
+    - Captures stderr always; stdout only if verbose.
+    - Uses UTF-8 decoding with error replacement.
+    - Enforces a timeout and returns a CompletedProcess-like object.
+    - Does NOT use shell, eliminating injection risk.
+
+    .. seealso::
+
+          Related API: :func:`~apsimNGpy.core.runner.run_from_dir`
+    """
 
     try:
+        ar = _get_arguments(model,
+                            apsim_exec=apsim_exec,
+                            verbose=verbose,
+                            to_csv=to_csv,
+                            timeout=timeout,
+                            cpu_count=cpu_count,
+                            cwd=cwd,
+                            env=env)
+
         proc = subprocess.run(
-            cmd,
-            cwd=cwd,
-            env=dict(os.environ, **(env or {})),
-            stdout=stdout_choice,
-            stderr=subprocess.PIPE,
-            text=True,
-            encoding="utf-8",
-            errors="replace",
-            shell=False,
-            timeout=timeout,
+            ar[0], **ar[1]
         )
-    except PermissionError as e:
-        logger.exception("Permission error launching APSIM.")
-        raise ApsimRuntimeError(str(e)) from e
-    except subprocess.TimeoutExpired as e:
-        # `run` already killed the process; include partial output
-        msg = f"APSIM run timed out after {timeout}s: {' '.join(cmd)}"
-        logger.error(msg)
-        if e.stderr:
-            logger.error("stderr (truncated): %s", e.stderr[:4000])
-        if e.stdout and verbose:
-            logger.info("stdout (truncated): %s", e.stdout[:4000])
-        raise ApsimRuntimeError(msg) from e
-    except OSError as e:
-        # Low-level OS error (e.g., exec format error)
-        logger.exception("OS error during APSIM run.")
-        raise ApsimRuntimeError(str(e)) from e
     finally:
 
         # clear any external file database locks by using Garbage collector; as a matter of fact, python's gc failed to do the job
         invoke_csharp_gc()
 
     if verbose and proc.stdout:
-        logger.info("APSIM stdout for %s:\n%s", model_path, proc.stdout.strip())
+        logger.info("APSIM stdout for %s:\n%s", proc.args, proc.stdout.strip())
 
     # Non-zero exit is treated as failure; caller can relax this if needed
-    elif proc.returncode != 0:
+    if proc.returncode != 0:
+        logger.error(f"APSIM exited with zero return code: {proc.stdout}\n{proc.stderr}{proc.args}", )
         raise ApsimRuntimeError(
             f"APSIM exited with code {proc.returncode}.\n {proc.stdout} "
-            f"See logs for stderr/stdout."
         )
 
     return proc
@@ -945,9 +950,24 @@ def dir_simulations_to_sql(
 
 if __name__ == '__main__':
     import time
+    from apsimNGpy.core.config import load_crop_from_disk
 
+    maize = load_crop_from_disk('Maize', out='maizee.apsimx')
+    try:
+        a1 = time.perf_counter()
+        run_model_externally(maize)
+        print(time.perf_counter() - a1, 'seconds for running model')
+    finally:
+        pass
+    try:
+        a1 = time.perf_counter()
+        run_model_externally(maize)
+        print(time.perf_counter() - a1, 'seconds for running model')
+    finally:
+        os.remove(maize)
     a = time.perf_counter()
     dat = collect_db_from_dir('.', '*.apsimx')
+
     df = list(dat)
     b = time.perf_counter()
     print(b - a, 'seconds')

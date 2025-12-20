@@ -528,7 +528,7 @@ _memory_cache: dict[tuple, Any] = {}
 def _load_crop_from_disk(crop: str, out: Union[str, Path], bin_path: Union[str, Path], suffix='.apsimx') -> None:
     BIN = bin_path or configuration.bin_path
     crop_path = Path(crop)
-    if crop_path.suffix == ".apsimx" in crop or crop_path.suffix=='.met':
+    if crop_path.suffix == ".apsimx" in crop or crop_path.suffix == '.met':
         crop, suffix = crop_path.stem, crop_path.suffix
     else:
         suffix = suffix
@@ -556,7 +556,7 @@ def _load_crop_from_disk(crop: str, out: Union[str, Path], bin_path: Union[str, 
     )
 
 
-def load_crop_from_disk(crop: str, out: Union[str, Path], bin_path=None, cache_path=True, suffix ='.apsimx'):
+def load_crop_from_disk(crop: str, out: Union[str, Path], bin_path=None, cache_path=True, suffix='.apsimx'):
     """
     Load a default APSIM crop simulation file from disk by specifying only the crop name. This fucntion can literally
     load anything that resides under the /Examples directory.
@@ -780,8 +780,8 @@ if __name__ == "__main__":
     ap = os.path.realpath('maizeTT.apsimx')
     try:
 
-       maize = load_crop_from_disk('Maize', out= ap)
-       print(f'path exists' ) if os.path.exists(ap) else print('file does not exist')
+        maize = load_crop_from_disk('Maize', out=ap)
+        print(f'path exists') if os.path.exists(ap) else print('file does not exist')
     finally:
         try:
             Path(ap).unlink(missing_ok=True)

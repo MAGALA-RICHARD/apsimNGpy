@@ -314,15 +314,16 @@ def get_table(reports, table):
 
 
 def runner(model, params, table=None):
+
     # ideally out_path not needed, as ApsimNGpy generate random temporal files automatically when out_path is not provided
     with ApsimModel(model) as model:
-        for param in params:
-            try:
-                model.set_params(param)
-            # There is a need at least to present to the user what is going on, because some errors maybe excepted breaking the program
-            except Exception as e:
-                print(ValueError, f'occurred while setting parameters{param}', e)
-                raise ValueError(f"{str(e)} e") from e
+
+        try:
+            {model.set_params(pa) for pa in params}
+        # There is a need at least to present to the user what is going on,because some errors maybe excepted, breaking the program
+        except Exception as e:
+            print(ValueError, f'occurred while setting parameters{params}', e)
+            raise ValueError(f"{str(e)} e") from e
         model.run()
         if not table:
             df = model.results

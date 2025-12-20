@@ -29,10 +29,13 @@ from apsimNGpy.core.pythonet_config import get_apsim_file_reader, get_apsim_file
 from apsimNGpy.core.pythonet_config import is_file_format_modified
 from apsimNGpy.core.pythonet_config import get_apsim_version as apsim_version
 from System import GC
+
 GLOBAL_IS_FILE_MODIFIED = is_file_format_modified()
 scratch_dir = Path.cwd().joinpath('scratch')
 scratch_dir.mkdir(exist_ok=True)
 SCRATCH = os.environ.get('WS', str(scratch_dir))
+AUTO_PATH = object()
+MODEL_NOT_PROVIDED = object()
 
 
 def stamp_name_with_version(file_name):
@@ -124,7 +127,7 @@ def copy_file(
     return str(dest_path)
 
 
-def save_model_to_file(_model, out=None):
+def save_model_to_file(_model, out=AUTO_PATH):
     """Save the model
 
         Parameters
@@ -135,7 +138,7 @@ def save_model_to_file(_model, out=None):
     # Determine the output path
     _model = get_model(_model)
 
-    final_out_path = out or '_saved_model.apsimx'
+    final_out_path = out if out is AUTO_PATH else '_saved_model.apsimx'
 
     json_string = to_json_string(_model)
     # Serialize the model to JSON string
@@ -185,7 +188,7 @@ def load_from_path(path2file, method='string'):
     return new_model
 
 
-def load_apsim_model(model=None, out_path=None, file_load_method='string', met_file=None, wd=None, tag='temp_',
+def load_apsim_model(model=MODEL_NOT_PROVIDED, out_path=AUTO_PATH, file_load_method='string', met_file=None, wd=None, tag='temp_',
                      **kwargs):
     """
     Load an APSIMX model from a file path, dictionary, or in-memory object.
@@ -203,6 +206,8 @@ def load_apsim_model(model=None, out_path=None, file_load_method='string', met_f
     Returns:
         {ModelData}: A dataclass container with paths, model object, and metadata.
     """
+    if model is MODEL_NOT_PROVIDED:
+        model=None
     if isinstance(model, Path):
         model = str(model)
 
@@ -212,11 +217,14 @@ def load_apsim_model(model=None, out_path=None, file_load_method='string', met_f
 
     out = {}  # Store a final output path
     wd = Path(wd or SCRATCH)
+
     DEFAULT_PATH = wd / f"{tag}{uuid.uuid1()}_{version[-6:]}_"
-    if out_path:
+    if out_path is AUTO_PATH:
+        out_path = DEFAULT_PATH
+    else:
         if _has_no_dir(out_path):
             out_path = Path(SCRATCH) / out_path
-    out_ = Path(out_path or DEFAULT_PATH)
+    out_ = out_path
     out_path = out_.with_suffix('.apsimx')
     match model:
         case dict():
@@ -283,7 +291,7 @@ def load_as_dict(file: Models.Core.ApsimFile) -> dict:
     return json.loads(json_string)
 
 
-def recompile(_model, out=None, met_path=None, ):
+def recompile(_model, out=AUTO_PATH, met_path=None, ):
     """ recompile without saving to disk useful for recombining the same model on the go after updating management scripts
 
             Parameters
@@ -297,7 +305,7 @@ def recompile(_model, out=None, met_path=None, ):
             """
     # Determine the output path
 
-    final_out_path = out or _model.path
+    final_out_path = out if out is not AUTO_PATH else _model.path
 
     # Serialize the model to JSON string
 
@@ -341,7 +349,7 @@ def recompile(_model, out=None, met_path=None, ):
                      Simulations=Model)
 
 
-def model_from_string(mod, out=None):
+def model_from_string(mod, out=AUTO_PATH):
     """
     try to load a model from string, and it is not converted to the corresponding reference type
     @param out: out name or path of the model
@@ -351,7 +359,7 @@ def model_from_string(mod, out=None):
     if str(mod).endswith('.apsimx'):
         path2file = mod
     else:
-        out = out or os.path.realpath(f'{mod}_{uuid.uuid1()}.apsimx')
+        out = os.path.realpath(f'{mod}_{uuid.uuid1()}.apsimx') if out is AUTO_PATH else out
         path2file = load_crop_from_disk(mod, out=out)
 
     f_name = realpath(path2file)
@@ -429,7 +437,7 @@ def get_node_and_type(node, node_path):
     model_type = model.GetType()
     mt = CastHelpers.CastAs[model_type](model)
     if nodel is not None:
-        return {'node': nodel, 'model_type':type(mt)}
+        return {'node': nodel, 'model_type': type(mt)}
 
 
 def get_node_string(node):

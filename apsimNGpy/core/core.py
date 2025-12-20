@@ -33,7 +33,7 @@ from apsimNGpy.core.model_tools import (get_or_check_model, old_method, _edit_in
                                         inspect_model_inputs,
                                         ModelTools, validate_model_obj, replace_variable_by_index)
 from apsimNGpy.core.runner import run_model_externally, run_p, invoke_csharp_gc
-from apsimNGpy.core.model_loader import (load_apsim_model, save_model_to_file, recompile, get_node_by_path)
+from apsimNGpy.core.model_loader import (load_apsim_model, save_model_to_file, recompile, get_node_by_path, AUTO_PATH)
 import ast
 from typing import Any
 from apsimNGpy.core.run_time_info import BASE_RELEASE_NO, GITHUB_RELEASE_NO
@@ -46,6 +46,7 @@ from apsimNGpy.core.pythonet_config import get_apsim_version as apsim_version
 from System import InvalidOperationException, ArgumentOutOfRangeException, Array, Double
 from apsimNGpy.core._cultivar import edit_cultivar_by_path
 from apsimNGpy.core.version_inspector import is_higher_apsim_version
+_NOT_PROVIDED = object()
 
 # constants
 IS_NEW_MODEL = is_file_format_modified()
@@ -120,7 +121,7 @@ class CoreModel(PlotManager):
     def __init__(
             self,
             model=None,
-            out_path=None,
+            out_path=AUTO_PATH,
             *,
             experiment=False,
             set_wd=None,
@@ -336,7 +337,7 @@ class CoreModel(PlotManager):
 
         return self
 
-    def save(self, file_name: Union[str, Path, None] = None, reload=True):
+    def save(self, file_name: Union[str, Path, _NOT_PROVIDED] = None, reload=True):
         """
         Saves the current APSIM NG model (``Simulations``) to disk and refresh runtime state.
 

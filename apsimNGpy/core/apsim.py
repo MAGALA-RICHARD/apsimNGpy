@@ -820,7 +820,13 @@ if __name__ == '__main__':
         model.add_report_variable(variable_spec='[Clock].Today.Year as year', report_name='Report')
         model.run()
         print(model.results.columns)
-        model.evaluate_simulated_output(ref_data=obs, table='Report', index_col=['year'],
+        df= model.results
+        df["date"] = pd.to_datetime(df["Clock.Today"])
+        # Extract components
+        df["year"] = df["date"].dt.year
+        df["month"] = df["date"].dt.month
+        df["day"] = df["date"].dt.day
+        model.evaluate_simulated_output(ref_data=obs, table=df, index_col=['year'],
                                         target_col='Yield', ref_data_col='observed')
         df = model.results
     print(os.path.exists(model.datastore))

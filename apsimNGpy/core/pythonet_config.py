@@ -11,6 +11,7 @@ from apsimNGpy.exceptions import ApsimBinPathConfigError
 from apsimNGpy.settings import logger
 from apsimNGpy.core.config import configuration, locate_model_bin_path
 
+AUTO = object()
 APSIM_BIN_PATH = configuration.bin_path
 
 pythonnet_start = start_pythonnet()
@@ -18,7 +19,7 @@ pythonnet_start = start_pythonnet()
 meta_info = {}
 
 
-def is_file_format_modified(bin_path: Union[str, Path, None] = None) -> bool:
+def is_file_format_modified(bin_path: Union[str, Path, None] = AUTO) -> bool:
     """
     Checks if the APSIM.CORE.dll is present in the bin path. Normally, the new APSIM version has this dll file.
 
@@ -30,7 +31,7 @@ def is_file_format_modified(bin_path: Union[str, Path, None] = None) -> bool:
     :returns:
       bool
     """
-    if bin_path is None:
+    if bin_path is AUTO:
         bin_path = APSIM_BIN_PATH
     bp = Path(bin_path)
     patterns = {"*APSIM.CORE.dll", "*APSIM.Core.dll"}
@@ -59,7 +60,7 @@ class ConfigRuntimeInfo:
     file_format_modified: bool = is_file_format_modified()
 
 
-def load_pythonnet(bin_path: Union[str, Path] = None):
+def load_pythonnet(bin_path: Union[str, Path] = AUTO):
     """
     A method for loading Python for .NET (pythonnet) and APSIM models from the binary path. It is also cached to
     avoid rerunning many times.
@@ -88,7 +89,7 @@ def load_pythonnet(bin_path: Union[str, Path] = None):
 
     @cache
     def _load(bin_path):
-        if bin_path is None:
+        if bin_path is AUTO:
             bin_path = APSIM_BIN_PATH
         candidate = locate_model_bin_path(bin_path)
         if not candidate:

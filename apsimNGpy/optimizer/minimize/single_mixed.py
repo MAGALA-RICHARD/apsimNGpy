@@ -6,6 +6,9 @@ from scipy.optimize import minimize, differential_evolution, NonlinearConstraint
 from tqdm import tqdm
 
 __all__ = ['MixedVariableOptimizer']
+
+_NOT_PROVIDED = object()
+
 try:
     import wrapdisc
 except ModuleNotFoundError as mnf:
@@ -171,14 +174,22 @@ class MixedVariableOptimizer:
             """
         try:
             options = kwargs.get('options')
-            if options:
-                maxiter = options.get('maxiter', self.problem_desc.n_factors * 200)
-            else:
-                maxiter = self.problem_desc.n_factors * 200
 
-            pbar = tqdm(total=maxiter)
+            maxiter = self.problem_desc.n_factors * 40
+
+            pbar = tqdm(
+                total=maxiter, # we don't know how many iterations it will take
+                desc="Optimizing",  # text shown to the left of the bar
+                unit=" number of iteration (nit)",  # unit name
+                leave=True,
+                position=0,
+                dynamic_ncols=True,
+                mininterval=0.1,
+                smoothing=0.3,  
+            )
 
             def callback(xk):
+
                 pbar.update(1)
 
             kwargs.setdefault('callback', callback)

@@ -12,7 +12,7 @@ import pandas as pd
 from dataclasses import dataclass
 from pathlib import Path
 from apsimNGpy.core.core import CoreModel, Models, ModelTools
-
+from apsimNGpy.core.model_loader import MODEL_NOT_PROVIDED, AUTO_PATH
 from apsimNGpy.core.inspector import Inspector
 from System.Collections.Generic import *
 from Models.Core import Simulations
@@ -85,11 +85,11 @@ class ApsimModel(CoreModel):
     """
 
     def __init__(self, model: Union[os.PathLike, dict, str],
-                 out_path: Union[str, Path] = None,
+                 out_path: Union[str, Path] = AUTO_PATH,
                  set_wd=None, **kwargs):
         super().__init__(model=model, out_path=out_path, set_wd=set_wd, **kwargs)
         self._model = model
-        self.out_path = Path(out_path) if out_path else None
+        self.out_path = Path(out_path) if out_path is not AUTO_PATH else AUTO_PATH
         self._extra_kwargs = kwargs or {}
 
     def __hash__(self):

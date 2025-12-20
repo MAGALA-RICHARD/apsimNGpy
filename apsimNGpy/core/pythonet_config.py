@@ -19,7 +19,7 @@ pythonnet_start = start_pythonnet()
 meta_info = {}
 
 
-def is_file_format_modified(bin_path: Union[str, Path, None] = AUTO) -> bool:
+def is_file_format_modified(bin_path: Union[str, Path] = AUTO) -> bool:
     """
     Checks if the APSIM.CORE.dll is present in the bin path. Normally, the new APSIM version has this dll file.
 
@@ -89,7 +89,7 @@ def load_pythonnet(bin_path: Union[str, Path] = AUTO):
 
     @cache
     def _load(bin_path):
-        if bin_path is AUTO:
+        if bin_path is AUTO or bin_path is None:
             bin_path = APSIM_BIN_PATH
         candidate = locate_model_bin_path(bin_path)
         if not candidate:

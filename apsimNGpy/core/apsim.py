@@ -819,6 +819,7 @@ if __name__ == '__main__':
         datastore = Path(model.datastore)
         model.add_report_variable(variable_spec='[Clock].Today.Year as year', report_name='Report')
         model.run()
+        print(model.results.columns)
         model.evaluate_simulated_output(ref_data=obs, table='Report', index_col=['year'],
                                         target_col='Yield', ref_data_col='observed')
         df = model.results

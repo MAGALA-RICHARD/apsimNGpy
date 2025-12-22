@@ -207,7 +207,7 @@ def get_apsim_file_writer():
     return getattr(base, 'WriteToString')
 
 
-def get_apsim_version(bin_path: Union[str, Path] = APSIM_BIN_PATH, release_number: bool = False) -> Optional[str]:
+def get_apsim_version(bin_path: Union[str, Path] = AUTO, release_number: bool = False) -> Optional[str]:
     """
     Return the APSIM version string detected from the installed binaries.
 
@@ -256,6 +256,8 @@ def get_apsim_version(bin_path: Union[str, Path] = APSIM_BIN_PATH, release_numbe
     --------
     load_pythonnet : Initialize pythonnet/CLR for APSIM binaries.
     """
+    if bin_path is AUTO:
+        bin_path = APSIM_BIN_PATH
     bin_path = str(bin_path)
     CI = load_pythonnet(bin_path)
     if not CI.clr_loaded:

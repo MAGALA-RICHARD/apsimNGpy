@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 from apsimNGpy.core.config import configuration
 
-from apsimNGpy.core.apsim import ApsimModel
+from apsimNGpy.core.apsim import ApsimModel, AUTO_PATH
 from collections import OrderedDict
 
 from apsimNGpy.core.model_tools import ModelTools, Models
@@ -57,7 +57,7 @@ class SensitivityManager(ApsimModel):
 
     """
 
-    def __init__(self, model, out_path=None):
+    def __init__(self, model, out_path=AUTO_PATH):
         super().__init__(model=model, out_path=out_path)
         self.method_class = None
         self.sensitivity_node = None

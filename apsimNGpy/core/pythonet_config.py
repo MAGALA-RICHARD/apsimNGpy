@@ -53,7 +53,7 @@ def _add_bin_to_syspath(bin_path: Path) -> None:
         sys.path.append(str(bin_path))
 
 
-@dataclass
+@dataclass(slots=True)
 class ConfigRuntimeInfo:
     clr_loaded: bool
     bin_path: Union[Path, str]
@@ -113,7 +113,7 @@ def load_pythonnet(bin_path: Union[str, Path] = AUTO):
         else:
             logger.warning(f'Could not find ApsimNG.dll in {candidate}')
 
-        return ConfigRuntimeInfo(True, bin_path=candidate)
+        return ConfigRuntimeInfo(True, bin_path=os.path.realpath(candidate))
 
     return _load(bin_path)
 

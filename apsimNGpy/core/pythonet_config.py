@@ -88,13 +88,11 @@ def load_pythonnet(bin_path: Union[str, Path] = AUTO):
     """
 
     @cache
-    def _load(bin_path):
-        if bin_path is AUTO or bin_path is None:
-            bin_path = APSIM_BIN_PATH
-        candidate = locate_model_bin_path(bin_path)
+    def _load(_bin_path):
+        candidate = locate_model_bin_path(_bin_path)
         if not candidate:
             raise ApsimBinPathConfigError(
-                f'Built APSIM Binaries seems to have been uninstalled from this directory: {bin_path}\n use the config.set_apsim_bin_path')
+                f'Built APSIM Binaries seems to have been uninstalled from this directory: {_bin_path}\n use the config.set_apsim_bin_path')
         _add_bin_to_syspath(candidate)
 
         # system.path.append(bin_path)
@@ -115,7 +113,9 @@ def load_pythonnet(bin_path: Union[str, Path] = AUTO):
 
         return ConfigRuntimeInfo(True, bin_path=os.path.realpath(candidate))
 
-    return _load(bin_path)
+    if bin_path is AUTO or bin_path is None:
+        bin_path = APSIM_BIN_PATH
+    return _load(_bin_path=bin_path)
 
     # return lm, sys, pythonnet.get_runtime_info()
 

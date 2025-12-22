@@ -224,7 +224,8 @@ def load_apsim_model(model=MODEL_NOT_PROVIDED, out_path=AUTO_PATH, file_load_met
     else:
         if _has_no_dir(out_path):
             out_path = Path(SCRATCH) / out_path
-    out_ = out_path
+    out_ = Path(out_path).resolve()
+
     out_path = out_.with_suffix('.apsimx')
     match model:
         case dict():

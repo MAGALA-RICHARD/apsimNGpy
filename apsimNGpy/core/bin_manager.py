@@ -11,6 +11,7 @@ from contextlib import AbstractContextManager
 from pathlib import Path
 from apsimNGpy.core.config import configuration
 from dotenv import load_dotenv
+from apsimNGpy.bin_loader.resources import remove_bin_from_syspath
 from apsimNGpy.core.pythonet_config import load_pythonnet
 logger = logging.getLogger(__name__)
 

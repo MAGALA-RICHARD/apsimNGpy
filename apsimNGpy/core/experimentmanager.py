@@ -12,7 +12,7 @@ from apsimNGpy.core.model_tools import ModelTools, Models
 from apsimNGpy.core.cs_resources import CastHelper
 from apsimNGpy.core.pythonet_config import is_file_format_modified
 from apsimNGpy.core.run_time_info import APSIM_VERSION_NO, BASE_RELEASE_NO, GITHUB_RELEASE_NO
-from apsimNGpy.core.model_loader import to_json_string, recompile, get_node_by_path
+from apsimNGpy.core.model_loader import to_json_string, recompile, get_node_by_path, AUTO_PATH
 
 from apsimNGpy.core_utils.deco import add_outline
 from apsimNGpy.core.runner import invoke_csharp_gc, run_model_externally
@@ -53,7 +53,7 @@ class ExperimentManager(ApsimModel):
 
     """
 
-    def __init__(self, model, out_path=None):
+    def __init__(self, model, out_path=AUTO_PATH):
         super().__init__(model=model, out_path=out_path)
         self.parent_factor = None
         self.experiment_node = None

@@ -90,10 +90,11 @@ from apsimNGpy.tests.unittests import model_loader, apsim, cs_resources, core, \
     core_edit_model, config, model_tools, test_get_weather_from_web_filename, plot_manager, \
     pythonnet_config, soilmanager, data_insights, experimentmanager
 from apsimNGpy.tests.unittests.optimizer import vars, smp
-from apsimNGpy.tests.unittests import edit_model_by_path
+from apsimNGpy.tests.unittests import edit_model_by_path, senstivitymanager
 
 modules = {pythonnet_config,
            model_tools,
+           senstivitymanager,
            core,
            apsim,
            vars,

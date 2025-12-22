@@ -259,6 +259,8 @@ def eval_observed(
 
     direction = metric_direction[method.lower()]
     out = direction * metric_value
+    if method.lower() == "bias":
+        return abs(out)
     return out
 
 

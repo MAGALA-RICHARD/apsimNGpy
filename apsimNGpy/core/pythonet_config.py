@@ -22,8 +22,6 @@ pythonnet_start = start_pythonnet()
 
 meta_info = {}
 
-print(configuration.bin_path)
-
 
 def is_file_format_modified(bin_path: Union[str, Path] = AUTO) -> bool:
     """

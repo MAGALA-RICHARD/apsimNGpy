@@ -91,7 +91,7 @@ class TestCoreModel(BaseTester):
         """
 
         with ApsimModel('Maize') as model:
-            model.edit_model('Models.Manager', 'Sow using a variable rule', Population=4)
+            model.edit_model('Models.Manager', 'Sow using a variable rule', Population=8)
             mn1 = model.run().results.Yield.mean()
             model.edit_model('Models.Manager', 'Sow using a variable rule', Population=9.2)
             mn2 = model.run().results.Yield.mean()
@@ -99,7 +99,7 @@ class TestCoreModel(BaseTester):
             self.assertGreater(mn2, mn1,
                                'mean corn yield at high population density is not greater than mean at low population density')
         # should be called after exiting with block
-        self.assertFalse(Path(model.datastore).exists(), 'context manager now working as expected while model editing')
+        self.assertFalse(Path(model.datastore).exists(), 'context manager not working as expected while model editing')
         self.assertFalse(Path(model.path).exists(), 'context manager now working as expected while model editing')
 
     def test_saving_while_using_auto_context_manager_reload(self):
@@ -112,7 +112,7 @@ class TestCoreModel(BaseTester):
 
             model.edit_model('Models.Manager', 'Sow using a variable rule', Population=9.2)
             model.run().results.Yield.mean()
-            fname = f"{self._testMethodName}.apsimx"
+            fname = f"{self._testMethodName}_with_block.apsimx"
             model.save(file_name=fname, reload=True)
             # it will be deleted anyway but just testing
             self.assertTrue(Path(fname).exists(), 'saving failed while in with block')
@@ -135,9 +135,8 @@ class TestCoreModel(BaseTester):
 
         with ApsimModel('Maize') as model:
             model.edit_model('Models.Manager', 'Sow using a variable rule', Population=4)
-            mn1 = model.run().results.Yield.mean()
             model.edit_model('Models.Manager', 'Sow using a variable rule', Population=9.2)
-            fname = f"{self._testMethodName}.apsimx"
+            fname = f"{self._testMethodName}_with_block.apsimx"
             model.save(file_name=fname, reload=False)
             # it will be deleted anyway but just testing
             self.assertTrue(Path(fname).exists(), 'saving failed while in with block')

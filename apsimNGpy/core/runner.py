@@ -213,7 +213,6 @@ def run_model_externally(
         raise ApsimRuntimeError(
             f"APSIM exited with code {proc.returncode}.\n {proc.stdout} "
         )
-
     return proc
 
 

@@ -817,7 +817,7 @@ if __name__ == '__main__':
     from apsimNGpy.tests.unittests.test_factory import obs
     with ApsimModel("Maize") as model:
         datastore = Path(model.datastore)
-        model.add_report_variable(variable_spec='[Clock].Today.Year as year', report_name='Report')
+        model.add_report_variable(variable_spec='[Clock].Today.Year as year', report_name='Report', simulations='Simulation')
         model.run()
         print(model.results.columns)
         df= model.results

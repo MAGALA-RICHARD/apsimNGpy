@@ -127,7 +127,7 @@ def copy_file(
     return str(dest_path)
 
 
-def save_model_to_file(_model, out=AUTO_PATH):
+def save_model_to_file(_model, out):
     """Save the model
 
         Parameters
@@ -138,7 +138,7 @@ def save_model_to_file(_model, out=AUTO_PATH):
     # Determine the output path
     _model = get_model(_model)
 
-    final_out_path = out if out is AUTO_PATH else '_saved_model.apsimx'
+    final_out_path = out
 
     json_string = to_json_string(_model)
     # Serialize the model to JSON string

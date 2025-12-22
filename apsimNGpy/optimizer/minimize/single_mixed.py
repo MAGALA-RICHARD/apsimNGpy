@@ -730,3 +730,14 @@ if __name__ == '__main__':
     res = optimizer.minimize_with_de(use_threads=False, updating='deferred', workers=15, popsize=10,
                                      constraints=(0, 0.2))
     print(res)
+    print('with mean absolute error')
+    mp = MixedProblem(model='Maize', trainer_dataset=obs, pred_col='Yield', metric='MAE', table='Report',
+                      index='year', trainer_col='observed')
+    optimizer = MixedVariableOptimizer(problem=mp)
+    mp.submit_factor(**cultivar_param_p)
+    print(mp.n_factors, 'factors submitted for the pure variables')
+    out = optimizer.minimize_with_local()
+    print(out)
+    res = optimizer.minimize_with_de(use_threads=False, updating='deferred', workers=15, popsize=10,
+                                     constraints=(0, 0.2))
+    print(res)

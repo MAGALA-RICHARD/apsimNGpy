@@ -27,6 +27,7 @@ from functools import lru_cache
 from apsimNGpy.core_utils.utils import open_apsimx_file_in_window, evaluate_commands_and_values_types, is_scalar
 # now we can safely import C# libraries
 from apsimNGpy.core.pythonet_config import *
+load_pythonnet()
 from apsimNGpy.core_utils.database_utils import read_db_table
 from apsimNGpy.core.config import configuration
 from apsimNGpy.exceptions import ModelNotFoundError, NodeNotFoundError

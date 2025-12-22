@@ -80,7 +80,7 @@ class Validate:
     actual: ArrayLike
     predicted: ArrayLike
 
-    METRICS = ["RMSE", "MAE", "MSE", "RRMSE", "bias", "ME", "WIA", "R2", "CCC", "SLOPE"]
+    METRICS = sorted({"RMSE", "MAE", "MSE", "RRMSE", "ME", "WIA", "R2", "CCC", "SLOPE", 'BIAS'})
 
     # -------------------------------------------------------------------------
     # Initialization
@@ -123,6 +123,10 @@ class Validate:
         """Mean Bias (positive = overestimation, negative = underestimation)."""
         return float(np.mean(self.predicted - self.actual))
 
+    def BIAS(self) -> float:
+        """Mean Bias (positive = overestimation, negative = underestimation)."""
+        return float(np.mean(self.predicted - self.actual))
+
     def ME(self) -> float:
         """Modeling Efficiency (Nash–Sutcliffe Efficiency)."""
         mse_model = np.mean((self.predicted - self.actual) ** 2)
@@ -154,10 +158,10 @@ class Validate:
     # Internal helpers
     # -------------------------------------------------------------------------
     def _rho_ci(
-        self,
-        ci: str = "z-transform",
-        conf_level: float = 0.95,
-        na_rm: bool = False
+            self,
+            ci: str = "z-transform",
+            conf_level: float = 0.95,
+            na_rm: bool = False
     ) -> Dict[str, Any]:
         """
         Compute Lin’s Concordance Correlation Coefficient (CCC) with confidence interval.
@@ -177,7 +181,7 @@ class Validate:
             Dictionary containing the CCC estimate and related statistics.
         """
         dat = pd.DataFrame({"x": self.actual, "y": self.predicted}).dropna() if na_rm else \
-              pd.DataFrame({"x": self.actual, "y": self.predicted})
+            pd.DataFrame({"x": self.actual, "y": self.predicted})
         k = len(dat)
         if k < 3:
             raise ValueError("Insufficient data to compute CCC (minimum 3 pairs required).")

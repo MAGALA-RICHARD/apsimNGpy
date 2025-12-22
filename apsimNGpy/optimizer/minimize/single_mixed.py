@@ -198,7 +198,7 @@ class MixedVariableOptimizer:
             initial_guess = self.problem_desc.start_values
             kwargs.setdefault("method", 'Nelder-Mead')
             logger.info(
-                f"[{kwargs.get('method')}] Starting optimization with {len(bounds)} variables,\n initial values: {initial_guess}")
+                f"[{kwargs.get('method')}] Starting optimization with {len(bounds)} variables,\n initial values : {initial_guess}\n")
             result = minimize(wrapped_obj, x0=x0, bounds=bounds, **kwargs)
 
             result = self._extract_solution(result)

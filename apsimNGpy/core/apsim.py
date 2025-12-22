@@ -821,6 +821,7 @@ if __name__ == '__main__':
         model.run()
         print(model.results.columns)
         df= model.results
+        print(df.columns)
         df["date"] = pd.to_datetime(df["Clock.Today"])
         # Extract components
         df["year"] = df["date"].dt.year
@@ -829,6 +830,7 @@ if __name__ == '__main__':
         model.evaluate_simulated_output(ref_data=obs, table=df, index_col=['year'],
                                         target_col='Yield', ref_data_col='observed')
         df = model.results
+
     print(os.path.exists(model.datastore))
 
     with ApsimModel('Maize') as model:

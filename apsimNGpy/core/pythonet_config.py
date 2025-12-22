@@ -220,7 +220,7 @@ def get_apsim_version(bin_path: Union[str, Path] = AUTO, release_number: bool = 
     ----------
     bin_path : str or pathlib.Path, optional
         Filesystem path to the APSIM **binaries** directory that contains
-        ``Models.dll``. Defaults to ``APSIM_BIN_PATH``.
+        ``Models.dll``. Defaults to a current apsim binary path being used by apsimNGpy.
     release_number : bool, optional
         If ``True``, returns only the assembly version (e.g., ``"2024.6.123"``).
         If ``False`` (default), prefix with ``"APSIM"`` (e.g., ``"APSIM 2024.6.123"``).

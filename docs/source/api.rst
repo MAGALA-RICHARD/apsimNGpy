@@ -463,7 +463,7 @@ Classes
    self : object
        Returns the updated ApsimModel instance.
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.save(self, file_name: 'Union[str, Path, None]' = None, reload=True) (inherited)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.save(self, file_name: 'Union[str, Path, _NOT_PROVIDED]' = None, reload=True) (inherited)
 
    Saves the current APSIM NG model (``Simulations``) to disk and refresh runtime state.
 
@@ -4580,7 +4580,7 @@ Classes
    self : object
        Returns the updated ApsimModel instance.
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.save(self, file_name: 'Union[str, Path, None]' = None, reload=True) (inherited)
+   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.save(self, file_name: 'Union[str, Path, _NOT_PROVIDED]' = None, reload=True) (inherited)
 
    Saves the current APSIM NG model (``Simulations``) to disk and refresh runtime state.
 
@@ -8104,7 +8104,7 @@ Functions
    --------
    load_pythonnet : Initialize pythonnet/CLR for APSIM binaries.
 
-.. py:function:: apsimNGpy.core.pythonet_config.is_file_format_modified(bin_path: Union[str, pathlib.Path, NoneType] = None) -> bool
+.. py:function:: apsimNGpy.core.pythonet_config.is_file_format_modified(bin_path: Union[str, pathlib.Path, NoneType] = <object object at 0x0000026D0155A2A0>) -> bool
 
    Checks if the APSIM.CORE.dll is present in the bin path. Normally, the new APSIM version has this dll file.
 
@@ -8116,7 +8116,7 @@ Functions
    :returns:
      bool
 
-.. py:function:: apsimNGpy.core.pythonet_config.load_pythonnet(bin_path: Union[str, pathlib.Path] = None)
+.. py:function:: apsimNGpy.core.pythonet_config.load_pythonnet(bin_path: Union[str, pathlib.Path] = <object object at 0x0000026D0155A2A0>)
 
    A method for loading Python for .NET (pythonnet) and APSIM models from the binary path. It is also cached to
    avoid rerunning many times.
@@ -9169,7 +9169,7 @@ Classes
    self : object
        Returns the updated ApsimModel instance.
 
-   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.save(self, file_name: 'Union[str, Path, None]' = None, reload=True) (inherited)
+   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.save(self, file_name: 'Union[str, Path, _NOT_PROVIDED]' = None, reload=True) (inherited)
 
    Saves the current APSIM NG model (``Simulations``) to disk and refresh runtime state.
 

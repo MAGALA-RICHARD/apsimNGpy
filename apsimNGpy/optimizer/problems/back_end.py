@@ -312,9 +312,20 @@ def get_table(reports, table):
             raise ValueError(f"Tables `{tabs}` not found in the simulation available tables are; `{reports}`")
     return tabs
 
+#TODO incoporate retries for random errors
+
+from tenacity import stop_after_attempt
+from tenacity import retry, retry_if_exception_type
+
+from tenacity import (
+    retry,
+    stop_after_attempt,
+    wait_exponential,
+    retry_if_exception_type
+)
+
 
 def runner(model, params, table=None):
-
     # ideally out_path not needed, as ApsimNGpy generate random temporal files automatically when out_path is not provided
     with ApsimModel(model) as model:
 

@@ -6,6 +6,7 @@ email: magalarich20@gmail.com
 """
 from __future__ import annotations
 import gc
+import os.path
 import re
 import random
 import pathlib
@@ -46,6 +47,7 @@ from apsimNGpy.core.pythonet_config import get_apsim_version as apsim_version
 from System import InvalidOperationException, ArgumentOutOfRangeException, Array, Double
 from apsimNGpy.core._cultivar import edit_cultivar_by_path
 from apsimNGpy.core.version_inspector import is_higher_apsim_version
+
 _NOT_PROVIDED = object()
 
 # constants
@@ -337,7 +339,7 @@ class CoreModel(PlotManager):
 
         return self
 
-    def save(self, file_name: Union[str, Path, _NOT_PROVIDED] = None, reload=True):
+    def save(self, file_name: Union[str, Path,] = _NOT_PROVIDED, reload=True):
         """
         Saves the current APSIM NG model (``Simulations``) to disk and refresh runtime state.
 
@@ -424,15 +426,15 @@ class CoreModel(PlotManager):
         instance class.
 
         """
-
-        _path = str(file_name or self.path)
+        if file_name is _NOT_PROVIDED:
+            file_name = self.path
+        _path = os.path.realpath(file_name)
 
         try:
-            _path = str(file_name or self.path)
 
             if is_higher_apsim_version(self.Simulations):
-                # self.Simulations.Write(str(_path))
-                save_model_to_file(getattr(self.Simulations, 'Node', self.Simulations), str(_path))
+                #self.Simulations.Write(_path)
+                save_model_to_file(getattr(self.Simulations, 'Node', self.Simulations), _path)
             else:
                 sm = getattr(self.Simulations, 'Node', self.Simulations)
                 save_model_to_file(sm, out=_path)
@@ -440,6 +442,7 @@ class CoreModel(PlotManager):
             if reload:
                 model_info = recompile(self)
                 self.restart_model(model_info)
+                # update path
                 self.path = _path
             return self
         finally:
@@ -2200,13 +2203,19 @@ class CoreModel(PlotManager):
 
             Related APIs: :meth:`remove_report_variable` and :meth:`add_db_table`.
         """
+
         if report_name is None:
             raise ValueError('report or database table is required via `report_name` parameter')
         sims = self.find_simulations(simulations)
+        sim_names = simulations or {}
         rep = self.get_replacements_node()
         if rep is not None and self.find_model_in_replacements(model_type=Models.Report, model_name=report_name):
             sims = {rep}
         for sim in sims:
+            # if sim.Name not in sim_names and simulations:
+            #     continue
+            if report_name not in self.inspect_model(model_type=Models.Report, fullpath=True, scope=sim) and sim not in sim_names and simulations:
+                continue
             if isinstance(variable_spec, str):
                 variable_spec = [variable_spec]
             get_report = self._get_report(report_name, sim)
@@ -2478,7 +2487,6 @@ class CoreModel(PlotManager):
             b_name = os.path.basename(self.path).rsplit('.apsimx', 1)[0]
             return (shutil.copy(self.model_info.path, os.path.join(path, f"{b_name}_{suffix}_{i}.apsimx")) for i in
                     range(k))
-
 
     def _cultivar_params(self, cultivar):
         """
@@ -3815,7 +3823,7 @@ class CoreModel(PlotManager):
         ch_model = get_node_by_path(self.Simulations, path)
         return [i.Model.FullPath for i in ch_model.Children]
 
-    def inspect_model(self, model_type: Union[str, Models], fullpath=True, **kwargs):
+    def inspect_model(self, model_type: Union[str, Models], fullpath=True, scope=_NOT_PROVIDED):
         """
         Inspect the model types and returns the model paths or names.
 
@@ -3988,7 +3996,7 @@ class CoreModel(PlotManager):
         """
         _version = float(self.Simulations.ApsimVersion.replace(".", ''))
         _base_version = float(BASE_RELEASE_NO.replace(".", ''))
-
+        inspection_location = self.Simulations if scope is _NOT_PROVIDED else scope
         model_type = validate_model_obj(model_type)
         if model_type == Models.Core.Simulations:
             obj = [self.Simulations]
@@ -3996,10 +4004,10 @@ class CoreModel(PlotManager):
         else:
 
             if is_higher_apsim_version(self.Simulations):
-                obj = ModelTools.find_all_in_scope(self.Simulations, model_type)
+                obj = ModelTools.find_all_in_scope(inspection_location, model_type)
             else:
                 try:
-                    obj = self.Simulations.FindAllDescendants[model_type]()
+                    obj = inspection_location.FindAllDescendants[model_type]()
                 except AttributeError:
                     logger.info(f"{_version} is not supported by this method install the appropriate APSIM version")
                     raise
@@ -5168,7 +5176,7 @@ if __name__ == '__main__':
         df = model.results
         model.add_db_table(variable_spec=['[Clock].Today.Year as year', '[Soil].Nutrient.TotalC[1]/1000 as SOC1'],
                            rename='soc_table')
-        model.inspect_model_parameters('Models.Report', model_name='soc_table')
+        soc_table=model.inspect_model_parameters('Models.Report', model_name='soc_table')
         print(model.results.columns)
 
 
@@ -5200,3 +5208,9 @@ if __name__ == '__main__':
         print(sw['SWCON'])
     print('Path exists after exit:', Path(corep.path).exists())
     print('datastore Path exists after exit:', Path(corep.datastore).exists())
+    fixed_model = CoreModel('Maize', 'fixed.apsimx')
+    file_name = Path('fixed_model_123.apsimx').absolute()
+    fixed_model.save(file_name)
+    print(f"file exists: {file_name.exists()}")
+    print(configuration.bin_path)
+    print('higher versions', is_higher_apsim_version(fixed_model.Simulations))

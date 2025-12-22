@@ -84,19 +84,20 @@ def send_report(sms, subject, attachment_path=None):
             print("Error:", e)
 
 
-if IS_NEW_APSIM:
-    from apsimNGpy.tests.unittests import experimentmanager
+
 from apsimNGpy.tests.unittests import model_loader, apsim, cs_resources, core, \
     weathermanager, mult_core, \
     core_edit_model, config, model_tools, test_get_weather_from_web_filename, plot_manager, \
     pythonnet_config, soilmanager, data_insights, experimentmanager
-from apsimNGpy.tests.unittests.optimizer import vars
+from apsimNGpy.tests.unittests.optimizer import vars, smp
 from apsimNGpy.tests.unittests import edit_model_by_path
+
 modules = {pythonnet_config,
            model_tools,
            core,
            apsim,
            vars,
+           smp,
            edit_model_by_path,
            cs_resources,
            core_edit_model,
@@ -109,6 +110,8 @@ modules = {pythonnet_config,
            data_insights
            }
 if IS_NEW_APSIM:
+    if IS_NEW_APSIM:
+        from apsimNGpy.tests.unittests import experimentmanager
     modules.add(experimentmanager)
     modules = (i for i in modules)
 

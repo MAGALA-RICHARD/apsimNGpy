@@ -790,7 +790,7 @@ def _edit_in_cultivar(_model, model_name, param_values, simulations=None, verbos
 
     if isinstance(values, str):
         cultivar_params[commands] = values.strip() # direct update
-    elif is_scalar(values) and isinstance(values, str):
+    elif is_scalar(values):
         cultivar_params[commands] = values # direct update
     else:
         for cmd, val in zip(commands, values):# esle iterate

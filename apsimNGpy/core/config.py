@@ -3,29 +3,28 @@
 from __future__ import annotations
 
 import configparser
-import dataclasses
 import glob
 import logging
 import os
 import platform
 import subprocess
-import sys
-import time
 from contextlib import AbstractContextManager
+from dataclasses import dataclass
 from functools import cache
-from os.path import (exists)
+from os.path import exists
 from pathlib import Path
 from shutil import copy2
 from typing import Union, Optional, Any
+
 import psutil
-from apsimNGpy.core_utils.utils import timer
 from dotenv import load_dotenv
 
-logger = logging.getLogger(__name__)
 from apsimNGpy.settings import CONFIG_PATH, create_config, logger
 from apsimNGpy.exceptions import ApsimBinPathConfigError
+from apsimNGpy.bin_loader.resources import add_bin_to_syspath, is_file_format_modified
 from functools import lru_cache
 
+logger = logging.getLogger(__name__)
 # Load a default .env if present (optional)
 load_dotenv()
 
@@ -90,6 +89,32 @@ def locate_model_bin_path(bin_path: Union[str, Path], recursive: bool = True) ->
                     return subdir
 
     return None
+
+@cache
+def load_bin_2path(_bin_path):
+    candidate = locate_model_bin_path(_bin_path)
+    if not candidate:
+        raise ApsimBinPathConfigError(
+            f'Built APSIM Binaries seems to have been uninstalled from this directory: {_bin_path}\n use the config.set_apsim_bin_path')
+    add_bin_to_syspath(candidate)
+
+    # system.path.append(bin_path)
+    import clr
+    clr.AddReference("System")
+    # model_path = os.path.join(bin_path, 'Models.dll')
+    # clr.AddReference(model_path)
+    # apsimNG = clr.AddReference('ApsimNG')
+    clr.AddReference("Models")
+    if is_file_format_modified(_bin_path):
+        clr.AddReference('APSIM.Core')
+    # apsimNG engine
+    if set(Path(candidate).glob("*ApsimNG.dll")):
+        clr.AddReference("ApsimNG")
+    else:
+        logger.warning(f'Could not find ApsimNG.dll in {candidate}')
+
+    print('Successfully loaded APSIM Binaries')
+    return clr
 
 
 def list_drives():
@@ -276,7 +301,7 @@ def get_apsim_bin_path():
     return _get_bin()
 
 
-@dataclasses.dataclass
+@dataclass
 class Configuration:
     """
   In the future, this module will contain all the constants required by the package.
@@ -745,9 +770,13 @@ class apsim_bin_context(AbstractContextManager):
         self.bin_path = os.path.realpath(p)
 
     def __enter__(self):
+        from apsimNGpy.core.load_clr import start_pythonnet
+        start_pythonnet()
         # Save and set
         configuration.set_temporal_bin_path(self.bin_path)
-        return None
+        # now we load binaries to the python path
+        load_bin_2path(_bin_path=self.bin_path)
+        return self
 
     def __exit__(self, exc_type, exc, tb):
         # Restore previous paths (even if it was None/empty)
@@ -755,10 +784,12 @@ class apsim_bin_context(AbstractContextManager):
         return False  # do not suppress exceptions
 
 
+# ________________________________
+# load_apsim_models
+
 if __name__ == "__main__":
     # -------- Example usage --------
     from unittest import TestCase
-    import unittest
 
 
     class TestConfig(TestCase):
@@ -777,6 +808,9 @@ if __name__ == "__main__":
                     pass
 
 if __name__ == "__main__":
+    print(configuration.bin_path)
+    with apsim_bin_context(apsim_bin_path=r"C:\Users\rmagala\AppData\Local\Programs\APSIM2025.12.7939.0\bin") as bin:
+        print(configuration.bin_path)
     ap = os.path.realpath('maizeTT.apsimx')
     try:
 

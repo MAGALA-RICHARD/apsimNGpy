@@ -135,6 +135,7 @@ class apsim_bin_context(AbstractContextManager):
         self.bin_path = os.path.realpath(p)
 
     def __enter__(self):
+
         # Save and set
         configuration.set_temporal_bin_path(self.bin_path)
         # loading pythonnet and adding the bin path to sys.path
@@ -151,9 +152,13 @@ if __name__ == "__main__":
     # -------- Example usage --------
     from unittest import TestCase
     print(configuration.bin_path)
+    before = configuration.bin_path
 
     with apsim_bin_context(apsim_bin_path=r"C:\Users\rmagala\AppData\Local\Programs\APSIM2025.12.7939.0\bin") as bin:
+        after =configuration.bin_path
+        print(after)
         import Models
+    assert before != after, 'bin path not set correctly'
     class TestConfig(TestCase):
         def setUp(self):
             pass

@@ -100,7 +100,7 @@ class TestCoreModel(BaseTester):
 
     def test_load_load_apsim_model_path_out_is_none(self):
         """Test unified APSIM model loader with file path string input."""
-        out = load_apsim_model(self.file_on_disk, out_path=None)
+        out = load_apsim_model(self.file_on_disk)
         sims = cast(out.IModel)
 
         self.assertIsInstance(sims, Models.Core.Simulations, 'loading model from model file path using '

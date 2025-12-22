@@ -4,12 +4,12 @@ import sys
 from dataclasses import dataclass
 from functools import cache
 from pathlib import Path
-from typing import Union
-
+from typing import Optional, Union
+from apsimNGpy.bin_loader.resources import add_bin_to_syspath
+from apsimNGpy.core.config import configuration, locate_model_bin_path
 from apsimNGpy.core.load_clr import start_pythonnet
 from apsimNGpy.exceptions import ApsimBinPathConfigError
 from apsimNGpy.settings import logger
-from apsimNGpy.core.config import configuration, locate_model_bin_path
 
 AUTO = object()
 APSIM_BIN_PATH = configuration.bin_path
@@ -41,16 +41,6 @@ def is_file_format_modified(bin_path: Union[str, Path] = AUTO) -> bool:
     if len(path) > 0:
         return True
     return False
-
-
-def _add_bin_to_syspath(bin_path: Path) -> None:
-    if not str(bin_path):
-        raise ApsimBinPathConfigError(f'Can not proceed to load pythonnet invalid bin path: {bin_path}')
-    # Idempotent: only add if not present (case-insensitive on Windows)
-    bin_path = Path(bin_path).resolve()
-    paths_norm = [Path(p).resolve() for p in sys.path if isinstance(p, str)]
-    if bin_path not in paths_norm:
-        sys.path.append(str(bin_path))
 
 
 @dataclass(slots=True)
@@ -93,7 +83,7 @@ def load_pythonnet(bin_path: Union[str, Path] = AUTO):
         if not candidate:
             raise ApsimBinPathConfigError(
                 f'Built APSIM Binaries seems to have been uninstalled from this directory: {_bin_path}\n use the config.set_apsim_bin_path')
-        _add_bin_to_syspath(candidate)
+        add_bin_to_syspath(candidate)
 
         # system.path.append(bin_path)
         import clr
@@ -209,10 +199,6 @@ def get_apsim_file_writer():
     else:
         base = Models.Core.ApsimFile.FileFormat
     return getattr(base, 'WriteToString')
-
-
-from pathlib import Path
-from typing import Optional, Union
 
 
 def get_apsim_version(bin_path: Union[str, Path] = APSIM_BIN_PATH, release_number: bool = False) -> Optional[str]:

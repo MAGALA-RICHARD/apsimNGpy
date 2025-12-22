@@ -8,6 +8,7 @@ import logging
 import os
 import platform
 import subprocess
+import sys
 from contextlib import AbstractContextManager
 from dataclasses import dataclass
 from functools import cache
@@ -21,7 +22,7 @@ from dotenv import load_dotenv
 
 from apsimNGpy.settings import CONFIG_PATH, create_config, logger
 from apsimNGpy.exceptions import ApsimBinPathConfigError
-from apsimNGpy.bin_loader.resources import add_bin_to_syspath, is_file_format_modified
+from apsimNGpy.bin_loader.resources import add_bin_to_syspath, is_file_format_modified, remove_bin_from_syspath
 from functools import lru_cache
 
 logger = logging.getLogger(__name__)
@@ -89,6 +90,7 @@ def locate_model_bin_path(bin_path: Union[str, Path], recursive: bool = True) ->
                     return subdir
 
     return None
+
 
 @cache
 def load_bin_2path(_bin_path):
@@ -770,15 +772,19 @@ class apsim_bin_context(AbstractContextManager):
         self.bin_path = os.path.realpath(p)
 
     def __enter__(self):
+        # remove current bin_path
+        remove_bin_from_syspath(configuration.bin_path)
         from apsimNGpy.core.load_clr import start_pythonnet
         start_pythonnet()
+        #
         # Save and set
         configuration.set_temporal_bin_path(self.bin_path)
         # now we load binaries to the python path
-        load_bin_2path(_bin_path=self.bin_path)
+        #load_bin_2path(_bin_path=self.bin_path)
         return self
 
     def __exit__(self, exc_type, exc, tb):
+        remove_bin_from_syspath(Path(self.bin_path))
         # Restore previous paths (even if it was None/empty)
         configuration.release_temporal_bin_path()
         return False  # do not suppress exceptions
@@ -808,9 +814,17 @@ if __name__ == "__main__":
                     pass
 
 if __name__ == "__main__":
-    print(configuration.bin_path)
+    #from apsimNGpy.core.apsim import ApsimModel
+    remove_bin_from_syspath(configuration.bin_path)
     with apsim_bin_context(apsim_bin_path=r"C:\Users\rmagala\AppData\Local\Programs\APSIM2025.12.7939.0\bin") as bin:
+
+        from apsimNGpy.core.core import CoreModel
+
+        model =CoreModel('Maize', out_path='cc.apsimx')
         print(configuration.bin_path)
+
+
+        print(model.Simulations.ApsimVersion)
     ap = os.path.realpath('maizeTT.apsimx')
     try:
 

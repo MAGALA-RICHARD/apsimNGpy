@@ -17,6 +17,31 @@ def add_bin_to_syspath(bin_path: Path) -> None:
     if bin_path not in paths_norm:
         sys.path.append(os.path.realpath(bin_path))
 
+import os
+import sys
+from pathlib import Path
+
+
+def remove_bin_from_syspath(bin_path: Path) -> None:
+    """
+    Remove an APSIM bin path from sys.path if present.
+    Safe to call multiple times (idempotent).
+    """
+    if not bin_path:
+        raise ApsimBinPathConfigError(
+            f"Cannot proceed: invalid bin path: {bin_path}"
+        )
+
+    bin_path = Path(bin_path).resolve()
+
+    sys.path[:] = [
+        p for p in sys.path
+        if not (
+            isinstance(p, str)
+            and Path(p).resolve() == bin_path
+        )
+    ]
+
 
 def is_file_format_modified(bin_path: Union[str, Path]) -> bool:
     """

@@ -2211,10 +2211,11 @@ class CoreModel(PlotManager):
         rep = self.get_replacements_node()
         if rep is not None and self.find_model_in_replacements(model_type=Models.Report, model_name=report_name):
             sims = {rep}
+        #provided_sims =simulations or {}
         for sim in sims:
             # if sim.Name not in sim_names and simulations:
             #     continue
-            if report_name not in self.inspect_model(model_type=Models.Report, fullpath=True, scope=sim) and sim not in sim_names and simulations:
+            if report_name not in self.inspect_model(model_type=Models.Report, fullpath=True, scope=sim) and sim.Name not in sim_names and simulations:
                 continue
             if isinstance(variable_spec, str):
                 variable_spec = [variable_spec]

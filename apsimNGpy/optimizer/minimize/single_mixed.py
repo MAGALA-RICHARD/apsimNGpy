@@ -30,12 +30,17 @@ class MixedVariableOptimizer:
         self.results = None
         self.outcomes = None
         self.problem_desc = problem
-        self.pbar = None
+        #self.pbar = None
         self.counter = 0
         self.maxiter = 0
         # Ensure setup
         if not hasattr(self, "problem_desc"):
             raise AttributeError("problem_desc must be initialized before calling minimize_with_de")
+
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        state["_handle"] = None
+        return state
 
     def minimize_with_alocal_solver(self, **kwargs):
         return self.minimize_with_local(**kwargs)
@@ -175,30 +180,21 @@ class MixedVariableOptimizer:
         try:
             options = kwargs.get('options')
 
-            maxiter = self.problem_desc.n_factors * 40
+            wrapped_obj, x0, bounds = self._submit_objective()
+            # Handle initial guess
+            initial_guess = self.problem_desc.start_values
+            kwargs.setdefault("method", 'Nelder-Mead')
+            logger.info(
+                f"\n[{kwargs.get('method')}] Starting optimization with {len(bounds)} variables, initial values : {initial_guess}\n"
+                f"==============================================================================================")
 
-            pbar = tqdm(
-                total=maxiter, # we don't know how many iterations it will take
-                desc="Optimizing",  # text shown to the left of the bar
-                unit=" number of iteration (nit)",  # unit name
-                leave=True,
-                position=0,
-                dynamic_ncols=True,
-                mininterval=0.1,
-                smoothing=0.3,  
-            )
+            pbar = self.pbar(iterations=self.problem_desc.n_factors * 40)
 
             def callback(xk):
 
                 pbar.update(1)
 
             kwargs.setdefault('callback', callback)
-            wrapped_obj, x0, bounds = self._submit_objective()
-            # Handle initial guess
-            initial_guess = self.problem_desc.start_values
-            kwargs.setdefault("method", 'Nelder-Mead')
-            logger.info(
-                f"[{kwargs.get('method')}] Starting optimization with {len(bounds)} variables,\n initial values : {initial_guess}\n")
             result = minimize(wrapped_obj, x0=x0, bounds=bounds, **kwargs)
 
             result = self._extract_solution(result)
@@ -206,6 +202,26 @@ class MixedVariableOptimizer:
 
         finally:
             pass
+
+    def pbar(self, iterations,
+             desc="Optimizing",  # text shown to the left of the bar
+             unit=" number of iteration (nit)",  # unit name
+             leave=True,
+             position=0,
+             dynamic_ncols=True,
+             mininterval=0.1,
+             smoothing=0.3,
+             ):
+        return tqdm(
+            total=iterations,  # we don't know how many iterations it will take
+            desc=desc,  # text shown to the left of the bar
+            unit=unit,  # unit name
+            leave=leave,
+            position=position,
+            dynamic_ncols=dynamic_ncols,
+            mininterval= mininterval,
+            smoothing=smoothing,
+        )
 
     def _submit_objective(self):
         if not self.problem_desc._detect_pure_vars():
@@ -222,7 +238,7 @@ class MixedVariableOptimizer:
         return objective, x0, bounds
 
     def _extract_solution(self, result):
-        calibrated_param_names= 'cal_param_values'
+        calibrated_param_names = 'cal_param_values'
         wrapped_obj = self._submit_objective()
         if not self.problem_desc._detect_pure_vars():
             decoded_solution = wrapped_obj[0].decode(result.x)
@@ -249,14 +265,14 @@ class MixedVariableOptimizer:
             recombination=0.9,
             rng=None,
             callback=None,
-            disp=True,
+            disp=False,
             polish=True,
             init='latinhypercube',
             atol=0,
             updating='deffered',
             workers=1,
             constraints=(),
-            x0=None,  # implimented internally
+            x0=None,  # implemented internally
             seed=44,
             *,
             integrality=None,
@@ -635,17 +651,17 @@ class MixedVariableOptimizer:
             logger.error(f"[DE] Population size {popsize}, is too loo")
 
         # x=1
-        # if not callback:
-        #     def callback(xk, convergence):
-        #         print(xk)
-        #         pbar.update(1)
+        pbar = self.pbar(iterations=maxiter)
+        if not callback and not disp:
+            def callback(xk, convergence):
+                pbar.update(1)
 
         arguments = dict(bounds=bounds, args=args, strategy=strategy,
                          maxiter=maxiter, popsize=popsize, tol=tol, mutation=mutation,
                          recombination=recombination, seed=seed, disp=disp,
                          polish=polish, init=init,
-                         atol=atol,updating=updating,callback=callback,
-                         workers=1,constraints=constraints, x0=x0, integrality=integrality,
+                         atol=atol, updating=updating, callback=callback,
+                         workers=1, constraints=constraints, x0=x0, integrality=integrality,
                          vectorized=vectorized,
                          )
         if workers == 1:
@@ -664,7 +680,6 @@ class MixedVariableOptimizer:
                     **arguments)
 
         return self._extract_solution(result)
-
 
     # tests
 
@@ -692,7 +707,7 @@ if __name__ == '__main__':
     cultivar_param_p = {
         "path": ".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82",
         "start_value": [550, ],
-        'bounds':[(400, 800)],
+        'bounds': [(400, 800)],
         "candidate_param": ["[Grain].MaximumGrainsPerCob.FixedValue", ],
         "other_params": {"sowed": True},
         # other params must be on the same node or associated or extra arguments, e.g., target simulation name classified simulations
@@ -729,7 +744,9 @@ if __name__ == '__main__':
     print(out)
     res = optimizer.minimize_with_de(use_threads=False, updating='deferred', workers=15, popsize=10,
                                      constraints=(0, 0.2))
+
     print(res)
+
     print('with mean absolute error')
     mp = MixedProblem(model='Maize', trainer_dataset=obs, pred_col='Yield', metric='MAE', table='Report',
                       index='year', trainer_col='observed')

@@ -146,7 +146,8 @@ class MixedProblem:
     # -------------------------------------------------------------------------
     # Factor Submission and Validation
     # -------------------------------------------------------------------------
-    def submit_factor(self, *, path, start_value, candidate_param, vtype=None, cultivar=False, bounds=(), other_params=None):
+    def submit_factor(self, *, path, start_value, candidate_param, vtype=None, cultivar=False, bounds=(),
+                      other_params=None):
         """
         Add a new factor (parameter) to be optimized.
 
@@ -645,6 +646,11 @@ class MixedProblem:
             "factors or don't define at all (implying that the submitted factors may not be cached and may not be encoded and decoded). Do not mix pure and typed variables."
         )
 
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        state["_handle"] = None
+        return state
+
     def _scan(self):
         """
         Rebuild variable arrays (types, names, start values) from submitted factors.
@@ -659,12 +665,10 @@ class MixedProblem:
 
         for _, factor in self.ordered_factors.items():
 
-
             apsim_var = filter_apsim_params(factor)
 
             self.apsim_params.append(apsim_var)
             if factor.bounds:
-
                 self.bounds.extend(factor.bounds)
             if hasattr(factor, "vtype"):
                 self.var_types.extend(factor.vtype)
@@ -673,6 +677,7 @@ class MixedProblem:
                 self.var_names.extend(factor.candidate_param)
             else:
                 self.var_names.extend(factor.candidate_param)
+        self.apsim_params = tuple(self.apsim_params)
         self._detect_pure_vars()
 
     # -------------------------------------------------------------------------
@@ -694,7 +699,7 @@ class MixedProblem:
             Updated APSIM parameter sets ready for model execution.
         """
         name_value_map = dict(zip(self.var_names, x_vars))
-        apsim_params = copy.deepcopy(self.apsim_params)
+        apsim_params = self.apsim_params
         for param in apsim_params:
 
             if 'cultivar' not in param:
@@ -711,8 +716,9 @@ class MixedProblem:
 
             # now we can also pop 'cultivar' key
             param.pop('cultivar', None)
+            yield param
 
-        return apsim_params
+        # return apsim_params
 
     def evaluate_objectives(self, x):
         """
@@ -785,8 +791,11 @@ class MixedProblem:
             print(f"Model evaluation ({mp.method}):", score)
         """
         if not self.inputs_ok:
-            self._test_inputs(x)
+            from apsimNGpy.optimizer.problems.back_end import test_inputs
 
+            passed = test_inputs(model=self.model, x=x, insert_x_vars=self._insert_x_vars,
+                                 runner=runner, table=self.table, verbose=False)
+            self.inputs_ok = passed
         try:
             predicted = runner(self.model, params=self._insert_x_vars(x), table=self.table)
             if callable(self.func):
@@ -938,9 +947,7 @@ if __name__ == "__main__":
         "candidate_param": ["FOM"],
         "other_params": {"FBiom": 2.3, "Carbon": 1.89},
     }
-   # mp.submit_factor(**example_param_pure)
+    # mp.submit_factor(**example_param_pure)
     print(mp.n_factors, 'factors submitted')
     mp._insert_x_vars([1.88])
     print(mp.var_names, mp.start_values)
-
-

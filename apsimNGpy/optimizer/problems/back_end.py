@@ -314,7 +314,8 @@ def get_table(reports, table):
             raise ValueError(f"Tables `{tabs}` not found in the simulation available tables are; `{reports}`")
     return tabs
 
-#TODO incoporate retries for random errors
+
+# TODO incoporate retries for random errors
 
 from tenacity import stop_after_attempt
 from tenacity import retry, retry_if_exception_type
@@ -330,12 +331,11 @@ from tenacity import (
 def runner(model, params, table=None):
     # ideally out_path not needed, as ApsimNGpy generate random temporal files automatically when out_path is not provided
     with ApsimModel(model) as model:
-
         try:
-            {model.set_params(pa) for pa in params}
+            [model.set_params(pa) for pa in params]
         # There is a need at least to present to the user what is going on,because some errors maybe excepted, breaking the program
         except Exception as e:
-            print(ValueError, f'occurred while setting parameters{params}', e)
+            print(ValueError, f'occurred while setting parameters', e)
             raise ValueError(f"{str(e)} e") from e
         model.run()
         if not table:
@@ -351,6 +351,86 @@ def runner(model, params, table=None):
 
         return df
     # all transient files are deleted after exiting this block
+
+
+def test_inputs(
+        model,
+        x,
+        insert_x_vars,
+        runner,
+        table=None,
+        verbose: bool = False,
+) -> bool:
+    """
+    Validate an optimization input vector before running the objective function.
+
+    This function performs a pre-execution (dry-run) test of the APSIM model
+    using the provided parameter vector ``x``. It ensures that all parameters
+    can be successfully inserted into the model and that the model executes
+    without runtime errors.
+
+    The test prevents invalid configurations from entering the optimization
+    loop, thereby isolating APSIM simulation errors from optimizer logic.
+    Typical failures include incorrect APSIM node paths, missing required
+    models, or incompatible parameter definitions.
+
+    Parameters
+    ----------
+    model : ApsimModel
+        An initialized APSIM model instance.
+    x : array-like
+        Parameter vector (sample) to validate.
+    insert_x_vars : callable
+        A function that maps ``x`` into APSIM-compatible parameter updates.
+        Signature: ``insert_x_vars(x) -> dict | object``.
+    runner : callable
+        Function responsible for executing the APSIM model.
+        Signature: ``runner(model, params, table=None)``.
+    table : str or pandas.DataFrame, optional
+        APSIM output table or preloaded dataframe used during the test run.
+    verbose : bool, optional
+        If True, prints a success message upon passing validation.
+
+    Raises
+    ------
+    FailedInputTestError
+        If the APSIM model fails to execute with the provided parameters.
+    """
+    from pandas import DataFrame
+    from apsimNGpy.exceptions import ApsimRuntimeError
+    from apsimNGpy.settings import logger
+
+    class FailedInputTestError(ApsimRuntimeError):
+        """
+        Raised when APSIM input validation fails prior to optimization,
+        indicating that the model cannot be executed with the given parameters.
+        """
+        pass
+
+    try:
+        # Insert parameters and perform a dry run
+        params = insert_x_vars(x)
+        res = runner(model, params, table=table)
+
+        if isinstance(res, pd.DataFrame) and not res.empty:
+            if verbose:
+                logger.info(
+                    "Input validation passed — proceeding with optimization."
+                )
+        return True
+
+    except ApsimRuntimeError as err:
+        logger.error(
+            "APSIM input validation failed — the model could not be executed "
+            "with the provided parameters.\n"
+            "Please ensure that:\n"
+            "- All APSIM node paths are valid\n"
+            "- Required models are present in the simulation file\n"
+            "- Variable types and bounds are correctly defined\n"
+            "- Weather files contain valid start dates"
+        )
+        raise FailedInputTestError(str(err)) from err
+
 
 
 if __name__ == '__main__':

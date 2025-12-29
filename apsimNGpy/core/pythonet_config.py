@@ -18,7 +18,7 @@ from apsimNGpy.settings import logger
 AUTO = object()
 APSIM_BIN_PATH = configuration.bin_path
 
-pythonnet_start = start_pythonnet()
+# pythonnet_start = start_pythonnet()
 
 meta_info = {}
 
@@ -82,6 +82,7 @@ def load_pythonnet(bin_path: Union[str, Path] = AUTO):
     """
 
     def _load(_bin_path):
+        start_pythonnet()
         #print('Loading APSIM models...:', configuration.bin_path)
         candidate = locate_model_bin_path(_bin_path)
         if not candidate:
@@ -108,7 +109,7 @@ def load_pythonnet(bin_path: Union[str, Path] = AUTO):
         return ConfigRuntimeInfo(True, bin_path=os.path.realpath(candidate))
 
     if bin_path is AUTO or bin_path is None:
-        bin_path = APSIM_BIN_PATH
+        bin_path = configuration.bin_path
     return _load(_bin_path=bin_path)
 
     # return lm, sys, pythonnet.get_runtime_info()
@@ -123,7 +124,7 @@ import Models
 
 from System import *
 
-Models = Models
+
 
 
 def get_apsim_file_reader(method: str = 'string'):
@@ -276,7 +277,7 @@ def get_apsim_version(bin_path: Union[str, Path] = AUTO, release_number: bool = 
 if __name__ == '__main__':
     loader = load_pythonnet()
     loaded_models = loader
-
+    import Models
     from System.Reflection import Assembly
     from System.Diagnostics import FileVersionInfo
     from System.Reflection import (

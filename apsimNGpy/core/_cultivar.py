@@ -166,6 +166,7 @@ def search_cultivar_manager(
     sims = model.simulations if simulations is None else model.find_simulations(simulations)
     results: Dict[str, Dict[str, str]] = {}
     reps = model.get_replacements_node()
+    sims = list(sims)
     if reps:
         sims.append(reps)
 

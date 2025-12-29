@@ -6,7 +6,7 @@ _lock = threading.Lock()
 from functools import lru_cache
 
 
-@lru_cache(maxsize=1)  # runs once during threads
+#@lru_cache(maxsize=1)  # runs once during threads
 def start_pythonnet(dotnet_root=None):
     import pythonnet
     info = pythonnet.get_runtime_info()

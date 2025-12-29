@@ -186,7 +186,7 @@ class TestCoreModel(BaseTester):
         with CoreModel('Maize') as model:
             # get a list of simulations
             sims = model.find_simulations()
-            self.assertIsInstance(sims, list)
+            self.assertIsInstance(sims, tuple)
             self.assertTrue(len(sims) > 0)
             sims = model.find_simulations(simulations=None)
             # ensures simulations are enclosed in a list
@@ -197,7 +197,7 @@ class TestCoreModel(BaseTester):
         with CoreModel('Maize') as model:
             # get a list of simulations
             sims = model.find_simulations()
-            self.assertIsInstance(sims, list)
+            self.assertIsInstance(sims, tuple)
             self.assertTrue(len(sims) > 0)
             sims = model.find_simulations(simulations='Simulation')
             # ensures simulations are enclosed in a list

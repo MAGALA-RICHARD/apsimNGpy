@@ -12,8 +12,8 @@ Testing requirements
    The ``.env`` file must explicitly define the APSIM versions required for
    testing. For example:
 
-   - ``7939`` = ``C:\Program Files\APSIM2025.2.7939.0\bin``
-   - ``7672`` = ``C:\Program Files\APSIM2025.2.7672.0\bin``
+   - ``7939`` = ``C:/Program Files/APSIM2025.2.7939.0/bin``
+   - ``7672`` = ``C:/Program Files/APSIM2025.2.7672.0/bin``
 
    Additional APSIM versions may be specified later.
 
@@ -34,18 +34,23 @@ print('starting apsim_bin_context.py')
 
 if __name__ == "__main__":
     #
+
     from apsimNGpy.core.config import configuration
 
     print(configuration.bin_path, '\n')
+    sys_before= set(sys.path)
 
+    from apsimNGpy.core.apsim import ApsimModel
+    sys_after= set(sys.path)
 
+    print('end')
     def im():
         from apsimNGpy.core.apsim import ApsimModel
         with ApsimModel('Maize') as model:
             print(model.Simulations.ApsimVersion)
         return True
 
-
+    #sys.path.remove(r'C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\9.0.0\\')
     with apsim_bin_context(apsim_bin_path=apsim_bin_7939) as bin:
 
         from apsimNGpy.core.core import CoreModel

@@ -11,26 +11,26 @@ from apsimNGpy.exceptions import NodeNotFoundError
 
 pyth = pythonet_config
 # now we can safely import C# libraries
-from System.Collections.Generic import *
-from System import *
-import Models
+
 
 import json
 from os.path import (realpath)
 import shutil
 from pathlib import Path
-from apsimNGpy.core.config import get_apsim_bin_path, load_crop_from_disk
+from apsimNGpy.core.config import get_apsim_bin_path, load_crop_from_disk, configuration
 import subprocess
 from dataclasses import dataclass
 from typing import Any
 from pathlib import Path
 from apsimNGpy.core.cs_resources import CastHelper as CastHelpers
-from apsimNGpy.core.pythonet_config import get_apsim_file_reader, get_apsim_file_writer
-from apsimNGpy.core.pythonet_config import is_file_format_modified
+from apsimNGpy.core.pythonet_config import get_apsim_file_reader, get_apsim_file_writer, load_pythonnet
 from apsimNGpy.core.pythonet_config import get_apsim_version as apsim_version
 from System import GC
-
-GLOBAL_IS_FILE_MODIFIED = is_file_format_modified()
+load_models = load_pythonnet(bin_path=configuration.bin_path)
+from System.Collections.Generic import *
+from System import *
+import Models
+GLOBAL_IS_FILE_MODIFIED = load_models.file_format_modified
 scratch_dir = Path.cwd().joinpath('scratch')
 scratch_dir.mkdir(exist_ok=True)
 SCRATCH = os.environ.get('WS', str(scratch_dir))
@@ -163,6 +163,7 @@ def load_from_path(path2file, method='string'):
     the file path. This is slower than the former.
     """
 
+
     f_name = realpath(path2file)
     with open(f_name, "r+", encoding='utf-8') as apsimx:
         app_ap = json.load(apsimx)
@@ -212,8 +213,9 @@ def load_apsim_model(model=MODEL_NOT_PROVIDED, out_path=AUTO_PATH, file_load_met
         model = os.path.realpath(model)
 
     def _has_no_dir(p) -> bool:
-        p = Path(p)
-        return p.parent == Path('.') or p.parent == Path(p.anchor)
+        if p:
+            p = Path(p)
+            return p.parent == Path('.') or p.parent == Path(p.anchor)
 
     out = {}  # Store a final output path
     wd = Path(wd or SCRATCH)

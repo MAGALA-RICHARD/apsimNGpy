@@ -16,7 +16,7 @@ from os.path import exists
 from pathlib import Path
 from shutil import copy2
 from typing import Union, Optional, Any
-
+import gc
 import psutil
 from dotenv import load_dotenv
 
@@ -773,6 +773,13 @@ class apsim_bin_context(AbstractContextManager):
 
     def __enter__(self):
         # remove current bin_path
+        __ap = globals().get('ApsimModel', '__model_apsimx')
+        ___core = globals().get('CoreModel', '__model_core')
+        globals().pop("ApsimModel", None)
+        globals().pop("CoreModel", None)
+        del __ap
+        del ___core
+        gc.collect()
         remove_bin_from_syspath(configuration.bin_path)
         from apsimNGpy.core.load_clr import start_pythonnet
         start_pythonnet()

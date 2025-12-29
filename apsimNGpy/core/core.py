@@ -27,7 +27,7 @@ from functools import lru_cache
 from apsimNGpy.core_utils.utils import open_apsimx_file_in_window, evaluate_commands_and_values_types, is_scalar
 # now we can safely import C# libraries
 from apsimNGpy.core.pythonet_config import *
-load_pythonnet()
+load_models = load_pythonnet()
 from apsimNGpy.core_utils.database_utils import read_db_table
 from apsimNGpy.core.config import configuration
 from apsimNGpy.exceptions import ModelNotFoundError, NodeNotFoundError
@@ -48,7 +48,9 @@ from apsimNGpy.core.pythonet_config import get_apsim_version as apsim_version
 from System import InvalidOperationException, ArgumentOutOfRangeException, Array, Double
 from apsimNGpy.core._cultivar import edit_cultivar_by_path
 from apsimNGpy.core.version_inspector import is_higher_apsim_version
-
+from System.Collections.Generic import KeyValuePair
+from System import *
+from System import String
 _NOT_PROVIDED = object()
 
 # constants
@@ -256,7 +258,7 @@ class CoreModel(PlotManager):
 
         if is_higher_apsim_version(self.Simulations):
             return ModelTools.find_all_in_scope(self.Simulations, Models.Core.Simulation)
-        return list(self.Simulations.FindAllDescendants[Models.Core.Simulation]())
+        return tuple(self.Simulations.FindAllDescendants[Models.Core.Simulation]())
 
     @property
     def simulation_names(self):

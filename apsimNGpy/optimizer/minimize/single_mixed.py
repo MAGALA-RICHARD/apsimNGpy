@@ -108,7 +108,7 @@ class MixedVariableOptimizer:
             Example:
             --------
             The following example shows how to use this method, the evaluation is very basic, but you
-            can add a more advanced evaluation by adding a loss function e.g RMSE os NSE by comparing with the observed and predicted,
+            can add a more advanced evaluation by changing an objective function e.g the RMSE os NSE by comparing with the observed and predicted,
             and changing the control variables::
 
             class Problem(MixedVarProblem):
@@ -176,6 +176,14 @@ class MixedVariableOptimizer:
             attributes not listed here. Since this class is essentially a
             subclass of dict with attribute accessors, one can see which
             attributes are available using the `OptimizeResult.keys` method.
+
+            If no callback function is provided, a progress bar is shown in the console.
+            The progress bar reflects the number of algorithm iterations, not the number of APSIM simulations
+            executed by apsimNGpy. The total number of iterations displayed is therefore an estimate and depends
+            on the optimization algorithm, the nature of the problem, and the objective function (metric) being minimized
+            .In some cases, the algorithm may converge and terminate before the displayed total number of iterations is
+            reached. Please also note that an algorithm can have very many functional evaluations, hence, the number of
+            seconds per iterations as displayed maybe significantly higher
             """
         try:
             options = kwargs.get('options')
@@ -620,7 +628,13 @@ class MixedVariableOptimizer:
     iteration, rather than multiple times for all the population members; the
     interpreter overhead is reduced.
 
-    .. versionadded:: 0.15.0
+    When minimizing with this function and display=False or no callback, a progress bar is shown in the console.
+    The progress bar reflects the number of algorithm iterations, not the number of APSIM simulations
+    executed by apsimNGpy. The total number of iterations displayed is therefore an estimate and depends
+    on the optimization algorithm, the nature of the problem, and the objective function (metric) being minimized
+    .In some cases, the algorithm may converge and terminate before the displayed total number of iterations is
+    reached. Please also note that an algorithm can have very many functional evaluations, hence, the number of
+    seconds per iterations as displayed maybe significantly higher
 
 
         Reference:

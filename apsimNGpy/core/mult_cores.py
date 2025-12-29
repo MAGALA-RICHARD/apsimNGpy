@@ -21,7 +21,9 @@ from apsimNGpy.exceptions import ApsimRuntimeError
 from apsimNGpy.parallel.process import custom_parallel
 from apsimNGpy.settings import logger
 from apsimNGpy.core_utils.database_utils import write_results_to_sql
-
+from apsimNGpy.core_utils.utils import timer
+from functools import partial
+from apsimNGpy.core._multi_core import _runner
 ID = 0
 # default cores to use
 CORES = max(1, math.ceil(os.cpu_count() * 0.85))
@@ -66,7 +68,8 @@ class MultiCoreManager:
     ran_ok: bool = False
     tag = 'multi-core'
     default_db = 'manager_datastorage.db'
-    incomplete_jobs: list = field(default_factory=list)
+    incomplete_jobs: set = field(default_factory=set)
+    table_prefix = '__multi_core__'
 
     def __post_init__(self):
         """
@@ -145,58 +148,15 @@ class MultiCoreManager:
 
     @property
     def tables(self):
+        from apsimNGpy.core_utils.database_utils import get_db_table_names
         "Summarizes all the tables that have been created from the simulations"
         if os.path.exists(self.db_path) and os.path.isfile(self.db_path) and str(self.db_path).endswith('.db'):
-            dt = read_db_table(self.db_path, report_name='table_names')
+            tables = get_db_table_names(self.db_path)
+            tables = [table for table in tables if table.startswith(self.table_prefix)]
             # get only unique tables
-            return set(dt.table.values)
+            return set(tables)
         else:
             raise ValueError("Attempting to get results from database before running all jobs")
-        return None
-
-    def run_parallel(self, model):
-        """
-        This is the worker for each simulation.
-
-        The function performs two things; runs the simulation and then inserts the simulated data into a specified
-        database.
-
-        :param model: str, dict, or Path object related .apsimx json file
-
-        returns None
-        """
-        # initialize the apsimNGpy model simulation engine
-        _model = ApsimModel(model, out_path=None)
-        table_names = _model.inspect_model('Models.Report', fullpath=False)
-        # we want a unique report for each crop, because they are likely to have different database schemas
-        crops = _model.inspect_model('Models.PMF.Plant', fullpath=False)
-        crop_table = [f"{a}_{b}" for a, b in zip(table_names, crops)]
-        tables = '_'.join(crop_table)
-        # run the model. without specifying report names, they will be detected automatically
-        try:
-            _model.run()
-            # aggregate the data using the aggregated function
-            if self.agg_func:
-                if self.agg_func not in {'sum', 'mean', 'max', 'min', 'median', 'std'}:
-                    raise ValueError(f"unsupported aggregation function {self.agg_func}")
-                dat = _model.results.groupby('source_table')  # if there are more than one table, we do not want to
-                # aggregate them together
-                out = dat.agg(self.agg_func, numeric_only=True)
-
-                out['source_name'] = Path(model).name
-
-            else:
-                out = _model.results
-            # track the model id
-            out['source_name'] = Path(model).name
-            # insert the simulated dataset into the specified database
-            self.insert_data(out, table=tables)
-            # clean up files related _model object
-            _model.clean_up(coerce=False)
-            # collect garbage before gc comes in
-
-        except ApsimRuntimeError:
-            self.incomplete_jobs.append(_model.path)
 
     def get_simulated_output(self, axis=0):
         """
@@ -356,8 +316,11 @@ class MultiCoreManager:
         if clear_db:
             self.clear_db()  # each simulation is fresh,
         # future updates include support for skipping some simulation
+
+        worker = partial(_runner, agg_func=self.agg_func, incomplete_jobs=self.incomplete_jobs,
+                         db= self.db_path, table_prefix=self.table_prefix)
         try:
-            for _ in custom_parallel(self.run_parallel, jobs, ncores=n_cores, use_threads=threads,
+            for _ in custom_parallel(func=worker, iterable=jobs, ncores=n_cores, use_threads=threads,
                                      progress_message='Processing all jobs', unit='simulation'):
                 pass  # holder to unzip jobs
 
@@ -375,11 +338,11 @@ class MultiCoreManager:
 
                     logger.info(f"Retrying {len_incomplete} failed job(s) with {cores} core(s).")
                     # iterable is replaced by the incomplete jobs, but we need to copy first
-                    incomplete__jobs = tuple(copy.deepcopy(self.incomplete_jobs))
+                    incomplete__jobs = tuple(self.incomplete_jobs)
                     # clear to prepare for new assessments
                     self.incomplete_jobs.clear()  # at every simulation, an incomplete job is appended
                     for _ in custom_parallel(
-                            self.run_parallel,
+                            worker,
                             incomplete__jobs,
                             ncores=cores,
                             use_thread=False,
@@ -418,15 +381,17 @@ MultiCoreManager.save_tocsv.__doc__ = """  Persist simulation results to a SQLit
 if __name__ == '__main__':
     import os, uuid, tempfile
     from tempfile import NamedTemporaryFile
+    from apsimNGpy.core_utils.database_utils import read_db_table
 
     # quick tests
-    create_jobs = [ApsimModel('Maize').path for _ in range(16 * 2)]
+    create_jobs = [ApsimModel('Maize').path for _ in range(16*2)]
+
     with tempfile.TemporaryDirectory() as td:
         db_path = Path(td) / f"{uuid.uuid4().hex}.db"
         test_agg_db = Path(td) / f"{uuid.uuid4().hex}.db"
 
         Parallel = MultiCoreManager(db_path=test_agg_db, agg_func='mean')
-        Parallel.run_all_jobs(create_jobs, n_cores=16, threads=False, clear_db=False, retry_rate=1)
+        Parallel.run_all_jobs(create_jobs, n_cores=6, threads=False, clear_db=False, retry_rate=1)
         df = Parallel.get_simulated_output(axis=0)
         Parallel.clear_scratch()
         # test saving to already an existing table

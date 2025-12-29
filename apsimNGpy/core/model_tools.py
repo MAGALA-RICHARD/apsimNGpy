@@ -29,6 +29,7 @@ APSIM_VERSION = apsim_version(release_number=True)
 
 from collections.abc import Iterable
 
+
 @cache
 def select_thread(multithread):
     if multithread:
@@ -110,7 +111,7 @@ def find_all_in_scope(parent, child_class):
         child_results = find_all_in_scope(child, child_class)
         if child_results:
             all_in_scope.extend(child_results)
-    return all_in_scope
+    return tuple(all_in_scope)
 
 
 def find_descendant(parent, child_class):
@@ -789,11 +790,11 @@ def _edit_in_cultivar(_model, model_name, param_values, simulations=None, verbos
     cultivar_params = _model._cultivar_params(cultivar)
 
     if isinstance(values, str):
-        cultivar_params[commands] = values.strip() # direct update
+        cultivar_params[commands] = values.strip()  # direct update
     elif is_scalar(values):
-        cultivar_params[commands] = values # direct update
+        cultivar_params[commands] = values  # direct update
     else:
-        for cmd, val in zip(commands, values):# esle iterate
+        for cmd, val in zip(commands, values):  # esle iterate
             cultivar_params[cmd.strip()] = val.strip() if isinstance(val, str) else val
 
     # Apply updated commands

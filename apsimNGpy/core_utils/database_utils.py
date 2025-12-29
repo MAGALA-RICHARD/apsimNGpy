@@ -510,7 +510,7 @@ def _default_insert_fn(db: str, df: DataFrame, table: str, if_exists: str) -> No
 
     from sqlalchemy import create_engine
     eng = create_engine(f"sqlite:///{db}")
-    df.to_sql(table, eng, if_exists=if_exists, index=False)
+    df.to_sql(table, eng, if_exists=if_exists, index=False,chunksize=20)
 
 
 def _to_dataframe(obj: Any) -> DataFrame:

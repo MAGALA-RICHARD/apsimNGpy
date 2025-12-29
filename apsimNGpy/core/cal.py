@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from apsimNGpy.core_utils.utils import timer
 from apsimNGpy.core.apsim import ApsimModel
-from apsimNGpy.core.pythonet_config import Models
+import Models
 
 
 class OptimizationBase(ApsimModel):

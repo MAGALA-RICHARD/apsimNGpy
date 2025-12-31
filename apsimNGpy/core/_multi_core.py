@@ -20,7 +20,7 @@ def process_id():
 
 @lru_cache(maxsize=100)
 def schema_id(schema):
-    _schema = tuple(schema)
+    _schema = tuple(schema) if not isinstance(schema, (tuple, str)) else schema
     payload = "|".join(map(str, _schema)).encode("utf-8")
     return hashlib.md5(payload).hexdigest()[:8]
 
@@ -72,7 +72,7 @@ def _runner(model: str,
                 out['ExecutionID'] = schema_id(Path(model).name)
                 out['ProcessID'] = run_id
                 # return data in a format that can be used by the decorator writing data to sql
-                # generate unique table id based on schema
+                # generated unique table id is based on schema
                 tables = auto_generate_schema_id(columns=tuple(out.columns), prefix=table_prefix)
 
                 out= {'data': out, 'table': tables}

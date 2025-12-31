@@ -12,7 +12,7 @@ counter = Value("i", 0)
 lock = Lock()
 
 
-def get_execution_id():
+def process_id():
     with lock:
         counter.value += 1
         return counter.value
@@ -49,6 +49,7 @@ def _runner(model: str,
         returns None
         """
         # initialize the apsimNGpy model simulation engine
+        # aim is to run and return results hash the columns to create a unique table name to avoid schema collisions
         with ApsimModel(model) as _model:
             try:
                 _model.run()
@@ -65,7 +66,7 @@ def _runner(model: str,
 
                 else:
                     out = _model.results
-                run_id = get_execution_id()
+                run_id = process_id()
 
                 # track the model id
                 out['ExecutionID'] = schema_id(Path(model).name)
@@ -74,7 +75,8 @@ def _runner(model: str,
                 # generate unique table id based on schema
                 tables = auto_generate_schema_id(columns=tuple(out.columns), prefix=table_prefix)
 
-                return {'data': out, 'table': tables}
+                out= {'data': out, 'table': tables}
+                return out
 
             except ApsimRuntimeError:
                 if isinstance(incomplete_jobs, list):

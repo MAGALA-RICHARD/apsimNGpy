@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from dataclasses import field
 from pathlib import Path
 from typing import Union, Literal
-
+from apsimNGpy.core_utils.database_utils import get_db_table_names, clear_table
 import pandas as pd
 from sqlalchemy import Table, Column, String, Float, Integer, MetaData
 from sqlalchemy import create_engine, text
@@ -31,7 +31,7 @@ CORES = max(1, math.ceil(os.cpu_count() * 0.85))
 csv_doc = pd.DataFrame().to_csv.__doc__
 
 
-def is_my_iterable(value):
+def _is_my_iterable(value):
     """Check if a value is an iterable, but not a string."""
     return isinstance(value, Iterable) and not isinstance(value, str)
 
@@ -74,7 +74,7 @@ class MultiCoreManager:
 
     def __post_init__(self):
         """
-        Initialize the database, note that this database is cleaned up everytime the object is called, to avoid table name errors
+        Initialize the database, note that this database tables are cleaned up everytime the object is called, to avoid table name errors
         :return:
         """
         self.db_path = self.db_path or f"{self.tag}_{self.default_db}"
@@ -208,23 +208,19 @@ class MultiCoreManager:
         return self.get_simulated_output(axis=0)
 
     def clear_db(self):
-        """Clears the database before any simulations.
-
-          First attempt a complete ``deletion`` of the database if that fails, existing tables are all deleted"""
+        """Clears the database before any simulations."""
         if not str(self.db_path).endswith('.db'):
             raise ValueError(f"Cannot clear invalid db path: {self.db_path}")
         if os.path.exists(self.db_path):
             # clear only tables starting with the stated prefix
-            from apsimNGpy.core_utils.database_utils import get_db_table_names, clear_table
             tables = get_db_table_names(self.db_path)
             for tb in tables:
                 try:
-                   _ = clear_table(self.db_path, tb) if tb.startswith(f"{self.table_prefix}") else None
+                    _ = clear_table(self.db_path, tb) if tb.startswith(f"{self.table_prefix}") else None
                 except PermissionError:
                     pass
                 except FileNotFoundError:
                     pass
-
 
     def clear_scratch(self):
         """clears the scratch directory where apsim files are cloned before being loaded. should be called after all simulations are completed
@@ -418,14 +414,14 @@ if __name__ == '__main__':
     from apsimNGpy.core_utils.database_utils import read_db_table
 
     # quick tests
-    create_jobs = [ApsimModel('Maize').path for _ in range(16 * 2)]
 
     with tempfile.TemporaryDirectory() as td:
+        create_jobs = [ApsimModel('Maize', out_path = Path(td)/f"{i}.apsimx").path for i in range(16 * 20)]
         db_path = Path(td) / f"{uuid.uuid4().hex}.db"
         test_agg_db = Path(td) / f"{uuid.uuid4().hex}.db"
 
-        Parallel = MultiCoreManager(db_path=test_agg_db, agg_func='mean')
-        Parallel.run_all_jobs(create_jobs, n_cores=6, threads=True, clear_db=False, retry_rate=1)
+        Parallel = MultiCoreManager(db_path=test_agg_db, agg_func=None)
+        Parallel.run_all_jobs(create_jobs, n_cores=12, threads=True, clear_db=False, retry_rate=1)
         df = Parallel.get_simulated_output(axis=0)
         Parallel.clear_scratch()
         # test saving to already an existing table

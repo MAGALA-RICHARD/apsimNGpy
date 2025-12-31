@@ -712,7 +712,7 @@ class CoreModel(PlotManager):
             simulations: Union[tuple, list] = None,
             clean_up: bool = True,
             verbose: bool = False,
-            timeout: int = 800,
+            timeout: int = 100,
             cpu_count: int = -1,
             **kwargs) -> 'CoreModel':
         """
@@ -739,6 +739,7 @@ class CoreModel(PlotManager):
         cpu_count: int, Optional default is -1, referring to all threads
             This parameter is useful when the number of simulations are more than 1, below that performance differences are minimal
             added in 0.39.11.21+
+
 
         kwargs: **dict
             Additional keyword arguments, e.g., to_csv=True, use this flag to correct results from
@@ -775,7 +776,8 @@ class CoreModel(PlotManager):
 
            Related APIs: :attr:`results` and :meth:`get_simulated_output`.
              """
-
+      #  apsim_bin_path = configuration.bin_path if apsim_bin_path is AUTO_PATH else apsim_bin_path
+#
         def dispose_db():
             try:
                 self._DataStore.Dispose()
@@ -5197,7 +5199,9 @@ if __name__ == '__main__':
         print('Path exists before exit:', Path(corep.path).exists())
         print('datastore Path exists before exit:', Path(corep.datastore).exists())
         corep.add_base_replacements()
-        corep.inspect_file(cultivar=True)
+        ##corep.inspect_file(cultivar=True)
+        clok = corep.inspect_model_parameters('Models.Clock', model_name='Clock')
+        print(clok)
         water = ModelTools.find_child(corep.Simulations, child_class=Models.WaterModel.WaterBalance,
                                       child_name='SoilWater')
         waterb = CastHelper.CastAs[Models.WaterModel.WaterBalance](water)

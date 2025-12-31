@@ -18,6 +18,7 @@ from shutil import copy2
 from typing import Union, Optional, Any
 import gc
 import psutil
+from apsimNGpy.core_utils.utils import timer
 from dotenv import load_dotenv
 
 from apsimNGpy.settings import CONFIG_PATH, create_config, logger
@@ -314,7 +315,7 @@ class Configuration:
 
     def __post_init__(self):
         """if bin_path is None, this function will normalize to a global one store on the disk"""
-        self.bin_path = get_apsim_bin_path() or any_bin_path_from_env() if self.bin_path is None else self.bin_path
+        self.bin_path = get_apsim_bin_path() if self.bin_path is None else self.bin_path
 
     def set_temporal_bin_path(self, temporal_bin_path):
         """
@@ -380,7 +381,7 @@ class Configuration:
 
     def release_temporal_bin_path(self):
         """release and set back to the global bin path"""
-        self.bin_path = get_apsim_bin_path() or any_bin_path_from_env()
+        self.bin_path = get_apsim_bin_path()
 
 
 configuration = Configuration()
@@ -773,25 +774,11 @@ class apsim_bin_context(AbstractContextManager):
 
     def __enter__(self):
         # remove current bin_path
-        __ap = globals().get('ApsimModel', '__model_apsimx')
-        ___core = globals().get('CoreModel', '__model_core')
-        globals().pop("ApsimModel", None)
-        globals().pop("CoreModel", None)
-        del __ap
-        del ___core
-        gc.collect()
-        remove_bin_from_syspath(configuration.bin_path)
-        from apsimNGpy.core.load_clr import start_pythonnet
-        start_pythonnet()
-        #
         # Save and set
         configuration.set_temporal_bin_path(self.bin_path)
-        # now we load binaries to the python path
-        #load_bin_2path(_bin_path=self.bin_path)
         return self
 
     def __exit__(self, exc_type, exc, tb):
-        remove_bin_from_syspath(Path(self.bin_path))
         # Restore previous paths (even if it was None/empty)
         configuration.release_temporal_bin_path()
         return False  # do not suppress exceptions
@@ -820,26 +807,3 @@ if __name__ == "__main__":
                 with apsim_bin_context(dotenv_path="dot_ev_path"):
                     pass
 
-if __name__ == "__main__":
-    #from apsimNGpy.core.apsim import ApsimModel
-    remove_bin_from_syspath(configuration.bin_path)
-    with apsim_bin_context(apsim_bin_path=r"C:\Users\rmagala\AppData\Local\Programs\APSIM2025.12.7939.0\bin") as bin:
-
-        from apsimNGpy.core.core import CoreModel
-
-        model =CoreModel('Maize', out_path='cc.apsimx')
-        print(configuration.bin_path)
-
-
-        print(model.Simulations.ApsimVersion)
-    ap = os.path.realpath('maizeTT.apsimx')
-    try:
-
-        maize = load_crop_from_disk('Maize', out=ap)
-        print(f'path exists') if os.path.exists(ap) else print('file does not exist')
-    finally:
-        try:
-            Path(ap).unlink(missing_ok=True)
-            print('path is cleaned up')
-        except PermissionError:
-            pass

@@ -190,7 +190,7 @@ class TestCoreModel(BaseTester):
             self.assertTrue(len(sims) > 0)
             sims = model.find_simulations(simulations=None)
             # ensures simulations are enclosed in a list
-            self.assertIsInstance(sims, list)
+            self.assertIsInstance(sims, tuple)
             self.assertTrue(len(sims) > 0)
 
     def test_find__simulations_when_str(self):

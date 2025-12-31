@@ -24,6 +24,7 @@ from apsimNGpy.core_utils.database_utils import write_results_to_sql
 from apsimNGpy.core_utils.utils import timer
 from functools import partial
 from apsimNGpy.core._multi_core import _runner
+
 ID = 0
 # default cores to use
 CORES = max(1, math.ceil(os.cpu_count() * 0.85))
@@ -148,6 +149,10 @@ class MultiCoreManager:
 
     @property
     def tables(self):
+        """
+        Returns a list of tables that were created during multiprocessing
+
+        """
         from apsimNGpy.core_utils.database_utils import get_db_table_names
         "Summarizes all the tables that have been created from the simulations"
         if os.path.exists(self.db_path) and os.path.isfile(self.db_path) and str(self.db_path).endswith('.db'):
@@ -160,9 +165,32 @@ class MultiCoreManager:
 
     def get_simulated_output(self, axis=0):
         """
-        Get simulated output from the API
+        Get simulated output from the API.
 
-        :param axis: if axis =0, concatenation is along the ``rows`` and if it is 1 concatenation is along the ``columns``
+        Results are retrieved based on the table prefix provided during the setup.
+
+        Parameters
+        ----------
+        axis : int, optional
+            Specifies how simulation outputs are concatenated.
+            If ``axis=0``, outputs are concatenated along rows.
+            If ``axis=1``, outputs are concatenated along columns.
+
+        Notes
+        -----
+        Based on the source file name and execution context, two additional columns
+        are appended to the returned dataset:
+
+        - ``ExecutionID``
+          A unique identifier assigned to each simulation run, independent of
+          execution order or process.
+
+        - ``ProcessID``
+          Identifies the process responsible for executing the simulation. For example,
+          when running on six cores, six distinct process IDs will be assigned.
+
+        These identifiers facilitate traceability and reproducibility across serial
+        and parallel execution workflows.
         """
         if axis not in {0, 1}:
             # Errors should go silently
@@ -173,7 +201,10 @@ class MultiCoreManager:
 
     @property
     def results(self):
-        """property methods for getting simulated output"""
+        """property methods for getting simulated output.
+        uses :meth:`~apsimNGpy.core.mult_cores.MultiCoreManager.get_simulated_output` under the hood
+        to create results attribute of the simulated data
+        """
         return self.get_simulated_output(axis=0)
 
     def clear_db(self):
@@ -183,12 +214,17 @@ class MultiCoreManager:
         if not str(self.db_path).endswith('.db'):
             raise ValueError(f"Cannot clear invalid db path: {self.db_path}")
         if os.path.exists(self.db_path):
+            # clear only tables starting with the stated prefix
+            from apsimNGpy.core_utils.database_utils import get_db_table_names, clear_table
+            tables = get_db_table_names(self.db_path)
+            for tb in tables:
+                try:
+                   _ = clear_table(self.db_path, tb) if tb.startswith(f"{self.table_prefix}") else None
+                except PermissionError:
+                    pass
+                except FileNotFoundError:
+                    pass
 
-            try:
-                os.remove(self.db_path)
-            except (PermissionError, FileNotFoundError):
-                # if removing it has failed due to permission errors, connect to it and remove all tables
-                delete_all_tables(self.db_path)
 
     def clear_scratch(self):
         """clears the scratch directory where apsim files are cloned before being loaded. should be called after all simulations are completed
@@ -271,11 +307,9 @@ class MultiCoreManager:
             results = getattr(self, "results", None)
             if results is None or (isinstance(results, pd.DataFrame) and results.empty):
                 raise ValueError("No simulation results to save: `self.results` is empty or missing.")
-            if not isinstance(results, (pd.DataFrame, dict)):
-                raise TypeError(f"`self.results` must be a pandas DataFrame,or dict  got {type(results)!r}.")
             return results
 
-        _ = _write()
+        _write()
 
     def save_tocsv(self, path_or_buf, **kwargs):
 
@@ -302,7 +336,7 @@ class MultiCoreManager:
             number of cores to use
 
         clear_db: (bool)
-           For clearing the database existing data if any. Defaults is True
+           For clearing the database existing data tables before writing new ones if any. Defaults is True
 
         kwargs:
           retry_rate: (int, optional)
@@ -318,7 +352,7 @@ class MultiCoreManager:
         # future updates include support for skipping some simulation
 
         worker = partial(_runner, agg_func=self.agg_func, incomplete_jobs=self.incomplete_jobs,
-                         db= self.db_path, table_prefix=self.table_prefix)
+                         db=self.db_path, table_prefix=self.table_prefix)
         try:
             for _ in custom_parallel(func=worker, iterable=jobs, ncores=n_cores, use_threads=threads,
                                      progress_message='Processing all jobs', unit='simulation'):
@@ -384,14 +418,14 @@ if __name__ == '__main__':
     from apsimNGpy.core_utils.database_utils import read_db_table
 
     # quick tests
-    create_jobs = [ApsimModel('Maize').path for _ in range(16*2)]
+    create_jobs = [ApsimModel('Maize').path for _ in range(16 * 2)]
 
     with tempfile.TemporaryDirectory() as td:
         db_path = Path(td) / f"{uuid.uuid4().hex}.db"
         test_agg_db = Path(td) / f"{uuid.uuid4().hex}.db"
 
         Parallel = MultiCoreManager(db_path=test_agg_db, agg_func='mean')
-        Parallel.run_all_jobs(create_jobs, n_cores=6, threads=False, clear_db=False, retry_rate=1)
+        Parallel.run_all_jobs(create_jobs, n_cores=6, threads=True, clear_db=False, retry_rate=1)
         df = Parallel.get_simulated_output(axis=0)
         Parallel.clear_scratch()
         # test saving to already an existing table
@@ -424,4 +458,4 @@ if __name__ == '__main__':
                 ve = True
             assert ve == False, 'append method failed'
         finally:
-           pass
+            pass

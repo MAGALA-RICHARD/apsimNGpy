@@ -80,7 +80,7 @@ def load_pythonnet(bin_path: Union[str, Path] = AUTO):
      path. Please edit the system environmental variable on your computer or set it using: :func:`~apsimNGpy.core.config.set_apsim_bin_path`
 
     """
-
+    @cache
     def _load(_bin_path):
         start_pythonnet()
         #print('Loading APSIM models...:', configuration.bin_path)

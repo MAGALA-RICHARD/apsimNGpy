@@ -28,6 +28,7 @@ from apsimNGpy.exceptions import ApsimRuntimeError
 from apsimNGpy.settings import *
 from apsimNGpy.core_utils.utils import timer
 
+AUTO = object()
 SchemaKey = Tuple[Tuple[Hashable, str], ...]  # ((column_name, dtype_str), ...)
 
 
@@ -45,8 +46,22 @@ else:  # Linux or macOS
     APSIM_EXEC = apsim_bin_path / "Models"
 
 
+@cache
+def get_apsim_executable(bin_path) -> str:
+    bin_path = Path(bin_path)
+    # Determine executable based on OS
+    if platform.system() == "Windows":
+        execU = bin_path / "Models.exe"
+    else:  # Linux or macOS
+        execU = bin_path / "Models"
+    return os.path.realpath(execU)
+
+
+from System import GC
+
+
+
 def invoke_csharp_gc():
-    from System import GC
     GC.Collect()
     GC.WaitForPendingFinalizers()
 
@@ -126,7 +141,7 @@ def _ensure_model(path: Union[str, Path]) -> str:
     return str(p)
 
 
-@cache
+@lru_cache(maxsize=None)
 def _get_arguments(model: Union[Path, str],
                    *,
                    apsim_exec: Optional[Union[Path, str]] = APSIM_EXEC,
@@ -145,10 +160,6 @@ def _get_arguments(model: Union[Path, str],
     if to_csv:
         cmd.append("--csv")
 
-    # Working directory default: model’s folder (so relative paths in .apsimx work)
-    if cwd is None:
-        cwd = str(Path(model_path).parent)
-
     # capture stderr; capture stdout only if verbose
     stdout_choice = subprocess.PIPE  # if verbose else subprocess.DEVNULL
     return cmd, {'stdout': stdout_choice,
@@ -157,21 +168,21 @@ def _get_arguments(model: Union[Path, str],
                  'timeout': timeout,
                  'encoding': "utf-8",
                  'stderr': subprocess.PIPE,
-                 'env': dict(os.environ, **(env or {})),
                  'errors': 'replace'
                  }
+
 
 
 def run_model_externally(
         model: Union[Path, str],
         *,
-        apsim_exec: Optional[Union[Path, str]] = APSIM_EXEC,
+        apsim_bin_path: Optional[Union[Path, str]] = AUTO,
         verbose: bool = False,
         to_csv: bool = False,
-        timeout: int = 600,
+        timeout: int = 20,
         cpu_count=-1,
         cwd: Optional[Union[Path, str]] = None,
-        env: Optional[Mapping[str, str]] = None, ) -> subprocess.CompletedProcess[str]:
+) -> subprocess.CompletedProcess[str]:
     """
     Run APSIM externally (cross-platform) with safe defaults.
 
@@ -185,7 +196,9 @@ def run_model_externally(
 
           Related API: :func:`~apsimNGpy.core.runner.run_from_dir`
     """
-
+    if apsim_bin_path is AUTO:
+        apsim_bin_path = configuration.bin_path
+    apsim_exec = get_apsim_executable(apsim_bin_path)
     try:
         ar = _get_arguments(model,
                             apsim_exec=apsim_exec,
@@ -194,13 +207,13 @@ def run_model_externally(
                             timeout=timeout,
                             cpu_count=cpu_count,
                             cwd=cwd,
-                            env=env)
-
+                            )
+        cmd, others = ar
         proc = subprocess.run(
-            ar[0], **ar[1]
+            cmd, **others
         )
     finally:
-
+        pass
         # clear any external file database locks by using Garbage collector; as a matter of fact, python's gc failed to do the job
         invoke_csharp_gc()
 
@@ -493,10 +506,11 @@ def apsim_executable(path, *args):
     return base
 
 
+@timer
 def run_p(path):
     run(apsim_executable(path))
 
-
+@timer
 def trial_run(self, report_name=None,
               simulations=None,
               clean=False,
@@ -956,17 +970,17 @@ if __name__ == '__main__':
         a1 = time.perf_counter()
         run_model_externally(maize)
         print(time.perf_counter() - a1, 'seconds for running model')
+        a = time.perf_counter()
+        dat = dir_simulations_to_dfs('.', '*.apsimx')
+
+        df = list(dat)
+        b = time.perf_counter()
+        print(b - a, 'seconds in dir mode')
     finally:
         pass
-    try:
-        a1 = time.perf_counter()
-        run_model_externally(maize)
-        print(time.perf_counter() - a1, 'seconds for running model')
-    finally:
-        os.remove(maize)
-    a = time.perf_counter()
-    dat = collect_db_from_dir('.', '*.apsimx')
 
-    df = list(dat)
-    b = time.perf_counter()
-    print(b - a, 'seconds')
+        os.remove(maize)
+
+    from apsimNGpy.core.apsim import ApsimModel
+    with ApsimModel('Mungbean') as model:
+        trial_run(model)

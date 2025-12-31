@@ -52,10 +52,11 @@ class TestMultiCoreManager(BaseTester):
         self.assertIn('clear_db_test', table_names)
 
         manager.clear_db()
+        fn = get_db_table_names(manager.db_path)
 
         if os.path.exists(self.test_clear_db):
             # then it is only cleared inside but not deleted
-            table_names = get_db_table_names(self.test_clear_db)
+            table_names = manager.tables
             # if clear was successful, then the table names are empty
             self.assertFalse(table_names)
         else:

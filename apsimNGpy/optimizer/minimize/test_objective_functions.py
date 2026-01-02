@@ -25,9 +25,9 @@ def problem(metric):
 
 
 db = r"D:\package\fun_evaluation.db"
+metrics_table = 'metrics'
 
-
-@write_results_to_sql(db_path=db, table='de')
+@write_results_to_sql(db_path=db, table=metrics_table)
 def write_results(de, metric, pop_size=20, algorithm='de', time_taken =None):
 
     from pandas import DataFrame
@@ -104,9 +104,15 @@ if __name__ == "__main__":
         mn =model.inspect_model_parameters(model_type='Manager',model_name='Sow using a variable rule')
 
 
-    for m in (  "bias",    "RMSE" , 'CCC', 'R2'):
+    for m in metrics:
         print(m)
-       # main(db_path=db, function_objective=m, algorithm="Nelder-Mead")
+        main(db_path=db, function_objective=m, algorithm="Nelder-Mead")
+        import gc
+        gc.collect()
+
+    for m in metrics:
+        print(m)
+        main(db_path=db, function_objective=m, algorithm="Powell")
         import gc
         gc.collect()
 

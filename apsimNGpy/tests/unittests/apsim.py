@@ -37,12 +37,14 @@ class TestCoreModel(BaseTester):
             model.set_params(values=[1.4], commands=['[Leaf].Photosynthesis.RUE.FixedValue'],
                              sowed=True, rename=rename,
                              path=".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82", )
-            import time
-            # model.inspect_file(cultivar=True)
             model.run()
             mn2 = model.results.mean(numeric_only=True)
-            out = mn2-mn1
-            sower = model.inspect_model_parameters(model_type='Manager', model_name='Sow using a variable rule')
+            out = list(mn2-mn1)
+            out  =  [i==0 for i in out]
+
+            out = all(out)
+            self.assertFalse(out, msg='editing cultivar failed to change simulated values')
+            sower = model.inspect_model_parameters(model_type='Models.Manager', model_name='Sow using a variable rule')
             self.assertIn(rename, sower.values())
 
     def test_evaluate_simulated_output(self):

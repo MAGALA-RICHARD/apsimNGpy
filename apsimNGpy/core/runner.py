@@ -59,6 +59,100 @@ def get_apsim_executable(bin_path) -> str:
 
 from System import GC
 
+import subprocess
+from pathlib import Path
+from typing import Union
+
+from apsimNGpy.settings import logger
+
+
+
+AUTO = object()
+@timer
+def run_apsim_by_path(
+    model: Union[str, Path],
+    *,
+    bin_path: Union[str, Path, object] = AUTO,
+    timeout: int = 800,
+    ncores: int = -1,
+    verbose: bool = False,
+    to_csv: bool = False,
+) -> None:
+    """
+    Execute an APSIM model safely and reproducibly.
+
+    Parameters
+    ----------
+    model : str | Path
+        Path to the APSIM .apsimx model file.
+    bin_path : str | Path | AUTO
+        APSIM bin directory. Defaults to configured APSIM path.
+    timeout : int
+        Maximum execution time in seconds.
+    ncores : int
+        Number of CPU cores (-1 uses all available).
+    verbose : bool
+        Enable APSIM verbose output.
+    to_csv : bool
+        Export APSIM outputs to CSV.
+
+    Raises
+    ------
+    ApsimRuntimeError
+        If APSIM execution fails or times out.
+    """
+
+    # Resolve APSIM binary
+    if bin_path is AUTO:
+        bin_path = configuration.bin_path
+
+    apsim_exec = _ensure_exec(get_apsim_executable(bin_path))
+    model_path = _ensure_model(model)
+
+    cmd: list[str] = [
+        str(apsim_exec),
+        str(model_path),
+        "--cpu-count",
+        str(ncores),
+    ]
+
+    if verbose:
+        cmd.append("--verbose")
+    if to_csv:
+        cmd.append("--csv")
+
+    logger.debug("Executing APSIM command: %s", " ".join(cmd))
+
+    try:
+        result = subprocess.run(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=timeout,
+            check=False,   # we handle errors explicitly
+            text=True,
+        )
+
+    except subprocess.TimeoutExpired as exc:
+        logger.error("APSIM execution timed out after %s seconds", timeout)
+        raise ApsimRuntimeError(
+            f"APSIM execution exceeded timeout ({timeout}s)"
+        ) from exc
+
+    # Log outputs
+    if verbose:
+        logger.info(result.stdout.strip())
+
+    if result.stderr:
+        logger.error(result.stderr.strip())
+
+    # Non-zero return code → failure
+    if result.returncode != 0:
+        raise ApsimRuntimeError(
+            f"APSIM failed (exit code: {result.returncode})\n"
+            f"STDERR:\n{result.stderr}\n"
+            f"STDOUT:\n{result.stdout}"
+        )
 
 
 def invoke_csharp_gc():
@@ -968,17 +1062,10 @@ if __name__ == '__main__':
     maize = load_crop_from_disk('Maize', out='maizee.apsimx')
     try:
         a1 = time.perf_counter()
-        run_model_externally(maize)
-        print(time.perf_counter() - a1, 'seconds for running model')
-        a = time.perf_counter()
-        dat = dir_simulations_to_dfs('.', '*.apsimx')
-
-        df = list(dat)
+        run_apsim_by_path(maize)
         b = time.perf_counter()
-        print(b - a, 'seconds in dir mode')
+        print(b - a1, 'seconds in dir mode')
     finally:
-        pass
-
         os.remove(maize)
 
     from apsimNGpy.core.apsim import ApsimModel

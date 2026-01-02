@@ -1,3 +1,8 @@
+"""
+Docstring for core.senstivitymanager
+guarranted to work on windows, R must be installed, not yet tested on Mac OS.
+We are building a dedicated apsimNGpy senstivity module away from the default one provided.
+"""
 import os
 import re
 import sys

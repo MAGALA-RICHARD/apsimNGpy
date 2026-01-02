@@ -9,6 +9,7 @@ metrics = (
     "RMSE",
     "MAE",
 )
+import gc
 from apsimNGpy.optimizer.minimize.single_mixed import MixedVariableOptimizer
 from apsimNGpy.optimizer.problems.smp import MixedProblem
 from apsimNGpy.tests.unittests.test_factory import obs
@@ -62,7 +63,7 @@ if __name__ == "__main__":
         import time
         @write_results_to_sql(db_path=db_path, table=f"{algorithm}_data", if_exists=if_exists)
         def run_for_metric(metric, algorithm=algorithm):
-            logger.info(f"Running metric: {metric} for algorithm: {algorithm}")
+            print(f"Running metric: {metric} for algorithm: {algorithm}")
             mp = problem(metric=metric)
             optimizer = MixedVariableOptimizer(problem=mp)
             mp.submit_factor(**cultivar_param_p.copy())
@@ -74,11 +75,11 @@ if __name__ == "__main__":
             t2 = time.perf_counter()
             time_taken =t2-t1
             print('time taken is: ', time_taken)
-            write_results(de=de, metric=metric, algorithm=algorithm, pop_size=pop_size, time_taken=time_taken)
             out = de
             print('Number of iterations:', out.nit)
             print('Number of function valuations:', out.nfev)
             print(f"x vars: ", out.cal_param_values)
+            write_results(de=de, metric=metric, algorithm=algorithm, pop_size=pop_size, time_taken=time_taken)
 
             return de.data
 
@@ -106,14 +107,12 @@ if __name__ == "__main__":
 
     for m in metrics:
         print(m)
-        main(db_path=db, function_objective=m, algorithm="Nelder-Mead")
-        import gc
+        main(db_path=db, function_objective=m, algorithm="L-BFGS-B")
         gc.collect()
 
     for m in metrics:
         print(m)
-        main(db_path=db, function_objective=m, algorithm="Powell")
-        import gc
+        main(db_path=db, function_objective=m, algorithm="BFGS")
         gc.collect()
 
 

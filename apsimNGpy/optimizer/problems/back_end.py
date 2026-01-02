@@ -1,3 +1,4 @@
+import sys
 from functools import cache
 from functools import cache
 from apsimNGpy.core_utils.utils import timer
@@ -331,11 +332,14 @@ def runner(model, params, table=None):
     # ideally out_path not needed, as ApsimNGpy generate random temporal files automatically when out_path is not provided
     with ApsimModel(model) as model:
         try:
-            [model.set_params(pa) for pa in params]
+            for p in params:
+                model.set_params(p)
         # There is a need at least to present to the user what is going on,because some errors maybe excepted, breaking the program
         except Exception as e:
             print(ValueError, f'occurred while setting parameters', e)
             raise ValueError(f"{str(e)} e") from e
+
+
         model.run()
         if not table:
             df = model.results

@@ -684,7 +684,7 @@ class MixedProblem:
     # Optimization Interface
     # -------------------------------------------------------------------------
 
-    def _insert_x_vars(self, x_vars: List[Any]) -> List[Dict[str, Any]]:
+    def _insert_x_vars(self, x_vars: List[Any]):
         """
         Insert optimized or sampled values into APSIM parameters efficiently.
 
@@ -695,24 +695,29 @@ class MixedProblem:
 
         Returns
         -------
-        list of dict
+        yield a dict
             Updated APSIM parameter sets ready for model execution.
         """
+
         name_value_map = dict(zip(self.var_names, x_vars))
         apsim_params = self.apsim_params
-        for param in apsim_params:
 
-            if 'cultivar' not in param:
+        for p in apsim_params:
+            param  = dict(p)
+            is_cultivar = param.get('cultivar', False)
+            if not is_cultivar:
                 keys = param.keys() & name_value_map.keys()
                 if keys:
                     param.update({k: name_value_map[k] for k in keys})
             else:
-                keys = param.keys() & name_value_map.keys()
-                if keys:
-                    param['values'] = [name_value_map[k] for k in keys]
-                    param['commands'] = [k for k in keys]
-                    # pop all keys here
-                    [param.pop(k, None) for k in keys]
+                commands, values = [], []
+                for name in self.var_names:
+                    if name in param:
+                        commands.append(name)
+                        values.append(name_value_map[name])
+                        param.pop(name)
+                param["commands"] = commands
+                param["values"] = values
 
             # now we can also pop 'cultivar' key
             param.pop('cultivar', None)
@@ -797,7 +802,9 @@ class MixedProblem:
                                  runner=runner, table=self.table, verbose=False)
             self.inputs_ok = passed
         try:
+
             predicted = runner(self.model, params=self._insert_x_vars(x), table=self.table)
+
             if callable(self.func):
                 return self.func(predicted)
             eval_out = eval_observed(
@@ -807,6 +814,7 @@ class MixedProblem:
                 obs_col=self.obs_column,
                 index=self.index,
                 method=self.accuracy_indicator)
+
 
             return eval_out
         except ApsimRuntimeError as ape:

@@ -284,6 +284,7 @@ class ApsimModel(CoreModel):
         # Apply to model
 
         self.edit_model_by_path(**pa)
+        self.save()
         return self
 
     def get_soil_from_web(self,

@@ -68,7 +68,7 @@ from apsimNGpy.settings import logger
 
 
 AUTO = object()
-@timer
+
 def run_apsim_by_path(
     model: Union[str, Path],
     *,

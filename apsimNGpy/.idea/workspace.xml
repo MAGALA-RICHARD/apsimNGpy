@@ -5,13 +5,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="5d471312-8496-4246-98d6-790439318160" name="Changes" comment="change the order of file name evaluation get_weather_from_web">
-      <change beforePath="$PROJECT_DIR$/tests/unittests/test_edits/Maize_nasa_1990_2001.met" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/unittests/test_edits/nasa_2.met" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/unittests/test_edits/temp_df684fdb-6cfa-11f0-8f37-089204ded298_MaizeAPSIM2024.5.7493.0.db-wal" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/unittests/test_edits/weatherdata/Maize_daymet_1990_2001.met" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/unittests/test_edits/weatherdata/__met_.met" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/unittests/test_edits/weatherdata/ame_met_test.met" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/unittests/test_edits/weatherdata/ames-test_write-to-file.met" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/apsimNGpy.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/apsimNGpy.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/D:\package\fun_evaluation.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/core_utils/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/core_utils/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/exp_rtest_ensure_edits_are_registered_while_in_context.apsimx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/maizee.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../uv.lock" beforeDir="false" afterPath="$PROJECT_DIR$/../uv.lock" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -44,6 +45,25 @@
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "MAGALA-RICHARD"
+  }
+}]]></component>
+  <component name="GithubProjectSettings">
+    <option name="branchProtectionPatterns">
+      <list>
+        <option value="main" />
+      </list>
+    </option>
+  </component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/MAGALA-RICHARD/apsimNGpy.git",
+    "accountId": "48cf6630-6258-4e45-8d69-0fd101285b23"
+  }
+}]]></component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/../README.rst" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" root2="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/core/base_data.py" root0="SKIP_INSPECTION" />
@@ -138,9 +158,12 @@
     "Python.weathermanager.executor": "Run",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "WebServerToolWindowFactoryState": "false",
     "git-widget-placeholder": "main",
+    "junie.onboarding.icon.badge.shown": "true",
     "last_opened_file_path": "D:/apsimNGpy",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
@@ -148,6 +171,7 @@
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
     "settings.editor.selected.configurable": "preferences.lookFeel",
+    "to.speed.mode.migration.done": "true",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
@@ -163,7 +187,7 @@
       <recent name="D:\package\src\apsimNGpy\tests\demos" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.tester_main">
+  <component name="RunManager" selected="Python.core">
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
       <module name="apsimNGpy" />
       <option name="ENV_FILES" value="" />
@@ -187,21 +211,18 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="main" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="cleaner" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="apsimNGpy" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/raw_docs" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/w" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/raw_docs/main.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/w/cleaner.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="true" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -210,44 +231,18 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="mult_cores" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="core" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="apsimNGpy" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/core" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/core/mult_cores.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="true" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="parallel simulations" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="apsimNGpy" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests/demos" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/tests/demos/parallel simulations.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/core/core.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="true" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -284,6 +279,9 @@
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests" />
       <option name="IS_MODULE_SDK" value="true" />
@@ -299,20 +297,41 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="utils" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="apsimNGpy" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/core_utils" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/core_utils/utils.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.core" />
+        <item itemvalue="Python.cleaner" />
+        <item itemvalue="Python.utils" />
         <item itemvalue="Python.tester_main" />
         <item itemvalue="Python.test_multcores" />
-        <item itemvalue="Python.main" />
-        <item itemvalue="Python.mult_cores" />
-        <item itemvalue="Python.parallel simulations" />
       </list>
     </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-python-sdk-5a2391486177-2887949eec09-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-233.13763.11" />
+        <option value="bundled-js-predefined-d6986cc7102b-3aa1da707db6-JavaScript-PY-252.27397.106" />
+        <option value="bundled-python-sdk-4e2b1448bda8-9a97661f3031-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-252.27397.106" />
       </set>
     </attachedChunks>
   </component>
@@ -410,6 +429,7 @@
       <workItem from="1755035988776" duration="62293000" />
       <workItem from="1755456103247" duration="4535000" />
       <workItem from="1755628507721" duration="131000" />
+      <workItem from="1767326287360" duration="683000" />
     </task>
     <task id="LOCAL-00565" summary="optimizations">
       <option name="closed" value="true" />

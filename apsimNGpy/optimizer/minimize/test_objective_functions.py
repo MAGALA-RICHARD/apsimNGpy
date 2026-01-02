@@ -84,21 +84,33 @@ if __name__ == "__main__":
 
         run_for_metric(metric=function_objective,)
 
-
     db = r"D:\package\fun_evaluation.db"
     from pathlib import Path
     if  not Path(db).exists():
         db =Path.home()/'packages'
         db.mkdir(exist_ok=True)
         db= str(db/'fun_ebaluation.db')
+    from apsimNGpy.core.apsim import ApsimModel
+    with ApsimModel('Maize') as model:
+        model.run()
+        print(model.results.mean(numeric_only=True))
+        model.set_params(values = [1.4], commands= ['[Leaf].Photosynthesis.RUE.FixedValue'],
+                         sowed = True, rename='thx',
+            path=".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82",)
+        import time
+        #model.inspect_file(cultivar=True)
+        model.run()
+        print(model.results.mean(numeric_only=True))
+        mn =model.inspect_model_parameters(model_type='Manager',model_name='Sow using a variable rule')
 
-    for m in ('WIA', "RRMSE",    "bias",    "RMSE" , 'CCC', 'R2'):
+
+    for m in (  "bias",    "RMSE" , 'CCC', 'R2'):
         print(m)
-        main(db_path=db, function_objective=m, algorithm="Nelder-Mead")
+       # main(db_path=db, function_objective=m, algorithm="Nelder-Mead")
         import gc
         gc.collect()
-        import time
-        time.sleep(1)
+
+
 
 
 

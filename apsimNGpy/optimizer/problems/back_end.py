@@ -364,7 +364,7 @@ def runner(model, params, table=None):
 
 )
 def test_inputs(
-        model,
+        model:str,
         x,
         insert_x_vars,
         runner,

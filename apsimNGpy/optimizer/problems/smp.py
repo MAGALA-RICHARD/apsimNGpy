@@ -706,10 +706,12 @@ class MixedProblem:
             param  = dict(p)
             is_cultivar = param.get('cultivar', False)
             if not is_cultivar:
+                # here the order does not matter because we use keys to get the values
                 keys = param.keys() & name_value_map.keys()
                 if keys:
                     param.update({k: name_value_map[k] for k in keys})
             else:
+                # order matters in all circumstances in order to map each command to its values
                 commands, values = [], []
                 for name in self.var_names:
                     if name in param:
@@ -796,6 +798,7 @@ class MixedProblem:
             print(f"Model evaluation ({mp.method}):", score)
         """
         if not self.inputs_ok:
+            # test if things are okay and raise the error early
             from apsimNGpy.optimizer.problems.back_end import test_inputs
 
             passed = test_inputs(model=self.model, x=x, insert_x_vars=self._insert_x_vars,

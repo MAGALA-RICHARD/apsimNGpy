@@ -153,6 +153,7 @@ def run_apsim_by_path(
             f"STDERR:\n{result.stderr}\n"
             f"STDOUT:\n{result.stdout}"
         )
+    return result
 
 
 def invoke_csharp_gc():

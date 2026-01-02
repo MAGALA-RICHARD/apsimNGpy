@@ -34,7 +34,7 @@ from apsimNGpy.exceptions import ModelNotFoundError, NodeNotFoundError
 from apsimNGpy.core.model_tools import (get_or_check_model, old_method, _edit_in_cultivar,
                                         inspect_model_inputs,
                                         ModelTools, validate_model_obj, replace_variable_by_index)
-from apsimNGpy.core.runner import run_model_externally, run_p, invoke_csharp_gc
+from apsimNGpy.core.runner import run_model_externally, run_p, invoke_csharp_gc, run_apsim_by_path
 from apsimNGpy.core.model_loader import (load_apsim_model, save_model_to_file, recompile, get_node_by_path, AUTO_PATH)
 import ast
 from typing import Any
@@ -712,7 +712,7 @@ class CoreModel(PlotManager):
             simulations: Union[tuple, list] = None,
             clean_up: bool = True,
             verbose: bool = False,
-            timeout: int = 100,
+            timeout: int = 800,
             cpu_count: int = -1,
             **kwargs) -> 'CoreModel':
         """
@@ -739,11 +739,11 @@ class CoreModel(PlotManager):
         cpu_count: int, Optional default is -1, referring to all threads
             This parameter is useful when the number of simulations are more than 1, below that performance differences are minimal
             added in 0.39.11.21+
+        to_csv: bool dfault is False,
+             If True, results are wrriten to a csv file instantly at the location of the apsimx file.
 
 
-        kwargs: **dict
-            Additional keyword arguments, e.g., to_csv=True, use this flag to correct results from
-            a csv file directly stored at the location of the running apsimx file.
+       
 
         Warning:
         --------------
@@ -798,15 +798,14 @@ class CoreModel(PlotManager):
                 except ArgumentOutOfRangeException:
                     pass
 
-            # Run APSIM externally
-            res = run_model_externally(
+            # Run APSIM externally replaced run_model_externally with run_apsim_by_path
+            res = run_apsim_by_path(
                 # we run using the copied file
-
                 self.path,
                 verbose=verbose,
                 to_csv=kwargs.get('to_csv', False),
                 timeout=timeout,
-                cpu_count=cpu_count,
+                ncores=cpu_count,
             )
 
             if res.returncode == 0:

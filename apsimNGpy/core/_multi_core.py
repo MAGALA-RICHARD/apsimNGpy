@@ -52,7 +52,7 @@ def _runner(model: str,
         # aim is to run and return results hash the columns to create a unique table name to avoid schema collisions
         with ApsimModel(model) as _model:
             try:
-                _model.run()
+                _model.run(timeout=200)
                 # aggregate the data using the aggregated function
                 if agg_func:
                     if agg_func not in aggs:
@@ -69,7 +69,7 @@ def _runner(model: str,
                 run_id = process_id()
 
                 # track the model id
-                out['ExecutionID'] = schema_id(Path(model).name)
+                out['ExecutionID'] = schema_id(str(model))
                 out['ProcessID'] = run_id
                 # return data in a format that can be used by the decorator writing data to sql
                 # generated unique table id is based on schema

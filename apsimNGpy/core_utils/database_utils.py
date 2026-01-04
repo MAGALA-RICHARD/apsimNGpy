@@ -707,7 +707,7 @@ def write_results_to_sql(
         db_path: Union[str, Path],
         table: str = "Report",
         *,
-        if_exists: Literal["fail", "replace", "append"] = "append",
+        if_exists: str = "append",
         insert_fn: InsertFn | None = None,
         ensure_parent: bool = True,
 ) -> Callable:

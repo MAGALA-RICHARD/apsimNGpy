@@ -203,6 +203,29 @@ class MixedVariableOptimizer:
                 pbar.update(1)
 
             kwargs.setdefault('callback', callback)
+            NO_BOUNDS_METHODS = {
+                "BFGS",
+                "CG",
+                "Newton-CG",
+                "Dogleg",
+                "Trust-NCG",
+                "Trust-Exact",
+                "Trust-Krylov",
+            }
+            REQUIRES_JACOBIAN = {
+                "Newton-CG",
+                "Dogleg",
+                "Trust-NCG",
+                "Trust-Exact",
+                "Trust-Krylov",
+            }
+
+            method = kwargs.get("method")
+            if method in REQUIRES_JACOBIAN:
+                assert kwargs.get('jac'), 'Please provide Jacobian matrix use jac argument'
+
+            if method in NO_BOUNDS_METHODS:
+                bounds = None
             result = minimize(wrapped_obj, x0=x0, bounds=bounds, **kwargs)
 
             result = self._extract_solution(result)
@@ -256,6 +279,7 @@ class MixedVariableOptimizer:
             xy_pairs = dict(zip(self.problem_desc.var_names, result.x))
         setattr(result, calibrated_param_names, xy_pairs)
         values = self.problem_desc.plug_optimal_values(result)
+        setattr(result, 'ndv', self.problem_desc.n_factors)
         setattr(result, 'obs_pred_data', values.get('data'))
         setattr(result, 'all_metrics', values.get('metrics'))
         self.outcomes = result
@@ -749,26 +773,26 @@ if __name__ == '__main__':
     # out = minim.minimize_with_local()
     # print(out)
 
-    mp = MixedProblem(model='Maize', trainer_dataset=obs, pred_col='Yield', metric='RRMSE', table='Report',
-                      index='year', trainer_col='observed')
-    optimizer = MixedVariableOptimizer(problem=mp)
-    mp.submit_factor(**cultivar_param_p)
-    print(mp.n_factors, 'factors submitted for the pure variables')
-    out = optimizer.minimize_with_local()
-    print(out)
-    res = optimizer.minimize_with_de(use_threads=False, updating='deferred', workers=15, popsize=10,
-                                     constraints=(0, 0.2))
-
-    print(res)
-
-    print('with mean absolute error')
+    # mp = MixedProblem(model='Maize', trainer_dataset=obs, pred_col='Yield', metric='RRMSE', table='Report',
+    #                   index='year', trainer_col='observed')
+    # optimizer = MixedVariableOptimizer(problem=mp)
+    # mp.submit_factor(**cultivar_param_p)
+    # print(mp.n_factors, 'factors submitted for the pure variables')
+    # out = optimizer.minimize_with_local()
+    # print(out)
+    # res = optimizer.minimize_with_de(use_threads=False, updating='deferred', workers=15, popsize=10,
+    #                                  constraints=(0, 0.2))
+    #
+    # print(res)
+    #
+    # print('with mean absolute error')
     mp = MixedProblem(model='Maize', trainer_dataset=obs, pred_col='Yield', metric='MAE', table='Report',
                       index='year', trainer_col='observed')
     optimizer = MixedVariableOptimizer(problem=mp)
     mp.submit_factor(**cultivar_param_p)
     print(mp.n_factors, 'factors submitted for the pure variables')
-    out = optimizer.minimize_with_local()
-    print(out)
-    res = optimizer.minimize_with_de(use_threads=False, updating='deferred', workers=15, popsize=10,
-                                     constraints=(0, 0.2))
-    print(res)
+    out = optimizer.minimize_with_local(method="Newton-CG",)
+    # print(out)
+    # res = optimizer.minimize_with_de(use_threads=False, updating='deferred', workers=15, popsize=10,
+    #                                  constraints=(0, 0.2))
+    # print(res)

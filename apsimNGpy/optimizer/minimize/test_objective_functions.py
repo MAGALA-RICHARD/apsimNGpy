@@ -1,21 +1,13 @@
-metrics = (
-    "ME",
-    "WIA",
-    "R2",
-    "CCC",
-    "MSE",
-    "RRMSE",
-    "bias",
-    "RMSE",
-    "MAE",
-)
+
 import gc
+
+from apsimNGpy.core_utils.database_utils import write_results_to_sql
 from apsimNGpy.optimizer.minimize.single_mixed import MixedVariableOptimizer
 from apsimNGpy.optimizer.problems.smp import MixedProblem
-from apsimNGpy.tests.unittests.test_factory import obs
-from pandas import DataFrame
-from apsimNGpy.core_utils.database_utils import write_results_to_sql, read_db_table
 from apsimNGpy.settings import logger
+from apsimNGpy.tests.unittests.test_factory import obs
+from apsimNGpy.core_utils.database_utils import read_db_table
+
 
 def problem(metric):
     def create_problem(_metric):
@@ -35,6 +27,7 @@ def write_results(de, metric, pop_size=20, algorithm='de', time_taken =None):
     metrics = de.all_metrics
     metrics['popsize'] = pop_size
     metrics['method'] = metric
+    metrics['ndv'] =de.ndv
     metrics['algorithm'] = algorithm
     metrics['nit'] = de.nit
     metrics['nfev'] = de.nfev
@@ -46,7 +39,7 @@ def write_results(de, metric, pop_size=20, algorithm='de', time_taken =None):
 
 
 ' System.ArgumentOutOfRangeException'
-
+metrics = ( "ME","WIA","R2","CCC", "MSE","RRMSE","bias", "RMSE","MAE",)
 if __name__ == "__main__":
     cultivar_param_p = {
         "path": ".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82",
@@ -69,7 +62,7 @@ if __name__ == "__main__":
             mp.submit_factor(**cultivar_param_p.copy())
             t1 = time.perf_counter()
             if algorithm == "de":
-                de = optimizer.minimize_with_de(popsize=pop_size, use_threads=True, workers=12, disp=False, )
+                de = optimizer.minimize_with_de(popsize=pop_size, use_threads=False, workers=12, disp=False, )
             else:
                 de = optimizer.minimize_with_local(options={'maxiter': 200}, method=algorithm)
             t2 = time.perf_counter()
@@ -91,29 +84,24 @@ if __name__ == "__main__":
         db =Path.home()/'packages'
         db.mkdir(exist_ok=True)
         db= str(db/'fun_ebaluation.db')
-    from apsimNGpy.core.apsim import ApsimModel
-    with ApsimModel('Maize') as model:
-        model.run()
-        print(model.results.mean(numeric_only=True))
-        model.set_params(values = [1.4], commands= ['[Leaf].Photosynthesis.RUE.FixedValue'],
-                         sowed = True, rename='thx',
-            path=".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82",)
-        import time
-        #model.inspect_file(cultivar=True)
-        model.run()
-        print(model.results.mean(numeric_only=True))
-        mn =model.inspect_model_parameters(model_type='Manager',model_name='Sow using a variable rule')
 
+    @write_results_to_sql(db_path=db, table=metrics_table, if_exists='replace')
+    def _update_table(var, value):
+        df = read_db_table(db, metrics_table)
+        df[var] = value
+        return df
+    #_update_table('ndv', 2)
 
+    # for m in {"RRMSE","bias", "RMSE","MAE"}:
+    #     print(m)
+    #     main(db_path=db, function_objective=m, algorithm="L-BFGS-B")
+    #     gc.collect()
+    #
     for m in metrics:
         print(m)
-        main(db_path=db, function_objective=m, algorithm="L-BFGS-B")
+        main(db_path=db, function_objective=m, algorithm="de")
         gc.collect()
-
-    for m in metrics:
-        print(m)
-        main(db_path=db, function_objective=m, algorithm="BFGS")
-        gc.collect()
+    d= read_db_table(db, metrics_table)
 
 
 

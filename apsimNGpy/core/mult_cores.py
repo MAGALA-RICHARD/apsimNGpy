@@ -86,7 +86,7 @@ class MultiCoreManager:
             # failed? no worries, the database is still cleared later by deleting all tables this is because inserting data just append
             pass
 
-    def insert_data(self, results, table):
+    def _insert_data(self, results, table):
         """
         Insert results into the specified table
         results: (Pd.DataFrame, dict) The results that will be inserted into the table
@@ -325,14 +325,19 @@ class MultiCoreManager:
         threads: (bool) default is False
             Threads or processes, recommended is to use processes
 
-        jobs: (iterable[simulations paths]
-             jobs to run
+        jobs: iterable[simulations paths] or dict
+                Jobs must be an iterable of some sort with each Job specification identifying the APSIM model to run. If a string is
+                provided, it is interpreted as the path to an ``.apsimx`` file. If a
+                dictionary is provided, it must contain a ``'model'`` key  with the `.apsimx` model path as the value, and may
+                include additional metadata to be attached to the results.
+                The meta-info might be site of the simulations or control variables
+
 
         n_cores: (int)
             number of cores to use
 
         clear_db: (bool)
-           For clearing the database existing data tables before writing new ones if any. Defaults is True
+           For clearing the existing database tables before writing new ones if any. Defaults is True
 
         kwargs:
           retry_rate: (int, optional)

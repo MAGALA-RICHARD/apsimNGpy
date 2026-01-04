@@ -151,7 +151,6 @@ class ExperimentManager(ApsimModel):
             if clean_up:
                 try:
                     _path = Path(self.path)
-                    db = _path.with_suffix('.db')
                     # delete or clear all tables
                     try:
                         self._DataStore.Dispose()

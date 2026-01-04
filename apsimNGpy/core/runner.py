@@ -140,7 +140,7 @@ def run_apsim_by_path(
         ) from exc
 
     # Log outputs
-    if verbose:
+    if verbose and result.stdout:
         logger.info(result.stdout.strip())
 
     if result.stderr:

@@ -1,11 +1,10 @@
 import pandas as pd
-
+from collections import defaultdict
 from apsimNGpy.core.experimentmanager import ExperimentManager, AUTO_PATH
 from apsimNGpy.senstivity.sampler import define_problem, create_factor_specs
 from SALib import ProblemSpec
-class BaseFactory(ExperimentManager):
-    def __init__(self, model, out_path=AUTO_PATH):
-        super().__init__(model=model, out_path=out_path)
+class BaseFactory:
+    def __init__(self):
         self.Y = None
         self.groups = None
         self.dist = None
@@ -14,14 +13,17 @@ class BaseFactory(ExperimentManager):
         self.problem = None
         self.cpu_count=12
         self.agg_var=None
+        self.param_keys =[]
 
+    def __enter__(self):
+        return self
 
-
-    def setup(self, permutation, base_simulation, params, y, cpu_count=12,
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        return False
+    def setup(self,  params, y, cpu_count=12,
               names=None, dist=None, groups=None,
               agg_var=None):
         # In the parent class, these are optional, we make them compulsory here
-        self.init_experiment(permutation=permutation, base_simulation=base_simulation)
         # carry the remain parameters forward
         self.params = params
         self.names = names
@@ -41,11 +43,55 @@ class BaseFactory(ExperimentManager):
         self.problem = problem
         return ProblemSpec(**problem)
 
-    def  evaluate_multiple(self, X):
-        def create_jobs(X):
-            for sp in X:
-             jobs = []
-        ...
+    def extract_param_keys(self):
+        # self.params is a dict with bounded values
+        for key in self.params.keys():
+            base, _, attr = key.rpartition(".")
+            self.param_keys.append(attr)
+
+        print(self.param_keys)
+    def attach_values(self, values):
+        """
+         Generate APSIM factor specifications by grouping candidate parameters
+        according to their APSIM base paths.
+
+        Parameters:
+        _____________
+        values: n.ndarray
+
+        Returns
+        --------
+        a generator[dict]
+        """
+        if values.ndim != 2:
+            raise ValueError('Values must have 2 dimension, hence a two dimensional array expected')
+        # ---- Group parameters by base path ----
+        grouped = group_candidate_params(self.params.keys())
+
+        n_params = len(self.params)
+        #loop through rows and attach values
+        for index in range(values.shape[0]):
+            row = values[index]
+            if len(row) != n_params:
+                raise ValueError(
+                    f"Each value row must have {n_params} values "
+                    f"(got {len(row)})"
+                )
+
+            # Map full param → value
+            param_value_map = dict(zip(self.param_keys, row))
+
+            # Emit one factor per base path
+            for base_path, attrs in grouped.items():
+                yield {
+                    "path": base_path,
+                    **{
+                        attr: param_value_map[f"{base_path}{attr}"]
+                        for attr in attrs
+                    },
+                }
+
+
     def evaluate(self, X):
         print(X.shape)
         specs = create_factor_specs(problem=self.problem, params=self.params, X=X, immediate=False)
@@ -93,6 +139,38 @@ class BaseFactory(ExperimentManager):
 
 
 
+def split_apsim_path(full_path: str) -> tuple[str, str]:
+    """
+    Split an APSIM parameter path into base path and attribute name.
+
+    Example
+    -------
+    '[Sow].Script.Population' →
+        ('[Sow].Script.', 'Population')
+    """
+    base, _, attr = full_path.rpartition(".")
+    if not base:
+        raise ValueError(f"Invalid APSIM path: {full_path}")
+    return base + ".", attr
+
+
+def group_candidate_params(candidate_param):
+    """
+    Group APSIM parameter paths by their base path.
+
+    Returns
+    -------
+    dict[str, list[str]]
+        Mapping of base_path → list of attribute names
+    """
+    groups = defaultdict(list)
+
+    for p in candidate_param:
+        base, attr = split_apsim_path(p)
+        groups[base].append(attr)
+
+    return dict(groups)
+
 
 if __name__ == '__main__':
     rowSpacing = '[Sow using a variable rule].Script.RowSpacing'
@@ -102,7 +180,9 @@ if __name__ == '__main__':
         print(model.inspect_model_parameters('Manager', 'Sow using a variable rule'))
         model.setup(permutation=False, base_simulation='Simulation', params=par, y='Yield')
         sp = model.get_problem()
-        si = sp.sample_sobol(16).evaluate(model.evaluate).analyze_sobol()
-        df =model.results
+        xp = model.extract_param_keys()
+        print(xp)
+        #si = sp.sample_sobol(16).evaluate(model.evaluate).analyze_sobol()
+        #df =model.results
 
 

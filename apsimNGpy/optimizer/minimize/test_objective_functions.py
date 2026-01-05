@@ -62,7 +62,7 @@ if __name__ == "__main__":
             mp.submit_factor(**cultivar_param_p.copy())
             t1 = time.perf_counter()
             if algorithm == "de":
-                de = optimizer.minimize_with_de(popsize=pop_size, use_threads=False, workers=12, disp=False, )
+                de = optimizer.minimize_with_de(popsize=pop_size, use_threads=False, workers=14, disp=False, )
             else:
                 de = optimizer.minimize_with_local(options={'maxiter': 200}, method=algorithm)
             t2 = time.perf_counter()
@@ -97,9 +97,10 @@ if __name__ == "__main__":
     #     main(db_path=db, function_objective=m, algorithm="L-BFGS-B")
     #     gc.collect()
     #
-    for m in metrics:
+    data = read_db_table(db, metrics_table)
+    for m in ["R2","CCC", "MSE","RRMSE","bias", "RMSE","MAE"]:
         print(m)
-        main(db_path=db, function_objective=m, algorithm="de")
+        main(db_path=db, function_objective=m, algorithm="de", pop_size=10)
         gc.collect()
     d= read_db_table(db, metrics_table)
 

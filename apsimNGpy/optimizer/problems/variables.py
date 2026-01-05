@@ -47,6 +47,8 @@ from wrapdisc.var import (
     RandintVar,
     UniformVar,
 )
+from typing import Optional, Tuple, Union, Dict
+from pydantic import BaseModel, ConfigDict
 
 UniformVa = UniformVar,
 PLACEHOLDER = object()
@@ -81,7 +83,6 @@ ALLOWED_NAMES = {
     "ordered_var": GridVar,
     "choice_var": ChoiceVar
 }
-
 
 def string_eval(obj):
     """
@@ -190,8 +191,6 @@ class BaseParams(BaseModel):
         )
 
 
-from typing import Optional, Tuple, Union, Dict
-from pydantic import BaseModel, ConfigDict
 
 Number = Union[int, float]
 BoundsPair = Tuple[Number, Number]

@@ -5,6 +5,7 @@ from apsimNGpy.core_utils.database_utils import write_results_to_sql
 from apsimNGpy.exceptions import ApsimRuntimeError
 import hashlib
 from multiprocessing import Value, Lock
+from typing import Tuple, Dict, Any, List
 
 aggs = {'sum', 'mean', 'max', 'min', 'median', 'std'}
 
@@ -30,10 +31,16 @@ def auto_generate_schema_id(columns, prefix):
     return table_id
 
 
-from typing import Tuple, Dict, Any
+def merge_dict(data):
+    merged = {}
+    for d in data:
+        d.pop('path', None)
+        for k, v in d.items():
+            merged.update({k: v})
+    return merged
 
 
-def _inspect_job(job) -> Tuple[str, Dict[str, Any], Dict[str, Any]]:
+def _inspect_job(job) -> Tuple[str, Dict[str, Any], List[Dict[str, Any]]]:
     """
     Normalize a job specification into a model identifier and metadata.
 
@@ -62,7 +69,7 @@ def _inspect_job(job) -> Tuple[str, Dict[str, Any], Dict[str, Any]]:
 
     match job:
         case str():
-            return job, {}, {}
+            return job, {}, []
 
         case dict():
             data = dict(job)  # shallow copy to avoid side effects
@@ -72,7 +79,7 @@ def _inspect_job(job) -> Tuple[str, Dict[str, Any], Dict[str, Any]]:
                 raise ValueError(
                     "Job dictionary must contain a 'model' key."
                 ) from exc
-            inputs = data.pop("inputs", {})
+            inputs = data.pop("inputs", [])
             return model, data, inputs
 
         case _:
@@ -84,7 +91,7 @@ def _inspect_job(job) -> Tuple[str, Dict[str, Any], Dict[str, Any]]:
 def _runner(
         job: str | dict,
         agg_func: str,
-        incomplete_jobs: set | list,
+        incomplete_jobs:  list,
         db,
         if_exists: str = "append",
         index: str | list | None = None,
@@ -109,7 +116,7 @@ def _runner(
         Job specification identifying the APSIM model to run. If a string is
         provided, it is interpreted as the path to an ``.apsimx`` file. If a
         dictionary is provided, it must contain a ``'model'`` key and may
-        include additional metadata to be attached to the results.
+        include additional metadata to be attached to the results. or inputs key word with list[dicts] for model editing
     agg_func : str
         Name of the aggregation function to apply to simulation outputs
         (e.g., ``'mean'``, ``'sum'``). If ``None`` or empty, raw simulation
@@ -170,7 +177,8 @@ def _runner(
                     call_back(model)
                 if inputs:
                     # set before running
-                    _model.set_params(**inputs)
+                    for in_put in inputs:
+                        _model.set_params(**in_put)
                 _model.run(timeout=timeout)
 
                 # Aggregate results if requested
@@ -193,7 +201,8 @@ def _runner(
                 out["ExecutionID"] = schema_id(tuple(out.columns))
                 out["ProcessID"] = run_id
                 # avoid duplicates columns
-                metadata = {**metadata, **inputs}
+                merged_inputs = merge_dict(inputs)
+                metadata = {**metadata, **merged_inputs}
                 out = out.assign(**metadata)
 
                 # Generate a unique table identifier based on schema
@@ -211,7 +220,6 @@ def _runner(
                 # Track failed jobs without interrupting the workflow
                 if isinstance(incomplete_jobs, list):
                     incomplete_jobs.append(job)
-                elif isinstance(incomplete_jobs, set):
-                    incomplete_jobs.add(job)
+
 
     _inside_runner()

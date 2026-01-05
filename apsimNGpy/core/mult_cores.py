@@ -64,12 +64,12 @@ def insert_data_with_pd(db, table, results, if_exists):
 
 @dataclass(slots=True)
 class MultiCoreManager:
-    db_path: Union[str, Path, None] = None,
+    db_path: Union[str, Path, None] = None
     agg_func: Union[str, None] = None
     ran_ok: bool = False
-    tag = 'multi-core'
+    tag = 'multi_core'
     default_db = 'manager_datastorage.db'
-    incomplete_jobs: set = field(default_factory=set)
+    incomplete_jobs: list = field(default_factory=list)
     table_prefix = '__core_table__'
     cleared_db: bool = field(default=False, init=False)
 
@@ -79,6 +79,7 @@ class MultiCoreManager:
         :return:
         """
         self.db_path = self.db_path or f"{self.tag}_{self.default_db}"
+
         self.db_path = Path(self.db_path).resolve().with_suffix('.db')
         self.cleared_db = False
 
@@ -89,8 +90,6 @@ class MultiCoreManager:
             pass
 
     def __enter__(self):
-        self.clear_db()
-        self.cleared_db = False
         return self
 
     def __exit__(self, exc_type, exc, tb):
@@ -322,8 +321,7 @@ class MultiCoreManager:
                ]
 
             **3. Job definitions with internal model edits**
-            In this format, each job specifies an ``inputs`` dictionary that
-            defines model edits to be applied internally by the runner. These
+            In this format, each job specifies an ``inputs`` list with dicts representing each node to be edited internally by the runner. These
             edits must follow the rules of
             :meth:`~apsimNGpy.core.apsim.ApsimModel.edit_model_by_path`. The input dictionary is treated as metadata and is attached to the results' tables. When both inputs and additional metadata are provided, they are merged into a single metadata mapping prior to attachment, with former entries overriding earlier metadata keys and thereby avoiding duplicate keys in the results' tables.
 
@@ -333,26 +331,26 @@ class MultiCoreManager:
                    {
                        'model': 'model_0.apsimx',
                        'ID': 0,
-                       'inputs': {
+                       'inputs': [{
                            'path': '.Simulations.Simulation.Field.Fertilise at sowing',
                            'Amount': 0
-                       }
+                       }]
                    },
                    {
                        'model': 'model_1.apsimx',
                        'ID': 1,
-                       'inputs': {
+                       'inputs': [{
                            'path': '.Simulations.Simulation.Field.Fertilise at sowing',
                            'Amount': 50
-                       }
+                       }]
                    },
                    {
                        'model': 'model_2.apsimx',
                        'ID': 2,
-                       'inputs': {
+                       'inputs': [{
                            'path': '.Simulations.Simulation.Field.Fertilise at sowing',
                            'Amount': 100
-                       }
+                       }]
                    }
                ]
 

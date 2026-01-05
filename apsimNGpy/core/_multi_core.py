@@ -59,10 +59,7 @@ def _inspect_job(job) -> Tuple[str, Dict[str, Any], Dict[str, Any]]:
         If ``job`` is neither a string nor a dictionary, or if a dictionary
         job does not contain a ``'model'`` key.
     """
-    job = {'model':job,  'inputs': {
-                           'path': '.Simulations.Simulation.Field.Fertilise at sowing',
-                           'Amount': 100
-                       }}
+
     match job:
         case str():
             return job, {}, {}
@@ -93,6 +90,7 @@ def _runner(
         index: str | list | None = None,
         table_prefix: str = "__",
         timeout=1000,
+        chunk_size: int = 1000,
         call_back=None):
     """
     Execute a single APSIM simulation job and persist its results to a database.
@@ -133,6 +131,8 @@ def _runner(
         on result schema. Default is ``'__'``.
     timeout: int, optional default is 1000
         timeout for each individual run
+    chunk_size: int, optional default is 1000
+       if data is too large
 
     Returns
     -------
@@ -152,7 +152,7 @@ def _runner(
       and process ID is stochastic from each process or threads
     """
 
-    @write_results_to_sql(db_path=db, if_exists=if_exists)
+    @write_results_to_sql(db_path=db, if_exists=if_exists, chunk_size=chunk_size)
     def _inside_runner():
         """
         Inner worker function executed under the SQL persistence decorator.
@@ -210,8 +210,8 @@ def _runner(
             except ApsimRuntimeError:
                 # Track failed jobs without interrupting the workflow
                 if isinstance(incomplete_jobs, list):
-                    incomplete_jobs.append(_model.path)
+                    incomplete_jobs.append(job)
                 elif isinstance(incomplete_jobs, set):
-                    incomplete_jobs.add(_model.path)
+                    incomplete_jobs.add(job)
 
     _inside_runner()

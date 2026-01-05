@@ -180,6 +180,7 @@ class MultiCoreManager:
         paths = Path.cwd().glob("*scratch")
         for path in paths:
             try:
+
                 shutil.rmtree(str(path), ignore_errors=True)
 
             except PermissionError:
@@ -324,11 +325,11 @@ class MultiCoreManager:
             In this format, each job specifies an ``inputs`` dictionary that
             defines model edits to be applied internally by the runner. These
             edits must follow the rules of
-            :meth:`~apsimNGpy.core.apsim.ApsimModel.edit_model_by_path`.
+            :meth:`~apsimNGpy.core.apsim.ApsimModel.edit_model_by_path`. The input dictionary is treated as metadata and is attached to the results' tables. When both inputs and additional metadata are provided, they are merged into a single metadata mapping prior to attachment, with former entries overriding earlier metadata keys and thereby avoiding duplicate keys in the results' tables.
 
             .. code-block:: python
 
-               [
+              jobs=  [
                    {
                        'model': 'model_0.apsimx',
                        'ID': 0,
@@ -381,7 +382,8 @@ class MultiCoreManager:
         - Both execution and process identifiers are attached to all output rows
           to support reproducibility and parallel execution tracking. Execution
           identifiers are derived from column schemas, while process identifiers
-          reflect the executing process or thread.
+          reflect the executing process or thread. To avoid unexpected behavior,
+           avoid duplicate identifiers in both metadata and input data.
 
         Examples
         --------
@@ -397,7 +399,6 @@ class MultiCoreManager:
                    jobs,
                    n_cores=12,
                    threads=False,
-                   clear_db=False,
                    retry_rate=1
                )
 
@@ -424,7 +425,8 @@ class MultiCoreManager:
 
             retry_rate = retry_rate
 
-            for _ in range(retry_rate):
+            for i in range(retry_rate):
+                print(f'Retrial: {i}')
                 # how many jobs were uncompleted?
                 len_incomplete = len(self.incomplete_jobs)
                 if len_incomplete == 0:

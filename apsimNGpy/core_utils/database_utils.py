@@ -451,7 +451,7 @@ def check_column_value_exists(_db: os.PathLike, table_name: str, value_to_check:
 InsertFn = Callable[[str, DataFrame, str, str], None]  # (db_path, df, table, if_exists)
 
 
-def _default_insert_fn(db: str, df: DataFrame, table: str, if_exists: str) -> None:
+def _default_insert_fn(db: str, df: DataFrame, table: str, if_exists: str, chunk_size=None) -> None:
     """
     Default insertion implementation for `collect_returned_results`.
 
@@ -510,7 +510,7 @@ def _default_insert_fn(db: str, df: DataFrame, table: str, if_exists: str) -> No
 
     from sqlalchemy import create_engine
     eng = create_engine(f"sqlite:///{db}")
-    df.to_sql(table, eng, if_exists=if_exists, index=False, chunksize=20)
+    df.to_sql(table, eng, if_exists=if_exists, index=False, chunksize=chunk_size)
 
 
 def _to_dataframe(obj: Any) -> DataFrame:
@@ -710,6 +710,7 @@ def write_results_to_sql(
         if_exists: str = "append",
         insert_fn: InsertFn | None = None,
         ensure_parent: bool = True,
+        chunk_size=None
 ) -> Callable:
     """
     Decorator factory: collect the wrapped function's returned data and insert it or saves it into SQLite database.
@@ -747,6 +748,8 @@ def write_results_to_sql(
         - control dtype mapping or target a different DBMS.
     ensure_parent : bool, default True
         If True, create missing parent directories for `db_path`.
+    chunk_size: int
+        size of the chunk if data is too large
 
     Returns
     -------
@@ -856,7 +859,7 @@ def write_results_to_sql(
                 if df is None or df.empty:
                     continue
                 try:
-                    insert_impl(dbp_str, df, tbl, if_exists)
+                    insert_impl(dbp_str, df, tbl, if_exists, chunk_size=chunk_size)
                     del df, tbl
                     gc.collect()
                 except Exception as exc:

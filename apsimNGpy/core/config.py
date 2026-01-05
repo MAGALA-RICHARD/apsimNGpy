@@ -26,6 +26,7 @@ from apsimNGpy.exceptions import ApsimBinPathConfigError
 from apsimNGpy.bin_loader.resources import add_bin_to_syspath, is_file_format_modified, remove_bin_from_syspath
 from functools import lru_cache
 
+AUTO_BIN = object()
 logger = logging.getLogger(__name__)
 # Load a default .env if present (optional)
 load_dotenv()
@@ -304,18 +305,21 @@ def get_apsim_bin_path():
     return _get_bin()
 
 
-@dataclass
+bin_from_get_apsim_bin: str = get_apsim_bin_path()
+
+
+@dataclass(slots=True)
 class Configuration:
     """
   In the future, this module will contain all the constants required by the package.
    Users will be able to override these values if needed by importing this module before running any simulations.
 
     """
-    bin_path: Union[Path, str] = None
+    bin_path: Union[Path, str] = AUTO_BIN
 
     def __post_init__(self):
         """if bin_path is None, this function will normalize to a global one store on the disk"""
-        self.bin_path = get_apsim_bin_path() if self.bin_path is None else self.bin_path
+        self.bin_path = bin_from_get_apsim_bin if self.bin_path is AUTO_BIN else self.bin_path
 
     def set_temporal_bin_path(self, temporal_bin_path):
         """
@@ -381,7 +385,7 @@ class Configuration:
 
     def release_temporal_bin_path(self):
         """release and set back to the global bin path"""
-        self.bin_path = get_apsim_bin_path()
+        self.bin_path = bin_from_get_apsim_bin
 
 
 configuration = Configuration()
@@ -806,4 +810,3 @@ if __name__ == "__main__":
             with self.assertRaises(FileNotFoundError):
                 with apsim_bin_context(dotenv_path="dot_ev_path"):
                     pass
-

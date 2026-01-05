@@ -1,37 +1,44 @@
+from pathlib import Path
+
+import numpy as np
 import pandas as pd
 from collections import defaultdict
 from apsimNGpy.core.experimentmanager import ExperimentManager, AUTO_PATH
 from apsimNGpy.senstivity.sampler import define_problem, create_factor_specs
 from SALib import ProblemSpec
+
+
 class BaseFactory:
-    def __init__(self):
+    def __init__(self, base_model):
+        self.results = None
+        self.base_model: str | Path = base_model
         self.Y = None
         self.groups = None
         self.dist = None
         self.params = None
-        self.names= None
+        self.names = None
         self.problem = None
-        self.cpu_count=12
-        self.agg_var=None
-        self.param_keys =[]
+        self.cpu_count = 12
+        self.agg_var = None
+        self.param_keys = []
+        self.index_id = "ID"  # defines columns for idenxing
 
     def __enter__(self):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         return False
-    def setup(self,  params, y, cpu_count=12,
+
+    def setup(self, params, y, cpu_count=12,
               names=None, dist=None, groups=None,
               agg_var=None):
-        # In the parent class, these are optional, we make them compulsory here
-        # carry the remain parameters forward
         self.params = params
         self.names = names
         self.agg_var = agg_var
-        self.cpu_count=cpu_count
+        self.cpu_count = cpu_count
         self.Y = y
         if dist is None:
-            dist= ['unif'] * len(params)
+            dist = ['unif'] * len(params)
         self.dist = dist
         self.groups = groups
 
@@ -50,7 +57,8 @@ class BaseFactory:
             self.param_keys.append(attr)
 
         print(self.param_keys)
-    def attach_values(self, values):
+
+    def job_maker(self, values):
         """
          Generate APSIM factor specifications by grouping candidate parameters
         according to their APSIM base paths.
@@ -62,6 +70,7 @@ class BaseFactory:
         Returns
         --------
         a generator[dict]
+        @param values:
         """
         if values.ndim != 2:
             raise ValueError('Values must have 2 dimension, hence a two dimensional array expected')
@@ -69,12 +78,12 @@ class BaseFactory:
         grouped = group_candidate_params(self.params.keys())
 
         n_params = len(self.params)
-        #loop through rows and attach values
+        # loop through rows and attach values
         for index in range(values.shape[0]):
             row = values[index]
             if len(row) != n_params:
                 raise ValueError(
-                    f"Each value row must have {n_params} values "
+                    f"Based on parameters given, each value row must have {n_params} values "
                     f"(got {len(row)})"
                 )
 
@@ -82,61 +91,67 @@ class BaseFactory:
             param_value_map = dict(zip(self.param_keys, row))
 
             # Emit one factor per base path
+            all_inputs = []
             for base_path, attrs in grouped.items():
-                yield {
+                inp = {
                     "path": base_path,
                     **{
-                        attr: param_value_map[f"{base_path}{attr}"]
+                        attr: param_value_map.get(f"{attr}")
                         for attr in attrs
                     },
                 }
-
+                all_inputs.append(inp)
+            yield {'model': self.base_model, self.index_id: index, 'inputs': all_inputs}
 
     def evaluate(self, X):
-        print(X.shape)
-        specs = create_factor_specs(problem=self.problem, params=self.params, X=X, immediate=False)
-        for sp in specs:
-            print(sp)
-            self.add_factor(**sp)
-        self.run( cpu_count=self.cpu_count, timeout=X.shape[0] *40)
-
-        names =self.problem.get('names')
-        if names:
-            names= list(names)
-        res = self.results
-        print(res[[*names, "Yield"]])
-        res.dropna(inplace=True)
-        # the control vars are returned by APSIM as strings, converting them to float to match with X
-        res[[*names]] = res[[*names]].astype('float')
-        if isinstance(self.Y, str):
-            self.Y = [self.Y]
-
-        if self.agg_var is not None:
-            df = (res.groupby([*names, self.agg_var])[self.Y].mean())
-            df_param = (
-                df.groupby(level=names, sort=False).mean()
-            )
-
-        else:
-            base = res[[*names, *self.Y]].copy()
-
-            df_param =base.set_index([*names], drop=True)
-            df_param = df_param.groupby(level=names, sort=False).mean()
-
-       # df =model.results.set_index(names)
-
-
-        # Re-align to SALib X order
-        X_index = pd.MultiIndex.from_arrays(
-            X.T,
-            names=names
-        )
-
-        Y = df_param.reindex(X_index).to_numpy()
-        print(Y)
-
+        print('submitting Jobs to mult-core manager API')
+        from apsimNGpy.core.mult_cores import MultiCoreManager
+        with MultiCoreManager(agg_func='mean') as mc:
+            jobs = self.job_maker(X)
+            mc.run_all_jobs(jobs, threads=True, clear_db=True, n_cores=12, retry_rate=2)
+            df = mc.get_simulated_output(axis=0)
+            df.sort_values(by=[self.index_id], inplace=True, ascending=True)
+            self.results = df
+            Y = df[self.Y].to_numpy()
         return Y
 
+    def analyze_with_sobol(self):
+        stp = self.get_problem()
+        sI = (
+            stp.sample_sobol(
+                N=2 ** 10,  # base sample size
+                calc_second_order=True,  # compute S2 indices
+                skip_values=0,  # skip initial Sobol points
+                seed=None  # RNG seed (None = random)
+            )
+            .evaluate(
+                model.evaluate,  # callable f(x)
+                parallel=False,  # whether to parallelize
+                n_jobs=None,  # number of workers
+                chunk_size=None,  # batch size for evaluation
+                progress=True  # show progress bar
+            )
+            .analyze_sobol(
+                calc_second_order=True,  # must match sampler
+                conf_level=0.95,  # CI level
+                n_resamples=1000,  # bootstrap resamples
+                print_to_console=True
+            )
+        )
+        return sI
+
+    def analyze_with_morris(self):
+        st = self.get_problem()
+        sI = (
+            st.sample_morris(
+                N=20,  # number of trajectories
+                num_levels=4,  # grid resolution
+                optimal_trajectories=10
+            )
+            .evaluate(model.evaluate)
+            .analyze_morris()
+        )
+        return st
 
 
 def split_apsim_path(full_path: str) -> tuple[str, str]:
@@ -167,22 +182,36 @@ def group_candidate_params(candidate_param):
 
     for p in candidate_param:
         base, attr = split_apsim_path(p)
+        base = base.rstrip('.')
         groups[base].append(attr)
 
     return dict(groups)
 
 
 if __name__ == '__main__':
-    rowSpacing = '[Sow using a variable rule].Script.RowSpacing'
-    par = {'[Sow using a variable rule].Script.Population': (2, 10),
-           rowSpacing: (650, 750)}
+    rowSpacing = '.Simulations.Simulation.Field.Fertilise at sowing.Amount'
+    par = {'.Simulations.Simulation.Field.Sow using a variable rule.Population': (2, 10),
+           '.Simulations.Simulation.Field.Fertilise at sowing.Amount': (0, 300),
+           '.Simulations.Simulation.Field.Sow using a variable rule.RowSpacing': (650, 750)}
     with BaseFactory('Maize') as model:
-        print(model.inspect_model_parameters('Manager', 'Sow using a variable rule'))
-        model.setup(permutation=False, base_simulation='Simulation', params=par, y='Yield')
+        model.setup(params=par, y='Yield')
         sp = model.get_problem()
         xp = model.extract_param_keys()
         print(xp)
-        #si = sp.sample_sobol(16).evaluate(model.evaluate).analyze_sobol()
-        #df =model.results
+        si = sp.sample_sobol(2 ** 6).evaluate(model.evaluate).analyze_sobol()
+        mor =model.analyze_with_morris()
 
-
+        df = model.results
+        # jobmaker
+        arr = np.array([
+            [1, 2, 'x'],
+            [4, 5, 'y'],
+            [7, 8, 'z'],
+            [7, 8, 'z'],
+            [7, 8, 'z'],
+            [7, 8, 'z'],
+            [7, 60, 'm'],
+            [7, 100, 'z'],
+            [7, 9, 'dd'],
+        ])
+        dat = list(model.job_maker(arr))

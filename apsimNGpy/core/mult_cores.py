@@ -70,7 +70,8 @@ class MultiCoreManager:
     tag = 'multi-core'
     default_db = 'manager_datastorage.db'
     incomplete_jobs: set = field(default_factory=set)
-    table_prefix = '__multi_core__'
+    table_prefix = '__core_table__'
+    cleared_db: bool = field(default=False, init=False)
 
     def __post_init__(self):
         """
@@ -79,6 +80,7 @@ class MultiCoreManager:
         """
         self.db_path = self.db_path or f"{self.tag}_{self.default_db}"
         self.db_path = Path(self.db_path).resolve().with_suffix('.db')
+        self.cleared_db = False
 
         try:
             self.db_path.unlink(missing_ok=True)
@@ -86,66 +88,15 @@ class MultiCoreManager:
             # failed? no worries, the database is still cleared later by deleting all tables this is because inserting data just append
             pass
 
-    def _insert_data(self, results, table):
-        """
-        Insert results into the specified table
-        results: (Pd.DataFrame, dict) The results that will be inserted into the table
-        table: str (name of the table to insert)
+    def __enter__(self):
+        self.clear_db()
+        self.cleared_db = False
+        return self
 
-        .. seealso::
-
-           :func:`~apsimNGpy.core_utils.database_utils.write_results_to_sql`
-        """
-
-        engine = create_engine(f"sqlite:///{str(self.db_path)}")
-        metadata = MetaData()
-
-        # there may be need for manual schema in future
-        if isinstance(results, pd.DataFrame):
-            results_num = results.select_dtypes(include='number')
-
-            cols = [Column(i, Float) for i in results_num.columns]
-            # Find all object (string-like) columns
-            str_cols_df = results.select_dtypes(include='object')
-
-            if not str_cols_df.empty:  # safer than "is not None"
-                str_cols = [Column(col_name, String) for col_name in str_cols_df.columns]
-                cols.extend(str_cols)
-
-        else:
-            cols = [
-                Column(col_name, String) if isinstance(results[col_name], str) else Column(col_name, Float)
-                for col_name in results
-            ]
-        results_table = Table(
-            table,
-            metadata,
-            Column('id', Integer, primary_key=True, autoincrement=True),
-            *cols
-
-        )
-        table_meta_info = Table(
-            'table_names',
-            metadata,
-            Column('id', Integer, primary_key=True, autoincrement=True),
-            Column('table', String, primary_key=False)
-
-        )
-        table_info = {"table": table}
-        # Create table if it doesn't exist
-        metadata.create_all(engine)
-        # if not simulation_exists(self.db_path, table, self.counter):
-        # Insert data manually (append instead of replacement)
-        with engine.begin() as conn:
-            # Convert DataFrame rows into dicts
-            if not isinstance(results, dict):
-                data_dicts = results.to_dict(orient='records')
-            else:
-                data_dicts = results
-            # keeping track of added tables
-
-            conn.execute(results_table.insert(), data_dicts)
-            conn.execute(table_meta_info.insert(), table_info)
+    def __exit__(self, exc_type, exc, tb):
+        # clear all the temporally files if available
+        self.clear_scratch()
+        return None
 
     @property
     def tables(self):
@@ -234,9 +185,6 @@ class MultiCoreManager:
             except PermissionError:
                 pass
 
-    def clean_up_data(self):
-        """Clears the data associated with each job. Please call this method after run_all_jobs is complete"""
-
     def save_tosql(
             self,
             db_name: Union[str, Path],
@@ -315,40 +263,155 @@ class MultiCoreManager:
         else:
             raise ValueError("results are empty or not yet simulated")
 
-    def run_all_jobs(self, jobs, *, n_cores=CORES, threads=False, clear_db=True, **kwargs):
+    def run_all_jobs(self, jobs, *, n_cores=CORES, threads=False, clear_db=True, retry_rate=1, **kwargs):
         """
-        runs all provided jobs using ``processes`` or ``threads`` specified
+        Run all provided jobs using multiprocessing or multithreading.
+
+        This method executes a collection of APSIM simulation jobs in parallel,
+        using either processes (recommended) or threads. Each job is executed
+        in isolation using a context-managed ``apsimNGpy`` model instance to
+        ensure proper cleanup and reproducibility.
 
         Parameters
-        -----------
+        ----------
+        threads : bool, optional
+            If ``True``, jobs are executed using threads; otherwise, jobs are
+            executed using processes. The default is ``False`` (process-based
+            execution), which is recommended for APSIM workloads.
 
-        threads: (bool) default is False
-            Threads or processes, recommended is to use processes
+        jobs : iterable or dict
+            A collection of job specifications identifying APSIM models to run.
+            Each job must specify the APSIM ``.apsimx`` model to execute and may
+            include additional metadata.
 
-        jobs: iterable[simulations paths] or dict
-                Jobs must be an iterable of some sort with each Job specification identifying the APSIM model to run. If a string is
-                provided, it is interpreted as the path to an ``.apsimx`` file. If a
-                dictionary is provided, it must contain a ``'model'`` key  with the `.apsimx` model path as the value, and may
-                include additional metadata to be attached to the results.
-                The meta-info might be site of the simulations or control variables
+            Supported job definitions include:
 
+            **1. Plain job definitions (no metadata, no edits)**
+            This assumes that each model file is unique and has already been
+            edited externally.
 
-        n_cores: (int)
-            number of cores to use
+            .. code-block:: python
 
-        clear_db: (bool)
-           For clearing the existing database tables before writing new ones if any. Defaults is True
+               jobs = {
+                   'model_0.apsimx',
+                   'model_1.apsimx',
+                   'model_2.apsimx',
+                   'model_3.apsimx',
+                   'model_4.apsimx',
+                   'model_5.apsimx',
+                   'model_6.apsimx',
+                   'model_7.apsimx'
+               }
 
-        kwargs:
-          retry_rate: (int, optional)
-            how many times to retry jobs before giving up
+            **2. Job definitions with metadata**
+            This format allows attaching identifiers or other metadata to each
+            job. Models are assumed to be unique and pre-edited.
 
-        :returns: None
-        :rtype: None
+            .. code-block:: python
+
+               [
+                   {'model': 'model_0.apsimx', 'ID': 0},
+                   {'model': 'model_1.apsimx', 'ID': 1},
+                   {'model': 'model_2.apsimx', 'ID': 2},
+                   {'model': 'model_3.apsimx', 'ID': 3},
+                   {'model': 'model_4.apsimx', 'ID': 4},
+                   {'model': 'model_5.apsimx', 'ID': 5},
+                   {'model': 'model_6.apsimx', 'ID': 6},
+                   {'model': 'model_7.apsimx', 'ID': 7}
+               ]
+
+            **3. Job definitions with internal model edits**
+            In this format, each job specifies an ``inputs`` dictionary that
+            defines model edits to be applied internally by the runner. These
+            edits must follow the rules of
+            :meth:`~apsimNGpy.core.apsim.ApsimModel.edit_model_by_path`.
+
+            .. code-block:: python
+
+               [
+                   {
+                       'model': 'model_0.apsimx',
+                       'ID': 0,
+                       'inputs': {
+                           'path': '.Simulations.Simulation.Field.Fertilise at sowing',
+                           'Amount': 0
+                       }
+                   },
+                   {
+                       'model': 'model_1.apsimx',
+                       'ID': 1,
+                       'inputs': {
+                           'path': '.Simulations.Simulation.Field.Fertilise at sowing',
+                           'Amount': 50
+                       }
+                   },
+                   {
+                       'model': 'model_2.apsimx',
+                       'ID': 2,
+                       'inputs': {
+                           'path': '.Simulations.Simulation.Field.Fertilise at sowing',
+                           'Amount': 100
+                       }
+                   }
+               ]
+
+        n_cores : int
+            Number of CPU cores to use for parallel execution.
+
+        clear_db : bool, optional
+            If ``True``, existing database tables are cleared before writing new
+            results. Defaults to ``True``.
+
+        retry_rate : int, optional
+            Number of times to retry a job upon failure before giving up.
+
+        Returns
+        -------
+        None
+
+        Notes
+        -----
+        - Each execution is isolated and uses a context-managed ``apsimNGpy``
+          model instance to ensure proper cleanup.
+        - Aggregation is applied only to numeric columns.
+        - Result tables are uniquely named using a deterministic schema hash
+          derived from column names to avoid database collisions. The hashed
+          identifier is prefixed with the user-defined table prefix (default:
+          ``__core_table__``), which is used internally to retrieve results.
+        - Both execution and process identifiers are attached to all output rows
+          to support reproducibility and parallel execution tracking. Execution
+          identifiers are derived from column schemas, while process identifiers
+          reflect the executing process or thread.
+
+        Examples
+        --------
+        .. code-block:: python
+
+           from apsimNGpy.core.mult_cores import MultiCoreManager
+
+           if __name__ == "__main__":
+               Parallel = MultiCoreManager(db_path=test_agg_db, agg_func=None)
+
+               # Run jobs in parallel using processes
+               Parallel.run_all_jobs(
+                   jobs,
+                   n_cores=12,
+                   threads=False,
+                   clear_db=False,
+                   retry_rate=1
+               )
+
+               # Retrieve results
+               df = Parallel.get_simulated_output(axis=0)
+
+        .. versionadded:: 0.39.1.21+
+
 
         """
         assert n_cores > 0, 'n_cores must be an integer above zero'
-        if clear_db:
+        self.cleared_db = clear_db
+        # because it is being deprecated, it cleared db is a must to avoid collsions
+        if self.cleared_db:
             self.clear_db()  # each simulation is fresh,
         # future updates include support for skipping some simulation
 
@@ -359,7 +422,7 @@ class MultiCoreManager:
                                      progress_message='Processing all jobs', unit='simulation'):
                 pass  # holder to unzip jobs
 
-            retry_rate = kwargs.get("retry_rate", 1)
+            retry_rate = retry_rate
 
             for _ in range(retry_rate):
                 # how many jobs were uncompleted?
@@ -421,12 +484,12 @@ if __name__ == '__main__':
     # quick tests
 
     with tempfile.TemporaryDirectory() as td:
-        create_jobs = [ApsimModel('Maize', out_path = Path(td)/f"{i}.apsimx").path for i in range(16 * 20)]
+        create_jobs = [ApsimModel('Maize', out_path=Path(td) / f"{i}.apsimx").path for i in range(16 * 20)]
         db_path = Path(td) / f"{uuid.uuid4().hex}.db"
         test_agg_db = Path(td) / f"{uuid.uuid4().hex}.db"
 
         Parallel = MultiCoreManager(db_path=test_agg_db, agg_func=None)
-        Parallel.run_all_jobs(create_jobs, n_cores=12, threads=True, clear_db=False, retry_rate=1)
+        Parallel.run_all_jobs(create_jobs, n_cores=12, threads=False, clear_db=False, retry_rate=1)
         df = Parallel.get_simulated_output(axis=0)
         Parallel.clear_scratch()
         # test saving to already an existing table

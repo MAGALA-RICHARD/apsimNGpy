@@ -1,15 +1,10 @@
 import os
-import os
-import sys
-from contextlib import AbstractContextManager
 from dataclasses import dataclass
 from functools import cache
 from pathlib import Path
 from typing import Optional, Union
 
-from dotenv import load_dotenv
-
-from apsimNGpy.bin_loader.resources import add_bin_to_syspath, remove_bin_from_syspath
+from apsimNGpy.bin_loader.resources import add_bin_to_syspath
 from apsimNGpy.core.config import configuration, locate_model_bin_path
 from apsimNGpy.core.load_clr import start_pythonnet
 from apsimNGpy.exceptions import ApsimBinPathConfigError
@@ -18,7 +13,7 @@ from apsimNGpy.settings import logger
 AUTO = object()
 APSIM_BIN_PATH = configuration.bin_path
 
-# pythonnet_start = start_pythonnet()
+pythonnet_start = start_pythonnet()
 
 meta_info = {}
 
@@ -82,8 +77,6 @@ def load_pythonnet(bin_path: Union[str, Path] = AUTO):
     """
     @cache
     def _load(_bin_path):
-        start_pythonnet()
-        #print('Loading APSIM models...:', configuration.bin_path)
         candidate = locate_model_bin_path(_bin_path)
         if not candidate:
             raise ApsimBinPathConfigError(
@@ -115,17 +108,13 @@ def load_pythonnet(bin_path: Union[str, Path] = AUTO):
     # return lm, sys, pythonnet.get_runtime_info()
 
 
-CI = load_pythonnet(bin_path=configuration.bin_path)
+CLR = load_pythonnet(bin_path=configuration.bin_path)
 # now we can safely import C# libraries
 
 from System.Collections.Generic import *
-
-import Models
-
 from System import *
-
-
-
+import Models
+Models =Models
 
 def get_apsim_file_reader(method: str = 'string'):
     """

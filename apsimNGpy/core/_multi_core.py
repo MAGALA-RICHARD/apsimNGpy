@@ -33,7 +33,7 @@ def auto_generate_schema_id(columns, prefix):
 from typing import Tuple, Dict, Any
 
 
-def inspect_job(job) -> Tuple[str, Dict[str, Any]]:
+def _inspect_job(job) -> Tuple[str, Dict[str, Any]]:
     """
     Normalize a job specification into a model identifier and metadata.
 
@@ -90,7 +90,8 @@ def _runner(
     if_exists: str = "append",
     index: str | list | None = None,
     table_prefix: str = "__",
-    timeout=1000,):
+    timeout=1000,
+    call_back=None):
     """
     Execute a single APSIM simulation job and persist its results to a database.
 
@@ -139,13 +140,14 @@ def _runner(
 
     Notes
     -----
-    - Each execution is isolated and uses a context-managed APSIM model
+    - Each execution is isolated and uses a context-managed apsimNGpy model
       instance to ensure proper cleanup.
     - Aggregation is applied only to numeric columns.
     - Result tables are uniquely named using a schema hash derived from
       column names to avoid database collisions.
     - Execution and process identifiers are attached to all output rows to
-      support reproducibility and parallel execution tracking.
+      support reproducibility and parallel execution tracking. Execution is determined from columns schemas
+      and process ID is stochastic from each process or threads
     """
 
     @write_results_to_sql(db_path=db, if_exists=if_exists)
@@ -157,10 +159,12 @@ def _runner(
         and returns a dictionary describing both the data and its target table.
         """
 
-        model, metadata = inspect_job(job)
+        model, metadata = _inspect_job(job)
 
         with ApsimModel(model) as _model:
             try:
+                if call_back and callable(call_back):
+                    call_back(model)
                 _model.run(timeout=timeout)
 
                 # Aggregate results if requested
@@ -203,3 +207,4 @@ def _runner(
                     incomplete_jobs.add(_model.path)
 
     _inside_runner()
+

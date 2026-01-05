@@ -13,7 +13,7 @@ from typing import Callable, Literal, Union, List, Tuple, Mapping, Any
 import numpy as np
 from pandas import DataFrame
 from pandas import read_sql_query as rsq
-from sqlalchemy import create_engine, inspect, Table, MetaData
+from sqlalchemy import create_engine, inspect, Table, MetaData, Column, Float, String, Integer
 from sqlalchemy.exc import NoSuchTableError
 from apsimNGpy.core.pythonet_config import *
 from apsimNGpy.exceptions import TableNotFoundError
@@ -273,12 +273,12 @@ def read_db_table(db: Union[str, Path], report_name: str = None, sql_query=None)
     except Exception as e:
         logger.error(f"Unexpected error while reading table '{report_name}': {e}")
     finally:
-        if hasattr(ENGINE,'dispose'):#sqlalchemy
+        if hasattr(ENGINE, 'dispose'):  # sqlalchemy
 
             ENGINE.dispose(close=True)
 
         elif hasattr(ENGINE, 'close'):
-            #raw sql
+            # raw sql
             ENGINE.close()
         gc.collect()
 
@@ -510,7 +510,7 @@ def _default_insert_fn(db: str, df: DataFrame, table: str, if_exists: str) -> No
 
     from sqlalchemy import create_engine
     eng = create_engine(f"sqlite:///{db}")
-    df.to_sql(table, eng, if_exists=if_exists, index=False,chunksize=20)
+    df.to_sql(table, eng, if_exists=if_exists, index=False, chunksize=20)
 
 
 def _to_dataframe(obj: Any) -> DataFrame:
@@ -941,8 +941,70 @@ def chunker(
         yield chunk
 
 
+def insert_table(db_path, results, table):
+    """
+    Insert results into the specified table
+    results: (Pd.DataFrame, dict) The results that will be inserted into the table
+    table: str (name of the table to insert)
+
+    .. seealso::
+
+       :func:`~apsimNGpy.core_utils.database_utils.write_results_to_sql`
+    """
+
+    engine = create_engine(f"sqlite:///{str(db_path)}")
+    metadata = MetaData()
+
+    # there may be need for manual schema in future
+    if isinstance(results, pd.DataFrame):
+        results_num = results.select_dtypes(include='number')
+
+        cols = [Column(i, Float) for i in results_num.columns]
+        # Find all object (string-like) columns
+        str_cols_df = results.select_dtypes(include='object')
+
+        if not str_cols_df.empty:  # safer than "is not None"
+            str_cols = [Column(col_name, String) for col_name in str_cols_df.columns]
+            cols.extend(str_cols)
+
+    else:
+        cols = [
+            Column(col_name, String) if isinstance(results[col_name], str) else Column(col_name, Float)
+            for col_name in results
+        ]
+    results_table = Table(
+        table,
+        metadata,
+        Column('id', Integer, primary_key=True, autoincrement=True),
+        *cols
+
+    )
+    table_meta_info = Table(
+        'table_names',
+        metadata,
+        Column('id', Integer, primary_key=True, autoincrement=True),
+        Column('table', String, primary_key=False)
+
+    )
+    table_info = {"table": table}
+    # Create table if it doesn't exist
+    metadata.create_all(engine)
+
+    # Insert data manually (append instead of replacement)
+    with engine.begin() as conn:
+        # Convert DataFrame rows into dicts
+        if not isinstance(results, dict):
+            data_dicts = results.to_dict(orient='records')
+        else:
+            data_dicts = results
+        # keeping track of added tables
+
+        conn.execute(results_table.insert(), data_dicts)
+        conn.execute(table_meta_info.insert(), table_info)
+
+
 if __name__ == "__main__":
-    #test
+    # test
     @write_results_to_sql(db_path='db.db', table='Report')
     def get_report():
         return DataFrame(dict(x=2, y=4))
@@ -951,8 +1013,8 @@ if __name__ == "__main__":
     ch = list(chunker(range(100), n_chunks=10))
     conn = create_engine('sqlite:///:memory:')
     try:
-      assert detect_connection(conn), "detect connection not working with alchemy"
+        assert detect_connection(conn), "detect connection not working with alchemy"
     finally:
-       conn.dispose(close=True)
+        conn.dispose(close=True)
     with sqlite3.connect(":memory:") as sqLconn:
         assert detect_connection(sqLconn), "detect connection not working on sql raw connection"

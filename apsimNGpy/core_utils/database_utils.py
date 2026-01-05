@@ -13,7 +13,8 @@ from typing import Callable, Literal, Union, List, Tuple, Mapping, Any
 import numpy as np
 from pandas import DataFrame
 from pandas import read_sql_query as rsq
-from sqlalchemy import create_engine, inspect, Table, MetaData, Column, Float, String, Integer
+from sqlalchemy import create_engine, inspect
+from sqlalchemy import Table, Column, String, Float, Integer, MetaData
 from sqlalchemy.exc import NoSuchTableError
 from apsimNGpy.core.pythonet_config import *
 from apsimNGpy.exceptions import TableNotFoundError
@@ -954,6 +955,7 @@ def insert_table(db_path, results, table):
 
        :func:`~apsimNGpy.core_utils.database_utils.write_results_to_sql`
     """
+    from sqlalchemy import Table, Column, String, Float, Integer, MetaData
 
     engine = create_engine(f"sqlite:///{str(db_path)}")
     metadata = MetaData()

@@ -6,7 +6,6 @@ from apsimNGpy.exceptions import ApsimRuntimeError
 import hashlib
 from multiprocessing import Value, Lock
 
-
 aggs = {'sum', 'mean', 'max', 'min', 'median', 'std'}
 
 counter = Value("i", 0)
@@ -30,10 +29,11 @@ def auto_generate_schema_id(columns, prefix):
     table_id = f"{prefix}_{schema_id(columns)}"
     return table_id
 
+
 from typing import Tuple, Dict, Any
 
 
-def _inspect_job(job) -> Tuple[str, Dict[str, Any]]:
+def _inspect_job(job) -> Tuple[str, Dict[str, Any], Dict[str, Any]]:
     """
     Normalize a job specification into a model identifier and metadata.
 
@@ -59,10 +59,13 @@ def _inspect_job(job) -> Tuple[str, Dict[str, Any]]:
         If ``job`` is neither a string nor a dictionary, or if a dictionary
         job does not contain a ``'model'`` key.
     """
-
+    job = {'model':job,  'inputs': {
+                           'path': '.Simulations.Simulation.Field.Fertilise at sowing',
+                           'Amount': 100
+                       }}
     match job:
         case str():
-            return job, {}
+            return job, {}, {}
 
         case dict():
             data = dict(job)  # shallow copy to avoid side effects
@@ -72,8 +75,8 @@ def _inspect_job(job) -> Tuple[str, Dict[str, Any]]:
                 raise ValueError(
                     "Job dictionary must contain a 'model' key."
                 ) from exc
-
-            return model, data
+            inputs = data.pop("inputs", {})
+            return model, data, inputs
 
         case _:
             raise ValueError(
@@ -81,17 +84,16 @@ def _inspect_job(job) -> Tuple[str, Dict[str, Any]]:
             )
 
 
-
 def _runner(
-    job: str | dict,
-    agg_func: str,
-    incomplete_jobs: set | list,
-    db,
-    if_exists: str = "append",
-    index: str | list | None = None,
-    table_prefix: str = "__",
-    timeout=1000,
-    call_back=None):
+        job: str | dict,
+        agg_func: str,
+        incomplete_jobs: set | list,
+        db,
+        if_exists: str = "append",
+        index: str | list | None = None,
+        table_prefix: str = "__",
+        timeout=1000,
+        call_back=None):
     """
     Execute a single APSIM simulation job and persist its results to a database.
 
@@ -144,7 +146,7 @@ def _runner(
       instance to ensure proper cleanup.
     - Aggregation is applied only to numeric columns.
     - Result tables are uniquely named using a schema hash derived from
-      column names to avoid database collisions.
+      column names to avoid database collisions. The hash is deterministic and it is further prefixed with user table prefix id default is __
     - Execution and process identifiers are attached to all output rows to
       support reproducibility and parallel execution tracking. Execution is determined from columns schemas
       and process ID is stochastic from each process or threads
@@ -159,12 +161,16 @@ def _runner(
         and returns a dictionary describing both the data and its target table.
         """
 
-        model, metadata = _inspect_job(job)
+        model, metadata, inputs = _inspect_job(job)
 
         with ApsimModel(model) as _model:
             try:
                 if call_back and callable(call_back):
+                    # there might be additional works that the user wants to enforce
                     call_back(model)
+                if inputs:
+                    # set before running
+                    _model.set_params(**inputs)
                 _model.run(timeout=timeout)
 
                 # Aggregate results if requested
@@ -186,6 +192,8 @@ def _runner(
                 run_id = process_id()
                 out["ExecutionID"] = schema_id(tuple(out.columns))
                 out["ProcessID"] = run_id
+                # avoid duplicates columns
+                metadata = {**metadata, **inputs}
                 out = out.assign(**metadata)
 
                 # Generate a unique table identifier based on schema
@@ -207,4 +215,3 @@ def _runner(
                     incomplete_jobs.add(_model.path)
 
     _inside_runner()
-

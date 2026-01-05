@@ -6,7 +6,7 @@ from apsimNGpy.core.mult_cores import MultiCoreManager
 from apsimNGpy.tests.unittests.base_unit_tests import BaseTester
 import sys
 import unittest
-
+from apsimNGpy.core_utils.database_utils import insert_table
 from apsimNGpy.settings import logger
 
 
@@ -42,13 +42,14 @@ class TestMultiCoreManager(BaseTester):
 
     def test_clear_db(self):
         manager = MultiCoreManager(db_path=self.test_clear_db)
+
         # clear before any data is inserted
         manager.clear_db()
 
         # test after any data is inserted
         df = self.create_synthetic_data()
-        manager.insert_data(df, table='clear_db_test')
-        table_names = get_db_table_names(self.test_clear_db)
+        insert_table(db_path=manager.db_path, results=df, table='clear_db_test')
+        table_names = get_db_table_names(manager.db_path)
         self.assertIn('clear_db_test', table_names)
 
         manager.clear_db()
@@ -70,7 +71,7 @@ class TestMultiCoreManager(BaseTester):
             os.remove(self.insert_data_db)
         # make up data quickly
         df = self.create_synthetic_data()
-        self.insert_data_manager.insert_data(results=df, table='makeup')
+        insert_table(results=df, table='makeup', db_path=self.insert_data_manager.db_path)
         df2 = read_db_table(self.insert_data_db, 'makeup')
         self.assertFalse(df2.empty)
         self.assertEqual(df2.shape[0], df.shape[0])

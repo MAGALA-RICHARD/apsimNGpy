@@ -91,7 +91,7 @@ def _inspect_job(job) -> Tuple[str, Dict[str, Any], List[Dict[str, Any]]]:
 def _runner(
         job: str | dict,
         agg_func: str,
-        incomplete_jobs:  list,
+        incomplete_jobs: list,
         db,
         if_exists: str = "append",
         index: str | list | None = None,
@@ -204,7 +204,6 @@ def _runner(
                 merged_inputs = merge_dict(inputs)
                 metadata = {**metadata, **merged_inputs}
                 out = out.assign(**metadata)
-
                 # Generate a unique table identifier based on schema
                 table_name = auto_generate_schema_id(
                     columns=tuple(out.columns),
@@ -220,6 +219,5 @@ def _runner(
                 # Track failed jobs without interrupting the workflow
                 if isinstance(incomplete_jobs, list):
                     incomplete_jobs.append(job)
-
 
     _inside_runner()

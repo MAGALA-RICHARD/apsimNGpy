@@ -1615,7 +1615,7 @@ class CoreModel(PlotManager):
                 edit_cultivar_by_path(self, path=path, commands=commands,
                                       values=pa_values, manager_param=kwargs.get('manager_param'),
                                       manager_path=kwargs.get('manager_path'),
-                                      sowed=kwargs.get('sowed'), rename=kwargs.get('rename'))
+                                      sowed=kwargs.get('sowed', True), rename=kwargs.get('rename'))
                 _edit_in_cultivar(self, model_name=values.Name, simulations=simulations, param_values=kwargs,
                                   verbose=verbose, by_path=True)
                 ...

@@ -21,7 +21,7 @@ class BaseFactory:
         self.cpu_count = 12
         self.agg_var = None
         self.param_keys = []
-        self.index_id = "ID"  # defines columns for idenxing
+        self.index_id = "ID"  # defines columns for indexing
 
     def __enter__(self):
         return self
@@ -55,8 +55,6 @@ class BaseFactory:
         for key in self.params.keys():
             base, _, attr = key.rpartition(".")
             self.param_keys.append(attr)
-
-        print(self.param_keys)
 
     def job_maker(self, values):
         """
@@ -106,7 +104,8 @@ class BaseFactory:
     def evaluate(self, X):
         print('submitting Jobs to mult-core manager API')
         from apsimNGpy.core.mult_cores import MultiCoreManager
-        with MultiCoreManager(agg_func='mean') as mc:
+        agg_func = 'sum'
+        with MultiCoreManager(agg_func=agg_func) as mc:
             jobs = self.job_maker(X)
             mc.run_all_jobs(jobs, threads=True, clear_db=True, n_cores=12, retry_rate=2)
             df = mc.get_simulated_output(axis=0)
@@ -140,16 +139,21 @@ class BaseFactory:
         )
         return sI
 
-    def analyze_with_morris(self):
+    def analyse_with_efast(self, sample_factor=80, print_to_console=True):
+        stp = self.get_problem()
+        si = stp.sample_fast(N=sample_factor).evaluate(self.evaluate).analyze_fast(print_to_console=True)
+        return stp
+
+    def analyze_with_morris(self, N=20, num_levels=4, optimal_trajectories=10):
         st = self.get_problem()
         sI = (
             st.sample_morris(
-                N=20,  # number of trajectories
-                num_levels=4,  # grid resolution
-                optimal_trajectories=10
+                N=N,  # number of trajectories
+                num_levels=num_levels,  # grid resolution
+                optimal_trajectories=optimal_trajectories
             )
-            .evaluate(model.evaluate)
-            .analyze_morris()
+            .evaluate(self.evaluate)
+            .analyze_morris(print_to_console=True)
         )
         return st
 
@@ -190,16 +194,18 @@ def group_candidate_params(candidate_param):
 
 if __name__ == '__main__':
     rowSpacing = '.Simulations.Simulation.Field.Fertilise at sowing.Amount'
+
     par = {'.Simulations.Simulation.Field.Sow using a variable rule.Population': (2, 10),
            '.Simulations.Simulation.Field.Fertilise at sowing.Amount': (0, 300),
            '.Simulations.Simulation.Field.Sow using a variable rule.RowSpacing': (650, 750)}
+
     with BaseFactory('Maize') as model:
         model.setup(params=par, y='Yield')
         sp = model.get_problem()
         xp = model.extract_param_keys()
-        print(xp)
-        si = sp.sample_sobol(2 ** 6).evaluate(model.evaluate).analyze_sobol()
-        mor =model.analyze_with_morris()
+        # si = sp.sample_sobol(2 ** 6).evaluate(model.evaluate).analyze_sobol()
+        ef = model.analyse_with_efast()
+        mor = model.analyze_with_morris()
 
         df = model.results
         # jobmaker

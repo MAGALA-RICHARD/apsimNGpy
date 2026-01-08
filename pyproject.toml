@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "apsimNGpy"
-version = '0.39.12.21'
+version = '1.0.0'
 description = "APSIM next generation package interface"
 readme = "README.rst"
 license = { file = "LICENSE" }
@@ -45,6 +45,7 @@ dependencies = [
     'pymoo',
     'tqdm==4.67.1',
     "wrapdisc==2.5.0",
+    "SALib==1.5.2",
     'python-dotenv>=1.0.1,<2.0.0',
     "summarytools>=0.3.0",
      'watchdog==6.0.0'

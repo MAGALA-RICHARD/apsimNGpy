@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 import sys
 from functools import cache
 
-VERSION = '1.0.0.0'
+VERSION = '1.0.0'
 
 DESCRIPTION = 'APSIM next generation package interface'
 LONG_DESCRIPTION = 'Run, edit, download soils and weather and interact with the apsimx file'
@@ -78,7 +78,8 @@ setup(
         'wrapdisc==2.5.0',
         'summarytools>=0.3.0',
         'tqdm==4.67.1',
-        'watchdog==6.0.0'
+        'watchdog==6.0.0',
+        'SALib==1.5.2'
 
     ]
 )

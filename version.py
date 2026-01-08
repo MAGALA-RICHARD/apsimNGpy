@@ -1,4 +1,4 @@
-version  = '0.39.12.21'
+version  = '1.0.0'
 import dotenv
 import os
 dotenv.load_dotenv()

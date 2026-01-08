@@ -124,15 +124,19 @@ class MultiCoreManager:
 
     @cache
     def _get_simulated_results(self, axis, tables):
+        print('loading simulated results.')
         if axis not in {0, 1}:
-            # Errors should go silently
+            # Errors should not go silently
             raise ValueError('Wrong value for axis should be either 0 or 1')
         from apsimNGpy.core_utils.database_utils import read_with_pandas
         read_db = partial(read_with_pandas, db=self.db_path)
-        frames = list(
-            custom_parallel(read_db, tables, void=False, progress_message='loading data',unit='table', display_failures=True))
+        if len(tables) > 16:
+            frames = list(
+                custom_parallel(read_db, tables, void=False, progress_message='loading data',unit='table', display_failures=True))
+        else:
+            frames=(read_db(i) for i in tables)
         # data = (read_db_table(self.db_path, report_name=rp) for rp in self.tables)
-        print('loading simulated results.')
+
         return pd.concat(frames, axis=axis)
 
     def get_simulated_output(self, axis=0):
@@ -189,7 +193,8 @@ class MultiCoreManager:
                 except FileNotFoundError:
                     pass
 
-    def clear_scratch(self):
+    @staticmethod
+    def clear_scratch():
         """clears the scratch directory where apsim files are cloned before being loaded. should be called after all simulations are completed
 
         """
@@ -439,7 +444,8 @@ class MultiCoreManager:
             self.clear_db()  # each simulation is fresh,
             # below is retry code based on user-specified retry rate, the question of why not use tenacity is the added overhead from tenacity,
             # and also need to record the ones that failed
-        for ret in range(retry_rate + 1):  # one is for the initial jobs simulations
+
+        for ret in range(1, retry_rate + 2):  # one is for the initial jobs simulations
             collect_incomplete_jobs = []
             worker = partial(single_runner, agg_func=self.agg_func, incomplete_jobs=collect_incomplete_jobs,
                              ignore_runtime_errors=ignore_runtime_errors,
@@ -447,7 +453,7 @@ class MultiCoreManager:
             try:
                 jobs = collect_incomplete_jobs or jobs
                 for _ in custom_parallel(func=worker, iterable=jobs, ncores=n_cores, use_threads=threads,
-                                         progress_message='APSIM running ', unit='simulation', void=False,
+                                         progress_message=f'APSIM running[{ret}]', unit='sim', void=False,
                                          display_failures=display_failures):
                     pass  # holder to unzip jobs
             finally:

@@ -327,9 +327,6 @@ def custom_parallel_chunks(
         return None
 
 
-
-
-
 if __name__ == '__main__':
     def work(x, scale=2):
         return x * scale
@@ -349,14 +346,16 @@ if __name__ == '__main__':
 
     def worker(x):
         time.sleep(0.1)
+
+
     # quick example
 
     success = list(
         custom_parallel(mock_success, range(100), use_thread=True, ncores=10, void=True, display_failures=True))
-    fail = list(custom_parallel(mock_failure, range(1000), use_thread=True, ncores=10, void=True, display_failures=True))
+    fail = list(
+        custom_parallel(mock_failure, range(1000), use_thread=True, ncores=10, void=False, display_failures=True,))
     fai = list(
         custom_parallel(mock_none, range(1000), use_thread=True, ncores=10, void=True, display_failures=True))
-
 
     for i in custom_parallel_chunks(worker, range(100), use_thread=True):
         pass

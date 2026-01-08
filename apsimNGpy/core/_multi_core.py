@@ -25,7 +25,7 @@ def process_id():
 def schema_id(schema):
     _schema = tuple(schema) if not isinstance(schema, (tuple, str)) else schema
     payload = "|".join(map(str, _schema)).encode("utf-8")
-    return hashlib.md5(payload).hexdigest()[:8]
+    return hashlib.md5(payload).hexdigest()
 
 
 def auto_generate_schema_id(columns, prefix):
@@ -220,16 +220,17 @@ def single_runner(
                     if set(sub).issubset(out.columns):
                         out = out[[*sub]].copy()
                 # Attach execution metadata
-                out["MetaProcessID"] = os.getpid()
-
+                PID = os.getpid()
+                out["MetaProcessID"] = PID
                 # avoid duplicates columns
                 merged_inputs = merge_dict(inputs)
                 metadata = {**metadata, **merged_inputs}
                 out = out.assign(**metadata)
-                schema_hash = schema_id(tuple([*out.columns, Path(_model.path).name]))
-                out["MetaExecutionID"] =  ID or schema_hash
+                schema_hash = schema_id(tuple(out.dtypes))
+                out["MetaExecutionID"] = ID or schema_hash
                 # Generate a unique table identifier based on schema
-                table_name = make_table_name(table_prefix=table_prefix, schema_id=schema_hash, run_id=os.getpid())
+                # table_name = make_table_name(table_prefix=table_prefix, schema_id=schema_hash, run_id=os.getpid())
+                table_name = f"{table_prefix}_{schema_hash}_{PID}"
 
                 return {
                     "data": out,

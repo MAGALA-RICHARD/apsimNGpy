@@ -30,7 +30,8 @@ from apsimNGpy.settings import logger
 from platform import system
 from subprocess import call, run, Popen
 
-
+import re
+from typing import List
 def select_process(use_thread, ncores):
     return ThreadPoolExecutor(ncores) if use_thread else ProcessPoolExecutor(ncores)
 
@@ -761,5 +762,15 @@ def flatten_dict(nested_dict, parent_key='', separator='.'):
     return flattened
 
 
+
+_PATTERN = re.compile(r"\[[^\]]+\]\.[A-Za-z0-9_.]+")
+
+
+def extract_cultivar_param_path(text: str) -> List[str]:
+    """
+    Extract APSIM-style paths like:
+    [Grain].MaximumGrainsPerCob.FixedValue
+    """
+    return _PATTERN.findall(text)
 if __name__ == '__main__':
     ...

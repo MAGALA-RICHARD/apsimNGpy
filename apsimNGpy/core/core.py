@@ -24,9 +24,11 @@ from apsimNGpy.core.cs_resources import CastHelper
 from apsimNGpy.manager.weathermanager import get_weather
 from functools import lru_cache
 # prepare for the C# import
-from apsimNGpy.core_utils.utils import open_apsimx_file_in_window, evaluate_commands_and_values_types, is_scalar
+from apsimNGpy.core_utils.utils import open_apsimx_file_in_window, evaluate_commands_and_values_types, is_scalar, \
+    extract_cultivar_param_path
 # now we can safely import C# libraries
 from apsimNGpy.core.pythonet_config import *
+
 load_models = load_pythonnet()
 from apsimNGpy.core_utils.database_utils import read_db_table
 from apsimNGpy.core.config import configuration
@@ -51,6 +53,7 @@ from apsimNGpy.core.version_inspector import is_higher_apsim_version
 from System.Collections.Generic import KeyValuePair
 from System import *
 from System import String
+
 _NOT_PROVIDED = object()
 
 # constants
@@ -436,7 +439,7 @@ class CoreModel(PlotManager):
         try:
 
             if is_higher_apsim_version(self.Simulations):
-                #self.Simulations.Write(_path)
+                # self.Simulations.Write(_path)
                 save_model_to_file(getattr(self.Simulations, 'Node', self.Simulations), _path)
             else:
                 sm = getattr(self.Simulations, 'Node', self.Simulations)
@@ -776,8 +779,9 @@ class CoreModel(PlotManager):
 
            Related APIs: :attr:`results` and :meth:`get_simulated_output`.
              """
-      #  apsim_bin_path = configuration.bin_path if apsim_bin_path is AUTO_PATH else apsim_bin_path
-#
+
+        #  apsim_bin_path = configuration.bin_path if apsim_bin_path is AUTO_PATH else apsim_bin_path
+        #
         def dispose_db():
             try:
                 self._DataStore.Dispose()
@@ -1549,9 +1553,9 @@ class CoreModel(PlotManager):
         verbose = kwargs.get('verbose')
         for p in {'simulation', 'simulations', 'verbose'}:
             kwargs.pop(p, None)
-        try:
+        if hasattr(self.Simulations, 'FindByPath'):
             v_obj = self.Simulations.FindByPath(path)
-        except AttributeError as e:
+        else:
             v_obj = get_node_by_path(self.Simulations, path)
         if v_obj is None:
             raise ValueError(f"Could not find model instance associated with path `{path}`")
@@ -1607,17 +1611,27 @@ class CoreModel(PlotManager):
 
                 kwargs['plant'] = trace_cultivar(self.Simulations, values.Name).get(values.Name)
                 commands = kwargs.get('commands')
-                if isinstance(commands, dict):
-                    commands, pa_values = commands.items()  # no need to extract values
-                else:
 
-                    pa_values = kwargs.get('values')
+                kvp = {}
+                for k, v in kwargs.items():
+                    if extract_cultivar_param_path(k):
+                        kvp[k] = v
+                commands = commands or kvp
+                if not commands:
+                    print(commands)
+                    raise ValueError('key word arguments commands missing or dict of paramters values')
+                if isinstance(commands, dict):
+                    commands, com_values = commands.keys(), commands.values()
+
+                else:
+                    com_values = kwargs.get('values')
                 edit_cultivar_by_path(self, path=path, commands=commands,
-                                      values=pa_values, manager_param=kwargs.get('manager_param'),
+                                      values=com_values, manager_param=kwargs.get('manager_param'),
                                       manager_path=kwargs.get('manager_path'),
                                       sowed=kwargs.get('sowed', True), rename=kwargs.get('rename'))
-                _edit_in_cultivar(self, model_name=values.Name, simulations=simulations, param_values=kwargs,
-                                  verbose=verbose, by_path=True)
+                if kwargs.get('commands', None):  # changed it momentarily
+                    _edit_in_cultivar(self, model_name=values.Name, simulations=simulations, param_values=kwargs,
+                                      verbose=verbose, by_path=True)
                 ...
             case Models.Clock:
                 self._set_clock_vars(values, param_values=kwargs)
@@ -2215,11 +2229,12 @@ class CoreModel(PlotManager):
         rep = self.get_replacements_node()
         if rep is not None and self.find_model_in_replacements(model_type=Models.Report, model_name=report_name):
             sims = {rep}
-        #provided_sims =simulations or {}
+        # provided_sims =simulations or {}
         for sim in sims:
             # if sim.Name not in sim_names and simulations:
             #     continue
-            if report_name not in self.inspect_model(model_type=Models.Report, fullpath=True, scope=sim) and sim.Name not in sim_names and simulations:
+            if report_name not in self.inspect_model(model_type=Models.Report, fullpath=True,
+                                                     scope=sim) and sim.Name not in sim_names and simulations:
                 continue
             if isinstance(variable_spec, str):
                 variable_spec = [variable_spec]
@@ -5181,7 +5196,7 @@ if __name__ == '__main__':
         df = model.results
         model.add_db_table(variable_spec=['[Clock].Today.Year as year', '[Soil].Nutrient.TotalC[1]/1000 as SOC1'],
                            rename='soc_table')
-        soc_table=model.inspect_model_parameters('Models.Report', model_name='soc_table')
+        soc_table = model.inspect_model_parameters('Models.Report', model_name='soc_table')
         print(model.results.columns)
 
 

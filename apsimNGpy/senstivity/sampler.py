@@ -4,7 +4,8 @@ from SALib.analyze import sobol
 from SALib.test_functions import Ishigami
 import numpy as np
 from typing import Iterable, Dict, Any
-AUTO =object()
+
+AUTO = object()
 import numpy as np
 from SALib import ProblemSpec
 
@@ -15,7 +16,7 @@ sp = ProblemSpec({
         [-1, 0],
         (-1, 1),
     ],
-'dists':{'unif'}
+    'dists': {'unif'}
 })
 
 param_names = ['x', 'y', 'z']
@@ -23,16 +24,18 @@ param_names = ['x', 'y', 'z']
 from typing import Dict, Iterable, Tuple, Any, Mapping
 from types import MappingProxyType
 
+
 # Sentinel for auto-naming
 class _AUTO:
     pass
+
 
 AUTO = _AUTO()
 
 
 def define_problem(
-    params: Mapping[str, Tuple[float, float]],
-    names: Iterable[str] | _AUTO = AUTO,) -> MappingProxyType|dict:
+        params: Mapping[str, Tuple[float, float]],
+        names: Iterable[str] | _AUTO = AUTO, ) -> MappingProxyType | dict:
     """
     Define a SALib-compatible optimization or sensitivity problem.
 
@@ -71,9 +74,9 @@ def define_problem(
     # Validate bounds
     for key, bound in items:
         if (
-            not isinstance(bound, tuple)
-            or len(bound) != 2
-            or not all(isinstance(v, (int, float)) for v in bound)
+                not isinstance(bound, tuple)
+                or len(bound) != 2
+                or not all(isinstance(v, (int, float)) for v in bound)
         ):
             raise ValueError(
                 f"Invalid bounds for '{key}'. Expected (lower, upper) tuple."
@@ -108,6 +111,7 @@ def define_problem(
 
     # Optional: prevent accidental mutation downstream
     return problem
+
 
 def sobol_fev(problem, base_sample, skip_values=None, calc_second_order=False):
     """
@@ -184,7 +188,7 @@ def create_factor_specs(problem, params, X, immediate=False):
     results = [] if immediate else None
 
     for col, (name, path) in enumerate(zip(names, param_paths)):
-        v  = [int(i) for i in X[:, col]]
+        v = [int(i) for i in X[:, col]]
         v = X[:, col]
         values = ",".join(map(str, v))
 
@@ -199,6 +203,8 @@ def create_factor_specs(problem, params, X, immediate=False):
             yield factor
     if immediate:
         return results
+
+
 if __name__ == "__main__":
     ...
     problem = {
@@ -214,12 +220,55 @@ if __name__ == "__main__":
     Si = sobol.analyze(problem, Y, print_to_console=True)
 
     '[Sow using a variable rule].Script.Population'
-    rowSpacing  = '[Sow using a variable rule].Script.RowSpacing'
+    rowSpacing = '[Sow using a variable rule].Script.RowSpacing'
 
+    par = {'[Sow using a variable rule].Script.Population': (2, 10),
 
-    par={'[Sow using a variable rule].Script.Population':(2, 10),
-
-                             rowSpacing:(100, 750)}
-    p=define_problem(params=par,
-                     names= ['population','rowspacing',])
+           rowSpacing: (100, 750)}
+    p = define_problem(params=par,
+                       names=['population', 'rowspacing', ])
     fa = create_factor_specs(p, par, X)
+
+
+    def path():
+        p = '.Simulations.Replacements.Maize.OPVPH_P2?[Leaf].Photosynthesis.RUE.FixedValue'
+        return p.split('?')
+
+
+    from dataclasses import dataclass
+    from typing import Iterable
+
+
+    def split_apsim_path_by_sep(
+            p: str, ):
+        """
+        Split an APSIM path into base and selector using the first matching separator.
+
+        Parameters
+        ----------
+        p : str
+            APSIM path string.
+        seps : iterable of str, optional
+            Allowed separators, checked in order of precedence.
+
+        Returns
+        -------
+        ApsimPath
+            Structured APSIM path with base, selector, and separator used.
+
+        Raises
+        ------
+        ValueError
+            If none of the separators are found.
+        """
+        seps = ("?", "::", "|", "@")
+        for sep in seps:
+            if sep in p:
+                left, right = p.split(sep, 1)
+                if not left or not right:
+                    raise ValueError(f"Invalid APSIM path around separator '{sep}': {p}")
+                return left.rstrip('.'), right.strip('.')
+
+        raise ValueError(
+            f"Invalid APSIM path: none of the allowed separators {seps} found in '{p}'"
+        )

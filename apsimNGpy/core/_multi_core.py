@@ -1,5 +1,8 @@
+import os
 from functools import cache, lru_cache
 from pathlib import Path
+from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
+from uuid import uuid4
 from apsimNGpy.core.apsim import ApsimModel
 from apsimNGpy.core_utils.database_utils import write_results_to_sql
 from apsimNGpy.exceptions import ApsimRuntimeError
@@ -19,7 +22,6 @@ def process_id():
         return counter.value
 
 
-@lru_cache(maxsize=100)
 def schema_id(schema):
     _schema = tuple(schema) if not isinstance(schema, (tuple, str)) else schema
     payload = "|".join(map(str, _schema)).encode("utf-8")
@@ -80,6 +82,7 @@ def _inspect_job(job) -> Tuple[str, Dict[str, Any], List[Dict[str, Any]]]:
                     "Job dictionary must contain a 'model' key."
                 ) from exc
             inputs = data.pop("inputs", [])
+
             return model, data, inputs
 
         case _:
@@ -88,7 +91,12 @@ def _inspect_job(job) -> Tuple[str, Dict[str, Any], List[Dict[str, Any]]]:
             )
 
 
-def _runner(
+def make_table_name(table_prefix: str, schema_id: str, run_id: int) -> str:
+    u = uuid4().hex[:8]
+    return f"{table_prefix}_{schema_id}_r{run_id}_{u}"
+
+
+def single_runner(
         job: str | dict,
         agg_func: str,
         incomplete_jobs: list,
@@ -98,7 +106,9 @@ def _runner(
         table_prefix: str = "__",
         timeout=1000,
         chunk_size: int = 1000,
-        call_back=None):
+        subset=None,
+        call_back=None,
+        ignore_runtime_errors=True):
     """
     Execute a single APSIM simulation job and persist its results to a database.
 
@@ -137,9 +147,16 @@ def _runner(
         Prefix used when auto-generating unique database table names based
         on result schema. Default is ``'__'``.
     timeout: int, optional default is 1000
-        timeout for each individual run
+        timeout for each run
     chunk_size: int, optional default is 1000
        if data is too large
+    call_back: callable, optional
+       use it to do constant edits should take in a positional argument model.
+    subset: str, list of str, optional
+        used to subset the columns after simulation
+    ignore_runtime_errors: bool, optional. Default is True
+      Ignore ApsimRunTimeError, to avoid breaking the program during multiprocessing
+      other processes can proceed, while we can keep the failed jobs
 
     Returns
     -------
@@ -158,9 +175,10 @@ def _runner(
       support reproducibility and parallel execution tracking. Execution is determined from columns schemas
       and process ID is stochastic from each process or threads
     """
+    SUCCESS = {'success': False}  # none can mean different things
 
     @write_results_to_sql(db_path=db, if_exists=if_exists, chunk_size=chunk_size)
-    def _inside_runner():
+    def _inside_runner(sub):
         """
         Inner worker function executed under the SQL persistence decorator.
 
@@ -169,8 +187,8 @@ def _runner(
         """
 
         model, metadata, inputs = _inspect_job(job)
-
-        with ApsimModel(model) as _model:
+        ID = metadata.get("ID", None) if metadata else None
+        with (ApsimModel(model) as _model):
             try:
                 if call_back and callable(call_back):
                     # there might be additional works that the user wants to enforce
@@ -191,33 +209,39 @@ def _runner(
                     grp = index or "source_table"
                     dat = _model.results.groupby(grp)
                     out = dat.agg(agg_func, numeric_only=True)
-
                     out["source_name"] = Path(model).name
                 else:
+                    grp = 'source_table'
                     out = _model.results
 
+                if sub:
+
+                    sub = [sub] if isinstance(sub, str) else sub
+                    if set(sub).issubset(out.columns):
+                        out = out[[*sub]].copy()
                 # Attach execution metadata
-                run_id = process_id()
-                out["ExecutionID"] = schema_id(tuple(out.columns))
-                out["ProcessID"] = run_id
+                out["MetaProcessID"] = os.getpid()
+
                 # avoid duplicates columns
                 merged_inputs = merge_dict(inputs)
                 metadata = {**metadata, **merged_inputs}
                 out = out.assign(**metadata)
+                schema_hash = schema_id(tuple([*out.columns, Path(_model.path).name]))
+                out["MetaExecutionID"] =  ID or schema_hash
                 # Generate a unique table identifier based on schema
-                table_name = auto_generate_schema_id(
-                    columns=tuple(out.columns),
-                    prefix=table_prefix,
-                )
+                table_name = make_table_name(table_prefix=table_prefix, schema_id=schema_hash, run_id=os.getpid())
 
                 return {
                     "data": out,
-                    "table": table_name,
+                    "table": table_name,  # table is the key accepted by the decorator
                 }
-
             except ApsimRuntimeError:
                 # Track failed jobs without interrupting the workflow
-                if isinstance(incomplete_jobs, list):
-                    incomplete_jobs.append(job)
+                incomplete_jobs.append(job)
+                if not ignore_runtime_errors:
+                    raise ApsimRuntimeError("runtime errors occurred")
 
-    _inside_runner()
+    _inside_runner(subset)
+    SUCCESS['success'] = True
+    succeed = SUCCESS['success']
+    return succeed

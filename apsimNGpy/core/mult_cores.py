@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import copy
 import gc
 import math
@@ -7,23 +9,19 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 # Database connection
 from dataclasses import field
+from functools import partial, cached_property, cache
 from pathlib import Path
 from typing import Union, Literal
-from apsimNGpy.core_utils.database_utils import get_db_table_names, clear_table
+
 import pandas as pd
-from sqlalchemy import Table, Column, String, Float, Integer, MetaData
 from sqlalchemy import create_engine, text
 
+from apsimNGpy.core._multi_core import single_runner
 from apsimNGpy.core.apsim import ApsimModel
-from apsimNGpy.core_utils.database_utils import read_db_table, delete_all_tables
+from apsimNGpy.core_utils.database_utils import write_results_to_sql, clear_table, get_db_table_names, read_db_table
 from apsimNGpy.core_utils.utils import timer
-from apsimNGpy.exceptions import ApsimRuntimeError
 from apsimNGpy.parallel.process import custom_parallel
 from apsimNGpy.settings import logger
-from apsimNGpy.core_utils.database_utils import write_results_to_sql
-from apsimNGpy.core_utils.utils import timer
-from functools import partial
-from apsimNGpy.core._multi_core import _runner
 
 ID = 0
 # default cores to use
@@ -70,7 +68,7 @@ class MultiCoreManager:
     tag = 'multi_core'
     default_db = 'manager_datastorage.db'
     incomplete_jobs: list = field(default_factory=list)
-    table_prefix = '__core_table__'
+    table_prefix: str = '__core_table__'
     cleared_db: bool = field(default=False, init=False)
 
     def __post_init__(self):
@@ -97,6 +95,16 @@ class MultiCoreManager:
         self.clear_scratch()
         return None
 
+    def __hash__(self):
+        return hash((
+            self.db_path,
+            self.tag,
+            self.table_prefix,
+            self.ran_ok,
+            self.cleared_db,
+            tuple(self.incomplete_jobs),
+        ))
+
     @property
     def tables(self):
         """
@@ -105,13 +113,27 @@ class MultiCoreManager:
         """
         from apsimNGpy.core_utils.database_utils import get_db_table_names
         "Summarizes all the tables that have been created from the simulations"
-        if os.path.exists(self.db_path) and os.path.isfile(self.db_path) and str(self.db_path).endswith('.db'):
+        if os.path.exists(self.db_path) and os.path.isfile(self.db_path) and str(self.db_path).endswith(
+                '.db') and self.ran_ok:
             tables = get_db_table_names(self.db_path)
-            tables = [table for table in tables if table.startswith(self.table_prefix)]
+            tables = {table for table in tables if table.startswith(self.table_prefix)}
             # get only unique tables
-            return set(tables)
+            return tuple(tables)
         else:
             raise ValueError("Attempting to get results from database before running all jobs")
+
+    @cache
+    def _get_simulated_results(self, axis, tables):
+        if axis not in {0, 1}:
+            # Errors should go silently
+            raise ValueError('Wrong value for axis should be either 0 or 1')
+        from apsimNGpy.core_utils.database_utils import read_with_pandas
+        read_db = partial(read_with_pandas, db=self.db_path)
+        frames = list(
+            custom_parallel(read_db, tables, void=False, progress_message='loading data',unit='table', display_failures=True))
+        # data = (read_db_table(self.db_path, report_name=rp) for rp in self.tables)
+        print('loading simulated results.')
+        return pd.concat(frames, axis=axis)
 
     def get_simulated_output(self, axis=0):
         """
@@ -142,12 +164,7 @@ class MultiCoreManager:
         These identifiers facilitate traceability and reproducibility across serial
         and parallel execution workflows.
         """
-        if axis not in {0, 1}:
-            # Errors should go silently
-            raise ValueError('Wrong value for axis should be either 0 or 1')
-
-        data = (read_db_table(self.db_path, report_name=rp) for rp in self.tables)
-        return pd.concat(data, axis=axis)
+        return self._get_simulated_results(axis=axis, tables=self.tables)
 
     @property
     def results(self):
@@ -263,7 +280,8 @@ class MultiCoreManager:
         else:
             raise ValueError("results are empty or not yet simulated")
 
-    def run_all_jobs(self, jobs, *, n_cores=CORES, threads=False, clear_db=True, retry_rate=1, **kwargs):
+    def run_all_jobs(self, jobs, *, n_cores=CORES, threads=False, clear_db=True, retry_rate=1, subset=None,
+                     ignore_runtime_errors=True, display_failures=True, **kwargs):
         """
         Run all provided jobs using multiprocessing or multithreading.
 
@@ -363,6 +381,13 @@ class MultiCoreManager:
 
         retry_rate : int, optional
             Number of times to retry a job upon failure before giving up.
+        subset:
+           subset of the data columns to forward to sql or save. It is handled silently if the subset does not exist, the entire table will be saved
+        ignore_runtime_errors: bool, optional. Default is True
+          Ignore ApsimRunTimeError, to avoid breaking the program during multiprocessing
+          other processes can proceed, while we can keep the failed jobs
+        display_failures: bool, optional, default=False
+        if ``True``, func must return False or True. For simulations written to a database, this is adequate
 
         Returns
         -------
@@ -412,60 +437,29 @@ class MultiCoreManager:
         # because it is being deprecated, it cleared db is a must to avoid collsions
         if self.cleared_db:
             self.clear_db()  # each simulation is fresh,
-        # future updates include support for skipping some simulation
-
-        worker = partial(_runner, agg_func=self.agg_func, incomplete_jobs=self.incomplete_jobs,
-                         db=self.db_path, table_prefix=self.table_prefix)
-        try:
-            for _ in custom_parallel(func=worker, iterable=jobs, ncores=n_cores, use_threads=threads,
-                                     progress_message='Processing all jobs', unit='simulation'):
-                pass  # holder to unzip jobs
-
-            retry_rate = retry_rate
-
-            for i in range(retry_rate):
-                print(f'Retrial: {i}')
-                # how many jobs were uncompleted?
-                len_incomplete = len(self.incomplete_jobs)
-                if len_incomplete == 0:
-                    self.ran_ok = True
-                    return
-                else:
-                    # Back off if failures exceed core budget; otherwise cap by failures
-                    cores = n_cores if len_incomplete > n_cores else min(len_incomplete, n_cores)
-
-                    logger.info(f"Retrying {len_incomplete} failed job(s) with {cores} core(s).")
-                    # iterable is replaced by the incomplete jobs, but we need to copy first
-                    incomplete__jobs = tuple(self.incomplete_jobs)
-                    # clear to prepare for new assessments
-                    self.incomplete_jobs.clear()  # at every simulation, an incomplete job is appended
-                    for _ in custom_parallel(
-                            worker,
-                            incomplete__jobs,
-                            ncores=cores,
-                            use_thread=False,
-                            progress_message="Re-running failed jobs",
-                    ):
-                        pass  # holder to unzip jobs
-
-                    if not self.incomplete_jobs:
-                        self.ran_ok = True
-                        gc.collect()
-                        break  # no need to continue
-
-            else:
-
-                # at this point, the error causing the failures is more than serious, although it's being excepted as
-                # an `ApsimRuntimeError`
-                if self.incomplete_jobs:
-                    logger.warning(
-                        f"MultiCoreManager exited with {len(self.incomplete_jobs)} uncompleted job(s). "
-                        "Inspect `incomplete_jobs` for details."
-                    )
+            # below is retry code based on user-specified retry rate, the question of why not use tenacity is the added overhead from tenacity,
+            # and also need to record the ones that failed
+        for ret in range(retry_rate + 1):  # one is for the initial jobs simulations
+            collect_incomplete_jobs = []
+            worker = partial(single_runner, agg_func=self.agg_func, incomplete_jobs=collect_incomplete_jobs,
+                             ignore_runtime_errors=ignore_runtime_errors,
+                             db=self.db_path, table_prefix=self.table_prefix, subset=subset)
+            try:
+                jobs = collect_incomplete_jobs or jobs
+                for _ in custom_parallel(func=worker, iterable=jobs, ncores=n_cores, use_threads=threads,
+                                         progress_message='APSIM running ', unit='simulation', void=False,
+                                         display_failures=display_failures):
+                    pass  # holder to unzip jobs
+            finally:
                 gc.collect()
+            # update incomplete jobs on the main class
+            self.incomplete_jobs = collect_incomplete_jobs
+            if not collect_incomplete_jobs:
+                self.ran_ok = True
+                break
 
-        finally:
-            gc.collect()
+        else:
+            logger.warning('Some jobs collected were not finished. check self.incomplete_jobs')
 
 
 MultiCoreManager.save_tocsv.__doc__ = """  Persist simulation results to a SQLite database table.
@@ -478,19 +472,19 @@ MultiCoreManager.save_tocsv.__doc__ = """  Persist simulation results to a SQLit
 
 if __name__ == '__main__':
     import os, uuid, tempfile
-    from tempfile import NamedTemporaryFile
     from apsimNGpy.core_utils.database_utils import read_db_table
 
     # quick tests
 
     with tempfile.TemporaryDirectory() as td:
-        create_jobs = [ApsimModel('Maize', out_path=Path(td) / f"{i}.apsimx").path for i in range(16 * 20)]
+        create_jobs = [ApsimModel('Maize', out_path=Path(td) / f"{i}.apsimx").path for i in range(16 * 5)]
         db_path = Path(td) / f"{uuid.uuid4().hex}.db"
         test_agg_db = Path(td) / f"{uuid.uuid4().hex}.db"
 
         Parallel = MultiCoreManager(db_path=test_agg_db, agg_func=None)
-        Parallel.run_all_jobs(create_jobs, n_cores=12, threads=False, clear_db=False, retry_rate=1)
+        Parallel.run_all_jobs(create_jobs, n_cores=12, threads=False, clear_db=False, retry_rate=1, subset='Yield')
         df = Parallel.get_simulated_output(axis=0)
+        print(len(Parallel.tables))
         Parallel.clear_scratch()
         # test saving to already an existing table
         ve = False

@@ -284,6 +284,12 @@ def read_db_table(db: Union[str, Path], report_name: str = None, sql_query=None)
         gc.collect()
 
 
+def read_with_pandas(table, db):
+    with sqlite3.connect(db) as con:
+        df= pd.read_sql(f"SELECT * FROM {table}", con)
+        return df
+
+
 def load_database(path):
     assert exists(path), "error from__ (database_utils module) file path does not exist try a different=========="
     assert path.endswith(

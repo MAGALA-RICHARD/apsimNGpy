@@ -52,6 +52,9 @@ def custom_parallel(func, iterable: Iterable, *args, **kwargs):
         side-effect–only functions.
     unit : str, optional, default="iteration"
         Label for the progress indicator (cosmetic only).
+    display_failures: bool, optional, default=False
+        if ``True``, func must return False or True. For simulations written to a database, this adquate
+        .. versionadded:: 1.0.0
 
     Examples
     --------
@@ -71,10 +74,10 @@ def custom_parallel(func, iterable: Iterable, *args, **kwargs):
     if isinstance(iterable, str):
         raise ValueError('jobs must an iterable but not strings')
     use_thread, cpu_cores = kwargs.get('use_thread', False), kwargs.get('ncores', CORES)
-    progress_message = kwargs.get('progress_message', f"Processing please wait!")
-    progress_message += ": "
+    progress_message = kwargs.get('progress_message', f"Processing..!")
     void = kwargs.get('void', False)
     unit = kwargs.get('unit', 'iteration')
+    display_failures = kwargs.get('display_failures')
     selection = select_type(use_thread=use_thread,
                             n_cores=cpu_cores)
 
@@ -90,13 +93,21 @@ def custom_parallel(func, iterable: Iterable, *args, **kwargs):
                             "({n_fmt}/{total}) >> completed (elapsed=>{elapsed}, eta=>{remaining}) {postfix}"),
                 dynamic_ncols=True,
                 miniters=1, ) as pbar:
+            FAILURES = 0
             for future in as_completed(futures):
                 result = future.result()
-                pbar.update(1)  # completed so far: pbar.n
+                pbar.update(1)
+                # completed so far: pbar.n
                 elapsed = time.perf_counter() - start
                 avg_rate = elapsed / pbar.n if elapsed > 0 else 0.0
                 sim_rate = pbar.n / elapsed if elapsed > 0 else 0.0
-                pbar.set_postfix_str(f"({avg_rate:.4f} s/{unit} or {sim_rate:,.3f} {unit}/s)")
+
+                if display_failures and result is False:
+                    FAILURES += 1
+                    pbar.set_postfix_str(f"({avg_rate:.4f} s/{unit} or {sim_rate:,.3f} {unit}/s failed={FAILURES})")
+
+                else:
+                    pbar.set_postfix_str(f"({avg_rate:.4f} s/{unit} or {sim_rate:,.3f} {unit}/s)")
 
                 if not void:
                     yield result
@@ -316,22 +327,36 @@ def custom_parallel_chunks(
         return None
 
 
-def work(x, scale=2):
-    return x * scale
 
-
-def worker(x):
-    time.sleep(0.1)
 
 
 if __name__ == '__main__':
+    def work(x, scale=2):
+        return x * scale
+
+
+    def mock_failure(x):
+        return False
+
+
+    def mock_success(x):
+        return True
+
+
+    def mock_none(x):
+        return None
+
+
+    def worker(x):
+        time.sleep(0.1)
     # quick example
 
-    lm = custom_parallel(worker, range(100), use_thread=True, ncores=10, void=True)
+    success = list(
+        custom_parallel(mock_success, range(100), use_thread=True, ncores=10, void=True, display_failures=True))
+    fail = list(custom_parallel(mock_failure, range(1000), use_thread=True, ncores=10, void=True, display_failures=True))
+    fai = list(
+        custom_parallel(mock_none, range(1000), use_thread=True, ncores=10, void=True, display_failures=True))
 
-    ap = [i for i in lm]
 
-    for i in lm:
-        pass
     for i in custom_parallel_chunks(worker, range(100), use_thread=True):
         pass

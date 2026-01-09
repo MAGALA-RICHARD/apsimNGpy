@@ -1,4 +1,5 @@
 import os
+import sqlite3
 from functools import cache, lru_cache
 from pathlib import Path
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
@@ -180,7 +181,6 @@ def single_runner(
 
     @retry(stop=stop_after_attempt(retry_rate), retry=retry_if_exception_type((ApsimRuntimeError, TimeoutError)))
     def runner_it():
-        @write_results_to_sql(db_path=db, if_exists=if_exists, chunk_size=chunk_size)
         def _inside_runner(sub):
             """
             Inner worker function executed under the SQL persistence decorator.
@@ -234,10 +234,9 @@ def single_runner(
                     # Generate a unique table identifier based on schema
                     # table_name = make_table_name(table_prefix=table_prefix, schema_id=schema_hash, run_id=os.getpid())
                     table_name = f"{table_prefix}_{schema_hash}_{PID}"
-                    return {
-                        "data": out,
-                        "table": table_name,  # table is the key accepted by the decorator
-                    }
+                    with sqlite3.connect(db) as conn:
+                        out.to_sql(table_name, conn, if_exists=if_exists, chunk_size=chunk_size)
+
                 except ApsimRuntimeError as apr:
                     # Track failed jobs without interrupting the workflow
                     if ignore_runtime_errors:

@@ -503,7 +503,7 @@ if __name__ == '__main__':
     import os, uuid, tempfile
     from apsimNGpy.core_utils.database_utils import read_db_table
 
-    # quick tests
+    # quick tests. comprehensive tests are in the tests
 
     with tempfile.TemporaryDirectory() as td:
         create_jobs = [ApsimModel('Maize', out_path=Path(td) / f"{i}.apsimx").path for i in range(16 * 5)]

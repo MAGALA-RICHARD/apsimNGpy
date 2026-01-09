@@ -306,7 +306,7 @@ if __name__ == "__main__":
 
     import shutil, os
     from apsimNGpy.core import config, base_data, apsim, mult_cores, pythonet_config, experimentmanager, runner
-    from apsimNGpy.optimizer import moo, single
+    # from apsimNGpy.optimizer import moo, single
     from apsimNGpy.core_utils import database_utils
     from apsimNGpy.parallel import process
     from apsimNGpy import exceptions
@@ -314,10 +314,14 @@ if __name__ == "__main__":
     from apsimNGpy.optimizer.minimize import single_mixed
     from apsimNGpy.optimizer.problems import smp, back_end
     from apsimNGpy.core import senstivitymanager
+    from apsimNGpy.senstivity import sensitivity
+    from apsimNGpy.senstivity.sensitivity import ConfigProblem, run_sensitivity
 
     # ________________________________________________________________________________
     # add outline!!
     # ----------------------------------------------------------------------------------
+    add_outline(sensitivity.ConfigProblem, include_inherited=True,
+                base_path='apsimNGpy.senstivity.sensitivity.ConfigProblem')
     add_outline(senstivitymanager.SensitivityManager, include_inherited=True,
                 base_path='apsimNGpy.core.senstivitymanager.SensitivityManager')
     add_outline(single_mixed.MixedVariableOptimizer, include_inherited=True,
@@ -327,16 +331,16 @@ if __name__ == "__main__":
     add_outline(experimentmanager.ExperimentManager, include_inherited=True,
                 base_path='apsimNGpy.core.experimentmanager.ExperimentManager')
     add_outline(apsim.ApsimModel, include_inherited=True, base_path='apsimNGpy.core.apsim.ApsimModel')
-    add_outline(moo.MultiObjectiveProblem, include_inherited=True,
-                base_path='apsimNGpy.optimizer.moo.MultiObjectiveProblem')
-    add_outline(single.MixedVariable, include_inherited=True,
-                base_path='apsimNGpy.optimizer.single.MixedVariableProblem')
+    # add_outline(moo.MultiObjectiveProblem, include_inherited=True,
+    #             base_path='apsimNGpy.optimizer.moo.MultiObjectiveProblem')
+    # add_outline(single.MixedVariable, include_inherited=True,
+    #             base_path='apsimNGpy.optimizer.single.MixedVariableProblem')
     add_outline(mult_cores.MultiCoreManager, include_inherited=True,
                 )
-    modules = (
-        process, apsim, mult_cores, experimentmanager, moo, smp,single_mixed,senstivitymanager,
-        evaluator, exceptions, database_utils, pythonet_config, config, runner, back_end,
-    )
+    modules = (sensitivity,
+               process, apsim, mult_cores, experimentmanager,  smp, single_mixed, senstivitymanager,
+               evaluator, exceptions, database_utils, pythonet_config, config, runner, back_end,
+               )
 
     OUT = Path("docs/source/api.rst")
     OUT.parent.mkdir(parents=True, exist_ok=True)

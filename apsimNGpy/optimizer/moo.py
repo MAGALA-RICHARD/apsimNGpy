@@ -1,22 +1,12 @@
-from typing import Union
-from dataclasses import dataclass
 import numpy as np
-
 from pymoo.algorithms.moo.nsga2 import NSGA2
 from pymoo.config import Config
 from pymoo.core.problem import ElementwiseProblem
 from pymoo.optimize import minimize
-from pymoo.core.problem import Problem
-from pymoo.algorithms.moo.nsga2 import NSGA2
-from pymoo.algorithms.moo.nsga3 import NSGA3
-from pymoo.optimize import minimize
-from apsimNGpy.core.cal import OptimizationBase as Runner, OptimizationBase
-import numpy as np
-from apsimNGpy.optimizer.optutils import compute_hyper_volume, edit_runner
-from apsimNGpy.optimizer.base import AbstractProblem
-from pymoo.core.problem import ElementwiseProblem
+
 from apsimNGpy.core.cal import OptimizationBase as Runner
-import numpy as np
+from apsimNGpy.optimizer.base import AbstractProblem
+from apsimNGpy.optimizer.optutils import edit_runner
 
 # Disable compilation warning
 Config.warnings['not_compiled'] = False

@@ -178,7 +178,7 @@ def single_runner(
     """
     SUCCESS = {'success': False}  # none can mean different things
 
-    @retry(stop=stop_after_attempt(retry_rate), retry=retry_if_exception_type(ApsimRuntimeError))
+    @retry(stop=stop_after_attempt(retry_rate), retry=retry_if_exception_type((ApsimRuntimeError, TimeoutError)))
     def runner_it():
         @write_results_to_sql(db_path=db, if_exists=if_exists, chunk_size=chunk_size)
         def _inside_runner(sub):
@@ -238,12 +238,12 @@ def single_runner(
                         "data": out,
                         "table": table_name,  # table is the key accepted by the decorator
                     }
-                except ApsimRuntimeError:
+                except ApsimRuntimeError as apr:
                     # Track failed jobs without interrupting the workflow
                     if ignore_runtime_errors:
                         return job
                     else:
-                        raise ApsimRuntimeError("runtime errors occurred")
+                        raise ApsimRuntimeError(f"runtime errors occurred{apr}")
 
         _inside_runner(subset)
         SUCCESS['success'] = True

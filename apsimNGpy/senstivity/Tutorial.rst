@@ -234,7 +234,9 @@ we can see that the total order effect are bigger than first oder effect, implyi
                                S2   S2_conf
     [Population, Amount]  0.04358  0.397149
 
-According to salib Each indice can be convered to Pandas Dataframe for further analysis
+SALib provides utilities that allow each sensitivity index to be
+converted into a pandas DataFrame, which can then be used for further
+analysis or visualization.
 
 .. code-block:: python
 

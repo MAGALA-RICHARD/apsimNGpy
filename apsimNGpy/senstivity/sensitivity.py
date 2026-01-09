@@ -162,9 +162,9 @@ class ConfigProblem:
 
 
 def run_sensitivity(
-        runner: ConfigProblem,
+        configured_prob: ConfigProblem,
         *,
-        method: str,
+        method: str ='morris',
         N: int | None = None,
         seed: int | None = 48,
         agg_func: str = "sum",
@@ -179,10 +179,10 @@ def run_sensitivity(
 
     Parameters
     ----------
-    runner : ConfigProblem
+    configured_prob : ConfigProblem
         Configured APSIM–SALib runner.
     method : {"morris", "sobol", "fast"}
-        Sensitivity method.
+        Sensitivity method. default is morris
     N : int, optional
         Base sample size. If None, a method-specific default is used.
     seed : int, optional
@@ -380,23 +380,23 @@ def run_sensitivity(
 
     if N is None:
         try:
-            N = default_n(method, runner.num_vars)
+            N = default_n(method, configured_prob.num_vars)
         except ValueError:
             N = 100
 
     evaluate = partial(
-        runner._evaluate,
+        configured_prob._evaluate,
         agg_func=agg_func,
         n_cores=n_cores,
         retry_rate=retry_rate,
         threads=threads,
     )
 
-    sampler = getattr(runner.problem, f"sample_{method}")
+    sampler = getattr(configured_prob.problem, f"sample_{method}")
     sample_options.setdefault('seed', seed)
     import inspect
     sign = list(inspect.signature(sampler).parameters)
-    print(sign)
+    #print(sign)
     stp = None
     try:
 
@@ -408,11 +408,11 @@ def run_sensitivity(
         # ---- evaluate ----
         # X = stp.samples
         # Y, results = evaluate(X)
-        setattr(stp, 'apsim_results', runner.raw_results)
+        setattr(stp, 'apsim_results', configured_prob.raw_results)
         # ---- analyze ----
         ans = analyzer(**analyze_options)
         sign = list(inspect.signature(analyzer).parameters)
-        print(sign)
+        #print(sign)
         return ans
     finally:
         del sampler, stp

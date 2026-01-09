@@ -168,7 +168,7 @@ def run_sensitivity(
         N: int | None = None,
         seed: int | None = 48,
         agg_func: str = "sum",
-        n_cores: int = None,
+        n_cores: int = -1,
         retry_rate: int = 3,
         threads: bool = False,
         sample_options: dict | None = None,
@@ -366,11 +366,11 @@ def run_sensitivity(
        sampling and analysis. If specified in only one of ``sample_options`` or
        ``analyze_options``, a value error is raised.
 """
-    if n_cores is None:
-        n_cores = CPU_CORES
+    n_cores = os.cpu_count() + n_cores if n_cores == -1 else n_cores
+    if n_cores < 0:
+        raise ValueError("n_cores must be a positive integer")
     sample_options = sample_options or {}
-    analyze_options = analyze_options or {
-    }
+    analyze_options = analyze_options or {}
     sample_options = sample_options.copy()
     analyze_options = analyze_options.copy()
     analyze_options.setdefault("conf_level", 0.95)
@@ -382,7 +382,6 @@ def run_sensitivity(
         if analyze_options.get('calc_second_order') != sample_options.get('calc_second_order'):
             raise ValueError(
                 "Sobol sensitivity requires that both sample `calc_second_order` and analyze ``calc_second_order` options  match ")
-
     if N is None:
         try:
             N = default_n(method, configured_prob.num_vars)

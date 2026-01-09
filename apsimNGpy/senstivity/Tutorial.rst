@@ -1,5 +1,5 @@
 
-Sensitivity analysis workflow
+Sensitivity analysis workflow (SALib driven workflow)
 =============================
 
 Sensitivity analysis follows a three-stage workflow triad:
@@ -156,3 +156,81 @@ column corresponds to one model output.
 In other words, the evaluation step applies APSIM to every sampled
 parameter set and returns the simulated results in a structured array
 that can be passed directly to SALib for analysis.
+
+Perform Analysis
+--------------------
+With the model outputs loaded into Python memory, the final step is to
+compute the sensitivity indices. In this example, we use
+``sobol.analyze``, which computes first-order, second-order, and
+total-order sensitivity indices.
+
+Additional details on the Sobol analysis workflow are available
+`here <https://salib.readthedocs.io/en/latest/user_guide/basics.html#an-example>`_.
+
+.. code-block:: python
+
+   Si = [sobol.analyze(runner.problem, Y[:, i], print_to_console=True) for i in range(Y.ndim)]
+
+Each element in the result is returned as a Python dictionary containing
+the keys ``S1``, ``S2``, ``ST``, ``S1_conf``, ``S2_conf``, and ``ST_conf``.
+The ``*_conf`` entries represent the confidence intervals associated with
+each sensitivity index, typically computed at a 95 percent confidence
+level.
+
+To display all sensitivity indices at once, set the keyword argument
+``print_to_console=True``. Alternatively, individual indices can be
+accessed directly from the results object, as shown below. Using grain yield as example hence index 0
+
+.. code-block:: python
+
+    Si[0]['S1']
+
+.. code-block:: none
+
+   array([0.43932783, 0.84502346])
+
+Amount which is Nitrogen fertilizer quantity have a higher first order effect than the planting population density.
+
+we can also retrieve the total effect
+
+.. code-block:: python
+
+   Si[0]['S1']
+
+.. code-block:: python
+
+  array([0.44579877, 0.91875446])
+
+we can see that the total order effect are bigger than first oder effect, implying that  interactions between the two factors are likely
+
+.. code-block:: python
+
+    Si[0]['S2'][0,1]
+
+.. code-block:: none
+
+   np.float64(0.025099857475360032)
+
+.. code-block:: python
+
+ Si = [sobol.analyze(runner.problem, Y[:,i], print_to_console=True) for i in range(Y.ndim)]
+
+.. code-block:: none
+
+         ST   ST_conf
+    Population  0.445799  0.447337
+    Amount      0.918754  0.492323
+                      S1   S1_conf
+    Population  0.439328  0.471019
+    Amount      0.845023  0.589469
+                              S2   S2_conf
+    [Population, Amount]  0.0251  0.338638
+                      ST   ST_conf
+    Population  0.342162  0.386487
+    Amount      0.948013  0.527931
+                      S1   S1_conf
+    Population  0.334605  0.493981
+    Amount      0.898494  0.579069
+                               S2   S2_conf
+    [Population, Amount]  0.04358  0.397149
+

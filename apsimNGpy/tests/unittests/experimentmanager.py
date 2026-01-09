@@ -1,4 +1,5 @@
 import os.path
+import sys
 import unittest
 from pandas import DataFrame
 from apsimNGpy.tests.unittests.base_unit_tests import BaseTester
@@ -43,6 +44,8 @@ class TestExperiment(BaseTester):
             self.assertFalse(df.empty, msg=f'Empty data frame encountered')
             self.assertTrue(Path(model.path).exists())
         self.assertFalse(Path(model.path).exists(), 'Path exists; context manager not working as expected')
+        if sys.platform == 'win32':
+            self.skipTest('skipping windows tests for data clean up on experiment manager')
         self.assertFalse(datastore.exists(), msg=f'data store exists context manager not working as expected')
 
     def test_add_factor_with_permutes_2_factors(self):

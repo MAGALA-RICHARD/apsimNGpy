@@ -438,6 +438,7 @@ the same workflow demonstrated in the first example and consult the
 SALib documentation for additional sensitivity analysis techniques and
 their usage.
 
+.. versionadded:: 1.0.0
 
 References
 

@@ -234,3 +234,18 @@ we can see that the total order effect are bigger than first oder effect, implyi
                                S2   S2_conf
     [Population, Amount]  0.04358  0.397149
 
+According to salib Each indice can be convered to Pandas Dataframe for further analysis
+
+.. code-block:: python
+
+  total_y, s1_y, s2_y  = Si[0].to_df()
+  total_gn, s1_gn, s2_n  = Si[1].to_df()
+
+.. code-block:: python
+
+   print(total_y)
+
+.. code-block:: python
+                       ST   ST_conf
+    Population  0.445799  0.447337
+    Amount      0.918754  0.492323

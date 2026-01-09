@@ -103,9 +103,9 @@ def single_runner(
         db,
         if_exists: str = "append",
         index: str | list | None = None,
-        table_prefix: str = "__",
+        table_prefix: str = "___",
         timeout=1000,
-        chunk_size: int = 1000,
+        chunk_size: int = None,
         subset=None,
         call_back=None,
         ignore_runtime_errors=True,
@@ -146,7 +146,7 @@ def single_runner(
         on result schema. Default is ``'__'``.
     timeout: int, optional default is 1000
         timeout for each run
-    chunk_size: int, optional default is 1000
+    chunk_size: int, optional default is None
        if data is too large
     call_back: callable, optional
        use it to do constant edits should take in a positional argument model.
@@ -179,7 +179,7 @@ def single_runner(
     """
     SUCCESS = {'success': False}  # none can mean different things
 
-    @retry(stop=stop_after_attempt(retry_rate), retry=retry_if_exception_type((ApsimRuntimeError, TimeoutError)))
+    @retry(stop=stop_after_attempt(retry_rate), retry=retry_if_exception_type((ApsimRuntimeError, TimeoutError, sqlite3.OperationalError)))
     def runner_it():
         def _inside_runner(sub):
             """

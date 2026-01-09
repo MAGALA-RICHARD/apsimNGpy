@@ -238,7 +238,11 @@ def run_sensitivity(
         N (int)
             Base sample size used to generate Sobol samples. Larger
             values lead to more reliable results but increase the number
-            of model runs. the total sample size is infered from the number of parameters. N must be a power of 2
+            of model runs. the total sample size is inferred from the number of parameters. N must be a power of 2
+            The final sample size is computed as N×(2D+2), where D is the number of parameters, when second-order effects are
+            enabled (i.e., calc_second_order=True), reflecting the need to evaluate parameter interactions. When
+            second-order effects are disabled (calc_second_order=False), the required sample size is
+            reduced to N×(D+2)
 
 
         calc_second_order (bool)

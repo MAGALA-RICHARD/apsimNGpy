@@ -22,11 +22,22 @@ from apsimNGpy.core_utils.database_utils import write_results_to_sql, clear_tabl
 from apsimNGpy.core_utils.utils import timer
 from apsimNGpy.parallel.process import custom_parallel
 from apsimNGpy.settings import logger
+from multiprocessing import Queue
 
 ID = 0
 # default cores to use
 CORES = max(1, math.ceil(os.cpu_count() * 0.85))
 csv_doc = pd.DataFrame().to_csv.__doc__
+
+
+def _get_failed(container):
+    failed_jobs = []
+    if isinstance(container, list):
+        return container
+    else:
+        while not container.empty():
+            failed_jobs.append(container.get())
+    return failed_jobs
 
 
 def _is_my_iterable(value):
@@ -132,9 +143,10 @@ class MultiCoreManager:
         read_db = partial(read_with_pandas, db=self.db_path)
         if len(tables) > 16:
             frames = list(
-                custom_parallel(read_db, tables, void=False, progress_message='loading data',unit='table', display_failures=True))
+                custom_parallel(read_db, tables, void=False, progress_message='loading data', unit='table',
+                                display_failures=True))
         else:
-            frames=(read_db(i) for i in tables)
+            frames = (read_db(i) for i in tables)
         # data = (read_db_table(self.db_path, report_name=rp) for rp in self.tables)
 
         return pd.concat(frames, axis=axis)
@@ -445,27 +457,26 @@ class MultiCoreManager:
             # below is retry code based on user-specified retry rate, the question of why not use tenacity is the added overhead from tenacity,
             # and also need to record the ones that failed
 
-        for ret in range(1, retry_rate + 2):  # one is for the initial jobs simulations
-            collect_incomplete_jobs = []
-            worker = partial(single_runner, agg_func=self.agg_func, incomplete_jobs=collect_incomplete_jobs,
-                             ignore_runtime_errors=ignore_runtime_errors,
-                             db=self.db_path, table_prefix=self.table_prefix, subset=subset)
-            try:
-                jobs = collect_incomplete_jobs or jobs
-                for _ in custom_parallel(func=worker, iterable=jobs, ncores=n_cores, use_threads=threads,
-                                         progress_message=f'APSIM running[{ret}]', unit='sim', void=False,
-                                         display_failures=display_failures):
+        worker = partial(single_runner, agg_func=self.agg_func,
+                         ignore_runtime_errors=ignore_runtime_errors, retry_rate=retry_rate,
+                         db=self.db_path, table_prefix=self.table_prefix, subset=subset)
+        try:
+            x = 0
+            failed = []
+            for res in custom_parallel(func=worker, iterable=jobs, ncores=n_cores, use_threads=threads,
+                                       progress_message=f'APSIM running[{x}]', unit='sim', void=False,
+                                       display_failures=display_failures):
+                if res is True:
                     pass  # holder to unzip jobs
-            finally:
-                gc.collect()
-            # update incomplete jobs on the main class
-            self.incomplete_jobs = collect_incomplete_jobs
-            if not collect_incomplete_jobs:
-                self.ran_ok = True
-                break
+                else:
+                    x += 1
+                    failed.append(res)
 
-        else:
-            logger.warning('Some jobs collected were not finished. check self.incomplete_jobs')
+        finally:
+            gc.collect()
+        # update incomplete jobs on the main class
+        self.incomplete_jobs = failed
+        self.ran_ok = True
 
 
 MultiCoreManager.save_tocsv.__doc__ = """  Persist simulation results to a SQLite database table.
@@ -488,7 +499,7 @@ if __name__ == '__main__':
         test_agg_db = Path(td) / f"{uuid.uuid4().hex}.db"
 
         Parallel = MultiCoreManager(db_path=test_agg_db, agg_func=None)
-        Parallel.run_all_jobs(create_jobs, n_cores=12, threads=False, clear_db=False, retry_rate=1, subset='Yield')
+        Parallel.run_all_jobs(create_jobs, n_cores=12, threads=False, clear_db=False, retry_rate=3, subset='Yield')
         df = Parallel.get_simulated_output(axis=0)
         print(len(Parallel.tables))
         Parallel.clear_scratch()

@@ -286,7 +286,7 @@ def read_db_table(db: Union[str, Path], report_name: str = None, sql_query=None)
 
 def read_with_pandas(table, db):
     with sqlite3.connect(db) as con:
-        df= pd.read_sql(f"SELECT * FROM {table}", con)
+        df = pd.read_sql(f"SELECT * FROM {table}", con)
         return df
 
 
@@ -516,8 +516,9 @@ def _default_insert_fn(db: str, df: DataFrame, table: str, if_exists: str, chunk
     """
 
     from sqlalchemy import create_engine
-    eng = create_engine(f"sqlite:///{db}")
-    df.to_sql(table, eng, if_exists=if_exists, index=False, chunksize=chunk_size)
+    # eng = create_engine(f"sqlite:///{db}")
+    with sqlite3.connect(db) as conn:
+        df.to_sql(table, conn, if_exists=if_exists, index=False, chunksize=chunk_size)
 
 
 def _to_dataframe(obj: Any) -> DataFrame:

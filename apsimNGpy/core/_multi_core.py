@@ -235,7 +235,7 @@ def single_runner(
                     # table_name = make_table_name(table_prefix=table_prefix, schema_id=schema_hash, run_id=os.getpid())
                     table_name = f"{table_prefix}_{schema_hash}_{PID}"
                     with sqlite3.connect(db) as conn:
-                        out.to_sql(table_name, conn, if_exists=if_exists, chunk_size=chunk_size)
+                        out.to_sql(table_name, conn, if_exists=if_exists, chunksize=chunk_size)
 
                 except ApsimRuntimeError as apr:
                     # Track failed jobs without interrupting the workflow

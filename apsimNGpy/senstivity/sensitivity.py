@@ -112,7 +112,8 @@ class ConfigProblem:
                     threads=threads,
                     clear_db=True,
                     display_failures=True,
-                    subset=self.outputs
+                    subset=self.outputs,
+                    ignore_runtime_errors=False,
                 )
                 df = mc.get_simulated_output(axis=0)
                 df.sort_values(self.index_id, inplace=True)
@@ -123,16 +124,11 @@ class ConfigProblem:
                 return df[self.outputs].to_numpy()
 
         try:
-
             return run_in_multi_core(db=db_path)
-        except sqlite3.OperationalError:
-            try:
-                return run_in_multi_core(db=db_path)
-            except PermissionError:
-                pass
         finally:
             try:
                 Path(db_path).unlink(missing_ok=True)
+                print('database deleted')
             except PermissionError:
                 pass
 
@@ -145,7 +141,7 @@ def run_sensitivity(
         seed: int | None = 48,
         agg_func: str = "sum",
         n_cores: int = None,
-        retry_rate: int = 2,
+        retry_rate: int = 3,
         threads: bool = False,
         sample_options: dict | None = None,
         analyze_options: dict | None = None,
@@ -174,9 +170,13 @@ def run_sensitivity(
     sample_options : dict, optional.
         Options forwarded to the SALib sampler. The available options are described in the
         SALib documentation fore each method.
+        fast: ['N', 'M', 'seed']
+        morris: ['N', 'num_levels', 'optimal_trajectories', 'local_optimization', 'seed']
+        sobol: ['N', 'calc_second_order', 'scramble', 'skip_values', 'seed']
     analyze_options : dict, optional
         Options forwarded to the SALib analyzer. The available options are described in the
         SALIB documentation fore each method.
+
     Examples
     ---------
 
@@ -280,13 +280,18 @@ def run_sensitivity(
         n_cores = CPU_CORES
     sample_options = sample_options or {}
     analyze_options = analyze_options or {
-        "conf_level": 0.95,
-        "num_resamples": 1000,
-        "print_to_console": True,
     }
+    sample_options = sample_options.copy()
+    analyze_options = analyze_options.copy()
+    analyze_options.setdefault("conf_level", 0.95)
+    analyze_options.setdefault("num_resamples", 1000, )
+    analyze_options.setdefault("print_to_console", True)
     if method == 'sobol':
-        # check if "calc_second_order" option is consistently provided and raise
-        sample_options, analyze_options = switch_sobol_option(sample_options, analyze_options)
+        sample_options.setdefault('calc_second_order', True)
+        analyze_options.setdefault('calc_second_order', True)
+        if analyze_options.get('calc_second_order') != sample_options.get('calc_second_order'):
+            raise ValueError(
+                "Sobol sensitivity requires that both sample `calc_second_order` and analyze ``calc_second_order` options  match ")
 
     if N is None:
         try:
@@ -303,27 +308,37 @@ def run_sensitivity(
     )
 
     sampler = getattr(runner.problem, f"sample_{method}")
-    analyzer = getattr(runner.problem, f"analyze_{method}")
     sample_options.setdefault('seed', seed)
-    # ---- sample ----
-    stp = sampler(N=N, **sample_options)
-    stp.evaluate(evaluate)
-    analyzer = getattr(stp, f"analyze_{method}")
+    import inspect
+    sign = list(inspect.signature(sampler).parameters)
+    print(sign)
+    stp= None
+    try:
 
-    # ---- evaluate ----
-    # X = stp.samples
-    # Y, results = evaluate(X)
-    setattr(stp, 'raw_results', runner.raw_results)
-    # ---- analyze ----
-    return analyzer(**analyze_options)
+        stp = sampler(N=N, **sample_options)
+
+        stp.evaluate(evaluate)
+        analyzer = getattr(stp, f"analyze_{method}")
+
+        # ---- evaluate ----
+        # X = stp.samples
+        # Y, results = evaluate(X)
+        setattr(stp, 'apsim_results', runner.raw_results)
+        # ---- analyze ----
+        ans = analyzer(**analyze_options)
+        sign = list(inspect.signature(analyzer).parameters)
+        print(sign)
+        return ans
+    finally:
+        del sampler, stp
 
 
 if __name__ == "__main__":
     params = {
         ".Simulations.Simulation.Field.Sow using a variable rule?Population": (2, 10),
         ".Simulations.Simulation.Field.Fertilise at sowing?Amount": (0, 300),
-        ".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82?[Leaf].Photosynthesis.RUE.FixedValue": (
-            1.2, 2.2),
+        # ".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82?[Leaf].Photosynthesis.RUE.FixedValue": (
+        #     1.2, 2.2),
     }
     runner = ConfigProblem(
         base_model="Maize",
@@ -331,13 +346,29 @@ if __name__ == "__main__":
         outputs=["Yield", "Maize.AboveGround.N"],
     )
 
+    Si_sobol = run_sensitivity(
+        runner,
+        method="sobol",
+        N=2 ** 5,  # ← base sample size
+        sample_options={
+            "calc_second_order": True,
+            # "skip_values": 1024,
+            # "seed": 42,
+        },
+        analyze_options={
+            "conf_level": 0.95,
+            "num_resamples": 1000,
+            "print_to_console": True,
+            "calc_second_order": True,
+        },
+    )
     Si_morris = run_sensitivity(
         runner,
         method="morris", n_cores=6,
         sample_options={
             'seed': 42,
             "num_levels": 6,
-            "optimal_trajectories": 10,
+            "optimal_trajectories": 6,
         },
         analyze_options={
             'conf_level': 0.95,
@@ -360,19 +391,3 @@ if __name__ == "__main__":
         },
     )
 
-    Si_sobol = run_sensitivity(
-        runner,
-        method="sobol",
-        N=2 ** 6,  # ← base sample size
-        sample_options={
-            "calc_second_order": True,
-            #"skip_values": 1024,
-            # "seed": 42,
-        },
-        analyze_options={
-            "conf_level": 0.95,
-            "num_resamples": 1000,
-            "print_to_console": True,
-            "calc_second_order": True,
-        },
-    )

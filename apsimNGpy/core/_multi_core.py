@@ -99,7 +99,6 @@ def make_table_name(table_prefix: str, schema_id: str, run_id: int) -> str:
 def single_runner(
         job: str | dict,
         agg_func: str,
-        incomplete_jobs: list,
         db,
         if_exists: str = "append",
         index: str | list | None = None,
@@ -108,7 +107,8 @@ def single_runner(
         chunk_size: int = 1000,
         subset=None,
         call_back=None,
-        ignore_runtime_errors=True):
+        ignore_runtime_errors=True,
+        retry_rate=1):
     """
     Execute a single APSIM simulation job and persist its results to a database.
 
@@ -131,9 +131,6 @@ def single_runner(
         Name of the aggregation function to apply to simulation outputs
         (e.g., ``'mean'``, ``'sum'``). If ``None`` or empty, raw simulation
         results are returned without aggregation.
-    incomplete_jobs : set or list
-        A mutable container used to track jobs that fail during execution.
-        Failed model paths are appended or added depending on container type.
     db : str or database handle
         Target database path or connection used by the SQL writer decorator.
     if_exists : str, optional
@@ -156,7 +153,11 @@ def single_runner(
         used to subset the columns after simulation
     ignore_runtime_errors: bool, optional. Default is True
       Ignore ApsimRunTimeError, to avoid breaking the program during multiprocessing
-      other processes can proceed, while we can keep the failed jobs
+      other processes can proceed, while we can keep the failed jobs.
+    retry_rate: int, optional default is 1
+       Number of times to retry by tenacity if ApsimRunTimeError is encountered, this suspects
+       that it is due to timeout errors. Other errors may be fatal, and after this retrial, they will be displayed
+
 
     Returns
     -------
@@ -177,72 +178,74 @@ def single_runner(
     """
     SUCCESS = {'success': False}  # none can mean different things
 
-    @write_results_to_sql(db_path=db, if_exists=if_exists, chunk_size=chunk_size)
-    def _inside_runner(sub):
-        """
-        Inner worker function executed under the SQL persistence decorator.
+    @retry(stop=stop_after_attempt(retry_rate), retry=retry_if_exception_type(ApsimRuntimeError))
+    def runner_it():
+        @write_results_to_sql(db_path=db, if_exists=if_exists, chunk_size=chunk_size)
+        def _inside_runner(sub):
+            """
+            Inner worker function executed under the SQL persistence decorator.
 
-        This function runs the APSIM simulation, prepares the result dataset,
-        and returns a dictionary describing both the data and its target table.
-        """
+            This function runs the APSIM simulation, prepares the result dataset,
+            and returns a dictionary describing both the data and its target table.
+            """
 
-        model, metadata, inputs = _inspect_job(job)
-        ID = metadata.get("ID", None) if metadata else None
-        with (ApsimModel(model) as _model):
-            try:
-                if call_back and callable(call_back):
-                    # there might be additional works that the user wants to enforce
-                    call_back(model)
-                if inputs:
-                    # set before running
-                    for in_put in inputs:
-                        _model.set_params(**in_put)
-                _model.run(timeout=timeout)
+            model, metadata, inputs = _inspect_job(job)
+            ID = metadata.get("ID", None) if metadata else None
+            with (ApsimModel(model) as _model):
+                try:
+                    if call_back and callable(call_back):
+                        # there might be additional works that the user wants to enforce
+                        call_back(model)
+                    if inputs:
+                        # set before running
+                        for in_put in inputs:
+                            _model.set_params(**in_put)
+                    _model.run(timeout=timeout)
 
-                # Aggregate results if requested
-                if agg_func:
-                    if agg_func not in aggs:
-                        raise ValueError(
-                            f"Unsupported aggregation function '{agg_func}'"
-                        )
+                    # Aggregate results if requested
+                    if agg_func:
+                        if agg_func not in aggs:
+                            raise ValueError(
+                                f"Unsupported aggregation function '{agg_func}'"
+                            )
 
-                    grp = index or "source_table"
-                    dat = _model.results.groupby(grp)
-                    out = dat.agg(agg_func, numeric_only=True)
-                    out["source_name"] = Path(model).name
-                else:
-                    grp = 'source_table'
-                    out = _model.results
+                        grp = index or "source_table"
+                        dat = _model.results.groupby(grp)
+                        out = dat.agg(agg_func, numeric_only=True)
+                        out["source_name"] = Path(model).name
+                    else:
+                        grp = 'source_table'
+                        out = _model.results
 
-                if sub:
+                    if sub:
 
-                    sub = [sub] if isinstance(sub, str) else sub
-                    if set(sub).issubset(out.columns):
-                        out = out[[*sub]].copy()
-                # Attach execution metadata
-                PID = os.getpid()
-                out["MetaProcessID"] = PID
-                # avoid duplicates columns
-                merged_inputs = merge_dict(inputs)
-                metadata = {**metadata, **merged_inputs}
-                out = out.assign(**metadata)
-                schema_hash = schema_id(tuple(out.dtypes))
-                out["MetaExecutionID"] = ID or schema_hash
-                # Generate a unique table identifier based on schema
-                # table_name = make_table_name(table_prefix=table_prefix, schema_id=schema_hash, run_id=os.getpid())
-                table_name = f"{table_prefix}_{schema_hash}_{PID}"
+                        sub = [sub] if isinstance(sub, str) else sub
+                        if set(sub).issubset(out.columns):
+                            out = out[[*sub]].copy()
+                    # Attach execution metadata
+                    PID = os.getpid()
+                    out["MetaProcessID"] = PID
+                    # avoid duplicates columns
+                    merged_inputs = merge_dict(inputs)
+                    metadata = {**metadata, **merged_inputs}
+                    out = out.assign(**metadata)
+                    schema_hash = schema_id(tuple(out.dtypes))
+                    out["MetaExecutionID"] = ID or schema_hash
+                    # Generate a unique table identifier based on schema
+                    # table_name = make_table_name(table_prefix=table_prefix, schema_id=schema_hash, run_id=os.getpid())
+                    table_name = f"{table_prefix}_{schema_hash}_{PID}"
+                    return {
+                        "data": out,
+                        "table": table_name,  # table is the key accepted by the decorator
+                    }
+                except ApsimRuntimeError:
+                    # Track failed jobs without interrupting the workflow
+                    if ignore_runtime_errors:
+                        return job
+                    else:
+                        raise ApsimRuntimeError("runtime errors occurred")
 
-                return {
-                    "data": out,
-                    "table": table_name,  # table is the key accepted by the decorator
-                }
-            except ApsimRuntimeError:
-                # Track failed jobs without interrupting the workflow
-                incomplete_jobs.append(job)
-                if not ignore_runtime_errors:
-                    raise ApsimRuntimeError("runtime errors occurred")
-
-    _inside_runner(subset)
-    SUCCESS['success'] = True
-    succeed = SUCCESS['success']
-    return succeed
+        _inside_runner(subset)
+        SUCCESS['success'] = True
+        return SUCCESS['success']
+    return runner_it()

@@ -79,7 +79,8 @@ setup(
         'summarytools>=0.3.0',
         'tqdm==4.67.1',
         'watchdog==6.0.0',
-        'SALib==1.5.2'
+        'SALib==1.5.2',
+        'numpy==1.26.4'
 
     ]
 )

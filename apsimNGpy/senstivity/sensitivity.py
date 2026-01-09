@@ -114,7 +114,9 @@ class ConfigProblem:
                 self.incomplete_jobs = mc.incomplete_jobs
                 if mc.incomplete_jobs:
                     logger.warning(f"over {len(mc.incomplete_jobs)}Incomplete were registered something went wrong")
-                return df[self.outputs].to_numpy()
+                out = df[self.outputs].to_numpy()
+
+                return out
 
         try:
             return run_in_multi_core(db=db_path)
@@ -138,13 +140,16 @@ class ConfigProblem:
            Aggregation function for APSIM outputs.
         n_cores : int, default= total machine cpu counts minus 2.
             Number of parallel workers. use 1 to purely run in a single thread or process
+            n_cores may be specified as a negative integer to indicate relative allocation from the total available CPU cores.
+            In this case, the absolute value of n_cores is subtracted from the total CPU budget, and the remaining cores are used.
+            If the resulting number of cores is less than or equal to zero, a ValueError is raised.
         retry_rate : int, default=2
             Number of retries for failed simulations.
         threads : bool, default=False
             Use multithreading instead of multiprocessing.
         """
         from apsimNGpy.core.mult_cores import core_count
-        n_cores = core_count(n_cores,threads=threads)
+        n_cores = core_count(n_cores, threads=threads)
         part = partial(
             self._evaluate,
             agg_func=agg_func,
@@ -185,6 +190,9 @@ def run_sensitivity(
         Aggregation function for APSIM outputs.
     n_cores : int, default= total machine cpu counts minus 2. to reserve for other processes
         Number of parallel workers. use 1 to purely run in a single thread or process.
+        n_cores may be specified as a negative integer to indicate relative allocation from the total available CPU cores.
+        In this case, the absolute value of n_cores is subtracted from the total CPU budget, and the remaining cores are used.
+        If the resulting number of cores is less than or equal to zero, a ValueError is raised.
     retry_rate : int, default=2
         Number of retries for failed simulations.
     threads : bool, default=False
@@ -401,13 +409,17 @@ def run_sensitivity(
 
         stp.evaluate(evaluate)
         analyzer = getattr(stp, f"analyze_{method}")
-
-        # ---- evaluate ----
-        # X = stp.samples
-        # Y, results = evaluate(X)
         setattr(stp, 'apsim_results', configured_prob.raw_results)
         # ---- analyze ----
         ans = analyzer(**analyze_options)
+        ##########################################################################
+        # check if there are no missing row wise values from the evaluated results
+        #######################################################################
+        if ans.results.shape[0] != ans.samples.shape[0]:
+            logger.info('re-running results, lengths of samples and evaluated results were not the same')
+            # evaluate and analyse again
+            stp.evaluate(evaluate)
+            ans = analyzer(**analyze_options)
         sign = list(inspect.signature(analyzer).parameters)
         # print(sign)
         return ans
@@ -429,20 +441,22 @@ if __name__ == "__main__":
         outputs=["Yield", "Maize.AboveGround.N"],
     )
     # custom
-    from SALib.sample import saltelli
-    from SALib.analyze import sobol
-
-    param_values = saltelli.sample(runner.problem, 2 ** 4)
-    Y = runner.evaluate(param_values)
-    Si = [sobol.analyze(runner.problem, Y[:, i], print_to_console=True) for i in range(Y.ndim)]
-    print(Si)
+    # from SALib.sample import saltelli
+    # from SALib.analyze import sobol
+    #
+    # param_values = saltelli.sample(runner.problem, 2 ** 4)
+    # Y = runner.evaluate(param_values)
+    # Si = [sobol.analyze(runner.problem, Y[:, i], print_to_console=True) for i in range(Y.ndim)]
+    # print(Si)
+    from apsimNGpy.senstivity.sensitivity import run_sensitivity, ConfigProblem
     Si_sobol = run_sensitivity(
         runner,
         method="sobol",
-        N=2 ** 4,  # ← base sample size
+        N=2 ** 8,  # ← base sample size
+        n_cores=-6,
         sample_options={
             "calc_second_order": True,
-            # "skip_values": 1024,
+            "skip_values": 1024,
             # "seed": 42,
         },
         analyze_options={
@@ -452,31 +466,31 @@ if __name__ == "__main__":
             "calc_second_order": True,
         },
     )
-    Si_morris = run_sensitivity(
-        runner,
-        method="morris", n_cores=10,
-        sample_options={
-            'seed': 42,
-            "num_levels": 6,
-            "optimal_trajectories": 6,
-        },
-        analyze_options={
-            'conf_level': 0.95,
-            "num_resamples": 1000,
-            "print_to_console": True,
-            'seed': 42
-        },
-    )
-    si_fast = run_sensitivity(
-        runner,
-        method="fast",
-        sample_options={
-            "M": 2,
-
-        },
-        analyze_options={
-            'conf_level': 0.95,
-            "num_resamples": 1000,
-            "print_to_console": True,
-        },
-    )
+    # Si_morris = run_sensitivity(
+    #     runner,
+    #     method="morris", n_cores=10,
+    #     sample_options={
+    #         'seed': 42,
+    #         "num_levels": 6,
+    #         "optimal_trajectories": 6,
+    #     },
+    #     analyze_options={
+    #         'conf_level': 0.95,
+    #         "num_resamples": 1000,
+    #         "print_to_console": True,
+    #         'seed': 42
+    #     },
+    # )
+    # si_fast = run_sensitivity(
+    #     runner,
+    #     method="fast",
+    #     sample_options={
+    #         "M": 2,
+    #
+    #     },
+    #     analyze_options={
+    #         'conf_level': 0.95,
+    #         "num_resamples": 1000,
+    #         "print_to_console": True,
+    #     },
+    # )

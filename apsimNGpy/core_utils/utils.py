@@ -1,37 +1,34 @@
-import logging
 from collections import deque
-from typing import Iterable
-
-import numpy as np
+import functools
 import glob
 import os
-from os.path import join as opj
-import shutil
 import random
+import re
+import shutil
 import string
-import geopandas as gpd
+import sys
+import time
+import traceback
+from collections import deque
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
+from os.path import join as opj
+from pathlib import Path
+from platform import system
+from subprocess import call, Popen
+from threading import Thread
+from time import perf_counter
+from typing import Iterable
+from typing import List
+
+import pandas as pd
+from scipy.optimize import curve_fit
+from shapely import wkt
 from shapely.geometry import Polygon
 from shapely.ops import unary_union
-from shapely.geometry import Point
-from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
-from threading import Thread
-from scipy.optimize import curve_fit
-from time import perf_counter
-import pandas as pd
-import time
-from functools import cache
-from pathlib import Path
-from shapely import wkt
 
-import functools
-import traceback
-import sys
 from apsimNGpy.settings import logger
-from platform import system
-from subprocess import call, run, Popen
 
-import re
-from typing import List
+
 def select_process(use_thread, ncores):
     return ThreadPoolExecutor(ncores) if use_thread else ProcessPoolExecutor(ncores)
 
@@ -288,36 +285,8 @@ def convert_negative_to_positive(arr, column_index):
     return arr
 
 
-def split_and_replace(data):
-    """
-    Replaces rows in the 'CropRotatn' column of the input structured array ('data')
-    with calculated values based on a mapping ('crop_mapping').
-
-    Parameters:
-        data (numpy structured array): A structured array with a 'CropRotatn' column.
-
-    Returns:
-        numpy array: A new column containing calculated values for rows that do not meet the condition,
-                     and 'none' for rows that meet the condition.
-    """
-
-    # Crop mapping dictionary to replace crop codes with crop names
-    crop_mapping = {'C': 'Maize', 'B': 'Soybean', 'W': 'Wheat'}
-
-    # Use np.vectorize() to apply np.char.find() on the specified columns
-    find_func = np.vectorize(lambda x: not any(crop in x for crop in ['F', 'U', 'X', 'T', 'G', 'R', 'P', 'I']))
-    valid_indices = np.where(find_func(data['CropRotatn']))[0]
-
-    # Initialize a new column with 'none'
-    new_column = np.array(['none'] * len(data), dtype=object)
-
-    # Calculate and populate new_column for the rows that do not meet the condition
-    new_column[valid_indices] = [", ".join([crop_mapping[c] for c in row]) for row in data['CropRotatn'][valid_indices]]
-
-    return new_column
-
-
 def convert_fc_to_numpy(fc):
+    import geopandas as gpd
     # Replace 'path_to_shapefile.shp' with the actual path to your feature class
     path_to_shapefile = fc
 
@@ -334,6 +303,8 @@ def convert_fc_to_numpy(fc):
 
 
 def get_centroid(polygon):
+    from shapely.geometry import Point
+    import geopandas as gpd
     gdf = gpd.read_file(polygon)
     # Union all geometries in the GeoDataFrame
     unified_geometry = unary_union(gdf['geometry'])
@@ -351,6 +322,7 @@ def create_polygon(lat, lon, lon_step, lat_step):
 
 
 def create_fishnet(min_lat, min_lon, max_lat, max_lon, lon_step, lat_step):
+    import geopandas as gpd
     lats = np.arange(min_lat, max_lat, lat_step)
     lons = np.arange(min_lon, max_lon, lon_step)
 
@@ -377,6 +349,7 @@ def create_polygon1(args):
 
 
 def create_fishnet1(pt, lon_step=20, lat_step=20, ncores=2, process=False):
+    import geopandas as gpd
     gdf_shape = gpd.read_file(pt)
     CRS = gdf_shape.crs
     print(crs)
@@ -628,6 +601,7 @@ def convert_df_to_gdf(df, CRS):
     Note:
     The 'wkt' module from 'shapely' needs to be imported to convert geometries from WKT.
     """
+    import geopandas as gpd
     df['geometry'] = df['geometry'].apply(wkt.loads)
     gdf = gpd.GeoDataFrame(df, crs=CRS)
     return gdf
@@ -762,7 +736,6 @@ def flatten_dict(nested_dict, parent_key='', separator='.'):
     return flattened
 
 
-
 _PATTERN = re.compile(r"\[[^\]]+\]\.[A-Za-z0-9_.]+")
 
 
@@ -772,5 +745,7 @@ def extract_cultivar_param_path(text: str) -> List[str]:
     [Grain].MaximumGrainsPerCob.FixedValue
     """
     return _PATTERN.findall(text)
+
+
 if __name__ == '__main__':
     ...

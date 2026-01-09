@@ -179,7 +179,8 @@ def single_runner(
     """
     SUCCESS = {'success': False}  # none can mean different things
 
-    @retry(stop=stop_after_attempt(retry_rate), retry=retry_if_exception_type((ApsimRuntimeError, TimeoutError, sqlite3.OperationalError)))
+    @retry(stop=stop_after_attempt(retry_rate),
+           retry=retry_if_exception_type((ApsimRuntimeError, TimeoutError, sqlite3.OperationalError)))
     def runner_it():
         def _inside_runner(sub):
             """
@@ -231,8 +232,9 @@ def single_runner(
                     out = out.assign(**metadata)
                     schema_hash = schema_id(tuple(out.dtypes))
                     out["MetaExecutionID"] = ID or schema_hash
-                    # Generate a unique table identifier based on schema
-                    # table_name = make_table_name(table_prefix=table_prefix, schema_id=schema_hash, run_id=os.getpid())
+                    ##########################################################################################
+                    # Generate a unique table identifier based on schema and process ID that way they cannot be resource sharing of the same table
+                    ############################################################################################################
                     table_name = f"{table_prefix}_{schema_hash}_{PID}"
                     with sqlite3.connect(db) as conn:
                         out.to_sql(table_name, conn, if_exists=if_exists, chunksize=chunk_size)
@@ -243,8 +245,19 @@ def single_runner(
                         return job
                     else:
                         raise ApsimRuntimeError(f"runtime errors occurred{apr}")
+                except TimeoutError as te:
+                    if ignore_runtime_errors:
+                        return job
+                    else:
+                        raise TimeoutError(f'time out occurred: {te}')
+                except sqlite3.OperationalError as oe:
+                    if ignore_runtime_errors:
+                        return job
+                    else:
+                        raise sqlite3.OperationalError(f"data base operation error occurred {oe}")
 
         _inside_runner(subset)
         SUCCESS['success'] = True
         return SUCCESS['success']
+
     return runner_it()

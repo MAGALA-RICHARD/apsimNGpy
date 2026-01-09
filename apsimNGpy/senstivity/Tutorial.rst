@@ -390,14 +390,6 @@ the FAST method. FAST is a variance-based approach that estimates the
 influence of each input parameter by systematically varying inputs
 across the parameter space and analyzing the resulting model response.
 
-Ideally, the analysis could begin with the Morris method to screen out
-less influential factors, particularly when a large number of inputs
-are under consideration. However, even without this initial screening,
-the results are consistent across methods.
-
-In this case, both FAST and Sobol analyses indicate that yield is more
-sensitive to nitrogen fertilizer rate than to population density.
-
 .. code-block:: python
 
     si_fast = run_sensitivity(
@@ -413,3 +405,36 @@ sensitive to nitrogen fertilizer rate than to population density.
             "print_to_console": True,
         },
     )
+
+.. code-block:: none
+
+    Out[9]:
+    Samples:
+        2 parameters: ['Population', 'Amount']
+        130 samples
+    Outputs:
+        2 outputs: ['Y1', 'Y2']
+        130 evaluations
+    Analysis:
+    Y1:
+                      S1        ST   S1_conf   ST_conf
+    Population  0.211503  0.332158  0.206649  0.165346
+    Amount      0.585945  0.742978  0.206981  0.163964:
+    Y2:
+                      S1        ST   S1_conf   ST_conf
+    Population  0.151057  0.243790  0.208318  0.158650
+    Amount      0.708005  0.819993  0.200030  0.162489:
+
+Ideally, the analysis could begin with the Morris method to screen out
+less influential factors, particularly when a large number of inputs
+are under consideration. However, even without this initial screening,
+the results are consistent across methods.
+
+In this case, both FAST and Sobol analyses indicate that yield is more
+sensitive to nitrogen fertilizer rate than to population density.
+
+References
+
+Iwanaga, T., Usher, W., & Herman, J. (2022). Toward SALib 2.0: Advancing the accessibility and interpretability of global sensitivity analyses. Socio-Environmental Systems Modelling, 4, 18155. doi:10.18174/sesmo.18155
+
+Herman, J. and Usher, W. (2017) SALib: An open-source Python library for sensitivity analysis. Journal of Open Source Software, 2(9). doi:10.21105/joss.00097

@@ -433,6 +433,12 @@ the results are consistent across methods.
 In this case, both FAST and Sobol analyses indicate that yield is more
 sensitive to nitrogen fertilizer rate than to population density.
 
+To extend the analysis beyond the Sobol, Morris, and FAST methods, follow
+the same workflow demonstrated in the first example and consult the
+SALib documentation for additional sensitivity analysis techniques and
+their usage.
+
+
 References
 
 Iwanaga, T., Usher, W., & Herman, J. (2022). Toward SALib 2.0: Advancing the accessibility and interpretability of global sensitivity analyses. Socio-Environmental Systems Modelling, 4, 18155. doi:10.18174/sesmo.18155

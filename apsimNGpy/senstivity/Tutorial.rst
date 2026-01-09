@@ -201,7 +201,8 @@ we can also retrieve the total effect
 
   array([0.44579877, 0.91875446])
 
-we can see that the total order effect are bigger than first oder effect, implying that  interactions between the two factors are likely
+The larger total-order effects relative to the first-order effects
+suggest potential interactions between the two factors
 
 .. code-block:: python
 
@@ -251,3 +252,62 @@ analysis or visualization.
                        ST   ST_conf
     Population  0.445799  0.447337
     Amount      0.918754  0.492323
+
+SALib provides an object-oriented interface that simplifies the
+sensitivity analysis triad of sampling, evaluation, and analysis.
+In apsimNGpy, this workflow is further streamlined by wrapping all
+three steps into a single method,
+:meth:`~apsimNGpy.sensitivity.sensitivity.run_sensitivity`.
+
+By keeping the initialized runner or problem definition constant,
+the complete sensitivity analysis demonstrated above can be executed
+in a concise and reproducible manner, as shown below.
+
+.. code-block:: python
+
+    Si_sobol = run_sensitivity(
+        runner,
+        method="sobol",
+        N=2 ** 4,  # ← base sample size should be power of 2
+        sample_options={
+            "calc_second_order": True,
+            "skip_values": 1024,
+             "seed": 42,
+        },
+        analyze_options={
+            "conf_level": 0.95,
+            "num_resamples": 1000,
+            "print_to_console": True,
+            "calc_second_order": True,
+        },
+    )
+
+
+The returned object is an instance of the
+``SALib.util.problem.ProblemSpec`` class. When evaluated in the Python
+console, this object displays a summary of the problem definition and
+the computed sensitivity indices, as shown below.
+
+.. code-block:: none
+
+We can try another method known as morris.   The Morris method is typically used as a *screening tool* to identify influential
+parameters with relatively low computational cost. It is well suited for high-dimensional
+problems where the goal is to rank parameters rather than quantify precise sensitivities.
+
+.. code-block:: python
+
+  Si_morris = run_sensitivity(
+        runner,
+        method="morris", n_cores=10,
+        sample_options={
+            'seed': 42,
+            "num_levels": 6,
+            "optimal_trajectories": 6,
+        },
+        analyze_options={
+            'conf_level': 0.95,
+            "num_resamples": 1000,
+            "print_to_console": True,
+            'seed': 42
+        },
+    )

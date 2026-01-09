@@ -441,7 +441,7 @@ if __name__ == "__main__":
     Si_sobol = run_sensitivity(
         runner,
         method="sobol",
-        N=2 ** 5,  # ← base sample size
+        N=2 ** 4,  # ← base sample size
         sample_options={
             "calc_second_order": True,
             # "skip_values": 1024,

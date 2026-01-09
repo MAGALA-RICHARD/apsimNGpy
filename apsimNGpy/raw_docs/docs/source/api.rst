@@ -134,7 +134,7 @@ Classes
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.update_mgt`
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.update_mgt_by_path`
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.__init__(self, model: Union[os.PathLike, dict, str], out_path: Union[str, pathlib.Path] = <object object at 0x0000024E5E5922E0>, set_wd=None, **kwargs)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.__init__(self, model: Union[os.PathLike, dict, str], out_path: Union[str, pathlib.Path] = <object object at 0x0000025CC4766460>, set_wd=None, **kwargs)
 
    Initialize self.  See help(type(self)) for accurate signature.
 
@@ -481,7 +481,7 @@ Classes
    self : object
        Returns the updated ApsimModel instance.
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.save(self, file_name: 'Union[str, Path]' = <object object at 0x0000024E0DAD8B60>, reload=True) (inherited)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.save(self, file_name: 'Union[str, Path]' = <object object at 0x0000025C85581030>, reload=True) (inherited)
 
    Saves the current APSIM NG model (``Simulations``) to disk and refresh runtime state.
 
@@ -2592,7 +2592,7 @@ Classes
    ---------------------------------------------------------------------------
    returns an array of the parameter values
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x0000024E0DAD8B60>) (inherited)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x0000025C85581030>) (inherited)
 
    Inspect the model types and returns the model paths or names.
 
@@ -3717,7 +3717,7 @@ Classes
    In the future, this module will contain all the constants required by the package.
     Users will be able to override these values if needed by importing this module before running any simulations.
 
-   .. py:method:: apsimNGpy.core.config.Configuration.__init__(self, bin_path: 'Union[Path, str]' = <object object at 0x0000024E5E5913F0>) -> None
+   .. py:method:: apsimNGpy.core.config.Configuration.__init__(self, bin_path: 'Union[Path, str]' = <object object at 0x0000025CC47656D0>) -> None
 
    Initialize self.  See help(type(self)) for accurate signature.
 
@@ -3967,7 +3967,7 @@ Classes
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.update_mgt`
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.update_mgt_by_path`
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.__init__(self, model, out_path=<object object at 0x0000024E5E5922E0>)
+   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.__init__(self, model, out_path=<object object at 0x0000025CC4766460>)
 
    Initialize self.  See help(type(self)) for accurate signature.
 
@@ -4617,7 +4617,7 @@ Classes
    self : object
        Returns the updated ApsimModel instance.
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.save(self, file_name: 'Union[str, Path]' = <object object at 0x0000024E0DAD8B60>, reload=True) (inherited)
+   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.save(self, file_name: 'Union[str, Path]' = <object object at 0x0000025C85581030>, reload=True) (inherited)
 
    Saves the current APSIM NG model (``Simulations``) to disk and refresh runtime state.
 
@@ -6728,7 +6728,7 @@ Classes
    ---------------------------------------------------------------------------
    returns an array of the parameter values
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x0000024E0DAD8B60>) (inherited)
+   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x0000025C85581030>) (inherited)
 
    Inspect the model types and returns the model paths or names.
 
@@ -7738,11 +7738,11 @@ Classes
    Based on the source file name and execution context, two additional columns
    are appended to the returned dataset:
 
-   - ``ExecutionID``
+   - ``MetaExecutionID``
      A unique identifier assigned to each simulation run, independent of
      execution order or process.
 
-   - ``ProcessID``
+   - ``MetaProcessID``
      Identifies the process responsible for executing the simulation. For example,
      when running on six cores, six distinct process IDs will be assigned.
 
@@ -7759,7 +7759,7 @@ Classes
 
    Clears the database before any simulations.
 
-   .. py:method:: apsimNGpy.core.mult_cores.MultiCoreManager.clear_scratch(self)
+   .. py:staticmethod:: apsimNGpy.core.mult_cores.MultiCoreManager.clear_scratch()
 
    clears the scratch directory where apsim files are cloned before being loaded. should be called after all simulations are completed
 
@@ -7977,7 +7977,7 @@ Classes
    >>> os.makedirs('folder/subfolder', exist_ok=True)  # doctest: +SKIP
    >>> df.to_csv('folder/subfolder/out.csv')  # doctest: +SKIP
 
-   .. py:method:: apsimNGpy.core.mult_cores.MultiCoreManager.run_all_jobs(self, jobs, *, n_cores=17, threads=False, clear_db=True, retry_rate=1, subset=None, ignore_runtime_errors=True, display_failures=True, **kwargs)
+   .. py:method:: apsimNGpy.core.mult_cores.MultiCoreManager.run_all_jobs(self, jobs, *, n_cores=-2, threads=False, clear_db=True, retry_rate=1, subset=None, ignore_runtime_errors=True, display_failures=True, **kwargs)
 
    Run all provided jobs using multiprocessing or multithreading.
 
@@ -7991,7 +7991,7 @@ Classes
    threads : bool, optional
        If ``True``, jobs are executed using threads; otherwise, jobs are
        executed using processes. The default is ``False`` (process-based
-       execution), which is recommended for APSIM workloads.
+       execution), which is recommended for APSIM workloads. Threads may allow over subscription beyond the cpu budget but not processes
 
    jobs : iterable or dict
        A collection of job specifications identifying APSIM models to run.
@@ -8070,6 +8070,10 @@ Classes
 
    n_cores : int
        Number of CPU cores to use for parallel execution.
+       Default= total machine cpu counts minus 2 to reserve cores for other processes.
+       n_cores may be specified as a negative integer to indicate relative allocation from the total available CPU cores.
+       In this case, the absolute value of n_cores is subtracted from the total CPU budget, and the remaining cores are used.
+       If the resulting number of cores is less than or equal to zero, a ValueError is raised.
 
    clear_db : bool, optional
        If ``True``, existing database tables are cleared before writing new
@@ -8217,7 +8221,7 @@ Functions
    >>> reader = get_apsim_file_reader("string")    # doctest: +SKIP
    >>> sims = reader(text)                         # doctest: +SKIP
 
-.. py:function:: apsimNGpy.core.pythonet_config.get_apsim_version(bin_path: Union[str, pathlib.Path] = <object object at 0x0000024E5E5922D0>, release_number: bool = False) -> Optional[str]
+.. py:function:: apsimNGpy.core.pythonet_config.get_apsim_version(bin_path: Union[str, pathlib.Path] = <object object at 0x0000025CC4766420>, release_number: bool = False) -> Optional[str]
 
    Return the APSIM version string detected from the installed binaries.
 
@@ -8266,7 +8270,7 @@ Functions
    --------
    load_pythonnet : Initialize pythonnet/CLR for APSIM binaries.
 
-.. py:function:: apsimNGpy.core.pythonet_config.is_file_format_modified(bin_path: Union[str, pathlib.Path] = <object object at 0x0000024E5E5922D0>) -> bool
+.. py:function:: apsimNGpy.core.pythonet_config.is_file_format_modified(bin_path: Union[str, pathlib.Path] = <object object at 0x0000025CC4766420>) -> bool
 
    Checks if the APSIM.CORE.dll is present in the bin path. Normally, the new APSIM version has this dll file.
 
@@ -8278,7 +8282,7 @@ Functions
    :returns:
      bool
 
-.. py:function:: apsimNGpy.core.pythonet_config.load_pythonnet(bin_path: Union[str, pathlib.Path] = <object object at 0x0000024E5E5922D0>)
+.. py:function:: apsimNGpy.core.pythonet_config.load_pythonnet(bin_path: Union[str, pathlib.Path] = <object object at 0x0000025CC4766420>)
 
    A method for loading Python for .NET (pythonnet) and APSIM models from the binary path. It is also cached to
    avoid rerunning many times.
@@ -8549,7 +8553,7 @@ Functions
 
    Return True if obj looks like a DB connection.
 
-.. py:function:: apsimNGpy.core.runner.run_apsim_by_path(model: 'Union[str, Path]', *, bin_path: 'Union[str, Path, object]' = <object object at 0x0000024E5E592310>, timeout: 'int' = 800, ncores: 'int' = -1, verbose: 'bool' = False, to_csv: 'bool' = False) -> 'None'
+.. py:function:: apsimNGpy.core.runner.run_apsim_by_path(model: 'Union[str, Path]', *, bin_path: 'Union[str, Path, object]' = <object object at 0x0000025CC4766480>, timeout: 'int' = 800, ncores: 'int' = -1, verbose: 'bool' = False, to_csv: 'bool' = False) -> 'None'
 
    Execute an APSIM model safely and reproducibly.
 
@@ -8594,7 +8598,7 @@ Functions
    RuntimeError
        If APSIM returns a non-zero exit code.
 
-.. py:function:: apsimNGpy.core.runner.run_model_externally(model: 'Union[Path, str]', *, apsim_bin_path: 'Optional[Union[Path, str]]' = <object object at 0x0000024E5E592310>, verbose: 'bool' = False, to_csv: 'bool' = False, timeout: 'int' = 20, cpu_count=-1, cwd: 'Optional[Union[Path, str]]' = None) -> 'subprocess.CompletedProcess[str]'
+.. py:function:: apsimNGpy.core.runner.run_model_externally(model: 'Union[Path, str]', *, apsim_bin_path: 'Optional[Union[Path, str]]' = <object object at 0x0000025CC4766480>, verbose: 'bool' = False, to_csv: 'bool' = False, timeout: 'int' = 20, cpu_count=-1, cwd: 'Optional[Union[Path, str]]' = None) -> 'subprocess.CompletedProcess[str]'
 
    Run APSIM externally (cross-platform) with safe defaults.
 
@@ -8799,7 +8803,7 @@ Classes
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.update_mgt`
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.update_mgt_by_path`
 
-   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.__init__(self, model, out_path=<object object at 0x0000024E5E5922E0>)
+   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.__init__(self, model, out_path=<object object at 0x0000025CC4766460>)
 
    Initialize self.  See help(type(self)) for accurate signature.
 
@@ -9385,7 +9389,7 @@ Classes
    self : object
        Returns the updated ApsimModel instance.
 
-   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.save(self, file_name: 'Union[str, Path]' = <object object at 0x0000024E0DAD8B60>, reload=True) (inherited)
+   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.save(self, file_name: 'Union[str, Path]' = <object object at 0x0000025C85581030>, reload=True) (inherited)
 
    Saves the current APSIM NG model (``Simulations``) to disk and refresh runtime state.
 
@@ -11496,7 +11500,7 @@ Classes
    ---------------------------------------------------------------------------
    returns an array of the parameter values
 
-   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x0000024E0DAD8B60>) (inherited)
+   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x0000025C85581030>) (inherited)
 
    Inspect the model types and returns the model paths or names.
 
@@ -13529,148 +13533,6 @@ Classes
        Reference:
            https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.differential_evolution.html
 
-apsimNGpy.optimizer.moo
------------------------
-
-Classes
-^^^^^^^
-
-.. py:class:: apsimNGpy.optimizer.moo.MultiObjectiveProblem
-
-   List of Public Attributes:
-   __________________________________
-
-   - :attr:`~apsimNGpy.optimizer.moo.MultiObjectiveProblem.indicators`
-   - :attr:`~apsimNGpy.optimizer.moo.MultiObjectiveProblem.labels`
-   - :attr:`~apsimNGpy.optimizer.moo.MultiObjectiveProblem.outcomes`
-   List of Public Methods
-   -----------------------------
-   - :meth:`~apsimNGpy.optimizer.moo.MultiObjectiveProblem.add_control`
-   - :meth:`~apsimNGpy.optimizer.moo.MultiObjectiveProblem.is_mixed_type_vars`
-   - :meth:`~apsimNGpy.optimizer.moo.MultiObjectiveProblem.minimize`
-
-   .. py:method:: apsimNGpy.optimizer.moo.MultiObjectiveProblem.__init__(self, apsim_model: apsimNGpy.core.cal.OptimizationBase, objectives: list, *, decision_vars: list = None, cache_size=100)
-
-   Parameters
-   ----------
-   apsim_runner : apsimNGpy.core.cal.OptimizationBase
-       Instance to run APSIM simulations.
-
-   objectives : list of callable.
-       List of functions that take simulation output (DataFrame) and return scalar objective values.
-
-   decision_vars : list of dict, optional
-       Each dict must have: 'path', 'bounds', 'v_type', 'kwargs'.
-
-   .. py:method:: apsimNGpy.optimizer.moo.MultiObjectiveProblem.optimization_type(self)
-
-   Must be implemented as a property in subclass
-
-   .. py:method:: apsimNGpy.optimizer.moo.MultiObjectiveProblem.is_mixed_type_vars(self)
-
-   Detect if decision vars contain types other than float or int.
-
-   .. py:method:: apsimNGpy.optimizer.moo.MultiObjectiveProblem.minimize(self, **kwargs)
-
-   Minimization of function of one or more variables, objectives and constraints. wraps around Pymoo
-
-   Parameters
-   ----------
-
-   kwargs : dict
-    - problem: instance of ``pymoo.core.problem.Problem``
-        A problem object which is defined using pymoo.
-
-    - algorithm: instance of ``pymoo.core.algorithm.Algorithm``
-         The algorithm object that should be used for the optimization.
-
-    - termination: ``pymoo.core.termination.Termination`` or tuple default is None
-       Usually the termination criterion that is used to stop the algorithm.
-
-    - seed : integer
-       The random seed to be used.
-
-    - verbose : bool
-           Whether output should be printed or not.
-
-    - display : :class:`~pymoo.util.display.Display`
-           Each algorithm has a default display object for printouts. However, it can be overwritten if desired.
-
-    - callback : `pymoo.core.callback.Callback`
-           A callback object which is called each iteration of the algorithm.
-
-    - save_history : bool
-           Whether the history should be stored or not.
-
-   - copy_algorithm : bool
-           Whether the algorithm object should be copied before optimization.
-
-   .. py:method:: apsimNGpy.optimizer.moo.MultiObjectiveProblem.add_control(self, path: str, *, bounds, v_type, q=None, start_value=None, categories=None, **kwargs) (inherited)
-
-   Adds a single APSIM parameter to be optimized.
-
-   Parameters
-   ----------
-   path : str
-       APSIM component path.
-
-    v_type : type
-       The Python type of the variable. Should be either `int` or `float` for continous variable problem or
-       'uniform', 'choice',  'grid',   'categorical',   'qrandint',  'quniform' for mixed variable problem
-
-   start_value : any (type determined by the variable type.
-       The initial value to use for the parameter in optimization routines. Only required for single objective optimizations
-
-   bounds : tuple of (float, float), optional
-       Lower and upper bounds for the parameter (used in bounded optimization).
-       Must be a tuple like (min, max). If None, the variable is considered unbounded or categorical or the algorithm to be used do not support bounds
-
-   kwargs: dict
-       One of the key-value pairs must contain a value of '?', indicating the parameter to be filled during optimization.
-       Keyword arguments are used because most APSIM models have unique parameter structures, and this approach allows
-       flexible specification of model-specific parameters. It is also possible to pass other parameters associated with the model in question to be changed on the fly.
-
-
-   Returns
-   -------
-   self : object
-       Returns self to support method chaining.
-
-   .. warning::
-
-       Raises a ``ValueError``
-           If the provided arguments do not pass validation via `_evaluate_args`.
-
-
-   .. Note::
-
-       - This method is typically used before running optimization to define which
-         parameters should be tuned.
-
-   Example:
-
-   .. code-block:: python
-
-            from apsimNGpy.core.apsim import ApsimModel
-            from apsimNGpy.core.optimizer import MultiObjectiveProblem
-            runner = ApsimModel("Maize")
-
-           _vars = [
-           {'path': '.Simulations.Simulation.Field.Fertilise at sowing', 'Amount': "?", "bounds": [50, 300],
-            "v_type": "float"},
-           {'path': '.Simulations.Simulation.Field.Sow using a variable rule', 'Population': "?", 'v_type': 'float',
-            'bounds': [4, 14]}
-            ]
-           problem = MultiObjectiveProblem(runner, objectives=objectives, decision_vars=_vars)
-           # or
-           problem = MultiObjectiveProblem(runner, objectives=objectives, None)
-           problem.add_control(
-               **{'path': '.Simulations.Simulation.Field.Fertilise at sowing', 'Amount': "?", "bounds": [50, 300],
-                  "v_type": "float"})
-           problem.add_control(
-               **{'path': '.Simulations.Simulation.Field.Sow using a variable rule', 'Population': "?", 'v_type': 'float',
-                  'bounds': [4, 14]})
-
 apsimNGpy.optimizer.problems.back_end
 -------------------------------------
 
@@ -14486,6 +14348,250 @@ Functions
    .. seealso::
 
           :func:`~apsimNGpy.parallel.process.custom_parallel`
+
+apsimNGpy.senstivity.sensitivity
+--------------------------------
+
+Functions
+^^^^^^^^^
+
+.. py:function:: apsimNGpy.senstivity.sensitivity.run_sensitivity(configured_prob: 'ConfigProblem', *, method: 'str' = 'morris', N: 'int | None' = None, seed: 'int | None' = 48, agg_func: 'str' = 'sum', n_cores: 'int' = -2, retry_rate: 'int' = 3, threads: 'bool' = False, sample_options: 'dict | None' = None, analyze_options: 'dict | None' = None)
+
+   Run a complete sensitivity analysis.
+
+   Parameters
+   ----------
+   configured_prob : ConfigProblem
+       Configured APSIM–SALib runner.
+   method : {"morris", "sobol", "fast"}
+       Sensitivity method. default is morris
+   N : int, optional
+       Base sample size. If None, a method-specific default is used.
+   seed : int, optional
+       Random seed.
+   agg_func : str, default="sum"
+       Aggregation function for APSIM outputs.
+   n_cores : int, default= total machine cpu counts minus 2. to reserve for other processes
+       Number of parallel workers. use 1 to purely run in a single thread or process.
+       n_cores may be specified as a negative integer to indicate relative allocation from the total available CPU cores.
+       In this case, the absolute value of n_cores is subtracted from the total CPU budget, and the remaining cores are used.
+       If the resulting number of cores is less than or equal to zero, a ValueError is raised.
+   retry_rate : int, default=2
+       Number of retries for failed simulations.
+   threads : bool, default=False
+       Use multithreading instead of multiprocessing.
+   sample_options : dict, optional
+   Options forwarded to the SALib sampling function. The available
+   options depend on the selected sensitivity analysis method.
+
+   FAST method
+       N (int)
+           Number of model evaluations used to estimate sensitivity
+           indices. Larger values improve stability but require more
+           simulations.
+
+       M (int)
+           Controls the resolution of the FAST sampling. Higher values
+           improve accuracy but increase computational cost.
+
+       seed (int)
+           Random seed used to make the sampling reproducible.
+           default is 48
+
+   Morris method
+       N (int)
+           Number of trajectories used to explore the parameter space.
+           Increasing this value improves robustness of the results.
+
+       num_levels (int)
+           Number of discrete levels used when sampling each parameter.
+           Higher values provide finer resolution.
+
+       optimal_trajectories (int)
+           Number of trajectories selected to improve coverage of the
+           parameter space.
+
+       local_optimization (bool)
+           Whether an additional optimization step is used to improve
+           trajectory selection.
+
+       seed (int)
+           Random seed used to make the sampling reproducible.
+            default is 48
+
+   Sobol method
+       N (int)
+           Base sample size used to generate Sobol samples. Larger
+           values lead to more reliable results but increase the number
+           of model runs. the total sample size is inferred from the number of parameters. N must be a power of 2
+           The final sample size is computed as N×(2D+2), where D is the number of parameters, when second-order effects are
+           enabled (i.e., calc_second_order=True), reflecting the need to evaluate parameter interactions. When
+           second-order effects are disabled (calc_second_order=False), the required sample size is
+           reduced to N×(D+2)
+
+
+       calc_second_order (bool)
+           Whether second order sensitivity indices are computed.
+           Enabling this option increases runtime.
+           Default is True
+
+       scramble (bool)
+           Whether scrambling is applied to improve the quality of the
+           Sobol sequence. default is False
+
+
+       skip_values (int)
+           Number of initial values skipped in the Sobol sequence to
+           improve sample quality.
+
+       seed (int)
+           Random seed used to make the sampling reproducible.
+            default is 48
+
+   analyze_options : dict, optional
+       Options forwarded to the SALib analyzer. The available options are described in the
+       SALIB documentation fore each method.
+
+   Examples
+   ---------
+
+   The following examples illustrate how to perform global sensitivity analysis using
+   different methods supported by :func:`run_sensitivity`. Each method serves a
+   different analytical purpose, ranging from screening to variance decomposition.
+
+   First, define a configuration-based sensitivity problem. The ``runner`` encapsulates
+   the APSIM base model, parameters to be perturbed, and the outputs of interest.
+
+   .. code-block:: python
+
+       params = {
+       ".Simulations.Simulation.Field.Sow using a variable rule?Population": (2, 10),
+       ".Simulations.Simulation.Field.Fertilise at sowing?Amount": (0, 300),
+       ".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82?[Leaf].Photosynthesis.RUE.FixedValue": (1.2, 2.2),
+        }
+        #  any of these ?, ::, |, @ are valid separators between node path and parameter name in question
+       runner = ConfigProblem(
+           base_model="Maize",
+           params=params,
+           outputs=["Yield", "Maize.AboveGround.N"]
+       )
+
+   Morris (Elementary Effects)
+   ------------------------------
+   The Morris method is typically used as a *screening tool* to identify influential
+   parameters with relatively low computational cost. It is well suited for high-dimensional
+   problems where the goal is to rank parameters rather than quantify precise sensitivities.
+
+   .. code-block:: python
+
+       Si_morris = run_sensitivity(
+           runner,
+           method="morris",
+           n_cores=6,
+           sample_options={
+               "seed": 42,
+               "num_levels": 6,
+               "optimal_trajectories": 10,
+           },
+           analyze_options={
+               "conf_level": 0.95,
+               "num_resamples": 1000,
+               "print_to_console": True,
+               "seed": 42,
+           },
+       )
+
+   FAST (Fourier Amplitude Sensitivity Test)
+   ------------------------------------------
+   The FAST method provides variance-based sensitivity indices with lower sampling
+   requirements than Sobol. It is useful when computational resources are limited but
+   quantitative sensitivity estimates are still required.
+
+   .. code-block:: python
+
+       Si_fast = run_sensitivity(
+           runner,
+           method="fast",
+           sample_options={
+               "M": 2,
+           },
+           analyze_options={
+               "conf_level": 0.95,
+               "num_resamples": 1000,
+               "print_to_console": True,
+           },
+       )
+
+   Sobol (Variance Decomposition)
+   ----------------------------------
+   Sobol sensitivity analysis provides a full variance decomposition of model outputs,
+   including first-order and (optionally) higher-order interaction effects. This method
+   is the most robust but also the most computationally demanding.
+
+   .. code-block:: python
+
+       Si_sobol = run_sensitivity(
+           runner,
+           method="sobol",
+           N=2 ** 8,  # base sample size
+           sample_options={
+               "calc_second_order": False,
+           },
+           analyze_options={
+               "conf_level": 0.95,
+               "num_resamples": 1000,
+               "print_to_console": True,
+               "calc_second_order": False,
+           },
+       )
+
+   .. note::
+
+      For Sobol sensitivity analysis, ``calc_second_order`` must be consistent between
+      sampling and analysis. If specified in only one of ``sample_options`` or
+      ``analyze_options``, a value error is raised.
+
+Classes
+^^^^^^^
+
+.. py:class:: apsimNGpy.senstivity.sensitivity.ConfigProblem
+
+       Core engine for APSIM–SALib sensitivity analysis.
+
+       This class is intentionally lightweight and stateless. Just used for problem configurations
+
+   List of Public Attributes:
+   __________________________________
+
+   - *(none)*
+   List of Public Methods
+   -----------------------------
+   - :meth:`~apsimNGpy.senstivity.sensitivity.ConfigProblem.evaluate`
+   - :meth:`~apsimNGpy.senstivity.sensitivity.ConfigProblem.job_maker`
+
+   .. py:method:: apsimNGpy.senstivity.sensitivity.ConfigProblem.__init__(self, base_model: 'str | Path', params: 'Mapping[str, tuple[float, float]]', outputs: 'list[str]', *, names: 'Iterable[str] | None' = None, dist: 'list[str] | None' = None, groups: 'list[int] | None' = None, index_id: 'str' = 'ID')
+
+   Initialize self.  See help(type(self)) for accurate signature.
+
+   .. py:method:: apsimNGpy.senstivity.sensitivity.ConfigProblem.job_maker(self, X: 'np.ndarray')
+
+   Generate APSIM jobs for each sampled parameter vector.
+
+   .. py:method:: apsimNGpy.senstivity.sensitivity.ConfigProblem.evaluate(self, X, agg_func='sum', n_cores=-2, retry_rate=2, threads=False)
+
+   The problem is already defined but user want to control the inputs or use a procedural approach after.
+
+   agg_func : str, default="sum"
+      Aggregation function for APSIM outputs.
+   n_cores : int, default= total machine cpu counts minus 2.
+       Number of parallel workers. use 1 to purely run in a single thread or process
+       n_cores may be specified as a negative integer to indicate relative allocation from the total available CPU cores.
+       In this case, the absolute value of n_cores is subtracted from the total CPU budget, and the remaining cores are used.
+       If the resulting number of cores is less than or equal to zero, a ValueError is raised.
+   retry_rate : int, default=2
+       Number of retries for failed simulations.
+   threads : bool, default=False
+       Use multithreading instead of multiprocessing.
 
 apsimNGpy.validation.evaluator
 ------------------------------

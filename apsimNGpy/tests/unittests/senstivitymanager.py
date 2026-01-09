@@ -1,3 +1,4 @@
+import sys
 import unittest
 from apsimNGpy.core.senstivitymanager import SensitivityManager
 import gc
@@ -22,6 +23,8 @@ class SensitivityManagerTest(unittest.TestCase):
     def test_sens_managers_sobol(self):
         "Test method = Sobol"
         gc.collect()
+        if sys.platform != 'win32':
+            self.skipTest('skipping sensitivity unsupported platform without containerization')
         print('running sensitivity test configuration for Sobol')
         exp = SensitivityManager("Maize", out_path='sob.apsimx')
         exp.add_sens_factor(name='cnr', path='Field.SurfaceOrganicMatter.InitialCNR', lower_bound=10, upper_bound=120)
@@ -36,6 +39,8 @@ class SensitivityManagerTest(unittest.TestCase):
     def test_sens_managers_morris(self):
         """Test method=Morris"""
         gc.collect()
+        if sys.platform != 'win32':
+            self.skipTest('skipping sensitivity unsupported platform without containerization')
         exp = SensitivityManager("Maize", out_path='morris.apsimx')
         exp.add_sens_factor(name='cnr', path='Field.SurfaceOrganicMatter.InitialCNR', lower_bound=10, upper_bound=120)
         exp.add_sens_factor(name='cn2bare', path='Field.Soil.SoilWater.CN2Bare', lower_bound=70, upper_bound=100)

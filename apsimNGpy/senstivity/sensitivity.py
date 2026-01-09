@@ -1,24 +1,17 @@
 from __future__ import annotations
 
-import copy
+import gc
 import os
-import sqlite3
 from functools import partial
 from pathlib import Path
 from typing import Iterable, Mapping
-
 import numpy as np
-import pandas as pd
 import sqlalchemy
-from apsimNGpy.core_utils.database_utils import (get_db_table_names, read_db_table)
-from apsimNGpy.senstivity.helpers import (split_apsim_path_by_sep, group_candidate_params, clear_db,
-                                          switch_sobol_option,
-                                          default_n, define_problem, generate_default_db_path)
+from apsimNGpy.senstivity.helpers import (split_apsim_path_by_sep, group_candidate_params, default_n, define_problem,
+                                          generate_default_db_path)
 from apsimNGpy.settings import logger
 
 dataError = sqlalchemy.exc.OperationalError
-
-CPU_CORES = max(6, os.cpu_count() - 4)
 
 
 class ConfigProblem:
@@ -97,10 +90,10 @@ class ConfigProblem:
         """
         Run APSIM simulations and return outputs and raw results.
         """
-        n_cores = os.cpu_count() + n_cores if n_cores < 0 else n_cores
         table_prefix = '__sens__'
-        from apsimNGpy.core.mult_cores import MultiCoreManager
+        from apsimNGpy.core.mult_cores import MultiCoreManager, core_count
         db_path = generate_default_db_path(table_prefix)
+        n_cores = core_count(n_cores, threads=threads)
 
         def run_in_multi_core(db):
 
@@ -135,7 +128,7 @@ class ConfigProblem:
 
     def evaluate(self, X,
                  agg_func='sum',
-                 n_cores=-1,
+                 n_cores=-2,
                  retry_rate=2,
                  threads=False):
         """
@@ -143,14 +136,15 @@ class ConfigProblem:
 
         agg_func : str, default="sum"
            Aggregation function for APSIM outputs.
-        n_cores : int, default=12
+        n_cores : int, default= total machine cpu counts minus 2.
             Number of parallel workers. use 1 to purely run in a single thread or process
         retry_rate : int, default=2
             Number of retries for failed simulations.
         threads : bool, default=False
             Use multithreading instead of multiprocessing.
         """
-        n_cores = os.cpu_count() + n_cores if n_cores < 0 else n_cores
+        from apsimNGpy.core.mult_cores import core_count
+        n_cores = core_count(n_cores,threads=threads)
         part = partial(
             self._evaluate,
             agg_func=agg_func,
@@ -164,11 +158,11 @@ class ConfigProblem:
 def run_sensitivity(
         configured_prob: ConfigProblem,
         *,
-        method: str ='morris',
+        method: str = 'morris',
         N: int | None = None,
         seed: int | None = 48,
         agg_func: str = "sum",
-        n_cores: int = -1,
+        n_cores: int = -2,
         retry_rate: int = 3,
         threads: bool = False,
         sample_options: dict | None = None,
@@ -189,8 +183,8 @@ def run_sensitivity(
         Random seed.
     agg_func : str, default="sum"
         Aggregation function for APSIM outputs.
-    n_cores : int, default=12
-        Number of parallel workers. use 1 to purely run in a single thread or process
+    n_cores : int, default= total machine cpu counts minus 2. to reserve for other processes
+        Number of parallel workers. use 1 to purely run in a single thread or process.
     retry_rate : int, default=2
         Number of retries for failed simulations.
     threads : bool, default=False
@@ -366,9 +360,8 @@ def run_sensitivity(
        sampling and analysis. If specified in only one of ``sample_options`` or
        ``analyze_options``, a value error is raised.
 """
-    n_cores = os.cpu_count() + n_cores if n_cores == -1 else n_cores
-    if n_cores < 0:
-        raise ValueError("n_cores must be a positive integer")
+    from apsimNGpy.core.mult_cores import core_count
+    n_cores = core_count(n_cores, threads=threads)
     sample_options = sample_options or {}
     analyze_options = analyze_options or {}
     sample_options = sample_options.copy()
@@ -416,10 +409,11 @@ def run_sensitivity(
         # ---- analyze ----
         ans = analyzer(**analyze_options)
         sign = list(inspect.signature(analyzer).parameters)
-        #print(sign)
+        # print(sign)
         return ans
     finally:
         del sampler, stp
+        gc.collect()
 
 
 if __name__ == "__main__":

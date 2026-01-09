@@ -403,6 +403,9 @@ class MultiCoreManager:
         n_cores : int
             Number of CPU cores to use for parallel execution.
             Default= total machine cpu counts minus 2 to reserve cores for other processes.
+            n_cores may be specified as a negative integer to indicate relative allocation from the total available CPU cores.
+            In this case, the absolute value of n_cores is subtracted from the total CPU budget, and the remaining cores are used.
+            If the resulting number of cores is less than or equal to zero, a ValueError is raised.
 
         clear_db : bool, optional
             If ``True``, existing database tables are cleared before writing new

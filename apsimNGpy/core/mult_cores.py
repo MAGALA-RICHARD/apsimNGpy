@@ -476,7 +476,7 @@ class MultiCoreManager:
             x = 0
             failed = []
             for res in custom_parallel(func=worker, iterable=jobs, ncores=n_cores, use_threads=threads,
-                                       progress_message=f'APSIM running[{x}]', unit='sim', void=False,
+                                       progress_message=f'APSIM running[{x}f]', unit='sim', void=False,
                                        display_failures=display_failures):
                 if res is True:
                     pass  # holder to unzip jobs

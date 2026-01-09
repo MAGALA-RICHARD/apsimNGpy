@@ -25,8 +25,8 @@ class ConfigProblem:
     """
     Core engine for APSIM–SALib sensitivity analysis.
 
-    This class is intentionally lightweight and stateless
-    beyond configuration.
+    This class is intentionally lightweight and stateless. Just used for problem configurations
+
     """
 
     def __init__(
@@ -85,7 +85,7 @@ class ConfigProblem:
 
     # ---------------- Evaluation ----------------
 
-    def evaluate(
+    def _evaluate(
             self,
             X: np.ndarray,
             *,
@@ -97,8 +97,8 @@ class ConfigProblem:
         """
         Run APSIM simulations and return outputs and raw results.
         """
-
-        table_prefix = '__senstivity_runner'
+        n_cores = os.cpu_count() + n_cores if n_cores < 0 else n_cores
+        table_prefix = '__sens__'
         from apsimNGpy.core.mult_cores import MultiCoreManager
         db_path = generate_default_db_path(table_prefix)
 
@@ -127,10 +127,38 @@ class ConfigProblem:
             return run_in_multi_core(db=db_path)
         finally:
             try:
-                Path(db_path).unlink(missing_ok=True)
+                db = Path(db_path).resolve()
+                os.remove(db) if db.exists() else None
                 print('database deleted')
             except PermissionError:
                 pass
+
+    def evaluate(self, X,
+                 agg_func='sum',
+                 n_cores=-1,
+                 retry_rate=2,
+                 threads=False):
+        """
+        The problem is already defined but user want to control the inputs or use a procedural approach after.
+
+        agg_func : str, default="sum"
+           Aggregation function for APSIM outputs.
+        n_cores : int, default=12
+            Number of parallel workers. use 1 to purely run in a single thread or process
+        retry_rate : int, default=2
+            Number of retries for failed simulations.
+        threads : bool, default=False
+            Use multithreading instead of multiprocessing.
+        """
+        n_cores = os.cpu_count() + n_cores if n_cores < 0 else n_cores
+        part = partial(
+            self._evaluate,
+            agg_func=agg_func,
+            n_cores=n_cores,
+            retry_rate=retry_rate,
+            threads=threads,
+        )
+        return part(X)
 
 
 def run_sensitivity(
@@ -167,12 +195,69 @@ def run_sensitivity(
         Number of retries for failed simulations.
     threads : bool, default=False
         Use multithreading instead of multiprocessing.
-    sample_options : dict, optional.
-        Options forwarded to the SALib sampler. The available options are described in the
-        SALib documentation fore each method.
-        fast: ['N', 'M', 'seed']
-        morris: ['N', 'num_levels', 'optimal_trajectories', 'local_optimization', 'seed']
-        sobol: ['N', 'calc_second_order', 'scramble', 'skip_values', 'seed']
+    sample_options : dict, optional
+    Options forwarded to the SALib sampling function. The available
+    options depend on the selected sensitivity analysis method.
+
+    FAST method
+        N (int)
+            Number of model evaluations used to estimate sensitivity
+            indices. Larger values improve stability but require more
+            simulations.
+
+        M (int)
+            Controls the resolution of the FAST sampling. Higher values
+            improve accuracy but increase computational cost.
+
+        seed (int)
+            Random seed used to make the sampling reproducible.
+            default is 48
+
+    Morris method
+        N (int)
+            Number of trajectories used to explore the parameter space.
+            Increasing this value improves robustness of the results.
+
+        num_levels (int)
+            Number of discrete levels used when sampling each parameter.
+            Higher values provide finer resolution.
+
+        optimal_trajectories (int)
+            Number of trajectories selected to improve coverage of the
+            parameter space.
+
+        local_optimization (bool)
+            Whether an additional optimization step is used to improve
+            trajectory selection.
+
+        seed (int)
+            Random seed used to make the sampling reproducible.
+             default is 48
+
+    Sobol method
+        N (int)
+            Base sample size used to generate Sobol samples. Larger
+            values lead to more reliable results but increase the number
+            of model runs. the total sample size is infered from the number of parameters
+
+        calc_second_order (bool)
+            Whether second order sensitivity indices are computed.
+            Enabling this option increases runtime.
+            Default is True
+
+        scramble (bool)
+            Whether scrambling is applied to improve the quality of the
+            Sobol sequence. default is False
+
+
+        skip_values (int)
+            Number of initial values skipped in the Sobol sequence to
+            improve sample quality.
+
+        seed (int)
+            Random seed used to make the sampling reproducible.
+             default is 48
+
     analyze_options : dict, optional
         Options forwarded to the SALib analyzer. The available options are described in the
         SALIB documentation fore each method.
@@ -202,7 +287,7 @@ def run_sensitivity(
         )
 
     Morris (Elementary Effects)
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ------------------------------
     The Morris method is typically used as a *screening tool* to identify influential
     parameters with relatively low computational cost. It is well suited for high-dimensional
     problems where the goal is to rank parameters rather than quantify precise sensitivities.
@@ -227,7 +312,7 @@ def run_sensitivity(
         )
 
     FAST (Fourier Amplitude Sensitivity Test)
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ------------------------------------------
     The FAST method provides variance-based sensitivity indices with lower sampling
     requirements than Sobol. It is useful when computational resources are limited but
     quantitative sensitivity estimates are still required.
@@ -248,7 +333,7 @@ def run_sensitivity(
         )
 
     Sobol (Variance Decomposition)
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ----------------------------------
     Sobol sensitivity analysis provides a full variance decomposition of model outputs,
     including first-order and (optionally) higher-order interaction effects. This method
     is the most robust but also the most computationally demanding.
@@ -274,7 +359,7 @@ def run_sensitivity(
 
        For Sobol sensitivity analysis, ``calc_second_order`` must be consistent between
        sampling and analysis. If specified in only one of ``sample_options`` or
-       ``analyze_options``, the value is automatically propagated to the other.
+       ``analyze_options``, a value error is raised.
 """
     if n_cores is None:
         n_cores = CPU_CORES
@@ -300,7 +385,7 @@ def run_sensitivity(
             N = 100
 
     evaluate = partial(
-        runner.evaluate,
+        runner._evaluate,
         agg_func=agg_func,
         n_cores=n_cores,
         retry_rate=retry_rate,
@@ -312,7 +397,7 @@ def run_sensitivity(
     import inspect
     sign = list(inspect.signature(sampler).parameters)
     print(sign)
-    stp= None
+    stp = None
     try:
 
         stp = sampler(N=N, **sample_options)
@@ -345,7 +430,14 @@ if __name__ == "__main__":
         params=params,
         outputs=["Yield", "Maize.AboveGround.N"],
     )
+    # custom
+    from SALib.sample import saltelli
+    from SALib.analyze import sobol
 
+    param_values = saltelli.sample(runner.problem, 2 ** 4)
+    Y = runner.evaluate(param_values)
+    Si = [sobol.analyze(runner.problem, Y[:, i], print_to_console=True) for i in range(Y.ndim)]
+    print(Si)
     Si_sobol = run_sensitivity(
         runner,
         method="sobol",
@@ -364,7 +456,7 @@ if __name__ == "__main__":
     )
     Si_morris = run_sensitivity(
         runner,
-        method="morris", n_cores=6,
+        method="morris", n_cores=10,
         sample_options={
             'seed': 42,
             "num_levels": 6,
@@ -390,4 +482,3 @@ if __name__ == "__main__":
             "print_to_console": True,
         },
     )
-

@@ -30,14 +30,25 @@ CORES = max(1, math.ceil(os.cpu_count() * 0.85))
 csv_doc = pd.DataFrame().to_csv.__doc__
 
 
-def _get_failed(container):
-    failed_jobs = []
-    if isinstance(container, list):
-        return container
-    else:
-        while not container.empty():
-            failed_jobs.append(container.get())
-    return failed_jobs
+def core_count(user_core: int, threads: bool) -> int:
+    total = os.cpu_count() or 1
+
+    # Allow negative indexing (e.g., -1 → all but one core)
+    core = total + user_core if user_core < 0 else user_core
+
+    if core <= 0:
+        raise ValueError(
+            f"Resolved core count must be positive; got {core} "
+            f"(user_core={user_core}, total={total})"
+        )
+
+    # For multiprocessing, avoid over subscription unless explicitly threaded
+    if not threads and core > total:
+        raise ValueError(
+            f"Requested {core} cores exceeds available cores ({total})."
+        )
+
+    return core
 
 
 def _is_my_iterable(value):
@@ -169,11 +180,11 @@ class MultiCoreManager:
         Based on the source file name and execution context, two additional columns
         are appended to the returned dataset:
 
-        - ``ExecutionID``
+        - ``MetaExecutionID``
           A unique identifier assigned to each simulation run, independent of
           execution order or process.
 
-        - ``ProcessID``
+        - ``MetaProcessID``
           Identifies the process responsible for executing the simulation. For example,
           when running on six cores, six distinct process IDs will be assigned.
 
@@ -312,7 +323,7 @@ class MultiCoreManager:
         threads : bool, optional
             If ``True``, jobs are executed using threads; otherwise, jobs are
             executed using processes. The default is ``False`` (process-based
-            execution), which is recommended for APSIM workloads.
+            execution), which is recommended for APSIM workloads. Threads may allow over subscription beyond the cpu budget but not processes
 
         jobs : iterable or dict
             A collection of job specifications identifying APSIM models to run.
@@ -391,6 +402,7 @@ class MultiCoreManager:
 
         n_cores : int
             Number of CPU cores to use for parallel execution.
+            Default= total machine cpu counts minus 2 to reserve cores for other processes.
 
         clear_db : bool, optional
             If ``True``, existing database tables are cleared before writing new

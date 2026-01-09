@@ -308,7 +308,7 @@ class MultiCoreManager:
         else:
             raise ValueError("results are empty or not yet simulated")
 
-    def run_all_jobs(self, jobs, *, n_cores=CORES, threads=False, clear_db=True, retry_rate=1, subset=None,
+    def run_all_jobs(self, jobs, *, n_cores=-2, threads=False, clear_db=True, retry_rate=1, subset=None,
                      ignore_runtime_errors=True, display_failures=True, **kwargs):
         """
         Run all provided jobs using multiprocessing or multithreading.

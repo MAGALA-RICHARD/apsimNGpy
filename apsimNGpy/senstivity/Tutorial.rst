@@ -1,6 +1,8 @@
 
 Sensitivity analysis workflow (SALib driven workflow)
-=============================
+=====================================================
+In response to requests for a cross-platform sensitivity analysis
+workflow, apsimNGpy has been integrated with SALib. As explained below
 
 Sensitivity analysis follows a three-stage workflow triad:
 
@@ -268,7 +270,7 @@ in a concise and reproducible manner, as shown below.
     Si_sobol = run_sensitivity(
         runner,
         method="sobol",
-        N=2 ** 4,  # ← base sample size should be power of 2
+        N=2 ** 5,  # ← base sample size should be power of 2
         sample_options={
             "calc_second_order": True,
             "skip_values": 1024,
@@ -290,6 +292,59 @@ the computed sensitivity indices, as shown below.
 
 .. code-block:: none
 
+      Out[4]:
+    Samples:
+        2 parameters: ['Population', 'Amount']
+        96 samples
+    Outputs:
+        2 outputs: ['Y1', 'Y2']
+        96 evaluations
+    Analysis:
+    Y1:
+                      ST   ST_conf
+    Population  0.308278  0.291488
+    Amount      1.089438  0.522208:
+                      S1   S1_conf
+    Population  0.394278  0.374126
+    Amount      0.780433  0.644199:
+                                S2   S2_conf
+    [Population, Amount] -0.024841  0.561135:
+    Y2:
+                      ST   ST_conf
+    Population  0.230316  0.245983
+    Amount      1.073707  0.475261:
+                      S1   S1_conf
+    Population  0.307134  0.290722
+    Amount      0.772897  0.628444:
+                               S2   S2_conf
+    [Population, Amount] -0.06778  0.422351:
+
+The presence of negative sensitivity indices usually indicates an
+insufficient sample size. Increasing the base sample size can help
+mitigate this issue.
+
+Converting outputs to pandas
+----------------------------
+If we use `to_df` a list of Pandas Dataframes is returned
+
+.. code-block:: none
+     [[                  ST   ST_conf
+      Population  0.308278  0.291488
+      Amount      1.089438  0.522208,
+                        S1   S1_conf
+      Population  0.394278  0.374126
+      Amount      0.780433  0.644199,
+                                  S2   S2_conf
+      [Population, Amount] -0.024841  0.561135],
+     [                  ST   ST_conf
+      Population  0.230316  0.245983
+      Amount      1.073707  0.475261,
+                        S1   S1_conf
+      Population  0.307134  0.290722
+      Amount      0.772897  0.628444,
+                                 S2   S2_conf
+      [Population, Amount] -0.06778  0.422351]]
+
 We can try another method known as morris.   The Morris method is typically used as a *screening tool* to identify influential
 parameters with relatively low computational cost. It is well suited for high-dimensional
 problems where the goal is to rank parameters rather than quantify precise sensitivities.
@@ -309,5 +364,52 @@ problems where the goal is to rank parameters rather than quantify precise sensi
             "num_resamples": 1000,
             "print_to_console": True,
             'seed': 42
+        },
+    )
+.. code-block:: none
+
+   Out[7]:
+    Samples:
+        2 parameters: ['Population', 'Amount']
+        18 samples
+    Outputs:
+        2 outputs: ['Y1', 'Y2']
+        18 evaluations
+    Analysis:
+    Y1:
+                          mu       mu_star         sigma  mu_star_conf
+    Population  11394.831001  14289.237399  17359.167016  10309.394014
+    Amount      28441.782977  29864.030018  31160.051327  22045.514695:
+    Y2:
+                       mu    mu_star      sigma  mu_star_conf
+    Population  33.702220  35.548789  35.455297     23.199723
+    Amount      78.486127  78.486127  73.559727     55.214639:
+
+The final sensitivity analysis method demonstrated in this tutorial is
+the FAST method. FAST is a variance-based approach that estimates the
+influence of each input parameter by systematically varying inputs
+across the parameter space and analyzing the resulting model response.
+
+Ideally, the analysis could begin with the Morris method to screen out
+less influential factors, particularly when a large number of inputs
+are under consideration. However, even without this initial screening,
+the results are consistent across methods.
+
+In this case, both FAST and Sobol analyses indicate that yield is more
+sensitive to nitrogen fertilizer rate than to population density.
+
+.. code-block:: python
+
+    si_fast = run_sensitivity(
+        runner,
+        method="fast",
+        sample_options={
+            "M": 2,
+
+        },
+        analyze_options={
+            'conf_level': 0.95,
+            "num_resamples": 1000,
+            "print_to_console": True,
         },
     )

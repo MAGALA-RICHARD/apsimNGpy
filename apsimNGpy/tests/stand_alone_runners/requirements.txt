@@ -1,0 +1,4 @@
+apsimNGpy @ git+https://github.com/MAGALA-RICHARD/apsimNGpy.git
+pydantic >2.12
+loguru >0.7.2
+

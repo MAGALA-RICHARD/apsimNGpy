@@ -10,12 +10,14 @@ import platform
 HOST = "127.0.0.1"
 PORT = 5055
 
+
 def apsim_command():
     system = platform.system()
     if system == "Windows":
         return [os.path.realpath(Path(get_apsim_bin_path()) / 'Models.exe'), ]
     else:
         return ["dotnet", os.path.realpath(Path(get_apsim_bin_path()) / 'Models.dll'), "--mode:server"]
+
 
 def start_engine():
     return subprocess.Popen(
@@ -26,6 +28,7 @@ def start_engine():
         text=True,
         bufsize=1
     )
+
 
 def main():
     engine = start_engine()
@@ -53,6 +56,7 @@ def main():
                 status = engine.stdout.readline().strip()
 
                 conn.send(status.encode())
+
 
 if __name__ == "__main__":
     main()

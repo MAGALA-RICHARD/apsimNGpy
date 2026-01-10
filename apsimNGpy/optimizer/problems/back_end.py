@@ -323,11 +323,7 @@ def get_table(reports, table):
     return tabs
 
 
-# TODO incoporate retries for random errors
-
-
-
-
+@retry(stop=stop_after_attempt(2), retry=retry_if_exception_type(ApsimRuntimeError))
 def runner(model, params, table=None):
     # ideally out_path not needed, as ApsimNGpy generate random temporal files automatically when out_path is not provided
     with ApsimModel(model) as model:
@@ -338,7 +334,6 @@ def runner(model, params, table=None):
         except Exception as e:
             print(ValueError, f'occurred while setting parameters', e)
             raise ValueError(f"{str(e)} e") from e
-
 
         model.run()
         if not table:
@@ -364,7 +359,7 @@ def runner(model, params, table=None):
 
 )
 def test_inputs(
-        model:str,
+        model: str,
         x,
         insert_x_vars,
         runner,
@@ -442,7 +437,6 @@ def test_inputs(
     #             "- Weather files contain valid start dates"
     #         )
     #     raise FailedInputTestError(str(err)) from err
-
 
 
 if __name__ == '__main__':

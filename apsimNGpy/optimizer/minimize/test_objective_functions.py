@@ -1,4 +1,7 @@
 import gc
+import os
+
+
 
 from apsimNGpy.core_utils.database_utils import write_results_to_sql
 from apsimNGpy.optimizer.minimize.single_mixed import MixedVariableOptimizer
@@ -6,8 +9,8 @@ from apsimNGpy.optimizer.problems.smp import MixedProblem
 from apsimNGpy.settings import logger
 from apsimNGpy.tests.unittests.test_factory import obs
 from apsimNGpy.core_utils.database_utils import read_db_table
-
-
+from persistqueue.queue import Queue
+from pathlib import Path
 def problem(metric):
     def create_problem(_metric):
         return MixedProblem(model='Maize', trainer_dataset=obs, pred_col='Yield', metric=_metric, table='Report',
@@ -16,9 +19,15 @@ def problem(metric):
     return create_problem(_metric=metric)
 
 
-db = r"D:\package\fun_evaluation.db"
+db1= r"D:\package\fun_evaluation.db"
+db2 =r'C:\Users\vanguard\Box\post-doc\fun_eval.db'
 metrics_table = 'metrics'
-
+if Path(db1).parent.exists():
+    db= db1
+if Path(db2).parent.exists():
+    db =db2
+else:
+    raise ValueError('provide valid database path')
 
 @write_results_to_sql(db_path=db, table=metrics_table)
 def write_results(de, metric, pop_size=20, algorithm='de', time_taken=None):
@@ -79,13 +88,9 @@ if __name__ == "__main__":
         run_for_metric(metric=function_objective, )
 
 
-    db = r"D:\package\fun_evaluation1.db"
+
     from pathlib import Path
 
-    if not Path(db).exists():
-        db = Path.home() / 'packages'
-        db.mkdir(exist_ok=True)
-        db = str(db / 'fun_ebaluation.db')
 
 
     @write_results_to_sql(db_path=db, table=metrics_table, if_exists='replace')
@@ -103,8 +108,25 @@ if __name__ == "__main__":
     #     gc.collect()
     #
     # data = read_db_table(db, metrics_table)
-    for m in ("MSE", "RRMSE", "bias", "RMSE", "MAE"):
-        print(m)
-        main(db_path=db, function_objective=m, algorithm="de", pop_size=10)
+    from itertools import product
+    m_f_c = list(product(['de', 'Nelder-Mead', "L-BFGS-B", 'Powell', 'BFGS'], metrics))
+    idx  = [i for i, _ in enumerate(m_f_c)]
+    jobs = dict(zip(idx, m_f_c))
+    q = Queue(str(Path(db).parent), )
+    print(db)
+    for i in idx:
+        q.put(i)
+    while not q.empty():
+        key  =q.get()
+        print(key)
+        method = jobs.get(key)
+        alg, fun = method
+        main(db_path=db, function_objective=fun, algorithm=alg, pop_size=10)
+        q.task_done()
         gc.collect()
+        q.task_done()
+    # for m in ("MSE", "RRMSE", "bias", "RMSE", "MAE"):
+    #     print(m)
+    #     main(db_path=db, function_objective=m, algorithm="de", pop_size=10)
+    #     gc.collect()
     d= read_db_table(db, metrics_table)

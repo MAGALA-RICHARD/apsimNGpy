@@ -1,21 +1,18 @@
-import sys
 from functools import cache
-from functools import cache
-from apsimNGpy.core_utils.utils import timer
 from typing import Optional, Union, Iterable
+import numpy as np
+import pandas as pd
 from tenacity import (
     retry,
     stop_after_attempt,
     retry_if_exception_type
 )
-import numpy as np
-import pandas as pd
 from tenacity import wait_fixed
-
 from apsimNGpy.core.apsim import ApsimModel
 from apsimNGpy.core_utils.utils import is_scalar
 from apsimNGpy.exceptions import ApsimRuntimeError
 from apsimNGpy.validation.evaluator import Validate
+from apsimNGpy.settings import logger
 
 __all__ = ['runner', 'eval_observed']
 
@@ -325,14 +322,14 @@ def get_table(reports, table):
 
 @retry(stop=stop_after_attempt(2), retry=retry_if_exception_type(ApsimRuntimeError))
 def runner(model, params, table=None):
-    # ideally out_path not needed, as ApsimNGpy generate random temporal files automatically when out_path is not provided
+    # Ideally out_path not needed, as ApsimNGpy generate random temporal files automatically when out_path is not provided
     with ApsimModel(model) as model:
         try:
             for p in params:
                 model.set_params(p)
         # There is a need at least to present to the user what is going on,because some errors maybe excepted, breaking the program
         except Exception as e:
-            print(ValueError, f'occurred while setting parameters', e)
+            print(ValueError, f'Occurred while setting parameters', e)
             raise ValueError(f"{str(e)} e") from e
 
         model.run()
@@ -401,8 +398,6 @@ def test_inputs(
     FailedInputTestError
         If the APSIM model fails to execute with the provided parameters.
     """
-    from apsimNGpy.exceptions import ApsimRuntimeError
-    from apsimNGpy.settings import logger
 
     class FailedInputTestError(ApsimRuntimeError):
         """
@@ -424,19 +419,6 @@ def test_inputs(
         return True
     finally:
         pass
-
-    # except ApsimRuntimeError as err:
-    #     if verbose:
-    #         logger.error(
-    #             "APSIM input validation failed — the model could not be executed "
-    #             "with the provided parameters.\n"
-    #             "Please ensure that:\n"
-    #             "- All APSIM node paths are valid\n"
-    #             "- Required models are present in the simulation file\n"
-    #             "- Variable types and bounds are correctly defined\n"
-    #             "- Weather files contain valid start dates"
-    #         )
-    #     raise FailedInputTestError(str(err)) from err
 
 
 if __name__ == '__main__':

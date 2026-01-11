@@ -1,16 +1,10 @@
 import configparser
 import os
 import stat
-import subprocess
-import sys
-import time
 import unittest
-from pathlib import Path
-from apsimNGpy.core.pythonet_config import is_file_format_modified
 import logging
 import smtplib
-from email.mime.text import MIMEText
-from apsimNGpy.core.config import get_apsim_bin_path, apsim_version
+from apsimNGpy.core.config import apsim_version
 from datetime import datetime
 from email import encoders
 
@@ -84,13 +78,12 @@ def send_report(sms, subject, attachment_path=None):
             print("Error:", e)
 
 
+from apsimNGpy.tests.unittests.core import core, data_insights, experimentmanager, senstivitymanager
 
-from apsimNGpy.tests.unittests import model_loader, apsim, cs_resources, core, \
-    weathermanager, mult_core, \
-    core_edit_model, config, model_tools, test_get_weather_from_web_filename, plot_manager, \
-    pythonnet_config, soilmanager, data_insights, experimentmanager
+from tests.unittests.manager import weathermanager, soilmanager, test_get_weather_from_web_filename
+from tests.unittests.core import apsim, senstivitymanager, experimentmanager, model_loader, model_tools, \
+    pythonnet_config, edit_model_by_path, core_edit_model, cs_resources, config, plot_manager
 from apsimNGpy.tests.unittests.optimizer import vars, smp
-from apsimNGpy.tests.unittests import edit_model_by_path, senstivitymanager
 
 modules = {pythonnet_config,
            model_tools,
@@ -112,7 +105,7 @@ modules = {pythonnet_config,
            }
 if IS_NEW_APSIM:
     if IS_NEW_APSIM:
-        from apsimNGpy.tests.unittests import experimentmanager
+        from apsimNGpy.tests.unittests.core import experimentmanager
     modules.add(experimentmanager)
     modules = (i for i in modules)
 

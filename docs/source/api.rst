@@ -12776,6 +12776,36 @@ Functions
                con.close()
    Examples:
 
+          >>> from pandas import DataFrame
+          >>> from apsimNGpy.core_utils.database_utils import write_results_to_sql, read_db_table
+          >>> @write_results_to_sql(db_or_con="db.db", table="Report", if_exists="replace")
+          ... def get_report():
+          ...     # Return a DataFrame to be written to SQLite
+          ...     return DataFrame({"x": [2], "y": [4]})
+
+          >>> _ = get_report()  # executes and writes to db.db::Report
+          >>> db = read_db_table("db.db", report_name="Report")
+          >>> print(db.to_string(index=False))
+           x  y
+           2  4
+
+
+
+          >>> from pandas import DataFrame
+          >>> from apsimNGpy.core_utils.database_utils import write_results_to_sql, read_db_table
+          >>> @write_results_to_sql(db_or_con="db.db", table="Report", if_exists="replace")
+          ... def get_report():
+          ...     # Return a DataFrame to be written to SQLite
+          ...     return DataFrame({"x": [2], "y": [4]})
+
+          >>> _ = get_report()  # executes and writes to db.db::Report
+          >>> db = read_db_table("db.db", report_name="Report")
+          >>> print(db.to_string(index=False))
+           x  y
+           2  4
+
+
+
        >>> from pandas import DataFrame
        >>> from apsimNGpy.core_utils.database_utils import write_results_to_sql, read_db_table
        >>> @write_results_to_sql(db_path="db.db", table="Report", if_exists="replace")

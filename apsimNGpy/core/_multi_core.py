@@ -2,10 +2,12 @@ import os
 import sqlite3
 from functools import cache, lru_cache
 from pathlib import Path
+
+import sqlalchemy
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 from uuid import uuid4
 from apsimNGpy.core.apsim import ApsimModel
-from apsimNGpy.core_utils.database_utils import write_results_to_sql
+from apsimNGpy.core_utils.database_utils import write_df_to_sql
 from apsimNGpy.exceptions import ApsimRuntimeError
 import hashlib
 from multiprocessing import Value, Lock
@@ -100,7 +102,7 @@ def make_table_name(table_prefix: str, schema_id: str, run_id: int) -> str:
 def single_runner(
         job: str | dict,
         agg_func: str,
-        db,
+        db_conn,
         if_exists: str = "append",
         index: str | list | None = None,
         table_prefix: str = "___",
@@ -132,7 +134,7 @@ def single_runner(
         Name of the aggregation function to apply to simulation outputs
         (e.g., ``'mean'``, ``'sum'``). If ``None`` or empty, raw simulation
         results are returned without aggregation.
-    db : str or database handle
+    db_conn : str or database handle or connection object
         Target database path or connection used by the SQL writer decorator.
     if_exists : str, optional
         SQL table handling policy (e.g., ``'append'``, ``'replace'``),
@@ -236,8 +238,7 @@ def single_runner(
                     # Generate a unique table identifier based on schema and process ID that way they cannot be resource sharing of the same table
                     ############################################################################################################
                     table_name = f"{table_prefix}_{schema_hash}_{PID}"
-                    with sqlite3.connect(db) as conn:
-                        out.to_sql(table_name, conn, if_exists=if_exists, chunksize=chunk_size)
+                    write_df_to_sql(out, db_or_con=db_conn, table_name=table_name, if_exists=if_exists, chunk_size=chunk_size)
 
                 except ApsimRuntimeError as apr:
                     # Track failed jobs without interrupting the workflow

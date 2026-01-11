@@ -14,7 +14,7 @@ if __name__ == '__main__':
         db_path = Path(td) / f"{uuid.uuid4().hex}.db"
         test_agg_db = Path(td) / f"{uuid.uuid4().hex}.db"
 
-        Parallel = MultiCoreManager(db_path=engine, agg_func='mean')
+        Parallel = MultiCoreManager(db_path=test_agg_db, agg_func='mean')
         Parallel.run_all_jobs(create_jobs, n_cores=12, threads=False, clear_db=False, retry_rate=3, subset=None,
                               ignore_runtime_errors=False)
         df = Parallel.get_simulated_output(axis=0)

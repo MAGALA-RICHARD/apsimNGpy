@@ -563,9 +563,6 @@ MultiCoreManager.save_tocsv.__doc__ = """  Persist simulation results to a SQLit
         during simulation and you need a durable copy\n.
         """ + csv_doc
 
-from sqlalchemy import create_engine
-
-engine = create_engine('sqlite:///:memory:')
 if __name__ == '__main__':
     import os, uuid, tempfile
 

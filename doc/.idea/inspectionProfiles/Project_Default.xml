@@ -1,0 +1,55 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="DuplicatedCode" enabled="true" level="WEAK WARNING" enabled_by_default="true">
+      <Languages>
+        <language minSize="403" name="Python" />
+      </Languages>
+    </inspection_tool>
+    <inspection_tool class="PyPackageRequirementsInspection" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoredPackages">
+        <value>
+          <list size="19">
+            <item index="0" class="java.lang.String" itemvalue="osgeo" />
+            <item index="1" class="java.lang.String" itemvalue="notebook_shim" />
+            <item index="2" class="java.lang.String" itemvalue="importlib_metadata" />
+            <item index="3" class="java.lang.String" itemvalue="pyviz_comms" />
+            <item index="4" class="java.lang.String" itemvalue="jupyterlab_widgets" />
+            <item index="5" class="java.lang.String" itemvalue="importlib_resources" />
+            <item index="6" class="java.lang.String" itemvalue="prompt_toolkit" />
+            <item index="7" class="java.lang.String" itemvalue="factor_analyzer" />
+            <item index="8" class="java.lang.String" itemvalue="jupyter_client" />
+            <item index="9" class="java.lang.String" itemvalue="jupyter_core" />
+            <item index="10" class="java.lang.String" itemvalue="jupyterlab_server" />
+            <item index="11" class="java.lang.String" itemvalue="jupyter_server" />
+            <item index="12" class="java.lang.String" itemvalue="jupyterlab_pygments" />
+            <item index="13" class="java.lang.String" itemvalue="pydantic_core" />
+            <item index="14" class="java.lang.String" itemvalue="ace_tools" />
+            <item index="15" class="java.lang.String" itemvalue="typing_extensions" />
+            <item index="16" class="java.lang.String" itemvalue="jupyter_server_terminals" />
+            <item index="17" class="java.lang.String" itemvalue="prometheus_client" />
+            <item index="18" class="java.lang.String" itemvalue="factor_analyser" />
+          </list>
+        </value>
+      </option>
+    </inspection_tool>
+    <inspection_tool class="PyPep8NamingInspection" enabled="true" level="WEAK WARNING" enabled_by_default="true">
+      <option name="ignoredErrors">
+        <list>
+          <option value="N802" />
+          <option value="N806" />
+          <option value="N813" />
+          <option value="N803" />
+          <option value="N801" />
+        </list>
+      </option>
+    </inspection_tool>
+    <inspection_tool class="PyUnresolvedReferencesInspection" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoredIdentifiers">
+        <list>
+          <option value="optional" />
+        </list>
+      </option>
+    </inspection_tool>
+  </profile>
+</component>

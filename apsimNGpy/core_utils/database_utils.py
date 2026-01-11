@@ -11,6 +11,7 @@ from os.path import exists
 from typing import Callable, Literal, Union, List, Tuple, Mapping, Any
 
 import numpy as np
+import sqlalchemy
 from pandas import DataFrame
 from pandas import read_sql_query as rsq
 from sqlalchemy import create_engine, inspect
@@ -24,6 +25,7 @@ from typing import Iterable, Iterator, List, Optional, TypeVar, Callable
 import pandas as pd
 from typing import Dict, Tuple, Hashable, List
 from sqlalchemy.engine import Engine  # or use any DB-API connection
+from sqlalchemy import text
 
 T = TypeVar("T")
 
@@ -185,7 +187,10 @@ def get_db_table_names(db):
     """
     d_b = f'sqlite:///{db}'
     # engine = create_engine(mssql+pymssql://sa:saPassword@localhost:52865/{d_b})')
-    engine = create_engine(d_b)
+    if not isinstance(db, (sqlite3.Connection, sqlalchemy.engine.base.Engine)):
+        engine = create_engine(d_b)
+    else:
+        engine = db
     insp = inspect(engine)
     return insp.get_table_names()
 
@@ -284,10 +289,72 @@ def read_db_table(db: Union[str, Path], report_name: str = None, sql_query=None)
         gc.collect()
 
 
-def read_with_pandas(table, db):
-    with sqlite3.connect(db) as con:
-        df = pd.read_sql(f"SELECT * FROM {table}", con)
-        return df
+def read_with_pandas(table: str, db_or_con):
+    """
+    Read an entire SQL table into a pandas DataFrame.
+
+    This function provides a unified interface for reading a database table
+    using `pandas.read_sql`, supporting multiple database connection
+    representations.
+
+    Parameters
+    ----------
+    table : str
+        Name of the table to read. The table name is quoted to allow for
+        mixed-case names or SQL reserved keywords.
+    db_or_con : str | pathlib.Path | sqlite3.Connection |
+                sqlalchemy.engine.Engine | sqlalchemy.engine.Connection
+        Database source or active connection. Supported inputs are:
+
+        - str or Path:
+            Path to a SQLite database file.
+        - sqlite3.Connection:
+            An open SQLite connection.
+        - SQLAlchemy Engine or Connection:
+            Any SQLAlchemy-compatible database backend.
+
+    Returns
+    -------
+    pandas.DataFrame
+        A DataFrame containing all rows and columns from the table.
+
+    Raises
+    ------
+    TypeError
+        If `db_or_con` is not a supported database or connection type.
+
+    Notes
+    -----
+    - This function executes a full table scan (`SELECT *`).
+    - Use filtering or chunked reads for large tables.
+    """
+    query = f'SELECT * FROM "{table}"'
+    # -----------------------------------------------
+    # Case 1: SQLite database file path
+    # -----------------------------------------------
+    if isinstance(db_or_con, (str, Path)):
+        with sqlite3.connect(db_or_con) as con:
+            return pd.read_sql(query, con)
+    # -----------------------------------------------
+    # Case 2: SQLite connection
+    # -----------------------------------------------
+    if isinstance(db_or_con, sqlite3.Connection):
+        return pd.read_sql(query, db_or_con)
+    # -----------------------------------------------
+    # Case 3: SQLAlchemy engine or connection
+    # -----------------------------------------------
+    if isinstance(
+            db_or_con,
+            (sqlalchemy.engine.Engine, sqlalchemy.engine.Connection),
+    ):
+        return pd.read_sql(text(query), db_or_con)
+
+    raise TypeError(
+        "Unsupported database type for 'db_or_con'. "
+        "Expected one of: str, pathlib.Path, sqlite3.Connection, "
+        "sqlalchemy.engine.Engine, or sqlalchemy.engine.Connection; "
+        f"got {type(db_or_con)!r}."
+    )
 
 
 def load_database(path):
@@ -376,32 +443,170 @@ def write_schema_grouped_tables(
     )
 
 
-def clear_table(db: Union[str, Path], table_name: str):
+from pathlib import Path
+from typing import Union
+import sqlite3
+import sqlalchemy
+from sqlalchemy import text
+from sqlalchemy.engine import Engine, Connection
+
+
+def drop_table(db: Union[str, Path, sqlite3.Connection, Engine, Connection],
+               table_name: str) -> bool:
     """
-    Deletes all rows from all user-defined tables in the given SQLite database.
+    Drop a table from a database if it exists.
+
+    This function removes the specified table entirely. If the table does
+    not exist, the function exits silently without raising an error.
 
     Parameters
     ----------
-    db : str | Path
-        Path to the SQLite database file.
+    db : str | Path | sqlite3.Connection | sqlalchemy.Engine | sqlalchemy.Connection
+        Database target. This may be a filesystem path to a SQLite database,
+        an open SQLite connection, a SQLAlchemy Engine, or a SQLAlchemy
+        Connection.
 
     table_name : str
-         Name of the target table to delete from the database `db`
+        Name of the table to drop.
 
     Returns
     -------
-    None
-        This function does not return a value.
+    bool
+        ``True`` if the operation completed without error. If the table does
+        not exist, ``True`` is still returned.
 
     .. seealso::
 
        Related API: :meth:`~apsimNGpy.core_utils.database_utils.clear_all_tables`
     """
 
-    with sqlite3.connect(db) as conn:
-        cursor = conn.cursor()
-        cursor.execute(f"DELETE FROM {table_name}")
-        conn.commit()
+    query = f"DROP TABLE IF EXISTS {table_name}"
+
+    # ------------------------------------------------------------------
+    # Case 1: SQLite database path
+    # ------------------------------------------------------------------
+    if isinstance(db, (str, Path)):
+        with sqlite3.connect(db) as conn:
+            conn.execute(query)
+            conn.commit()
+
+    # ------------------------------------------------------------------
+    # Case 2: sqlite3 connection
+    # ------------------------------------------------------------------
+    elif isinstance(db, sqlite3.Connection):
+        db.execute(query)
+        db.commit()
+
+    # ------------------------------------------------------------------
+    # Case 3: SQLAlchemy Engine
+    # ------------------------------------------------------------------
+    elif isinstance(db, Engine):
+        with db.begin() as conn:
+            conn.execute(text(query))
+
+    # ------------------------------------------------------------------
+    # Case 4: SQLAlchemy Connection
+    # ------------------------------------------------------------------
+    elif isinstance(db, Connection):
+        db.execute(text(query))
+
+    else:
+        raise TypeError(
+            "db must be a SQLite path, sqlite3.Connection, "
+            "SQLAlchemy Engine, or SQLAlchemy Connection"
+        )
+
+    return True
+
+
+def write_df_to_sql(out: DataFrame, *,
+                    db_or_con: Union[str, Path, Engine, sqlalchemy.engine.Connection, sqlite3.Connection],
+                    table_name: str, if_exists: str, chunk_size: Union[int, None], index: bool = False):
+    """
+    Write a pandas DataFrame to a SQLite database table.
+
+    This function is a thin wrapper around `pandas.DataFrame.to_sql`
+    that supports writing to either a SQLite database file or an
+    existing SQLite connection.
+
+    Parameters
+    ----------
+    out : pandas.DataFrame
+        DataFrame to be written to the database.
+    db_or_con : str | pathlib.Path | sqlite3.Connection
+    SQLite database destination, provided as either:
+            - str or Path: path to a SQLite database file
+            - sqlite3.Connection: an open SQLite connection
+    table_name : str
+        Name of the target table.
+    if_exists : {'fail', 'replace', 'append'}
+        Behavior when the table already exists:
+            - 'fail'    : raise an error
+            - 'replace' : drop the table before inserting new data
+            - 'append'  : append data to the existing table
+    chunk_size : int | None
+        Number of rows to write at a time. Useful for large DataFrames.
+        If None, all rows are written in a single batch.
+    index: bool default is True
+        include the index of the database
+
+    Returns
+    -------
+    None
+
+    Notes
+    -----
+    - Index values are not written if index is False.
+
+    """
+    ###############################################################
+    # sqlite3 Connection
+    ################################################################
+    if isinstance(db_or_con, sqlite3.Connection):
+        out.to_sql(
+            table_name,
+            db_or_con,
+            if_exists=if_exists,
+            chunksize=chunk_size,
+            index=index,
+        )
+    ###############################################################
+    # sqlalchemy engine Connection
+    ################################################################
+    elif isinstance(db_or_con, sqlalchemy.engine.Connection):
+        out.to_sql(
+            table_name,
+            db_or_con,
+            if_exists=if_exists,
+            chunksize=chunk_size,
+            index=index,
+        )
+    ###############################################################
+    # sqlalchemy Engine
+    ################################################################
+    elif isinstance(db_or_con, sqlalchemy.engine.Engine):
+        with db_or_con.begin() as conn:  # ensures proper transaction handling
+            out.to_sql(
+                table_name,
+                conn,
+                if_exists=if_exists,
+                chunksize=chunk_size,
+                index=index,
+            )
+
+    else:
+        ###############################################################
+        # file system with valid parent path
+        ################################################################
+        with sqlite3.connect(db_or_con) as conn:
+            out.to_sql(
+                table_name,
+                conn,
+                if_exists=if_exists,
+                chunksize=chunk_size,
+                index=False,
+            )
+    return True
 
 
 def clear_all_tables(db):
@@ -517,8 +722,7 @@ def _default_insert_fn(db: str, df: DataFrame, table: str, if_exists: str, chunk
 
     from sqlalchemy import create_engine
     # eng = create_engine(f"sqlite:///{db}")
-    with sqlite3.connect(db) as conn:
-        df.to_sql(table, conn, if_exists=if_exists, index=False, chunksize=chunk_size)
+    write_df_to_sql(df, db_or_con=db, table_name=table, if_exists=if_exists, index=False, chunk_size=chunk_size)
 
 
 def _to_dataframe(obj: Any) -> DataFrame:
@@ -569,11 +773,15 @@ def _to_dataframe(obj: Any) -> DataFrame:
 
     if isinstance(obj, DataFrame):
         return obj
+    # -------------------------------------
     # list of dicts OR dict-of-columns
+    # --------------------------------------
     if isinstance(obj, (list, tuple)) and (not obj or isinstance(obj[0], Mapping)):
         return DataFrame(list(obj))
     if isinstance(obj, Mapping):
+        # ------------------------------------------------
         # dict-of-columns (values are list-like/scalars)
+        # -------------------------------------------------------
         return DataFrame(obj)
     raise TypeError("Cannot coerce object to DataFrame. Expected DataFrame, list[dict], or dict-of-columns.")
 
@@ -641,32 +849,37 @@ def _normalize_result(
 
     if result is None:
         return items  # no-op
-
+    ################################################
     # Single DataFrame -> default table
+    ##############################################
     if isinstance(result, DataFrame):
         items.append((default_table, result))
         return items
-
+    ##################################
     # Tuple (table, df)
+    ##################################
     if isinstance(result, tuple) and len(result) == 2 and isinstance(result[1], pd.DataFrame) and isinstance(result[0],
                                                                                                              str):
         items.append((result[0], result[1]))
         return items
-
+    ########################################################
     # List/tuple of DataFrames -> same default table
+    ###########################################################
     if isinstance(result, (list, tuple)) and result and all(isinstance(x, pd.DataFrame) for x in result):
         items.extend((default_table, df) for df in result)  # append all to same table
         return items
-
+    ##################################
     # List/tuple of (table, df) pairs
+    ##################################
     if isinstance(result, (list, tuple)) and result and all(
             isinstance(x, (list, tuple)) and len(x) == 2 and isinstance(x[0], str) and isinstance(x[1], pd.DataFrame)
             for x in result
     ):
         items.extend((tbl, df) for tbl, df in result)
         return items
-
+    ##################################
     # Mapping cases
+    ##################################
     if isinstance(result, Mapping):
         # Shape: {"data": <df|list[dict]|dict-of-cols>, "table": "Name"}
         if "data" in result:
@@ -687,14 +900,16 @@ def _normalize_result(
             items.append((str(key), df))
         if ok and items:
             return items
-
+    #################################################
     # Sequence of dicts (records) -> default table
+    ################################################
     if isinstance(result, (list, tuple)) and (not result or isinstance(result[0], Mapping)):
         df = _to_dataframe(result)
         items.append((default_table, df))
         return items
-
+    ##################################
     # Dict-of-columns -> default table
+    ##################################
     if isinstance(result, Mapping):
         try:
             df = _to_dataframe(result)
@@ -712,7 +927,7 @@ def _normalize_result(
 
 
 def write_results_to_sql(
-        db_path: Union[str, Path],
+        db_or_con: Union[str, Path, Engine, sqlalchemy.engine.Engine, sqlite3.Connection],
         table: str = "Report",
         *,
         if_exists: str = "append",
@@ -742,7 +957,7 @@ def write_results_to_sql(
 
     Parameters
     ----------
-    db_path : str | pathlib.Path
+    db_or_con : str | pathlib.Path
         Destination SQLite file. A `.db` suffix is enforced if missing. If `ensure_parent`
         is True, parent directories are created.
     table : str, default "Report"
@@ -831,7 +1046,7 @@ def write_results_to_sql(
 
         >>> from pandas import DataFrame
         >>> from apsimNGpy.core_utils.database_utils import write_results_to_sql, read_db_table
-        >>> @write_results_to_sql(db_path="db.db", table="Report", if_exists="replace")
+        >>> @write_results_to_sql(db_or_con="db.db", table="Report", if_exists="replace")
         ... def get_report():
         ...     # Return a DataFrame to be written to SQLite
         ...     return DataFrame({"x": [2], "y": [4]})
@@ -850,12 +1065,10 @@ def write_results_to_sql(
     """
 
     insert_impl = insert_fn or _default_insert_fn
-    dbp = Path(db_path)
-    if dbp.suffix.lower() != ".db":
-        dbp = dbp.with_suffix(".db")
-    if ensure_parent:
-        dbp.parent.mkdir(parents=True, exist_ok=True)
-    dbp_str = str(dbp)
+
+    if ensure_parent and isinstance(db_or_con, (str, Path)):
+        db_or_con = Path(db_or_con).resolve()
+        db_or_con.parent.mkdir(parents=True, exist_ok=True)
 
     def decorator(func: Callable) -> Callable:
         @wraps(func)
@@ -867,7 +1080,7 @@ def write_results_to_sql(
                 if df is None or df.empty:
                     continue
                 try:
-                    insert_impl(dbp_str, df, tbl, if_exists, chunk_size=chunk_size)
+                    insert_impl(db_or_con, df, tbl, if_exists, chunk_size=chunk_size)
                     del df, tbl
                     gc.collect()
                 except Exception as exc:
@@ -1017,11 +1230,20 @@ def insert_table(db_path, results, table):
 
 if __name__ == "__main__":
     # test
-    @write_results_to_sql(db_path='db.db', table='Report')
+    test_con = sqlite3.connect(":memory:")
+
+
+    @write_results_to_sql(db_or_con=test_con, table='Report')
+    def con_get_report():
+        return DataFrame([dict(x=2, y=4)])
+
+
+    @write_results_to_sql(db_or_con='db.db', table='Report')
     def get_report():
-        return DataFrame(dict(x=2, y=4))
+        return DataFrame([dict(x=2, y=4)])
 
 
+    get_report()
     ch = list(chunker(range(100), n_chunks=10))
     conn = create_engine('sqlite:///:memory:')
     try:
@@ -1030,3 +1252,19 @@ if __name__ == "__main__":
         conn.dispose(close=True)
     with sqlite3.connect(":memory:") as sqLconn:
         assert detect_connection(sqLconn), "detect connection not working on sql raw connection"
+
+if __name__ == "__main__":
+    db = 'db.db'
+    con = create_engine('sqlite:///:memory:')
+    sql_con = sqlite3.connect(":memory:")
+    import pandas as pd
+
+    df = pd.DataFrame([{'x': 9}])
+    write_df_to_sql(df, db_or_con=db, table_name='tt', if_exists='append', chunk_size=None)
+    write_df_to_sql(df, db_or_con=con, table_name='tt', if_exists='append', chunk_size=None)
+    write_df_to_sql(df, db_or_con=sql_con, table_name='tt', if_exists='append', chunk_size=None)
+    cond = read_with_pandas('tt', con)
+    sqnd = read_with_pandas('tt', sql_con)
+    write_df_to_sql(df, db_or_con=con, table_name='tt', if_exists='append', chunk_size=None)
+    drp = drop_table(con, 'tt')
+    drp1 = drop_table(db, 'tt')

@@ -49,4 +49,4 @@ if __name__ == '__main__':
             assert ve == False, 'append method failed'
         finally:
             pass
-    print(Path(Parallel.db_path).exists())
+

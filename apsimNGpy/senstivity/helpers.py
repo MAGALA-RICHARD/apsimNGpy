@@ -8,7 +8,7 @@ from typing import Mapping
 
 from SALib import ProblemSpec
 
-from apsimNGpy.core_utils.database_utils import clear_table, get_db_table_names
+from apsimNGpy.core_utils.database_utils import drop_table, get_db_table_names
 from apsimNGpy.settings import logger
 
 
@@ -199,7 +199,7 @@ def clear_db(
             continue
 
         try:
-            clear_table(str(db_path), tb)
+            drop_table(str(db_path), tb)
             cleared.append(tb)
         except (PermissionError, FileNotFoundError) as e:
             # PermissionError: DB locked (common on Windows)

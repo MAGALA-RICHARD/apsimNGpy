@@ -5,6 +5,7 @@ import gc
 import math
 import os.path
 import shutil
+import sqlite3
 from collections.abc import Iterable
 from dataclasses import dataclass
 # Database connection
@@ -14,11 +15,12 @@ from pathlib import Path
 from typing import Union, Literal
 
 import pandas as pd
+import sqlalchemy
 from sqlalchemy import create_engine, text
 
 from apsimNGpy.core._multi_core import single_runner
 from apsimNGpy.core.apsim import ApsimModel
-from apsimNGpy.core_utils.database_utils import write_results_to_sql, clear_table, get_db_table_names, read_db_table
+from apsimNGpy.core_utils.database_utils import write_results_to_sql, drop_table, get_db_table_names, read_db_table
 from apsimNGpy.core_utils.utils import timer
 from apsimNGpy.parallel.process import custom_parallel
 from apsimNGpy.settings import logger
@@ -84,33 +86,89 @@ def insert_data_with_pd(db, table, results, if_exists):
 
 @dataclass(slots=True)
 class MultiCoreManager:
-    db_path: Union[str, Path, None] = None
+    db_path: Union[str, Path, None, sqlalchemy.engine.base.Engine, sqlite3.Connection] = None
     agg_func: Union[str, None] = None
     ran_ok: bool = False
     tag = 'multi_core'
-    default_db = 'manager_datastorage.db'
+    default_db = Path('manager_datastorage.db').resolve()
     incomplete_jobs: list = field(default_factory=list)
     table_prefix: str = '__core_table__'
     cleared_db: bool = field(default=False, init=False)
+
+    """
+        Manager class for coordinating multi-core execution workflows and
+        handling result aggregation and persistence.
+
+        This class serves as a lightweight state container for parallel or
+        multi-core processing tasks. It tracks execution status, incomplete
+        jobs, database connections, and aggregation behavior, and is designed
+        to be shared across worker processes or threads in a controlled manner.
+
+        Parameters
+        ----------
+        db_path : str, pathlib.Path, defult='manager_datastorage.db'
+            Database connection or path used to persist results generated
+            during multi-core execution. This can be a file-based SQLite
+            database, an active SQLAlchemy engine, an open SQLite connection,
+            or ``None`` if persistence is not required.
+
+        agg_func : str or None, optional
+            Name of the aggregation function used to combine results from
+            completed jobs. The interpretation of this value depends on the
+            execution context and downstream processing logic.
+
+        ran_ok : bool, optional
+            Flag indicating whether the multi-core execution completed
+            successfully. This value is updated internally after execution
+            finishes.
+
+        incomplete_jobs : list, optional
+            List used to track jobs that failed, were interrupted, or did not
+            complete successfully during execution. This list is populated
+            dynamically at runtime.
+
+        table_prefix : str, optional
+            Prefix used when creating database tables for storing intermediate
+            or aggregated results. This helps avoid table name collisions when
+            running multiple workflows. This prefix is also used to avoid table name collisions by clearing all tables that exists with that prefix
+
+        Attributes
+        ----------
+        tag : str
+            Identifier string used to label this manager instance in logs,
+            database tables, or metadata.
+
+        default_db : str
+            Default SQLite database filename used when no database is
+            explicitly provided.
+
+        cleared_db : bool
+            Internal flag indicating whether the database has been cleared
+            during the current execution lifecycle. This attribute is managed
+            internally and is not intended to be set by the user.
+            
+            By default, tables starting with the provided prefix are deleted for each initialization, to prepare for clean data collection
+        """
 
     def __post_init__(self):
         """
         Initialize the database, note that this database tables are cleaned up everytime the object is called, to avoid table name errors
         :return:
         """
+        self._check_db_path()
         self.db_path = self.db_path or f"{self.tag}_{self.default_db}"
-
-        self.db_path = Path(self.db_path).resolve().with_suffix('.db')
+        if isinstance(self.db_path, (str, Path)):
+            self.db_path = Path(self.db_path).resolve().with_suffix('.db')
         self.cleared_db = False
-
-        try:
-            self.db_path.unlink(missing_ok=True)
-        except PermissionError:
-            # failed? no worries, the database is still cleared later by deleting all tables this is because inserting data just append
-            pass
 
     def __enter__(self):
         return self
+
+    def _check_db_path(self):
+        if isinstance(self.db_path, (sqlite3.Connection, sqlalchemy.engine.Connection, sqlalchemy.engine.base.Engine)):
+            raise TypeError(
+                f"db_path must be a database path (str | Path) got {type(self.db_path)}"
+            )
 
     def __exit__(self, exc_type, exc, tb):
         # clear all the temporally files if available
@@ -118,8 +176,9 @@ class MultiCoreManager:
         return None
 
     def __hash__(self):
+        db_hash = self.db_path if isinstance(self.db_path, (str, Path)) else 'connection'
         return hash((
-            self.db_path,
+            db_hash,
             self.tag,
             self.table_prefix,
             self.ran_ok,
@@ -135,14 +194,12 @@ class MultiCoreManager:
         """
         from apsimNGpy.core_utils.database_utils import get_db_table_names
         "Summarizes all the tables that have been created from the simulations"
-        if os.path.exists(self.db_path) and os.path.isfile(self.db_path) and str(self.db_path).endswith(
-                '.db') and self.ran_ok:
-            tables = get_db_table_names(self.db_path)
-            tables = {table for table in tables if table.startswith(self.table_prefix)}
-            # get only unique tables
-            return tuple(tables)
-        else:
-            raise ValueError("Attempting to get results from database before running all jobs")
+        if isinstance(self.db_path, (str, Path)):
+            if not os.path.exists(self.db_path) and os.path.isfile(self.db_path) and self.ran_ok:
+                raise ValueError("Attempting to get results from database before running all jobs")
+        _tables = get_db_table_names(self.db_path)
+        tables = {table for table in _tables if table.startswith(self.table_prefix)}
+        return tuple(tables)
 
     @cache
     def _get_simulated_results(self, axis, tables):
@@ -151,7 +208,7 @@ class MultiCoreManager:
             # Errors should not go silently
             raise ValueError('Wrong value for axis should be either 0 or 1')
         from apsimNGpy.core_utils.database_utils import read_with_pandas
-        read_db = partial(read_with_pandas, db=self.db_path)
+        read_db = partial(read_with_pandas, db_or_con=self.db_path)
         if len(tables) > 16:
             frames = list(
                 custom_parallel(read_db, tables, void=False, progress_message='loading data', unit='table',
@@ -203,18 +260,22 @@ class MultiCoreManager:
 
     def clear_db(self):
         """Clears the database before any simulations."""
-        if not str(self.db_path).endswith('.db'):
-            raise ValueError(f"Cannot clear invalid db path: {self.db_path}")
-        if os.path.exists(self.db_path):
+        if isinstance(self.db_path, (Path, str)):
+            if not str(self.db_path).endswith('.db'):
+                self.db_path = Path(self.db_path).with_suffix('.db')
+            if not Path(self.db_path).exists():
+                return self
             # clear only tables starting with the stated prefix
-            tables = get_db_table_names(self.db_path)
-            for tb in tables:
-                try:
-                    _ = clear_table(self.db_path, tb) if tb.startswith(f"{self.table_prefix}") else None
-                except PermissionError:
-                    pass
-                except FileNotFoundError:
-                    pass
+        tables = get_db_table_names(self.db_path)
+        if not tables:
+            return self
+        for tb in tables:
+            try:
+                _ = drop_table(self.db_path, tb) if tb.startswith(f"{self.table_prefix}") else None
+            except PermissionError:
+                pass
+            except FileNotFoundError:
+                pass
 
     @staticmethod
     def clear_scratch():
@@ -291,7 +352,7 @@ class MultiCoreManager:
         """
 
         # --- Validate results
-        @write_results_to_sql(db_path=db_name, table=table_name, if_exists=if_exists)
+        @write_results_to_sql(db_or_con=db_name, table=table_name, if_exists=if_exists)
         def _write():
             results = getattr(self, "results", None)
             if results is None or (isinstance(results, pd.DataFrame) and results.empty):
@@ -447,7 +508,7 @@ class MultiCoreManager:
            from apsimNGpy.core.mult_cores import MultiCoreManager
 
            if __name__ == "__main__":
-               Parallel = MultiCoreManager(db_path=test_agg_db, agg_func=None)
+               Parallel = MultiCoreManager(db=test_agg_db, agg_func=None)
 
                # Run jobs in parallel using processes
                Parallel.run_all_jobs(
@@ -474,7 +535,7 @@ class MultiCoreManager:
 
         worker = partial(single_runner, agg_func=self.agg_func,
                          ignore_runtime_errors=ignore_runtime_errors, retry_rate=retry_rate,
-                         db=self.db_path, table_prefix=self.table_prefix, subset=subset)
+                         db_conn=self.db_path, table_prefix=self.table_prefix, subset=subset)
         try:
             x = 0
             failed = []
@@ -502,19 +563,24 @@ MultiCoreManager.save_tocsv.__doc__ = """  Persist simulation results to a SQLit
         during simulation and you need a durable copy\n.
         """ + csv_doc
 
+from sqlalchemy import create_engine
+
+engine = create_engine('sqlite:///:memory:')
 if __name__ == '__main__':
     import os, uuid, tempfile
+
     from apsimNGpy.core_utils.database_utils import read_db_table
 
     # quick tests. comprehensive tests are in the tests
 
     with tempfile.TemporaryDirectory() as td:
-        create_jobs = [ApsimModel('Maize', out_path=Path(td) / f"{i}.apsimx").path for i in range(16 * 5)]
+        create_jobs = [ApsimModel('Maize', out_path=Path(td) / f"{i}.apsimx").path for i in range(16)]
         db_path = Path(td) / f"{uuid.uuid4().hex}.db"
-        test_agg_db = Path(td) / f"{uuid.uuid4().hex}.db"
+        test_agg_db = Path(td) / f"_{uuid.uuid4().hex}.db"
 
-        Parallel = MultiCoreManager(db_path=test_agg_db, agg_func=None)
-        Parallel.run_all_jobs(create_jobs, n_cores=12, threads=False, clear_db=False, retry_rate=3, subset='Yield')
+        Parallel = MultiCoreManager(db_path=db_path, agg_func=None)
+        Parallel.run_all_jobs(create_jobs, n_cores=12, threads=False, clear_db=False, retry_rate=3, subset='Yield',
+                              )
         df = Parallel.get_simulated_output(axis=0)
         print(len(Parallel.tables))
         Parallel.clear_scratch()

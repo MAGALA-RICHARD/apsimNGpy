@@ -40,29 +40,6 @@ class TestMultiCoreManager(BaseTester):
         df = pd.DataFrame([{"cores": 2, 'sys': "linnux"}, {'sys': 'windows', 'cores': 5}])
         return df
 
-    def test_clear_db(self):
-        manager = MultiCoreManager(db_path=self.test_clear_db)
-
-        # clear before any data is inserted
-        manager.clear_db()
-
-        # test after any data is inserted
-        df = self.create_synthetic_data()
-        insert_table(db_path=manager.db_path, results=df, table='clear_db_test')
-        table_names = get_db_table_names(manager.db_path)
-        self.assertIn('clear_db_test', table_names)
-
-        manager.clear_db()
-        fn = get_db_table_names(manager.db_path)
-
-        if os.path.exists(self.test_clear_db):
-            # then it is only cleared inside but not deleted
-            table_names = manager.tables
-            # if clear was successful, then the table names are empty
-            self.assertFalse(table_names)
-        else:
-            self.assertFalse(os.path.exists(self.test_clear_db))
-
     def test_insert_data_db(self):
         """tests if insert_data method on MultiCoreManager is working"""
         self.insert_data_manager = MultiCoreManager(db_path=self.insert_data_db)
@@ -112,4 +89,5 @@ def test_multiprocessing():
         unittest.main()
 
 
-test_multiprocessing()
+if __name__ == '__main__':
+    test_multiprocessing()

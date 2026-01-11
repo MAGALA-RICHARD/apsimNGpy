@@ -148,11 +148,12 @@ if __name__ == "__main__":
         method = jobs.get(key)
         print(key, method)
         if not method:
+            q.task_done()
             continue
         alg, fun = method
         #main(function_objective=fun, algorithm=alg, pop_size=20)
         q.task_done()
         gc.collect()
-        q.task_done()
+
     sys.exit(1)
     # d = read_db_table(db, metrics_table)

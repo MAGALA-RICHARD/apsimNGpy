@@ -293,10 +293,11 @@ class MultiCoreManager:
 
     def save_tosql(
             self,
-            db_name: Union[str, Path],
+            db_or_con: Union[str, Path],
             *,
             table_name: str = "aggregated_tables",
             if_exists: Literal["fail", "replace", "append"] = "fail",
+            chunk_size=None
     ) -> None:
         """
         Write simulation results to an SQLite database table.
@@ -309,8 +310,8 @@ class MultiCoreManager:
 
         Parameters
         ----------
-        db_name : str | pathlib.Path
-            Target database file. If a name without extension is provided, a
+        db_or_con : str | pathlib.Path
+            Target database file or connection. If a name without extension is provided, a
             ``.db`` suffix is appended. If a relative path is given, it resolves
             against the current working directory.
         table_name : str, optional
@@ -322,6 +323,8 @@ class MultiCoreManager:
             - ``"append"``: insert rows into existing table (default).
             (defaults to fail if table exists, more secure for the users to know
          what they are doing)
+         chunk_size: int, optional default is None
+            For writing data in chunks
 
         Raises
         ------
@@ -352,7 +355,7 @@ class MultiCoreManager:
         """
 
         # --- Validate results
-        @write_results_to_sql(db_or_con=db_name, table=table_name, if_exists=if_exists)
+        @write_results_to_sql(db_or_con=db_or_con, table=table_name, if_exists=if_exists, chunk_size=chunk_size)
         def _write():
             results = getattr(self, "results", None)
             if results is None or (isinstance(results, pd.DataFrame) and results.empty):
@@ -361,7 +364,7 @@ class MultiCoreManager:
 
         _write()
 
-    def save_tocsv(self, path_or_buf, **kwargs):
+    def save_to_csv(self, path_or_buf, **kwargs):
 
         if self.results is not None and not self.results.empty:
 

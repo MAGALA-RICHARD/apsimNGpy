@@ -141,7 +141,6 @@ ____________
 * Better integration of APSIM with decision support, sensitivity, and spatial optimization routines
 * An enduring API that is resilient and robust under a wide range of uncertainties
 
-
 apsimNGpy 0.39.11.20 – Release Notes
 ======================================
 

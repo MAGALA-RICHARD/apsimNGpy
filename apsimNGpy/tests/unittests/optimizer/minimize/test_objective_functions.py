@@ -136,7 +136,7 @@ if __name__ == "__main__":
     # data = read_db_table(db, metrics_table)
     from itertools import product
 
-    m_f_c = list(product(['Nelder-Mead', 'L-BFGS'], metrics))
+    m_f_c = list(product(['Nelder-Mead', "L-BFGS-B"], metrics))
     idx = [i for i, _ in enumerate(m_f_c)]
     jobs = dict(zip(idx, m_f_c))
     q = Queue(str(Path(__file__).parent), )

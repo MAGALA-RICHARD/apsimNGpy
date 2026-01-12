@@ -136,7 +136,7 @@ If ``agg_func`` is specified, it can be one of: mean, median, sum, min, or max. 
 ``n_cores (int)``: Specifies the number of worker cores to use for the task. The workload will be divided among these workers. If the number of cores is large but the number of tasks is small, some scheduling overhead will occur, and workers may remain idle while waiting for available tasks.
 
 Tracking completed jobs
-------------------------
+=========================
 MultiCoreManager API displays the number of completed jobs and percentage of the total submitted,
 time per simulation(sim) failed jobs (f) elapsed time and seconds per sim
 
@@ -146,8 +146,8 @@ time per simulation(sim) failed jobs (f) elapsed time and seconds per sim
 
 
 Retrieving results
--------------------
-Results can be loaded to memory by :meth:`~apsimNgpy.core.mult_cores.MultiCoreManager.get_simulated_output` or :attr:`~apsimNgpy.core.mult_cores.MultiCoreManager.results`
+====================
+Results can be loaded to memory by :meth:`~apsimNGpy.core.mult_cores.MultiCoreManager.get_simulated_output` or :attr:`~apsimNGpy.core.mult_cores.MultiCoreManager.results`
 
 .. code-block:: python
 
@@ -155,6 +155,17 @@ Results can be loaded to memory by :meth:`~apsimNgpy.core.mult_cores.MultiCoreMa
             # same as
             data = task_manager.results  # defaults is axis =0
 
+Results can also be transferred to an sql database or to csv as follows
+
+.. code-block:: python
+
+   from sqlite2 import connect
+   db  = connect(':memory:")
+   or
+   db = 'test.db"
+   task_manager.save_tosql(db_or_con=db, table_name='agg_table', if_exist='replace', chunk_size=1000)
+   # to scv
+   task_manager.save_to_csv('test.csv')
 
 Customization
 ===================

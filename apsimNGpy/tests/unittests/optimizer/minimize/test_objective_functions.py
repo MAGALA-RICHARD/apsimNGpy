@@ -151,7 +151,7 @@ if __name__ == "__main__":
             q.task_done()
             continue
         alg, fun = method
-        #main(function_objective=fun, algorithm=alg, pop_size=20)
+        main(function_objective=fun, algorithm=alg, pop_size=20)
         q.task_done()
         gc.collect()
 

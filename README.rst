@@ -90,56 +90,87 @@ APSIM Next Generation (NG) Installation Tip
 Use the **pinned APSIM release** indicated on the documentation homepage to avoid forward-compatibility issues.
 The pinned version represents the latest APSIM NG build verified against apsimNGpy’s API and unit tests.
 
-What is New in **apsimNGpy 1.0.0**
-===================================
-**apsimNGpy 1.0.0** represents a major milestone in the development of the framework, transitioning from an experimental research tool to a stable, production-ready release. This version consolidates years of development and introduces several key improvements in performance, usability, reproducibility, and analytical capability.
+What is New in apsimNGpy 1.0.0
+=============================
 
-``1. Stable, Reproducible Release``
----------------------------------------
-* First **official 1.0.0** version, signifying a **stable API** and backward compatibility guarantee for future minor releases.
+apsimNGpy 1.0.0 represents a major milestone in the development of the framework,
+transitioning from an experimental research tool to a stable, production-ready
+release. This version consolidates years of development and introduces key
+improvements in performance, usability, reproducibility, and analytical
+capability.
 
-``2. Core Engine Improvements``
-_________________________________
-* **Refactored multiprocessing engine** for robust, scalable execution across multiple CPU cores, including safer handling of parallel APSIM runs on Windows.
-* **Improved failure reporting** and retry mechanisms with configurable policies (e.g., `tenacity`-based retries), reducing silent errors in large batch jobs.
-* **Improve job submissions** allowing edits to be submitted simultaneously.
+1. Stable, Reproducible Release
+-------------------------------
 
-``3. Expanded Sensitivity & Uncertainty Analysis``
-___________________________________________________
-* Updated **Sobol sampling** with configurable skip values for improved space-filling design.
-* Clean handling of **calc_second_order** options with consistent propagation between sampling and analysis layers.
-* Support for additional SALib methods with stable default parameterization.
-* Sensitivity analysis workflows fully compatible across all os platforms.
+- First official 1.0.0 release, signifying a stable public API.
+- Backward compatibility is guaranteed for future minor releases.
 
-``4. Improved Database & Output Management``
-_______________________________________________
-* **Schema-hash table naming** to avoid SQLite collisions in parallel executions.
-* Stable persistence layer with:
-  * deterministic table identifiers
-  * execution and process metadata
-  * large result handling with chunked writes.
-* Cleaner error handling for results writes under heavy parallel loads.
+2. Core Engine Improvements
+---------------------------
 
-``5. Workflow & Developer Quality-of-Life``
-___________________________________________
-* First modules test using .bat scripts
-* Support for locking APSIM versions to a specific project.
+- Refactored multiprocessing engine for robust, scalable execution across
+  multiple CPU cores, including safer handling of parallel APSIM runs on Windows.
+- Improved failure reporting and retry mechanisms with configurable policies
+  (for example, tenacity-based retries), reducing silent errors in large batch
+  jobs.
+- Improved job submission logic allowing multiple edits to be submitted
+  simultaneously.
 
-``6. Fixes & Stability Enhancements``
-__________________________________
-* Resolution of common parallel SQLite locking issues under heavy batch throughput.
-* Deterministic hashing for table identifiers even in multiprocessing contexts.
-* Guidance and preflight validation for schema drift, unsupported data types, and mixed index/column structures.
-* Better error reporting for model editing callbacks and APSIM parameter sets.
+3. Expanded Sensitivity and Uncertainty Analysis
+------------------------------------------------
 
-``Summary``
-____________
-**apsimNGpy 1.0.0** delivers:
+- Updated Sobol sampling with configurable skip values for improved
+  space-filling designs.
+- Clean handling of ``calc_second_order`` options with consistent propagation
+  between sampling and analysis layers.
+- Support for additional SALib methods with stable default parameterization.
+- Sensitivity analysis workflows fully compatible across operating systems.
 
-* A stable, reproducible foundation for agri-environmental modeling workflows
-* Scalability, reliability for large batch, single and multi-objective experiments
-* Better integration of APSIM with decision support, sensitivity, and spatial optimization routines
-* An enduring API that is resilient and robust under a wide range of uncertainties
+4. Improved Database and Output Management
+------------------------------------------
+
+- Schema-hash-based table naming to avoid SQLite collisions during parallel
+  execution.
+- A stable persistence layer with:
+
+  - deterministic table identifiers
+  - execution and process metadata
+  - chunked writes for large result sets
+
+- Cleaner error handling for database writes under heavy parallel workloads.
+
+5. Workflow and Developer Quality of Life
+-----------------------------------------
+
+- Initial test modules executed using Windows batch scripts.
+- Support for locking APSIM versions to a specific project configuration.
+
+6. Fixes and Stability Enhancements
+-----------------------------------
+
+- Resolution of common SQLite locking issues under heavy parallel throughput.
+- Deterministic hashing for table identifiers, even in multiprocessing contexts.
+- Preflight validation and guidance for schema drift, unsupported data types,
+  and mixed index or column structures.
+- Improved error reporting for model-editing callbacks and APSIM parameter sets.
+
+Summary
+-------
+
+apsimNGpy 1.0.0 delivers:
+
+- A stable, reproducible foundation for agri-environmental modeling workflows.
+- Improved scalability and reliability for large batch, single-objective, and
+  multi-objective experiments.
+- Stronger integration of APSIM with decision support, sensitivity analysis,
+  and spatial optimization routines.
+- An enduring API designed to remain robust under a wide range of modeling
+  uncertainties.
+
+This release establishes a solid platform for future enhancements while
+remaining reliable for both academic research and applied decision-support
+workflows in productivity, environmental impacts, and landscape planning.
+
 
 apsimNGpy 0.39.11.20 – Release Notes
 ======================================

@@ -10,6 +10,7 @@ def _defining_class(cls: Type, name: str) -> Type:
             return base
     return cls  # fallback
 
+
 def add_outline(cls: Type, include_inherited=True, base_path=None) -> type:
     names = dir(cls) if include_inherited else list(cls.__dict__.keys())
     names = sorted(n for n in names if not n.startswith("_"))
@@ -64,12 +65,12 @@ def add_outline(cls: Type, include_inherited=True, base_path=None) -> type:
 
     outline = (
         "\n\n"
-         f"List of Public Attributes:\n"
+        f"List of Public Attributes:\n"
         "__________________________________\n\n"
-         f"{props_lines}\n"
+        f"{props_lines}\n"
         f"List of Public Methods\n"
         "-----------------------------\n"
         f"{meths_lines}\n"
     )
     cls.__doc__ = (cls.__doc__ or "").rstrip() + outline
-
+    print(cls.__doc__)

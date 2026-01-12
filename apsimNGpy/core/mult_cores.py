@@ -107,10 +107,8 @@ class MultiCoreManager:
         Parameters
         ----------
         db_path : str, pathlib.Path, defult='manager_datastorage.db'
-            Database connection or path used to persist results generated
-            during multi-core execution. This can be a file-based SQLite
-            database, an active SQLAlchemy engine, an open SQLite connection,
-            or ``None`` if persistence is not required.
+            Database  path used to persist results generated
+            during multi-core execution. connections may not be picklable
 
         agg_func : str or None, optional
             Name of the aggregation function used to combine results from

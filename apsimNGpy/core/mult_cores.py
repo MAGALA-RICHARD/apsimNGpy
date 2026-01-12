@@ -90,7 +90,7 @@ class MultiCoreManager:
     agg_func: Union[str, None] = None
     ran_ok: bool = False
     tag = 'multi_core'
-    default_db = Path('manager_datastorage.db').resolve()
+    default_db = 'manager_datastorage.db'
     incomplete_jobs: list = field(default_factory=list)
     table_prefix: str = '__core_table__'
     cleared_db: bool = field(default=False, init=False)

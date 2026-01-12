@@ -134,7 +134,7 @@ Classes
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.update_mgt`
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.update_mgt_by_path`
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.__init__(self, model: Union[os.PathLike, dict, str], out_path: Union[str, pathlib.Path] = <object object at 0x0000025CC4766460>, set_wd=None, **kwargs)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.__init__(self, model: Union[os.PathLike, dict, str], out_path: Union[str, pathlib.Path] = <object object at 0x000002396309E460>, set_wd=None, **kwargs)
 
    Initialize self.  See help(type(self)) for accurate signature.
 
@@ -481,7 +481,7 @@ Classes
    self : object
        Returns the updated ApsimModel instance.
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.save(self, file_name: 'Union[str, Path]' = <object object at 0x0000025C85581030>, reload=True) (inherited)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.save(self, file_name: 'Union[str, Path]' = <object object at 0x00000239120AD030>, reload=True) (inherited)
 
    Saves the current APSIM NG model (``Simulations``) to disk and refresh runtime state.
 
@@ -2592,7 +2592,7 @@ Classes
    ---------------------------------------------------------------------------
    returns an array of the parameter values
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x0000025C85581030>) (inherited)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x00000239120AD030>) (inherited)
 
    Inspect the model types and returns the model paths or names.
 
@@ -3561,7 +3561,7 @@ Module attributes
 
 .. py:attribute:: apsimNGpy.core.config.configuration
 
-   Default value: ``Configuration(bin_path='D:\\My_BOX\\Box\\PhD thesis\\Objective two\\morrow plot…``
+   Default value: ``Configuration(bin_path='C:\\Users\\rmagala\\AppData\\Local\\Programs\\APSIM2025…``
 
 Functions
 ^^^^^^^^^
@@ -3717,7 +3717,7 @@ Classes
    In the future, this module will contain all the constants required by the package.
     Users will be able to override these values if needed by importing this module before running any simulations.
 
-   .. py:method:: apsimNGpy.core.config.Configuration.__init__(self, bin_path: 'Union[Path, str]' = <object object at 0x0000025CC47656D0>) -> None
+   .. py:method:: apsimNGpy.core.config.Configuration.__init__(self, bin_path: 'Union[Path, str]' = <object object at 0x000002396309D6D0>) -> None
 
    Initialize self.  See help(type(self)) for accurate signature.
 
@@ -3967,7 +3967,7 @@ Classes
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.update_mgt`
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.update_mgt_by_path`
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.__init__(self, model, out_path=<object object at 0x0000025CC4766460>)
+   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.__init__(self, model, out_path=<object object at 0x000002396309E460>)
 
    Initialize self.  See help(type(self)) for accurate signature.
 
@@ -4617,7 +4617,7 @@ Classes
    self : object
        Returns the updated ApsimModel instance.
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.save(self, file_name: 'Union[str, Path]' = <object object at 0x0000025C85581030>, reload=True) (inherited)
+   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.save(self, file_name: 'Union[str, Path]' = <object object at 0x00000239120AD030>, reload=True) (inherited)
 
    Saves the current APSIM NG model (``Simulations``) to disk and refresh runtime state.
 
@@ -6728,7 +6728,7 @@ Classes
    ---------------------------------------------------------------------------
    returns an array of the parameter values
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x0000025C85581030>) (inherited)
+   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x00000239120AD030>) (inherited)
 
    Inspect the model types and returns the model paths or names.
 
@@ -7680,7 +7680,7 @@ Classes
 
 .. py:class:: apsimNGpy.core.mult_cores.MultiCoreManager
 
-   MultiCoreManager(db_path: 'Union[str, Path, None]' = None, agg_func: 'Union[str, None]' = None, ran_ok: 'bool' = False, incomplete_jobs: 'list' = <factory>, table_prefix: 'str' = '__core_table__')
+   MultiCoreManager(db_path: 'Union[str, Path, None, sqlalchemy.engine.base.Engine, sqlite3.Connection]' = None, agg_func: 'Union[str, None]' = None, ran_ok: 'bool' = False, incomplete_jobs: 'list' = <factory>, table_prefix: 'str' = '__core_table__')
 
    List of Public Attributes:
    __________________________________
@@ -7704,7 +7704,7 @@ Classes
    - :meth:`~apsimNGpy.core.mult_cores.MultiCoreManager.save_tocsv`
    - :meth:`~apsimNGpy.core.mult_cores.MultiCoreManager.save_tosql`
 
-   .. py:method:: apsimNGpy.core.mult_cores.MultiCoreManager.__init__(self, db_path: 'Union[str, Path, None]' = None, agg_func: 'Union[str, None]' = None, ran_ok: 'bool' = False, incomplete_jobs: 'list' = <factory>, table_prefix: 'str' = '__core_table__') -> None
+   .. py:method:: apsimNGpy.core.mult_cores.MultiCoreManager.__init__(self, db_path: 'Union[str, Path, None, sqlalchemy.engine.base.Engine, sqlite3.Connection]' = None, agg_func: 'Union[str, None]' = None, ran_ok: 'bool' = False, incomplete_jobs: 'list' = <factory>, table_prefix: 'str' = '__core_table__') -> None
 
    Initialize self.  See help(type(self)) for accurate signature.
 
@@ -7714,7 +7714,7 @@ Classes
 
    .. py:attribute:: apsimNGpy.core.mult_cores.MultiCoreManager.default_db
 
-   Default: ``'manager_datastorage.db'``
+   Default: ``WindowsPath('D:/package/apsimNGpy/apsimNGpy/raw_docs/manager_datastorage.db')``
 
    .. py:property:: apsimNGpy.core.mult_cores.MultiCoreManager.tables
 
@@ -8115,7 +8115,7 @@ Classes
       from apsimNGpy.core.mult_cores import MultiCoreManager
 
       if __name__ == "__main__":
-          Parallel = MultiCoreManager(db_path=test_agg_db, agg_func=None)
+          Parallel = MultiCoreManager(db=test_agg_db, agg_func=None)
 
           # Run jobs in parallel using processes
           Parallel.run_all_jobs(
@@ -8162,7 +8162,7 @@ Module attributes
 
 .. py:attribute:: apsimNGpy.core.pythonet_config.CLR
 
-   Default value: ``ConfigRuntimeInfo(clr_loaded=True, bin_path='D:\\My_BOX\\Box\\PhD thesis\\Objec…``
+   Default value: ``ConfigRuntimeInfo(clr_loaded=True, bin_path='C:\\Users\\rmagala\\AppData\\Local…``
 
 Functions
 ^^^^^^^^^
@@ -8221,7 +8221,7 @@ Functions
    >>> reader = get_apsim_file_reader("string")    # doctest: +SKIP
    >>> sims = reader(text)                         # doctest: +SKIP
 
-.. py:function:: apsimNGpy.core.pythonet_config.get_apsim_version(bin_path: Union[str, pathlib.Path] = <object object at 0x0000025CC4766420>, release_number: bool = False) -> Optional[str]
+.. py:function:: apsimNGpy.core.pythonet_config.get_apsim_version(bin_path: Union[str, pathlib.Path] = <object object at 0x000002396309E420>, release_number: bool = False) -> Optional[str]
 
    Return the APSIM version string detected from the installed binaries.
 
@@ -8270,7 +8270,7 @@ Functions
    --------
    load_pythonnet : Initialize pythonnet/CLR for APSIM binaries.
 
-.. py:function:: apsimNGpy.core.pythonet_config.is_file_format_modified(bin_path: Union[str, pathlib.Path] = <object object at 0x0000025CC4766420>) -> bool
+.. py:function:: apsimNGpy.core.pythonet_config.is_file_format_modified(bin_path: Union[str, pathlib.Path] = <object object at 0x000002396309E420>) -> bool
 
    Checks if the APSIM.CORE.dll is present in the bin path. Normally, the new APSIM version has this dll file.
 
@@ -8282,7 +8282,7 @@ Functions
    :returns:
      bool
 
-.. py:function:: apsimNGpy.core.pythonet_config.load_pythonnet(bin_path: Union[str, pathlib.Path] = <object object at 0x0000025CC4766420>)
+.. py:function:: apsimNGpy.core.pythonet_config.load_pythonnet(bin_path: Union[str, pathlib.Path] = <object object at 0x000002396309E420>)
 
    A method for loading Python for .NET (pythonnet) and APSIM models from the binary path. It is also cached to
    avoid rerunning many times.
@@ -8553,7 +8553,7 @@ Functions
 
    Return True if obj looks like a DB connection.
 
-.. py:function:: apsimNGpy.core.runner.run_apsim_by_path(model: 'Union[str, Path]', *, bin_path: 'Union[str, Path, object]' = <object object at 0x0000025CC4766480>, timeout: 'int' = 800, ncores: 'int' = -1, verbose: 'bool' = False, to_csv: 'bool' = False) -> 'None'
+.. py:function:: apsimNGpy.core.runner.run_apsim_by_path(model: 'Union[str, Path]', *, bin_path: 'Union[str, Path, object]' = <object object at 0x000002396309E480>, timeout: 'int' = 800, ncores: 'int' = -1, verbose: 'bool' = False, to_csv: 'bool' = False) -> 'None'
 
    Execute an APSIM model safely and reproducibly.
 
@@ -8598,7 +8598,7 @@ Functions
    RuntimeError
        If APSIM returns a non-zero exit code.
 
-.. py:function:: apsimNGpy.core.runner.run_model_externally(model: 'Union[Path, str]', *, apsim_bin_path: 'Optional[Union[Path, str]]' = <object object at 0x0000025CC4766480>, verbose: 'bool' = False, to_csv: 'bool' = False, timeout: 'int' = 20, cpu_count=-1, cwd: 'Optional[Union[Path, str]]' = None) -> 'subprocess.CompletedProcess[str]'
+.. py:function:: apsimNGpy.core.runner.run_model_externally(model: 'Union[Path, str]', *, apsim_bin_path: 'Optional[Union[Path, str]]' = <object object at 0x000002396309E480>, verbose: 'bool' = False, to_csv: 'bool' = False, timeout: 'int' = 20, cpu_count=-1, cwd: 'Optional[Union[Path, str]]' = None) -> 'subprocess.CompletedProcess[str]'
 
    Run APSIM externally (cross-platform) with safe defaults.
 
@@ -8803,7 +8803,7 @@ Classes
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.update_mgt`
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.update_mgt_by_path`
 
-   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.__init__(self, model, out_path=<object object at 0x0000025CC4766460>)
+   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.__init__(self, model, out_path=<object object at 0x000002396309E460>)
 
    Initialize self.  See help(type(self)) for accurate signature.
 
@@ -9389,7 +9389,7 @@ Classes
    self : object
        Returns the updated ApsimModel instance.
 
-   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.save(self, file_name: 'Union[str, Path]' = <object object at 0x0000025C85581030>, reload=True) (inherited)
+   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.save(self, file_name: 'Union[str, Path]' = <object object at 0x00000239120AD030>, reload=True) (inherited)
 
    Saves the current APSIM NG model (``Simulations``) to disk and refresh runtime state.
 
@@ -11500,7 +11500,7 @@ Classes
    ---------------------------------------------------------------------------
    returns an array of the parameter values
 
-   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x0000025C85581030>) (inherited)
+   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x00000239120AD030>) (inherited)
 
    Inspect the model types and returns the model paths or names.
 
@@ -12528,27 +12528,6 @@ Functions
 
       Related API: :meth:`~apsimNGpy.core_utils.database_utils.clear_table`
 
-.. py:function:: apsimNGpy.core_utils.database_utils.clear_table(db: 'Union[str, Path]', table_name: 'str')
-
-   Deletes all rows from all user-defined tables in the given SQLite database.
-
-   Parameters
-   ----------
-   db : str | Path
-       Path to the SQLite database file.
-
-   table_name : str
-        Name of the target table to delete from the database `db`
-
-   Returns
-   -------
-   None
-       This function does not return a value.
-
-   .. seealso::
-
-      Related API: :meth:`~apsimNGpy.core_utils.database_utils.clear_all_tables`
-
 .. py:function:: apsimNGpy.core_utils.database_utils.dataview_to_dataframe(_model, reports)
 
    Convert .NET System.Data.DataView to Pandas DataFrame.
@@ -12570,6 +12549,33 @@ Functions
    deletes the table in a database.
 
    ⚠️ Proceed with caution: this operation is irreversible.
+
+.. py:function:: apsimNGpy.core_utils.database_utils.drop_table(db: 'Union[str, Path, sqlite3.Connection, Engine, Connection]', table_name: 'str') -> 'bool'
+
+   Drop a table from a database if it exists.
+
+   This function removes the specified table entirely. If the table does
+   not exist, the function exits silently without raising an error.
+
+   Parameters
+   ----------
+   db : str | Path | sqlite3.Connection | sqlalchemy.Engine | sqlalchemy.Connection
+       Database target. This may be a filesystem path to a SQLite database,
+       an open SQLite connection, a SQLAlchemy Engine, or a SQLAlchemy
+       Connection.
+
+   table_name : str
+       Name of the table to drop.
+
+   Returns
+   -------
+   bool
+       ``True`` if the operation completed without error. If the table does
+       not exist, ``True`` is still returned.
+
+   .. seealso::
+
+      Related API: :meth:`~apsimNGpy.core_utils.database_utils.clear_all_tables`
 
 .. py:function:: apsimNGpy.core_utils.database_utils.get_db_table_names(db)
 
@@ -12625,6 +12631,45 @@ Functions
    - This function retrieves **all** records; use with caution for very large
      tables.
 
+.. py:function:: apsimNGpy.core_utils.database_utils.read_with_pandas(table: 'str', db_or_con)
+
+   Read an entire SQL table into a pandas DataFrame.
+
+   This function provides a unified interface for reading a database table
+   using `pandas.read_sql`, supporting multiple database connection
+   representations.
+
+   Parameters
+   ----------
+   table : str
+       Name of the table to read. The table name is quoted to allow for
+       mixed-case names or SQL reserved keywords.
+   db_or_con : str | pathlib.Path | sqlite3.Connection |
+               sqlalchemy.engine.Engine | sqlalchemy.engine.Connection
+       Database source or active connection. Supported inputs are:
+
+       - str or Path:
+           Path to a SQLite database file.
+       - sqlite3.Connection:
+           An open SQLite connection.
+       - SQLAlchemy Engine or Connection:
+           Any SQLAlchemy-compatible database backend.
+
+   Returns
+   -------
+   pandas.DataFrame
+       A DataFrame containing all rows and columns from the table.
+
+   Raises
+   ------
+   TypeError
+       If `db_or_con` is not a supported database or connection type.
+
+   Notes
+   -----
+   - This function executes a full table scan (`SELECT *`).
+   - Use filtering or chunked reads for large tables.
+
 .. py:function:: apsimNGpy.core_utils.database_utils.read_with_query(db, query)
 
    Executes an SQL query on a specified SQLite database and returns the result as a
@@ -12666,7 +12711,44 @@ Functions
 
       Related API: :meth:`~apsimNGpy.core_utils.database_utils.read_db_table`
 
-.. py:function:: apsimNGpy.core_utils.database_utils.write_results_to_sql(db_path: 'Union[str, Path]', table: 'str' = 'Report', *, if_exists: 'str' = 'append', insert_fn: 'InsertFn | None' = None, ensure_parent: 'bool' = True, chunk_size=None) -> 'Callable'
+.. py:function:: apsimNGpy.core_utils.database_utils.write_df_to_sql(out: 'DataFrame', *, db_or_con: 'Union[str, Path, Engine, sqlalchemy.engine.Connection, sqlite3.Connection]', table_name: 'str', if_exists: 'str', chunk_size: 'Union[int, None]', index: 'bool' = False)
+
+   Write a pandas DataFrame to a SQLite database table.
+
+   This function is a thin wrapper around `pandas.DataFrame.to_sql`
+   that supports writing to either a SQLite database file or an
+   existing SQLite connection.
+
+   Parameters
+   ----------
+   out : pandas.DataFrame
+       DataFrame to be written to the database.
+   db_or_con : str | pathlib.Path | sqlite3.Connection
+   SQLite database destination, provided as either:
+           - str or Path: path to a SQLite database file
+           - sqlite3.Connection: an open SQLite connection
+   table_name : str
+       Name of the target table.
+   if_exists : {'fail', 'replace', 'append'}
+       Behavior when the table already exists:
+           - 'fail'    : raise an error
+           - 'replace' : drop the table before inserting new data
+           - 'append'  : append data to the existing table
+   chunk_size : int | None
+       Number of rows to write at a time. Useful for large DataFrames.
+       If None, all rows are written in a single batch.
+   index: bool default is True
+       include the index of the database
+
+   Returns
+   -------
+   None
+
+   Notes
+   -----
+   - Index values are not written if index is False.
+
+.. py:function:: apsimNGpy.core_utils.database_utils.write_results_to_sql(db_or_con: 'Union[str, Path, Engine, sqlalchemy.engine.Engine, sqlite3.Connection]', table: 'str' = 'Report', *, if_exists: 'str' = 'append', insert_fn: 'InsertFn | None' = None, ensure_parent: 'bool' = True, chunk_size=None) -> 'Callable'
 
    Decorator factory: collect the wrapped function's returned data and insert it or saves it into SQLite database.
 
@@ -12689,7 +12771,7 @@ Functions
 
    Parameters
    ----------
-   db_path : str | pathlib.Path
+   db_or_con : str | pathlib.Path
        Destination SQLite file. A `.db` suffix is enforced if missing. If `ensure_parent`
        is True, parent directories are created.
    table : str, default "Report"
@@ -12776,39 +12858,9 @@ Functions
                con.close()
    Examples:
 
-          >>> from pandas import DataFrame
-          >>> from apsimNGpy.core_utils.database_utils import write_results_to_sql, read_db_table
-          >>> @write_results_to_sql(db_or_con="db.db", table="Report", if_exists="replace")
-          ... def get_report():
-          ...     # Return a DataFrame to be written to SQLite
-          ...     return DataFrame({"x": [2], "y": [4]})
-
-          >>> _ = get_report()  # executes and writes to db.db::Report
-          >>> db = read_db_table("db.db", report_name="Report")
-          >>> print(db.to_string(index=False))
-           x  y
-           2  4
-
-
-
-          >>> from pandas import DataFrame
-          >>> from apsimNGpy.core_utils.database_utils import write_results_to_sql, read_db_table
-          >>> @write_results_to_sql(db_or_con="db.db", table="Report", if_exists="replace")
-          ... def get_report():
-          ...     # Return a DataFrame to be written to SQLite
-          ...     return DataFrame({"x": [2], "y": [4]})
-
-          >>> _ = get_report()  # executes and writes to db.db::Report
-          >>> db = read_db_table("db.db", report_name="Report")
-          >>> print(db.to_string(index=False))
-           x  y
-           2  4
-
-
-
        >>> from pandas import DataFrame
        >>> from apsimNGpy.core_utils.database_utils import write_results_to_sql, read_db_table
-       >>> @write_results_to_sql(db_path="db.db", table="Report", if_exists="replace")
+       >>> @write_results_to_sql(db_or_con="db.db", table="Report", if_exists="replace")
        ... def get_report():
        ...     # Return a DataFrame to be written to SQLite
        ...     return DataFrame({"x": [2], "y": [4]})

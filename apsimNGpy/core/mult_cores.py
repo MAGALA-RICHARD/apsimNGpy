@@ -106,29 +106,31 @@ class MultiCoreManager:
 
         Parameters
         ----------
-        db_path : str, pathlib.Path, defult='manager_datastorage.db'
+        db_path : str, pathlib.Path, default=resolved path 'manager_datastorage.db'
             Database  path used to persist results generated
             during multi-core execution. connections may not be picklable
 
         agg_func : str or None, optional
             Name of the aggregation function used to combine results from
             completed jobs. The interpretation of this value depends on the
-            execution context and downstream processing logic.
+            execution context and downstream processing logic. When the user provides an index for aggregation in run_all_jobs method,
+            aggregation is performed on that index. 
 
         ran_ok : bool, optional
             Flag indicating whether the multi-core execution completed
             successfully. This value is updated internally after execution
-            finishes.
+            finishes. It is used a signal to data memory retrieval methods on this class that everything is ok to retrieve the results from sql database.
 
         incomplete_jobs : list, optional
             List used to track jobs that failed, were interrupted, or did not
             complete successfully during execution. This list is populated
-            dynamically at runtime.
+            dynamically at runtime. Most of the time this container will be empty because the back-end retries silently in case of any perturbation
 
         table_prefix : str, optional
             Prefix used when creating database tables for storing intermediate
             or aggregated results. This helps avoid table name collisions when
-            running multiple workflows. This prefix is also used to avoid table name collisions by clearing all tables that exists with that prefix
+            running multiple workflows. This prefix is also used to avoid table name collisions by clearing all tables that exists with that prefix, for every fresh restart.
+            Why this is critical is that we don't want to mixe results from previous session with the current session
 
         Attributes
         ----------

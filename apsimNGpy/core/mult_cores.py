@@ -153,7 +153,52 @@ class MultiCoreManager:
     def __post_init__(self):
         """
         Initialize the database, note that this database tables are cleaned up everytime the object is called, to avoid table name errors
-        :return:
+
+        Parameters
+        ----------
+        db_path : str, pathlib.Path, default=resolved path 'manager_datastorage.db'
+            Database  path used to persist results generated
+            during multi-core execution. connections may not be picklable
+
+        agg_func : str or None, optional
+            Name of the aggregation function used to combine results from
+            completed jobs. The interpretation of this value depends on the
+            execution context and downstream processing logic. When the user provides an index for aggregation in run_all_jobs method,
+            aggregation is performed on that index.
+
+        ran_ok : bool, optional
+            Flag indicating whether the multi-core execution completed
+            successfully. This value is updated internally after execution
+            finishes. It is used a signal to data memory retrieval methods on this class that everything is ok to retrieve the results from sql database.
+
+        incomplete_jobs : list, optional
+            List used to track jobs that failed, were interrupted, or did not
+            complete successfully during execution. This list is populated
+            dynamically at runtime. Most of the time this container will be empty because the back-end retries silently in case of any perturbation
+
+        table_prefix : str, optional
+            Prefix used when creating database tables for storing intermediate
+            or aggregated results. This helps avoid table name collisions when
+            running multiple workflows. This prefix is also used to avoid table name collisions by clearing all tables that exists with that prefix, for every fresh restart.
+            Why this is critical is that we don't want to mixe results from previous session with the current session
+
+        Attributes
+        ----------
+        tag : str
+            Identifier string used to label this manager instance in logs,
+            database tables, or metadata.
+
+        default_db : str
+            Default SQLite database filename used when no database is
+            explicitly provided.
+
+        cleared_db : bool
+            Internal flag indicating whether the database has been cleared
+            during the current execution lifecycle. This attribute is managed
+            internally and is not intended to be set by the user.
+
+            By default, tables starting with the provided prefix are deleted for each initialization, to prepare for clean data collection
+
         """
         self._check_db_path()
         self.db_path = self.db_path or f"{self.tag}_{self.default_db}"

@@ -558,7 +558,7 @@ class MultiCoreManager:
         self.ran_ok = True
 
 
-MultiCoreManager.save_tocsv.__doc__ = """  Persist simulation results to a SQLite database table.
+MultiCoreManager.save_to_csv.__doc__ = """  Persist simulation results to a SQLite database table.
 
         This method writes `self.results` (a pandas DataFrame) to the given csv file. It is designed to be robust in workflows where some simulations
         may fail: any successfully simulated rows present in `self.results` are

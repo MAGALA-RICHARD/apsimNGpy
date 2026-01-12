@@ -342,10 +342,11 @@ if __name__ == "__main__":
                evaluator, exceptions, database_utils, pythonet_config, config, runner, back_end,
                )
 
-    OUT = Path("doc/source/api.rst")
+    OUT = Path("doc/source/api.rst").resolve()
+    doc_folder = Path(__file__).parent.parent.parent / 'doc'
     OUT.parent.mkdir(parents=True, exist_ok=True)
     docs(modules, output_file=OUT, skip_undocumented=True, main_package="apsimNGpy")
-
+    shutil.copy2(OUT, doc_folder / 'api.rst')
     rsts = list(Path.cwd().rglob("*pi.rst"))
     if SENDTO2.exists():
         for rst in rsts:

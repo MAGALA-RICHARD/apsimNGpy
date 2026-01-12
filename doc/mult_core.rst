@@ -126,20 +126,6 @@ Instantiating and Running the Simulations
             # Run all the jobs
             task_manager.run_all_jobs(create_jobs, n_cores=16, threads=False, clear_db=True)
 
-# this is the progress info
-
-.. code-block:: python
-
-            Processing all jobs. Please wait!: :  |██████████| 100.0%| [100/100]| Complete | 1.07s/iteration | Elapsed time: 00:01:46.850
-
-# get the results
-
-.. code-block:: python
-
-            df = task_manager.get_simulated_output(axis=0)
-            # same as
-            data = task_manager.results  # defaults is axis =0
-
 If ``agg_func`` is specified, it can be one of: mean, median, sum, min, or max. Each results table will then be summarized using the selected aggregation function.
 
 ``clear_db`` is used to clear the database tables before all new entries are added
@@ -147,6 +133,27 @@ If ``agg_func`` is specified, it can be one of: mean, median, sum, min, or max. 
 ``threads (bool)``: If True, use threads; if False, use processes. For ``CPU-bound`` tasks like this one, processes are preferred as they prevent resource contention and blocking inherent to threads.
 
 ``n_cores (int)``: Specifies the number of worker cores to use for the task. The workload will be divided among these workers. If the number of cores is large but the number of tasks is small, some scheduling overhead will occur, and workers may remain idle while waiting for available tasks.
+
+Tracking completed jobs
+------------------------
+MultiCoreManager API displays the number of completed jobs and percentage of the total submitted,
+time per simulation(sim) failed jobs (f) elapsed time and seconds per sim
+
+.. code-block:: python
+
+            Processing![0f] :  |██████████| 100.0%| [100/100]| Complete | 1.07s/sim | Elapsed time: 00:01:46.850
+
+
+Retrieving results
+-------------------
+Results can be loaded to memory by :meth:`~apsimNgpy.core.mult_cores.MultiCoreManager.get_simulated_output` or :attr:`~apsimNgpy.core.mult_cores.MultiCoreManager.results`
+
+.. code-block:: python
+
+            df = task_manager.get_simulated_output(axis=0)
+            # same as
+            data = task_manager.results  # defaults is axis =0
+
 
 Customization
 ===================

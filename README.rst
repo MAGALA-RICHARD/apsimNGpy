@@ -275,8 +275,7 @@ Full Documentation
 ------------------
 
 `Read the docs <https://magala-richard.github.io/apsimNGpy-documentations/index.html>`_
-
-`Read the docs <https://apsimngpy.readthedocs.io/en/latest/>`
+Or `Read the docs <https://apsimngpy.readthedocs.io/en/latest/>`
 
 
 

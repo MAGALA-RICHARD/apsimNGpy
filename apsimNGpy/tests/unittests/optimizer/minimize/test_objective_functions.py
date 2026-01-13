@@ -1,34 +1,28 @@
 import gc
 import os
 import sys
+from pathlib import Path
 
-from apsimNGpy.core_utils.database_utils import write_results_to_sql
+import dotenv
+from persistqueue.queue import Queue
+from apsimNGpy.core_utils.database_utils import read_db_table
 from apsimNGpy.optimizer.minimize.single_mixed import MixedVariableOptimizer
 from apsimNGpy.optimizer.problems.smp import MixedProblem
 from apsimNGpy.settings import logger
 from apsimNGpy.tests.unittests.test_factory import obs
-from apsimNGpy.core_utils.database_utils import read_db_table
-from persistqueue.queue import Queue
-from pathlib import Path
-from sqlalchemy import create_engine
-import pandas as pd
-import dotenv
 
 dotenv.load_dotenv()
 dbp = os.getenv('SUPABASE_DB_PASSWORD')
 
-from sqlalchemy import create_engine
 import os
 passWord = os.getenv('SUPABASE_DB_PASSWORD')
-from sqlalchemy import create_engine
 from sqlalchemy import create_engine
 from sqlalchemy.engine import URL
 
 url = URL.create(
     drivername="postgresql+psycopg2",
     username="postgres",
-    password=passWord,   # raw password is OK here
-    host="db.elheeekvqchcvvdwlnzc.supabase.co",
+    password=passWord,
     port=5432,
     database="postgres",
 )
@@ -136,7 +130,7 @@ if __name__ == "__main__":
     # data = read_db_table(db, metrics_table)
     from itertools import product
 
-    m_f_c = list(product(['Nelder-Mead', "L-BFGS-B"], metrics))
+    m_f_c = list(product(['SLSQP', "de"], metrics))
     idx = [i for i, _ in enumerate(m_f_c)]
     jobs = dict(zip(idx, m_f_c))
     q = Queue(str(Path(__file__).parent), )
@@ -151,7 +145,7 @@ if __name__ == "__main__":
             q.task_done()
             continue
         alg, fun = method
-        main(function_objective=fun, algorithm=alg, pop_size=20)
+        main(function_objective=fun, algorithm=alg, pop_size=30)
         q.task_done()
         gc.collect()
 

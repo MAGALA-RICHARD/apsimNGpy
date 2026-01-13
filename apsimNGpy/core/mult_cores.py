@@ -389,10 +389,7 @@ class MultiCoreManager:
 
         Examples
         --------
-        >>> mgr.results.head()
-           sim_id  yield  n2o
-        0       1   10.2  0.8
-        >>> mgr.save("outputs/simulations.db")
+
 
         .. seealso::
 
@@ -542,7 +539,7 @@ class MultiCoreManager:
         - Result tables are uniquely named using a deterministic schema hash
           derived from column names to avoid database collisions. The hashed
           identifier is prefixed with the user-defined table prefix (default:
-          ``__core_table__``), which is used internally to retrieve results.
+          ``__core_table__`` and processID), which is used internally to retrieve results.
         - Both execution and process identifiers are attached to all output rows
           to support reproducibility and parallel execution tracking. Execution
           identifiers are derived from column schemas, while process identifiers
@@ -629,7 +626,6 @@ if __name__ == '__main__':
                               )
         df = Parallel.get_simulated_output(axis=0)
         print(len(Parallel.tables))
-        Parallel.clear_scratch()
         # test saving to already an existing table
         ve = False
         db_path.unlink(missing_ok=True)

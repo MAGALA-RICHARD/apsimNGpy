@@ -1,13 +1,13 @@
 from __future__ import annotations
-import os
+
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, as_completed
 from multiprocessing import cpu_count
+from pathlib import Path
 from typing import Any, Callable, Iterable, List, Sequence, Optional
 from tqdm import tqdm
 from apsimNGpy.core_utils.database_utils import read_db_table
-from apsimNGpy.core_utils.run_utils import run_model
 from apsimNGpy.parallel.data_manager import chunker
 from apsimNGpy.settings import NUM_CORES
-from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, as_completed
 
 CPU = int(int(cpu_count()) * 0.5)
 CORES = NUM_CORES
@@ -16,6 +16,36 @@ import time
 
 def select_type(use_thread: bool, n_cores: int):
     return ThreadPoolExecutor(n_cores) if use_thread else ProcessPoolExecutor(n_cores)
+
+
+def _run_with_queue(func, pool, queue_dir, keep_session, iterable, *args):
+    if keep_session:
+        from persistqueue.queue import Queue
+        queue_dir = queue_dir or Path(".queue")
+        q = Queue(str(queue_dir))
+
+        # Populate only once
+        if q.empty():
+            for item in iterable:
+                q.put(item)
+    else:
+        q = (i for i in iterable)
+
+    futures = []
+
+    while True:
+        try:
+            if keep_session:
+                item = q.get(block=False)
+            else:
+                item = next(q, None)  # LIST uses pop
+                if not item:
+                    break
+        except Exception:
+            break  # nothing left
+        if item:
+            futures.append(pool.submit(func, item, *args))
+    return futures
 
 
 def custom_parallel(func, iterable: Iterable, *args, **kwargs):
@@ -353,7 +383,7 @@ if __name__ == '__main__':
     success = list(
         custom_parallel(mock_success, range(100), use_thread=True, ncores=10, void=True, display_failures=True))
     fail = list(
-        custom_parallel(mock_failure, range(1000), use_thread=True, ncores=10, void=False, display_failures=True,))
+        custom_parallel(mock_failure, range(1000), use_thread=True, ncores=10, void=False, display_failures=True, ))
     fai = list(
         custom_parallel(mock_none, range(1000), use_thread=True, ncores=10, void=True, display_failures=True))
 

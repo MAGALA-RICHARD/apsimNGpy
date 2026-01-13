@@ -573,6 +573,7 @@ class MultiCoreManager:
 
 
         """
+        n_cores = core_count(n_cores, threads=threads)
         assert n_cores > 0, 'n_cores must be an integer above zero'
         self.cleared_db = clear_db
         # because it is being deprecated, it cleared db is a must to avoid collsions

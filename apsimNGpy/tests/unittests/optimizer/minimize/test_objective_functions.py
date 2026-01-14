@@ -140,18 +140,15 @@ if __name__ == "__main__":
     idx = [i for i, _ in enumerate(m_f_c)]
     jobs = dict(zip(idx, m_f_c))
     q = Queue(str(Path(__file__).parent), )
-
-    for i in idx:
-        q.put(i)
+    for metric in metrics:
+        q.put(metric)
     while not q.empty():
         key = q.get()
-        method = jobs.get(key)
-        print(key, method)
-        if not method:
+        print(key)
+        if not key:
             q.task_done()
             continue
-        alg, fun = method
-        main(function_objective=fun, algorithm=alg, pop_size=20)
+        main(function_objective=key, algorithm='de', pop_size=15)
         q.task_done()
         gc.collect()
 

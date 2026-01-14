@@ -576,11 +576,8 @@ class MultiCoreManager:
         n_cores = core_count(n_cores, threads=threads)
         assert n_cores > 0, 'n_cores must be an integer above zero'
         self.cleared_db = clear_db
-        # because it is being deprecated, it cleared db is a must to avoid collsions
         if self.cleared_db:
             self.clear_db()  # each simulation is fresh,
-            # below is retry code based on user-specified retry rate, the question of why not use tenacity is the added overhead from tenacity,
-            # and also need to record the ones that failed
 
         worker = partial(single_runner, agg_func=self.agg_func,
                          ignore_runtime_errors=ignore_runtime_errors, retry_rate=retry_rate,
@@ -590,7 +587,7 @@ class MultiCoreManager:
             failed = []
             for res in custom_parallel(func=worker, iterable=jobs, ncores=n_cores, use_threads=threads,
                                        progress_message=f'APSIM running[{x}f]', unit='sim', void=False,
-                                       display_failures=display_failures):
+                                       ):
                 if res is True:
                     pass  # holder to unzip jobs
                 else:

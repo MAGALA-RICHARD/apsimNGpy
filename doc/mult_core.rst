@@ -384,4 +384,5 @@ corresponding structure.
 .. seealso::
 
   - API description: :class:`~apsimNGpy.core.mult_cores.MultiCoreManager`
+  - run_all_jobs API: :class:`~apsimNGpy.core.mult_cores.MultiCoreManager.run_all_jobs`
   -  :ref:`API Reference: <api_ref>`

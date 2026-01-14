@@ -284,7 +284,7 @@ Then, you can run the model
 
    sobol.run(verbose = True)
 
-Before I log off, you can check out the documentation of following methods, which have been used in this tutorial
+Before I log off, you can check out the documentation of the following methods, which have been used in this tutorial
 
 :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.add_sens_factor`,
 :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.build_sense_model`,
@@ -299,15 +299,15 @@ Before I log off, you can check out the documentation of following methods, whic
 
 .. note::
 
-The sensitivity analysis workflow described above is effective because it leverages APSIM’s built-in methods and commands.
-However, APSIM currently relies on external R-based sensitivity analysis packages, which may require users to have R installed.
-Outside of Windows environments, this often necessitates some form of containerization, adding complexity to the workflow.
+    The sensitivity analysis workflow described above is effective because it leverages APSIM’s built-in methods and commands.
+    However, APSIM currently relies on external R-based sensitivity analysis packages, which may require users to have R installed.
+    Outside of Windows environments, this often necessitates some form of containerization, adding complexity to the workflow.
 
-To address these limitations, Part II of the apsimNGpy sensitivity workflow introduces a fully cross-platform solution by
-integrating the SALib library directly with apsimNGpy. This approach eliminates the dependency on R, simplifies deployment
-across operating systems, and provides greater flexibility.
+    To address these limitations, Part II of the apsimNGpy sensitivity workflow introduces a fully cross-platform solution by
+    integrating the SALib library directly with apsimNGpy. This approach eliminates the dependency on R, simplifies deployment
+    across operating systems, and provides greater flexibility.
 
-In addition, the SALib-based workflow is highly customizable in terms of sampling strategies and supports a wide range of
-sensitivity analysis methods beyond Morris and Sobol.
+    In addition, the SALib-based workflow is highly customizable in terms of sampling strategies and supports a wide range of
+    sensitivity analysis methods beyond Morris and Sobol.
 
-**Please check it out on the next page.**
+    **Please check it out on the next page.**

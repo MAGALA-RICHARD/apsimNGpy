@@ -18,7 +18,7 @@ class ConfigProblem:
     """
     Core engine for APSIM–SALib sensitivity analysis.
 
-    This class is intentionally lightweight and stateless. Just used for problem configurations
+    This class is just used for problem configurations
 
     """
 
@@ -420,8 +420,6 @@ def run_sensitivity(
             # evaluate and analyse again
             stp.evaluate(evaluate)
             ans = analyzer(**analyze_options)
-        sign = list(inspect.signature(analyzer).parameters)
-        # print(sign)
         return ans
     finally:
         del sampler, stp
@@ -452,7 +450,7 @@ if __name__ == "__main__":
     Si_sobol = run_sensitivity(
         runner,
         method="sobol",
-        N=2 ** 8,  # ← base sample size
+        N=2 ** 6,  # ← base sample size
         n_cores=-6,
         sample_options={
             "calc_second_order": True,

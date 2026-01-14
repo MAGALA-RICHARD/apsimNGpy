@@ -1,3 +1,4 @@
+.. sens_salib
 
 Sensitivity analysis workflow Part 2 (SALib driven workflow)
 ============================================================

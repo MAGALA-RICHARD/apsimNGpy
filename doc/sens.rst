@@ -293,6 +293,7 @@ Before I log off, you can check out the documentation of the following methods, 
 
  .. seealso::
 
+    - See :ref:`the SALib-based sensitivity workflow <sens_salib>` for cross platform solution.
     - :ref:`API Reference <api_ref>`
     - :ref:`Download Stable APSIM Version here <apsim_pin_version>`
     - :ref:`Go back to the home page<master>`

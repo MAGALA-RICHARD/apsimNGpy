@@ -14,7 +14,7 @@
    :target: https://pepy.tech/project/apsimNGpy
    :alt: Total PyPI downloads
 
-.. image:: https://img.shields.io/badge/Join%20Publication-blue.svg
+.. image:: https://img.shields.io/badge/Read%20Publication-blue.svg
    :target: https://www.sciencedirect.com/science/article/pii/S2352711025004625
    :alt: Read publication
 

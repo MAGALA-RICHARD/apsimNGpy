@@ -26,7 +26,10 @@ extensions = [
     'sphinx.ext.githubpages',
     # Utility
     'sphinx_copybutton',
+    'sphinx_sitemap'
 ]
+html_baseurl = "https://apsimngpy.readthedocs.io/en/stable/"
+sitemap_url_scheme = "{link}"
 mermaid_params = [
     "--theme", "forest"
 ]

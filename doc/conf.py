@@ -26,7 +26,7 @@ extensions = [
     'sphinx.ext.githubpages',
     # Utility
     'sphinx_copybutton',
-    'sphinx_sitemap'
+
 ]
 
 mermaid_params = [

@@ -10,20 +10,21 @@ The version and sub-version numbers can be retrieved via apsimNGpy.__version__, 
 Magala, R., Schulte, L.A., 2026. apsimNGpy: A comprehensive Python framework for interactive, reproducible, and scalable simulations of the APSIM Next Generation model. SoftwareX 33, 102496. https://doi.org/10.1016/j.softx.2025.102496
 
 
-@article{Magala2026apsimNGpy,
-  author  = {Magala, Richard and Schulte, Lisa A.},
-  title   = {apsimNGpy: A comprehensive Python framework for interactive, reproducible, and scalable simulations of the APSIM Next Generation model},
-  journal = {SoftwareX},
-  year    = {2026},
-  volume  = {33},
-  pages   = {102496},
-  doi     = {10.1016/j.softx.2025.102496},
-  url     = {https://doi.org/10.1016/j.softx.2025.102496}
-}
+**BibTeX format:**
+.. code-block:: bibtex
+
+    @article{Magala2026apsimNGpy,
+      author  = {Magala, Richard and Schulte, Lisa A.},
+      title   = {apsimNGpy: A comprehensive Python framework for interactive, reproducible, and scalable simulations of the APSIM Next Generation model},
+      journal = {SoftwareX},
+      year    = {2026},
+      volume  = {33},
+      pages   = {102496},
+      doi     = {10.1016/j.softx.2025.102496},
+      url     = {https://doi.org/10.1016/j.softx.2025.102496}
+    }
 
 to cite a specific version;
-
-**BibTeX format:**
 
 .. code-block:: bibtex
 

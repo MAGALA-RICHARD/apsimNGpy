@@ -134,7 +134,7 @@ Classes
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.update_mgt`
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.update_mgt_by_path`
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.__init__(self, model: Union[os.PathLike, dict, str], out_path: Union[str, pathlib.Path] = <object object at 0x0000018E19B76460>, set_wd=None, **kwargs)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.__init__(self, model: Union[os.PathLike, dict, str], out_path: Union[str, pathlib.Path] = <object object at 0x00000266E0FAE460>, set_wd=None, **kwargs)
 
    Initialize self.  See help(type(self)) for accurate signature.
 
@@ -481,7 +481,7 @@ Classes
    self : object
        Returns the updated ApsimModel instance.
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.save(self, file_name: 'Union[str, Path]' = <object object at 0x0000018E48B2D030>, reload=True) (inherited)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.save(self, file_name: 'Union[str, Path]' = <object object at 0x000002668FFF9030>, reload=True) (inherited)
 
    Saves the current APSIM NG model (``Simulations``) to disk and refresh runtime state.
 
@@ -2592,7 +2592,7 @@ Classes
    ---------------------------------------------------------------------------
    returns an array of the parameter values
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x0000018E48B2D030>) (inherited)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x000002668FFF9030>) (inherited)
 
    Inspect the model types and returns the model paths or names.
 
@@ -3717,7 +3717,7 @@ Classes
    In the future, this module will contain all the constants required by the package.
     Users will be able to override these values if needed by importing this module before running any simulations.
 
-   .. py:method:: apsimNGpy.core.config.Configuration.__init__(self, bin_path: 'Union[Path, str]' = <object object at 0x0000018E19B756D0>) -> None
+   .. py:method:: apsimNGpy.core.config.Configuration.__init__(self, bin_path: 'Union[Path, str]' = <object object at 0x00000266E0FAD6D0>) -> None
 
    Initialize self.  See help(type(self)) for accurate signature.
 
@@ -3967,7 +3967,7 @@ Classes
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.update_mgt`
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.update_mgt_by_path`
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.__init__(self, model, out_path=<object object at 0x0000018E19B76460>)
+   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.__init__(self, model, out_path=<object object at 0x00000266E0FAE460>)
 
    Initialize self.  See help(type(self)) for accurate signature.
 
@@ -4617,7 +4617,7 @@ Classes
    self : object
        Returns the updated ApsimModel instance.
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.save(self, file_name: 'Union[str, Path]' = <object object at 0x0000018E48B2D030>, reload=True) (inherited)
+   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.save(self, file_name: 'Union[str, Path]' = <object object at 0x000002668FFF9030>, reload=True) (inherited)
 
    Saves the current APSIM NG model (``Simulations``) to disk and refresh runtime state.
 
@@ -6728,7 +6728,7 @@ Classes
    ---------------------------------------------------------------------------
    returns an array of the parameter values
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x0000018E48B2D030>) (inherited)
+   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x000002668FFF9030>) (inherited)
 
    Inspect the model types and returns the model paths or names.
 
@@ -7680,21 +7680,64 @@ Classes
 
 .. py:class:: apsimNGpy.core.mult_cores.MultiCoreManager
 
-   MultiCoreManager(db_path: 'Union[str, Path, None, sqlalchemy.engine.base.Engine, sqlite3.Connection]' = None, agg_func: 'Union[str, None]' = None, ran_ok: 'bool' = False, incomplete_jobs: 'list' = <factory>, table_prefix: 'str' = '__core_table__')
+           Manager class for coordinating multi-core execution workflows and
+           handling result aggregation and persistence.
+
+           This class serves as a lightweight state container for parallel or
+           multi-core processing tasks. It tracks execution status, incomplete
+           jobs, database connections, and aggregation behavior, and is designed
+           to be shared across worker processes or threads in a controlled manner.
+
+           Parameters
+           ----------
+           db_path : str, pathlib.Path, default=resolved path 'manager_datastorage.db'
+               Database  path used to persist results generated
+               during multi-core execution. connections may not be picklable
+
+           agg_func : str or None, optional
+               Name of the aggregation function used to combine results from
+               completed jobs. The interpretation of this value depends on the
+               execution context and downstream processing logic. When the user provides an index for aggregation in run_all_jobs method,
+               aggregation is performed on that index. 
+
+           ran_ok : bool, optional
+               Flag indicating whether the multi-core execution completed
+               successfully. This value is updated internally after execution
+               finishes. It is used a signal to data memory retrieval methods on this class that everything is ok to retrieve the results from sql database.
+
+           incomplete_jobs : list, optional
+               List used to track jobs that failed, were interrupted, or did not
+               complete successfully during execution. This list is populated
+               dynamically at runtime. Most of the time this container will be empty because the back-end retries silently in case of any perturbation
+
+           table_prefix : str, optional
+               Prefix used when creating database tables for storing intermediate
+               or aggregated results. This helps avoid table name collisions when
+               running multiple workflows. This prefix is also used to avoid table name collisions by clearing all tables that exists with that prefix, for every fresh restart.
+               Why this is critical is that we don't want to mixe results from previous session with the current session
+
+           Attributes
+           ----------
+           tag : str
+               Identifier string used to label this manager instance in logs,
+               database tables, or metadata.
+
+           default_db : str
+               Default SQLite database filename used when no database is
+               explicitly provided.
+
+           cleared_db : bool
+               Internal flag indicating whether the database has been cleared
+               during the current execution lifecycle. This attribute is managed
+               internally and is not intended to be set by the user.
+
+               By default, tables starting with the provided prefix are deleted for each initialization, to prepare for clean data collection
 
    List of Public Attributes:
    __________________________________
 
-   - :attr:`~apsimNGpy.core.mult_cores.MultiCoreManager.agg_func`
-   - :attr:`~apsimNGpy.core.mult_cores.MultiCoreManager.cleared_db`
-   - :attr:`~apsimNGpy.core.mult_cores.MultiCoreManager.db_path`
-   - :attr:`~apsimNGpy.core.mult_cores.MultiCoreManager.default_db`
-   - :attr:`~apsimNGpy.core.mult_cores.MultiCoreManager.incomplete_jobs`
-   - :attr:`~apsimNGpy.core.mult_cores.MultiCoreManager.ran_ok`
    - :attr:`~apsimNGpy.core.mult_cores.MultiCoreManager.results`
-   - :attr:`~apsimNGpy.core.mult_cores.MultiCoreManager.table_prefix`
    - :attr:`~apsimNGpy.core.mult_cores.MultiCoreManager.tables`
-   - :attr:`~apsimNGpy.core.mult_cores.MultiCoreManager.tag`
    List of Public Methods
    -----------------------------
    - :meth:`~apsimNGpy.core.mult_cores.MultiCoreManager.clear_db`
@@ -7704,17 +7747,54 @@ Classes
    - :meth:`~apsimNGpy.core.mult_cores.MultiCoreManager.save_to_csv`
    - :meth:`~apsimNGpy.core.mult_cores.MultiCoreManager.save_tosql`
 
-   .. py:method:: apsimNGpy.core.mult_cores.MultiCoreManager.__init__(self, db_path: 'Union[str, Path, None, sqlalchemy.engine.base.Engine, sqlite3.Connection]' = None, agg_func: 'Union[str, None]' = None, ran_ok: 'bool' = False, incomplete_jobs: 'list' = <factory>, table_prefix: 'str' = '__core_table__') -> None
+   .. py:method:: apsimNGpy.core.mult_cores.MultiCoreManager.__init__(self, db_path: 'Union[str, Path, None, sqlalchemy.engine.base.Engine, sqlite3.Connection]' = None, agg_func: 'Union[str, None]' = None, tag='multi_core', default_db='manager_datastorage.db', incomplete_jobs: 'list' = None, table_prefix: 'str' = '__core_table__')
 
-   Initialize self.  See help(type(self)) for accurate signature.
+   Initialize the database, note that this database tables are cleaned up everytime the object is called, to avoid table name errors
 
-   .. py:attribute:: apsimNGpy.core.mult_cores.MultiCoreManager.tag
+   Parameters
+   ----------
+   db_path : str, pathlib.Path, default=resolved path 'manager_datastorage.db'
+       Database  path used to persist results generated
+       during multi-core execution. connections may not be picklable
 
-   Default: ``'multi_core'``
+   agg_func : str or None, optional
+       Name of the aggregation function used to combine results from
+       completed jobs. The interpretation of this value depends on the
+       execution context and downstream processing logic. When the user provides an index for aggregation in run_all_jobs method,
+       aggregation is performed on that index.
 
-   .. py:attribute:: apsimNGpy.core.mult_cores.MultiCoreManager.default_db
+   ran_ok : bool, optional
+       Flag indicating whether the multi-core execution completed
+       successfully. This value is updated internally after execution
+       finishes. It is used a signal to data memory retrieval methods on this class that everything is ok to retrieve the results from sql database.
 
-   Default: ``'manager_datastorage.db'``
+   incomplete_jobs : list, optional
+       List used to track jobs that failed, were interrupted, or did not
+       complete successfully during execution. This list is populated
+       dynamically at runtime. Most of the time this container will be empty because the back-end retries silently in case of any perturbation
+
+   table_prefix : str, optional
+       Prefix used when creating database tables for storing intermediate
+       or aggregated results. This helps avoid table name collisions when
+       running multiple workflows. This prefix is also used to avoid table name collisions by clearing all tables that exists with that prefix, for every fresh restart.
+       Why this is critical is that we don't want to mixe results from previous session with the current session
+
+   Attributes
+   ----------
+   tag : str
+       Identifier string used to label this manager instance in logs,
+       database tables, or metadata.
+
+   default_db : str
+       Default SQLite database filename used when no database is
+       explicitly provided.
+
+   cleared_db : bool
+       Internal flag indicating whether the database has been cleared
+       during the current execution lifecycle. This attribute is managed
+       internally and is not intended to be set by the user.
+
+       By default, tables starting with the provided prefix are deleted for each initialization, to prepare for clean data collection
 
    .. py:property:: apsimNGpy.core.mult_cores.MultiCoreManager.tables
 
@@ -8132,30 +8212,6 @@ Classes
 
    .. versionadded:: 0.39.1.21+
 
-   .. py:attribute:: apsimNGpy.core.mult_cores.MultiCoreManager.agg_func
-
-   Default: ``<member 'agg_func' of 'MultiCoreManager' objects>``
-
-   .. py:attribute:: apsimNGpy.core.mult_cores.MultiCoreManager.cleared_db
-
-   Default: ``<member 'cleared_db' of 'MultiCoreManager' objects>``
-
-   .. py:attribute:: apsimNGpy.core.mult_cores.MultiCoreManager.db_path
-
-   Default: ``<member 'db_path' of 'MultiCoreManager' objects>``
-
-   .. py:attribute:: apsimNGpy.core.mult_cores.MultiCoreManager.incomplete_jobs
-
-   Default: ``<member 'incomplete_jobs' of 'MultiCoreManager' objects>``
-
-   .. py:attribute:: apsimNGpy.core.mult_cores.MultiCoreManager.ran_ok
-
-   Default: ``<member 'ran_ok' of 'MultiCoreManager' objects>``
-
-   .. py:attribute:: apsimNGpy.core.mult_cores.MultiCoreManager.table_prefix
-
-   Default: ``<member 'table_prefix' of 'MultiCoreManager' objects>``
-
 apsimNGpy.core.pythonet_config
 ------------------------------
 
@@ -8223,7 +8279,7 @@ Functions
    >>> reader = get_apsim_file_reader("string")    # doctest: +SKIP
    >>> sims = reader(text)                         # doctest: +SKIP
 
-.. py:function:: apsimNGpy.core.pythonet_config.get_apsim_version(bin_path: Union[str, pathlib.Path] = <object object at 0x0000018E19B76420>, release_number: bool = False) -> Optional[str]
+.. py:function:: apsimNGpy.core.pythonet_config.get_apsim_version(bin_path: Union[str, pathlib.Path] = <object object at 0x00000266E0FAE420>, release_number: bool = False) -> Optional[str]
 
    Return the APSIM version string detected from the installed binaries.
 
@@ -8272,7 +8328,7 @@ Functions
    --------
    load_pythonnet : Initialize pythonnet/CLR for APSIM binaries.
 
-.. py:function:: apsimNGpy.core.pythonet_config.is_file_format_modified(bin_path: Union[str, pathlib.Path] = <object object at 0x0000018E19B76420>) -> bool
+.. py:function:: apsimNGpy.core.pythonet_config.is_file_format_modified(bin_path: Union[str, pathlib.Path] = <object object at 0x00000266E0FAE420>) -> bool
 
    Checks if the APSIM.CORE.dll is present in the bin path. Normally, the new APSIM version has this dll file.
 
@@ -8284,7 +8340,7 @@ Functions
    :returns:
      bool
 
-.. py:function:: apsimNGpy.core.pythonet_config.load_pythonnet(bin_path: Union[str, pathlib.Path] = <object object at 0x0000018E19B76420>)
+.. py:function:: apsimNGpy.core.pythonet_config.load_pythonnet(bin_path: Union[str, pathlib.Path] = <object object at 0x00000266E0FAE420>)
 
    A method for loading Python for .NET (pythonnet) and APSIM models from the binary path. It is also cached to
    avoid rerunning many times.
@@ -8555,7 +8611,7 @@ Functions
 
    Return True if obj looks like a DB connection.
 
-.. py:function:: apsimNGpy.core.runner.run_apsim_by_path(model: 'Union[str, Path]', *, bin_path: 'Union[str, Path, object]' = <object object at 0x0000018E19B76480>, timeout: 'int' = 800, ncores: 'int' = -1, verbose: 'bool' = False, to_csv: 'bool' = False) -> 'None'
+.. py:function:: apsimNGpy.core.runner.run_apsim_by_path(model: 'Union[str, Path]', *, bin_path: 'Union[str, Path, object]' = <object object at 0x00000266E0FAE480>, timeout: 'int' = 800, ncores: 'int' = -1, verbose: 'bool' = False, to_csv: 'bool' = False) -> 'None'
 
    Execute an APSIM model safely and reproducibly.
 
@@ -8600,7 +8656,7 @@ Functions
    RuntimeError
        If APSIM returns a non-zero exit code.
 
-.. py:function:: apsimNGpy.core.runner.run_model_externally(model: 'Union[Path, str]', *, apsim_bin_path: 'Optional[Union[Path, str]]' = <object object at 0x0000018E19B76480>, verbose: 'bool' = False, to_csv: 'bool' = False, timeout: 'int' = 20, cpu_count=-1, cwd: 'Optional[Union[Path, str]]' = None) -> 'subprocess.CompletedProcess[str]'
+.. py:function:: apsimNGpy.core.runner.run_model_externally(model: 'Union[Path, str]', *, apsim_bin_path: 'Optional[Union[Path, str]]' = <object object at 0x00000266E0FAE480>, verbose: 'bool' = False, to_csv: 'bool' = False, timeout: 'int' = 20, cpu_count=-1, cwd: 'Optional[Union[Path, str]]' = None) -> 'subprocess.CompletedProcess[str]'
 
    Run APSIM externally (cross-platform) with safe defaults.
 
@@ -8805,7 +8861,7 @@ Classes
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.update_mgt`
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.update_mgt_by_path`
 
-   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.__init__(self, model, out_path=<object object at 0x0000018E19B76460>)
+   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.__init__(self, model, out_path=<object object at 0x00000266E0FAE460>)
 
    Initialize self.  See help(type(self)) for accurate signature.
 
@@ -9391,7 +9447,7 @@ Classes
    self : object
        Returns the updated ApsimModel instance.
 
-   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.save(self, file_name: 'Union[str, Path]' = <object object at 0x0000018E48B2D030>, reload=True) (inherited)
+   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.save(self, file_name: 'Union[str, Path]' = <object object at 0x000002668FFF9030>, reload=True) (inherited)
 
    Saves the current APSIM NG model (``Simulations``) to disk and refresh runtime state.
 
@@ -11502,7 +11558,7 @@ Classes
    ---------------------------------------------------------------------------
    returns an array of the parameter values
 
-   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x0000018E48B2D030>) (inherited)
+   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x000002668FFF9030>) (inherited)
 
    Inspect the model types and returns the model paths or names.
 
@@ -14642,7 +14698,7 @@ Classes
 
        Core engine for APSIM–SALib sensitivity analysis.
 
-       This class is intentionally lightweight and stateless. Just used for problem configurations
+       This class is just used for problem configurations
 
    List of Public Attributes:
    __________________________________

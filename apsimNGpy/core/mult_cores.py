@@ -84,17 +84,8 @@ def insert_data_with_pd(db, table, results, if_exists):
     results.to_sql(table, engine, index=False, if_exists=if_exists)
 
 
-@dataclass(slots=True)
+@dataclass(repr=False, order=False, init=False)
 class MultiCoreManager:
-    db_path: Union[str, Path, None, sqlalchemy.engine.base.Engine, sqlite3.Connection] = None
-    agg_func: Union[str, None] = None
-    ran_ok: bool = False
-    tag = 'multi_core'
-    default_db = 'manager_datastorage.db'
-    incomplete_jobs: list = field(default_factory=list)
-    table_prefix: str = '__core_table__'
-    cleared_db: bool = field(default=False, init=False)
-
     """
         Manager class for coordinating multi-core execution workflows and
         handling result aggregation and persistence.
@@ -150,7 +141,13 @@ class MultiCoreManager:
             By default, tables starting with the provided prefix are deleted for each initialization, to prepare for clean data collection
         """
 
-    def __post_init__(self):
+    def __init__(self, db_path: Union[str, Path, None, sqlalchemy.engine.base.Engine, sqlite3.Connection] = None,
+                 agg_func: Union[str, None] = None,
+                 tag='multi_core',
+                 default_db='manager_datastorage.db',
+                 incomplete_jobs: list = None,
+                 table_prefix: str = '__core_table__',
+                 ):
         """
         Initialize the database, note that this database tables are cleaned up everytime the object is called, to avoid table name errors
 
@@ -200,7 +197,16 @@ class MultiCoreManager:
             By default, tables starting with the provided prefix are deleted for each initialization, to prepare for clean data collection
 
         """
+        self.db_path = db_path
+        self.tag = tag
+        self.default_db = default_db
+        self.cleared_db = False
+        self.agg_func = agg_func
+        self.ran_ok: bool = False
+        self.incomplete_jobs = incomplete_jobs or []
+        self.table_prefix = table_prefix
         self._check_db_path()
+
         self.db_path = self.db_path or f"{self.tag}_{self.default_db}"
         if isinstance(self.db_path, (str, Path)):
             self.db_path = Path(self.db_path).resolve().with_suffix('.db')

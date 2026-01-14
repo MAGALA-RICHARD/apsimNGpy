@@ -84,7 +84,6 @@ def insert_data_with_pd(db, table, results, if_exists):
     results.to_sql(table, engine, index=False, if_exists=if_exists)
 
 
-@dataclass(repr=False, order=False, init=False)
 class MultiCoreManager:
     """
         Manager class for coordinating multi-core execution workflows and
@@ -140,6 +139,16 @@ class MultiCoreManager:
             
             By default, tables starting with the provided prefix are deleted for each initialization, to prepare for clean data collection
         """
+    __slots__ = (
+        "db_path",
+        "agg_func",
+        "tag",
+        "default_db",
+        "incomplete_jobs",
+        "table_prefix",
+        'ran_ok',
+        'cleared_db'
+    )
 
     def __init__(self, db_path: Union[str, Path, None, sqlalchemy.engine.base.Engine, sqlite3.Connection] = None,
                  agg_func: Union[str, None] = None,

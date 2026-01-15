@@ -81,7 +81,8 @@ setup(
         'watchdog==6.0.0',
         'SALib==1.5.2',
         'numpy==1.26.4',
-        'pydantic>=2.12'
+        'pydantic>=2.12',
+        'loguru == 0.7.3'
 
     ]
 )

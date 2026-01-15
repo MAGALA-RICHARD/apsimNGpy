@@ -218,7 +218,7 @@ def custom_parallel_chunks(
         If ``func`` returns ``None``, the results will be a sequence of ``None``.
         Note: The function returns a generator, which must be consumed to retrieve results.
 
-    Other Parameters
+    Other Parameters supplied as keyword arguments
     ----------------
     use_thread : bool, optional, default=False
         If ``True``, use threads for parallel execution;
@@ -231,9 +231,8 @@ def custom_parallel_chunks(
     verbose : bool, optional, default=True
         Whether to display a progress bar.
 
-    progress_message : str, optional
+    progress_message : str, optional default ="Processing.. wait!"
         Message to display alongside the progress bar.
-        Defaults to ``f"Processing multiple jobs via {func.__name__}, please wait!"``.
 
     void : bool, optional, default=False
         If ``True``, results are consumed internally (not yielded).
@@ -250,25 +249,42 @@ def custom_parallel_chunks(
         Size of each chunk.
         If specified, ``n_chunks`` is determined automatically.
         For example, if the iterable length is 100 and ``chunk_size=10``, then ``n_chunks=10``.
+    resume : bool, optional, default=False
+        tracks the progress of completed chunks and resumes from the last completed chunk in case the session is interrupted. make sure the previous chunks are not changed
+    db_session : DatabaseSession, optional, default=None
+      if None, and resume __data_db__{number of chunks}.db is used and stored in the cwd
+    clean_db_track:
+        refresh_tracker : bool, optional, default=False
+        if True, the database table containing the completed chunk ID is dropped or cleared.
+        This is important if jobs from the Previous session have changed.
     Examples
     --------
     Run with processes (CPU-bound):
-    >>> def worker():
-    ... pass
 
-    >>> list(run_parallel(work, range(5), use_thread=False, ncores=4))
+    .. code-block:: python
+
+         def worker():
+            # some code here
+        if __name__ == __main__:
+            list(run_parallel(work, range(5), use_thread=False, ncores=4))
 
     Run with threads (I/O-bound):
 
-    >>> for _ in run_parallel(download, urls, use_thread=True, verbose=True):
-    ...     pass
+    .. code-block:: python
+
+         for _ in run_parallel(download, urls, use_thread=True, verbose=True):
+            pass
+
+   .. note::
+
+      resume acts for the previous and future session in case a process is interrupted.
 
     .. seealso::
 
            :func:`~apsimNGpy.parallel.process.custom_parallel`
 
+
     """
-    from persistqueue.queue import Queue
     if isinstance(jobs, str):
         raise ValueError('jobs must an iterable but not strings')
 
@@ -283,12 +299,13 @@ def custom_parallel_chunks(
 
     Executor = ThreadPoolExecutor if use_thread else ProcessPoolExecutor
 
-    desc = (progress_message or "Processing please wait!") + ": "
+    desc = (progress_message or "Processing.. wait!") + ": "
     start = time.perf_counter()
     total_chunks = kwargs.get('n_chunks', 10)
     chunked = chunker(jobs, n_chunks=total_chunks)
+    resume = kwargs.pop('resume', False)
+    db_session = kwargs.get('db_session', False)
 
-    from dotenv import set_key
     from pathlib import Path
 
     def get_key(db, value):
@@ -331,17 +348,15 @@ def custom_parallel_chunks(
             total=total_chunks, desc=desc, unit=unit,
             dynamic_ncols=True, miniters=1,
             bar_format=("{desc} {bar} {percentage:3.0f}% "
-                        "({n_fmt}/{total}) >> completed (elapsed=>{elapsed}, eta=>{remaining}) {postfix}")
+                        "({n_fmt}/{total} chunks) > completed (elapsed=>{elapsed}, eta=>{remaining}) {postfix}")
         ) if verbose else None
-        INDEX_COUNTER = 0
         try:
-            data_db = Path('__data__.db').resolve()
-
+            data_db = db_session or Path(f'__data__{total_chunks}.db')
+            data_db = Path(data_db).with_suffix('.db').resolve()
             for idx, chunk in enumerate(chunked):
+
                 key = get_key(value=idx, db=data_db)
-
-                if key:
-
+                if key and resume:
                     if bar is not None:
                         bar.update(1)
                     continue
@@ -366,10 +381,9 @@ def custom_parallel_chunks(
                         yield result
                     break  # return to top-up loop
                 write_key(idx, data_db)
-                INDEX_COUNTER += 1
-                if idx+1 == total_chunks:
+                if idx + 1 == total_chunks:
+                    # tracking completed
                     clear_db(db=data_db)
-
 
         finally:
             if bar is not None:
@@ -378,6 +392,10 @@ def custom_parallel_chunks(
         if void:
             return None
         return None
+
+
+def worker(x):
+    time.sleep(0.1)
 
 
 if __name__ == '__main__':
@@ -397,11 +415,6 @@ if __name__ == '__main__':
         return None
 
 
-    def worker(x):
-
-        time.sleep(0.1)
-
-
     # quick example
 
     success = list(
@@ -411,5 +424,5 @@ if __name__ == '__main__':
     fai = list(
         custom_parallel(mock_none, range(1000), use_thread=True, ncores=10, void=True, display_failures=True))
 
-    for i in custom_parallel_chunks(worker, range(10000), use_thread=True, n_chunks=102, void=False):
-        print(i)
+    for i in custom_parallel_chunks(worker, range(10000), use_thread=False, n_chunks=102, void=False, resume=True):
+        pass

@@ -3,8 +3,9 @@ from apsimNGpy.senstivity.sensitivity import run_sensitivity, ConfigProblem
 if __name__ == "__main__":
     params = {
         ".Simulations.Simulation.Field.Sow using a variable rule?Population": (2, 10),
-         ".Simulations.Simulation.Field.Fertilise at sowing?Amount": (0, 300),
-        ".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82@[Phenology].GrainFilling.Target.FixedValue": (400, 850),
+        ".Simulations.Simulation.Field.Fertilise at sowing?Amount": (0, 300),
+        ".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82@[Phenology].GrainFilling.Target.FixedValue": (
+        400, 850),
         ".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82?[Leaf].Photosynthesis.RUE.FixedValue": (
             1.2, 2.2),
     }
@@ -13,6 +14,9 @@ if __name__ == "__main__":
         params=params,
         outputs=["Yield", "Maize.AboveGround.N"],
     )
+    #######################################
+    # Method Sobol
+    #######################################
     Si_sobol = run_sensitivity(
         runner,
         method="sobol",
@@ -30,6 +34,9 @@ if __name__ == "__main__":
             "calc_second_order": True,
         },
     )
+    #######################################
+    # Method Morris
+    #######################################
     Si_morris = run_sensitivity(
         runner,
         method="morris", n_cores=10,
@@ -45,6 +52,9 @@ if __name__ == "__main__":
             'seed': 42
         },
     )
+    #######################################
+    # Method efast
+    #######################################
     si_fast = run_sensitivity(
         runner,
         method="fast",

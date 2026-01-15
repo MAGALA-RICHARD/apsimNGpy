@@ -208,7 +208,7 @@ Full Documentation
 
 `Read the live docs <https://magala-richard.github.io/apsimNGpy-documentations/index.html>`_
 Or read the docs at `apsimNGpy documentation <https://apsimngpy.readthedocs.io/en/v1.0.0/>`_.
-publication: can be found here: `Publication <https://www.sciencedirect.com/science/article/pii/S2352711025004625>`_.
+Publication: can be found here: `Publication <https://www.sciencedirect.com/science/article/pii/S2352711025004625>`_.
 
 
 

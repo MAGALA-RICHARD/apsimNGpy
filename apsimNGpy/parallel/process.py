@@ -1,22 +1,16 @@
 from __future__ import annotations
-
-import gc
-import os
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, as_completed
 from multiprocessing import cpu_count
-from pathlib import Path
 from typing import Any, Callable, Iterable, List, Sequence, Optional
-
 import pandas as pd
 from tqdm import tqdm
 from apsimNGpy.core_utils.database_utils import read_db_table
-from apsimNGpy.core_utils.run_utils import run_model
 from apsimNGpy.parallel.data_manager import chunker
 from apsimNGpy.settings import NUM_CORES
-from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, as_completed
-
+import time
 CPU = int(int(cpu_count()) * 0.5)
 CORES = NUM_CORES
-import time
+
 
 
 def select_type(use_thread: bool, n_cores: int):
@@ -253,10 +247,7 @@ def custom_parallel_chunks(
         tracks the progress of completed chunks and resumes from the last completed chunk in case the session is interrupted. make sure the previous chunks are not changed
     db_session : DatabaseSession, optional, default=None
       if None, and resume __data_db__{number of chunks}.db is used and stored in the cwd
-    clean_db_track:
-        refresh_tracker : bool, optional, default=False
-        if True, the database table containing the completed chunk ID is dropped or cleared.
-        This is important if jobs from the Previous session have changed.
+
     Examples
     --------
     Run with processes (CPU-bound):
@@ -305,6 +296,7 @@ def custom_parallel_chunks(
     chunked = chunker(jobs, n_chunks=total_chunks)
     resume = kwargs.pop('resume', False)
     db_session = kwargs.get('db_session', False)
+    refresh_tracker = kwargs.get('refresh_tracker', False)
 
     from pathlib import Path
 
@@ -337,7 +329,6 @@ def custom_parallel_chunks(
     from apsimNGpy.core_utils.database_utils import drop_table
 
     def clear_db(db):
-        print("Clearing")
         drop_table(db=db, table_name="completed")
 
     with Executor(max_workers=ncores) as pool:
@@ -354,7 +345,6 @@ def custom_parallel_chunks(
             data_db = db_session or Path(f'__data__{total_chunks}.db')
             data_db = Path(data_db).with_suffix('.db').resolve()
             for idx, chunk in enumerate(chunked):
-
                 key = get_key(value=idx, db=data_db)
                 if key and resume:
                     if bar is not None:

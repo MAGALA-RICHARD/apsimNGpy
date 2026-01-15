@@ -8220,7 +8220,7 @@ Module attributes
 
 .. py:attribute:: apsimNGpy.core.pythonet_config.CLR
 
-   Default value: ``ConfigRuntimeInfo(clr_loaded=True, bin_path='C:\\Users\\rmagala\\AppData\\Local…``
+   Default value: ``ConfigRuntimeInfo(clr_loaded=True, bin_path=None)
 
 Functions
 ^^^^^^^^^

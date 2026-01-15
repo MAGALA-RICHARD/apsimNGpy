@@ -84,6 +84,7 @@ ALLOWED_NAMES = {
     "choice_var": ChoiceVar
 }
 
+
 def string_eval(obj):
     """
     Evaluate a string expression using a restricted namespace.
@@ -191,15 +192,16 @@ class BaseParams(BaseModel):
         )
 
 
-
 Number = Union[int, float]
 BoundsPair = Tuple[Number, Number]
 
 BoundsInput = Union[
-    BoundsPair,                  # (0, 10)
-    List[BoundsPair],            # [(0, 10), (1, 5)]
-    Tuple[BoundsPair, ...],      # ((0, 10), (1, 5))
+    BoundsPair,  # (0, 10)
+    List[BoundsPair],  # [(0, 10), (1, 5)]
+    Tuple[BoundsPair, ...],  # ((0, 10), (1, 5))
 ]
+
+
 class BaseParamsContinuous(BaseModel):
     """
     A base parameter container for continuous or bounded optimization variables.
@@ -251,7 +253,7 @@ class BaseParamsContinuous(BaseModel):
             others = self.other_params or {}
             others.pop(key, None)
 
-        logger.info(f"Data type validation succeeded")
+        # logger.info(f"Data type validation succeeded")
         return self
 
 
@@ -310,7 +312,7 @@ def validate_user_params(params: Dict) -> BaseParams:
         for key in (candidates if isinstance(candidates, (list, tuple)) else [candidates]):
             others.pop(key, None)
 
-        logger.info(f"Data type validation succeeded")
+        # logger.info(f"Data type validation succeeded")
         return validated
 
     except ValidationError as e:
@@ -318,7 +320,7 @@ def validate_user_params(params: Dict) -> BaseParams:
         raise
 
 
-def validate_user_params_cont(params: Dict) -> BaseParams:
+def validate_user_params_cont(params: Dict) -> BaseParamsContinuous:
     """
     Validate user-supplied parameters using the BaseParams schema.
 
@@ -367,7 +369,7 @@ def validate_user_params_cont(params: Dict) -> BaseParams:
         for key in (candidates if isinstance(candidates, (list, tuple)) else [candidates]):
             others.pop(key, None)
 
-        logger.info(f"Data type validation succeeded")
+        # logger.info(f"Data type validation succeeded")
         return validated
 
     except ValidationError as e:
@@ -426,7 +428,7 @@ def merge_params_by_path(param_list: List[Dict]) -> List[Dict]:
 
     Parameters
     ----------
-    param_list : list of dict
+    param_list : list of dicts.
         List of parameter dictionaries to merge.
 
     Returns

@@ -1,7 +1,12 @@
 from __future__ import annotations
+
+import gc
 import os
 from multiprocessing import cpu_count
+from pathlib import Path
 from typing import Any, Callable, Iterable, List, Sequence, Optional
+
+import pandas as pd
 from tqdm import tqdm
 from apsimNGpy.core_utils.database_utils import read_db_table
 from apsimNGpy.core_utils.run_utils import run_model
@@ -263,6 +268,7 @@ def custom_parallel_chunks(
            :func:`~apsimNGpy.parallel.process.custom_parallel`
 
     """
+    from persistqueue.queue import Queue
     if isinstance(jobs, str):
         raise ValueError('jobs must an iterable but not strings')
 
@@ -281,6 +287,42 @@ def custom_parallel_chunks(
     start = time.perf_counter()
     total_chunks = kwargs.get('n_chunks', 10)
     chunked = chunker(jobs, n_chunks=total_chunks)
+
+    from dotenv import set_key
+    from pathlib import Path
+
+    def get_key(db, value):
+        try:
+            from sqlalchemy import create_engine, text, inspect
+
+            engine = create_engine(f"sqlite:///{db}") if isinstance(db, (Path, str)) else db
+
+            with engine.connect() as conn:
+                if "completed" not in inspect(conn).get_table_names():
+                    return None
+
+                row = conn.execute(
+                    text('SELECT 1 FROM completed WHERE "ID" = :v LIMIT 1'),
+                    {"v": value},
+                ).fetchone()
+
+                return value if row else None
+        except Exception:
+            return None
+
+    def write_key(key, db):
+        from apsimNGpy.core_utils.database_utils import write_df_to_sql
+        out = pd.DataFrame([{f"ID": int(key)}])
+        out['ID'] = out['ID'].astype(int)
+        write_df_to_sql(out, db_or_con=db, table_name="completed", if_exists='append', chunk_size=None, index=False)
+        return db
+
+    from apsimNGpy.core_utils.database_utils import drop_table
+
+    def clear_db(db):
+        print("Clearing")
+        drop_table(db=db, table_name="completed")
+
     with Executor(max_workers=ncores) as pool:
         submitted = 0
         completed = 0
@@ -291,10 +333,20 @@ def custom_parallel_chunks(
             bar_format=("{desc} {bar} {percentage:3.0f}% "
                         "({n_fmt}/{total}) >> completed (elapsed=>{elapsed}, eta=>{remaining}) {postfix}")
         ) if verbose else None
-
+        INDEX_COUNTER = 0
         try:
+            data_db = Path('__data__.db').resolve()
 
-            for chunk in chunked:
+            for idx, chunk in enumerate(chunked):
+                key = get_key(value=idx, db=data_db)
+
+                if key:
+
+                    if bar is not None:
+                        bar.update(1)
+                    continue
+                if bar is not None:
+                    bar.update(1)
                 futures = [pool.submit(func, i, *args) for i in chunk]
                 submitted += 1
 
@@ -303,19 +355,20 @@ def custom_parallel_chunks(
 
                     result = fut.result()  # propagate exceptions
                     completed += 1
-
-                    if bar is not None:
-                        bar.update(1)
-                        elapsed = time.perf_counter() - start
-                        if completed and elapsed > 0:
-                            avg = elapsed / completed
-                            rate = completed / elapsed
-                            bar.set_postfix_str(f"({avg:.3f} s/{unit} or {rate:,.3f} {unit}/s)")
+                    elapsed = time.perf_counter() - start
+                    if completed and elapsed > 0:
+                        avg = elapsed / completed
+                        rate = completed / elapsed
+                        bar.set_postfix_str(f"({avg:.3f} s/{unit} or {rate:,.3f} {unit}/s)")
 
                     if not void:
                         # yield results for THIS iterable (kept separate)
                         yield result
                     break  # return to top-up loop
+                write_key(idx, data_db)
+                INDEX_COUNTER += 1
+                if idx+1 == total_chunks:
+                    clear_db(db=data_db)
 
 
         finally:
@@ -345,6 +398,7 @@ if __name__ == '__main__':
 
 
     def worker(x):
+
         time.sleep(0.1)
 
 
@@ -353,9 +407,9 @@ if __name__ == '__main__':
     success = list(
         custom_parallel(mock_success, range(100), use_thread=True, ncores=10, void=True, display_failures=True))
     fail = list(
-        custom_parallel(mock_failure, range(1000), use_thread=True, ncores=10, void=False, display_failures=True,))
+        custom_parallel(mock_failure, range(1000), use_thread=True, ncores=10, void=False, display_failures=True, ))
     fai = list(
         custom_parallel(mock_none, range(1000), use_thread=True, ncores=10, void=True, display_failures=True))
 
-    for i in custom_parallel_chunks(worker, range(100), use_thread=True):
-        pass
+    for i in custom_parallel_chunks(worker, range(10000), use_thread=True, n_chunks=102, void=False):
+        print(i)

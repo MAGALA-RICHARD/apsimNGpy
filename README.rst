@@ -206,7 +206,7 @@ Highlights
 Full Documentation
 ------------------
 
-`apsimNGpy documentation <https://apsimngpy.readthedocs.io/en/v1.0.0/>`_.
+`apsimNGpy documentation <https://apsimngpy.readthedocs.io/en/latest/>`_.
 
 `Publication <https://www.sciencedirect.com/science/article/pii/S2352711025004625>`_.
 

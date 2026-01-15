@@ -133,4 +133,4 @@ except PermissionError:
     SCRATCH = Path.cwd()
 
 
-config_internal('version', f"{VERSION}")
+#config_internal('version', f"{VERSION}")

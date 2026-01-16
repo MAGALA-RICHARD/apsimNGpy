@@ -8,9 +8,11 @@ from apsimNGpy.core_utils.database_utils import read_db_table
 from apsimNGpy.parallel.data_manager import chunker
 from apsimNGpy.settings import NUM_CORES
 import time
+from pathlib import Path
+from apsimNGpy.parallel._process import write_key, get_key, clear_db
+
 CPU = int(int(cpu_count()) * 0.5)
 CORES = NUM_CORES
-
 
 
 def select_type(use_thread: bool, n_cores: int):
@@ -285,51 +287,14 @@ def custom_parallel_chunks(
     progress_message: str = kwargs.pop("progress_message", "Processing please wait!")
     unit: str = kwargs.pop("unit", "chunk")
     void: bool = kwargs.pop("void", False)
-
     ncores = max(1, ncores_kw or CORES)
-
     Executor = ThreadPoolExecutor if use_thread else ProcessPoolExecutor
-
     desc = (progress_message or "Processing.. wait!") + ": "
     start = time.perf_counter()
     total_chunks = kwargs.get('n_chunks', 10)
     chunked = chunker(jobs, n_chunks=total_chunks)
     resume = kwargs.pop('resume', False)
     db_session = kwargs.get('db_session', False)
-    refresh_tracker = kwargs.get('refresh_tracker', False)
-
-    from pathlib import Path
-
-    def get_key(db, value):
-        try:
-            from sqlalchemy import create_engine, text, inspect
-
-            engine = create_engine(f"sqlite:///{db}") if isinstance(db, (Path, str)) else db
-
-            with engine.connect() as conn:
-                if "completed" not in inspect(conn).get_table_names():
-                    return None
-
-                row = conn.execute(
-                    text('SELECT 1 FROM completed WHERE "ID" = :v LIMIT 1'),
-                    {"v": value},
-                ).fetchone()
-
-                return value if row else None
-        except Exception:
-            return None
-
-    def write_key(key, db):
-        from apsimNGpy.core_utils.database_utils import write_df_to_sql
-        out = pd.DataFrame([{f"ID": int(key)}])
-        out['ID'] = out['ID'].astype(int)
-        write_df_to_sql(out, db_or_con=db, table_name="completed", if_exists='append', chunk_size=None, index=False)
-        return db
-
-    from apsimNGpy.core_utils.database_utils import drop_table
-
-    def clear_db(db):
-        drop_table(db=db, table_name="completed")
 
     with Executor(max_workers=ncores) as pool:
         submitted = 0

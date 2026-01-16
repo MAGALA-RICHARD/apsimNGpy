@@ -671,8 +671,6 @@ class MixedVariableOptimizer:
         if disp:
             logger.info(f"[DE] Starting optimization with {len(bounds)} variables,\n mutation: {mutation}," \
                         f" seed={seed}, popsize={popsize}, strategy: {strategy}, starting values: {initial_guess}")
-        from tqdm.contrib.concurrent import thread_map
-        from tqdm.contrib.concurrent import process_map
 
         if isinstance(constraints, tuple) and constraints:
             if len(constraints) != 2:

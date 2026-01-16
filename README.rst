@@ -22,13 +22,13 @@
    :target: https://teams.live.com/l/community/FBAbNOQj7y9dPcoaAI
    :alt: Ask Teams
 
-.. image:: https://img.shields.io/badge/Download--APSIM--NG-2025.12.7939.0-blue?style=flat&logo=apachespark
-   :target: https://registration.apsim.info/?version=2025.12.7939.0&product=APSIM%20Next%20Generation
-   :alt: APSIM Next Generation version
 
-===============================================================
-apsimNGpy: The Next Generation Agroecosystem Simulation Library
-===============================================================
+.. image:: https://img.shields.io/badge/Download--APSIM--NG-2025.12.7939.0-blue?style=flat&logo=apachespark
+   :alt: APSIM Next Generation version
+   :target: https://registration.apsim.info/?version=2025.12.7939.0&product=APSIM%20Next%20Generation
+
+apsimNGpy: The Next Generation Agroe-cosystem Simulation Library
+===========================================================================
 
 **apsimNGpy** is a cutting-edge, open-source framework for advanced agroecosystem modeling, built entirely in Python.
 It enables **object-oriented**, **data-driven** workflows for interacting with APSIM Next Generation models, offering capabilities for:
@@ -38,10 +38,10 @@ It enables **object-oriented**, **data-driven** workflows for interacting with A
 - Weather data retrieval and pre-processing
 - Optimization and performance diagnostics
 - Efficient soil profile development and validation
+- Parameter sensitivity analysis
 
 `Python <https://www.python.org/>`_ serves as the execution environment, integrating scientific computing, data analysis, and automation for sustainable agricultural systems.
 
----
 
 Requirements
 *************
@@ -52,10 +52,9 @@ Requirements
 4. (Optional) Use the official APSIM installer for easiest setup.
 5. Minimum 8 GB RAM recommended.
 
----
 
 Installation
-************
+**************
 
 **Option 1 – Install from PyPI (stable)**
 
@@ -85,13 +84,13 @@ If using the `uv` virtual environment manager:
 
 
 APSIM Next Generation (NG) Installation Tip
-===========================================
+==============================================
 
 Use the **pinned APSIM release** indicated on the documentation homepage to avoid forward-compatibility issues.
 The pinned version represents the latest APSIM NG build verified against apsimNGpy’s API and unit tests.
 
 What is New in apsimNGpy 1.0.0
-=============================
+==================================
 
 Expansion of sensitivity analysis algorithms with robust, cross-platform execution.
 
@@ -105,7 +104,7 @@ High-throughput parallelization enabling long-running experiments to persist acr
 
 
 apsimNGpy 0.39.11.20 – Release Notes
-======================================
+=================================================
 
 This release introduces a dedicated simulation file context manager that automatically removes transient .apsimx files and all associated output database files (.db, .db-wal, .db-sha, etc.) at the end of a with block.
 This lets users run temporary simulations with confidence that intermediate files will not accumulate on disk — especially important for large workflows such as optimization loops, Monte-Carlo runs, or multi-site batch simulations.
@@ -116,21 +115,25 @@ Because of that, there is a small (but practically negligible) performance overh
 This release also adds a second context manager for temporary APSIM bin-path management.
 It allows users to specify a local APSIM-NG installation path for a given script/module while preserving the global default in memory — enabling cleaner multi-version testing or workflow portability without rewriting environment variables.
 
-1) Temporally simulations using a context manager
----------------------------------------------------
+Temporary simulations using a context manager
+=================================================
+
 .. code-block:: python
 
    from apsimNGpy.core.apsim import ApsimModel
-    with Apsim_model("template.apsimx") as temp_model:
-        temp_model.run()   # temporary .apsimx + .db files created
-        df= temp_model.results
-        print(df)
+   with ApsimModel("template.apsimx") as temp_model:
+       temp_model.run()
+       df = temp_model.results
+       print(df)
+  # temporary .apsimx and .db files created
+
 
 Immediately after exiting the with block, the temporary .apsimx file (and its associated .db files) are deleted,
 since only clones of the original model file are used inside the context.
 
-2) Temporary APSIM-bin path
-----------------------------
+Temporary APSIM-bin path
+===========================
+
 .. code-block:: python
 
     from apsimNGpy.core.config import apsim_bin_context
@@ -142,11 +145,12 @@ Immediately after exiting the with block, the path is restored back to the globa
 APSIM versions change frequently, and a future run of your current project might fail or give different results if a newer APSIM version is picked up without you realizing it. By scoping a local APSIM bin path for this project, you ensure that reruns in the future use exactly the same APSIM version that generated the original results.
 This makes the workflow both reproducible and stable.
 
-.. note::
+Note
+=====
 
-    Since the model assemblies are already loaded into memory inside the `apsim_bin_context`, you do not need to remain inside the
-    `with` block to keep using them. Once loaded, those modules (and their namespaces) are global within the process, and they retain
-    their reference to the APSIM bin path that was supplied during loading.
+Since the model assemblies are already loaded into memory inside the `apsim_bin_context`, you do not need to remain inside the
+`with` block to keep using them. Once loaded, those modules (and their namespaces) are global within the process, and they retain
+their reference to the APSIM bin path that was supplied during loading.
 
 
 
@@ -163,7 +167,7 @@ v0.39.10.18 (2025-10-24)
 =========================
 
 Added
-------
+======
 
 - ``preview_simulation(watch=True)`` now supports **interactive edit syncing**:
   - Opens the ``.apsimx`` file in the APSIM NG GUI and *watches* for saved edits.
@@ -173,7 +177,7 @@ Added
   - Users should close the GUI after completing edits before continuing with the Python model instance.
 
 Notes
-------
+======
 
 - This feature is **experimental** but stable in tests.
 - Synchronization assumes that both APSIM GUI and Python edit the same ``.apsimx`` file path.
@@ -181,34 +185,34 @@ Notes
 - GUI edits must be **saved** before synchronization occurs. Unsaved edits are ignored.
 
 Developer impact
-----------------
+====================
 
 - New function signature: ``preview_simulation(self, watch=False)``
 - Existing scripts calling ``preview_simulation()`` remain fully compatible.
 - File-watching currently uses file modification times; future releases may support event-based detection.
 
 
-
 v0.39.10.17
 ===========
 
 Release Notes
--------------
+===============
 
 This build is stable for day-to-day work, with incremental API refinements.
 
 Highlights
-----------
+===================
 
 - Updated ``save`` method on ``ApsimModel`` to include a ``reload`` parameter.
 - Improved documentation navigation and linked related APIs.
 
-Full Documentation
-------------------
+Links
+================
 
-`apsimNGpy documentation <https://apsimngpy.readthedocs.io/en/latest/>`_.
+`Read the docs <https://apsimngpy.readthedocs.io/en/latest/>`_
 
 `Publication <https://www.sciencedirect.com/science/article/pii/S2352711025004625>`_.
+
 
 
 

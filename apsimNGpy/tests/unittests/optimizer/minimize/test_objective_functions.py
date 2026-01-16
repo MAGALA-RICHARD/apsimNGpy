@@ -142,15 +142,16 @@ if __name__ == "__main__":
     q = Queue(str(Path(__file__).parent), )
     for metric in metrics:
         q.put(metric)
-    while not q.empty():
-        key = q.get()
-        print(key)
-        if not key:
-            q.task_done()
-            continue
-        main(function_objective=key, algorithm='de', pop_size=15)
-        q.task_done()
-        gc.collect()
+    # while not q.empty():
+    #     key = q.get()
+    #     print(key)
+    #     if not key:
+    #         q.task_done()
+    #         continue
+    #     main(function_objective=key, algorithm='de', pop_size=15)
+    #     q.task_done()
+    #     gc.collect()
 
-    sys.exit(1)
-    # d = read_db_table(db, metrics_table)
+    d = read_db_table(engine, metrics_table)
+
+   # sys.exit(1)

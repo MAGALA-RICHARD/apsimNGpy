@@ -13,7 +13,7 @@ LONG_DESCRIPTION = 'Run, edit, download soils and weather and interact with the 
 readme = Path("README.rst").read_text(encoding="utf-8")
 
 setup(
-    name='apsimNGpy',
+    name='apsimngpy',
     version=VERSION,
     url='https://github.com/MAGALA-RICHARD/apsimNGpy.git',
     license_file="./LICENSE",

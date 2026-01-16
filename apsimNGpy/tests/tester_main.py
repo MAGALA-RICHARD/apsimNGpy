@@ -78,10 +78,9 @@ def send_report(sms, subject, attachment_path=None):
             print("Error:", e)
 
 
-from apsimNGpy.tests.unittests.core import core, data_insights, experimentmanager, senstivitymanager
-
-from tests.unittests.manager import weathermanager, soilmanager, test_get_weather_from_web_filename
-from tests.unittests.core import apsim, senstivitymanager, experimentmanager, model_loader, model_tools, \
+from apsimNGpy.tests.unittests.core import core, data_insights
+from apsimNGpy.tests.unittests.manager import weathermanager, soilmanager, test_get_weather_from_web_filename
+from apsimNGpy.tests.unittests.core import apsim, senstivitymanager, experimentmanager, model_loader, model_tools, \
     pythonnet_config, edit_model_by_path, core_edit_model, cs_resources, config, plot_manager
 from apsimNGpy.tests.unittests.optimizer import vars, smp
 

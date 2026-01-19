@@ -149,6 +149,8 @@ For reporting reproducible bugs or contributing code, please use the
    :caption: TUTORIALS
 
    comp_cultivar
+   app_multi_process
+
 
 .. toctree::
    :maxdepth: 3

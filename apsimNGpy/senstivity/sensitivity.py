@@ -113,7 +113,9 @@ class ConfigProblem:
                 self.raw_results = df
                 self.incomplete_jobs = mc.incomplete_jobs
                 if mc.incomplete_jobs:
-                    logger.warning(f"over {len(mc.incomplete_jobs)}Incomplete were registered something went wrong")
+                    logger.warning(f"over {len(mc.incomplete_jobs)} incomplete were registered something went wrong")
+                if not isinstance(self.outputs, str) and len(self.outputs) == 1:
+                    self.outputs = self.outputs[0]
                 out = df[self.outputs].to_numpy()
 
                 return out
@@ -250,7 +252,7 @@ def run_sensitivity(
         calc_second_order (bool)
             Whether second order sensitivity indices are computed.
             Enabling this option increases runtime.
-            Default is True
+            Default is False
 
         scramble (bool)
             Whether scrambling is applied to improve the quality of the
@@ -370,6 +372,9 @@ def run_sensitivity(
 """
     from apsimNGpy.core.mult_cores import core_count
     n_cores = core_count(n_cores, threads=threads)
+
+    if method.lower() not in {"sobol", "morris", 'fast'}:
+        raise NotImplementedError(f"Method {method} not supported by this method try customization from scratch")
     sample_options = sample_options or {}
     analyze_options = analyze_options or {}
     sample_options = sample_options.copy()
@@ -378,8 +383,8 @@ def run_sensitivity(
     analyze_options.setdefault("num_resamples", 1000, )
     analyze_options.setdefault("print_to_console", True)
     if method == 'sobol':
-        sample_options.setdefault('calc_second_order', True)
-        analyze_options.setdefault('calc_second_order', True)
+        sample_options.setdefault('calc_second_order', False)
+        analyze_options.setdefault('calc_second_order', False)
         if analyze_options.get('calc_second_order') != sample_options.get('calc_second_order'):
             raise ValueError(
                 "Sobol sensitivity requires that both sample `calc_second_order` and analyze ``calc_second_order` options  match ")
@@ -399,14 +404,8 @@ def run_sensitivity(
 
     sampler = getattr(configured_prob.problem, f"sample_{method}")
     sample_options.setdefault('seed', seed)
-    import inspect
-    sign = list(inspect.signature(sampler).parameters)
-
-    stp = None
     try:
-
         stp = sampler(N=N, **sample_options)
-
         stp.evaluate(evaluate)
         analyzer = getattr(stp, f"analyze_{method}")
         setattr(stp, 'apsim_results', configured_prob.raw_results)

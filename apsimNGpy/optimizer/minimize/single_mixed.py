@@ -30,7 +30,7 @@ class MixedVariableOptimizer:
         self.results = None
         self.outcomes = None
         self.problem_desc = problem
-        #self.pbar = None
+        # self.pbar = None
         self.counter = 0
         self.maxiter = 0
         # Ensure setup
@@ -250,7 +250,7 @@ class MixedVariableOptimizer:
             leave=leave,
             position=position,
             dynamic_ncols=dynamic_ncols,
-            mininterval= mininterval,
+            mininterval=mininterval,
             smoothing=smoothing,
         )
 
@@ -295,7 +295,7 @@ class MixedVariableOptimizer:
             tol=0.01,
             mutation=(0.5, 1),
             recombination=0.9,
-            rng=None,
+            rng=42,
             callback=None,
             disp=False,
             polish=True,
@@ -305,7 +305,7 @@ class MixedVariableOptimizer:
             workers=1,
             constraints=(),
             x0=None,  # implemented internally
-            seed=44,
+            seed=None,  # please not that seed is being dropped as input use rng
             *,
             integrality=None,
             vectorized=False,
@@ -663,6 +663,7 @@ class MixedVariableOptimizer:
 
         Reference:
             https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.differential_evolution.html
+            @param rng:
         """
 
         wrapped_obj, x0, bounds = self._submit_objective()
@@ -692,28 +693,28 @@ class MixedVariableOptimizer:
             def callback(xk, convergence):
                 pbar.update(1)
 
-        arguments = dict(bounds=bounds, args=args, strategy=strategy,
-                         maxiter=maxiter, popsize=popsize, tol=tol, mutation=mutation,
-                         recombination=recombination, seed=seed, disp=disp,
-                         polish=polish, init=init,
-                         atol=atol, updating=updating, callback=callback,
-                         workers=1, constraints=constraints, x0=x0, integrality=integrality,
-                         vectorized=vectorized,
-                         )
+        from functools import partial
+        def de_runner(worker, updating=updating):
+            return partial(differential_evolution, bounds=bounds, args=args, strategy=strategy,
+                           maxiter=maxiter, popsize=popsize, tol=tol, mutation=mutation,
+                           recombination=recombination, disp=disp,
+                           polish=polish, init=init, rng=rng,
+                           atol=atol, updating=updating, callback=callback,
+                           workers=worker, constraints=constraints, x0=x0, integrality=integrality,
+                           vectorized=vectorized,
+                           )
+
         if workers == 1:
-            result = differential_evolution(
-                wrapped_obj,
-                **arguments)
+            de_algorithm = de_runner(1)
+            result = de_algorithm(
+                wrapped_obj)
         else:
             select_process = ThreadPoolExecutor if use_threads else ProcessPoolExecutor
-            updating = 'deferred'
             with select_process(max_workers=workers) as executor:
                 workers = executor.map
-                arguments['workers'] = workers
-                arguments['updating'] = updating
-                result = differential_evolution(
-                    wrapped_obj,
-                    **arguments)
+                de_algorithm = de_runner(worker=workers, updating="deferred")
+                result = de_algorithm(
+                    wrapped_obj)
 
         return self._extract_solution(result)
 
@@ -789,8 +790,8 @@ if __name__ == '__main__':
     optimizer = MixedVariableOptimizer(problem=mp)
     mp.submit_factor(**cultivar_param_p)
     print(mp.n_factors, 'factors submitted for the pure variables')
-    out = optimizer.minimize_with_local()
+    # out = optimizer.minimize_with_local()
     # print(out)
-    # res = optimizer.minimize_with_de(use_threads=False, updating='deferred', workers=15, popsize=10,
-    #                                  constraints=(0, 0.2))
+    res = optimizer.minimize_with_de(use_threads=False, updating='deferred', workers=15, popsize=10,
+                                     constraints=(0, 0.2))
     # print(res)

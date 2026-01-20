@@ -1,30 +1,28 @@
 from __future__ import annotations
 
-import copy
 import gc
 import math
 import os.path
 import shutil
 import sqlite3
 from collections.abc import Iterable
-from dataclasses import dataclass
 # Database connection
-from dataclasses import field
-from functools import partial, cached_property, cache
+from functools import partial, cache
 from pathlib import Path
 from typing import Union, Literal
+import tempfile
 
+import loguru
 import pandas as pd
 import sqlalchemy
 from sqlalchemy import create_engine, text
 
 from apsimNGpy.core._multi_core import single_runner
-from apsimNGpy.core.apsim import ApsimModel
-from apsimNGpy.core_utils.database_utils import write_results_to_sql, drop_table, get_db_table_names, read_db_table
+from apsimNGpy.core_utils.database_utils import (write_results_to_sql, drop_table,
+                                                 get_db_table_names, read_with_pandas, write_df_to_sql)
 from apsimNGpy.core_utils.utils import timer
-from apsimNGpy.parallel.process import custom_parallel
-from apsimNGpy.settings import logger
-from multiprocessing import Queue
+from apsimNGpy.parallel.process import custom_parallel, custom_parallel_chunks
+from parallel._process import JobTracker
 
 ID = 0
 # default cores to use
@@ -41,7 +39,7 @@ def core_count(user_core: int, threads: bool) -> int:
     if core <= 0:
         raise ValueError(
             f"Resolved core count must be positive; got {core} "
-            f"(user_core={user_core}, total={total})"
+            f"(user_core={user_core}, total budget={total})"
         )
 
     # For multiprocessing, avoid over subscription unless explicitly threaded
@@ -50,7 +48,26 @@ def core_count(user_core: int, threads: bool) -> int:
             f"Requested {core} cores exceeds available cores ({total})."
         )
 
-    return core
+    return max(2, core)
+
+
+import re
+
+
+def _get_id(fname: str) -> int:
+    m = re.fullmatch(r"(.+)__(\d+)\.db", fname)
+    base, num = m.group(1), int(m.group(2))
+    return num
+
+
+def get_results(file_name, db_or_con, prefix):
+    stem_ID = _get_id(str(file_name))
+    tables_names = [i for i in get_db_table_names(db=file_name) if not i.startswith('_')]
+    df = (read_with_pandas(db_or_con=file_name, table=tn).assign(source_table=tn, ID=stem_ID) for tn in tables_names)
+    df = pd.concat(df, ignore_index=True)
+    table_name = f"{prefix}_id_{stem_ID}_{os.getpid()}"
+    write_df_to_sql(out=df, db_or_con=db_or_con, table_name=table_name, if_exists='append', index=False,
+                    chunk_size=None)
 
 
 def _is_my_iterable(value):
@@ -147,7 +164,8 @@ class MultiCoreManager:
         "incomplete_jobs",
         "table_prefix",
         'ran_ok',
-        'cleared_db'
+        'cleared_db',
+        'run_external'
     )
 
     def __init__(self, db_path: Union[str, Path, None, sqlalchemy.engine.base.Engine, sqlite3.Connection] = None,
@@ -220,6 +238,7 @@ class MultiCoreManager:
         if isinstance(self.db_path, (str, Path)):
             self.db_path = Path(self.db_path).resolve().with_suffix('.db')
         self.cleared_db = False
+        self.run_external = False
 
     def __enter__(self):
         return self
@@ -263,11 +282,11 @@ class MultiCoreManager:
 
     @cache
     def _get_simulated_results(self, axis, tables):
-        print('loading simulated results.')
+
         if axis not in {0, 1}:
             # Errors should not go silently
             raise ValueError('Wrong value for axis should be either 0 or 1')
-        from apsimNGpy.core_utils.database_utils import read_with_pandas
+
         read_db = partial(read_with_pandas, db_or_con=self.db_path)
         if len(tables) > 16:
             frames = list(
@@ -433,7 +452,15 @@ class MultiCoreManager:
             raise ValueError("results are empty or not yet simulated")
 
     def run_all_jobs(self, jobs, *, n_cores=-2, threads=False, clear_db=True, retry_rate=1, subset=None,
-                     ignore_runtime_errors=True, display_failures=True, **kwargs):
+                     ignore_runtime_errors=True, engine='python', **kwargs):
+        if engine == 'csharp':
+            self.run_jobs_external(jobs=jobs, n_cores=n_cores, threads=threads, clear_db=clear_db)
+        else:
+            self._run_all_jobs(jobs=jobs, n_cores=n_cores, threads=threads,
+                               clear_db=clear_db, retry_rate=retry_rate, ignore_runtime_errors=ignore_runtime_errors)
+
+    def _run_all_jobs(self, jobs, *, n_cores=-2, threads=False, clear_db=True, retry_rate=1, subset=None,
+                      ignore_runtime_errors=True, **kwargs):
         """
         Run all provided jobs using multiprocessing or multithreading.
 
@@ -542,8 +569,7 @@ class MultiCoreManager:
         ignore_runtime_errors: bool, optional. Default is True
           Ignore ApsimRunTimeError, to avoid breaking the program during multiprocessing
           other processes can proceed, while we can keep the failed jobs
-        display_failures: bool, optional, default=False
-        if ``True``, func must return False or True. For simulations written to a database, this is adequate
+
 
         Returns
         -------
@@ -589,7 +615,6 @@ class MultiCoreManager:
 
         """
         n_cores = core_count(n_cores, threads=threads)
-        assert n_cores > 0, 'n_cores must be an integer above zero'
         self.cleared_db = clear_db
         if self.cleared_db:
             self.clear_db()  # each simulation is fresh,
@@ -615,6 +640,79 @@ class MultiCoreManager:
         self.incomplete_jobs = failed
         self.ran_ok = True
 
+    def run_jobs_external(self, jobs, n_cores=-3, threads=False, clear_db=True):
+        from apsimNGpy.core._multi_core import edit_to_folder
+        from apsimNGpy.core.runner import _run_from_dir
+        import time
+        if clear_db:
+            self.clear_db()
+        db = self.db_path
+        # job_tracker = JobTracker(db=db, completed_table='__completed__')
+        pattern = f"{self.table_prefix}*.apsimx"
+
+        def clear(folder_dir):
+            PT = f"{self.table_prefix}*.apsimx"
+            check = Path(folder_dir).glob(PT)
+            for job in check:
+                if job.is_file():
+                    job.unlink(missing_ok=True)
+            pt2 = f"{self.table_prefix}*.db"
+            check = Path(folder_dir).glob(pt2)
+            for job in check:
+                if job.is_file():
+                    job.unlink(missing_ok=True)
+
+        n_cores = core_count(n_cores, threads)
+        tmp = tempfile.TemporaryDirectory(prefix="apsim_")
+
+        try:
+            ted =tmp.name
+            folder = Path(ted) / f"{uuid.uuid4().hex}"
+            folder.mkdir(exist_ok=True)
+            clear(folder)
+            partial_editor = partial(edit_to_folder, folder_path=folder, prefix=self.table_prefix, db_or_conn=db)
+            apsimx_pattern = f"{self.table_prefix}*.apsimx"
+
+            def send_jobs():
+                for _ in custom_parallel(func=partial_editor, iterable=jobs, ncores=n_cores, threads=threads,
+                                         progress_message='Copying data..'):
+                    pass
+                loguru.logger.info("running APSIM now")
+                gc.collect()
+
+            send_jobs()
+            a = time.perf_counter()
+
+            def run():
+                import Models
+                gc.collect()
+                from apsimNGpy.core.runner import invoke_csharp_gc
+                invoke_csharp_gc()
+                try:
+                  _run_from_dir(folder, verbose=False, cpu_count=n_cores, run_only=True, pattern=apsimx_pattern)
+                except Models.Core.SimulationException as mcse:
+                    raise RuntimeError(mcse)
+
+            run()
+            print(time.perf_counter() - a, 'seconds')
+            db_pattern = str(Path(apsimx_pattern).with_suffix('.db'))
+            print(db_pattern)
+            jobs = list(Path(folder).rglob(db_pattern))
+
+            def collect():
+                partial_collector = partial(get_results, db_or_con=self.db_path, prefix=self.table_prefix)
+                for _ in custom_parallel(func=partial_collector, iterable=jobs, ncores=n_cores, threads=threads,
+                                         progress_message='collecting data..'):
+                    pass
+
+            collect()
+            time.sleep(0.3)
+            gc.collect()
+
+        finally:
+            tmp.cleanup()
+        print(list(folder.rglob('*.db')))
+
 
 MultiCoreManager.save_to_csv.__doc__ = """  Persist simulation results to a SQLite database table.
 
@@ -627,49 +725,55 @@ MultiCoreManager.save_to_csv.__doc__ = """  Persist simulation results to a SQLi
 if __name__ == '__main__':
     import os, uuid, tempfile
 
-    from apsimNGpy.core_utils.database_utils import read_db_table
-
     # quick tests. comprehensive tests are in the tests
 
-    with tempfile.TemporaryDirectory() as td:
-        create_jobs = [ApsimModel('Maize', out_path=Path(td) / f"{i}.apsimx").path for i in range(16)]
-        db_path = Path(td) / f"{uuid.uuid4().hex}.db"
-        test_agg_db = Path(td) / f"_{uuid.uuid4().hex}.db"
-
-        Parallel = MultiCoreManager(db_path=db_path, agg_func=None)
-        Parallel.run_all_jobs(create_jobs, n_cores=12, threads=False, clear_db=False, retry_rate=3, subset='Yield',
-                              )
-        df = Parallel.get_simulated_output(axis=0)
-        print(len(Parallel.tables))
-        Parallel.clear_scratch()
-        # test saving to already an existing table
-        ve = False
-        db_path.unlink(missing_ok=True)
-        try:
-            try:
-                # ___________________first__________________________________
-                Parallel.save_tosql(db_path, table_name='results', if_exists='replace')
-                # ______________________ then _________________________________
-                Parallel.save_tosql(db_path, table_name='results', if_exists='fail')
-            except ValueError:
-                ve = True
-            assert ve == True, 'fail method is not raising value error'
-
-            # ____________test saving by replacing existing table _______________
-            ve = False
-            try:
-
-                Parallel.save_tosql(db_path, table_name='results', if_exists='replace')
-            except ValueError:
-                ve = True
-            assert ve == False, 'replace method failed'
-
-            # ____________test appending to an existing table _______________
-            ve = False
-            try:
-                Parallel.save_tosql(db_path, table_name='results', if_exists='append')
-            except ValueError:
-                ve = True
-            assert ve == False, 'append method failed'
-        finally:
-            pass
+    # with tempfile.TemporaryDirectory() as td:
+    #     create_jobs = ("Maize" for _ in range(1600))
+    #     db_path = Path(td) / f"{uuid.uuid4().hex}.db"
+    #     test_agg_db = Path(td) / f"_{uuid.uuid4().hex}.db"
+    #
+    #     Parallel = MultiCoreManager(db_path=test_agg_db, agg_func=None)
+    #     # Parallel.run_all_jobs(create_jobs, n_cores=12, threads=False, clear_db=False, retry_rate=3, subset='Yield'          )
+    #     Parallel.run_jobs_in_chunks(create_jobs, n_cores=12, threads=False, clear_db=False, retry_rate=3,
+    #                                 subset='Yield', chunk_size=100,
+    #                                 resume=False, db_session=test_agg_db)
+    #     df = Parallel.get_simulated_output(axis=0)
+    #     print(len(Parallel.tables))
+    #     Parallel.clear_scratch()
+    #     # test saving to already an existing table
+    #     ve = False
+    #     db_path.unlink(missing_ok=True)
+    #     try:
+    #         try:
+    #             # ___________________first__________________________________
+    #             Parallel.save_tosql(db_path, table_name='results', if_exists='replace')
+    #             # ______________________ then _________________________________
+    #             Parallel.save_tosql(db_path, table_name='results', if_exists='fail')
+    #         except ValueError:
+    #             ve = True
+    #         assert ve == True, 'fail method is not raising value error'
+    #
+    #         # ____________test saving by replacing existing table _______________
+    #         ve = False
+    #         try:
+    #
+    #             Parallel.save_tosql(db_path, table_name='results', if_exists='replace')
+    #         except ValueError:
+    #             ve = True
+    #         assert ve == False, 'replace method failed'
+    #
+    #         # ____________test appending to an existing table _______________
+    #         ve = False
+    #         try:
+    #             Parallel.save_tosql(db_path, table_name='results', if_exists='append')
+    #         except ValueError:
+    #             ve = True
+    #         assert ve == False, 'append method failed'
+    #     finally:
+    #         pass
+    Parallel = MultiCoreManager(db_path=Path("test_agg_3.db").resolve(), agg_func=None)
+    jobs = ({'model': 'Maize', 'ID': i, 'inputs': [{'path': '.Simulations.Simulation.Field.Fertilise at sowing',
+                                                   'Amount': i}]} for i in range(40))
+    Parallel.run_all_jobs(jobs=jobs, n_cores=2, engine='python')
+    dff = Parallel.results
+    print(dff.shape)

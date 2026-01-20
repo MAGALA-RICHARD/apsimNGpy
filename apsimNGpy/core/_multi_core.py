@@ -4,6 +4,7 @@ from functools import cache, lru_cache
 from pathlib import Path
 
 import sqlalchemy
+from pandas import DataFrame
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 from uuid import uuid4
 from apsimNGpy.core.apsim import ApsimModel
@@ -12,7 +13,7 @@ from apsimNGpy.exceptions import ApsimRuntimeError
 import hashlib
 from multiprocessing import Value, Lock
 from typing import Tuple, Dict, Any, List
-
+from apsimNGpy.parallel._process import JobTracker
 aggs = {'sum', 'mean', 'max', 'min', 'median', 'std'}
 
 counter = Value("i", 0)
@@ -99,6 +100,39 @@ def make_table_name(table_prefix: str, schema_id: str, run_id: int) -> str:
     return f"{table_prefix}_{schema_id}_r{run_id}_{u}"
 
 
+def edit_to_folder(job, *,folder_path: str, prefix,  db_or_conn):
+    model, metadata, inputs = _inspect_job(job)
+    ID = metadata.get("ID", None) if metadata else None
+    file_name = (Path(folder_path)/f"{prefix}_{uuid4().hex}___{ID}.apsimx").resolve()
+    if ID is None:
+        raise ValueError(f"simulation identification key is required got {ID}")
+    with (ApsimModel(model) as _model):
+        try:
+            if inputs:
+                # set before running
+                for in_put in inputs:
+                    _model.set_params(**in_put)
+            reps = _model.inspect_model('Models.Report', fullpath=False)
+            _model.Simulations.Name = f"{_model.Simulations.Name}_{ID}"
+            for sim in _model.simulations:
+                sim.Name = f"{sim.Name}_{ID}"
+            _model.save(file_name=file_name, reload=False)
+            PID = os.getpid()
+            # avoid duplicates columns
+            merged_inputs = merge_dict(inputs)
+            merged_inputs['MetaProcessID'] = PID
+            metadata = {**metadata, **merged_inputs}
+            metadata['ApsimReports'] = f"{reps}"
+            out= DataFrame([metadata])
+            schema_hash = schema_id(tuple(out.dtypes))
+            table_name = f"{schema_hash}_{PID}"
+            write_df_to_sql(out, db_or_con=db_or_conn, table_name=table_name, if_exists='append',
+                            chunk_size=None)
+
+        finally:
+            pass
+
+
 def single_runner(
         job: str | dict,
         agg_func: str,
@@ -179,7 +213,6 @@ def single_runner(
       support reproducibility and parallel execution tracking. Execution is determined from columns schemas
       and process ID is stochastic from each process or threads
     """
-    SUCCESS = {'success': False}  # none can mean different things
 
     @retry(stop=stop_after_attempt(retry_rate),
            retry=retry_if_exception_type((ApsimRuntimeError, TimeoutError, sqlite3.OperationalError)))
@@ -238,7 +271,8 @@ def single_runner(
                     # Generate a unique table identifier based on schema and process ID that way they cannot be resource sharing of the same table
                     ############################################################################################################
                     table_name = f"{table_prefix}_{schema_hash}_{PID}"
-                    write_df_to_sql(out, db_or_con=db_conn, table_name=table_name, if_exists=if_exists, chunk_size=chunk_size)
+                    write_df_to_sql(out, db_or_con=db_conn, table_name=table_name, if_exists=if_exists,
+                                    chunk_size=chunk_size)
 
                 except ApsimRuntimeError as apr:
                     # Track failed jobs without interrupting the workflow
@@ -258,7 +292,6 @@ def single_runner(
                         raise sqlite3.OperationalError(f"data base operation error occurred {oe}")
 
         _inside_runner(subset)
-        SUCCESS['success'] = True
-        return SUCCESS['success']
+        return True
 
     return runner_it()

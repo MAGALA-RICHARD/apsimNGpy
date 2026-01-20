@@ -546,39 +546,56 @@ def _run_from_dir(dir_path, pattern, verbose=False,
           Related API: :func:`~apsimNGpy.core.runner.run_model_externally`
        """
     dir_path = str(dir_path)
+    dir_pattern = f"{dir_path}/{pattern}"
 
-    dir_patern = f"{dir_path}/{pattern}"
-    base_cmd = [str(APSIM_EXEC), str(dir_patern), '--cpu-count', str(cpu_count)]
+    cmd = [
+        str(APSIM_EXEC),
+        dir_pattern,
+        "--cpu-count",
+        str(cpu_count),
+    ]
+
     if recursive:
-        base_cmd.append('--recursive')
+        cmd.append("--recursive")
     if verbose:
-        base_cmd.append('--verbose')
+        cmd.append("--verbose")
     if write_tocsv:
-        base_cmd.append('--csv')
-    ran_ok = False
-    with  contextlib.ExitStack() as stack:
-        process = stack.enter_context(Popen(base_cmd, stdout=PIPE, stderr=PIPE,
-                                            text=True))
+        cmd.append("--csv")
 
-        try:
-            logger.info('waiting for APSIM simulations to complete')
-            process.wait()
-            out, st_err = process.communicate()
-            if verbose:
-                logger.info(f'{out.strip()}')
-            if process.returncode != 0:
-                logger.info(f"{out}, {st_err}")
-            ran_ok = True
-        finally:
-            if process.poll() is None:
-                process.kill()
-            invoke_csharp_gc()
+    try:
+        # NOTE:
+        # - capture_output=True replaces stdout=PIPE, stderr=PIPE
+        # - text=True gives str instead of bytes
+        # - check=False allows us to handle return codes ourselves
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=10000
+        )
 
-    if write_tocsv and ran_ok and not run_only:
+        if verbose and result.stdout:
+            logger.info(result.stdout.strip())
+
+        if result.returncode != 0:
+            logger.error(
+                "APSIM failed with return code %s\nSTDOUT:\n%s\nSTDERR:\n%s",
+                result.returncode,
+                result.stdout,
+                result.stderr,
+            )
+            return result
+
+    finally:
+        # Explicitly invoke .NET GC once APSIM exits
+        invoke_csharp_gc()
+
+    if write_tocsv and not run_only:
         logger.info(f"Loading data into memory.")
         out = collect_csv_from_dir(dir_path, pattern, recursive=recursive)
         return out
-    elif not write_tocsv and ran_ok and not run_only:
+    elif not write_tocsv and not run_only:
         out = collect_db_from_dir(dir_path, pattern, recursive=recursive, tables=tables)
         groups = group_and_concat_by_schema(out, axis=axis, order_sensitive=order_sensitive, add_keys=add_keys,
                                             keys_prefix=keys_prefix)
@@ -591,8 +608,6 @@ def _run_from_dir(dir_path, pattern, verbose=False,
             )
         else:
             return groups
-    else:
-        return process
 
 
 @lru_cache(maxsize=None)

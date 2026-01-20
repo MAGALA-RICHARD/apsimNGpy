@@ -1,4 +1,6 @@
 from __future__ import annotations
+
+import gc
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, as_completed
 from multiprocessing import cpu_count
 from typing import Any, Callable, Iterable, List, Sequence, Optional
@@ -9,7 +11,7 @@ from apsimNGpy.parallel.data_manager import chunker
 from apsimNGpy.settings import NUM_CORES
 import time
 from pathlib import Path
-from apsimNGpy.parallel._process import write_key, get_key, clear_db
+from apsimNGpy.parallel._process import register_key, get_key, clear_db
 
 CPU = int(int(cpu_count()) * 0.5)
 CORES = NUM_CORES
@@ -188,7 +190,7 @@ def _process_chunk(
 
 def custom_parallel_chunks(
         func: Callable[..., Any],
-        jobs: Iterable[Iterable[Any]],  # generator of iterables (chunks)
+        iterable: Iterable[Iterable[Any]],  # generator of iterables (chunks)
         *args,
         **kwargs,
 ):
@@ -275,10 +277,11 @@ def custom_parallel_chunks(
     .. seealso::
 
            :func:`~apsimNGpy.parallel.process.custom_parallel`
+           @param jobs:
 
 
     """
-    if isinstance(jobs, str):
+    if isinstance(iterable, str):
         raise ValueError('jobs must an iterable but not strings')
 
     use_thread: bool = kwargs.pop("use_thread", False)
@@ -290,15 +293,16 @@ def custom_parallel_chunks(
     ncores = max(1, ncores_kw or CORES)
     Executor = ThreadPoolExecutor if use_thread else ProcessPoolExecutor
     desc = (progress_message or "Processing.. wait!") + ": "
-    start = time.perf_counter()
+
     total_chunks = kwargs.get('n_chunks', 10)
-    chunked = chunker(jobs, n_chunks=total_chunks)
+    chunked = chunker(iterable, n_chunks=total_chunks)
     resume = kwargs.pop('resume', False)
     db_session = kwargs.get('db_session', False)
 
     with Executor(max_workers=ncores) as pool:
         submitted = 0
         completed = 0
+        sims = 0
 
         bar = tqdm(
             total=total_chunks, desc=desc, unit=unit,
@@ -309,6 +313,7 @@ def custom_parallel_chunks(
         try:
             data_db = db_session or Path(f'__data__{total_chunks}.db')
             data_db = Path(data_db).with_suffix('.db').resolve()
+
             for idx, chunk in enumerate(chunked):
                 key = get_key(value=idx, db=data_db)
                 if key and resume:
@@ -317,7 +322,8 @@ def custom_parallel_chunks(
                     continue
                 if bar is not None:
                     bar.update(1)
-                futures = [pool.submit(func, i, *args) for i in chunk]
+                start = time.perf_counter()
+                futures = [pool.submit(func, qi, *args) for qi in chunk]
                 submitted += 1
 
                 # Collect at least one finished chunk
@@ -325,17 +331,20 @@ def custom_parallel_chunks(
 
                     result = fut.result()  # propagate exceptions
                     completed += 1
+                    sims +=1
                     elapsed = time.perf_counter() - start
                     if completed and elapsed > 0:
                         avg = elapsed / completed
                         rate = completed / elapsed
-                        bar.set_postfix_str(f"({avg:.3f} s/{unit} or {rate:,.3f} {unit}/s)")
+                        bar.set_postfix_str(f"({avg:.3f} s/{unit}  [{sims}]")
 
                     if not void:
                         # yield results for THIS iterable (kept separate)
                         yield result
                     break  # return to top-up loop
-                write_key(idx, data_db)
+                # register completed chunk
+                register_key(idx, data_db)
+                gc.collect()
                 if idx + 1 == total_chunks:
                     # tracking completed
                     clear_db(db=data_db)

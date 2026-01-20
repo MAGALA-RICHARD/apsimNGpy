@@ -121,7 +121,6 @@ def custom_parallel(func, iterable: Iterable, *args, **kwargs):
 
 # _______________________________________________________________
 
-
 def _read_result_in_parallel(iterable_files: Iterable, ncores: int = None, use_threads: bool = False,
                              report_name: str = "Report", **kwargs):
     """

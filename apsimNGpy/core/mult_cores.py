@@ -11,12 +11,13 @@ from functools import partial, cache
 from pathlib import Path
 from typing import Union, Literal
 import tempfile
+import uuid
 
 import loguru
 import pandas as pd
 import sqlalchemy
 from sqlalchemy import create_engine, text
-
+import os
 from apsimNGpy.core._multi_core import single_runner
 from apsimNGpy.core_utils.database_utils import (write_results_to_sql, drop_table,
                                                  get_db_table_names, read_with_pandas, write_df_to_sql)
@@ -453,11 +454,13 @@ class MultiCoreManager:
 
     def run_all_jobs(self, jobs, *, n_cores=-2, threads=False, clear_db=True, retry_rate=1, subset=None,
                      ignore_runtime_errors=True, engine='python', **kwargs):
-        if engine == 'csharp':
+        if engine.lower() == 'csharp':
             self.run_jobs_external(jobs=jobs, n_cores=n_cores, threads=threads, clear_db=clear_db)
-        else:
+        elif engine.lower() == 'python':
             self._run_all_jobs(jobs=jobs, n_cores=n_cores, threads=threads,
                                clear_db=clear_db, retry_rate=retry_rate, ignore_runtime_errors=ignore_runtime_errors)
+        else:
+            raise ValueError(f"Unsupported engine expected (python or csharp) got {engine}")
 
     def _run_all_jobs(self, jobs, *, n_cores=-2, threads=False, clear_db=True, retry_rate=1, subset=None,
                       ignore_runtime_errors=True, **kwargs):
@@ -666,7 +669,7 @@ class MultiCoreManager:
         tmp = tempfile.TemporaryDirectory(prefix="apsim_")
 
         try:
-            ted =tmp.name
+            ted = tmp.name
             folder = Path(ted) / f"{uuid.uuid4().hex}"
             folder.mkdir(exist_ok=True)
             clear(folder)
@@ -689,7 +692,7 @@ class MultiCoreManager:
                 from apsimNGpy.core.runner import invoke_csharp_gc
                 invoke_csharp_gc()
                 try:
-                  _run_from_dir(folder, verbose=False, cpu_count=n_cores, run_only=True, pattern=apsimx_pattern)
+                    _run_from_dir(folder, verbose=False, cpu_count=n_cores, run_only=True, pattern=apsimx_pattern)
                 except Models.Core.SimulationException as mcse:
                     raise RuntimeError(mcse)
 
@@ -723,57 +726,47 @@ MultiCoreManager.save_to_csv.__doc__ = """  Persist simulation results to a SQLi
         """ + csv_doc
 
 if __name__ == '__main__':
-    import os, uuid, tempfile
-
     # quick tests. comprehensive tests are in the tests
 
-    # with tempfile.TemporaryDirectory() as td:
-    #     create_jobs = ("Maize" for _ in range(1600))
-    #     db_path = Path(td) / f"{uuid.uuid4().hex}.db"
-    #     test_agg_db = Path(td) / f"_{uuid.uuid4().hex}.db"
-    #
-    #     Parallel = MultiCoreManager(db_path=test_agg_db, agg_func=None)
-    #     # Parallel.run_all_jobs(create_jobs, n_cores=12, threads=False, clear_db=False, retry_rate=3, subset='Yield'          )
-    #     Parallel.run_jobs_in_chunks(create_jobs, n_cores=12, threads=False, clear_db=False, retry_rate=3,
-    #                                 subset='Yield', chunk_size=100,
-    #                                 resume=False, db_session=test_agg_db)
-    #     df = Parallel.get_simulated_output(axis=0)
-    #     print(len(Parallel.tables))
-    #     Parallel.clear_scratch()
-    #     # test saving to already an existing table
-    #     ve = False
-    #     db_path.unlink(missing_ok=True)
-    #     try:
-    #         try:
-    #             # ___________________first__________________________________
-    #             Parallel.save_tosql(db_path, table_name='results', if_exists='replace')
-    #             # ______________________ then _________________________________
-    #             Parallel.save_tosql(db_path, table_name='results', if_exists='fail')
-    #         except ValueError:
-    #             ve = True
-    #         assert ve == True, 'fail method is not raising value error'
-    #
-    #         # ____________test saving by replacing existing table _______________
-    #         ve = False
-    #         try:
-    #
-    #             Parallel.save_tosql(db_path, table_name='results', if_exists='replace')
-    #         except ValueError:
-    #             ve = True
-    #         assert ve == False, 'replace method failed'
-    #
-    #         # ____________test appending to an existing table _______________
-    #         ve = False
-    #         try:
-    #             Parallel.save_tosql(db_path, table_name='results', if_exists='append')
-    #         except ValueError:
-    #             ve = True
-    #         assert ve == False, 'append method failed'
-    #     finally:
-    #         pass
-    Parallel = MultiCoreManager(db_path=Path("test_agg_3.db").resolve(), agg_func=None)
-    jobs = ({'model': 'Maize', 'ID': i, 'inputs': [{'path': '.Simulations.Simulation.Field.Fertilise at sowing',
-                                                   'Amount': i}]} for i in range(40))
-    Parallel.run_all_jobs(jobs=jobs, n_cores=2, engine='python')
-    dff = Parallel.results
-    print(dff.shape)
+    with tempfile.TemporaryDirectory() as td:
+        create_jobs = ({'model':"Maize", 'ID':i} for i in range(1600))
+        db_path = Path(td) / f"{uuid.uuid4().hex}.db"
+        test_agg_db = Path(td) / f"_{uuid.uuid4().hex}.db"
+
+        Parallel = MultiCoreManager(db_path=test_agg_db, agg_func=None)
+        Parallel.run_all_jobs(create_jobs, n_cores=12, threads=False, clear_db=False, retry_rate=3, subset='Yield')
+
+        df = Parallel.get_simulated_output(axis=0)
+        print(len(Parallel.tables))
+        Parallel.clear_scratch()
+        # test saving to already an existing table
+        ve = False
+        db_path.unlink(missing_ok=True)
+        try:
+            try:
+                # ___________________first__________________________________
+                Parallel.save_tosql(db_path, table_name='results', if_exists='replace')
+                # ______________________ then _________________________________
+                Parallel.save_tosql(db_path, table_name='results', if_exists='fail')
+            except ValueError:
+                ve = True
+            assert ve == True, 'fail method is not raising value error'
+
+            # ____________test saving by replacing existing table _______________
+            ve = False
+            try:
+
+                Parallel.save_tosql(db_path, table_name='results', if_exists='replace')
+            except ValueError:
+                ve = True
+            assert ve == False, 'replace method failed'
+
+            # ____________test appending to an existing table _______________
+            ve = False
+            try:
+                Parallel.save_tosql(db_path, table_name='results', if_exists='append')
+            except ValueError:
+                ve = True
+            assert ve == False, 'append method failed'
+        finally:
+            pass

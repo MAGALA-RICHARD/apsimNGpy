@@ -58,6 +58,7 @@ def custom_parallel(func, iterable: Iterable, *args, **kwargs):
     display_failures: bool, optional, default=False
         if ``True``, func must return False or True. For simulations written to a database, this adquate
         .. versionadded:: 1.0.0
+    progressbar : bool, optional, default=True
 
     Examples
     --------
@@ -80,40 +81,42 @@ def custom_parallel(func, iterable: Iterable, *args, **kwargs):
     progress_message = kwargs.get('progress_message', f"Processing..!")
     void = kwargs.get('void', False)
     unit = kwargs.get('unit', 'iteration')
-    display_failures = kwargs.get('display_failures')
+    progressbar = kwargs.get('progressbar', True)
     selection = select_type(use_thread=use_thread,
                             n_cores=cpu_cores)
 
     with selection as pool:
         futures = [pool.submit(func, i, *args) for i in iterable]
         total = len(futures)
-        start = time.perf_counter()
-        with tqdm(
-                total=total,
-                desc=progress_message,
-                unit=unit,  # no leading space
-                bar_format=("{desc} {bar} {percentage:3.0f}% "
-                            "({n_fmt}/{total}) >> completed (elapsed=>{elapsed}, eta=>{remaining}) {postfix}"),
-                dynamic_ncols=True,
-                miniters=1, ) as pbar:
-            FAILURES = 0
+        if progressbar:
+            with tqdm(
+                    total=total,
+                    desc=progress_message,
+                    unit=unit,
+                    bar_format=("{desc} {bar} {percentage:3.0f}% "
+                                "({n_fmt}/{total}) >> completed (elapsed=>{elapsed}, eta=>{remaining}) {postfix}"),
+                    dynamic_ncols=True,
+                    miniters=1,
+            ) as pbar:
+
+                for future in as_completed(futures):
+                    result = future.result()
+                    pbar.update(1)
+                    # commented out bcause they're maybe introducing additional computation cost
+                    # elapsed = time.perf_counter() - start
+                    # avg_rate = elapsed / pbar.n if elapsed > 0 else 0.0
+                    # sim_rate = pbar.n / elapsed if elapsed > 0 else 0.0
+                    # pbar.set_postfix_str(
+                    #     f"({avg_rate:.4f} s/{unit} or {sim_rate:,.3f} {unit}/s)")
+
+                    if not void:
+                        yield result
+        else:
             for future in as_completed(futures):
                 result = future.result()
-                pbar.update(1)
-                # completed so far: pbar.n
-                elapsed = time.perf_counter() - start
-                avg_rate = elapsed / pbar.n if elapsed > 0 else 0.0
-                sim_rate = pbar.n / elapsed if elapsed > 0 else 0.0
-
-                if display_failures and result is False:
-                    FAILURES += 1
-                    pbar.set_postfix_str(f"({avg_rate:.4f} s/{unit} or {sim_rate:,.3f} {unit}/s failed={FAILURES})")
-
-                else:
-                    pbar.set_postfix_str(f"({avg_rate:.4f} s/{unit} or {sim_rate:,.3f} {unit}/s)")
-
                 if not void:
                     yield result
+
         if void:
             return None
         return None
@@ -381,7 +384,7 @@ if __name__ == '__main__':
     # quick example
 
     success = list(
-        custom_parallel(mock_success, range(100), use_thread=True, ncores=10, void=True, display_failures=True))
+        custom_parallel(mock_success, range(100), use_thread=True, ncores=10, void=True, display_failures=True, progressbar=False))
     fail = list(
         custom_parallel(mock_failure, range(1000), use_thread=True, ncores=10, void=False, display_failures=True, ))
     fai = list(

@@ -13,6 +13,9 @@ from typing import Union, Literal
 import tempfile
 import uuid
 
+from tqdm import tqdm
+
+from apsimNGpy.parallel.data_manager import chunker
 import loguru
 import pandas as pd
 import sqlalchemy
@@ -24,11 +27,17 @@ from apsimNGpy.core_utils.database_utils import (write_results_to_sql, drop_tabl
 from apsimNGpy.core_utils.utils import timer
 from apsimNGpy.parallel.process import custom_parallel, custom_parallel_chunks
 from parallel._process import JobTracker
+from apsimNGpy.core.runner import _run_from_dir
 
 ID = 0
 # default cores to use
 CORES = max(1, math.ceil(os.cpu_count() * 0.85))
 csv_doc = pd.DataFrame().to_csv.__doc__
+
+
+def _execute_dir(dir_folder, apsimx_pattern, cores=10):
+    gc.collect()
+    _run_from_dir(dir_folder, verbose=False, cpu_count=cores, run_only=True, pattern=apsimx_pattern, write_tocsv=False)
 
 
 def core_count(user_core: int, threads: bool) -> int:
@@ -61,12 +70,34 @@ def _get_id(fname: str) -> int:
     return num
 
 
-def get_results(file_name, db_or_con, prefix):
+def get_results(file_name, db_or_con, prefix, agg_func=None, sub=None):
     stem_ID = _get_id(str(file_name))
     tables_names = [i for i in get_db_table_names(db=file_name) if not i.startswith('_')]
-    df = (read_with_pandas(db_or_con=file_name, table=tn).assign(source_table=tn, ID=stem_ID) for tn in tables_names)
-    df = pd.concat(df, ignore_index=True)
-    table_name = f"{prefix}_id_{stem_ID}_{os.getpid()}"
+    if agg_func is None:
+        df = (read_with_pandas(db_or_con=file_name, table=tn).assign(source_table=tn, ID=stem_ID) for tn in
+              tables_names)
+        df = pd.concat(df, ignore_index=True)
+
+    else:
+        df = pd.concat(read_with_pandas(db_or_con=file_name, table=tn).assign(source_table=tn) for tn in tables_names)
+        gru_per = 'source_table'
+        df.groupby(gru_per)
+        if not hasattr(df, agg_func):
+            raise ValueError(
+                f"Unsupported aggregation function '{agg_func}'"
+            )
+        df = df.agg(agg_func, numeric_only=True)
+        df = df.to_frame().T if not isinstance(df, pd.DataFrame) else df
+        df.reset_index(drop=False, inplace=True)
+        df['ID'] = stem_ID
+    if sub is not None:
+        sub = [sub] if isinstance(sub, str) else sub
+
+        if set(sub).issubset(df.columns):
+
+            df = df[[*sub, 'ID']].copy()
+
+    table_name = f"{prefix}_pid_{os.getpid()}"
     write_df_to_sql(out=df, db_or_con=db_or_con, table_name=table_name, if_exists='append', index=False,
                     chunk_size=None)
 
@@ -453,16 +484,231 @@ class MultiCoreManager:
             raise ValueError("results are empty or not yet simulated")
 
     def run_all_jobs(self, jobs, *, n_cores=-2, threads=False, clear_db=True, retry_rate=1, subset=None,
-                     ignore_runtime_errors=True, engine='python', **kwargs):
+                     ignore_runtime_errors=True, engine='python', progressbar: bool = True, **kwargs):
+        """
+
+        This method executes a collection of APSIM simulation jobs in parallel,
+        using either processes (recommended) or threads. Each job is executed
+        in isolation using a context-managed ``apsimNGpy`` model instance to
+        ensure proper cleanup and reproducibility.
+
+        Parameters
+        ----------
+        threads : bool, optional
+            If ``True``, jobs are executed using threads; otherwise, jobs are
+            executed using processes. The default is ``False`` (process-based
+            execution), which is recommended for APSIM workloads. Threads may allow over subscription beyond the cpu budget but not processes
+
+        jobs : iterable or dict
+            A collection of job specifications identifying APSIM models to run.
+            Each job must specify the APSIM ``.apsimx`` model to execute and may
+            include additional metadata.
+
+            Supported job definitions include:
+
+            **1. Plain job definitions (no metadata, no edits)**
+            This assumes that each model file is unique and has already been
+            edited externally.
+
+            .. code-block:: python
+
+               jobs = {
+                   'model_0.apsimx',
+                   'model_1.apsimx',
+                   'model_2.apsimx',
+                   'model_3.apsimx',
+                   'model_4.apsimx',
+                   'model_5.apsimx',
+                   'model_6.apsimx',
+                   'model_7.apsimx'
+               }
+
+            **2. Job definitions with metadata**
+            This format allows attaching identifiers or other metadata to each
+            job. Models are assumed to be unique and pre-edited.
+
+            .. code-block:: python
+
+               [
+                   {'model': 'model_0.apsimx', 'ID': 0},
+                   {'model': 'model_1.apsimx', 'ID': 1},
+                   {'model': 'model_2.apsimx', 'ID': 2},
+                   {'model': 'model_3.apsimx', 'ID': 3},
+                   {'model': 'model_4.apsimx', 'ID': 4},
+                   {'model': 'model_5.apsimx', 'ID': 5},
+                   {'model': 'model_6.apsimx', 'ID': 6},
+                   {'model': 'model_7.apsimx', 'ID': 7}
+               ]
+
+            **3. Job definitions with internal model edits**
+            In this format, each job specifies an ``inputs`` list with dicts representing each node to be edited internally by the runner. These
+            edits must follow the rules of
+            :meth:`~apsimNGpy.core.apsim.ApsimModel.edit_model_by_path`. The input dictionary is treated as metadata and is attached to the results' tables. When both inputs and additional metadata are provided, they are merged into a single metadata mapping prior to attachment, with former entries overriding earlier metadata keys and thereby avoiding duplicate keys in the results' tables.
+
+            .. code-block:: python
+
+              jobs=  [
+                   {
+                       'model': 'model_0.apsimx',
+                       'ID': 0,
+                       'inputs': [{
+                           'path': '.Simulations.Simulation.Field.Fertilise at sowing',
+                           'Amount': 0
+                       }]
+                   },
+                   {
+                       'model': 'model_1.apsimx',
+                       'ID': 1,
+                       'inputs': [{
+                           'path': '.Simulations.Simulation.Field.Fertilise at sowing',
+                           'Amount': 50
+                       }]
+                   },
+                   {
+                       'model': 'model_2.apsimx',
+                       'ID': 2,
+                       'inputs': [{
+                           'path': '.Simulations.Simulation.Field.Fertilise at sowing',
+                           'Amount': 100
+                       }]
+                   }
+               ]
+
+        n_cores : int
+            Number of CPU cores to use for parallel execution.
+            Default= total machine cpu counts minus 2 to reserve cores for other processes.
+            n_cores may be specified as a negative integer to indicate relative allocation from the total available CPU cores.
+            In this case, the absolute value of n_cores is subtracted from the total CPU budget, and the remaining cores are used.
+            If the resulting number of cores is less than or equal to zero, a ValueError is raised.
+
+        clear_db : bool, optional
+            If ``True``, existing database tables are cleared before writing new
+            results. Defaults to ``True``.
+
+        retry_rate : int, optional
+            Number of times to retry a job upon failure before giving up.
+        subset:
+           subset of the data columns to forward to sql or save. It is handled silently if the subset does not exist, the entire table will be saved
+        ignore_runtime_errors: bool, optional. Default is True
+          Ignore ApsimRunTimeError, to avoid breaking the program during multiprocessing
+          other processes can proceed, while we can keep the failed jobs
+        engine: str or None, optional default is python.
+             if engine is python, we run all jobs in parallel, but if engine is csharp, we run jobs externally, meaning all jobs are invoked by csharp
+             this is by far the fastest. However, it has not been exclusively tested; preliminary tests showed that version 7844 did not perform well, while
+             APSIM2025.12.7939.0.
+        progressbar: bool, optional. Default is True
+            a progress bar will be displayed if True
+
+
+        Returns
+        -------
+        None
+
+        Notes
+        -----
+        engine ==python
+
+        - Each execution is isolated and uses a context-managed ``apsimNGpy``
+          model instance to ensure proper cleanup.
+        - Aggregation is applied only to numeric columns.
+        - Result tables are uniquely named using a deterministic schema hash
+          derived from column names to avoid database collisions. The hashed
+          identifier is prefixed with the user-defined table prefix (default:
+          ``__core_table__``), which is used internally to retrieve results.
+        - Both execution and process identifiers are attached to all output rows
+          to support reproducibility and parallel execution tracking. Execution
+          identifiers are derived from column schemas, while process identifiers
+          reflect the executing process or thread. To avoid unexpected behavior,
+           avoid duplicate identifiers in both metadata and input data.
+
+        engine==csharp
+        -------------
+        When the engine is set to csharp, APSIMNGpy applies all model edits and writes the modified
+        APSIMX files to a working directory, after which they are executed by the C# engine using
+        ultithreading. Task chunking is required to prevent stack overflow and excessive memory
+        usage arising from APSIM’s internal execution architecture, not from disk I/O or file writing.
+
+        To manage these architectural constraints, simulations are executed in chunks determined by a
+        user-specified chunk size, with a maximum (and default) value of 100 simulations per chunk.
+        For example, a run consisting of 1,000 simulations is executed sequentially in 10 chunks of
+        100 simulations each.
+
+        Under this execution mode, metadata tables are written separately from the simulation output tables.
+        If progressbar=True, the progress bar reports the progress and elapsed time for each chunk, providing
+         visibility into long-running executions.
+        Examples
+        --------
+        .. code-block:: python
+
+           from apsimNGpy.core.mult_cores import MultiCoreManager
+
+           if __name__ == "__main__":
+               Parallel = MultiCoreManager(db=test_agg_db, agg_func=None)
+
+               # Run jobs in parallel using processes
+               Parallel.run_all_jobs(
+                   jobs,
+                   n_cores=12,
+                   threads=False,
+                   retry_rate=1
+               )
+
+               # Retrieve results
+               df = Parallel.get_simulated_output(axis=0)
+
+        .. versionadded:: 0.39.1.21+
+
+
+        Examples
+        --------------
+        .. code-block:: python
+
+        from apsimNGpy.core.mult_cores import MultiCoreManager
+        from pathlib import Path
+        db= (Path.home()/"test_agg.db").resolve()
+        if __name__ == '__main__':
+            workspace  = Path('D:/')
+            Parallel = MultiCoreManager(db_path=db, agg_func=None, table_prefix='di')
+            jobs = ({'model': 'Maize', 'ID': i, 'inputs': [{'path': '.Simulations.Simulation.Field.Fertilise at sowing',
+                                                            'Amount': i}]} for i in range(600))
+            Parallel.run_all_jobs(jobs=jobs, n_cores=8, engine='csharp', threads=False,)
+            dff = Parallel.results
+            print(dff.shape)
+
+        """
+        ch_size = kwargs.get('chunk_size', 100)
+        if ch_size > 150:
+            raise ValueError('Chunk size must be less than 150')
         if engine.lower() == 'csharp':
-            self.run_jobs_external(jobs=jobs, n_cores=n_cores, threads=threads, clear_db=clear_db)
+            if clear_db:
+                self.clear_db()
+
+            if progressbar:
+                CH_A_NKS = tuple(chunker(jobs, chunk_size=ch_size))
+                prog_msg = 'Processing please wait..'
+                with tqdm(
+                        total=len(CH_A_NKS),
+                        desc=prog_msg,
+                        unit='chunk',
+                        bar_format=("{desc} {bar} {percentage:3.0f}% "
+                                    " >> completed (elapsed=>{elapsed}, eta=>{remaining}) {postfix}"),
+                        dynamic_ncols=True,
+                        miniters=1, ) as pbar:
+                    for counter, sub_jobs in enumerate(CH_A_NKS):
+                        self.run_jobs_external(jobs=sub_jobs, n_cores=n_cores, threads=threads, subset=subset)
+                        pbar.update(1)
+            else:
+                for sub in chunker(jobs, chunk_size=ch_size):
+                    self.run_jobs_external(jobs=sub, n_cores=n_cores, threads=threads, subset=subset)
+
         elif engine.lower() == 'python':
-            self._run_all_jobs(jobs=jobs, n_cores=n_cores, threads=threads,
+            self._run_all_jobs(jobs=jobs, n_cores=n_cores, threads=threads, subset=subset,
                                clear_db=clear_db, retry_rate=retry_rate, ignore_runtime_errors=ignore_runtime_errors)
         else:
             raise ValueError(f"Unsupported engine expected (python or csharp) got {engine}")
 
-    def _run_all_jobs(self, jobs, *, n_cores=-2, threads=False, clear_db=True, retry_rate=1, subset=None,
+    def _run_all_jobs(self, jobs, *, n_cores=-2, threads=False, clear_db=True, retry_rate=1, progressbar: bool = True,
+                      subset=None, index=None,
                       ignore_runtime_errors=True, **kwargs):
         """
         Run all provided jobs using multiprocessing or multithreading.
@@ -622,7 +868,7 @@ class MultiCoreManager:
         if self.cleared_db:
             self.clear_db()  # each simulation is fresh,
 
-        worker = partial(single_runner, agg_func=self.agg_func,
+        worker = partial(single_runner, agg_func=self.agg_func, index=index,
                          ignore_runtime_errors=ignore_runtime_errors, retry_rate=retry_rate,
                          db_conn=self.db_path, table_prefix=self.table_prefix, subset=subset)
         try:
@@ -630,6 +876,7 @@ class MultiCoreManager:
             failed = []
             for res in custom_parallel(func=worker, iterable=jobs, ncores=n_cores, use_threads=threads,
                                        progress_message=f'APSIM running[{x}f]', unit='sim', void=False,
+                                       progressbar=progressbar
                                        ):
                 if res is True:
                     pass  # holder to unzip jobs
@@ -643,78 +890,56 @@ class MultiCoreManager:
         self.incomplete_jobs = failed
         self.ran_ok = True
 
-    def run_jobs_external(self, jobs, n_cores=-3, threads=False, clear_db=True):
+    def run_jobs_external(self, jobs, n_cores=-3, threads=False, subset=None):
+        """
+        Tested and stable with APSIM version APSIM2025.12.7939.0
+        version Later versions may exhibit intermittent SQLite errors under batch execution.
+
+        .. note::
+
+            Sending many jobs more than 100 at a go will lead to stack overflow issues or memory issues.
+            It is an architectural design issue of APSIm rather than apsimNGpy.
+
+        """
         from apsimNGpy.core._multi_core import edit_to_folder
-        from apsimNGpy.core.runner import _run_from_dir
         import time
-        if clear_db:
-            self.clear_db()
+
         db = self.db_path
-        # job_tracker = JobTracker(db=db, completed_table='__completed__')
-        pattern = f"{self.table_prefix}*.apsimx"
-
-        def clear(folder_dir):
-            PT = f"{self.table_prefix}*.apsimx"
-            check = Path(folder_dir).glob(PT)
-            for job in check:
-                if job.is_file():
-                    job.unlink(missing_ok=True)
-            pt2 = f"{self.table_prefix}*.db"
-            check = Path(folder_dir).glob(pt2)
-            for job in check:
-                if job.is_file():
-                    job.unlink(missing_ok=True)
-
         n_cores = core_count(n_cores, threads)
-        tmp = tempfile.TemporaryDirectory(prefix="apsim_")
-
+        folder = Path(f"tmp{self.table_prefix}{uuid.uuid4().hex}")
+        folder.mkdir(exist_ok=True)
         try:
-            ted = tmp.name
-            folder = Path(ted) / f"{uuid.uuid4().hex}"
-            folder.mkdir(exist_ok=True)
-            clear(folder)
             partial_editor = partial(edit_to_folder, folder_path=folder, prefix=self.table_prefix, db_or_conn=db)
             apsimx_pattern = f"{self.table_prefix}*.apsimx"
 
             def send_jobs():
-                for _ in custom_parallel(func=partial_editor, iterable=jobs, ncores=n_cores, threads=threads,
-                                         progress_message='Copying data..'):
-                    pass
-                loguru.logger.info("running APSIM now")
-                gc.collect()
+                try:
+                    for _ in custom_parallel(func=partial_editor, iterable=jobs, ncores=n_cores, threads=threads,
+                                             progress_message='Copying data..', progressbar=False):
+                        pass
+                finally:
+                    gc.collect()
 
             send_jobs()
             a = time.perf_counter()
-
-            def run():
-                import Models
-                gc.collect()
-                from apsimNGpy.core.runner import invoke_csharp_gc
-                invoke_csharp_gc()
-                try:
-                    _run_from_dir(folder, verbose=False, cpu_count=n_cores, run_only=True, pattern=apsimx_pattern)
-                except Models.Core.SimulationException as mcse:
-                    raise RuntimeError(mcse)
-
-            run()
-            print(time.perf_counter() - a, 'seconds')
+            _execute_dir(folder, apsimx_pattern, cores=n_cores)
             db_pattern = str(Path(apsimx_pattern).with_suffix('.db'))
-            print(db_pattern)
-            jobs = list(Path(folder).rglob(db_pattern))
+            jobs = Path(folder).rglob(db_pattern)
 
-            def collect():
-                partial_collector = partial(get_results, db_or_con=self.db_path, prefix=self.table_prefix)
+            def collect_simulated_data():
+                partial_collector = partial(get_results, db_or_con=self.db_path, prefix=self.table_prefix,
+                                            agg_func=self.agg_func, sub=subset)
                 for _ in custom_parallel(func=partial_collector, iterable=jobs, ncores=n_cores, threads=threads,
-                                         progress_message='collecting data..'):
+                                         progress_message='collecting data..', progressbar=False):
                     pass
 
-            collect()
+            collect_simulated_data()
             time.sleep(0.3)
             gc.collect()
 
         finally:
-            tmp.cleanup()
-        print(list(folder.rglob('*.db')))
+            import shutil
+            shutil.rmtree(folder, ignore_errors=True)
 
 
 MultiCoreManager.save_to_csv.__doc__ = """  Persist simulation results to a SQLite database table.
@@ -725,48 +950,48 @@ MultiCoreManager.save_to_csv.__doc__ = """  Persist simulation results to a SQLi
         during simulation and you need a durable copy\n.
         """ + csv_doc
 
-if __name__ == '__main__':
-    # quick tests. comprehensive tests are in the tests
-
-    with tempfile.TemporaryDirectory() as td:
-        create_jobs = ({'model':"Maize", 'ID':i} for i in range(1600))
-        db_path = Path(td) / f"{uuid.uuid4().hex}.db"
-        test_agg_db = Path(td) / f"_{uuid.uuid4().hex}.db"
-
-        Parallel = MultiCoreManager(db_path=test_agg_db, agg_func=None)
-        Parallel.run_all_jobs(create_jobs, n_cores=12, threads=False, clear_db=False, retry_rate=3, subset='Yield')
-
-        df = Parallel.get_simulated_output(axis=0)
-        print(len(Parallel.tables))
-        Parallel.clear_scratch()
-        # test saving to already an existing table
-        ve = False
-        db_path.unlink(missing_ok=True)
-        try:
-            try:
-                # ___________________first__________________________________
-                Parallel.save_tosql(db_path, table_name='results', if_exists='replace')
-                # ______________________ then _________________________________
-                Parallel.save_tosql(db_path, table_name='results', if_exists='fail')
-            except ValueError:
-                ve = True
-            assert ve == True, 'fail method is not raising value error'
-
-            # ____________test saving by replacing existing table _______________
-            ve = False
-            try:
-
-                Parallel.save_tosql(db_path, table_name='results', if_exists='replace')
-            except ValueError:
-                ve = True
-            assert ve == False, 'replace method failed'
-
-            # ____________test appending to an existing table _______________
-            ve = False
-            try:
-                Parallel.save_tosql(db_path, table_name='results', if_exists='append')
-            except ValueError:
-                ve = True
-            assert ve == False, 'append method failed'
-        finally:
-            pass
+# if __name__ == '__main__':
+#     # quick tests. comprehensive tests are in the tests
+#
+#     with tempfile.TemporaryDirectory() as td:
+#         create_jobs = ({'model': "Maize", 'ID': i} for i in range(1600))
+#         db_path = Path(td) / f"{uuid.uuid4().hex}.db"
+#         test_agg_db = Path(td) / f"_{uuid.uuid4().hex}.db"
+#
+#         Parallel = MultiCoreManager(db_path=test_agg_db, agg_func=None)
+#         Parallel.run_all_jobs(create_jobs, n_cores=12, threads=False, clear_db=False, retry_rate=3, subset='Yield')
+#
+#         df = Parallel.get_simulated_output(axis=0)
+#         print(len(Parallel.tables))
+#         Parallel.clear_scratch()
+#         # test saving to already an existing table
+#         ve = False
+#         db_path.unlink(missing_ok=True)
+#         try:
+#             try:
+#                 # ___________________first__________________________________
+#                 Parallel.save_tosql(db_path, table_name='results', if_exists='replace')
+#                 # ______________________ then _________________________________
+#                 Parallel.save_tosql(db_path, table_name='results', if_exists='fail')
+#             except ValueError:
+#                 ve = True
+#             assert ve == True, 'fail method is not raising value error'
+#
+#             # ____________test saving by replacing existing table _______________
+#             ve = False
+#             try:
+#
+#                 Parallel.save_tosql(db_path, table_name='results', if_exists='replace')
+#             except ValueError:
+#                 ve = True
+#             assert ve == False, 'replace method failed'
+#
+#             # ____________test appending to an existing table _______________
+#             ve = False
+#             try:
+#                 Parallel.save_tosql(db_path, table_name='results', if_exists='append')
+#             except ValueError:
+#                 ve = True
+#             assert ve == False, 'append method failed'
+#         finally:
+#             pass

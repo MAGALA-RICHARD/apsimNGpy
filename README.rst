@@ -89,20 +89,21 @@ APSIM Next Generation (NG) Installation Tip
 Use the **pinned APSIM release** indicated on the documentation homepage to avoid forward-compatibility issues.
 The pinned version represents the latest APSIM NG build verified against apsimNGpy’s API and unit tests.
 
-apsimNgpy v1.1.0
+apsimNgpy v1.1.0 change logs
 ====================
-## [1.1.0] – Multi-Core Performance & Execution Improvements
 
 added
 =============
 - run_all_jobs on MultiCoreManagerAPI is now optimized to run under pure  C# execution pathway under the option engine=csharp
+- it also has an option to turn off progressbars using progressbar=False
 
 Changed
 =========
 - Internal task scheduling for engine="csharp" to reduce overhead and memory pressure.
 - Up to ~200% speed improvement for multi-simulation workloads when using csharp engine. A critical milestone for sensitivity analysis and large scale simulations
 
-### Fixed
+Fixed
+=======
 - import errors in tests module
 
 apsimNGpy v1.0.0

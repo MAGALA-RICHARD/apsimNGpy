@@ -103,7 +103,8 @@ def make_table_name(table_prefix: str, schema_id: str, run_id: int) -> str:
 def edit_to_folder(job, *,folder_path: str, prefix,  db_or_conn):
     model, metadata, inputs = _inspect_job(job)
     ID = metadata.get("ID", None) if metadata else None
-    file_name = (Path(folder_path)/f"{prefix}_{uuid4().hex}___{ID}.apsimx").resolve()
+    # prefix should be the first one
+    file_name = (Path(folder_path)/f"{prefix}{uuid4().hex}___{ID}.apsimx").resolve()
     if ID is None:
         raise ValueError(f"simulation identification key is required got {ID}")
     with (ApsimModel(model) as _model):

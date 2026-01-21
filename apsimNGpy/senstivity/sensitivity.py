@@ -86,6 +86,7 @@ class ConfigProblem:
             n_cores: int,
             retry_rate: int,
             threads: bool,
+            engine: str
     ):
         """
         Run APSIM simulations and return outputs and raw results.
@@ -107,6 +108,7 @@ class ConfigProblem:
                     display_failures=True,
                     subset=self.outputs,
                     ignore_runtime_errors=False,
+                    engine=engine
                 )
                 df = mc.get_simulated_output(axis=0)
                 df.sort_values(self.index_id, inplace=True)
@@ -134,7 +136,8 @@ class ConfigProblem:
                  agg_func='sum',
                  n_cores=-2,
                  retry_rate=2,
-                 threads=False):
+                 threads=False,
+                 engine='python'):
         """
         The problem is already defined but user want to control the inputs or use a procedural approach after.
 
@@ -149,6 +152,8 @@ class ConfigProblem:
             Number of retries for failed simulations.
         threads : bool, default=False
             Use multithreading instead of multiprocessing.
+        engine: str optional default is 'python'
+        if 'csharp' results are written to a directory then forwarded to Models.exe. this is 2 times faster all the time
         """
         from apsimNGpy.core.mult_cores import core_count
         n_cores = core_count(n_cores, threads=threads)
@@ -158,6 +163,7 @@ class ConfigProblem:
             n_cores=n_cores,
             retry_rate=retry_rate,
             threads=threads,
+            engine=engine
         )
         return part(X)
 
@@ -174,6 +180,7 @@ def run_sensitivity(
         threads: bool = False,
         sample_options: dict | None = None,
         analyze_options: dict | None = None,
+        engine ='python'
 ):
     """
     Run a complete sensitivity analysis.
@@ -270,6 +277,9 @@ def run_sensitivity(
     analyze_options : dict, optional
         Options forwarded to the SALib analyzer. The available options are described in the
         SALIB documentation fore each method.
+    engine: str optional default is 'python'
+        if 'csharp' results are written to a directory then forwarded to Models.exe. this is 2 times faster all the time
+
 
     Examples
     ---------
@@ -400,6 +410,7 @@ def run_sensitivity(
         n_cores=n_cores,
         retry_rate=retry_rate,
         threads=threads,
+        engine=engine
     )
 
     sampler = getattr(configured_prob.problem, f"sample_{method}")
@@ -445,12 +456,13 @@ if __name__ == "__main__":
     # Y = runner.evaluate(param_values)
     # Si = [sobol.analyze(runner.problem, Y[:, i], print_to_console=True) for i in range(Y.ndim)]
     # print(Si)
-    from apsimNGpy.senstivity.sensitivity import run_sensitivity, ConfigProblem
+
     Si_sobol = run_sensitivity(
         runner,
         method="sobol",
         N=2 ** 6,  # ← base sample size
         n_cores=-6,
+        engine='csharp',
         sample_options={
             "calc_second_order": True,
             "skip_values": 1024,

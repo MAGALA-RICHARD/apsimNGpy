@@ -10,7 +10,7 @@ if __name__ == '__main__':
     workspace = Path('D:/')
     os.chdir(workspace)
 
-    Parallel = MultiCoreManager(db_path=db, agg_func='mean', table_prefix='di',)
+    Parallel = MultiCoreManager(db_path=db, agg_func='sum', table_prefix='di',)
     jobs = ({'model': 'Maize', 'ID': i, 'inputs': [{'path': '.Simulations.Simulation.Field.Fertilise at sowing',
                                                     'Amount': i}]} for i in range(100))
     start = time.perf_counter()

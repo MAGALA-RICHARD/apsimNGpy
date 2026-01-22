@@ -94,8 +94,9 @@ def get_results(file_name, db_or_con, prefix, agg_func=None, sub=None):
         sub = [sub] if isinstance(sub, str) else sub
 
         if set(sub).issubset(df.columns):
+            others = ['ID'] if not 'source_table' in df.columns else ['source_table', 'ID']
 
-            df = df[[*sub, 'ID']].copy()
+            df = df[[*sub, *others]].copy()
 
     table_name = f"{prefix}_pid_{os.getpid()}"
     write_df_to_sql(out=df, db_or_con=db_or_con, table_name=table_name, if_exists='append', index=False,

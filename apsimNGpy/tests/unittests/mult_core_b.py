@@ -16,7 +16,7 @@ if __name__ == '__main__':
     start = time.perf_counter()
     Parallel.run_all_jobs(jobs=jobs, n_cores=20, engine='csharp', threads=True, chunk_size=150,
                           subset=['Yield'],
-                          progressbar=True)
+                          progressbar=False)
     dff = Parallel.results
     print(dff.shape)
     print(time.perf_counter() - start)

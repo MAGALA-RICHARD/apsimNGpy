@@ -2,37 +2,48 @@ from __future__ import annotations
 
 import gc
 import math
+import os
 import os.path
 import shutil
 import sqlite3
+import time
+import uuid
 from collections.abc import Iterable
 # Database connection
 from functools import partial, cache
 from pathlib import Path
 from typing import Union, Literal
-import tempfile
-import uuid
-
-from tqdm import tqdm
-
-from apsimNGpy.parallel.data_manager import chunker
-import loguru
 import pandas as pd
 import sqlalchemy
 from sqlalchemy import create_engine, text
-import os
+from tqdm import tqdm
+from apsimNGpy.core._multi_core import edit_to_folder
 from apsimNGpy.core._multi_core import single_runner
+from apsimNGpy.core.runner import _run_from_dir
 from apsimNGpy.core_utils.database_utils import (write_results_to_sql, drop_table,
                                                  get_db_table_names, read_with_pandas, write_df_to_sql)
 from apsimNGpy.core_utils.utils import timer
-from apsimNGpy.parallel.process import custom_parallel, custom_parallel_chunks
-from parallel._process import JobTracker
-from apsimNGpy.core.runner import _run_from_dir
+from apsimNGpy.parallel.data_manager import chunker
+from apsimNGpy.parallel.process import custom_parallel
+from contextlib import contextmanager
 
 ID = 0
 # default cores to use
 CORES = max(1, math.ceil(os.cpu_count() * 0.85))
 csv_doc = pd.DataFrame().to_csv.__doc__
+
+
+# tempfile could work too
+@contextmanager
+def apsim_workdir(prefix, delay=0.03):
+    tmp = Path(f"mcp{prefix}{uuid.uuid4().hex}")
+    tmp.mkdir(parents=True, exist_ok=True)
+    try:
+        yield tmp
+    finally:
+        time.sleep(delay)
+        gc.collect()
+        shutil.rmtree(tmp, ignore_errors=True)
 
 
 def _execute_dir(dir_folder, apsimx_pattern, cores=10):
@@ -79,22 +90,19 @@ def get_results(file_name, db_or_con, prefix, agg_func=None, sub=None):
         df = pd.concat(df, ignore_index=True)
 
     else:
-        df = pd.concat(read_with_pandas(db_or_con=file_name, table=tn).assign(source_table=tn) for tn in tables_names)
-        gru_per = 'source_table'
-        df.groupby(gru_per)
-        if not hasattr(df, agg_func):
-            raise ValueError(
-                f"Unsupported aggregation function '{agg_func}'"
-            )
-        df = df.agg(agg_func, numeric_only=True)
-        df = df.to_frame().T if not isinstance(df, pd.DataFrame) else df
-        df.reset_index(drop=False, inplace=True)
-        df['ID'] = stem_ID
+        data = []
+        for tn in tables_names:
+            df = read_with_pandas(db_or_con=file_name, table=tn)
+            df = df.agg(agg_func, numeric_only=True)
+            df = df.to_frame().T if not isinstance(df, pd.DataFrame) else df
+            df[['source_table', 'ID']] = [tn, stem_ID]
+            data.append(df)
+        df = pd.concat(data, ignore_index=True)
     if sub is not None:
         sub = [sub] if isinstance(sub, str) else sub
 
         if set(sub).issubset(df.columns):
-            others = ['ID'] if not 'source_table' in df.columns else ['source_table', 'ID']
+            others = ['source_table', 'ID']
 
             df = df[[*sub, *others]].copy()
 
@@ -849,45 +857,41 @@ class MultiCoreManager:
             It is an architectural design issue of APSIm rather than apsimNGpy.
 
         """
-        from apsimNGpy.core._multi_core import edit_to_folder
-        import time
 
         db = self.db_path
         n_cores = core_count(n_cores, threads)
-        folder = Path(f"tmp{self.table_prefix}{uuid.uuid4().hex}")
-        folder.mkdir(exist_ok=True)
+
         try:
-            partial_editor = partial(edit_to_folder, folder_path=folder, prefix=self.table_prefix, db_or_conn=db)
-            apsimx_pattern = f"{self.table_prefix}*.apsimx"
+            with apsim_workdir(prefix=self.table_prefix) as folder:
+                partial_editor = partial(edit_to_folder, folder_path=folder, prefix=self.table_prefix, db_or_conn=db)
+                apsimx_pattern = f"{self.table_prefix}*.apsimx"
 
-            def send_jobs():
-                try:
-                    for _ in custom_parallel(func=partial_editor, iterable=jobs, ncores=n_cores, threads=threads,
-                                             progress_message='Copying data..', progressbar=False):
+                def send_jobs():
+                    try:
+                        for _ in custom_parallel(func=partial_editor, iterable=jobs, ncores=n_cores, threads=threads,
+                                                 progress_message='Copying data..', progressbar=False):
+                            pass
+                    finally:
+                        gc.collect()
+
+                send_jobs()
+                _execute_dir(folder, apsimx_pattern, cores=n_cores)
+                db_pattern = str(Path(apsimx_pattern).with_suffix('.db'))
+                jobs = Path(folder).rglob(db_pattern)
+
+                def collect_simulated_data():
+                    partial_collector = partial(get_results, db_or_con=self.db_path, prefix=self.table_prefix,
+                                                agg_func=self.agg_func, sub=subset)
+                    for _ in custom_parallel(func=partial_collector, iterable=jobs, ncores=n_cores, threads=threads,
+                                             progress_message='collecting data..', progressbar=False):
                         pass
-                finally:
-                    gc.collect()
 
-            send_jobs()
-            a = time.perf_counter()
-            _execute_dir(folder, apsimx_pattern, cores=n_cores)
-            db_pattern = str(Path(apsimx_pattern).with_suffix('.db'))
-            jobs = Path(folder).rglob(db_pattern)
-
-            def collect_simulated_data():
-                partial_collector = partial(get_results, db_or_con=self.db_path, prefix=self.table_prefix,
-                                            agg_func=self.agg_func, sub=subset)
-                for _ in custom_parallel(func=partial_collector, iterable=jobs, ncores=n_cores, threads=threads,
-                                         progress_message='collecting data..', progressbar=False):
-                    pass
-
-            collect_simulated_data()
-            time.sleep(0.3)
-            gc.collect()
+                collect_simulated_data()
+                time.sleep(0.3)
+                gc.collect()
 
         finally:
-            import shutil
-            shutil.rmtree(folder, ignore_errors=True)
+            pass
 
 
 MultiCoreManager.save_to_csv.__doc__ = """  Persist simulation results to a SQLite database table.

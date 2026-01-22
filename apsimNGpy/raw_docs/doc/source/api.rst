@@ -134,7 +134,7 @@ Classes
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.update_mgt`
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.update_mgt_by_path`
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.__init__(self, model: Union[os.PathLike, dict, str], out_path: Union[str, pathlib.Path] = <object object at 0x0000019687682460>, set_wd=None, **kwargs)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.__init__(self, model: Union[os.PathLike, dict, str], out_path: Union[str, pathlib.Path] = <object object at 0x000001951CA6E460>, set_wd=None, **kwargs)
 
    Initialize self.  See help(type(self)) for accurate signature.
 
@@ -481,7 +481,7 @@ Classes
    self : object
        Returns the updated ApsimModel instance.
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.save(self, file_name: 'Union[str, Path]' = <object object at 0x00000196B6609030>, reload=True) (inherited)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.save(self, file_name: 'Union[str, Path]' = <object object at 0x000001954BB49030>, reload=True) (inherited)
 
    Saves the current APSIM NG model (``Simulations``) to disk and refresh runtime state.
 
@@ -2592,7 +2592,7 @@ Classes
    ---------------------------------------------------------------------------
    returns an array of the parameter values
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x00000196B6609030>) (inherited)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x000001954BB49030>) (inherited)
 
    Inspect the model types and returns the model paths or names.
 
@@ -3717,7 +3717,7 @@ Classes
    In the future, this module will contain all the constants required by the package.
     Users will be able to override these values if needed by importing this module before running any simulations.
 
-   .. py:method:: apsimNGpy.core.config.Configuration.__init__(self, bin_path: 'Union[Path, str]' = <object object at 0x00000196876816D0>) -> None
+   .. py:method:: apsimNGpy.core.config.Configuration.__init__(self, bin_path: 'Union[Path, str]' = <object object at 0x000001951CA6D6D0>) -> None
 
    Initialize self.  See help(type(self)) for accurate signature.
 
@@ -3967,7 +3967,7 @@ Classes
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.update_mgt`
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.update_mgt_by_path`
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.__init__(self, model, out_path=<object object at 0x0000019687682460>)
+   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.__init__(self, model, out_path=<object object at 0x000001951CA6E460>)
 
    Initialize self.  See help(type(self)) for accurate signature.
 
@@ -4617,7 +4617,7 @@ Classes
    self : object
        Returns the updated ApsimModel instance.
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.save(self, file_name: 'Union[str, Path]' = <object object at 0x00000196B6609030>, reload=True) (inherited)
+   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.save(self, file_name: 'Union[str, Path]' = <object object at 0x000001954BB49030>, reload=True) (inherited)
 
    Saves the current APSIM NG model (``Simulations``) to disk and refresh runtime state.
 
@@ -6728,7 +6728,7 @@ Classes
    ---------------------------------------------------------------------------
    returns an array of the parameter values
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x00000196B6609030>) (inherited)
+   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x000001954BB49030>) (inherited)
 
    Inspect the model types and returns the model paths or names.
 
@@ -7680,70 +7680,27 @@ Classes
 
 .. py:class:: apsimNGpy.core.mult_cores.MultiCoreManager
 
-           Manager class for coordinating multi-core execution workflows and
-           handling result aggregation and persistence.
-
-           This class serves as a lightweight state container for parallel or
-           multi-core processing tasks. It tracks execution status, incomplete
-           jobs, database connections, and aggregation behavior, and is designed
-           to be shared across worker processes or threads in a controlled manner.
-
-           Parameters
-           ----------
-           db_path : str, pathlib.Path, default=resolved path 'manager_datastorage.db'
-               Database  path used to persist results generated
-               during multi-core execution. connections may not be picklable
-
-           agg_func : str or None, optional
-               Name of the aggregation function used to combine results from
-               completed jobs. The interpretation of this value depends on the
-               execution context and downstream processing logic. When the user provides an index for aggregation in run_all_jobs method,
-               aggregation is performed on that index. 
-
-           ran_ok : bool, optional
-               Flag indicating whether the multi-core execution completed
-               successfully. This value is updated internally after execution
-               finishes. It is used a signal to data memory retrieval methods on this class that everything is ok to retrieve the results from sql database.
-
-           incomplete_jobs : list, optional
-               List used to track jobs that failed, were interrupted, or did not
-               complete successfully during execution. This list is populated
-               dynamically at runtime. Most of the time this container will be empty because the back-end retries silently in case of any perturbation
-
-           table_prefix : str, optional
-               Prefix used when creating database tables for storing intermediate
-               or aggregated results. This helps avoid table name collisions when
-               running multiple workflows. This prefix is also used to avoid table name collisions by clearing all tables that exists with that prefix, for every fresh restart.
-               Why this is critical is that we don't want to mixe results from previous session with the current session
-
-           Attributes
-           ----------
-           tag : str
-               Identifier string used to label this manager instance in logs,
-               database tables, or metadata.
-
-           default_db : str
-               Default SQLite database filename used when no database is
-               explicitly provided.
-
-           cleared_db : bool
-               Internal flag indicating whether the database has been cleared
-               during the current execution lifecycle. This attribute is managed
-               internally and is not intended to be set by the user.
-
-               By default, tables starting with the provided prefix are deleted for each initialization, to prepare for clean data collection
-
    List of Public Attributes:
    __________________________________
 
+   - :attr:`~apsimNGpy.core.mult_cores.MultiCoreManager.agg_func`
+   - :attr:`~apsimNGpy.core.mult_cores.MultiCoreManager.cleared_db`
+   - :attr:`~apsimNGpy.core.mult_cores.MultiCoreManager.db_path`
+   - :attr:`~apsimNGpy.core.mult_cores.MultiCoreManager.default_db`
+   - :attr:`~apsimNGpy.core.mult_cores.MultiCoreManager.incomplete_jobs`
+   - :attr:`~apsimNGpy.core.mult_cores.MultiCoreManager.ran_ok`
    - :attr:`~apsimNGpy.core.mult_cores.MultiCoreManager.results`
+   - :attr:`~apsimNGpy.core.mult_cores.MultiCoreManager.run_external`
+   - :attr:`~apsimNGpy.core.mult_cores.MultiCoreManager.table_prefix`
    - :attr:`~apsimNGpy.core.mult_cores.MultiCoreManager.tables`
+   - :attr:`~apsimNGpy.core.mult_cores.MultiCoreManager.tag`
    List of Public Methods
    -----------------------------
    - :meth:`~apsimNGpy.core.mult_cores.MultiCoreManager.clear_db`
    - :meth:`~apsimNGpy.core.mult_cores.MultiCoreManager.clear_scratch`
    - :meth:`~apsimNGpy.core.mult_cores.MultiCoreManager.get_simulated_output`
    - :meth:`~apsimNGpy.core.mult_cores.MultiCoreManager.run_all_jobs`
+   - :meth:`~apsimNGpy.core.mult_cores.MultiCoreManager.run_jobs_external`
    - :meth:`~apsimNGpy.core.mult_cores.MultiCoreManager.save_to_csv`
    - :meth:`~apsimNGpy.core.mult_cores.MultiCoreManager.save_tosql`
 
@@ -8059,9 +8016,7 @@ Classes
    >>> os.makedirs('folder/subfolder', exist_ok=True)  # doctest: +SKIP
    >>> df.to_csv('folder/subfolder/out.csv')  # doctest: +SKIP
 
-   .. py:method:: apsimNGpy.core.mult_cores.MultiCoreManager.run_all_jobs(self, jobs, *, n_cores=-2, threads=False, clear_db=True, retry_rate=1, subset=None, ignore_runtime_errors=True, display_failures=True, **kwargs)
-
-   Run all provided jobs using multiprocessing or multithreading.
+   .. py:method:: apsimNGpy.core.mult_cores.MultiCoreManager.run_all_jobs(self, jobs, *, n_cores=-2, threads=False, clear_db=True, retry_rate=1, subset=None, ignore_runtime_errors=True, engine='python', progressbar: 'bool' = True, **kwargs)
 
    This method executes a collection of APSIM simulation jobs in parallel,
    using either processes (recommended) or threads. Each job is executed
@@ -8168,8 +8123,13 @@ Classes
    ignore_runtime_errors: bool, optional. Default is True
      Ignore ApsimRunTimeError, to avoid breaking the program during multiprocessing
      other processes can proceed, while we can keep the failed jobs
-   display_failures: bool, optional, default=False
-   if ``True``, func must return False or True. For simulations written to a database, this is adequate
+   engine: str or None, optional default is python.
+        if engine is python, we run all jobs in parallel, but if engine is csharp, we run jobs externally, meaning all jobs are invoked by csharp
+        this is by far the fastest. However, it has not been exclusively tested; preliminary tests showed that version 7844 did not perform well, while
+        APSIM2025.12.7939.0.
+   progressbar: bool, optional. Default is True
+       a progress bar will be displayed if True
+
 
    Returns
    -------
@@ -8177,6 +8137,9 @@ Classes
 
    Notes
    -----
+   engine ==python
+   ------------------
+
    - Each execution is isolated and uses a context-managed ``apsimNGpy``
      model instance to ensure proper cleanup.
    - Aggregation is applied only to numeric columns.
@@ -8190,6 +8153,21 @@ Classes
      reflect the executing process or thread. To avoid unexpected behavior,
       avoid duplicate identifiers in both metadata and input data.
 
+   engine==csharp
+   ---------------
+   When the engine is set to csharp, APSIMNGpy applies all model edits and writes the modified
+   APSIMX files to a working directory, after which they are executed by the C# engine using
+   multithreading. Task chunking is required to prevent stack overflow and excessive memory
+   usage arising from APSIM’s internal execution architecture, not from disk I/O or file writing.
+
+   To manage these architectural constraints, simulations are executed in chunks determined by a
+   user-specified chunk size, with a maximum (and default) value of 150 simulations per chunk.
+   For example, a run consisting of 1500 simulations is executed sequentially in 10 chunks of
+   150 simulations each.
+
+   Under this execution mode, metadata tables are written separately from the simulation output tables. but can be merged using column 'ID"
+   If progressbar=True, the progress bar reports the progress and elapsed time for each chunk, providing
+    visibility into long-running executions.
    Examples
    --------
    .. code-block:: python
@@ -8211,6 +8189,69 @@ Classes
           df = Parallel.get_simulated_output(axis=0)
 
    .. versionadded:: 0.39.1.21+
+
+
+   Examples
+   --------------
+   .. code-block:: python
+
+   from apsimNGpy.core.mult_cores import MultiCoreManager
+   from pathlib import Path
+   db= (Path.home()/"test_agg.db").resolve()
+   if __name__ == '__main__':
+       workspace  = Path('D:/')
+       Parallel = MultiCoreManager(db_path=db, agg_func=None, table_prefix='di')
+       jobs = ({'model': 'Maize', 'ID': i, 'inputs': [{'path': '.Simulations.Simulation.Field.Fertilise at sowing',
+                                                       'Amount': i}]} for i in range(600))
+       Parallel.run_all_jobs(jobs=jobs, n_cores=8, engine='csharp', threads=False,)
+       dff = Parallel.results
+       print(dff.shape)
+
+   .. py:method:: apsimNGpy.core.mult_cores.MultiCoreManager.run_jobs_external(self, jobs, n_cores=-3, threads=False, subset=None)
+
+   Tested and stable with APSIM version APSIM2025.12.7939.0
+   version Later versions may exhibit intermittent SQLite errors under batch execution.
+
+   .. note::
+
+       Sending many jobs more than 100 at a go will lead to stack overflow issues or memory issues.
+       It is an architectural design issue of APSIm rather than apsimNGpy.
+
+   .. py:attribute:: apsimNGpy.core.mult_cores.MultiCoreManager.agg_func
+
+   Default: ``<member 'agg_func' of 'MultiCoreManager' objects>``
+
+   .. py:attribute:: apsimNGpy.core.mult_cores.MultiCoreManager.cleared_db
+
+   Default: ``<member 'cleared_db' of 'MultiCoreManager' objects>``
+
+   .. py:attribute:: apsimNGpy.core.mult_cores.MultiCoreManager.db_path
+
+   Default: ``<member 'db_path' of 'MultiCoreManager' objects>``
+
+   .. py:attribute:: apsimNGpy.core.mult_cores.MultiCoreManager.default_db
+
+   Default: ``<member 'default_db' of 'MultiCoreManager' objects>``
+
+   .. py:attribute:: apsimNGpy.core.mult_cores.MultiCoreManager.incomplete_jobs
+
+   Default: ``<member 'incomplete_jobs' of 'MultiCoreManager' objects>``
+
+   .. py:attribute:: apsimNGpy.core.mult_cores.MultiCoreManager.ran_ok
+
+   Default: ``<member 'ran_ok' of 'MultiCoreManager' objects>``
+
+   .. py:attribute:: apsimNGpy.core.mult_cores.MultiCoreManager.run_external
+
+   Default: ``<member 'run_external' of 'MultiCoreManager' objects>``
+
+   .. py:attribute:: apsimNGpy.core.mult_cores.MultiCoreManager.table_prefix
+
+   Default: ``<member 'table_prefix' of 'MultiCoreManager' objects>``
+
+   .. py:attribute:: apsimNGpy.core.mult_cores.MultiCoreManager.tag
+
+   Default: ``<member 'tag' of 'MultiCoreManager' objects>``
 
 apsimNGpy.core.pythonet_config
 ------------------------------
@@ -8279,7 +8320,7 @@ Functions
    >>> reader = get_apsim_file_reader("string")    # doctest: +SKIP
    >>> sims = reader(text)                         # doctest: +SKIP
 
-.. py:function:: apsimNGpy.core.pythonet_config.get_apsim_version(bin_path: Union[str, pathlib.Path] = <object object at 0x0000019687682420>, release_number: bool = False) -> Optional[str]
+.. py:function:: apsimNGpy.core.pythonet_config.get_apsim_version(bin_path: Union[str, pathlib.Path] = <object object at 0x000001951CA6E420>, release_number: bool = False) -> Optional[str]
 
    Return the APSIM version string detected from the installed binaries.
 
@@ -8328,7 +8369,7 @@ Functions
    --------
    load_pythonnet : Initialize pythonnet/CLR for APSIM binaries.
 
-.. py:function:: apsimNGpy.core.pythonet_config.is_file_format_modified(bin_path: Union[str, pathlib.Path] = <object object at 0x0000019687682420>) -> bool
+.. py:function:: apsimNGpy.core.pythonet_config.is_file_format_modified(bin_path: Union[str, pathlib.Path] = <object object at 0x000001951CA6E420>) -> bool
 
    Checks if the APSIM.CORE.dll is present in the bin path. Normally, the new APSIM version has this dll file.
 
@@ -8340,7 +8381,7 @@ Functions
    :returns:
      bool
 
-.. py:function:: apsimNGpy.core.pythonet_config.load_pythonnet(bin_path: Union[str, pathlib.Path] = <object object at 0x0000019687682420>)
+.. py:function:: apsimNGpy.core.pythonet_config.load_pythonnet(bin_path: Union[str, pathlib.Path] = <object object at 0x000001951CA6E420>)
 
    A method for loading Python for .NET (pythonnet) and APSIM models from the binary path. It is also cached to
    avoid rerunning many times.
@@ -8611,7 +8652,7 @@ Functions
 
    Return True if obj looks like a DB connection.
 
-.. py:function:: apsimNGpy.core.runner.run_apsim_by_path(model: 'Union[str, Path]', *, bin_path: 'Union[str, Path, object]' = <object object at 0x0000019687682480>, timeout: 'int' = 800, ncores: 'int' = -1, verbose: 'bool' = False, to_csv: 'bool' = False) -> 'None'
+.. py:function:: apsimNGpy.core.runner.run_apsim_by_path(model: 'Union[str, Path]', *, bin_path: 'Union[str, Path, object]' = <object object at 0x000001951CA6E480>, timeout: 'int' = 800, ncores: 'int' = -1, verbose: 'bool' = False, to_csv: 'bool' = False) -> 'None'
 
    Execute an APSIM model safely and reproducibly.
 
@@ -8656,7 +8697,7 @@ Functions
    RuntimeError
        If APSIM returns a non-zero exit code.
 
-.. py:function:: apsimNGpy.core.runner.run_model_externally(model: 'Union[Path, str]', *, apsim_bin_path: 'Optional[Union[Path, str]]' = <object object at 0x0000019687682480>, verbose: 'bool' = False, to_csv: 'bool' = False, timeout: 'int' = 20, cpu_count=-1, cwd: 'Optional[Union[Path, str]]' = None) -> 'subprocess.CompletedProcess[str]'
+.. py:function:: apsimNGpy.core.runner.run_model_externally(model: 'Union[Path, str]', *, apsim_bin_path: 'Optional[Union[Path, str]]' = <object object at 0x000001951CA6E480>, verbose: 'bool' = False, to_csv: 'bool' = False, timeout: 'int' = 20, cpu_count=-1, cwd: 'Optional[Union[Path, str]]' = None) -> 'subprocess.CompletedProcess[str]'
 
    Run APSIM externally (cross-platform) with safe defaults.
 
@@ -8861,7 +8902,7 @@ Classes
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.update_mgt`
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.update_mgt_by_path`
 
-   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.__init__(self, model, out_path=<object object at 0x0000019687682460>)
+   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.__init__(self, model, out_path=<object object at 0x000001951CA6E460>)
 
    Initialize self.  See help(type(self)) for accurate signature.
 
@@ -9447,7 +9488,7 @@ Classes
    self : object
        Returns the updated ApsimModel instance.
 
-   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.save(self, file_name: 'Union[str, Path]' = <object object at 0x00000196B6609030>, reload=True) (inherited)
+   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.save(self, file_name: 'Union[str, Path]' = <object object at 0x000001954BB49030>, reload=True) (inherited)
 
    Saves the current APSIM NG model (``Simulations``) to disk and refresh runtime state.
 
@@ -11558,7 +11599,7 @@ Classes
    ---------------------------------------------------------------------------
    returns an array of the parameter values
 
-   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x00000196B6609030>) (inherited)
+   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x000001954BB49030>) (inherited)
 
    Inspect the model types and returns the model paths or names.
 
@@ -13318,7 +13359,7 @@ Classes
        reached. Please also note that an algorithm can have very many functional evaluations, hence, the number of
        seconds per iterations as displayed maybe significantly higher
 
-   .. py:method:: apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.minimize_with_de(self, use_threads=False, args=(), strategy='rand1bin', maxiter=1000, popsize=None, tol=0.01, mutation=(0.5, 1), recombination=0.9, rng=None, callback=None, disp=False, polish=True, init='latinhypercube', atol=0, updating='deffered', workers=1, constraints=(), x0=None, seed=44, *, integrality=None, vectorized=False)
+   .. py:method:: apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer.minimize_with_de(self, use_threads=False, args=(), strategy='rand1bin', maxiter=1000, popsize=None, tol=0.01, mutation=(0.5, 1), recombination=0.9, rng=42, callback=None, disp=False, polish=True, init='latinhypercube', atol=0, updating='deffered', workers=1, constraints=(), x0=None, seed=None, *, integrality=None, vectorized=False)
 
        Run differential evolution on the wrapped APSIM objective function.
        Finds the global minimum of a multivariate function.
@@ -13672,6 +13713,7 @@ Classes
 
        Reference:
            https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.differential_evolution.html
+           @param rng:
 
 apsimNGpy.optimizer.problems.back_end
 -------------------------------------
@@ -14401,6 +14443,7 @@ Functions
     display_failures: bool, optional, default=False
         if ``True``, func must return False or True. For simulations written to a database, this adquate
         .. versionadded:: 1.0.0
+    progressbar : bool, optional, default=True
 
     Examples
     --------
@@ -14417,77 +14460,91 @@ Functions
 
            :func:`~apsimNGpy.parallel.process.custom_parallel_chunks`
 
-.. py:function:: apsimNGpy.parallel.process.custom_parallel_chunks(func: 'Callable[..., Any]', jobs: 'Iterable[Iterable[Any]]', *args, **kwargs)
+.. py:function:: apsimNGpy.parallel.process.custom_parallel_chunks(func: 'Callable[..., Any]', iterable: 'Iterable[Iterable[Any]]', *args, **kwargs)
 
-   Run a function in parallel using threads or processes.
-   The iterable is automatically divided into chunks, and each chunk is submitted to worker processes or threads.
+    Run a function in parallel using threads or processes.
+    The iterable is automatically divided into chunks, and each chunk is submitted to worker processes or threads.
 
-   Parameters
-   ----------
-   func : callable
-       The function to run in parallel.
+    Parameters
+    ----------
+    func : callable
+        The function to run in parallel.
 
-   iterable : iterable
-       An iterable of items that will be processed by ``func``.
+    iterable : iterable
+        An iterable of items that will be processed by ``func``.
 
-   *args
-       Additional positional arguments to pass to ``func``.
+    *args
+        Additional positional arguments to pass to ``func``.
 
-   Yields
-   ------
-   Any
-       The results of ``func`` for each item in the iterable.
-       If ``func`` returns ``None``, the results will be a sequence of ``None``.
-       Note: The function returns a generator, which must be consumed to retrieve results.
+    Yields
+    ------
+    Any
+        The results of ``func`` for each item in the iterable.
+        If ``func`` returns ``None``, the results will be a sequence of ``None``.
+        Note: The function returns a generator, which must be consumed to retrieve results.
 
-   Other Parameters
-   ----------------
-   use_thread : bool, optional, default=False
-       If ``True``, use threads for parallel execution;
-       if ``False``, use processes (recommended for CPU-bound tasks).
+    Other Parameters supplied as keyword arguments
+    ----------------
+    use_thread : bool, optional, default=False
+        If ``True``, use threads for parallel execution;
+        if ``False``, use processes (recommended for CPU-bound tasks).
 
-   ncores : int, optional
-       Number of worker processes or threads to use.
-       Defaults to 50% of available CPU cores.
+    ncores : int, optional
+        Number of worker processes or threads to use.
+        Defaults to 50% of available CPU cores.
 
-   verbose : bool, optional, default=True
-       Whether to display a progress bar.
+    verbose : bool, optional, default=True
+        Whether to display a progress bar.
 
-   progress_message : str, optional
-       Message to display alongside the progress bar.
-       Defaults to ``f"Processing multiple jobs via {func.__name__}, please wait!"``.
+    progress_message : str, optional default ="Processing.. wait!"
+        Message to display alongside the progress bar.
 
-   void : bool, optional, default=False
-       If ``True``, results are consumed internally (not yielded).
-       Useful for functions that operate with side effects and do not return results.
+    void : bool, optional, default=False
+        If ``True``, results are consumed internally (not yielded).
+        Useful for functions that operate with side effects and do not return results.
 
-   unit : str, optional, default="iteration"
-       Label for the progress bar unit (cosmetic only).
+    unit : str, optional, default="iteration"
+        Label for the progress bar unit (cosmetic only).
 
-   n_chunks : int, optional
-       Number of chunks to divide the iterable into.
-       For example, if the iterable length is 100 and ``n_chunks=10``, each chunk will have 10 items.
+    n_chunks : int, optional
+        Number of chunks to divide the iterable into.
+        For example, if the iterable length is 100 and ``n_chunks=10``, each chunk will have 10 items.
 
-   chunk_size : int, optional
-       Size of each chunk.
-       If specified, ``n_chunks`` is determined automatically.
-       For example, if the iterable length is 100 and ``chunk_size=10``, then ``n_chunks=10``.
-   Examples
-   --------
-   Run with processes (CPU-bound):
-   >>> def worker():
-   ... pass
+    chunk_size : int, optional
+        Size of each chunk.
+        If specified, ``n_chunks`` is determined automatically.
+        For example, if the iterable length is 100 and ``chunk_size=10``, then ``n_chunks=10``.
+    resume : bool, optional, default=False
+        tracks the progress of completed chunks and resumes from the last completed chunk in case the session is interrupted. make sure the previous chunks are not changed
+    db_session : DatabaseSession, optional, default=None
+      if None, and resume __data_db__{number of chunks}.db is used and stored in the cwd
 
-   >>> list(run_parallel(work, range(5), use_thread=False, ncores=4))
+    Examples
+    --------
+    Run with processes (CPU-bound):
 
-   Run with threads (I/O-bound):
+    .. code-block:: python
 
-   >>> for _ in run_parallel(download, urls, use_thread=True, verbose=True):
-   ...     pass
+         def worker():
+            # some code here
+        if __name__ == __main__:
+            list(run_parallel(work, range(5), use_thread=False, ncores=4))
 
-   .. seealso::
+    Run with threads (I/O-bound):
 
-          :func:`~apsimNGpy.parallel.process.custom_parallel`
+    .. code-block:: python
+
+         for _ in run_parallel(download, urls, use_thread=True, verbose=True):
+            pass
+
+   .. note::
+
+      resume acts for the previous and future session in case a process is interrupted.
+
+    .. seealso::
+
+           :func:`~apsimNGpy.parallel.process.custom_parallel`
+           @param jobs:
 
 apsimNGpy.senstivity.sensitivity
 --------------------------------
@@ -14495,7 +14552,7 @@ apsimNGpy.senstivity.sensitivity
 Functions
 ^^^^^^^^^
 
-.. py:function:: apsimNGpy.senstivity.sensitivity.run_sensitivity(configured_prob: 'ConfigProblem', *, method: 'str' = 'morris', N: 'int | None' = None, seed: 'int | None' = 48, agg_func: 'str' = 'sum', n_cores: 'int' = -2, retry_rate: 'int' = 3, threads: 'bool' = False, sample_options: 'dict | None' = None, analyze_options: 'dict | None' = None)
+.. py:function:: apsimNGpy.senstivity.sensitivity.run_sensitivity(configured_prob: 'ConfigProblem', *, method: 'str' = 'morris', N: 'int | None' = None, seed: 'int | None' = 48, agg_func: 'str' = 'sum', n_cores: 'int' = -2, retry_rate: 'int' = 3, threads: 'bool' = False, sample_options: 'dict | None' = None, analyze_options: 'dict | None' = None, engine='python')
 
    Run a complete sensitivity analysis.
 
@@ -14573,7 +14630,7 @@ Functions
        calc_second_order (bool)
            Whether second order sensitivity indices are computed.
            Enabling this option increases runtime.
-           Default is True
+           Default is False
 
        scramble (bool)
            Whether scrambling is applied to improve the quality of the
@@ -14591,6 +14648,9 @@ Functions
    analyze_options : dict, optional
        Options forwarded to the SALib analyzer. The available options are described in the
        SALIB documentation fore each method.
+   engine: str optional default is 'python'
+       if 'csharp' results are written to a directory then forwarded to Models.exe. This is 2 times faster all the time
+
 
    Examples
    ---------
@@ -14717,7 +14777,7 @@ Classes
 
    Generate APSIM jobs for each sampled parameter vector.
 
-   .. py:method:: apsimNGpy.senstivity.sensitivity.ConfigProblem.evaluate(self, X, agg_func='sum', n_cores=-2, retry_rate=2, threads=False)
+   .. py:method:: apsimNGpy.senstivity.sensitivity.ConfigProblem.evaluate(self, X, agg_func='sum', n_cores=-2, retry_rate=2, threads=False, engine='python')
 
    The problem is already defined but user want to control the inputs or use a procedural approach after.
 
@@ -14732,6 +14792,8 @@ Classes
        Number of retries for failed simulations.
    threads : bool, default=False
        Use multithreading instead of multiprocessing.
+   engine: str optional default is 'python'
+   if 'csharp' results are written to a directory then forwarded to Models.exe. this is 2 times faster all the time
 
 apsimNGpy.validation.evaluator
 ------------------------------

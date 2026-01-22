@@ -1,12 +1,7 @@
 from __future__ import annotations
-
-import gc
-import math
-import os
+import re, gc, os, math, shutil, time
 import os.path
-import shutil
 import sqlite3
-import time
 import uuid
 from collections.abc import Iterable
 # Database connection
@@ -28,14 +23,13 @@ from apsimNGpy.parallel.process import custom_parallel
 from contextlib import contextmanager
 
 ID = 0
-# default cores to use
-CORES = max(1, math.ceil(os.cpu_count() * 0.85))
 csv_doc = pd.DataFrame().to_csv.__doc__
 
 
 # tempfile could work too
 @contextmanager
 def apsim_workdir(prefix, delay=0.03):
+    "creates a temporal working directory"
     tmp = Path(f"mcp{prefix}{uuid.uuid4().hex}")
     tmp.mkdir(parents=True, exist_ok=True)
     try:
@@ -70,9 +64,6 @@ def core_count(user_core: int, threads: bool) -> int:
         )
 
     return max(2, core)
-
-
-import re
 
 
 def _get_id(fname: str) -> int:
@@ -111,37 +102,6 @@ def get_results(file_name, db_or_con, prefix, agg_func=None, sub=None):
                     chunk_size=None)
 
 
-def _is_my_iterable(value):
-    """Check if a value is an iterable, but not a string."""
-    return isinstance(value, Iterable) and not isinstance(value, str)
-
-
-def simulation_exists(db_path: str, table_name: str, simulation_id: int) -> bool:
-    """
-    Check if a simulation_id exists in the specified table.
-
-    Args:
-        db_path (str): Path to the SQLite database file.
-        table_name (str): Name of the table to query.
-        simulation_id (int): ID of the simulation to check.
-
-    Returns:
-        bool: True if exists, False otherwise.
-    """
-    engine = create_engine(f"sqlite:///{db_path}")
-
-    query = text(f"SELECT 1 FROM {table_name} WHERE SimulationID = :sim_id LIMIT 1")
-    with engine.connect() as conn:
-        result = conn.execute(query, {"sim_id": simulation_id}).first()
-        return result is not None
-
-
-@timer
-def insert_data_with_pd(db, table, results, if_exists):
-    engine = create_engine(f'sqlite:///{db}')
-    results.to_sql(table, engine, index=False, if_exists=if_exists)
-
-
 class MultiCoreManager:
     __slots__ = (
         "db_path",
@@ -152,7 +112,8 @@ class MultiCoreManager:
         "table_prefix",
         'ran_ok',
         'cleared_db',
-        'run_external'
+        'run_external',
+        'engine'
     )
 
     def __init__(self, db_path: Union[str, Path, None, sqlalchemy.engine.base.Engine, sqlite3.Connection] = None,
@@ -226,6 +187,7 @@ class MultiCoreManager:
             self.db_path = Path(self.db_path).resolve().with_suffix('.db')
         self.cleared_db = False
         self.run_external = False
+        self.engine = 'python'
 
     def __enter__(self):
         return self
@@ -314,7 +276,10 @@ class MultiCoreManager:
         These identifiers facilitate traceability and reproducibility across serial
         and parallel execution workflows.
         """
-        return self._get_simulated_results(axis=axis, tables=self.tables)
+        if self.engine == 'python':
+            return self._get_simulated_results(axis=axis, tables=self.tables)
+        elif self.engine == 'csharp':
+            return self._merged_simulated(axis=axis)
 
     @property
     def results(self):
@@ -335,13 +300,18 @@ class MultiCoreManager:
         tables = get_db_table_names(self.db_path)
         if not tables:
             return self
-        for tb in tables:
-            try:
-                _ = drop_table(self.db_path, tb) if tb.startswith(f"{self.table_prefix}") else None
-            except PermissionError:
-                pass
-            except FileNotFoundError:
-                pass
+
+        def _clear(prefix):
+            for tb in tables:
+                try:
+                    _ = drop_table(self.db_path, tb) if tb.startswith(f"{prefix}") else None
+                except PermissionError:
+                    pass
+                except FileNotFoundError:
+                    pass
+
+        for pref in {self.table_prefix, f"meta{self.table_prefix}"}:
+            _clear(pref)
 
     @staticmethod
     def clear_scratch():
@@ -542,11 +512,12 @@ class MultiCoreManager:
 
         retry_rate : int, optional
             Number of times to retry a job upon failure before giving up.
+            Works only when `engine = python`
         subset:
            subset of the data columns to forward to sql or save. It is handled silently if the subset does not exist, the entire table will be saved
         ignore_runtime_errors: bool, optional. Default is True
           Ignore ApsimRunTimeError, to avoid breaking the program during multiprocessing
-          other processes can proceed, while we can keep the failed jobs
+          other processes can proceed, while we can keep the failed jobs. Works only when `engine = python`
         engine: str or None, optional default is python.
              if engine is python, we run all jobs in parallel, but if engine is csharp, we run jobs externally, meaning all jobs are invoked by csharp
              this is by far the fastest. However, it has not been exclusively tested; preliminary tests showed that version 7844 did not perform well, while
@@ -636,6 +607,7 @@ class MultiCoreManager:
         if ch_size > 150:
             raise ValueError('Chunk size must be less than 150')
         if engine.lower() == 'csharp':
+            self.engine = engine
             if clear_db:
                 self.clear_db()
 
@@ -845,6 +817,26 @@ class MultiCoreManager:
         # update incomplete jobs on the main class
         self.incomplete_jobs = failed
         self.ran_ok = True
+
+    @property
+    def meta_data(self):
+        """ return a generator of metadata about the simulated data, if engine was csharp NotImplementedError otherwise"""
+        if self.engine == 'csharp':
+            meta_tables = (i for i in get_db_table_names(self.db_path) if i.startswith(f'meta{self.table_prefix}'))
+            return (read_with_pandas(table=tn, db_or_con=self.db_path) for tn in meta_tables)
+        else:
+            raise NotImplementedError(f'method not supported when engine is  {self.engine}')
+
+    def _merged_simulated(self, axis=0):
+        """# NOTE FOR DEVELOPERS:
+        # When using the C# engine, simulation metadata is stored separately from the
+        # main results. This step explicitly extracts that metadata and merges it back
+        # into the simulated outputs to ensure a unified, consistent result structure.
+        """
+        meta_df = pd.concat(self.meta_data, axis=0, ignore_index=True)
+        simulated = self._get_simulated_results(axis=axis, tables=self.tables)
+        out = simulated.merge(meta_df, how='left', on='ID')
+        return out
 
     def run_jobs_external(self, jobs, n_cores=-3, threads=False, subset=None):
         """

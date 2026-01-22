@@ -180,7 +180,7 @@ def run_sensitivity(
         threads: bool = False,
         sample_options: dict | None = None,
         analyze_options: dict | None = None,
-        engine ='python'
+        engine ='csharp'
 ):
     """
     Run a complete sensitivity analysis.
@@ -341,6 +341,7 @@ def run_sensitivity(
         Si_fast = run_sensitivity(
             runner,
             method="fast",
+            engine = 'python',
             sample_options={
                 "M": 2,
             },
@@ -363,6 +364,7 @@ def run_sensitivity(
             runner,
             method="sobol",
             N=2 ** 8,  # base sample size
+            engine='csharp', # default is csharp
             sample_options={
                 "calc_second_order": False,
             },

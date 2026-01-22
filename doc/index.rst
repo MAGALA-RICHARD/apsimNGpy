@@ -8,7 +8,7 @@ apsimNGpy: The Next-Generation Agro-ecosystem Simulation Library
    :alt: License: Apache-2.0
 
 .. image:: https://img.shields.io/badge/docs-online-blue.svg
-   :target: https://magala-richard.github.io/apsimNGpy-documentations/index.html
+   :target: https://apsimngpy.readthedocs.io/en/latest
    :alt: Documentation
 
 .. image:: https://img.shields.io/pypi/v/apsimNGpy?logo=pypi

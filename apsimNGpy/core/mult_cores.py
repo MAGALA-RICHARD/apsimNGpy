@@ -409,7 +409,8 @@ class MultiCoreManager:
             raise ValueError("results are empty or not yet simulated")
 
     def run_all_jobs(self, jobs, *, n_cores=-2, threads=False, clear_db=True, retry_rate=1, subset=None,
-                     ignore_runtime_errors=True, engine='python', progressbar: bool = True, **kwargs):
+                     ignore_runtime_errors=True, engine='python', progressbar: bool = True,
+                     chunk_size:int=100, **kwargs):
         """
 
         This method executes a collection of APSIM simulation jobs in parallel,
@@ -515,16 +516,17 @@ class MultiCoreManager:
             Works only when `engine = python`
         subset:
            subset of the data columns to forward to sql or save. It is handled silently if the subset does not exist, the entire table will be saved
-        ignore_runtime_errors: bool, optional. Default is True
+        ignore_runtime_errors: bool, optional. Default is True.
           Ignore ApsimRunTimeError, to avoid breaking the program during multiprocessing
           other processes can proceed, while we can keep the failed jobs. Works only when `engine = python`
         engine: str or None, optional default is python.
              if engine is python, we run all jobs in parallel, but if engine is csharp, we run jobs externally, meaning all jobs are invoked by csharp
              this is by far the fastest. However, it has not been exclusively tested; preliminary tests showed that version 7844 did not perform well, while
              APSIM2025.12.7939.0.
-        progressbar: bool, optional. Default is True
-            a progress bar will be displayed if True
-
+        progressbar: bool, optional. Default is True,
+            a progress bar will be displayed if True.
+        chunk_size: int, optional default is 100, the maximum allowed is 150.
+              Used to determine the size of the individual chunk to send to the runner at a time. Only used when engine is csharp.
 
         Returns
         -------
@@ -603,7 +605,7 @@ class MultiCoreManager:
             print(dff.shape)
 
         """
-        ch_size = kwargs.get('chunk_size', 100)
+        ch_size = chunk_size
         if ch_size > 150:
             raise ValueError('Chunk size must be less than 150')
         if engine.lower() == 'csharp':
@@ -613,7 +615,8 @@ class MultiCoreManager:
 
             if progressbar:
                 CH_A_NKS = tuple(chunker(jobs, chunk_size=ch_size))
-                prog_msg = 'Processing please wait..'
+                maxJobs = sum(len(i) for i in CH_A_NKS)
+                prog_msg = f'Processing {maxJobs} jobs wait..'
                 with tqdm(
                         total=len(CH_A_NKS),
                         desc=prog_msg,

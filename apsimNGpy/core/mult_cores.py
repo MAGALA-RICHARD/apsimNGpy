@@ -30,7 +30,7 @@ csv_doc = pd.DataFrame().to_csv.__doc__
 @contextmanager
 def apsim_workdir(prefix, delay=0.03):
     "creates a temporal working directory"
-    tmp = Path(f"mcp{prefix}{uuid.uuid4().hex}")
+    tmp = Path(f"mcp{prefix}{uuid.uuid4().hex}").resolve()
     tmp.mkdir(parents=True, exist_ok=True)
     try:
         yield tmp

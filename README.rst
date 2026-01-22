@@ -90,7 +90,7 @@ Use the **pinned APSIM release** indicated on the documentation homepage to avoi
 The pinned version represents the latest APSIM NG build verified against apsimNGpy’s API and unit tests.
 
 apsimNgpy v1.1.0 change logs
-====================
+==============================
 
 added
 =============
@@ -100,7 +100,7 @@ added
 Changed
 =========
 - Internal task scheduling for engine="csharp" to reduce overhead and memory pressure.
-- Up to ~200% speed improvement for multi-simulation workloads when using csharp engine. A critical milestone for sensitivity analysis and large scale simulations
+- Up to ~50-100% speed improvement for multi-simulation workloads when using csharp engine. A critical milestone for sensitivity analysis and large scale simulations
 
 Fixed
 =======

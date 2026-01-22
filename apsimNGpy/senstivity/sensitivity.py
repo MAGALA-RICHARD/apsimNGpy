@@ -86,7 +86,8 @@ class ConfigProblem:
             n_cores: int,
             retry_rate: int,
             threads: bool,
-            engine: str
+            engine: str,
+            chunk_size:int =100
     ):
         """
         Run APSIM simulations and return outputs and raw results.
@@ -108,7 +109,8 @@ class ConfigProblem:
                     display_failures=True,
                     subset=self.outputs,
                     ignore_runtime_errors=False,
-                    engine=engine
+                    engine=engine,
+                    chunk_size=chunk_size
                 )
                 df = mc.get_simulated_output(axis=0)
                 df.sort_values(self.index_id, inplace=True)
@@ -462,7 +464,7 @@ if __name__ == "__main__":
     Si_sobol = run_sensitivity(
         runner,
         method="sobol",
-        N=2 ** 8,  # ← base sample size
+        N=2 ** 5,  # ← base sample size
         n_cores=-6,
         engine='csharp',
         sample_options={

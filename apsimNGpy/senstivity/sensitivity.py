@@ -278,7 +278,7 @@ def run_sensitivity(
         Options forwarded to the SALib analyzer. The available options are described in the
         SALIB documentation fore each method.
     engine: str optional default is 'python'
-        if 'csharp' results are written to a directory then forwarded to Models.exe. this is 2 times faster all the time
+        if 'csharp' results are written to a directory then forwarded to Models.exe. This is 2 times faster all the time
 
 
     Examples
@@ -460,7 +460,7 @@ if __name__ == "__main__":
     Si_sobol = run_sensitivity(
         runner,
         method="sobol",
-        N=2 ** 6,  # ← base sample size
+        N=2 ** 8,  # ← base sample size
         n_cores=-6,
         engine='csharp',
         sample_options={

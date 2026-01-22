@@ -615,7 +615,9 @@ class MultiCoreManager:
 
             if progressbar:
                 CH_A_NKS = tuple(chunker(jobs, chunk_size=ch_size))
-                maxJobs = sum(len(i) for i in CH_A_NKS)
+                # CH_A_NKS is expected to contain sized collections; this guard avoids
+                # hard failures if a non-sized object is ever introduced.
+                maxJobs = sum(len(i) for i in CH_A_NKS if hasattr(i, '__len__'))
                 prog_msg = f'Processing {maxJobs} jobs wait..'
                 with tqdm(
                         total=len(CH_A_NKS),

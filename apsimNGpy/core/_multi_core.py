@@ -113,7 +113,7 @@ def edit_to_folder(job, *,folder_path: str, prefix,  db_or_conn):
                 # set before running
                 for in_put in inputs:
                     _model.set_params(**in_put)
-            reps = _model.inspect_model('Models.Report', fullpath=False)
+            # reps = _model.inspect_model('Models.Report', fullpath=False)
             _model.Simulations.Name = f"{_model.Simulations.Name}_{ID}"
             for sim in _model.simulations:
                 sim.Name = f"{sim.Name}_{ID}"
@@ -123,10 +123,10 @@ def edit_to_folder(job, *,folder_path: str, prefix,  db_or_conn):
             merged_inputs = merge_dict(inputs)
             merged_inputs['MetaProcessID'] = PID
             metadata = {**metadata, **merged_inputs}
-            metadata['ApsimReports'] = f"{reps}"
+            # metadata['ApsimReports'] = f"{reps}"
             out= DataFrame([metadata])
             schema_hash = schema_id(tuple(out.dtypes))
-            table_name = f"{schema_hash}_{PID}"
+            table_name = f"meta{prefix}{schema_hash}_{PID}"
             write_df_to_sql(out, db_or_con=db_or_conn, table_name=table_name, if_exists='append',
                             chunk_size=None)
 

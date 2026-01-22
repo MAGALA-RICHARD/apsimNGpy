@@ -182,7 +182,8 @@ def run_sensitivity(
         threads: bool = False,
         sample_options: dict | None = None,
         analyze_options: dict | None = None,
-        engine ='csharp'
+        engine ='python',
+        chunk_size: int =100
 ):
     """
     Run a complete sensitivity analysis.
@@ -280,7 +281,8 @@ def run_sensitivity(
         Options forwarded to the SALib analyzer. The available options are described in the
         SALIB documentation fore each method.
     engine: str optional default is 'python'
-        if 'csharp' results are written to a directory then forwarded to Models.exe. This is 2 times faster all the time
+        if 'csharp' results are written to a directory then forwarded to Models.exe. This is 50-100% times faster than python all the time.
+        The csharp engine is considerably faster on powerful machines but exhibits stability issues in some older APSIM versions, whereas the Python engine is more stable. For this reason, the default engine is set to "python".
 
 
     Examples
@@ -414,7 +416,8 @@ def run_sensitivity(
         n_cores=n_cores,
         retry_rate=retry_rate,
         threads=threads,
-        engine=engine
+        engine=engine,
+        chunk_size=chunk_size
     )
 
     sampler = getattr(configured_prob.problem, f"sample_{method}")
@@ -464,7 +467,7 @@ if __name__ == "__main__":
     Si_sobol = run_sensitivity(
         runner,
         method="sobol",
-        N=2 ** 5,  # ← base sample size
+        N=2 ** 8,  # ← base sample size
         n_cores=-6,
         engine='csharp',
         sample_options={
@@ -474,7 +477,7 @@ if __name__ == "__main__":
         },
         analyze_options={
             "conf_level": 0.95,
-            "num_resamples": 1000,
+            "num_resamples": 5000,
             "print_to_console": True,
             "calc_second_order": True,
         },

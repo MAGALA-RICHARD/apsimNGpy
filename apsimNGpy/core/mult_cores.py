@@ -605,6 +605,7 @@ class MultiCoreManager:
             print(dff.shape)
 
         """
+        n_cores =core_count(n_cores, threads=threads)
         ch_size = chunk_size
         if ch_size > 150:
             raise ValueError('Chunk size must be less than 150')
@@ -843,7 +844,7 @@ class MultiCoreManager:
         out = simulated.merge(meta_df, how='left', on='ID')
         return out
 
-    def run_jobs_external(self, jobs, n_cores=-3, threads=False, subset=None):
+    def run_jobs_external(self, jobs, n_cores=-3, threads=False, subset=None, progressbar=False):
         """
         Tested and stable with APSIM version APSIM2025.12.7939.0
         version Later versions may exhibit intermittent SQLite errors under batch execution.
@@ -866,7 +867,7 @@ class MultiCoreManager:
                 def send_jobs():
                     try:
                         for _ in custom_parallel(func=partial_editor, iterable=jobs, ncores=n_cores, threads=threads,
-                                                 progress_message='Copying data..', progressbar=False):
+                                                 progress_message='Copying data..', progressbar=progressbar):
                             pass
                     finally:
                         gc.collect()

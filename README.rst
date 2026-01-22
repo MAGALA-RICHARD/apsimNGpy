@@ -95,7 +95,7 @@ apsimNgpy v1.1.0 change logs
 added
 =============
 - run_all_jobs on MultiCoreManagerAPI is now optimized to run under pure  C# execution pathway under the option engine=csharp
-- it also has an option to turn off progressbars using progressbar=False
+- It also has an option to turn off progressbars using progressbar=False
 
 Changed
 =========

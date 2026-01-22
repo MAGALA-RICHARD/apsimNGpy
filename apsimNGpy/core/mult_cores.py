@@ -134,60 +134,6 @@ def insert_data_with_pd(db, table, results, if_exists):
 
 
 class MultiCoreManager:
-    """
-        Manager class for coordinating multi-core execution workflows and
-        handling result aggregation and persistence.
-
-        This class serves as a lightweight state container for parallel or
-        multi-core processing tasks. It tracks execution status, incomplete
-        jobs, database connections, and aggregation behavior, and is designed
-        to be shared across worker processes or threads in a controlled manner.
-
-        Parameters
-        ----------
-        db_path : str, pathlib.Path, default=resolved path 'manager_datastorage.db'
-            Database  path used to persist results generated
-            during multi-core execution. connections may not be picklable
-
-        agg_func : str or None, optional
-            Name of the aggregation function used to combine results from
-            completed jobs. The interpretation of this value depends on the
-            execution context and downstream processing logic. When the user provides an index for aggregation in run_all_jobs method,
-            aggregation is performed on that index. 
-
-        ran_ok : bool, optional
-            Flag indicating whether the multi-core execution completed
-            successfully. This value is updated internally after execution
-            finishes. It is used a signal to data memory retrieval methods on this class that everything is ok to retrieve the results from sql database.
-
-        incomplete_jobs : list, optional
-            List used to track jobs that failed, were interrupted, or did not
-            complete successfully during execution. This list is populated
-            dynamically at runtime. Most of the time this container will be empty because the back-end retries silently in case of any perturbation
-
-        table_prefix : str, optional
-            Prefix used when creating database tables for storing intermediate
-            or aggregated results. This helps avoid table name collisions when
-            running multiple workflows. This prefix is also used to avoid table name collisions by clearing all tables that exists with that prefix, for every fresh restart.
-            Why this is critical is that we don't want to mixe results from previous session with the current session
-
-        Attributes
-        ----------
-        tag : str
-            Identifier string used to label this manager instance in logs,
-            database tables, or metadata.
-
-        default_db : str
-            Default SQLite database filename used when no database is
-            explicitly provided.
-
-        cleared_db : bool
-            Internal flag indicating whether the database has been cleared
-            during the current execution lifecycle. This attribute is managed
-            internally and is not intended to be set by the user.
-            
-            By default, tables starting with the provided prefix are deleted for each initialization, to prepare for clean data collection
-        """
     __slots__ = (
         "db_path",
         "agg_func",
@@ -607,6 +553,7 @@ class MultiCoreManager:
         Notes
         -----
         engine ==python
+        ------------------
 
         - Each execution is isolated and uses a context-managed ``apsimNGpy``
           model instance to ensure proper cleanup.
@@ -622,18 +569,18 @@ class MultiCoreManager:
            avoid duplicate identifiers in both metadata and input data.
 
         engine==csharp
-        -------------
+        ---------------
         When the engine is set to csharp, APSIMNGpy applies all model edits and writes the modified
         APSIMX files to a working directory, after which they are executed by the C# engine using
-        ultithreading. Task chunking is required to prevent stack overflow and excessive memory
+        multithreading. Task chunking is required to prevent stack overflow and excessive memory
         usage arising from APSIM’s internal execution architecture, not from disk I/O or file writing.
 
         To manage these architectural constraints, simulations are executed in chunks determined by a
-        user-specified chunk size, with a maximum (and default) value of 100 simulations per chunk.
-        For example, a run consisting of 1,000 simulations is executed sequentially in 10 chunks of
-        100 simulations each.
+        user-specified chunk size, with a maximum (and default) value of 150 simulations per chunk.
+        For example, a run consisting of 1500 simulations is executed sequentially in 10 chunks of
+        150 simulations each.
 
-        Under this execution mode, metadata tables are written separately from the simulation output tables.
+        Under this execution mode, metadata tables are written separately from the simulation output tables. but can be merged using column 'ID"
         If progressbar=True, the progress bar reports the progress and elapsed time for each chunk, providing
          visibility into long-running executions.
         Examples

@@ -617,6 +617,8 @@ def edit_cultivar_by_path(
     updated_cultivar = update_cultivar(cultivar, commands, values, rename=cultivar_name)
 
     # ---- Trace parent plant efficiently ----
+    if not replacements:
+        raise ValueError('Replacements not found')
     plant_name = trace_cultivar(replacements, cultivar_name=original_name, strict=True)[original_name]
 
     # ---- Insert updated cultivar ----

@@ -220,8 +220,8 @@ class CoreModel(PlotManager):
         return None
 
     def check_model(self):
-        if hasattr(Models.Core.ApsimFile, "ConverterReturnType"):
-
+        if hasattr(Models.Core, 'ApsimFile'):
+          if hasattr(Models.Core.ApsimFile, "ConverterReturnType"):
             if isinstance(self.Simulations, Models.Core.ApsimFile.ConverterReturnType):
                 self.Simulations = self.Simulations.get_NewModel()
                 self.model_info = self.model_info._replace(IModel=self.Simulations)
@@ -2049,16 +2049,23 @@ class CoreModel(PlotManager):
                     try:
                         plant_model = get_or_check_model(replacements, Models.PMF.Plant, plant_name,
                                                          action='get')
+                        if not plant_model:
+                            raise RuntimeError(f'plant {plant_name} not found')
                     except ValueError:
-                        pl_model = find_child(parent=replacements, child_class=Models.PMF.Plant, child_name='Maize')
-                        plant_model = pl_model
+                        "an error occured"
+                        plant_model = find_child(parent=replacements, child_class=Models.PMF.Plant, child_name='Maize')
+
 
                     # Remove existing cultivar with same name
                     get_or_check_model(replacements, Models.PMF.Cultivar, new_cultivar_name, action='delete')
 
                     # Rename and reattach cultivar
                     cultivar.Name = new_cultivar_name
-                    ModelTools.ADD(cultivar, plant_model)
+                    if ModelTools.ADD:
+                        # most likely old APSIM models
+                         ModelTools.ADD(cultivar, plant_model)
+                    else:
+                        plant_model.Children.Add(cultivar)
 
                     # Update cultivar manager script
                     self.edit_model(model_type=Models.Manager, model_name=cultivar_manager, simulations=simulations,
@@ -4672,7 +4679,7 @@ class CoreModel(PlotManager):
         else:
             target_parent = PARENT.FindDescendant[Models.Core.Folder]('Replacements')
         if not target_parent:
-            ModelTools.ADD(_FOLDER, PARENT)
+                ModelTools.ADD(_FOLDER, PARENT)
         # assumes that the crop already exists in the simulation
         if is_higher_apsim_version(self.Simulations):
             _crop = ModelTools.find_child(PARENT, Models.PMF.Plant, CROP)
@@ -4680,10 +4687,10 @@ class CoreModel(PlotManager):
             _crop = PARENT.FindDescendant[Models.PMF.Plant](CROP)
 
         if _crop is not None:
-            ModelTools.ADD(_crop, _FOLDER)
-        else:
+                ModelTools.ADD(_crop, _FOLDER)
 
-            logger.error(f"No plants of crop{CROP} found")
+        else:
+            logger.error(f"No plants of crop {CROP} found")
         return self
 
     def get_model_paths(self, cultivar=False) -> list[str]:

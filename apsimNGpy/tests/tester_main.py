@@ -110,6 +110,7 @@ if IS_NEW_APSIM:
 
 
 def clean_up():
+
     sc = Path('../scratch')
     for path in sc.rglob("temp_*"):
         try:
@@ -138,14 +139,17 @@ def run_suite(verbosity_level=2):
         num_failures = len(result.failures)
         num_errors = len(result.errors)
         num_passed = total_tests - num_failures - num_errors
-        failure_rate = (num_failures + num_errors) / total_tests * 100 if total_tests else 0
+        failure_rate = (num_failures / total_tests) * 100 if total_tests else 0
+        error_rate = (num_errors / total_tests) * 100 if total_tests else 0
 
         logger.info(f"\n Test Summary:")
         print(f"=====================================")
-        logger.info(f"  ✅ Passed  : {num_passed}")
-        logger.info(f"  ❌ Failures: {num_failures}")
-        logger.info(f"  💥 Errors  : {num_errors}")
-        logger.info(f"  📉 Failure Rate: {failure_rate:.2f}%")
+        logger.info(f"✅ Passed  : {num_passed}")
+        logger.info(f"❌ Failures: {num_failures}")
+        logger.info(f"❌ Errors  : {num_errors}")
+        logger.info(f"📉 Failure Rate: {failure_rate:.2f}%")
+        logger.info(f"📉 Error Rate: {error_rate:.2f}%\n")
+
 
         # Create report string
         report = (
@@ -155,6 +159,7 @@ def run_suite(verbosity_level=2):
             f"❌ Failures: {num_failures}\n"
             f"💥 Errors  : {num_errors}\n"
             f"📉 Failure Rate: {failure_rate:.2f}%\n"
+            f"📉 Error Rate: {error_rate:.2f}%\n"
             f"Date: {date_STR}"
         )
 

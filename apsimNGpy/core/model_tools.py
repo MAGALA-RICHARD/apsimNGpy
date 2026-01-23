@@ -30,6 +30,33 @@ APSIM_VERSION = apsim_version(release_number=True)
 from collections.abc import Iterable
 
 
+def _add_model(model, parent) -> None:
+    """
+    Adds a model node from the model tree based on the file structure.
+    @param model: model to add to the parent.
+    @param parent: parent model where to add the model.
+    @return: None
+    """
+    if hasattr(Models.Core, 'ApsimFile'):
+        Models.Core.ApsimFile.Structure.Add(model, parent)
+    else:
+        parent.Children.Add(model)
+
+
+def _delete_node(node) -> None:
+    """
+    deletes a node from the model tree based on the file structure
+    @param node:
+    @return: None
+    """
+    if hasattr(Models.Core, 'ApsimFile'):
+        Models.Core.ApsimFile.Structure.Delete(node)
+    else:
+        from APSIM.Core import Node
+        node = getattr(node, 'Node', node)
+        Node.Clear(node)
+
+
 @cache
 def select_thread(multithread):
     if multithread:
@@ -43,25 +70,31 @@ select_thread(multithread=True)
 
 
 def _tools(method):
-    if hasattr(Models.Core.ApsimFile.Structure, 'Rename'):
-        rename = Models.Core.ApsimFile.Structure.Rename
+    if hasattr(Models.Core, 'ApsimFile'):
+        if hasattr(Models.Core.ApsimFile.Structure, 'Rename'):
+            rename = Models.Core.ApsimFile.Structure.Rename
     else:
         rename = None
+    if hasattr(Models.Core, 'ApsimFile'):
+        FileTools = {
+            "MOVE": Models.Core.ApsimFile.Structure.Move,
+            "REPLACE": Models.Core.ApsimFile.Structure.Replace,
+        }
+    else:
+        FileTools = {}
     config = {
-        "ADD": Models.Core.ApsimFile.Structure.Add,
-        "DELETE": Models.Core.ApsimFile.Structure.Delete,
-        "MOVE": Models.Core.ApsimFile.Structure.Move,
+        "ADD": _add_model,
+        "DELETE": _delete_node,
         "RENAME": rename,
         "CLONER": Models.Core.Apsim.Clone,
-        "REPLACE": Models.Core.ApsimFile.Structure.Replace,
         "MultiThreaded": Models.Core.Run.Runner.RunTypeEnum.MultiThreaded,
         "SingleThreaded": Models.Core.Run.Runner.RunTypeEnum.SingleThreaded,
         "ModelRUNNER": Models.Core.Run.Runner,
         "CLASS_MODEL": type(Models.Clock),
         "ACTIONS": ('get', 'delete', 'check'),
         "COLLECT": collect,
-    }
-    method = config[method]
+        **FileTools}
+    method = config.get(method)
     del config
     return method
 
@@ -81,7 +114,7 @@ def find_child(parent, child_class, child_name):
         if child.Name == child_name and cast_child:
             # child = CastHelper.CastAs[child_class](child)
             return child
-        # 🔁 Recursively search in child's children
+        #  Recursively search in child's children
         result = find_child(child, child_class, child_name)
         if result is not None:
             return result
@@ -190,11 +223,10 @@ def get_or_check_model(search_scope, model_type, model_name, action='get', cache
 
         if action == 'delete' and get_model:
             ModelTools.DELETE(get_model)
+
         if get_model and action == 'get':
             return get_model
 
-    # if cacheit:
-    #     __excute = lru_cache(maxsize=cache_size)(__excute)
     return _execute(search_scope, model_type, model_name, action)
 
 
@@ -1155,11 +1187,20 @@ class ModelTools:
     edit_instance = edit_instance_attributes
 
 
-def find_all_model_type(parent, model_type):
+def find_all_model_type(parent, model_type, ignore_errors=False):
     if not callable(model_type):
         model_type = getattr(Models, model_type)
-    node_base = getattr(parent, "Node", parent)
-    return node_base.FindAll[model_type]()
+
+    #node_base = getattr(parent, "Node", parent)
+
+    error_MSG = f"Failed to find models of type {model_type} under parent node {parent}"
+
+    ALL_MODELS = find_all_in_scope(parent=parent, child_class=model_type)
+
+    if ALL_MODELS is None and not ignore_errors:
+        raise ValueError(error_MSG)
+    return ALL_MODELS
+
 
 
 collect()
@@ -1190,7 +1231,7 @@ if __name__ == "__main__":
     datastore.UseInMemoryDB = False
     a = time.perf_counter()
     sim.Prepare()
-    sim.Run()
+
     b = time.perf_counter()
     print(b - a, 'seconds')
 

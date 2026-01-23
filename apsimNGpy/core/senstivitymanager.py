@@ -27,7 +27,7 @@ if is_file_format_modified():
     import APSIM.Core as NodeUtils
     import System
 
-    structure = Models.Core.ApsimFile.Structure
+   # structure = Models.Core.ApsimFile.Structure
 else:
     from apsimNGpy.core.config import apsim_version
 

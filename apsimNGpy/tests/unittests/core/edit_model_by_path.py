@@ -17,7 +17,7 @@ Organic = '.Simulations.Simulation.Field.Soil.Organic'
 cultivar_path = '.Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_100'
 cultivar_path_soybean ='.Simulations.Simulation.Field.Soybean.Cultivars.Generic.Generic_MG2'
 cultivar_path_for_sowed_soybean = '.Simulations.Simulation.Field.Soybean.Cultivars.Australia.Davis'
-cultivar_path_for_sowed_maize = '.Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82'
+cultivar_path_for_sowed_maize = ".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82"
 # Create weather file on disk
 met_file = realpath(Path('wf.met'))
 met_file = load_crop_from_disk('AU_Goondiwindi', out=met_file, suffix='.met')

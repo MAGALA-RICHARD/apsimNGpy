@@ -26,10 +26,12 @@ from apsimNGpy.core.cs_resources import CastHelper as CastHelpers
 from apsimNGpy.core.pythonet_config import get_apsim_file_reader, get_apsim_file_writer, load_pythonnet
 from apsimNGpy.core.pythonet_config import get_apsim_version as apsim_version
 from System import GC
+
 load_models = load_pythonnet(bin_path=configuration.bin_path)
 from System.Collections.Generic import *
 from System import *
 import Models
+
 GLOBAL_IS_FILE_MODIFIED = load_models.file_format_modified
 scratch_dir = Path.cwd().joinpath('scratch')
 scratch_dir.mkdir(exist_ok=True)
@@ -163,7 +165,6 @@ def load_from_path(path2file, method='string'):
     the file path. This is slower than the former.
     """
 
-
     f_name = realpath(path2file)
     with open(f_name, "r+", encoding='utf-8') as apsimx:
         app_ap = json.load(apsimx)
@@ -189,7 +190,8 @@ def load_from_path(path2file, method='string'):
     return new_model
 
 
-def load_apsim_model(model=MODEL_NOT_PROVIDED, out_path=AUTO_PATH, file_load_method='string', met_file=None, wd=None, tag='temp_',
+def load_apsim_model(model=MODEL_NOT_PROVIDED, out_path=AUTO_PATH, file_load_method='string', met_file=None, wd=None,
+                     tag='temp_',
                      **kwargs):
     """
     Load an APSIMX model from a file path, dictionary, or in-memory object.
@@ -208,7 +210,7 @@ def load_apsim_model(model=MODEL_NOT_PROVIDED, out_path=AUTO_PATH, file_load_met
         {ModelData}: A dataclass container with paths, model object, and metadata.
     """
     if model is MODEL_NOT_PROVIDED:
-        model=None
+        model = None
     if isinstance(model, Path):
         model = os.path.realpath(model)
 
@@ -287,7 +289,15 @@ def load_apsim_model(model=MODEL_NOT_PROVIDED, out_path=AUTO_PATH, file_load_met
     )
 
 
-def load_as_dict(file: Models.Core.ApsimFile) -> dict:
+def load_as_dict(file) -> dict:
+    """loads apsimx model from a path"""
+    WriteToString = get_apsim_file_writer()
+    model_simulations = load_from_path(file)
+    json_string = WriteToString(model_simulations)
+    return json.loads(json_string)
+
+
+def _load_as_dict(file) -> dict:
     """loads apsimx model from a pathlib"""
     model_simulations = load_from_path(file)
     json_string = Models.Core.ApsimFile.FileFormat.WriteToString(model_simulations)

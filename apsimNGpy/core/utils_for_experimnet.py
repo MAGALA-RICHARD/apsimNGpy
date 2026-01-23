@@ -18,8 +18,7 @@ from apsimNGpy.core.model_loader import get_node_and_type, get_node_by_path
 if is_file_format_modified():
     import APSIM.Core as NodeUtils
     import System
-
-    structure = Models.Core.ApsimFile.Structure
+    #structure = Models.Core.ApsimFile.Structure
 else:
     from apsimNGpy.core.config import apsim_version
 

@@ -23,9 +23,9 @@
    :alt: Ask Teams
 
 
-.. image:: https://img.shields.io/badge/Download--APSIM--NG-2025.12.7939.0-blue?style=flat&logo=apachespark
+.. image:: https://img.shields.io/badge/Download--APSIM--NG-2026.01.7969.0-blue?style=flat&logo=apachespark
    :alt: APSIM Next Generation version
-   :target: https://registration.apsim.info/?version=2025.12.7939.0&product=APSIM%20Next%20Generation
+   :target: https://registration.apsim.info/?version=2026.01.7969.0&product=APSIM%20Next%20Generation
 
 apsimNGpy: The Next Generation Agroe-cosystem Simulation Library
 ===========================================================================

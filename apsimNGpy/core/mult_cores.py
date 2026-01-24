@@ -619,7 +619,7 @@ class MultiCoreManager:
            Parallel.run_all_jobs(jobs=jobs, n_cores=6, engine='python', threads=False, chunk_size=100,
                           subset=['Yield'],
                           progressbar=True)
-        if engine is csharp, chunk size will be used
+        if engine is csharp, chunk size will be used, parameter engine was introduced in v1.1.0
 
         .. code-block:: python
 

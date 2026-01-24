@@ -89,6 +89,13 @@ APSIM Next Generation (NG) Installation Tip
 Use the **pinned APSIM release** indicated on the documentation homepage to avoid forward-compatibility issues.
 The pinned version represents the latest APSIM NG build verified against apsimNGpy’s API and unit tests.
 
+apsimNGpy v1.2.0 (01/23/2026)
+===================================
+
+This release introduces minor enhancements to the MultiCoreManager API and resolves bugs related to recent APSIM versions.
+
+Include minor changes to the MultiCoreManager API, and fixed bugs associated with the newest APSIM versions
+
 apsimNgpy v1.1.0 change logs
 ==============================
 
@@ -201,27 +208,7 @@ Notes
 - If ``watch=False`` (default), ``preview_simulation`` behaves as before — no live syncing.
 - GUI edits must be **saved** before synchronization occurs. Unsaved edits are ignored.
 
-Developer impact
-====================
 
-- New function signature: ``preview_simulation(self, watch=False)``
-- Existing scripts calling ``preview_simulation()`` remain fully compatible.
-- File-watching currently uses file modification times; future releases may support event-based detection.
-
-
-v0.39.10.17
-===========
-
-Release Notes
-===============
-
-This build is stable for day-to-day work, with incremental API refinements.
-
-Highlights
-===================
-
-- Updated ``save`` method on ``ApsimModel`` to include a ``reload`` parameter.
-- Improved documentation navigation and linked related APIs.
 
 Links
 ================

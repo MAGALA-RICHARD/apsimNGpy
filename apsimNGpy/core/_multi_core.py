@@ -59,6 +59,11 @@ def _inspect_job(job) -> Tuple[str, Dict[str, Any], List[Dict[str, Any]]]:
         simulation model; all remaining key–value pairs are treated as
         metadata.
 
+    .. note::
+
+       key word ``model`` is reserved to represent the apsimx file, pyload or inputs can be used to describe a dictionary for model
+       editing parameters
+
     Returns
     -------
     model : str
@@ -86,7 +91,9 @@ def _inspect_job(job) -> Tuple[str, Dict[str, Any], List[Dict[str, Any]]]:
                     "Job dictionary must contain a 'model' key."
                 ) from exc
             inputs = data.pop("inputs", [])
-
+            # users are also free to use the key word payload
+            payload = data.pop("payload", [])
+            inputs = inputs or payload
             return model, data, inputs
 
         case _:

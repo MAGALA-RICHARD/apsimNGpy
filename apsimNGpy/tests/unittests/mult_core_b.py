@@ -11,10 +11,10 @@ if __name__ == '__main__':
     os.chdir(workspace)
 
     Parallel = MultiCoreManager(db_path=db, agg_func='sum', table_prefix='di',)
-    jobs = ({'model': 'Maize', 'ID': i, 'inputs': [{'path': '.Simulations.Simulation.Field.Fertilise at sowing',
-                                                    'Amount': i}]} for i in range(300))
+    jobs = ({'model': 'Maize', 'ID': i, 'payload': [{'path': '.Simulations.Simulation.Field.Fertilise at sowing',
+                                                    'Amount': i}]} for i in range(200))
     start = time.perf_counter()
-    Parallel.run_all_jobs(jobs=jobs, n_cores=5, engine='csharp', threads=True, chunk_size=100,
+    Parallel.run_all_jobs(jobs=jobs, n_cores=6, engine='csharp', threads=False, chunk_size=100,
                           subset=['Yield'],
                           progressbar=True)
     dff = Parallel.results

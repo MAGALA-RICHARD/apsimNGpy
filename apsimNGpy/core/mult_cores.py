@@ -597,12 +597,68 @@ class MultiCoreManager:
         db= (Path.home()/"test_agg.db").resolve()
         if __name__ == '__main__':
             workspace  = Path('D:/')
-            Parallel = MultiCoreManager(db_path=db, agg_func=None, table_prefix='di')
+            Parallel = MultiCoreManager(db_path=db, agg_func='sum', table_prefix='di')
             jobs = ({'model': 'Maize', 'ID': i, 'inputs': [{'path': '.Simulations.Simulation.Field.Fertilise at sowing',
-                                                            'Amount': i}]} for i in range(600))
+                                                            'Amount': i}]} for i in range(200))
             Parallel.run_all_jobs(jobs=jobs, n_cores=8, engine='csharp', threads=False,)
             dff = Parallel.results
             print(dff.shape)
+        .. note::
+
+          ``payload`` key word is still a valid argument introduced in v1.2.0 and can be used as follows
+
+        .. code-block:: python
+
+            jobs = ({'model': 'Maize', 'ID': i, 'payload': [{'path': '.Simulations.Simulation.Field.Fertilise at sowing',
+                                                            'Amount': i}]} for i in range(200))
+
+        Send jobs for processing
+        --------------------------
+        .. code-block:: python
+
+           Parallel.run_all_jobs(jobs=jobs, n_cores=6, engine='python', threads=False, chunk_size=100,
+                          subset=['Yield'],
+                          progressbar=True)
+        if engine is csharp, chunk size will be used
+
+        .. code-block:: python
+
+           Parallel.run_all_jobs(jobs=jobs, n_cores=6, engine='csharp', threads=False, chunk_size=100,
+                          subset=['Yield'],
+                          progressbar=True)
+
+        Get the simulated results
+        -------------------------------
+        .. code-block:: python
+
+            dff = Parallel.results
+            print(dff.shape)
+            # (200, 5)
+
+        A deep look at the results.
+        --------------------------
+
+        .. code-block:: None
+
+                      Yield source_table   ID  Amount  MetaProcessID
+                0    56024.992468       Report  195     195          37612
+                1    56931.990087       Report  110     110          46296
+                2    56018.961064       Report  196     196          53904
+                3    57136.204297       Report  124     124          48968
+                4    56451.297559       Report  151     151          37612
+                ..            ...          ...  ...     ...            ...
+                195  20648.605930       Report   10      10          53172
+                196  41250.083371       Report   64      64          53172
+                197  26731.681331       Report   25      25           9308
+                198  32095.705851       Report   42      42          38048
+                199  22905.212988       Report   16      16          53172
+                [200 rows x 5 columns]
+
+        It is clear that the shape of the returned data contains 200 rows, corresponding
+         to the 200 simulations that were executed. This row count reflects one summarized row per simulation.
+
+        When no aggregation is applied, the number of rows increases because each simulation contributes multiple
+        records. For example, if each simulation spans 10 years, the resulting DataFrame will contain 10 × 200 = 2,000 rows.
 
         """
         n_cores =core_count(n_cores, threads=threads)

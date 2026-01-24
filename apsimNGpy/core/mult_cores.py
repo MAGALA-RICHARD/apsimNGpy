@@ -636,7 +636,7 @@ class MultiCoreManager:
             # (200, 5)
 
         A deep look at the results.
-        --------------------------
+        ----------------------------
 
         .. code-block:: None
 

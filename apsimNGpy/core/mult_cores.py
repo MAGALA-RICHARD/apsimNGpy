@@ -12,7 +12,7 @@ import pandas as pd
 import sqlalchemy
 from sqlalchemy import create_engine, text
 from tqdm import tqdm
-from apsimNGpy.core._multi_core import edit_to_folder
+from apsimNGpy.core._multi_core import edit_to_folder, IDENTIFICATION
 from apsimNGpy.core._multi_core import single_runner
 from apsimNGpy.core.runner import _run_from_dir
 from apsimNGpy.core_utils.database_utils import (write_results_to_sql, drop_table,
@@ -21,9 +21,15 @@ from apsimNGpy.core_utils.utils import timer
 from apsimNGpy.parallel.data_manager import chunker
 from apsimNGpy.parallel.process import custom_parallel
 from contextlib import contextmanager
+from itertools import tee
 
 ID = 0
 csv_doc = pd.DataFrame().to_csv.__doc__
+PYTHON_ENGINE = 'python'
+CSHARP_ENGINE = 'csharp'
+SOURCE_TABLE = 'source_table'
+AGGREGATE_TABLE = 'aggregate_table'
+CSHARP_ENGINE_MAX_CHUNK_SIZE = 150
 
 
 # tempfile could work too
@@ -86,14 +92,14 @@ def get_results(file_name, db_or_con, prefix, agg_func=None, sub=None):
             df = read_with_pandas(db_or_con=file_name, table=tn)
             df = df.agg(agg_func, numeric_only=True)
             df = df.to_frame().T if not isinstance(df, pd.DataFrame) else df
-            df[['source_table', 'ID']] = [tn, stem_ID]
+            df[['source_table', IDENTIFICATION]] = [tn, stem_ID]
             data.append(df)
         df = pd.concat(data, ignore_index=True)
     if sub is not None:
         sub = [sub] if isinstance(sub, str) else sub
 
         if set(sub).issubset(df.columns):
-            others = ['source_table', 'ID']
+            others = ['source_table', IDENTIFICATION]
 
             df = df[[*sub, *others]].copy()
 
@@ -187,7 +193,7 @@ class MultiCoreManager:
             self.db_path = Path(self.db_path).resolve().with_suffix('.db')
         self.cleared_db = False
         self.run_external = False
-        self.engine = 'python'
+        self.engine = PYTHON_ENGINE
 
     def __enter__(self):
         return self
@@ -276,10 +282,12 @@ class MultiCoreManager:
         These identifiers facilitate traceability and reproducibility across serial
         and parallel execution workflows.
         """
-        if self.engine == 'python':
+        if self.engine == PYTHON_ENGINE:
             return self._get_simulated_results(axis=axis, tables=self.tables)
-        elif self.engine == 'csharp':
+        elif self.engine == CSHARP_ENGINE:
             return self._merged_simulated(axis=axis)
+        else:
+            raise NotImplementedError("Unsupported engine {}".format(self.engine))
 
     @property
     def results(self):
@@ -331,7 +339,7 @@ class MultiCoreManager:
             self,
             db_or_con: Union[str, Path],
             *,
-            table_name: str = "aggregated_tables",
+            table_name: str = AGGREGATE_TABLE,
             if_exists: Literal["fail", "replace", "append"] = "fail",
             chunk_size=None
     ) -> None:
@@ -383,7 +391,7 @@ class MultiCoreManager:
         >>> mgr.results.head()
            sim_id  yield  n2o
         0       1   10.2  0.8
-        >>> mgr.save("outputs/simulations.db")
+        >>> mgr.save_tosql("outputs/simulations.db")
 
         .. seealso::
 
@@ -410,7 +418,7 @@ class MultiCoreManager:
 
     def run_all_jobs(self, jobs, *, n_cores=-2, threads=False, clear_db=True, retry_rate=1, subset=None,
                      ignore_runtime_errors=True, engine='python', progressbar: bool = True,
-                     chunk_size:int=100, **kwargs):
+                     chunk_size: int = 100, **kwargs):
         """
 
         This method executes a collection of APSIM simulation jobs in parallel,
@@ -662,41 +670,44 @@ class MultiCoreManager:
         records. For example, if each simulation spans 10 years, the resulting DataFrame will contain 10 × 200 = 2,000 rows.
 
         """
-        n_cores =core_count(n_cores, threads=threads)
+        n_cores = core_count(n_cores, threads=threads)
         ch_size = chunk_size
-        if ch_size > 150:
-            raise ValueError('Chunk size must be less than 150')
-        if engine.lower() == 'csharp':
-            self.engine = engine
+        if ch_size > CSHARP_ENGINE_MAX_CHUNK_SIZE:
+            raise ValueError(f'Chunk size must be less than {CSHARP_ENGINE_MAX_CHUNK_SIZE}')
+        if engine.lower() == CSHARP_ENGINE:
+            # update engine on main
+            self.engine = engine.lower()
             if clear_db:
                 self.clear_db()
 
             if progressbar:
-                CH_A_NKS = tuple(chunker(jobs, chunk_size=ch_size))
+                count_CKS, iter_CKS, maxJOB_Iter = tee(chunker(jobs, chunk_size=ch_size), 3)
                 # CH_A_NKS is expected to contain sized collections; this guard avoids
                 # hard failures if a non-sized object is ever introduced.
-                maxJobs = sum(len(i) for i in CH_A_NKS if hasattr(i, '__len__'))
+                maxJobs = sum(len(i) for i in maxJOB_Iter if hasattr(i, '__len__'))
+                TotalLoops = sum(1 for _ in count_CKS)
                 prog_msg = f'Processing {maxJobs} jobs wait..'
                 with tqdm(
-                        total=len(CH_A_NKS),
+                        total=TotalLoops,
                         desc=prog_msg,
                         unit='chunk',
                         bar_format=("{desc} {bar} {percentage:3.0f}% "
                                     " >> completed (elapsed=>{elapsed}, eta=>{remaining}) {postfix}"),
                         dynamic_ncols=True,
                         miniters=1, ) as pbar:
-                    for counter, sub_jobs in enumerate(CH_A_NKS):
-                        self.run_jobs_external(jobs=sub_jobs, n_cores=n_cores, threads=threads, subset=subset)
+
+                    for counter, sub_jobs in enumerate(iter_CKS):
+                        self._run_jobs_external(jobs=sub_jobs, n_cores=n_cores, threads=threads, subset=subset)
                         pbar.update(1)
             else:
                 for sub in chunker(jobs, chunk_size=ch_size):
-                    self.run_jobs_external(jobs=sub, n_cores=n_cores, threads=threads, subset=subset)
+                    self._run_jobs_external(jobs=sub, n_cores=n_cores, threads=threads, subset=subset)
 
         elif engine.lower() == 'python':
             self._run_all_jobs(jobs=jobs, n_cores=n_cores, threads=threads, subset=subset,
                                clear_db=clear_db, retry_rate=retry_rate, ignore_runtime_errors=ignore_runtime_errors)
         else:
-            raise ValueError(f"Unsupported engine expected (python or csharp) got {engine}")
+            raise ValueError(f"Unsupported engine expected str as (python or csharp) got {engine}")
 
     def _run_all_jobs(self, jobs, *, n_cores=-2, threads=False, clear_db=True, retry_rate=1, progressbar: bool = True,
                       subset=None, index=None,
@@ -863,22 +874,14 @@ class MultiCoreManager:
                          ignore_runtime_errors=ignore_runtime_errors, retry_rate=retry_rate,
                          db_conn=self.db_path, table_prefix=self.table_prefix, subset=subset)
         try:
-            x = 0
-            failed = []
-            for res in custom_parallel(func=worker, iterable=jobs, ncores=n_cores, use_threads=threads,
-                                       progress_message=f'APSIM running[{x}f]', unit='sim', void=False,
-                                       progressbar=progressbar
-                                       ):
-                if res is True:
-                    pass  # holder to unzip jobs
-                else:
-                    x += 1
-                    failed.append(res)
+
+            for _ in custom_parallel(func=worker, iterable=jobs, ncores=n_cores, use_threads=threads,
+                                     progress_message=f'APSIM running', unit='sim', void=False,
+                                     progressbar=progressbar):
+                pass
 
         finally:
             gc.collect()
-        # update incomplete jobs on the main class
-        self.incomplete_jobs = failed
         self.ran_ok = True
 
     @property
@@ -892,7 +895,7 @@ class MultiCoreManager:
 
     def _merged_simulated(self, axis=0):
         """# NOTE FOR DEVELOPERS:
-        # When using the C# engine, simulation metadata is stored separately from the
+        # When using the csharp engine, simulation metadata is stored separately from the
         # main results. This step explicitly extracts that metadata and merges it back
         # into the simulated outputs to ensure a unified, consistent result structure.
         """
@@ -901,15 +904,15 @@ class MultiCoreManager:
         out = simulated.merge(meta_df, how='left', on='ID')
         return out
 
-    def run_jobs_external(self, jobs, n_cores=-3, threads=False, subset=None, progressbar=False):
+    def _run_jobs_external(self, jobs, n_cores=-3, threads=False, subset=None, progressbar=False):
         """
-        Tested and stable with APSIM version APSIM2025.12.7939.0
+        Tested and stable with APSIM version APSIM2025.12.7939.0 or higher
         version Later versions may exhibit intermittent SQLite errors under batch execution.
 
-        .. note::
+        .. Note::
 
             Sending many jobs more than 100 at a go will lead to stack overflow issues or memory issues.
-            It is an architectural design issue of APSIm rather than apsimNGpy.
+            It is an architectural design issue of APSIM rather than apsimNGpy.
 
         """
 
@@ -947,6 +950,7 @@ class MultiCoreManager:
 
         finally:
             pass
+
 
 MultiCoreManager.save_to_csv.__doc__ = """  Persist simulation results to a SQLite database table.
 

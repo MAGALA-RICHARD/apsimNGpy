@@ -386,3 +386,4 @@ corresponding structure.
   - API description: :class:`~apsimNGpy.core.mult_cores.MultiCoreManager`
   - run_all_jobs API: :class:`~apsimNGpy.core.mult_cores.MultiCoreManager.run_all_jobs`
   -  :ref:`API Reference: <api_ref>`
+  - `Download jupiter notebook example batch simulation workflow <https://github.com/yourname/repo/releases/download/v1.2.0/example_data.zip>`_

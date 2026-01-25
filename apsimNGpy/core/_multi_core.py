@@ -14,10 +14,20 @@ import hashlib
 from multiprocessing import Value, Lock
 from typing import Tuple, Dict, Any, List
 from apsimNGpy.parallel._process import JobTracker
+
 aggs = {'sum', 'mean', 'max', 'min', 'median', 'std'}
 
 counter = Value("i", 0)
 lock = Lock()
+IDENTIFICATION = 'ID'
+PAYLOAD = 'payload'
+INPUTS = 'inputs'
+PATH = 'path'
+TIMEOUT = 1000
+TABLE_PREFIX = '__table'
+RETRY_INTERVAL = 1
+MODEL_KEY = 'model'
+ENCODING = "utf-8"
 
 
 def process_id():
@@ -28,7 +38,7 @@ def process_id():
 
 def schema_id(schema):
     _schema = tuple(schema) if not isinstance(schema, (tuple, str)) else schema
-    payload = "|".join(map(str, _schema)).encode("utf-8")
+    payload = "|".join(map(str, _schema)).encode(ENCODING)
     return hashlib.md5(payload).hexdigest()
 
 
@@ -40,7 +50,7 @@ def auto_generate_schema_id(columns, prefix):
 def merge_dict(data):
     merged = {}
     for d in data:
-        d.pop('path', None)
+        d.pop(PATH, None)
         for k, v in d.items():
             merged.update({k: v})
     return merged
@@ -85,14 +95,14 @@ def _inspect_job(job) -> Tuple[str, Dict[str, Any], List[Dict[str, Any]]]:
         case dict():
             data = dict(job)  # shallow copy to avoid side effects
             try:
-                model = data.pop("model")
+                model = data.pop(MODEL_KEY)
             except KeyError as exc:
                 raise ValueError(
-                    "Job dictionary must contain a 'model' key."
+                    f"Job dictionary must contain a {MODEL_KEY} key."
                 ) from exc
-            inputs = data.pop("inputs", [])
+            inputs = data.pop(INPUTS, [])
             # users are also free to use the key word payload
-            payload = data.pop("payload", [])
+            payload = data.pop(PAYLOAD, [])
             inputs = inputs or payload
             return model, data, inputs
 
@@ -107,11 +117,11 @@ def make_table_name(table_prefix: str, schema_id: str, run_id: int) -> str:
     return f"{table_prefix}_{schema_id}_r{run_id}_{u}"
 
 
-def edit_to_folder(job, *,folder_path: str, prefix,  db_or_conn):
+def edit_to_folder(job, *, folder_path: str, prefix, db_or_conn):
     model, metadata, inputs = _inspect_job(job)
-    ID = metadata.get("ID", None) if metadata else None
+    ID = metadata.get(IDENTIFICATION, None) if metadata else None
     # prefix should be the first one
-    file_name = (Path(folder_path)/f"{prefix}{uuid4().hex}___{ID}.apsimx").resolve()
+    file_name = (Path(folder_path) / f"{prefix}{uuid4().hex}___{ID}.apsimx").resolve()
     if ID is None:
         raise ValueError(f"simulation identification key is required got {ID}")
     with (ApsimModel(model) as _model):
@@ -131,7 +141,7 @@ def edit_to_folder(job, *,folder_path: str, prefix,  db_or_conn):
             merged_inputs['MetaProcessID'] = PID
             metadata = {**metadata, **merged_inputs}
             # metadata['ApsimReports'] = f"{reps}"
-            out= DataFrame([metadata])
+            out = DataFrame([metadata])
             schema_hash = schema_id(tuple(out.dtypes))
             table_name = f"meta{prefix}{schema_hash}_{PID}"
             write_df_to_sql(out, db_or_con=db_or_conn, table_name=table_name, if_exists='append',
@@ -147,13 +157,13 @@ def single_runner(
         db_conn,
         if_exists: str = "append",
         index: str | list | None = None,
-        table_prefix: str = "___",
-        timeout=1000,
+        table_prefix: str = TABLE_PREFIX,
+        timeout=TIMEOUT,
         chunk_size: int = None,
         subset=None,
         call_back=None,
         ignore_runtime_errors=True,
-        retry_rate=1):
+        retry_rate=RETRY_INTERVAL):
     """
     Execute a single APSIM simulation job and persist its results to a database.
 
@@ -234,7 +244,7 @@ def single_runner(
             """
 
             model, metadata, inputs = _inspect_job(job)
-            ID = metadata.get("ID", None) if metadata else None
+            ID = metadata.get(IDENTIFICATION, None) if metadata else None
             with (ApsimModel(model) as _model):
                 try:
                     if call_back and callable(call_back):
@@ -244,7 +254,7 @@ def single_runner(
                         # set before running
                         for in_put in inputs:
                             _model.set_params(**in_put)
-                    _model.run(timeout=timeout)
+                    _model.run(timeout=timeout, cpu_count=4)
 
                     # Aggregate results if requested
                     if agg_func:

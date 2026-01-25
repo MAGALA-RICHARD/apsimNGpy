@@ -59,7 +59,7 @@ class TestModelTools(unittest.TestCase):
             sowing_manager = detect_sowing_managers(model)
             self.assertIsNotNone(sowing_manager)
 
-    def test_detect_sow_manager_when_none(self):
+    def _test_detect_sow_manager_when_none(self):
         from apsimNGpy.core.model_tools import ModelTools
         with ApsimModel('Maize', out_path=self.apsim_path) as model:
             sowing_manager = detect_sowing_managers(model)

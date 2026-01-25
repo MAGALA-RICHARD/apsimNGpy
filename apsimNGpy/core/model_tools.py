@@ -68,24 +68,20 @@ def select_thread(multithread):
 
 select_thread(multithread=True)
 
-
+@cache
 def _tools(method):
-    if hasattr(Models.Core, 'ApsimFile'):
-        if hasattr(Models.Core.ApsimFile.Structure, 'Rename'):
-            rename = Models.Core.ApsimFile.Structure.Rename
-    else:
-        rename = None
+
     if hasattr(Models.Core, 'ApsimFile'):
         FileTools = {
             "MOVE": Models.Core.ApsimFile.Structure.Move,
             "REPLACE": Models.Core.ApsimFile.Structure.Replace,
+            "RENAME": getattr(Models.Core.ApsimFile.Structure, 'Rename', None)
         }
     else:
         FileTools = {}
     config = {
         "ADD": _add_model,
         "DELETE": _delete_node,
-        "RENAME": rename,
         "CLONER": Models.Core.Apsim.Clone,
         "MultiThreaded": Models.Core.Run.Runner.RunTypeEnum.MultiThreaded,
         "SingleThreaded": Models.Core.Run.Runner.RunTypeEnum.SingleThreaded,

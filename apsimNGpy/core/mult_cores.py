@@ -671,8 +671,8 @@ class MultiCoreManager:
         When no aggregation is applied, the number of rows increases because each simulation contributes multiple
         records. For example, if each simulation spans 10 years, the resulting DataFrame will contain 10 × 200 = 2,000 rows.
 
-        benchmarking engine type speed boost
-        ------------------------------------
+        Benchmarking computation speed across the different simulation engines
+        ------------------------------------------------------------------------
 
         +------------+--------------+-----------+----------------+
         | Batch size | Python (m)   | C# (m)    | Speedup (×)    |

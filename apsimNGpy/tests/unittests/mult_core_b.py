@@ -21,7 +21,7 @@ if __name__ == '__main__':
     _jobs = ({'model': 'Maize', 'ID': i, } for i in range(300))
     start = time.perf_counter()
 
-    Parallel.run_all_jobs(jobs=_jobs, n_cores=8, engine='python', threads=False, chunk_size=100,
+    Parallel.run_all_jobs(jobs=jobs, n_cores=8, engine='csharp', threads=False, chunk_size=100,
                           subset=['Yield'],
                           progressbar=True)
     dff = Parallel.results

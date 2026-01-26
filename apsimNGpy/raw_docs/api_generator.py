@@ -342,7 +342,7 @@ if __name__ == "__main__":
                evaluator, exceptions, database_utils, pythonet_config, config, runner, back_end,
                )
 
-    OUT = Path("docs/source/api.rst").resolve()
+    OUT = Path("doc/source/api.rst").resolve()
     doc_folder = Path(__file__).parent.parent.parent / 'doc'
     OUT.parent.mkdir(parents=True, exist_ok=True)
     docs(modules, output_file=OUT, skip_undocumented=True, main_package="apsimNGpy")

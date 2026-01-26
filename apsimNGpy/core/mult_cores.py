@@ -418,7 +418,7 @@ class MultiCoreManager:
 
     def run_all_jobs(self, jobs, *, n_cores=-2, threads=False, clear_db=True, retry_rate=1, subset=None,
                      ignore_runtime_errors=True, engine='python', progressbar: bool = True,
-                     chunk_size: int = 100, **kwargs):
+                     chunk_size: int = 100, callback=None,**kwargs):
         """
 
         This method executes a collection of APSIM simulation jobs in parallel,
@@ -535,6 +535,8 @@ class MultiCoreManager:
             a progress bar will be displayed if True.
         chunk_size: int, optional default is 100, the maximum allowed is 150.
               Used to determine the size of the individual chunk to send to the runner at a time. Only used when engine is csharp.
+        callback: callable, optional default is None
+              A function to be called before model run, can me an intermediate function
 
         Returns
         -------
@@ -669,6 +671,38 @@ class MultiCoreManager:
         When no aggregation is applied, the number of rows increases because each simulation contributes multiple
         records. For example, if each simulation spans 10 years, the resulting DataFrame will contain 10 × 200 = 2,000 rows.
 
+        benchmarking engine type speed boost
+        ------------------------------------
+
+        +------------+--------------+-----------+----------------+
+        | Batch size | Python (m)   | C# (m)    | Speedup (×)    |
+        +============+==============+===========+================+
+        | 100        | 2:30         | 1:25      | ~1.76          |
+        +------------+--------------+-----------+----------------+
+        | 200        | 4:44         | 2:54      | ~1.63          |
+        +------------+--------------+-----------+----------------+
+        | 300        | 7:13         | 4:23      | ~1.65          |
+        +------------+--------------+-----------+----------------+
+        | 400        | 9:24         | 5:26      | ~1.73          |
+        +------------+--------------+-----------+----------------+
+        | 500        | 11:55        | 6:58      | ~1.71          |
+        +------------+--------------+-----------+----------------+
+        m = minutes,  C# =csharp
+
+        .. note::
+
+           Benchmark results were generated on the following system:
+
+           - **Processor:** 12th Gen Intel® Core™ i7-12700 @ 2.10 GHz
+           - **Installed RAM:** 32.0 GB (31.7 GB usable)
+           - **System type:** 64-bit operating system, x64-based processor
+
+        .. note::
+
+           Reported speedups are indicative and may vary depending on system
+           hardware, operating system, available memory, number of CPU cores,
+           background workload, and simulation configuration.
+
         """
         n_cores = core_count(n_cores, threads=threads)
         ch_size = chunk_size
@@ -697,15 +731,16 @@ class MultiCoreManager:
                         miniters=1, ) as pbar:
 
                     for counter, sub_jobs in enumerate(iter_CKS):
-                        self._run_jobs_external(jobs=sub_jobs, n_cores=n_cores, threads=threads, subset=subset)
+                        self._run_jobs_external(jobs=sub_jobs, n_cores=n_cores, threads=threads, subset=subset, call_back=callback)
                         pbar.update(1)
             else:
                 for sub in chunker(jobs, chunk_size=ch_size):
-                    self._run_jobs_external(jobs=sub, n_cores=n_cores, threads=threads, subset=subset)
+                    self._run_jobs_external(jobs=sub, n_cores=n_cores, threads=threads, subset=subset, call_back=callback)
 
         elif engine.lower() == 'python':
             self._run_all_jobs(jobs=jobs, n_cores=n_cores, threads=threads, subset=subset,
-                               clear_db=clear_db, retry_rate=retry_rate, ignore_runtime_errors=ignore_runtime_errors)
+                               clear_db=clear_db, retry_rate=retry_rate, ignore_runtime_errors=ignore_runtime_errors,
+                               call_back=callback)
         else:
             raise ValueError(f"Unsupported engine expected str as (python or csharp) got {engine}")
 
@@ -870,7 +905,7 @@ class MultiCoreManager:
         if self.cleared_db:
             self.clear_db()  # each simulation is fresh,
 
-        worker = partial(single_runner, agg_func=self.agg_func, index=index,
+        worker = partial(single_runner, agg_func=self.agg_func, index=index, call_back=kwargs.get('call_back'),
                          ignore_runtime_errors=ignore_runtime_errors, retry_rate=retry_rate,
                          db_conn=self.db_path, table_prefix=self.table_prefix, subset=subset)
         try:
@@ -904,7 +939,8 @@ class MultiCoreManager:
         out = simulated.merge(meta_df, how='left', on='ID')
         return out
 
-    def _run_jobs_external(self, jobs, n_cores=-3, threads=False, subset=None, progressbar=False):
+    def _run_jobs_external(self, jobs, n_cores=-3, threads=False, subset=None, progressbar=False,
+                           call_back=None, **kwargs):
         """
         Tested and stable with APSIM version APSIM2025.12.7939.0 or higher
         version Later versions may exhibit intermittent SQLite errors under batch execution.
@@ -921,7 +957,8 @@ class MultiCoreManager:
 
         try:
             with apsim_workdir(prefix=self.table_prefix) as folder:
-                partial_editor = partial(edit_to_folder, folder_path=folder, prefix=self.table_prefix, db_or_conn=db)
+                partial_editor = partial(edit_to_folder, folder_path=folder, prefix=self.table_prefix, db_or_conn=db,
+                                         call_back=call_back)
                 apsimx_pattern = f"{self.table_prefix}*.apsimx"
 
                 def send_jobs():

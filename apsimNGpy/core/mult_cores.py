@@ -563,7 +563,7 @@ class MultiCoreManager:
 
         engine==csharp
         ---------------
-        When the engine is set to csharp, APSIMNGpy applies all model edits and writes the modified
+        When the engine is set to csharp, apsimNGpy applies all model edits and writes the modified
         APSIMX files to a working directory, after which they are executed by the C# engine using
         multithreading. Task chunking is required to prevent stack overflow and excessive memory
         usage arising from APSIM’s internal execution architecture, not from disk I/O or file writing.

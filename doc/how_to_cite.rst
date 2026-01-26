@@ -20,7 +20,7 @@ Magala, R., Schulte, L.A., 2026. apsimNGpy: A comprehensive Python framework for
       doi     = {10.1016/j.softx.2025.102496},
       url     = {https://doi.org/10.1016/j.softx.2025.102496}
     }
-If you are planning to use communicate something specific to a particular version, please make sure to refer to the version number you used.
+If you are planning to communicate something specific to a particular version, please make sure to refer to the version number you used.
 The version and sub-version numbers can be retrieved via apsimNGpy.__version__, e.g., 0.39.X  (replace X with current version).
 
 .. code-block:: bibtex
@@ -29,7 +29,7 @@ The version and sub-version numbers can be retrieved via apsimNGpy.__version__, 
       author       = {Richard Magala},
       title        = {apsimNGpy: A Python package for running APSIM Next Generation in Python environment},
       year         = {2025},
-      version      = {0.39.3},
+      version      = {X},
       howpublished = {\url{https://github.com/MAGALA-RICHARD/apsimNGpy.git}},
       note         = {If you use this software, please cite it.}
     }

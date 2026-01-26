@@ -294,91 +294,56 @@ it is recommended to define worker functions in a standalone Python module (.py 
 
 Minimal Example 3: Run All Simulations Using the C# Backend
 ----------------------------------------------------------
-
-This example shows how to execute a folder of APSIM simulations using the C\# engine
-(`Models.exe`) and either:
-
-1. store the results directly into a SQL database, or
-2. load the grouped outputs into memory as pandas DataFrames.
-
-We begin by creating a directory containing multiple APSIMX files.
+The above workflow can now be cleanly reproduced using the MultiCoreManager API, as shown below.
+This interface allows users to choose between a pure Python execution
+mode—where tasks are distributed across multiple Python interpreters
+in memory—or a C# execution mode, where simulations are executed through the C# engine.
 
 .. code-block:: python
 
-   from apsimNGpy.tests.unittests.test_factory import mimic_multiple_files
-   from apsimNGpy.core.runner import dir_simulations_to_sql, dir_simulations_to_dfs
+     Parallel = MultiCoreManager(db_path=db, agg_func='mean', table_prefix='di', )
+     jobs = ({'model': 'Maize', 'ID': i, 'payload': [{'path': '.Simulations.Simulation.Field.Fertilise at sowing',
+                                                     'Amount': i}]} for i in range(200))
+     start = time.perf_counter()
+     Parallel.run_all_jobs(jobs=jobs, n_cores=8, engine='csharp', threads=False, chunk_size=100,
+                          subset=['Yield'],
+                          progressbar=True)
+     dff = Parallel.results
 
-   file_dir = mimic_multiple_files(
-       out_file="test_dir",
-       size=100,
-       suffix="__",
-       mix=False
-   )
+When no aggregation is applied, the number of rows increases because each simulation contributes multiple
+records. For example, if each simulation spans 10 years, the resulting DataFrame will contain 10 × 200 = 2,000 rows.
 
-3a) Running All Simulations and Storing Results in a SQL Database
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Benchmarking computation speed across the different simulation engines
+------------------------------------------------------------------------
 
-.. code-block:: python
++------------+--------------+-----------+----------------+
+| Batch size | Python (m)   | C# (m)    | Speedup (×)    |
++============+==============+===========+================+
+| 100        | 2:30         | 1:25      | ~1.76          |
++------------+--------------+-----------+----------------+
+| 200        | 4:44         | 2:54      | ~1.63          |
++------------+--------------+-----------+----------------+
+| 300        | 7:13         | 4:23      | ~1.65          |
++------------+--------------+-----------+----------------+
+| 400        | 9:24         | 5:26      | ~1.73          |
++------------+--------------+-----------+----------------+
+| 500        | 11:55        | 6:58      | ~1.71          |
++------------+--------------+-----------+----------------+
+m = minutes,  C# =csharp
 
-   from sqlalchemy import create_engine, inspect
+.. note::
 
-   # Use an in-memory SQLite database; replace with a file path for persistence
-   engine = create_engine("sqlite:///:memory:")
+   Benchmark results were generated on the following system:
 
-   try:
-       dir_simulations_to_sql(
-           dir_path=file_dir,
-           pattern="*__.apsimx",
-           recursive=False,
-           tables="Report",# could be a list of table names if more than one tables are anticipated or needed
-           cpu_count=10,
-           connection=engine,
-       )
+   - **Processor:** 12th Gen Intel® Core™ i7-12700 @ 2.10 GHz
+   - **Installed RAM:** 32.0 GB (31.7 GB usable)
+   - **System type:** 64-bit operating system, x64-based processor
 
-       # Inspect which tables were created
-       inspector = inspect(engine)
-       tables = inspector.get_table_names()
-       print(tables)
+.. tip::
 
-       # Expected tables:
-       #   1) a data table containing all Report rows aggregated by schema
-       #   2) a schema table documenting column names and dtypes
-   finally:
-       engine.dispose(close=True)
-
-In this workflow, all APSIMX files matching ``*__.apsimx`` are executed using the
-C\# simulation engine. The resulting ``Report`` tables are collected from the APSIM
-databases, grouped in memory by schema, and written into the SQL database specified
-by ``connection``.
-
-The grouped data are stored in one table, and a separate schema table
-(``_schemas`` by default) records the column names and dtypes associated with each
-group. Calling ``inspect(engine).get_table_names()`` allows you to verify that both
-tables were created.
-
-3b) Running All Simulations and Loading Grouped Results Into Memory
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. code-block:: python
-
-    groups = dir_simulations_to_dfs(
-        dir_path=file_dir,
-        pattern="*__.apsimx",
-        recursive=False,
-        tables="Report",# could be a list of table names if more than one tables are anticipated or needed
-        cpu_count=10,
-    )
-
-In this mode, the results are not written to disk. Instead, ``groups`` is returned as
-a dictionary where:
-
-* **keys** are schema signatures (tuples describing each column and its dtype), and
-* **values** are DataFrames containing all rows that share that schema.
-
-If different simulations generate different ``Report`` table structures, multiple
-schema groups will be produced. For example, if two distinct report schemas are
-encountered, ``groups`` will contain two keys, each mapping to a DataFrame with its
-corresponding structure.
+   Reported speedups are indicative and may vary depending on system
+   hardware, operating system, available memory, number of CPU cores,
+   background workload, and simulation configuration.
 
 
 .. seealso::

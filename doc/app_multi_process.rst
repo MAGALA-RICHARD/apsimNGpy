@@ -137,6 +137,12 @@ Zip them up for iteration since are correlated
             }
             yield jj
 
+.. tip::
+
+    The function above returns an iterator that yields jobs one at a time, with each job consumed immediately during execution.
+    This design ensures that jobs are not stored in memory, keeping the memory footprint of simulations low and preventing system overload.
+    These principles are central to apsimNGpy’s architecture, which is explicitly designed to manage large simulation campaigns efficiently on local machines.
+    As a result, even the MultiCoreAPI runs smoothly in the background under high simulation counts; in practice, users can execute on the order of one million simulations on a local device, provided sufficient time is allowed for completion.
 
 .. code-block:: python
 

@@ -312,6 +312,16 @@ in memory—or a C# execution mode, where simulations are executed through the C
                           progressbar=True)
      dff = Parallel.results
 
+.. note::
+
+   To specify pure python we use the string python as follows:
+
+.. code-block:: python
+
+    Parallel.run_all_jobs(jobs=jobs, n_cores=8, engine='python', threads=False, chunk_size=100,
+                          subset=['Yield'],
+                          progressbar=True)
+
 .. code-block:: none
 
         Out[3]:

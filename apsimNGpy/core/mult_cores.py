@@ -30,13 +30,14 @@ CSHARP_ENGINE = 'csharp'
 SOURCE_TABLE = 'source_table'
 AGGREGATE_TABLE = 'aggregate_table'
 CSHARP_ENGINE_MAX_CHUNK_SIZE = 150
+DIR_PREFIX = 'mcp'
 
 
 # tempfile could work too
 @contextmanager
 def apsim_workdir(prefix, delay=0.03):
     "creates a temporal working directory"
-    tmp = Path(f"mcp{prefix}{uuid.uuid4().hex}").resolve()
+    tmp = Path(f"{DIR_PREFIX}{prefix}{uuid.uuid4().hex}").resolve()
     tmp.mkdir(parents=True, exist_ok=True)
     try:
         yield tmp
@@ -418,7 +419,7 @@ class MultiCoreManager:
 
     def run_all_jobs(self, jobs, *, n_cores=-2, threads=False, clear_db=True, retry_rate=1, subset=None,
                      ignore_runtime_errors=True, engine='python', progressbar: bool = True,
-                     chunk_size: int = 100, callback=None,**kwargs):
+                     chunk_size: int = 100, callback=None, **kwargs):
         """
 
         This method executes a collection of APSIM simulation jobs in parallel,
@@ -731,11 +732,13 @@ class MultiCoreManager:
                         miniters=1, ) as pbar:
 
                     for counter, sub_jobs in enumerate(iter_CKS):
-                        self._run_jobs_external(jobs=sub_jobs, n_cores=n_cores, threads=threads, subset=subset, call_back=callback)
+                        self._run_jobs_external(jobs=sub_jobs, n_cores=n_cores, threads=threads, subset=subset,
+                                                call_back=callback)
                         pbar.update(1)
             else:
                 for sub in chunker(jobs, chunk_size=ch_size):
-                    self._run_jobs_external(jobs=sub, n_cores=n_cores, threads=threads, subset=subset, call_back=callback)
+                    self._run_jobs_external(jobs=sub, n_cores=n_cores, threads=threads, subset=subset,
+                                            call_back=callback)
 
         elif engine.lower() == 'python':
             self._run_all_jobs(jobs=jobs, n_cores=n_cores, threads=threads, subset=subset,

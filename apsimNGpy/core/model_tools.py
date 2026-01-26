@@ -1255,9 +1255,15 @@ if __name__ == "__main__":
         unique_updated = list(dict.fromkeys(update))
         return unique_updated
 
+    try:
+       pp = edit_cultivar('B_110', "1")
+    except ValueError:
+        print('working as expected')
 
-    pp = edit_cultivar('B_110', "1")
-    ppd = edit_cultivar('B_110', "1=")
+    try:
+       ppd = edit_cultivar('B_110', "1=")
+    except ValueError:
+        print('working as expected')
     pp1 = edit_cultivar('B_110', commands='[Leaf].Photosynthesis.RUE.FixedValue=2')
     ppl = edit_cultivar('B_110', commands=['[Phenology].Juvenile.Target.FixedValue = 210',
                                            '[Phenology].Photosensitive.Target.XYPairs.X = 0, 12.5, 24',

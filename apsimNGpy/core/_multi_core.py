@@ -117,7 +117,7 @@ def make_table_name(table_prefix: str, schema_id: str, run_id: int) -> str:
     return f"{table_prefix}_{schema_id}_r{run_id}_{u}"
 
 
-def edit_to_folder(job, *, folder_path: str, prefix, db_or_conn):
+def edit_to_folder(job, *, folder_path: str, prefix, db_or_conn, call_back=None):
     model, metadata, inputs = _inspect_job(job)
     ID = metadata.get(IDENTIFICATION, None) if metadata else None
     # prefix should be the first one
@@ -134,6 +134,8 @@ def edit_to_folder(job, *, folder_path: str, prefix, db_or_conn):
             _model.Simulations.Name = f"{_model.Simulations.Name}_{ID}"
             for sim in _model.simulations:
                 sim.Name = f"{sim.Name}_{ID}"
+            if call_back is not None:
+                call_back(_model)
             _model.save(file_name=file_name, reload=False)
             PID = os.getpid()
             # avoid duplicates columns
@@ -249,7 +251,7 @@ def single_runner(
                 try:
                     if call_back and callable(call_back):
                         # there might be additional works that the user wants to enforce
-                        call_back(model)
+                        call_back(_model)
                     if inputs:
                         # set before running
                         for in_put in inputs:

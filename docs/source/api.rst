@@ -134,7 +134,7 @@ Classes
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.update_mgt`
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.update_mgt_by_path`
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.__init__(self, model: Union[os.PathLike, dict, str], out_path: Union[str, pathlib.Path] = <object object at 0x0000025DA9A56460>, set_wd=None, **kwargs)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.__init__(self, model: Union[os.PathLike, dict, str], out_path: Union[str, pathlib.Path] = <object object at 0x000001F9C7282460>, set_wd=None, **kwargs)
 
    Initialize self.  See help(type(self)) for accurate signature.
 
@@ -481,7 +481,7 @@ Classes
    self : object
        Returns the updated ApsimModel instance.
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.save(self, file_name: 'Union[str, Path]' = <object object at 0x0000025DD8B75000>, reload=True) (inherited)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.save(self, file_name: 'Union[str, Path]' = <object object at 0x000001F985749000>, reload=True) (inherited)
 
    Saves the current APSIM NG model (``Simulations``) to disk and refresh runtime state.
 
@@ -2592,7 +2592,7 @@ Classes
    ---------------------------------------------------------------------------
    returns an array of the parameter values
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x0000025DD8B75000>) (inherited)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x000001F985749000>) (inherited)
 
    Inspect the model types and returns the model paths or names.
 
@@ -3717,7 +3717,7 @@ Classes
    In the future, this module will contain all the constants required by the package.
     Users will be able to override these values if needed by importing this module before running any simulations.
 
-   .. py:method:: apsimNGpy.core.config.Configuration.__init__(self, bin_path: 'Union[Path, str]' = <object object at 0x0000025DA9A556D0>) -> None
+   .. py:method:: apsimNGpy.core.config.Configuration.__init__(self, bin_path: 'Union[Path, str]' = <object object at 0x000001F9C72816D0>) -> None
 
    Initialize self.  See help(type(self)) for accurate signature.
 
@@ -3967,7 +3967,7 @@ Classes
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.update_mgt`
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.update_mgt_by_path`
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.__init__(self, model, out_path=<object object at 0x0000025DA9A56460>)
+   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.__init__(self, model, out_path=<object object at 0x000001F9C7282460>)
 
    Initialize self.  See help(type(self)) for accurate signature.
 
@@ -4617,7 +4617,7 @@ Classes
    self : object
        Returns the updated ApsimModel instance.
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.save(self, file_name: 'Union[str, Path]' = <object object at 0x0000025DD8B75000>, reload=True) (inherited)
+   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.save(self, file_name: 'Union[str, Path]' = <object object at 0x000001F985749000>, reload=True) (inherited)
 
    Saves the current APSIM NG model (``Simulations``) to disk and refresh runtime state.
 
@@ -6728,7 +6728,7 @@ Classes
    ---------------------------------------------------------------------------
    returns an array of the parameter values
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x0000025DD8B75000>) (inherited)
+   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x000001F985749000>) (inherited)
 
    Inspect the model types and returns the model paths or names.
 
@@ -7694,7 +7694,6 @@ Classes
    - :meth:`~apsimNGpy.core.mult_cores.MultiCoreManager.clear_scratch`
    - :meth:`~apsimNGpy.core.mult_cores.MultiCoreManager.get_simulated_output`
    - :meth:`~apsimNGpy.core.mult_cores.MultiCoreManager.run_all_jobs`
-   - :meth:`~apsimNGpy.core.mult_cores.MultiCoreManager.run_jobs_external`
    - :meth:`~apsimNGpy.core.mult_cores.MultiCoreManager.save_to_csv`
    - :meth:`~apsimNGpy.core.mult_cores.MultiCoreManager.save_tosql`
 
@@ -7794,7 +7793,7 @@ Classes
 
    clears the scratch directory where apsim files are cloned before being loaded. should be called after all simulations are completed
 
-   .. py:method:: apsimNGpy.core.mult_cores.MultiCoreManager.save_tosql(self, db_or_con: 'Union[str, Path]', *, table_name: 'str' = 'aggregated_tables', if_exists: "Literal['fail', 'replace', 'append']" = 'fail', chunk_size=None) -> 'None'
+   .. py:method:: apsimNGpy.core.mult_cores.MultiCoreManager.save_tosql(self, db_or_con: 'Union[str, Path]', *, table_name: 'str' = 'aggregate_table', if_exists: "Literal['fail', 'replace', 'append']" = 'fail', chunk_size=None) -> 'None'
 
    Write simulation results to an SQLite database table.
 
@@ -7843,7 +7842,7 @@ Classes
    >>> mgr.results.head()
       sim_id  yield  n2o
    0       1   10.2  0.8
-   >>> mgr.save("outputs/simulations.db")
+   >>> mgr.save_tosql("outputs/simulations.db")
 
    .. seealso::
 
@@ -8010,7 +8009,7 @@ Classes
    >>> os.makedirs('folder/subfolder', exist_ok=True)  # doctest: +SKIP
    >>> df.to_csv('folder/subfolder/out.csv')  # doctest: +SKIP
 
-   .. py:method:: apsimNGpy.core.mult_cores.MultiCoreManager.run_all_jobs(self, jobs, *, n_cores=-2, threads=False, clear_db=True, retry_rate=1, subset=None, ignore_runtime_errors=True, engine='python', progressbar: 'bool' = True, chunk_size: 'int' = 100, **kwargs)
+   .. py:method:: apsimNGpy.core.mult_cores.MultiCoreManager.run_all_jobs(self, jobs, *, n_cores=-2, threads=False, clear_db=True, retry_rate=1, subset=None, ignore_runtime_errors=True, engine='python', progressbar: 'bool' = True, chunk_size: 'int' = 100, callback=None, **kwargs)
 
    This method executes a collection of APSIM simulation jobs in parallel,
    using either processes (recommended) or threads. Each job is executed
@@ -8126,6 +8125,8 @@ Classes
        a progress bar will be displayed if True.
    chunk_size: int, optional default is 100, the maximum allowed is 150.
          Used to determine the size of the individual chunk to send to the runner at a time. Only used when engine is csharp.
+   callback: callable, optional default is None
+         A function to be called before model run, can me an intermediate function
 
    Returns
    -------
@@ -8187,21 +8188,22 @@ Classes
    .. versionadded:: 0.39.1.21+
 
 
-   Examples
-   --------------
+   Examples to illustrate minor changes in v 1.2.0.
+   -------------------------------------------------------
    .. code-block:: python
 
-   from apsimNGpy.core.mult_cores import MultiCoreManager
-   from pathlib import Path
-   db= (Path.home()/"test_agg.db").resolve()
-   if __name__ == '__main__':
-       workspace  = Path('D:/')
-       Parallel = MultiCoreManager(db_path=db, agg_func='sum', table_prefix='di')
-       jobs = ({'model': 'Maize', 'ID': i, 'inputs': [{'path': '.Simulations.Simulation.Field.Fertilise at sowing',
-                                                       'Amount': i}]} for i in range(200))
-       Parallel.run_all_jobs(jobs=jobs, n_cores=8, engine='csharp', threads=False,)
-       dff = Parallel.results
-       print(dff.shape)
+       from apsimNGpy.core.mult_cores import MultiCoreManager
+       from pathlib import Path
+       db= (Path.home()/"test_agg.db").resolve()
+       if __name__ == '__main__':
+           workspace  = Path.home()
+           Parallel = MultiCoreManager(db_path=db, agg_func='sum', table_prefix='di')
+           jobs = ({'model': 'Maize', 'ID': i, 'inputs': [{'path': '.Simulations.Simulation.Field.Fertilise at sowing',
+                                                           'Amount': i}]} for i in range(200))
+           Parallel.run_all_jobs(jobs=jobs, n_cores=8, engine='csharp', threads=False,)
+           dff = Parallel.results
+           print(dff.shape)
+
    .. note::
 
      ``payload`` key word is still a valid argument introduced in v1.2.0 and can be used as follows
@@ -8254,24 +8256,46 @@ Classes
            [200 rows x 5 columns]
 
    It is clear that the shape of the returned data contains 200 rows, corresponding
-    to the 200 simulations that were executed. This row count reflects one summarized row per simulation.
+   to the 200 simulations that were executed. This row count reflects one summarized row per simulation.
 
    When no aggregation is applied, the number of rows increases because each simulation contributes multiple
    records. For example, if each simulation spans 10 years, the resulting DataFrame will contain 10 × 200 = 2,000 rows.
 
-   .. py:property:: apsimNGpy.core.mult_cores.MultiCoreManager.meta_data
+   benchmarking engine type speed boost
+   ------------------------------------
 
-   return a generator of metadata about the simulated data, if engine was csharp NotImplementedError otherwise
-
-   .. py:method:: apsimNGpy.core.mult_cores.MultiCoreManager.run_jobs_external(self, jobs, n_cores=-3, threads=False, subset=None, progressbar=False)
-
-   Tested and stable with APSIM version APSIM2025.12.7939.0
-   version Later versions may exhibit intermittent SQLite errors under batch execution.
+   +------------+--------------+-----------+----------------+
+   | Batch size | Python (m)   | C# (m)    | Speedup (×)    |
+   +============+==============+===========+================+
+   | 100        | 2:30         | 1:25      | ~1.76          |
+   +------------+--------------+-----------+----------------+
+   | 200        | 4:44         | 2:54      | ~1.63          |
+   +------------+--------------+-----------+----------------+
+   | 300        | 7:13         | 4:23      | ~1.65          |
+   +------------+--------------+-----------+----------------+
+   | 400        | 9:24         | 5:26      | ~1.73          |
+   +------------+--------------+-----------+----------------+
+   | 500        | 11:55        | 6:58      | ~1.71          |
+   +------------+--------------+-----------+----------------+
+   m = minutes,  C# =csharp
 
    .. note::
 
-       Sending many jobs more than 100 at a go will lead to stack overflow issues or memory issues.
-       It is an architectural design issue of APSIm rather than apsimNGpy.
+      Benchmark results were generated on the following system:
+
+      - **Processor:** 12th Gen Intel® Core™ i7-12700 @ 2.10 GHz
+      - **Installed RAM:** 32.0 GB (31.7 GB usable)
+      - **System type:** 64-bit operating system, x64-based processor
+
+   .. note::
+
+      Reported speedups are indicative and may vary depending on system
+      hardware, operating system, available memory, number of CPU cores,
+      background workload, and simulation configuration.
+
+   .. py:property:: apsimNGpy.core.mult_cores.MultiCoreManager.meta_data
+
+   return a generator of metadata about the simulated data, if engine was csharp NotImplementedError otherwise
 
    .. py:attribute:: apsimNGpy.core.mult_cores.MultiCoreManager.agg_func
 
@@ -8380,7 +8404,7 @@ Functions
    >>> reader = get_apsim_file_reader("string")    # doctest: +SKIP
    >>> sims = reader(text)                         # doctest: +SKIP
 
-.. py:function:: apsimNGpy.core.pythonet_config.get_apsim_version(bin_path: Union[str, pathlib.Path] = <object object at 0x0000025DA9A56430>, release_number: bool = False) -> Optional[str]
+.. py:function:: apsimNGpy.core.pythonet_config.get_apsim_version(bin_path: Union[str, pathlib.Path] = <object object at 0x000001F9C7282430>, release_number: bool = False) -> Optional[str]
 
    Return the APSIM version string detected from the installed binaries.
 
@@ -8429,7 +8453,7 @@ Functions
    --------
    load_pythonnet : Initialize pythonnet/CLR for APSIM binaries.
 
-.. py:function:: apsimNGpy.core.pythonet_config.is_file_format_modified(bin_path: Union[str, pathlib.Path] = <object object at 0x0000025DA9A56430>) -> bool
+.. py:function:: apsimNGpy.core.pythonet_config.is_file_format_modified(bin_path: Union[str, pathlib.Path] = <object object at 0x000001F9C7282430>) -> bool
 
    Checks if the APSIM.CORE.dll is present in the bin path. Normally, the new APSIM version has this dll file.
 
@@ -8441,7 +8465,7 @@ Functions
    :returns:
      bool
 
-.. py:function:: apsimNGpy.core.pythonet_config.load_pythonnet(bin_path: Union[str, pathlib.Path] = <object object at 0x0000025DA9A56430>)
+.. py:function:: apsimNGpy.core.pythonet_config.load_pythonnet(bin_path: Union[str, pathlib.Path] = <object object at 0x000001F9C7282430>)
 
    A method for loading Python for .NET (pythonnet) and APSIM models from the binary path. It is also cached to
    avoid rerunning many times.
@@ -8712,7 +8736,7 @@ Functions
 
    Return True if obj looks like a DB connection.
 
-.. py:function:: apsimNGpy.core.runner.run_apsim_by_path(model: 'Union[str, Path]', *, bin_path: 'Union[str, Path, object]' = <object object at 0x0000025DA9A56470>, timeout: 'int' = 800, ncores: 'int' = -1, verbose: 'bool' = False, to_csv: 'bool' = False) -> 'None'
+.. py:function:: apsimNGpy.core.runner.run_apsim_by_path(model: 'Union[str, Path]', *, bin_path: 'Union[str, Path, object]' = <object object at 0x000001F9C7282470>, timeout: 'int' = 800, ncores: 'int' = -1, verbose: 'bool' = False, to_csv: 'bool' = False) -> 'None'
 
    Execute an APSIM model safely and reproducibly.
 
@@ -8757,7 +8781,7 @@ Functions
    RuntimeError
        If APSIM returns a non-zero exit code.
 
-.. py:function:: apsimNGpy.core.runner.run_model_externally(model: 'Union[Path, str]', *, apsim_bin_path: 'Optional[Union[Path, str]]' = <object object at 0x0000025DA9A56470>, verbose: 'bool' = False, to_csv: 'bool' = False, timeout: 'int' = 20, cpu_count=-1, cwd: 'Optional[Union[Path, str]]' = None) -> 'subprocess.CompletedProcess[str]'
+.. py:function:: apsimNGpy.core.runner.run_model_externally(model: 'Union[Path, str]', *, apsim_bin_path: 'Optional[Union[Path, str]]' = <object object at 0x000001F9C7282470>, verbose: 'bool' = False, to_csv: 'bool' = False, timeout: 'int' = 20, cpu_count=-1, cwd: 'Optional[Union[Path, str]]' = None) -> 'subprocess.CompletedProcess[str]'
 
    Run APSIM externally (cross-platform) with safe defaults.
 
@@ -8962,7 +8986,7 @@ Classes
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.update_mgt`
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.update_mgt_by_path`
 
-   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.__init__(self, model, out_path=<object object at 0x0000025DA9A56460>)
+   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.__init__(self, model, out_path=<object object at 0x000001F9C7282460>)
 
    Initialize self.  See help(type(self)) for accurate signature.
 
@@ -9548,7 +9572,7 @@ Classes
    self : object
        Returns the updated ApsimModel instance.
 
-   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.save(self, file_name: 'Union[str, Path]' = <object object at 0x0000025DD8B75000>, reload=True) (inherited)
+   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.save(self, file_name: 'Union[str, Path]' = <object object at 0x000001F985749000>, reload=True) (inherited)
 
    Saves the current APSIM NG model (``Simulations``) to disk and refresh runtime state.
 
@@ -11659,7 +11683,7 @@ Classes
    ---------------------------------------------------------------------------
    returns an array of the parameter values
 
-   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x0000025DD8B75000>) (inherited)
+   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x000001F985749000>) (inherited)
 
    Inspect the model types and returns the model paths or names.
 

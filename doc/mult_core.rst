@@ -63,6 +63,8 @@ edited externally.
        'model_7.apsimx'
    }
 
+.. note:: In the newer apsimNGpy version v1.1.0+, when engine='csharp', jobs must be defined with ID description see below
+
 **2. Job definitions with metadata**
 This format allows attaching identifiers or other metadata to each
 job. Models are assumed to be unique and pre-edited.
@@ -142,7 +144,7 @@ time per simulation(sim) failed jobs (f) elapsed time and seconds per sim
 
 .. code-block:: python
 
-            Processing![0f] :  |██████████| 100.0%| [100/100]| Complete | 1.07s/sim | Elapsed time: 00:01:46.850
+            APSIM running![0f] :  |██████████| 100.0%| [100/100]| Complete | 1.07s/sim | Elapsed time: 00:01:46.850
 
 
 Retrieving results
@@ -310,8 +312,27 @@ in memory—or a C# execution mode, where simulations are executed through the C
                           progressbar=True)
      dff = Parallel.results
 
+.. code-block:: none
+
+        Out[3]:
+               Yield       source_table   ID  Amount  MetaProcessID
+        0    5633.920881       Report  164     164          54180
+        1    5657.656303       Report  144     144          60440
+        2    5644.208341       Report  152     152          69276
+        3    5724.240086       Report  117     117          60440
+        4    5713.620430       Report  124     124          33264
+        ..           ...          ...  ...     ...            ...
+        195  5570.404233       Report  106     106          17516
+        196  5700.637935       Report  129     129          64608
+        197  5600.078263       Report  199     199          33264
+        198  5648.906514       Report  148     148          33264
+        199  5620.273855       Report  173     173          33264
+        [200 rows x 5 columns]
+
+
 When no aggregation is applied, the number of rows increases because each simulation contributes multiple
 records. For example, if each simulation spans 10 years, the resulting DataFrame will contain 10 × 200 = 2,000 rows.
+
 
 Benchmarking computation speed across the different simulation engines
 ------------------------------------------------------------------------

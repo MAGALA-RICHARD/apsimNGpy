@@ -238,7 +238,7 @@ records. For example, if each simulation spans 10 years, the resulting DataFrame
 
 
 Benchmarking computation speed across the different simulation engines
-------------------------------------------------------------------------
+==========================================================================
 
 +------------+--------------+-----------+----------------+
 | Batch size | Python (m)   | C# (m)    | Speedup (×)    |

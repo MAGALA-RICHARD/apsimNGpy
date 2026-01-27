@@ -18,10 +18,10 @@ if __name__ == '__main__':
     Parallel = MultiCoreManager(db_path=db, agg_func='mean', table_prefix='di', )
     jobs = ({'model': 'Maize', 'ID': i, 'payload': [{'path': '.Simulations.Simulation.Field.Fertilise at sowing',
                                                      'Amount': i}]} for i in range(200))
-    _jobs = ({'model': 'Maize', 'ID': i, } for i in range(300))
+    _jobs = ({'model': 'Maize', 'ID': i, } for i in range(100))
     start = time.perf_counter()
 
-    Parallel.run_all_jobs(jobs=jobs, n_cores=8, engine='python', threads=False, chunk_size=100,
+    Parallel.run_all_jobs(jobs=jobs, n_cores=1, engine='python', threads=False, chunk_size=100,
                           subset=['Yield'],
                           progressbar=True)
     dff = Parallel.results

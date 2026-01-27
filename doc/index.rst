@@ -1,5 +1,11 @@
 .. _master:
 
+.. meta::
+   :description lang=en:
+          apsimNGpy is a Python framework for running APSIM crop model simulations, large-scale experiment orchestration,
+          sensitivity analysis, and multiple-processing among others.
+   :keywords: APSIM, Python, crop modeling, agricultural simulation, sensitivity analysis, batch simulations
+
 apsimNGpy: The Next-Generation Agro-ecosystem Simulation Library
 ================================================================
 

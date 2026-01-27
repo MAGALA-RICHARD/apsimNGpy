@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+
+# Explicitly allow all documentation assets and versions
+Allow: /en/
+Allow: /latest/
+Allow: /stable/
+Allow: /_static/
+Allow: /_images/
+Allow: /_sources/
+Allow: /_build/
+
+# Encourage fast discovery
+Crawl-delay: 0
+
+# Sitemap for full coverage
+Sitemap: https://apsimngpy.readthedocs.io/sitemap.xml

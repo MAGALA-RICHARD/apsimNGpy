@@ -169,140 +169,15 @@ Results can also be transferred to an sql database or to csv as follows
    # to scv
    task_manager.save_to_csv('test.csv')
 
-Customization
-===================
-If you don’t want to use the higher-level API, you can build the pipeline from scratch.
-The simplest path is to decorate your worker with :func:`~apsimNGpy.core_utils.database_utils.write_results_to_sql`, which writes the worker’s return
-value to the database after each run. The worker must return either a pandas DataFrame or a dict—that way you control exactly which variables/columns are written.
-Alternatively, skip the decorator and call your own writer/aggregator inside the worker, as shown below.
+
+csharp or python engine selections
+===================================
+The latest apsimNGpy versions allows the user to select between python or csharp engine as follows:
+
 
 .. code-block:: python
 
-            from pathlib import Path
-            from apsimNGpy.core.apsim import ApsimModel
-            from apsimNGpy.core_utils.database_utils import read_db_table, write_results_to_sql
-            from apsimNGpy.parallel.process import custom_parallel
-            import pandas as pd
-            from sqlalchemy import create_engine
-
-
-            DATABAse = str(Path('test_custom.db').resolve())
-
-
-
-Minimal example 1: Writing your own worker and data storage function
---------------------------------------------------------------------
-
-.. code-block:: python
-
-            # define function to insert insert results
-            def insert_results(db_path, results, table_name):
-                """
-                Insert a pandas DataFrame into a SQLite table.
-
-                Parameters
-                ----------
-                db_path : str or Path
-                    Path to the SQLite database file.
-                results : pandas.DataFrame
-                    DataFrame to insert into the database.
-                table_name : str
-                    Name of the table to insert the data into.
-                """
-                if not isinstance(results, pd.DataFrame):
-                    raise TypeError("`results` must be a pandas DataFrame")
-
-                engine = create_engine(f"sqlite:///{db_path}")
-                results.to_sql(table_name, con=engine, if_exists='append', index=False)
-            # ____________worker___________________________-
-            def worker(nitrogen_rate, model):
-                out_path = Path(f"_{nitrogen_rate}.apsimx").resolve()
-                model = ApsimModel(model, out_path=out_path)
-                model.edit_model("Models.Manager", model_name='Fertilise at sowing', Amount=nitrogen_rate)
-                model.run(report_name="Report")
-                df = model.results
-                # we can even create column for each simulation
-                df['nitrogen rate'] = nitrogen_rate
-
-                insert_results(db_path = DATABAse, results =df, table_name='Report')
-                model.clean_up()
-                # no need to return results
-
-Minimal example 2: Writing your own worker and use data storage decorator from data_base_utils (only latest version)
---------------------------------------------------------------------------------------------------------------------
-
-.. code-block:: python
-
-            @write_results_to_sql(DATABAse, table='Report', if_exists='append')
-            def worker(nitrogen_rate, model):
-                out_path = Path(f"_{nitrogen_rate}.apsimx").resolve()
-                model = ApsimModel(model, out_path=out_path)
-                model.edit_model("Models.Manager", model_name='Fertilise at sowing', Amount=nitrogen_rate)
-                model.run(report_name="Report")
-                df = model.results
-                # we can even create column for each simulation
-                df['nitrogen rate'] = nitrogen_rate
-                model.clean_up()
-                return df
-
-Running all jobs
-===================
-Always run parallel code under the standard Python entry-point guard: ``if __name__ == '__main__':``
-Without the guard, top-level code re-executes in each child and can recursively spawn processes.
-
-.. code-block:: python
-
-            if __name__ == '__main__':
-
-                for _ in custom_parallel(worker, range(0, 400, 10), 'Maize', n_cores=6, use_threads=False):
-                    pass
-                # get the results
-                data = read_db_table(DATABAse, report_name="Report")
-
-.. code-block:: python
-
-   Processing please wait!:  ██████████ 100% (40/40) >> completed (elapsed=>0:30, eta=>00:00) , (0.76 s/iteration or 1.23 iteration/s)
-
-.. code-block:: python
-
-            print(data)
-                SimulationName  SimulationID  ...  source_table nitrogen rate
-            0       Simulation             1  ...        Report            20
-            1       Simulation             1  ...        Report            20
-            2       Simulation             1  ...        Report            20
-            3       Simulation             1  ...        Report            20
-            4       Simulation             1  ...        Report            20
-            ..             ...           ...  ...           ...           ...
-            395     Simulation             1  ...        Report           380
-            396     Simulation             1  ...        Report           380
-            397     Simulation             1  ...        Report           380
-            398     Simulation             1  ...        Report           380
-            399     Simulation             1  ...        Report           380
-            [400 rows x 18 columns]
-
-
-Our 40 simulations ran in 30 seconds only, almost 0.76 seconds per simulation.
-
-.. note::
-
-   Performance can vary between systems depending on hardware specifications,
-   such as RAM, processor clock speed, and the number of CPU cores.
-
-
-Working in notebooks (Jupyter/Colab)
-=====================================
-When using Jupyter notebooks, the workflow follows the same structure as described above. For stability and reproducibility,
-it is recommended to define worker functions in a standalone Python module (.py file) and import them into the notebook.
-
-Minimal Example 3: Run All Simulations Using the C# Backend
-----------------------------------------------------------
-The above workflow can now be cleanly reproduced using the MultiCoreManager API, as shown below.
-This interface allows users to choose between a pure Python execution
-mode—where tasks are distributed across multiple Python interpreters
-in memory—or a C# execution mode, where simulations are executed through the C# engine.
-
-.. code-block:: python
-
+     Parallel = MultiCoreManager(db_path=db, agg_func='mean', table_prefix='di', )
      Parallel = MultiCoreManager(db_path=db, agg_func='mean', table_prefix='di', )
      jobs = ({'model': 'Maize', 'ID': i, 'payload': [{'path': '.Simulations.Simulation.Field.Fertilise at sowing',
                                                      'Amount': i}]} for i in range(200))
@@ -311,6 +186,24 @@ in memory—or a C# execution mode, where simulations are executed through the C
                           subset=['Yield'],
                           progressbar=True)
      dff = Parallel.results
+
+
+
+.. code-block:: none
+
+                  Yield source_table   ID  Amount  MetaProcessID
+            80   1747.866065       Report    0       0          63672
+            81   1773.798050       Report    1       1          62028
+            40   1792.630425       Report    2       2          60976
+            3    1822.193813       Report    3       3          36152
+            184  1854.471650       Report    4       4          13056
+            ..           ...          ...  ...     ...            ...
+            103  5602.499247       Report  195     195          57804
+            94   5601.896106       Report  196     196          61980
+            93   5601.294697       Report  197     197          69492
+            130  5600.687519       Report  198     198          64844
+            101  5600.078263       Report  199     199          66580
+            [200 rows x 5 columns]
 
 .. note::
 
@@ -324,21 +217,20 @@ in memory—or a C# execution mode, where simulations are executed through the C
 
 .. code-block:: none
 
-        Out[3]:
-               Yield       source_table   ID  Amount  MetaProcessID
-        0    5633.920881       Report  164     164          54180
-        1    5657.656303       Report  144     144          60440
-        2    5644.208341       Report  152     152          69276
-        3    5724.240086       Report  117     117          60440
-        4    5713.620430       Report  124     124          33264
-        ..           ...          ...  ...     ...            ...
-        195  5570.404233       Report  106     106          17516
-        196  5700.637935       Report  129     129          64608
-        197  5600.078263       Report  199     199          33264
-        198  5648.906514       Report  148     148          33264
-        199  5620.273855       Report  173     173          33264
-        [200 rows x 5 columns]
-
+   Out[4]:
+              Yield  MetaProcessID   ID  Amount                   MetaExecutionID
+                0   1747.866065           5572    0       0  09f90023a10aa7408899b57e420180b7
+                0   1773.798050          60752    1       1                                 1
+                0   1792.630425          69532    2       2                                 2
+                0   1822.193813          59972    3       3                                 3
+                0   1854.471650          47032    4       4                                 4
+                ..          ...            ...  ...     ...                               ...
+                24  5602.499247          68876  195     195                               195
+                24  5601.896106          69532  196     196                               196
+                24  5601.294697          69432  197     197                               197
+                24  5600.687519          47032  198     198                               198
+                24  5600.078263           5572  199     199                               199
+                [200 rows x 5 columns]
 
 When no aggregation is applied, the number of rows increases because each simulation contributes multiple
 records. For example, if each simulation spans 10 years, the resulting DataFrame will contain 10 × 200 = 2,000 rows.

@@ -11,7 +11,7 @@ project = 'apsimNGpy'
 copyright = '2025, Richard Magala'
 author = 'Richard Magala'
 release = '0.39.10.17'
-
+html_title = "apsimNGpy Documentation"
 # -------------------- General configuration ---------------------------------------------------
 extensions = [
     # Core / common

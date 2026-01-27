@@ -1,3 +1,7 @@
+.. meta::
+    :description lang=en:
+       Instantiating can be done using any of the default APSIM model templates or
+       custom apsimx path on your computer
 
 Instantiating `apsimNGpy` Model Objects
 ========================================

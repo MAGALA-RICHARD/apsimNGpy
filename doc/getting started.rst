@@ -1,5 +1,10 @@
 .. _Installation:
 
+.. meta::
+    :description lang=en:
+        apsimNGpy can be installed via PyPi, or github.
+        Users are also required to supply an APSIM installed binary path.
+
 Installation
 ============
 

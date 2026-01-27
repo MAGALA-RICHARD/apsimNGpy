@@ -1,9 +1,9 @@
 .. _Installation:
 
 .. meta::
-    :description lang=en:
-        apsimNGpy can be installed via PyPi, or github.
-        Users are also required to supply an APSIM installed binary path.
+   :description lang=en:
+      Run APSIM models sequentially with `run` or in parallel using `MultiCoreManager.run_all_jobs`.
+
 
 Installation
 ============

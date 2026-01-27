@@ -171,8 +171,9 @@ Results can also be transferred to an sql database or to csv as follows
 
 
 csharp or python engine selections
-===================================
-The latest apsimNGpy versions allows the user to select between python or csharp engine as follows:
+====================================
+The latest apsimNGpy versions allows the user to select between python or csharp engine as follows.
+In addition the both inputs or payload are accepted while providing the editing data.
 
 
 .. code-block:: python

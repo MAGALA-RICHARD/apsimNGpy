@@ -1,3 +1,9 @@
+.. meta::
+   :description lang=en:
+          APSIM simulations can be executed sequentially using the `run` method or in parallel
+          using the `run_all_jobs` method of the `MultiCoreManager` API.
+
+
 Running and Retrieving Results
 ==============================
 

@@ -1,3 +1,8 @@
+.. meta::
+    :description lang=en:
+          Previewing a file in GUI can be accomplished by the preview_simulation method.
+          Allows user to inspect the simulation template or change parameters if watch=True
+
 Model Preview in GUI
 =====================
 

@@ -124,20 +124,22 @@ Add a factor for radiation use efficiency (RUE):
      exp.add_factor(specification='[Maize].Leaf.Photosynthesis.RUE.FixedValue = 1.0, 1.23, 4.3',
      factor_name='RUE')
 
-Run the experiment and visualize the impact of ``RUE`` on yield:
 
-.. code-block:: python
+API Summary
+===========
 
-    exp.run()
-    sns.catplot(x='Nitrogen', y='Yield', hue='RUE', data=exp.results, kind='bar')
-    plt.show()
+- :class:`~apsimNGpy.core.experimentmanager.ExperimentManager`: Main entry point to create and manipulate factorial designs.
+- :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.init_experiment`: Prepares the experiment node structure in the model.
+- :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.add_factor`: Adds a new varying parameter or script-defined rule.
+- :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.finalize`: Validates and commits the experiment structure to the model.
 
-.. admonition:: Conclusion.
+Further Reading
+===============
 
-   This tutorial demonstrated how to set up and run factorial experiments using apsimNGpy. By systematically varying multiple factors (e.g., nitrogen levels, population density, and RUE), we can analyze their effects on the target variable effectively.
-
-.. include:: new_experiment.rst
+For advanced usage (e.g., linked script validation, mixed designs), refer to the API reference section.
 
 .. seealso::
 
-   - :ref:`API Reference: <api_ref>`
+   - :ref:`comp_cultivar`
+   - :ref:`api_ref`
+

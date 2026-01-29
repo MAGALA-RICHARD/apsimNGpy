@@ -32,7 +32,7 @@ The :class:`~apsimNGpy.core.experimentmanager.ExperimentManager`: class wraps an
 - Export the updated ``.apsimx`` file with fully configured experiments
 - visualize outputs easily
 
-Step 1: Import the API and initialize it
+Step 1. Import the API and initialize it
 -----------------------------------------
 
 .. code-block:: python
@@ -58,7 +58,7 @@ b) Add population density as a categorical factor:
                      factor_name='Population')
 
 
-Running the Experiment
+Step 3. Running the Experiment
 ----------------------
 
 Execute the simulation and visualize results:

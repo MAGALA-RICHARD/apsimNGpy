@@ -223,7 +223,6 @@ context manager. This approach is useful for short scripts or interactive sessio
 and assumes that you do **not** import any other ``apsimNGpy`` modules outside of
 the :mod:`~apsimNGpy.core.config` module before entering the with block as shown below:
 
-
 .. code-block:: python
 
    from apsimNGpy.core.config import set_apsim_bin_path, apsim_bin_context
@@ -234,9 +233,3 @@ the :mod:`~apsimNGpy.core.config` module before entering the with block as shown
        model = ApsimModel("Soybean")
        df = model.run()
 
-Containerization and Portability
-----------------------------------
-
-**apsimNGpy** simplifies containerization and project portability. Entire
-projects can be transferred to another machine **without reinstalling APSIM**,
-provided the APSIM binaries are correctly referenced.

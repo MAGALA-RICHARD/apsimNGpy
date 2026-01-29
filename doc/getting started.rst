@@ -225,7 +225,7 @@ the :mod:`~apsimNGpy.core.config` module before entering the with block as shown
 
 .. code-block:: python
 
-   from apsimNGpy.core.config import set_apsim_bin_path, apsim_bin_context
+   from apsimNGpy.core.config import apsim_bin_context
 
    with apsim_bin_context(
        apsim_bin_path=r"your_apsim_binary_path"):
@@ -233,3 +233,23 @@ the :mod:`~apsimNGpy.core.config` module before entering the with block as shown
        model = ApsimModel("Soybean")
        df = model.run()
 
+
+.. note::
+
+   When using the APSIM ``bin`` context manager as shown above, the APSIM binaries
+   are loaded only within the scope of that context, and the global APSIM binary
+   configuration is not modified. This means the same context setup must be applied
+   in each script where ``apsimNGpy`` is used. Whether this is an inconvenience
+   depends on the use case—for example, it can be beneficial if you do not want to
+   modify the global APSIM installation because it is used by other projects, or
+   if you need to test or compare results across specific APSIM versions.
+
+.. attention::
+
+    Due to the way APSIM binaries are initialized globally within the runtime
+    environment, only **one** APSIM ``bin`` context manager can be active at a time.
+    As a result, starting another APSIM ``bin`` context manager within or after an
+    existing one will not behave as expected and may lead to difficult-to-diagnose
+    errors. In simple terms, multiple APSIM ``bin`` context managers cannot be used
+    sequentially or nested within the same process, and attempting to do so is
+    strongly discouraged.

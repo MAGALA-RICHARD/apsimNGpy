@@ -59,7 +59,7 @@ b) Add population density as a categorical factor:
 
 
 Step 3. Running the Experiment
-----------------------
+------------------------------------
 
 Execute the simulation and visualize results:
 
@@ -68,6 +68,9 @@ Execute the simulation and visualize results:
     exp.run(report_name='Report')
     df = apsim.results
     df[['population']] = pd.Categorical(['Population'])
+
+Step 4. Visualization and other analysis
+---------------------------------------------
     sns.catplot(x='Nitrogen', y='Yield', hue='Population', data=df, kind='box')
     plt.show()
 

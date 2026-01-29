@@ -4,13 +4,48 @@
    :description lang=en:
       Run APSIM models sequentially with `run` or in parallel using `MultiCoreManager.run_all_jobs`.
 
+Operating System
+----------------
+
+- **Windows**
+
+- **Linux and macOS** are also supported, provided APSIM is installed and running locally on your machine.
+
+Python Requirements
+-------------------
+
+- **Python ≥ 3.10 and < 3.14**
+
+  .. note::
+     Python 3.14 is not currently supported due to upstream limitations in
+     ``pythonnet``.
+
+Required Dependencies
+---------------------
+
+- **APSIM** (installed locally)
+
+  - APSIM must be installed and accessible on the system.
+  - A compatible APSIM version matching your workflow is required.
+
+- **pythonnet ≥ 3.0.5**
+
+  - Used to interface with APSIM’s .NET runtime.
+
+- **NumPy**
+
+- **Pandas**
+
+- **SQLAlchemy**
+
+- **matplotlib and seaborn**
+
+These dependencies are installed automatically via ``pip``.
 
 Installation
 ============
 
-``apsimNGpy`` is under active development. Stable releases are available, but
-new features and bug fixes are introduced frequently. You can install the
-package using one of the methods below.
+``apsimNGpy`` You can install the package using one of the methods below.
 
 Installing apsimNGpy
 --------------------

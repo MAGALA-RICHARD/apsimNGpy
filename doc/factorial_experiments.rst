@@ -3,7 +3,7 @@
 Quick and Simple Way to Run Factorial Experiments
 =================================================
 
-.. image:: ../images/experiment.gif
+.. image:: ../images/experiment_r.gif
    :alt: Run APSIM simulation
    :align: center
    :width: 800px

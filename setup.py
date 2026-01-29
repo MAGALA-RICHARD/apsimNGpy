@@ -23,6 +23,7 @@ setup(
     long_description=readme,
     packages=find_packages(),
     include_package_data=True,
+    python_requires=">=3.10,<3.14",
     entry_points={
         'console_scripts': [
             'apsim=apsimNGpy.cli.cli:main_entry_point',

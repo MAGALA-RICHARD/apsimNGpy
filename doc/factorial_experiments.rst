@@ -123,7 +123,7 @@ What about by Nitrogen fertilizers?
 From the mean values obtained in both code examples,
 it is evident that nitrogen fertilizer has a greater influence
 on corn grain yield than plant population density, as reflected by
-the higher mean yield values
+the higher mean yield values, especially at high nitrogen rates.
 
 Factorial Experiment with Cultivar Replacements
 -----------------------------------------------

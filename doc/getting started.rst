@@ -173,19 +173,7 @@ Option 1: Manual configuration file
 2. Open ``apsimNGpy_config.ini``.
 3. Update the ``apsim_location`` entry.
 
-Option 2: Environment variable (temporary)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. code-block:: python
-
-   import os
-   os.environ["APSIM"] = r"path/to/your/apsim/binary/folder/bin"
-
-.. caution::
-
-   This approach must be executed **before** importing ``apsimNGpy``.
-
-Option 3: Using the apsimNGpy config API (recommended)
+Option 2: Using the apsimNGpy config API (recommended)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: python
@@ -197,7 +185,7 @@ Option 3: Using the apsimNGpy config API (recommended)
 
    API reference: :func:`~apsimNGpy.core.config.set_apsim_bin_path`
 
-Option 4: Command-line update
+Option 3: Command-line update
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: console

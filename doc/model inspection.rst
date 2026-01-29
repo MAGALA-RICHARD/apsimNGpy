@@ -4,7 +4,7 @@ Inspect Model
 =========================
 
 .. image:: ../images/inspect_model.gif
-   :alt: Run APSIM simulation
+   :alt: Inspect specif models
    :align: center
    :width: 800px
 

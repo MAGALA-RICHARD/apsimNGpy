@@ -132,8 +132,13 @@ For reporting reproducible bugs or contributing code, please use the
    preview
    inspect_model_parameters
    edit
-   factorial_experiments
    weather
+
+.. toctree::
+   :maxdepth: 2
+   :caption: FACTORIAL EXPERIMENTS
+
+   factorial_experiments
 
 .. toctree::
    :maxdepth: 2

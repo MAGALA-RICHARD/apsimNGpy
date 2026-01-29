@@ -1,7 +1,7 @@
 .. _plain_inspect:
 
 Inspect Model
-=============================
+=========================
 
 .. image:: ../images/inspect.gif
    :alt: Run APSIM simulation

@@ -1,3 +1,9 @@
+
+.. image:: doc/images/batch.gif
+   :alt: Run APSIM simulation
+   :align: center
+   :width: 600px
+
 Distributed Computing
 =========================
 

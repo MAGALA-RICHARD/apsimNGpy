@@ -12,32 +12,8 @@ First, import the necessary libraries:
 
 .. code-block:: python
 
-    import pandas as pd
-    import seaborn as sns
-    sns.set_style('whitegrid')
-    from matplotlib import pyplot as plt
-    from apsimNGpy.core.base_data import load_default_simulations
-    from apsimNGpy.core.apsim import ApsimModel
-
-Creating an Experiment
-----------------------
-
-Load the default maize simulations and initialize APSIM:
-
-.. code-block:: python
-
-    # get path to the default simulations in APSIM
-    _apsim = load_default_simulations(crop='Maize', simulations_object=False)
-    # instantiate
-    apsim = ApsimModel(_apsim)
-    # same as:
-    apsim  = ApsimModel('Maize')
-
-Create an experiment with permutation enabled:
-
-.. code-block:: python
-
-    apsim.create_experiment(permutation=True, verbose=False)  # Default is a permutation experiment
+   from apsimNGpy.core.experimentmanager import ExperimentManager
+   exp = ExperimentManager("Maize", out_path="Maize_experiment.apsimx")
 
 Adding Factors
 --------------
@@ -46,13 +22,13 @@ Add nitrogen levels as a continuous factor:
 
 .. code-block:: python
 
-    apsim.add_factor(specification="[Fertilise at sowing].Script.Amount = 0 to 200 step 20", factor_name='Nitrogen')
+    exp.add_factor(specification="[Fertilise at sowing].Script.Amount = 0 to 200 step 20", factor_name='Nitrogen')
 
 Add population density as a categorical factor:
 
 .. code-block:: python
 
-    apsim.add_factor(specification="[Sow using a variable rule].Script.Population = 4, 10, 2, 7, 6",
+    exp.add_factor(specification="[Sow using a variable rule].Script.Population = 4, 10, 2, 7, 6",
                      factor_name='Population')
 
 
@@ -63,7 +39,7 @@ Execute the simulation and visualize results:
 
 .. code-block:: python
 
-    apsim.run(report_name='Report')
+    exp.run(report_name='Report')
     df = apsim.results
     df[['population']] = pd.Categorical(['Population'])
     sns.catplot(x='Nitrogen', y='Yield', hue='Population', data=df, kind='box')
@@ -80,15 +56,15 @@ Load the maize simulations again and initialize APSIM:
 
 .. code-block:: python
 
-    from apsimNGpy.core.apsim import ApsimModel
-    _apsim = "Maize"
-    apsimC = ApsimModel(_apsim)
+   from apsimNGpy.core.experimentmanager import ExperimentManager
+   exp = ExperimentManager("Maize", out_path="Maize_experiment.apsimx")
+
 
 Create an experiment with permutation enabled:
 
 .. code-block:: python
 
-    apsimC.create_experiment(permutation=True, verbose=False)  # Default is a permutation experiment
+    exp.init_experiment(permutation=True)
 
 Add nitrogen and population density factors:
 

@@ -107,6 +107,7 @@ What about by Nitrogen fertilizers?
 .. code-block:: python
 
   df.sort_values(by='Nitrogen', inplace=True)
+  df.groupby('Nitrogen')['Yield'].mean()
 
 .. code-block:: none
 

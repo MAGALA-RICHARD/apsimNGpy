@@ -48,13 +48,13 @@ a) Add nitrogen levels as a continuous factor:
 
 .. code-block:: python
 
-    exp.add_factor(specification="[Fertilise at sowing].Script.Amount = 0 to 200 step 20", factor_name='Nitrogen')
+    exp.add_factor(specification="[Fertilise at sowing].Script.Amount = 0 to 200 step 50", factor_name='Nitrogen')
 
 b) Add population density as a categorical factor:
 
 .. code-block:: python
 
-    exp.add_factor(specification="[Sow using a variable rule].Script.Population = 4, 10, 2, 7, 6",
+    exp.add_factor(specification="[Sow using a variable rule].Script.Population =  4, 6, 10"",
                      factor_name='Population')
 
 
@@ -71,9 +71,16 @@ Execute the simulation and visualize results:
 
 Step 4. Visualization and other analysis
 ---------------------------------------------
-    sns.catplot(x='Nitrogen', y='Yield', hue='Population', data=df, kind='box')
-    plt.show()
 
+.. code-block:: python
+
+    exp.cat_plot(x='Population', y='Yield', hue='Nitrogen', table='Report', kind='box',)
+
+
+.. image:: ../images/Maize_experiment.png
+   :alt: Maize experiment example plot
+   :align: center
+   :width: 800px
 Factorial Experiment with Cultivar Replacements
 -----------------------------------------------
 

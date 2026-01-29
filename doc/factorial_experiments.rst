@@ -1,11 +1,12 @@
 .. _quick_factorial_experiments:
 
+Quick and Simple Way to Run Factorial Experiments
+=================================================
+
 .. image:: ../images/experiment.gif
    :alt: Run APSIM simulation
    :align: center
    :width: 800px
-Quick and Simple Way to Run Factorial Experiments
-=================================================
 
 This guide demonstrates how to set up and run factorial experiments using `apsimNGpy`, `pandas`, and `seaborn`. Factorial experiments involve systematically varying multiple factors to observe their effects on outputs such as crop yield.
 

@@ -218,6 +218,25 @@ Verifying Successful Configuration
    - :ref:`API Reference <api_ref>`
    - :ref:`Download Stable APSIM Version <apsim_pin_version>`
 
+The quickest alternative for all the above is to temporarily provide the APSIM ``bin`` path using a
+context manager. This approach is useful for short scripts or interactive sessions
+and assumes that you do **not** import any other ``apsimNGpy`` modules outside of
+the :mod:`~apsimNGpy.core.config` module.
+
+The APSIM binary path can be set temporarily as follows:
+
+.. code-block:: python
+
+   from apsimNGpy.core.config import set_apsim_bin_path, apsim_bin_context
+
+   with apsim_bin_context(
+       apsim_bin_path=r"C:\Users\rmagala\AppData\Local\Programs\APSIM2026.1.7969.0\bin"
+   ):
+       from apsimNGpy.core.apsim import ApsimModel
+
+       model = ApsimModel("soybean")
+       df = model.run()
+
 Containerization and Portability
 ----------------------------------
 

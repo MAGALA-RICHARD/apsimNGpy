@@ -90,7 +90,7 @@ What is is the mean of maize grain yield if grouped by population density?
 
 .. code-block:: python
 
-  df  =exp.results
+  df  = exp.results
   df.groupby('Population')['Yield'].mean()
 
 .. code-block:: none
@@ -119,6 +119,11 @@ What about by Nitrogen fertilizers?
     200    5523.046246
     50     3463.481660
     Name: Yield, dtype: float64
+
+From the mean values obtained in both code examples,
+it is evident that nitrogen fertilizer has a greater influence
+on corn grain yield than plant population density, as reflected by
+the higher mean yield values
 
 Factorial Experiment with Cultivar Replacements
 -----------------------------------------------

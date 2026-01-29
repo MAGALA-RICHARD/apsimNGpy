@@ -5,7 +5,7 @@
       Run APSIM models sequentially with `run` or in parallel using `MultiCoreManager.run_all_jobs`.
 
 Operating System
-----------------
+====================
 
 - **Windows**
 
@@ -22,7 +22,7 @@ Python Requirements
      ``pythonnet``. However, the development team is working around the clock to make sure it is also supported
 
 Required Dependencies
----------------------
+==========================
 
 - **APSIM** (installed locally)
 
@@ -44,12 +44,12 @@ Required Dependencies
 These dependencies are installed automatically via ``pip``.
 
 Installation
-============
+===============
 
 You can install ``apsimNGpy`` using one of the methods below.
 
 Installing apsimNGpy
---------------------
+-----------------------
 
 Method 1: Install from PyPI (stable releases)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -94,20 +94,23 @@ Prerequisites
 
 .. important::
 
-   Before using ``apsimNGpy``, **APSIM Next Generation must be installed**.
+   APSIM application can be installed by following the links below:
 
    - Windows: https://www.apsim.info/download-apsim/downloads/
    - macOS / Linux: https://apsimnextgeneration.netlify.app/install/
    - APSIM documentation: https://docs.apsim.info/
 
-   ``apsimNGpy`` assumes users have a basic understanding of APSIM as a
-   process-based crop model. The goal of this package is to provide a
-   programmatic and reproducible interface.
+.. tip::
+
+   If you are new to using APSIM, try the following tutorials
+   `here <https://apsimnextgeneration.netlify.app/user_tutorials/>`_.
 
 .. tip::
 
-   Use the **pinned APSIM release** shown on the apsimNGpy home page
-   (:ref:`Download it here <apsim_pin_version>`) to avoid forward-compatibility issues.
+   Unless you have a specific reason to do otherwise, always use the **pinned APSIM release**
+   shown on the apsimNGpy home page (:ref:`Download it here <apsim_pin_version>`)
+   to avoid forward-compatibility issues.
+
 
 Verifying the APSIM Binary Path
 -------------------------------
@@ -228,7 +231,7 @@ Verifying Successful Configuration
    - :ref:`Download Stable APSIM Version <apsim_pin_version>`
 
 Containerization and Portability
---------------------------------
+----------------------------------
 
 **apsimNGpy** simplifies containerization and project portability. Entire
 projects can be transferred to another machine **without reinstalling APSIM**,

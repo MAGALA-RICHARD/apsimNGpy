@@ -101,6 +101,24 @@ What is is the mean of maize grain yield if grouped by population density?
     4     4009.747575
     6     4385.225238
     Name: Yield, dtype: float64
+
+What about by Nitrogen fertilizers?
+
+.. code-block:: python
+
+  df.sort_values(by='Nitrogen', inplace=True)
+
+.. code-block:: none
+
+    Out[17]:
+    Nitrogen
+    0      1759.903894
+    100    5145.991310
+    150    5580.979357
+    200    5523.046246
+    50     3463.481660
+    Name: Yield, dtype: float64
+
 Factorial Experiment with Cultivar Replacements
 -----------------------------------------------
 

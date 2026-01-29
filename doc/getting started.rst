@@ -73,9 +73,9 @@ Method 3: Install directly from GitHub (Recommended)
 
 .. tip::
 
-   Installing directly from GitHub is **strongly recommended**, as the repository
-   is actively maintained and receives continuous bug fixes as soon as issues
-   are reported by users.
+   Installing directly from GitHub may be convenient for Anaconda users, as
+   apsimNGpy is not currently distributed through the Anaconda package manager.
+
 
 Editable installation (for developers)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

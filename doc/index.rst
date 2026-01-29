@@ -40,6 +40,10 @@ apsimNGpy: The Next-Generation Agro-ecosystem Simulation Library
    :target: https://registration.apsim.info/?version=2026.01.7969.0&product=APSIM%20Next%20Generation
    :name: apsim_pin_version
 
+.. image:: ../images/run.gif
+   :alt: Run APSIM simulation
+   :align: center
+   :width: 800px
 
 Introduction
 ============

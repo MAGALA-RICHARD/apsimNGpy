@@ -12,7 +12,7 @@ Operating System
 - **Linux and macOS** are also supported, provided APSIM is installed and running locally on your machine.
 
 Python Requirements
--------------------
+---------------------
 
 - **Python ≥ 3.10 and < 3.14**
 

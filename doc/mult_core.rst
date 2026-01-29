@@ -1,5 +1,5 @@
 
-.. image:: ../images/batch.gif
+.. image:: ../images/batch2.gif
    :alt: Run APSIM simulation
    :align: center
    :width: 800px

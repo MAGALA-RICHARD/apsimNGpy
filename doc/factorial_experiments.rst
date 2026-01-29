@@ -1,5 +1,9 @@
 .. _quick_factorial_experiments:
 
+.. image:: ../images/experiment.gif
+   :alt: Run APSIM simulation
+   :align: center
+   :width: 800px
 Quick and Simple Way to Run Factorial Experiments
 =================================================
 
@@ -70,30 +74,30 @@ Add nitrogen and population density factors:
 
 .. code-block:: python
 
-    apsimC.add_factor(specification="[Fertilise at sowing].Script.Amount = 0 to 200 step 20",
+    exp.add_factor(specification="[Fertilise at sowing].Script.Amount = 0 to 200 step 20",
     factor_name='Nitrogen')
-    apsimC.add_factor(specification="[Sow using a variable rule].Script.Population = 4, 10, 2, 7, 6",
+    exp.add_factor(specification="[Sow using a variable rule].Script.Population = 4, 10, 2, 7, 6",
                       factor_name='Population')
 
 Replace the crop with an alternative maize cultivar:
 
 .. code-block:: python
 
-    apsimC.add_crop_replacements(_crop='Maize')
+    exp.add_crop_replacements(_crop='Maize')
 
 Add a factor for radiation use efficiency (RUE):
 
 .. code-block:: python
 
-    apsimC.add_factor(specification='[Maize].Leaf.Photosynthesis.RUE.FixedValue = 1.0, 1.23, 4.3',
+     exp.add_factor(specification='[Maize].Leaf.Photosynthesis.RUE.FixedValue = 1.0, 1.23, 4.3',
      factor_name='RUE')
 
 Run the experiment and visualize the impact of ``RUE`` on yield:
 
 .. code-block:: python
 
-    apsimC.run()
-    sns.catplot(x='Nitrogen', y='Yield', hue='RUE', data=apsimC.results, kind='bar')
+    exp.run()
+    sns.catplot(x='Nitrogen', y='Yield', hue='RUE', data=exp.results, kind='bar')
     plt.show()
 
 .. admonition:: Conclusion.

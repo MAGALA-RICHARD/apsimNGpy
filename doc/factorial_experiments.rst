@@ -72,6 +72,8 @@ Execute the simulation and visualize results:
 Step 4. Visualization and other analysis
 ---------------------------------------------
 
+a) Visualization
+^^^^^^^^^^^^^^^^^^^^
 .. code-block:: python
 
     exp.cat_plot(x='Population', y='Yield', hue='Nitrogen', table='Report', kind='box',)
@@ -81,6 +83,24 @@ Step 4. Visualization and other analysis
    :alt: Maize experiment example plot
    :align: center
    :width: 800px
+
+b) Statistical analysis
+-----------------------
+What is is the mean of maize grain yield if grouped by population density?
+
+.. code-block:: python
+
+  df  =exp.results
+  df.groupby('Population')['Yield'].mean()
+
+.. code-block:: none
+
+    Out[6]:
+    Population
+    10    4489.068667
+    4     4009.747575
+    6     4385.225238
+    Name: Yield, dtype: float64
 Factorial Experiment with Cultivar Replacements
 -----------------------------------------------
 

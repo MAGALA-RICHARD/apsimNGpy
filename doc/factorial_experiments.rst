@@ -11,15 +11,14 @@ Quick and Simple Way to Run Factorial Experiments
 This guide demonstrates how to set up and run factorial experiments using `apsimNGpy`.
 Factorial experiments involve systematically varying multiple factors to observe their effects on outputs such as crop yield.
 
-The :class:`~apsimNGpy.core.experimentmanager.ExperimentManager`: API in ``apsimNGpy`` provides a high-level interface to build factorial experiments
-programmatically using APSIM. It is ideal for users who want to automate the creation of simulation treatments
-by varying input parameters or management scripts — all without manually editing ``.apsimx`` files.
+The :class:`~apsimNGpy.core.experimentmanager.ExperimentManager`: in ``apsimNGpy`` provides a high-level interface to build factorial experiments
+programmatically without APSIM GUI or template.
 
 Why apsimNGpy for factorial experiments
 ======================================
 
 Data in apsimNGpy is **lazily loaded**, allowing users and researchers to run
-large design-of-experiments (DoE) workflows without excessive memory usage.
+large factorial experiments workflows without excessive memory usage.
 Simulation outputs are also readily available for downstream analysis.
 
 Quick Overview

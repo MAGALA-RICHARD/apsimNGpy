@@ -17,8 +17,9 @@ Python Requirements
 - **Python ≥ 3.10 and < 3.14**
 
   .. note::
+
      Python 3.14 is not currently supported due to upstream limitations in
-     ``pythonnet``.
+     ``pythonnet``. However, the development team is working around the clock to make sure it is also supported
 
 Required Dependencies
 ---------------------

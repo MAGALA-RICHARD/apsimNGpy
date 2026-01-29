@@ -224,7 +224,6 @@ the :mod:`~apsimNGpy.core.config` module before entering the with block as shown
 .. code-block:: python
 
    from apsimNGpy.core.config import apsim_bin_context
-
    with apsim_bin_context(
        apsim_bin_path=r"your_apsim_binary_path"):
        from apsimNGpy.core.apsim import ApsimModel

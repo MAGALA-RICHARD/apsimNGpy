@@ -41,15 +41,16 @@ Step 1: Import the API and initialize it
    exp = ExperimentManager("Maize", out_path="Maize_experiment.apsimx")
 
 Step 2. Adding Factors
---------------
+----------------------------
+The following example demonstrates how plant population density and nitrogen fertilizer rates are added with one at a time.
 
-Add nitrogen levels as a continuous factor:
+a) Add nitrogen levels as a continuous factor:
 
 .. code-block:: python
 
     exp.add_factor(specification="[Fertilise at sowing].Script.Amount = 0 to 200 step 20", factor_name='Nitrogen')
 
-Add population density as a categorical factor:
+b) Add population density as a categorical factor:
 
 .. code-block:: python
 

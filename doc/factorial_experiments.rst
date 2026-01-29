@@ -21,18 +21,26 @@ Data in apsimNGpy is **lazily loaded**, allowing users and researchers to run
 large design-of-experiments (DoE) workflows without excessive memory usage.
 Simulation outputs are also readily available for downstream analysis.
 
+Quick Overview
+==============
 
-Setting Up the Environment
---------------------------
+The :class:`~apsimNGpy.core.experimentmanager.ExperimentManager`: class wraps an existing APSIM model and allows you to:
 
-First, import the necessary libraries:
+- Clone and isolate a base simulation
+- Add multiple input factors (e.g., fertilizer rate, sowing density)
+- Generate permutations or combinations of those factors
+- Export the updated ``.apsimx`` file with fully configured experiments
+- visualize outputs easily
+
+Step 1: Import the API and initialize it
+-----------------------------------------
 
 .. code-block:: python
 
    from apsimNGpy.core.experimentmanager import ExperimentManager
    exp = ExperimentManager("Maize", out_path="Maize_experiment.apsimx")
 
-Adding Factors
+Step 2. Adding Factors
 --------------
 
 Add nitrogen levels as a continuous factor:

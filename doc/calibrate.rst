@@ -5,6 +5,12 @@
 
 Automatic Parameter calibration
 =================================
+
+.. image:: ../images/optimization.gif
+   :alt: Run APSIM simulation
+   :align: center
+   :width: 800px
+
 This tutorial demonstrates how to automatically calibrate APSIM parameters using the optimization algorithms
 available in apsimNGpy. For detailed information on defining and submitting optimization factors,
 refer to the API documentation for :meth:`~apsimNGpy.optimizer.problems.smp.MixedProblem.submit_factor`.

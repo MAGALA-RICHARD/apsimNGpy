@@ -1,3 +1,4 @@
+
 .. image:: https://img.shields.io/badge/License-Apache_2.0-blue.svg
    :target: https://opensource.org/licenses/Apache-2.0
    :alt: License: Apache-2.0
@@ -26,6 +27,11 @@
 .. image:: https://img.shields.io/badge/Download--APSIM--NG-2026.01.7969.0-blue?style=flat&logo=apachespark
    :alt: APSIM Next Generation version
    :target: https://registration.apsim.info/?version=2026.01.7969.0&product=APSIM%20Next%20Generation
+
+.. image:: ../images/run.gif
+   :alt: Run APSIM simulation
+   :align: center
+   :width: 800px
 
 apsimNGpy: The Next Generation Agroe-cosystem Simulation Library
 ===========================================================================

@@ -46,7 +46,7 @@ These dependencies are installed automatically via ``pip``.
 Installation
 ============
 
-``apsimNGpy`` You can install the package using one of the methods below.
+You can install ``apsimNGpy`` using one of the methods below.
 
 Installing apsimNGpy
 --------------------

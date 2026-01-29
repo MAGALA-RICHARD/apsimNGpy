@@ -104,9 +104,10 @@ Prerequisites
 
 .. tip::
 
-   Unless you have a specific reason to do otherwise, always use the **pinned APSIM release**
-   shown on the apsimNGpy home page (:ref:`Download it here <apsim_pin_version>`)
-   to avoid forward-compatibility issues.
+    Unless you have a specific reason to do otherwise, always use the **pinned APSIM
+    version (or an earlier compatible release)** shown on the apsimNGpy home page
+    (:ref:`Download it here <apsim_pin_version>`) to avoid forward-compatibility issues.
+
 
 
 Verifying the APSIM Binary Path

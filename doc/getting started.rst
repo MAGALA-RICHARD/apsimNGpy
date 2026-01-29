@@ -43,13 +43,10 @@ Required Dependencies
 
 These dependencies are installed automatically via ``pip``.
 
-Installation
-===============
+Installing apsimNGpy
+=====================
 
 You can install ``apsimNGpy`` using one of the methods below.
-
-Installing apsimNGpy
------------------------
 
 Method 1: Install from PyPI (stable releases)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

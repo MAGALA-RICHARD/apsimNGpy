@@ -64,7 +64,7 @@ Method 2: Clone the development repository
    cd apsimNGpy
    pip install .
 
-Method 3: Install directly from GitHub (recommended)
+Method 3: Install directly from GitHub (Recommended)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: console

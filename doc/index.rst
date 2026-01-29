@@ -137,7 +137,7 @@ For reporting reproducible bugs or contributing code, please use the
 
 .. toctree::
    :maxdepth: 2
-   :caption: DISTRIBUTED COMPUTING
+   :caption: BATCH SIMULATIONS
 
    mult_core
 

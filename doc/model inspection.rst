@@ -3,7 +3,7 @@
 Inspect Model
 =========================
 
-.. image:: ../images/inspect.gif
+.. image:: ../images/inspect_model.gif
    :alt: Run APSIM simulation
    :align: center
    :width: 800px

@@ -277,7 +277,7 @@ without value unpacking, we can submit variables directly as follows:
 
 .. code-block:: python
 
-   mp.mp.submit_factor(
+   mp.submit_factor(
        path=".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82",
        vtype=[
            QrandintVar(400, 900, q=10),

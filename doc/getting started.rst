@@ -46,7 +46,7 @@ These dependencies are installed automatically via ``pip``.
 Installing apsimNGpy
 =====================
 
-.. image:: ../images/install.gif
+.. image:: ../images/installing.gif
    :alt: Run APSIM simulation
    :align: center
    :width: 800px

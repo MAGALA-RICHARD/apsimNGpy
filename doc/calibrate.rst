@@ -6,7 +6,7 @@
 Automatic Parameter calibration
 =================================
 
-.. image:: ../images/optimization.gif
+.. image:: ../images/calib.gif
    :alt: Run APSIM simulation
    :align: center
    :width: 800px

@@ -46,6 +46,11 @@ These dependencies are installed automatically via ``pip``.
 Installing apsimNGpy
 =====================
 
+.. image:: ../images/install.gif
+   :alt: Run APSIM simulation
+   :align: center
+   :width: 800px
+
 You can install ``apsimNGpy`` using one of the methods below.
 
 Method 1: Install from PyPI (stable releases)

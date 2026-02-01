@@ -1,12 +1,10 @@
 import os
-from apsimNGpy.core.config import apsim_bin_context, set_apsim_bin_path, get_apsim_bin_path, configuration
 from pathlib import Path
-from multiprocessing import RLock
+
+from apsimNGpy.core.config import apsim_bin_context, configuration
 
 bin_path = Path(os.environ.get('TEST_APSIM_BINARY'))
 import time
-
-from contextlib import contextmanager
 
 
 def edit_weather(model):

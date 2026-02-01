@@ -37,8 +37,6 @@ HOME_DATA = Path.home().joinpath('AppData', 'Local', 'Programs')
 cdrive = os.environ.get('PROGRAMFILES')
 CONFIG = configparser.ConfigParser()
 TEMPORAL_BIN_ENV_KEY = 'TEMPORAL_BIN'
-_lock = RLock()
-
 
 @cache
 def _apsim_model_is_installed(_path: str):

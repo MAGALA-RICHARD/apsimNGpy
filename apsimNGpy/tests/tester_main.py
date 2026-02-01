@@ -1,19 +1,20 @@
-import configparser
-import time
+import os
+import logging
 import os
 import stat
 import unittest
-import logging
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
+
 from apsimNGpy.mailer.mail import send_report
+
 date_STR = datetime.now().strftime("%y-%m-%d-%H-%M-%S")
 logging.basicConfig(level=logging.INFO, format='  [%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format='  [%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
 
-from apsimNGpy.core.config import set_apsim_bin_path, apsim_bin_context, get_apsim_bin_path
+from apsimNGpy.core.config import apsim_bin_context
 
 bin_path = Path(os.environ.get('TEST_APSIM_BINARY'))
 with apsim_bin_context(bin_path, disk_cache=False) as bin_context:

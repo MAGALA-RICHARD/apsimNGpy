@@ -12,6 +12,8 @@ from apsimNGpy.settings import logger
 import re
 
 AUTO = object()
+
+
 def is_file_format_modified(bin_path: Union[str, Path] = AUTO) -> bool:
     """
     Checks if the APSIM.CORE.dll is present in the bin path. Normally, the new APSIM version has this dll file.
@@ -97,7 +99,6 @@ class ConfigRuntimeInfo:
         self.start_pythonnet()
         self.load_clr()
         self.apsim_compiled_version = _fetch_apsim_version(self.bin_path, release_number=True)
-
 
     def get_file_reader(self, method='string'):
         """

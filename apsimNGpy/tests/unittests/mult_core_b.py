@@ -19,7 +19,7 @@ if __name__ == '__main__':
     # get the APSIM binary path
 
     print(configuration.bin_path)
-    with apsim_bin_context(bin_path, disk_cache=True) as ap:
+    with apsim_bin_context(bin_path, disk_cache=False) as ap:
         time.sleep(2)
         from apsimNGpy.core.mult_cores import MultiCoreManager
 

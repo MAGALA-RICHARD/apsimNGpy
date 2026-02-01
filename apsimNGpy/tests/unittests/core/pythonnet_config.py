@@ -12,22 +12,14 @@ from typing import Union
 
 from apsimNGpy.core import pythonet_config
 from apsimNGpy.core.config import locate_model_bin_path, configuration
-from apsimNGpy.core.pythonet_config import start_pythonnet, is_file_format_modified, CLR
+from apsimNGpy.core.pythonet_config import CLR
 # --------------apsimNGpy related modules________________________
 from apsimNGpy.exceptions import ApsimBinPathConfigError
-from apsimNGpy.settings import logger
 
 CURRENT_BIN = configuration.bin_path
 
+
 # ---- Helpers ---------------------------------------------------------------
-
-
-# ---- Test cases ------------------------------------------------------------
-bin = configuration.bin_path
-
-if not locate_model_bin_path(bin):
-    logger.info('Could not locate bin path and thus can not proceed with test pythonnet config module')
-    sys.exit()
 
 
 def _exclude(path: Union[str, Path]) -> bool:

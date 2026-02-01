@@ -38,7 +38,6 @@ def is_connection(obj):
 
 
 apsim_bin_path = Path(configuration.bin_path)
-print(apsim_bin_path)
 # Determine executable based on OS
 if platform.system() == "Windows":
     APSIM_EXEC = apsim_bin_path / "Models.exe"

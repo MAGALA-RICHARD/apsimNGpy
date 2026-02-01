@@ -91,33 +91,6 @@ def locate_model_bin_path(bin_path: Union[str, Path], recursive: bool = True) ->
     return None
 
 
-@cache
-def load_bin_2path(_bin_path):
-    candidate = locate_model_bin_path(_bin_path)
-    if not candidate:
-        raise ApsimBinPathConfigError(
-            f'Built APSIM Binaries seems to have been uninstalled from this directory: {_bin_path}\n use the config.set_apsim_bin_path')
-    add_bin_to_syspath(candidate)
-
-    # system.path.append(bin_path)
-    import clr
-    clr.AddReference("System")
-    # model_path = os.path.join(bin_path, 'Models.dll')
-    # clr.AddReference(model_path)
-    # apsimNG = clr.AddReference('ApsimNG')
-    clr.AddReference("Models")
-    if is_file_format_modified(_bin_path):
-        clr.AddReference('APSIM.Core')
-    # apsimNG engine
-    if set(Path(candidate).glob("*ApsimNG.dll")):
-        clr.AddReference("ApsimNG")
-    else:
-        logger.warning(f'Could not find ApsimNG.dll in {candidate}')
-
-    print('Successfully loaded APSIM Binaries')
-    return clr
-
-
 def list_drives():
     """
     for windows-only

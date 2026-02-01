@@ -13,6 +13,8 @@ import re
 
 AUTO = object()
 
+__all__ = ['is_file_format_modified', 'CLR', 'ConfigRuntimeInfo']
+
 
 def is_file_format_modified(bin_path: Union[str, Path] = AUTO) -> bool:
     """

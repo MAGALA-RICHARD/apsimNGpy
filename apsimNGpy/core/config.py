@@ -798,10 +798,6 @@ class apsim_bin_context(AbstractContextManager):
             time.sleep(1)
         return self
 
-    def wait(self):
-        self._wait = True
-        self.release = False
-
     def __exit__(self, exc_type, exc, tb):
         if self.set_to_file:
             configuration.bin_path = self.previous

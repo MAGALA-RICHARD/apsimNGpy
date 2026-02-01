@@ -1,23 +1,20 @@
 # test_pythonnet_config.py. depends on a properly functioning config module
+import gc
+import importlib
 import os
+import platform
+import shutil
 import sys
 import tempfile
-import shutil
-import importlib
 import unittest
 from pathlib import Path
 from typing import Union
-from unittest.mock import patch
-import gc
-import platform
-from pathlib import Path
+
+from apsimNGpy.core import pythonet_config
+from apsimNGpy.core.config import locate_model_bin_path, configuration
+from apsimNGpy.core.pythonet_config import start_pythonnet, is_file_format_modified, CLR
 # --------------apsimNGpy related modules________________________
 from apsimNGpy.exceptions import ApsimBinPathConfigError
-from apsimNGpy.core.config import get_apsim_bin_path, locate_model_bin_path, configuration
-from apsimNGpy.core import pythonet_config
-from apsimNGpy.core.pythonet_config import start_pythonnet, load_pythonnet, get_apsim_file_reader, \
-    get_apsim_file_writer, is_file_format_modified
-
 from apsimNGpy.settings import logger
 
 CURRENT_BIN = configuration.bin_path
@@ -99,28 +96,14 @@ class TestPythonnetLoader(unittest.TestCase):
         checks whether pythonnet is running and was able to add bin_path to path, and hence the ability to import c#modules
         @return:
         """
-        module = self.import_module_with_valid_bin()
-        module.load_pythonnet()
 
-        try:
-            # ____ If loaded then C3 modules are importable ___________
-            import Models
-            loaded = True
-        except ModuleNotFoundError:
-            # switch loaded flag to indicate False and hence failure
-            loaded = False
-        self.assertTrue(loaded, msg="loading pythonnet failed")
-        import pythonnet
-        self.assertTrue(pythonnet.get_runtime_info().initialized, 'Pythonnet initialization failed')
+        self.assertTrue(CLR.clr_loaded, 'Pythonnet initialization failed')
 
     def test_later_modified_versions_with_apsim_dot_core(self):
-        modified = is_file_format_modified()
-        start_pythonnet()
-        try:
-            import APSIM.Core
-            apsim_core = True
-        except ModuleNotFoundError:
-            apsim_core = False
+        modified = CLR.file_format_modified
+
+        apsim_core = True if CLR.APsimCore else False
+
         check_true = apsim_core == modified
         self.assertTrue(check_true,
                         msg=f"is_file_format_modified indicated {modified} yet importing APSIM,core indicated {apsim_core}")

@@ -1,8 +1,8 @@
 from apsimNGpy.core.pythonet_config import load_pythonnet, is_file_format_modified
 from apsimNGpy.core.cs_resources import CastHelper
-from apsimNGpy.core.pythonet_config import load_pythonnet, is_file_format_modified
+from apsimNGpy.core.pythonet_config import CLR, is_file_format_modified
 
-load = load_pythonnet(bin_path=None)
+
 import Models
 import os
 from pathlib import Path

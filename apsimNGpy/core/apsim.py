@@ -4,40 +4,32 @@ author: Richard Magala
 email: magalarich20@gmail.com
 """
 
-from builtins import str
-from typing import Union, Any, Optional, Tuple, Mapping, Sequence
 import os
-import numpy as np
-import pandas as pd
 from dataclasses import dataclass
 from pathlib import Path
-from apsimNGpy.core.core import CoreModel, Models, ModelTools
-from apsimNGpy.core.model_loader import MODEL_NOT_PROVIDED, AUTO_PATH
-from apsimNGpy.core.inspector import Inspector
-from System.Collections.Generic import *
-from Models.Core import Simulations
-from System import *
-from Models.Soils import Solute, Water, Chemical
-from Models.Soils import Soil, Physical, SoilCrop, Organic, LayerStructure
-
+from typing import Any
+from typing import Optional, Tuple, Sequence
 from typing import Union
+from apsimNGpy.core.pythonet_config import CLR
+from apsimNGpy.core.core import CoreModel, ModelTools
+import numpy as np
+import pandas as pd
+from Models.Soils import Physical, SoilCrop, Organic, LayerStructure
+from Models.Soils import Water, Chemical
+from System import *
+from System.Collections.Generic import *
+
+Models = CLR.Models
 from apsimNGpy.core.cs_resources import CastHelper
+from apsimNGpy.core.model_loader import AUTO_PATH
 from apsimNGpy.core.model_loader import get_node_by_path
 from apsimNGpy.core.model_tools import find_child_of_class
-from apsimNGpy.settings import logger
 from apsimNGpy.core.soiler import SoilManager
-from apsimNGpy.core.runner import run_model_externally
-from typing import Any
+from apsimNGpy.settings import logger
+
 
 # ===================================================================================================
 
-
-# constants
-REPORT_PATH = {'Carbon': '[Soil].Nutrient.TotalC/1000 as dyn', 'DUL': '[Soil].SoilWater.PAW as paw', 'N03':
-    '[Soil].Nutrient.NO3.ppm as N03'}
-
-
-# decorator to monitor performance
 
 @dataclass(repr=False, order=False, init=False)
 class ApsimModel(CoreModel):
@@ -224,7 +216,6 @@ class ApsimModel(CoreModel):
         .. versionadded:: 0.39.12.21+
         """
 
-
         from apsimNGpy.optimizer.problems.back_end import final_eval
         if not isinstance(table, pd.DataFrame) and isinstance(table, str):
             if not self.ran_ok:
@@ -282,7 +273,6 @@ class ApsimModel(CoreModel):
         # the rest of errors are handled by edit_model_path gracefully
 
         # Apply to model
-
 
         self.edit_model_by_path(**pa)
         self.save()
@@ -837,12 +827,14 @@ if __name__ == '__main__':
     model.get_soil_from_web(simulation_name=None, lonlat=(-89.9937, 40.4842), thinnest_layer=150, adjust_dul=True)
     # mod.get_soil_from_web(simulation_name=None, lonlat=(-93.045, 42.0541))
     from apsimNGpy.tests.unittests.test_factory import obs
+
     with ApsimModel("Maize") as model:
         datastore = Path(model.datastore)
-        model.add_report_variable(variable_spec='[Clock].Today.Year as year', report_name='Report', simulations='Simulation')
+        model.add_report_variable(variable_spec='[Clock].Today.Year as year', report_name='Report',
+                                  simulations='Simulation')
         model.run()
         print(model.results.columns)
-        df= model.results
+        df = model.results
         print(df.columns)
         df["date"] = pd.to_datetime(df["Clock.Today"])
         # Extract components

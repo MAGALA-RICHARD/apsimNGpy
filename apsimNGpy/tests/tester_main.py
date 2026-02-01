@@ -1,179 +1,121 @@
 import configparser
+import time
 import os
 import stat
 import unittest
 import logging
-import smtplib
-from apsimNGpy.core.config import apsim_version
-from datetime import datetime
-from email import encoders
-
 from pathlib import Path
-
+from datetime import datetime
+from apsimNGpy.mailer.mail import send_report
 date_STR = datetime.now().strftime("%y-%m-%d-%H-%M-%S")
 logging.basicConfig(level=logging.INFO, format='  [%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format='  [%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
-from apsimNGpy.core.pythonet_config import is_file_format_modified
 
-IS_NEW_APSIM = is_file_format_modified()
-config = configparser.ConfigParser()
-config_file = config.read('./unittests/configs.ini')
+from apsimNGpy.core.config import set_apsim_bin_path, apsim_bin_context, get_apsim_bin_path
 
+bin_path = Path(os.environ.get('TEST_APSIM_BINARY'))
+with apsim_bin_context(bin_path, disk_cache=False) as bin_context:
+    from apsimNGpy.core.pythonet_config import CLR
+    apsim_version = CLR.apsim_compiled_version
+    IS_NEW_APSIM = CLR.file_format_modified
 
-def send_report(sms, subject, attachment_path=None):
-    # Works only on the local machine for the robot to run automatically and send results of what is going on
-    # the env vars are set manually on the local machine for security purposes
-    all_envs = False
-    sender = None
-    receiver = None
-    key = None
-    if os.environ.get('REPORT_TESTS', None):
-        sender = os.environ.get('SENDER', sender)
-        receiver = os.environ.get('RECEIVER', receiver)
-        key = os.environ.get('PASSCODE', key)
-        all_envs = all([receiver, sender, key])
-    if all_envs:
-        from email.mime.base import MIMEBase
-        from email.mime.multipart import MIMEMultipart
-        from email.mime.text import MIMEText
-        # Email credentials
-        SMTP_SERVER = "smtp.gmail.com"
-        SMTP_PORT = 587
-        EMAIL_SENDER = sender
-        EMAIL_PASSWORD = key
-        EMAIL_RECEIVER = receiver
+    from apsimNGpy.tests.unittests.core import core, data_insights
+    from apsimNGpy.tests.unittests.manager import weathermanager, soilmanager, test_get_weather_from_web_filename
+    from apsimNGpy.tests.unittests.core import apsim, senstivitymanager, experimentmanager, model_loader, model_tools, \
+        pythonnet_config, edit_model_by_path, core_edit_model, cs_resources, config, plot_manager
+    from apsimNGpy.tests.unittests.optimizer import vars, smp
 
-        # Create the email message
-        msg = MIMEMultipart()
-        msg["From"] = EMAIL_SENDER
-        msg["To"] = EMAIL_RECEIVER
-        msg["Subject"] = subject
-
-        # Attach text message
-        msg.attach(MIMEText(sms, "plain"))
-
-        # Attach a file if provided
-        if attachment_path and os.path.exists(attachment_path):
-            with open(attachment_path, "rb") as attachment:
-                part = MIMEBase("application", "octet-stream")
-                part.set_payload(attachment.read())
-
-            encoders.encode_base64(part)
-            part.add_header(
-                "Content-Disposition",
-                f"attachment; filename={os.path.basename(attachment_path)}",
-            )
-            msg.attach(part)
-
-        # Send the email
-        try:
-            with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
-                server.starttls()  # Secure the connection
-                server.login(EMAIL_SENDER, EMAIL_PASSWORD)
-                server.sendmail(EMAIL_SENDER, EMAIL_RECEIVER, msg.as_string())
-                logger.info("Email sent successfully!")
-        except Exception as e:
-            print("Error:", e)
-
-
-from apsimNGpy.tests.unittests.core import core, data_insights
-from apsimNGpy.tests.unittests.manager import weathermanager, soilmanager, test_get_weather_from_web_filename
-from apsimNGpy.tests.unittests.core import apsim, senstivitymanager, experimentmanager, model_loader, model_tools, \
-    pythonnet_config, edit_model_by_path, core_edit_model, cs_resources, config, plot_manager
-from apsimNGpy.tests.unittests.optimizer import vars, smp
-
-modules = {pythonnet_config,
-           model_tools,
-           senstivitymanager,
-           core,
-           apsim,
-           vars,
-           smp,
-           edit_model_by_path,
-           cs_resources,
-           core_edit_model,
-           model_loader,
-           config,
-           weathermanager,
-           test_get_weather_from_web_filename,
-           plot_manager,
-           soilmanager,
-           data_insights
-           }
-if IS_NEW_APSIM:
+    modules = {pythonnet_config,
+               model_tools,
+               senstivitymanager,
+               core,
+               apsim,
+               vars,
+               smp,
+               edit_model_by_path,
+               cs_resources,
+               core_edit_model,
+               model_loader,
+               config,
+               weathermanager,
+               test_get_weather_from_web_filename,
+               plot_manager,
+               soilmanager,
+               data_insights
+               }
     if IS_NEW_APSIM:
-        from apsimNGpy.tests.unittests.core import experimentmanager
-    modules.add(experimentmanager)
-    modules = (i for i in modules)
+        if IS_NEW_APSIM:
+            from apsimNGpy.tests.unittests.core import experimentmanager
+        modules.add(experimentmanager)
+        modules = (i for i in modules)
 
 
-def clean_up():
+    def clean_up():
+        sc = Path('../scratch')
+        for path in sc.rglob("temp_*"):
+            try:
+                # Ensure file is writable (especially on Windows)
+                path.chmod(stat.S_IWRITE)
+                path.unlink(missing_ok=True)
+            except (PermissionError, FileNotFoundError):
+                ...
 
-    sc = Path('../scratch')
-    for path in sc.rglob("temp_*"):
+
+    # Create a test suite combining all the test cases
+    loader = unittest.TestLoader()
+    suite = unittest.TestSuite()
+
+    for mod in modules:
+        suite.addTests(loader.loadTestsFromModule(mod))
+
+
+    def run_suite(verbosity_level=2):
+        logger.info('Running all tests')
         try:
-            # Ensure file is writable (especially on Windows)
-            path.chmod(stat.S_IWRITE)
-            path.unlink(missing_ok=True)
-        except (PermissionError, FileNotFoundError):
-            ...
+            runner = unittest.TextTestRunner(verbosity=verbosity_level)
+            result = runner.run(suite)
+
+            total_tests = result.testsRun
+            num_failures = len(result.failures)
+            num_errors = len(result.errors)
+            num_passed = total_tests - num_failures - num_errors
+            failure_rate = (num_failures / total_tests) * 100 if total_tests else 0
+            error_rate = (num_errors / total_tests) * 100 if total_tests else 0
+
+            logger.info(f"\n Test Summary:")
+            print(f"=====================================")
+            logger.info(f"✅ Passed  : {num_passed}")
+            logger.info(f"❌ Failures: {num_failures}")
+            logger.info(f"❌ Errors  : {num_errors}")
+            logger.info(f"📉 Failure Rate: {failure_rate:.2f}%")
+            logger.info(f"📉 Error Rate: {error_rate:.2f}%\n")
+
+            # Create report string
+            report = (
+                f"Test Suite Summary for {apsim_version}\n"
+                f"====================================\n"
+                f"✅ Passed  : {num_passed}\n"
+                f"❌ Failures: {num_failures}\n"
+                f"💥 Errors  : {num_errors}\n"
+                f"📉 Failure Rate: {failure_rate:.2f}%\n"
+                f"📉 Error Rate: {error_rate:.2f}%\n"
+                f"Date: {date_STR}"
+            )
+
+            # Send report
+
+            send_report(sms=report,
+                        subject=f"{apsim_version} Test Suite Report"
+                        )
+
+            return report
+        finally:
+
+            clean_up()
 
 
-# Create a test suite combining all the test cases
-loader = unittest.TestLoader()
-suite = unittest.TestSuite()
-
-for mod in modules:
-    suite.addTests(loader.loadTestsFromModule(mod))
-
-
-def run_suite(verbosity_level=2):
-    logger.info('Running all tests')
-    try:
-        runner = unittest.TextTestRunner(verbosity=verbosity_level)
-        result = runner.run(suite)
-
-        total_tests = result.testsRun
-        num_failures = len(result.failures)
-        num_errors = len(result.errors)
-        num_passed = total_tests - num_failures - num_errors
-        failure_rate = (num_failures / total_tests) * 100 if total_tests else 0
-        error_rate = (num_errors / total_tests) * 100 if total_tests else 0
-
-        logger.info(f"\n Test Summary:")
-        print(f"=====================================")
-        logger.info(f"✅ Passed  : {num_passed}")
-        logger.info(f"❌ Failures: {num_failures}")
-        logger.info(f"❌ Errors  : {num_errors}")
-        logger.info(f"📉 Failure Rate: {failure_rate:.2f}%")
-        logger.info(f"📉 Error Rate: {error_rate:.2f}%\n")
-
-
-        # Create report string
-        report = (
-            f"Test Suite Summary for {apsim_version()}\n"
-            f"====================================\n"
-            f"✅ Passed  : {num_passed}\n"
-            f"❌ Failures: {num_failures}\n"
-            f"💥 Errors  : {num_errors}\n"
-            f"📉 Failure Rate: {failure_rate:.2f}%\n"
-            f"📉 Error Rate: {error_rate:.2f}%\n"
-            f"Date: {date_STR}"
-        )
-
-        # Send report
-
-        send_report(sms=report,
-                    subject=f"{apsim_version()} Test Suite Report"
-                    )
-
-        return report
-    finally:
-        clean_up()
-
-
-if __name__ == '__main__':
-    # MULTI-CORE TEST IS TESTED ELSE WHERE
-    run = (run_suite(),)
+    if __name__ == '__main__':
+        # MULTI-CORE TEST IS TESTED ELSE WHERE
+        run = (run_suite(),)

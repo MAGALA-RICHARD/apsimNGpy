@@ -3,38 +3,19 @@ Docstring for core.senstivitymanager
 guarranted to work on windows, R must be installed, not yet tested on Mac OS.
 We are building a dedicated apsimNGpy senstivity module away from the default one provided.
 """
-import os
-import re
-import sys
-from pathlib import Path
-from apsimNGpy.core.config import configuration
 
-from apsimNGpy.core.apsim import ApsimModel, AUTO_PATH
 from collections import OrderedDict
-
-from apsimNGpy.core.model_tools import ModelTools, Models
-
+from apsimNGpy.core.pythonet_config import CLR
+from apsimNGpy.core.apsim import ApsimModel, AUTO_PATH
 from apsimNGpy.core.cs_resources import CastHelper
-from apsimNGpy.core.pythonet_config import is_file_format_modified
-from apsimNGpy.core.run_time_info import APSIM_VERSION_NO, BASE_RELEASE_NO, GITHUB_RELEASE_NO
-from apsimNGpy.core.model_loader import to_json_string, recompile, get_node_by_path
+from apsimNGpy.core.model_loader import get_node_by_path
+from apsimNGpy.core.model_tools import ModelTools
 
-from apsimNGpy.core_utils.deco import add_outline
-from apsimNGpy.core.runner import invoke_csharp_gc, run_model_externally
-from apsimNGpy.core.utils_for_experimnet import create
+from apsimNGpy.core.runner import invoke_csharp_gc
+Models = CLR.Models
+if not CLR.file_format_modified:
+    raise ValueError(f"The experiment module is not supported for this type of {CLR.apsim_compiled_version} ")
 
-if is_file_format_modified():
-    import APSIM.Core as NodeUtils
-    import System
-
-   # structure = Models.Core.ApsimFile.Structure
-else:
-    from apsimNGpy.core.config import apsim_version
-
-    raise ValueError(f"The experiment module is not supported for this type of {apsim_version()} ")
-
-import inspect
-from typing import Type, Union
 from apsimNGpy.core.version_inspector import is_higher_apsim_version
 
 from System.Collections.Generic import List
@@ -208,7 +189,6 @@ class SensitivityManager(ApsimModel):
             return sim
 
         def refresher():
-            from apsimNGpy.core.config import load_crop_from_disk
             replace_ments = ModelTools.find_child(self.Simulations, child_class=Models.Core.Folder,
                                                   child_name='Replacements')
 

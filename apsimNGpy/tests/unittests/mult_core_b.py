@@ -1,10 +1,12 @@
 import os
-
-
+from apsimNGpy.core.config import apsim_bin_context, set_apsim_bin_path, get_apsim_bin_path, configuration
 from pathlib import Path
+from multiprocessing import RLock
 
-db = (Path.home() / "test_agg_3.db").resolve()
+bin_path = Path(os.environ.get('TEST_APSIM_BINARY'))
 import time
+
+from contextlib import contextmanager
 
 
 def edit_weather(model):
@@ -12,21 +14,39 @@ def edit_weather(model):
 
 
 if __name__ == '__main__':
-    from apsimNGpy.core.config import set_apsim_bin_path, apsim_bin_context
-    from apsimNGpy.core.mult_cores import MultiCoreManager
-    with apsim_bin_context(apsim_bin_path=r'C:\Users\rmagala\AppData\Local\Programs\APSIM2026.1.7969.0\bin'):
+    # set the database where data will be stores
+    db = (Path.home() / "test_agg_3.db").resolve()
+    # get the APSIM binary path
+    previous = get_apsim_bin_path()
+    print(configuration.bin_path)
+    with apsim_bin_context(bin_path, disk_cache=True) as ap:
+        time.sleep(2)
         from apsimNGpy.core.mult_cores import MultiCoreManager
+
+
+        print(configuration.bin_path)
+
         workspace = Path('D:/')
         os.chdir(workspace)
+
+        #initialize the API
         Parallel = MultiCoreManager(db_path=db, agg_func='mean', table_prefix='di', )
+        # define the batch simulation jobs
         jobs = ({'model': 'Maize', 'ID': i, 'payload': [{'path': '.Simulations.Simulation.Field.Fertilise at sowing',
-                                                         'Amount': i}]} for i in range(100))
-
+                                                         'Amount': i}]} for i in range(100, 122))
         start = time.perf_counter()
-
-        Parallel.run_all_jobs(jobs=jobs, n_cores=6, engine='csharp', threads=False, chunk_size=100,
-                              subset=['Yield'],callback=edit_weather,
+        # run all the jobs defined above
+        Parallel.run_all_jobs(jobs=jobs, n_cores=11, engine='python', threads=True, chunk_size=100,
+                              subset=['Yield'], callback=edit_weather,
                               progressbar=True)
+        # extract the results
         dff = Parallel.results
         print(dff.shape)
         print(time.perf_counter() - start)
+
+    print(configuration.bin_path)
+
+
+
+
+# using a context manager to load APSIM

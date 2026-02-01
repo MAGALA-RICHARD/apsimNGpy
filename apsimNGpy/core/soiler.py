@@ -3,7 +3,7 @@ from dataclasses import dataclass
 import datetime as dt
 from typing import Optional, Sequence, Tuple, Mapping, Any, Union
 
-from apsimNGpy.core.pythonet_config import load_pythonnet
+from apsimNGpy.core.pythonet_config import CLR
 from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganiseSoilProfile
 from apsimNGpy.core_utils.soil_lay_calculator import auto_gen_thickness_layers
 from apsimNGpy.core.model_tools import find_child_of_class, find_all_in_scope, CastHelper
@@ -12,10 +12,10 @@ from apsimNGpy.core.model_tools import find_child_of_class
 from apsimNGpy.settings import logger
 from pandas import DataFrame
 
-lp = load_pythonnet()  # ensure CLR
+
 import numpy as np
-import Models
-from System import Array, Double  # pythonnet: fast marshaling to double[]
+Models = CLR.Models
+Array, Double = CLR.System.Array, CLR.System.Double
 
 
 # -------------------------------------------------------------------

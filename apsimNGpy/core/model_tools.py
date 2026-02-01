@@ -1,33 +1,30 @@
-import pandas as pd
-from apsimNGpy.core.pythonet_config import is_file_format_modified
-from dataclasses import dataclass
-from gc import collect
-import Models
-from System.Collections import IEnumerable
-from System import String, Double, Array
-from functools import lru_cache, cache
-from typing import Union, Dict, Any, Iterable
-from Models.Soils import Physical, SoilCrop, Organic, Solute, Chemical
 import warnings
-from System.Collections.Generic import List, KeyValuePair
-from apsimNGpy.settings import *
-from pathlib import Path
-from apsimNGpy.core.model_loader import load_apsim_model
-from apsimNGpy.core.cs_resources import simple_rotation_code, update_manager_code
-from apsimNGpy.core.pythonet_config import get_apsim_version as apsim_version
-from apsimNGpy.core.run_time_info import BASE_RELEASE_NO, GITHUB_RELEASE_NO
-from apsimNGpy.core.version_inspector import is_higher_apsim_version
 from array import array
-from apsimNGpy.core_utils.utils import is_scalar, timer
+from dataclasses import dataclass
+from functools import lru_cache, cache
+from gc import collect
+from typing import Union, Dict, Any
+import pandas as pd
+from apsimNGpy.core.pythonet_config import CLR
+# These should be below CLR imports
+from System import String, Double, Array
+from System.Collections import IEnumerable
+from System.Collections.Generic import List, KeyValuePair
 
-IS_NEW_APSIM = is_file_format_modified()
+from apsimNGpy.core.cs_resources import simple_rotation_code, update_manager_code
+from apsimNGpy.core.model_loader import load_apsim_model
+from apsimNGpy.core.version_inspector import is_higher_apsim_version
+from apsimNGpy.core_utils.utils import is_scalar
+from apsimNGpy.settings import *
+
+Models = CLR.Models
+Physical, SoilCrop, Organic, Solute, Chemical = Models.Soils.Physical, Models.Soils.SoilCrop, Models.Soils.Organic, Models.Soils.Solute, Models.Soils.Chemical
+IS_NEW_APSIM = CLR.file_format_modified
 
 from apsimNGpy.core.cs_resources import CastHelper, sow_using_variable_rule, sow_on_fixed_date, harvest, \
     fertilizer_at_sow, cast_as
 
-APSIM_VERSION = apsim_version(release_number=True)
-
-from collections.abc import Iterable
+APSIM_VERSION = CLR.apsim_compiled_version
 
 
 def _add_model(model, parent) -> None:
@@ -52,7 +49,7 @@ def _delete_node(node) -> None:
     if hasattr(Models.Core, 'ApsimFile'):
         Models.Core.ApsimFile.Structure.Delete(node)
     else:
-        from APSIM.Core import Node
+        Node  = CLR.Node
         node = getattr(node, 'Node', node)
         Node.Clear(node)
 
@@ -68,9 +65,9 @@ def select_thread(multithread):
 
 select_thread(multithread=True)
 
+
 @cache
 def _tools(method):
-
     if hasattr(Models.Core, 'ApsimFile'):
         FileTools = {
             "MOVE": Models.Core.ApsimFile.Structure.Move,
@@ -269,7 +266,7 @@ def find_model(model_name: str):
     if model_type:
         return model_type
     # for some unknown reasons Models.Factorial namespace is not featuring so let's do it mannually here
-    import Models
+    Models = CLR.Models
     if model_type is None:
         model_type = getattr(Models.Factorial, model_name, None)
     if model_type is None:
@@ -1187,7 +1184,7 @@ def find_all_model_type(parent, model_type, ignore_errors=False):
     if not callable(model_type):
         model_type = getattr(Models, model_type)
 
-    #node_base = getattr(parent, "Node", parent)
+    # node_base = getattr(parent, "Node", parent)
 
     error_MSG = f"Failed to find models of type {model_type} under parent node {parent}"
 
@@ -1198,7 +1195,6 @@ def find_all_model_type(parent, model_type, ignore_errors=False):
     return ALL_MODELS
 
 
-
 collect()
 # add_method_to_model_tools(find_child)
 # add_method_to_model_tools(find_all_in_scope)
@@ -1206,9 +1202,7 @@ collect()
 
 if __name__ == "__main__":
     ...
-    from apsimNGpy.core_utils.database_utils import read_db_table, get_db_table_names
     import time
-    from apsimNGpy.core.apsim import ApsimModel
     from apsimNGpy.core.pythonet_config import get_apsim_file_reader
     from apsimNGpy.core.config import load_crop_from_disk
 
@@ -1255,13 +1249,14 @@ if __name__ == "__main__":
         unique_updated = list(dict.fromkeys(update))
         return unique_updated
 
+
     try:
-       pp = edit_cultivar('B_110', "1")
+        pp = edit_cultivar('B_110', "1")
     except ValueError:
         print('working as expected')
 
     try:
-       ppd = edit_cultivar('B_110', "1=")
+        ppd = edit_cultivar('B_110', "1=")
     except ValueError:
         print('working as expected')
     pp1 = edit_cultivar('B_110', commands='[Leaf].Photosynthesis.RUE.FixedValue=2')

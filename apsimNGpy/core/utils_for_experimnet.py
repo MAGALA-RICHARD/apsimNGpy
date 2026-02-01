@@ -4,18 +4,18 @@ import re
 from collections import OrderedDict
 
 from apsimNGpy.core.apsim import ApsimModel
-from apsimNGpy.core.cs_resources import CastHelper
 from apsimNGpy.core.model_loader import get_node_by_path
 from apsimNGpy.core.model_tools import ModelTools, Models
 from apsimNGpy.core.pythonet_config import CLR
 from apsimNGpy.core.run_time_info import APSIM_VERSION_NO, BASE_RELEASE_NO, GITHUB_RELEASE_NO
 
+CastHelper = CLR.CastHelper
 NodeUtils = CLR.APsimCore
 apsim_version = CLR.apsim_compiled_version
 if not CLR.file_format_modified:
-    raise ValueError(f"The experiment module is not supported for this type of {apsim_version()} ")
+    raise ValueError(f"The experiment module is not supported for this type of {CLR.apsim_compiled_version} ")
 
-from System import GC
+GC = CLR.System.GC
 
 
 # ________________helpers______________

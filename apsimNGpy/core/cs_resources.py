@@ -1,14 +1,11 @@
 import os
 from pathlib import Path
-import re
 from apsimNGpy.core.load_clr import start_pythonnet
-# Define the path to the config file using pathlib for better cross-platform support
-DLL_DIR = str(Path(__file__).parent.parent / 'dll')
-
+CAST_OBJECT = 'CastBridge'
+DLL_DIR = (Path(__file__).parent.parent / 'dll').joinpath(CAST_OBJECT)
 start_pythonnet()
 import clr
-
-clr.AddReference(os.path.join(DLL_DIR, 'CastBridge'))
+clr.AddReference(str(DLL_DIR))
 from CastBridge import CastHelper
 
 

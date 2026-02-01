@@ -1,12 +1,15 @@
 import inspect
-import textwrap
+import textwrap, os
 from pathlib import Path
 from typing import Iterable, Union, List, Set, Any
+from apsimNGpy.core.config import get_apsim_bin_path, set_apsim_bin_path
 
 # ---------- knobs ----------
 INHERIT_NOTE_STYLE = "short"  # {"short","base","none"}
 INDENT = "   "  # indentation for bodies
 SHOW_MODULE_VARIABLES = True  # include public module-level attributes
+
+bin_path = Path(os.environ.get('TEST_APSIM_BINARY')) or get_apsim_bin_path()
 
 
 # ---------- helpers ----------
@@ -296,75 +299,80 @@ def docs(
     print(f"API reference written to: {output_file}")
 
 
-# ---------------- CLI demo driver ----------------
-if __name__ == "__main__":
-    SENDTO = Path.cwd().parent.parent / 'docs/source'
-    SENDTO.mkdir(parents=True, exist_ok=True)
-    SENDTO2 = Path.cwd().parent.parent.parent / 'apsimNGpy-documentations/doc'
-    SENDTO2.mkdir(parents=True, exist_ok=True)
-    from apsimNGpy.core_utils.deco import add_outline
+def main(apsim_bin_path):
+    from apsimNGpy.core.config import apsim_bin_context
+    with apsim_bin_context(apsim_bin_path):
+        SENDTO = Path.cwd().parent.parent / 'docs/source'
+        SENDTO.mkdir(parents=True, exist_ok=True)
+        SENDTO2 = Path.cwd().parent.parent.parent / 'apsimNGpy-documentations/doc'
+        SENDTO2.mkdir(parents=True, exist_ok=True)
+        from apsimNGpy.core_utils.deco import add_outline
 
-    import shutil, os
-    from apsimNGpy.core import config, base_data, apsim, mult_cores, pythonet_config, experimentmanager, runner
-    # from apsimNGpy.optimizer import moo, single
-    from apsimNGpy.core_utils import database_utils
-    from apsimNGpy.parallel import process
-    from apsimNGpy import exceptions
-    from apsimNGpy.validation import evaluator
-    from apsimNGpy.optimizer.minimize import single_mixed
-    from apsimNGpy.optimizer.problems import smp, back_end
-    from apsimNGpy.core import senstivitymanager
-    from apsimNGpy.senstivity import sensitivity
-    from apsimNGpy.senstivity.sensitivity import ConfigProblem, run_sensitivity
+        import shutil, os
+        from apsimNGpy.core import config, base_data, apsim, mult_cores, pythonet_config, experimentmanager, runner
+        # from apsimNGpy.optimizer import moo, single
+        from apsimNGpy.core_utils import database_utils
+        from apsimNGpy.parallel import process
+        from apsimNGpy import exceptions
+        from apsimNGpy.validation import evaluator
+        from apsimNGpy.optimizer.minimize import single_mixed
+        from apsimNGpy.optimizer.problems import smp, back_end
+        from apsimNGpy.core import senstivitymanager
+        from apsimNGpy.senstivity import sensitivity
+        from apsimNGpy.senstivity.sensitivity import ConfigProblem, run_sensitivity
 
-    # ________________________________________________________________________________
-    # add outline!!
-    # ----------------------------------------------------------------------------------
-    add_outline(sensitivity.ConfigProblem, include_inherited=True,
-                base_path='apsimNGpy.senstivity.sensitivity.ConfigProblem')
-    add_outline(senstivitymanager.SensitivityManager, include_inherited=True,
-                base_path='apsimNGpy.core.senstivitymanager.SensitivityManager')
-    add_outline(single_mixed.MixedVariableOptimizer, include_inherited=True,
-                base_path='apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer')
-    add_outline(smp.MixedProblem, include_inherited=True,
-                base_path='apsimNGpy.optimizer.problems.smp.MixedProblem')
-    add_outline(experimentmanager.ExperimentManager, include_inherited=True,
-                base_path='apsimNGpy.core.experimentmanager.ExperimentManager')
-    add_outline(apsim.ApsimModel, include_inherited=True, base_path='apsimNGpy.core.apsim.ApsimModel')
-    # add_outline(moo.MultiObjectiveProblem, include_inherited=True,
-    #             base_path='apsimNGpy.optimizer.moo.MultiObjectiveProblem')
-    # add_outline(single.MixedVariable, include_inherited=True,
-    #             base_path='apsimNGpy.optimizer.single.MixedVariableProblem')
-    add_outline(mult_cores.MultiCoreManager, include_inherited=True,
-                )
-    modules = (sensitivity,
-               process, apsim, mult_cores, experimentmanager,  smp, single_mixed, senstivitymanager,
-               evaluator, exceptions, database_utils, pythonet_config, config, runner, back_end,
-               )
+        # ________________________________________________________________________________
+        # add outline!!
+        # ----------------------------------------------------------------------------------
+        add_outline(sensitivity.ConfigProblem, include_inherited=True,
+                    base_path='apsimNGpy.senstivity.sensitivity.ConfigProblem')
+        add_outline(senstivitymanager.SensitivityManager, include_inherited=True,
+                    base_path='apsimNGpy.core.senstivitymanager.SensitivityManager')
+        add_outline(single_mixed.MixedVariableOptimizer, include_inherited=True,
+                    base_path='apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer')
+        add_outline(smp.MixedProblem, include_inherited=True,
+                    base_path='apsimNGpy.optimizer.problems.smp.MixedProblem')
+        add_outline(experimentmanager.ExperimentManager, include_inherited=True,
+                    base_path='apsimNGpy.core.experimentmanager.ExperimentManager')
+        add_outline(apsim.ApsimModel, include_inherited=True, base_path='apsimNGpy.core.apsim.ApsimModel')
+        # add_outline(moo.MultiObjectiveProblem, include_inherited=True,
+        #             base_path='apsimNGpy.optimizer.moo.MultiObjectiveProblem')
+        # add_outline(single.MixedVariable, include_inherited=True,
+        #             base_path='apsimNGpy.optimizer.single.MixedVariableProblem')
+        add_outline(mult_cores.MultiCoreManager, include_inherited=True,
+                    )
+        modules = (sensitivity,
+                   process, apsim, mult_cores, experimentmanager, smp, single_mixed, senstivitymanager,
+                   evaluator, exceptions, database_utils, pythonet_config, config, runner, back_end,
+                   )
 
-    OUT = Path("docs/source/api.rst").resolve()
-    doc_folder = Path(__file__).parent.parent.parent / 'doc'
-    OUT.parent.mkdir(parents=True, exist_ok=True)
-    docs(modules, output_file=OUT, skip_undocumented=True, main_package="apsimNGpy")
-    shutil.copy2(OUT, doc_folder / 'api.rst')
-    rsts = list(Path.cwd().rglob("*pi.rst"))
-    if SENDTO2.exists():
+        OUT = Path("docs/source/api.rst").resolve()
+        doc_folder = Path(__file__).parent.parent.parent / 'doc'
+        OUT.parent.mkdir(parents=True, exist_ok=True)
+        docs(modules, output_file=OUT, skip_undocumented=True, main_package="apsimNGpy")
+        shutil.copy2(OUT, doc_folder / 'api.rst')
+        rsts = list(Path.cwd().rglob("*pi.rst"))
+        if SENDTO2.exists():
+            for rst in rsts:
+                if str(rst).endswith("dex.rst") or str(rst).endswith("inspection.rst"):
+                    continue
+                dst = SENDTO2 / rst.name
+                if dst.exists():
+                    os.remove(dst)
+                shutil.copy2(rst, dst)
+                print(dst)
+        else:
+            print(f"{SENDTO2} not present")
+
         for rst in rsts:
-            if str(rst).endswith("dex.rst") or str(rst).endswith("inspection.rst"):
+            if str(rst).endswith("index.rst") or str(rst).endswith("inspection.rst"):
                 continue
-            dst = SENDTO2 / rst.name
+            dst = SENDTO / rst.name
             if dst.exists():
                 os.remove(dst)
             shutil.copy2(rst, dst)
             print(dst)
-    else:
-        print(f"{SENDTO2} not present")
 
-    for rst in rsts:
-        if str(rst).endswith("index.rst") or str(rst).endswith("inspection.rst"):
-            continue
-        dst = SENDTO / rst.name
-        if dst.exists():
-            os.remove(dst)
-        shutil.copy2(rst, dst)
-        print(dst)
+
+if __name__ == "__main__":
+    main(bin_path)

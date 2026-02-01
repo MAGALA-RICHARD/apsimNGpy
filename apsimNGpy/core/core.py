@@ -30,7 +30,7 @@ from System.Collections.Generic import KeyValuePair
 from apsimNGpy.core._cultivar import edit_cultivar_by_path
 from apsimNGpy.core._cultivar import trace_cultivar
 from apsimNGpy.core.config import configuration
-from apsimNGpy.core.cs_resources import CastHelper
+CastHelper = CLR.CastHelper
 from apsimNGpy.core.model_loader import (load_apsim_model, save_model_to_file, recompile, get_node_by_path, AUTO_PATH)
 from apsimNGpy.core.model_tools import find_child
 from apsimNGpy.core.model_tools import (get_or_check_model, old_method, _edit_in_cultivar,

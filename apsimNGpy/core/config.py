@@ -1,32 +1,23 @@
-# nothing should be run here we don't want any errors, as it is used to set bin_path, which is critical to the
-# application
 from __future__ import annotations
 
 import configparser
-import glob
-import logging
-import os
+import os, time, logging, glob, subprocess
 import platform
-import subprocess
-import sys
-import time
 from contextlib import AbstractContextManager
 from dataclasses import dataclass
 from functools import cache
+from functools import lru_cache
 from os.path import exists
 from pathlib import Path
 from shutil import copy2
 from typing import Union, Optional, Any
-import gc
+
 import psutil
-from apsimNGpy.core_utils.utils import timer
 from dotenv import load_dotenv
 
-from apsimNGpy.settings import CONFIG_PATH, create_config, logger
+from apsimNGpy.bin_loader.resources import add_bin_to_syspath, is_file_format_modified
 from apsimNGpy.exceptions import ApsimBinPathConfigError
-from apsimNGpy.bin_loader.resources import add_bin_to_syspath, is_file_format_modified, remove_bin_from_syspath
-from functools import lru_cache
-from multiprocessing import RLock
+from apsimNGpy.settings import CONFIG_PATH, create_config, logger
 
 AUTO_BIN = object()
 logger = logging.getLogger(__name__)
@@ -36,7 +27,11 @@ load_dotenv()
 HOME_DATA = Path.home().joinpath('AppData', 'Local', 'Programs')
 cdrive = os.environ.get('PROGRAMFILES')
 CONFIG = configparser.ConfigParser()
-TEMPORAL_BIN_ENV_KEY = 'TEMPORAL_BIN'
+TEMPORAL_BIN_ENV_KEY = 'TEMPORAL_BIN_KEY'
+
+__all__ = ['auto_detect_apsim_bin_path', 'apsim_bin_context',
+           'set_apsim_bin_path', 'get_apsim_bin_path', 'load_crop_from_disk', 'configuration']
+
 
 @cache
 def _apsim_model_is_installed(_path: str):
@@ -807,9 +802,6 @@ class apsim_bin_context(AbstractContextManager):
         os.environ.pop(TEMPORAL_BIN_ENV_KEY, None)
         return False  # do not suppress exceptions
 
-
-# ________________________________
-# load_apsim_models
 
 if __name__ == "__main__":
     # -------- Example usage --------

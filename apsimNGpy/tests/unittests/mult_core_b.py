@@ -1,9 +1,8 @@
 import os
 from pathlib import Path
 from apsimNGpy.core.config import apsim_bin_context, configuration
-
-bin_path = Path(os.environ.get('TEST_APSIM_BINARY'))
 import time
+bin_path = Path(os.environ.get('TEST_APSIM_BINARY'))
 
 
 def edit_weather(model):

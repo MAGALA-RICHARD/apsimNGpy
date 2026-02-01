@@ -14,9 +14,9 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format='  [%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
 
-from apsimNGpy.core.config import apsim_bin_context
+from apsimNGpy.core.config import apsim_bin_context, get_apsim_bin_path
 
-bin_path = Path(os.environ.get('TEST_APSIM_BINARY'))
+bin_path = Path(os.environ.get('TEST_APSIM_BINARY')) or get_apsim_bin_path()
 with apsim_bin_context(bin_path, disk_cache=False) as bin_context:
     from apsimNGpy.core.pythonet_config import CLR
     apsim_version = CLR.apsim_compiled_version

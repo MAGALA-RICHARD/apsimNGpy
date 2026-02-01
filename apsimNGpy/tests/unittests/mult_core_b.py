@@ -17,7 +17,7 @@ if __name__ == '__main__':
     # set the database where data will be stores
     db = (Path.home() / "test_agg_3.db").resolve()
     # get the APSIM binary path
-    previous = get_apsim_bin_path()
+
     print(configuration.bin_path)
     with apsim_bin_context(bin_path, disk_cache=True) as ap:
         time.sleep(2)

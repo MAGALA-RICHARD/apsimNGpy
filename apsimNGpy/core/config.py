@@ -285,9 +285,11 @@ class Configuration:
    Users will be able to override these values if needed by importing this module before running any simulations.
 
     """
-    bin_path: Path = field(default_factory=get_apsim_bin_path)
+    bin_path: Union[str, Path] = None
 
     def __post_init__(self):
+        if self.bin_path is None:
+            self.bin_path = get_apsim_bin_path()
         temporal_bin = os.environ.get(TEMPORAL_BIN_ENV_KEY, None)
         # persist temporal bin_path because other threads might load from get_apsim_bin_path even though in a context manager
         # the temporal bin_key is popped out on exit in apsim_bin_context class
@@ -362,7 +364,6 @@ class Configuration:
 
 
 configuration = Configuration()
-
 
 def get_bin_use_history():
     """

@@ -197,6 +197,7 @@ def load_apsim_model(model=MODEL_NOT_PROVIDED, out_path=AUTO_PATH, file_load_met
 
     Returns:
         {ModelData}: A dataclass container with paths, model object, and metadata.
+        @param tag:
     """
     if model is MODEL_NOT_PROVIDED:
         model = None

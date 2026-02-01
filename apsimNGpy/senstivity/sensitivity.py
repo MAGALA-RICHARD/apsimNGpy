@@ -13,6 +13,8 @@ from apsimNGpy.settings import logger
 
 dataError = sqlalchemy.exc.OperationalError
 
+__all__ = ['ConfigProblem', 'run_sensitivity']
+
 
 class ConfigProblem:
     """
@@ -87,7 +89,7 @@ class ConfigProblem:
             retry_rate: int,
             threads: bool,
             engine: str,
-            chunk_size:int =100
+            chunk_size: int = 100
     ):
         """
         Run APSIM simulations and return outputs and raw results.
@@ -182,8 +184,8 @@ def run_sensitivity(
         threads: bool = False,
         sample_options: dict | None = None,
         analyze_options: dict | None = None,
-        engine ='python',
-        chunk_size: int =100
+        engine='python',
+        chunk_size: int = 100
 ):
     """
     Run a complete sensitivity analysis.

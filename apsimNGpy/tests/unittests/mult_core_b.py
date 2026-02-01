@@ -1,6 +1,5 @@
 import os
 from pathlib import Path
-
 from apsimNGpy.core.config import apsim_bin_context, configuration
 
 bin_path = Path(os.environ.get('TEST_APSIM_BINARY'))
@@ -21,13 +20,12 @@ if __name__ == '__main__':
         time.sleep(2)
         from apsimNGpy.core.mult_cores import MultiCoreManager
 
-
         print(configuration.bin_path)
 
         workspace = Path('D:/')
         os.chdir(workspace)
 
-        #initialize the API
+        # initialize the API
         Parallel = MultiCoreManager(db_path=db, agg_func='mean', table_prefix='di', )
         # define the batch simulation jobs
         jobs = ({'model': 'Maize', 'ID': i, 'payload': [{'path': '.Simulations.Simulation.Field.Fertilise at sowing',
@@ -43,8 +41,5 @@ if __name__ == '__main__':
         print(time.perf_counter() - start)
 
     print(configuration.bin_path)
-
-
-
 
 # using a context manager to load APSIM

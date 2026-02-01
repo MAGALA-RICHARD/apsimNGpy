@@ -210,6 +210,11 @@ class MultiCoreManager:
         self.clear_scratch()
         return None
 
+    def init(self, db_path, agg_func=None, table_prefix='di', ):
+        self.table_prefix = table_prefix
+        self.agg_func = agg_func
+        self.db_path = Path(db_path).resolve().with_suffix('db')
+
     def __hash__(self):
         db_hash = self.db_path if isinstance(self.db_path, (str, Path)) else 'connection'
         return hash((
@@ -228,7 +233,7 @@ class MultiCoreManager:
 
         """
         from apsimNGpy.core_utils.database_utils import get_db_table_names
-        "Summarizes all the tables that have been created from the simulations"
+        # "Summarizes all the tables that have been created from the simulations"
         if isinstance(self.db_path, (str, Path)):
             if not os.path.exists(self.db_path) and os.path.isfile(self.db_path) and self.ran_ok:
                 raise ValueError("Attempting to get results from database before running all jobs")
@@ -428,7 +433,7 @@ class MultiCoreManager:
         ensure proper cleanup and reproducibility.
 
         Parameters
-        ----------
+        -------------
         threads : bool, optional
             If ``True``, jobs are executed using threads; otherwise, jobs are
             executed using processes. The default is ``False`` (process-based
@@ -709,6 +714,7 @@ class MultiCoreManager:
         ch_size = chunk_size
         if ch_size > CSHARP_ENGINE_MAX_CHUNK_SIZE:
             raise ValueError(f'Chunk size must be less than {CSHARP_ENGINE_MAX_CHUNK_SIZE}')
+
         if engine.lower() == CSHARP_ENGINE:
             # update engine on main
             self.engine = engine.lower()

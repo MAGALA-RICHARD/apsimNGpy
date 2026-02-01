@@ -1,31 +1,19 @@
 import dataclasses
 import gc
-import os
 import re
-import sys
-from apsimNGpy.core.apsim import ApsimModel
 from collections import OrderedDict
-from apsimNGpy.core.model_tools import ModelTools, Models
+
+from apsimNGpy.core.apsim import ApsimModel
 from apsimNGpy.core.cs_resources import CastHelper
-from apsimNGpy.core.pythonet_config import is_file_format_modified
+from apsimNGpy.core.model_loader import get_node_by_path
+from apsimNGpy.core.model_tools import ModelTools, Models
+from apsimNGpy.core.pythonet_config import CLR
 from apsimNGpy.core.run_time_info import APSIM_VERSION_NO, BASE_RELEASE_NO, GITHUB_RELEASE_NO
-from apsimNGpy.core.model_loader import to_json_string
-from apsimNGpy.core_utils.deco import add_outline
-from apsimNGpy.core.runner import invoke_csharp_gc
-from pathlib import Path
-from apsimNGpy.core.model_loader import get_node_and_type, get_node_by_path
 
-if is_file_format_modified():
-    import APSIM.Core as NodeUtils
-    import System
-    #structure = Models.Core.ApsimFile.Structure
-else:
-    from apsimNGpy.core.config import apsim_version
-
+NodeUtils = CLR.APsimCore
+apsim_version = CLR.apsim_compiled_version
+if not CLR.file_format_modified:
     raise ValueError(f"The experiment module is not supported for this type of {apsim_version()} ")
-
-import inspect
-from typing import Type
 
 from System import GC
 
@@ -46,7 +34,7 @@ def _get_base_sim(_model, base_simulation):
 
 
 def create(_model, base_simulation, permutation=True):
-   # mo = NodeUtils.Node.Clone(_model.Simulations.Node)
+    # mo = NodeUtils.Node.Clone(_model.Simulations.Node)
     mo = _model.Simulations
     try:
         pass
@@ -58,7 +46,7 @@ def create(_model, base_simulation, permutation=True):
             base = _model.simulations[0]
             base_full_path = base.FullPath
         base_clone = NodeUtils.Node.Clone(base.Node)
-        base_clone= CastHelper.CastAs[Models.Core.Simulation](base_clone.Model)
+        base_clone = CastHelper.CastAs[Models.Core.Simulation](base_clone.Model)
         experiment = Models.Factorial.Experiment()
         data['experiment_node'] = experiment
         factor = Models.Factorial.Factors()
@@ -69,20 +57,20 @@ def create(_model, base_simulation, permutation=True):
             data['permutation_node'] = perm_node
             factor.AddChild(perm_node)
         experiment.AddChild(factor)
-    #     # add simulation before experiment to the simulation tree
+        #     # add simulation before experiment to the simulation tree
         experiment.AddChild(base_clone)
         mo.Children.Add(experiment)
 
-    #     # delete base simulation outside the experiment if exists
+        #     # delete base simulation outside the experiment if exists
         simulation_node = get_node_by_path(mo, node_path=base_full_path)
         if simulation_node:
             ModelTools.DELETE(simulation_node.Model)
 
-        #mo.Write(_model.path)
+        # mo.Write(_model.path)
         data['path'] = _model.path
         return data
     finally:
-       GC.Collect()
+        GC.Collect()
 
 
 @dataclasses.dataclass(order=True, frozen=False, )
@@ -218,7 +206,7 @@ class ExperimentManager:
 
         try:
             if APSIM_VERSION_NO > BASE_RELEASE_NO or APSIM_VERSION_NO == GITHUB_RELEASE_NO:
-                create(self.apsim_model,base_simulation=base_simulation, permutation=self.permutation)
+                create(self.apsim_model, base_simulation=base_simulation, permutation=self.permutation)
 
                 self.init = True
             # compile
@@ -521,7 +509,6 @@ class ExperimentManager:
 
 if __name__ == '__main__':
     from runner import trial_run as run_p
+
     with ApsimModel('Maize') as model:
         dt = run_p(model, )
-
-

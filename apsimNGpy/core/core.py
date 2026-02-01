@@ -5,59 +5,56 @@ email: magalarich20@gmail.com
 
 """
 from __future__ import annotations
-import gc
-import os.path
-import re
-import random
-import pathlib
-import string
-from typing import Union
-import shutil
-import pandas as pd
-import json
-import datetime
-from dataclasses import field
-from typing import List, Dict
-import warnings
-from sqlalchemy.testing.plugin.plugin_base import logging
-from apsimNGpy.core.cs_resources import CastHelper
-from apsimNGpy.manager.weathermanager import get_weather
-from functools import lru_cache
-# prepare for the C# import
-from apsimNGpy.core_utils.utils import open_apsimx_file_in_window, evaluate_commands_and_values_types, is_scalar, \
-    extract_cultivar_param_path
-# now we can safely import C# libraries
-from apsimNGpy.core.pythonet_config import *
 
-load_models = load_pythonnet()
-from apsimNGpy.core_utils.database_utils import read_db_table
+import ast
+import datetime
+import gc
+import json
+import os.path
+import random
+import re
+import shutil
+import string
+import warnings
+from functools import lru_cache
+from typing import Any
+from typing import Union
+import pandas as pd
+from pathlib import Path
+from apsimNGpy.core.pythonet_config import CLR
+from System import *
+from System import InvalidOperationException, ArgumentOutOfRangeException
+from System import String
+from System.Collections.Generic import KeyValuePair
+
+from apsimNGpy.core._cultivar import edit_cultivar_by_path
+from apsimNGpy.core._cultivar import trace_cultivar
 from apsimNGpy.core.config import configuration
-from apsimNGpy.exceptions import ModelNotFoundError, NodeNotFoundError
+from apsimNGpy.core.cs_resources import CastHelper
+from apsimNGpy.core.model_loader import (load_apsim_model, save_model_to_file, recompile, get_node_by_path, AUTO_PATH)
+from apsimNGpy.core.model_tools import find_child
 from apsimNGpy.core.model_tools import (get_or_check_model, old_method, _edit_in_cultivar,
                                         inspect_model_inputs,
                                         ModelTools, validate_model_obj, replace_variable_by_index)
-from apsimNGpy.core.runner import run_model_externally, run_p, invoke_csharp_gc, run_apsim_by_path
-from apsimNGpy.core.model_loader import (load_apsim_model, save_model_to_file, recompile, get_node_by_path, AUTO_PATH)
-import ast
-from typing import Any
-from apsimNGpy.core.run_time_info import BASE_RELEASE_NO, GITHUB_RELEASE_NO
-from apsimNGpy.settings import SCRATCH, logger, MissingOption
 from apsimNGpy.core.plotmanager import PlotManager
-from apsimNGpy.core.model_tools import find_child
-from apsimNGpy.core._cultivar import trace_cultivar
-import Models
-from apsimNGpy.core.pythonet_config import get_apsim_version as apsim_version
-from System import InvalidOperationException, ArgumentOutOfRangeException, Array, Double
-from apsimNGpy.core._cultivar import edit_cultivar_by_path
+
+# now we can safely import C# libraries
+from apsimNGpy.core.run_time_info import BASE_RELEASE_NO, GITHUB_RELEASE_NO
+from apsimNGpy.core.runner import run_model_externally, run_p, run_apsim_by_path
 from apsimNGpy.core.version_inspector import is_higher_apsim_version
-from System.Collections.Generic import KeyValuePair
-from System import *
-from System import String
+from apsimNGpy.core_utils.database_utils import read_db_table
+# prepare for the C# import
+from apsimNGpy.core_utils.utils import open_apsimx_file_in_window, evaluate_commands_and_values_types, \
+    extract_cultivar_param_path
+from apsimNGpy.exceptions import ModelNotFoundError, NodeNotFoundError
+from apsimNGpy.manager.weathermanager import get_weather
+from apsimNGpy.settings import SCRATCH, logger, MissingOption
 
 _NOT_PROVIDED = object()
 
 # constants
-IS_NEW_MODEL = is_file_format_modified()
+IS_NEW_MODEL = CLR.file_format_modified
+Models = CLR.Models
 
 
 def edit_cultivar(node, cultivar_name, commands):
@@ -221,17 +218,17 @@ class CoreModel(PlotManager):
 
     def check_model(self):
         if hasattr(Models.Core, 'ApsimFile'):
-          if hasattr(Models.Core.ApsimFile, "ConverterReturnType"):
-            if isinstance(self.Simulations, Models.Core.ApsimFile.ConverterReturnType):
-                self.Simulations = self.Simulations.get_NewModel()
-                self.model_info = self.model_info._replace(IModel=self.Simulations)
+            if hasattr(Models.Core.ApsimFile, "ConverterReturnType"):
+                if isinstance(self.Simulations, Models.Core.ApsimFile.ConverterReturnType):
+                    self.Simulations = self.Simulations.get_NewModel()
+                    self.model_info = self.model_info._replace(IModel=self.Simulations)
         return self
 
     @staticmethod
     def _remove_related_files(_name):
         """Remove related database files."""
         for suffix in ["", "-shm", "-wal"]:
-            db_file = pathlib.Path(f"{_name}.db{suffix}")
+            db_file = Path(f"{_name}.db{suffix}")
             db_file.unlink(missing_ok=True)
 
     @staticmethod
@@ -2055,7 +2052,6 @@ class CoreModel(PlotManager):
                         "an error occured"
                         plant_model = find_child(parent=replacements, child_class=Models.PMF.Plant, child_name='Maize')
 
-
                     # Remove existing cultivar with same name
                     get_or_check_model(replacements, Models.PMF.Cultivar, new_cultivar_name, action='delete')
 
@@ -2063,7 +2059,7 @@ class CoreModel(PlotManager):
                     cultivar.Name = new_cultivar_name
                     if ModelTools.ADD:
                         # most likely old APSIM models
-                         ModelTools.ADD(cultivar, plant_model)
+                        ModelTools.ADD(cultivar, plant_model)
                     else:
                         plant_model.Children.Add(cultivar)
 
@@ -4021,7 +4017,8 @@ class CoreModel(PlotManager):
                :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_model_parameters`,
                :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_model_parameters_by_path`
         """
-        _version = float(self.Simulations.ApsimVersion.replace(".", ''))
+        vers = CLR.get_apsim_version_no
+        _version = float(vers.replace(".", ''))
         _base_version = float(BASE_RELEASE_NO.replace(".", ''))
         inspection_location = self.Simulations if scope is _NOT_PROVIDED else scope
         model_type = validate_model_obj(model_type)
@@ -4679,7 +4676,7 @@ class CoreModel(PlotManager):
         else:
             target_parent = PARENT.FindDescendant[Models.Core.Folder]('Replacements')
         if not target_parent:
-                ModelTools.ADD(_FOLDER, PARENT)
+            ModelTools.ADD(_FOLDER, PARENT)
         # assumes that the crop already exists in the simulation
         if is_higher_apsim_version(self.Simulations):
             _crop = ModelTools.find_child(PARENT, Models.PMF.Plant, CROP)
@@ -4687,7 +4684,7 @@ class CoreModel(PlotManager):
             _crop = PARENT.FindDescendant[Models.PMF.Plant](CROP)
 
         if _crop is not None:
-                ModelTools.ADD(_crop, _FOLDER)
+            ModelTools.ADD(_crop, _FOLDER)
 
         else:
             logger.error(f"No plants of crop {CROP} found")

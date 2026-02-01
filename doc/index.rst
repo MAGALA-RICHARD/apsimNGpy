@@ -7,7 +7,7 @@
    :keywords: APSIM, Python, crop modeling, agricultural simulation, sensitivity analysis, batch simulations
 
 apsimNGpy: The Next-Generation Agro-ecosystem Simulation Library
-================================================================
+=================================================================
 
 .. image:: https://img.shields.io/badge/License-Apache_2.0-blue.svg
    :target: https://opensource.org/licenses/Apache-2.0

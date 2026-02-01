@@ -9,6 +9,7 @@ import os
 import platform
 import subprocess
 import sys
+import time
 from contextlib import AbstractContextManager
 from dataclasses import dataclass
 from functools import cache
@@ -25,6 +26,7 @@ from apsimNGpy.settings import CONFIG_PATH, create_config, logger
 from apsimNGpy.exceptions import ApsimBinPathConfigError
 from apsimNGpy.bin_loader.resources import add_bin_to_syspath, is_file_format_modified, remove_bin_from_syspath
 from functools import lru_cache
+from multiprocessing import RLock
 
 AUTO_BIN = object()
 logger = logging.getLogger(__name__)
@@ -34,6 +36,8 @@ load_dotenv()
 HOME_DATA = Path.home().joinpath('AppData', 'Local', 'Programs')
 cdrive = os.environ.get('PROGRAMFILES')
 CONFIG = configparser.ConfigParser()
+TEMPORAL_BIN_ENV_KEY = 'TEMPORAL_BIN'
+_lock = RLock()
 
 
 @cache
@@ -305,9 +309,6 @@ def get_apsim_bin_path():
     return _get_bin()
 
 
-bin_from_get_apsim_bin: str = get_apsim_bin_path()
-
-
 @dataclass(slots=True)
 class Configuration:
     """
@@ -315,11 +316,17 @@ class Configuration:
    Users will be able to override these values if needed by importing this module before running any simulations.
 
     """
-    bin_path: Union[Path, str] = AUTO_BIN
+    temporal_bin = os.environ.get(TEMPORAL_BIN_ENV_KEY, None)
+    _bin_path: str | Path = get_apsim_bin_path() if not temporal_bin else temporal_bin
 
-    def __post_init__(self):
-        """if bin_path is None, this function will normalize to a global one store on the disk"""
-        self.bin_path = bin_from_get_apsim_bin if self.bin_path is AUTO_BIN else self.bin_path
+    @property
+    def bin_path(self):
+        """This fetches the global one"""
+        return self._bin_path
+
+    @bin_path.setter
+    def bin_path(self, value):
+        self._bin_path = value
 
     def set_temporal_bin_path(self, temporal_bin_path):
         """
@@ -385,7 +392,7 @@ class Configuration:
 
     def release_temporal_bin_path(self):
         """release and set back to the global bin path"""
-        self.bin_path = bin_from_get_apsim_bin
+        self.bin_path = get_apsim_bin_path() or self._bin_path
 
 
 configuration = Configuration()
@@ -739,10 +746,12 @@ class apsim_bin_context(AbstractContextManager):
             self,
             apsim_bin_path: str | os.PathLike | None = None,
             dotenv_path: str | os.PathLike | None = None,
-            bin_key: str = '',
+            bin_key: str = '', disk_cache=False,
 
     ) -> None:
-        bin_path: str | None = None
+        _bin_path: str | None = None
+        self._wait = False
+        self.release = True
 
         # If a specific .env path is provided, load it first
         if dotenv_path is not None:
@@ -753,38 +762,54 @@ class apsim_bin_context(AbstractContextManager):
                 if dotenv_path is not None:
                     raise FileNotFoundError(f"dotenv_path does not exist or it is invalid .env file: {dp}")
             # Try env vars from that .env
-            bin_path = os.getenv(bin_key) or os.getenv("APSIM_BIN_PATH") or os.getenv("APSIM_MODEL_PATH")
+            _bin_path = os.getenv(bin_key) or os.getenv("APSIM_BIN_PATH") or os.getenv("APSIM_MODEL_PATH")
 
         # If no .env bin found, fall back to explicit arg
-        if bin_path is None and apsim_bin_path is not None:
-            bin_path = os.path.realpath(Path(apsim_bin_path).resolve())
+        if _bin_path is None and apsim_bin_path is not None:
+            _bin_path = os.path.realpath(Path(apsim_bin_path).resolve())
 
         # If still none, try already-loaded env (from top-level load_dotenv)
-        if bin_path is None:
-            bin_path = os.getenv("APSIM_BIN_PATH") or os.getenv("APSIM_MODEL_PATH")
+        if _bin_path is None:
+            _bin_path = os.getenv("APSIM_BIN_PATH") or os.getenv("APSIM_MODEL_PATH")
 
-        if not bin_path:
+        if not _bin_path:
             raise ValueError(
                 "APSIM bin path not provided. Pass `apsim_bin_path=` or set "
                 "APSIM_BIN_PATH / APSIM_MODEL_PATH via environment/.env."
             )
 
         # Optional: check the path exists
-        p = Path(bin_path)
+        p = Path(_bin_path)
         if not p.exists():
             raise FileNotFoundError(f"APSIM bin path not found: {p}")
 
-        self.bin_path = os.path.realpath(p)
+        self._bin_path = os.path.realpath(p)
+        self.set_to_file = disk_cache
+        self.previous = None
 
     def __enter__(self):
-        # remove current bin_path
-        # Save and set
-        configuration.set_temporal_bin_path(self.bin_path)
+        # update flag for temporal bin key in env vars
+        os.environ[TEMPORAL_BIN_ENV_KEY] = str(self._bin_path)
+        configuration.bin_path = self._bin_path
+        if self.set_to_file:
+            self.previous = get_apsim_bin_path()
+            set_apsim_bin_path(self._bin_path)
+            time.sleep(1)
         return self
 
+    def wait(self):
+        self._wait = True
+        self.release = False
+
     def __exit__(self, exc_type, exc, tb):
-        # Restore previous paths (even if it was None/empty)
-        configuration.release_temporal_bin_path()
+        if self.set_to_file:
+            configuration.bin_path = self.previous
+            # update it in the configg.ini file
+            set_apsim_bin_path(self.previous)
+            # Restore the global path by poping temporal one
+        else:
+            configuration.bin_path = get_apsim_bin_path()
+        os.environ.pop(TEMPORAL_BIN_ENV_KEY, None)
         return False  # do not suppress exceptions
 
 

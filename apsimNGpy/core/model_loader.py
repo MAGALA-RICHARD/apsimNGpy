@@ -4,35 +4,26 @@ This module offers a procedural alternative other than object-oriented approach 
 import os
 import uuid
 from typing import Union
-
-from apsimNGpy.core import pythonet_config
-from apsimNGpy.core_utils.utils import timer
+from apsimNGpy.core.pythonet_config import CLR
 from apsimNGpy.exceptions import NodeNotFoundError
-
-pyth = pythonet_config
-# now we can safely import C# libraries
-
-
 import json
 from os.path import (realpath)
 import shutil
-from pathlib import Path
-from apsimNGpy.core.config import get_apsim_bin_path, load_crop_from_disk, configuration
-import subprocess
+from apsimNGpy.core.config import load_crop_from_disk
 from dataclasses import dataclass
 from typing import Any
 from pathlib import Path
 from apsimNGpy.core.cs_resources import CastHelper as CastHelpers
-from apsimNGpy.core.pythonet_config import get_apsim_file_reader, get_apsim_file_writer, load_pythonnet
-from apsimNGpy.core.pythonet_config import get_apsim_version as apsim_version
+
+get_apsim_file_writer = CLR.get_file_writer
+get_apsim_file_reader = CLR.get_file_reader
+Models = CLR.Models
 from System import GC
-
-load_models = load_pythonnet(bin_path=configuration.bin_path)
 from System.Collections.Generic import *
-from System import *
-import Models
 
-GLOBAL_IS_FILE_MODIFIED = load_models.file_format_modified
+# from System import *
+
+GLOBAL_IS_FILE_MODIFIED = CLR.file_format_modified
 scratch_dir = Path.cwd().joinpath('scratch')
 scratch_dir.mkdir(exist_ok=True)
 SCRATCH = os.environ.get('WS', str(scratch_dir))
@@ -46,7 +37,7 @@ def stamp_name_with_version(file_name):
     @param file_name: path to the would be.apsimx file
     @return: path to the stamped file
     """
-    _version = apsim_version()
+    _version = CLR.apsim_compiled_version
     destination = Path(file_name).resolve()
     dest_path = destination.with_name(
         destination.name.replace(".apsimx", f"{_version}.apsimx")
@@ -55,7 +46,7 @@ def stamp_name_with_version(file_name):
 
 
 def to_model_from_string(json_string, file_name):
-    loader = get_apsim_file_reader()
+    loader = CLR.get_file_reader()
     return loader[Models.Core.Simulations](json_string, None, True, fileName=file_name)
 
 
@@ -72,7 +63,7 @@ def to_json_string(_model: Models.Core.Simulation):
     raise ValueError(f'failed to convert model:`{_model}` to strings ')
 
 
-@dataclass
+@dataclass(slots=True)
 class ModelData:
     """
     This is a meta-data container for the loaded models
@@ -99,7 +90,7 @@ def load_from_dict(dict_data, out):
     return to_model_from_string(str_, file_name=out)
 
 
-version = apsim_version()
+version = CLR.apsim_compiled_version
 
 
 def copy_file(
@@ -123,7 +114,7 @@ def copy_file(
     """
     # Ensure working directory is set. defaults to current working directory
 
-    # noramlize destination path
+    # normalize destination path
     dest_path = str(Path(destination).resolve().with_suffix('.apsimx'))
     shutil.copy2(source, dest_path)
     return str(dest_path)
@@ -172,7 +163,7 @@ def load_from_path(path2file, method='string'):
 
     method = method.lower()
 
-    loader = get_apsim_file_reader(method)
+    loader = CLR.get_file_reader(method)
 
     match method:
         case 'string':
@@ -222,7 +213,7 @@ def load_apsim_model(model=MODEL_NOT_PROVIDED, out_path=AUTO_PATH, file_load_met
     out = {}  # Store a final output path
     wd = Path(wd or SCRATCH)
 
-    DEFAULT_PATH = wd / f"{tag}{uuid.uuid1()}_{version[-6:]}_"
+    DEFAULT_PATH = wd / f"{tag}{uuid.uuid1()}_{CLR.apsim_compiled_version[-6:]}_"
     if out_path is AUTO_PATH:
         out_path = DEFAULT_PATH
     else:
@@ -269,7 +260,12 @@ def load_apsim_model(model=MODEL_NOT_PROVIDED, out_path=AUTO_PATH, file_load_met
     if hasattr(out_model, "FindChild"):
         DataStore = out_model.FindChild[Models.Storage.DataStore]()
     else:
-        DataStore = [i for i in out_model.Children if i.Name == 'DataStore']
+        children = getattr(out_model, 'Children', None)
+        children_in_node = getattr(out_model, 'GetChildren', None)
+        if children_in_node:
+            children_in_node = children_in_node()
+        candidate_children = children or children_in_node
+        DataStore = [i for i in candidate_children if i.Name == 'DataStore']
         if DataStore:
             DataStore = DataStore[0]
 
@@ -380,7 +376,7 @@ def model_from_string(mod, out=AUTO_PATH):
     with open(f_name, "r+", encoding='utf-8') as apsimx:
         app_ap = json.load(apsimx)
         string_name = json.dumps(app_ap)
-        loader = get_apsim_file_reader(method='string')
+        loader = CLR.get_file_reader(method='string')
 
         mod = loader[Models.Core.Simulations](string_name, None, initInBackground=True)
         mod = getattr(mod, "Model", mod)
@@ -388,27 +384,6 @@ def model_from_string(mod, out=AUTO_PATH):
         mod = covert_to_model(mod)
 
         return mod
-
-
-@timer
-def run_model_externally(model):
-    # Define the APSIM executable path (adjust if needed)
-    apsim_exe = Path(get_apsim_bin_path()) / 'Models.exe'
-
-    # Define the APSIMX file path
-    apsim_file = model
-
-    # Run APSIM with the specified file
-    try:
-        result = subprocess.run([apsim_exe, apsim_file])
-
-        print("APSIM Run Successful!")
-
-        # df = read_db_table(datastore, table)
-        # return df
-    except subprocess.CalledProcessError as e:
-        print("Error running APSIM:")
-        print(e.stderr)  # Print APSIM error message if execution fails
 
 
 def get_node_by_name(node, name):
@@ -477,7 +452,7 @@ if __name__ == '__main__':
     print(load.DataStore, 'datastore')
     p, model, model2 = load.Node, load.IModel, load.IModel
 
-    getattr(Models.Core.ApsimFile, "FileFormat", None)
+    # getattr(Models.Core.ApsimFile, "FileFormat", None)
     # set_apsim_bin_path(r'/Applications/APSIM2025.2.7670.0.app/Contents/Resources/bin')
     to_json_string(model2)
     get_node_and_type(load.Simulations, '.Simulations.Simulation')

@@ -1,4 +1,4 @@
-import os
+import os, sys
 from dataclasses import dataclass
 from functools import cache
 from pathlib import Path
@@ -9,6 +9,7 @@ from apsimNGpy.core.config import configuration, locate_model_bin_path
 from apsimNGpy.core.load_clr import start_pythonnet
 from apsimNGpy.exceptions import ApsimBinPathConfigError
 from apsimNGpy.settings import logger
+from apsimNGpy.core.cs_resources import DLL_DIR
 import re
 
 AUTO = object()
@@ -40,7 +41,10 @@ def is_file_format_modified(bin_path: Union[str, Path] = AUTO) -> bool:
     return False
 
 
-def _get_apsim_core_module():
+def _get_apsim_core_module() -> Union["APSIM.Core", None]:
+    """
+    Returns the APSIM.Core module if it exists, otherwise returns None
+    """
     try:
         import APSIM.Core
         return APSIM.Core
@@ -94,6 +98,7 @@ class ConfigRuntimeInfo:
     APsimCore: 'APSIM.Core' = None
     pythonnet_started: bool = False
     System: 'System.Module' = False
+    CastHelper: 'CastHelper' = None
 
     def __post_init__(self):
         if self.bin_path is None:
@@ -178,6 +183,7 @@ class ConfigRuntimeInfo:
                 f'Built APSIM Binaries seems to have been uninstalled from this directory: {_bin_path}\n use the config.set_apsim_bin_path')
         add_bin_to_syspath(candidate)
         import clr
+        clr.AddReference(str(DLL_DIR))
         clr.AddReference("System")
         clr.AddReference("Models")
         if self.file_format_modified:
@@ -189,6 +195,8 @@ class ConfigRuntimeInfo:
             logger.warning(f'Could not find ApsimNG.dll in {candidate}')
         import Models
         import System
+        from CastBridge import CastHelper
+        self.CastHelper = CastHelper
         self.System = System
         self.Models = Models
         apsim_core = _get_apsim_core_module()
@@ -198,191 +206,9 @@ class ConfigRuntimeInfo:
         self.clr_loaded = True
 
 
-@cache
-def load_pythonnet(bin_path: Union[str, Path] = AUTO):
-    """
-    A method for loading Python for .NET (pythonnet) and APSIM models from the binary path. It is also cached to
-    avoid rerunning many times.
-
-    It initializes the Python for .NET (pythonnet) runtime and load APSIM models.
-
-    Loads the 'coreclr' runtime, and if not found, falls back to an alternate runtime.
-    It also sets the APSIM binary path, adds the necessary references, and returns a reference to the loaded APSIM models.
-
-    Returns:
-    -------
-    ConfigRuntimeInfo:
-         an instance of ConfigRuntimeInfo with reference to the loaded APSIM models
-
-    Raises:
-    ------
-    KeyError: If APSIM path is not found in the system environmental variable.
-    ValueError: If the provided APSIM path is invalid.
-
-    .. important::
-
-     This function is called internally by apsimNGpy modules, but it is dependent on correct configuration of the bin
-     path. Please edit the system environmental variable on your computer or set it using: :func:`~apsimNGpy.core.config.set_apsim_bin_path`
-
-    """
-
-    def _load(_bin_path):
-        candidate = locate_model_bin_path(_bin_path)
-        if not candidate:
-            raise ApsimBinPathConfigError(
-                f'Built APSIM Binaries seems to have been uninstalled from this directory: {_bin_path}\n use the config.set_apsim_bin_path')
-        add_bin_to_syspath(candidate)
-
-        # system.path.append(bin_path)
-        import clr
-        clr.AddReference("System")
-        # model_path = os.path.join(bin_path, 'Models.dll')
-        # clr.AddReference(model_path)
-        # apsimNG = clr.AddReference('ApsimNG')
-        clr.AddReference("Models")
-        if is_file_format_modified():
-            clr.AddReference('APSIM.Core')
-            apsim_core = True
-        # apsimNG engine
-        if set(Path(candidate).glob("*ApsimNG.dll")):
-            clr.AddReference("ApsimNG")
-        else:
-            logger.warning(f'Could not find ApsimNG.dll in {candidate}')
-        import Models
-        if is_file_format_modified(configuration.bin_path):
-            import APSIM.Core as Core
-            from APSIM.Core import Node
-        else:
-            Core, Node = None, None
-        return ConfigRuntimeInfo(True, bin_path=os.path.realpath(candidate), Models=Models, APsimCore=Core, Node=Node,
-                                 apsim_compiled_version=_fetch_apsim_version(_bin_path, release_number=False))
-
-    if bin_path is AUTO or bin_path is None:
-        bin_path = configuration.bin_path
-    return _load(_bin_path=bin_path)
-
-    # return lm, sys, pythonnet.get_runtime_info()
-
-
 CLR = ConfigRuntimeInfo()  # load_pythonnet(bin_path=configuration.bin_path)
 # now we can safely import C# libraries
 Models = CLR.Models
-
-
-def get_apsim_file_reader(method: str = 'string'):
-    """
-        Return an APSIM file reader callable based on the requested method.
-
-        This helper selects the appropriate APSIM NG ``FileFormat`` implementation,
-        accounting for runtime changes in the file format (via
-        :func:`is_file_format_modified`) and whether the managed type is available
-        under ``Models.Core.ApsimFile.FileFormat`` or ``APSIM.Core.FileFormat``.
-        It then returns the corresponding static method to read an APSIM file
-        either **from a string** or **from a file path**.
-
-        Parameters
-        ----------
-        method: {"string", "file"}, optional
-            Which reader to return:
-            - "string" >>> returns ``FileFormat.ReadFromString``.
-            - "file" >>> returns ``FileFormat.ReadFromFile``.
-            Defaults to ``"string"``.
-
-        Returns
-        -------
-        Callable
-            A .NET static method (callable from Python) that performs the read:
-            either ``ReadFromString(text: str)`` or ``ReadFromFile(path: str)``.
-
-        Raises
-        ------
-        NotImplementedError
-            If `method` is not one of `string` or `file`.
-        AttributeError
-            If the underlying APSIM ``FileFormat`` type does not expose the
-            expected reader method (environment/binaries misconfigured).
-
-        Notes
-        -----
-        - When : func:`is_file_format_modified` returns ``bool``.If False, then
-          ``Models.Core.ApsimFile.FileFormat`` is unavailable, the function falls
-          back to ``APSIM.Core.FileFormat``.
-        - The returned callable is a .NET method; typical usage is
-          ``reader = get_apsim_file_reader("file"); model = reader(path)``.
-
-        Examples
-        --------
-        Read from a file path:
-
-        >>> reader = get_apsim_file_reader("file")      # doctest: +SKIP
-        >>> sims = reader("/path/to/model.apsimx")      # doctest: +SKIP
-
-        Read from a string (APSXML/JSON depending on APSIM NG):
-
-        >>> text = "...apsimx content..."               # doctest: +SKIP
-        >>> reader = get_apsim_file_reader("string")    # doctest: +SKIP
-        >>> sims = reader(text)                         # doctest: +SKIP
-        """
-    return _fetch_file_reader(models_namespace=CLR.Models, method=method)
-
-
-def get_apsim_version(bin_path: Union[str, Path] = AUTO, release_number: bool = False) -> Optional[str]:
-    """
-    Return the APSIM version string detected from the installed binaries.
-
-    The function initializes pythonnet for the given APSIM binaries path (via
-    ``load_pythonnet(bin_path)``), then loads ``Models.dll`` and reads its
-    assembly version. By default, the returned string is prefixed with ``"APSIM"``;
-    set ``release_number=True`` to get the raw semantic version.
-
-    Parameters
-    ----------
-    bin_path : str or pathlib.Path, optional
-        Filesystem path to the APSIM **binaries** directory that contains
-        ``Models.dll``. Defaults to a current apsim binary path being used by apsimNGpy.
-    release_number : bool, optional
-        If ``True``, returns only the assembly version (e.g., ``"2024.6.123"``).
-        If ``False`` (default), prefix with ``"APSIM"`` (e.g., ``"APSIM 2024.6.123"``).
-
-    Returns
-    -------
-    str or None
-        The version string if detected successfully; otherwise ``None`` when
-        required system modules are unavailable (e.g., if the binaries path is
-        not correctly configured).
-
-    Raises
-    ------
-    ApsimBinPathConfigError
-        If pythonnet/CLR is not initialized for the provided ``bin_path`` (i.e.,
-        APSIM binaries path has not been set up).
-
-    Notes
-    -----
-    - This call requires a valid APSIM NG binaries folder and a loadable
-      ``Models.dll`` at ``bin_path/Models.dll``.
-    - ``load_pythonnet`` must succeed so that the CLR is available; otherwise
-      the version cannot be queried.
-
-    Examples
-    --------
-    >>> get_apsim_version("/opt/apsim/bin")           # doctest: +SKIP
-    'APSIM2024.6.123'
-    >>> get_apsim_version("/opt/apsim/bin", True)     # doctest: +SKIP
-    '2024.6.123'
-
-    See Also
-    --------
-    load_pythonnet : Initialize pythonnet/CLR for APSIM binaries.
-    """
-    if bin_path is AUTO:
-        bin_path = configuration.bin_path
-    bin_path = str(bin_path)
-    CI = load_pythonnet(bin_path)
-    if not CI.clr_loaded:
-        raise ApsimBinPathConfigError("Pythonnet and APSIM bin path not yet initialized")
-    return _fetch_apsim_version(bin_path, release_number)
-
 
 # Example usage:
 if __name__ == '__main__':

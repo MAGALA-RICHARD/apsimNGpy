@@ -1,28 +1,33 @@
 from __future__ import annotations
-import re, gc, os, math, shutil, time
+
+import gc
+import os
 import os.path
+import re
+import shutil
 import sqlite3
+import time
 import uuid
-from collections.abc import Iterable
+from contextlib import contextmanager
 # Database connection
 from functools import partial, cache
+from itertools import tee
 from pathlib import Path
 from typing import Union, Literal
+
 import pandas as pd
 import sqlalchemy
-from sqlalchemy import create_engine, text
 from tqdm import tqdm
+
 from apsimNGpy.core._multi_core import edit_to_folder, IDENTIFICATION
 from apsimNGpy.core._multi_core import single_runner
 from apsimNGpy.core.runner import _run_from_dir
 from apsimNGpy.core_utils.database_utils import (write_results_to_sql, drop_table,
                                                  get_db_table_names, read_with_pandas, write_df_to_sql)
-from apsimNGpy.core_utils.utils import timer
 from apsimNGpy.parallel.data_manager import chunker
 from apsimNGpy.parallel.process import custom_parallel
-from contextlib import contextmanager
-from itertools import tee
 
+__all__ = ['MultiCoreManager']
 ID = 0
 csv_doc = pd.DataFrame().to_csv.__doc__
 PYTHON_ENGINE = 'python'
@@ -289,11 +294,15 @@ class MultiCoreManager:
         and parallel execution workflows.
         """
         if self.engine == PYTHON_ENGINE:
-            return self._get_simulated_results(axis=axis, tables=self.tables)
+            df = self._get_simulated_results(axis=axis, tables=self.tables)
+
         elif self.engine == CSHARP_ENGINE:
-            return self._merged_simulated(axis=axis)
+            df = self._merged_simulated(axis=axis)
         else:
             raise NotImplementedError("Unsupported engine {}".format(self.engine))
+        if 'ID' in df.columns:
+            df.sort_values(by=['ID'], ascending=True, inplace=True)
+        return df
 
     @property
     def results(self):

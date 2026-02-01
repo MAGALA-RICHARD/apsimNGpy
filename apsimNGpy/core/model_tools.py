@@ -6,10 +6,14 @@ from gc import collect
 from typing import Union, Dict, Any
 import pandas as pd
 from apsimNGpy.core.pythonet_config import CLR
+
 # These should be below CLR imports
-from System import String, Double, Array
-from System.Collections import IEnumerable
-from System.Collections.Generic import List, KeyValuePair
+String = CLR.System.String
+Double = CLR.System.Double
+Array = CLR.System.Array
+List, KeyValuePair = CLR.System.Collections.Generic.List, CLR.System.Collections.Generic.KeyValuePair
+IEnumerable = CLR.System.Collections.IEnumerable
+
 
 from apsimNGpy.core.cs_resources import simple_rotation_code, update_manager_code
 from apsimNGpy.core.model_loader import load_apsim_model
@@ -49,7 +53,7 @@ def _delete_node(node) -> None:
     if hasattr(Models.Core, 'ApsimFile'):
         Models.Core.ApsimFile.Structure.Delete(node)
     else:
-        Node  = CLR.Node
+        Node = CLR.Node
         node = getattr(node, 'Node', node)
         Node.Clear(node)
 
@@ -1203,9 +1207,9 @@ collect()
 if __name__ == "__main__":
     ...
     import time
-    from apsimNGpy.core.pythonet_config import get_apsim_file_reader
-    from apsimNGpy.core.config import load_crop_from_disk
 
+    from apsimNGpy.core.config import load_crop_from_disk
+    get_apsim_file_reader = CLR.get_file_reader
     maize = load_crop_from_disk(crop='Maize', out='apism_run.apsimx')
     wf = load_crop_from_disk('AU_Dalby.met', out='AU_Dalby.met')
     string_name = maize.read_text()

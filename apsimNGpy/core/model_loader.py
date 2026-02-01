@@ -13,15 +13,13 @@ from apsimNGpy.core.config import load_crop_from_disk
 from dataclasses import dataclass
 from typing import Any
 from pathlib import Path
-from apsimNGpy.core.cs_resources import CastHelper as CastHelpers
 
 get_apsim_file_writer = CLR.get_file_writer
 get_apsim_file_reader = CLR.get_file_reader
 Models = CLR.Models
-from System import GC
-from System.Collections.Generic import *
-
-# from System import *
+CastHelpers = CLR.CastHelper
+GC = CLR.System.GC
+List, KeyValuePair = CLR.System.Collections.Generic.List, CLR.System.Collections.Generic.KeyValuePair
 
 GLOBAL_IS_FILE_MODIFIED = CLR.file_format_modified
 scratch_dir = Path.cwd().joinpath('scratch')

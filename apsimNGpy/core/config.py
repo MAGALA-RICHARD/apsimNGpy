@@ -1,10 +1,14 @@
 from __future__ import annotations
 
 import configparser
-import os, time, logging, glob, subprocess
+import glob
+import logging
+import os
 import platform
+import subprocess
+import time
 from contextlib import AbstractContextManager
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from functools import cache
 from functools import lru_cache
 from os.path import exists
@@ -15,7 +19,6 @@ from typing import Union, Optional, Any
 import psutil
 from dotenv import load_dotenv
 
-from apsimNGpy.bin_loader.resources import add_bin_to_syspath, is_file_format_modified
 from apsimNGpy.exceptions import ApsimBinPathConfigError
 from apsimNGpy.settings import CONFIG_PATH, create_config, logger
 
@@ -27,7 +30,7 @@ load_dotenv()
 HOME_DATA = Path.home().joinpath('AppData', 'Local', 'Programs')
 cdrive = os.environ.get('PROGRAMFILES')
 CONFIG = configparser.ConfigParser()
-TEMPORAL_BIN_ENV_KEY = 'TEMPORAL_BIN_KEY'
+TEMPORAL_BIN_ENV_KEY = 'TEMPORAL_APSIM_BIN_KEY'
 
 __all__ = ['auto_detect_apsim_bin_path', 'apsim_bin_context',
            'set_apsim_bin_path', 'get_apsim_bin_path', 'load_crop_from_disk', 'configuration']
@@ -114,7 +117,7 @@ def scan_dir_for_bin(path: str):
     with os.scandir(path) as entries:
         for entry in entries:
             if entry.is_dir():
-                if entry.name == 'bin' and 'APSIM20' in entry.path:
+                if entry.name == 'bin' and 'APSIM2' in entry.path:
                     # we don't want to call _apsim_model_is_installed on every dir_path,
                     # so we call it below after the first condition is met
                     if _apsim_model_is_installed(entry.path):
@@ -275,25 +278,21 @@ def get_apsim_bin_path():
     return _get_bin()
 
 
-@dataclass(slots=True)
+@dataclass(slots=True, frozen=False)
 class Configuration:
     """
   In the future, this module will contain all the constants required by the package.
    Users will be able to override these values if needed by importing this module before running any simulations.
 
     """
-    temporal_bin = os.environ.get(TEMPORAL_BIN_ENV_KEY, None)
-    # guard it in threads
-    _bin_path: str | Path = get_apsim_bin_path() if not temporal_bin else temporal_bin
+    bin_path: Path = field(default_factory=get_apsim_bin_path)
 
-    @property
-    def bin_path(self):
-        """This fetches the global one"""
-        return self._bin_path
-
-    @bin_path.setter
-    def bin_path(self, value):
-        self._bin_path = value
+    def __post_init__(self):
+        temporal_bin = os.environ.get(TEMPORAL_BIN_ENV_KEY, None)
+        # persist temporal bin_path because other threads might load from get_apsim_bin_path even though in a context manager
+        # the temporal bin_key is popped out on exit in apsim_bin_context class
+        if temporal_bin:
+            self.bin_path = Path(temporal_bin)
 
     def set_temporal_bin_path(self, temporal_bin_path):
         """

@@ -8,6 +8,7 @@ import time
 
 def edit_weather(model):
     model.get_weather_from_web(lonlat=(-92.034, 42.012), start=1989, end=2020, source='daymet')
+    model.get_soil_from_web(simulation_name=None,lonlat=(-92.034, 42.012))
 
 
 if __name__ == '__main__':
@@ -32,7 +33,7 @@ if __name__ == '__main__':
                                                          'Amount': i}]} for i in range(100, 122))
         start = time.perf_counter()
         # run all the jobs defined above
-        Parallel.run_all_jobs(jobs=jobs, n_cores=11, engine='python', threads=True, chunk_size=100,
+        Parallel.run_all_jobs(jobs=jobs, n_cores=11, engine='csharp', threads=False, chunk_size=100,
                               subset=['Yield'], callback=edit_weather,
                               progressbar=True)
         # extract the results

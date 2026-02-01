@@ -317,6 +317,7 @@ class Configuration:
 
     """
     temporal_bin = os.environ.get(TEMPORAL_BIN_ENV_KEY, None)
+    # guard it in threads
     _bin_path: str | Path = get_apsim_bin_path() if not temporal_bin else temporal_bin
 
     @property

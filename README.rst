@@ -43,7 +43,7 @@ Links
 apsimNGpy: The Next Generation Agroe-cosystem Simulation Library
 ===========================================================================
 
-**apsimNGpy** is a cutting-edge, open-source framework for advanced agroecosystem modeling, built entirely in Python.
+**apsimNGpy** is an open-source framework for advanced agroecosystem modeling, built entirely in Python.
 It enables **object-oriented**, **data-driven** workflows for interacting with APSIM Next Generation models, offering capabilities for:
 
 - Batch file simulation and model evaluation

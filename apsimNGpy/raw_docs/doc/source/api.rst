@@ -134,7 +134,7 @@ Classes
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.update_mgt`
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.update_mgt_by_path`
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.__init__(self, model: Union[os.PathLike, dict, str], out_path: Union[str, pathlib.Path] = <object object at 0x000001E6B0D5E460>, set_wd=None, **kwargs)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.__init__(self, model: Union[os.PathLike, dict, str], out_path: Union[str, pathlib.Path] = <object object at 0x000001C18131DA50>, set_wd=None, **kwargs)
 
    Initialize self.  See help(type(self)) for accurate signature.
 
@@ -280,86 +280,210 @@ Classes
    In such cases, parameter sets can be programmatically generated, serialized,
    and reused without manual modification of code.
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.get_soil_from_web(self, simulation_name: Union[str, tuple, NoneType] = None, *, lonlat: Optional[System.Tuple[Double,Double]] = None, soil_series: Optional[str] = None, thickness_sequence: Optional[Sequence[float]] = 'auto', thickness_value: int = None, max_depth: Optional[int] = 2400, n_layers: int = 10, thinnest_layer: int = 100, thickness_growth_rate: float = 1.5, edit_sections: Optional[Sequence[str]] = None, attach_missing_sections: bool = True, additional_plants: tuple = None, adjust_dul: bool = True)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.get_soil_from_web(self, simulations: Union[str, tuple, NoneType] = None, *, lonlat: Optional[System.Tuple[Double,Double]] = None, soil_series: Optional[str] = None, thickness_sequence: Optional[Sequence[float]] = 'auto', thickness_value: int = None, max_depth: Optional[int] = 2400, n_layers: int = 10, thinnest_layer: int = 100, thickness_growth_rate: float = 1.5, edit_sections: Optional[Sequence[str]] = None, attach_missing_sections: bool = True, additional_plants: tuple = None, source='isric', top_finert=0.65, top_fom=1000, top_fbiom=0.04, fom_cnr=40, soil_cnr=12, swcon=0.3, top_urea=0, top_nh3=0.5, top_nh4=0.05, adjust_dul: bool = True, **soil_kwargs)
 
-   Download SSURGO-derived soil for a given location and populate the APSIM NG
-   soil sections in the current model.
+      Download soil profiles for a given location and populate the APSIM NG
+      soil sections in the current model.
 
-   This method updates the target Simulation(s) in-place by attaching a Soil node
-   (if missing) and writing section properties from the downloaded profile.
+      This method updates the target Simulation(s) in-place by attaching a Soil node
+      (if missing) and writing section properties from the downloaded profile.
 
-   Parameters
-   ----------
-   simulation : str | sequence[str] | None, default None
-       Target simulation name(s). If ``None``, all simulations are updated.
+      Parameters
+      ----------
+      simulation : str | sequence[str] | None, default None
+          Target simulation name(s). If ``None``, all simulations are updated.
 
-   lonlat : tuple[float, float] | None
-       Location for SSURGO download, as ``(lon, lat)`` in decimal degrees
-       (e.g., ``(-93.045, 42.012)``).
+      lonlat : tuple[float, float] | None
+          Location for SSURGO download, as ``(lon, lat)`` in decimal degrees
+          (e.g., ``(-93.045, 42.012)``).
 
-   soil_series : str | None, optional
-       Optional component/series filter. If ``None``, the dominant series
-       by area is used. If a non-existent series is supplied, an error is raised.
+      soil_series : str | None, optional
+          Optional component/series filter. If ``None``, the dominant series
+          by area is used. If a non-existent series is supplied, an error is raised.
 
-   thickness_sequence : sequence[float] | str | None, default "auto"
-       Explicit layer thicknesses (mm). If ``"auto"``, thicknesses are generated
-       from the layer controls (e.g., number of layers, growth rate, thinnest layer,
-       and ``max_depth``). If ``None``, you must provide ``thickness_value`` and
-       ``max_depth`` to construct a uniform sequence.
+      thickness_sequence : sequence[float] | str | None, default "auto"
+          Explicit layer thicknesses (mm). If ``"auto"``, thicknesses are generated
+          from the layer controls (e.g., number of layers, growth rate, thinnest layer,
+          and ``max_depth``). If ``None``, you must provide ``thickness_value`` and
+          ``max_depth`` to construct a uniform sequence.
 
-   thickness_value : int | None, optional
-       Uniform thickness (mm) for all layers. Ignored if ``thickness_sequence`` is
-       provided; used only when ``thickness_sequence`` is ``None``.
+      thickness_value : int | None, optional
+          Uniform thickness (mm) for all layers. Ignored if ``thickness_sequence`` is
+          provided; used only when ``thickness_sequence`` is ``None``.
 
-   max_depth : int, default 2400
-       Maximum soil depth (mm) to cover with the thickness sequence.
+      max_depth : int, default 2400
+          Maximum soil depth (mm) to cover with the thickness sequence.
 
-   edit_sections : sequence[str], optional
-       Sections to edit. Default:
-       ``("physical", "organic", "chemical", "water", "water_balance", "solutes", "soil_crop", "meta_info")``.
-       Note: if sections are edited with differing layer counts, APSIM may error at run time.
+      edit_sections : sequence[str], optional
+          Sections to edit. Default:
+          ``("physical", "organic", "chemical", "water", "water_balance", "solutes", "soil_crop", "meta_info")``.
+          Note: if sections are edited with differing layer counts, APSIM may error at run time.
 
-   attach_missing_sections : bool, default True
-       If ``True``, create and attach missing section nodes before editing.
+      attach_missing_sections : bool, default True
+          If ``True``, create and attach missing section nodes before editing.
 
-   additional_plants : sequence[str] | None, optional
-        Plant names for which to create/populate ``SoilCrop`` entries (e.g., to set KL/XF).
+      additional_plants : sequence[str] | None, optional
+           Plant names for which to create/populate ``SoilCrop`` entries (e.g., to set KL/XF).
 
-   adjust_dul : bool, optional
-       If ``True``, adjust layer values where ``SAT`` exceeds ``DUL`` to prevent APSIM runtime errors.
+      adjust_dul : bool, optional
+          If ``True``, adjust layer values where ``SAT`` exceeds ``DUL`` to prevent APSIM runtime errors.
+      n_layers: int
+         number of soil layers to generate a soil profile.
+      source : str, optional default='isric'
+         the database source to use. Currently only 'isric' and 'ssurgo' are supported
+      top_finert : float, optional
+          Fraction of inert organic matter (FInert) in the surface soil layer.
+          Default is 0.88.
+      top_fom : float, optional
+          Fresh organic matter (FOM) content of the surface soil layer
+          in kg C ha⁻¹. Default is 180.
+      top_fbiom : float, optional
+          Fraction of microbial biomass carbon (FBiom) in the surface layer.
+          Default is 0.04.
+      fom_cnr : float, optional
+          Carbon-to-nitrogen ratio (C:N) of fresh organic matter.
+          Default is 40.
+      soil_cnr : float, optional
+          Carbon-to-nitrogen ratio (C:N) of soil organic matter (humic pool).
+          Default is 12.
+      swcon : float, optional
+          Soil water conductivity parameter controlling water extraction
+          rate by roots (APSIM `SWCON`). Typical values range from 0.1–1.
+          Default is 0.3.
+      top_urea : float, optional
+          Initial urea nitrogen in the surface soil layer (kg N ha⁻¹).
+          Default is 0.
+      top_nh3 : float, optional
+          Initial nitrate nitrogen (NO₃⁻–N) in the surface soil layer
+          in kg N ha⁻¹. Default is 0.5.
+      top_nh4 : float, optional
+          Initial ammonium nitrogen (NH₄⁺–N) in the surface soil layer
+          in kg N ha⁻¹. Default is 0.05.
 
-   Returns
-   -------
-   self
-       The same instance, to allow method chaining.
+      soil_kwargs:
+      Additional keyword arguments to pass to the function related to soil water module such as the WinterCona.
+      See the following list:
 
-   Raises
-   ------
-   ValueError
-       - ``thickness_sequence`` provided with any non-positive value(s).
-       - ``thickness_sequence`` is ``None`` **and** ``thickness_value`` is ``None``.
-       - Units mismatch or inconsistency between ``thickness_value`` and ``max_depth``.
+       winter_cona : float, optional
+          Drying coefficient for stage 2 soil water evaporation in winter
+          (APSIM: ``WinterCona``).
+          Scalar parameter.
+      psi_dul : float, optional
+          Matric potential at drained upper limit (DUL), in cm
+          (APSIM: ``PSIDul``).
+          Scalar parameter.
+      depth : list of str, optional
+          Soil layer depth intervals expressed as strings
+          (e.g., ``"0-150"``, ``"150-300"``).
+          Layered parameter.
+      diffus_slope : float, optional
+          Effect of soil water storage above the lower limit on soil water
+          diffusivity (mm) (APSIM: ``DiffusSlope``).
+          Scalar parameter.
+      diffus_const : float, optional
+          Constant in soil water diffusivity calculations
+          (APSIM: ``DiffusConst``).
+          Scalar parameter.
+      k_lat : float, optional
+          Lateral hydraulic conductivity parameter for catchment flow
+          (APSIM: ``KLAT``).
+          Scalar parameter.
+      pore_interaction_index : float, optional
+          Pore interaction index controlling soil water movement
+          (APSIM: ``PoreInteractionIndex``).
+          Scalar parameter.
+      discharge_width : float, optional
+          Basal width of the downslope boundary of the catchment used in
+          lateral flow calculations (m) (APSIM: ``DischargeWidth``).
+          Scalar parameter.
+      swcon : list of float, optional
+          Soil water conductivity parameter controlling root water uptake
+          (APSIM: ``SWCON``).
+          Layered parameter (one value per soil layer).
+      cn_cov : float, optional
+          Fractional cover at which maximum runoff curve number reduction
+          occurs (APSIM: ``CNCov``).
+          Scalar parameter.
+      catchment_area : float, optional
+          Catchment area used for runoff and lateral flow calculations (m²)
+          (APSIM: ``CatchmentArea``).
+          Scalar parameter.
+      water : dict, optional
+          Nested water balance configuration block
+          (APSIM: ``Water``).
+          Dictionary parameter.
+      salb : float, optional
+          Fraction of incoming solar radiation reflected by the soil surface
+          (albedo) (APSIM: ``Salb``).
+          Scalar parameter.
+      winter_u : float, optional
+          Cumulative soil water evaporation required to complete stage 1
+          evaporation during winter (APSIM: ``WinterU``).
+          Scalar parameter.
+      runoff : float, optional
+          Runoff fraction or runoff scaling factor
+          (APSIM: ``Runoff``).
+          Scalar parameter.
+      cn2_bare : int or float, optional
+          Runoff curve number for bare soil under average moisture conditions
+          (APSIM: ``CN2Bare``).
+          Scalar parameter.
+      winter_date : str, optional
+          Calendar date marking the switch to winter parameterization
+          (APSIM: ``WinterDate``), e.g. ``"1-Apr"``.
+          Scalar string parameter.
+      potential_infiltration : float, optional
+          Potential infiltration limit used in runoff calculations
+          (APSIM: ``PotentialInfiltration``).
+          Scalar parameter.
+      summer_date : str, optional
+          Calendar date marking the switch to summer parameterization
+          (APSIM: ``SummerDate``), e.g. ``"1-Nov"``.
+          Scalar string parameter.
+      sw_mm : float, optional
+          Total soil water storage (mm) if explicitly specified
+          (APSIM: ``SWmm``).
+          Scalar parameter.
+      summer_cona : float, optional
+          Drying coefficient for stage 2 soil water evaporation in summer
+          (APSIM: ``SummerCona``).
+          Scalar parameter.
+      summer_u : float, optional
+          Cumulative soil water evaporation required to complete stage 1
+          evaporation during summer (APSIM: ``SummerU``).
+          Scalar parameter.
+      precipitation_interception : float, optional
+          Fraction or amount of precipitation intercepted before reaching
+          the soil surface (APSIM: ``PrecipitationInterception``).
+          Scalar parameter.
 
-   Notes
-   -----
-   - Assumes soil sections live under a **Soil** node; when
-     ``attach_missing_sections=True`` a Soil node is created if missing.
-   - Uses the optimized SoilManager routines (vectorized assignments / .NET double[] marshaling).
-   - Side effects (in place on the APSIM model):
-       1. Creates/attaches **Soil** when needed.
-       2. Creates/updates child sections (``Physical``, ``Organic``, ``Chemical``,
-          ``Water``, ``WaterBalance``, ``SoilCrop``) as listed in ``edit_sections``.
-       3. Overwrites section properties (e.g., layer arrays such as ``Depth``, ``BD``,
-          ``LL15``, ``DUL``, ``SAT``; solutes; crop KL/XF) with downloaded values.
-       4. Add **SoilCrop** children for any names in ``additional_plants``.
-       5. Performs **network I/O** to retrieve SSURGO tables when ``lonlat`` is provided.
-       6. Emits log messages (warnings/info) when attaching nodes, resolving thickness controls,
-          or skipping missing columns.
-       7. Caches the computed soil profile in the helper during execution; the in-memory APSIM
-          tree remains modified after return.
-       8. Does **not** write files; call ``save()`` on the model if you want to persist changes.
-       9. The existing soil-profile structure is completed override by the newly generated soil profile.
-          So, variables like soil thickness, number of soil layers, etc. might be different from the old one.
+      Returns
+      -------
+      self
+          The same instance, to allow method chaining.
+
+      Raises
+      ------
+      ValueError
+          - ``thickness_sequence`` provided with any non-positive value(s).
+          - ``thickness_sequence`` is ``None`` **and** ``thickness_value`` is ``None``.
+          - Units mismatch or inconsistency between ``thickness_value`` and ``max_depth``.
+          - lonlat do not match the source database specified. For example, if coordinates are outside the USA, but a source is source.
+           for worldwide soil request use source = isric
+   Examples:
+   ------------------
+
+   .. code-block python
+
+          with ApsimModel("Maize") as model:
+          datastore = Path(model.datastore)
+          model.add_report_variable(variable_spec='[Clock].Today.Year as year', report_name='Report',
+                                    simulations='Simulation')
+          model.get_soil_from_web(simulations=None, lonlat=(-93.9937, 40.4842), thinnest_layer=100,
+                                  adjust_dul=True,
+
+                                  summer_date='1-May', precipitation_interception=13.5, winter_date='1-nov',
+                                  source='isric')
 
    .. py:method:: apsimNGpy.core.apsim.ApsimModel.adjust_dul(self, simulations: Union[tuple, list] = None)
 
@@ -481,7 +605,7 @@ Classes
    self : object
        Returns the updated ApsimModel instance.
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.save(self, file_name: 'Union[str, Path]' = <object object at 0x0000022774C65000>, reload=True) (inherited)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.save(self, file_name: 'Union[str, Path]' = <object object at 0x000001C1B0050B70>, reload=True) (inherited)
 
    Saves the current APSIM NG model (``Simulations``) to disk and refresh runtime state.
 
@@ -2592,7 +2716,7 @@ Classes
    ---------------------------------------------------------------------------
    returns an array of the parameter values
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x0000022774C65000>) (inherited)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x000001C1B0050B70>) (inherited)
 
    Inspect the model types and returns the model paths or names.
 
@@ -3717,7 +3841,7 @@ Classes
    In the future, this module will contain all the constants required by the package.
     Users will be able to override these values if needed by importing this module before running any simulations.
 
-   .. py:method:: apsimNGpy.core.config.Configuration.__init__(self, bin_path: 'Union[Path, str]' = <object object at 0x000001E6B0D5D6D0>) -> None
+   .. py:method:: apsimNGpy.core.config.Configuration.__init__(self, bin_path: 'Union[str, Path]' = None) -> None
 
    Initialize self.  See help(type(self)) for accurate signature.
 
@@ -3856,7 +3980,7 @@ Classes
 
    added in v0.39.10.20+
 
-   .. py:method:: apsimNGpy.core.config.apsim_bin_context.__init__(self, apsim_bin_path: 'str | os.PathLike | None' = None, dotenv_path: 'str | os.PathLike | None' = None, bin_key: 'str' = '') -> 'None'
+   .. py:method:: apsimNGpy.core.config.apsim_bin_context.__init__(self, apsim_bin_path: 'str | os.PathLike | None' = None, dotenv_path: 'str | os.PathLike | None' = None, bin_key: 'str' = '', disk_cache=False) -> 'None'
 
    Initialize self.  See help(type(self)) for accurate signature.
 
@@ -3967,7 +4091,7 @@ Classes
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.update_mgt`
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.update_mgt_by_path`
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.__init__(self, model, out_path=<object object at 0x000001E6B0D5E460>)
+   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.__init__(self, model, out_path=<object object at 0x000001C18131DA50>)
 
    Initialize self.  See help(type(self)) for accurate signature.
 
@@ -4416,86 +4540,210 @@ Classes
    In such cases, parameter sets can be programmatically generated, serialized,
    and reused without manual modification of code.
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.get_soil_from_web(self, simulation_name: Union[str, tuple, NoneType] = None, *, lonlat: Optional[System.Tuple[Double,Double]] = None, soil_series: Optional[str] = None, thickness_sequence: Optional[Sequence[float]] = 'auto', thickness_value: int = None, max_depth: Optional[int] = 2400, n_layers: int = 10, thinnest_layer: int = 100, thickness_growth_rate: float = 1.5, edit_sections: Optional[Sequence[str]] = None, attach_missing_sections: bool = True, additional_plants: tuple = None, adjust_dul: bool = True) (inherited)
+   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.get_soil_from_web(self, simulations: Union[str, tuple, NoneType] = None, *, lonlat: Optional[System.Tuple[Double,Double]] = None, soil_series: Optional[str] = None, thickness_sequence: Optional[Sequence[float]] = 'auto', thickness_value: int = None, max_depth: Optional[int] = 2400, n_layers: int = 10, thinnest_layer: int = 100, thickness_growth_rate: float = 1.5, edit_sections: Optional[Sequence[str]] = None, attach_missing_sections: bool = True, additional_plants: tuple = None, source='isric', top_finert=0.65, top_fom=1000, top_fbiom=0.04, fom_cnr=40, soil_cnr=12, swcon=0.3, top_urea=0, top_nh3=0.5, top_nh4=0.05, adjust_dul: bool = True, **soil_kwargs) (inherited)
 
-   Download SSURGO-derived soil for a given location and populate the APSIM NG
-   soil sections in the current model.
+      Download soil profiles for a given location and populate the APSIM NG
+      soil sections in the current model.
 
-   This method updates the target Simulation(s) in-place by attaching a Soil node
-   (if missing) and writing section properties from the downloaded profile.
+      This method updates the target Simulation(s) in-place by attaching a Soil node
+      (if missing) and writing section properties from the downloaded profile.
 
-   Parameters
-   ----------
-   simulation : str | sequence[str] | None, default None
-       Target simulation name(s). If ``None``, all simulations are updated.
+      Parameters
+      ----------
+      simulation : str | sequence[str] | None, default None
+          Target simulation name(s). If ``None``, all simulations are updated.
 
-   lonlat : tuple[float, float] | None
-       Location for SSURGO download, as ``(lon, lat)`` in decimal degrees
-       (e.g., ``(-93.045, 42.012)``).
+      lonlat : tuple[float, float] | None
+          Location for SSURGO download, as ``(lon, lat)`` in decimal degrees
+          (e.g., ``(-93.045, 42.012)``).
 
-   soil_series : str | None, optional
-       Optional component/series filter. If ``None``, the dominant series
-       by area is used. If a non-existent series is supplied, an error is raised.
+      soil_series : str | None, optional
+          Optional component/series filter. If ``None``, the dominant series
+          by area is used. If a non-existent series is supplied, an error is raised.
 
-   thickness_sequence : sequence[float] | str | None, default "auto"
-       Explicit layer thicknesses (mm). If ``"auto"``, thicknesses are generated
-       from the layer controls (e.g., number of layers, growth rate, thinnest layer,
-       and ``max_depth``). If ``None``, you must provide ``thickness_value`` and
-       ``max_depth`` to construct a uniform sequence.
+      thickness_sequence : sequence[float] | str | None, default "auto"
+          Explicit layer thicknesses (mm). If ``"auto"``, thicknesses are generated
+          from the layer controls (e.g., number of layers, growth rate, thinnest layer,
+          and ``max_depth``). If ``None``, you must provide ``thickness_value`` and
+          ``max_depth`` to construct a uniform sequence.
 
-   thickness_value : int | None, optional
-       Uniform thickness (mm) for all layers. Ignored if ``thickness_sequence`` is
-       provided; used only when ``thickness_sequence`` is ``None``.
+      thickness_value : int | None, optional
+          Uniform thickness (mm) for all layers. Ignored if ``thickness_sequence`` is
+          provided; used only when ``thickness_sequence`` is ``None``.
 
-   max_depth : int, default 2400
-       Maximum soil depth (mm) to cover with the thickness sequence.
+      max_depth : int, default 2400
+          Maximum soil depth (mm) to cover with the thickness sequence.
 
-   edit_sections : sequence[str], optional
-       Sections to edit. Default:
-       ``("physical", "organic", "chemical", "water", "water_balance", "solutes", "soil_crop", "meta_info")``.
-       Note: if sections are edited with differing layer counts, APSIM may error at run time.
+      edit_sections : sequence[str], optional
+          Sections to edit. Default:
+          ``("physical", "organic", "chemical", "water", "water_balance", "solutes", "soil_crop", "meta_info")``.
+          Note: if sections are edited with differing layer counts, APSIM may error at run time.
 
-   attach_missing_sections : bool, default True
-       If ``True``, create and attach missing section nodes before editing.
+      attach_missing_sections : bool, default True
+          If ``True``, create and attach missing section nodes before editing.
 
-   additional_plants : sequence[str] | None, optional
-        Plant names for which to create/populate ``SoilCrop`` entries (e.g., to set KL/XF).
+      additional_plants : sequence[str] | None, optional
+           Plant names for which to create/populate ``SoilCrop`` entries (e.g., to set KL/XF).
 
-   adjust_dul : bool, optional
-       If ``True``, adjust layer values where ``SAT`` exceeds ``DUL`` to prevent APSIM runtime errors.
+      adjust_dul : bool, optional
+          If ``True``, adjust layer values where ``SAT`` exceeds ``DUL`` to prevent APSIM runtime errors.
+      n_layers: int
+         number of soil layers to generate a soil profile.
+      source : str, optional default='isric'
+         the database source to use. Currently only 'isric' and 'ssurgo' are supported
+      top_finert : float, optional
+          Fraction of inert organic matter (FInert) in the surface soil layer.
+          Default is 0.88.
+      top_fom : float, optional
+          Fresh organic matter (FOM) content of the surface soil layer
+          in kg C ha⁻¹. Default is 180.
+      top_fbiom : float, optional
+          Fraction of microbial biomass carbon (FBiom) in the surface layer.
+          Default is 0.04.
+      fom_cnr : float, optional
+          Carbon-to-nitrogen ratio (C:N) of fresh organic matter.
+          Default is 40.
+      soil_cnr : float, optional
+          Carbon-to-nitrogen ratio (C:N) of soil organic matter (humic pool).
+          Default is 12.
+      swcon : float, optional
+          Soil water conductivity parameter controlling water extraction
+          rate by roots (APSIM `SWCON`). Typical values range from 0.1–1.
+          Default is 0.3.
+      top_urea : float, optional
+          Initial urea nitrogen in the surface soil layer (kg N ha⁻¹).
+          Default is 0.
+      top_nh3 : float, optional
+          Initial nitrate nitrogen (NO₃⁻–N) in the surface soil layer
+          in kg N ha⁻¹. Default is 0.5.
+      top_nh4 : float, optional
+          Initial ammonium nitrogen (NH₄⁺–N) in the surface soil layer
+          in kg N ha⁻¹. Default is 0.05.
 
-   Returns
-   -------
-   self
-       The same instance, to allow method chaining.
+      soil_kwargs:
+      Additional keyword arguments to pass to the function related to soil water module such as the WinterCona.
+      See the following list:
 
-   Raises
-   ------
-   ValueError
-       - ``thickness_sequence`` provided with any non-positive value(s).
-       - ``thickness_sequence`` is ``None`` **and** ``thickness_value`` is ``None``.
-       - Units mismatch or inconsistency between ``thickness_value`` and ``max_depth``.
+       winter_cona : float, optional
+          Drying coefficient for stage 2 soil water evaporation in winter
+          (APSIM: ``WinterCona``).
+          Scalar parameter.
+      psi_dul : float, optional
+          Matric potential at drained upper limit (DUL), in cm
+          (APSIM: ``PSIDul``).
+          Scalar parameter.
+      depth : list of str, optional
+          Soil layer depth intervals expressed as strings
+          (e.g., ``"0-150"``, ``"150-300"``).
+          Layered parameter.
+      diffus_slope : float, optional
+          Effect of soil water storage above the lower limit on soil water
+          diffusivity (mm) (APSIM: ``DiffusSlope``).
+          Scalar parameter.
+      diffus_const : float, optional
+          Constant in soil water diffusivity calculations
+          (APSIM: ``DiffusConst``).
+          Scalar parameter.
+      k_lat : float, optional
+          Lateral hydraulic conductivity parameter for catchment flow
+          (APSIM: ``KLAT``).
+          Scalar parameter.
+      pore_interaction_index : float, optional
+          Pore interaction index controlling soil water movement
+          (APSIM: ``PoreInteractionIndex``).
+          Scalar parameter.
+      discharge_width : float, optional
+          Basal width of the downslope boundary of the catchment used in
+          lateral flow calculations (m) (APSIM: ``DischargeWidth``).
+          Scalar parameter.
+      swcon : list of float, optional
+          Soil water conductivity parameter controlling root water uptake
+          (APSIM: ``SWCON``).
+          Layered parameter (one value per soil layer).
+      cn_cov : float, optional
+          Fractional cover at which maximum runoff curve number reduction
+          occurs (APSIM: ``CNCov``).
+          Scalar parameter.
+      catchment_area : float, optional
+          Catchment area used for runoff and lateral flow calculations (m²)
+          (APSIM: ``CatchmentArea``).
+          Scalar parameter.
+      water : dict, optional
+          Nested water balance configuration block
+          (APSIM: ``Water``).
+          Dictionary parameter.
+      salb : float, optional
+          Fraction of incoming solar radiation reflected by the soil surface
+          (albedo) (APSIM: ``Salb``).
+          Scalar parameter.
+      winter_u : float, optional
+          Cumulative soil water evaporation required to complete stage 1
+          evaporation during winter (APSIM: ``WinterU``).
+          Scalar parameter.
+      runoff : float, optional
+          Runoff fraction or runoff scaling factor
+          (APSIM: ``Runoff``).
+          Scalar parameter.
+      cn2_bare : int or float, optional
+          Runoff curve number for bare soil under average moisture conditions
+          (APSIM: ``CN2Bare``).
+          Scalar parameter.
+      winter_date : str, optional
+          Calendar date marking the switch to winter parameterization
+          (APSIM: ``WinterDate``), e.g. ``"1-Apr"``.
+          Scalar string parameter.
+      potential_infiltration : float, optional
+          Potential infiltration limit used in runoff calculations
+          (APSIM: ``PotentialInfiltration``).
+          Scalar parameter.
+      summer_date : str, optional
+          Calendar date marking the switch to summer parameterization
+          (APSIM: ``SummerDate``), e.g. ``"1-Nov"``.
+          Scalar string parameter.
+      sw_mm : float, optional
+          Total soil water storage (mm) if explicitly specified
+          (APSIM: ``SWmm``).
+          Scalar parameter.
+      summer_cona : float, optional
+          Drying coefficient for stage 2 soil water evaporation in summer
+          (APSIM: ``SummerCona``).
+          Scalar parameter.
+      summer_u : float, optional
+          Cumulative soil water evaporation required to complete stage 1
+          evaporation during summer (APSIM: ``SummerU``).
+          Scalar parameter.
+      precipitation_interception : float, optional
+          Fraction or amount of precipitation intercepted before reaching
+          the soil surface (APSIM: ``PrecipitationInterception``).
+          Scalar parameter.
 
-   Notes
-   -----
-   - Assumes soil sections live under a **Soil** node; when
-     ``attach_missing_sections=True`` a Soil node is created if missing.
-   - Uses the optimized SoilManager routines (vectorized assignments / .NET double[] marshaling).
-   - Side effects (in place on the APSIM model):
-       1. Creates/attaches **Soil** when needed.
-       2. Creates/updates child sections (``Physical``, ``Organic``, ``Chemical``,
-          ``Water``, ``WaterBalance``, ``SoilCrop``) as listed in ``edit_sections``.
-       3. Overwrites section properties (e.g., layer arrays such as ``Depth``, ``BD``,
-          ``LL15``, ``DUL``, ``SAT``; solutes; crop KL/XF) with downloaded values.
-       4. Add **SoilCrop** children for any names in ``additional_plants``.
-       5. Performs **network I/O** to retrieve SSURGO tables when ``lonlat`` is provided.
-       6. Emits log messages (warnings/info) when attaching nodes, resolving thickness controls,
-          or skipping missing columns.
-       7. Caches the computed soil profile in the helper during execution; the in-memory APSIM
-          tree remains modified after return.
-       8. Does **not** write files; call ``save()`` on the model if you want to persist changes.
-       9. The existing soil-profile structure is completed override by the newly generated soil profile.
-          So, variables like soil thickness, number of soil layers, etc. might be different from the old one.
+      Returns
+      -------
+      self
+          The same instance, to allow method chaining.
+
+      Raises
+      ------
+      ValueError
+          - ``thickness_sequence`` provided with any non-positive value(s).
+          - ``thickness_sequence`` is ``None`` **and** ``thickness_value`` is ``None``.
+          - Units mismatch or inconsistency between ``thickness_value`` and ``max_depth``.
+          - lonlat do not match the source database specified. For example, if coordinates are outside the USA, but a source is source.
+           for worldwide soil request use source = isric
+   Examples:
+   ------------------
+
+   .. code-block python
+
+          with ApsimModel("Maize") as model:
+          datastore = Path(model.datastore)
+          model.add_report_variable(variable_spec='[Clock].Today.Year as year', report_name='Report',
+                                    simulations='Simulation')
+          model.get_soil_from_web(simulations=None, lonlat=(-93.9937, 40.4842), thinnest_layer=100,
+                                  adjust_dul=True,
+
+                                  summer_date='1-May', precipitation_interception=13.5, winter_date='1-nov',
+                                  source='isric')
 
    .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.adjust_dul(self, simulations: Union[tuple, list] = None) (inherited)
 
@@ -4617,7 +4865,7 @@ Classes
    self : object
        Returns the updated ApsimModel instance.
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.save(self, file_name: 'Union[str, Path]' = <object object at 0x0000022774C65000>, reload=True) (inherited)
+   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.save(self, file_name: 'Union[str, Path]' = <object object at 0x000001C1B0050B70>, reload=True) (inherited)
 
    Saves the current APSIM NG model (``Simulations``) to disk and refresh runtime state.
 
@@ -6728,7 +6976,7 @@ Classes
    ---------------------------------------------------------------------------
    returns an array of the parameter values
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x0000022774C65000>) (inherited)
+   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x000001C1B0050B70>) (inherited)
 
    Inspect the model types and returns the model paths or names.
 
@@ -8017,7 +8265,7 @@ Classes
    ensure proper cleanup and reproducibility.
 
    Parameters
-   ----------
+   -------------
    threads : bool, optional
        If ``True``, jobs are executed using threads; otherwise, jobs are
        executed using processes. The default is ``False`` (process-based
@@ -8152,7 +8400,7 @@ Classes
 
    engine==csharp
    ---------------
-   When the engine is set to csharp, APSIMNGpy applies all model edits and writes the modified
+   When the engine is set to csharp, apsimNGpy applies all model edits and writes the modified
    APSIMX files to a working directory, after which they are executed by the C# engine using
    multithreading. Task chunking is required to prevent stack overflow and excessive memory
    usage arising from APSIM’s internal execution architecture, not from disk I/O or file writing.
@@ -8345,14 +8593,37 @@ Module attributes
 
 .. py:attribute:: apsimNGpy.core.pythonet_config.CLR
 
-   Default value: ``ConfigRuntimeInfo(clr_loaded=True, bin_path='C:\\Users\\rmagala\\AppData\\Local…``
+   Default value: ``ConfigRuntimeInfo(bin_path='C:\\Users\\rmagala\\AppData\\Local\\Programs\\APSIM…``
 
 Functions
 ^^^^^^^^^
 
-.. py:function:: apsimNGpy.core.pythonet_config.get_apsim_file_reader(method: str = 'string')
+.. py:function:: apsimNGpy.core.pythonet_config.is_file_format_modified(bin_path: Union[str, pathlib.Path] = <object object at 0x000001C18131DA60>) -> bool
 
-   Return an APSIM file reader callable based on the requested method.
+   Checks if the APSIM.CORE.dll is present in the bin path. Normally, the new APSIM version has this dll file.
+
+   Parameters
+   ---------
+   bin_path: Union[str, Path, None].
+        Default is the current bin_path for apsimNGpy, used only when bin_path is None.
+
+   :returns:
+     bool
+
+Classes
+^^^^^^^
+
+.. py:class:: apsimNGpy.core.pythonet_config.ConfigRuntimeInfo
+
+   ConfigRuntimeInfo(bin_path: Union[pathlib.Path, str] = None, apsim_compiled_version: str = None, Models: 'Models' = None, clr_loaded: bool = None, file_format_modified: bool = True, Node: 'Node' = None, APsimCore: 'APSIM.Core' = None, pythonnet_started: bool = False, System: 'System.Module' = False, CastHelper: 'CastHelper' = None)
+
+   .. py:method:: apsimNGpy.core.pythonet_config.ConfigRuntimeInfo.__init__(self, bin_path: Union[pathlib.Path, str] = None, apsim_compiled_version: str = None, Models: 'Models' = None, clr_loaded: bool = None, file_format_modified: bool = True, Node: 'Node' = None, APsimCore: 'APSIM.Core' = None, pythonnet_started: bool = False, System: 'System.Module' = False, CastHelper: 'CastHelper' = None) -> None
+
+   Initialize self.  See help(type(self)) for accurate signature.
+
+   .. py:method:: apsimNGpy.core.pythonet_config.ConfigRuntimeInfo.get_file_reader(self, method='string')
+
+     Return an APSIM file reader callable based on the requested method.
 
    This helper selects the appropriate APSIM NG ``FileFormat`` implementation,
    accounting for runtime changes in the file format (via
@@ -8374,132 +8645,52 @@ Functions
    Callable
        A .NET static method (callable from Python) that performs the read:
        either ``ReadFromString(text: str)`` or ``ReadFromFile(path: str)``.
+   @param method:
+   @return:
 
-   Raises
-   ------
-   NotImplementedError
-       If `method` is not one of `string` or `file`.
-   AttributeError
-       If the underlying APSIM ``FileFormat`` type does not expose the
-       expected reader method (environment/binaries misconfigured).
+   .. py:method:: apsimNGpy.core.pythonet_config.ConfigRuntimeInfo.load_clr(self)
 
-   Notes
-   -----
-   - When : func:`is_file_format_modified` returns ``bool``.If False, then
-     ``Models.Core.ApsimFile.FileFormat`` is unavailable, the function falls
-     back to ``APSIM.Core.FileFormat``.
-   - The returned callable is a .NET method; typical usage is
-     ``reader = get_apsim_file_reader("file"); model = reader(path)``.
+   Initializes and caches the Python for .NET (pythonnet) runtime to avoid repeated setup.
 
-   Examples
-   --------
-   Read from a file path:
+   Loads APSIM models directly from the configured binary path.
 
-   >>> reader = get_apsim_file_reader("file")      # doctest: +SKIP
-   >>> sims = reader("/path/to/model.apsimx")      # doctest: +SKIP
+   Attempts to load the coreclr runtime first, with a fallback to an alternative runtime if unavailable.
 
-   Read from a string (APSXML/JSON depending on APSIM NG):
+   Configures the APSIM binary path and adds required .NET references.
 
-   >>> text = "...apsimx content..."               # doctest: +SKIP
-   >>> reader = get_apsim_file_reader("string")    # doctest: +SKIP
-   >>> sims = reader(text)                         # doctest: +SKIP
+   Returns a ConfigRuntimeInfo object containing references to the loaded APSIM models.
 
-.. py:function:: apsimNGpy.core.pythonet_config.get_apsim_version(bin_path: Union[str, pathlib.Path] = <object object at 0x000001E6B0D5E430>, release_number: bool = False) -> Optional[str]
+   Relies on a correctly configured APSIM bin path (via environment variable or set_apsim_bin_path).
 
-   Return the APSIM version string detected from the installed binaries.
+   Throws:
 
-   The function initializes pythonnet for the given APSIM binaries path (via
-   ``load_pythonnet(bin_path)``), then loads ``Models.dll`` and reads its
-   assembly version. By default, the returned string is prefixed with ``"APSIM"``;
-   set ``release_number=True`` to get the raw semantic version.
+   KeyError if the APSIM path environment variable is missing.
 
-   Parameters
-   ----------
-   bin_path : str or pathlib.Path, optional
-       Filesystem path to the APSIM **binaries** directory that contains
-       ``Models.dll``. Defaults to a current apsim binary path being used by apsimNGpy.
-   release_number : bool, optional
-       If ``True``, returns only the assembly version (e.g., ``"2024.6.123"``).
-       If ``False`` (default), prefix with ``"APSIM"`` (e.g., ``"APSIM 2024.6.123"``).
+   ValueError if the APSIM path is invalid.
 
-   Returns
-   -------
-   str or None
-       The version string if detected successfully; otherwise ``None`` when
-       required system modules are unavailable (e.g., if the binaries path is
-       not correctly configured).
+   .. py:attribute:: apsimNGpy.core.pythonet_config.ConfigRuntimeInfo.APsimCore
 
-   Raises
-   ------
-   ApsimBinPathConfigError
-       If pythonnet/CLR is not initialized for the provided ``bin_path`` (i.e.,
-       APSIM binaries path has not been set up).
+   Default: ``<member 'APsimCore' of 'ConfigRuntimeInfo' objects>``
 
-   Notes
-   -----
-   - This call requires a valid APSIM NG binaries folder and a loadable
-     ``Models.dll`` at ``bin_path/Models.dll``.
-   - ``load_pythonnet`` must succeed so that the CLR is available; otherwise
-     the version cannot be queried.
+   .. py:attribute:: apsimNGpy.core.pythonet_config.ConfigRuntimeInfo.CastHelper
 
-   Examples
-   --------
-   >>> get_apsim_version("/opt/apsim/bin")           # doctest: +SKIP
-   'APSIM2024.6.123'
-   >>> get_apsim_version("/opt/apsim/bin", True)     # doctest: +SKIP
-   '2024.6.123'
+   Default: ``<member 'CastHelper' of 'ConfigRuntimeInfo' objects>``
 
-   See Also
-   --------
-   load_pythonnet : Initialize pythonnet/CLR for APSIM binaries.
+   .. py:attribute:: apsimNGpy.core.pythonet_config.ConfigRuntimeInfo.Models
 
-.. py:function:: apsimNGpy.core.pythonet_config.is_file_format_modified(bin_path: Union[str, pathlib.Path] = <object object at 0x000001E6B0D5E430>) -> bool
+   Default: ``<member 'Models' of 'ConfigRuntimeInfo' objects>``
 
-   Checks if the APSIM.CORE.dll is present in the bin path. Normally, the new APSIM version has this dll file.
+   .. py:attribute:: apsimNGpy.core.pythonet_config.ConfigRuntimeInfo.Node
 
-   Parameters
-   ---------
-   bin_path: Union[str, Path, None].
-        Default is the current bin_path for apsimNGpy, used only when bin_path is None.
+   Default: ``<member 'Node' of 'ConfigRuntimeInfo' objects>``
 
-   :returns:
-     bool
+   .. py:attribute:: apsimNGpy.core.pythonet_config.ConfigRuntimeInfo.System
 
-.. py:function:: apsimNGpy.core.pythonet_config.load_pythonnet(bin_path: Union[str, pathlib.Path] = <object object at 0x000001E6B0D5E430>)
+   Default: ``<member 'System' of 'ConfigRuntimeInfo' objects>``
 
-   A method for loading Python for .NET (pythonnet) and APSIM models from the binary path. It is also cached to
-   avoid rerunning many times.
+   .. py:attribute:: apsimNGpy.core.pythonet_config.ConfigRuntimeInfo.apsim_compiled_version
 
-   It initializes the Python for .NET (pythonnet) runtime and load APSIM models.
-
-   Loads the 'coreclr' runtime, and if not found, falls back to an alternate runtime.
-   It also sets the APSIM binary path, adds the necessary references, and returns a reference to the loaded APSIM models.
-
-   Returns:
-   -------
-   ConfigRuntimeInfo:
-        an instance of ConfigRuntimeInfo with reference to the loaded APSIM models
-
-   Raises:
-   ------
-   KeyError: If APSIM path is not found in the system environmental variable.
-   ValueError: If the provided APSIM path is invalid.
-
-   .. important::
-
-    This function is called internally by apsimNGpy modules, but it is dependent on correct configuration of the bin
-    path. Please edit the system environmental variable on your computer or set it using: :func:`~apsimNGpy.core.config.set_apsim_bin_path`
-
-Classes
-^^^^^^^
-
-.. py:class:: apsimNGpy.core.pythonet_config.ConfigRuntimeInfo
-
-   ConfigRuntimeInfo(clr_loaded: bool, bin_path: Union[pathlib.Path, str], file_format_modified: bool = True)
-
-   .. py:method:: apsimNGpy.core.pythonet_config.ConfigRuntimeInfo.__init__(self, clr_loaded: bool, bin_path: Union[pathlib.Path, str], file_format_modified: bool = True) -> None
-
-   Initialize self.  See help(type(self)) for accurate signature.
+   Default: ``<member 'apsim_compiled_version' of 'ConfigRuntimeInfo' objects>``
 
    .. py:attribute:: apsimNGpy.core.pythonet_config.ConfigRuntimeInfo.bin_path
 
@@ -8512,6 +8703,10 @@ Classes
    .. py:attribute:: apsimNGpy.core.pythonet_config.ConfigRuntimeInfo.file_format_modified
 
    Default: ``<member 'file_format_modified' of 'ConfigRuntimeInfo' objects>``
+
+   .. py:attribute:: apsimNGpy.core.pythonet_config.ConfigRuntimeInfo.pythonnet_started
+
+   Default: ``<member 'pythonnet_started' of 'ConfigRuntimeInfo' objects>``
 
 apsimNGpy.core.runner
 ---------------------
@@ -8736,7 +8931,7 @@ Functions
 
    Return True if obj looks like a DB connection.
 
-.. py:function:: apsimNGpy.core.runner.run_apsim_by_path(model: 'Union[str, Path]', *, bin_path: 'Union[str, Path, object]' = <object object at 0x000001E6B0D5E470>, timeout: 'int' = 800, ncores: 'int' = -1, verbose: 'bool' = False, to_csv: 'bool' = False) -> 'None'
+.. py:function:: apsimNGpy.core.runner.run_apsim_by_path(model: 'Union[str, Path]', *, bin_path: 'Union[str, Path, object]' = <object object at 0x000001C1B0050A10>, timeout: 'int' = 800, ncores: 'int' = -1, verbose: 'bool' = False, to_csv: 'bool' = False) -> 'None'
 
    Execute an APSIM model safely and reproducibly.
 
@@ -8781,7 +8976,7 @@ Functions
    RuntimeError
        If APSIM returns a non-zero exit code.
 
-.. py:function:: apsimNGpy.core.runner.run_model_externally(model: 'Union[Path, str]', *, apsim_bin_path: 'Optional[Union[Path, str]]' = <object object at 0x000001E6B0D5E470>, verbose: 'bool' = False, to_csv: 'bool' = False, timeout: 'int' = 20, cpu_count=-1, cwd: 'Optional[Union[Path, str]]' = None) -> 'subprocess.CompletedProcess[str]'
+.. py:function:: apsimNGpy.core.runner.run_model_externally(model: 'Union[Path, str]', *, apsim_bin_path: 'Optional[Union[Path, str]]' = <object object at 0x000001C1B0050A10>, verbose: 'bool' = False, to_csv: 'bool' = False, timeout: 'int' = 20, cpu_count=-1, cwd: 'Optional[Union[Path, str]]' = None) -> 'subprocess.CompletedProcess[str]'
 
    Run APSIM externally (cross-platform) with safe defaults.
 
@@ -8986,7 +9181,7 @@ Classes
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.update_mgt`
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.update_mgt_by_path`
 
-   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.__init__(self, model, out_path=<object object at 0x000001E6B0D5E460>)
+   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.__init__(self, model, out_path=<object object at 0x000001C18131DA50>)
 
    Initialize self.  See help(type(self)) for accurate signature.
 
@@ -9371,86 +9566,210 @@ Classes
    In such cases, parameter sets can be programmatically generated, serialized,
    and reused without manual modification of code.
 
-   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.get_soil_from_web(self, simulation_name: Union[str, tuple, NoneType] = None, *, lonlat: Optional[System.Tuple[Double,Double]] = None, soil_series: Optional[str] = None, thickness_sequence: Optional[Sequence[float]] = 'auto', thickness_value: int = None, max_depth: Optional[int] = 2400, n_layers: int = 10, thinnest_layer: int = 100, thickness_growth_rate: float = 1.5, edit_sections: Optional[Sequence[str]] = None, attach_missing_sections: bool = True, additional_plants: tuple = None, adjust_dul: bool = True) (inherited)
+   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.get_soil_from_web(self, simulations: Union[str, tuple, NoneType] = None, *, lonlat: Optional[System.Tuple[Double,Double]] = None, soil_series: Optional[str] = None, thickness_sequence: Optional[Sequence[float]] = 'auto', thickness_value: int = None, max_depth: Optional[int] = 2400, n_layers: int = 10, thinnest_layer: int = 100, thickness_growth_rate: float = 1.5, edit_sections: Optional[Sequence[str]] = None, attach_missing_sections: bool = True, additional_plants: tuple = None, source='isric', top_finert=0.65, top_fom=1000, top_fbiom=0.04, fom_cnr=40, soil_cnr=12, swcon=0.3, top_urea=0, top_nh3=0.5, top_nh4=0.05, adjust_dul: bool = True, **soil_kwargs) (inherited)
 
-   Download SSURGO-derived soil for a given location and populate the APSIM NG
-   soil sections in the current model.
+      Download soil profiles for a given location and populate the APSIM NG
+      soil sections in the current model.
 
-   This method updates the target Simulation(s) in-place by attaching a Soil node
-   (if missing) and writing section properties from the downloaded profile.
+      This method updates the target Simulation(s) in-place by attaching a Soil node
+      (if missing) and writing section properties from the downloaded profile.
 
-   Parameters
-   ----------
-   simulation : str | sequence[str] | None, default None
-       Target simulation name(s). If ``None``, all simulations are updated.
+      Parameters
+      ----------
+      simulation : str | sequence[str] | None, default None
+          Target simulation name(s). If ``None``, all simulations are updated.
 
-   lonlat : tuple[float, float] | None
-       Location for SSURGO download, as ``(lon, lat)`` in decimal degrees
-       (e.g., ``(-93.045, 42.012)``).
+      lonlat : tuple[float, float] | None
+          Location for SSURGO download, as ``(lon, lat)`` in decimal degrees
+          (e.g., ``(-93.045, 42.012)``).
 
-   soil_series : str | None, optional
-       Optional component/series filter. If ``None``, the dominant series
-       by area is used. If a non-existent series is supplied, an error is raised.
+      soil_series : str | None, optional
+          Optional component/series filter. If ``None``, the dominant series
+          by area is used. If a non-existent series is supplied, an error is raised.
 
-   thickness_sequence : sequence[float] | str | None, default "auto"
-       Explicit layer thicknesses (mm). If ``"auto"``, thicknesses are generated
-       from the layer controls (e.g., number of layers, growth rate, thinnest layer,
-       and ``max_depth``). If ``None``, you must provide ``thickness_value`` and
-       ``max_depth`` to construct a uniform sequence.
+      thickness_sequence : sequence[float] | str | None, default "auto"
+          Explicit layer thicknesses (mm). If ``"auto"``, thicknesses are generated
+          from the layer controls (e.g., number of layers, growth rate, thinnest layer,
+          and ``max_depth``). If ``None``, you must provide ``thickness_value`` and
+          ``max_depth`` to construct a uniform sequence.
 
-   thickness_value : int | None, optional
-       Uniform thickness (mm) for all layers. Ignored if ``thickness_sequence`` is
-       provided; used only when ``thickness_sequence`` is ``None``.
+      thickness_value : int | None, optional
+          Uniform thickness (mm) for all layers. Ignored if ``thickness_sequence`` is
+          provided; used only when ``thickness_sequence`` is ``None``.
 
-   max_depth : int, default 2400
-       Maximum soil depth (mm) to cover with the thickness sequence.
+      max_depth : int, default 2400
+          Maximum soil depth (mm) to cover with the thickness sequence.
 
-   edit_sections : sequence[str], optional
-       Sections to edit. Default:
-       ``("physical", "organic", "chemical", "water", "water_balance", "solutes", "soil_crop", "meta_info")``.
-       Note: if sections are edited with differing layer counts, APSIM may error at run time.
+      edit_sections : sequence[str], optional
+          Sections to edit. Default:
+          ``("physical", "organic", "chemical", "water", "water_balance", "solutes", "soil_crop", "meta_info")``.
+          Note: if sections are edited with differing layer counts, APSIM may error at run time.
 
-   attach_missing_sections : bool, default True
-       If ``True``, create and attach missing section nodes before editing.
+      attach_missing_sections : bool, default True
+          If ``True``, create and attach missing section nodes before editing.
 
-   additional_plants : sequence[str] | None, optional
-        Plant names for which to create/populate ``SoilCrop`` entries (e.g., to set KL/XF).
+      additional_plants : sequence[str] | None, optional
+           Plant names for which to create/populate ``SoilCrop`` entries (e.g., to set KL/XF).
 
-   adjust_dul : bool, optional
-       If ``True``, adjust layer values where ``SAT`` exceeds ``DUL`` to prevent APSIM runtime errors.
+      adjust_dul : bool, optional
+          If ``True``, adjust layer values where ``SAT`` exceeds ``DUL`` to prevent APSIM runtime errors.
+      n_layers: int
+         number of soil layers to generate a soil profile.
+      source : str, optional default='isric'
+         the database source to use. Currently only 'isric' and 'ssurgo' are supported
+      top_finert : float, optional
+          Fraction of inert organic matter (FInert) in the surface soil layer.
+          Default is 0.88.
+      top_fom : float, optional
+          Fresh organic matter (FOM) content of the surface soil layer
+          in kg C ha⁻¹. Default is 180.
+      top_fbiom : float, optional
+          Fraction of microbial biomass carbon (FBiom) in the surface layer.
+          Default is 0.04.
+      fom_cnr : float, optional
+          Carbon-to-nitrogen ratio (C:N) of fresh organic matter.
+          Default is 40.
+      soil_cnr : float, optional
+          Carbon-to-nitrogen ratio (C:N) of soil organic matter (humic pool).
+          Default is 12.
+      swcon : float, optional
+          Soil water conductivity parameter controlling water extraction
+          rate by roots (APSIM `SWCON`). Typical values range from 0.1–1.
+          Default is 0.3.
+      top_urea : float, optional
+          Initial urea nitrogen in the surface soil layer (kg N ha⁻¹).
+          Default is 0.
+      top_nh3 : float, optional
+          Initial nitrate nitrogen (NO₃⁻–N) in the surface soil layer
+          in kg N ha⁻¹. Default is 0.5.
+      top_nh4 : float, optional
+          Initial ammonium nitrogen (NH₄⁺–N) in the surface soil layer
+          in kg N ha⁻¹. Default is 0.05.
 
-   Returns
-   -------
-   self
-       The same instance, to allow method chaining.
+      soil_kwargs:
+      Additional keyword arguments to pass to the function related to soil water module such as the WinterCona.
+      See the following list:
 
-   Raises
-   ------
-   ValueError
-       - ``thickness_sequence`` provided with any non-positive value(s).
-       - ``thickness_sequence`` is ``None`` **and** ``thickness_value`` is ``None``.
-       - Units mismatch or inconsistency between ``thickness_value`` and ``max_depth``.
+       winter_cona : float, optional
+          Drying coefficient for stage 2 soil water evaporation in winter
+          (APSIM: ``WinterCona``).
+          Scalar parameter.
+      psi_dul : float, optional
+          Matric potential at drained upper limit (DUL), in cm
+          (APSIM: ``PSIDul``).
+          Scalar parameter.
+      depth : list of str, optional
+          Soil layer depth intervals expressed as strings
+          (e.g., ``"0-150"``, ``"150-300"``).
+          Layered parameter.
+      diffus_slope : float, optional
+          Effect of soil water storage above the lower limit on soil water
+          diffusivity (mm) (APSIM: ``DiffusSlope``).
+          Scalar parameter.
+      diffus_const : float, optional
+          Constant in soil water diffusivity calculations
+          (APSIM: ``DiffusConst``).
+          Scalar parameter.
+      k_lat : float, optional
+          Lateral hydraulic conductivity parameter for catchment flow
+          (APSIM: ``KLAT``).
+          Scalar parameter.
+      pore_interaction_index : float, optional
+          Pore interaction index controlling soil water movement
+          (APSIM: ``PoreInteractionIndex``).
+          Scalar parameter.
+      discharge_width : float, optional
+          Basal width of the downslope boundary of the catchment used in
+          lateral flow calculations (m) (APSIM: ``DischargeWidth``).
+          Scalar parameter.
+      swcon : list of float, optional
+          Soil water conductivity parameter controlling root water uptake
+          (APSIM: ``SWCON``).
+          Layered parameter (one value per soil layer).
+      cn_cov : float, optional
+          Fractional cover at which maximum runoff curve number reduction
+          occurs (APSIM: ``CNCov``).
+          Scalar parameter.
+      catchment_area : float, optional
+          Catchment area used for runoff and lateral flow calculations (m²)
+          (APSIM: ``CatchmentArea``).
+          Scalar parameter.
+      water : dict, optional
+          Nested water balance configuration block
+          (APSIM: ``Water``).
+          Dictionary parameter.
+      salb : float, optional
+          Fraction of incoming solar radiation reflected by the soil surface
+          (albedo) (APSIM: ``Salb``).
+          Scalar parameter.
+      winter_u : float, optional
+          Cumulative soil water evaporation required to complete stage 1
+          evaporation during winter (APSIM: ``WinterU``).
+          Scalar parameter.
+      runoff : float, optional
+          Runoff fraction or runoff scaling factor
+          (APSIM: ``Runoff``).
+          Scalar parameter.
+      cn2_bare : int or float, optional
+          Runoff curve number for bare soil under average moisture conditions
+          (APSIM: ``CN2Bare``).
+          Scalar parameter.
+      winter_date : str, optional
+          Calendar date marking the switch to winter parameterization
+          (APSIM: ``WinterDate``), e.g. ``"1-Apr"``.
+          Scalar string parameter.
+      potential_infiltration : float, optional
+          Potential infiltration limit used in runoff calculations
+          (APSIM: ``PotentialInfiltration``).
+          Scalar parameter.
+      summer_date : str, optional
+          Calendar date marking the switch to summer parameterization
+          (APSIM: ``SummerDate``), e.g. ``"1-Nov"``.
+          Scalar string parameter.
+      sw_mm : float, optional
+          Total soil water storage (mm) if explicitly specified
+          (APSIM: ``SWmm``).
+          Scalar parameter.
+      summer_cona : float, optional
+          Drying coefficient for stage 2 soil water evaporation in summer
+          (APSIM: ``SummerCona``).
+          Scalar parameter.
+      summer_u : float, optional
+          Cumulative soil water evaporation required to complete stage 1
+          evaporation during summer (APSIM: ``SummerU``).
+          Scalar parameter.
+      precipitation_interception : float, optional
+          Fraction or amount of precipitation intercepted before reaching
+          the soil surface (APSIM: ``PrecipitationInterception``).
+          Scalar parameter.
 
-   Notes
-   -----
-   - Assumes soil sections live under a **Soil** node; when
-     ``attach_missing_sections=True`` a Soil node is created if missing.
-   - Uses the optimized SoilManager routines (vectorized assignments / .NET double[] marshaling).
-   - Side effects (in place on the APSIM model):
-       1. Creates/attaches **Soil** when needed.
-       2. Creates/updates child sections (``Physical``, ``Organic``, ``Chemical``,
-          ``Water``, ``WaterBalance``, ``SoilCrop``) as listed in ``edit_sections``.
-       3. Overwrites section properties (e.g., layer arrays such as ``Depth``, ``BD``,
-          ``LL15``, ``DUL``, ``SAT``; solutes; crop KL/XF) with downloaded values.
-       4. Add **SoilCrop** children for any names in ``additional_plants``.
-       5. Performs **network I/O** to retrieve SSURGO tables when ``lonlat`` is provided.
-       6. Emits log messages (warnings/info) when attaching nodes, resolving thickness controls,
-          or skipping missing columns.
-       7. Caches the computed soil profile in the helper during execution; the in-memory APSIM
-          tree remains modified after return.
-       8. Does **not** write files; call ``save()`` on the model if you want to persist changes.
-       9. The existing soil-profile structure is completed override by the newly generated soil profile.
-          So, variables like soil thickness, number of soil layers, etc. might be different from the old one.
+      Returns
+      -------
+      self
+          The same instance, to allow method chaining.
+
+      Raises
+      ------
+      ValueError
+          - ``thickness_sequence`` provided with any non-positive value(s).
+          - ``thickness_sequence`` is ``None`` **and** ``thickness_value`` is ``None``.
+          - Units mismatch or inconsistency between ``thickness_value`` and ``max_depth``.
+          - lonlat do not match the source database specified. For example, if coordinates are outside the USA, but a source is source.
+           for worldwide soil request use source = isric
+   Examples:
+   ------------------
+
+   .. code-block python
+
+          with ApsimModel("Maize") as model:
+          datastore = Path(model.datastore)
+          model.add_report_variable(variable_spec='[Clock].Today.Year as year', report_name='Report',
+                                    simulations='Simulation')
+          model.get_soil_from_web(simulations=None, lonlat=(-93.9937, 40.4842), thinnest_layer=100,
+                                  adjust_dul=True,
+
+                                  summer_date='1-May', precipitation_interception=13.5, winter_date='1-nov',
+                                  source='isric')
 
    .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.adjust_dul(self, simulations: Union[tuple, list] = None) (inherited)
 
@@ -9572,7 +9891,7 @@ Classes
    self : object
        Returns the updated ApsimModel instance.
 
-   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.save(self, file_name: 'Union[str, Path]' = <object object at 0x0000022774C65000>, reload=True) (inherited)
+   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.save(self, file_name: 'Union[str, Path]' = <object object at 0x000001C1B0050B70>, reload=True) (inherited)
 
    Saves the current APSIM NG model (``Simulations``) to disk and refresh runtime state.
 
@@ -11683,7 +12002,7 @@ Classes
    ---------------------------------------------------------------------------
    returns an array of the parameter values
 
-   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x0000022774C65000>) (inherited)
+   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x000001C1B0050B70>) (inherited)
 
    Inspect the model types and returns the model paths or names.
 

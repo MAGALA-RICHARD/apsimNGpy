@@ -1,19 +1,19 @@
-from typing import Optional, Tuple, Sequence, Any, Mapping
-from dataclasses import dataclass
 import datetime as dt
-from typing import Optional, Sequence, Tuple, Mapping, Any, Union
-
-from apsimNGpy.core.pythonet_config import CLR
-from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganiseSoilProfile
-from apsimNGpy.core_utils.soil_lay_calculator import auto_gen_thickness_layers
-from apsimNGpy.core.model_tools import find_child_of_class, find_all_in_scope, CastHelper
-from apsimNGpy.settings import logger
-from apsimNGpy.core.model_tools import find_child_of_class
-from apsimNGpy.settings import logger
-from pandas import DataFrame
-
+from dataclasses import dataclass
+from typing import Optional, Sequence, Tuple, Mapping, Any
 
 import numpy as np
+from pandas import DataFrame
+
+from apsimNGpy.core.model_tools import find_all_in_scope, CastHelper
+from apsimNGpy.core.model_tools import find_child_of_class
+from apsimNGpy.core.pythonet_config import CLR
+from apsimNGpy.core_utils.soil_lay_calculator import auto_gen_thickness_layers
+from apsimNGpy.settings import logger
+from apsimNGpy.soils.helpers import _is_within_USA_mainland
+from apsimNGpy.soils.soilgrid import get_soil_profile_soil_grid
+from apsimNGpy.soils.soilmanager import DownloadsurgoSoiltables, OrganiseSoilProfile
+
 Models = CLR.Models
 Array, Double = CLR.System.Array, CLR.System.Double
 
@@ -22,11 +22,22 @@ Array, Double = CLR.System.Array, CLR.System.Double
 # Helpers
 # -------------------------------------------------------------------
 
+# def _to_net_double_array(values) -> Array[Double]:
+#     """Fast-ish conversion of a 1D numeric sequence to .NET double[]."""
+#     a = np.asarray(values, dtype=np.float64)
+#     # pythonnet marshaling from list -> double[] is reliable and reasonably fast
+#     return Array[Double](a.tolist())
+
+
 def _to_net_double_array(values) -> Array[Double]:
-    """Fast-ish conversion of a 1D numeric sequence to .NET double[]."""
-    a = np.asarray(values, dtype=np.float64)
-    # pythonnet marshaling from list -> double[] is reliable and reasonably fast
-    return Array[Double](a.tolist())
+    """Safe conversion of a 1D numeric sequence to .NET double[]"""
+    a = np.asarray(values, dtype=np.float64).ravel()
+
+    net_arr = Array[Double](len(a))
+    for i, v in enumerate(a):
+        net_arr[i] = float(v)  # force System.Double-compatible value
+
+    return net_arr
 
 
 def fill_in_meta_info(*,
@@ -85,8 +96,18 @@ class SoilManager:
     max_depth: Optional[int] = 2400  # mm
     n_layers: int = 10
     thinnest_layer: int = 100  # mm
-    thickness_growth_rate: float = 1.5  # unitless
+    thickness_growth_rate: float = 1.5  # unit less
     soil_profile: Optional[Mapping] = None  # cached once
+    source: str = 'soil grid',
+    top_finert: float = 0.65,
+    top_fom: float = 180,
+    top_fbiom: float = 0.04,
+    fom_cnr: float = 40,
+    soil_cnr: float = 12,
+    top_urea: float = 0,
+    top_nh3: float = 0.5,
+    top_nh4: float = 0.05
+    swcon:float =0.3,
 
     # ------------------------ Profile prep ------------------------
     def __post_init__(self):
@@ -105,17 +126,35 @@ class SoilManager:
         if self.soil_profile is not None:
             return
 
-        # Prefer lonlat (your original logic)
         if self.lonlat is not None:
-            self.soil_profile = self.get_soil_profile_from_lonlat(
-                self.lonlat,
-                thickness=self.thickness_value,
-                thinnest_layer=self.thinnest_layer,
-                n_layers=self.n_layers,
-                max_depth=self.max_depth,
-                soil_series=self.soil_series,
-                thickness_sequence=self.thickness_sequence,
-            )
+            if self.source.lower() == 'ssurgo':
+                if not _is_within_USA_mainland(self.lonlat):
+                    raise ValueError(f'Coordinates:  {self.lonlat} are outside USA. Please use source =`isric` instead')
+                self.soil_profile = self.get_soil_profile_from_lonlat_ssurgo(
+                    self.lonlat,
+                    thickness=self.thickness_value,
+                    n_layers=self.n_layers,
+                    max_depth=self.max_depth,
+                    soil_series=self.soil_series,
+                    thickness_sequence=self.thickness_sequence,
+                )
+            elif self.source.lower() == 'isric':
+                self.soil_profile = get_soil_profile_soil_grid(lonlat=self.lonlat,
+                                                               thickness_values_mm=self.thickness_sequence,
+                                                               top_finert=self.top_finert,
+                                                               top_fom=self.top_fom,
+                                                               top_fbiom=self.top_fbiom,
+                                                               fom_cnr=self.fom_cnr,
+                                                               soil_cnr=self.soil_cnr,
+                                                               top_urea=self.top_urea,
+                                                               top_nh3=self.top_nh3,
+                                                               top_nh4=self.top_nh4,
+                                                               swcon= self.swcon
+
+                                                               )
+            else:
+                raise NotImplementedError(
+                    f' source `{self.source}` not supported. Please choose from `isric` or `ssurgo`')
 
         # Fallback to provided tables (dict-like expected)
         if isinstance(self.soil_tables, dict):
@@ -123,18 +162,15 @@ class SoilManager:
             self.thickness_sequence = self.soil_tables.get('Thickness', self.thickness_sequence)
             return
 
-    @staticmethod
-    def get_soil_profile_from_lonlat(
-            lonlat,
-            *,
-            thickness_sequence=None,
-            soil_series=None,
-            thickness=None,
-            max_depth=2400,
-            n_layers=10,
-            thinnest_layer=100,
-            thick_growth_rate=1.3
-    ):
+    # @staticmethod
+    def get_soil_profile_from_lonlat_ssurgo(self,
+                                            lonlat,
+                                            *,
+                                            thickness_sequence=None,
+                                            soil_series=None,
+                                            thickness=None,
+                                            max_depth=2400,
+                                            n_layers=10, ):
         assert any([thickness_sequence, thickness]), \
             "both thickness_sequence and thickness must not be None"
         if all([thickness_sequence, thickness]):
@@ -143,6 +179,7 @@ class SoilManager:
             )
 
         date_str = dt.datetime.now().isoformat(timespec="seconds")
+
         sdf = DownloadsurgoSoiltables(lonlat=lonlat, select_componentname=soil_series, summarytable=False)
         if soil_series in sdf.componentname.unique():
             sdf = sdf[sdf['componentname'] == soil_series]
@@ -158,7 +195,8 @@ class SoilManager:
         soil_series = sdf['componentname'].iloc[0]
         mu_name = sdf['muname'].iloc[0]
         chkey = sdf['chkey'].iloc[0]
-        soil_profile = OrganiseSoilProfile(sdf, thickness_values=thickness_sequence)
+        soil_profile = OrganiseSoilProfile(sdf,
+                                           thickness_values=thickness_sequence)
         try:
             rn = int(int(chkey))
         except TypeError as e:
@@ -175,7 +213,15 @@ class SoilManager:
             ),
             comments=f"number of layers: {n_layers}, max depth: {max_depth}mm"
         )
-        return soil_profile.cal_missingFromSurgo(metadata=meta_info)
+        return soil_profile.cal_missingFromSurgo(metadata=meta_info,
+                                                 top_finert=self.top_finert,
+                                                 top_fom=self.top_fom,
+                                                 top_fbiom=self.top_fbiom,
+                                                 fom_cnr=self.fom_cnr,
+                                                 soil_cnr=self.soil_cnr,
+                                                 top_urea=self.top_urea,
+                                                 top_nh3=self.top_nh3,
+                                                 top_nh4=self.top_nh4)
 
     # ------------------------ Editors ------------------------
 

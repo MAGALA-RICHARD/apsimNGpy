@@ -22,6 +22,9 @@ from dataclasses import dataclass
 from apsimNGpy.core_utils.soil_lay_calculator import layer_boundaries, auto_gen_thickness_layers, \
     gen_layer_bounds_from_single_thickness
 
+from apsimNGpy.manager import show_module_deprecation
+show_module_deprecation(__file__=__file__)
+
 THICKNESS = [150, 150, 200, 200, 200, 250, 300, 300, 400, 500]
 hydro = {'A': 67, 'B': 78, 'C': 85, 'D': 89}
 
@@ -145,7 +148,7 @@ b = 1.4
 
 
 # create a variable profile constructor
-def soilvar_perdep_cor(nlayers, soil_bottom=200, a=0.5, b=0.5):  # has potential to cythonize
+def vary_soil_var_by_layer(nlayers, a=0.5, b=0.5):  # has potential to cythonize
     depths = np.arange(1, nlayers + 1, 1)
     if a < 0:
         print("Target parameter can not be negative")  # a * e^(-b * x).
@@ -560,32 +563,31 @@ class OrganiseSoilProfile:
         return predcited
 
     def cal_missingFromSurgo(self, curveparam_a=0, curveparam_b=0.2, crops=("Wheat", "Maize", "Soybean", "Rye"),
-                             metadata=None, soilwat=None, swim=None, soilorganicmatter=None):
+                             metadata=None, soilwat=None, swim=None, soilorganicmatter=None,
+                             top_finert=0.65, top_fom=180, top_fbiom=0.04, fom_cnr=40, soil_cnr=12, swcon=0.3,
+                             top_urea=0, top_nh3=0.5, top_nh4=0.05):
         nlayers = int(self.Nlayers)
 
         cropLL = self.get_AirDry()
+        cropKL = 0.08 * vary_soil_var_by_layer(nlayers, a=curveparam_a, b=curveparam_b)
 
-        # Original thought
-        # ad * soilvar_perdep_cor(nlayers, a = curveparam_a, b = curveparam_b)
-        cropKL = 0.08 * soilvar_perdep_cor(nlayers, a=curveparam_a, b=curveparam_b)
-
-        cropXF = 1 * soilvar_perdep_cor(nlayers, a=curveparam_a, b=0)[:nlayers]
+        cropXF = 1 * vary_soil_var_by_layer(nlayers, a=curveparam_a, b=0)[:nlayers]
 
         # create a data frame for these three _variables
-        # ------------------------ organic data calculation ------------------------
-        SoilCNRatio = np.full(shape=nlayers, fill_value=12, dtype=np.int64)
-        FOM = 150 * soilvar_perdep_cor(nlayers, a=curveparam_a, b=curveparam_b)
-        FOMCN = np.full(shape=nlayers, fill_value=40, dtype=np.int64)
-        FBiom = 0.045 * soilvar_perdep_cor(nlayers, a=curveparam_a, b=curveparam_b)
-        Fi = 0.83 * soilvar_perdep_cor(nlayers, a=curveparam_a, b=-0.01)
+        # organic data calculation
+        SoilCNRatio = np.full(shape=nlayers, fill_value=soil_cnr, dtype=np.int64)
+        FOM = top_fom * vary_soil_var_by_layer(nlayers, a=curveparam_a, b=curveparam_b)
+        FOMCN = np.full(shape=nlayers, fill_value=fom_cnr, dtype=np.int64)
+        FBiom = top_fbiom * vary_soil_var_by_layer(nlayers, a=curveparam_a, b=curveparam_b)
+        Fi = top_finert * vary_soil_var_by_layer(nlayers, a=curveparam_a, b=-0.01)
         FInert = Fi
 
-        NO3N = 0.5 * soilvar_perdep_cor(nlayers, a=curveparam_a, b=0.01)
-        NH4N = 0.05 * soilvar_perdep_cor(nlayers, a=curveparam_a, b=0.01)
+        NO3N = top_nh3 * vary_soil_var_by_layer(nlayers, a=curveparam_a, b=0.01)
+        NH4N = top_nh4 * vary_soil_var_by_layer(nlayers, a=curveparam_a, b=0.01)
         FInert[0] = 0.65
         FInert[1] = 0.668
-        FBiom[0] = 0.0395
-        FBiom[1] = 0.035
+        FBiom[0] = top_fbiom
+
         # from above
         Carbon = self.cal_Carbon()
         PH = self.interpolate_PH()
@@ -604,7 +606,7 @@ class OrganiseSoilProfile:
         NO3 = pd.DataFrame({'Depth': self.depths, 'Thickness': self.thickness_values, 'InitialValues': NO3N})
         NH4 = pd.DataFrame({'Depth': self.depths, 'Thickness': self.thickness_values, 'InitialValues': NH4N})
         Urea = pd.DataFrame(
-            {'Depth': self.depths, 'Thickness': self.thickness_values, 'InitialValues': np.full(len(self.depths), 0.0)})
+            {'Depth': self.depths, 'Thickness': self.thickness_values, 'InitialValues': np.full(len(self.depths), top_urea)})
 
         names = []
         # ------------------------crop soil info ------------------------

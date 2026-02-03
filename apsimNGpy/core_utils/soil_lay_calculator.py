@@ -1,8 +1,8 @@
 from math import pow
-from typing import Iterable, Tuple, List
-from apsimNGpy.core_utils.utils import timer
+from typing import Iterable, List
 from typing import Tuple
 import numpy as np
+from apsimNGpy.core_utils.utils import timer
 
 
 def auto_gen_thickness_layers(max_depth, n_layers=10, thin_layers=3, thin_thickness=100,

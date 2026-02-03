@@ -3,7 +3,7 @@ from dataclasses import dataclass
 import datetime as dt
 from typing import Optional, Sequence, Tuple, Mapping, Any, Union
 
-from apsimNGpy.core.pythonet_config import load_pythonnet
+from apsimNGpy.core.pythonet_config import CLR
 from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganiseSoilProfile
 from apsimNGpy.core_utils.soil_lay_calculator import auto_gen_thickness_layers
 from apsimNGpy.core.model_tools import find_child_of_class, find_all_in_scope, CastHelper
@@ -327,5 +327,3 @@ if __name__ == "__main__":
     # soil.edit_soil_water_balance()
     # soil.edit_soil_crop(crops_in=['Soybean'])
     # model.save()
-    # model.preview_simulation()
-    get_soil_from_web(model.simulations[0], lonlat=(-93.97702, 42.8023))

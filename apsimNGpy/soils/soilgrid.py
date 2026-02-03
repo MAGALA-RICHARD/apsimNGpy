@@ -9,7 +9,7 @@ from apsimNGpy.soils.saxon_rawls import (sat, cal_dul_from_sand_clay_OM,
                                          ks_from_soilgrids,
                                          cal_l15_from_sand_clay_OM)
 from tenacity import retry_if_exception_type, retry, stop_after_attempt, wait_exponential, wait_fixed
-
+from functools import lru_cache
 PARTICLE_DENSITY = 2.65  # g/cm³
 PHYSICAL_PROPERTIES = physic = {"BD", "LL15", "DUL", "SAT", "KS", "Sand", "Silt", "Clay", "AirDry", }
 control_param_a, control_param_b = 0, 0.2,
@@ -82,7 +82,7 @@ def generate_params(**kwargs):
 
 
 @retry(stop=stop_after_attempt(2), retry=retry_if_exception_type((HTTPError, TME_OUT_ERROR)))
-@cache
+@lru_cache(maxsize=200)
 def get_soil_grid_by_lonlat(**_params):
     response = requests.get(URL, params=_params)
     response.raise_for_status()
@@ -324,7 +324,7 @@ def aggregate_data(transformed_data, *, thickness_mm, crops=None, metadata=None,
     return out
 
 
-@timer
+
 def get_soil_profile_soil_grid(lonlat,
                                thickness_values_mm,
                                top_finert=0.88,

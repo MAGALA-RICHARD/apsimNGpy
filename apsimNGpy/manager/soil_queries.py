@@ -1,6 +1,11 @@
 import requests
 import pandas as pd
 import xmltodict
+from apsimNGpy.manager import show_module_deprecation
+
+show_module_deprecation(__file__=__file__)
+
+
 def get_gssurgo_soil_soil_table_at_lonlat(lonlat, select_componentname=None, summarytable=False):
     '''
     TODO this is a duplicate File. Duplicate of soils/soilmanager
@@ -137,6 +142,7 @@ def get_gssurgo_soil_soil_table_at_polygon(_coordinates):
         pass
     return soil_df
 
+
 def get_polygon_points(row):
     """Extract points from a polygon geometry."""
     if row.geometry.geom_type == 'Polygon':
@@ -149,10 +155,11 @@ def get_polygon_points(row):
     else:
         return None  # not sure of other polygon types
 
+
 # Apply the function to each row in the GeoDataFrame
 def get_polygon_bounds(gdf_):
     gdf = gdf_.copy()
     crs = gdf.crs
     gdf.to_crs(4326, inplace=True)
-    #print(f"coordinate system changed from: {crs} to: {gdf.crs}")
+    # print(f"coordinate system changed from: {crs} to: {gdf.crs}")
     return gdf.apply(get_polygon_points, axis=1)

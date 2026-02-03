@@ -1,18 +1,13 @@
-import os
-
-import pandas as pd
-import numpy as np
-from scipy import interpolate
-from scipy.interpolate import UnivariateSpline
-from apsimNGpy.core.base_data import LoadExampleFiles, Path
 import copy
 import json
-import requests
+import os
 from datetime import datetime
-
+import pandas as pd
+import requests
+from scipy import interpolate
+from pathlib import Path
 wd = Path.home()
 os.chdir(wd)
-# maize = LoadExampleFiles(wd).get_maize_model
 import numpy as np
 
 lon = -93.620369, 42.034534

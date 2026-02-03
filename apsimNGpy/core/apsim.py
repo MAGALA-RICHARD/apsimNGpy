@@ -26,10 +26,10 @@ from apsimNGpy.core.model_loader import get_node_by_path
 from apsimNGpy.core.model_tools import find_child_of_class
 from apsimNGpy.core.soiler import SoilManager
 from apsimNGpy.settings import logger
+from apsimNGpy.soils.helpers import pythonic_key_map, soil_water_param_fill
 
 
 # ===================================================================================================
-
 
 @dataclass(repr=False, order=False, init=False)
 class ApsimModel(CoreModel):
@@ -279,7 +279,7 @@ class ApsimModel(CoreModel):
         return self
 
     def get_soil_from_web(self,
-                          simulation_name: Union[str, tuple, None] = None,
+                          simulations: Union[str, tuple, None] = None,
                           *,
                           # location / data source
                           lonlat: Optional[Tuple[float, float]] = None,
@@ -296,9 +296,19 @@ class ApsimModel(CoreModel):
                           # attach any missing nodes before editing
                           attach_missing_sections: bool = True,
                           additional_plants: tuple = None,
-                          adjust_dul: bool = True):
+                          source='isric',
+                          top_finert=0.65,
+                          top_fom=1000,
+                          top_fbiom=0.04,
+                          fom_cnr=40,
+                          soil_cnr=12,
+                          swcon=0.3,
+                          top_urea=0,
+                          top_nh3=0.5,
+                          top_nh4=0.05,
+                          adjust_dul: bool = True, **soil_kwargs):
         """
-        Download SSURGO-derived soil for a given location and populate the APSIM NG
+        Download soil profiles for a given location and populate the APSIM NG
         soil sections in the current model.
 
         This method updates the target Simulation(s) in-place by attaching a Soil node
@@ -343,6 +353,135 @@ class ApsimModel(CoreModel):
 
         adjust_dul : bool, optional
             If ``True``, adjust layer values where ``SAT`` exceeds ``DUL`` to prevent APSIM runtime errors.
+        n_layers: int
+           number of soil layers to generate a soil profile.
+        source : str, optional default='isric'
+           the database source to use. Currently only 'isric' and 'ssurgo' are supported
+        top_finert : float, optional
+            Fraction of inert organic matter (FInert) in the surface soil layer.
+            Default is 0.88.
+        top_fom : float, optional
+            Fresh organic matter (FOM) content of the surface soil layer
+            in kg C ha⁻¹. Default is 180.
+        top_fbiom : float, optional
+            Fraction of microbial biomass carbon (FBiom) in the surface layer.
+            Default is 0.04.
+        fom_cnr : float, optional
+            Carbon-to-nitrogen ratio (C:N) of fresh organic matter.
+            Default is 40.
+        soil_cnr : float, optional
+            Carbon-to-nitrogen ratio (C:N) of soil organic matter (humic pool).
+            Default is 12.
+        swcon : float, optional
+            Soil water conductivity parameter controlling water extraction
+            rate by roots (APSIM `SWCON`). Typical values range from 0.1–1.
+            Default is 0.3.
+        top_urea : float, optional
+            Initial urea nitrogen in the surface soil layer (kg N ha⁻¹).
+            Default is 0.
+        top_nh3 : float, optional
+            Initial nitrate nitrogen (NO₃⁻–N) in the surface soil layer
+            in kg N ha⁻¹. Default is 0.5.
+        top_nh4 : float, optional
+            Initial ammonium nitrogen (NH₄⁺–N) in the surface soil layer
+            in kg N ha⁻¹. Default is 0.05.
+
+        soil_kwargs:
+        Additional keyword arguments to pass to the function related to soil water module such as the WinterCona.
+        See the following list:
+
+         winter_cona : float, optional
+            Drying coefficient for stage 2 soil water evaporation in winter
+            (APSIM: ``WinterCona``).
+            Scalar parameter.
+        psi_dul : float, optional
+            Matric potential at drained upper limit (DUL), in cm
+            (APSIM: ``PSIDul``).
+            Scalar parameter.
+        depth : list of str, optional
+            Soil layer depth intervals expressed as strings
+            (e.g., ``"0-150"``, ``"150-300"``).
+            Layered parameter.
+        diffus_slope : float, optional
+            Effect of soil water storage above the lower limit on soil water
+            diffusivity (mm) (APSIM: ``DiffusSlope``).
+            Scalar parameter.
+        diffus_const : float, optional
+            Constant in soil water diffusivity calculations
+            (APSIM: ``DiffusConst``).
+            Scalar parameter.
+        k_lat : float, optional
+            Lateral hydraulic conductivity parameter for catchment flow
+            (APSIM: ``KLAT``).
+            Scalar parameter.
+        pore_interaction_index : float, optional
+            Pore interaction index controlling soil water movement
+            (APSIM: ``PoreInteractionIndex``).
+            Scalar parameter.
+        discharge_width : float, optional
+            Basal width of the downslope boundary of the catchment used in
+            lateral flow calculations (m) (APSIM: ``DischargeWidth``).
+            Scalar parameter.
+        swcon : list of float, optional
+            Soil water conductivity parameter controlling root water uptake
+            (APSIM: ``SWCON``).
+            Layered parameter (one value per soil layer).
+        cn_cov : float, optional
+            Fractional cover at which maximum runoff curve number reduction
+            occurs (APSIM: ``CNCov``).
+            Scalar parameter.
+        catchment_area : float, optional
+            Catchment area used for runoff and lateral flow calculations (m²)
+            (APSIM: ``CatchmentArea``).
+            Scalar parameter.
+        water : dict, optional
+            Nested water balance configuration block
+            (APSIM: ``Water``).
+            Dictionary parameter.
+        salb : float, optional
+            Fraction of incoming solar radiation reflected by the soil surface
+            (albedo) (APSIM: ``Salb``).
+            Scalar parameter.
+        winter_u : float, optional
+            Cumulative soil water evaporation required to complete stage 1
+            evaporation during winter (APSIM: ``WinterU``).
+            Scalar parameter.
+        runoff : float, optional
+            Runoff fraction or runoff scaling factor
+            (APSIM: ``Runoff``).
+            Scalar parameter.
+        cn2_bare : int or float, optional
+            Runoff curve number for bare soil under average moisture conditions
+            (APSIM: ``CN2Bare``).
+            Scalar parameter.
+        winter_date : str, optional
+            Calendar date marking the switch to winter parameterization
+            (APSIM: ``WinterDate``), e.g. ``"1-Apr"``.
+            Scalar string parameter.
+        potential_infiltration : float, optional
+            Potential infiltration limit used in runoff calculations
+            (APSIM: ``PotentialInfiltration``).
+            Scalar parameter.
+        summer_date : str, optional
+            Calendar date marking the switch to summer parameterization
+            (APSIM: ``SummerDate``), e.g. ``"1-Nov"``.
+            Scalar string parameter.
+        sw_mm : float, optional
+            Total soil water storage (mm) if explicitly specified
+            (APSIM: ``SWmm``).
+            Scalar parameter.
+        summer_cona : float, optional
+            Drying coefficient for stage 2 soil water evaporation in summer
+            (APSIM: ``SummerCona``).
+            Scalar parameter.
+        summer_u : float, optional
+            Cumulative soil water evaporation required to complete stage 1
+            evaporation during summer (APSIM: ``SummerU``).
+            Scalar parameter.
+        precipitation_interception : float, optional
+            Fraction or amount of precipitation intercepted before reaching
+            the soil surface (APSIM: ``PrecipitationInterception``).
+            Scalar parameter.
 
         Returns
         -------
@@ -355,27 +494,23 @@ class ApsimModel(CoreModel):
             - ``thickness_sequence`` provided with any non-positive value(s).
             - ``thickness_sequence`` is ``None`` **and** ``thickness_value`` is ``None``.
             - Units mismatch or inconsistency between ``thickness_value`` and ``max_depth``.
+            - lonlat do not match the source database specified. For example, if coordinates are outside the USA, but a source is source.
+             for worldwide soil request use source = isric
+     Examples:
+     ------------------
 
-        Notes
-        -----
-        - Assumes soil sections live under a **Soil** node; when
-          ``attach_missing_sections=True`` a Soil node is created if missing.
-        - Uses the optimized SoilManager routines (vectorized assignments / .NET double[] marshaling).
-        - Side effects (in place on the APSIM model):
-            1. Creates/attaches **Soil** when needed.
-            2. Creates/updates child sections (``Physical``, ``Organic``, ``Chemical``,
-               ``Water``, ``WaterBalance``, ``SoilCrop``) as listed in ``edit_sections``.
-            3. Overwrites section properties (e.g., layer arrays such as ``Depth``, ``BD``,
-               ``LL15``, ``DUL``, ``SAT``; solutes; crop KL/XF) with downloaded values.
-            4. Add **SoilCrop** children for any names in ``additional_plants``.
-            5. Performs **network I/O** to retrieve SSURGO tables when ``lonlat`` is provided.
-            6. Emits log messages (warnings/info) when attaching nodes, resolving thickness controls,
-               or skipping missing columns.
-            7. Caches the computed soil profile in the helper during execution; the in-memory APSIM
-               tree remains modified after return.
-            8. Does **not** write files; call ``save()`` on the model if you want to persist changes.
-            9. The existing soil-profile structure is completed override by the newly generated soil profile.
-               So, variables like soil thickness, number of soil layers, etc. might be different from the old one.
+     .. code-block python
+
+            with ApsimModel("Maize") as model:
+            datastore = Path(model.datastore)
+            model.add_report_variable(variable_spec='[Clock].Today.Year as year', report_name='Report',
+                                      simulations='Simulation')
+            model.get_soil_from_web(simulations=None, lonlat=(-93.9937, 40.4842), thinnest_layer=100,
+                                    adjust_dul=True,
+
+                                    summer_date='1-May', precipitation_interception=13.5, winter_date='1-nov',
+                                    source='isric')
+
         """
 
         # Default: edit all known sections
@@ -405,7 +540,8 @@ class ApsimModel(CoreModel):
             soil_parent.Children.Add(section)
             return section
 
-        simulations = self.find_simulations(simulations=simulation_name)
+        simulation_name = simulations  # for backward compatibility
+        simulations = self.find_simulations(simulations=simulations)
         for simulation in simulations:
             # Pre-attach requested sections (avoids "created but unreachable" inside editor)
             if attach_missing_sections:
@@ -446,7 +582,17 @@ class ApsimModel(CoreModel):
                 thinnest_layer=thinnest_layer,
                 thickness_growth_rate=thickness_growth_rate,
                 soil_profile=None,
-                # let it compute/fill once
+                source=source,
+                top_finert=top_finert,
+                top_fom=top_fom,
+                top_fbiom=top_fbiom,
+                fom_cnr=fom_cnr,
+                soil_cnr=soil_cnr,
+                top_urea=top_urea,
+                top_nh3=top_nh3,
+                top_nh4=top_nh4,
+                swcon=swcon
+
             )
             add_crop = additional_plants if additional_plants is not None else ()
             # Do edits
@@ -467,12 +613,11 @@ class ApsimModel(CoreModel):
                 mgr.edit_soil_crop(crops_in=add_crop)
         if adjust_dul:
             self.adjust_dul(simulation_name)
+        if soil_kwargs:
+            soil_water_param_fill(self, **soil_kwargs)
         return self
 
     def __exit__(self, exc_type, exc, tb):
-        # Optional flags on the instance:
-        #   self.db  -> whether to remove the SQLite db sidecar(s) [default: True]
-        #   self.csv -> whether to remove generated .csv report sidecars [default: False]
         db_flag = getattr(self, "db", True)
         csv_flag = getattr(self, "csv", True)
 
@@ -486,8 +631,6 @@ class ApsimModel(CoreModel):
             db_shm = path.with_suffix('.db-shm')
 
             clean_candidates = {bak, db_wal, db_shm, path}
-
-            # Optionally include report CSVs like <file>.<ReportName>.csv
             if csv_flag:
                 try:
                     reps = self.inspect_model(Models.Report, fullpath=False) or {}
@@ -500,11 +643,11 @@ class ApsimModel(CoreModel):
             # Optionally include the SQLite .db sidecar (force GC on pythonnet/.NET first)
             if db_flag:
                 try:
-                    from System import GC  # pythonnet
-                    GC.Collect()
+
+                    CLR.System.GC.Collect()
                     import gc
                     gc.collect()
-                    GC.WaitForPendingFinalizers()
+                    CLR.System.GC.WaitForPendingFinalizers()
                 except Exception:
                     pass
                 clean_candidates.add(_db)
@@ -793,61 +936,51 @@ if __name__ == '__main__':
     # test
 
     os.chdir(Path.home())
-
-    #
-    # try:
-    #     lonlat = -93.7738, 42.0204
-    #     al = load_default_simulations(simulations_object=False)
-    #     model = al
-    #
-    #     from apsimNGpy import settings
-    #
-    #     mod = ApsimModel('Maize')
-    #     model = ApsimModel(model, out_path=None,
-    #                        thickness_values=settings.SOIL_THICKNESS)
-    #     model.replace_met_from_web(lonlat=lonlat, start_year=2001, end_year=2020)
-    #     from apsimNGpy.manager import soilmanager as sm
-    #
-    #     st = sm.DownloadsurgoSoiltables(lonlat)
-    #     sp = sm.OrganiseSoilProfile(st, 20)
-    #     sop = sp.cal_missingFromSurgo()
-    #     model.replace_downloaded_soils(sop, model.simulation_names, No_till=True)
-    #     bd = model.extract_any_soil_physical("BD")
-    #
-    # except Exception as e:
-    #     print(type(e).__name__, repr(e))
-    #     exc_type, exc_value, exc_traceback = sys.exc_info()
-    #     # Extract the line number from the traceback object
-    #     line_number = exc_traceback.tb_lineno
-    #     print(f"Error: {type(e).__name__} occurred on line: {line_number} execution value: {exc_value}")
-
     maize_x = Path.home() / 'maize.apsimx'
     # mod = ApsimModel('Maize', out_path=maize_x)
-    model = ApsimModel(maize_x, out_path=Path.home() / 'm.apsimx')
-    model.get_soil_from_web(simulation_name=None, lonlat=(-89.9937, 40.4842), thinnest_layer=150, adjust_dul=True)
+    mode = ApsimModel(maize_x, out_path=Path.home() / 'm.apsimx')
+    # mode.get_soil_from_web(simulations=None, lonlat=(-93.9937, 40.4842), thinnest_layer=150, adjust_dul=True,
+    #                         source='isric')
     # mod.get_soil_from_web(simulation_name=None, lonlat=(-93.045, 42.0541))
     from apsimNGpy.tests.unittests.test_factory import obs
 
-    with ApsimModel("Maize") as model:
-        datastore = Path(model.datastore)
-        model.add_report_variable(variable_spec='[Clock].Today.Year as year', report_name='Report',
-                                  simulations='Simulation')
-        model.run()
-        print(model.results.columns)
-        df = model.results
-        print(df.columns)
-        df["date"] = pd.to_datetime(df["Clock.Today"])
-        # Extract components
-        df["year"] = df["date"].dt.year
-        df["month"] = df["date"].dt.month
-        df["day"] = df["date"].dt.day
-        model.evaluate_simulated_output(ref_data=obs, table=df, index_col=['year'],
-                                        target_col='Yield', ref_data_col='observed')
-        df = model.results
+    outside_usa__lonlat = 47.1553, 59.0809
 
-    print(os.path.exists(model.datastore))
+
+    def source_test(soil_source='isric'):
+        with ApsimModel("Maize") as model:
+            datastore = Path(model.datastore)
+            model.add_report_variable(variable_spec='[Clock].Today.Year as year', report_name='Report',
+                                      simulations='Simulation')
+            model.get_soil_from_web(simulations=None, lonlat=(-93.9937, 40.4842), thinnest_layer=100,
+                                    adjust_dul=True,
+                                    summer_date='1-May', precipitation_interception=13.5, winter_date='1-nov',
+                                    source=soil_source)
+            model.get_weather_from_web(lonlat=(-93.9937, 40.4842), start=1989, end=2020, source='nasa')
+            model.run()
+            print(model.results.columns)
+            df = model.results
+            print(df.columns)
+            df["date"] = pd.to_datetime(df["Clock.Today"])
+            # Extract components
+            df["year"] = df["date"].dt.year
+            df["month"] = df["date"].dt.month
+            df["day"] = df["date"].dt.day
+            model.evaluate_simulated_output(ref_data=obs, table=df, index_col=['year'],
+                                            target_col='Yield', ref_data_col='observed')
+            df = model.results
+            print(df.Yield.mean())
+
+        print(os.path.exists(model.datastore))
+        return df
+
 
     with ApsimModel('Maize') as model:
         model.set_params(
             {'path': '.Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82', 'sowed': True, 'values': [550.0],
              'commands': ['[Grain].MaximumGrainsPerCob.FixedValue']})
+        isric = source_test(soil_source='isric')
+        ssurgo = source_test(soil_source='ssurgo')
+        ssurgo['ssurgo_yield'] = ssurgo['Yield']
+        model.evaluate_simulated_output(ref_data=isric, table=ssurgo, index_col=['year'], target_col='ssurgo_yield',
+                                        ref_data_col='Yield')

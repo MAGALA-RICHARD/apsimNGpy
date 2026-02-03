@@ -186,7 +186,7 @@ class TestCoreModel(BaseTester):
 
     def test_get_weather_from_web_auto(self):
 
-        self.test_ap_sim.get_soil_from_web(simulation_name=None, lonlat=(-93.045, 42.0541), thickness_sequence='auto')
+        self.test_ap_sim.get_soil_from_web(simulations=None, lonlat=(-93.045, 42.0541), thickness_sequence='auto')
         thickness = self.test_ap_sim.inspect_model_parameters(model_type='Models.Soils.Physical', model_name='Physical',
                                                               parameters='Thickness')
         # if it is auto
@@ -195,7 +195,7 @@ class TestCoreModel(BaseTester):
 
     def test_get_weather_from_web_seq(self):
 
-        self.test_ap_sim.get_soil_from_web(simulation_name=None, lonlat=(-93.045, 42.0541),
+        self.test_ap_sim.get_soil_from_web(simulations=None, lonlat=(-93.045, 42.0541),
                                            thickness_sequence=self.thickness_sequence_test_values)
         thickness = self.test_ap_sim.inspect_model_parameters(model_type='Models.Soils.Physical', model_name='Physical',
                                                               parameters='Thickness')
@@ -229,7 +229,7 @@ class TestCoreModel(BaseTester):
         casted_mock_sims.Write(str(self.mock_sim_path_name))
         load_mocked = ApsimModel(self.mock_sim_path_name, out_path=self.out_path)
         # test it
-        load_mocked.get_soil_from_web(simulation_name=None, lonlat=(-93.045, 42.0541),
+        load_mocked.get_soil_from_web(simulations=None, lonlat=(-93.045, 42.0541),
                                       thickness_sequence=self.thickness_sequence_test_values)
         thickness = load_mocked.inspect_model_parameters(model_type='Models.Soils.Physical', model_name='Physical',
                                                          parameters='Thickness')

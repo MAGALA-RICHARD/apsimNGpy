@@ -30,6 +30,7 @@ from System.Collections.Generic import KeyValuePair
 from apsimNGpy.core._cultivar import edit_cultivar_by_path
 from apsimNGpy.core._cultivar import trace_cultivar
 from apsimNGpy.core.config import configuration
+
 CastHelper = CLR.CastHelper
 from apsimNGpy.core.model_loader import (load_apsim_model, save_model_to_file, recompile, get_node_by_path, AUTO_PATH)
 from apsimNGpy.core.model_tools import find_child
@@ -5232,6 +5233,7 @@ if __name__ == '__main__':
         sw = corep.inspect_model_parameters_by_path('.Simulations.Simulation.Field.Soil.SoilWater')
         print(corep.inspect_children_by_path('.Simulations.Simulation.Field.Maize'))
         print(sw['SWCON'])
+        print(sw)
     print('Path exists after exit:', Path(corep.path).exists())
     print('datastore Path exists after exit:', Path(corep.datastore).exists())
     fixed_model = CoreModel('Maize', 'fixed.apsimx')

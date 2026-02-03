@@ -255,7 +255,7 @@ def adjust_dul(physical_data):
 
     dul = physical_data.DUL
     saT = physical_data.SAT
-    dul = np.asarray(dul)
+    dul = list(dul)
     saT = np.asarray(saT)
     for idx, (d, s) in enumerate(zip(dul, saT)):
         if d > s:

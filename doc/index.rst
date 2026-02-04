@@ -127,6 +127,7 @@ For reporting reproducible bugs or contributing code, please use the
    inspect_model_parameters
    edit
    weather
+   soil_refill
 
 .. toctree::
    :maxdepth: 2

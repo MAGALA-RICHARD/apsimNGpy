@@ -20,10 +20,9 @@ import psutil
 from dotenv import load_dotenv
 
 from apsimNGpy.exceptions import ApsimBinPathConfigError
-from apsimNGpy.settings import CONFIG_PATH, create_config, logger
-
+from apsimNGpy.settings import CONFIG_PATH, create_config
+from apsimNGpy.logger import logger
 AUTO_BIN = object()
-logger = logging.getLogger(__name__)
 # Load a default .env if present (optional)
 load_dotenv()
 

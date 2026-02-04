@@ -89,7 +89,7 @@ Method 3: Install directly from GitHub (Recommended)
 
 
 Editable installation (for developers)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+--------------------------------------
 
 .. code-block:: console
 

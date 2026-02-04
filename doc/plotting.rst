@@ -1,5 +1,12 @@
 .. _Plots:
 
+.. rubric:: Table of Contents
+
+.. contents::
+   :local:
+   :depth: 2
+   :class: compact
+
 Plotting and Visualizing Simulated Output
 =========================================
 Visualizing simulated results, is a critical step in understanding and communicating model behavior.

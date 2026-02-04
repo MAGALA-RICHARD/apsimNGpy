@@ -1,3 +1,11 @@
+
+.. rubric:: Table of Contents
+
+.. contents::
+   :local:
+   :depth: 2
+   :class: compact
+
 Sensitivity Analysis in apsimNGpy Part 1
 =========================================
 

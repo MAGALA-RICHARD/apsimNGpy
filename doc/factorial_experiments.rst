@@ -1,5 +1,12 @@
 .. _quick_factorial_experiments:
 
+.. rubric:: Table of Contents
+
+.. contents::
+   :local:
+   :depth: 2
+   :class: compact
+
 Quick and Simple Way to Run Factorial Experiments
 =================================================
 

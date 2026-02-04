@@ -1,5 +1,12 @@
 .. _sens_salib:
 
+.. rubric:: Table of Contents
+
+.. contents::
+   :local:
+   :depth: 2
+   :class: compact
+
 Sensitivity analysis workflow Part 2 (SALib driven workflow)
 ============================================================
 In response to requests for a cross-platform sensitivity analysis

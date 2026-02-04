@@ -1,3 +1,9 @@
+.. rubric:: Table of Contents
+
+.. contents::
+   :local:
+   :depth: 2
+   :class: compact
 
 .. image:: ../images/batch__run.gif
    :alt: Run APSIM simulation

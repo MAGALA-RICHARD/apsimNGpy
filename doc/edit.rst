@@ -1,5 +1,13 @@
 .. _editor:
 
+
+.. rubric:: Table of Contents
+
+.. contents::
+   :local:
+   :depth: 2
+   :class: compact
+
 .. caption:: Model Parameter Editing
 
 Editing model parameters

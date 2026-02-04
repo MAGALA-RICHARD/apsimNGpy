@@ -1,3 +1,6 @@
+Soil Parameter Value Refilling
+=============================
+
 .. rubric:: Table of Contents
 
 .. contents::
@@ -5,16 +8,15 @@
    :depth: 1
    :class: compact
 
-Soil Parameter Value Refilling
-=============================
-
+Overview
+==============
 Soil parameters in APSIM can be updated using any of the following methods
-- :meth:`apsimNGpy.core.ApsimModel.get_soil_from_web`,
-- :meth:`apsimNGpy.core.ApsimModel.edit_model`, and
-- :meth:`apsimNGpy.core.ApsimModel.edit_model_by_path`.
+- :meth:`~apsimNGpy.core.apsim.ApsimModel.get_soil_from_web`,
+- :meth:`~apsimNGpy.core..apsim.ApsimModel.edit_model`, and
+- :meth:`~apsimNGpy.core.apsim.ApsimModel.edit_model_by_path`.
 
 Detailed usage of :meth:`apsimNGpy.core.ApsimModel.edit_model` and
-:meth:`apsimNGpy.core.ApsimModel.edit_model_by_path` is provided in the
+:meth:`apsimNGpy.core.apsim.ApsimModel.edit_model_by_path` is provided in the
 :ref:`editor` section.
 
 This section focuses on
@@ -29,31 +31,42 @@ the API documentation (:meth:`apsimNGpy.core.ApsimModel.get_soil_from_web`) for 
 Example workflow
 ====================
 
-1. Source ISRIC database
----------------------------
+1. ISRIC Soil Database
+========================
+
+This example retrieves soil data from the **ISRIC** database and runs a maize simulation.
 
 .. code-block:: python
 
    from apsimNGpy.core.apsim import ApsimModel
-   LONLAT = -93.658723, 42.08567949
-   with ApsimModel('Maize') as maize_model:
-       model.get_soil_from_web(simulations=None, lonlat=LONLAT, source='isric')
-       model.run(verbose=True)
-       mi =model.results.Yield.mean()
-       print(mi)
-       # output 5976.794446324352
 
-2. SOURCE SSURGO
----------------------
+   LONLAT = (-93.658723, 42.08567949)
+
+   with ApsimModel("Maize") as model:
+       model.get_soil_from_web(simulations=None, lonlat=LONLAT, source="isric")
+       model.run(verbose=True)
+
+       mi = model.results.Yield.mean()
+       print(mi)
+       # output: 5976.794446324352
+
+
+2. SSURGO Soil Database
+========================
+
+This example retrieves soil data from the **SSURGO** database and runs the same maize simulation.
 
 .. code-block:: python
 
-    from apsimNGpy.core.apsim import ApsimModel
-    LONLAT = -93.658723, 42.08567949
-    with ApsimModel('Maize') as model:
-       model.get_soil_from_web(simulations=None, lonlat=LONLAT, source='ssurgo')
+   from apsimNGpy.core.apsim import ApsimModel
+
+   LONLAT = (-93.658723, 42.08567949)
+
+   with ApsimModel("Maize") as model:
+       model.get_soil_from_web(simulations=None, lonlat=LONLAT, source="ssurgo")
        model.run(verbose=True)
-       ms =model.results.Yield.mean()
+
+       ms = model.results.Yield.mean()
        print(ms)
-       print(ms)
-       # output
+       # output: 6177.591814492994
+

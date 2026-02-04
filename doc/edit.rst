@@ -1,6 +1,5 @@
 .. _editor:
 
-
 .. rubric:: Table of Contents
 
 .. contents::

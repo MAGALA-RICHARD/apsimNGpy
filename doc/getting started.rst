@@ -98,8 +98,8 @@ Editable installation (for developers)
    cd apsimNGpy
    pip install -e .
 
-Other requirements
--------------
+Important APSIM installation and tutorial links
+-------------------------------------------------
 
 .. important::
 

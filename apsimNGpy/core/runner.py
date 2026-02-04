@@ -70,7 +70,7 @@ def run_apsim_by_path(
         ncores: int = -1,
         verbose: bool = False,
         to_csv: bool = False,
-) -> None:
+) -> subprocess.CompletedProcess[str]:
     """
     Execute an APSIM model safely and reproducibly.
 
@@ -641,7 +641,7 @@ def trial_run(self, report_name=None,
     """
     from apsimNGpy.core.pythonet_config import CLR
     Models = CLR.Models
-    IRunner = CLR.APsimCore.IRunner
+
 
     try:
         # Set run type
@@ -1080,8 +1080,6 @@ if __name__ == '__main__':
     from apsimNGpy.core.apsim import ApsimModel
 
     with ApsimModel('Mungbean') as model:
-
-        model.run(verbose=True)
 
         tr = trial_run(model)
 

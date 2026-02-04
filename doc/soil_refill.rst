@@ -5,7 +5,7 @@ Soil Parameter Value Refilling
 
 .. contents::
    :local:
-   :depth: 1
+   :depth: 2
    :class: compact
 
 Overview
@@ -20,7 +20,7 @@ Detailed usage of :meth:`~apsimNGpy.core.ApsimModel.edit_model` and
 :ref:`editor` section.
 
 This section focuses on
-:meth:`apsimNGpy.core.ApsimModel.get_soil_from_web`, which retrieves soil
+:meth:`apsimNGpy.core.apsim.ApsimModel.get_soil_from_web`, which retrieves soil
 profiles from online databases. By default, soils are downloaded from
 **ISRIC (SoilGrids)** for global coverage, while **SSURGO** is available
 for locations within the contiguous United States.

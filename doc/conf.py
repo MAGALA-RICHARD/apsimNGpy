@@ -81,3 +81,7 @@ import sys, pathlib, os
 # sys.path.insert(0, str(ROOT))
 
 sys.path.insert(0, os.path.abspath('../'))
+
+html_css_files = [
+    'custom.css',
+]

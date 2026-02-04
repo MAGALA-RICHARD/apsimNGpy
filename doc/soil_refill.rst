@@ -12,7 +12,7 @@ Overview
 ==============
 Soil parameters in APSIM can be updated using any of the following methods
 - :meth:`~apsimNGpy.core.apsim.ApsimModel.get_soil_from_web`,
-- :meth:`~apsimNGpy.core..apsim.ApsimModel.edit_model`, and
+- :meth:`~apsimNGpy.core.apsim.ApsimModel.edit_model`, and
 - :meth:`~apsimNGpy.core.apsim.ApsimModel.edit_model_by_path`.
 
 Detailed usage of :meth:`~apsimNGpy.core.ApsimModel.edit_model` and

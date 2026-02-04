@@ -34,6 +34,12 @@ the API documentation (:meth:`~apsimNGpy.core.apsim.ApsimModel.get_soil_from_web
 Example workflow
 ====================
 
+.. code-block:: python
+
+    from apsimNGpy.core.apsim import ApsimModel
+    from apsimNGpy.logger import logger
+
+
 1. ISRIC Soil Database
 ========================
 
@@ -41,10 +47,7 @@ This example retrieves soil data from the **ISRIC** database and runs a maize si
 
 .. code-block:: python
 
-   from apsimNGpy.core.apsim import ApsimModel
-
    LONLAT = (-93.658723, 42.08567949)
-
    with ApsimModel("Maize") as model:
        model.get_soil_from_web(simulations=None, lonlat=LONLAT, source="isric")
        model.run(verbose=True)
@@ -90,4 +93,16 @@ This example retrieves soil data from the **SSURGO** database and runs the same 
 
 Targeting specific simulation
 -------------------------------
-By
+By default the above instatiated model has one simulation but incase there are more than one we can still target specific simulation
+as follows.
+
+.. code-block:: python
+
+   with ApsimModel("Maize") as model:
+       logger.info([i.Name for i in model.simulations])
+       # output ['Simulation']
+       model.get_soil_from_web(simulations='Simulation', lonlat=LONLAT, source="ssurgo")
+       model.run(verbose=True)
+       ms = model.results.Yield.mean()
+       print(ms)
+       # output: 6177.591814492994

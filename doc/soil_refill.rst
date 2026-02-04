@@ -91,10 +91,10 @@ This example retrieves soil data from the **SSURGO** database and runs the same 
    computer. When providing a custom file, ensure that the filename
    includes the ``.apsimx`` suffix.
 
-Targeting specific simulation
+Targeting a specific simulation
 -------------------------------
-By default the above instatiated model has one simulation but incase there are more than one we can still target specific simulation
-as follows.
+By default, all available simulations are updated with the downloaded soils profiles.
+However, when multiple simulations are present, you can target a specific simulation explicitly.
 
 .. code-block:: python
 

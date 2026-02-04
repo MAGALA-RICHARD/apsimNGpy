@@ -4,6 +4,12 @@
    :description lang=en:
       Run APSIM models sequentially with `run` or in parallel using `MultiCoreManager.run_all_jobs`.
 
+.. rubric:: Table of Contents
+
+.. contents::
+   :local:
+   :depth: 3
+
 Operating System
 ====================
 

@@ -127,7 +127,7 @@ def run_apsim_by_path(
         )
 
     except subprocess.TimeoutExpired as exc:
-        logger.error("APSIM execution timed out after %s seconds", timeout)
+        logger.exception("APSIM execution timed out after %s seconds", timeout)
         raise ApsimRuntimeError(
             f"APSIM execution exceeded timeout ({timeout}s)"
         ) from exc
@@ -310,7 +310,7 @@ def run_model_externally(
 
     # Non-zero exit is treated as failure; caller can relax this if needed
     if proc.returncode != 0:
-        logger.error(f"APSIM exited with zero return code: {proc.stdout}\n{proc.stderr}{proc.args}", )
+        logger.exception(f"APSIM exited with zero return code: {proc.stdout}\n{proc.stderr}{proc.args}", )
         raise ApsimRuntimeError(
             f"APSIM exited with code {proc.returncode}.\n {proc.stdout} "
         )

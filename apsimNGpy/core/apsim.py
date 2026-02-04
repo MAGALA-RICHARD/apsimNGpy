@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any
 from typing import Optional, Tuple, Sequence
 from typing import Union
-
+from apsimNGpy.core.pythonet_config import CLR
 import numpy as np
 import pandas as pd
 from Models.Soils import Physical, SoilCrop, Organic, LayerStructure
@@ -19,7 +19,7 @@ from System import *
 from System.Collections.Generic import *
 
 from apsimNGpy.core.core import CoreModel, ModelTools
-from apsimNGpy.core.pythonet_config import CLR
+
 
 Models = CLR.Models
 from apsimNGpy.core.cs_resources import CastHelper

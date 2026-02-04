@@ -2,12 +2,14 @@ import os
 from pathlib import Path
 from apsimNGpy.core.config import apsim_bin_context, configuration
 import time
+
 bin_path = Path(os.environ.get('TEST_APSIM_BINARY'))
+from apsimNGpy.logger import logger
 
 
 def edit_weather(model):
     model.get_weather_from_web(lonlat=(-92.034, 42.012), start=1989, end=2020, source='daymet')
-    model.get_soil_from_web(simulation_name=None,lonlat=(-92.034, 42.012))
+    model.get_soil_from_web(simulations=None, lonlat=(-92.034, 42.012), source='ssurgo')
 
 
 if __name__ == '__main__':
@@ -15,12 +17,12 @@ if __name__ == '__main__':
     db = (Path.home() / "test_agg_3.db").resolve()
     # get the APSIM binary path
 
-    print(configuration.bin_path)
+    logger.info(configuration.bin_path, )
     with apsim_bin_context(bin_path, disk_cache=False) as ap:
         time.sleep(2)
         from apsimNGpy.core.mult_cores import MultiCoreManager
 
-        print(configuration.bin_path)
+        logger.info(configuration.bin_path)
 
         workspace = Path('D:/')
         os.chdir(workspace)

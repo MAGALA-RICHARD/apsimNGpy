@@ -98,7 +98,7 @@ Editable installation (for developers)
    cd apsimNGpy
    pip install -e .
 
-Prerequisites
+Other requirements
 -------------
 
 .. important::

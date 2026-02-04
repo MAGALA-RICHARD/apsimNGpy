@@ -1,9 +1,7 @@
 import os
 import sqlite3
-from functools import cache, lru_cache
 from pathlib import Path
 
-import sqlalchemy
 from pandas import DataFrame
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 from uuid import uuid4
@@ -14,6 +12,7 @@ import hashlib
 from multiprocessing import Value, Lock
 from typing import Tuple, Dict, Any, List
 from apsimNGpy.parallel._process import JobTracker
+from apsimNGpy.logger import logger
 
 aggs = {'sum', 'mean', 'max', 'min', 'median', 'std'}
 
@@ -297,16 +296,19 @@ def single_runner(
                 except ApsimRuntimeError as apr:
                     # Track failed jobs without interrupting the workflow
                     if ignore_runtime_errors:
+                        logger.exception(f"error {apr} occurred while running\n {job}")
                         return job
                     else:
-                        raise ApsimRuntimeError(f"runtime errors occurred{apr}")
+                        raise ApsimRuntimeError(f"runtime errors occurred{apr} with {job}")
                 except TimeoutError as te:
+                    logger.exception(f"timeout occurred while running\n {job}")
                     if ignore_runtime_errors:
                         return job
                     else:
                         raise TimeoutError(f'time out occurred: {te}')
                 except sqlite3.OperationalError as oe:
                     if ignore_runtime_errors:
+                        logger.exception(f"error {oe} occurred while running {job}")
                         return job
                     else:
                         raise sqlite3.OperationalError(f"data base operation error occurred {oe}")

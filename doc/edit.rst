@@ -1,5 +1,8 @@
 .. _editor:
 
+Editing model parameters
+===========================================
+
 .. rubric:: Table of Contents
 
 .. contents::
@@ -9,20 +12,19 @@
 
 .. caption:: Model Parameter Editing
 
-Editing model parameters
-===========================================
 
 Editing a model involves changing model parameter values. This task can be accomplished via
 a unified method called  :meth:`~apsimNGpy.core.apsim.ApsimModel.edit_model` or :meth:`~apsimNGpy.core.apsim.ApsimModel.edit_model_by_path` from ``ApsimModel`` Class
 by specifying the model type, name and simulation name, or path, respectively.
 
-.. tip::
+Editing requirements
+========================
 
-   Editing APSIM models in **apsimNGpy** does *not* require placing the
-   target model inside a *Replacements* folder or node. However, when
-   modifying **cultivar parameters**, it can be helpful to include a
-   Replacements folder containing the relevant plant definition hosting
-   that cultivar. In many cases, apsimNGpy will handle this automatically.
+Editing APSIM models in **apsimNGpy** does *not* require placing the
+target model inside a *Replacements* folder or node. However, when
+modifying **cultivar parameters**, it can be helpful to include a
+Replacements folder containing the relevant plant definition hosting
+that cultivar. In many cases, apsimNGpy will handle this automatically.
 
 Selective editing
 -----------------

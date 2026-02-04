@@ -9,6 +9,7 @@
 .. contents::
    :local:
    :depth: 2
+   :class: tight
 
 Operating System
 ====================

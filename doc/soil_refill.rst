@@ -26,7 +26,7 @@ profiles from online databases. By default, soils are downloaded from
 for locations within the contiguous United States.
 
 The method also accepts optional scalar parameters (e.g., ``CONA_U``,) to further customize the soil profile. Refer to
-the API documentation (:meth:`apsimNGpy.core.ApsimModel.get_soil_from_web`) for a complete list of supported arguments.
+the API documentation (:meth:`~apsimNGpy.core.apsim.ApsimModel.get_soil_from_web`) for a complete list of supported arguments.
 
 Example workflow
 ====================

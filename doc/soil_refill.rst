@@ -23,7 +23,7 @@ Detailed usage of :meth:`~apsimNGpy.core.ApsimModel.edit_model` and
 :ref:`editor` section.
 
 This section focuses on
-:meth:`apsimNGpy.core.apsim.ApsimModel.get_soil_from_web`, which retrieves soil
+:meth:`~apsimNGpy.core.apsim.ApsimModel.get_soil_from_web`, which retrieves soil
 profiles from online databases. By default, soils are downloaded from
 **ISRIC (SoilGrids)** for global coverage, while **SSURGO** is available
 for locations within the contiguous United States.
@@ -106,3 +106,5 @@ However, when multiple simulations are present, you can target a specific simula
        ms = model.results.Yield.mean()
        print(ms)
        # output: 6177.591814492994
+
+the default

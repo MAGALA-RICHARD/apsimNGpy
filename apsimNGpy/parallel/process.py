@@ -1,17 +1,16 @@
 from __future__ import annotations
 
 import gc
+import time
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, as_completed
 from multiprocessing import cpu_count
+from pathlib import Path
 from typing import Any, Callable, Iterable, List, Sequence, Optional
-import pandas as pd
 from tqdm import tqdm
 from apsimNGpy.core_utils.database_utils import read_db_table
+from apsimNGpy.parallel._process import register_key, get_key, clear_db
 from apsimNGpy.parallel.data_manager import chunker
 from apsimNGpy.settings import NUM_CORES
-import time
-from pathlib import Path
-from apsimNGpy.parallel._process import register_key, get_key, clear_db
 
 CPU = int(int(cpu_count()) * 0.5)
 CORES = NUM_CORES

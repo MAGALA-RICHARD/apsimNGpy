@@ -83,7 +83,8 @@ setup(
         'SALib==1.5.2',
         'numpy==1.26.4',
         'pydantic>=2.12',
-        'loguru == 0.7.3'
+        'loguru == 0.7.3',
+        "rich>=13.7.0"
 
     ]
 )

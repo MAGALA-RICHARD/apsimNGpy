@@ -26,7 +26,7 @@ from shapely import wkt
 from shapely.geometry import Polygon
 from shapely.ops import unary_union
 
-from apsimNGpy.settings import logger
+from apsimNGpy.logger import logger
 
 
 def select_process(use_thread, ncores):

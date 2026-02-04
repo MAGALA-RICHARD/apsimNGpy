@@ -5,7 +5,6 @@ import gc
 import os.path
 import platform
 import sqlite3
-import subprocess
 import warnings
 from functools import lru_cache, cache
 from pathlib import Path
@@ -13,6 +12,8 @@ from subprocess import *
 from subprocess import Popen, PIPE
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Hashable
 from typing import Mapping
+import subprocess
+from pathlib import Path
 from typing import Union
 
 import pandas as pd
@@ -24,9 +25,9 @@ from apsimNGpy.core.df_grp import group_and_concat_by_schema
 from apsimNGpy.core.pythonet_config import configuration
 from apsimNGpy.core_utils.database_utils import read_db_table, get_db_table_names
 from apsimNGpy.core_utils.database_utils import write_schema_grouped_tables
-from apsimNGpy.exceptions import ApsimRuntimeError
-from apsimNGpy.settings import *
 from apsimNGpy.core_utils.utils import timer
+from apsimNGpy.exceptions import ApsimRuntimeError
+from apsimNGpy.logger import logger
 
 AUTO = object()
 SchemaKey = Tuple[Tuple[Hashable, str], ...]  # ((column_name, dtype_str), ...)
@@ -56,26 +57,19 @@ def get_apsim_executable(bin_path) -> str:
     return os.path.realpath(execU)
 
 
-from System import GC
-
-import subprocess
-from pathlib import Path
-from typing import Union
-
-from apsimNGpy.settings import logger
-
 
 
 AUTO = object()
 
+
 def run_apsim_by_path(
-    model: Union[str, Path],
-    *,
-    bin_path: Union[str, Path, object] = AUTO,
-    timeout: int = 800,
-    ncores: int = -1,
-    verbose: bool = False,
-    to_csv: bool = False,
+        model: Union[str, Path],
+        *,
+        bin_path: Union[str, Path, object] = AUTO,
+        timeout: int = 800,
+        ncores: int = -1,
+        verbose: bool = False,
+        to_csv: bool = False,
 ) -> None:
     """
     Execute an APSIM model safely and reproducibly.
@@ -128,7 +122,7 @@ def run_apsim_by_path(
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             timeout=timeout,
-            check=False,   # we handle errors explicitly
+            check=False,  # we handle errors explicitly
             text=True,
         )
 
@@ -156,8 +150,9 @@ def run_apsim_by_path(
 
 
 def invoke_csharp_gc():
-    GC.Collect()
-    GC.WaitForPendingFinalizers()
+    from apsimNGpy.core.pythonet_config import CLR
+    CLR.System.GC.Collect()
+    CLR.System.GC.WaitForPendingFinalizers()
 
 
 def get_apsim_version(verbose: bool = False):
@@ -264,7 +259,6 @@ def _get_arguments(model: Union[Path, str],
                  'stderr': subprocess.PIPE,
                  'errors': 'replace'
                  }
-
 
 
 def run_model_externally(
@@ -560,7 +554,7 @@ def _run_from_dir(dir_path, pattern, verbose=False,
                                             text=True))
 
         try:
-            #logger.info('waiting for APSIM simulations to complete')
+            # logger.info('waiting for APSIM simulations to complete')
             process.wait()
             out, st_err = process.communicate()
             if verbose:
@@ -604,6 +598,7 @@ def apsim_executable(path, *args):
 def run_p(path):
     run(apsim_executable(path))
 
+
 @timer
 def trial_run(self, report_name=None,
               simulations=None,
@@ -644,8 +639,10 @@ def trial_run(self, report_name=None,
 
           Related API: :func:`~apsimNGpy.core.runner.run_model_externally`
     """
-    import Models
-    invoke_csharp_gc()
+    from apsimNGpy.core.pythonet_config import CLR
+    Models = CLR.Models
+    IRunner = CLR.APsimCore.IRunner
+
     try:
         # Set run type
         runtype = Models.Core.Run.Runner.RunTypeEnum.MultiThreaded if multithread \
@@ -660,6 +657,8 @@ def trial_run(self, report_name=None,
         # Get simulations to run
         self._DataStore.Open()
         sims = self.find_simulations(simulations) if simulations else self.Simulations
+        List = CLR.System.Collections.Generic.List
+        cs_sims = List[Models.Core.Simulation]()
         if simulations:
             cs_sims = List[Models.Core.Simulation]()
             for s in sims:
@@ -667,19 +666,29 @@ def trial_run(self, report_name=None,
             sim = cs_sims
         else:
             sim = sims
-        from apsimNGpy.core.pythonet_config import get_apsim_file_reader
+
+        get_apsim_file_reader = CLR.get_file_reader
         # file = get_apsim_file_reader('file')[Models.Core.Simulations](self.path).Model
 
-        Runner = Models.Core.Run.Runner(self.Simulations.Node.Model)
-        Runner.Run()
+        # Runner = Models.Core.Run.Runner(self.Simulations.Node.Model)
+        # Runner.DisposeStorage()
+        # Runner.Run()
         # Run the model
-        _run_model = Models.Core.Run.Runner(self.path, wait=True)
-        # errors = _run_model.Run()
-        invoke_csharp_gc()
+        _run_model = Models.Core.Run.Runner(sim, wait=True, runTests=True,
+                                            RunTypeEnum=runtype,
+                                            numberOfProcessors=9)
+        _run_model.DisposeStorage()
+        _run_model.UseInMemoryDB = False
+        print(self.Simulations.Node)
+        node = CLR.Node.Create(Models.Core.Simulations())
+        print(node)
+        errors = _run_model.Run()
+        print(errors)
 
         # Determine report names
         if report_name is None:
             report_name = get_db_table_names(self.datastore)
+            print(report_name)
             if 'Report' in report_name:
                 print('success')
             else:
@@ -688,7 +697,7 @@ def trial_run(self, report_name=None,
                 report_name.remove('_Units')
             if verbose:
                 warnings.warn(f"No report name specified. Using detected tables: {report_name}")
-
+        from sqlite3 import connect
         # Read results
         if isinstance(report_name, (list, tuple)):
             if get_dict:
@@ -1069,5 +1078,11 @@ if __name__ == '__main__':
         os.remove(maize)
 
     from apsimNGpy.core.apsim import ApsimModel
+
     with ApsimModel('Mungbean') as model:
-        trial_run(model)
+
+        model.run(verbose=True)
+
+        tr = trial_run(model)
+
+

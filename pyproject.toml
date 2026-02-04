@@ -51,7 +51,8 @@ dependencies = [
     'python-dotenv>=1.0.1,<2.0.0',
     "summarytools>=0.3.0",
      'watchdog==6.0.0',
-    'loguru == 0.7.3'
+    'loguru == 0.7.3',
+    "rich>=13.7.0"
 ]
 
 [project.urls]

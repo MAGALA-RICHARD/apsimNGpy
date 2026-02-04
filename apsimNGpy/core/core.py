@@ -23,10 +23,10 @@ import pandas as pd
 from pathlib import Path
 from apsimNGpy.core.pythonet_config import CLR
 from System import *
-from System import InvalidOperationException, ArgumentOutOfRangeException
-from System import String
-from System.Collections.Generic import KeyValuePair
-
+#from System import InvalidOperationException, ArgumentOutOfRangeException
+KeyValuePair= CLR.System.Collections.Generic.KeyValuePair
+String = CLR.System.String
+InvalidOperationException, ArgumentOutOfRangeException = CLR.System.InvalidOperationException,  CLR.System.ArgumentOutOfRangeException
 from apsimNGpy.core._cultivar import edit_cultivar_by_path
 from apsimNGpy.core._cultivar import trace_cultivar
 from apsimNGpy.core.config import configuration
@@ -49,7 +49,8 @@ from apsimNGpy.core_utils.utils import open_apsimx_file_in_window, evaluate_comm
     extract_cultivar_param_path
 from apsimNGpy.exceptions import ModelNotFoundError, NodeNotFoundError
 from apsimNGpy.manager.weathermanager import get_weather
-from apsimNGpy.settings import SCRATCH, logger, MissingOption
+from apsimNGpy.settings import SCRATCH, MissingOption
+from apsimNGpy.logger import logger
 
 _NOT_PROVIDED = object()
 

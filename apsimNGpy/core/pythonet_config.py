@@ -8,7 +8,7 @@ from apsimNGpy.bin_loader.resources import add_bin_to_syspath
 from apsimNGpy.core.config import configuration, locate_model_bin_path
 from apsimNGpy.core.load_clr import start_pythonnet
 from apsimNGpy.exceptions import ApsimBinPathConfigError
-from apsimNGpy.settings import logger
+from apsimNGpy.logger import logger
 from apsimNGpy.core.cs_resources import DLL_DIR
 import re
 

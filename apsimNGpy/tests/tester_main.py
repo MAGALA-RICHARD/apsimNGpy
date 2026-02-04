@@ -5,18 +5,15 @@ import stat
 import unittest
 from datetime import datetime
 from pathlib import Path
-
+from apsimNGpy.logger import logger
 from apsimNGpy.mailer.mail import send_report
 
 date_STR = datetime.now().strftime("%y-%m-%d-%H-%M-%S")
-logging.basicConfig(level=logging.INFO, format='  [%(levelname)s] %(message)s')
-logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO, format='  [%(levelname)s] %(message)s')
-logger = logging.getLogger(__name__)
 
 from apsimNGpy.core.config import apsim_bin_context, get_apsim_bin_path, set_apsim_bin_path
 
 bin_path = Path(os.environ.get('TEST_APSIM_BINARY')) or get_apsim_bin_path()
+logger.info('Using apsim bin: {}'.format(bin_path))
 
 
 def run_suite(_bin_path, verbosity_level=2):
@@ -30,7 +27,6 @@ def run_suite(_bin_path, verbosity_level=2):
         from apsimNGpy.core.pythonet_config import CLR
         apsim_version = CLR.apsim_compiled_version
         IS_NEW_APSIM = CLR.file_format_modified
-
         from apsimNGpy.tests.unittests.core import core, data_insights
         from apsimNGpy.tests.unittests.manager import weathermanager, soilmanager, test_get_weather_from_web_filename
         from apsimNGpy.tests.unittests.core import apsim, senstivitymanager, experimentmanager, model_loader, \
@@ -111,7 +107,7 @@ def run_suite(_bin_path, verbosity_level=2):
                     f"📉 Error Rate: {error_rate:.2f}%\n"
                     f"Date: {date_STR}"
                 )
-
+                logger.info(f"tested APSIM is {bin_path}")
                 # Send report
 
                 send_report(sms=report,

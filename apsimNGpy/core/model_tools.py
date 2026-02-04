@@ -20,6 +20,7 @@ from apsimNGpy.core.model_loader import load_apsim_model
 from apsimNGpy.core.version_inspector import is_higher_apsim_version
 from apsimNGpy.core_utils.utils import is_scalar
 from apsimNGpy.settings import *
+from apsimNGpy.logger import logger
 
 Models = CLR.Models
 Physical, SoilCrop, Organic, Solute, Chemical = Models.Soils.Physical, Models.Soils.SoilCrop, Models.Soils.Organic, Models.Soils.Solute, Models.Soils.Chemical

@@ -1,3 +1,10 @@
+.. rubric:: Table of Contents
+
+.. contents::
+   :local:
+   :depth: 2
+   :class: compact
+
 .. _comp_cultivar:
 Comparing cultivars yield
 ===============================

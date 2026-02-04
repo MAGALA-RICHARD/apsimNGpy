@@ -3,6 +3,13 @@
           Previewing a file in GUI can be accomplished by the preview_simulation method,
           Allowing user to inspect the simulation template or change parameters if watch=True
 
+.. rubric:: Table of Contents
+
+.. contents::
+   :local:
+   :depth: 2
+   :class: compact
+
 Model Preview in GUI
 =====================
 

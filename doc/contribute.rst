@@ -1,3 +1,10 @@
+.. rubric:: Table of Contents
+
+.. contents::
+   :local:
+   :depth: 2
+   :class: compact
+
 How to Contribute to apsimNGpy
 *********************************************************************************
 We welcome contributions from the community, whether they are bug fixes, enhancements, documentation updates, or new features. Here's how you can contribute to ``apsimNGpy``:

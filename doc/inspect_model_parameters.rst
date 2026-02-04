@@ -1,5 +1,12 @@
 .. _inspect_params:
 
+.. rubric:: Table of Contents
+
+.. contents::
+   :local:
+   :depth: 2
+   :class: compact
+
 Inspect Model Parameters
 =============================
 

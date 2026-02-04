@@ -1,3 +1,11 @@
+
+.. rubric:: Table of Contents
+
+.. contents::
+   :local:
+   :depth: 2
+   :class: compact
+
 More examples about `edit_model_by_path`
 =======================================
 

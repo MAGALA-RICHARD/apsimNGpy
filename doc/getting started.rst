@@ -9,7 +9,7 @@
 .. contents::
    :local:
    :depth: 2
-   :class: simple
+   :class: compact
 
 Operating System
 ====================

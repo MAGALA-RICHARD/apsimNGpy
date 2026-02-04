@@ -4,7 +4,7 @@
 
 .. contents::
    :local:
-   :depth: 2
+   :depth: 1
    :class: compact
 
 Sensitivity analysis workflow Part 2 (SALib driven workflow)

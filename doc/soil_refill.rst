@@ -28,3 +28,32 @@ the API documentation (:meth:`apsimNGpy.core.ApsimModel.get_soil_from_web`) for 
 
 Example workflow
 ====================
+
+1. Source ISRIC database
+---------------------------
+
+.. code-block:: python
+
+   from apsimNGpy.core.apsim import ApsimModel
+   LONLAT = -93.658723, 42.08567949
+   with ApsimModel('Maize') as maize_model:
+       model.get_soil_from_web(simulations=None, lonlat=LONLAT, source='isric')
+       model.run(verbose=True)
+       mi =model.results.Yield.mean()
+       print(mi)
+       # output 5976.794446324352
+
+2. SOURCE SSURGO
+---------------------
+
+.. code-block:: python
+
+    from apsimNGpy.core.apsim import ApsimModel
+    LONLAT = -93.658723, 42.08567949
+    with ApsimModel('Maize') as model:
+       model.get_soil_from_web(simulations=None, lonlat=LONLAT, source='ssurgo')
+       model.run(verbose=True)
+       ms =model.results.Yield.mean()
+       print(ms)
+       print(ms)
+       # output

@@ -2,7 +2,6 @@
 
 Soil Parameter Value Replacements
 ===================================
-
 .. rubric:: Table of Contents
 
 .. contents::

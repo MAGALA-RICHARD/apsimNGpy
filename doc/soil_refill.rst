@@ -45,7 +45,6 @@ This example retrieves soil data from the **ISRIC** database and runs a maize si
    with ApsimModel("Maize") as model:
        model.get_soil_from_web(simulations=None, lonlat=LONLAT, source="isric")
        model.run(verbose=True)
-
        mi = model.results.Yield.mean()
        print(mi)
        # output: 5976.794446324352
@@ -65,8 +64,23 @@ This example retrieves soil data from the **SSURGO** database and runs the same 
    with ApsimModel("Maize") as model:
        model.get_soil_from_web(simulations=None, lonlat=LONLAT, source="ssurgo")
        model.run(verbose=True)
-
        ms = model.results.Yield.mean()
        print(ms)
        # output: 6177.591814492994
 
+.. note::
+
+   In this example, a ``with`` block is used so that the APSIMX file and
+   its associated database files are deleted automatically after the
+   model run. If you prefer, you can also initialize and run the model
+   directly without using a context manager.
+
+   For example:
+
+   .. code-block:: python
+
+      model = ApsimModel("Maize")
+
+   You may replace ``"Maize"`` with the path to any APSIMX file on your
+   computer. When providing a custom file, ensure that the filename
+   includes the ``.apsimx`` suffix.

@@ -24,9 +24,9 @@
    :alt: Ask Teams
 
 
-.. image:: https://img.shields.io/badge/Download--APSIM--NG-2026.01.7969.0-blue?style=flat&logo=apachespark
+.. image:: https://img.shields.io/badge/Download--APSIM--NG-2026.2.7980.0-blue?style=flat&logo=apachespark
    :alt: APSIM Next Generation version
-   :target: https://registration.apsim.info/?version=2026.01.7969.0&product=APSIM%20Next%20Generation
+   :target: https://registration.apsim.info/?version=2026.02.7980.0&product=APSIM%20Next%20Generation
 
 .. image:: ./images/run.gif
    :alt: Run APSIM simulation

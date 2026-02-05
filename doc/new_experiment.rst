@@ -1,11 +1,14 @@
+.. _experiment_api:
+
+Factorial experiments part 2
+============================
+
 .. rubric:: Table of Contents
 
 .. contents::
    :local:
    :depth: 2
    :class: compact
-
-.. _experiment_api:
 
 
 .. note::
@@ -21,7 +24,7 @@ by varying input parameters or management scripts — all without manually editi
    This feature is especially useful for agronomists and researchers running large design-of-experiment (DoE) simulations.
 
 Quick Overview
-==============
+-------------------
 
 The :class:`~apsimNGpy.core.experimentmanager.ExperimentManager`: class wraps an existing APSIM model and allows you to:
 
@@ -31,7 +34,7 @@ The :class:`~apsimNGpy.core.experimentmanager.ExperimentManager`: class wraps an
 - Export the updated ``.apsimx`` file with fully configured experiments
 
 Getting Started
-===============
+-----------------
 
 First, create an `Experiment` object by loading a base model:
 
@@ -52,7 +55,7 @@ Then initialize the experiment block:
   :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.init_experiment`:
 
 Adding Input Factors
-====================
+---------------------
 
 Each factor describes a script path and a set of values to assign in the experiment. You can add one or more
 factors like this:
@@ -67,7 +70,7 @@ factors like this:
    API description: :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.add_factor`
 
 Finalizing the Experiment
-=========================
+--------------------------
 
 Once all factors are defined, finalize the setup and save the modified model. Please note this is entirely optional,
 :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.add_factor` is a stand alone method, once you have finished adding factors, you can call the ``run`` to retrieve the results, without calling finalize. finalize is wa built as safe guard for immutability
@@ -82,7 +85,7 @@ This writes a new `.apsimx` file that contains a complete factorial experiment,
 ready to run in APSIM or via automation tools.
 
 API Summary
-===========
+-----------------
 
 - :class:`~apsimNGpy.core.experimentmanager.ExperimentManager`: Main entry point to create and manipulate factorial designs.
 - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.init_experiment`: Prepares the experiment node structure in the model.
@@ -90,7 +93,7 @@ API Summary
 - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.finalize`: Validates and commits the experiment structure to the model.
 
 Further Reading
-===============
+--------------------
 
 For advanced usage (e.g., linked script validation, mixed designs), refer to the API reference section.
 

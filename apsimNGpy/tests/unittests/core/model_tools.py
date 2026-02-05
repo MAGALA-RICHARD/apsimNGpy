@@ -7,7 +7,7 @@ from apsimNGpy.core.apsim import ApsimModel
 from apsimNGpy.core.model_tools import validate_model_obj, add_as_simulation, find_model, \
     detect_sowing_managers, find_child, find_all_in_scope, add_replacement_folder, \
     add_model_as_a_replacement, get_or_check_model
-from starter.pythonet_config import is_file_format_modified
+from starter.starter import is_file_format_modified
 
 IS_NEW_APSIM = is_file_format_modified()
 

@@ -14,7 +14,7 @@ from apsimNGpy.core.config import (
     apsim_version,
     locate_model_bin_path
 )
-from starter.pythonet_config import get_apsim_version
+from apsimNGpy.starter.starter import _fetch_apsim_version
 
 LOCK_FILENAME = "apsim.lock.json"  # project-local lock
 VENDORED_DIR = "bin_dist/frozen_bin"  # project-local vendor target

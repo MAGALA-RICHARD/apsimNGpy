@@ -6,7 +6,7 @@ from collections import OrderedDict
 from apsimNGpy.core.apsim import ApsimModel
 from apsimNGpy.core.model_loader import get_node_by_path
 from apsimNGpy.core.model_tools import ModelTools, Models
-from starter.pythonet_config import CLR
+from apsimNGpy.starter.starter import CLR
 from apsimNGpy.core.run_time_info import APSIM_VERSION_NO, BASE_RELEASE_NO, GITHUB_RELEASE_NO
 
 CastHelper = CLR.CastHelper

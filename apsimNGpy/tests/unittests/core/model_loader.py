@@ -5,7 +5,7 @@ from pathlib import Path
 
 from starter.cs_resources import CastHelper as CastHelpers
 from apsimNGpy.core.model_loader import (load_apsim_model, get_model, save_model_to_file, load_from_path, load_crop_from_disk, load_from_dict)
-from starter.pythonet_config import Models
+from starter.starter import Models
 from apsimNGpy.exceptions import CastCompilationError
 from apsimNGpy.tests.unittests.base_unit_tests import BaseTester
 

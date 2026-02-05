@@ -1,4 +1,4 @@
-from starter.pythonet_config import CLR
+from apsimNGpy.starter.starter import CLR
 from apsimNGpy.core.run_time_info import BASE_RELEASE_NO, GITHUB_RELEASE_NO
 
 

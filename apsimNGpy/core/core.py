@@ -20,7 +20,8 @@ from functools import lru_cache
 from typing import Any
 from typing import Union
 import pandas as pd
-from starter.pythonet_config import CLR
+from pathlib import Path
+from apsimNGpy.starter.starter import CLR
 from System import *
 #from System import InvalidOperationException, ArgumentOutOfRangeException
 KeyValuePair= CLR.System.Collections.Generic.KeyValuePair

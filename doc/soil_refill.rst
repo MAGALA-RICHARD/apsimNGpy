@@ -32,7 +32,7 @@ The method also accepts optional scalar parameters (e.g., ``CONA_U``,) to furthe
 the API documentation (:meth:`~apsimNGpy.core.apsim.ApsimModel.get_soil_from_web`) for a complete list of supported arguments.
 
 Example workflow
-====================
+--------------------
 
 .. code-block:: python
 
@@ -41,7 +41,7 @@ Example workflow
 
 
 1. ISRIC Soil Database
-========================
+------------------------
 
 This example retrieves soil data from the **ISRIC** database and runs a maize simulation.
 
@@ -57,7 +57,7 @@ This example retrieves soil data from the **ISRIC** database and runs a maize si
 
 
 2. SSURGO Soil Database
-========================
+----------------------------
 
 This example retrieves soil data from the **SSURGO** database and runs the same maize simulation.
 

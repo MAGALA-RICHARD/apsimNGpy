@@ -5,7 +5,7 @@ from functools import lru_cache, cache
 from gc import collect
 from typing import Union, Dict, Any
 import pandas as pd
-from apsimNGpy.starter.pythonet_config import CLR
+from apsimNGpy.starter.starter import CLR
 
 # These should be below CLR imports
 String = CLR.System.String

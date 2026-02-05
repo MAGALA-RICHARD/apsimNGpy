@@ -21,7 +21,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from apsimNGpy.core.df_grp import group_and_concat_by_schema
-from starter.pythonet_config import configuration
+from apsimNGpy.starter.starter import configuration
 from apsimNGpy.core_utils.database_utils import read_db_table, get_db_table_names
 from apsimNGpy.core_utils.database_utils import write_schema_grouped_tables
 from apsimNGpy.core_utils.utils import timer
@@ -149,7 +149,7 @@ def run_apsim_by_path(
 
 
 def invoke_csharp_gc():
-    from starter.pythonet_config import CLR
+    from apsimNGpy.starter.starter import CLR
     CLR.System.GC.Collect()
     CLR.System.GC.WaitForPendingFinalizers()
 
@@ -638,7 +638,7 @@ def trial_run(self, report_name=None,
 
           Related API: :func:`~apsimNGpy.core.runner.run_model_externally`
     """
-    from starter.pythonet_config import CLR
+    from apsimNGpy.starter.starter import CLR
     Models = CLR.Models
 
 

@@ -1,4 +1,4 @@
-from apsimNGpy.starter.pythonet_config import ConfigRuntimeInfo
+from apsimNGpy.starter.starter import ConfigRuntimeInfo
 
 CLR = ConfigRuntimeInfo()
 

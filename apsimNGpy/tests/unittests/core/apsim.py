@@ -5,7 +5,7 @@ import gc
 from apsimNGpy.core.apsim import ApsimModel, Models
 from apsimNGpy.tests.unittests.base_unit_tests import BaseTester
 
-from starter.pythonet_config import is_file_format_modified
+from starter.starter import is_file_format_modified
 
 wd = Path.cwd() / "test_apsim"
 wd.mkdir(parents=True, exist_ok=True)

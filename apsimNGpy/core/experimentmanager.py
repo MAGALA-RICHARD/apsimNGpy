@@ -1,29 +1,22 @@
 import re
+from collections import OrderedDict
 from pathlib import Path
+from typing import Union
 
 from apsimNGpy.core.apsim import ApsimModel
-from collections import OrderedDict
-
-from apsimNGpy.core.model_tools import ModelTools, Models
-
-from starter.cs_resources import CastHelper
-from starter.pythonet_config import is_file_format_modified
 from apsimNGpy.core.model_loader import get_node_by_path, AUTO_PATH
-
+from apsimNGpy.core.model_tools import ModelTools, Models
 from apsimNGpy.core.runner import invoke_csharp_gc, run_model_externally
-
-if is_file_format_modified():
-    import APSIM.Core as NodeUtils
-    import System
-
-#    structure = Models.Core.ApsimFile.Structure
-else:
-    from apsimNGpy.core.config import apsim_version
-
-    raise ValueError(f"The experiment module is not supported for this type of {apsim_version()} ")
-
-from typing import Union
 from apsimNGpy.core.version_inspector import is_higher_apsim_version
+from apsimNGpy.starter.starter import CLR
+from starter.cs_resources import CastHelper
+
+NodeUtils = CLR.APsimCore
+System = CLR.System
+apsim_version = CLR.apsim_compiled_version
+if not CLR.file_format_modified:
+    raise ValueError(f"The experiment module is not supported for this type of {apsim_version} ")
+
 
 class ExperimentManager(ApsimModel):
     """
@@ -69,16 +62,17 @@ class ExperimentManager(ApsimModel):
             invoke_csharp_gc()
 
             self.clean_up(db=True)
-            self.is_simulations_closed =True
+            self.is_simulations_closed = True
         except PermissionError:
             print(self.model_info.datastore)
+
     # put here during debugging context db file manager, but sure will be removed after full tests
     def _run(self, report_name: Union[tuple, list, str] = None,
-            simulations: Union[tuple, list] = None,
-            clean_up: bool = True,
-            verbose: bool = False,
-            timeout: int = 800,
-            **kwargs) -> 'CoreModel':
+             simulations: Union[tuple, list] = None,
+             clean_up: bool = True,
+             verbose: bool = False,
+             timeout: int = 800,
+             **kwargs) -> 'CoreModel':
         """
         Run APSIM model simulations to write the results either to SQLite database or csv file. Does not collect the
          simulated output into memory. Please see related APIs: :attr:`results` and :meth:`get_simulated_output`.
@@ -273,7 +267,7 @@ class ExperimentManager(ApsimModel):
             print(sim.Children)
             if not sim:
                 raise ValueError(f"No base simulation found")
-            new_sim =Models.Core.Simulation()
+            new_sim = Models.Core.Simulation()
             new_sim.Name = sim.Name
             new_sim.Children = sim.Children
             base = new_sim
@@ -327,7 +321,7 @@ class ExperimentManager(ApsimModel):
             siM = self.Simulations
             # if replace_ments:
             #     siM.AddChild(replace_ments)
-            #create experiment
+            # create experiment
             _experiments = list(siM.Node.FindAll[Models.Factorial.Experiment]())
             if _experiments:
                 raise ValueError('Not supported at the moment, provide a base simulation and build from scratch')
@@ -360,7 +354,6 @@ class ExperimentManager(ApsimModel):
             if datastore:
                 datastore = CastHelper.CastAs[Models.Storage.DataStore](datastore)
             datastore.set_FileName(self.datastore)
-
 
             # siM.Write(self.path)
 
@@ -688,5 +681,3 @@ if __name__ == '__main__':
         # exp.finalize()
 
     print('datastore Path exists after exit:', Path(exp.datastore).exists())
-
-

@@ -6,7 +6,7 @@ import pandas as pd
 import pathlib
 import sqlite3
 import sys
-from starter import pythonet_config
+from starter import starter
 
 apsim_model = pythonet_config.APSIM_BIN_PATH
 

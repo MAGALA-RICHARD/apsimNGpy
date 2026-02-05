@@ -310,7 +310,7 @@ def main(apsim_bin_path):
 
         import shutil, os
         from apsimNGpy.core import config, apsim, mult_cores, experimentmanager, runner
-        from starter import pythonet_config
+        from starter import starter
         # from apsimNGpy.optimizer import moo, single
         from apsimNGpy.core_utils import database_utils
         from apsimNGpy.parallel import process

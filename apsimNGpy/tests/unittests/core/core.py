@@ -11,7 +11,7 @@ from apsimNGpy.core.model_tools import find_model, validate_model_obj, find_chil
 from apsimNGpy.settings import logger
 from apsimNGpy.tests.unittests.base_unit_tests import BaseTester
 from apsimNGpy.core.base_data import load_default_simulations
-from starter.pythonet_config import is_file_format_modified
+from starter.starter import is_file_format_modified
 
 IS_NEW_APSIM = is_file_format_modified()
 

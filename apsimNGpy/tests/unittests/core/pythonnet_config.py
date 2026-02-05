@@ -9,10 +9,10 @@ import tempfile
 import unittest
 from pathlib import Path
 from typing import Union
-
-from starter import pythonet_config
+from apsimNGpy.starter import starter as pythonnet_config
+from starter import starter
 from apsimNGpy.core.config import locate_model_bin_path, configuration
-from starter.pythonet_config import CLR
+from starter.starter import CLR
 # --------------apsimNGpy related modules________________________
 from apsimNGpy.exceptions import ApsimBinPathConfigError
 
@@ -66,7 +66,7 @@ class TestPythonnetLoader(unittest.TestCase):
     Replace 'pythonnet_loader' with your module name.
     """
 
-    MODULE = pythonet_config.__name__
+    MODULE = starter.__name__
 
     def setUp(self):
         # Temporary directory to act as a fake APSIM bin folder

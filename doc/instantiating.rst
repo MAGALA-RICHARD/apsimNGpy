@@ -108,6 +108,8 @@ You can either load a built-in template or use your own APSIM file.
     model = ApsimModel(model='path/to/your/apsim/file.apsimx', out_path = './maize.apsimx')
 
 
+What comes next after editing
+-----------------------------
 
 .. admonition:: Next actions
 

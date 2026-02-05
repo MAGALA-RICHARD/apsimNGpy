@@ -245,7 +245,7 @@ We can get only the names of the cultivar models using the full string path::
     Models.Clock
 
 Whole Model inspection
-=====================================
+-----------------------
 
 Use :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_file` method to inspects all simulations in the file.
 This method displays a tree showing how each model is connected with each other.

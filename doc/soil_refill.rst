@@ -14,10 +14,11 @@ Soil Parameter Value Replacement
 Overview
 ==============
 
-Soil parameters in APSIM can be updated using any of the following methods
-- :meth:`~apsimNGpy.core.apsim.ApsimModel.get_soil_from_web`,
-- :meth:`~apsimNGpy.core.apsim.ApsimModel.edit_model`, and
-- :meth:`~apsimNGpy.core.apsim.ApsimModel.edit_model_by_path`.
+Soil parameters in APSIM can be updated using any of the following methods.
+
+    - :meth:`~apsimNGpy.core.apsim.ApsimModel.get_soil_from_web`,
+    - :meth:`~apsimNGpy.core.apsim.ApsimModel.edit_model`, and
+    - :meth:`~apsimNGpy.core.apsim.ApsimModel.edit_model_by_path`.
 
 Detailed usage of :meth:`~apsimNGpy.core.ApsimModel.edit_model` and
 :meth:`~apsimNGpy.core.apsim.ApsimModel.edit_model_by_path` is provided in the
@@ -132,7 +133,9 @@ For example, the following thicknesses may be supplied:
        p=model.inspect_model_parameters(model_type='Models.Soils.Physical', model_name='Physical')
        print(p) # results are shown below
 
-our changes were propagated into the current model. apsimNGpy uses simple interpolation techniques to adjust the parameters accordingly. see output below
+The changes were successfully propagated into the current model.
+apsimNGpy applies simple interpolation techniques to adjust the parameters accordingly.
+The resulting output is shown below
 
 .. code-block:: none
 

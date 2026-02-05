@@ -3,6 +3,10 @@
           APSIM simulations can be executed sequentially using the `run` method or in parallel
           using the `run_all_jobs` method of the `MultiCoreManager` API.
 
+
+Running and Retrieving Results
+==============================
+
 .. rubric:: Table of Contents
 
 .. contents::
@@ -15,11 +19,9 @@
    :align: center
    :width: 800px
 
-Running and Retrieving Results
-==============================
 
 Running loaded models
-^^^^^^^^^^^^^^^^^^^^^^^
+--------------------------
 Running loaded models implies executing the model to generate simulated outputs. This is implemented via :meth:`~apsimNGpy.core.apsim.ApsimModel.run` method as shown below.
 Users can provide the ``report_name``, which specifies data table name from the simulation for retrieving the results.
 
@@ -39,7 +41,7 @@ Users can provide the ``report_name``, which specifies data table name from the 
 
 
 Accessing Simulated Results
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+----------------------------
 After the simulation runs, results can be accessed  via :attr:`~apsimNGpy.core.apsim.ApsimModel.results` property attribute as pandas DataFrames. Please see note above. These results can be saved to a CSV file or printed to the console.
 
 Another way to access the results is to use :meth:`~apsimNGpy.core.apsim.ApsimModel.get_simulated_output` on the instantiated class object. This method accepts only one argument ``report_names`` and under the same principle explained above.
@@ -108,7 +110,7 @@ Instantiate, use model and discard the edited model afterwards
 .. versionadded:: v0.39.10.20
 
 Saving the Simulation
-^^^^^^^^^^^^^^^^^^^^^^^^
+-----------------------
 When we load the model, it is usually assigned a random name. However, you can save the file using the :meth:`~apsimNGpy.core.apsim.ApsimModel.save` method.
 This method takes a single argument: the desired file path or name.
 
@@ -134,7 +136,7 @@ Recent versions of **apsimNGpy** allow users to explicitly control this
 behavior using the ``reload`` argument in :meth:`~apsimNGpy.core.apsim.ApsimModel.save`.
 
 Controlling Reload Behavior
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+-----------------------------
 You can indicate whether the saved model should be reloaded into the
 current model object using the ``reload`` flag.
 
@@ -144,7 +146,7 @@ current model object using the ``reload`` flag.
 
 
 Example: Reload Enabled (Default Behavior)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+-----------------------------------------------
 When ``reload=True`` (the default), the saved file becomes the new active
 model and the internal ``model.path`` is updated accordingly, as shown in the code below.
 
@@ -168,7 +170,7 @@ model and the internal ``model.path`` is updated accordingly, as shown in the co
 
 
 Example: Reload Disabled
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+---------------------------
 With ``reload=False``, the model is written to disk, but the in-memory
 model object continues to reference the original path as shown in the code below.
 
@@ -192,7 +194,7 @@ Here, the new file exists on disk, but the active model object continues
 to reference the original file.
 
 Using ``save`` Inside a Context Manager
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+----------------------------------------
 When using :class:`ApsimModel` as a context manager, special care is required. The saved file path must be different
 from the current ``model.path`` and ``reload`` must be set to ``False`` as shown below.
 

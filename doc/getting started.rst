@@ -1,5 +1,7 @@
 .. _Installation:
 
+Getting started
+==================
 .. meta::
    :description lang=en:
       Run APSIM models sequentially with `run` or in parallel using `MultiCoreManager.run_all_jobs`.
@@ -8,11 +10,11 @@
 
 .. contents::
    :local:
-   :depth: 2
+   :depth: 4
    :class: compact
 
 Operating System
-====================
+-------------------
 
 - **Windows**
 
@@ -29,7 +31,7 @@ Python Requirements
      ``pythonnet``. However, the development team is working around the clock to make sure it is also supported
 
 Required Dependencies
-==========================
+-----------------------
 
 - **APSIM** (installed locally)
 
@@ -51,7 +53,7 @@ Required Dependencies
 These dependencies are installed automatically via ``pip``.
 
 Installing apsimNGpy
-=====================
+---------------------
 
 .. image:: ../images/installing.gif
    :alt: Run APSIM simulation
@@ -61,14 +63,14 @@ Installing apsimNGpy
 You can install ``apsimNGpy`` using one of the methods below.
 
 Method 1: Install from PyPI (stable releases)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+-----------------------------------------------
 
 .. code-block:: console
 
    pip install apsimNGpy
 
 Method 2: Clone the development repository
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+--------------------------------------------
 
 .. code-block:: console
 
@@ -77,7 +79,7 @@ Method 2: Clone the development repository
    pip install .
 
 Method 3: Install directly from GitHub (Recommended)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+------------------------------------------------------
 
 .. code-block:: console
 
@@ -125,15 +127,15 @@ Important APSIM installation and tutorial links
 Verifying the APSIM Binary Path
 -------------------------------
 
-Using the command line
-^^^^^^^^^^^^^^^^^^^^^^
+Using the command line to set or check the APSIM bin path
+-------------------------------------------------------------
 
 .. code-block:: console
 
    apsim_bin_path -s
 
 Automatic search
-^^^^^^^^^^^^^^^^
+--------------------
 
 .. code-block:: console
 
@@ -148,7 +150,7 @@ Automatic search
       apsim_bin_path -a
 
 Using Python
-^^^^^^^^^^^^
+-----------------
 
 .. code-block:: python
 
@@ -177,14 +179,14 @@ Setting or Updating the APSIM Binary Path
 -----------------------------------------
 
 Option 1: Manual configuration file
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+------------------------------------
 
 1. Locate ``APSIMNGpy_meta_data`` in your home directory.
 2. Open ``apsimNGpy_config.ini``.
 3. Update the ``apsim_location`` entry.
 
 Option 2: Using the apsimNGpy config API (recommended)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+--------------------------------------------------------
 
 .. code-block:: python
 
@@ -196,7 +198,7 @@ Option 2: Using the apsimNGpy config API (recommended)
    API reference: :func:`~apsimNGpy.core.config.set_apsim_bin_path`
 
 Option 3: Command-line update
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+---------------------------------
 
 .. code-block:: console
 

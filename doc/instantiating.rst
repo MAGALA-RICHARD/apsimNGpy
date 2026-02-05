@@ -111,7 +111,7 @@ You can either load a built-in template or use your own APSIM file.
 
 
 What comes next after editing
------------------------------
+------------------------------
 
 .. admonition:: Next actions
 

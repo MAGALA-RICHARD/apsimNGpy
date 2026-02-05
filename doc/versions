@@ -1,0 +1,3 @@
+version 1.4
+moves pythonet_config from core module to starter module
+latest apsim bin test: 7980

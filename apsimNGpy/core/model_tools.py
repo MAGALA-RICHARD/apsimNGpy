@@ -5,7 +5,7 @@ from functools import lru_cache, cache
 from gc import collect
 from typing import Union, Dict, Any
 import pandas as pd
-from apsimNGpy.core.pythonet_config import CLR
+from apsimNGpy.starter.pythonet_config import CLR
 
 # These should be below CLR imports
 String = CLR.System.String
@@ -15,7 +15,7 @@ List, KeyValuePair = CLR.System.Collections.Generic.List, CLR.System.Collections
 IEnumerable = CLR.System.Collections.IEnumerable
 
 
-from apsimNGpy.core.cs_resources import simple_rotation_code, update_manager_code
+from apsimNGpy.starter.cs_resources import simple_rotation_code, update_manager_code
 from apsimNGpy.core.model_loader import load_apsim_model
 from apsimNGpy.core.version_inspector import is_higher_apsim_version
 from apsimNGpy.core_utils.utils import is_scalar
@@ -26,7 +26,7 @@ Models = CLR.Models
 Physical, SoilCrop, Organic, Solute, Chemical = Models.Soils.Physical, Models.Soils.SoilCrop, Models.Soils.Organic, Models.Soils.Solute, Models.Soils.Chemical
 IS_NEW_APSIM = CLR.file_format_modified
 
-from apsimNGpy.core.cs_resources import CastHelper, sow_using_variable_rule, sow_on_fixed_date, harvest, \
+from starter.cs_resources import CastHelper, sow_using_variable_rule, sow_on_fixed_date, harvest, \
     fertilizer_at_sow, cast_as
 
 APSIM_VERSION = CLR.apsim_compiled_version

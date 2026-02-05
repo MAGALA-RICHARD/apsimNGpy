@@ -4,29 +4,22 @@ Interface to APSIM simulation models using Python.NET build on top of Matti Past
 import os
 import pandas as pd
 import pathlib
-import pythonnet
-import shutil
 import sqlite3
 import sys
-import warnings
-import pythonnet
-from apsimNGpy.core import pythonet_config
+from starter import pythonet_config
+
 apsim_model = pythonet_config.APSIM_BIN_PATH
 
-from os.path import realpath
 import warnings
 from System.Collections.Generic import *
-from Models.Core import Simulations
 from System import *
-from Models.PMF import Cultivar
-from Models import Options
 
 import Models
 from System import *
 from collections import namedtuple
 import json
 from System.Collections.Generic import *
-import subprocess
+
 #from settings import * not needed in this module
 
 FAILED_RUNS = []

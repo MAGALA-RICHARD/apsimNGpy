@@ -1,6 +1,4 @@
 import os
-import logging
-import os
 import stat
 import unittest
 from datetime import datetime
@@ -10,7 +8,7 @@ from apsimNGpy.mailer.mail import send_report
 
 date_STR = datetime.now().strftime("%y-%m-%d-%H-%M-%S")
 
-from apsimNGpy.core.config import apsim_bin_context, get_apsim_bin_path, set_apsim_bin_path
+from apsimNGpy.core.config import apsim_bin_context, get_apsim_bin_path
 
 bin_path = Path(os.environ.get('TEST_APSIM_BINARY')) or get_apsim_bin_path()
 logger.info('Using apsim bin: {}'.format(bin_path))
@@ -24,7 +22,7 @@ def run_suite(_bin_path, verbosity_level=2):
     @return: None
     """
     with apsim_bin_context(_bin_path, disk_cache=False) as bin_context:
-        from apsimNGpy.core.pythonet_config import CLR
+        from starter.pythonet_config import CLR
         apsim_version = CLR.apsim_compiled_version
         IS_NEW_APSIM = CLR.file_format_modified
         from apsimNGpy.tests.unittests.core import core, data_insights

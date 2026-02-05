@@ -1,10 +1,10 @@
 import os
 from pathlib import Path
 from shutil import copy2, rmtree
-from apsimNGpy.core.pythonet_config import CLR
+from starter.pythonet_config import CLR
 from apsimNGpy.core.config import load_crop_from_disk
-from apsimNGpy.core.cs_resources import CastHelper
-from apsimNGpy.core.pythonet_config import is_file_format_modified
+from starter.cs_resources import CastHelper
+from starter.pythonet_config import is_file_format_modified
 import numpy as np
 import pandas as pd
 Models = CLR.Models
@@ -66,8 +66,7 @@ def mimic_multiple_files(out_file: str | os.PathLike, size: int = 20, mix=True, 
 
 def create_simulation(name):
     if is_file_format_modified():
-        import APSIM.Core as NodeUtils
-        from apsimNGpy.core.cs_resources import CastHelper
+        from starter.cs_resources import CastHelper
     else:
         return
         # creates a Models.Core.Simulations object
@@ -83,7 +82,7 @@ def mock_multiple_simulations(n):
     sims = map(create_simulation, [f"sim_{i}" for i in range(n)])
     datastore = Models.Storage.DataStore()
     if is_file_format_modified():
-        import APSIM.Core as NodeUtils
+        pass
     mock_sims = CLR.Node.Create(Models.Core.Simulations())
     mock_sims.AddChild(datastore)
     for s in sims:

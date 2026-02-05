@@ -1,22 +1,16 @@
-import os
 import re
-import sys
 from pathlib import Path
-from apsimNGpy.core.config import configuration
 
 from apsimNGpy.core.apsim import ApsimModel
 from collections import OrderedDict
 
 from apsimNGpy.core.model_tools import ModelTools, Models
 
-from apsimNGpy.core.cs_resources import CastHelper
-from apsimNGpy.core.pythonet_config import is_file_format_modified
-from apsimNGpy.core.run_time_info import APSIM_VERSION_NO, BASE_RELEASE_NO, GITHUB_RELEASE_NO
-from apsimNGpy.core.model_loader import to_json_string, recompile, get_node_by_path, AUTO_PATH
+from starter.cs_resources import CastHelper
+from starter.pythonet_config import is_file_format_modified
+from apsimNGpy.core.model_loader import get_node_by_path, AUTO_PATH
 
-from apsimNGpy.core_utils.deco import add_outline
 from apsimNGpy.core.runner import invoke_csharp_gc, run_model_externally
-from apsimNGpy.core.utils_for_experimnet import create
 
 if is_file_format_modified():
     import APSIM.Core as NodeUtils
@@ -28,8 +22,7 @@ else:
 
     raise ValueError(f"The experiment module is not supported for this type of {apsim_version()} ")
 
-import inspect
-from typing import Type, Union
+from typing import Union
 from apsimNGpy.core.version_inspector import is_higher_apsim_version
 
 class ExperimentManager(ApsimModel):
@@ -70,8 +63,6 @@ class ExperimentManager(ApsimModel):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-
-        from System.IO import File # dont remove I don't know why if imported it works magic
 
         try:
 
@@ -329,7 +320,6 @@ class ExperimentManager(ApsimModel):
             # mode.save()
 
         def refresher():
-            from apsimNGpy.core.config import load_crop_from_disk
 
             replace_ments = ModelTools.find_child(self.Simulations, child_class=Models.Core.Folder,
                                                   child_name='Replacements')

@@ -4,8 +4,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from apsimNGpy.core.cs_resources import CastHelper as CastHelpers, cast_as
-from apsimNGpy.core.pythonet_config import Models, is_file_format_modified
+from starter.cs_resources import CastHelper as CastHelpers, cast_as
+from starter.pythonet_config import Models, is_file_format_modified
 from apsimNGpy.core.model_loader import model_from_string
 
 NEW_APSIM = is_file_format_modified()  # bool

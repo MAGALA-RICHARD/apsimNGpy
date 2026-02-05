@@ -1,4 +1,3 @@
-import gc
 import os
 import unittest
 from pathlib import Path
@@ -6,7 +5,7 @@ import gc
 from apsimNGpy.core.apsim import ApsimModel, Models
 from apsimNGpy.tests.unittests.base_unit_tests import BaseTester
 
-from apsimNGpy.core.pythonet_config import is_file_format_modified
+from starter.pythonet_config import is_file_format_modified
 
 wd = Path.cwd() / "test_apsim"
 wd.mkdir(parents=True, exist_ok=True)
@@ -211,8 +210,7 @@ class TestCoreModel(BaseTester):
         import Models
         if is_file_format_modified():
             import APSIM.Core as NodeUtils
-            from apsimNGpy.core.cs_resources import CastHelper
-            import System
+            from starter.cs_resources import CastHelper
         else:
             self.skipTest('version can not mock simulations object using nodes')
         # creates a Models.Core.Simulations object

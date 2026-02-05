@@ -7,7 +7,6 @@ import platform
 import sqlite3
 import warnings
 from functools import lru_cache, cache
-from pathlib import Path
 from subprocess import *
 from subprocess import Popen, PIPE
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Hashable
@@ -22,7 +21,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from apsimNGpy.core.df_grp import group_and_concat_by_schema
-from apsimNGpy.core.pythonet_config import configuration
+from starter.pythonet_config import configuration
 from apsimNGpy.core_utils.database_utils import read_db_table, get_db_table_names
 from apsimNGpy.core_utils.database_utils import write_schema_grouped_tables
 from apsimNGpy.core_utils.utils import timer
@@ -150,7 +149,7 @@ def run_apsim_by_path(
 
 
 def invoke_csharp_gc():
-    from apsimNGpy.core.pythonet_config import CLR
+    from starter.pythonet_config import CLR
     CLR.System.GC.Collect()
     CLR.System.GC.WaitForPendingFinalizers()
 
@@ -639,7 +638,7 @@ def trial_run(self, report_name=None,
 
           Related API: :func:`~apsimNGpy.core.runner.run_model_externally`
     """
-    from apsimNGpy.core.pythonet_config import CLR
+    from starter.pythonet_config import CLR
     Models = CLR.Models
 
 

@@ -1,13 +1,11 @@
-from typing import Optional, Tuple, Sequence, Any, Mapping
 from dataclasses import dataclass
 import datetime as dt
-from typing import Optional, Sequence, Tuple, Mapping, Any, Union
+from typing import Optional, Sequence, Tuple, Mapping, Any
 
-from apsimNGpy.core.pythonet_config import load_pythonnet
+from starter.pythonet_config import load_pythonnet
 from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganiseSoilProfile
 from apsimNGpy.core_utils.soil_lay_calculator import auto_gen_thickness_layers
-from apsimNGpy.core.model_tools import find_child_of_class, find_all_in_scope, CastHelper
-from apsimNGpy.settings import logger
+from apsimNGpy.core.model_tools import find_all_in_scope, CastHelper
 from apsimNGpy.core.model_tools import find_child_of_class
 from apsimNGpy.settings import logger
 

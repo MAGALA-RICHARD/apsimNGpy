@@ -8,7 +8,7 @@ Automatic Parameter calibration
 
 .. contents::
    :local:
-   :depth: 2
+   :depth: 4
    :class: compact
 
 .. image:: ../images/calib.gif

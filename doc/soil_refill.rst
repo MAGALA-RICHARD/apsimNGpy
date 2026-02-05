@@ -8,7 +8,7 @@ Soil Parameter Value Replacement
 .. contents::
    :local:
    :depth: 3
-   :class: compact
+
 
 
 Overview

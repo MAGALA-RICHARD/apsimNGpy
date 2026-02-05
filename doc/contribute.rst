@@ -12,6 +12,7 @@ We welcome contributions from the community, whether they are bug fixes, enhance
 
 Reporting Issues
 ----------------
+
 .. note::
   apsimNGpy is developed and maintained by a dedicated team of volunteers. We kindly ask that you adhere to our community standards when engaging with the project. Please maintain a respectful tone when reporting issues or interacting with community members.
 

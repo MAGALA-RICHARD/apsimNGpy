@@ -122,8 +122,8 @@ Users can override this default behavior by explicitly providing a custom soil t
        logger.info([i.Name for i in model.simulations])
        # output ['Simulation']
        th = [50, 100, 150, 200, 200, 300, 400, 400]
-       model.get_soil_from_web(simulations='Simulation', lonlat=LONLAT, source="ssurgo",  thickness_sequence=th)
+       model.get_soil_from_web(simulations='Simulation', lonlat=LONLAT, source="isric",  thickness_sequence=th)
        model.run(verbose=True)
        ms = model.results.Yield.mean()
        print(ms)
-       # output: 6177.591814492994
+       # output: 7029.702721876342

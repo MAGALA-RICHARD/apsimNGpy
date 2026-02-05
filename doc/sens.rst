@@ -41,7 +41,7 @@ Class: :class:`~apsimNGpy.core.senstivitymanager.SensitivityManager` was added i
    consistently, and run it across multiple APSIM templates or scenarios.
 
 Workflow Overview
------------------
+------------------
 
 The sensitivity analysis workflow in ``apsimNGpy`` follows a structured,
 reproducible sequence of steps. The process is designed to mirror APSIM’s
@@ -79,7 +79,7 @@ Python. The key stages are:
 
 
 Workflow Diagram
-----------------
+-----------------
 
 ::
 

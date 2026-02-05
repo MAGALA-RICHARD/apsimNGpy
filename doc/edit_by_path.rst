@@ -1,3 +1,5 @@
+More examples about `edit_model_by_path`
+----------------------------------------
 
 .. rubric:: Table of Contents
 
@@ -5,9 +7,6 @@
    :local:
    :depth: 2
    :class: compact
-
-More examples about `edit_model_by_path`
-=======================================
 
 .. code-block:: python
 

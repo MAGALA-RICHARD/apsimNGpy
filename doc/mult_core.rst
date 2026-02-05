@@ -6,7 +6,7 @@ Distributed Computing
 
 .. contents::
    :local:
-   :depth: 2
+   :depth: 4
    :class: compact
 
 .. image:: ../images/batch__run.gif
@@ -14,7 +14,8 @@ Distributed Computing
    :align: center
    :width: 800px
 
-
+What is distributed computed ?
+--------------------------------
 Distributed computing (or parallelism) is the practice of dividing computing tasks among multiple processing resources to speed up computations.
 See Li, Z., Qi, Z., Liu, Y., Zheng, Y., & Yang, Y. (2023). A modularized parallel distributed High–Performance computing framework for simulating seasonal frost dynamics in Canadian croplands. Computers and Electronics in Agriculture, 212, 108057.
 
@@ -55,12 +56,15 @@ To explicitly set unique filenames for each simulation:
 
      The key idea: every file must have a unique identifier to avoid race conditions during parallel execution.
 
+Job batching
+-----------------
 In newer apsimNGpy versions, each job must specify the APSIM ``.apsimx`` model to execute and may
 include additional metadata.
 
 Supported job definitions include:
 
-**1. Plain job definitions (no metadata, no edits)**
+1. Plain job definitions (no metadata, no edits)
+-------------------------------------------------
 This assumes that each model file is unique and has already been
 edited externally.
 
@@ -79,7 +83,8 @@ edited externally.
 
 .. note:: In the newer apsimNGpy version v1.1.0+, when engine='csharp', jobs must be defined with ID description see below
 
-**2. Job definitions with metadata**
+2. Job definitions with metadata
+-------------------------------------
 This format allows attaching identifiers or other metadata to each
 job. Models are assumed to be unique and pre-edited.
 
@@ -96,10 +101,10 @@ job. Models are assumed to be unique and pre-edited.
        {'model': 'model_7.apsimx', 'ID': 7}
    ]
 
-**3. Job definitions with internal model edits**
+3. Job definitions with internal model edits
+------------------------------------------------
 In this format, each job specifies an ``inputs`` list with dicts representing each node to be edited internally by the runner. These
-edits must follow the rules of
-:meth:`~apsimNGpy.core.apsim.ApsimModel.edit_model_by_path`. The input dictionary is treated as metadata and is attached to the results' tables. When both inputs and additional metadata are provided, they are merged into a single metadata mapping prior to attachment, with former entries overriding earlier metadata keys and thereby avoiding duplicate keys in the results' tables.
+edits must follow the rules of :meth:`~apsimNGpy.core.apsim.ApsimModel.edit_model_by_path`. The input dictionary is treated as metadata and is attached to the results' tables. When both inputs and additional metadata are provided, they are merged into a single metadata mapping prior to attachment, with former entries overriding earlier metadata keys and thereby avoiding duplicate keys in the results' tables.
 
 .. code-block:: python
 

@@ -291,7 +291,7 @@ class ApsimModel(CoreModel):
                           thickness_value: int = None,
                           max_depth: Optional[int] = 2400,
                           n_layers: int = 10,
-                          thinnest_layer: int = 100,
+                          thinnest_layer: int = 50,
                           thickness_growth_rate: float = 1.5,  # unit less
                           # which sections to edit
                           edit_sections: Optional[Sequence[str]] = None,

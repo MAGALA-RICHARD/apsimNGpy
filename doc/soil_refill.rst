@@ -110,9 +110,11 @@ However, when multiple simulations are present, you can target a specific simula
 
 Soil thickness
 -----------------
-By default, apsimNGpy downloads soil data from the web and interpolates soil profile values to a soil profile of 10 layers, with a maximum depth of 2400 mm
+By default, apsimNGpy downloads soil data from the web and interpolates soil profile values to a soil profile of 10 layers, with a maximum depth of 2400 mm.
+The soil profile is generated assuming a thinnest top layer of 100 mm in case no thickness_sequence is specified and thickness_growth_rate of 1.5.
 
-Users can override this default behavior by explicitly providing a custom soil thickness sequence as a list. For example, the following thicknesses may be supplied:
+Users can override this default behavior by explicitly providing a custom soil thickness sequence as a list.
+For example, the following thicknesses may be supplied:
 
 `[50, 100, 150, 200, 200, 300, 400, 400]`. The example below demonstrates how this customization works in practice.
 
@@ -129,6 +131,7 @@ Users can override this default behavior by explicitly providing a custom soil t
        # output: 7029.702721876342
        p=model.inspect_model_parameters(model_type='Models.Soils.Physical', model_name='Physical')
        print(p) # results are shown below
+
 our changes were propagated into the current model. apsimNGpy uses simple interpolation techniques to adjust the parameters accordingly. see output below
 
 .. code-block:: none

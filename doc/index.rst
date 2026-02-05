@@ -48,7 +48,7 @@ apsimNGpy: The Next-Generation Agro-ecosystem Simulation Library
 Introduction
 ===============
 
-   apsimNGpy is a cutting-edge, open-source Python framework designed for advanced modeling with APSIM process-based model.
+   apsimNGpy is  an open-source Python framework designed for advanced modeling with APSIM process-based model.
    Built on object-oriented principles. apsimNGpy extends and augments APSIM Next Generation functionalities within the Python scientific ecosystem,
    turning GUI-centric workflows into scriptable, reproducible, and scalable pipelines. apsimNGpy functionalities include, but not limited to the following:
 

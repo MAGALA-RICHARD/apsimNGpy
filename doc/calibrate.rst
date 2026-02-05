@@ -2,15 +2,14 @@
    :description lang=en:
      apsimNGpy supports model calibration through the MixedVariableOptimizer API, providing multiple optimization methods, including differential evolution, for efficient and flexible parameter tuning.
 
+Automatic Parameter calibration
+=================================
 .. rubric:: Table of Contents
 
 .. contents::
    :local:
    :depth: 2
    :class: compact
-
-Automatic Parameter calibration
-=================================
 
 .. image:: ../images/calib.gif
    :alt: Run APSIM simulation

@@ -106,4 +106,12 @@ However, when multiple simulations are present, you can target a specific simula
        print(ms)
        # output: 6177.591814492994
 
-the default
+
+By default, apsimNGpy downloads soil data from the web and interpolates soil profile values to a soil profile of 10 layers, with a maximum depth of 2400 mm
+
+
+Users can override this default behavior by explicitly providing a custom soil thickness sequence as a list. For example, the following thicknesses may be supplied:
+
+50, 100, 150, 200, 200, 300, 400, 400
+
+The example below demonstrates how this customization works in practice.

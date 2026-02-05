@@ -7,7 +7,7 @@ Comparing cultivars yield
 
 .. contents::
    :local:
-   :depth: 2
+   :depth: 4
    :class: compact
 
 

@@ -1,14 +1,14 @@
 .. _quick_factorial_experiments:
 
+Quick and Simple Way to Run Factorial Experiments
+=================================================
+
 .. rubric:: Table of Contents
 
 .. contents::
    :local:
    :depth: 2
    :class: compact
-
-Quick and Simple Way to Run Factorial Experiments
-=================================================
 
 .. image:: ../images/experiment_r.gif
    :alt: Run APSIM simulation
@@ -22,14 +22,14 @@ The :class:`~apsimNGpy.core.experimentmanager.ExperimentManager`: in ``apsimNGpy
 programmatically without APSIM GUI or template.
 
 Why apsimNGpy for factorial experiments
-======================================
+-----------------------------------------
 
 Data in apsimNGpy is **lazily loaded**, allowing users and researchers to run
 large factorial experiments workflows without excessive memory usage.
 Simulation outputs are also readily available for downstream analysis.
 
 Quick Overview
-==============
+------------------
 
 The :class:`~apsimNGpy.core.experimentmanager.ExperimentManager`: class wraps an existing APSIM model and allows you to:
 
@@ -92,7 +92,7 @@ a) Visualization
    :width: 800px
 
 b) Statistical analysis
------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 What is is the mean of maize grain yield if grouped by population density?
 
 .. code-block:: python
@@ -177,7 +177,7 @@ Add a factor for radiation use efficiency (RUE):
 
 
 API Summary
-===========
+-------------
 
 - :class:`~apsimNGpy.core.experimentmanager.ExperimentManager`: Main entry point to create and manipulate factorial designs.
 - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.init_experiment`: Prepares the experiment node structure in the model.
@@ -185,7 +185,7 @@ API Summary
 - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.finalize`: Validates and commits the experiment structure to the model.
 
 Further Reading
-===============
+--------------------
 
 For advanced usage (e.g., linked script validation, mixed designs), refer to the API reference section.
 

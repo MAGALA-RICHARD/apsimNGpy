@@ -1,3 +1,6 @@
+Application of Multiprocessing
+==============================
+
 .. rubric:: Table of Contents
 
 .. contents::
@@ -5,8 +8,6 @@
    :depth: 2
    :class: compact
 
-Application of Multiprocessing
-==============================
 
 In this tutorial, we demonstrate how multiprocessing can be used to run custom
 experimental simulations that are difficult to implement using the

@@ -1,3 +1,8 @@
+.. _comp_cultivar:
+
+Comparing cultivars yield
+===============================
+
 .. rubric:: Table of Contents
 
 .. contents::
@@ -5,9 +10,6 @@
    :depth: 2
    :class: compact
 
-.. _comp_cultivar:
-Comparing cultivars yield
-===============================
 
 In this tutorial we are going to compare the cultivar yield across different cultivars using apsimNGpy
 
@@ -30,7 +32,7 @@ Firstly, we are going to start by creating a none permutation experiment
        model.inspect_model('Cultivar', fullpath=False)
 
 
-getting info about the simulated output
+Getting info about the simulated output
 
 .. code-block:: python
 

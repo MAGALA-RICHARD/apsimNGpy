@@ -1,13 +1,15 @@
 .. _soil_param_refill:
 
-Soil Parameter Value Replacements
-===================================
+Soil Parameter Value Replacement
+================================
+
 .. rubric:: Table of Contents
 
 .. contents::
    :local:
    :depth: 2
    :class: compact
+
 
 Overview
 ==============
@@ -106,9 +108,9 @@ However, when multiple simulations are present, you can target a specific simula
        print(ms)
        # output: 6177.591814492994
 
-
+Soil thickness
+-----------------
 By default, apsimNGpy downloads soil data from the web and interpolates soil profile values to a soil profile of 10 layers, with a maximum depth of 2400 mm
-
 
 Users can override this default behavior by explicitly providing a custom soil thickness sequence as a list. For example, the following thicknesses may be supplied:
 

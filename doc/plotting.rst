@@ -1,14 +1,15 @@
 .. _Plots:
 
+Plotting and Visualizing Simulated Output
+=========================================
+
 .. rubric:: Table of Contents
 
 .. contents::
    :local:
-   :depth: 2
+   :depth: 4
    :class: compact
 
-Plotting and Visualizing Simulated Output
-=========================================
 Visualizing simulated results, is a critical step in understanding and communicating model behavior.
 Visualization serves as the blueprint of any experiment as it generates scientific insight underlying the data.
 The goal of this tutorial, therefore, is to help you quickly set up, diagnose, and report your simulation outcomes effectively,
@@ -229,7 +230,7 @@ Statistical results for each column
         75%       1705.820275  1998.000000
         max       2457.083319  2000.000000
 Moving average plots
-====================
+---------------------------
 
 .. code-block:: python
 
@@ -245,17 +246,18 @@ Multi-year moving average for each experiment (line plot).
 
 
 Categorical Plots
-=================
+-------------------
 
 Box plots
----------
+^^^^^^^^^^^^^
 
 .. code-block:: python
 
   model.cat_plot(table = 'Report', y='Yield', x= 'Population', kind = 'box')
 
 Maize yield variability by population density (mva plot).
-----------------------------------------------
+----------------------------------------------------------
+
 .. figure:: ../images/cat_plot_no_hue.png
    :alt: cat plot no hue
    :width: 100%
@@ -269,13 +271,14 @@ Add Nitrogen fertilizer as hue for contrast across the nitrogen treatments
 plt.savefig(dir_p/'hue_nitrogen.png', dpi=600)
 
 Maize yield variability by population density and nitrogen fertilizer (box plot).
----------------------------------------------------------------------
+------------------------------------------------------------------------------------
+
 .. figure:: ../images/hue_nitrogen.png
    :alt: Nitrogen and population effect
    :width: 70%
 
 Bar Plots
----------
+^^^^^^^^^^^^^^
 
 .. code-block:: python
 
@@ -289,8 +292,9 @@ Maize yield variability by population density (bar plot).
    :alt: bar plot population and nitrogen  effect
    :width: 70%
 
-
 Changing statistical estimators.
+------------------------------------
+
 The example below shows how to switch estimators, and after the change to sum, the y-axis is now inflated
 
 .. code-block:: python
@@ -316,7 +320,7 @@ Maize yield variability by population density in Mg (bar plot, estimator =sum).
    :alt: bar plot expression of kg to mg estimator sum
 
 Tidy up the plots for reporting
-===============================
+---------------------------------
 The heavy lifting is done; now polish the figure—adjust labels, titles, and size.
 All plotting methods on ApsimModel and ExperimentManager return a seaborn.axisgrid.FacetGrid, so you can keep customizing afterward. Because Seaborn sits on Matplotlib,
 any Matplotlib styling you pass (or apply later) still works.
@@ -328,13 +332,15 @@ any Matplotlib styling you pass (or apply later) still works.
     g.set_titles("Yield vs population density")
 
 Maize yield labeled plot (bar plot).
----------------------------------------------------------
+-----------------------------------------
+
 .. figure:: ../images/styled.png
    :alt: bar plot expression of kg to mg estimator sum
 
 
 Passing a custom dataset
-==========================
+-------------------------------
+
 Because apsimNGpy plotting wraps Seaborn, you don’t need extra imports for most advanced visuals
 or after some advanced calculation on your dataset.
 
@@ -418,7 +424,7 @@ Binned Maize yield (bar plot).
 
 
 Meta info
-==========
+^^^^^^^^^^^^^^^
 
 .. code-block::python
 

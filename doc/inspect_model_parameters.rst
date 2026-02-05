@@ -171,6 +171,7 @@ Inspect soil ``Chemical`` profile:
 
 
 .. tip::
+
      only few selected parameters ``'Carbon'``, ``'CNR'``
 
 .. code-block:: python

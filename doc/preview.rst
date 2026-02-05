@@ -3,6 +3,9 @@
           Previewing a file in GUI can be accomplished by the preview_simulation method,
           Allowing user to inspect the simulation template or change parameters if watch=True
 
+Model Preview in GUI
+=====================
+
 .. rubric:: Table of Contents
 
 .. contents::
@@ -10,8 +13,6 @@
    :depth: 2
    :class: compact
 
-Model Preview in GUI
-=====================
 
 The :meth:`~apsimNGpy.core.apsim.ApsimModel.preview_simulation` method provides the
 primary mechanism for opening the current in-memory APSIM model in the APSIM Next
@@ -39,7 +40,7 @@ The :meth:`~apsimNGpy.core.apsim.ApsimModel.preview_simulation` takes in one par
      ApsimModel("gui_edited_file_path.apsimx")
 
 Examples
---------
+---------
 **1. Preview only**
 
 .. code-block:: python

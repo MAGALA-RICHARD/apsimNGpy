@@ -22,13 +22,13 @@ Contributing Code
 
 We accept code contributions via Pull Requests (PRs). Here are the steps to contribute:
 
-Fork the Repository
-^^^^^^^^^^^^^^^^^^^
+Forking the Repository
+------------------------
 
 Start by forking the ``apsimNGpy`` repository on GitHub. This creates a copy of the repo under your GitHub account.
 
 Clone Your Fork
-^^^^^^^^^^^^^^^
+----------------------
 
 Clone your fork to your local machine:
 

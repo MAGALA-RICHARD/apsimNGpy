@@ -4,32 +4,26 @@ Interface to APSIM simulation models using Python.NET
 from __future__ import annotations
 
 import gc
-import sqlite3
 from collections import namedtuple
 from functools import wraps
 from os.path import exists
-from typing import Callable, Literal, Union, List, Tuple, Mapping, Any
+from typing import Union, Mapping, Any
 
 import numpy as np
-import sqlalchemy
-from pandas import DataFrame
 from pandas import read_sql_query as rsq
 from sqlalchemy import create_engine, inspect
-from sqlalchemy import Table, Column, String, Float, Integer, MetaData
+from sqlalchemy import Table, MetaData
 from sqlalchemy.exc import NoSuchTableError
-from apsimNGpy.core.pythonet_config import *
 from apsimNGpy.exceptions import TableNotFoundError
 from pandas import DataFrame
 from itertools import islice, repeat
-from typing import Iterable, Iterator, List, Optional, TypeVar, Callable
+from typing import Iterable, Iterator, Optional, TypeVar, Callable
 import pandas as pd
 from typing import Dict, Tuple, Hashable, List
-from sqlalchemy.engine import Engine  # or use any DB-API connection
-from sqlalchemy import text
 
 T = TypeVar("T")
 
-from sqlalchemy.engine import Engine, Connection
+from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 UNKNOWN_FLAG = 'UNKNOWN'
@@ -720,7 +714,6 @@ def _default_insert_fn(db: str, df: DataFrame, table: str, if_exists: str, chunk
        specialized `insert_fn` for performance and control.
     """
 
-    from sqlalchemy import create_engine
     # eng = create_engine(f"sqlite:///{db}")
     write_df_to_sql(df, db_or_con=db, table_name=table, if_exists=if_exists, index=False, chunk_size=chunk_size)
 

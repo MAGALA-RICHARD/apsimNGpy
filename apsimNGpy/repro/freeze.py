@@ -2,21 +2,19 @@
 from __future__ import annotations
 
 import json
-import os
 import shutil
 import hashlib
 import platform
 from dataclasses import dataclass, asdict
 from pathlib import Path
-from typing import Iterable, List, Optional, Dict, Any, Union
+from typing import List, Optional, Dict, Any, Union
 
 from apsimNGpy.core.config import (
     get_apsim_bin_path,
-    set_apsim_bin_path,
     apsim_version,
     locate_model_bin_path
 )
-from apsimNGpy.core.pythonet_config import get_apsim_version
+from starter.pythonet_config import get_apsim_version
 
 LOCK_FILENAME = "apsim.lock.json"  # project-local lock
 VENDORED_DIR = "bin_dist/frozen_bin"  # project-local vendor target

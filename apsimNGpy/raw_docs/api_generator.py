@@ -2,7 +2,7 @@ import inspect
 import textwrap, os
 from pathlib import Path
 from typing import Iterable, Union, List, Set, Any
-from apsimNGpy.core.config import get_apsim_bin_path, set_apsim_bin_path
+from apsimNGpy.core.config import get_apsim_bin_path
 
 # ---------- knobs ----------
 INHERIT_NOTE_STYLE = "short"  # {"short","base","none"}
@@ -309,7 +309,8 @@ def main(apsim_bin_path):
         from apsimNGpy.core_utils.deco import add_outline
 
         import shutil, os
-        from apsimNGpy.core import config, base_data, apsim, mult_cores, pythonet_config, experimentmanager, runner
+        from apsimNGpy.core import config, apsim, mult_cores, experimentmanager, runner
+        from starter import pythonet_config
         # from apsimNGpy.optimizer import moo, single
         from apsimNGpy.core_utils import database_utils
         from apsimNGpy.parallel import process
@@ -319,7 +320,6 @@ def main(apsim_bin_path):
         from apsimNGpy.optimizer.problems import smp, back_end
         from apsimNGpy.core import senstivitymanager
         from apsimNGpy.senstivity import sensitivity
-        from apsimNGpy.senstivity.sensitivity import ConfigProblem, run_sensitivity
 
         # ________________________________________________________________________________
         # add outline!!

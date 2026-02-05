@@ -5,9 +5,9 @@ We are building a dedicated apsimNGpy senstivity module away from the default on
 """
 
 from collections import OrderedDict
-from apsimNGpy.core.pythonet_config import CLR
+from starter.pythonet_config import CLR
 from apsimNGpy.core.apsim import ApsimModel, AUTO_PATH
-from apsimNGpy.core.cs_resources import CastHelper
+from starter.cs_resources import CastHelper
 from apsimNGpy.core.model_loader import get_node_by_path
 from apsimNGpy.core.model_tools import ModelTools
 

@@ -4,7 +4,7 @@ This module offers a procedural alternative other than object-oriented approach 
 import os
 import uuid
 from typing import Union
-from apsimNGpy.core.pythonet_config import CLR
+from starter.pythonet_config import CLR
 from apsimNGpy.exceptions import NodeNotFoundError
 import json
 from os.path import (realpath)

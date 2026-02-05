@@ -11,8 +11,7 @@ from contextlib import AbstractContextManager
 from pathlib import Path
 from apsimNGpy.core.config import configuration
 from dotenv import load_dotenv
-from apsimNGpy.bin_loader.resources import remove_bin_from_syspath
-from apsimNGpy.core.pythonet_config import load_pythonnet
+from starter.pythonet_config import load_pythonnet
 logger = logging.getLogger(__name__)
 
 # Load a default .env if present (optional)
@@ -158,7 +157,6 @@ if __name__ == "__main__":
     with apsim_bin_context(apsim_bin_path=r"C:\Users\rmagala\AppData\Local\Programs\APSIM2025.12.7939.0\bin") as bin:
         after =configuration.bin_path
         print(after)
-        import Models
     assert before != after, 'bin path not set correctly'
     class TestConfig(TestCase):
         def setUp(self):

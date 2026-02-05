@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any
 from typing import Optional, Tuple, Sequence
 from typing import Union
-from apsimNGpy.core.pythonet_config import CLR
+from starter.pythonet_config import CLR
 import numpy as np
 import pandas as pd
 from Models.Soils import Physical, SoilCrop, Organic, LayerStructure
@@ -22,7 +22,7 @@ from apsimNGpy.core.core import CoreModel, ModelTools
 
 
 Models = CLR.Models
-from apsimNGpy.core.cs_resources import CastHelper
+from starter.cs_resources import CastHelper
 from apsimNGpy.core.model_loader import AUTO_PATH
 from apsimNGpy.core.model_loader import get_node_by_path
 from apsimNGpy.core.model_tools import find_child_of_class

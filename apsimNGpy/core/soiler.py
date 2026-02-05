@@ -7,7 +7,7 @@ from pandas import DataFrame
 
 from apsimNGpy.core.model_tools import find_all_in_scope, CastHelper
 from apsimNGpy.core.model_tools import find_child_of_class
-from apsimNGpy.core.pythonet_config import CLR
+from starter.pythonet_config import CLR
 from apsimNGpy.core_utils.soil_lay_calculator import auto_gen_thickness_layers
 from apsimNGpy.logger import logger
 from apsimNGpy.soils.helpers import _is_within_USA_mainland

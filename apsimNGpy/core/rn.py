@@ -1,14 +1,11 @@
 import os
 
-from apsimNGpy.core.pythonet_config import load_pythonnet
+from starter.pythonet_config import load_pythonnet
 from pathlib import Path
-from subprocess import run
 from apsimNGpy.core.model_loader import load_apsim_model
-from apsimNGpy.core.cs_resources import CastHelper
 from apsimNGpy.core.model_tools import find_child
 from Models.Core.Run import Runner
 CI = load_pythonnet()
-from APSIM.Core import Node
 import subprocess
 out_path = Path.home() / 'Documents/testing_run.apsimx'
 if out_path.exists():

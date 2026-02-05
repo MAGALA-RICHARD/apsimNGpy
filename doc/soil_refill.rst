@@ -108,8 +108,8 @@ However, when multiple simulations are present, you can target a specific simula
        print(ms)
        # output: 6177.591814492994
 
-Soil thickness
------------------
+Soil profile layer thickness
+---------------------------------
 By default, apsimNGpy downloads soil data from the web and interpolates soil profile values to a soil profile of 10 layers, with a maximum depth of 2400 mm.
 The soil profile is generated assuming a thinnest top layer of 100 mm in case no thickness_sequence is specified and thickness_growth_rate of 1.5.
 
@@ -165,3 +165,16 @@ our changes were propagated into the current model. apsimNGpy uses simple interp
     5  0.345125  103.537500      300.0               1000.0
     6  0.335500  134.200000      400.0               1400.0
     7  0.313849  125.539623      400.0               1800.0
+
+.. seealso::
+
+   - save: :meth:`~apsimNGpy.core.apsim.ApsimModel.save`
+   - results retrieval API: :attr:`~apsimNGpy.core.apsim.ApsimModel.results`
+
+.. seealso::
+
+   - :ref:`API Reference <api_ref>`
+   - :ref:`apsimNGpy Cheat sheat <cheat>`
+   - :ref:`Inspecting Model Parameters <inspect_params>`
+   - :ref:`APSIM Model types <model_List>`
+   - :ref:`Go back to the home page<master>`

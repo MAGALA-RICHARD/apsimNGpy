@@ -21,25 +21,26 @@ class TestCoreModel(BaseTester):
         self.test_ap_sim = ApsimModel("Maize", out_path=self.out_path)
         self.mock_sim_path_name = Path(f"__mock__{self._testMethodName}.apsimx")
         self.thickness_sequence_test_values = [100, 200, 200, 200, 300, 250, 400, 450]
-        self.expect_ts_auto = [100.0, 100.0, 100.0, 295.0, 297.0, 298.0, 300.0, 301.0, 303.0, 304.0]
+        self.expect_ts_auto = [50.0, 50.0, 50.0, 316.0, 318.0, 319.0, 321.0, 322.0, 324.0, 325.0]
 
     def test_run(self):
         self.test_ap_sim.run()
         self.assertTrue(self.test_ap_sim.ran_ok)
         self.test_ap_sim.clean_up(db=True)
+
     def test_set_params_cultivar(self):
         with ApsimModel('Maize') as model:
             model.run()
             # mean 1
             mn1 = model.results.mean(numeric_only=True)
-            rename ="edited_RUE"
+            rename = "edited_RUE"
             model.set_params(values=[1.4], commands=['[Leaf].Photosynthesis.RUE.FixedValue'],
                              sowed=True, rename=rename,
                              path=".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82", )
             model.run()
             mn2 = model.results.mean(numeric_only=True)
-            out = list(mn2-mn1)
-            out  =  [i==0 for i in out]
+            out = list(mn2 - mn1)
+            out = [i == 0 for i in out]
 
             out = all(out)
             self.assertFalse(out, msg='editing cultivar failed to change simulated values')

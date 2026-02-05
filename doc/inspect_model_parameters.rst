@@ -39,6 +39,7 @@ This tutorial introduces the  :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_mo
 
 model_type : (``str``) see more :ref:`details here <model_List>`
     The type or class of the model to inspect.
+
 Examples:
     Shorthand:      ``'Clock'``, ``'Weather'``
     Fully qualified: ``'Models.Clock'``, ``'Models.Climate.Weather'``

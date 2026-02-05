@@ -10,15 +10,14 @@ Soil Parameter Value Replacement
    :depth: 3
 
 
-
 Overview
 ==============
 
 Soil parameters in APSIM can be updated using any of the following methods.
 
-    - :meth:`~apsimNGpy.core.apsim.ApsimModel.get_soil_from_web`,
-    - :meth:`~apsimNGpy.core.apsim.ApsimModel.edit_model`, and
-    - :meth:`~apsimNGpy.core.apsim.ApsimModel.edit_model_by_path`.
+    - :meth:`~apsimNGpy.core.apsim.ApsimModel.get_soil_from_web`
+    - :meth:`~apsimNGpy.core.apsim.ApsimModel.edit_model`
+    - :meth:`~apsimNGpy.core.apsim.ApsimModel.edit_model_by_path`
 
 Detailed usage of :meth:`~apsimNGpy.core.ApsimModel.edit_model` and
 :meth:`~apsimNGpy.core.apsim.ApsimModel.edit_model_by_path` is provided in the
@@ -94,7 +93,7 @@ This example retrieves soil data from the **SSURGO** database and runs the same 
    includes the ``.apsimx`` suffix.
 
 Targeting a specific simulation
--------------------------------
+---------------------------------
 By default, all available simulations are updated with the downloaded soils profiles.
 However, when multiple simulations are present, you can target a specific simulation explicitly.
 

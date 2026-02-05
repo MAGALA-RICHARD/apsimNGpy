@@ -1,5 +1,8 @@
 .. _sens_salib:
 
+Sensitivity analysis workflow Part 2 (SALib driven workflow)
+============================================================
+
 .. rubric:: Table of Contents
 
 .. contents::
@@ -7,8 +10,6 @@
    :depth: 1
    :class: compact
 
-Sensitivity analysis workflow Part 2 (SALib driven workflow)
-============================================================
 In response to requests for a cross-platform sensitivity analysis
 workflow, apsimNGpy has been integrated with SALib. As explained below
 
@@ -106,7 +107,7 @@ Since we are performing a Sobol’ sensitivity analysis, we need to generate sam
     param_values = saltelli.sample(runner.problem, 2 ** 4)
 
 Sample matrix and evaluation
-============================
+------------------------------
 
 The variable ``param_values`` is a two-dimensional NumPy array.
 Inspecting its shape using ``param_values.shape`` shows that the array

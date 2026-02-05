@@ -3,6 +3,9 @@
        Instantiating can be done using any of the default APSIM model templates or
        custom apsimx path on your computer
 
+Instantiating `apsimNGpy` Model Objects
+========================================
+
 .. rubric:: Table of Contents
 
 .. contents::
@@ -10,8 +13,7 @@
    :depth: 2
    :class: compact
 
-Instantiating `apsimNGpy` Model Objects
-========================================
+
 You can either load a built-in template or use your own APSIM file.
 
 .. admonition:: Loading default APSIM templates

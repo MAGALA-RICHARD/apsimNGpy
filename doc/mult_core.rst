@@ -1,3 +1,7 @@
+
+Distributed Computing
+=========================
+
 .. rubric:: Table of Contents
 
 .. contents::
@@ -10,8 +14,6 @@
    :align: center
    :width: 800px
 
-Distributed Computing
-=========================
 
 Distributed computing (or parallelism) is the practice of dividing computing tasks among multiple processing resources to speed up computations.
 See Li, Z., Qi, Z., Liu, Y., Zheng, Y., & Yang, Y. (2023). A modularized parallel distributed High–Performance computing framework for simulating seasonal frost dynamics in Canadian croplands. Computers and Electronics in Agriculture, 212, 108057.
@@ -129,7 +131,7 @@ edits must follow the rules of
    ]
 
 Instantiating and Running the Simulations
-=========================================
+-------------------------------------------
 
 .. code-block:: python
 
@@ -150,7 +152,7 @@ If ``agg_func`` is specified, it can be one of: mean, median, sum, min, or max. 
 ``n_cores (int)``: Specifies the number of worker cores to use for the task. The workload will be divided among these workers. If the number of cores is large but the number of tasks is small, some scheduling overhead will occur, and workers may remain idle while waiting for available tasks.
 
 Tracking completed jobs
-=========================
+--------------------------
 MultiCoreManager API displays the number of completed jobs and percentage of the total submitted,
 time per simulation(sim) failed jobs (f) elapsed time and seconds per sim
 
@@ -160,7 +162,7 @@ time per simulation(sim) failed jobs (f) elapsed time and seconds per sim
 
 
 Retrieving results
-====================
+-----------------------
 Results can be loaded to memory by :meth:`~apsimNGpy.core.mult_cores.MultiCoreManager.get_simulated_output` or :attr:`~apsimNGpy.core.mult_cores.MultiCoreManager.results`
 
 .. code-block:: python
@@ -183,7 +185,7 @@ Results can also be transferred to an sql database or to csv as follows
 
 
 csharp or python engine selections
-====================================
+---------------------------------------
 The latest apsimNGpy versions allows the user to select between python or csharp engine as follows.
 In addition any of the word ``inputs`` or ``payload`` are accepted while providing the editing data.
 
@@ -250,7 +252,7 @@ records. For example, if each simulation spans 10 years, the resulting DataFrame
 
 
 Benchmarking computation speed across the different simulation engines
-==========================================================================
+-------------------------------------------------------------------------
 
 +------------+--------------+-----------+----------------+
 | Batch size | Python (m)   | C# (m)    | Speedup (×)    |

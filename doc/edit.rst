@@ -18,7 +18,7 @@ a unified method called  :meth:`~apsimNGpy.core.apsim.ApsimModel.edit_model` or 
 by specifying the model type, name and simulation name, or path, respectively.
 
 Editing requirements
-========================
+-----------------------
 
 Editing APSIM models in **apsimNGpy** does *not* require placing the
 target model inside a *Replacements* folder or node. However, when
@@ -284,7 +284,7 @@ can modify parameters reliably even in complex, deeply nested APSIM structures. 
 .. include:: edit_by_path.rst
 
 Editing nested simulation models
-================================
+-------------------------------------
 **apsimNGpy** provides robust capabilities for **editing** and **inspecting** deeply nested APSIM NG models,
 including models containing multiple **simulations** that users may wish to run in combination with different
 inputs. The example below demonstrates the two complementary strategies for targeted modification—exclusion

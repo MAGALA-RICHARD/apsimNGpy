@@ -114,6 +114,16 @@ By default, apsimNGpy downloads soil data from the web and interpolates soil pro
 
 Users can override this default behavior by explicitly providing a custom soil thickness sequence as a list. For example, the following thicknesses may be supplied:
 
-50, 100, 150, 200, 200, 300, 400, 400
+`[50, 100, 150, 200, 200, 300, 400, 400]`. The example below demonstrates how this customization works in practice.
 
-The example below demonstrates how this customization works in practice.
+.. code-block:: python
+
+     with ApsimModel("Maize") as model:
+       logger.info([i.Name for i in model.simulations])
+       # output ['Simulation']
+       th = [50, 100, 150, 200, 200, 300, 400, 400]
+       model.get_soil_from_web(simulations='Simulation', lonlat=LONLAT, source="ssurgo",  thickness_sequence=th)
+       model.run(verbose=True)
+       ms = model.results.Yield.mean()
+       print(ms)
+       # output: 6177.591814492994

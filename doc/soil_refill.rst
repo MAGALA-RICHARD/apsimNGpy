@@ -105,7 +105,7 @@ However, when multiple simulations are present, you can target a specific simula
        model.get_soil_from_web(simulations='Simulation', lonlat=LONLAT, source="ssurgo")
        model.run(verbose=True)
        ms = model.results.Yield.mean()
-       print(ms)
+       logger.info(ms)
        # output: 6177.591814492994
 
 Soil profile layer thickness
@@ -130,7 +130,7 @@ For example, the following thicknesses may be supplied:
        print(ms)
        # output: 7029.702721876342
        p=model.inspect_model_parameters(model_type='Models.Soils.Physical', model_name='Physical')
-       print(p) # results are shown below
+       logger.info(p) # results are shown below
 
 The changes were successfully propagated into the current model.
 apsimNGpy applies simple interpolation techniques to adjust the parameters accordingly.

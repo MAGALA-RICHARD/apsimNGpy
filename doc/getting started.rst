@@ -211,7 +211,7 @@ or
    apsim_bin_path --update "path/to/your/apsim/binary/folder/bin"
 
 Verifying Successful Configuration
-----------------------------------
+------------------------------------
 
 .. code-block:: python
 

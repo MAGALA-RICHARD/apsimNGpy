@@ -63,7 +63,7 @@ include additional metadata.
 
 Supported job definitions include:
 
-1. Plain job definitions (no metadata, no edits)
+1. Plain job batching (no metadata, no edits)
 -------------------------------------------------
 This assumes that each model file is unique and has already been
 edited externally.
@@ -83,7 +83,7 @@ edited externally.
 
 .. note:: In the newer apsimNGpy version v1.1.0+, when engine='csharp', jobs must be defined with ID description see below
 
-2. Job definitions with metadata
+2. Job batching with metadata
 -------------------------------------
 This format allows attaching identifiers or other metadata to each
 job. Models are assumed to be unique and pre-edited.
@@ -101,7 +101,7 @@ job. Models are assumed to be unique and pre-edited.
        {'model': 'model_7.apsimx', 'ID': 7}
    ]
 
-3. Job definitions with internal model edits
+3. Job batching with internal model edits
 ------------------------------------------------
 In this format, each job specifies an ``inputs`` list with dicts representing each node to be edited internally by the runner. These
 edits must follow the rules of :meth:`~apsimNGpy.core.apsim.ApsimModel.edit_model_by_path`. The input dictionary is treated as metadata and is attached to the results' tables. When both inputs and additional metadata are provided, they are merged into a single metadata mapping prior to attachment, with former entries overriding earlier metadata keys and thereby avoiding duplicate keys in the results' tables.
@@ -135,7 +135,7 @@ edits must follow the rules of :meth:`~apsimNGpy.core.apsim.ApsimModel.edit_mode
        }
    ]
 
-Instantiating and Running the Simulations
+Instantiating and Running the batches
 -------------------------------------------
 
 .. code-block:: python

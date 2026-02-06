@@ -1,12 +1,15 @@
 import os
+import sys
+import time
 from pathlib import Path
 from shutil import copy2, rmtree
-from apsimNGpy.starter.starter import is_file_format_modified, CLR
-from apsimNGpy.core.config import load_crop_from_disk
-from apsimNGpy.starter.cs_resources import CastHelper
-from functools import partial
+
 import numpy as np
 import pandas as pd
+
+from apsimNGpy.core.config import load_crop_from_disk
+from apsimNGpy.starter.starter import is_file_format_modified, CLR
+from apsimNGpy.core_utils import timer
 
 Models = CLR.Models
 
@@ -83,7 +86,7 @@ def create_simulation(name, base_simulation=None):
         node = getattr(base_simulation, 'Node', base_simulation)
         sim_obj = CLR.Node.Clone(node)
         CLR.Node.Rename(sim_obj, name)
-        return CastHelper.CastAs[Models.Core.Simulation](sim_obj.Model)
+        return CLR.CastHelper.CastAs[Models.Core.Simulation](sim_obj.Model)
     else:
         sim_obj = Models.Core.Simulation()
         zone = Models.Core.Zone()
@@ -92,6 +95,7 @@ def create_simulation(name, base_simulation=None):
     return sim_obj
 
 
+@timer
 def mock_multiple_simulations(n, base_simulation=None):
     sims = [create_simulation(name=f"sim_{i}", base_simulation=base_simulation) for i in range(n)]
     datastore = Models.Storage.DataStore()
@@ -102,7 +106,7 @@ def mock_multiple_simulations(n, base_simulation=None):
         mock_sims.AddChild(datastore)
         for s in sims:
             mock_sims.AddChild(s)
-        return CastHelper.CastAs[Models.Core.Simulations](mock_sims.Model)
+        return CLR.CastHelper.CastAs[Models.Core.Simulations](mock_sims.Model)
     else:
         mock_sims = Models.Core.Simulations()
         for s in sims:
@@ -143,7 +147,7 @@ pred = pd.DataFrame({
 })
 
 
-def clone_simulation(self, sim_name, rename, inplace=True):
+def clone_simulation(self, sim_name, rename, inplace=True, **kwargs):
     """
     Clone an existing simulation and optionally attach it to the current model.
 
@@ -189,8 +193,16 @@ def clone_simulation(self, sim_name, rename, inplace=True):
 
     if inplace:
         self.Simulations.Children.Add(node.Model)
+        if kwargs:
+            self.edit_model(**kwargs)
+        return self
+    else:
+        return node
 
-    return node
+
+def cloner(name, ):
+    clone_simulation(m, sim_name='Simulation', inplace=False, rename=name)
+    pass
 
 
 if __name__ == "__main__":
@@ -212,8 +224,26 @@ if __name__ == "__main__":
         m.inspect_file()
         m.edit_model('Models.Manager', 'Sow using a variable rule', Population=4, simulations='new_babe')
         m.run(verbose=True)
-
+        clone_simulation(m, 'Simulation', rename='re')
         df = m.results
         # mock simulations when base is Models.Core.Simulation object
     sim2 = mock_multiple_simulations(n=5, base_simulation=s)
     print([i.Name for i in sim2.Children])
+    sim_no = (i for i in range(100, 200))
+    with ApsimModel('Maize') as m:
+        a = time.perf_counter()
+
+        # names = [f"sim_{i}" for i in ]
+        # list(custom_parallel(cloner, names, use_thread=False))
+        [clone_simulation(m, 'Simulation', rename=f"sim_{i}",
+                          model_type='Models.Manager', model_name='Fertilise at sowing', Amount=i, simulations=f"sim_{i}") for i in sim_no]
+        b = time.perf_counter()
+        m.add_report_variable(variable_spec=['[Simulation].Name as SimName'], report_name='Report')
+        print(b - a, 'seconds elapsed to add the simulations')
+        a = time.perf_counter()
+        m.run()
+        print(time.perf_counter() - a, 'seconds to run simulations')
+        print(sys.getsizeof(m.simulations) / (1024 ** 2))
+        print(m.results.shape)
+        print(len(m.simulations))
+        agd = m.results

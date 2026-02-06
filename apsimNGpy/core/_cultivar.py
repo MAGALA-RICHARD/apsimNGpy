@@ -3,7 +3,7 @@ from apsimNGpy.core.model_tools import find_all_model_type, get_or_check_model
 import Models
 from apsimNGpy.settings import logger
 from apsimNGpy.core.model_loader import get_node_by_path
-from starter.cs_resources import CastHelper
+from apsimNGpy.starter.cs_resources import CastHelper
 from apsimNGpy.core.model_tools import ModelTools
 from apsimNGpy.core_utils.utils import is_scalar, evaluate_commands_and_values_types
 from typing_extensions import TypeAlias

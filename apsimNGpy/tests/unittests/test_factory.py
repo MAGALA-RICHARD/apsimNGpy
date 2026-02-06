@@ -1,10 +1,10 @@
 import os
 from pathlib import Path
 from shutil import copy2, rmtree
-from starter.starter import CLR
+from apsimNGpy.starter.starter import is_file_format_modified, CLR
 from apsimNGpy.core.config import load_crop_from_disk
-from starter.cs_resources import CastHelper
-from starter.starter import is_file_format_modified
+from apsimNGpy.starter.cs_resources import CastHelper
+
 import numpy as np
 import pandas as pd
 Models = CLR.Models

@@ -1,12 +1,9 @@
-import os.path
 import sys
 import unittest
-from pandas import DataFrame
-from apsimNGpy.tests.unittests.base_unit_tests import BaseTester
-from apsimNGpy.core.experimentmanager import ExperimentManager as Experiment
-from apsimNGpy.core.apsim import ApsimModel
 from pathlib import Path
-from apsimNGpy.core.utils_for_experimnet import create
+from pandas import DataFrame
+from apsimNGpy.core.experimentmanager import ExperimentManager as Experiment
+from apsimNGpy.tests.unittests.base_unit_tests import BaseTester
 
 cwd = Path.cwd()
 

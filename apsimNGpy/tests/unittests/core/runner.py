@@ -1,15 +1,11 @@
 import gc
-import os
 import shutil
-import sqlite3
-from pathlib import Path
-from shutil import rmtree, copy2, rmtree
-from apsimNGpy.core.runner import _run_from_dir, collect_db_from_dir, aggregate_data, \
-    dir_simulations_to_sql, dir_simulations_to_dfs, dir_simulations_to_csv  # (unused here but kept if you need later)
-from apsimNGpy.core.config import load_crop_from_disk
-from apsimNGpy.tests.unittests.test_factory import mimic_multiple_files
 import unittest
+from pathlib import Path
 from pandas import DataFrame
+from apsimNGpy.core.runner import dir_simulations_to_sql, dir_simulations_to_dfs, \
+    dir_simulations_to_csv  # (unused here but kept if you need later)
+from apsimNGpy.tests.unittests.test_factory import mimic_multiple_files
 
 
 def _delete_file(obj):

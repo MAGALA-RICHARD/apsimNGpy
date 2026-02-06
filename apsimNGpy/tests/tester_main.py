@@ -22,7 +22,7 @@ def run_suite(_bin_path, verbosity_level=2):
     @return: None
     """
     with apsim_bin_context(_bin_path, disk_cache=False) as bin_context:
-        from starter.starter import CLR
+        from apsimNGpy.starter.starter import CLR
         apsim_version = CLR.apsim_compiled_version
         IS_NEW_APSIM = CLR.file_format_modified
         from apsimNGpy.tests.unittests.core import core, data_insights

@@ -208,11 +208,11 @@ class TestCoreModel(BaseTester):
         ensure that if soil node is missing, then a soil node is created
         @return:
         """
-        import Models
-        if is_file_format_modified():
-            import APSIM.Core as NodeUtils
-            from starter.cs_resources import CastHelper
-        else:
+        from apsimNGpy.starter.starter import CLR
+        Models = CLR.Models
+        NodeUtils =CLR.APsimCore
+        CastHelper = CLR.CastHelper
+        if not CLR.file_format_modified:
             self.skipTest('version can not mock simulations object using nodes')
         # creates a Models.Core.Simulations object
         mock_sims = NodeUtils.Node.Create(Models.Core.Simulations())

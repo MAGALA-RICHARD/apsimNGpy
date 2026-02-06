@@ -14,7 +14,6 @@ Array = CLR.System.Array
 List, KeyValuePair = CLR.System.Collections.Generic.List, CLR.System.Collections.Generic.KeyValuePair
 IEnumerable = CLR.System.Collections.IEnumerable
 
-
 from apsimNGpy.starter.cs_resources import simple_rotation_code, update_manager_code
 from apsimNGpy.core.model_loader import load_apsim_model
 from apsimNGpy.core.version_inspector import is_higher_apsim_version
@@ -930,6 +929,58 @@ def compile_manager(code):
 planting_info = {'seq': 'Maize, Soybean', 'in_crop': ('Maize',)}
 
 
+def clone_simulation(self, sim_name, rename, inplace=True):
+    """
+    Clone an existing simulation and optionally attach it to the current model.
+
+    This method locates a simulation by name, creates a deep clone of its
+    underlying APSIM node, renames the cloned simulation, and optionally
+    adds it to the model's ``Simulations`` container.
+
+    Parameters
+    ----------
+    sim_name : str
+        Name of the simulation to be cloned.
+    rename : str
+        New name to assign to the cloned simulation.
+    inplace : bool, optional
+        If True (default), the cloned simulation is added to the current
+        model's ``Simulations`` node. If False, the cloned node is returned
+        without being attached to the model tree.
+
+    Returns
+    -------
+    node : APSIM.Core.Node
+        The cloned simulation node.
+
+    Raises
+    ------
+    ValueError
+        If no simulation with the specified name is found.
+
+    Notes
+    -----
+    When ``inplace=True``, the cloned simulation becomes part of the model
+    and will be included in subsequent runs. When ``inplace=False``, the
+    caller is responsible for managing or attaching the returned node.
+    """
+    for s in self.simulations:
+        if s.Name == sim_name:
+            break
+    else:
+        raise ValueError(f"Simulation {sim_name} not found. available simulations are/is {[i.Name for i in self.simulations]}")
+
+    inode = CLR.Node.Clone(s.Node) if hasattr(s, 'Node') else CLR.Node.Clone(s)
+    if rename in {i.Name for i in self.simulations}:
+        raise NameError("rename {} already exists".format(rename))
+    CLR.Node.Rename(inode, rename)
+
+    if inplace:
+        self.Simulations.Children.Add(inode.Model)
+
+    return inode
+
+
 def configure(app, seq: Union[str, tuple, list], in_crop: Union[tuple, list], strategy: str,
               sowing_depth: str, row_spacing: str, population: int,
               cultivar_name: str, start_date: str, end_date=None, min_esw=100,
@@ -1210,6 +1261,7 @@ if __name__ == "__main__":
     import time
 
     from apsimNGpy.core.config import load_crop_from_disk
+
     get_apsim_file_reader = CLR.get_file_reader
     maize = load_crop_from_disk(crop='Maize', out='apism_run.apsimx')
     wf = load_crop_from_disk('AU_Dalby.met', out='AU_Dalby.met')

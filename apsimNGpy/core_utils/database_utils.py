@@ -20,6 +20,7 @@ from itertools import islice, repeat
 from typing import Iterable, Iterator, Optional, TypeVar, Callable
 import pandas as pd
 from typing import Dict, Tuple, Hashable, List
+from apsimNGpy.logger import logger
 
 T = TypeVar("T")
 

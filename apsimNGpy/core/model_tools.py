@@ -26,7 +26,7 @@ Models = CLR.Models
 Physical, SoilCrop, Organic, Solute, Chemical = Models.Soils.Physical, Models.Soils.SoilCrop, Models.Soils.Organic, Models.Soils.Solute, Models.Soils.Chemical
 IS_NEW_APSIM = CLR.file_format_modified
 
-from starter.cs_resources import CastHelper, sow_using_variable_rule, sow_on_fixed_date, harvest, \
+from apsimNGpy.starter.cs_resources import CastHelper, sow_using_variable_rule, sow_on_fixed_date, harvest, \
     fertilizer_at_sow, cast_as
 
 APSIM_VERSION = CLR.apsim_compiled_version

@@ -4,7 +4,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from starter.cs_resources import CastHelper as CastHelpers, cast_as
+from apsimNGpy.starter.cs_resources import CastHelper as CastHelpers, cast_as
 from starter.starter import Models, is_file_format_modified
 from apsimNGpy.core.model_loader import model_from_string
 

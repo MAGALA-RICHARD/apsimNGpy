@@ -9,7 +9,7 @@ from apsimNGpy.core.model_tools import ModelTools, Models
 from apsimNGpy.core.runner import invoke_csharp_gc, run_model_externally
 from apsimNGpy.core.version_inspector import is_higher_apsim_version
 from apsimNGpy.starter.starter import CLR
-from starter.cs_resources import CastHelper
+from apsimNGpy.starter.cs_resources import CastHelper
 
 NodeUtils = CLR.APsimCore
 System = CLR.System

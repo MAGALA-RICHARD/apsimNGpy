@@ -22,7 +22,7 @@ from apsimNGpy.core.core import CoreModel, ModelTools
 
 
 Models = CLR.Models
-from starter.cs_resources import CastHelper
+from apsimNGpy.starter.cs_resources import CastHelper
 from apsimNGpy.core.model_loader import AUTO_PATH
 from apsimNGpy.core.model_loader import get_node_by_path
 from apsimNGpy.core.model_tools import find_child_of_class

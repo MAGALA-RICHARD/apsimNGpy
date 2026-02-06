@@ -1,0 +1,42 @@
+{
+  "$type": "Models.Core.Simulations, Models",
+  "Version": 201,
+  "Name": "Simulations",
+  "ResourceName": null,
+  "Children": [
+    {
+      "$type": "Models.Core.Simulation, Models",
+      "Descriptors": null,
+      "Name": "Simulation",
+      "ResourceName": null,
+      "Children": [
+        {
+          "$type": "Models.Core.Zone, Models",
+          "Area": 0.0,
+          "Slope": 0.0,
+          "AspectAngle": 0.0,
+          "Altitude": 50.0,
+          "CanopyType": null,
+          "Name": "Zone",
+          "ResourceName": null,
+          "Children": [],
+          "Enabled": true,
+          "ReadOnly": false
+        }
+      ],
+      "Enabled": true,
+      "ReadOnly": false
+    },
+    {
+      "$type": "Models.Storage.DataStore, Models",
+      "CustomFileName": null,
+      "Name": "DataStore",
+      "ResourceName": null,
+      "Children": [],
+      "Enabled": true,
+      "ReadOnly": false
+    }
+  ],
+  "Enabled": true,
+  "ReadOnly": false
+}

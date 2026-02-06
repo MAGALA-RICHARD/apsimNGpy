@@ -29,10 +29,11 @@ def run_suite(_bin_path, verbosity_level=2):
         from apsimNGpy.tests.unittests.manager import weathermanager, soilmanager, test_get_weather_from_web_filename
         from apsimNGpy.tests.unittests.core import apsim, senstivitymanager, experimentmanager, model_loader, \
             model_tools, \
-            pythonnet_config, edit_model_by_path, core_edit_model, cs_resources, config, plot_manager
+            edit_model_by_path, core_edit_model, cs_resources, config, plot_manager
         from apsimNGpy.tests.unittests.optimizer import vars, smp
+        from apsimNGpy.tests.unittests.starter import starter
 
-        modules = {pythonnet_config,
+        modules = {starter,
                    model_tools,
                    senstivitymanager,
                    core,

@@ -1,4 +1,6 @@
 import os.path
+import sys
+import time
 import unittest
 from pathlib import Path
 import pandas as pd
@@ -195,20 +197,29 @@ class TestModelTools(unittest.TestCase):
             ):
                 clone_simulation(pp, 'does not exists', rename=rename)
 
+    from apsimNGpy.core_utils.utils import timer
+
     def test_all_simulation_runs_well_on_cloning(self):
         """
         Assert that simulation runs on the cloning and when inplace=True
         @return:
         """
         with ApsimModel('Maize') as m:
-            clone_simulation(m, 'Simulation', rename='cloned_simulation', inplace=True)
-            clone_simulation(m, 'Simulation', rename='cloned_simulation1', inplace=True)
-            clone_simulation(m, 'Simulation', rename='cloned_simulation2', inplace=True)
+            a= time.perf_counter()
+            for i in range(0, 200):
+                clone_simulation(m, 'Simulation', rename=f"sim_{i}")
+            b = time.perf_counter()
+            print(b-a, 'seconds elapsed to add the simulations')
+            a = time.perf_counter()
             m.run(verbose=True)
+            print(time.perf_counter() - a, 'seconds to run simulations')
             self.assertFalse(m.results.empty, msg=f'cloning Simulation led to malformed results')
             # also check that simulations ID are more than 1
             self.assertGreater(len(m.results.SimulationID.unique()), 1,
                                msg=f'simulation are not greater than 1 despite adding another simulation')
+            print(sys.getsizeof(m.simulations) / (1024 ** 2))
+            print(m.results.shape)
+            print(len(m.simulations))
 
     def test_simulation_extractor_returns_correct_no_of_sims(self):
         """

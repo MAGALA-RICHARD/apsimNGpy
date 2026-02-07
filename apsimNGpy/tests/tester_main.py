@@ -9,8 +9,12 @@ from apsimNGpy.mailer.mail import send_report
 date_STR = datetime.now().strftime("%y-%m-%d-%H-%M-%S")
 
 from apsimNGpy.core.config import apsim_bin_context, get_apsim_bin_path
-
-bin_path = Path(os.environ.get('TEST_APSIM_BINARY')) or get_apsim_bin_path()
+TEST_BIN = os.environ.get('TEST_APSIM_BINARY')
+bin_path = TEST_BIN or get_apsim_bin_path()
+if bin_path is not None:
+    bin_path = Path(bin_path)
+else:
+    bin_path = input("please enter your apsim binary path:").strip()
 logger.info('Using apsim bin: {}'.format(bin_path))
 
 

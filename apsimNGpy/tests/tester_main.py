@@ -10,7 +10,7 @@ date_STR = datetime.now().strftime("%y-%m-%d-%H-%M-%S")
 
 from apsimNGpy.core.config import apsim_bin_context, get_apsim_bin_path
 
-bin_path = Path(os.environ.get('TEST_APSIM_BINARY')) or get_apsim_bin_path()
+bin_path = os.environ.get('TEST_APSIM_BINARY') or get_apsim_bin_path()
 logger.info('Using apsim bin: {}'.format(bin_path))
 
 

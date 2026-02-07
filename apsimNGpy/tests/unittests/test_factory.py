@@ -221,7 +221,7 @@ if __name__ == "__main__":
         m.Simulations.Children.Add(c.Model)
         m.save()
         # m.preview_simulation()
-        m.inspect_file()
+        #m.inspect_file()
         m.edit_model('Models.Manager', 'Sow using a variable rule', Population=4, simulations='new_babe')
         m.run(verbose=True)
         clone_simulation(m, 'Simulation', rename='re')
@@ -229,7 +229,7 @@ if __name__ == "__main__":
         # mock simulations when base is Models.Core.Simulation object
     sim2 = mock_multiple_simulations(n=5, base_simulation=s)
     print([i.Name for i in sim2.Children])
-    sim_no = (i for i in range(100, 200))
+    sim_no = (i for i in [0, 100, 300, 150, 200, 350, 400])
     with ApsimModel('Maize') as m:
         a = time.perf_counter()
 

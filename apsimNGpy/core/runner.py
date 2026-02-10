@@ -1075,47 +1075,47 @@ def dir_simulations_to_sql(
     gc.collect()
 
 
-if __name__ == '__main__':
-    import time
-    from apsimNGpy.core.config import load_crop_from_disk
-
-    maize = load_crop_from_disk('Maize', out='maizee.apsimx')
-    try:
-        a1 = time.perf_counter()
-        run_apsim_by_path(maize)
-        b = time.perf_counter()
-        print(b - a1, 'seconds in dir mode')
-    finally:
-        os.remove(maize)
-
-
-
-
-
-    tr = trial_run()
-    from apsimNGpy.starter.starter import CLR
-    from apsimNGpy import load_crop_from_disk
-
-    maize = load_crop_from_disk('Maize', out=Path('Maize.apsimx').resolve())
-    maize2 = load_crop_from_disk('Maize', out=Path('Maize2.apsimx').resolve())
-    read = CLR.APsimCore.FileFormat.ReadFromFile[CLR.Models.Core.Simulations]
-
-    import APSIM.Core as c
-
-    model = read(str(maize), None, True)
-    import ApsimNG
-
-    xc = run_apsim_by_path([maize, maize2])
-    import APSIM.Shared as ap
-    from apsimNGpy.starter.starter import CLR
-    from System.Collections.Generic import List
-
-    files = List[CLR.Models.Core.Run.Runner]()
-    fi = ap.JobRunning.IJobManager
-    runtype = CLR.Models.Core.Run.Runner.RunTypeEnum.MultiThreaded
-
-    _rn = CLR.Models.Core.Run.Runner(model.Model, wait=False, runTests=False,
-                                     RunTypeEnum=runtype,
-                                     numberOfProcessors=9)
-    rn = _rn.Run()
-    files.Add(_rn)
+# if __name__ == '__main__':
+#     import time
+#     from apsimNGpy.core.config import load_crop_from_disk
+#
+#     maize = load_crop_from_disk('Maize', out='maizee.apsimx')
+#     try:
+#         a1 = time.perf_counter()
+#         run_apsim_by_path(maize)
+#         b = time.perf_counter()
+#         print(b - a1, 'seconds in dir mode')
+#     finally:
+#         os.remove(maize)
+#
+#
+#
+#
+#
+#     tr = trial_run()
+#     from apsimNGpy.starter.starter import CLR
+#     from apsimNGpy import load_crop_from_disk
+#
+#     maize = load_crop_from_disk('Maize', out=Path('Maize.apsimx').resolve())
+#     maize2 = load_crop_from_disk('Maize', out=Path('Maize2.apsimx').resolve())
+#     read = CLR.APsimCore.FileFormat.ReadFromFile[CLR.Models.Core.Simulations]
+#
+#     import APSIM.Core as c
+#
+#     model = read(str(maize), None, True)
+#     import ApsimNG
+#
+#     xc = run_apsim_by_path([maize, maize2])
+#     import APSIM.Shared as ap
+#     from apsimNGpy.starter.starter import CLR
+#     from System.Collections.Generic import List
+#
+#     files = List[CLR.Models.Core.Run.Runner]()
+#     fi = ap.JobRunning.IJobManager
+#     runtype = CLR.Models.Core.Run.Runner.RunTypeEnum.MultiThreaded
+#
+#     _rn = CLR.Models.Core.Run.Runner(model.Model, wait=False, runTests=False,
+#                                      RunTypeEnum=runtype,
+#                                      numberOfProcessors=9)
+#     rn = _rn.Run()
+#     files.Add(_rn)

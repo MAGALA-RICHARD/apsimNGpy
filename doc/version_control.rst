@@ -37,9 +37,5 @@ The ``apsimNGpy`` package is designed to interface with any version of the APSIM
 
 .. tip::
 
-   APSIM has undergone three major version changes that introduced breaking changes for ``apsimNGpy``. This implies that there is high chance even for new versions not yet tested ``tested`` to still work.  Based on experience, about 98% do—thanks to apsimNGpy’s versatile API. However, if you hit a compatibility issue, please report it with your APSIM build number and a minimal example.
-
-   In addition, while breaking changes can be inconvenient—and have led some APSIM wrappers to pin to fixed versions, apsimNGpy is built with forward  and backward-compatibility in mind and is actively synchronized with upstream APSIM.
-   This philosophy lets researchers adopt APSIM improvements without reworking their pipelines, preserving reproducibility while enabling rapid iteration. This allows studies to be reproduced and extended as APSIM evolves.
-
-
+   An untested version may still work. If you want to try a version that has not yet been tested, give it a try first.
+   If it fails, please report it as an issue for prompt attention.

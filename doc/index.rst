@@ -62,33 +62,6 @@ Introduction
     - Evaluate model predictions using built-in metrics such as RMSE, RRMSE, WIA, MAE, CCC, and R².
     - Port complete projects across machines using containerized execution with referenced binaries.
 
-Discussion and Community Support
-================================
-
-Users who wish to ask questions, report issues, request new features,
-or engage in general discussion about **apsimNGpy** are encouraged to
-visit the project’s official `GitHub Discussions`_ page.
-
-This forum serves as the preferred place for:
-
-- Troubleshooting and “how-to” questions
-- Sharing workflows or examples
-- Feature proposals and use-case discussions
-- Clarification on model editing, optimization, and calibration
-- Community-driven enhancements
-- Collaboration with other APSIM users
-
-If your question is not answered in the documentation, feel free to
-start a new discussion thread and tag it appropriately.
-
-For reporting reproducible bugs or contributing code, please use the
-`GitHub Issues`_ tracker.
-
-
-.. _GitHub Discussions: https://github.com/MAGALA-RICHARD/apsimNGpy/discussions
-.. _GitHub Issues: https://github.com/MAGALA-RICHARD/apsimNGpy/issues
-
-
 .. toctree::
    :maxdepth: 2
    :caption: Table of Contents

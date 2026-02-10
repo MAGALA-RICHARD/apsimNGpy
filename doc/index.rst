@@ -111,7 +111,7 @@ For reporting reproducible bugs or contributing code, please use the
    manage_env
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 1
    :caption: EDITING & INSPECTION
 
    model inspection

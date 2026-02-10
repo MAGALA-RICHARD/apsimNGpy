@@ -32,7 +32,7 @@ The ``apsimNGpy`` package is designed to interface with any version of the APSIM
 
     * **Check the documentation homepage** to confirm the current ``latestunit apsimNGpy::version``.
     * **Stay updated** with the most recent version of ``apsimNGpy`` to benefit from improvements and compatibility updates.
-    * If issues arise with a new APSIM version, **fall back to a previously tested version** known to work with your current ``apsimNGpy`` setup.
+    * If issues arise with a new APSIM version, **fall back to a previously tested version** known to work with your current ``apsimNGpy`` setup or ask for assistance
 
 
 .. tip::

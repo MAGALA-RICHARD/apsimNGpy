@@ -15,7 +15,8 @@ def clean(root_dir: Union[str, Path], recursive=False) -> None:
     def _get_files():
         ax = getattr(path, glob)('*.apsimx')
         db = getattr(path, glob)('*.db')
-        remove = list(ax) + list(db) + list(getattr(path, glob)('*.db-shm')) + list(getattr(path, glob)('*.csv'))
+        mets = getattr(path, glob)('*.mets')
+        remove = list(ax) + list(db) + list(getattr(path, glob)('*.db-shm')) + list(getattr(path, glob)('*.csv')) +list(mets)
         return remove
 
     fl = _get_files()

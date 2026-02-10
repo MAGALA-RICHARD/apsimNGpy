@@ -24,7 +24,7 @@ from apsimNGpy.core.df_grp import group_and_concat_by_schema
 from apsimNGpy.starter.starter import configuration
 from apsimNGpy.core_utils.database_utils import read_db_table, get_db_table_names
 from apsimNGpy.core_utils.database_utils import write_schema_grouped_tables
-from apsimNGpy.core_utils.utils import timer
+from apsimNGpy.core_utils.utils import timer, is_scalar
 from apsimNGpy.exceptions import ApsimRuntimeError
 from apsimNGpy.logger import logger
 
@@ -56,17 +56,17 @@ def get_apsim_executable(bin_path) -> str:
     return os.path.realpath(execU)
 
 
-
-
 AUTO = object()
+
+from pandas import Series
 
 
 def run_apsim_by_path(
-        model: Union[str, Path],
+        model: Union[str, Path, list, tuple, Series],
         *,
         bin_path: Union[str, Path, object] = AUTO,
         timeout: int = 800,
-        ncores: int = -1,
+        n_cores: int = -1,
         verbose: bool = False,
         to_csv: bool = False,
 ) -> subprocess.CompletedProcess[str]:
@@ -75,13 +75,13 @@ def run_apsim_by_path(
 
     Parameters
     ----------
-    model : str | Path
-        Path to the APSIM .apsimx model file.
+    model : str | Path | pd.Series[str], list[str], tuple[str]
+        Path to the APSIM .apsimx model file, or an array of strings paths
     bin_path : str | Path | AUTO
         APSIM bin directory. Defaults to configured APSIM path.
     timeout : int
         Maximum execution time in seconds.
-    ncores : int
+    n_cores : int
         Number of CPU cores (-1 uses all available).
     verbose : bool
         Enable APSIM verbose output.
@@ -92,6 +92,26 @@ def run_apsim_by_path(
     ------
     ApsimRuntimeError
         If APSIM execution fails or times out.
+
+    Examples
+    ------------------
+    .. code-block:: python
+
+        from apsimNGpy.core.config import load_crop_from_disk
+        from apsimNGpy.core.runner import run_apsim_by_path
+        maize = load_crop_from_disk('Maize', out='maize_test.apsimx')
+        run_apsim_by_path(maize)
+
+    run two files at once
+
+    .. code-block:: python
+
+     files = load_crop_from_disk('Maize', out='maize_test.apsimx'),  load_crop_from_disk('Soybean', out='soybean_test.apsimx')
+     run_apsim_by_path(files, n_cores=4)
+
+     .. note::
+
+       files should have distinct names and valid path
     """
 
     # Resolve APSIM binary
@@ -99,14 +119,29 @@ def run_apsim_by_path(
         bin_path = configuration.bin_path
 
     apsim_exec = _ensure_exec(get_apsim_executable(bin_path))
-    model_path = _ensure_model(model)
+    if not is_scalar(model):
+        # assumes it is an iterable other than a str
+        files = (_ensure_model(m) for m in model)  # check before sending to apsim models.exe
+        cmd: list[str] = [
+            str(apsim_exec),
+            *(_ensure_model(p) for p in files),
+            "--cpu-count",
+            str(n_cores),
+        ]
+    else:
+        # assumes that it is str or path as one unit
+        # NOTE:
+        # When processing multiple files, passing them as a list in a single run is more
+        # efficient than invoking separate runs for each file individually.
 
-    cmd: list[str] = [
-        str(apsim_exec),
-        str(model_path),
-        "--cpu-count",
-        str(ncores),
-    ]
+        model_path = _ensure_model(model)
+
+        cmd: list[str] = [
+            str(apsim_exec),
+            model_path,
+            "--cpu-count",
+            str(n_cores),
+        ]
 
     if verbose:
         cmd.append("--verbose")
@@ -221,12 +256,16 @@ def _ensure_exec(path: Union[str, Path]) -> str:
 
 
 def _ensure_model(path: Union[str, Path]) -> str:
-    p = Path(path).expanduser().resolve()
-    if not p.is_file():
+    """
+    Ensure the path exists and ends with .apsimx extension
+    @param path: expected candidate oath
+    @return: str path
+    """
+    p = Path(path).with_suffix('.apsimx').resolve()
+    if p.is_file():
+        return str(p)
+    else:
         raise FileNotFoundError(f"APSIM model file not found: {p}")
-    # Optional: enforce extension
-    # if p.suffix.lower() != ".apsimx": raise ValueError(f"Expected .apsimx: {p}")
-    return str(p)
 
 
 @lru_cache(maxsize=None)
@@ -599,12 +638,12 @@ def run_p(path):
 
 
 @timer
-def trial_run(self, report_name=None,
-              simulations=None,
-              clean=False,
-              multithread=True,
-              verbose=False,
-              get_dict=False, **kwargs):
+def trial_run(
+        simulations=None,
+        clean=False,
+        multithread=True,
+        verbose=False,
+        get_dict=False, **kwargs):
     """
     Run APSIM model simulations.
 
@@ -641,30 +680,10 @@ def trial_run(self, report_name=None,
     from apsimNGpy.starter.starter import CLR
     Models = CLR.Models
 
-
     try:
         # Set run type
         runtype = Models.Core.Run.Runner.RunTypeEnum.MultiThreaded if multithread \
             else Models.Core.Run.Runner.RunTypeEnum.SingleThreaded
-
-        # Open and optionally clean the datastore
-
-        if clean:
-            self._DataStore.Dispose(True)
-            self._DataStore.set_FileName(str(self.datastore))
-
-        # Get simulations to run
-        self._DataStore.Open()
-        sims = self.find_simulations(simulations) if simulations else self.Simulations
-        List = CLR.System.Collections.Generic.List
-        cs_sims = List[Models.Core.Simulation]()
-        if simulations:
-            cs_sims = List[Models.Core.Simulation]()
-            for s in sims:
-                cs_sims.Add(s)
-            sim = cs_sims
-        else:
-            sim = sims
 
         get_apsim_file_reader = CLR.get_file_reader
         # file = get_apsim_file_reader('file')[Models.Core.Simulations](self.path).Model
@@ -673,46 +692,39 @@ def trial_run(self, report_name=None,
         # Runner.DisposeStorage()
         # Runner.Run()
         # Run the model
-        _run_model = Models.Core.Run.Runner(sim, wait=True, runTests=True,
+        from apsimNGpy import load_crop_from_disk
+        maize = load_crop_from_disk('Maize', out=Path('Maiz_YY_e.apsimx').resolve())
+        read = CLR.get_file_reader(method='file')
+        sim = read[CLR.Models.Core.Simulations](str(maize), None, True)
+        _run_model = Models.Core.Run.Runner(sim.Model, wait=False, runTests=False,
                                             RunTypeEnum=runtype,
                                             numberOfProcessors=9)
-        _run_model.DisposeStorage()
+        from System.Collections.Generic import List
+        from System import String
+        files = List[String]()
+        files.Add(String(str(maize)))
+        _run_model = Models.Core.Run.Runner(sim.Model, wait=True, runTests=True,
+                                            RunTypeEnum=runtype,
+                                            numberOfProcessors=9)
         _run_model.UseInMemoryDB = False
-        print(self.Simulations.Node)
-        node = CLR.Node.Create(Models.Core.Simulations())
-        print(node)
-        errors = _run_model.Run()
-        print(errors)
+        # for i in dir(_run_model):
+        #     print(i) if not i.startswith('__') else None
+        _run_model.DisposeStorage()
+        rx = _run_model.Run()
+        _run_model.Finalize()
+        _datastore = maize.with_suffix('.db')
+        print(_datastore.stat().st_size)
+        print(_datastore)
+        print('report names', get_db_table_names(_datastore))
+        logger.info(list(_run_model.ExceptionsThrown))
+        print(_run_model.Status)
 
-        # Determine report names
-        if report_name is None:
-            report_name = get_db_table_names(self.datastore)
-            print(report_name)
-            if 'Report' in report_name:
-                print('success')
-            else:
-                print('fail')
-            if '_Units' in report_name:
-                report_name.remove('_Units')
-            if verbose:
-                warnings.warn(f"No report name specified. Using detected tables: {report_name}")
-        from sqlite3 import connect
-        # Read results
-        if isinstance(report_name, (list, tuple)):
-            if get_dict:
-                results = {rep: read_db_table(self.datastore, rep) for rep in report_name}
-            else:
-                results = [read_db_table(self.datastore, rep) for rep in report_name]
-        else:
-            if get_dict:
-                results = {report_name: read_db_table(self.datastore, report_name)}
-            else:
-                results = read_db_table(self.datastore, report_name)
+
+
+
     finally:
-        self._DataStore.Close()
-        invoke_csharp_gc()
 
-    return results
+        invoke_csharp_gc()
 
 
 def build_apsim_command(
@@ -1076,10 +1088,34 @@ if __name__ == '__main__':
     finally:
         os.remove(maize)
 
-    from apsimNGpy.core.apsim import ApsimModel
-
-    with ApsimModel('Mungbean') as model:
-
-        tr = trial_run(model)
 
 
+
+
+    tr = trial_run()
+    from apsimNGpy.starter.starter import CLR
+    from apsimNGpy import load_crop_from_disk
+
+    maize = load_crop_from_disk('Maize', out=Path('Maize.apsimx').resolve())
+    maize2 = load_crop_from_disk('Maize', out=Path('Maize2.apsimx').resolve())
+    read = CLR.APsimCore.FileFormat.ReadFromFile[CLR.Models.Core.Simulations]
+
+    import APSIM.Core as c
+
+    model = read(str(maize), None, True)
+    import ApsimNG
+
+    xc = run_apsim_by_path([maize, maize2])
+    import APSIM.Shared as ap
+    from apsimNGpy.starter.starter import CLR
+    from System.Collections.Generic import List
+
+    files = List[CLR.Models.Core.Run.Runner]()
+    fi = ap.JobRunning.IJobManager
+    runtype = CLR.Models.Core.Run.Runner.RunTypeEnum.MultiThreaded
+
+    _rn = CLR.Models.Core.Run.Runner(model.Model, wait=False, runTests=False,
+                                     RunTypeEnum=runtype,
+                                     numberOfProcessors=9)
+    rn = _rn.Run()
+    files.Add(_rn)

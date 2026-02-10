@@ -297,7 +297,7 @@ class ExperimentManager(ApsimModel):
             mode.model_info.Node.AddChild(experiment)
             sim_final = CastHelper.CastAs[Models.Core.Simulations](mode.model_info.Node)
 
-            if is_higher_apsim_version(self.Simulations):
+            if is_higher_apsim_version():
 
                 simx = ModelTools.find_all_in_scope(sim_final, Models.Core.Simulation)
                 simy = [ModelTools.CLONER(i) for i in simx]
@@ -360,7 +360,7 @@ class ExperimentManager(ApsimModel):
             self.Simulations = siM
             self.save()
 
-        if is_higher_apsim_version(self.Simulations):
+        if is_higher_apsim_version():
 
             refresher()
 
@@ -605,7 +605,7 @@ class ExperimentManager(ApsimModel):
         # Choose parent node and parent class
         parent_factor = self.permutation_node if self.permutation else self.factorial_node
         parent_class = Models.Factorial.Permutation if self.permutation else Models.Factorial.Factors
-        if is_higher_apsim_version(self.Simulations):
+        if is_higher_apsim_version():
             parent_factor = ModelTools.find_child_of_class(self.Simulations, parent_class)
 
         new_factor = Models.Factorial.Factor()

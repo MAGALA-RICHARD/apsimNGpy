@@ -136,8 +136,12 @@ class ConfigRuntimeInfo:
         return _fetch_file_reader(method=method, models_namespace=self.Models, apsim_version=CLR.apsim_compiled_version)
 
     def get_file_writer(self):
+        """
+        Gets the apsimx file writer based on the architecture of the compiled APSIM binaries
+        @return:
+        """
         if self.APsimCore or not getattr(self.Models.Core.ApsimFile, "FileFormat", None):
-            base = self.APsimCore.APSIM.Core.FileFormat
+            base = self.APsimCore.Core.FileFormat
         else:
             base = self.Models.Core.ApsimFile.FileFormat
         return getattr(base, 'WriteToString')

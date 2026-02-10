@@ -236,7 +236,7 @@ class SensitivityManager(ApsimModel):
             self.Simulations = siM
             self.save()
 
-        if is_higher_apsim_version(self.Simulations):
+        if is_higher_apsim_version():
             refresher()
 
         self.init = True

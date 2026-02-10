@@ -55,7 +55,7 @@ Introduction
     - Run large experiment sets efficiently using multiprocessing or multithreading.
     - Integrate geospatial data with automated soil and weather input retrieval.
     - Perform multi-objective optimization and sensitivity analysis for model calibration.
-    - Execute APSIM through Jupyter, CLI, or scripts with results returned as pandas DataFrames.
+    - Execute APSIM through Jupyter, CLI, or python scripts with results returned as pandas DataFrames.
     - Inspect, edit, and manage APSIM models programmatically without the GUI.
     - Maintain forward and backward compatibility with evolving APSIM versions.
     - Extend and integrate workflows using an open, Apache-2.0 licensed architecture.

@@ -23,10 +23,11 @@ import pandas as pd
 from pathlib import Path
 from apsimNGpy.starter.starter import CLR
 from System import *
-#from System import InvalidOperationException, ArgumentOutOfRangeException
-KeyValuePair= CLR.System.Collections.Generic.KeyValuePair
+
+# from System import InvalidOperationException, ArgumentOutOfRangeException
+KeyValuePair = CLR.System.Collections.Generic.KeyValuePair
 String = CLR.System.String
-InvalidOperationException, ArgumentOutOfRangeException = CLR.System.InvalidOperationException,  CLR.System.ArgumentOutOfRangeException
+InvalidOperationException, ArgumentOutOfRangeException = CLR.System.InvalidOperationException, CLR.System.ArgumentOutOfRangeException
 from apsimNGpy.core._cultivar import edit_cultivar_by_path
 from apsimNGpy.core._cultivar import trace_cultivar
 from apsimNGpy.core.config import configuration
@@ -258,7 +259,7 @@ class CoreModel(PlotManager):
         # we can actually specify the simulation name in the bracket
         self.check_model()
 
-        if is_higher_apsim_version(self.Simulations):
+        if is_higher_apsim_version():
             return ModelTools.find_all_in_scope(self.Simulations, Models.Core.Simulation)
         return tuple(self.Simulations.FindAllDescendants[Models.Core.Simulation]())
 
@@ -437,7 +438,7 @@ class CoreModel(PlotManager):
 
         try:
 
-            if is_higher_apsim_version(self.Simulations):
+            if is_higher_apsim_version():
                 # self.Simulations.Write(_path)
                 save_model_to_file(getattr(self.Simulations, 'Node', self.Simulations), _path)
             else:
@@ -808,7 +809,7 @@ class CoreModel(PlotManager):
                 verbose=verbose,
                 to_csv=kwargs.get('to_csv', False),
                 timeout=timeout,
-                ncores=cpu_count,
+                n_cores=cpu_count,
             )
 
             if res.returncode == 0:
@@ -1143,7 +1144,7 @@ class CoreModel(PlotManager):
         adoptive_parent_type = validate_model_obj(adoptive_parent_type, evaluate_bound=False)
 
         # Locate the model to be cloned within the simulation scope
-        if is_higher_apsim_version(self.Simulations):
+        if is_higher_apsim_version():
             clone_parent = (ModelTools.find_child(self.Simulations, model_type, model_name) if model_name
                             else ModelTools.find_child_of_class(self.Simulations, model_type))
         else:
@@ -1916,7 +1917,7 @@ class CoreModel(PlotManager):
 
         def edit_object(obj):
             sim = obj
-            if is_higher_apsim_version(self.Simulations):
+            if is_higher_apsim_version():
                 model_instance = find_child(sim, model_type_class, model_name)
             else:
                 model_instance = sim.FindDescendant[model_type_class](model_name)
@@ -2153,7 +2154,7 @@ class CoreModel(PlotManager):
 
     def _get_report(self, report_name, parent):
         """just fetches the report from the simulations database """
-        if not is_higher_apsim_version(self.Simulations):
+        if not is_higher_apsim_version():
             if report_name:
                 get_report = ModelTools.find_child(parent, Models.Report, report_name)
                 # get_report = self.Simulations.FindDescendant[Models.Report](report_name)
@@ -3073,10 +3074,12 @@ class CoreModel(PlotManager):
 
     @property
     def is_recent_version(self):
-        return is_higher_apsim_version(self.Simulations)
+        """Bencmark to a known APSIM version when changes were drastic to influence changes in apsimNGpy API"""
+        return is_higher_apsim_version()
 
-    def update_manager(self, scope, manager_name, **kwargs):
-        if is_higher_apsim_version(self.Simulations):
+    @staticmethod
+    def update_manager(scope, manager_name, **kwargs):
+        if is_higher_apsim_version():
             manager = ModelTools.find_child(scope, Models.Manager, manager_name)
             manager = CastHelper.CastAs[Models.Manager](manager)
             if not manager:
@@ -3229,7 +3232,7 @@ class CoreModel(PlotManager):
             management = management,
 
         for sim in self.find_simulations(simulations):
-            if is_higher_apsim_version(self.Simulations):
+            if is_higher_apsim_version():
                 zone = ModelTools.find_child_of_class(sim, Models.Core.Zone)  # expect one Model.Core.Zone
             else:
                 zone = sim.FindChild[Models.Core.Zone]()
@@ -3554,7 +3557,7 @@ class CoreModel(PlotManager):
         simus = self.find_simulations(simulations=simulations)
         sims = (i for i in simus if i.Name not in exclude)
         for sim in sims:
-            if is_higher_apsim_version(self.Simulations):
+            if is_higher_apsim_version():
                 weathers = ModelTools.find_all_in_scope(sim, Models.Climate.Weather)
             else:
                 weathers = sim.FindAllDescendants[Models.Climate.Weather]()
@@ -3790,7 +3793,7 @@ class CoreModel(PlotManager):
         """
         simulations = self.find_simulations(simulations)
         for sim in simulations:
-            if is_higher_apsim_version(self.Simulations):
+            if is_higher_apsim_version():
                 i_enum = ModelTools.find_all_in_scope(sim, Models.Report)
                 i_enum = [i for i in i_enum if i.Name == report_name]
             else:
@@ -3815,7 +3818,7 @@ class CoreModel(PlotManager):
         """
         sim_physical = {}
         for nn, simu in enumerate(self._find_simulation(simulations)):
-            if is_higher_apsim_version(self.Simulations):
+            if is_higher_apsim_version():
                 physical_soil = ModelTools.find_child_of_class(simu, Models.Soils.Physical)
             else:
                 soil_object = simu.FindDescendant[Models.Soils]()
@@ -4029,7 +4032,7 @@ class CoreModel(PlotManager):
 
         else:
 
-            if is_higher_apsim_version(self.Simulations):
+            if is_higher_apsim_version():
                 obj = ModelTools.find_all_in_scope(inspection_location, model_type)
             else:
                 try:
@@ -4265,7 +4268,7 @@ class CoreModel(PlotManager):
             soil_class = self.find_model(sub_soil)
 
             if soil_child != 'soilcrop':
-                if is_higher_apsim_version(self.Simulations):
+                if is_higher_apsim_version():
                     _soil_child = ModelTools.find_all_in_scope(simu, soil_class)  # requires recussion
                     if not _soil_child:
                         raise ModelNotFoundError(f"model of class {soil_class} not found in {simu.FullPath}")
@@ -4673,14 +4676,14 @@ class CoreModel(PlotManager):
         _FOLDER.Name = "Replacements"
         PARENT = self.Simulations
         # parent replacement should be added once
-        if is_higher_apsim_version(self.Simulations):
+        if is_higher_apsim_version():
             target_parent = ModelTools.find_child(PARENT, Models.Core.Folder, 'Replacements')
         else:
             target_parent = PARENT.FindDescendant[Models.Core.Folder]('Replacements')
         if not target_parent:
             ModelTools.ADD(_FOLDER, PARENT)
         # assumes that the crop already exists in the simulation
-        if is_higher_apsim_version(self.Simulations):
+        if is_higher_apsim_version():
             _crop = ModelTools.find_child(PARENT, Models.PMF.Plant, CROP)
         else:
             _crop = PARENT.FindDescendant[Models.PMF.Plant](CROP)
@@ -5164,7 +5167,7 @@ class CoreModel(PlotManager):
         sims = self.find_simulations(simulation_name)
 
         for sim in sims:
-            if is_higher_apsim_version(self.Simulations):
+            if is_higher_apsim_version():
                 zone = ModelTools.find_child_of_class(sim, Models.Core.Zone)
             else:
                 zone = sim.FindDescendant[Models.Core.Zone]()
@@ -5242,4 +5245,4 @@ if __name__ == '__main__':
     fixed_model.save(file_name)
     print(f"file exists: {file_name.exists()}")
     print(configuration.bin_path)
-    print('higher versions', is_higher_apsim_version(fixed_model.Simulations))
+    print('higher versions', is_higher_apsim_version())

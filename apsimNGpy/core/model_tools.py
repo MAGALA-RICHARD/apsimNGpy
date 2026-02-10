@@ -908,7 +908,7 @@ def add_as_simulation(_model, resource, sim_name):
 
 
 def detect_sowing_managers(_model):
-    if is_higher_apsim_version(_model.Simulations):
+    if is_higher_apsim_version():
         managers = find_all_in_scope(_model.Simulations, Models.Manager)
     else:
         managers = _model.Simulations.FindAllDescendants[Models.Manager]()

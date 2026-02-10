@@ -52,23 +52,15 @@ Introduction
    Built on object-oriented principles. apsimNGpy extends and augments APSIM Next Generation functionalities within the Python scientific ecosystem,
    turning GUI-centric workflows into scriptable, reproducible, and scalable pipelines. apsimNGpy functionalities include, but not limited to the following:
 
-    **Scalable performance.** Run large experiment sets efficiently via ``multiprocessing/multithreading`` (e.g., factorials, ensembles, calibrations) using a clean, high-level API.
-
-    **Spatial & data integration**. Leverage Python’s geospatial stack and built-in helpers to fetch and manage soil/weather inputs, enabling landscape-scale analyses.
-
-    **Optimization & calibration**. Access multi-objective optimization and sensitivity analysis to quantify trade-offs (e.g., yield vs. nitrate loss/GHG) and calibrate parameters.
-
-    **Reproducible automation**. Run ``APSIM`` using Jupyter/CLI/scripts; outputs land in ``pandas DataFrames`` for downstream analysis, plotting, and reporting.
-
-    **Full model manipulation**. A modular, ``object-oriented`` design supports inspection, editing, experiments, and custom reports without manual GUI interface.
-
-    **Version resilience**. rather than tying ``apsimNGpy`` to a fixed APSIM version, ``apsimNGpy`` is developed with forward- and backward-compatibility in mind and is actively synchronized with upstream APSIM.
-
-    **Open and extensible**. ``Apache-2.0`` licensing, clear abstractions, and a plug-friendly architecture make it easy to extend and integrate into existing research pipelines.
-
-    **Diverse model evaluation metrics**. Built-in model prediction evaluation metrics: RMSE, RRMSE, Willmott’s Index of Agreement (WIA), Bias, MAE, Lin's CCC, and R\ :sup:`2`
-
-    **Containerization and Portability**. Lastly but not least, it is worth noting that apsimNGpy simplifies **containerization**, allowing entire projects to be ported to another machine without reinstalling APSIM, provided the required binaries are correctly referenced.
+    - Run large experiment sets efficiently using multiprocessing or multithreading.
+    - Integrate geospatial data with automated soil and weather input retrieval.
+    - Perform multi-objective optimization and sensitivity analysis for model calibration.
+    - Execute APSIM through Jupyter, CLI, or scripts with results returned as pandas DataFrames.
+    - Inspect, edit, and manage APSIM models programmatically without the GUI.
+    - Maintain forward and backward compatibility with evolving APSIM versions.
+    - Extend and integrate workflows using an open, Apache-2.0 licensed architecture.
+    - Evaluate model predictions using built-in metrics such as RMSE, RRMSE, WIA, MAE, CCC, and R².
+    - Port complete projects across machines using containerized execution with referenced binaries.
 
 Discussion and Community Support
 ================================

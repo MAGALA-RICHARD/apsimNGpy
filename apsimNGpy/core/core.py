@@ -30,7 +30,7 @@ String = CLR.System.String
 InvalidOperationException, ArgumentOutOfRangeException = CLR.System.InvalidOperationException, CLR.System.ArgumentOutOfRangeException
 from apsimNGpy.core._cultivar import edit_cultivar_by_path
 from apsimNGpy.core._cultivar import trace_cultivar
-from apsimNGpy.core.config import configuration
+from apsimNGpy import configuration
 
 CastHelper = CLR.CastHelper
 from apsimNGpy.core.model_loader import (load_apsim_model, save_model_to_file, recompile, get_node_by_path, AUTO_PATH)
@@ -4421,10 +4421,9 @@ class CoreModel(PlotManager):
 
         """
         if IS_NEW_MODEL:
-            from apsimNGpy.core.config import apsim_version
-            version = apsim_version()
+
             logger.warning(
-                f'\n create_experiment is deprecated for this apsim version {version} use the `apsimNGpy.core.experiment.ExperimentManager` class instead.')
+                f'\n create_experiment is deprecated for this apsim version {CLR.apsim_compiled_version} use the `apsimNGpy.core.experiment.ExperimentManager` class instead.')
             return self
         #
         self.refresh_model()
@@ -4497,7 +4496,7 @@ class CoreModel(PlotManager):
             apsim.add_factor(specification="[Sow using a variable rule].Script.Population =4 to 8 step 2", factor_name='Population')
             apsim.run() # doctest: +SKIP
         """
-        # TODO fix factors either composite or not composite
+
         if factor_name is None:
             get_name = specification.split("=")[0].strip()
             # split again by

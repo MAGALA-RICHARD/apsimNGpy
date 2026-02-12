@@ -13,23 +13,28 @@ from typing import Union
 from apsimNGpy.starter.starter import CLR
 import numpy as np
 import pandas as pd
-from Models.Soils import Physical, SoilCrop, Organic, LayerStructure
-from Models.Soils import Water, Chemical
-from System import *
-from System.Collections.Generic import *
+# from System import *
+# from System.Collections.Generic import *
 
 from apsimNGpy.core.core import CoreModel, ModelTools
 
-
 Models = CLR.Models
-from apsimNGpy.starter.cs_resources import CastHelper
+CastHelper = CLR.CastHelper
 from apsimNGpy.core.model_loader import AUTO_PATH
 from apsimNGpy.core.model_loader import get_node_by_path
 from apsimNGpy.core.model_tools import find_child_of_class
 from apsimNGpy.core.soiler import SoilManager
-from apsimNGpy.logger import logger
+from apsimNGpy import logger
 from apsimNGpy.soils.helpers import soil_water_param_fill
 
+# expose some models
+# ===================================
+Physical = CLR.Models.Soils.Physical
+SoilCrop = CLR.Models.Soils.SoilCrop
+Organic = CLR.Models.Soils.Organic
+LayerStructure = CLR.Models.Soils.LayerStructure
+Water = CLR.Models.Soils.Water
+Chemical = CLR.Models.Soils.Chemical
 
 # ===================================================================================================
 

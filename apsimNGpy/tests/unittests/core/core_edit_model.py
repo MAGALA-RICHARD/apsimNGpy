@@ -3,10 +3,10 @@ Tests edit_model_method and inspect model_parameters co-currently.
 
 
 """
-from apsimNGpy.core.base_data import load_default_simulations
-from apsimNGpy.core.apsim import ApsimModel
 import unittest
 from pathlib import Path
+from apsimNGpy.tests.unittests.base_unit_tests import BaseTester
+from apsimNGpy.core.apsim import ApsimModel
 
 wd = Path(__file__).parent.joinpath('test_edits')
 wd.mkdir(parents=True, exist_ok=True)
@@ -17,7 +17,7 @@ SIMULATION = 'Simulation'
 import os
 
 
-class TestCoreModel(unittest.TestCase):
+class TestCoreModel(BaseTester):
 
     def setUp(self):
         self.out_path = Path(f"{self._testMethodName}.apsimx")
@@ -176,6 +176,10 @@ class TestCoreModel(unittest.TestCase):
         for path in self.paths:
             if os.path.exists(path):
                 os.remove(path)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls._clean_up(where=wd)
 
 
 if __name__ == '__main__':

@@ -1,11 +1,10 @@
 import os
+import shutil
 import unittest
 from pathlib import Path
 import gc
 from apsimNGpy.core.apsim import ApsimModel, Models
 from apsimNGpy.tests.unittests.base_unit_tests import BaseTester
-
-
 
 wd = Path.cwd() / "test_apsim"
 wd.mkdir(parents=True, exist_ok=True)
@@ -17,7 +16,7 @@ Models = Models
 class TestCoreModel(BaseTester):
     def setUp(self):
         self.out_path = Path(f"{self._testMethodName}.apsimx")
-
+        self.wd = wd
         self.test_ap_sim = ApsimModel("Maize", out_path=self.out_path)
         self.mock_sim_path_name = Path(f"__mock__{self._testMethodName}.apsimx")
         self.thickness_sequence_test_values = [100, 200, 200, 200, 300, 250, 400, 450]
@@ -210,7 +209,7 @@ class TestCoreModel(BaseTester):
         """
         from apsimNGpy.starter.starter import CLR
         Models = CLR.Models
-        NodeUtils =CLR.APsimCore
+        NodeUtils = CLR.APsimCore
         CastHelper = CLR.CastHelper
         if not CLR.file_format_modified:
             self.skipTest('version can not mock simulations object using nodes')
@@ -246,6 +245,10 @@ class TestCoreModel(BaseTester):
         del self.test_ap_sim
         del self.thickness_sequence_test_values
         gc.collect()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls._clean_up(where=wd)
 
 
 # initialize the model

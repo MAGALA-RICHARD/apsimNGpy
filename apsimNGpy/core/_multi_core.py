@@ -1,12 +1,14 @@
 import os
 import sqlite3
+from itertools import tee
 from pathlib import Path
 
+import pandas as pd
 from pandas import DataFrame
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 from uuid import uuid4
 from apsimNGpy.core.apsim import ApsimModel
-from apsimNGpy.core_utils.database_utils import write_df_to_sql
+from apsimNGpy.core_utils.database_utils import write_df_to_sql, read_with_pandas, get_db_table_names
 from apsimNGpy.exceptions import ApsimRuntimeError
 import hashlib
 from multiprocessing import Value, Lock
@@ -317,3 +319,63 @@ def single_runner(
         return True
 
     return runner_it()
+
+
+x = 0
+
+from apsimNGpy.core_utils.utils import timer
+
+
+@timer
+def run_multi_core(files, agg_func=None):
+    """
+    runs multiple files at a go and collect results to sql
+    @param files:
+    @return:
+    """
+    global x
+    from apsimNGpy.core.runner import run_apsim_by_path
+    run, files = tee(files, 2)
+    run_apsim_by_path(run, n_cores=12, timeout=1000)
+    dib = tuple(Path(ff).with_suffix('.db') for ff in files)
+
+    table_names = {d: (i for i in get_db_table_names(d) if not i.startswith('_')) for d in dib}
+
+    dif: list = [
+        [read_with_pandas(db_or_con=db, table=t) for t in v]
+        for db, v in table_names.items()
+    ]
+    for idx, d, in enumerate(dif):
+        x += (idx + 1)
+        dat = pd.concat(d, ignore_index=True)
+        dat['CollectionID'] = f"{os.getpid()}-{idx}"
+        dif[idx] = dat
+    if agg_func is not None:
+        df = pd.concat(dif, ignore_index=True)
+        number = df.select_dtypes(include='number').columns.tolist()
+        return df.groupby(['CollectionID']).agg({i:agg_func for i in number})
+
+    return dif
+
+
+if __name__ == '__main__':
+    from apsimNGpy import load_crop_from_disk
+
+    mcp = Path('mptc')
+    pid = os.getpid()
+    mcp.mkdir( exist_ok=True)
+    for u in mcp.glob('*'):
+        try:
+            u.unlink()
+        except PermissionError:
+            pass
+    files = (load_crop_from_disk('Maize', out=mcp.joinpath(f'soybean__{i}_{pid}_.apsimx')) for i in range(106))
+    try:
+        data = run_multi_core(files, agg_func='mean')
+    finally:
+        import shutil
+
+        shutil.rmtree(mcp, ignore_errors=True)
+
+# from apsimNGpy import set_apsim_bin_path, get_apsim_bin_path
+# set_apsim_bin_path(r'C:\Users\rmagala\AppData\Local\Programs\APSIM2026.2.7980.0\bin')

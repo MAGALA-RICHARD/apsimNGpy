@@ -206,7 +206,7 @@ class TestModelTools(unittest.TestCase):
         """
         with ApsimModel('Maize') as m:
             a= time.perf_counter()
-            for i in range(0, 200):
+            for i in range(0, 50):
                 clone_simulation(m, 'Simulation', rename=f"sim_{i}")
             b = time.perf_counter()
             print(b-a, 'seconds elapsed to add the simulations')

@@ -1,18 +1,10 @@
-import os
 from pathlib import Path
-from apsimNGpy.core.load_clr import start_pythonnet
-CAST_OBJECT = 'CastBridge'
-DLL_DIR = (Path(__file__).parent.parent / 'dll').joinpath(CAST_OBJECT)
-start_pythonnet()
-import clr
-clr.AddReference(str(DLL_DIR))
-from CastBridge import CastHelper
 
 
 # a more pythonic version
 
-def cast_as(model, model_class):
-    return CastHelper.CastAs[model_class](model)
+# def cast_as(model, model_class):
+#     return CastHelper.CastAs[model_class](model)
 
 
 simple_rotation_code = """

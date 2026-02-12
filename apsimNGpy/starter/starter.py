@@ -5,11 +5,9 @@ from pathlib import Path
 from typing import Union
 
 from apsimNGpy.bin_loader.resources import add_bin_to_syspath
-from apsimNGpy.core.config import configuration, locate_model_bin_path
-from apsimNGpy.starter.cs_resources import DLL_DIR
-from apsimNGpy.core.load_clr import start_pythonnet
+from apsimNGpy import configuration, locate_model_bin_path, logger, set_apsim_bin_path, DLL_DIR, start_pythonnet
 from apsimNGpy.exceptions import ApsimBinPathConfigError
-from apsimNGpy.logger import logger
+
 
 AUTO = object()
 

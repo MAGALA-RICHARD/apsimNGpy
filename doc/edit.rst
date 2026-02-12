@@ -299,7 +299,7 @@ retrieve this example just specifying its name as follows
 .. code-block:: python
 
     from apsimNGpy.core.apsim import ApsimModel
-    from apsimNGpy.core.config import load_crop_from_disk
+    from apsimNGpy import load_crop_from_disk
 
 How many simulations are this file? let's find out.
 

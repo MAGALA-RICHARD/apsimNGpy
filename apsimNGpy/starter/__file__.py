@@ -1,6 +1,6 @@
-from apsimNGpy.starter.starter import ConfigRuntimeInfo
 
-CLR = ConfigRuntimeInfo()
+from apsimNGpy.starter.starter import ConfigRuntimeInfo, is_file_format_modified, CLR
+
 
 Models = CLR.Models
 

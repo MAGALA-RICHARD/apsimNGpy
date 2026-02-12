@@ -480,7 +480,7 @@ class TestCoreModel(BaseTester):
             )
 
             self.assertTrue(sw3["SWCON"][-1] == 5,
-                "Bottom-layer update for SWCON failed")
+                            "Bottom-layer update for SWCON failed")
 
             # ------------------------------------------------------------
             # 5. Test scalar index update
@@ -488,8 +488,8 @@ class TestCoreModel(BaseTester):
             # ------------------------------------------------------------
             corep.edit_model_by_path(
                 '.Simulations.Simulation.Field.Soil.SoilWater',
-                SWCON= 5,
-                indices= -1
+                SWCON=5,
+                indices=-1
             )
 
             sw4 = corep.inspect_model_parameters_by_path(
@@ -497,14 +497,14 @@ class TestCoreModel(BaseTester):
             )
 
             self.assertTrue(sw4["SWCON"][-1] == 5,
-                "SWCON update with scalar index failed")
+                            "SWCON update with scalar index failed")
 
             # ------------------------------------------------------------
             # 6. Extra: ensure no unexpected attributes remain
             # ------------------------------------------------------------
 
             self.assertIsInstance(sw4["SWCON"], list,
-                msg="SWCON should always be stored as list after edits")
+                                  msg="SWCON should always be stored as list after edits")
 
             with self.assertRaises(AssertionError, msg=f'expected to raise AssertionError'):
                 corep.edit_model_by_path(
@@ -652,7 +652,23 @@ class TestCoreModel(BaseTester):
         except PermissionError:
             pass
 
+    @classmethod
+    def tearDownClass(cls):
+        scratch = list(wd.glob("*scratch"))
+
+        try:
+            if Path(os.getcwd()).resolve() == wd.resolve():
+                os.chdir(wd.parent)
+            shutil.rmtree(wd, ignore_errors=True)
+            for path in scratch:
+                if path.exists():
+                    shutil.rmtree(path, ignore_errors=True)
+        except (PermissionError, FileNotFoundError):
+            pass
+
 
 if __name__ == '__main__':
-    ...
-    unittest.main()
+    try:
+        unittest.main()
+    finally:
+        pass

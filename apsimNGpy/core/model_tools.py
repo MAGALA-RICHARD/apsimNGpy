@@ -19,17 +19,17 @@ from apsimNGpy.core.model_loader import load_apsim_model
 from apsimNGpy.core.version_inspector import is_higher_apsim_version
 from apsimNGpy.core_utils.utils import is_scalar
 from apsimNGpy.settings import *
-from apsimNGpy.logger import logger
+from apsimNGpy import logger
 
 Models = CLR.Models
 Physical, SoilCrop, Organic, Solute, Chemical = Models.Soils.Physical, Models.Soils.SoilCrop, Models.Soils.Organic, Models.Soils.Solute, Models.Soils.Chemical
 IS_NEW_APSIM = CLR.file_format_modified
 
-from apsimNGpy.starter.cs_resources import CastHelper, sow_using_variable_rule, sow_on_fixed_date, harvest, \
-    fertilizer_at_sow, cast_as
+from apsimNGpy.starter.cs_resources import   sow_on_fixed_date, harvest, \
+    fertilizer_at_sow
 
 APSIM_VERSION = CLR.apsim_compiled_version
-
+CastHelper = CLR.CastHelper
 
 def _add_model(model, parent) -> None:
     """
@@ -1013,7 +1013,7 @@ def configure(app, seq: Union[str, tuple, list], in_crop: Union[tuple, list], st
         @param name: name of the child
         @return:
         """
-
+        from apsimNGpy.starter.cs_resources import sow_using_variable_rule, sow_on_fixed_date
         # enforce
         child_model.Name = name
         ch = parent.Children
@@ -1228,7 +1228,7 @@ class ModelTools:
     String = String
     Double = Double
     Array = Array
-    CAST = cast_as
+
     find_child = find_child
     add_replacement_folder = add_replacement_folder
     find_all_in_scope = find_all_in_scope

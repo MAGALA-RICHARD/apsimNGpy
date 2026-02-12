@@ -3,8 +3,10 @@ import shutil
 import unittest
 from pathlib import Path
 from pandas import DataFrame
+
+from apsimNGpy import logger
 from apsimNGpy.core.runner import dir_simulations_to_sql, dir_simulations_to_dfs, \
-    dir_simulations_to_csv  # (unused here but kept if you need later)
+    dir_simulations_to_csv, run_apsim_by_path
 from apsimNGpy.tests.unittests.test_factory import mimic_multiple_files
 
 
@@ -98,6 +100,33 @@ class TestRunner(unittest.TestCase):
             0].CollectionID.unique()
         self.assertEqual(self.size, len(collection_ids))
 
+    def test_run_multiple_files_at_go(self):
+        from apsimNGpy.core_utils.database_utils import read_db_table
+        from pandas import concat
+        mtps = Path('.') / '.scratch_all'
+        mtps.mkdir(exist_ok=True)
+        base_size = 5
+        MSG = f"Not all files were run successfully "
+        try:
+            from apsimNGpy import load_crop_from_disk
+            files = (load_crop_from_disk('Maize', out=mtps / f"_subset_{i}.apsimx") for i in range(base_size))
+            run_apsim_by_path(files, n_cores=3)
+            dib = mtps.glob('*.db')
+            data = [read_db_table(db, report_name="Report") for db in dib]
+            self.assertEqual(len(data), base_size, msg=MSG)
+            is_empties = [False == df.empty for df in data]
+            is_empty = all(is_empties)
+            self.assertTrue(is_empty, msg=MSG)
+            logger.info('All tests passed for multiple files running run_apsim_by_path')
+        finally:
+            fi = mtps.rglob('*')
+            for fp in fi:
+                try:
+                    fp.unlink()
+                except PermissionError:
+                    pass
+            shutil.rmtree(mtps)
+
     def test_connection_homogenous_files(self):
         from sqlalchemy import create_engine, inspect
         database = 'temp_memory.db'
@@ -148,5 +177,4 @@ class TestRunner(unittest.TestCase):
 
 
 if __name__ == "__main__":
-
     unittest.main()

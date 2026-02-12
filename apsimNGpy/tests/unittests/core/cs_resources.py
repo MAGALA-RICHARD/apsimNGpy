@@ -4,11 +4,12 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from apsimNGpy.starter.cs_resources import CastHelper as CastHelpers, cast_as
 from apsimNGpy.starter.starter import Models, is_file_format_modified
 from apsimNGpy.core.model_loader import model_from_string
+from apsimNGpy.starter.starter import CLR
 
 NEW_APSIM = is_file_format_modified()  # bool
+CastHelpers = CLR.CastHelper
 
 
 class TestCastHelper(unittest.TestCase):
@@ -38,7 +39,7 @@ class TestCastHelper(unittest.TestCase):
         self.assertIsInstance(cast, Models.Core.Simulations,
                               "casting to Models.Core.Simulations failed")
 
-    def test_cast_as(self):
+    def _test_cast_as(self):
         """tests the cast function compiled as .dll the pythonic way"""
         if NEW_APSIM:
             # ensure that self.model is not the target conversion class

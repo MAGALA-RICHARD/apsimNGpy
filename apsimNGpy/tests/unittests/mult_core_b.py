@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from apsimNGpy.core.config import apsim_bin_context, configuration
+from apsimNGpy.config import apsim_bin_context, configuration
 import time
 
 bin_path = Path(os.environ.get('TEST_APSIM_BINARY'))
@@ -34,7 +34,7 @@ if __name__ == '__main__':
                                                          'Amount': i}]} for i in range(100, 122))
         start = time.perf_counter()
         # run all the jobs defined above
-        Parallel.run_all_jobs(jobs=jobs, n_cores=11, engine='csharp', threads=False, chunk_size=100,
+        Parallel.run_all_jobs(jobs=jobs, n_cores=11, engine='python', threads=False, chunk_size=100,
                               subset=['Yield'], callback=edit_weather,
                               progressbar=True)
         # extract the results

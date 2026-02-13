@@ -146,7 +146,8 @@ class ApsimModel(CoreModel):
             ref_data_col,
             target_col,
             index_col,
-            expr=None
+            expr=None,
+            verbose=True
     ):
         """
         Evaluate APSIM-simulated output against a reference (observed) dataset.
@@ -192,6 +193,8 @@ class ApsimModel(CoreModel):
             Optional transformation or expression applied prior to evaluation.
             May be a callable, a string expression, or ``None``.
             Default is ``None``.
+        verbose: bool
+           If ``True``, prints all results on for each metric on the console
 
         Returns
         -------
@@ -268,7 +271,7 @@ class ApsimModel(CoreModel):
         if not isinstance(ref_data, pd.DataFrame):
             raise TypeError(f"Expected {pd.DataFrame}, got {type(ref_data)}")
         return final_eval(ref_data, predicted, pred_col=target_col, index=index_col,
-                          obs_col=ref_data_col, exp=expr)
+                          obs_col=ref_data_col, exp=expr, verbose=verbose)
 
     def set_params(self, params: dict[str, Any] | None = None, **kwargs) -> "ApsimModel":
         """

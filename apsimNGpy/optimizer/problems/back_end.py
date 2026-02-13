@@ -275,7 +275,8 @@ def final_eval(
         index: Union[str, tuple, list],
         pred_col: str,
         obs_col: str,
-        exp: Optional[Iterable[str]] = None) -> dict:
+        exp: Optional[Iterable[str]] = None,
+        verbose=False) -> dict:
     """
     Evaluate observed and predicted values and return the full suite of
     performance metrics supported by the: class:`Validate` class.
@@ -304,7 +305,7 @@ def final_eval(
                 data.eval(expr, inplace=True)
 
     validator = Validate(data[obs_col], data[pred_col])
-    metric_dict = validator.evaluate_all(verbose=True)
+    metric_dict = validator.evaluate_all(verbose=verbose)
 
     return {"metrics": metric_dict, "data": data}
 

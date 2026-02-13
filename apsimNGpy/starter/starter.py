@@ -79,7 +79,7 @@ def _fetch_apsim_version(bin_path: str | Path, release_number: bool):
         version = assembly.GetName().Version.ToString()
         out = version if release_number else f"APSIM{version}"
     except Exception:
-        from apsimNGpy.core.config import apsim_version
+        from apsimNGpy.config import apsim_version
         return apsim_version()
     return out
 

@@ -223,7 +223,7 @@ class CoreModel(PlotManager):
                         return sim
                 else:
                     available = ', '.join(i.Name for i in self.simulations)
-                    syn = 'Valid option is' if len(self) == 1 else 'Valid options are' or 'No simulation are present'
+                    syn = 'Valid option is' if len(self) == 1 else 'Valid options are'
 
                     raise KeyError(
                         f"Simulation {name_or_index!r} does not exist. "

@@ -88,6 +88,7 @@ Classes
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.edit_cultivar`
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.edit_model`
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.edit_model_by_path`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.evaluate`
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.evaluate_simulated_output`
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.extract_any_soil_physical`
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.extract_soil_physical`
@@ -134,11 +135,18 @@ Classes
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.update_mgt`
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.update_mgt_by_path`
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.__init__(self, model: Union[os.PathLike, dict, str], out_path: Union[str, pathlib.Path] = <object object at 0x000001C18131DA50>, set_wd=None, **kwargs)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.__init__(self, model: Union[os.PathLike, dict, str], out_path: Union[str, pathlib.Path] = <object object at 0x0000021CBD32DC20>, set_wd=None, **kwargs)
 
    Initialize self.  See help(type(self)) for accurate signature.
 
    .. py:method:: apsimNGpy.core.apsim.ApsimModel.evaluate_simulated_output(self, ref_data: pandas.core.frame.DataFrame, table, ref_data_col, target_col, index_col, expr=None)
+
+   Deprecated wrapper for :meth:`evaluate`.
+
+   This method is maintained for backward compatibility and will be
+   removed in a future release. Please use :meth:`evaluate` instead.
+
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.evaluate(self, ref_data: pandas.core.frame.DataFrame, table, ref_data_col, target_col, index_col, expr=None, verbose=True)
 
    Evaluate APSIM-simulated output against a reference (observed) dataset.
 
@@ -183,6 +191,8 @@ Classes
        Optional transformation or expression applied prior to evaluation.
        May be a callable, a string expression, or ``None``.
        Default is ``None``.
+   verbose: bool
+      If ``True``, prints all results on for each metric on the console
 
    Returns
    -------
@@ -280,7 +290,7 @@ Classes
    In such cases, parameter sets can be programmatically generated, serialized,
    and reused without manual modification of code.
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.get_soil_from_web(self, simulations: Union[str, tuple, NoneType] = None, *, lonlat: Optional[System.Tuple[Double,Double]] = None, soil_series: Optional[str] = None, thickness_sequence: Optional[Sequence[float]] = 'auto', thickness_value: int = None, max_depth: Optional[int] = 2400, n_layers: int = 10, thinnest_layer: int = 100, thickness_growth_rate: float = 1.5, edit_sections: Optional[Sequence[str]] = None, attach_missing_sections: bool = True, additional_plants: tuple = None, source='isric', top_finert=0.65, top_fom=1000, top_fbiom=0.04, fom_cnr=40, soil_cnr=12, swcon=0.3, top_urea=0, top_nh3=0.5, top_nh4=0.05, adjust_dul: bool = True, **soil_kwargs)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.get_soil_from_web(self, simulations: Union[str, tuple, NoneType] = None, *, lonlat: Optional[Tuple[float, float]] = None, soil_series: Optional[str] = None, thickness_sequence: Optional[Sequence[float]] = 'auto', thickness_value: int = None, max_depth: Optional[int] = 2400, n_layers: int = 10, thinnest_layer: int = 50, thickness_growth_rate: float = 1.5, edit_sections: Optional[Sequence[str]] = None, attach_missing_sections: bool = True, additional_plants: tuple = None, source='isric', top_finert=0.65, top_fom=1000, top_fbiom=0.04, fom_cnr=40, soil_cnr=12, swcon=0.3, top_urea=0, top_nh3=0.5, top_nh4=0.05, adjust_dul: bool = True, **soil_kwargs)
 
       Download soil profiles for a given location and populate the APSIM NG
       soil sections in the current model.
@@ -605,7 +615,7 @@ Classes
    self : object
        Returns the updated ApsimModel instance.
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.save(self, file_name: 'Union[str, Path]' = <object object at 0x000001C1B0050B70>, reload=True) (inherited)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.save(self, file_name: 'Union[str, Path]' = <object object at 0x0000021C85E00D10>, reload=True) (inherited)
 
    Saves the current APSIM NG model (``Simulations``) to disk and refresh runtime state.
 
@@ -2716,7 +2726,7 @@ Classes
    ---------------------------------------------------------------------------
    returns an array of the parameter values
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x000001C1B0050B70>) (inherited)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x0000021C85E00D10>) (inherited)
 
    Inspect the model types and returns the model paths or names.
 
@@ -4043,6 +4053,7 @@ Classes
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.edit_cultivar`
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.edit_model`
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.edit_model_by_path`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.evaluate`
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.evaluate_simulated_output`
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.extract_any_soil_physical`
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.extract_soil_physical`
@@ -4091,7 +4102,7 @@ Classes
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.update_mgt`
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.update_mgt_by_path`
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.__init__(self, model, out_path=<object object at 0x000001C18131DA50>)
+   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.__init__(self, model, out_path=<object object at 0x0000021CBD32DC20>)
 
    Initialize self.  See help(type(self)) for accurate signature.
 
@@ -4400,6 +4411,13 @@ Classes
 
    .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.evaluate_simulated_output(self, ref_data: pandas.core.frame.DataFrame, table, ref_data_col, target_col, index_col, expr=None) (inherited)
 
+   Deprecated wrapper for :meth:`evaluate`.
+
+   This method is maintained for backward compatibility and will be
+   removed in a future release. Please use :meth:`evaluate` instead.
+
+   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.evaluate(self, ref_data: pandas.core.frame.DataFrame, table, ref_data_col, target_col, index_col, expr=None, verbose=True) (inherited)
+
    Evaluate APSIM-simulated output against a reference (observed) dataset.
 
    This method compares observed data (``ref_data``) with simulated predictions
@@ -4443,6 +4461,8 @@ Classes
        Optional transformation or expression applied prior to evaluation.
        May be a callable, a string expression, or ``None``.
        Default is ``None``.
+   verbose: bool
+      If ``True``, prints all results on for each metric on the console
 
    Returns
    -------
@@ -4540,7 +4560,7 @@ Classes
    In such cases, parameter sets can be programmatically generated, serialized,
    and reused without manual modification of code.
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.get_soil_from_web(self, simulations: Union[str, tuple, NoneType] = None, *, lonlat: Optional[System.Tuple[Double,Double]] = None, soil_series: Optional[str] = None, thickness_sequence: Optional[Sequence[float]] = 'auto', thickness_value: int = None, max_depth: Optional[int] = 2400, n_layers: int = 10, thinnest_layer: int = 100, thickness_growth_rate: float = 1.5, edit_sections: Optional[Sequence[str]] = None, attach_missing_sections: bool = True, additional_plants: tuple = None, source='isric', top_finert=0.65, top_fom=1000, top_fbiom=0.04, fom_cnr=40, soil_cnr=12, swcon=0.3, top_urea=0, top_nh3=0.5, top_nh4=0.05, adjust_dul: bool = True, **soil_kwargs) (inherited)
+   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.get_soil_from_web(self, simulations: Union[str, tuple, NoneType] = None, *, lonlat: Optional[Tuple[float, float]] = None, soil_series: Optional[str] = None, thickness_sequence: Optional[Sequence[float]] = 'auto', thickness_value: int = None, max_depth: Optional[int] = 2400, n_layers: int = 10, thinnest_layer: int = 50, thickness_growth_rate: float = 1.5, edit_sections: Optional[Sequence[str]] = None, attach_missing_sections: bool = True, additional_plants: tuple = None, source='isric', top_finert=0.65, top_fom=1000, top_fbiom=0.04, fom_cnr=40, soil_cnr=12, swcon=0.3, top_urea=0, top_nh3=0.5, top_nh4=0.05, adjust_dul: bool = True, **soil_kwargs) (inherited)
 
       Download soil profiles for a given location and populate the APSIM NG
       soil sections in the current model.
@@ -4865,7 +4885,7 @@ Classes
    self : object
        Returns the updated ApsimModel instance.
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.save(self, file_name: 'Union[str, Path]' = <object object at 0x000001C1B0050B70>, reload=True) (inherited)
+   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.save(self, file_name: 'Union[str, Path]' = <object object at 0x0000021C85E00D10>, reload=True) (inherited)
 
    Saves the current APSIM NG model (``Simulations``) to disk and refresh runtime state.
 
@@ -6976,7 +6996,7 @@ Classes
    ---------------------------------------------------------------------------
    returns an array of the parameter values
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x000001C1B0050B70>) (inherited)
+   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x0000021C85E00D10>) (inherited)
 
    Inspect the model types and returns the model paths or names.
 
@@ -8585,129 +8605,6 @@ Classes
 
    Default: ``<member 'tag' of 'MultiCoreManager' objects>``
 
-apsimNGpy.core.pythonet_config
-------------------------------
-
-Module attributes
-^^^^^^^^^^^^^^^^^^
-
-.. py:attribute:: apsimNGpy.core.pythonet_config.CLR
-
-   Default value: ``ConfigRuntimeInfo(bin_path='C:\\Users\\rmagala\\AppData\\Local\\Programs\\APSIM…``
-
-Functions
-^^^^^^^^^
-
-.. py:function:: apsimNGpy.core.pythonet_config.is_file_format_modified(bin_path: Union[str, pathlib.Path] = <object object at 0x000001C18131DA60>) -> bool
-
-   Checks if the APSIM.CORE.dll is present in the bin path. Normally, the new APSIM version has this dll file.
-
-   Parameters
-   ---------
-   bin_path: Union[str, Path, None].
-        Default is the current bin_path for apsimNGpy, used only when bin_path is None.
-
-   :returns:
-     bool
-
-Classes
-^^^^^^^
-
-.. py:class:: apsimNGpy.core.pythonet_config.ConfigRuntimeInfo
-
-   ConfigRuntimeInfo(bin_path: Union[pathlib.Path, str] = None, apsim_compiled_version: str = None, Models: 'Models' = None, clr_loaded: bool = None, file_format_modified: bool = True, Node: 'Node' = None, APsimCore: 'APSIM.Core' = None, pythonnet_started: bool = False, System: 'System.Module' = False, CastHelper: 'CastHelper' = None)
-
-   .. py:method:: apsimNGpy.core.pythonet_config.ConfigRuntimeInfo.__init__(self, bin_path: Union[pathlib.Path, str] = None, apsim_compiled_version: str = None, Models: 'Models' = None, clr_loaded: bool = None, file_format_modified: bool = True, Node: 'Node' = None, APsimCore: 'APSIM.Core' = None, pythonnet_started: bool = False, System: 'System.Module' = False, CastHelper: 'CastHelper' = None) -> None
-
-   Initialize self.  See help(type(self)) for accurate signature.
-
-   .. py:method:: apsimNGpy.core.pythonet_config.ConfigRuntimeInfo.get_file_reader(self, method='string')
-
-     Return an APSIM file reader callable based on the requested method.
-
-   This helper selects the appropriate APSIM NG ``FileFormat`` implementation,
-   accounting for runtime changes in the file format (via
-   :func:`is_file_format_modified`) and whether the managed type is available
-   under ``Models.Core.ApsimFile.FileFormat`` or ``APSIM.Core.FileFormat``.
-   It then returns the corresponding static method to read an APSIM file
-   either **from a string** or **from a file path**.
-
-   Parameters
-   ----------
-   method: {"string", "file"}, optional
-       Which reader to return:
-       - "string" >>> returns ``FileFormat.ReadFromString``.
-       - "file" >>> returns ``FileFormat.ReadFromFile``.
-       Defaults to ``"string"``.
-
-   Returns
-   -------
-   Callable
-       A .NET static method (callable from Python) that performs the read:
-       either ``ReadFromString(text: str)`` or ``ReadFromFile(path: str)``.
-   @param method:
-   @return:
-
-   .. py:method:: apsimNGpy.core.pythonet_config.ConfigRuntimeInfo.load_clr(self)
-
-   Initializes and caches the Python for .NET (pythonnet) runtime to avoid repeated setup.
-
-   Loads APSIM models directly from the configured binary path.
-
-   Attempts to load the coreclr runtime first, with a fallback to an alternative runtime if unavailable.
-
-   Configures the APSIM binary path and adds required .NET references.
-
-   Returns a ConfigRuntimeInfo object containing references to the loaded APSIM models.
-
-   Relies on a correctly configured APSIM bin path (via environment variable or set_apsim_bin_path).
-
-   Throws:
-
-   KeyError if the APSIM path environment variable is missing.
-
-   ValueError if the APSIM path is invalid.
-
-   .. py:attribute:: apsimNGpy.core.pythonet_config.ConfigRuntimeInfo.APsimCore
-
-   Default: ``<member 'APsimCore' of 'ConfigRuntimeInfo' objects>``
-
-   .. py:attribute:: apsimNGpy.core.pythonet_config.ConfigRuntimeInfo.CastHelper
-
-   Default: ``<member 'CastHelper' of 'ConfigRuntimeInfo' objects>``
-
-   .. py:attribute:: apsimNGpy.core.pythonet_config.ConfigRuntimeInfo.Models
-
-   Default: ``<member 'Models' of 'ConfigRuntimeInfo' objects>``
-
-   .. py:attribute:: apsimNGpy.core.pythonet_config.ConfigRuntimeInfo.Node
-
-   Default: ``<member 'Node' of 'ConfigRuntimeInfo' objects>``
-
-   .. py:attribute:: apsimNGpy.core.pythonet_config.ConfigRuntimeInfo.System
-
-   Default: ``<member 'System' of 'ConfigRuntimeInfo' objects>``
-
-   .. py:attribute:: apsimNGpy.core.pythonet_config.ConfigRuntimeInfo.apsim_compiled_version
-
-   Default: ``<member 'apsim_compiled_version' of 'ConfigRuntimeInfo' objects>``
-
-   .. py:attribute:: apsimNGpy.core.pythonet_config.ConfigRuntimeInfo.bin_path
-
-   Default: ``<member 'bin_path' of 'ConfigRuntimeInfo' objects>``
-
-   .. py:attribute:: apsimNGpy.core.pythonet_config.ConfigRuntimeInfo.clr_loaded
-
-   Default: ``<member 'clr_loaded' of 'ConfigRuntimeInfo' objects>``
-
-   .. py:attribute:: apsimNGpy.core.pythonet_config.ConfigRuntimeInfo.file_format_modified
-
-   Default: ``<member 'file_format_modified' of 'ConfigRuntimeInfo' objects>``
-
-   .. py:attribute:: apsimNGpy.core.pythonet_config.ConfigRuntimeInfo.pythonnet_started
-
-   Default: ``<member 'pythonnet_started' of 'ConfigRuntimeInfo' objects>``
-
 apsimNGpy.core.runner
 ---------------------
 
@@ -8931,7 +8828,7 @@ Functions
 
    Return True if obj looks like a DB connection.
 
-.. py:function:: apsimNGpy.core.runner.run_apsim_by_path(model: 'Union[str, Path]', *, bin_path: 'Union[str, Path, object]' = <object object at 0x000001C1B0050A10>, timeout: 'int' = 800, ncores: 'int' = -1, verbose: 'bool' = False, to_csv: 'bool' = False) -> 'None'
+.. py:function:: apsimNGpy.core.runner.run_apsim_by_path(model: 'Union[str, Path]', *, bin_path: 'Union[str, Path, object]' = <object object at 0x0000021C85E00BB0>, timeout: 'int' = 800, ncores: 'int' = -1, verbose: 'bool' = False, to_csv: 'bool' = False) -> 'subprocess.CompletedProcess[str]'
 
    Execute an APSIM model safely and reproducibly.
 
@@ -8976,7 +8873,7 @@ Functions
    RuntimeError
        If APSIM returns a non-zero exit code.
 
-.. py:function:: apsimNGpy.core.runner.run_model_externally(model: 'Union[Path, str]', *, apsim_bin_path: 'Optional[Union[Path, str]]' = <object object at 0x000001C1B0050A10>, verbose: 'bool' = False, to_csv: 'bool' = False, timeout: 'int' = 20, cpu_count=-1, cwd: 'Optional[Union[Path, str]]' = None) -> 'subprocess.CompletedProcess[str]'
+.. py:function:: apsimNGpy.core.runner.run_model_externally(model: 'Union[Path, str]', *, apsim_bin_path: 'Optional[Union[Path, str]]' = <object object at 0x0000021C85E00BB0>, verbose: 'bool' = False, to_csv: 'bool' = False, timeout: 'int' = 20, cpu_count=-1, cwd: 'Optional[Union[Path, str]]' = None) -> 'subprocess.CompletedProcess[str]'
 
    Run APSIM externally (cross-platform) with safe defaults.
 
@@ -9134,6 +9031,7 @@ Classes
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.edit_cultivar`
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.edit_model`
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.edit_model_by_path`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.evaluate`
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.evaluate_simulated_output`
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.extract_any_soil_physical`
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.extract_soil_physical`
@@ -9181,7 +9079,7 @@ Classes
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.update_mgt`
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.update_mgt_by_path`
 
-   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.__init__(self, model, out_path=<object object at 0x000001C18131DA50>)
+   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.__init__(self, model, out_path=<object object at 0x0000021CBD32DC20>)
 
    Initialize self.  See help(type(self)) for accurate signature.
 
@@ -9426,6 +9324,13 @@ Classes
 
    .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.evaluate_simulated_output(self, ref_data: pandas.core.frame.DataFrame, table, ref_data_col, target_col, index_col, expr=None) (inherited)
 
+   Deprecated wrapper for :meth:`evaluate`.
+
+   This method is maintained for backward compatibility and will be
+   removed in a future release. Please use :meth:`evaluate` instead.
+
+   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.evaluate(self, ref_data: pandas.core.frame.DataFrame, table, ref_data_col, target_col, index_col, expr=None, verbose=True) (inherited)
+
    Evaluate APSIM-simulated output against a reference (observed) dataset.
 
    This method compares observed data (``ref_data``) with simulated predictions
@@ -9469,6 +9374,8 @@ Classes
        Optional transformation or expression applied prior to evaluation.
        May be a callable, a string expression, or ``None``.
        Default is ``None``.
+   verbose: bool
+      If ``True``, prints all results on for each metric on the console
 
    Returns
    -------
@@ -9566,7 +9473,7 @@ Classes
    In such cases, parameter sets can be programmatically generated, serialized,
    and reused without manual modification of code.
 
-   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.get_soil_from_web(self, simulations: Union[str, tuple, NoneType] = None, *, lonlat: Optional[System.Tuple[Double,Double]] = None, soil_series: Optional[str] = None, thickness_sequence: Optional[Sequence[float]] = 'auto', thickness_value: int = None, max_depth: Optional[int] = 2400, n_layers: int = 10, thinnest_layer: int = 100, thickness_growth_rate: float = 1.5, edit_sections: Optional[Sequence[str]] = None, attach_missing_sections: bool = True, additional_plants: tuple = None, source='isric', top_finert=0.65, top_fom=1000, top_fbiom=0.04, fom_cnr=40, soil_cnr=12, swcon=0.3, top_urea=0, top_nh3=0.5, top_nh4=0.05, adjust_dul: bool = True, **soil_kwargs) (inherited)
+   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.get_soil_from_web(self, simulations: Union[str, tuple, NoneType] = None, *, lonlat: Optional[Tuple[float, float]] = None, soil_series: Optional[str] = None, thickness_sequence: Optional[Sequence[float]] = 'auto', thickness_value: int = None, max_depth: Optional[int] = 2400, n_layers: int = 10, thinnest_layer: int = 50, thickness_growth_rate: float = 1.5, edit_sections: Optional[Sequence[str]] = None, attach_missing_sections: bool = True, additional_plants: tuple = None, source='isric', top_finert=0.65, top_fom=1000, top_fbiom=0.04, fom_cnr=40, soil_cnr=12, swcon=0.3, top_urea=0, top_nh3=0.5, top_nh4=0.05, adjust_dul: bool = True, **soil_kwargs) (inherited)
 
       Download soil profiles for a given location and populate the APSIM NG
       soil sections in the current model.
@@ -9891,7 +9798,7 @@ Classes
    self : object
        Returns the updated ApsimModel instance.
 
-   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.save(self, file_name: 'Union[str, Path]' = <object object at 0x000001C1B0050B70>, reload=True) (inherited)
+   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.save(self, file_name: 'Union[str, Path]' = <object object at 0x0000021C85E00D10>, reload=True) (inherited)
 
    Saves the current APSIM NG model (``Simulations``) to disk and refresh runtime state.
 
@@ -12002,7 +11909,7 @@ Classes
    ---------------------------------------------------------------------------
    returns an array of the parameter values
 
-   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x000001C1B0050B70>) (inherited)
+   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x0000021C85E00D10>) (inherited)
 
    Inspect the model types and returns the model paths or names.
 
@@ -14190,7 +14097,7 @@ Functions
      float
          Metric value multiplied by the optimization direction.
 
-.. py:function:: apsimNGpy.optimizer.problems.back_end.final_eval(obs: pandas.core.frame.DataFrame, pred: pandas.core.frame.DataFrame, index: Union[str, tuple, list], pred_col: str, obs_col: str, exp: Optional[Iterable[str]] = None) -> dict
+.. py:function:: apsimNGpy.optimizer.problems.back_end.final_eval(obs: pandas.core.frame.DataFrame, pred: pandas.core.frame.DataFrame, index: Union[str, tuple, list], pred_col: str, obs_col: str, exp: Optional[Iterable[str]] = None, verbose=True) -> dict
 
    Evaluate observed and predicted values and return the full suite of
    performance metrics supported by the: class:`Validate` class.

@@ -18,7 +18,8 @@ if __name__ == '__main__':
     # get the APSIM binary path
 
     logger.info(configuration.bin_path, )
-    with apsim_bin_context(bin_path, disk_cache=False) as ap:
+    bn = r"C:\Users\rmagala\AppData\Local\Programs\APSIM2026.2.7989.0\bin"
+    with apsim_bin_context(bn, disk_cache=False) as ap:
         time.sleep(2)
         from apsimNGpy.core.mult_cores import MultiCoreManager
 
@@ -34,7 +35,7 @@ if __name__ == '__main__':
                                                          'Amount': i}]} for i in range(100, 122))
         start = time.perf_counter()
         # run all the jobs defined above
-        Parallel.run_all_jobs(jobs=jobs, n_cores=11, engine='python', threads=False, chunk_size=100,
+        Parallel.run_all_jobs(jobs=jobs, n_cores=1, engine='csharp', threads=False, chunk_size=100,
                               subset=['Yield'], callback=edit_weather,
                               progressbar=True)
         # extract the results

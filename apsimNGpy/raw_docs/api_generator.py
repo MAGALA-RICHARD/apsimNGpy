@@ -343,7 +343,7 @@ def main(apsim_bin_path):
                     )
         modules = (sensitivity,
                    process, apsim, mult_cores, experimentmanager, smp, single_mixed, senstivitymanager,
-                   evaluator, exceptions, database_utils, pythonet_config, config, runner, back_end,
+                   evaluator, exceptions, database_utils, config, runner, back_end,
                    )
 
         OUT = Path("doc/source/api.rst").resolve()

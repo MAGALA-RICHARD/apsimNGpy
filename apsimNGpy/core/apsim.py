@@ -36,6 +36,7 @@ LayerStructure = CLR.Models.Soils.LayerStructure
 Water = CLR.Models.Soils.Water
 Chemical = CLR.Models.Soils.Chemical
 
+
 # ===================================================================================================
 
 @dataclass(repr=False, order=False, init=False)
@@ -991,3 +992,4 @@ if __name__ == '__main__':
         ssurgo['ssurgo_yield'] = ssurgo['Yield']
         model.evaluate_simulated_output(ref_data=isric, table=ssurgo, index_col=['year'], target_col='ssurgo_yield',
                                         ref_data_col='Yield')
+        print(model[1])

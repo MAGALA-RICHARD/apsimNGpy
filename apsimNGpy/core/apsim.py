@@ -13,22 +13,28 @@ from typing import Union
 from apsimNGpy.starter.starter import CLR
 import numpy as np
 import pandas as pd
-from Models.Soils import Physical, SoilCrop, Organic, LayerStructure
-from Models.Soils import Water, Chemical
-from System import *
-from System.Collections.Generic import *
+# from System import *
+# from System.Collections.Generic import *
 
 from apsimNGpy.core.core import CoreModel, ModelTools
 
-
 Models = CLR.Models
-from apsimNGpy.starter.cs_resources import CastHelper
+CastHelper = CLR.CastHelper
 from apsimNGpy.core.model_loader import AUTO_PATH
 from apsimNGpy.core.model_loader import get_node_by_path
 from apsimNGpy.core.model_tools import find_child_of_class
 from apsimNGpy.core.soiler import SoilManager
-from apsimNGpy.logger import logger
+from apsimNGpy import logger
 from apsimNGpy.soils.helpers import soil_water_param_fill
+
+# expose some models
+# ===================================
+Physical = CLR.Models.Soils.Physical
+SoilCrop = CLR.Models.Soils.SoilCrop
+Organic = CLR.Models.Soils.Organic
+LayerStructure = CLR.Models.Soils.LayerStructure
+Water = CLR.Models.Soils.Water
+Chemical = CLR.Models.Soils.Chemical
 
 
 # ===================================================================================================
@@ -108,7 +114,40 @@ class ApsimModel(CoreModel):
             ref_data_col,
             target_col,
             index_col,
-            expr=None
+            expr=None,
+    ):
+        """
+        Deprecated wrapper for :meth:`evaluate`.
+
+        This method is maintained for backward compatibility and will be
+        removed in a future release. Please use :meth:`evaluate` instead.
+        """
+        import warnings
+        warnings.warn(
+            "`evaluate_simulated_output` is deprecated and will be removed "
+            "in a future version. Please use `evaluate` instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
+        return self.evaluate(
+            ref_data=ref_data,
+            table=table,
+            ref_data_col=ref_data_col,
+            target_col=target_col,
+            index_col=index_col,
+            expr=expr,
+        )
+
+    def evaluate(
+            self,
+            ref_data: pd.DataFrame,
+            table,
+            ref_data_col,
+            target_col,
+            index_col,
+            expr=None,
+            verbose=True
     ):
         """
         Evaluate APSIM-simulated output against a reference (observed) dataset.
@@ -154,6 +193,8 @@ class ApsimModel(CoreModel):
             Optional transformation or expression applied prior to evaluation.
             May be a callable, a string expression, or ``None``.
             Default is ``None``.
+        verbose: bool
+           If ``True``, prints all results on for each metric on the console
 
         Returns
         -------
@@ -230,7 +271,7 @@ class ApsimModel(CoreModel):
         if not isinstance(ref_data, pd.DataFrame):
             raise TypeError(f"Expected {pd.DataFrame}, got {type(ref_data)}")
         return final_eval(ref_data, predicted, pred_col=target_col, index=index_col,
-                          obs_col=ref_data_col, exp=expr)
+                          obs_col=ref_data_col, exp=expr, verbose=verbose)
 
     def set_params(self, params: dict[str, Any] | None = None, **kwargs) -> "ApsimModel":
         """
@@ -968,8 +1009,8 @@ if __name__ == '__main__':
             df["year"] = df["date"].dt.year
             df["month"] = df["date"].dt.month
             df["day"] = df["date"].dt.day
-            model.evaluate_simulated_output(ref_data=obs, table=df, index_col=['year'],
-                                            target_col='Yield', ref_data_col='observed')
+            model.evaluate(ref_data=obs, table=df, index_col=['year'],
+                           target_col='Yield', ref_data_col='observed')
             df = model.results
             print(df.Yield.mean())
 
@@ -984,5 +1025,6 @@ if __name__ == '__main__':
         isric = source_test(soil_source='isric')
         ssurgo = source_test(soil_source='ssurgo')
         ssurgo['ssurgo_yield'] = ssurgo['Yield']
-        model.evaluate_simulated_output(ref_data=isric, table=ssurgo, index_col=['year'], target_col='ssurgo_yield',
-                                        ref_data_col='Yield')
+        model.evaluate(ref_data=isric, table=ssurgo, index_col=['year'], target_col='ssurgo_yield',
+                       ref_data_col='Yield')
+

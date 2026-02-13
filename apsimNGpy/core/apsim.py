@@ -114,6 +114,38 @@ class ApsimModel(CoreModel):
             ref_data_col,
             target_col,
             index_col,
+            expr=None,
+    ):
+        """
+        Deprecated wrapper for :meth:`evaluate`.
+
+        This method is maintained for backward compatibility and will be
+        removed in a future release. Please use :meth:`evaluate` instead.
+        """
+        import warnings
+        warnings.warn(
+            "`evaluate_simulated_output` is deprecated and will be removed "
+            "in a future version. Please use `evaluate` instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
+        return self.evaluate(
+            ref_data=ref_data,
+            table=table,
+            ref_data_col=ref_data_col,
+            target_col=target_col,
+            index_col=index_col,
+            expr=expr,
+        )
+
+    def evaluate(
+            self,
+            ref_data: pd.DataFrame,
+            table,
+            ref_data_col,
+            target_col,
+            index_col,
             expr=None
     ):
         """
@@ -974,8 +1006,8 @@ if __name__ == '__main__':
             df["year"] = df["date"].dt.year
             df["month"] = df["date"].dt.month
             df["day"] = df["date"].dt.day
-            model.evaluate_simulated_output(ref_data=obs, table=df, index_col=['year'],
-                                            target_col='Yield', ref_data_col='observed')
+            model.evaluate(ref_data=obs, table=df, index_col=['year'],
+                           target_col='Yield', ref_data_col='observed')
             df = model.results
             print(df.Yield.mean())
 
@@ -990,6 +1022,6 @@ if __name__ == '__main__':
         isric = source_test(soil_source='isric')
         ssurgo = source_test(soil_source='ssurgo')
         ssurgo['ssurgo_yield'] = ssurgo['Yield']
-        model.evaluate_simulated_output(ref_data=isric, table=ssurgo, index_col=['year'], target_col='ssurgo_yield',
-                                        ref_data_col='Yield')
+        model.evaluate(ref_data=isric, table=ssurgo, index_col=['year'], target_col='ssurgo_yield',
+                       ref_data_col='Yield')
         print(model[1])

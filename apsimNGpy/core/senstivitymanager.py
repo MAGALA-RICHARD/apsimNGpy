@@ -7,11 +7,11 @@ We are building a dedicated apsimNGpy senstivity module away from the default on
 from collections import OrderedDict
 from apsimNGpy.starter.starter import CLR
 from apsimNGpy.core.apsim import ApsimModel, AUTO_PATH
-from apsimNGpy.starter.cs_resources import CastHelper
 from apsimNGpy.core.model_loader import get_node_by_path
 from apsimNGpy.core.model_tools import ModelTools
 
 from apsimNGpy.core.runner import invoke_csharp_gc
+
 Models = CLR.Models
 if not CLR.file_format_modified:
     raise ValueError(f"The experiment module is not supported for this type of {CLR.apsim_compiled_version} ")
@@ -19,6 +19,8 @@ if not CLR.file_format_modified:
 from apsimNGpy.core.version_inspector import is_higher_apsim_version
 
 from System.Collections.Generic import List
+
+CastHelper = CLR.CastHelper
 
 
 class SensitivityManager(ApsimModel):

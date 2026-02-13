@@ -1,3 +1,12 @@
-version 1.4
-moves pythonet_config from core module to starter module
-latest apsim bin test: 7980
+Version 1.4
+--------------
+Moved pythonet_config from the core module to the starter module to improve module organization and initialization flow.
+
+Verified compatibility with the latest APSIM binary (build 7980).
+
+Added a __len__ dunder method to ApsimModel, enabling len(model) to return the number of loaded simulations. this method internally calls
+ Internally calls len(self.simulations).
+
+Added a __getitem__ dunder method to ApsimModel, enabling model[index] or model[str] to return a simulation matching the specified index or name, respectively
+
+Ensures the model is saved before evaluation to prevent inconsistencies from simulations lingering in memory.

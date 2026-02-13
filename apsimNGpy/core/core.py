@@ -183,6 +183,56 @@ class CoreModel(PlotManager):
     # ------------------------------------------------------------------
     # Internal initialization logic
     # ------------------------------------------------------------------
+    def __len__(self):
+        "Counts the number of simulations present"
+        self.save(reload=True)
+        return len(self.simulations)
+
+    def __getitem__(self, name_or_index: Union[int, str]):
+        """
+        Fetch an APSIM simulation by index or by simulation name.
+
+        Parameters
+        ------------
+        name_or_index : str or int
+            The simulation index (int) or the name of the simulation node (str)
+            to retrieve.
+
+        Returns
+        ---------
+        Models.Core.Simulation
+            The requested APSIM simulation object.
+
+        Raises
+        --------
+        IndexError
+            If the provided index is out of range.
+        KeyError
+            If the provided simulation name does not exist.
+        """
+
+        self.save(reload=True)
+        if len(self) <1:
+            raise KeyError(f"No simulations is present under {self.Simulations.Name}")
+        match name_or_index:
+            case int():
+                return self.simulations[name_or_index]
+            case str():
+                for sim in self.simulations:
+                    if sim.Name == name_or_index:
+                        return sim
+                else:
+                    available = ', '.join(i.Name for i in self.simulations)
+                    syn = 'Valid option is' if len(self) == 1 else 'Valid options are' or 'No simulation are present'
+
+                    raise KeyError(
+                        f"Simulation {name_or_index!r} does not exist. "
+                        f"{syn}: `{available}`."
+                    )
+            case _:
+                raise TypeError(
+                    f"name_or_index must be str or int, got {type(name_or_index).__name__}"
+                )
 
     def _initialize_model(self):
         """Load model, clone it, initialize datastore and metadata."""
@@ -4421,7 +4471,6 @@ class CoreModel(PlotManager):
 
         """
         if IS_NEW_MODEL:
-
             logger.warning(
                 f'\n create_experiment is deprecated for this apsim version {CLR.apsim_compiled_version} use the `apsimNGpy.core.experiment.ExperimentManager` class instead.')
             return self
@@ -4489,8 +4538,7 @@ class CoreModel(PlotManager):
 
         Example::
 
-            from apsimNGpy.core import base_data
-            apsim = base_data.load_default_simulations(crop='Maize')
+            apsim = ApsimModel('Maize')
             apsim.create_experiment(permutation=False)
             apsim.add_factor(specification="[Fertilise at sowing].Script.Amount = 0 to 200 step 20", factor_name='Nitrogen')
             apsim.add_factor(specification="[Sow using a variable rule].Script.Population =4 to 8 step 2", factor_name='Population')

@@ -115,6 +115,12 @@ Introduction
 
 .. toctree::
    :maxdepth: 3
+   :caption: MODEL EVALUATION
+
+   evaluate
+
+.. toctree::
+   :maxdepth: 3
    :caption: SUPPORT DEVELOPMENT
 
    how_to_cite

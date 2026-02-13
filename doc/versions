@@ -10,3 +10,7 @@ Added a __len__ dunder method to ApsimModel, enabling len(model) to return the n
 Added a __getitem__ dunder method to ApsimModel, enabling model[index] or model[str] to return a simulation matching the specified index or name, respectively
 
 Ensures the model is saved before evaluation to prevent inconsistencies from simulations lingering in memory.
+
+Deprecated:
+- evaluate_simulated_output() will be removed in v1.5.0.
+  Use evaluate() instead.

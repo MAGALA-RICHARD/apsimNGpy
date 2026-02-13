@@ -148,6 +148,12 @@ For reporting reproducible bugs or contributing code, please use the
 
 .. toctree::
    :maxdepth: 3
+   :caption: MODEL EVALUATION
+
+   evaluate
+
+.. toctree::
+   :maxdepth: 3
    :caption: TUTORIALS
 
    comp_cultivar

@@ -30,7 +30,7 @@ String = CLR.System.String
 InvalidOperationException, ArgumentOutOfRangeException = CLR.System.InvalidOperationException, CLR.System.ArgumentOutOfRangeException
 from apsimNGpy.core._cultivar import edit_cultivar_by_path
 from apsimNGpy.core._cultivar import trace_cultivar
-from apsimNGpy import configuration
+from apsimNGpy.config import configuration
 
 CastHelper = CLR.CastHelper
 from apsimNGpy.core.model_loader import (load_apsim_model, save_model_to_file, recompile, get_node_by_path, AUTO_PATH)

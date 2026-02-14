@@ -49,7 +49,7 @@ from apsimNGpy.core_utils.utils import open_apsimx_file_in_window, evaluate_comm
     extract_cultivar_param_path
 from apsimNGpy.exceptions import ModelNotFoundError, NodeNotFoundError
 from apsimNGpy.manager.weathermanager import get_weather
-from apsimNGpy.settings import SCRATCH, MissingOption
+from apsimNGpy.settings import workspace, MissingOption
 from apsimNGpy.logger import logger
 
 _NOT_PROVIDED = object()
@@ -139,7 +139,7 @@ class CoreModel(PlotManager):
         self.model = model
         self.out_path = out_path
         self.experiment = experiment
-        self.set_wd = set_wd
+        self.set_wd = workspace(set_wd)
         self.copy = copy  # deprecated but accepted
         self.others = {}  # additional runtime options
         self.wk_info = {}
@@ -170,7 +170,7 @@ class CoreModel(PlotManager):
         self.run_method = None
 
         # Working directories
-        self.work_space = self.set_wd or SCRATCH
+        self.work_space =workspace(set_wd)
         self._met_file = None
 
         # Models namespace handle

@@ -9,9 +9,9 @@ import uuid
 from apsimNGpy.core.apsim import ApsimModel as SoilModel
 from apsimNGpy.core.config import get_apsim_bin_path, apsim_version, locate_model_bin_path, load_crop_from_disk
 from apsimNGpy.settings import logger
-from apsimNGpy.settings import SCRATCH
+from apsimNGpy.settings import workspace
 import warnings
-
+SCRATCH = workspace()
 warnings.warn('base_data.py is deprecated and will be removed in future versions of apsimNGpy use ApsimModel instead',
               DeprecationWarning)
 WEATHER_CO = 'NewMetrrr.met'

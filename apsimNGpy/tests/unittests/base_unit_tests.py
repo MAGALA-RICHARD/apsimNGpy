@@ -14,8 +14,9 @@ from apsimNGpy.settings import logger
 
 wd = Path.cwd() / 'apsimNGpy_tests'
 
-from apsimNGpy.settings import SCRATCH
+from apsimNGpy.settings import workspace
 
+SCRATCH  = workspace(str(wd))
 
 def get_files(pattern):
     return list(Path(SCRATCH).rglob(pattern))

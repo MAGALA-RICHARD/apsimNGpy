@@ -23,8 +23,9 @@ from apsimNGpy.core.df_grp import group_and_concat_by_schema
 from apsimNGpy.starter.starter import configuration
 from apsimNGpy.core_utils.database_utils import read_db_table, get_db_table_names
 from apsimNGpy.core_utils.database_utils import write_schema_grouped_tables
-
-from apsimNGpy import logger, ApsimRuntimeError, timer, is_scalar
+from apsimNGpy.exceptions import ApsimRuntimeError
+from apsimNGpy.core_utils.utils import timer, is_scalar
+from apsimNGpy.logger import logger
 
 AUTO = object()
 SchemaKey = Tuple[Tuple[Hashable, str], ...]  # ((column_name, dtype_str), ...)

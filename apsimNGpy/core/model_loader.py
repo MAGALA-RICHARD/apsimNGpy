@@ -9,7 +9,7 @@ from apsimNGpy.exceptions import NodeNotFoundError
 import json
 from os.path import (realpath)
 import shutil
-from apsimNGpy import load_crop_from_disk
+from apsimNGpy.config import load_crop_from_disk
 from dataclasses import dataclass
 from typing import Any
 from pathlib import Path

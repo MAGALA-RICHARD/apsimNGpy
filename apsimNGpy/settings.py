@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 from shutil import rmtree
 
-VERSION = '0.3.9.4'
+VERSION = '1.4.0'
 
 
 class MissingType:
@@ -125,12 +125,14 @@ logger = setup_logger()
 
 APSIM_LOCATION = os.environ.get('APSIM_LOCATION')
 
-SCRATCH = os.environ.get('WS', Path(os.getcwd()) / '.scratch')
-# need to clean up periodically if can
-try:
-    SCRATCH.mkdir(parents=True, exist_ok=True)
-except PermissionError:
-    SCRATCH = Path.cwd()
 
+def workspace(work_space: str = '.scratch') -> Path:
+    work_space: str = work_space or '.scratch'
+    SCRATCH = Path(work_space).resolve()
+    try:
+        SCRATCH.mkdir(parents=True, exist_ok=True)
+    except PermissionError:
+        SCRATCH = Path.cwd()
+    return SCRATCH
 
-#config_internal('version', f"{VERSION}")
+# config_internal('version', f"{VERSION}")

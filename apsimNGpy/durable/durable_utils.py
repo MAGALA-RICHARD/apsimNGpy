@@ -9,4 +9,4 @@ class CheckPoint:
         self.epoch = 0
 
 
-code = "{i for i in range(10)}"
+

@@ -1,6 +1,7 @@
 import argparse
 import sys
 from os import path
+
 from apsimNGpy.config import configuration, set_apsim_bin_path, auto_detect_apsim_bin_path
 
 

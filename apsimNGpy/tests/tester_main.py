@@ -27,7 +27,7 @@ def run_suite(_bin_path, verbosity_level=2):
         IS_NEW_APSIM = CLR.file_format_modified
         from apsimNGpy.tests.unittests.core import core, data_insights
         from apsimNGpy.tests.unittests.manager import weathermanager, soilmanager, test_get_weather_from_web_filename
-        from apsimNGpy.tests.unittests.core import apsim, senstivitymanager, experimentmanager, model_loader, \
+        from apsimNGpy.tests.unittests.core import apsim, senstivitymanager,  model_loader, \
             model_tools, \
             edit_model_by_path, core_edit_model, cs_resources, config, plot_manager
         from apsimNGpy.tests.unittests.optimizer import vars, smp
@@ -49,12 +49,13 @@ def run_suite(_bin_path, verbosity_level=2):
                    test_get_weather_from_web_filename,
                    plot_manager,
                    soilmanager,
+
                    data_insights
                    }
         if IS_NEW_APSIM:
-            if IS_NEW_APSIM:
-                from apsimNGpy.tests.unittests.core import experimentmanager
-            modules.add(experimentmanager)
+
+            from apsimNGpy.tests.unittests.core import experiment
+            modules.add(experiment)
             modules = (i for i in modules)
 
         def clean_up():

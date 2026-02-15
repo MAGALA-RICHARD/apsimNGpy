@@ -116,7 +116,7 @@ We can still use any other methods inherited from :class:`~apsimNGpy.core.apsim.
 
 .. code-block:: python
 
-   morris.inspect_file()
+   morris.tree()
 
 .. code-block:: none
 
@@ -217,7 +217,7 @@ In order to use Sobol, use `method =sobol' as follows
     morris.add_sens_factor(name='cnr', path='Field.SurfaceOrganicMatter.InitialCNR', lower_bound=10, upper_bound=120)
     morris.add_sens_factor(name='cn2bare', path='Field.Soil.SoilWater.CN2Bare', lower_bound=70, upper_bound=100)
     sobol.build_sense_model(method='Sobol', aggregation_column_name='Clock.Today')
-    sobol.inspect_file()
+    sobol.tree()
     sobol.run()
     sobol.statistics
     sobol.results

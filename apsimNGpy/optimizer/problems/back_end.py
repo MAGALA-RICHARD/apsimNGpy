@@ -276,7 +276,7 @@ def final_eval(
         pred_col: str,
         obs_col: str,
         exp: Optional[Iterable[str]] = None,
-        verbose=True) -> dict:
+        verbose=False) -> dict:
     """
     Evaluate observed and predicted values and return the full suite of
     performance metrics supported by the: class:`Validate` class.
@@ -285,7 +285,6 @@ def final_eval(
       • prepares and validates the input data (shared utility),
       • runs all metrics, not just one,
       • returns both the metric dictionary and the aligned dataset.
-      . sample size, which is a product of all rows that match the index between simulated and observed data
 
     Returns
     -------
@@ -308,7 +307,7 @@ def final_eval(
     validator = Validate(data[obs_col], data[pred_col])
     metric_dict = validator.evaluate_all(verbose=verbose)
 
-    return {"metrics": metric_dict, "data": data, 'sample_size':data.shape[0]}
+    return {"metrics": metric_dict, "data": data}
 
 
 @cache

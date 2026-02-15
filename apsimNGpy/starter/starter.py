@@ -5,11 +5,9 @@ from pathlib import Path
 from typing import Union
 
 from apsimNGpy.bin_loader.resources import add_bin_to_syspath
-from apsimNGpy.core.config import configuration, locate_model_bin_path
-from apsimNGpy.starter.cs_resources import DLL_DIR
-from apsimNGpy.core.load_clr import start_pythonnet
+from apsimNGpy.config import configuration, locate_model_bin_path, logger, set_apsim_bin_path, DLL_DIR, start_pythonnet
 from apsimNGpy.exceptions import ApsimBinPathConfigError
-from apsimNGpy.logger import logger
+
 
 AUTO = object()
 
@@ -81,7 +79,7 @@ def _fetch_apsim_version(bin_path: str | Path, release_number: bool):
         version = assembly.GetName().Version.ToString()
         out = version if release_number else f"APSIM{version}"
     except Exception:
-        from apsimNGpy.core.config import apsim_version
+        from apsimNGpy.config import apsim_version
         return apsim_version()
     return out
 
@@ -136,8 +134,12 @@ class ConfigRuntimeInfo:
         return _fetch_file_reader(method=method, models_namespace=self.Models, apsim_version=CLR.apsim_compiled_version)
 
     def get_file_writer(self):
+        """
+        Gets the apsimx file writer based on the architecture of the compiled APSIM binaries
+        @return:
+        """
         if self.APsimCore or not getattr(self.Models.Core.ApsimFile, "FileFormat", None):
-            base = self.APsimCore.APSIM.Core.FileFormat
+            base = self.APsimCore.Core.FileFormat
         else:
             base = self.Models.Core.ApsimFile.FileFormat
         return getattr(base, 'WriteToString')

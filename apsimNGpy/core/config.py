@@ -22,9 +22,19 @@ from dotenv import load_dotenv
 from apsimNGpy.exceptions import ApsimBinPathConfigError
 from apsimNGpy.settings import CONFIG_PATH, create_config
 from apsimNGpy.logger import logger
+
 AUTO_BIN = object()
+import warnings
+
 # Load a default .env if present (optional)
 load_dotenv()
+
+warnings.warn(
+    "The module 'apsimNGpy.core.config' is deprecated and will be removed in a future release. "
+    "Please use 'apsimNGpy.config' instead.",
+    FutureWarning,
+    stacklevel=2,
+)
 
 HOME_DATA = Path.home().joinpath('AppData', 'Local', 'Programs')
 cdrive = os.environ.get('PROGRAMFILES')
@@ -363,6 +373,7 @@ class Configuration:
 
 
 configuration = Configuration()
+
 
 def get_bin_use_history():
     """
@@ -773,6 +784,26 @@ class apsim_bin_context(AbstractContextManager):
             configuration.bin_path = get_apsim_bin_path()
         os.environ.pop(TEMPORAL_BIN_ENV_KEY, None)
         return False  # do not suppress exceptions
+
+
+from functools import lru_cache
+
+
+# runs once during threads
+@lru_cache(maxsize=None)
+def start_pythonnet(dotnet_root=None):
+    import pythonnet
+    info = pythonnet.get_runtime_info()
+    if info is None:
+        try:
+            if dotnet_root is not None:
+                pythonnet.load("coreclr", dotnet_root=dotnet_root)
+            else:
+                pythonnet.load("coreclr")
+        except Exception:
+            pythonnet.load()
+        info = pythonnet.get_runtime_info()
+    return info
 
 
 if __name__ == "__main__":

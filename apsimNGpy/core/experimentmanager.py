@@ -9,11 +9,12 @@ from apsimNGpy.core.model_tools import ModelTools, Models
 from apsimNGpy.core.runner import invoke_csharp_gc, run_model_externally
 from apsimNGpy.core.version_inspector import is_higher_apsim_version
 from apsimNGpy.starter.starter import CLR
-from apsimNGpy.starter.cs_resources import CastHelper
-
+CastHelper =CLR.CastHelper
+import warnings
 NodeUtils = CLR.APsimCore
 System = CLR.System
 apsim_version = CLR.apsim_compiled_version
+warnings.warn("The apsimNGpy.core.experimentmanager module has been renamed to Experiment and will be removed in future versions", DeprecationWarning)
 if not CLR.file_format_modified:
     raise ValueError(f"The experiment module is not supported for this type of {apsim_version} ")
 
@@ -297,7 +298,7 @@ class ExperimentManager(ApsimModel):
             mode.model_info.Node.AddChild(experiment)
             sim_final = CastHelper.CastAs[Models.Core.Simulations](mode.model_info.Node)
 
-            if is_higher_apsim_version(self.Simulations):
+            if is_higher_apsim_version():
 
                 simx = ModelTools.find_all_in_scope(sim_final, Models.Core.Simulation)
                 simy = [ModelTools.CLONER(i) for i in simx]
@@ -360,7 +361,7 @@ class ExperimentManager(ApsimModel):
             self.Simulations = siM
             self.save()
 
-        if is_higher_apsim_version(self.Simulations):
+        if is_higher_apsim_version():
 
             refresher()
 
@@ -605,7 +606,7 @@ class ExperimentManager(ApsimModel):
         # Choose parent node and parent class
         parent_factor = self.permutation_node if self.permutation else self.factorial_node
         parent_class = Models.Factorial.Permutation if self.permutation else Models.Factorial.Factors
-        if is_higher_apsim_version(self.Simulations):
+        if is_higher_apsim_version():
             parent_factor = ModelTools.find_child_of_class(self.Simulations, parent_class)
 
         new_factor = Models.Factorial.Factor()

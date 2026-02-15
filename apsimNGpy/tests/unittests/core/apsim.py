@@ -1,11 +1,10 @@
 import os
+import shutil
 import unittest
 from pathlib import Path
 import gc
 from apsimNGpy.core.apsim import ApsimModel, Models
 from apsimNGpy.tests.unittests.base_unit_tests import BaseTester
-
-
 
 wd = Path.cwd() / "test_apsim"
 wd.mkdir(parents=True, exist_ok=True)
@@ -17,7 +16,7 @@ Models = Models
 class TestCoreModel(BaseTester):
     def setUp(self):
         self.out_path = Path(f"{self._testMethodName}.apsimx")
-
+        self.wd = wd
         self.test_ap_sim = ApsimModel("Maize", out_path=self.out_path)
         self.mock_sim_path_name = Path(f"__mock__{self._testMethodName}.apsimx")
         self.thickness_sequence_test_values = [100, 200, 200, 200, 300, 250, 400, 450]
@@ -53,8 +52,8 @@ class TestCoreModel(BaseTester):
         with ApsimModel('Maize') as model:
             model.add_report_variable(variable_spec='[Clock].Today.Year as year', report_name='Report')
             model.run()
-            metrics = model.evaluate_simulated_output(ref_data=obs, table='Report', index_col=['year'],
-                                                      target_col='Yield', ref_data_col='observed')
+            metrics = model.evaluate(ref_data=obs, table='Report', index_col=['year'],
+                                     target_col='Yield', ref_data_col='observed')
             self.assertIsInstance(metrics, dict, f'Metrics should be a dictionary, got {type(metrics)}')
             self.assertIn('data', metrics.keys(), f'data  key not found in {metrics.keys()}')
 
@@ -65,8 +64,8 @@ class TestCoreModel(BaseTester):
             model.add_report_variable(variable_spec='[Clock].Today.Year as year', report_name='Report')
 
             with self.assertRaises(RuntimeError, msg="expected to raise runtime error"):
-                metrics = model.evaluate_simulated_output(ref_data=obs, table='Report', index_col=['year'],
-                                                          target_col='Yield', ref_data_col='observed')
+                metrics = model.evaluate(ref_data=obs, table='Report', index_col=['year'],
+                                         target_col='Yield', ref_data_col='observed')
 
     def test_evaluate_simulated_output_direct_predicted_data_as_table(self):
         from apsimNGpy.tests.unittests.test_factory import obs
@@ -74,8 +73,8 @@ class TestCoreModel(BaseTester):
         with ApsimModel('Maize') as model:
             model.add_report_variable(variable_spec='[Clock].Today.Year as year', report_name='Report')
             model.run('Report')
-            metrics = model.evaluate_simulated_output(ref_data=obs, table=model.results, index_col=['year'],
-                                                      target_col='Yield', ref_data_col='observed')
+            metrics = model.evaluate(ref_data=obs, table=model.results, index_col=['year'],
+                                     target_col='Yield', ref_data_col='observed')
             self.assertIsInstance(metrics, dict, f'Metrics should be a dictionary, got {type(metrics)}')
             self.assertIn('data', metrics.keys(), f'data  key not found in {metrics.keys()}')
 
@@ -86,11 +85,11 @@ class TestCoreModel(BaseTester):
             model.add_report_variable(variable_spec='[Clock].Today.Year as year', report_name='Report')
             model.run()
             with self.assertRaises(TypeError, msg="expected to raise  TypeError"):
-                metrics = model.evaluate_simulated_output(ref_data=[obs], table='Report', index_col=['year'],
-                                                          target_col='Yield', ref_data_col='observed')
+                metrics = model.evaluate(ref_data=[obs], table='Report', index_col=['year'],
+                                         target_col='Yield', ref_data_col='observed')
             with self.assertRaises(TypeError, msg="expected to raise TypeError"):
-                metrics = model.evaluate_simulated_output(ref_data=obs, table=[model.results], index_col=['year'],
-                                                          target_col='Yield', ref_data_col='observed')
+                metrics = model.evaluate(ref_data=obs, table=[model.results], index_col=['year'],
+                                         target_col='Yield', ref_data_col='observed')
 
     def test_context_manager(self):
         with ApsimModel("Maize") as model:
@@ -210,7 +209,7 @@ class TestCoreModel(BaseTester):
         """
         from apsimNGpy.starter.starter import CLR
         Models = CLR.Models
-        NodeUtils =CLR.APsimCore
+        NodeUtils = CLR.APsimCore
         CastHelper = CLR.CastHelper
         if not CLR.file_format_modified:
             self.skipTest('version can not mock simulations object using nodes')
@@ -246,6 +245,10 @@ class TestCoreModel(BaseTester):
         del self.test_ap_sim
         del self.thickness_sequence_test_values
         gc.collect()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls._clean_up(where=wd)
 
 
 # initialize the model

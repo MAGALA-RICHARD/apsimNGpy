@@ -1,16 +1,9 @@
 import os
-import tempfile
+import shutil
 from abc import ABC, abstractmethod
 from os import chdir as _chdir
-from os import path
 from pathlib import Path
 from unittest import TestCase
-
-import joblib
-
-from apsimNGpy.core.base_data import load_default_simulations
-from apsimNGpy.core.core import CoreModel
-from apsimNGpy.settings import logger
 
 wd = Path.cwd() / 'apsimNGpy_tests'
 
@@ -56,3 +49,15 @@ class BaseTester(TestCase, ABC):
             WD = _wd
         WD.mkdir(exist_ok=True)
         _chdir(wd)
+    @staticmethod
+    def _clean_up(where):
+        scratch = list(where.glob("*scratch"))
+        try:
+            if Path(os.getcwd()).resolve() == where.resolve():
+                os.chdir(where.parent)
+            shutil.rmtree(where, ignore_errors=True)
+            for _path in scratch:
+                if _path.exists():
+                    shutil.rmtree(_path, ignore_errors=True)
+        except (PermissionError, FileNotFoundError):
+            pass

@@ -1027,4 +1027,4 @@ if __name__ == '__main__':
         ssurgo['ssurgo_yield'] = ssurgo['Yield']
         model.evaluate(ref_data=isric, table=ssurgo, index_col=['year'], target_col='ssurgo_yield',
                        ref_data_col='Yield')
-
+        print(model[1])

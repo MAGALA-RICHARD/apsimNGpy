@@ -1,5 +1,5 @@
 from apsimNGpy.tests.unittests import base_unit_tests
-from apsimNGpy.manager.soilmanager import DownloadsurgoSoiltables, OrganiseSoilProfile
+from apsimNGpy.soils.soilmanager import DownloadsurgoSoiltables, OrganiseSoilProfile
 import unittest
 import pandas as pd
 from functools import cache

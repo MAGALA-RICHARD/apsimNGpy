@@ -18,7 +18,7 @@ from typing import Union, Literal
 import pandas as pd
 import sqlalchemy
 from tqdm import tqdm
-
+from apsimNGpy.core.plotmanager import PlotManager
 from apsimNGpy.core._multi_core import edit_to_folder, IDENTIFICATION
 from apsimNGpy.core._multi_core import single_runner
 from apsimNGpy.core.runner import _run_from_dir
@@ -114,7 +114,7 @@ def get_results(file_name, db_or_con, prefix, agg_func=None, sub=None):
                     chunk_size=None)
 
 
-class MultiCoreManager:
+class MultiCoreManager(PlotManager):
     __slots__ = (
         "db_path",
         "agg_func",
@@ -304,6 +304,14 @@ class MultiCoreManager:
             df.sort_values(by=['ID'], ascending=True, inplace=True)
         return df
 
+    def run(self):
+        self.ran_ok = True
+
+    def add_report_variable(self, name, value):
+        df = self.results
+        df[name] = name
+        self.results = df
+
     @property
     def results(self):
         """property methods for getting simulated output.
@@ -311,6 +319,10 @@ class MultiCoreManager:
         to create results attribute of the simulated data
         """
         return self.get_simulated_output(axis=0)
+
+    @results.setter
+    def results(self, value):
+        self.results = value
 
     def clear_db(self):
         """Clears the database before any simulations."""

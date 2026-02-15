@@ -14,9 +14,9 @@ Factorial experiments part 2
 .. note::
 
     ⚠️ Note: The Experiment module, introduced in apsimNGpy v0.3.9.7, addresses recent structural changes in APSIM file structure changes. While the older ``create_experiment`` method in ApsimModel is retained for backward compatibility,
-    users working with newer APSIM models should use the :class:`~apsimNGpy.core.experimentmanager.ExperimentManager` class for building factorial designs. It offers full support for modern model experiment editing
+    users working with newer APSIM models should use the :class:`~apsimNGpy.core.experiment.ExperimentManager` class for building factorial designs. It offers full support for modern model experiment editing
 
-The :class:`~apsimNGpy.core.experimentmanager.ExperimentManager`: API in ``apsimNGpy`` provides a high-level interface to build factorial experiments
+The :class:`~apsimNGpy.core.experiment.ExperimentManager`: API in ``apsimNGpy`` provides a high-level interface to build factorial experiments
 programmatically using APSIM. It is ideal for users who want to automate the creation of simulation treatments
 by varying input parameters or management scripts — all without manually editing ``.apsimx`` files.
 
@@ -26,7 +26,7 @@ by varying input parameters or management scripts — all without manually editi
 Quick Overview
 -------------------
 
-The :class:`~apsimNGpy.core.experimentmanager.ExperimentManager`: class wraps an existing APSIM model and allows you to:
+The :class:`~apsimNGpy.core.experiment.ExperimentManager`: class wraps an existing APSIM model and allows you to:
 
 - Clone and isolate a base simulation
 - Add multiple input factors (e.g., fertilizer rate, sowing density)
@@ -40,7 +40,7 @@ First, create an `Experiment` object by loading a base model:
 
 .. code-block:: python
 
-   from apsimNGpy.core.experimentmanager import ExperimentManager
+   from apsimNGpy.core.experiment import ExperimentManager
 
    exp = ExperimentManager("Maize", out_path="Maize_experiment.apsimx")
 
@@ -52,7 +52,7 @@ Then initialize the experiment block:
 
 .. seealso::
 
-  :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.init_experiment`:
+  :meth:`~apsimNGpy.core.experiment.ExperimentManager.init_experiment`:
 
 Adding Input Factors
 ---------------------
@@ -67,13 +67,13 @@ factors like this:
 
 .. seealso::
 
-   API description: :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.add_factor`
+   API description: :meth:`~apsimNGpy.core.experiment.ExperimentManager.add_factor`
 
 Finalizing the Experiment
 --------------------------
 
 Once all factors are defined, finalize the setup and save the modified model. Please note this is entirely optional,
-:meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.add_factor` is a stand alone method, once you have finished adding factors, you can call the ``run`` to retrieve the results, without calling finalize. finalize is wa built as safe guard for immutability
+:meth:`~apsimNGpy.core.experiment.ExperimentManager.add_factor` is a stand alone method, once you have finished adding factors, you can call the ``run`` to retrieve the results, without calling finalize. finalize is wa built as safe guard for immutability
 
 @deprecated:
 
@@ -87,10 +87,10 @@ ready to run in APSIM or via automation tools.
 API Summary
 -----------------
 
-- :class:`~apsimNGpy.core.experimentmanager.ExperimentManager`: Main entry point to create and manipulate factorial designs.
-- :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.init_experiment`: Prepares the experiment node structure in the model.
-- :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.add_factor`: Adds a new varying parameter or script-defined rule.
-- :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.finalize`: Validates and commits the experiment structure to the model.
+- :class:`~apsimNGpy.core.experiment.ExperimentManager`: Main entry point to create and manipulate factorial designs.
+- :meth:`~apsimNGpy.core.experiment.ExperimentManager.init_experiment`: Prepares the experiment node structure in the model.
+- :meth:`~apsimNGpy.core.experiment.ExperimentManager.add_factor`: Adds a new varying parameter or script-defined rule.
+- :meth:`~apsimNGpy.core.experiment.ExperimentManager.finalize`: Validates and commits the experiment structure to the model.
 
 Further Reading
 --------------------

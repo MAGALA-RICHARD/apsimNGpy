@@ -2,12 +2,14 @@ import json
 import os
 import unittest
 from pathlib import Path
-
-from apsimNGpy.starter.cs_resources import CastHelper as CastHelpers
-from apsimNGpy.core.model_loader import (load_apsim_model, get_model, save_model_to_file, load_from_path, load_crop_from_disk, load_from_dict)
+from apsimNGpy.starter.starter import CLR
+from apsimNGpy.core.model_loader import (load_apsim_model, get_model, save_model_to_file, load_from_path,
+                                         load_crop_from_disk, load_from_dict)
 from apsimNGpy.starter.starter import Models
 from apsimNGpy.exceptions import CastCompilationError
 from apsimNGpy.tests.unittests.base_unit_tests import BaseTester
+
+CastHelpers = CLR.CastHelper
 
 
 def cast(out_model, target=Models.Core.Simulations):

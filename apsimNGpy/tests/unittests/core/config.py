@@ -3,11 +3,11 @@ import shutil
 import unittest
 import os
 # Import the module where CoreModel class is defined
-from apsimNGpy.core.config import (set_apsim_bin_path, get_apsim_bin_path, apsim_version, load_crop_from_disk,
+from apsimNGpy.config import (set_apsim_bin_path, get_apsim_bin_path, apsim_version, load_crop_from_disk,
 
                                    auto_detect_apsim_bin_path, get_bin_use_history)
 from apsimNGpy.core.run_time_info import GITHUB_RELEASE_NO
-from apsimNGpy.tests.unittests.base_unit_tests import BaseTester, path
+from apsimNGpy.tests.unittests.base_unit_tests import BaseTester
 from pathlib import Path
 from apsimNGpy.exceptions import ApsimBinPathConfigError
 
@@ -42,9 +42,10 @@ class TestConfig(BaseTester):
 
     def test_get_apsim_bin_path(self):
         abp = get_apsim_bin_path()
-        p_true = path.exists(abp)
+
         if not abp:
             self.skipTest('Could not find apsim bin. perhaps not yet set')
+        p_true = Path(abp).exists()
         self.assertTrue(p_true)
         # dir_size = get_dir_size(abp)
         # self.assertGreater(dir_size, 5, "Bin path is perhaps empty")

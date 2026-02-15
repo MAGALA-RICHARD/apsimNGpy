@@ -309,7 +309,7 @@ def main(apsim_bin_path):
         from apsimNGpy.core_utils.deco import add_outline
 
         import shutil, os
-        from apsimNGpy.core import config, apsim, mult_cores, experimentmanager, runner
+        from apsimNGpy.core import config, apsim, mult_cores, experiment, runner
         from starter import starter
         # from apsimNGpy.optimizer import moo, single
         from apsimNGpy.core_utils import database_utils
@@ -332,7 +332,7 @@ def main(apsim_bin_path):
                     base_path='apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer')
         add_outline(smp.MixedProblem, include_inherited=True,
                     base_path='apsimNGpy.optimizer.problems.smp.MixedProblem')
-        add_outline(experimentmanager.ExperimentManager, include_inherited=True,
+        add_outline(experiment.ExperimentManager, include_inherited=True,
                     base_path='apsimNGpy.core.experimentmanager.ExperimentManager')
         add_outline(apsim.ApsimModel, include_inherited=True, base_path='apsimNGpy.core.apsim.ApsimModel')
         # add_outline(moo.MultiObjectiveProblem, include_inherited=True,
@@ -342,13 +342,13 @@ def main(apsim_bin_path):
         add_outline(mult_cores.MultiCoreManager, include_inherited=True,
                     )
         modules = (sensitivity,
-                   process, apsim, mult_cores, experimentmanager, smp, single_mixed, senstivitymanager,
+                   process, apsim, mult_cores, experiment, smp, single_mixed, senstivitymanager,
                    evaluator, exceptions, database_utils, config, runner, back_end,
                    )
 
         OUT = Path("api.rst").resolve()
         doc_folder = Path(__file__).parent.parent / 'doc'
-        OUT.parent.mkdir(parentsTrue, exist_ok=True)
+        OUT.parent.mkdir(parents=True, exist_ok=True)
         docs(modules, output_file=OUT, skip_undocumented=True, main_package="apsimNGpy")
         #shutil.copy2(OUT, doc_folder / 'api.rst')
         rsts = list(Path.cwd().rglob("*pi.rst"))

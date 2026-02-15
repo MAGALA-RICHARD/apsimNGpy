@@ -28,9 +28,68 @@
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
+<!-- Key entry pages -->
+  <url>
+    <loc>https://apsimngpy.readthedocs.io/en/latest/preview.html</loc>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- Key entry pages -->
+  <url>
+    <loc>https://apsimngpy.readthedocs.io/en/latest/instantiating.html</loc>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+
+  <url>
+    <loc>https://apsimngpy.readthedocs.io/en/latest/inspect_model_parameters.html</loc>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+
+  <url>
+    <loc>https://apsimngpy.readthedocs.io/en/latest/getting started.html</loc>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+
+  <url>
+    <loc>https://apsimngpy.readthedocs.io/en/latest/mult_core.html</loc>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+   <url>
+    <loc>https://apsimngpy.readthedocs.io/en/latest/calibrate.html</loc>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <url>
+    <loc>https://apsimngpy.readthedocs.io/en/latest/Tutorial.html</loc>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
 
   <url>
     <loc>https://apsimngpy.readthedocs.io/en/latest/installation.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://apsimngpy.readthedocs.io/en/latest/edit.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+
+  <url>
+    <loc>https://apsimngpy.readthedocs.io/en/latest/soil_refill.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>

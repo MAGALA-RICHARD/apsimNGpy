@@ -1,6 +1,7 @@
 import argparse
 import sys
 from os import path
+from apsimNGpy.config import configuration, set_apsim_bin_path, auto_detect_apsim_bin_path
 
 
 def print_msg(msg, normal=True):
@@ -53,19 +54,16 @@ def apsim_bin_path():
         if not path.exists(args.update):
             print_msg(f"{args.update} does not exist", normal=False)
             sys.exit(1)
-        from apsimNGpy.core.config import set_apsim_bin_path
         set_apsim_bin_path(args.update)
         print_msg(f"Bin path updated to: {args.update}")
         sys.exit(0)
 
     if args.show_bin_path:
-        from apsimNGpy.core.config import get_apsim_bin_path
-        current_path = get_apsim_bin_path()
+        current_path = configuration.bin_path
         print_msg(current_path)
         sys.exit(0)
 
     if args.auto_search:
-        from apsimNGpy.core.config import auto_detect_apsim_bin_path
         auto = auto_detect_apsim_bin_path()
         if not auto:
             print_msg("No bin path detected", normal=False)
@@ -74,12 +72,13 @@ def apsim_bin_path():
         sys.exit(0)
 
     if args.version:
-        from apsimNGpy.core.runner import get_apsim_version
-        v = get_apsim_version()
+        v = configuration.bin_path
         print_msg(f"APSIM version: {v}")
         sys.exit(0)
 
 
 if __name__ == '__main__':
-    sys.argv.append('-s')
+    #sys.argv.append('-s')
+    apsim_bin_path()
+    sys.argv.append('-a')
     apsim_bin_path()

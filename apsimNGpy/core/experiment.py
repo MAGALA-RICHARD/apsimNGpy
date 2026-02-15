@@ -9,12 +9,13 @@ from apsimNGpy.core.model_tools import ModelTools, Models
 from apsimNGpy.core.runner import invoke_csharp_gc, run_model_externally
 from apsimNGpy.core.version_inspector import is_higher_apsim_version
 from apsimNGpy.starter.starter import CLR
+from apsimNGpy.logger import logger
 CastHelper =CLR.CastHelper
 NodeUtils = CLR.APsimCore
 System = CLR.System
 apsim_version = CLR.apsim_compiled_version
 if not CLR.file_format_modified:
-    raise ValueError(f"The experiment module is not supported for this type of {apsim_version} ")
+    logger.warning(f"The experiment module is not supported for this APSIM version: {apsim_version} ")
 
 
 class ExperimentManager(ApsimModel):

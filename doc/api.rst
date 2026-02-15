@@ -2,6 +2,313 @@
 apsimNGpy: API Reference
 ========================
 
+apsimNGpy.config
+----------------
+
+Module attributes
+^^^^^^^^^^^^^^^^^^
+
+.. py:attribute:: apsimNGpy.config.configuration
+
+   Default value: ``Configuration(bin_path='C:\\Users\\rmagala\\AppData\\Local\\Programs\\APSIM2026…``
+
+Functions
+^^^^^^^^^
+
+.. py:function:: apsimNGpy.config.any_bin_path_from_env() -> 'Path'
+
+   Finalize resolving the real APSIM bin path or raise a clear error.
+
+   APSIM bin path expected in environment variables:keys include:
+
+           APSIM_BIN_PATH / APSIM_PATH / APSIM/ Models
+
+.. py:function:: apsimNGpy.config.get_apsim_bin_path()
+
+   Returns the path to the apsim bin folder from either auto-detection or from the path already supplied by the user
+   through the apsimNGpy config.ini file in the user home directory.
+
+   This function is silent does not raise any exception but return empty string in all
+   cases if bin_path is empty or was not found.
+
+
+   Example::
+
+     bin_path = get_apsim_bin_path()
+
+   .. seealso::
+
+          :func:`~apsimNGpy.core.config.set_apsim_bin_path`
+
+.. py:function:: apsimNGpy.config.get_bin_use_history()
+
+   shows the bins that have been used only those still available on the computer as valid paths are shown.
+
+   @return: list[paths]
+
+.. py:function:: apsimNGpy.config.list_drives()
+
+   for windows-only
+   @return: list of available drives on windows pc
+
+.. py:function:: apsimNGpy.config.load_crop_from_disk(crop: 'str', out: 'Union[str, Path]', bin_path=None, cache_path=True, suffix='.apsimx')
+
+   Load a default APSIM crop simulation file from disk by specifying only the crop name. This fucntion can literally
+   load anything that resides under the /Examples directory.
+
+   Locates and copies an `.apsimx` file associated with the specified crop from the APSIM
+   /Examples directory into a working directory. It is useful when programmatically running default
+   simulations for different crops without manually opening them in GUI.
+
+   Parameters
+   ----------
+   crop: (str)
+       The name of the crop to load (e.g., 'Maize', 'Soybean', 'Barley', 'Mungbean', 'Pinus', 'Eucalyptus').
+       The name is case-insensitive and must-match an existing `.apsimx` file in the APSIM Examples folder.
+
+   out: (str, optional)
+        A custom output path where the `.apsimx` file should be copied.
+        If not provided, a temporary file will be created in the working directory. this is stamped with the APSIM version being used
+
+
+   bin_path: (str, optional):
+      no restriction we can laod from  another bin path
+   cache_path: (str, optional):
+
+       keep the path in memory for the next request
+
+   Returns
+   ________
+       `str`: The path to the copied `.apsimx` file ready for further manipulation or simulation.
+
+   .. caution::
+
+     The method catches the results, so if the file is removed from the disk, there may be issues> If this case
+     is anticipated, turn off the cach_path to False.
+
+   Raises
+   ________
+       ``FileNotFoundError``: If the APSIM binary path cannot be resolved or the crop simulation file does not exist.
+
+   Example::
+
+       >>> load_crop_from_disk("Maize", out ='my_maize_example.apsimx')
+       'C:/path/to/temp_uuid_Maize.apsimx'
+
+.. py:function:: apsimNGpy.config.scan_drive_for_bin()
+
+   This function uses scan_dir_for_bin to scan all drive directories.
+   for Windows only
+
+.. py:function:: apsimNGpy.config.set_apsim_bin_path(path: 'Union[str, Path]', raise_errors: 'bool' = True, verbose: 'bool' = False) -> 'bool'
+
+    Validate and write the bin path to the config file, where it is accessed by ``get_apsim_bin_path``.
+
+    Parameters
+    ___________
+    path : Union[str, Path]
+        The provided `path` should point to (or contain) the APSIM `bin` directory that
+        includes the required binaries:
+          - Windows: Models.dll AND Models.exe
+          - macOS/Linux: Models.dll AND Models (unix executable)
+        If `path` is a parent directory, the function will search recursively to locate
+        a matching `bin` directory. The first match is used.
+
+    raise_errors : bool, default is True
+        Whether to raise an error in case of errors. for testing purposes only
+
+    verbose: bool
+       whether to print messages to the console or not
+
+
+    Returns
+    -------
+    bool
+        True if the configuration was updated (or already valid and set to the same
+        resolved path), False if validation failed and `raise_errors=False`.
+
+    Raises
+    ------
+    ValueError
+        If no valid APSIM binary directory is found and `raise_errors=True`.
+
+    Examples
+    --------
+    >>> from apsimNGpy.core import config
+    >>> # Check the current path
+    >>> current = config.get_apsim_bin_path()
+    >>> # Set the desired path (either the bin folder or a parent)
+    >>> config.set_apsim_bin_path('/path/to/APSIM/2025/bin', verbose=True)
+
+   .. seealso::
+
+           :func:`~apsimNGpy.core.config.get_apsim_bin_path`
+
+.. py:function:: apsimNGpy.config.stamp_name_with_version(file_name)
+
+   Stamp every file name with the version, which allows the user to associate the file name with its appropriate
+   version it was created.
+
+   Parameters
+   ------------
+   file_name: str
+         path to the would be.apsimx file.
+
+   Returns
+   -------
+   str path with the apsim version stamp
+
+Classes
+^^^^^^^
+
+.. py:class:: apsimNGpy.config.Configuration
+
+   In the future, this module will contain all the constants required by the package.
+    Users will be able to override these values if needed by importing this module before running any simulations.
+
+   .. py:method:: apsimNGpy.config.Configuration.__init__(self, bin_path: 'Union[str, Path]' = None) -> None
+
+   Initialize self.  See help(type(self)) for accurate signature.
+
+   .. py:method:: apsimNGpy.config.Configuration.set_temporal_bin_path(self, temporal_bin_path)
+
+    Set a temporary APSIM-NG binary path for this package/module.
+
+   This updates the module-level resolution of APSIM assemblies to use the
+   provided path for the current process/session. It does **not** permanently
+   change the global APSIM bin path on disk. Use this when you need to pin a
+   workflow to a specific APSIM build for reproducibility.
+
+   Parameters
+   ----------
+   temporal_bin_path : str | os.PathLike
+       Absolute or relative path to the APSIM ``bin`` directory to use
+       temporarily (e.g., ``C:/APSIM/2025.09.01/bin``).
+
+       Reference (for the *global* fallback, not changed by this method):
+       :func:`get_apsim_bin_path()` typically resolves from configuration or
+       environment variables ``APSIM_BIN_PATH``, ``MODELS``, or ``APSIM``.
+
+   Returns
+   -------
+   None
+
+   Raises
+   ------
+   FileNotFoundError
+       If ``temporal_bin_path`` does not exist.
+   NotADirectoryError
+       If ``temporal_bin_path`` is not a directory.
+   PermissionError
+       If the process lacks read/execute permission on the path.
+   ValueError
+       If the directory does not appear to be a valid APSIM ``bin`` (e.g.,
+       required assemblies are missing).
+
+   Notes
+   -----
+   - Assemblies already loaded after pointing to this path will remain bound
+     in memory for the lifetime of the process.
+   - To limit the override to a block of code, prefer a context manager that
+     restores the prior path on exit.
+
+   Examples
+   --------
+
+   .. code-block:: python
+
+       from apsimNGpy.core.config import configuration
+       configuration.set_temporal_bin_path(r"C:/APSIM/2025.09.01/bin")
+       # proceed with imports/execution; assemblies are resolved from that path
+
+
+   .. seealso::
+
+      :func:`~apsimNGpy.core.config.get_apsim_bin_path`
+      :func:`~apsimNGpy.core.config.set_apsim_bin_path`
+
+   .. py:method:: apsimNGpy.config.Configuration.release_temporal_bin_path(self)
+
+   release and set back to the global bin path
+
+   .. py:attribute:: apsimNGpy.config.Configuration.bin_path
+
+   Default: ``<member 'bin_path' of 'Configuration' objects>``
+
+.. py:class:: apsimNGpy.config.apsim_bin_context
+
+     Temporarily configure the APSIM-NG *bin* path used by ``apsimNGpy`` so imports
+     (e.g., ``ApsimModel``) can resolve APSIM .NET assemblies. Restores the previous
+     configuration on exit.
+
+     Parameters
+     ----------
+     apsim_bin_path : str | os.PathLike | None, optional
+         Explicit path to the APSIM ``bin`` directory (e.g.,
+         ``C:/APSIM/2025.05.1234/bin`` or ``/opt/apsim/2025.05.1234/bin``).
+         Used if no valid value is resolved from ``dotenv_path``.
+     dotenv_path : str | os.PathLike | None, optional
+         Path to a ``.env`` file to load *before* resolution. If provided, the
+         manager will read (in order): ``bin_key`` (if non-empty), then
+         ``APSIM_BIN_PATH``, then ``APSIM_MODEL_PATH`` from that file.
+     bin_key : str, default ''
+         Custom environment variable name to read from the loaded ``.env``
+         (e.g., ``"APSIM_BIN_PATH_2025"``). Ignored when empty.
+     timeout : float, default 0.003
+         Small sleep (seconds) after setting the bin path to avoid races with
+         immediate imports on some filesystems. Set to 0 to disable.
+
+     Returns
+     -------
+     None
+         The context manager returns ``None``; import within the ``with`` block.
+
+     Raises
+     ------
+     ValueError
+         If no path can be resolved from ``dotenv_path``, ``apsim_bin_path``,
+         or the process environment.
+     FileNotFoundError
+         If the resolved path does not exist.
+
+     Notes
+     -----
+     - Python.NET assemblies cannot be unloaded from a running process; this
+       context only restores path configuration for **future** imports.
+     - Do not nest this context across threads; the underlying config is global.
+
+     Examples
+     --------
+     Use an explicit path::
+
+        with apsim_bin_context(r"C:/APSIM/2025.05.1234/bin"):
+          from apsimNGpy.core.apsim import ApsimModel
+          model = ApsimModel(...)
+
+     Use a .env file with a custom key::
+
+         from pathlib import Path
+         with apsim_bin_context(dotenv_path=Path(".env"), bin_key="APSIM_BIN_PATH"):
+              from apsimNGpy.core.apsim import ApsimModel
+
+    If you have .env files located in the root of your script::
+
+      with apsim_bin_context():
+          from apsimNGpy.core.apsim import ApsimModel
+
+     Verify restoration::
+
+         prev = get_apsim_bin_path()
+         with apsim_bin_context(r"C:/APSIM/X.Y.Z/bin"):
+
+         assert get_apsim_bin_path() == prev
+
+   added in v0.39.10.20+
+
+   .. py:method:: apsimNGpy.config.apsim_bin_context.__init__(self, apsim_bin_path: 'str | os.PathLike | None' = None, dotenv_path: 'str | os.PathLike | None' = None, bin_key: 'str' = '', disk_cache=False) -> 'None'
+
+   Initialize self.  See help(type(self)) for accurate signature.
+
 apsimNGpy.core.apsim
 --------------------
 
@@ -135,7 +442,7 @@ Classes
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.update_mgt`
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.update_mgt_by_path`
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.__init__(self, model: Union[os.PathLike, dict, str], out_path: Union[str, pathlib.Path] = <object object at 0x000001BC0CB56100>, set_wd=None, **kwargs)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.__init__(self, model: Union[os.PathLike, dict, str], out_path: Union[str, pathlib.Path] = <object object at 0x00000142B54B6100>, set_wd=None, **kwargs)
 
    Initialize self.  See help(type(self)) for accurate signature.
 
@@ -615,7 +922,7 @@ Classes
    self : object
        Returns the updated ApsimModel instance.
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.save(self, file_name: 'Union[str, Path]' = <object object at 0x000001BC3BA80E00>, reload=True) (inherited)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.save(self, file_name: 'Union[str, Path]' = <object object at 0x00000142853E4E00>, reload=True) (inherited)
 
    Saves the current APSIM NG model (``Simulations``) to disk and refresh runtime state.
 
@@ -2730,7 +3037,7 @@ Classes
    ---------------------------------------------------------------------------
    returns an array of the parameter values
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x000001BC3BA80E00>) (inherited)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x00000142853E4E00>) (inherited)
 
    Inspect the model types and returns the model paths or names.
 
@@ -3690,313 +3997,6 @@ Classes
 
    Plots a relation plot
 
-apsimNGpy.core.config
----------------------
-
-Module attributes
-^^^^^^^^^^^^^^^^^^
-
-.. py:attribute:: apsimNGpy.core.config.configuration
-
-   Default value: ``Configuration(bin_path='C:\\Users\\rmagala\\AppData\\Local\\Programs\\APSIM2026…``
-
-Functions
-^^^^^^^^^
-
-.. py:function:: apsimNGpy.core.config.any_bin_path_from_env() -> 'Path'
-
-   Finalize resolving the real APSIM bin path or raise a clear error.
-
-   APSIM bin path expected in environment variables:keys include:
-
-           APSIM_BIN_PATH / APSIM_PATH / APSIM/ Models
-
-.. py:function:: apsimNGpy.core.config.get_apsim_bin_path()
-
-   Returns the path to the apsim bin folder from either auto-detection or from the path already supplied by the user
-   through the apsimNGpy config.ini file in the user home directory.
-
-   This function is silent does not raise any exception but return empty string in all
-   cases if bin_path is empty or was not found.
-
-
-   Example::
-
-     bin_path = get_apsim_bin_path()
-
-   .. seealso::
-
-          :func:`~apsimNGpy.core.config.set_apsim_bin_path`
-
-.. py:function:: apsimNGpy.core.config.get_bin_use_history()
-
-   shows the bins that have been used only those still available on the computer as valid paths are shown.
-
-   @return: list[paths]
-
-.. py:function:: apsimNGpy.core.config.list_drives()
-
-   for windows-only
-   @return: list of available drives on windows pc
-
-.. py:function:: apsimNGpy.core.config.load_crop_from_disk(crop: 'str', out: 'Union[str, Path]', bin_path=None, cache_path=True, suffix='.apsimx')
-
-   Load a default APSIM crop simulation file from disk by specifying only the crop name. This fucntion can literally
-   load anything that resides under the /Examples directory.
-
-   Locates and copies an `.apsimx` file associated with the specified crop from the APSIM
-   /Examples directory into a working directory. It is useful when programmatically running default
-   simulations for different crops without manually opening them in GUI.
-
-   Parameters
-   ----------
-   crop: (str)
-       The name of the crop to load (e.g., 'Maize', 'Soybean', 'Barley', 'Mungbean', 'Pinus', 'Eucalyptus').
-       The name is case-insensitive and must-match an existing `.apsimx` file in the APSIM Examples folder.
-
-   out: (str, optional)
-        A custom output path where the `.apsimx` file should be copied.
-        If not provided, a temporary file will be created in the working directory. this is stamped with the APSIM version being used
-
-
-   bin_path: (str, optional):
-      no restriction we can laod from  another bin path
-   cache_path: (str, optional):
-
-       keep the path in memory for the next request
-
-   Returns
-   ________
-       `str`: The path to the copied `.apsimx` file ready for further manipulation or simulation.
-
-   .. caution::
-
-     The method catches the results, so if the file is removed from the disk, there may be issues> If this case
-     is anticipated, turn off the cach_path to False.
-
-   Raises
-   ________
-       ``FileNotFoundError``: If the APSIM binary path cannot be resolved or the crop simulation file does not exist.
-
-   Example::
-
-       >>> load_crop_from_disk("Maize", out ='my_maize_example.apsimx')
-       'C:/path/to/temp_uuid_Maize.apsimx'
-
-.. py:function:: apsimNGpy.core.config.scan_drive_for_bin()
-
-   This function uses scan_dir_for_bin to scan all drive directories.
-   for Windows only
-
-.. py:function:: apsimNGpy.core.config.set_apsim_bin_path(path: 'Union[str, Path]', raise_errors: 'bool' = True, verbose: 'bool' = False) -> 'bool'
-
-    Validate and write the bin path to the config file, where it is accessed by ``get_apsim_bin_path``.
-
-    Parameters
-    ___________
-    path : Union[str, Path]
-        The provided `path` should point to (or contain) the APSIM `bin` directory that
-        includes the required binaries:
-          - Windows: Models.dll AND Models.exe
-          - macOS/Linux: Models.dll AND Models (unix executable)
-        If `path` is a parent directory, the function will search recursively to locate
-        a matching `bin` directory. The first match is used.
-
-    raise_errors : bool, default is True
-        Whether to raise an error in case of errors. for testing purposes only
-
-    verbose: bool
-       whether to print messages to the console or not
-
-
-    Returns
-    -------
-    bool
-        True if the configuration was updated (or already valid and set to the same
-        resolved path), False if validation failed and `raise_errors=False`.
-
-    Raises
-    ------
-    ValueError
-        If no valid APSIM binary directory is found and `raise_errors=True`.
-
-    Examples
-    --------
-    >>> from apsimNGpy.core import config
-    >>> # Check the current path
-    >>> current = config.get_apsim_bin_path()
-    >>> # Set the desired path (either the bin folder or a parent)
-    >>> config.set_apsim_bin_path('/path/to/APSIM/2025/bin', verbose=True)
-
-   .. seealso::
-
-           :func:`~apsimNGpy.core.config.get_apsim_bin_path`
-
-.. py:function:: apsimNGpy.core.config.stamp_name_with_version(file_name)
-
-   Stamp every file name with the version, which allows the user to associate the file name with its appropriate
-   version it was created.
-
-   Parameters
-   ------------
-   file_name: str
-         path to the would be.apsimx file.
-
-   Returns
-   -------
-   str path with the apsim version stamp
-
-Classes
-^^^^^^^
-
-.. py:class:: apsimNGpy.core.config.Configuration
-
-   In the future, this module will contain all the constants required by the package.
-    Users will be able to override these values if needed by importing this module before running any simulations.
-
-   .. py:method:: apsimNGpy.core.config.Configuration.__init__(self, bin_path: 'Union[str, Path]' = None) -> None
-
-   Initialize self.  See help(type(self)) for accurate signature.
-
-   .. py:method:: apsimNGpy.core.config.Configuration.set_temporal_bin_path(self, temporal_bin_path)
-
-    Set a temporary APSIM-NG binary path for this package/module.
-
-   This updates the module-level resolution of APSIM assemblies to use the
-   provided path for the current process/session. It does **not** permanently
-   change the global APSIM bin path on disk. Use this when you need to pin a
-   workflow to a specific APSIM build for reproducibility.
-
-   Parameters
-   ----------
-   temporal_bin_path : str | os.PathLike
-       Absolute or relative path to the APSIM ``bin`` directory to use
-       temporarily (e.g., ``C:/APSIM/2025.09.01/bin``).
-
-       Reference (for the *global* fallback, not changed by this method):
-       :func:`get_apsim_bin_path()` typically resolves from configuration or
-       environment variables ``APSIM_BIN_PATH``, ``MODELS``, or ``APSIM``.
-
-   Returns
-   -------
-   None
-
-   Raises
-   ------
-   FileNotFoundError
-       If ``temporal_bin_path`` does not exist.
-   NotADirectoryError
-       If ``temporal_bin_path`` is not a directory.
-   PermissionError
-       If the process lacks read/execute permission on the path.
-   ValueError
-       If the directory does not appear to be a valid APSIM ``bin`` (e.g.,
-       required assemblies are missing).
-
-   Notes
-   -----
-   - Assemblies already loaded after pointing to this path will remain bound
-     in memory for the lifetime of the process.
-   - To limit the override to a block of code, prefer a context manager that
-     restores the prior path on exit.
-
-   Examples
-   --------
-
-   .. code-block:: python
-
-       from apsimNGpy.core.config import configuration
-       configuration.set_temporal_bin_path(r"C:/APSIM/2025.09.01/bin")
-       # proceed with imports/execution; assemblies are resolved from that path
-
-
-   .. seealso::
-
-      :func:`~apsimNGpy.core.config.get_apsim_bin_path`
-      :func:`~apsimNGpy.core.config.set_apsim_bin_path`
-
-   .. py:method:: apsimNGpy.core.config.Configuration.release_temporal_bin_path(self)
-
-   release and set back to the global bin path
-
-   .. py:attribute:: apsimNGpy.core.config.Configuration.bin_path
-
-   Default: ``<member 'bin_path' of 'Configuration' objects>``
-
-.. py:class:: apsimNGpy.core.config.apsim_bin_context
-
-     Temporarily configure the APSIM-NG *bin* path used by ``apsimNGpy`` so imports
-     (e.g., ``ApsimModel``) can resolve APSIM .NET assemblies. Restores the previous
-     configuration on exit.
-
-     Parameters
-     ----------
-     apsim_bin_path : str | os.PathLike | None, optional
-         Explicit path to the APSIM ``bin`` directory (e.g.,
-         ``C:/APSIM/2025.05.1234/bin`` or ``/opt/apsim/2025.05.1234/bin``).
-         Used if no valid value is resolved from ``dotenv_path``.
-     dotenv_path : str | os.PathLike | None, optional
-         Path to a ``.env`` file to load *before* resolution. If provided, the
-         manager will read (in order): ``bin_key`` (if non-empty), then
-         ``APSIM_BIN_PATH``, then ``APSIM_MODEL_PATH`` from that file.
-     bin_key : str, default ''
-         Custom environment variable name to read from the loaded ``.env``
-         (e.g., ``"APSIM_BIN_PATH_2025"``). Ignored when empty.
-     timeout : float, default 0.003
-         Small sleep (seconds) after setting the bin path to avoid races with
-         immediate imports on some filesystems. Set to 0 to disable.
-
-     Returns
-     -------
-     None
-         The context manager returns ``None``; import within the ``with`` block.
-
-     Raises
-     ------
-     ValueError
-         If no path can be resolved from ``dotenv_path``, ``apsim_bin_path``,
-         or the process environment.
-     FileNotFoundError
-         If the resolved path does not exist.
-
-     Notes
-     -----
-     - Python.NET assemblies cannot be unloaded from a running process; this
-       context only restores path configuration for **future** imports.
-     - Do not nest this context across threads; the underlying config is global.
-
-     Examples
-     --------
-     Use an explicit path::
-
-        with apsim_bin_context(r"C:/APSIM/2025.05.1234/bin"):
-          from apsimNGpy.core.apsim import ApsimModel
-          model = ApsimModel(...)
-
-     Use a .env file with a custom key::
-
-         from pathlib import Path
-         with apsim_bin_context(dotenv_path=Path(".env"), bin_key="APSIM_BIN_PATH"):
-              from apsimNGpy.core.apsim import ApsimModel
-
-    If you have .env files located in the root of your script::
-
-      with apsim_bin_context():
-          from apsimNGpy.core.apsim import ApsimModel
-
-     Verify restoration::
-
-         prev = get_apsim_bin_path()
-         with apsim_bin_context(r"C:/APSIM/X.Y.Z/bin"):
-
-         assert get_apsim_bin_path() == prev
-
-   added in v0.39.10.20+
-
-   .. py:method:: apsimNGpy.core.config.apsim_bin_context.__init__(self, apsim_bin_path: 'str | os.PathLike | None' = None, dotenv_path: 'str | os.PathLike | None' = None, bin_key: 'str' = '', disk_cache=False) -> 'None'
-
-   Initialize self.  See help(type(self)) for accurate signature.
-
 apsimNGpy.core.experiment
 -------------------------
 
@@ -4105,7 +4105,7 @@ Classes
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.update_mgt`
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.update_mgt_by_path`
 
-   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.__init__(self, model, out_path=<object object at 0x000001BC0CB56100>)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.__init__(self, model, out_path=<object object at 0x00000142B54B6100>)
 
    Initialize self.  See help(type(self)) for accurate signature.
 
@@ -4888,7 +4888,7 @@ Classes
    self : object
        Returns the updated ApsimModel instance.
 
-   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.save(self, file_name: 'Union[str, Path]' = <object object at 0x000001BC3BA80E00>, reload=True) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.save(self, file_name: 'Union[str, Path]' = <object object at 0x00000142853E4E00>, reload=True) (inherited)
 
    Saves the current APSIM NG model (``Simulations``) to disk and refresh runtime state.
 
@@ -7003,7 +7003,7 @@ Classes
    ---------------------------------------------------------------------------
    returns an array of the parameter values
 
-   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x000001BC3BA80E00>) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x00000142853E4E00>) (inherited)
 
    Inspect the model types and returns the model paths or names.
 
@@ -9155,7 +9155,7 @@ Functions
 
    Return True if obj looks like a DB connection.
 
-.. py:function:: apsimNGpy.core.runner.run_apsim_by_path(model: 'Union[str, Path, Iterable[str], Iterable[Path]]', *, bin_path: 'Union[str, Path, object]' = <object object at 0x000001BC3BA81000>, timeout: 'int' = 800, n_cores: 'int' = -1, verbose: 'bool' = False, to_csv: 'bool' = False) -> 'subprocess.CompletedProcess[str]'
+.. py:function:: apsimNGpy.core.runner.run_apsim_by_path(model: 'Union[str, Path, Iterable[str], Iterable[Path]]', *, bin_path: 'Union[str, Path, object]' = <object object at 0x00000142853E5000>, timeout: 'int' = 800, n_cores: 'int' = -1, verbose: 'bool' = False, to_csv: 'bool' = False) -> 'subprocess.CompletedProcess[str]'
 
    Execute an APSIM model safely and reproducibly.
 
@@ -9220,7 +9220,7 @@ Functions
    RuntimeError
        If APSIM returns a non-zero exit code.
 
-.. py:function:: apsimNGpy.core.runner.run_model_externally(model: 'Union[Path, str]', *, apsim_bin_path: 'Optional[Union[Path, str]]' = <object object at 0x000001BC3BA81000>, verbose: 'bool' = False, to_csv: 'bool' = False, timeout: 'int' = 20, cpu_count=-1, cwd: 'Optional[Union[Path, str]]' = None) -> 'subprocess.CompletedProcess[str]'
+.. py:function:: apsimNGpy.core.runner.run_model_externally(model: 'Union[Path, str]', *, apsim_bin_path: 'Optional[Union[Path, str]]' = <object object at 0x00000142853E5000>, verbose: 'bool' = False, to_csv: 'bool' = False, timeout: 'int' = 20, cpu_count=-1, cwd: 'Optional[Union[Path, str]]' = None) -> 'subprocess.CompletedProcess[str]'
 
    Run APSIM externally (cross-platform) with safe defaults.
 
@@ -9426,7 +9426,7 @@ Classes
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.update_mgt`
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.update_mgt_by_path`
 
-   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.__init__(self, model, out_path=<object object at 0x000001BC0CB56100>)
+   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.__init__(self, model, out_path=<object object at 0x00000142B54B6100>)
 
    Initialize self.  See help(type(self)) for accurate signature.
 
@@ -10145,7 +10145,7 @@ Classes
    self : object
        Returns the updated ApsimModel instance.
 
-   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.save(self, file_name: 'Union[str, Path]' = <object object at 0x000001BC3BA80E00>, reload=True) (inherited)
+   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.save(self, file_name: 'Union[str, Path]' = <object object at 0x00000142853E4E00>, reload=True) (inherited)
 
    Saves the current APSIM NG model (``Simulations``) to disk and refresh runtime state.
 
@@ -12260,7 +12260,7 @@ Classes
    ---------------------------------------------------------------------------
    returns an array of the parameter values
 
-   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x000001BC3BA80E00>) (inherited)
+   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x00000142853E4E00>) (inherited)
 
    Inspect the model types and returns the model paths or names.
 

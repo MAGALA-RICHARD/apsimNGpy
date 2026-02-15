@@ -52,7 +52,8 @@ dependencies = [
     "summarytools>=0.3.0",
      'watchdog==6.0.0',
     'loguru == 0.7.3',
-    "rich>=13.7.0"
+    "rich>=13.7.0",
+    'pydantic>=2.12'
 ]
 
 [project.urls]

@@ -176,3 +176,13 @@ If you require this simple rotation manager, please raise an issue on GitHub and
             tb_df.to_csv(base_path/f'{tables}.csv', index=False)
         df.to_csv(Base_DIR / 'Results/simulated.csv', index=False)
         wheat_r= df[df['source_table']=='WheatR']
+
+.. tip::
+
+   In most cases, you do not need to use the ``MultiCoreManager`` API.
+   For standard factorial experiments, the built-in Experiment manager is usually sufficient.
+
+   However, in more advanced scenarios—such as the example above—where a high degree
+   of customization is required, the Experiment manager may not provide the necessary
+   flexibility. In such cases, ``MultiCoreManager`` offers greater control and
+   extensibility.

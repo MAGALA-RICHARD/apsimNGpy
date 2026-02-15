@@ -38,7 +38,6 @@ CSHARP_ENGINE_MAX_CHUNK_SIZE = 150
 DIR_PREFIX = 'mcp'
 
 
-# tempfile could work too
 @contextmanager
 def apsim_workdir(prefix, delay=0.03):
     "creates a temporal working directory"

@@ -58,7 +58,7 @@ async def main():
             print_msg(model.inspect_model(model_type=model_type))
 
         else:
-            model.inspect_file()
+            model.tree()
         print()
         return
 

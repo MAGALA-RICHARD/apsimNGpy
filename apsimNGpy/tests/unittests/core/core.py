@@ -378,7 +378,7 @@ class TestCoreModel(BaseTester):
 
     def test_inspect_file(self):
         with CoreModel("Maize") as model:
-            _inspected = model.inspect_file(console=False)
+            _inspected = model.tree(console=False)
             self.assertTrue(_inspected)
 
     def test_get_weather_from_web_nasa(self):

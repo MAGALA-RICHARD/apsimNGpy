@@ -122,7 +122,7 @@ class TestEditModelByPath(unittest.TestCase):
 
     def test_edited_cultivar_added_to_replacements(self):
         with ApsimModel('Maize') as model:
-            model.inspect_file(cultivar=True)
+            model.tree(cultivar=True)
             model.edit_model_by_path(
                 path='.Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82',
                 commands='[Grain].MaximumGrainsPerCob.FixedValue',

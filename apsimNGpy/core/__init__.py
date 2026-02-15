@@ -1,6 +1,6 @@
-from apsimNGpy.config import configuration, Path
+from apsimNGpy.config import configuration
 from apsimNGpy.starter.starter import CLR
-if configuration.bin_path is not None and Path(configuration.bin_path).exists():
+if configuration.is_bin_path_valid():
     from apsimNGpy.core.core import CoreModel
     from apsimNGpy.core.apsim import ApsimModel
     from apsimNGpy.core.runner import run_apsim_by_path

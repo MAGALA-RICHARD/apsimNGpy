@@ -36,6 +36,7 @@ CAST_OBJECT = 'CastBridge'
 
 DLL_DIR = (Path(__file__).parent / 'dll').joinpath(CAST_OBJECT)
 
+
 @lru_cache(maxsize=None)
 def start_pythonnet(dotnet_root=None):
     """
@@ -317,6 +318,25 @@ class Configuration:
         # the temporal bin_key is popped out on exit in apsim_bin_context class
         if temporal_bin:
             self.bin_path = Path(temporal_bin)
+
+    from pathlib import Path
+    import platform
+
+    def is_bin_path_valid(self) -> bool:
+        """
+        Validate that the APSIM bin directory contains
+        the required Models executable in a cross-platform way.
+        """
+        if str(self.bin_path) == '':
+            return False
+        if self.bin_path is None:
+            return False
+        # by all means now it is pathlike
+        bin_path = Path(self.bin_path)
+        if locate_model_bin_path(bin_path=bin_path, recursive=True):
+            return True
+
+        return False
 
     def set_temporal_bin_path(self, temporal_bin_path):
         """

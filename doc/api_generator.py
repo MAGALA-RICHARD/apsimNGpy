@@ -2,7 +2,7 @@ import inspect
 import textwrap, os
 from pathlib import Path
 from typing import Iterable, Union, List, Set, Any
-from apsimNGpy.core.config import get_apsim_bin_path
+from apsimNGpy.config import get_apsim_bin_path
 
 # ---------- knobs ----------
 INHERIT_NOTE_STYLE = "short"  # {"short","base","none"}
@@ -300,7 +300,7 @@ def docs(
 
 
 def main(apsim_bin_path):
-    from apsimNGpy.core.config import apsim_bin_context
+    from apsimNGpy.config import apsim_bin_context
     with apsim_bin_context(apsim_bin_path):
         SENDTO = Path.cwd().parent.parent / 'docs/source'
         SENDTO.mkdir(parents=True, exist_ok=True)
@@ -309,7 +309,8 @@ def main(apsim_bin_path):
         from apsimNGpy.core_utils.deco import add_outline
 
         import shutil, os
-        from apsimNGpy.core import config, apsim, mult_cores, experiment, runner
+        from apsimNGpy.core import  apsim, mult_cores, experiment, runner
+        from apsimNGpy import config
         from starter import starter
         # from apsimNGpy.optimizer import moo, single
         from apsimNGpy.core_utils import database_utils

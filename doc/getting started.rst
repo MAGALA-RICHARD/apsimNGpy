@@ -154,12 +154,12 @@ Using Python
 
 .. code-block:: python
 
-   from apsimNGpy.core import config
+   from apsimNGpy import config
    print(config.get_apsim_bin_path())
 
 .. seealso::
 
-   API reference: :func:`~apsimNGpy.core.config.get_apsim_bin_path`
+   API reference: :func:`~apsimNGpy.config.get_apsim_bin_path`
 
 How apsimNGpy Locates APSIM Binaries
 -----------------------------------
@@ -190,12 +190,12 @@ Option 2: Using the apsimNGpy config API (recommended)
 
 .. code-block:: python
 
-   from apsimNGpy.core.config import set_apsim_bin_path
+   from apsimNGpy.config import set_apsim_bin_path
    set_apsim_bin_path(r"path/to/your/apsim/binary/folder/bin")
 
 .. seealso::
 
-   API reference: :func:`~apsimNGpy.core.config.set_apsim_bin_path`
+   API reference: :func:`~apsimNGpy.config.set_apsim_bin_path`
 
 Option 3: Command-line update
 ---------------------------------
@@ -233,11 +233,11 @@ Verifying Successful Configuration
 The quickest alternative for all the above is to temporarily provide the APSIM ``bin`` path using a
 context manager. This approach is useful for short scripts or interactive sessions
 and assumes that you do **not** import any other ``apsimNGpy`` modules outside of
-the :mod:`~apsimNGpy.core.config` module before entering the with block as shown below:
+the :mod:`~apsimNGpy.config` module before entering the with block as shown below:
 
 .. code-block:: python
 
-   from apsimNGpy.core.config import apsim_bin_context
+   from apsimNGpy.config import apsim_bin_context
    with apsim_bin_context(
        apsim_bin_path=r"your_apsim_binary_path"):
        from apsimNGpy.core.apsim import ApsimModel

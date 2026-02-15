@@ -158,7 +158,7 @@ class ExperimentManager:
                # initialize experiment with a preferred base simulation name
                experiment.init_experiment(permutation=False, base_simulation='Simulation')
                # view the simulation tree
-               experiment.inspect_file()
+               experiment.tree()
 
             The method :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.inspect_file` is inherited from the
             :class:`~apsimNGpy.core.apsim.ApsimModel` class , but it is still useful here, for example, you can see

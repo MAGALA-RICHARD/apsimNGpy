@@ -135,7 +135,7 @@ Classes
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.update_mgt`
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.update_mgt_by_path`
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.__init__(self, model: Union[os.PathLike, dict, str], out_path: Union[str, pathlib.Path] = <object object at 0x0000015F512C1C10>, set_wd=None, **kwargs)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.__init__(self, model: Union[os.PathLike, dict, str], out_path: Union[str, pathlib.Path] = <object object at 0x000001BC0CB56100>, set_wd=None, **kwargs)
 
    Initialize self.  See help(type(self)) for accurate signature.
 
@@ -615,7 +615,7 @@ Classes
    self : object
        Returns the updated ApsimModel instance.
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.save(self, file_name: 'Union[str, Path]' = <object object at 0x0000015F05E1CD00>, reload=True) (inherited)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.save(self, file_name: 'Union[str, Path]' = <object object at 0x000001BC3BA80E00>, reload=True) (inherited)
 
    Saves the current APSIM NG model (``Simulations``) to disk and refresh runtime state.
 
@@ -2322,6 +2322,10 @@ Classes
    ----------
      Instance of apsimNgpy.core.ApsimModel or apsimNgpy.core.experimentmanager.ExperimentManager
 
+   .. py:property:: apsimNGpy.core.apsim.ApsimModel.is_recent_version (inherited)
+
+   Bencmark to a known APSIM version when changes were drastic to influence changes in apsimNGpy API
+
    .. py:method:: apsimNGpy.core.apsim.ApsimModel.replace_model_from(self, model, model_type: 'str', model_name: 'str' = None, target_model_name: 'str' = None, simulations: 'str' = None) (inherited)
 
    @deprecated and will be removed
@@ -2726,7 +2730,7 @@ Classes
    ---------------------------------------------------------------------------
    returns an array of the parameter values
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x0000015F05E1CD00>) (inherited)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x000001BC3BA80E00>) (inherited)
 
    Inspect the model types and returns the model paths or names.
 
@@ -3015,8 +3019,7 @@ Classes
 
    Example::
 
-       from apsimNGpy.core import base_data
-       apsim = base_data.load_default_simulations(crop='Maize')
+       apsim = ApsimModel('Maize')
        apsim.create_experiment(permutation=False)
        apsim.add_factor(specification="[Fertilise at sowing].Script.Amount = 0 to 200 step 20", factor_name='Nitrogen')
        apsim.add_factor(specification="[Sow using a variable rule].Script.Population =4 to 8 step 2", factor_name='Population')
@@ -3994,13 +3997,13 @@ Classes
 
    Initialize self.  See help(type(self)) for accurate signature.
 
-apsimNGpy.core.experimentmanager
---------------------------------
+apsimNGpy.core.experiment
+-------------------------
 
 Classes
 ^^^^^^^
 
-.. py:class:: apsimNGpy.core.experimentmanager.ExperimentManager
+.. py:class:: apsimNGpy.core.experiment.ExperimentManager
 
        This class inherits methods and attributes from: :class:`~apsimNGpy.core.apsim.ApsimModel` to manage APSIM Experiments
        with pure factors or permutations. You first need to initiate the instance of this class and then initialize the
@@ -4102,11 +4105,11 @@ Classes
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.update_mgt`
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.update_mgt_by_path`
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.__init__(self, model, out_path=<object object at 0x0000015F512C1C10>)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.__init__(self, model, out_path=<object object at 0x000001BC0CB56100>)
 
    Initialize self.  See help(type(self)) for accurate signature.
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.init_experiment(self, permutation: bool = True, base_simulation: str = None)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.init_experiment(self, permutation: 'bool' = True, base_simulation: 'str' = None)
 
    Initializes the factorial experiment structure inside the APSIM file.
 
@@ -4180,7 +4183,7 @@ Classes
 
       :meth:`add_factor`
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.add_factor(self, specification: str, factor_name: str = None, **kwargs)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.add_factor(self, specification: 'str', factor_name: 'str' = None, **kwargs)
 
    Add a new factor to the experiment from an APSIM-style script specification.
 
@@ -4391,12 +4394,12 @@ Classes
           factor_name='initial_carbon'
       )
 
-   .. py:property:: apsimNGpy.core.experimentmanager.ExperimentManager.n_factors
+   .. py:property:: apsimNGpy.core.experiment.ExperimentManager.n_factors
 
    Returns:
        int: The total number of active factor specifications currently added to the experiment.
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.finalize(self)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.finalize(self)
 
    "
    Finalizes the experiment setup by re-creating the internal APSIM factor nodes from specs.
@@ -4409,14 +4412,14 @@ Classes
        Re-creates and attaches each factor as a new node.
        Triggers model saving.
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.evaluate_simulated_output(self, ref_data: pandas.core.frame.DataFrame, table, ref_data_col, target_col, index_col, expr=None) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.evaluate_simulated_output(self, ref_data: pandas.core.frame.DataFrame, table, ref_data_col, target_col, index_col, expr=None) (inherited)
 
    Deprecated wrapper for :meth:`evaluate`.
 
    This method is maintained for backward compatibility and will be
    removed in a future release. Please use :meth:`evaluate` instead.
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.evaluate(self, ref_data: pandas.core.frame.DataFrame, table, ref_data_col, target_col, index_col, expr=None, verbose=True) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.evaluate(self, ref_data: pandas.core.frame.DataFrame, table, ref_data_col, target_col, index_col, expr=None, verbose=True) (inherited)
 
    Evaluate APSIM-simulated output against a reference (observed) dataset.
 
@@ -4526,7 +4529,7 @@ Classes
 
    .. versionadded:: 0.39.12.21+
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.set_params(self, params: dict[str, typing.Any] | None = None, **kwargs) -> 'ApsimModel' (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.set_params(self, params: dict[str, typing.Any] | None = None, **kwargs) -> 'ApsimModel' (inherited)
 
    Set parameters for the given model by passing a dictionary or keyword arguments.
 
@@ -4560,7 +4563,7 @@ Classes
    In such cases, parameter sets can be programmatically generated, serialized,
    and reused without manual modification of code.
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.get_soil_from_web(self, simulations: Union[str, tuple, NoneType] = None, *, lonlat: Optional[Tuple[float, float]] = None, soil_series: Optional[str] = None, thickness_sequence: Optional[Sequence[float]] = 'auto', thickness_value: int = None, max_depth: Optional[int] = 2400, n_layers: int = 10, thinnest_layer: int = 50, thickness_growth_rate: float = 1.5, edit_sections: Optional[Sequence[str]] = None, attach_missing_sections: bool = True, additional_plants: tuple = None, source='isric', top_finert=0.65, top_fom=1000, top_fbiom=0.04, fom_cnr=40, soil_cnr=12, swcon=0.3, top_urea=0, top_nh3=0.5, top_nh4=0.05, adjust_dul: bool = True, **soil_kwargs) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.get_soil_from_web(self, simulations: Union[str, tuple, NoneType] = None, *, lonlat: Optional[Tuple[float, float]] = None, soil_series: Optional[str] = None, thickness_sequence: Optional[Sequence[float]] = 'auto', thickness_value: int = None, max_depth: Optional[int] = 2400, n_layers: int = 10, thinnest_layer: int = 50, thickness_growth_rate: float = 1.5, edit_sections: Optional[Sequence[str]] = None, attach_missing_sections: bool = True, additional_plants: tuple = None, source='isric', top_finert=0.65, top_fom=1000, top_fbiom=0.04, fom_cnr=40, soil_cnr=12, swcon=0.3, top_urea=0, top_nh3=0.5, top_nh4=0.05, adjust_dul: bool = True, **soil_kwargs) (inherited)
 
       Download soil profiles for a given location and populate the APSIM NG
       soil sections in the current model.
@@ -4765,7 +4768,7 @@ Classes
                                   summer_date='1-May', precipitation_interception=13.5, winter_date='1-nov',
                                   source='isric')
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.adjust_dul(self, simulations: Union[tuple, list] = None) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.adjust_dul(self, simulations: Union[tuple, list] = None) (inherited)
 
    - This method checks whether the soil ``SAT`` is above or below ``DUL`` and decreases ``DUL``  values accordingly
 
@@ -4777,7 +4780,7 @@ Classes
 
        model the object for method chaining
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.replace_downloaded_soils(self, soil_tables: Union[dict, list], simulation_names: Union[tuple, list], **kwargs) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.replace_downloaded_soils(self, soil_tables: Union[dict, list], simulation_names: Union[tuple, list], **kwargs) (inherited)
 
    @deprecated and will be removed in the future versions
            Updates soil parameters and configurations for downloaded soil data in simulation models.
@@ -4807,7 +4810,7 @@ Classes
            ``CultvarName``: cultivar name which is in the sowing module for adjusting the rue
            ``tillage``: specify whether you will be carried to adjust some physical parameters
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.read_apsimx_data(self, table=None) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.read_apsimx_data(self, table=None) (inherited)
 
    Read APSIM NG datastore for the current model. Raises FileNotFoundError if the model was initialized from
    default models because those need to be executed first to generate a database.
@@ -4826,7 +4829,7 @@ Classes
     ------------
      KeyError: if table is not found in the database
 
-   .. py:property:: apsimNGpy.core.experimentmanager.ExperimentManager.simulations (inherited)
+   .. py:property:: apsimNGpy.core.experiment.ExperimentManager.simulations (inherited)
 
    Retrieve simulation nodes in the APSIMx `Model.Core.Simulations` object.
 
@@ -4839,27 +4842,27 @@ Classes
 
         The simulations are c# referenced objects, and their manipulation maybe for advanced users only.
 
-   .. py:property:: apsimNGpy.core.experimentmanager.ExperimentManager.simulation_names (inherited)
+   .. py:property:: apsimNGpy.core.experiment.ExperimentManager.simulation_names (inherited)
 
    @deprecated will be removed in future releases. Please use inspect_model function instead.
 
    retrieves the name of the simulations in the APSIMx file
    @return: list of simulation names
 
-   .. py:property:: apsimNGpy.core.experimentmanager.ExperimentManager.tables_list (inherited)
+   .. py:property:: apsimNGpy.core.experiment.ExperimentManager.tables_list (inherited)
 
    quick property returns available database report tables name
 
-   .. py:property:: apsimNGpy.core.experimentmanager.ExperimentManager.managers_scripts_list (inherited)
+   .. py:property:: apsimNGpy.core.experiment.ExperimentManager.managers_scripts_list (inherited)
 
    quick property returns available database manager script names
 
-   .. py:property:: apsimNGpy.core.experimentmanager.ExperimentManager.simulations_list (inherited)
+   .. py:property:: apsimNGpy.core.experiment.ExperimentManager.simulations_list (inherited)
 
    quick property for returning a list of available simulation names
    @return:
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.restart_model(self, model_info=None) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.restart_model(self, model_info=None) (inherited)
 
    Reinitialize the APSIM model instance after edits or management updates.
 
@@ -4885,7 +4888,7 @@ Classes
    self : object
        Returns the updated ApsimModel instance.
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.save(self, file_name: 'Union[str, Path]' = <object object at 0x0000015F05E1CD00>, reload=True) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.save(self, file_name: 'Union[str, Path]' = <object object at 0x000001BC3BA80E00>, reload=True) (inherited)
 
    Saves the current APSIM NG model (``Simulations``) to disk and refresh runtime state.
 
@@ -4971,7 +4974,7 @@ Classes
    In the above case, both reload = `False` or `True`, will produce the same reference path for the live
    instance class.
 
-   .. py:property:: apsimNGpy.core.experimentmanager.ExperimentManager.results (inherited)
+   .. py:property:: apsimNGpy.core.experiment.ExperimentManager.results (inherited)
 
    Legacy method for retrieving simulation results.
 
@@ -5085,7 +5088,7 @@ Classes
 
       Related API: :meth:`get_simulated_output`.
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.get_simulated_output(self, report_names: 'Union[str, list]', axis=0, **kwargs) -> 'pd.DataFrame' (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.get_simulated_output(self, report_names: 'Union[str, list]', axis=0, **kwargs) -> 'pd.DataFrame' (inherited)
 
    Reads report data from CSV files generated by the simulation. More Advanced table-merging arguments will be introduced soon.
 
@@ -5186,7 +5189,7 @@ Classes
 
       Related API: :attr:`results`.
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.run(self, report_name: 'Union[tuple, list, str]' = None, simulations: 'Union[tuple, list]' = None, clean_up: 'bool' = True, verbose: 'bool' = False, timeout: 'int' = 800, cpu_count: 'int' = -1, **kwargs) -> "'CoreModel'" (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.run(self, report_name: 'Union[tuple, list, str]' = None, simulations: 'Union[tuple, list]' = None, clean_up: 'bool' = True, verbose: 'bool' = False, timeout: 'int' = 800, cpu_count: 'int' = -1, **kwargs) -> "'CoreModel'" (inherited)
 
     Run APSIM model simulations to write the results either to SQLite database or csv file. Does not collect the
      simulated output into memory. Please see related APIs: :attr:`results` and :meth:`get_simulated_output`.
@@ -5248,7 +5251,7 @@ Classes
 
        Related APIs: :attr:`results` and :meth:`get_simulated_output`.
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.rename_model(self, model_type, *, old_name, new_name) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.rename_model(self, model_type, *, old_name, new_name) (inherited)
 
       Renames a model within the APSIM simulation tree.
 
@@ -5452,7 +5455,7 @@ Classes
        :meth:`~apsimNGpy.core.apsim.ApsimModel.clone_model`, and
        :meth:`~apsimNGpy.core.apsim.ApsimModel.move_model`.
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.clone_model(self, model_type, model_name, adoptive_parent_type, rename=None, adoptive_parent_name=None) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.clone_model(self, model_type, model_name, adoptive_parent_type, rename=None, adoptive_parent_name=None) (inherited)
 
    Clone an existing ``model`` and move it to a specified parent within the simulation structure.
    The function modifies the simulation structure by adding the cloned model to the designated parent.
@@ -5549,7 +5552,7 @@ Classes
 
       Related APIs: :meth:`add_model` and :meth:`move_model`.
 
-   .. py:staticmethod:: apsimNGpy.core.experimentmanager.ExperimentManager.find_model(model_name: 'str') (inherited)
+   .. py:staticmethod:: apsimNGpy.core.experiment.ExperimentManager.find_model(model_name: 'str') (inherited)
 
    Find a model from the Models namespace and return its path.
 
@@ -5574,7 +5577,7 @@ Classes
         >>> model.find_model("Clock")  # doctest: +SKIP
         'Models.Clock'
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.add_model(self, model_type, adoptive_parent, rename=None, adoptive_parent_name=None, verbose=False, source='Models', source_model_name=None, override=True, **kwargs) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.add_model(self, model_type, adoptive_parent, rename=None, adoptive_parent_name=None, verbose=False, source='Models', source_model_name=None, override=True, **kwargs) (inherited)
 
    Adds a model to the Models Simulations namespace.
 
@@ -5636,11 +5639,11 @@ Classes
 
        Related APIs: :meth:`clone_model` and :meth:`move_model`.
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.detect_model_type(self, model_instance: 'Union[str, Models]') (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.detect_model_type(self, model_instance: 'Union[str, Models]') (inherited)
 
    Detects the model type from a given APSIM model instance or path string.
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.edit_model_by_path(self, path: 'str', **kwargs) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.edit_model_by_path(self, path: 'str', **kwargs) (inherited)
 
    Edit a model component located by an APSIM path, dispatching to type-specific editors.
 
@@ -5747,12 +5750,12 @@ Classes
 
       Related API: :meth:`edit_model`.
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.add_base_replacements(self) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.add_base_replacements(self) (inherited)
 
    Add base replacements with all available models of type Plants and then start from there to add more
    @return: self
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.edit_model(self, model_type: 'str', model_name: 'str', simulations: 'Union[str, list]' = 'all', exclude=None, verbose=False, **kwargs) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.edit_model(self, model_type: 'str', model_name: 'str', simulations: 'Union[str, list]' = 'all', exclude=None, verbose=False, **kwargs) (inherited)
 
    Modify various APSIM model components by specifying the model type and name across given simulations.
 
@@ -5968,7 +5971,7 @@ Classes
 
       Related API: :meth:`edit_model_by_path`.
 
-   .. py:staticmethod:: apsimNGpy.core.experimentmanager.ExperimentManager.inspect_settable_attributes(model_type) (inherited)
+   .. py:staticmethod:: apsimNGpy.core.experiment.ExperimentManager.inspect_settable_attributes(model_type) (inherited)
 
    Inspect and return all settable attributes for a given APSIM model type.
 
@@ -6026,11 +6029,11 @@ Classes
 
    .. versionadded:: 0.39.12.21
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.find_model_in_replacements(self, model_type, model_name) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.find_model_in_replacements(self, model_type, model_name) (inherited)
 
    checks whether the model to be edited is in the replacement, there is no point to contnue editing from individual simulations
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.add_report_variable(self, variable_spec: 'Union[list, str, tuple]', report_name: 'str' = None, set_event_names: 'Union[str, list]' = None, simulations=None) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.add_report_variable(self, variable_spec: 'Union[list, str, tuple]', report_name: 'str' = None, set_event_names: 'Union[str, list]' = None, simulations=None) (inherited)
 
    This adds a report variable to the end of other _variables, if you want to change the whole report use change_report
 
@@ -6078,7 +6081,7 @@ Classes
 
        Related APIs: :meth:`remove_report_variable` and :meth:`add_db_table`.
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.remove_report_variable(self, variable_spec: 'Union[list, tuple, str]', report_name: 'str | None' = None) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.remove_report_variable(self, variable_spec: 'Union[list, tuple, str]', report_name: 'str | None' = None) (inherited)
 
    Remove one or more variable expressions from an APSIM Report component.
 
@@ -6140,7 +6143,7 @@ Classes
 
        Related APIs: :meth:`add_report_variable` and :meth:`add_db_table`.
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.remove_model(self, model_type: 'Models', model_name) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.remove_model(self, model_type: 'Models', model_name) (inherited)
 
    Removes a model from the APSIM Models.Simulations namespace.
 
@@ -6169,7 +6172,7 @@ Classes
 
         Related APIs: :meth:`clone_model` and :meth:`add_model`.
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.move_model(self, model_type: 'Models', new_parent_type: 'Models', model_name: 'str' = None, new_parent_name: 'str' = None, verbose: 'bool' = False, simulations: 'Union[str, list]' = None) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.move_model(self, model_type: 'Models', new_parent_type: 'Models', model_name: 'str' = None, new_parent_name: 'str' = None, verbose: 'bool' = False, simulations: 'Union[str, list]' = None) (inherited)
 
    Args:
    -----
@@ -6190,7 +6193,7 @@ Classes
    ---------
      returns instance of apsimNGpy.core.core.apsim.ApsimModel or apsimNGpy.core.core.apsim.CoreModel
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.replicate_file(self, k: 'int', path: 'os.PathLike' = None, suffix: 'str' = 'replica') (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.replicate_file(self, k: 'int', path: 'os.PathLike' = None, suffix: 'str' = 'replica') (inherited)
 
    Replicates a file ``k`` times.
    Parameters
@@ -6209,12 +6212,12 @@ Classes
    -------
    - A  generator(str) is returned.
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.get_crop_replacement(self, Crop) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.get_crop_replacement(self, Crop) (inherited)
 
    :param Crop: crop to get the replacement
    :return: System.Collections.Generic.IEnumerable APSIM plant object
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.inspect_model_parameters(self, model_type: 'Union[Models, str]', model_name: 'str', simulations: 'Union[str, list]' = <UserOptionMissing>, parameters: 'Union[list, set, tuple, str]' = 'all', exclude: 'list | set | tuple | str' = None, **kwargs) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.inspect_model_parameters(self, model_type: 'Union[Models, str]', model_name: 'str', simulations: 'Union[str, list]' = <UserOptionMissing>, parameters: 'Union[list, set, tuple, str]' = 'all', exclude: 'list | set | tuple | str' = None, **kwargs) (inherited)
 
    Inspect the input parameters of a specific ``APSIM`` model type instance within selected simulations.
 
@@ -6471,7 +6474,7 @@ Classes
 
        Related API: :meth:`inspect_model_parameters_by_path`
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.inspect_model_parameters_by_path(self, path, *, parameters: 'Union[list, set, tuple, str]' = None) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.inspect_model_parameters_by_path(self, path, *, parameters: 'Union[list, set, tuple, str]' = None) (inherited)
 
     Inspect and extract parameters from a model component specified by its path.
 
@@ -6527,7 +6530,7 @@ Classes
         Related API: :meth:`inspect_model_parameters`
         Others: :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_model`, :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_file`
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.edit_cultivar(self, *, CultivarName: 'str', commands: 'str', values: 'Any', **kwargs) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.edit_cultivar(self, *, CultivarName: 'str', commands: 'str', values: 'Any', **kwargs) (inherited)
 
    @deprecated
    Edits the parameters of a given cultivar. we don't need a simulation name for this unless if you are defining it in the
@@ -6550,7 +6553,7 @@ Classes
 
      - values: values for each command (e.g., (721, 760)).
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.update_cultivar(self, *, parameters: 'dict', simulations: 'Union[list, tuple]' = None, clear=False, **kwargs) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.update_cultivar(self, *, parameters: 'dict', simulations: 'Union[list, tuple]' = None, clear=False, **kwargs) (inherited)
 
    Update cultivar parameters
 
@@ -6565,7 +6568,7 @@ Classes
    clear (bool, optional)
         If `True` remove all existing parameters, by default `False`.
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.recompile_edited_model(self, out_path: 'os.PathLike') (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.recompile_edited_model(self, out_path: 'os.PathLike') (inherited)
 
    Args:
    ______________
@@ -6573,7 +6576,7 @@ Classes
 
    ``return:`` self
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.update_mgt_by_path(self, *, path: 'str', fmt='.', **kwargs) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.update_mgt_by_path(self, *, path: 'str', fmt='.', **kwargs) (inherited)
 
    Parameters
    __________
@@ -6592,7 +6595,11 @@ Classes
    ----------
      Instance of apsimNgpy.core.ApsimModel or apsimNgpy.core.experimentmanager.ExperimentManager
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.replace_model_from(self, model, model_type: 'str', model_name: 'str' = None, target_model_name: 'str' = None, simulations: 'str' = None) (inherited)
+   .. py:property:: apsimNGpy.core.experiment.ExperimentManager.is_recent_version (inherited)
+
+   Bencmark to a known APSIM version when changes were drastic to influence changes in apsimNGpy API
+
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.replace_model_from(self, model, model_type: 'str', model_name: 'str' = None, target_model_name: 'str' = None, simulations: 'str' = None) (inherited)
 
    @deprecated and will be removed
    function has not been maintained for a long time, use it at your own risk
@@ -6625,7 +6632,7 @@ Classes
    Raises:
        ``ValueError``: If ``model_class`` is "Simulations" which is not allowed for replacement.
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.update_mgt(self, *, management: 'Union[dict, tuple]', simulations: '[list, tuple]' = <UserOptionMissing>, out: '[Path, str]' = None, reload: 'bool' = True, **kwargs) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.update_mgt(self, *, management: 'Union[dict, tuple]', simulations: '[list, tuple]' = <UserOptionMissing>, out: '[Path, str]' = None, reload: 'bool' = True, **kwargs) (inherited)
 
    Update management settings in the model. This method handles one management parameter at a time.
 
@@ -6654,7 +6661,7 @@ Classes
        This method does not perform `validation` on the provided `management` dictionary beyond checking for key
        existence. - If the specified management script or parameters do not exist, they will be ignored.
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.preview_simulation(self, watch=False) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.preview_simulation(self, watch=False) (inherited)
 
    Open the current simulation in the APSIM Next Gen GUI.
 
@@ -6765,7 +6772,7 @@ Classes
        Depending on your environment, you may need to close the GUI window to continue
        or follow the prompts shown after termination.
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.replace_met_file(self, *, weather_file: 'Union[Path, str]', simulations=<UserOptionMissing>, exclude: 'set | str | tuple | list' = None, **kwargs) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.replace_met_file(self, *, weather_file: 'Union[Path, str]', simulations=<UserOptionMissing>, exclude: 'set | str | tuple | list' = None, **kwargs) (inherited)
 
    .. deprecated:: 0.**x**
       This helper will be removed in a future release. Prefer newer weather
@@ -6849,7 +6856,7 @@ Classes
    ModelTools.find_all_in_scope : Scope-aware traversal utility.
    Models.Climate.Weather : APSIM NG weather component.
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.get_weather_from_file(self, weather_file, simulations=None) -> "'self'" (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.get_weather_from_file(self, weather_file, simulations=None) -> "'self'" (inherited)
 
    Point targeted APSIM Weather nodes to a local ``.met`` file.
 
@@ -6914,7 +6921,7 @@ Classes
 
        Related APIs: :meth:`edit_model` and :meth:`edit_model_by_path`.
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.get_weather_from_web(self, lonlat: 'tuple', start: 'int', end: 'int', simulations=<UserOptionMissing>, source='nasa', filename=None) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.get_weather_from_web(self, lonlat: 'tuple', start: 'int', end: 'int', simulations=<UserOptionMissing>, source='nasa', filename=None) (inherited)
 
     Replaces the weather (met) file in the model using weather data fetched from an online source. Internally, calls get_weather_from_file after downloading the weather
    Parameters:
@@ -6953,7 +6960,7 @@ Classes
       >>> start, end = dt['Start'].year, dt['End'].year
       # output: 1990, 2000
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.change_report(self, *, command: 'str', report_name='Report', simulations=None, set_DayAfterLastOutput=None, **kwargs) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.change_report(self, *, command: 'str', report_name='Report', simulations=None, set_DayAfterLastOutput=None, **kwargs) (inherited)
 
        Set APSIM report _variables for specified simulations.
 
@@ -6974,7 +6981,7 @@ Classes
    -------
    None
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.extract_soil_physical(self, simulations: '[tuple, list]' = None) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.extract_soil_physical(self, simulations: '[tuple, list]' = None) (inherited)
 
    Find physical soil
 
@@ -6986,7 +6993,7 @@ Classes
    -------
        APSIM Models.Soils.Physical object
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.extract_any_soil_physical(self, parameter, simulations: '[list, tuple]' = <UserOptionMissing>) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.extract_any_soil_physical(self, parameter, simulations: '[list, tuple]' = <UserOptionMissing>) (inherited)
 
    Extracts soil physical parameters in the simulation
 
@@ -6996,7 +7003,7 @@ Classes
    ---------------------------------------------------------------------------
    returns an array of the parameter values
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x0000015F05E1CD00>) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x000001BC3BA80E00>) (inherited)
 
    Inspect the model types and returns the model paths or names.
 
@@ -7167,11 +7174,11 @@ Classes
           :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_model_parameters`,
           :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_model_parameters_by_path`
 
-   .. py:property:: apsimNGpy.core.experimentmanager.ExperimentManager.configs (inherited)
+   .. py:property:: apsimNGpy.core.experiment.ExperimentManager.configs (inherited)
 
    records activities or modifications to the model including changes to the file
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.replace_soils_values_by_path(self, node_path: 'str', indices: 'list' = None, **kwargs) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.replace_soils_values_by_path(self, node_path: 'str', indices: 'list' = None, **kwargs) (inherited)
 
    set the new values of the specified soil object by path. only layers parameters are supported.
 
@@ -7205,7 +7212,7 @@ Classes
          sv= model.get_soil_values_by_path('.Simulations.Simulation.Field.Soil.Organic', 'Carbon')
          output # {'Carbon': [1.3, 0.96, 0.6, 0.3, 0.18, 0.12, 0.12]}
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.replace_soil_property_values(self, *, parameter: 'str', param_values: 'list', soil_child: 'str', simulations: 'list' = <UserOptionMissing>, indices: 'list' = None, crop=None, **kwargs) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.replace_soil_property_values(self, *, parameter: 'str', param_values: 'list', soil_child: 'str', simulations: 'list' = <UserOptionMissing>, indices: 'list' = None, crop=None, **kwargs) (inherited)
 
    Replaces values in any soil property array. The soil property array.
 
@@ -7222,7 +7229,7 @@ Classes
 
    ``crop`` (str, optional): string for soil water replacement. Default is None
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.clean_up(self, db=True, verbose=False, csv=True) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.clean_up(self, db=True, verbose=False, csv=True) (inherited)
 
    Clears the file cloned the datastore and associated csv files are not deleted if db is set to False defaults to True.
 
@@ -7234,7 +7241,7 @@ Classes
       Please proceed with caution, we assume that if you want to clear the model objects, then you don't need them,
       but by making copy compulsory, then, we are clearing the edited files
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.create_experiment(self, permutation: 'bool' = True, base_name: 'str' = None, **kwargs) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.create_experiment(self, permutation: 'bool' = True, base_name: 'str' = None, **kwargs) (inherited)
 
     @deprecated and will be removed in future versions for this class.
 
@@ -7255,12 +7262,12 @@ Classes
 
        ``base_name`` is optional but the experiment may not be created if there are more than one base simulations. Therefore, an error is likely.
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.refresh_model(self) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.refresh_model(self) (inherited)
 
    for methods that will alter the simulation objects and need refreshing the second time we call
    @return: self for method chaining
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.add_fac(self, model_type, parameter, model_name, values, factor_name=None) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.add_fac(self, model_type, parameter, model_name, values, factor_name=None) (inherited)
 
    Add a factor to the initiated experiment. This should replace add_factor. which has less abstractionn @param
    model_type: model_class from APSIM Models namespace @param parameter: name of the parameter to fill e.g CNR
@@ -7269,7 +7276,7 @@ Classes
    @param factor_name: name to identify the factor in question
    @return:
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.set_continuous_factor(self, factor_path, lower_bound, upper_bound, interval, factor_name=None) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.set_continuous_factor(self, factor_path, lower_bound, upper_bound, interval, factor_name=None) (inherited)
 
    Wraps around `add_factor` to add a continuous factor, just for clarity
 
@@ -7294,7 +7301,7 @@ Classes
        apsim.create_experiment(permutation=False)
        apsim.set_continuous_factor(factor_path = "[Fertilise at sowing].Script.Amount", lower_bound=100, upper_bound=300, interval=10)
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.set_categorical_factor(self, factor_path: 'str', categories: 'Union[list, tuple]', factor_name: 'str' = None) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.set_categorical_factor(self, factor_path: 'str', categories: 'Union[list, tuple]', factor_name: 'str' = None) (inherited)
 
    wraps around ``add_factor()`` to add a continuous factor, just for clarity.
 
@@ -7316,7 +7323,7 @@ Classes
        apsim.create_experiment(permutation=False)
        apsim.set_continuous_factor(factor_path = "[Fertilise at sowing].Script.Amount", lower_bound=100, upper_bound=300, interval=10)
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.add_crop_replacements(self, _crop: 'str') (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.add_crop_replacements(self, _crop: 'str') (inherited)
 
    Adds a replacement folder as a child of the simulations.
 
@@ -7331,11 +7338,11 @@ Classes
    ``Raises:``
        - *ValueError*: If the specified crop is not found.
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.get_model_paths(self, cultivar=False) -> 'list[str]' (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.get_model_paths(self, cultivar=False) -> 'list[str]' (inherited)
 
    Select out a few model types to use for building the APSIM file inspections
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.inspect_file(self, *, cultivar=False, console=True, **kwargs) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.inspect_file(self, *, cultivar=False, console=True, **kwargs) (inherited)
 
    Inspects the file by traversing the entire simulation tree, using :meth:`inspect_model` under the hood
 
@@ -7559,7 +7566,7 @@ Classes
        - Related APIs: :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_model`, :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_model_parameters`
        - :ref:`Model inspections <plain_inspect>`
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.summarize_numeric(self, data_table: 'Union[str, tuple, list]' = None, columns: 'list' = None, percentiles=(0.25, 0.5, 0.75), round=2) -> 'pd.DataFrame' (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.summarize_numeric(self, data_table: 'Union[str, tuple, list]' = None, columns: 'list' = None, percentiles=(0.25, 0.5, 0.75), round=2) -> 'pd.DataFrame' (inherited)
 
    Summarize numeric columns in a simulated pandas DataFrame. Useful when you want to quickly look at the simulated data
 
@@ -7574,7 +7581,7 @@ Classes
 
        pd.DataFrame: A summary DataFrame with statistics for each numeric column.
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.add_db_table(self, variable_spec: 'list' = None, set_event_names: 'list' = None, rename: 'str' = None, simulation_name: 'Union[str, list, tuple]' = <UserOptionMissing>) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.add_db_table(self, variable_spec: 'list' = None, set_event_names: 'list' = None, rename: 'str' = None, simulation_name: 'Union[str, list, tuple]' = <UserOptionMissing>) (inherited)
 
     Adds a new database table, which ``APSIM`` calls ``Report`` (Models.Report) to the ``Simulation`` under a Simulation Zone.
 
@@ -7613,7 +7620,7 @@ Classes
 
     Related APIs: :meth:`remove_report_variables` and :meth:`add_report_variables`.
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.plot_mva(self, table: pandas.core.frame.DataFrame, time_col: Hashable, response: Hashable, *, expression: str = None, window: int = 5, min_period: int = 1, grouping: Union[Hashable, collections.abc.Sequence[Hashable], NoneType] = None, preserve_start: bool = True, kind: str = 'line', estimator='mean', plot_raw: bool = False, raw_alpha: float = 0.35, raw_linewidth: float = 1.0, auto_datetime: bool = False, ylabel: Optional[str] = None, return_data: bool = False, **kwargs) -> seaborn.axisgrid.FacetGrid | tuple[seaborn.axisgrid.FacetGrid, pandas.core.frame.DataFrame] (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.plot_mva(self, table: pandas.core.frame.DataFrame, time_col: Hashable, response: Hashable, *, expression: str = None, window: int = 5, min_period: int = 1, grouping: Union[Hashable, collections.abc.Sequence[Hashable], NoneType] = None, preserve_start: bool = True, kind: str = 'line', estimator='mean', plot_raw: bool = False, raw_alpha: float = 0.35, raw_linewidth: float = 1.0, auto_datetime: bool = False, ylabel: Optional[str] = None, return_data: bool = False, **kwargs) -> seaborn.axisgrid.FacetGrid | tuple[seaborn.axisgrid.FacetGrid, pandas.core.frame.DataFrame] (inherited)
 
    Plot a centered moving-average (MVA) of a response using ``seaborn.relplot``.
 
@@ -7670,7 +7677,7 @@ Classes
 
    https://seaborn.pydata.org/generated/seaborn/relplot.html
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.boxplot(self, column, *, table=None, expression: str = None, by=None, figsize=(10, 8), grid=False, **kwargs) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.boxplot(self, column, *, table=None, expression: str = None, by=None, figsize=(10, 8), grid=False, **kwargs) (inherited)
 
    Plot a boxplot from simulation results using ``pandas.DataFrame.boxplot``.
 
@@ -7695,7 +7702,7 @@ Classes
 
           Related APIs: :meth:`cat_plot`.
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.distribution(self, x, *, table=None, expression: str = None, **kwargs) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.distribution(self, x, *, table=None, expression: str = None, **kwargs) (inherited)
 
    Plot a uni-variate distribution/histogram using :func:`seaborn.histplot`.
 
@@ -7726,7 +7733,7 @@ Classes
 
    =================================================================
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.series_plot(self, table=None, expression: str = None, *, x: str = None, y: Union[str, list] = None, hue=None, size=None, style=None, units=None, weights=None, palette=None, hue_order=None, hue_norm=None, sizes=None, size_order=None, size_norm=None, dashes=True, markers=None, style_order=None, estimator='mean', errorbar=('ci', 95), n_boot=1000, seed=None, orient='x', sort=True, err_style='band', err_kws=None, legend='auto', ci='deprecated', ax=None, **kwargs) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.series_plot(self, table=None, expression: str = None, *, x: str = None, y: Union[str, list] = None, hue=None, size=None, style=None, units=None, weights=None, palette=None, hue_order=None, hue_norm=None, sizes=None, size_order=None, size_norm=None, dashes=True, markers=None, style_order=None, estimator='mean', errorbar=('ci', 95), n_boot=1000, seed=None, orient='x', sort=True, err_style='band', err_kws=None, legend='auto', ci='deprecated', ax=None, **kwargs) (inherited)
 
    Just a wrapper for seaborn.lineplot that supports multiple y columns that could be provided as a list
 
@@ -7778,7 +7785,7 @@ Classes
 
       Related APIs: :meth:`plot_mva`.
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.scatter_plot(self, table=None, expression: str = None, *, x=None, y=None, hue=None, size=None, style=None, palette=None, hue_order=None, hue_norm=None, sizes=None, size_order=None, size_norm=None, markers=True, style_order=None, legend='auto', ax=None, **kwargs) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.scatter_plot(self, table=None, expression: str = None, *, x=None, y=None, hue=None, size=None, style=None, palette=None, hue_order=None, hue_norm=None, sizes=None, size_order=None, size_norm=None, markers=True, style_order=None, legend='auto', ax=None, **kwargs) (inherited)
 
    Scatter plot using :func:`seaborn.scatterplot` with flexible aesthetic mappings.
 
@@ -7800,7 +7807,7 @@ Classes
 
    ================================================================================================================================
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.cat_plot(self, table=None, expression=None, *, x=None, y=None, hue=None, row=None, col=None, kind='strip', estimator='mean', errorbar=('ci', 95), n_boot=1000, seed=None, units=None, weights=None, order=None, hue_order=None, row_order=None, col_order=None, col_wrap=None, height=5, aspect=1, log_scale=None, native_scale=False, formatter=None, orient=None, color=None, palette=None, hue_norm=None, legend='auto', legend_out=True, sharex=True, sharey=True, margin_titles=False, facet_kws=None, **kwargs) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.cat_plot(self, table=None, expression=None, *, x=None, y=None, hue=None, row=None, col=None, kind='strip', estimator='mean', errorbar=('ci', 95), n_boot=1000, seed=None, units=None, weights=None, order=None, hue_order=None, row_order=None, col_order=None, col_wrap=None, height=5, aspect=1, log_scale=None, native_scale=False, formatter=None, orient=None, color=None, palette=None, hue_norm=None, legend='auto', legend_out=True, sharex=True, sharey=True, margin_titles=False, facet_kws=None, **kwargs) (inherited)
 
     Categorical plot wrapper over :func:`seaborn.catplot`.
 
@@ -7829,7 +7836,7 @@ Classes
 
         Related APIs: :meth:`distribution`.
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.reg_plot(self, table=None, expression=None, **kwargs) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.reg_plot(self, table=None, expression=None, **kwargs) (inherited)
 
    Wrapper around seaborn.lmplot. V 0.39.10.19+
 
@@ -7921,7 +7928,7 @@ Classes
                     https://seaborn.pydata.org/generated/seaborn.lmplot.html
    Tutorial: https://seaborn.pydata.org/tutorial/regression.html#regression-tutorial
 
-   .. py:method:: apsimNGpy.core.experimentmanager.ExperimentManager.relplot(self, table=None, **kwargs) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.relplot(self, table=None, **kwargs) (inherited)
 
    Plots a relation plot
 
@@ -7958,12 +7965,20 @@ Classes
    - :attr:`~apsimNGpy.core.mult_cores.MultiCoreManager.tag`
    List of Public Methods
    -----------------------------
+   - :meth:`~apsimNGpy.core.plotmanager.PlotManager.boxplot`
+   - :meth:`~apsimNGpy.core.plotmanager.PlotManager.cat_plot`
    - :meth:`~apsimNGpy.core.mult_cores.MultiCoreManager.clear_db`
    - :meth:`~apsimNGpy.core.mult_cores.MultiCoreManager.clear_scratch`
+   - :meth:`~apsimNGpy.core.plotmanager.PlotManager.distribution`
    - :meth:`~apsimNGpy.core.mult_cores.MultiCoreManager.get_simulated_output`
+   - :meth:`~apsimNGpy.core.plotmanager.PlotManager.plot_mva`
+   - :meth:`~apsimNGpy.core.plotmanager.PlotManager.reg_plot`
+   - :meth:`~apsimNGpy.core.plotmanager.PlotManager.relplot`
    - :meth:`~apsimNGpy.core.mult_cores.MultiCoreManager.run_all_jobs`
    - :meth:`~apsimNGpy.core.mult_cores.MultiCoreManager.save_to_csv`
    - :meth:`~apsimNGpy.core.mult_cores.MultiCoreManager.save_tosql`
+   - :meth:`~apsimNGpy.core.plotmanager.PlotManager.scatter_plot`
+   - :meth:`~apsimNGpy.core.plotmanager.PlotManager.series_plot`
 
    .. py:method:: apsimNGpy.core.mult_cores.MultiCoreManager.__init__(self, db_path: 'Union[str, Path, None, sqlalchemy.engine.base.Engine, sqlite3.Connection]' = None, agg_func: 'Union[str, None]' = None, tag='multi_core', default_db='manager_datastorage.db', incomplete_jobs: 'list' = None, table_prefix: 'str' = '__core_table__')
 
@@ -8605,6 +8620,318 @@ Classes
 
    Default: ``<member 'tag' of 'MultiCoreManager' objects>``
 
+   .. py:method:: apsimNGpy.core.mult_cores.MultiCoreManager.plot_mva(self, table: pandas.core.frame.DataFrame, time_col: Hashable, response: Hashable, *, expression: str = None, window: int = 5, min_period: int = 1, grouping: Union[Hashable, collections.abc.Sequence[Hashable], NoneType] = None, preserve_start: bool = True, kind: str = 'line', estimator='mean', plot_raw: bool = False, raw_alpha: float = 0.35, raw_linewidth: float = 1.0, auto_datetime: bool = False, ylabel: Optional[str] = None, return_data: bool = False, **kwargs) -> seaborn.axisgrid.FacetGrid | tuple[seaborn.axisgrid.FacetGrid, pandas.core.frame.DataFrame] (inherited)
+
+   Plot a centered moving-average (MVA) of a response using ``seaborn.relplot``.
+
+   Enhancements over a direct ``relplot`` call:
+   - Computes and plots a smoothed series via :func:`apsimNGpy.stats.data_insights.mva`.
+   - Supports multi-column grouping; will auto-construct a composite hue if needed.
+   - Optional overlay of the raw (unsmoothed) series for comparison.
+   - Stable (mergesort) time ordering.
+
+   Parameters
+   ----------
+   table : pandas.DataFrame or str
+       Data source or table name; if ``None``, use :pyattr:`results`.
+   time_col : hashable
+       Time (x-axis) column.
+   response : hashable
+       Response (y) column to smooth.
+   expression: str default is None
+       simple mathematical expression to create new columns from existing columns
+   window : int, default=5
+       MVA window size.
+   min_period : int, default=1
+       Minimum periods for the rolling mean.
+   grouping : hashable or sequence of hashable, optional
+       One or more grouping columns.
+   preserve_start : bool, default=True
+       Preserve initial values when centering.
+   kind : {"line","scatter"}, default="line"
+       Passed to ``sns.relplot``.
+   estimator : str or None, default="mean"
+       Passed to ``sns.relplot`` (set to ``None`` to plot raw observations).
+   plot_raw : bool, default=False
+       Overlay the raw series on each facet.
+   raw_alpha : float, default=0.35
+       Alpha for the raw overlay.
+   raw_linewidth : float, default=1.0
+       Line width for the raw overlay.
+   auto_datetime : bool, default=False
+       Attempt to convert ``time_col`` to datetime.
+   ylabel : str, optional
+       Custom y-axis label; default is generated from window/response.
+   return_data : bool, default=False
+       If ``True``, return ``(FacetGrid, smoothed_df)``.
+
+   Returns
+   -------
+   seaborn.FacetGrid
+       The relplot grid, or ``(grid, smoothed_df)`` if ``return_data=True``.
+
+   Notes
+   -----
+      This function calls :func:`seaborn.relplot` and accepts its keyword arguments
+      via ``**kwargs``. See link below for details:
+
+   https://seaborn.pydata.org/generated/seaborn/relplot.html
+
+   .. py:method:: apsimNGpy.core.mult_cores.MultiCoreManager.boxplot(self, column, *, table=None, expression: str = None, by=None, figsize=(10, 8), grid=False, **kwargs) (inherited)
+
+   Plot a boxplot from simulation results using ``pandas.DataFrame.boxplot``.
+
+   Parameters
+   ----------
+   column : str
+       Column to plot.
+   table : str or pandas.DataFrame, optional
+       Table name or DataFrame; if omitted, use :pyattr:`results`.
+   by : str, optional
+       Grouping column.
+   figsize : tuple, default=(10, 8)
+   grid : bool, default=False
+   **kwargs
+       Forwarded to :meth:`pandas.DataFrame.boxplot`.
+
+   Returns
+   -------
+   matplotlib.axes.Axes
+
+   .. seealso::
+
+          Related APIs: :meth:`cat_plot`.
+
+   .. py:method:: apsimNGpy.core.mult_cores.MultiCoreManager.distribution(self, x, *, table=None, expression: str = None, **kwargs) (inherited)
+
+   Plot a uni-variate distribution/histogram using :func:`seaborn.histplot`.
+
+   Parameters
+   ----------
+   x : str
+       Numeric column to plot.
+   table : str or pandas.DataFrame, optional
+       Table name or DataFrame; if omitted, use :pyattr:`results`.
+
+   expression: str default is None
+               simple mathematical expression to create new columns from existing columns
+   **kwargs
+       Forwarded to :func:`seaborn.histplot`.
+
+   Raises
+   ------
+   ValueError
+       If ``x`` is a string-typed column.
+
+   Notes
+   -----
+   This function calls :func:`seaborn.histplot` and accepts its keyword arguments
+   via ``**kwargs``. See link below for details:
+
+   https://seaborn.pydata.org/generated/seaborn/histplot.html 
+
+
+   =================================================================
+
+   .. py:method:: apsimNGpy.core.mult_cores.MultiCoreManager.series_plot(self, table=None, expression: str = None, *, x: str = None, y: Union[str, list] = None, hue=None, size=None, style=None, units=None, weights=None, palette=None, hue_order=None, hue_norm=None, sizes=None, size_order=None, size_norm=None, dashes=True, markers=None, style_order=None, estimator='mean', errorbar=('ci', 95), n_boot=1000, seed=None, orient='x', sort=True, err_style='band', err_kws=None, legend='auto', ci='deprecated', ax=None, **kwargs) (inherited)
+
+   Just a wrapper for seaborn.lineplot that supports multiple y columns that could be provided as a list
+
+    table : str | [str] |None | None| pandas.DataFrame, optional. Default is None
+       If the table names are provided, results are collected from the simulated data, using that table names.
+       If None, results will be all the table names inside concatenated along the axis 0 (not recommended).
+
+   expression: str default is None
+               simple mathematical expression to create new columns from existing columns
+
+    If ``y`` is a list of columns, the data are melted into long form and
+   the different series are colored by variable name.
+
+   **Kwargs
+       Additional keyword args and all other arguments are for Seaborn.lineplot.
+       See the reference below for all the kwargs.
+
+   reference; https://seaborn.pydata.org/generated/seaborn.lineplot.html
+
+   Examples
+   --------
+   >>> model.series_plot(x='Year', y='Yield', table='Report')  # doctest: +SKIP
+   >>> model.series_plot(x='Year', y=['SOC1', 'SOC2'], table='Report')  # doctest: +SKIP
+
+   Examples:
+   ------------
+
+      >>> from apsimNGpy.core.apsim import ApsimModel
+      >>> model = ApsimModel(model= 'Maize')
+      # run the results
+      >>> model.run(report_names='Report')
+      >>>model.series_plot(x='Maize.Grain.Size', y='Yield', table='Report')
+      >>>model.render_plot(show=True, ylabel = 'Maize yield', xlabel ='Maize grain size')
+
+   Plot two variables:
+
+      >>>model.series_plot(x='Yield', y=['Maize.Grain.N', 'Maize.Grain.Size'], table= 'Report')
+
+   Notes
+   -----
+   This function calls :func:`seaborn.lineplot` and accepts its keyword arguments
+   via ``**kwargs``. See link below for detailed explanations:
+
+   https://seaborn.pydata.org/generated/seaborn/lineplot.html 
+
+   =============================================================================================================================================
+
+   .. seealso::
+
+      Related APIs: :meth:`plot_mva`.
+
+   .. py:method:: apsimNGpy.core.mult_cores.MultiCoreManager.scatter_plot(self, table=None, expression: str = None, *, x=None, y=None, hue=None, size=None, style=None, palette=None, hue_order=None, hue_norm=None, sizes=None, size_order=None, size_norm=None, markers=True, style_order=None, legend='auto', ax=None, **kwargs) (inherited)
+
+   Scatter plot using :func:`seaborn.scatterplot` with flexible aesthetic mappings.
+
+   Parameters
+   ----------
+   table : str | [str] |None | None| pandas.DataFrame, optional. Default is None
+       If the table names are provided, results are collected from the simulated data, using that table names.
+       If None, results will be all the table names inside concatenated along the axis 0 (not recommended).
+
+   x, y, hue, size, style, palette, hue_order, hue_norm, sizes, size_order, size_norm, markers, style_order, legend, ax
+       Passed through to :func:`seaborn.scatterplot`.
+
+   expression: str default is None
+               simple mathematical expression to create new columns from existing columns
+   ** Kwargs
+       Additional keyword args for Seaborn.
+   See the reference below for all the kwargs.
+   reference; https://seaborn.pydata.org/generated/seaborn.scatterplot.html 
+
+   ================================================================================================================================
+
+   .. py:method:: apsimNGpy.core.mult_cores.MultiCoreManager.cat_plot(self, table=None, expression=None, *, x=None, y=None, hue=None, row=None, col=None, kind='strip', estimator='mean', errorbar=('ci', 95), n_boot=1000, seed=None, units=None, weights=None, order=None, hue_order=None, row_order=None, col_order=None, col_wrap=None, height=5, aspect=1, log_scale=None, native_scale=False, formatter=None, orient=None, color=None, palette=None, hue_norm=None, legend='auto', legend_out=True, sharex=True, sharey=True, margin_titles=False, facet_kws=None, **kwargs) (inherited)
+
+    Categorical plot wrapper over :func:`seaborn.catplot`.
+
+   Parameters
+   ----------
+   table : str or pandas.DataFrame, optional
+
+   expression: str default is None
+               simple mathematical expression to create new columns from existing columns
+
+   x, y, hue, row, col, kind, estimator, errorbar, n_boot, seed, units, weights, order,
+   hue_order, row_order, col_order, col_wrap, height, aspect, log_scale, native_scale, formatter,
+   orient, color, palette, hue_norm, legend, legend_out, sharex, sharey, margin_titles, facet_kws
+       Passed through to :func:`seaborn.catplot`.
+   **kwargs
+       Additional keyword args for Seaborn.
+
+   Returns
+   -------
+   seaborn.axisgrid.FacetGrid
+
+   reference https://seaborn.pydata.org/generated/seaborn.catplot.html
+
+   =========================================================================================================
+   .. seealso::
+
+        Related APIs: :meth:`distribution`.
+
+   .. py:method:: apsimNGpy.core.mult_cores.MultiCoreManager.reg_plot(self, table=None, expression=None, **kwargs) (inherited)
+
+   Wrapper around seaborn.lmplot. V 0.39.10.19+
+
+   Kwargs passed to seaborn.lmplot
+   -------------------------------
+   x : str or None, optional
+       Name of column in `data` to plot on the x-axis.
+   y : str or None, optional
+       Name of column in `data` to plot on the y-axis.
+   hue : str or None, optional
+       Grouping variable that will produce elements with different colors.
+   col : str or None, optional
+       Variable that defines columns of the facet grid.
+   row : str or None, optional
+       Variable that defines rows of the facet grid.
+   palette : str, list, dict, or None, optional
+       Color palette for different `hue` levels.
+   col_wrap : int or None, optional
+       Wrap the column facets after this many columns.
+   height : float, default=5
+       Height (in inches) of each facet.
+   aspect : float, default=1
+       Aspect ratio of each facet, so width = aspect * height.
+   markers : str or list, default='o'
+       Marker(s) used for the scatter plot points.
+   sharex : bool or None, optional
+       If True, share x-axis limits across facets.
+   sharey : bool or None, optional
+       If True, share y-axis limits across facets.
+   hue_order : list or None, optional
+       Order to plot the levels of `hue`.
+   col_order : list or None, optional
+       Order to plot the levels of `col`.
+   row_order : list or None, optional
+       Order to plot the levels of `row`.
+   legend : bool, default=True
+       If True, add a legend for the `hue` variable.
+   legend_out : bool or None, optional
+       If True, place the legend outside the grid.
+   x_estimator : callable or None, optional
+       Function to compute a central tendency of `y` for each unique `x`
+       (e.g. `np.mean`). Plot points at that value instead of raw data.
+   x_bins : int or None, optional
+       Bin the `x` variable into discrete bins before plotting.
+   x_ci : 'ci', 'sd', float, or None, default='ci'
+       Size/definition of the confidence band around the estimator in `x_estimator`.
+   scatter : bool, default=True
+       If True, draw the scatter points.
+   fit_reg : bool, default=True
+       If True, fit and plot a regression line.
+   ci : int or None, default=95
+       Size of the bootstrap confidence interval for the regression estimate.
+   n_boot : int, default=1000
+       Number of bootstrap samples to compute `ci`.
+   units : str or None, optional
+       Column in `data` identifying sampling units. Used for clustered bootstrap.
+   seed : int, RandomState, or None, optional
+       Random seed for reproducible bootstrapping.
+   order : int, default=1
+       Polynomial order of the regression (1 = linear).
+   logistic : bool, default=False
+       If True, fit a logistic regression.
+   lowess : bool, default=False
+       If True, fit a locally weighted regression (LOWESS).
+   robust : bool, default=False
+       If True, use a robust regression estimator.
+   logx : bool, default=False
+       If True, estimate the model in log10(x) space.
+   x_partial : str, list of str, or None, optional
+       Columns in `data` to regress out of `x` before plotting.
+   y_partial : str, list of str, or None, optional
+       Columns in `data` to regress out of `y` before plotting.
+   truncate : bool, default=True
+       If True, limit the regression line to the data range.
+   x_jitter : float or None, optional
+       Amount of horizontal jitter to add to scatter points.
+   y_jitter : float or None, optional
+       Amount of vertical jitter to add to scatter points.
+   scatter_kws : dict or None, optional
+       Additional keyword args passed to the scatter plot (e.g. alpha, s).
+   line_kws : dict or None, optional
+       Additional keyword args passed to the regression line plot.
+   facet_kws : dict or None, optional
+       Additional keyword args passed to seaborn.FacetGrid.
+
+   See Also
+   --------
+   seaborn.lmplot : High-level interface for plotting linear models with faceting.
+                    https://seaborn.pydata.org/generated/seaborn.lmplot.html
+   Tutorial: https://seaborn.pydata.org/tutorial/regression.html#regression-tutorial
+
+   .. py:method:: apsimNGpy.core.mult_cores.MultiCoreManager.relplot(self, table=None, **kwargs) (inherited)
+
+   Plots a relation plot
+
 apsimNGpy.core.runner
 ---------------------
 
@@ -8828,19 +9155,19 @@ Functions
 
    Return True if obj looks like a DB connection.
 
-.. py:function:: apsimNGpy.core.runner.run_apsim_by_path(model: 'Union[str, Path]', *, bin_path: 'Union[str, Path, object]' = <object object at 0x0000015F05E1CBA0>, timeout: 'int' = 800, ncores: 'int' = -1, verbose: 'bool' = False, to_csv: 'bool' = False) -> 'subprocess.CompletedProcess[str]'
+.. py:function:: apsimNGpy.core.runner.run_apsim_by_path(model: 'Union[str, Path, Iterable[str], Iterable[Path]]', *, bin_path: 'Union[str, Path, object]' = <object object at 0x000001BC3BA81000>, timeout: 'int' = 800, n_cores: 'int' = -1, verbose: 'bool' = False, to_csv: 'bool' = False) -> 'subprocess.CompletedProcess[str]'
 
    Execute an APSIM model safely and reproducibly.
 
    Parameters
    ----------
-   model : str | Path
-       Path to the APSIM .apsimx model file.
+   model : str | Path | pd.Series[str], list[str], tuple[str]
+       Path to the APSIM .apsimx model file, or an array of strings paths
    bin_path : str | Path | AUTO
        APSIM bin directory. Defaults to configured APSIM path.
    timeout : int
        Maximum execution time in seconds.
-   ncores : int
+   n_cores : int
        Number of CPU cores (-1 uses all available).
    verbose : bool
        Enable APSIM verbose output.
@@ -8851,6 +9178,26 @@ Functions
    ------
    ApsimRuntimeError
        If APSIM execution fails or times out.
+
+   Examples
+   ------------------
+   .. code-block:: python
+
+       from apsimNGpy.core.config import load_crop_from_disk
+       from apsimNGpy.core.runner import run_apsim_by_path
+       maize = load_crop_from_disk('Maize', out='maize_test.apsimx')
+       run_apsim_by_path(maize)
+
+   run two files at once
+
+   .. code-block:: python
+
+    files = load_crop_from_disk('Maize', out='maize_test.apsimx'),  load_crop_from_disk('Soybean', out='soybean_test.apsimx')
+    run_apsim_by_path(files, n_cores=4)
+
+    .. note::
+
+      files should have distinct names and valid path
 
 .. py:function:: apsimNGpy.core.runner.run_dir_simulations(dir_path: 'str', pattern: 'str', *, cpu_count: 'int' = -1, recursive: 'bool' = False, verbose: 'bool' = False, write_tocsv: 'bool' = False) -> 'Popen[str]'
 
@@ -8873,7 +9220,7 @@ Functions
    RuntimeError
        If APSIM returns a non-zero exit code.
 
-.. py:function:: apsimNGpy.core.runner.run_model_externally(model: 'Union[Path, str]', *, apsim_bin_path: 'Optional[Union[Path, str]]' = <object object at 0x0000015F05E1CBA0>, verbose: 'bool' = False, to_csv: 'bool' = False, timeout: 'int' = 20, cpu_count=-1, cwd: 'Optional[Union[Path, str]]' = None) -> 'subprocess.CompletedProcess[str]'
+.. py:function:: apsimNGpy.core.runner.run_model_externally(model: 'Union[Path, str]', *, apsim_bin_path: 'Optional[Union[Path, str]]' = <object object at 0x000001BC3BA81000>, verbose: 'bool' = False, to_csv: 'bool' = False, timeout: 'int' = 20, cpu_count=-1, cwd: 'Optional[Union[Path, str]]' = None) -> 'subprocess.CompletedProcess[str]'
 
    Run APSIM externally (cross-platform) with safe defaults.
 
@@ -8887,7 +9234,7 @@ Functions
 
          Related API: :func:`~apsimNGpy.core.runner.run_from_dir`
 
-.. py:function:: apsimNGpy.core.runner.trial_run(self, report_name=None, simulations=None, clean=False, multithread=True, verbose=False, get_dict=False, **kwargs)
+.. py:function:: apsimNGpy.core.runner.trial_run(simulations=None, clean=False, multithread=True, verbose=False, get_dict=False, **kwargs)
 
    Run APSIM model simulations.
 
@@ -9079,7 +9426,7 @@ Classes
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.update_mgt`
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.update_mgt_by_path`
 
-   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.__init__(self, model, out_path=<object object at 0x0000015F512C1C10>)
+   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.__init__(self, model, out_path=<object object at 0x000001BC0CB56100>)
 
    Initialize self.  See help(type(self)) for accurate signature.
 
@@ -9798,7 +10145,7 @@ Classes
    self : object
        Returns the updated ApsimModel instance.
 
-   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.save(self, file_name: 'Union[str, Path]' = <object object at 0x0000015F05E1CD00>, reload=True) (inherited)
+   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.save(self, file_name: 'Union[str, Path]' = <object object at 0x000001BC3BA80E00>, reload=True) (inherited)
 
    Saves the current APSIM NG model (``Simulations``) to disk and refresh runtime state.
 
@@ -11505,6 +11852,10 @@ Classes
    ----------
      Instance of apsimNgpy.core.ApsimModel or apsimNgpy.core.experimentmanager.ExperimentManager
 
+   .. py:property:: apsimNGpy.core.senstivitymanager.SensitivityManager.is_recent_version (inherited)
+
+   Bencmark to a known APSIM version when changes were drastic to influence changes in apsimNGpy API
+
    .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.replace_model_from(self, model, model_type: 'str', model_name: 'str' = None, target_model_name: 'str' = None, simulations: 'str' = None) (inherited)
 
    @deprecated and will be removed
@@ -11909,7 +12260,7 @@ Classes
    ---------------------------------------------------------------------------
    returns an array of the parameter values
 
-   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x0000015F05E1CD00>) (inherited)
+   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x000001BC3BA80E00>) (inherited)
 
    Inspect the model types and returns the model paths or names.
 
@@ -12198,8 +12549,7 @@ Classes
 
    Example::
 
-       from apsimNGpy.core import base_data
-       apsim = base_data.load_default_simulations(crop='Maize')
+       apsim = ApsimModel('Maize')
        apsim.create_experiment(permutation=False)
        apsim.add_factor(specification="[Fertilise at sowing].Script.Amount = 0 to 200 step 20", factor_name='Nitrogen')
        apsim.add_factor(specification="[Sow using a variable rule].Script.Population =4 to 8 step 2", factor_name='Population')
@@ -14097,7 +14447,7 @@ Functions
      float
          Metric value multiplied by the optimization direction.
 
-.. py:function:: apsimNGpy.optimizer.problems.back_end.final_eval(obs: pandas.core.frame.DataFrame, pred: pandas.core.frame.DataFrame, index: Union[str, tuple, list], pred_col: str, obs_col: str, exp: Optional[Iterable[str]] = None, verbose=True) -> dict
+.. py:function:: apsimNGpy.optimizer.problems.back_end.final_eval(obs: pandas.core.frame.DataFrame, pred: pandas.core.frame.DataFrame, index: Union[str, tuple, list], pred_col: str, obs_col: str, exp: Optional[Iterable[str]] = None, verbose=False) -> dict
 
    Evaluate observed and predicted values and return the full suite of
    performance metrics supported by the: class:`Validate` class.
@@ -14106,7 +14456,6 @@ Functions
      • prepares and validates the input data (shared utility),
      • runs all metrics, not just one,
      • returns both the metric dictionary and the aligned dataset.
-     . sample size, which is a product of all rows that match the index between simulated and observed data
 
    Returns
    -------

@@ -171,7 +171,7 @@ class CoreModel(PlotManager):
         self.run_method = None
 
         # Working directories
-        self.work_space =workspace(set_wd)
+        self.work_space = workspace(set_wd)
         self._met_file = None
 
         # Models namespace handle
@@ -212,7 +212,7 @@ class CoreModel(PlotManager):
         """
 
         self.save(reload=True)
-        if len(self) <1:
+        if len(self) < 1:
             raise KeyError(f"No simulations is present under {self.Simulations.Name}")
         match name_or_index:
             case int():
@@ -918,7 +918,7 @@ class CoreModel(PlotManager):
                >>> model.inspect_model(model_type='Models.Core.Simulation', fullpath = False)
                 ['my_simulation']
                # The alternative is to use model.inspect_file to see your changes
-               >>> model.inspect_file()
+               >>> model.tree()
 
          .. code-block:: none
 
@@ -1130,7 +1130,7 @@ class CoreModel(PlotManager):
             >>> model.clone_model(model_type='Models.Core.Simulation', model_name="Simulation",
             ... rename="Sim2", adoptive_parent_type = 'Models.Core.Simulations',
             ... adoptive_parent_name='Simulations')
-            >>> model.inspect_file()
+            >>> model.tree()
             └── Simulations: .Simulations
                 ├── DataStore: .Simulations.DataStore
                 ├── Sim2: .Simulations.Sim2
@@ -4786,7 +4786,13 @@ class CoreModel(PlotManager):
 
         return filter_out()
 
-    def inspect_file(self, *, cultivar=False, console=True, **kwargs):
+    def inspect_file(self, cultivar=False, console=True, **kwargs):
+        import warnings
+        warnings.warn('Method `inspect_file` is deprecated and will '
+                      'be removed in future versions use `tree` instead', DeprecationWarning)
+        self.tree(cultivar=cultivar, console=console, **kwargs)
+
+    def tree(self, *, cultivar=False, console=True, **kwargs):
 
         """
         Inspects the file by traversing the entire simulation tree, using :meth:`inspect_model` under the hood

@@ -65,7 +65,7 @@ class TestModelTools(unittest.TestCase):
             sowing_manager = detect_sowing_managers(model)
             ModelTools.DELETE(sowing_manager)
             model.save(reload=True)
-            model.inspect_file()
+            model.tree()
             sowing_manager = detect_sowing_managers(model)
             self.assertIsNone(sowing_manager)
 

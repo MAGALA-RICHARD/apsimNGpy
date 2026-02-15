@@ -476,7 +476,7 @@ if __name__ == '__main__':
     exp.add_sens_factor(name='cnr', path='Field.SurfaceOrganicMatter.InitialCNR', lower_bound=10, upper_bound=120)
     exp.add_sens_factor(name='cn2bare', path='Field.Soil.SoilWater.CN2Bare', lower_bound=70, upper_bound=100)
     exp.build_sense_model(method='sobol', aggregation_column_name='Clock.Today')
-    exp.inspect_file()
+    exp.tree()
     # exp.preview_simulation()
     exp.run(verbose=True)
     print(exp.statistics)
@@ -490,7 +490,7 @@ if __name__ == '__main__':
     morris.add_sens_factor(name='cnr', path='Field.SurfaceOrganicMatter.InitialCNR', lower_bound=10, upper_bound=120)
     morris.add_sens_factor(name='cn2bare', path='Field.Soil.SoilWater.CN2Bare', lower_bound=70, upper_bound=100)
     morris.build_sense_model(method='Morris', aggregation_column_name='Clock.Today')
-    morris.inspect_file()
+    morris.tree()
     morris.run()
     print(morris.statistics.columns)
 

@@ -1318,6 +1318,32 @@ Classes
           and then updates the model's `Name` attribute. The model is serialized using the `save()`
           immediately after to apply and enfoce the change.
 
+                Examples
+                ---------
+                   >>> from apsimNGpy.core.apsim import ApsimModel
+                   >>> model = ApsimModel(model = 'Maize', out_path='my_maize.apsimx')
+                   >>> model.rename_model(model_type="Models.Core.Simulation", old_name ='Simulation', new_name='my_simulation')
+                   # check if it has been successfully renamed
+                   >>> model.inspect_model(model_type='Models.Core.Simulation', fullpath = False)
+                    ['my_simulation']
+                   # The alternative is to use model.inspect_file to see your changes
+                   >>> model.tree()
+
+
+
+                Examples
+                ---------
+                   >>> from apsimNGpy.core.apsim import ApsimModel
+                   >>> model = ApsimModel(model = 'Maize', out_path='my_maize.apsimx')
+                   >>> model.rename_model(model_type="Models.Core.Simulation", old_name ='Simulation', new_name='my_simulation')
+                   # check if it has been successfully renamed
+                   >>> model.inspect_model(model_type='Models.Core.Simulation', fullpath = False)
+                    ['my_simulation']
+                   # The alternative is to use model.inspect_file to see your changes
+                   >>> model.tree()
+
+
+
       Examples
       ---------
          >>> from apsimNGpy.core.apsim import ApsimModel
@@ -1521,6 +1547,130 @@ Classes
    Example:
    -------
     Create a cloned version of `"clock1"` and place it under `"Simulation"` with the new name `"new_clock`:
+
+           >>> from apsimNGpy.core.apsim import ApsimModel
+           >>> model = ApsimModel('Maize', out_path='my_maize.apsimx')
+           >>> model.clone_model(model_type='Models.Core.Simulation', model_name="Simulation",
+           ... rename="Sim2", adoptive_parent_type = 'Models.Core.Simulations',
+           ... adoptive_parent_name='Simulations')
+           >>> model.tree()
+           └── Simulations: .Simulations
+               ├── DataStore: .Simulations.DataStore
+               ├── Sim2: .Simulations.Sim2
+               │   ├── Clock: .Simulations.Sim2.Clock
+               │   ├── Field: .Simulations.Sim2.Field
+               │   │   ├── Fertilise at sowing: .Simulations.Sim2.Field.Fertilise at sowing
+               │   │   ├── Fertiliser: .Simulations.Sim2.Field.Fertiliser
+               │   │   ├── Harvest: .Simulations.Sim2.Field.Harvest
+               │   │   ├── Maize: .Simulations.Sim2.Field.Maize
+               │   │   ├── Report: .Simulations.Sim2.Field.Report
+               │   │   ├── Soil: .Simulations.Sim2.Field.Soil
+               │   │   │   ├── Chemical: .Simulations.Sim2.Field.Soil.Chemical
+               │   │   │   ├── NH4: .Simulations.Sim2.Field.Soil.NH4
+               │   │   │   ├── NO3: .Simulations.Sim2.Field.Soil.NO3
+               │   │   │   ├── Organic: .Simulations.Sim2.Field.Soil.Organic
+               │   │   │   ├── Physical: .Simulations.Sim2.Field.Soil.Physical
+               │   │   │   │   └── MaizeSoil: .Simulations.Sim2.Field.Soil.Physical.MaizeSoil
+               │   │   │   ├── Urea: .Simulations.Sim2.Field.Soil.Urea
+               │   │   │   └── Water: .Simulations.Sim2.Field.Soil.Water
+               │   │   ├── Sow using a variable rule: .Simulations.Sim2.Field.Sow using a variable rule
+               │   │   ├── SurfaceOrganicMatter: .Simulations.Sim2.Field.SurfaceOrganicMatter
+               │   │   └── soc_table: .Simulations.Sim2.Field.soc_table
+               │   ├── Graph: .Simulations.Sim2.Graph
+               │   │   └── Series: .Simulations.Sim2.Graph.Series
+               │   ├── MicroClimate: .Simulations.Sim2.MicroClimate
+               │   ├── SoilArbitrator: .Simulations.Sim2.SoilArbitrator
+               │   ├── Summary: .Simulations.Sim2.Summary
+               │   └── Weather: .Simulations.Sim2.Weather
+               └── Simulation: .Simulations.Simulation
+                   ├── Clock: .Simulations.Simulation.Clock
+                   ├── Field: .Simulations.Simulation.Field
+                   │   ├── Fertilise at sowing: .Simulations.Simulation.Field.Fertilise at sowing
+                   │   ├── Fertiliser: .Simulations.Simulation.Field.Fertiliser
+                   │   ├── Harvest: .Simulations.Simulation.Field.Harvest
+                   │   ├── Maize: .Simulations.Simulation.Field.Maize
+                   │   ├── Report: .Simulations.Simulation.Field.Report
+                   │   ├── Soil: .Simulations.Simulation.Field.Soil
+                   │   │   ├── Chemical: .Simulations.Simulation.Field.Soil.Chemical
+                   │   │   ├── NH4: .Simulations.Simulation.Field.Soil.NH4
+                   │   │   ├── NO3: .Simulations.Simulation.Field.Soil.NO3
+                   │   │   ├── Organic: .Simulations.Simulation.Field.Soil.Organic
+                   │   │   ├── Physical: .Simulations.Simulation.Field.Soil.Physical
+                   │   │   │   └── MaizeSoil: .Simulations.Simulation.Field.Soil.Physical.MaizeSoil
+                   │   │   ├── Urea: .Simulations.Simulation.Field.Soil.Urea
+                   │   │   └── Water: .Simulations.Simulation.Field.Soil.Water
+                   │   ├── Sow using a variable rule: .Simulations.Simulation.Field.Sow using a variable rule
+                   │   ├── SurfaceOrganicMatter: .Simulations.Simulation.Field.SurfaceOrganicMatter
+                   │   └── soc_table: .Simulations.Simulation.Field.soc_table
+                   ├── Graph: .Simulations.Simulation.Graph
+                   │   └── Series: .Simulations.Simulation.Graph.Series
+                   ├── MicroClimate: .Simulations.Simulation.MicroClimate
+                   ├── SoilArbitrator: .Simulations.Simulation.SoilArbitrator
+                   ├── Summary: .Simulations.Simulation.Summary
+                   └── Weather: .Simulations.Simulation.Weather
+
+
+           >>> from apsimNGpy.core.apsim import ApsimModel
+           >>> model = ApsimModel('Maize', out_path='my_maize.apsimx')
+           >>> model.clone_model(model_type='Models.Core.Simulation', model_name="Simulation",
+           ... rename="Sim2", adoptive_parent_type = 'Models.Core.Simulations',
+           ... adoptive_parent_name='Simulations')
+           >>> model.tree()
+           └── Simulations: .Simulations
+               ├── DataStore: .Simulations.DataStore
+               ├── Sim2: .Simulations.Sim2
+               │   ├── Clock: .Simulations.Sim2.Clock
+               │   ├── Field: .Simulations.Sim2.Field
+               │   │   ├── Fertilise at sowing: .Simulations.Sim2.Field.Fertilise at sowing
+               │   │   ├── Fertiliser: .Simulations.Sim2.Field.Fertiliser
+               │   │   ├── Harvest: .Simulations.Sim2.Field.Harvest
+               │   │   ├── Maize: .Simulations.Sim2.Field.Maize
+               │   │   ├── Report: .Simulations.Sim2.Field.Report
+               │   │   ├── Soil: .Simulations.Sim2.Field.Soil
+               │   │   │   ├── Chemical: .Simulations.Sim2.Field.Soil.Chemical
+               │   │   │   ├── NH4: .Simulations.Sim2.Field.Soil.NH4
+               │   │   │   ├── NO3: .Simulations.Sim2.Field.Soil.NO3
+               │   │   │   ├── Organic: .Simulations.Sim2.Field.Soil.Organic
+               │   │   │   ├── Physical: .Simulations.Sim2.Field.Soil.Physical
+               │   │   │   │   └── MaizeSoil: .Simulations.Sim2.Field.Soil.Physical.MaizeSoil
+               │   │   │   ├── Urea: .Simulations.Sim2.Field.Soil.Urea
+               │   │   │   └── Water: .Simulations.Sim2.Field.Soil.Water
+               │   │   ├── Sow using a variable rule: .Simulations.Sim2.Field.Sow using a variable rule
+               │   │   ├── SurfaceOrganicMatter: .Simulations.Sim2.Field.SurfaceOrganicMatter
+               │   │   └── soc_table: .Simulations.Sim2.Field.soc_table
+               │   ├── Graph: .Simulations.Sim2.Graph
+               │   │   └── Series: .Simulations.Sim2.Graph.Series
+               │   ├── MicroClimate: .Simulations.Sim2.MicroClimate
+               │   ├── SoilArbitrator: .Simulations.Sim2.SoilArbitrator
+               │   ├── Summary: .Simulations.Sim2.Summary
+               │   └── Weather: .Simulations.Sim2.Weather
+               └── Simulation: .Simulations.Simulation
+                   ├── Clock: .Simulations.Simulation.Clock
+                   ├── Field: .Simulations.Simulation.Field
+                   │   ├── Fertilise at sowing: .Simulations.Simulation.Field.Fertilise at sowing
+                   │   ├── Fertiliser: .Simulations.Simulation.Field.Fertiliser
+                   │   ├── Harvest: .Simulations.Simulation.Field.Harvest
+                   │   ├── Maize: .Simulations.Simulation.Field.Maize
+                   │   ├── Report: .Simulations.Simulation.Field.Report
+                   │   ├── Soil: .Simulations.Simulation.Field.Soil
+                   │   │   ├── Chemical: .Simulations.Simulation.Field.Soil.Chemical
+                   │   │   ├── NH4: .Simulations.Simulation.Field.Soil.NH4
+                   │   │   ├── NO3: .Simulations.Simulation.Field.Soil.NO3
+                   │   │   ├── Organic: .Simulations.Simulation.Field.Soil.Organic
+                   │   │   ├── Physical: .Simulations.Simulation.Field.Soil.Physical
+                   │   │   │   └── MaizeSoil: .Simulations.Simulation.Field.Soil.Physical.MaizeSoil
+                   │   │   ├── Urea: .Simulations.Simulation.Field.Soil.Urea
+                   │   │   └── Water: .Simulations.Simulation.Field.Soil.Water
+                   │   ├── Sow using a variable rule: .Simulations.Simulation.Field.Sow using a variable rule
+                   │   ├── SurfaceOrganicMatter: .Simulations.Simulation.Field.SurfaceOrganicMatter
+                   │   └── soc_table: .Simulations.Simulation.Field.soc_table
+                   ├── Graph: .Simulations.Simulation.Graph
+                   │   └── Series: .Simulations.Simulation.Graph.Series
+                   ├── MicroClimate: .Simulations.Simulation.MicroClimate
+                   ├── SoilArbitrator: .Simulations.Simulation.SoilArbitrator
+                   ├── Summary: .Simulations.Simulation.Summary
+                   └── Weather: .Simulations.Simulation.Weather
+
 
        >>> from apsimNGpy.core.apsim import ApsimModel
        >>> model = ApsimModel('Maize', out_path='my_maize.apsimx')
@@ -5284,6 +5434,32 @@ Classes
           and then updates the model's `Name` attribute. The model is serialized using the `save()`
           immediately after to apply and enfoce the change.
 
+                Examples
+                ---------
+                   >>> from apsimNGpy.core.apsim import ApsimModel
+                   >>> model = ApsimModel(model = 'Maize', out_path='my_maize.apsimx')
+                   >>> model.rename_model(model_type="Models.Core.Simulation", old_name ='Simulation', new_name='my_simulation')
+                   # check if it has been successfully renamed
+                   >>> model.inspect_model(model_type='Models.Core.Simulation', fullpath = False)
+                    ['my_simulation']
+                   # The alternative is to use model.inspect_file to see your changes
+                   >>> model.tree()
+
+
+
+                Examples
+                ---------
+                   >>> from apsimNGpy.core.apsim import ApsimModel
+                   >>> model = ApsimModel(model = 'Maize', out_path='my_maize.apsimx')
+                   >>> model.rename_model(model_type="Models.Core.Simulation", old_name ='Simulation', new_name='my_simulation')
+                   # check if it has been successfully renamed
+                   >>> model.inspect_model(model_type='Models.Core.Simulation', fullpath = False)
+                    ['my_simulation']
+                   # The alternative is to use model.inspect_file to see your changes
+                   >>> model.tree()
+
+
+
       Examples
       ---------
          >>> from apsimNGpy.core.apsim import ApsimModel
@@ -5487,6 +5663,130 @@ Classes
    Example:
    -------
     Create a cloned version of `"clock1"` and place it under `"Simulation"` with the new name `"new_clock`:
+
+           >>> from apsimNGpy.core.apsim import ApsimModel
+           >>> model = ApsimModel('Maize', out_path='my_maize.apsimx')
+           >>> model.clone_model(model_type='Models.Core.Simulation', model_name="Simulation",
+           ... rename="Sim2", adoptive_parent_type = 'Models.Core.Simulations',
+           ... adoptive_parent_name='Simulations')
+           >>> model.tree()
+           └── Simulations: .Simulations
+               ├── DataStore: .Simulations.DataStore
+               ├── Sim2: .Simulations.Sim2
+               │   ├── Clock: .Simulations.Sim2.Clock
+               │   ├── Field: .Simulations.Sim2.Field
+               │   │   ├── Fertilise at sowing: .Simulations.Sim2.Field.Fertilise at sowing
+               │   │   ├── Fertiliser: .Simulations.Sim2.Field.Fertiliser
+               │   │   ├── Harvest: .Simulations.Sim2.Field.Harvest
+               │   │   ├── Maize: .Simulations.Sim2.Field.Maize
+               │   │   ├── Report: .Simulations.Sim2.Field.Report
+               │   │   ├── Soil: .Simulations.Sim2.Field.Soil
+               │   │   │   ├── Chemical: .Simulations.Sim2.Field.Soil.Chemical
+               │   │   │   ├── NH4: .Simulations.Sim2.Field.Soil.NH4
+               │   │   │   ├── NO3: .Simulations.Sim2.Field.Soil.NO3
+               │   │   │   ├── Organic: .Simulations.Sim2.Field.Soil.Organic
+               │   │   │   ├── Physical: .Simulations.Sim2.Field.Soil.Physical
+               │   │   │   │   └── MaizeSoil: .Simulations.Sim2.Field.Soil.Physical.MaizeSoil
+               │   │   │   ├── Urea: .Simulations.Sim2.Field.Soil.Urea
+               │   │   │   └── Water: .Simulations.Sim2.Field.Soil.Water
+               │   │   ├── Sow using a variable rule: .Simulations.Sim2.Field.Sow using a variable rule
+               │   │   ├── SurfaceOrganicMatter: .Simulations.Sim2.Field.SurfaceOrganicMatter
+               │   │   └── soc_table: .Simulations.Sim2.Field.soc_table
+               │   ├── Graph: .Simulations.Sim2.Graph
+               │   │   └── Series: .Simulations.Sim2.Graph.Series
+               │   ├── MicroClimate: .Simulations.Sim2.MicroClimate
+               │   ├── SoilArbitrator: .Simulations.Sim2.SoilArbitrator
+               │   ├── Summary: .Simulations.Sim2.Summary
+               │   └── Weather: .Simulations.Sim2.Weather
+               └── Simulation: .Simulations.Simulation
+                   ├── Clock: .Simulations.Simulation.Clock
+                   ├── Field: .Simulations.Simulation.Field
+                   │   ├── Fertilise at sowing: .Simulations.Simulation.Field.Fertilise at sowing
+                   │   ├── Fertiliser: .Simulations.Simulation.Field.Fertiliser
+                   │   ├── Harvest: .Simulations.Simulation.Field.Harvest
+                   │   ├── Maize: .Simulations.Simulation.Field.Maize
+                   │   ├── Report: .Simulations.Simulation.Field.Report
+                   │   ├── Soil: .Simulations.Simulation.Field.Soil
+                   │   │   ├── Chemical: .Simulations.Simulation.Field.Soil.Chemical
+                   │   │   ├── NH4: .Simulations.Simulation.Field.Soil.NH4
+                   │   │   ├── NO3: .Simulations.Simulation.Field.Soil.NO3
+                   │   │   ├── Organic: .Simulations.Simulation.Field.Soil.Organic
+                   │   │   ├── Physical: .Simulations.Simulation.Field.Soil.Physical
+                   │   │   │   └── MaizeSoil: .Simulations.Simulation.Field.Soil.Physical.MaizeSoil
+                   │   │   ├── Urea: .Simulations.Simulation.Field.Soil.Urea
+                   │   │   └── Water: .Simulations.Simulation.Field.Soil.Water
+                   │   ├── Sow using a variable rule: .Simulations.Simulation.Field.Sow using a variable rule
+                   │   ├── SurfaceOrganicMatter: .Simulations.Simulation.Field.SurfaceOrganicMatter
+                   │   └── soc_table: .Simulations.Simulation.Field.soc_table
+                   ├── Graph: .Simulations.Simulation.Graph
+                   │   └── Series: .Simulations.Simulation.Graph.Series
+                   ├── MicroClimate: .Simulations.Simulation.MicroClimate
+                   ├── SoilArbitrator: .Simulations.Simulation.SoilArbitrator
+                   ├── Summary: .Simulations.Simulation.Summary
+                   └── Weather: .Simulations.Simulation.Weather
+
+
+           >>> from apsimNGpy.core.apsim import ApsimModel
+           >>> model = ApsimModel('Maize', out_path='my_maize.apsimx')
+           >>> model.clone_model(model_type='Models.Core.Simulation', model_name="Simulation",
+           ... rename="Sim2", adoptive_parent_type = 'Models.Core.Simulations',
+           ... adoptive_parent_name='Simulations')
+           >>> model.tree()
+           └── Simulations: .Simulations
+               ├── DataStore: .Simulations.DataStore
+               ├── Sim2: .Simulations.Sim2
+               │   ├── Clock: .Simulations.Sim2.Clock
+               │   ├── Field: .Simulations.Sim2.Field
+               │   │   ├── Fertilise at sowing: .Simulations.Sim2.Field.Fertilise at sowing
+               │   │   ├── Fertiliser: .Simulations.Sim2.Field.Fertiliser
+               │   │   ├── Harvest: .Simulations.Sim2.Field.Harvest
+               │   │   ├── Maize: .Simulations.Sim2.Field.Maize
+               │   │   ├── Report: .Simulations.Sim2.Field.Report
+               │   │   ├── Soil: .Simulations.Sim2.Field.Soil
+               │   │   │   ├── Chemical: .Simulations.Sim2.Field.Soil.Chemical
+               │   │   │   ├── NH4: .Simulations.Sim2.Field.Soil.NH4
+               │   │   │   ├── NO3: .Simulations.Sim2.Field.Soil.NO3
+               │   │   │   ├── Organic: .Simulations.Sim2.Field.Soil.Organic
+               │   │   │   ├── Physical: .Simulations.Sim2.Field.Soil.Physical
+               │   │   │   │   └── MaizeSoil: .Simulations.Sim2.Field.Soil.Physical.MaizeSoil
+               │   │   │   ├── Urea: .Simulations.Sim2.Field.Soil.Urea
+               │   │   │   └── Water: .Simulations.Sim2.Field.Soil.Water
+               │   │   ├── Sow using a variable rule: .Simulations.Sim2.Field.Sow using a variable rule
+               │   │   ├── SurfaceOrganicMatter: .Simulations.Sim2.Field.SurfaceOrganicMatter
+               │   │   └── soc_table: .Simulations.Sim2.Field.soc_table
+               │   ├── Graph: .Simulations.Sim2.Graph
+               │   │   └── Series: .Simulations.Sim2.Graph.Series
+               │   ├── MicroClimate: .Simulations.Sim2.MicroClimate
+               │   ├── SoilArbitrator: .Simulations.Sim2.SoilArbitrator
+               │   ├── Summary: .Simulations.Sim2.Summary
+               │   └── Weather: .Simulations.Sim2.Weather
+               └── Simulation: .Simulations.Simulation
+                   ├── Clock: .Simulations.Simulation.Clock
+                   ├── Field: .Simulations.Simulation.Field
+                   │   ├── Fertilise at sowing: .Simulations.Simulation.Field.Fertilise at sowing
+                   │   ├── Fertiliser: .Simulations.Simulation.Field.Fertiliser
+                   │   ├── Harvest: .Simulations.Simulation.Field.Harvest
+                   │   ├── Maize: .Simulations.Simulation.Field.Maize
+                   │   ├── Report: .Simulations.Simulation.Field.Report
+                   │   ├── Soil: .Simulations.Simulation.Field.Soil
+                   │   │   ├── Chemical: .Simulations.Simulation.Field.Soil.Chemical
+                   │   │   ├── NH4: .Simulations.Simulation.Field.Soil.NH4
+                   │   │   ├── NO3: .Simulations.Simulation.Field.Soil.NO3
+                   │   │   ├── Organic: .Simulations.Simulation.Field.Soil.Organic
+                   │   │   ├── Physical: .Simulations.Simulation.Field.Soil.Physical
+                   │   │   │   └── MaizeSoil: .Simulations.Simulation.Field.Soil.Physical.MaizeSoil
+                   │   │   ├── Urea: .Simulations.Simulation.Field.Soil.Urea
+                   │   │   └── Water: .Simulations.Simulation.Field.Soil.Water
+                   │   ├── Sow using a variable rule: .Simulations.Simulation.Field.Sow using a variable rule
+                   │   ├── SurfaceOrganicMatter: .Simulations.Simulation.Field.SurfaceOrganicMatter
+                   │   └── soc_table: .Simulations.Simulation.Field.soc_table
+                   ├── Graph: .Simulations.Simulation.Graph
+                   │   └── Series: .Simulations.Simulation.Graph.Series
+                   ├── MicroClimate: .Simulations.Simulation.MicroClimate
+                   ├── SoilArbitrator: .Simulations.Simulation.SoilArbitrator
+                   ├── Summary: .Simulations.Simulation.Summary
+                   └── Weather: .Simulations.Simulation.Weather
+
 
        >>> from apsimNGpy.core.apsim import ApsimModel
        >>> model = ApsimModel('Maize', out_path='my_maize.apsimx')
@@ -10541,6 +10841,32 @@ Classes
           and then updates the model's `Name` attribute. The model is serialized using the `save()`
           immediately after to apply and enfoce the change.
 
+                Examples
+                ---------
+                   >>> from apsimNGpy.core.apsim import ApsimModel
+                   >>> model = ApsimModel(model = 'Maize', out_path='my_maize.apsimx')
+                   >>> model.rename_model(model_type="Models.Core.Simulation", old_name ='Simulation', new_name='my_simulation')
+                   # check if it has been successfully renamed
+                   >>> model.inspect_model(model_type='Models.Core.Simulation', fullpath = False)
+                    ['my_simulation']
+                   # The alternative is to use model.inspect_file to see your changes
+                   >>> model.tree()
+
+
+
+                Examples
+                ---------
+                   >>> from apsimNGpy.core.apsim import ApsimModel
+                   >>> model = ApsimModel(model = 'Maize', out_path='my_maize.apsimx')
+                   >>> model.rename_model(model_type="Models.Core.Simulation", old_name ='Simulation', new_name='my_simulation')
+                   # check if it has been successfully renamed
+                   >>> model.inspect_model(model_type='Models.Core.Simulation', fullpath = False)
+                    ['my_simulation']
+                   # The alternative is to use model.inspect_file to see your changes
+                   >>> model.tree()
+
+
+
       Examples
       ---------
          >>> from apsimNGpy.core.apsim import ApsimModel
@@ -10744,6 +11070,130 @@ Classes
    Example:
    -------
     Create a cloned version of `"clock1"` and place it under `"Simulation"` with the new name `"new_clock`:
+
+           >>> from apsimNGpy.core.apsim import ApsimModel
+           >>> model = ApsimModel('Maize', out_path='my_maize.apsimx')
+           >>> model.clone_model(model_type='Models.Core.Simulation', model_name="Simulation",
+           ... rename="Sim2", adoptive_parent_type = 'Models.Core.Simulations',
+           ... adoptive_parent_name='Simulations')
+           >>> model.tree()
+           └── Simulations: .Simulations
+               ├── DataStore: .Simulations.DataStore
+               ├── Sim2: .Simulations.Sim2
+               │   ├── Clock: .Simulations.Sim2.Clock
+               │   ├── Field: .Simulations.Sim2.Field
+               │   │   ├── Fertilise at sowing: .Simulations.Sim2.Field.Fertilise at sowing
+               │   │   ├── Fertiliser: .Simulations.Sim2.Field.Fertiliser
+               │   │   ├── Harvest: .Simulations.Sim2.Field.Harvest
+               │   │   ├── Maize: .Simulations.Sim2.Field.Maize
+               │   │   ├── Report: .Simulations.Sim2.Field.Report
+               │   │   ├── Soil: .Simulations.Sim2.Field.Soil
+               │   │   │   ├── Chemical: .Simulations.Sim2.Field.Soil.Chemical
+               │   │   │   ├── NH4: .Simulations.Sim2.Field.Soil.NH4
+               │   │   │   ├── NO3: .Simulations.Sim2.Field.Soil.NO3
+               │   │   │   ├── Organic: .Simulations.Sim2.Field.Soil.Organic
+               │   │   │   ├── Physical: .Simulations.Sim2.Field.Soil.Physical
+               │   │   │   │   └── MaizeSoil: .Simulations.Sim2.Field.Soil.Physical.MaizeSoil
+               │   │   │   ├── Urea: .Simulations.Sim2.Field.Soil.Urea
+               │   │   │   └── Water: .Simulations.Sim2.Field.Soil.Water
+               │   │   ├── Sow using a variable rule: .Simulations.Sim2.Field.Sow using a variable rule
+               │   │   ├── SurfaceOrganicMatter: .Simulations.Sim2.Field.SurfaceOrganicMatter
+               │   │   └── soc_table: .Simulations.Sim2.Field.soc_table
+               │   ├── Graph: .Simulations.Sim2.Graph
+               │   │   └── Series: .Simulations.Sim2.Graph.Series
+               │   ├── MicroClimate: .Simulations.Sim2.MicroClimate
+               │   ├── SoilArbitrator: .Simulations.Sim2.SoilArbitrator
+               │   ├── Summary: .Simulations.Sim2.Summary
+               │   └── Weather: .Simulations.Sim2.Weather
+               └── Simulation: .Simulations.Simulation
+                   ├── Clock: .Simulations.Simulation.Clock
+                   ├── Field: .Simulations.Simulation.Field
+                   │   ├── Fertilise at sowing: .Simulations.Simulation.Field.Fertilise at sowing
+                   │   ├── Fertiliser: .Simulations.Simulation.Field.Fertiliser
+                   │   ├── Harvest: .Simulations.Simulation.Field.Harvest
+                   │   ├── Maize: .Simulations.Simulation.Field.Maize
+                   │   ├── Report: .Simulations.Simulation.Field.Report
+                   │   ├── Soil: .Simulations.Simulation.Field.Soil
+                   │   │   ├── Chemical: .Simulations.Simulation.Field.Soil.Chemical
+                   │   │   ├── NH4: .Simulations.Simulation.Field.Soil.NH4
+                   │   │   ├── NO3: .Simulations.Simulation.Field.Soil.NO3
+                   │   │   ├── Organic: .Simulations.Simulation.Field.Soil.Organic
+                   │   │   ├── Physical: .Simulations.Simulation.Field.Soil.Physical
+                   │   │   │   └── MaizeSoil: .Simulations.Simulation.Field.Soil.Physical.MaizeSoil
+                   │   │   ├── Urea: .Simulations.Simulation.Field.Soil.Urea
+                   │   │   └── Water: .Simulations.Simulation.Field.Soil.Water
+                   │   ├── Sow using a variable rule: .Simulations.Simulation.Field.Sow using a variable rule
+                   │   ├── SurfaceOrganicMatter: .Simulations.Simulation.Field.SurfaceOrganicMatter
+                   │   └── soc_table: .Simulations.Simulation.Field.soc_table
+                   ├── Graph: .Simulations.Simulation.Graph
+                   │   └── Series: .Simulations.Simulation.Graph.Series
+                   ├── MicroClimate: .Simulations.Simulation.MicroClimate
+                   ├── SoilArbitrator: .Simulations.Simulation.SoilArbitrator
+                   ├── Summary: .Simulations.Simulation.Summary
+                   └── Weather: .Simulations.Simulation.Weather
+
+
+           >>> from apsimNGpy.core.apsim import ApsimModel
+           >>> model = ApsimModel('Maize', out_path='my_maize.apsimx')
+           >>> model.clone_model(model_type='Models.Core.Simulation', model_name="Simulation",
+           ... rename="Sim2", adoptive_parent_type = 'Models.Core.Simulations',
+           ... adoptive_parent_name='Simulations')
+           >>> model.tree()
+           └── Simulations: .Simulations
+               ├── DataStore: .Simulations.DataStore
+               ├── Sim2: .Simulations.Sim2
+               │   ├── Clock: .Simulations.Sim2.Clock
+               │   ├── Field: .Simulations.Sim2.Field
+               │   │   ├── Fertilise at sowing: .Simulations.Sim2.Field.Fertilise at sowing
+               │   │   ├── Fertiliser: .Simulations.Sim2.Field.Fertiliser
+               │   │   ├── Harvest: .Simulations.Sim2.Field.Harvest
+               │   │   ├── Maize: .Simulations.Sim2.Field.Maize
+               │   │   ├── Report: .Simulations.Sim2.Field.Report
+               │   │   ├── Soil: .Simulations.Sim2.Field.Soil
+               │   │   │   ├── Chemical: .Simulations.Sim2.Field.Soil.Chemical
+               │   │   │   ├── NH4: .Simulations.Sim2.Field.Soil.NH4
+               │   │   │   ├── NO3: .Simulations.Sim2.Field.Soil.NO3
+               │   │   │   ├── Organic: .Simulations.Sim2.Field.Soil.Organic
+               │   │   │   ├── Physical: .Simulations.Sim2.Field.Soil.Physical
+               │   │   │   │   └── MaizeSoil: .Simulations.Sim2.Field.Soil.Physical.MaizeSoil
+               │   │   │   ├── Urea: .Simulations.Sim2.Field.Soil.Urea
+               │   │   │   └── Water: .Simulations.Sim2.Field.Soil.Water
+               │   │   ├── Sow using a variable rule: .Simulations.Sim2.Field.Sow using a variable rule
+               │   │   ├── SurfaceOrganicMatter: .Simulations.Sim2.Field.SurfaceOrganicMatter
+               │   │   └── soc_table: .Simulations.Sim2.Field.soc_table
+               │   ├── Graph: .Simulations.Sim2.Graph
+               │   │   └── Series: .Simulations.Sim2.Graph.Series
+               │   ├── MicroClimate: .Simulations.Sim2.MicroClimate
+               │   ├── SoilArbitrator: .Simulations.Sim2.SoilArbitrator
+               │   ├── Summary: .Simulations.Sim2.Summary
+               │   └── Weather: .Simulations.Sim2.Weather
+               └── Simulation: .Simulations.Simulation
+                   ├── Clock: .Simulations.Simulation.Clock
+                   ├── Field: .Simulations.Simulation.Field
+                   │   ├── Fertilise at sowing: .Simulations.Simulation.Field.Fertilise at sowing
+                   │   ├── Fertiliser: .Simulations.Simulation.Field.Fertiliser
+                   │   ├── Harvest: .Simulations.Simulation.Field.Harvest
+                   │   ├── Maize: .Simulations.Simulation.Field.Maize
+                   │   ├── Report: .Simulations.Simulation.Field.Report
+                   │   ├── Soil: .Simulations.Simulation.Field.Soil
+                   │   │   ├── Chemical: .Simulations.Simulation.Field.Soil.Chemical
+                   │   │   ├── NH4: .Simulations.Simulation.Field.Soil.NH4
+                   │   │   ├── NO3: .Simulations.Simulation.Field.Soil.NO3
+                   │   │   ├── Organic: .Simulations.Simulation.Field.Soil.Organic
+                   │   │   ├── Physical: .Simulations.Simulation.Field.Soil.Physical
+                   │   │   │   └── MaizeSoil: .Simulations.Simulation.Field.Soil.Physical.MaizeSoil
+                   │   │   ├── Urea: .Simulations.Simulation.Field.Soil.Urea
+                   │   │   └── Water: .Simulations.Simulation.Field.Soil.Water
+                   │   ├── Sow using a variable rule: .Simulations.Simulation.Field.Sow using a variable rule
+                   │   ├── SurfaceOrganicMatter: .Simulations.Simulation.Field.SurfaceOrganicMatter
+                   │   └── soc_table: .Simulations.Simulation.Field.soc_table
+                   ├── Graph: .Simulations.Simulation.Graph
+                   │   └── Series: .Simulations.Simulation.Graph.Series
+                   ├── MicroClimate: .Simulations.Simulation.MicroClimate
+                   ├── SoilArbitrator: .Simulations.Simulation.SoilArbitrator
+                   ├── Summary: .Simulations.Simulation.Summary
+                   └── Weather: .Simulations.Simulation.Weather
+
 
        >>> from apsimNGpy.core.apsim import ApsimModel
        >>> model = ApsimModel('Maize', out_path='my_maize.apsimx')

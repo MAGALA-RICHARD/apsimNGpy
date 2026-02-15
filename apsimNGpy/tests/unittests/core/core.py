@@ -210,7 +210,7 @@ class TestCoreModel(BaseTester):
             # check if it has been successfully renamed
             sims = model.inspect_model(model_type='Simulation', fullpath=False)
             assert NEW_NAME in sims, 'rename not successful'
-            # The alternative is to use model.inspect_file to see your changes
+            # The alternative is to use model.tree to see your changes
             model.rename_model(model_type="Simulations", old_name='Simulations', new_name=NEW_SIMs_NAME)
             assert NEW_SIMs_NAME in model.inspect_model(model_type='Simulations',
                                                         fullpath=False), 'renaming simulations was not successful'

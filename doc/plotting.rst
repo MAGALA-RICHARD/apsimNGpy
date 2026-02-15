@@ -31,14 +31,14 @@ Create the experiment
 Adding factors to the experiment
 --------------------------------
 Adding factors to the experiment requires that we understand the model structure. This can be accomplished
-by: :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.inspect_model`, :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.inspect_file`,
+by: :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.inspect_model`, :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.tree`,
 :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.inspect_model_parameters_by_path`
 
 Inspect the whole simulation tree
 
 .. code-block:: python
 
-   model.inspect_file()
+   model.tree()
 
 .. code-block:: none
 

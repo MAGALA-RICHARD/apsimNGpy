@@ -157,14 +157,14 @@ class SensitivityManager(ApsimModel):
             exp.run()
 
         You can inspect the updated APSIM file structure using the
-        :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.inspect_file`
+        :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.tree`
         method, inherited from
         :class:`~apsimNGpy.core.apsim.ApsimModel`. This allows you to verify that a
         sensitivity analysis model has been added under the ``Simulations`` node:
 
     .. code-block:: python
 
-        exp.inspect_file()
+        exp.tree()
 
 
 

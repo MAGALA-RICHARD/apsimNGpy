@@ -917,7 +917,7 @@ class CoreModel(PlotManager):
                # check if it has been successfully renamed
                >>> model.inspect_model(model_type='Models.Core.Simulation', fullpath = False)
                 ['my_simulation']
-               # The alternative is to use model.inspect_file to see your changes
+               # The alternative is to use model.tree to see your changes
                >>> model.tree()
 
          .. code-block:: none

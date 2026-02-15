@@ -247,7 +247,7 @@ We can get only the names of the cultivar models using the full string path::
 Whole Model inspection
 -----------------------
 
-Use :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_file` method to inspects all simulations in the file.
+Use :meth:`~apsimNGpy.core.apsim.ApsimModel.tree` method to inspects all simulations in the file.
 This method displays a tree showing how each model is connected with each other.
 ``Model types or classes`` are colored and are followed by their corresponding full paths relative to their parent node; ``Simulations``.
 
@@ -256,7 +256,7 @@ For interactive consoles (e.g., Jupyter Notebook), this is a game changer, youâ€
 
 .. code-block:: python
 
-    model.inspect_file(cultivar =False)
+    model.tree(cultivar =False)
 
 
 
@@ -272,7 +272,7 @@ For interactive consoles (e.g., Jupyter Notebook), this is a game changer, youâ€
 
 .. code-block:: python
 
-    model.inspect_file(cultivar = True)
+    model.tree(cultivar = True)
 
 .. code-block:: none
 
@@ -314,7 +314,7 @@ The advantages of apsimNGpy is its ability to work with very nested apsimx json 
      '.Simulations.More Reporting Examples.Annual Crop Example.ContinuousWheatExample.Clock',
      '.Simulations.Grouping.Seasonal.Clock']
      # inspect the whole file, check how nested
-     model.inspect_file()
+     model.tree()
 
 
 
@@ -490,7 +490,7 @@ In the next tutorial, I will teach you how to use exclusion and specification st
 
 .. seealso::
 
-  :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_file` in the :ref:`API Reference <api_ref>`
+  :meth:`~apsimNGpy.core.apsim.ApsimModel.tree` in the :ref:`API Reference <api_ref>`
 
 .. Warning::
 

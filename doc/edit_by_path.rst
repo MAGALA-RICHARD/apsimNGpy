@@ -91,7 +91,7 @@ edit cultivar when not yet sowed. this is accomplished by providing the fullpath
 .. code-block:: python
 
         with ApsimModel('Maize') as model:
-            model.inspect_file(cultivar=True)
+            model.tree(cultivar=True)
             model.edit_model_by_path(
                 path='.Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82',
                 commands='[Grain].MaximumGrainsPerCob.FixedValue',

@@ -84,7 +84,8 @@ setup(
         'numpy==1.26.4',
         'pydantic>=2.12',
         'loguru == 0.7.3',
-        "rich>=13.7.0"
+        "rich>=13.7.0",
+
 
     ]
 )

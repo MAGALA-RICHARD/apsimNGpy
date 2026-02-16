@@ -1365,7 +1365,7 @@ class CoreModel(PlotManager):
                         f"{model_type} can not be found. Did you forget to specify the `source_model_name`")
                 else:
                     raise ValueError(
-                        f"{model_type} can not be found. Please recheck your input or use inspect_file() to see all the available model types")
+                        f"{model_type} can not be found. Please recheck your input or use tree() to see all the available model types")
 
             model_type.Name = rename if rename else model_type.Name
             # target_child = parent.FindInScope[model_class.__class__](model_class.Name)
@@ -2945,7 +2945,7 @@ class CoreModel(PlotManager):
        .. seealso::
 
             Related API: :meth:`inspect_model_parameters`
-            Others: :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_model`, :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_file`
+            Others: :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_model`, :meth:`~apsimNGpy.core.apsim.ApsimModel.tree`
         """
         from apsimNGpy.core.model_tools import extract_value
         try:
@@ -4068,7 +4068,7 @@ class CoreModel(PlotManager):
         .. seealso::
 
                Related APIs:
-               :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_file`,
+               :meth:`~apsimNGpy.core.apsim.ApsimModel.tree`,
                :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_model_parameters`,
                :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_model_parameters_by_path`
         """
@@ -4813,7 +4813,7 @@ class CoreModel(PlotManager):
 
            from apsimNGpy.core.apsim import ApsimModel
            model = ApsimModel('Maize')
-           model.inspect_file(cultivar=False)
+           model.tree(cultivar=False)
 
         # output
 
@@ -4853,7 +4853,7 @@ class CoreModel(PlotManager):
 
         .. code-block:: python
 
-          model.inspect_file(cultivar=True)
+          model.tree(cultivar=True)
 
         # output
 
@@ -5021,7 +5021,7 @@ class CoreModel(PlotManager):
         self.save()  # save before compiling for consistent behaviors
         if kwargs.get('indent', None) or kwargs.get('display_full_path', None):
             logger.info(
-                "Inspecting file with key word indent or display_full_path is \ndeprecated, the inspect_file now print "
+                "Inspecting file with key word indent or display_full_path is \ndeprecated, the tree() method  now print "
                 "the inspection as a tree with names and corresponding model \nfull paths combined")
 
         def build_tree(paths):

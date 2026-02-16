@@ -472,7 +472,7 @@ class ExperimentManager:
                     # NodeUtils.Node.RemoveChild(old_child)
                 #  ModelTools.DELETE(old_child)
 
-        except System.ArgumentOutOfRangeException:
+        except CLR.System.ArgumentOutOfRangeException:
             pass
 
         # Insert a new factor

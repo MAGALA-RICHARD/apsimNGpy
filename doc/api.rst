@@ -451,7 +451,7 @@ Classes
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.update_mgt`
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.update_mgt_by_path`
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.__init__(self, model: Union[os.PathLike, dict, str], out_path: Union[str, pathlib.Path] = <object object at 0x00000255432B6490>, set_wd=None, **kwargs)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.__init__(self, model: Union[os.PathLike, dict, str], out_path: Union[str, pathlib.Path] = <object object at 0x0000020BA3FF6490>, set_wd=None, **kwargs)
 
    Initialize self.  See help(type(self)) for accurate signature.
 
@@ -931,7 +931,7 @@ Classes
    self : object
        Returns the updated ApsimModel instance.
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.save(self, file_name: 'Union[str, Path]' = <object object at 0x00000255054E4E20>, reload=True) (inherited)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.save(self, file_name: 'Union[str, Path]' = <object object at 0x0000020BD2E10E20>, reload=True) (inherited)
 
    Saves the current APSIM NG model (``Simulations``) to disk and refresh runtime state.
 
@@ -2571,7 +2571,7 @@ Classes
    .. seealso::
 
         Related API: :meth:`inspect_model_parameters`
-        Others: :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_model`, :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_file`
+        Others: :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_model`, :meth:`~apsimNGpy.core.apsim.ApsimModel.tree`
 
    .. py:method:: apsimNGpy.core.apsim.ApsimModel.edit_cultivar(self, *, CultivarName: 'str', commands: 'str', values: 'Any', **kwargs) (inherited)
 
@@ -3046,7 +3046,7 @@ Classes
    ---------------------------------------------------------------------------
    returns an array of the parameter values
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x00000255054E4E20>) (inherited)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x0000020BD2E10E20>) (inherited)
 
    Inspect the model types and returns the model paths or names.
 
@@ -3213,7 +3213,7 @@ Classes
    .. seealso::
 
           Related APIs:
-          :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_file`,
+          :meth:`~apsimNGpy.core.apsim.ApsimModel.tree`,
           :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_model_parameters`,
           :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_model_parameters_by_path`
 
@@ -3436,7 +3436,7 @@ Classes
 
       from apsimNGpy.core.apsim import ApsimModel
       model = ApsimModel('Maize')
-      model.inspect_file(cultivar=False)
+      model.tree(cultivar=False)
 
    # output
 
@@ -3476,7 +3476,7 @@ Classes
 
    .. code-block:: python
 
-     model.inspect_file(cultivar=True)
+     model.tree(cultivar=True)
 
    # output
 
@@ -4114,7 +4114,7 @@ Classes
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.update_mgt`
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.update_mgt_by_path`
 
-   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.__init__(self, model, out_path=<object object at 0x00000255432B6490>)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.__init__(self, model, out_path=<object object at 0x0000020BA3FF6490>)
 
    Initialize self.  See help(type(self)) for accurate signature.
 
@@ -4897,7 +4897,7 @@ Classes
    self : object
        Returns the updated ApsimModel instance.
 
-   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.save(self, file_name: 'Union[str, Path]' = <object object at 0x00000255054E4E20>, reload=True) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.save(self, file_name: 'Union[str, Path]' = <object object at 0x0000020BD2E10E20>, reload=True) (inherited)
 
    Saves the current APSIM NG model (``Simulations``) to disk and refresh runtime state.
 
@@ -6537,7 +6537,7 @@ Classes
    .. seealso::
 
         Related API: :meth:`inspect_model_parameters`
-        Others: :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_model`, :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_file`
+        Others: :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_model`, :meth:`~apsimNGpy.core.apsim.ApsimModel.tree`
 
    .. py:method:: apsimNGpy.core.experiment.ExperimentManager.edit_cultivar(self, *, CultivarName: 'str', commands: 'str', values: 'Any', **kwargs) (inherited)
 
@@ -7012,7 +7012,7 @@ Classes
    ---------------------------------------------------------------------------
    returns an array of the parameter values
 
-   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x00000255054E4E20>) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x0000020BD2E10E20>) (inherited)
 
    Inspect the model types and returns the model paths or names.
 
@@ -7179,7 +7179,7 @@ Classes
    .. seealso::
 
           Related APIs:
-          :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_file`,
+          :meth:`~apsimNGpy.core.apsim.ApsimModel.tree`,
           :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_model_parameters`,
           :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_model_parameters_by_path`
 
@@ -7371,7 +7371,7 @@ Classes
 
       from apsimNGpy.core.apsim import ApsimModel
       model = ApsimModel('Maize')
-      model.inspect_file(cultivar=False)
+      model.tree(cultivar=False)
 
    # output
 
@@ -7411,7 +7411,7 @@ Classes
 
    .. code-block:: python
 
-     model.inspect_file(cultivar=True)
+     model.tree(cultivar=True)
 
    # output
 
@@ -9164,7 +9164,7 @@ Functions
 
    Return True if obj looks like a DB connection.
 
-.. py:function:: apsimNGpy.core.runner.run_apsim_by_path(model: 'Union[str, Path, Iterable[str], Iterable[Path]]', *, bin_path: 'Union[str, Path, object]' = <object object at 0x00000255054E5020>, timeout: 'int' = 800, n_cores: 'int' = -1, verbose: 'bool' = False, to_csv: 'bool' = False) -> 'subprocess.CompletedProcess[str]'
+.. py:function:: apsimNGpy.core.runner.run_apsim_by_path(model: 'Union[str, Path, Iterable[str], Iterable[Path]]', *, bin_path: 'Union[str, Path, object]' = <object object at 0x0000020BD2E11020>, timeout: 'int' = 800, n_cores: 'int' = -1, verbose: 'bool' = False, to_csv: 'bool' = False) -> 'subprocess.CompletedProcess[str]'
 
    Execute an APSIM model safely and reproducibly.
 
@@ -9229,7 +9229,7 @@ Functions
    RuntimeError
        If APSIM returns a non-zero exit code.
 
-.. py:function:: apsimNGpy.core.runner.run_model_externally(model: 'Union[Path, str]', *, apsim_bin_path: 'Optional[Union[Path, str]]' = <object object at 0x00000255054E5020>, verbose: 'bool' = False, to_csv: 'bool' = False, timeout: 'int' = 20, cpu_count=-1, cwd: 'Optional[Union[Path, str]]' = None) -> 'subprocess.CompletedProcess[str]'
+.. py:function:: apsimNGpy.core.runner.run_model_externally(model: 'Union[Path, str]', *, apsim_bin_path: 'Optional[Union[Path, str]]' = <object object at 0x0000020BD2E11020>, verbose: 'bool' = False, to_csv: 'bool' = False, timeout: 'int' = 20, cpu_count=-1, cwd: 'Optional[Union[Path, str]]' = None) -> 'subprocess.CompletedProcess[str]'
 
    Run APSIM externally (cross-platform) with safe defaults.
 
@@ -9435,7 +9435,7 @@ Classes
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.update_mgt`
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.update_mgt_by_path`
 
-   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.__init__(self, model, out_path=<object object at 0x00000255432B6490>)
+   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.__init__(self, model, out_path=<object object at 0x0000020BA3FF6490>)
 
    Initialize self.  See help(type(self)) for accurate signature.
 
@@ -10154,7 +10154,7 @@ Classes
    self : object
        Returns the updated ApsimModel instance.
 
-   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.save(self, file_name: 'Union[str, Path]' = <object object at 0x00000255054E4E20>, reload=True) (inherited)
+   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.save(self, file_name: 'Union[str, Path]' = <object object at 0x0000020BD2E10E20>, reload=True) (inherited)
 
    Saves the current APSIM NG model (``Simulations``) to disk and refresh runtime state.
 
@@ -11794,7 +11794,7 @@ Classes
    .. seealso::
 
         Related API: :meth:`inspect_model_parameters`
-        Others: :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_model`, :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_file`
+        Others: :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_model`, :meth:`~apsimNGpy.core.apsim.ApsimModel.tree`
 
    .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.edit_cultivar(self, *, CultivarName: 'str', commands: 'str', values: 'Any', **kwargs) (inherited)
 
@@ -12269,7 +12269,7 @@ Classes
    ---------------------------------------------------------------------------
    returns an array of the parameter values
 
-   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x00000255054E4E20>) (inherited)
+   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x0000020BD2E10E20>) (inherited)
 
    Inspect the model types and returns the model paths or names.
 
@@ -12436,7 +12436,7 @@ Classes
    .. seealso::
 
           Related APIs:
-          :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_file`,
+          :meth:`~apsimNGpy.core.apsim.ApsimModel.tree`,
           :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_model_parameters`,
           :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_model_parameters_by_path`
 
@@ -12659,7 +12659,7 @@ Classes
 
       from apsimNGpy.core.apsim import ApsimModel
       model = ApsimModel('Maize')
-      model.inspect_file(cultivar=False)
+      model.tree(cultivar=False)
 
    # output
 
@@ -12699,7 +12699,7 @@ Classes
 
    .. code-block:: python
 
-     model.inspect_file(cultivar=True)
+     model.tree(cultivar=True)
 
    # output
 

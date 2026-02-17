@@ -246,7 +246,7 @@ class RunError(RuntimeError):
 
 
 def _ensure_exec(path: Union[str, Path]) -> str:
-    p = Path(path).expanduser().resolve()
+    p = Path(path).resolve()
     if not p.is_file():
         raise FileNotFoundError(f"APSIM executable not found: {p}")
     if os.name != "nt" and not os.access(p, os.X_OK):
@@ -711,12 +711,7 @@ def trial_run(
         _run_model.DisposeStorage()
         rx = _run_model.Run()
         _run_model.Finalize()
-        _datastore = maize.with_suffix('.db')
-        print(_datastore.stat().st_size)
-        print(_datastore)
-        print('report names', get_db_table_names(_datastore))
-        logger.info(list(_run_model.ExceptionsThrown))
-        print(_run_model.Status)
+
 
 
 

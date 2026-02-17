@@ -2,7 +2,8 @@ import sys
 import unittest
 from apsimNGpy.core.senstivitymanager import SensitivityManager
 import gc
-
+from apsimNGpy.config import configuration
+print(configuration.bin_path)
 
 # def test_sens_managers_morris():
 #     """Test method=Morris"""

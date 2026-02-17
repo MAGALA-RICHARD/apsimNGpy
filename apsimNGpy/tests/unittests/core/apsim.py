@@ -27,6 +27,50 @@ class TestCoreModel(BaseTester):
         self.assertTrue(self.test_ap_sim.ran_ok)
         self.test_ap_sim.clean_up(db=True)
 
+    def test_ensures_all_simulations_are_loaded(self):
+        # this has about 4 simulations
+        with ApsimModel('Report') as model:
+            sims = model.simulations_list
+            self.assertGreater(len(model), 1)
+
+    def helper_nested_sims(self, model):
+        pa = model.inspect_model_parameters(model_type='Models.Manager', model_name='AutomaticIrrigation',
+                                            simulations='Seasonal')
+        # by default manager parameters are integers
+        self.assertEqual(pa['maximumAmount'], '21')
+        self.assertEqual(pa['returndays'], '3')
+
+    def test_editing_nested_simulations(self):
+        with ApsimModel('Report') as model:
+            model.edit_model(model_type='Models.Manager', model_name='AutomaticIrrigation', simulations='Seasonal',
+                             returndays=3, maximumAmount=21)
+            self.helper_nested_sims(model)
+
+    def test_edit_nested_simulations_by_path(self):
+        with ApsimModel('Report') as model:
+            model.edit_model_by_path('.Simulations.Grouping.Seasonal.Field.AutomaticIrrigation', returndays=3,
+                                     maximumAmount=21)
+            self.helper_nested_sims(model)
+
+    def test_tree_on_nested_sims(self):
+        """
+        Test that we can graphically represent the model tree elements
+
+        """
+        with ApsimModel('Report') as model:
+            con = model.tree(console=False)
+            false = dict(con) == dict()
+            self.assertFalse(false)
+
+    def test_inspect_on_nested_sims(self):
+        """
+        test if all clocks for each simulation are successfully inspected by inspect_model method
+
+        """
+        with ApsimModel('Report') as model:
+            clk_str= model.inspect_model('Models.Clock')
+            self.assertEqual(len(clk_str), len(model))
+
     def test_set_params_cultivar(self):
         with ApsimModel('Maize') as model:
             model.run()

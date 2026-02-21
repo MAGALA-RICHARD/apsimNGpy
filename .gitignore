@@ -212,7 +212,7 @@ apsimNGpy/manager/*.db-wal
 
 apsimNGpy/manager/*.met
 apsimNGpy/manager/weatherdata
-
+apsimNGpy/tests/draft_tests.py
 apsimNGpy/scratch/*.apsimx
 apsimNGpy/scratch/*.db-shm
 apsimNGpy/scratch/*.db

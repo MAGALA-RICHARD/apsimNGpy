@@ -32,9 +32,11 @@ def run_suite(_bin_path, verbosity_level=2):
             edit_model_by_path, core_edit_model, cs_resources, config, plot_manager
         from apsimNGpy.tests.unittests.optimizer import vars, smp
         from apsimNGpy.tests.unittests.starter import starter
+        from apsimNGpy.tests.unittests import conig_apsim_bin_context
 
         modules = {starter,
                    model_tools,
+                   conig_apsim_bin_context,
                    senstivitymanager,
                    core,
                    apsim,

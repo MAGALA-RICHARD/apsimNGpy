@@ -4755,7 +4755,7 @@ class CoreModel(PlotManager):
 
         This method ensures that a ``Replacements`` folder exists within the
         model structure. If the folder does not already exist, it will be created.
-        The provided replacement nodes are then attached under this folder.
+        The provided replacement nodes (args) are then attached under this folder.
 
         Parameters
         ----------
@@ -4898,7 +4898,7 @@ class CoreModel(PlotManager):
            To include cultivar paths.
 
         console: (bool)
-           Prints to the console if True
+           Prints to the console if True, else return raw objects, only used for testing the method in unnitests
 
         Examples
         -----------

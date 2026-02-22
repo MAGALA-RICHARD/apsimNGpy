@@ -391,6 +391,7 @@ Classes
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.add_fac`
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.add_factor`
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.add_model`
+   - :meth:`~apsimNGpy.core.apsim.ApsimModel.add_replacements`
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.add_report_variable`
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.adjust_dul`
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.boxplot`
@@ -451,7 +452,7 @@ Classes
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.update_mgt`
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.update_mgt_by_path`
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.__init__(self, model: Union[os.PathLike, dict, str], out_path: Union[str, pathlib.Path] = <object object at 0x0000020BA3FF6490>, set_wd=None, **kwargs)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.__init__(self, model: Union[os.PathLike, dict, str], out_path: Union[str, pathlib.Path] = <object object at 0x000001C6E8AD6440>, set_wd=None, **kwargs)
 
    Initialize self.  See help(type(self)) for accurate signature.
 
@@ -931,7 +932,7 @@ Classes
    self : object
        Returns the updated ApsimModel instance.
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.save(self, file_name: 'Union[str, Path]' = <object object at 0x0000020BD2E10E20>, reload=True) (inherited)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.save(self, file_name: 'Union[str, Path]' = <object object at 0x000001C696A58DC0>, reload=True) (inherited)
 
    Saves the current APSIM NG model (``Simulations``) to disk and refresh runtime state.
 
@@ -3046,7 +3047,7 @@ Classes
    ---------------------------------------------------------------------------
    returns an array of the parameter values
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x0000020BD2E10E20>) (inherited)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x000001C696A58DC0>) (inherited)
 
    Inspect the model types and returns the model paths or names.
 
@@ -3397,7 +3398,7 @@ Classes
        apsim.create_experiment(permutation=False)
        apsim.set_continuous_factor(factor_path = "[Fertilise at sowing].Script.Amount", lower_bound=100, upper_bound=300, interval=10)
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.add_crop_replacements(self, _crop: 'str') (inherited)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.add_crop_replacements(self, _crop: 'str', *args) (inherited)
 
    Adds a replacement folder as a child of the simulations.
 
@@ -3411,6 +3412,63 @@ Classes
 
    ``Raises:``
        - *ValueError*: If the specified crop is not found.
+
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.add_replacements(self, *args) (inherited)
+
+   Add one or more Replacements nodes to the APSIM simulation tree.
+
+   This method ensures that a ``Replacements`` folder exists within the
+   model structure. If the folder does not already exist, it will be created.
+   The provided replacement nodes (args) are then attached under this folder.
+
+   Parameters
+   ----------
+   *args : postional arguments
+       One or more APSIM model nodes to be added as replacements.
+       Each argument should be a valid complete node or model path relative to the simulations root and component compatible
+       with the ``Replacements`` folder.
+
+   Notes
+   -----
+   - If the ``Replacements`` folder does not exist, it will be created
+     automatically.
+   - This method modifies the in-memory APSIM model tree.
+   - Changes take effect once the model is saved or executed.
+
+   Returns
+   -------
+   None
+       The model structure is modified in place.
+
+   .. versionadded 1.4.1
+
+   Examples
+   -------------------------------------------
+   Add nodes to the ``Replacements`` folder:
+
+   .. code-block:: python
+
+       from apsimNGpy.core.apsim import ApsimModel
+
+       # Initialize model
+       model = ApsimModel('Wheat', out='wheat_model')
+
+       # Inspect Plants node paths available
+       model.inspect_model('Models.PMF.Plant')
+       # ['.Simulations.Simulation.Field.Wheat']
+
+       # Add Wheat as a replacement
+       model.add_replacements('.Simulations.Simulation.Field.Wheat')
+
+       # Inspect Weather nodes path available
+       model.inspect_model('Models.Climate.Weather')
+       # ['.Simulations.Simulation.Weather']
+
+       # Add Weather as a replacement
+       model.add_replacements('.Simulations.Simulation.Weather')
+
+       # Verify structure
+       model.tree()
 
    .. py:method:: apsimNGpy.core.apsim.ApsimModel.get_model_paths(self, cultivar=False) -> 'list[str]' (inherited)
 
@@ -3428,7 +3486,7 @@ Classes
       To include cultivar paths.
 
    console: (bool)
-      Prints to the console if True
+      Prints to the console if True, else return raw objects, only used for testing the method in unnitests
 
    Examples
    -----------
@@ -4052,6 +4110,7 @@ Classes
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.add_fac`
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.add_factor`
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.add_model`
+   - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.add_replacements`
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.add_report_variable`
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.adjust_dul`
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.boxplot`
@@ -4114,7 +4173,7 @@ Classes
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.update_mgt`
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.update_mgt_by_path`
 
-   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.__init__(self, model, out_path=<object object at 0x0000020BA3FF6490>)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.__init__(self, model, out_path=<object object at 0x000001C6E8AD6440>)
 
    Initialize self.  See help(type(self)) for accurate signature.
 
@@ -4897,7 +4956,7 @@ Classes
    self : object
        Returns the updated ApsimModel instance.
 
-   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.save(self, file_name: 'Union[str, Path]' = <object object at 0x0000020BD2E10E20>, reload=True) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.save(self, file_name: 'Union[str, Path]' = <object object at 0x000001C696A58DC0>, reload=True) (inherited)
 
    Saves the current APSIM NG model (``Simulations``) to disk and refresh runtime state.
 
@@ -7012,7 +7071,7 @@ Classes
    ---------------------------------------------------------------------------
    returns an array of the parameter values
 
-   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x0000020BD2E10E20>) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x000001C696A58DC0>) (inherited)
 
    Inspect the model types and returns the model paths or names.
 
@@ -7332,7 +7391,7 @@ Classes
        apsim.create_experiment(permutation=False)
        apsim.set_continuous_factor(factor_path = "[Fertilise at sowing].Script.Amount", lower_bound=100, upper_bound=300, interval=10)
 
-   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.add_crop_replacements(self, _crop: 'str') (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.add_crop_replacements(self, _crop: 'str', *args) (inherited)
 
    Adds a replacement folder as a child of the simulations.
 
@@ -7346,6 +7405,63 @@ Classes
 
    ``Raises:``
        - *ValueError*: If the specified crop is not found.
+
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.add_replacements(self, *args) (inherited)
+
+   Add one or more Replacements nodes to the APSIM simulation tree.
+
+   This method ensures that a ``Replacements`` folder exists within the
+   model structure. If the folder does not already exist, it will be created.
+   The provided replacement nodes (args) are then attached under this folder.
+
+   Parameters
+   ----------
+   *args : postional arguments
+       One or more APSIM model nodes to be added as replacements.
+       Each argument should be a valid complete node or model path relative to the simulations root and component compatible
+       with the ``Replacements`` folder.
+
+   Notes
+   -----
+   - If the ``Replacements`` folder does not exist, it will be created
+     automatically.
+   - This method modifies the in-memory APSIM model tree.
+   - Changes take effect once the model is saved or executed.
+
+   Returns
+   -------
+   None
+       The model structure is modified in place.
+
+   .. versionadded 1.4.1
+
+   Examples
+   -------------------------------------------
+   Add nodes to the ``Replacements`` folder:
+
+   .. code-block:: python
+
+       from apsimNGpy.core.apsim import ApsimModel
+
+       # Initialize model
+       model = ApsimModel('Wheat', out='wheat_model')
+
+       # Inspect Plants node paths available
+       model.inspect_model('Models.PMF.Plant')
+       # ['.Simulations.Simulation.Field.Wheat']
+
+       # Add Wheat as a replacement
+       model.add_replacements('.Simulations.Simulation.Field.Wheat')
+
+       # Inspect Weather nodes path available
+       model.inspect_model('Models.Climate.Weather')
+       # ['.Simulations.Simulation.Weather']
+
+       # Add Weather as a replacement
+       model.add_replacements('.Simulations.Simulation.Weather')
+
+       # Verify structure
+       model.tree()
 
    .. py:method:: apsimNGpy.core.experiment.ExperimentManager.get_model_paths(self, cultivar=False) -> 'list[str]' (inherited)
 
@@ -7363,7 +7479,7 @@ Classes
       To include cultivar paths.
 
    console: (bool)
-      Prints to the console if True
+      Prints to the console if True, else return raw objects, only used for testing the method in unnitests
 
    Examples
    -----------
@@ -9164,7 +9280,7 @@ Functions
 
    Return True if obj looks like a DB connection.
 
-.. py:function:: apsimNGpy.core.runner.run_apsim_by_path(model: 'Union[str, Path, Iterable[str], Iterable[Path]]', *, bin_path: 'Union[str, Path, object]' = <object object at 0x0000020BD2E11020>, timeout: 'int' = 800, n_cores: 'int' = -1, verbose: 'bool' = False, to_csv: 'bool' = False) -> 'subprocess.CompletedProcess[str]'
+.. py:function:: apsimNGpy.core.runner.run_apsim_by_path(model: 'Union[str, Path, Iterable[str], Iterable[Path]]', *, bin_path: 'Union[str, Path, object]' = <object object at 0x000001C696A58FC0>, timeout: 'int' = 800, n_cores: 'int' = -1, verbose: 'bool' = False, to_csv: 'bool' = False) -> 'subprocess.CompletedProcess[str]'
 
    Execute an APSIM model safely and reproducibly.
 
@@ -9229,7 +9345,7 @@ Functions
    RuntimeError
        If APSIM returns a non-zero exit code.
 
-.. py:function:: apsimNGpy.core.runner.run_model_externally(model: 'Union[Path, str]', *, apsim_bin_path: 'Optional[Union[Path, str]]' = <object object at 0x0000020BD2E11020>, verbose: 'bool' = False, to_csv: 'bool' = False, timeout: 'int' = 20, cpu_count=-1, cwd: 'Optional[Union[Path, str]]' = None) -> 'subprocess.CompletedProcess[str]'
+.. py:function:: apsimNGpy.core.runner.run_model_externally(model: 'Union[Path, str]', *, apsim_bin_path: 'Optional[Union[Path, str]]' = <object object at 0x000001C696A58FC0>, verbose: 'bool' = False, to_csv: 'bool' = False, timeout: 'int' = 20, cpu_count=-1, cwd: 'Optional[Union[Path, str]]' = None) -> 'subprocess.CompletedProcess[str]'
 
    Run APSIM externally (cross-platform) with safe defaults.
 
@@ -9371,6 +9487,7 @@ Classes
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.add_fac`
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.add_factor`
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.add_model`
+   - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.add_replacements`
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.add_report_variable`
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.add_sens_factor`
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.adjust_dul`
@@ -9435,7 +9552,7 @@ Classes
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.update_mgt`
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.update_mgt_by_path`
 
-   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.__init__(self, model, out_path=<object object at 0x0000020BA3FF6490>)
+   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.__init__(self, model, out_path=<object object at 0x000001C6E8AD6440>)
 
    Initialize self.  See help(type(self)) for accurate signature.
 
@@ -10154,7 +10271,7 @@ Classes
    self : object
        Returns the updated ApsimModel instance.
 
-   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.save(self, file_name: 'Union[str, Path]' = <object object at 0x0000020BD2E10E20>, reload=True) (inherited)
+   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.save(self, file_name: 'Union[str, Path]' = <object object at 0x000001C696A58DC0>, reload=True) (inherited)
 
    Saves the current APSIM NG model (``Simulations``) to disk and refresh runtime state.
 
@@ -12269,7 +12386,7 @@ Classes
    ---------------------------------------------------------------------------
    returns an array of the parameter values
 
-   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x0000020BD2E10E20>) (inherited)
+   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x000001C696A58DC0>) (inherited)
 
    Inspect the model types and returns the model paths or names.
 
@@ -12620,7 +12737,7 @@ Classes
        apsim.create_experiment(permutation=False)
        apsim.set_continuous_factor(factor_path = "[Fertilise at sowing].Script.Amount", lower_bound=100, upper_bound=300, interval=10)
 
-   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.add_crop_replacements(self, _crop: 'str') (inherited)
+   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.add_crop_replacements(self, _crop: 'str', *args) (inherited)
 
    Adds a replacement folder as a child of the simulations.
 
@@ -12634,6 +12751,63 @@ Classes
 
    ``Raises:``
        - *ValueError*: If the specified crop is not found.
+
+   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.add_replacements(self, *args) (inherited)
+
+   Add one or more Replacements nodes to the APSIM simulation tree.
+
+   This method ensures that a ``Replacements`` folder exists within the
+   model structure. If the folder does not already exist, it will be created.
+   The provided replacement nodes (args) are then attached under this folder.
+
+   Parameters
+   ----------
+   *args : postional arguments
+       One or more APSIM model nodes to be added as replacements.
+       Each argument should be a valid complete node or model path relative to the simulations root and component compatible
+       with the ``Replacements`` folder.
+
+   Notes
+   -----
+   - If the ``Replacements`` folder does not exist, it will be created
+     automatically.
+   - This method modifies the in-memory APSIM model tree.
+   - Changes take effect once the model is saved or executed.
+
+   Returns
+   -------
+   None
+       The model structure is modified in place.
+
+   .. versionadded 1.4.1
+
+   Examples
+   -------------------------------------------
+   Add nodes to the ``Replacements`` folder:
+
+   .. code-block:: python
+
+       from apsimNGpy.core.apsim import ApsimModel
+
+       # Initialize model
+       model = ApsimModel('Wheat', out='wheat_model')
+
+       # Inspect Plants node paths available
+       model.inspect_model('Models.PMF.Plant')
+       # ['.Simulations.Simulation.Field.Wheat']
+
+       # Add Wheat as a replacement
+       model.add_replacements('.Simulations.Simulation.Field.Wheat')
+
+       # Inspect Weather nodes path available
+       model.inspect_model('Models.Climate.Weather')
+       # ['.Simulations.Simulation.Weather']
+
+       # Add Weather as a replacement
+       model.add_replacements('.Simulations.Simulation.Weather')
+
+       # Verify structure
+       model.tree()
 
    .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.get_model_paths(self, cultivar=False) -> 'list[str]' (inherited)
 
@@ -12651,7 +12825,7 @@ Classes
       To include cultivar paths.
 
    console: (bool)
-      Prints to the console if True
+      Prints to the console if True, else return raw objects, only used for testing the method in unnitests
 
    Examples
    -----------

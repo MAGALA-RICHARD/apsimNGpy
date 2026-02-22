@@ -16,16 +16,18 @@ class TestConfigApsimBinContext(unittest.TestCase):
         load_dotenv()
         bin_path = os.getenv(BIN_KEY)
         self.bin_path = bin_path
+        self.bin_path2 = os.getenv(BIN_KEY2)
 
     def test_bin_path_with_context(self):
         # first change it
-        bp = os.getenv(BIN_KEY2)
-        set_apsim_bin_path(bp)
-        bin_context = apsim_bin_context(self.bin_path)
+        time.sleep(1.5)
+        set_apsim_bin_path(self.bin_path2)
+        apsim_bin_context(self.bin_path)
         eq = Path(self.bin_path) == Path(configuration.bin_path)
         self.assertTrue(eq)
 
     def test_bin_path_no_context(self):
+        set_apsim_bin_path(self.bin_path2)
         with apsim_bin_context(self.bin_path):
             eq = Path(self.bin_path) == Path(configuration.bin_path)
             self.assertTrue(eq)

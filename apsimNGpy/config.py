@@ -766,11 +766,11 @@ class apsim_bin_context(AbstractContextManager):
         # If a specific .env path is provided, load it first
         if dotenv_path is not None:
             dp = Path(dotenv_path)
-            if dp.exists() and os.path.realpath(dp).endswith('.env'):
-                load_dotenv(os.path.realpath(dp.resolve()))
+            if dp.exists():
+                load_dotenv(dotenv_path=dp.resolve(), override=False)
             else:
-                if dotenv_path is not None:
-                    raise FileNotFoundError(f"dotenv_path does not exist or it is invalid .env file: {dp}")
+
+                raise FileNotFoundError(f"dotenv_path does not exist or it is invalid .env file: {dp}")
             # Try env vars from that .env
             _bin_path = os.getenv(bin_key) or os.getenv("APSIM_BIN_PATH") or os.getenv("APSIM_MODEL_PATH")
 

@@ -122,6 +122,7 @@ class TestConfigApsimBinContext(unittest.TestCase):
             self.assertTrue(hasattr(bin_runtime, "sensitivity"))
             self.assertTrue(hasattr(bin_runtime, "ConfigProblem"))
             self.assertTrue(hasattr(bin_runtime, "ExperimentManager"))
+            self.assertTrue(hasattr(bin_runtime, "SensitivityManager"))
 
             # --- Type / callable checks ---
             self.assertTrue(callable(bin_runtime.ApsimModel))
@@ -130,6 +131,7 @@ class TestConfigApsimBinContext(unittest.TestCase):
             self.assertTrue(callable(bin_runtime.sensitivity))
             self.assertTrue(callable(bin_runtime.ConfigProblem))
             self.assertTrue(callable(bin_runtime.ExperimentManager))
+            self.assertTrue(callable(bin_runtime.SensitivityManager))
 
 
 if __name__ == '__main__':

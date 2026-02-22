@@ -803,7 +803,12 @@ class apsim_bin_context(AbstractContextManager):
             set_apsim_bin_path(self._bin_path)
             time.sleep(1)
         from apsimNGpy.core.apsim import ApsimModel
+        from apsimNGpy.core.mult_cores import MultiCoreManager
+        from apsimNGpy.core.runner import run_apsim_by_path
         self.ApsimModel = ApsimModel
+        self.MultiCoreManager = MultiCoreManager
+        self.run_apsim_by_path = run_apsim_by_path
+
 
     def __enter__(self):
         """

@@ -802,12 +802,15 @@ class apsim_bin_context(AbstractContextManager):
             self.previous = get_apsim_bin_path()
             set_apsim_bin_path(self._bin_path)
             time.sleep(1)
+        # import apsimNGpy objects to attach
         from apsimNGpy.core.apsim import ApsimModel
         from apsimNGpy.core.mult_cores import MultiCoreManager
         from apsimNGpy.core.runner import run_apsim_by_path
+        # attach as attributes
         self.ApsimModel = ApsimModel
         self.MultiCoreManager = MultiCoreManager
         self.run_apsim_by_path = run_apsim_by_path
+
 
 
     def __enter__(self):

@@ -377,6 +377,7 @@ class TestCoreModel(BaseTester):
                     model.remove_model(model_class='Simulation', model_name='soybean_replaced')
 
     def test_inspect_file(self):
+        """Checks if the model simulation tree is working"""
         with CoreModel("Maize") as model:
             _inspected = model.tree(console=False)
             self.assertTrue(_inspected)
@@ -392,6 +393,23 @@ class TestCoreModel(BaseTester):
             model.clean_up()
         except KeyError:
             pass
+
+    def test_add_replacements(self):
+        from apsimNGpy.core import ApsimModel
+        with ApsimModel('Report', ) as model:
+            model.add_replacements('.Simulations.SimpleReportingSim.Field.Soil ')
+
+    def test_add_replacements_with_invalid_args(self):
+        from apsimNGpy.exceptions import NodeNotFoundError
+        from apsimNGpy.core import ApsimModel
+        with self.assertRaises(NodeNotFoundError, msg='Node not found error is not succeeding'):
+            # ensure an invalid path leads to a NodeNotFoundError
+            with ApsimModel('Report', ) as model:
+                model.add_replacements('.Simulations.SimpleReportingSim.Field.Soil-xx ')
+        with self.assertRaises(ValueError):
+            # ensure empty arguments do not pass
+            with ApsimModel('Report', ) as model:
+                model.add_replacements()
 
     def test_get_weather_from_web_daymet(self):
         with CoreModel("Maize") as model:

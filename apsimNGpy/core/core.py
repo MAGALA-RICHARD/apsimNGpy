@@ -2947,6 +2947,7 @@ class CoreModel(PlotManager):
             Related API: :meth:`inspect_model_parameters`
             Others: :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_model`, :meth:`~apsimNGpy.core.apsim.ApsimModel.tree`
         """
+        path= path.strip()
         from apsimNGpy.core.model_tools import extract_value
         try:
             model_by_path = self.Simulations.FindByPath(path)
@@ -4777,8 +4778,36 @@ class CoreModel(PlotManager):
 
         .. versionadded 1.4.1
 
+        Examples
+        -------------------------------------------
+        Add nodes to the ``Replacements`` folder:
+
+        .. code-block:: python
+
+            from apsimNGpy.core.apsim import ApsimModel
+
+            # Initialize model
+            model = ApsimModel('Wheat', out='wheat_model')
+
+            # Inspect Plants node paths available
+            model.inspect_model('Models.PMF.Plant')
+            # ['.Simulations.Simulation.Field.Wheat']
+
+            # Add Wheat as a replacement
+            model.add_replacements('.Simulations.Simulation.Field.Wheat')
+
+            # Inspect Weather nodes path available
+            model.inspect_model('Models.Climate.Weather')
+            # ['.Simulations.Simulation.Weather']
+
+            # Add Weather as a replacement
+            model.add_replacements('.Simulations.Simulation.Weather')
+
+            # Verify structure
+            model.tree()
         """
-        if not args:
+        if not args or args == "":  # checks empty strings before it proceeds to the get_node_by
+            # path as it will be interpreted as an invalid node path
             raise ValueError(
                 "One or more replacement nodes are required. "
                 "Use `self.tree()` to retrieve the correct node paths for replacements.")
@@ -4792,16 +4821,19 @@ class CoreModel(PlotManager):
             ModelTools.ADD(folder, self.Simulations)
 
         if args:
-            # Adds a node to the replacement node, args is expected to be a tuple of node path
+            # Adds a node to the replacement node, args is expected to be a tuple of node paths
             for arg in args:
                 # fetch node by path
-                node = get_node_by_path(self.Simulations, node_path=arg)
+                node = get_node_by_path(self.Simulations, node_path=arg.strip())
                 if node:
                     # Add the retrieved node to the simulations tree
-                    ModelTools.ADD(node.Model, folder)
+                    n_model = getattr(node, 'Model', node)
+                    ModelTools.ADD(n_model, folder)
                 else:
                     # avoid silent bugs
                     raise ValueError(f"{arg} is not a valid node path to current simulations tree")
+        self.Simulations.Children.Reverse()
+        self.save()
 
     def get_model_paths(self, cultivar=False) -> list[str]:
         """

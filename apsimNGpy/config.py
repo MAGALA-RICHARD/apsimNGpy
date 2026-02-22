@@ -806,10 +806,15 @@ class apsim_bin_context(AbstractContextManager):
         from apsimNGpy.core.apsim import ApsimModel
         from apsimNGpy.core.mult_cores import MultiCoreManager
         from apsimNGpy.core.runner import run_apsim_by_path
+        from apsimNGpy.senstivity.sensitivity import run_sensitivity, ConfigProblem
+        from apsimNGpy.core.experiment import ExperimentManager
         # attach as attributes
         self.ApsimModel = ApsimModel
         self.MultiCoreManager = MultiCoreManager
         self.run_apsim_by_path = run_apsim_by_path
+        self.sensitivity = run_sensitivity
+        self.ConfigProblem = ConfigProblem
+        self.ExperimentManager = ExperimentManager
 
 
 

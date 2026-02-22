@@ -4699,7 +4699,7 @@ class CoreModel(PlotManager):
         self.add_factor(specification=format_factor, factor_name=factor_name)
         return self
 
-    def add_crop_replacements(self, _crop: str):
+    def add_crop_replacements(self, _crop: str, *args):
         """
         Adds a replacement folder as a child of the simulations.
 
@@ -4737,10 +4737,71 @@ class CoreModel(PlotManager):
 
         if _crop is not None:
             ModelTools.ADD(_crop, _FOLDER)
+        if args:
+            # Adds a node to the replacement node, args is expected to be a tuple of node path
+            for arg in args:
+                node = get_node_by_path(self.Simulations, node_path=arg)
+                if node:
+                    ModelTools.ADD(node.Model, _FOLDER)
 
         else:
             logger.error(f"No plants of crop {CROP} found")
         return self
+
+    def add_replacements(self, *args):
+        """
+        Add one or more Replacements nodes to the APSIM simulation tree.
+
+        This method ensures that a ``Replacements`` folder exists within the
+        model structure. If the folder does not already exist, it will be created.
+        The provided replacement nodes are then attached under this folder.
+
+        Parameters
+        ----------
+        *args : postional arguments
+            One or more APSIM model nodes to be added as replacements.
+            Each argument should be a valid complete node or model path relative to the simulations root and component compatible
+            with the ``Replacements`` folder.
+
+        Notes
+        -----
+        - If the ``Replacements`` folder does not exist, it will be created
+          automatically.
+        - This method modifies the in-memory APSIM model tree.
+        - Changes take effect once the model is saved or executed.
+
+        Returns
+        -------
+        None
+            The model structure is modified in place.
+
+        .. versionadded 1.4.1
+
+        """
+        if not args:
+            raise ValueError(
+                "One or more replacement nodes are required. "
+                "Use `self.tree()` to retrieve the correct node paths for replacements.")
+
+        folder = self.get_replacements_node()
+        if not folder:
+            # Replacements node is not yet added
+            folder = Models.Core.Folder()
+            # Add it to the simulations' node
+            folder.Name = 'Replacements'
+            ModelTools.ADD(folder, self.Simulations)
+
+        if args:
+            # Adds a node to the replacement node, args is expected to be a tuple of node path
+            for arg in args:
+                # fetch node by path
+                node = get_node_by_path(self.Simulations, node_path=arg)
+                if node:
+                    # Add the retrieved node to the simulations tree
+                    ModelTools.ADD(node.Model, folder)
+                else:
+                    # avoid silent bugs
+                    raise ValueError(f"{arg} is not a valid node path to current simulations tree")
 
     def get_model_paths(self, cultivar=False) -> list[str]:
         """

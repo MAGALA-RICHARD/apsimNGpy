@@ -1,39 +1,24 @@
-import os
-from os.path import join as opj
-from datetime import datetime
+import copy
 import datetime
-import urllib
+import gc
+import io
+import json
+import logging
+import os
+import random
+import statistics
+import string
+import time
+import warnings
+from functools import lru_cache
 from pathlib import Path
 from typing import Union, Tuple, List
-import gc
-from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception, retry_if_exception_type
-import requests
-import random
-import json
-import pandas as pd
-import time
-import statistics
+
 import numpy as np
-import string
-import io
-from scipy import interpolate
-import copy
-import requests
-from datetime import datetime
-import string
-from io import StringIO
-import io
-import os
-from scipy import interpolate
-from scipy.interpolate import UnivariateSpline
-import logging
-from functools import lru_cache
-from datetime import datetime
 import pandas as pd
-import numpy as np
+import requests
 from scipy import interpolate
-import copy
-import warnings
+from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_type
 
 # we only need to retry if any of these error occured, the rest we dont need to know
 NETWORK_EXCEPTIONS = (requests.ConnectionError, requests.Timeout, requests.RequestException)
@@ -81,10 +66,7 @@ def get_iem_by_station(dates_tuple, station, path, met_tag):
     if rep.ok:
         met_name_of_file = station + met_tag + ".met"
         os.chdir(path)
-        if not os.path.exists('weatherdata'):
-            os.mkdir('weatherdata')
-        pt = os.path.join('weatherdata', met_name_of_file)
-
+        pt = str(Path(met_name_of_file).resolve())
         with open(pt, 'wb') as met_fileX:
             # remember to include the file extension name
             met_fileX.write(rep.content)
@@ -456,9 +438,8 @@ def get_met_from_day_met(lonlat: Union[tuple, list, np.ndarray], start: int,
         tav = round(statistics.mean((mean_max_temp, mean_mint)), 2)
         tile = connector.headers["Content-Disposition"].split("=")[1].split("_")[0]
         short_file_name = filename or "Daymet" + '.met'
-        if not os.path.exists('weatherdata'):
-            os.makedirs('weatherdata')
-        file_name_path = os.path.join('weatherdata', short_file_name)
+
+        file_name_path = str(Path(short_file_name).resolve())
         headers = ['year', 'day', 'radn', 'maxt', 'mint', 'rain', 'vp', 'swe']
         header_string = " ".join(headers) + "\n"
         # close and append new lines

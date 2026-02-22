@@ -4,12 +4,14 @@ from apsimNGpy.config import apsim_bin_context, path_checker, configuration, Pat
 import unittest
 from dotenv import load_dotenv
 import time
+
 BIN_KEY = '7980'
 BIN_KEY2 = '7990'
 
-ENV_FILE = Path(__file__).parent.parent/'.env_bin'
+ENV_FILE = Path(__file__).parent.parent / '.env_bin'
 
-path_checker(ENV_FILE)
+if not path_checker(ENV_FILE):
+    logger.warning(f"{__file__}  test requires that {ENV_FILE} is  set and populated with bins 1  and two")
 
 
 class TestConfigApsimBinContext(unittest.TestCase):
@@ -22,8 +24,9 @@ class TestConfigApsimBinContext(unittest.TestCase):
     def test_bin_path_with_context(self):
         self.skip()
         # first change it
-        time.sleep(1.5)
+
         set_apsim_bin_path(self.bin_path2)
+        time.sleep(1.5)
         apsim_bin_context(self.bin_path)
         eq = Path(self.bin_path) == Path(configuration.bin_path)
         self.assertTrue(eq)
@@ -114,7 +117,7 @@ class TestConfigApsimBinContext(unittest.TestCase):
         """Ensure required namespace attributes are exposed by apsim_bin_context."""
         self.skip()
 
-        with  apsim_bin_context(self.bin_path) as bin_runtime:
+        with apsim_bin_context(self.bin_path) as bin_runtime:
             # --- Attribute existence checks ---
             self.assertTrue(hasattr(bin_runtime, "ApsimModel"))
             self.assertTrue(hasattr(bin_runtime, "MultiCoreManager"))

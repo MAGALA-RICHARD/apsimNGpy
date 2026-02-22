@@ -2947,7 +2947,7 @@ class CoreModel(PlotManager):
             Related API: :meth:`inspect_model_parameters`
             Others: :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_model`, :meth:`~apsimNGpy.core.apsim.ApsimModel.tree`
         """
-        path= path.strip()
+        path = path.strip()
         from apsimNGpy.core.model_tools import extract_value
         try:
             model_by_path = self.Simulations.FindByPath(path)
@@ -3319,8 +3319,23 @@ class CoreModel(PlotManager):
 
         return self
 
-    # immediately open the file in GUI
-    def preview_simulation(self, watch=False):
+    def preview_simulation(self, watch: bool = False):
+        """
+        Deprecated: Use ``open_in_gui()`` instead.
+
+        This method will be removed in a future release.
+        """
+        warnings.warn(
+            (
+                "`preview_simulation()` is deprecated and will be removed "
+                "\nin a future release. Use `open_in_gui()` instead."
+            ),
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        self.open_in_gui(watch)
+
+    def open_in_gui(self, watch=False):
         """
            Open the current simulation in the APSIM Next Gen GUI.
 

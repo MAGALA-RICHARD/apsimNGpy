@@ -796,15 +796,29 @@ class apsim_bin_context(AbstractContextManager):
         self._bin_path = os.path.realpath(p)
         self.set_to_file = disk_cache
         self.previous = None
-
-    def __enter__(self):
-        # update flag for temporal bin key in env vars
         os.environ[TEMPORAL_BIN_ENV_KEY] = str(self._bin_path)
         configuration.bin_path = self._bin_path
         if self.set_to_file:
             self.previous = get_apsim_bin_path()
             set_apsim_bin_path(self._bin_path)
             time.sleep(1)
+        from apsimNGpy.core.apsim import ApsimModel
+        self.ApsimModel = ApsimModel
+
+    def __enter__(self):
+        """
+        Support usage as a context manager.
+
+        Note
+        ----
+        Environment activation is performed during object initialization
+        (in ``__init__``), allowing this class to be used both:
+
+            1. With a ``with`` statement
+            2. Without a context manager
+
+        Therefore, ``__enter__`` simply returns ``self``.
+        """
         return self
 
     def __exit__(self, exc_type, exc, tb):
@@ -817,6 +831,17 @@ class apsim_bin_context(AbstractContextManager):
             configuration.bin_path = get_apsim_bin_path()
         os.environ.pop(TEMPORAL_BIN_ENV_KEY, None)
         return False  # do not suppress exceptions
+
+
+def path_checker(path):
+    """Check if path exists. keeps it open do not raise"""
+    if path is None:
+        return False
+    if path == '':
+        return False
+    path = Path(path)
+    if path.exists():
+        return True
 
 
 if __name__ == "__main__":

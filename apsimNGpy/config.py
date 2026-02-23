@@ -37,6 +37,17 @@ CAST_OBJECT = 'CastBridge'
 DLL_DIR = (Path(__file__).parent / 'dll').joinpath(CAST_OBJECT)
 
 
+def path_checker(path):
+    """Check if path exists. Does not raise"""
+    if path is None:
+        return False
+    if path == '':
+        return False
+    path = Path(path)
+    if path.exists():
+        return True
+
+
 @lru_cache(maxsize=None)
 def start_pythonnet(dotnet_root=None):
     """
@@ -681,87 +692,94 @@ def stamp_name_with_version(file_name):
     return dest_path
 
 
+class _AutoBin(object):
+    pass
+
+
 class apsim_bin_context(AbstractContextManager):
-    """
-        Temporarily configure the APSIM-NG *bin* path used by ``apsimNGpy`` so imports
-        (e.g., ``ApsimModel``) can resolve APSIM .NET assemblies. Restores the previous
-        configuration on exit.
-
-        Parameters
-        ----------
-        apsim_bin_path : str | os.PathLike | None, optional
-            Explicit path to the APSIM ``bin`` directory (e.g.,
-            ``C:/APSIM/2025.05.1234/bin`` or ``/opt/apsim/2025.05.1234/bin``).
-            Used if no valid value is resolved from ``dotenv_path``.
-        dotenv_path : str | os.PathLike | None, optional
-            Path to a ``.env`` file to load *before* resolution. If provided, the
-            manager will read (in order): ``bin_key`` (if non-empty), then
-            ``APSIM_BIN_PATH``, then ``APSIM_MODEL_PATH`` from that file.
-        bin_key : str, default ''
-            Custom environment variable name to read from the loaded ``.env``
-            (e.g., ``"APSIM_BIN_PATH_2025"``). Ignored when empty.
-        timeout : float, default 0.003
-            Small sleep (seconds) after setting the bin path to avoid races with
-            immediate imports on some filesystems. Set to 0 to disable.
-
-        Returns
-        -------
-        None
-            The context manager returns ``None``; import within the ``with`` block.
-
-        Raises
-        ------
-        ValueError
-            If no path can be resolved from ``dotenv_path``, ``apsim_bin_path``,
-            or the process environment.
-        FileNotFoundError
-            If the resolved path does not exist.
-
-        Notes
-        -----
-        - Python.NET assemblies cannot be unloaded from a running process; this
-          context only restores path configuration for **future** imports.
-        - Do not nest this context across threads; the underlying config is global.
-
-        Examples
-        --------
-        Use an explicit path::
-
-           with apsim_bin_context(r"C:/APSIM/2025.05.1234/bin"):
-             from apsimNGpy.core.apsim import ApsimModel
-             model = ApsimModel(...)
-
-        Use a .env file with a custom key::
-
-            from pathlib import Path
-            with apsim_bin_context(dotenv_path=Path(".env"), bin_key="APSIM_BIN_PATH"):
-                 from apsimNGpy.core.apsim import ApsimModel
-
-       If you have .env files located in the root of your script::
-
-         with apsim_bin_context():
-             from apsimNGpy.core.apsim import ApsimModel
-
-        Verify restoration::
-
-            prev = get_apsim_bin_path()
-            with apsim_bin_context(r"C:/APSIM/X.Y.Z/bin"):
-
-            assert get_apsim_bin_path() == prev
-
-      added in v0.39.10.20+
-        """
 
     def __init__(
             self,
             apsim_bin_path: str | os.PathLike | None = None,
             dotenv_path: str | os.PathLike | None = None,
-            bin_key: str = '', disk_cache=False,
+            bin_key: str = '', disk_cache=False) -> None:
 
-    ) -> None:
+        """
+                Temporarily configure the APSIM-NG *bin* path used by ``apsimNGpy`` so imports
+                (e.g., ``ApsimModel``) can resolve APSIM .NET assemblies. Restores the previous
+                configuration on exit.
+
+                Parameters
+                ----------
+                apsim_bin_path : str | os.PathLike | None, optional, default is AUTO, meaning it will retrieve an already set bin path
+                    Explicit path to the APSIM ``bin`` directory (e.g.,
+                    ``C:/APSIM/2025.05.1234/bin`` or ``/opt/apsim/2025.05.1234/bin``).
+                    Used if no valid value is resolved from ``dotenv_path``.
+                dotenv_path : str | os.PathLike | None, optional
+                    Path to a ``.env`` file to load *before* resolution. If provided, the
+                    manager will read (in order): ``bin_key`` (if non-empty), then
+                    ``APSIM_BIN_PATH``, then ``APSIM_MODEL_PATH`` from that file.
+                bin_key : str, default ''
+                    Custom environment variable name to read from the loaded ``.env``
+                    (e.g., ``"APSIM_BIN_PATH_2025"``). Ignored when empty.
+                disk_cache: bool, default False
+                     if True, apsim_bin_path will be sent config.ini file
+
+
+                Returns
+                -------
+                class object with the following apsimNGpy runtime attributes:
+                    - ApsimModel from apsimNGpy.core.apsim
+                    - MultiCoreManager from apsimNGpy.core.mult_cores
+                    - run_apsim_by_path from apsimNGpy.core.runner
+                    - run_sensitivity  from apsimNGpy.senstivity.sensitivity
+                    - ConfigProblem  from apsimNGpy.senstivity.sensitivity
+                    - ExperimentManager from apsimNGpy.core.experiment
+                    - SensitivityManager from apsimNGpy.core.senstivitymanager
+
+                Raises
+                ------
+                ValueError
+                    If no path can be resolved from ``dotenv_path``, ``apsim_bin_path``,
+                    or the process environment.
+                FileNotFoundError
+                    If the resolved path does not exist.
+
+                Notes
+                -----
+                - Python.NET assemblies cannot be unloaded from a running process; this
+                  context only restores path configuration for **future** imports.
+                - Do not nest this context across threads; the underlying config is global.
+
+                Examples
+                --------
+                Use an explicit path::
+
+                   with apsim_bin_context(r"C:/APSIM/2025.05.1234/bin"):
+                     from apsimNGpy.core.apsim import ApsimModel
+                     model = ApsimModel(...)
+
+                Use a .env file with a custom key::
+
+                    from pathlib import Path
+                    with apsim_bin_context(dotenv_path=Path(".env"), bin_key="APSIM_BIN_PATH"):
+                         from apsimNGpy.core.apsim import ApsimModel
+
+               If you have .env files located in the root of your script::
+
+                 with apsim_bin_context():
+                     from apsimNGpy.core.apsim import ApsimModel
+
+                Verify restoration::
+
+                    prev = get_apsim_bin_path()
+                    with apsim_bin_context(r"C:/APSIM/X.Y.Z/bin"):
+
+                    assert get_apsim_bin_path() == prev
+
+              added in v0.39.10.20+
+                """
         _bin_path: str | None = None
-        self._wait = False
-        self.release = True
 
         # If a specific .env path is provided, load it first
         if dotenv_path is not None:
@@ -819,8 +837,6 @@ class apsim_bin_context(AbstractContextManager):
         self.ExperimentManager = ExperimentManager
         self.SensitivityManager = SensitivityManager
 
-
-
     def __enter__(self):
         """
         Support usage as a context manager.
@@ -847,17 +863,6 @@ class apsim_bin_context(AbstractContextManager):
             configuration.bin_path = get_apsim_bin_path()
         os.environ.pop(TEMPORAL_BIN_ENV_KEY, None)
         return False  # do not suppress exceptions
-
-
-def path_checker(path):
-    """Check if path exists. keeps it open do not raise"""
-    if path is None:
-        return False
-    if path == '':
-        return False
-    path = Path(path)
-    if path.exists():
-        return True
 
 
 if __name__ == "__main__":

@@ -15,9 +15,6 @@ NodeUtils = CLR.APsimCore
 System = CLR.System
 apsim_version = CLR.apsim_compiled_version
 
-if not CLR.file_format_modified:
-    logger.warning(f"The experiment module is not supported for this APSIM version: {apsim_version} ")
-
 
 class ExperimentManager(ApsimModel):
     """
@@ -52,6 +49,8 @@ class ExperimentManager(ApsimModel):
         self.sims = self.simulations
         self.init = False
         self.is_simulations_closed = False
+        if not CLR.file_format_modified:
+            logger.warning(f"The experiment module is not supported for this APSIM version: {apsim_version} ")
 
     def __enter__(self):
         return self

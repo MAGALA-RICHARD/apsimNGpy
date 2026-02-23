@@ -40,7 +40,7 @@ _doc_msg = """
 # that way even if the APSIM bin configuration is not set packages errors do not affect entry point
 # this is a refactoring class, I did not want to reconfigure apsim_bin-context
 class Apsim(apsim_bin_context):
-
+    # see apsim_bin_context doc string
     def __init__(self, apsim_bin_path=_AutoBin, dotenv_path=None, bin_key=None, disk_cache=None):
         if apsim_bin_path is _AutoBin and dotenv_path is None:
             apsim_bin_path = get_apsim_bin_path()

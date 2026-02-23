@@ -12,10 +12,7 @@ from apsimNGpy.logger import logger
 from apsimNGpy.parallel.process import custom_parallel
 from apsimNGpy.core_utils.utils import is_scalar, timer
 from apsimNGpy.exceptions import ApsimRuntimeError, NodeNotFoundError, TableNotFoundError, CastCompilationError
-from dotenv import load_dotenv as _load_dot_env
-from os import getenv as _get_env
-from pathlib import Path as _set_path
-from apsimNGpy.config import path_checker
+
 
 
 __all__ = [

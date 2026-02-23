@@ -13,8 +13,6 @@ from apsimNGpy.logger import logger
 from apsimNGpy.core.runner import invoke_csharp_gc
 
 Models = CLR.Models
-if not CLR.file_format_modified:
-    logger.warning(f"The `senstivitymanager` module is not supported for this APSIM version:  {CLR.apsim_compiled_version} ")
 
 from apsimNGpy.core.version_inspector import is_higher_apsim_version
 List = CLR.System.Collections.Generic.List
@@ -61,6 +59,10 @@ class SensitivityManager(ApsimModel):
         self.hash_name_and_path = []
         self.param_collections = List[Models.Sensitivity.Parameter]()
         self.method = None
+
+        if not CLR.file_format_modified:
+            logger.warning(
+                f"The `senstivitymanager` module is not supported for this APSIM version:  {CLR.apsim_compiled_version} ")
 
     def __enter__(self):
         return self

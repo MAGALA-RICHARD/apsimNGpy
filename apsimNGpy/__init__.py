@@ -50,8 +50,6 @@ class Apsim(apsim_bin_context):
         super().__init__(apsim_bin_path, dotenv_path=dotenv_path, bin_key=bin_key, disk_cache=disk_cache)
 
 
-# ApsimRuntime.__doc__ = _doc_msg + apsim_bin_context.__doc__
-
 __all__ = [
     'Apsim',
     'start_pythonnet',
@@ -75,6 +73,9 @@ __all__ = [
     'DLL_DIR'
 ]
 
-# if __name__ == '__main__':
-#     with Apsim() as runtime:
-#         print(runtime.ExperimentManager)
+if __name__ == '__main__':
+    with Apsim() as apsim:
+        with apsim.ApsimModel('Maize') as m:
+            m.run(verbose=True)
+            print(m.results)
+            print(m.summarize_numeric())

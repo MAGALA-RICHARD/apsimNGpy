@@ -121,9 +121,12 @@ def locate_model_bin_path(bin_path: Union[str, Path], recursive: bool = True) ->
     if recursive:
         for root, dirs, _ in os.walk(bin_path):
             for d in dirs:
-                subdir = Path(root) / d
-                if has_models(subdir):
-                    return subdir
+                try:
+                    subdir = Path(root) / d
+                    if has_models(subdir):
+                        return subdir
+                except PermissionError:
+                    pass
 
     return None
 

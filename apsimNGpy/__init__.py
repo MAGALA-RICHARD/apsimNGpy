@@ -46,7 +46,7 @@ class Apsim(apsim_bin_context):
             apsim_bin_path = get_apsim_bin_path()
             # since we are getting from config.ini file, disk_cache should be False too
             disk_cache = False
-        # another way round implies that apsim_bin_path will be retrieved on global environment variables
+        # if the above condition is false, it implies that apsim_bin_path will be retrieved on global environment variables
         super().__init__(apsim_bin_path, dotenv_path=dotenv_path, bin_key=bin_key, disk_cache=disk_cache)
 
 

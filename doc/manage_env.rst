@@ -96,12 +96,13 @@ Make sure you import it in your app, such that the rules are enforced and everyt
 
 .. code-block:: python
 
-   from apsimNGpy.core.config import apsim_bin_context
+   from apsimNGpy.core.config import Apsim
 
-   with apsim_bin_context("C:/APSIM/2025.05.1234/bin"):
+   with Apsim("C:/APSIM/2025.05.1234/bin") as apsim:
        # All CLR and APSIM assemblies are resolved from this bin path
-       from Models.Core import Simulations
-       from apsimNGpy.core.apsim import ApsimModel
+       with apsim.ApsimModel('Wheat') as model:
+         model.run()
+
 
 .. attention::
 
@@ -132,23 +133,10 @@ Make sure you import it in your app, such that the rules are enforced and everyt
 .. code-block:: python
 
     with apsim_bin_context(dotenv_path = './config/.env', bin_key ='APSIM_BIN'): # assumes that .env is in the config directory
-        from apsimNGpy.core.apsim import ApsimModel # uses the above bin path for loading
+         with apsim.ApsimModel('Wheat') as model:
+         model.run()
 
 .. admonition:: Highlight
 
-    Since the model assemblies are already loaded into memory inside the apsim_bin_context,
-    you do not need to remain inside the with block to keep using them. Once loaded, those modules (and their namespaces)
-    are global within the process, and they retain their reference to the APSIM bin path that was supplied during loading.
+    All modules that require .Net or apsim binary path are loaded after initializing Apsim class
 
-.. tip::
-
-   Each project keeps its own .env, so paths/versions don’t clash.
-
-   For multiple installs, create variant files (e.g., .env.2025.8) and load with:
-
-   ``load_dotenv(dotenv_path=".env.2025.8", override=True)``
-   
-
-   On Windows, keep quotes around paths with spaces.
-
-   Thank you

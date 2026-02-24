@@ -419,12 +419,63 @@ def get_node_by_path(node, node_path):
 
 
 def get_node_and_type(node, node_path):
+    """
+    Retrieve an APSIM node and its underlying .NET model type.
+
+    This utility resolves a node from the APSIM simulation tree using
+    a fully qualified path and returns both the node object and the
+    concrete Python type of the associated .NET model instance.
+
+    The function automatically handles cases where the resolved object
+    either exposes a ``Model`` attribute or is itself the model object.
+
+    Parameters
+    ----------
+    node : object
+        Root APSIM node (typically ``model.Simulations`` or a similar
+        container) from which the search begins.
+
+    node_path : str
+        Fully qualified APSIM path to the target node.
+        Example:
+            ".Simulations.Simulation.Field.Wheat"
+
+    Returns
+    -------
+    dict or None
+        A dictionary with the following keys:
+
+        - ``'node'`` : The resolved APSIM node object.
+        - ``'model_type'`` : The Python type of the underlying
+          .NET model after casting.
+
+        Returns ``None`` if the node cannot be resolved.
+
+    Notes
+    -----
+    - Internally uses ``get_node_by_path`` to resolve the node.
+    - Uses ``CastHelpers.CastAs`` to cast the .NET model to its
+      concrete type.
+    - Useful for reflection, dynamic inspection, and type-safe
+      editing of APSIM components.
+
+    Examples
+    --------
+    .. code-block:: python
+         from apsimNGpy import Apsim
+         # initialize the APSIM engine
+         apsim = Apsim()
+         with apsim.ApsimModel("Wheat") as model:
+             result = get_node_and_type(model.Simulations,".Simulations.Simulation.Field.Wheat")
+             print(result["model_type"])
+             # <class 'Models.PMF.Plant'>
+    """
     nodel = get_node_by_path(node, node_path=node_path)
     model = getattr(nodel, 'Model', nodel)
     model_type = model.GetType()
     mt = CastHelpers.CastAs[model_type](model)
     if nodel is not None:
-        return {'node': nodel, 'model_type': type(mt)}
+        return {'node': nodel, 'model_class': type(mt)}
 
 
 def get_node_string(node):
@@ -454,4 +505,5 @@ if __name__ == '__main__':
     # getattr(Models.Core.ApsimFile, "FileFormat", None)
     # set_apsim_bin_path(r'/Applications/APSIM2025.2.7670.0.app/Contents/Resources/bin')
     to_json_string(model2)
-    get_node_and_type(load.Simulations, '.Simulations.Simulation')
+    m_and_type = get_node_and_type(load.Simulations, '.Simulations.Simulation')
+    print(m_and_type)

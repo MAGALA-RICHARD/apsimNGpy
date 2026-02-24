@@ -830,8 +830,11 @@ class apsim_bin_context(AbstractContextManager):
         from apsimNGpy.senstivity.sensitivity import run_sensitivity, ConfigProblem
         from apsimNGpy.core.experiment import ExperimentManager
         from apsimNGpy.core.senstivitymanager import SensitivityManager
+        from apsimNGpy.starter.starter import CLR
+        from apsimNGpy.core import model_tools
+        from apsimNGpy.core.model_loader import get_node_by_path, get_node_and_type
 
-        # attach as attributes
+        # attach APSIM engine attributes
         self.ApsimModel = ApsimModel
         self.MultiCoreManager = MultiCoreManager
         self.run_apsim_by_path = run_apsim_by_path
@@ -839,6 +842,10 @@ class apsim_bin_context(AbstractContextManager):
         self.ConfigProblem = ConfigProblem
         self.ExperimentManager = ExperimentManager
         self.SensitivityManager = SensitivityManager
+        self.CLR = CLR
+        self.model_tools = model_tools
+        self.get_node_by_path = get_node_by_path
+        self.get_node_and_type = get_node_and_type
 
     def __enter__(self):
         """

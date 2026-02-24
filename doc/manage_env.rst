@@ -140,9 +140,9 @@ specifying any path arguments. See the example below.
 All the apsimNGpy objects exposed via :class:`~apsimNGpy.Apsim` class are as follows:
 
 - :class:`~apsimNGpy.Apsim.ApsimModel` (:mod:`~apsimNGpy.core.apsim`)
-- :class:`~apsimNGpy.Apsim.MultiCoreManager` (:mode:`~apsimNGpy.core.mult_cores`)
+- :class:`~apsimNGpy.Apsim.MultiCoreManager` (:mod:`~apsimNGpy.core.mult_cores`)
 - :meth:`~apsimNGpy.Apsim.run_apsim_by_path` (:mod:`~apsimNGpy.core.runner`)
-- :meth:`~apsimNGpy.Apsim.run_sensitivity` (apsimNGpy.sensitivity.sensitivity)
+- :meth:`~apsimNGpy.Apsim.run_sensitivity` (:mod:`~apsimNGpy.sensitivity.sensitivity`)
 - :class:`~apsimNGpy.Apsim.ConfigProblem` (apsimNGpy.sensitivity.sensitivity)
 - :class:`~apsimNGpy.Apsim.ExperimentManager` (apsimNGpy.core.experiment)
 - :class:`~apsimNGpy.Apsim.SensitivityManager` (apsimNGpy.core.sensitivitymanager)

@@ -158,4 +158,10 @@ Introduction
 
    api
 
+.. toctree::
+   :maxdepth: 2
+   :caption: Changes
+
+   change_logs
+
 

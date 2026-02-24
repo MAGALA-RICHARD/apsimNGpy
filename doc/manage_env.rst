@@ -141,7 +141,7 @@ All the apsimNGpy objects exposed via :class:`~apsimNGpy.Apsim` class are as fol
 
 - :class:`~apsimNGpy.Apsim.ApsimModel` (:mod:`~apsimNGpy.core.apsim`)
 - :class:`~apsimNGpy.Apsim.MultiCoreManager` (:mode:`~apsimNGpy.core.mult_cores`)
-- :meth:`~apsimNGpy.Apsim.run_apsim_by_path` (apsimNGpy.core.runner)
+- :meth:`~apsimNGpy.Apsim.run_apsim_by_path` (:mod:`~apsimNGpy.core.runner`)
 - :meth:`~apsimNGpy.Apsim.run_sensitivity` (apsimNGpy.sensitivity.sensitivity)
 - :class:`~apsimNGpy.Apsim.ConfigProblem` (apsimNGpy.sensitivity.sensitivity)
 - :class:`~apsimNGpy.Apsim.ExperimentManager` (apsimNGpy.core.experiment)

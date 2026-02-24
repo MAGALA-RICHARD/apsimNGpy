@@ -1,8 +1,9 @@
 """
-This script validates the functionality of the CoreModel class
-as inherited by the ApsimModel. While CoreModel provides the foundational
-implementation, ApsimModel remains the primary interface used in practice. So. here ApsimModel is imported for tests
+Tests the ``CoreModel`` base class through its public subclass
+``ApsimModel``. While ``CoreModel`` provides the core implementation,
+``ApsimModel`` remains the primary user-facing interface.
 """
+from __future__ import annotations
 import os
 import shutil
 import unittest

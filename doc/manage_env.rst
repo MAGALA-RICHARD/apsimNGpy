@@ -123,7 +123,7 @@ By using :class:`~apsimNGpy.Apsim`,  we can manage our APSIM path  as follows:
      from apsimNGpy.core.config import Apsim
      apsim = Apsim(dotenv_path = './config/.env', bin_key ='APSIM_BIN') # assumes that .env is in the config directory
      with apsim.ApsimModel('Wheat') as model:
-     model.run()
+         model.run()
 
 Although the Apsim class allows you to pass a bin_path or load it from a .env file, this is not strictly required.
 If the APSIM executable path has already been defined in config.ini or stored in a globally accessible environment variable, the class
@@ -135,7 +135,7 @@ specifying any path arguments. See the example below.
      from apsimNGpy.core.config import Apsim
      apsim = Apsim()
      with apsim.ApsimModel('Wheat') as model:
-     model.run()
+         model.run()
 
 All the apsimNGpy objects exposed via :class:`~apsimNGpy.Apsim` class are as follows:
 

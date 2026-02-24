@@ -321,6 +321,8 @@ def main(apsim_bin_path):
         from apsimNGpy.optimizer.problems import smp, back_end
         from apsimNGpy.core import senstivitymanager
         from apsimNGpy.senstivity import sensitivity
+        from apsimNGpy import Apsim
+
 
         # ________________________________________________________________________________
         # add outline!!
@@ -342,10 +344,8 @@ def main(apsim_bin_path):
         #             base_path='apsimNGpy.optimizer.single.MixedVariableProblem')
         add_outline(mult_cores.MultiCoreManager, include_inherited=True,
                     )
-        modules = (sensitivity,
-                   process, apsim, mult_cores, experiment, smp, single_mixed, senstivitymanager,
-                   evaluator, exceptions, database_utils, config, runner, back_end,
-                   )
+        modules = tuple({sensitivity, process, apsim, mult_cores, experiment, smp, single_mixed, senstivitymanager, evaluator,
+                   exceptions, database_utils, config, runner, back_end, Apsim})
 
         OUT = Path("api.rst").resolve()
         doc_folder = Path(__file__).parent.parent / 'doc'

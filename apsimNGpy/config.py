@@ -835,7 +835,7 @@ class apsim_bin_context(AbstractContextManager):
         self.ApsimModel = ApsimModel
         self.MultiCoreManager = MultiCoreManager
         self.run_apsim_by_path = run_apsim_by_path
-        self.sensitivity = run_sensitivity
+        self.run_sensitivity = run_sensitivity
         self.ConfigProblem = ConfigProblem
         self.ExperimentManager = ExperimentManager
         self.SensitivityManager = SensitivityManager

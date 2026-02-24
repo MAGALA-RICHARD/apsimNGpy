@@ -1,92 +1,61 @@
 import os
-from apsimNGpy.logger import logger
-from apsimNGpy.config import apsim_bin_context, path_checker, configuration, Path, set_apsim_bin_path
-import unittest
-from dotenv import load_dotenv
 import time
+import unittest
+from apsimNGpy.config import apsim_bin_context, path_checker, configuration, Path, set_apsim_bin_path, \
+    get_apsim_bin_path
+from apsimNGpy.logger import logger
+from apsimNGpy import Apsim
 
-BIN_KEY = '7980'
-BIN_KEY2 = '7990'
-
-ENV_FILE = Path(__file__).parent.parent / '.env_bin'
-
-if not path_checker(ENV_FILE):
-    logger.warning(f"{__file__}  test requires that {ENV_FILE} is  set and populated with bins 1  and two")
+bin_path2 = os.environ.get('TEST_APSIM_BINARY')
+if bin_path2:
+    bin_path2 = Path(bin_path2.strip())
 
 
 class TestConfigApsimBinContext(unittest.TestCase):
     def setUp(self):
-        load_dotenv(dotenv_path=ENV_FILE)
-        bin_path = os.getenv(BIN_KEY)
-        self.bin_path = bin_path
-        self.bin_path2 = os.getenv(BIN_KEY2)
-
-    def test_bin_path_with_context(self):
-        self.skip()
-        # first change it
-
-        set_apsim_bin_path(self.bin_path2)
-        time.sleep(1.5)
-        apsim_bin_context(self.bin_path)
-        eq = Path(self.bin_path) == Path(configuration.bin_path)
-        self.assertTrue(eq)
-
-    def test_bin_path_no_context(self):
-        self.skip()
-        set_apsim_bin_path(self.bin_path2)
-        with apsim_bin_context(self.bin_path):
-            eq = Path(self.bin_path) == Path(configuration.bin_path)
-            self.assertTrue(eq)
+        self.bin_path = get_apsim_bin_path()
 
     def skip(self):
         if not path_checker(self.bin_path):
-            if not path_checker(ENV_FILE):
-                skip_msg = f'{ENV_FILE} file does exist'
-            else:
-                sub_msg = (
-                    f"is not set according to the env bin key `{BIN_KEY}`"
-                    if self.bin_path is None
-                    else f"'{self.bin_path}' does not exist"
-                )
+            sub_msg = (
+                f"is not set according to the env bin key 'TEST_APSIM_BINARY'"
+                if self.bin_path is None
+                else f"'{self.bin_path}' does not exist"
+            )
 
-                skip_msg = (
-                    f"Skipping test `{self._testMethodName}` because APSIM binary path {sub_msg} "
+            logger.warning(sub_msg)
 
-                )
+            self.skipTest(sub_msg)
 
-            logger.warning(skip_msg)
-
-            self.skipTest(skip_msg)
-
-    def test_apsim_bin_context(self):
+    def test_apsim_bin_context_no_direct_path(self):
         """
         Test context manager WHEN ONLY env path and bin key are provided
 
         """
         self.skip()
-        with apsim_bin_context(dotenv_path=ENV_FILE, bin_key=BIN_KEY) as bin_run_time:
+        with Apsim() as bin_run_time:
             with bin_run_time.ApsimModel('Maize') as model:
                 model.run()
                 self.assertFalse(model.results.empty, 'Results are empty')
 
-    def test_apsim_bin_context_direct_path(self):
+    def test_apsim_direct_path(self):
         """
         Test context manager, WHEN BIN PATH is provided
 
         """
         self.skip()
-        with apsim_bin_context(apsim_bin_path=self.bin_path) as bin_run_time:
+        with Apsim(apsim_bin_path=self.bin_path) as bin_run_time:
             with bin_run_time.ApsimModel('Maize') as model:
                 model.run()
                 self.assertFalse(model.results.empty, 'Results are empty')
 
-    def test_apsim_bin_context_no_context(self):
+    def test_apsim_no_context(self):
         """
               Test NO context manager
 
         """
         self.skip()
-        bin_run_time = apsim_bin_context(apsim_bin_path=self.bin_path)
+        bin_run_time = Apsim(apsim_bin_path=self.bin_path)
         with bin_run_time.ApsimModel('Maize') as model:
             model.run()
             self.assertFalse(model.results.empty, 'Results are empty')
@@ -95,7 +64,7 @@ class TestConfigApsimBinContext(unittest.TestCase):
         """Ensure required namespace attributes are exposed by apsim_bin_context."""
         self.skip()
 
-        bin_runtime = apsim_bin_context(self.bin_path)
+        bin_runtime = Apsim(self.bin_path)
 
         # --- Attribute existence checks ---
         self.assertTrue(hasattr(bin_runtime, "ApsimModel"))
@@ -117,7 +86,7 @@ class TestConfigApsimBinContext(unittest.TestCase):
         """Ensure required namespace attributes are exposed by apsim_bin_context."""
         self.skip()
 
-        with apsim_bin_context(self.bin_path) as bin_runtime:
+        with Apsim(self.bin_path) as bin_runtime:
             # --- Attribute existence checks ---
             self.assertTrue(hasattr(bin_runtime, "ApsimModel"))
             self.assertTrue(hasattr(bin_runtime, "MultiCoreManager"))

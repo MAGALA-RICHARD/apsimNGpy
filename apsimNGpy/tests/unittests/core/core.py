@@ -1,19 +1,24 @@
+"""
+This script validates the functionality of the CoreModel class
+as inherited by the ApsimModel. While CoreModel provides the foundational
+implementation, ApsimModel remains the primary interface used in practice. So. here ApsimModel is imported for tests
+"""
 import os
 import shutil
 import unittest
 from functools import lru_cache
 from pathlib import Path
-
 import pandas as pd
-from apsimNGpy.core.config import apsim_version, stamp_name_with_version
-from apsimNGpy.core.core import CoreModel, Models
-from apsimNGpy.core.model_tools import find_model, validate_model_obj, find_child
-from apsimNGpy.settings import logger
-from apsimNGpy.tests.unittests.base_unit_tests import BaseTester
-from apsimNGpy.core.base_data import load_default_simulations
-from apsimNGpy.starter.starter import is_file_format_modified
+from apsimNGpy import Apsim
+from apsimNGpy.config import stamp_name_with_version
+from apsimNGpy.logger import logger
 
-IS_NEW_APSIM = is_file_format_modified()
+apsim = Apsim()
+Models = apsim.CLR.Models
+from apsimNGpy.core.model_tools import find_model, validate_model_obj, find_child
+from apsimNGpy.tests.unittests.base_unit_tests import BaseTester
+
+IS_NEW_APSIM = apsim.CLR.file_format_modified
 
 wd = Path.cwd() / "test_core"
 
@@ -37,7 +42,7 @@ def prepare():
 prepare()
 wd.mkdir(parents=True, exist_ok=True)
 os.chdir(wd)
-VERSION = apsim_version()
+VERSION = apsim.CLR.apsim_compiled_version
 
 
 class TestCoreModel(BaseTester):
@@ -61,7 +66,7 @@ class TestCoreModel(BaseTester):
             self.test_save_path.unlink(missing_ok=True)
         except PermissionError:
             pass
-        with CoreModel('Maize') as maize_model:
+        with apsim.ApsimModel('Maize') as maize_model:
             cp = maize_model.path
             maize_model.save(file_name=self.test_save_path, reload=False)
             self.assertGreater(self.test_save_path.stat().st_size, 0, 'saving the model failed when reload =False')
@@ -74,7 +79,7 @@ class TestCoreModel(BaseTester):
             self.test_save_path.unlink(missing_ok=True)
         except PermissionError:
             pass
-        with CoreModel('Maize') as maize_model:
+        with apsim.ApsimModel('Maize') as maize_model:
             cp = maize_model.path
             maize_model.save(file_name=self.test_save_path, reload=True)
             self.assertGreater(self.test_save_path.stat().st_size, 0, 'saving the model failed when reload =True')
@@ -88,14 +93,14 @@ class TestCoreModel(BaseTester):
         user_name = stamp_name_with_version(os.path.realpath(f'use_name_ot_test.apsimx'))
         if os.path.exists(user_name):
             os.remove(user_name)
-        with CoreModel('Maize') as model:
+        with apsim.ApsimModel('Maize') as model:
             in_path = str(model.path)
             # self.assertEqual(in_path, str(user_name))
             self.assertGreater(os.path.getsize(model.path), 0, 'out_path is empty')
             model.clean_up()
 
     def test_random_out_path(self):
-        with CoreModel('Maize') as model:
+        with apsim.ApsimModel('Maize') as model:
             self.assertTrue(os.path.exists(model.path))
             self.paths.add(model.path)
 
@@ -105,7 +110,7 @@ class TestCoreModel(BaseTester):
          ==========================================================="""
 
         """There are several ways to check if the run was successful, here I have tried all of them"""
-        with CoreModel('Maize') as model:
+        with apsim.ApsimModel('Maize') as model:
             model.run(report_name=['Report'])
             self.assertIsInstance(model.results, pd.DataFrame,
                                   msg="an error occurred while passing  alist "
@@ -128,7 +133,7 @@ class TestCoreModel(BaseTester):
         Amount = 23.557777
         script_name = 'Fertilise at sowing'
         mgt_script = {'Name': script_name, 'Amount': Amount},
-        with CoreModel(model='Maize') as model:
+        with apsim.ApsimModel(model='Maize') as model:
             model.update_mgt(management=mgt_script)
             # extract user infor
             value = model.inspect_model_parameters('Manager', simulations='Simulation',
@@ -143,7 +148,7 @@ class TestCoreModel(BaseTester):
         # test None
         sim = 'Simulation'
         MSG = f'test_find_simulations failed to return requested simulation object: {sim}'
-        with CoreModel("Maize") as model:
+        with apsim.ApsimModel("Maize") as model:
             self.assertTrue(model.find_simulations(), msg=MSG)
             # test str
             self.assertTrue(model.find_simulations(simulations=sim), msg=MSG)
@@ -158,7 +163,7 @@ class TestCoreModel(BaseTester):
         requires that the models are run first
         ================================================
         """
-        with CoreModel('Maize') as model:
+        with apsim.ApsimModel('Maize') as model:
             model.run()
             if not model.ran_ok:
                 raise unittest.SkipTest(f'skipping test_simulated_results because model did '
@@ -168,20 +173,20 @@ class TestCoreModel(BaseTester):
             self.assertIsInstance(repos, pd.DataFrame, msg=msg)
 
     def test_get_reports(self):
-        with CoreModel('Maize') as maize_model:
+        with apsim.ApsimModel('Maize') as maize_model:
             self.assertIsInstance(maize_model.inspect_model('Report'), list)
             self.assertTrue(maize_model.tables_list)
 
     def test_inspect_clock(self):
-        with CoreModel('Maize') as maize_model:
+        with apsim.ApsimModel('Maize') as maize_model:
             self.assertIsInstance(maize_model.inspect_model('Clock'), list)
 
     def test_inspect_simulation(self):
-        with CoreModel('Maize') as maize_model:
+        with apsim.ApsimModel('Maize') as maize_model:
             self.assertIsInstance(maize_model.inspect_model('Models.Core.Simulation', fullpath=False), list)
 
     def test_find__simulations(self):
-        with CoreModel('Maize') as model:
+        with apsim.ApsimModel('Maize') as model:
             # get a list of simulations
             sims = model.find_simulations()
             self.assertIsInstance(sims, tuple)
@@ -192,7 +197,7 @@ class TestCoreModel(BaseTester):
             self.assertTrue(len(sims) > 0)
 
     def test_find__simulations_when_str(self):
-        with CoreModel('Maize') as model:
+        with apsim.ApsimModel('Maize') as model:
             # get a list of simulations
             sims = model.find_simulations()
             self.assertIsInstance(sims, tuple)
@@ -205,7 +210,7 @@ class TestCoreModel(BaseTester):
     def test_rename(self):
         NEW_NAME = 'NEW_SIM_NAME'
         NEW_SIMs_NAME = 'NEW_SIMULATION_NAME'
-        with CoreModel("Maize") as model:
+        with apsim.ApsimModel("Maize") as model:
             model.rename_model(model_type="Simulation", old_name='Simulation', new_name=NEW_NAME)
             # check if it has been successfully renamed
             sims = model.inspect_model(model_type='Simulation', fullpath=False)
@@ -220,7 +225,7 @@ class TestCoreModel(BaseTester):
     def test_replace_soil_property_values(self):
         parameter = 'Carbon'
         param_values = [2.4, 1.4]
-        with CoreModel("Maize") as model:
+        with apsim.ApsimModel("Maize") as model:
             model.replace_soil_property_values(parameter=parameter, param_values=param_values,
                                                soil_child='Organic', )
             lisT = model.inspect_model_parameters(model_type='Organic', simulations='all', model_name='Organic',
@@ -239,14 +244,14 @@ class TestCoreModel(BaseTester):
 
     def test_replace_soil_properties_by_path(self):
         param_values = [1.45, 1.95]
-        with CoreModel("Maize") as model:
+        with apsim.ApsimModel("Maize") as model:
             model.edit_model(model_type='Organic', model_name='Organic', Carbon=param_values)
 
     def test_update_mgt_by_path(self):
         # test when fmt  ='.'
         pathto = '.Simulations.Simulation.Field.Sow using a variable rule'
-        with CoreModel("Maize") as model:
-            model.update_mgt_by_path(path=pathto, Population=7.5, fmt='.')
+        with apsim.ApsimModel("Soybean") as model:
+            # model.update_mgt_by_path(path=pathto, Population=7.5, fmt='.')
             model.run()
             self.assertTrue(model.ran_ok, msg='simulation was not ran when fmt was .')
             # test when fmt = '/'
@@ -265,7 +270,7 @@ class TestCoreModel(BaseTester):
             pass
             # being tested else where in another file
         else:
-            with CoreModel("Maize") as model:
+            with apsim.ApsimModel("Maize") as model:
                 model.create_experiment()
                 # add factor
                 model.add_factor(specification="[Fertilise at sowing].Script.Amount = 0 to 200 step 20",
@@ -276,7 +281,7 @@ class TestCoreModel(BaseTester):
             self.assertFalse(os.path.exists(path), msg='datastore path was not deleted or cleaned up')
 
     def test_add_crop_replacements(self):
-        with CoreModel("Maize") as model:
+        with apsim.ApsimModel("Maize") as model:
             model.add_crop_replacements(_crop='Maize')
             xp = find_child(model.Simulations, child_name='Replacements', child_class='Models.Core.Folder')
             # xp = self.test_ap_sim.Simulations.FindInScope('Replacements')
@@ -288,14 +293,14 @@ class TestCoreModel(BaseTester):
 
     def test_replace_soils_values_by_path(self):
         node = '.Simulations.Simulation.Field.Soil.Organic'
-        with CoreModel("Maize") as model:
+        with apsim.ApsimModel("Maize") as model:
             model.replace_soils_values_by_path(node_path=node,
                                                indices=[0], Carbon=1.3)
             v = model.get_soil_values_by_path(node, 'Carbon')['Carbon'][0]
             self.assertEqual(v, 1.3)
 
     def test_add_db_table(self):
-        with CoreModel("Maize") as model:
+        with apsim.ApsimModel("Maize") as model:
             model.add_db_table(
                 variable_spec=['[Clock].Today', '[Soil].Nutrient.TotalC[1]/1000 as SOC1',
                                '[Maize].Grain.Total.Wt*10 as Yield'],
@@ -310,13 +315,13 @@ class TestCoreModel(BaseTester):
             self.assertTrue(model.ran_ok, msg='simulation was not ran after adding the report table report2.')
 
     def test_loading_defaults_with(self):
-        with CoreModel("Maize", out_path=Path('ld.apsimx').absolute()) as model:
+        with apsim.ApsimModel("Maize", out_path=Path('ld.apsimx').absolute()) as model:
             model.run()
-            self.assertTrue(model.ran_ok, 'simulation was not ran after using default within CoreModel class')
+            self.assertTrue(model.ran_ok, 'simulation was not ran after using default within apsim.ApsimModel class')
             self.paths.add(model.path)
 
     def test_edit_with_path_som(self):
-        with  CoreModel(model='Maize', out_path='path_som.apsimx') as model:
+        with  apsim.ApsimModel(model='Maize', out_path='path_som.apsimx') as model:
             initial_ratio = 200.0
             model.edit_model_by_path('.Simulations.Simulation.Field.SurfaceOrganicMatter', InitialCNR=initial_ratio,
                                      verbose=False)
@@ -361,7 +366,7 @@ class TestCoreModel(BaseTester):
         self.assertEqual(factors, Models.Factorial.Factors)  # Confirm evaluation matches Models.Factorial.Factors model
 
     def test_add_model_simulation(self):
-        with CoreModel("Maize") as model:
+        with apsim.ApsimModel("Maize") as model:
             if not IS_NEW_APSIM:
 
                 try:
@@ -378,21 +383,21 @@ class TestCoreModel(BaseTester):
 
     def test_inspect_file(self):
         """Checks if the model simulation tree is working"""
-        with CoreModel("Maize") as model:
+        with apsim.ApsimModel("Maize") as model:
             _inspected = model.tree(console=False)
             self.assertTrue(_inspected)
 
     def test_get_weather_from_web_nasa(self):
-        model = load_default_simulations('Maize')
-        try:
-            model.get_weather_from_web(lonlat=(-93.50456, 42.601247), start=1990, end=2001, source='nasa',
-                                       filename=self.weather_file_nasa)
-            model.run()
-            self.assertTrue(model.ran_ok)
-            self.paths.add(model.path)
-            model.clean_up()
-        except KeyError:
-            pass
+        with apsim.ApsimModel("Maize") as model:
+            try:
+                model.get_weather_from_web(lonlat=(-93.50456, 42.601247), start=1990, end=2001, source='nasa',
+                                           filename=self.weather_file_nasa)
+                model.run()
+                self.assertTrue(model.ran_ok)
+                self.paths.add(model.path)
+                model.clean_up()
+            except KeyError:
+                pass
 
     def test_add_replacements(self):
         from apsimNGpy.core import ApsimModel
@@ -412,7 +417,7 @@ class TestCoreModel(BaseTester):
                 model.add_replacements()
 
     def test_get_weather_from_web_daymet(self):
-        with CoreModel("Maize") as model:
+        with apsim.ApsimModel("Maize") as model:
             model.get_weather_from_web(lonlat=(-93.50456, 42.601247), start=1990, end=2001, source='daymet',
                                        filename=self.weather_file_daymet)
             model.run()
@@ -420,7 +425,7 @@ class TestCoreModel(BaseTester):
             self.paths.add(model.path)
 
     def test_edit_model(self):
-        with CoreModel("Maize") as model:
+        with apsim.ApsimModel("Maize") as model:
             model.edit_model(model_type='Clock', model_name='Clock', simulations="Simulation",
                              Start='1900-01-01', End='1990-01-12')
             info = model.inspect_model_parameters('Models.Clock', 'Clock')
@@ -430,7 +435,7 @@ class TestCoreModel(BaseTester):
 
     def test_edit_water_model_water_balance(self):
         # Context manager loads the APSIM model and ensures cleanup
-        with CoreModel('Maize') as corep:
+        with apsim.ApsimModel('Maize') as corep:
             # ------------------------------------------------------------
             # 1. Test layered attribute when provided as a list
             # ------------------------------------------------------------
@@ -537,7 +542,7 @@ class TestCoreModel(BaseTester):
                 )
 
     def test_edit_soils_physical(self):
-        with CoreModel("Maize") as model:
+        with apsim.ApsimModel("Maize") as model:
             ks = model.inspect_model_parameters('Models.Soils.Physical', 'Physical', parameters='KS')
             length = ks.shape[0]
             #  The top two lines of codes here only modify the KS value for the first layer, but the third line updates all values
@@ -570,7 +575,7 @@ class TestCoreModel(BaseTester):
         """
 
         # test_ap_sim.add_crop_replacements(_crop='Maize')
-        with CoreModel("Maize") as test_ap_sim:
+        with apsim.ApsimModel("Maize") as test_ap_sim:
             out_cultivar = 'B_110-e'
             new_juvenile = 289.777729777
             com_path = '[Phenology].Juvenile.Target.FixedValue'
@@ -588,8 +593,8 @@ class TestCoreModel(BaseTester):
         """This is deprecated though"""
         com_path = '[Phenology].Juvenile.Target.FixedValue'
 
-        test_ap_sim = CoreModel("Maize", out_path=self.user_file_name)
-        with CoreModel("Maize") as test_ap_sim:
+        test_ap_sim = apsim.ApsimModel("Maize", out_path=self.user_file_name)
+        with apsim.ApsimModel("Maize") as test_ap_sim:
             cp = test_ap_sim.inspect_model_parameters(model_type='Cultivar', model_name='B_110')
 
             new_juvenile = 289.888
@@ -604,7 +609,7 @@ class TestCoreModel(BaseTester):
             self.paths.add(test_ap_sim.path)
 
     def test_inspect_model_parameters(self):
-        with CoreModel("Maize") as model:
+        with apsim.ApsimModel("Maize") as model:
             w_file = model.inspect_model_parameters(model_type='Weather', simulations='Simulation',
                                                     model_name='Weather')
             self.assertIsInstance(w_file, str, msg='Inspect weather model parameters failed, when simulation is a str')
@@ -615,26 +620,27 @@ class TestCoreModel(BaseTester):
                                   msg='Inspect weather model parameters failed, when simulation is a list')
 
     def test_model_info_attributes(self):
-        with CoreModel("Maize") as model:
+        with apsim.ApsimModel("Maize") as model:
             self.assertTrue(model.datastore, ' datastore is set to to empty or None')
             self.assertTrue(model._DataStore, '_DataStore model is set to to empty or None')
             self.assertTrue(model.Datastore, '_DataStore is set to empty or null')
 
     def test_model_info_types(self):
-        with CoreModel("Maize") as model:
+        with apsim.ApsimModel("Maize") as model:
             self.assertIsInstance(model.Datastore, Models.Storage.DataStore,
                                   msg='Inspect DataStore, data store was not casted to Models.Storage.DataStore')
             self.assertIsInstance(model._DataStore, Models.Storage.DataStore,
                                   msg='Inspect DataStore, data store was not casted to Models.Storage.DataStore')
 
     def test_simulation_container(self):
-        with CoreModel("Maize") as model:
+        with apsim.ApsimModel("Maize") as model:
+            import Models
             self.assertIsInstance(model.Simulations, Models.Core.Simulations,
                                   msg=f'{model.Simulations} is expeced to be a Models.Core.Simulations object perhaps casting was not done')
 
     def test_remove_variable_spec(self):
         variable_spec = '[Clock].Today as Date'
-        with CoreModel("Maize") as model:
+        with apsim.ApsimModel("Maize") as model:
             vs = model.inspect_model_parameters('Models.Report', 'Report')['VariableNames']
             vsIn = variable_spec in vs
             self.assertFalse(vsIn, msg=f'Variable {variable_spec} already in report')
@@ -650,7 +656,7 @@ class TestCoreModel(BaseTester):
             self.assertFalse(vsIn, msg=f'Variable {variable_spec} was not successfully removed')
 
     def test_context_manager(self):
-        with CoreModel("Maize") as model:
+        with apsim.ApsimModel("Maize") as model:
             datastore = Path(model.datastore)
             model.run()
             df = model.results

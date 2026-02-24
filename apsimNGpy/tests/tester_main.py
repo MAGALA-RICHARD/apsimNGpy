@@ -6,11 +6,26 @@ from pathlib import Path
 from apsimNGpy.logger import logger
 from apsimNGpy.mailer.mail import send_report
 from apsimNGpy import Apsim
+
 date_STR = datetime.now().strftime("%y-%m-%d-%H-%M-%S")
+from apsimNGpy.config import path_checker
+from apsimNGpy.config import apsim_bin_context, get_apsim_bin_path, set_apsim_bin_path
 
-from apsimNGpy.config import apsim_bin_context, get_apsim_bin_path
+bin_path = get_apsim_bin_path()
 
-bin_path = os.environ.get('TEST_APSIM_BINARY') or get_apsim_bin_path()
+if not path_checker(bin_path):
+    new_path = input(
+        "APSIM binary path is not valid.\n"
+        "Please enter a valid APSIM binary path "
+        "or configure it using apsimNGpy.set_apsim_bin_path(): "
+    ).strip()
+
+    if not path_checker(new_path):
+        raise ValueError(f"Invalid APSIM binary path: {new_path}")
+
+    set_apsim_bin_path(new_path)
+    bin_path = new_path
+
 logger.info('Using apsim bin: {}'.format(bin_path))
 
 
@@ -22,13 +37,13 @@ def run_suite(_bin_path, verbosity_level=2):
     @return: None
     """
     with apsim_bin_context(_bin_path, disk_cache=True) as bin_context:
-        from apsimNGpy.starter.starter import CLR
+        CLR = bin_context.CLR
         from apsimNGpy.tests.unittests import apsimNGpy__init__
         apsim_version = CLR.apsim_compiled_version
         IS_NEW_APSIM = CLR.file_format_modified
         from apsimNGpy.tests.unittests.core import core, data_insights
         from apsimNGpy.tests.unittests.manager import weathermanager, soilmanager, test_get_weather_from_web_filename
-        from apsimNGpy.tests.unittests.core import apsim, senstivitymanager,  model_loader, \
+        from apsimNGpy.tests.unittests.core import apsim, senstivitymanager, model_loader, \
             model_tools, \
             edit_model_by_path, core_edit_model, cs_resources, config, plot_manager
         from apsimNGpy.tests.unittests.optimizer import vars, smp
@@ -57,7 +72,6 @@ def run_suite(_bin_path, verbosity_level=2):
                    data_insights
                    }
         if IS_NEW_APSIM:
-
             from apsimNGpy.tests.unittests.core import experiment
             modules.add(experiment)
             modules = (i for i in modules)

@@ -87,9 +87,7 @@ Make sure you import it in your app, such that the rules are enforced and everyt
 
 .. admonition:: Highlight
 
-    apsimNGpy version **0.39.10.20** introduces a context manager for managing APSIM version efficiently.
-    It allows users to specify a local APSIM-NG installation path for a given script/module while preserving
-    the global default in memory — enabling cleaner multi-version testing or workflow portability without rewriting environment variables. from the above workflow
+    apsimNGpy version **1.5.0** introduces a lazy loader (:class:`~apsimNGpy.Apsim`) for APSIM components dependent on .NET environment and a valid APSIM bin path.
     we can manage our APSIM path in two ways:
 
 1. Use the bin path in the context manager as follows.
@@ -97,42 +95,19 @@ Make sure you import it in your app, such that the rules are enforced and everyt
 .. code-block:: python
 
    from apsimNGpy.core.config import Apsim
-
    with Apsim("C:/APSIM/2025.05.1234/bin") as apsim:
        # All CLR and APSIM assemblies are resolved from this bin path
        with apsim.ApsimModel('Wheat') as model:
          model.run()
 
 
-.. attention::
-
-   The APSIM bin context **must be activated before** importing any modules
-   that rely on ``pythonnet`` or APSIM C# assemblies.
-
-   Once a CLR assembly is loaded, it is cached for the lifetime of the Python
-   process. If APSIM-related modules are imported *before* entering
-   ``apsim_bin_context``, those cached assemblies will continue to be used,
-   and changing the bin path afterward will have **no effect**.
-
-   To avoid this issue, always enter ``apsim_bin_context`` at the **very
-   beginning** of your script or interactive session, before importing:
-
-   Define your APSIM workflows inside **functions** rather than at the
-   module or global scope.  Encapsulating logic within functions helps to clearly separate **local**
-   state from **global** state, reducing unintended side effects caused by
-   module-level imports, cached objects, or persistent runtime state
-   (e.g., ``pythonnet`` and CLR assemblies).
-
-   OR
-
-   It is advisable that you don't mixed direct imports with context depended imports in one script.
-
 
 2. Use the env file in the context manager as follows
 
 .. code-block:: python
 
-    with apsim_bin_context(dotenv_path = './config/.env', bin_key ='APSIM_BIN'): # assumes that .env is in the config directory
+     from apsimNGpy.core.config import Apsim
+     with Apsim(dotenv_path = './config/.env', bin_key ='APSIM_BIN') as apsim: # assumes that .env is in the config directory
          with apsim.ApsimModel('Wheat') as model:
          model.run()
 

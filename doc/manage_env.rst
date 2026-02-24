@@ -137,7 +137,7 @@ specifying any path arguments. See the example below.
      with apsim.ApsimModel('Wheat') as model:
      model.run()
 
-All the apsimNGpy objects exposed via Apsim class are as follows:
+All the apsimNGpy objects exposed via :class:`~apsimNGpy.Apsim` class are as follows:
 
 - :class:`~apsimNGpy.Apsim.ApsimModel` (apsimNGpy.core.apsim)
 - :class:`~apsimNGpy.Apsim.MultiCoreManager` (apsimNGpy.core.mult_cores)

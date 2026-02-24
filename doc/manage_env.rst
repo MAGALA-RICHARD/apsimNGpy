@@ -124,3 +124,25 @@ By using :class:`~apsimNGpy.Apsim`,  we can manage our APSIM path  as follows:
      model = Apsim(dotenv_path = './config/.env', bin_key ='APSIM_BIN') # assumes that .env is in the config directory
      with apsim.ApsimModel('Wheat') as model:
      model.run()
+
+Although the Apsim class allows you to pass a bin_path or load it from a .env file, this is not strictly required.
+If the APSIM executable path has already been defined in config.ini or stored in a globally accessible environment variable, the class
+will automatically resolve and use that path. In this case, you can instantiate the Apsim class directly without
+specifying any path arguments. See the example below.
+
+.. code-block:: python
+
+     from apsimNGpy.core.config import Apsim
+     model = Apsim()
+     with apsim.ApsimModel('Wheat') as model:
+     model.run()
+
+All the apsimNGpy objects exposed via Apsim class are as follows:
+
+- :class:`~apsimNGpy.Apsim.ApsimModel` (apsimNGpy.core.apsim)
+- :class:`~apsimNGpy.Apsim.MultiCoreManager` (apsimNGpy.core.mult_cores)
+- :meth:`~apsimNGpy.Apsimrun_apsim_by_path` (apsimNGpy.core.runner)
+- :meth:`~apsimNGpy.Apsim.run_sensitivity` (apsimNGpy.sensitivity.sensitivity)
+- :class:`~apsimNGpy.ApsimConfigProblem` (apsimNGpy.sensitivity.sensitivity)
+- :class:`~apsimNGpy.Apsim.ExperimentManager` (apsimNGpy.core.experiment)
+- :class:`~apsimNGpy.ApsimSensitivityManager` (apsimNGpy.core.sensitivitymanager)

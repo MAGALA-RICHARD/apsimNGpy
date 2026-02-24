@@ -133,7 +133,7 @@ specifying any path arguments. See the example below.
 .. code-block:: python
 
      from apsimNGpy.core.config import Apsim
-     model = Apsim()
+     apsim = Apsim()
      with apsim.ApsimModel('Wheat') as model:
      model.run()
 

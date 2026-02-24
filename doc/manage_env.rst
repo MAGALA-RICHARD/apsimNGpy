@@ -87,8 +87,9 @@ Make sure you import it in your app, such that the rules are enforced and everyt
 
 .. admonition:: Highlight
 
-    apsimNGpy version **1.5.0** introduces a lazy loader (:class:`~apsimNGpy.Apsim`) for APSIM components dependent on .NET environment and a valid APSIM bin path.
-    we can manage our APSIM path in two ways:
+    apsimNGpy version **1.5.0** introduces a lazy loader (:class:`~apsimNGpy.Apsim`) for apsimNGpy modules dependent on .NET environment and a valid APSIM bin path.
+
+By using :class:`~apsimNGpy.Apsim`,  we can manage our APSIM path  as follows:
 
 1. Use the bin path in the context manager as follows.
 

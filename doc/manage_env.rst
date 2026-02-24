@@ -116,3 +116,11 @@ By using :class:`~apsimNGpy.Apsim`,  we can manage our APSIM path  as follows:
 
     All modules that require .Net or apsim binary path are loaded after initializing Apsim class
 
+:class:`~apsimNGpy.Apsim` can also be used without with key word as follows:
+
+.. code-block:: python
+
+     from apsimNGpy.core.config import Apsim
+     model = Apsim(dotenv_path = './config/.env', bin_key ='APSIM_BIN') # assumes that .env is in the config directory
+     with apsim.ApsimModel('Wheat') as model:
+     model.run()

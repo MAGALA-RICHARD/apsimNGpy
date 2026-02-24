@@ -5,7 +5,7 @@ from datetime import datetime
 from pathlib import Path
 from apsimNGpy.logger import logger
 from apsimNGpy.mailer.mail import send_report
-
+from apsimNGpy import Apsim
 date_STR = datetime.now().strftime("%y-%m-%d-%H-%M-%S")
 
 from apsimNGpy.config import apsim_bin_context, get_apsim_bin_path
@@ -21,8 +21,9 @@ def run_suite(_bin_path, verbosity_level=2):
     @param verbosity_level: level of verbosity for printing stdout messages
     @return: None
     """
-    with apsim_bin_context(_bin_path, disk_cache=False) as bin_context:
+    with apsim_bin_context(_bin_path, disk_cache=True) as bin_context:
         from apsimNGpy.starter.starter import CLR
+        from apsimNGpy.tests.unittests import apsimNGpy__init__
         apsim_version = CLR.apsim_compiled_version
         IS_NEW_APSIM = CLR.file_format_modified
         from apsimNGpy.tests.unittests.core import core, data_insights
@@ -42,6 +43,7 @@ def run_suite(_bin_path, verbosity_level=2):
                    apsim,
                    vars,
                    smp,
+                   apsimNGpy__init__,
                    edit_model_by_path,
                    cs_resources,
                    core_edit_model,

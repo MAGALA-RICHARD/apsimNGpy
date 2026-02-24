@@ -1,23 +1,24 @@
+import gc
 import os
-import shutil
 import unittest
 from pathlib import Path
-import gc
-from apsimNGpy.core.apsim import ApsimModel, Models
 from apsimNGpy.tests.unittests.base_unit_tests import BaseTester
 
 wd = Path.cwd() / "test_apsim"
 wd.mkdir(parents=True, exist_ok=True)
 os.chdir(wd)
+from apsimNGpy import Apsim
 
-Models = Models
+
+apsim = Apsim()
 
 
 class TestCoreModel(BaseTester):
     def setUp(self):
+
         self.out_path = Path(f"{self._testMethodName}.apsimx")
         self.wd = wd
-        self.test_ap_sim = ApsimModel("Maize", out_path=self.out_path)
+        self.test_ap_sim = apsim.ApsimModel("Maize", out_path=self.out_path)
         self.mock_sim_path_name = Path(f"__mock__{self._testMethodName}.apsimx")
         self.thickness_sequence_test_values = [100, 200, 200, 200, 300, 250, 400, 450]
         self.expect_ts_auto = [50.0, 50.0, 50.0, 316.0, 318.0, 319.0, 321.0, 322.0, 324.0, 325.0]
@@ -29,7 +30,7 @@ class TestCoreModel(BaseTester):
 
     def test_ensures_all_simulations_are_loaded(self):
         # this has about 4 simulations
-        with ApsimModel('Report') as model:
+        with apsim.ApsimModel('Report') as model:
             sims = model.simulations_list
             self.assertGreater(len(model), 1)
 
@@ -41,13 +42,13 @@ class TestCoreModel(BaseTester):
         self.assertEqual(pa['returndays'], '3')
 
     def test_editing_nested_simulations(self):
-        with ApsimModel('Report') as model:
+        with apsim.ApsimModel('Report') as model:
             model.edit_model(model_type='Models.Manager', model_name='AutomaticIrrigation', simulations='Seasonal',
                              returndays=3, maximumAmount=21)
             self.helper_nested_sims(model)
 
     def test_edit_nested_simulations_by_path(self):
-        with ApsimModel('Report') as model:
+        with apsim.ApsimModel('Report') as model:
             model.edit_model_by_path('.Simulations.Grouping.Seasonal.Field.AutomaticIrrigation', returndays=3,
                                      maximumAmount=21)
             self.helper_nested_sims(model)
@@ -57,7 +58,7 @@ class TestCoreModel(BaseTester):
         Test that we can graphically represent the model tree elements
 
         """
-        with ApsimModel('Report') as model:
+        with apsim.ApsimModel('Report') as model:
             con = model.tree(console=False)
             false = dict(con) == dict()
             self.assertFalse(false)
@@ -67,12 +68,12 @@ class TestCoreModel(BaseTester):
         test if all clocks for each simulation are successfully inspected by inspect_model method
 
         """
-        with ApsimModel('Report') as model:
-            clk_str= model.inspect_model('Models.Clock')
+        with apsim.ApsimModel('Report') as model:
+            clk_str = model.inspect_model('Models.Clock')
             self.assertEqual(len(clk_str), len(model))
 
     def test_set_params_cultivar(self):
-        with ApsimModel('Maize') as model:
+        with apsim.ApsimModel('Maize') as model:
             model.run()
             # mean 1
             mn1 = model.results.mean(numeric_only=True)
@@ -93,7 +94,7 @@ class TestCoreModel(BaseTester):
     def test_evaluate_simulated_output(self):
         from apsimNGpy.tests.unittests.test_factory import obs
 
-        with ApsimModel('Maize') as model:
+        with apsim.ApsimModel('Maize') as model:
             model.add_report_variable(variable_spec='[Clock].Today.Year as year', report_name='Report')
             model.run()
             metrics = model.evaluate(ref_data=obs, table='Report', index_col=['year'],
@@ -104,7 +105,7 @@ class TestCoreModel(BaseTester):
     def test_evaluate_simulated_output_runtime_error(self):
         from apsimNGpy.tests.unittests.test_factory import obs
 
-        with ApsimModel('Maize') as model:
+        with apsim.ApsimModel('Maize') as model:
             model.add_report_variable(variable_spec='[Clock].Today.Year as year', report_name='Report')
 
             with self.assertRaises(RuntimeError, msg="expected to raise runtime error"):
@@ -114,7 +115,7 @@ class TestCoreModel(BaseTester):
     def test_evaluate_simulated_output_direct_predicted_data_as_table(self):
         from apsimNGpy.tests.unittests.test_factory import obs
 
-        with ApsimModel('Maize') as model:
+        with apsim.ApsimModel('Maize') as model:
             model.add_report_variable(variable_spec='[Clock].Today.Year as year', report_name='Report')
             model.run('Report')
             metrics = model.evaluate(ref_data=obs, table=model.results, index_col=['year'],
@@ -125,7 +126,7 @@ class TestCoreModel(BaseTester):
     def test_evaluate_simulated_output_type_error(self):
         from apsimNGpy.tests.unittests.test_factory import obs
 
-        with ApsimModel('Maize') as model:
+        with apsim.ApsimModel('Maize') as model:
             model.add_report_variable(variable_spec='[Clock].Today.Year as year', report_name='Report')
             model.run()
             with self.assertRaises(TypeError, msg="expected to raise  TypeError"):
@@ -136,7 +137,7 @@ class TestCoreModel(BaseTester):
                                          target_col='Yield', ref_data_col='observed')
 
     def test_context_manager(self):
-        with ApsimModel("Maize") as model:
+        with apsim.ApsimModel("Maize") as model:
             datastore = Path(model.datastore)
             model.run()
             df = model.results
@@ -151,7 +152,7 @@ class TestCoreModel(BaseTester):
         Ensure that changes are occurring with model editing in test context manager
         """
 
-        with ApsimModel('Maize') as model:
+        with apsim.ApsimModel('Maize') as model:
             model.edit_model('Models.Manager', 'Sow using a variable rule', Population=8)
             mn1 = model.run().results.Yield.mean()
             model.edit_model('Models.Manager', 'Sow using a variable rule', Population=9.2)
@@ -168,7 +169,7 @@ class TestCoreModel(BaseTester):
             Ensure that saving apsimx file and reloading within the with block works correctly, and that the file will still be deleted
             """
 
-        with ApsimModel('Maize') as model:
+        with apsim.ApsimModel('Maize') as model:
             model.edit_model('Models.Manager', 'Sow using a variable rule', Population=4)
 
             model.edit_model('Models.Manager', 'Sow using a variable rule', Population=9.2)
@@ -194,7 +195,7 @@ class TestCoreModel(BaseTester):
           which is intended to use a temporary working file and automatically delete it on exit. So, here we are just testing the expected behaviors
             """
 
-        with ApsimModel('Maize') as model:
+        with apsim.ApsimModel('Maize') as model:
             model.edit_model('Models.Manager', 'Sow using a variable rule', Population=4)
             model.edit_model('Models.Manager', 'Sow using a variable rule', Population=9.2)
             fname = f"{self._testMethodName}_with_block.apsimx"
@@ -269,7 +270,7 @@ class TestCoreModel(BaseTester):
             mock_sims.AddChild(i)
         casted_mock_sims = CastHelper.CastAs[Models.Core.Simulations](mock_sims.Model)
         casted_mock_sims.Write(str(self.mock_sim_path_name))
-        load_mocked = ApsimModel(self.mock_sim_path_name, out_path=self.out_path)
+        load_mocked = apsim.ApsimModel(self.mock_sim_path_name, out_path=self.out_path)
         # test it
         load_mocked.get_soil_from_web(simulations=None, lonlat=(-93.045, 42.0541),
                                       thickness_sequence=self.thickness_sequence_test_values)

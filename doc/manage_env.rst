@@ -95,7 +95,7 @@ By using :class:`~apsimNGpy.Apsim`,  we can manage our APSIM path  as follows:
 
 .. code-block:: python
 
-   from apsimNGpy.core.config import Apsim
+   from apsimNGpy import Apsim
    with Apsim("C:/APSIM/2025.05.1234/bin") as apsim:
        # All CLR and APSIM assemblies are resolved from this bin path
        with apsim.ApsimModel('Wheat') as model:
@@ -107,7 +107,7 @@ By using :class:`~apsimNGpy.Apsim`,  we can manage our APSIM path  as follows:
 
 .. code-block:: python
 
-     from apsimNGpy.core.config import Apsim
+     from apsimNGpy import Apsim
      with Apsim(dotenv_path = './config/.env', bin_key ='APSIM_BIN') as apsim: # assumes that .env is in the config directory
          with apsim.ApsimModel('Wheat') as model:
          model.run()
@@ -120,7 +120,7 @@ By using :class:`~apsimNGpy.Apsim`,  we can manage our APSIM path  as follows:
 
 .. code-block:: python
 
-     from apsimNGpy.core.config import Apsim
+     from apsimNGpy import Apsim
      apsim = Apsim(dotenv_path = './config/.env', bin_key ='APSIM_BIN') # assumes that .env is in the config directory
      with apsim.ApsimModel('Wheat') as model:
          model.run()
@@ -132,7 +132,7 @@ specifying any path arguments. See the example below.
 
 .. code-block:: python
 
-     from apsimNGpy.core.config import Apsim
+     from apsimNGpy import Apsim
      apsim = Apsim()
      with apsim.ApsimModel('Wheat') as model:
          model.run()

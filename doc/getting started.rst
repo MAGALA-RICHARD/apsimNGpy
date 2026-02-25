@@ -235,32 +235,35 @@ context manager. This approach is useful for short scripts or interactive sessio
 and assumes that you do **not** import any other ``apsimNGpy`` modules outside of
 the :mod:`~apsimNGpy.config` module before entering the with block as shown below:
 
+
 .. code-block:: python
 
-   from apsimNGpy.config import apsim_bin_context
-   with apsim_bin_context(
-       apsim_bin_path=r"your_apsim_binary_path"):
-       from apsimNGpy.core.apsim import ApsimModel
-       model = ApsimModel("Soybean")
-       df = model.run()
+   from apsimNGpy.core.config import Apsim
+   with Apsim("C:/APSIM/2025.05.1234/bin") as apsim:
+       # All CLR and APSIM assemblies are resolved from this bin path
+       with apsim.ApsimModel('Wheat') as model:
+         model.run()
 
 
-.. note::
 
-   When using the APSIM ``bin`` context manager as shown above, the APSIM binaries
-   are loaded only within the scope of that context, and the global APSIM binary
-   configuration is not modified. This means the same context setup must be applied
-   in each script where ``apsimNGpy`` is used. Whether this is an inconvenience
-   depends on the use case—for example, it can be beneficial if you do not want to
-   modify the global APSIM installation because it is used by other projects, or
-   if you need to test or compare results across specific APSIM versions.
+2. Use the env file in the context manager as follows
 
-.. attention::
+.. code-block:: python
 
-    Due to the way APSIM binaries are initialized globally within the runtime
-    environment, only **one** APSIM ``bin`` context manager can be active at a time.
-    As a result, starting another APSIM ``bin`` context manager within or after an
-    existing one will not behave as expected and may lead to difficult-to-diagnose
-    errors. In simple terms, multiple APSIM ``bin`` context managers cannot be used
-    sequentially or nested within the same process, and attempting to do so is
-    strongly discouraged.
+     from apsimNGpy.core.config import Apsim
+     with Apsim(dotenv_path = './config/.env', bin_key ='APSIM_BIN') as apsim: # assumes that .env is in the config directory
+         with apsim.ApsimModel('Wheat') as model:
+         model.run()
+
+.. admonition:: Highlight
+
+    All modules that require .Net or apsim binary path are loaded after initializing Apsim class
+
+:class:`~apsimNGpy.Apsim` can also be used without `with` key word as follows:
+
+.. code-block:: python
+
+     from apsimNGpy.core.config import Apsim
+     apsim = Apsim(dotenv_path = './config/.env', bin_key ='APSIM_BIN') # assumes that .env is in the config directory
+     with apsim.ApsimModel('Wheat') as model:
+         model.run()

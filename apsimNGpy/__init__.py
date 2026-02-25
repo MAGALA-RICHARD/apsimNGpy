@@ -1,17 +1,17 @@
-"""
-This module does not directly import from `apsimNGpy.core` or `apsimNGpy.starter`
-to avoid errors when PythonNet is not configured or the APSIM binary path is unset.
-
-Instead, it uses `Apsim` class to lazily load and attach the following objects:
-
-- ApsimModel (apsimNGpy.core.apsim)
-- MultiCoreManager (apsimNGpy.core.mult_cores)
-- run_apsim_by_path (apsimNGpy.core.runner)
-- run_sensitivity (apsimNGpy.sensitivity.sensitivity)
-- ConfigProblem (apsimNGpy.sensitivity.sensitivity)
-- ExperimentManager (apsimNGpy.core.experiment)
-- SensitivityManager (apsimNGpy.core.sensitivitymanager)
-"""
+# """
+# This module does not directly import from `apsimNGpy.core` or `apsimNGpy.starter`
+# to avoid errors when PythonNet is not configured or the APSIM binary path is unset.
+#
+# Instead, it uses `Apsim` class to lazily load and attach the following objects:
+#
+# - ApsimModel (apsimNGpy.core.apsim)
+# - MultiCoreManager (apsimNGpy.core.mult_cores)
+# - run_apsim_by_path (apsimNGpy.core.runner)
+# - run_sensitivity (apsimNGpy.sensitivity.sensitivity)
+# - ConfigProblem (apsimNGpy.sensitivity.sensitivity)
+# - ExperimentManager (apsimNGpy.core.experiment)
+# - SensitivityManager (apsimNGpy.core.sensitivitymanager)
+# """
 
 from apsimNGpy.config import (set_apsim_bin_path, get_apsim_bin_path,
                               apsim_bin_context, load_crop_from_disk, configuration, start_pythonnet, DLL_DIR,

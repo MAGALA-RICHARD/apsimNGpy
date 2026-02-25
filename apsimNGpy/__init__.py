@@ -23,18 +23,6 @@ from apsimNGpy.exceptions import ApsimRuntimeError, NodeNotFoundError, TableNotF
 
 _AutoBin = object()
 
-_doc_msg = """
-            Lazy loader for APSIM components dependent on .NET environment and a valid APSIM bin path.
-
-            Avoids direct imports from `apsimNGpy.core` and `apsimNGpy.starter`
-            until PythonNet and the APSIM binary are configured.
-
-            `ApsimRuntime` dynamically exposes:
-            ApsimModel, MultiCoreManager, run_apsim_by_path,
-            run_sensitivity, ConfigProblem,
-            ExperimentManager, SensitivityManager.
-            """
-
 
 # define the run time objects inside a callable class
 # that way even if the APSIM bin configuration is not set packages errors do not affect entry point
@@ -52,6 +40,7 @@ class Apsim(apsim_bin_context):
    run_sensitivity, ConfigProblem,
    ExperimentManager, SensitivityManager.
    """
+
     def __init__(self, apsim_bin_path=_AutoBin, dotenv_path=None, bin_key=None, disk_cache=None):
         if apsim_bin_path is _AutoBin and dotenv_path is None:
             apsim_bin_path = get_apsim_bin_path()

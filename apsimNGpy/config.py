@@ -399,7 +399,7 @@ class Configuration:
 
         .. code-block:: python
 
-            from apsimNGpy.core.config import configuration
+            from apsimNGpy.config import configuration
             configuration.set_temporal_bin_path(r"C:/APSIM/2025.09.01/bin")
             # proceed with imports/execution; assemblies are resolved from that path
 
@@ -484,7 +484,7 @@ def set_apsim_bin_path(path: Union[str, Path],
 
    .. seealso::
 
-           :func:`~apsimNGpy.core.config.get_apsim_bin_path`
+           :func:`~apsimNGpy.config.get_apsim_bin_path`
 
     """
     # Normalize user input

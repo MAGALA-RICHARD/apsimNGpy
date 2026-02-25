@@ -232,7 +232,7 @@ Verifying Successful Configuration
 
 The quickest alternative for all the above is to temporarily provide the APSIM ``bin`` path using a
 context manager. This approach is useful for short scripts or interactive sessions
-and assumes that you do **not** import any other ``apsimNGpy`` modules
+and assumes that you do **not** import any other ``apsimNGpy`` modules as follows:
 
 
 .. code-block:: python

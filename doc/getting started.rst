@@ -280,6 +280,8 @@ and assumes that you do **not** import any other ``apsimNGpy`` modules
 
    from apsimNGpy.config import apsim_bin_context
    with apsim_bin_context(apsim_bin_path ='your/apsim/bin'):
+      # import any module now
       from apsimNgpy.core.apsim import ApsimModel
       model  = ApsimModel('Maize')
       model.run()
+      df =model.results

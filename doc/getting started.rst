@@ -270,3 +270,7 @@ and assumes that you do **not** import any other ``apsimNGpy`` modules
      with apsim.ApsimModel('Soybean') as model:
          model.run()
          df= model.results
+
+.. note::
+
+    :class:`~apsimNGpy.Apsim` was added in version 1.5.0, and extends the capabilities provided by :class:`~apsimNGpy.config.apsim_bin_context`

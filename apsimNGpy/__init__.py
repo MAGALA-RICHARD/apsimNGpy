@@ -30,12 +30,12 @@ _AutoBin = object()
 class Apsim(apsim_bin_context):
     # see apsim_bin_context doc string
     """
-   Lazy loader for APSIM components dependent on .NET environment and a valid APSIM bin path.
+   Lazy loader for APSIM modules dependent on .NET environment and a valid APSIM bin path.
 
    Avoids direct imports from `apsimNGpy.core` and `apsimNGpy.starter`
    until PythonNet and the APSIM binary are configured.
 
-   `ApsimRuntime` dynamically exposes:
+   After initialization, the following objects are loaded
    ApsimModel, MultiCoreManager, run_apsim_by_path,
    run_sensitivity, ConfigProblem,
    ExperimentManager, SensitivityManager.

@@ -92,31 +92,28 @@ class Apsim(apsim_bin_context):
         -----
         - Python.NET assemblies cannot be unloaded from a running process.
           This context only restores path configuration for **future imports**.
-        - Do not nest this context across threads; the underlying configuration
+        - Do not nest this context across different bin paths in the same script; the underlying configuration
           is process-global.
 
         Examples
         --------
         Use an explicit path::
 
-            with apsim_bin_context(r"C:/APSIM/2025.05.1234/bin"):
-                from apsimNGpy.core.apsim import ApsimModel
-                model = ApsimModel(...)
+            with Apsim(r"C:/APSIM/2025.05.1234/bin") as apsim:
+                model = apsim.ApsimModel("Wheat")
 
         Use a ``.env`` file with a custom key::
 
             from pathlib import Path
 
-            with apsim_bin_context(
-                dotenv_path=Path(".env"),
-                bin_key="APSIM_BIN_PATH"
-            ):
-                from apsimNGpy.core.apsim import ApsimModel
+            with Apsim(dotenv_path=Path(".env",
+                bin_key="APSIM_BIN_PATH") as apsim:
+                model =apsim.ApsimModel('Wheat")
 
         Use automatic resolution (``.env`` in project root)::
 
-            with apsim_bin_context():
-                from apsimNGpy.core.apsim import ApsimModel
+            with Apsim() as apsim:
+                 model =apsim.ApsimModel('Wheat")
 
         Verify restoration::
 
@@ -125,9 +122,10 @@ class Apsim(apsim_bin_context):
             with apsim_bin_context(r"C:/APSIM/X.Y.Z/bin"):
                 pass
 
-            assert get_apsim_bin_path() == prev
+            assert get_apsim_bin_path() != prev
 
         .. versionadded:: 0.39.10.20
+
         """
         if apsim_bin_path is _AutoBin and dotenv_path is None:
             apsim_bin_path = get_apsim_bin_path()

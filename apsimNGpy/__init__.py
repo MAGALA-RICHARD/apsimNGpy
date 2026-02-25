@@ -41,6 +41,17 @@ _doc_msg = """
 # this is a refactoring class, I did not want to reconfigure apsim_bin-context
 class Apsim(apsim_bin_context):
     # see apsim_bin_context doc string
+    """
+   Lazy loader for APSIM components dependent on .NET environment and a valid APSIM bin path.
+
+   Avoids direct imports from `apsimNGpy.core` and `apsimNGpy.starter`
+   until PythonNet and the APSIM binary are configured.
+
+   `ApsimRuntime` dynamically exposes:
+   ApsimModel, MultiCoreManager, run_apsim_by_path,
+   run_sensitivity, ConfigProblem,
+   ExperimentManager, SensitivityManager.
+   """
     def __init__(self, apsim_bin_path=_AutoBin, dotenv_path=None, bin_key=None, disk_cache=None):
         if apsim_bin_path is _AutoBin and dotenv_path is None:
             apsim_bin_path = get_apsim_bin_path()

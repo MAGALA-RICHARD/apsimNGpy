@@ -2,10 +2,112 @@
 apsimNGpy: API Reference
 ========================
 
-Apsim
------
+apsimNGpy
+---------
 
-An abstract base class for context managers.
+This module does not directly import from `apsimNGpy.core` or `apsimNGpy.starter`
+to avoid errors when PythonNet is not configured or the APSIM binary path is unset.
+
+Instead, it uses `Apsim` class to lazily load and attach the following objects:
+
+- ApsimModel (apsimNGpy.core.apsim)
+- MultiCoreManager (apsimNGpy.core.mult_cores)
+- run_apsim_by_path (apsimNGpy.core.runner)
+- run_sensitivity (apsimNGpy.sensitivity.sensitivity)
+- ConfigProblem (apsimNGpy.sensitivity.sensitivity)
+- ExperimentManager (apsimNGpy.core.experiment)
+- SensitivityManager (apsimNGpy.core.sensitivitymanager)
+
+Classes
+^^^^^^^
+
+.. py:class:: apsimNGpy.Apsim
+
+   Lazy loader for APSIM components dependent on .NET environment and a valid APSIM bin path.
+
+   Avoids direct imports from `apsimNGpy.core` and `apsimNGpy.starter`
+   until PythonNet and the APSIM binary are configured.
+
+   `ApsimRuntime` dynamically exposes:
+   ApsimModel, MultiCoreManager, run_apsim_by_path,
+   run_sensitivity, ConfigProblem,
+   ExperimentManager, SensitivityManager.
+
+   .. py:method:: apsimNGpy.Apsim.__init__(self, apsim_bin_path=<object object at 0x000001ED21F7A010>, dotenv_path=None, bin_key=None, disk_cache=None)
+
+     Temporarily configure the APSIM-NG *bin* path used by ``apsimNGpy`` so imports
+     (e.g., ``ApsimModel``) can resolve APSIM .NET assemblies. Restores the previous
+     configuration on exit.
+
+     Parameters
+     ----------
+     apsim_bin_path : str | os.PathLike | None, optional, default is AUTO, meaning it will retrieve an already set bin path
+         Explicit path to the APSIM ``bin`` directory (e.g.,
+         ``C:/APSIM/2025.05.1234/bin`` or ``/opt/apsim/2025.05.1234/bin``).
+         Used if no valid value is resolved from ``dotenv_path``.
+     dotenv_path : str | os.PathLike | None, optional
+         Path to a ``.env`` file to load *before* resolution. If provided, the
+         manager will read (in order): ``bin_key`` (if non-empty), then
+         ``APSIM_BIN_PATH``, then ``APSIM_MODEL_PATH`` from that file.
+     bin_key : str, default ''
+         Custom environment variable name to read from the loaded ``.env``
+         (e.g., ``"APSIM_BIN_PATH_2025"``). Ignored when empty.
+     disk_cache: bool, default False
+          if True, apsim_bin_path will be sent config.ini file
+
+
+     Returns
+     -------
+     class object with the following apsimNGpy runtime attributes:
+         - ApsimModel from apsimNGpy.core.apsim
+         - MultiCoreManager from apsimNGpy.core.mult_cores
+         - run_apsim_by_path from apsimNGpy.core.runner
+         - run_sensitivity  from apsimNGpy.senstivity.sensitivity
+         - ConfigProblem  from apsimNGpy.senstivity.sensitivity
+         - ExperimentManager from apsimNGpy.core.experiment
+         - SensitivityManager from apsimNGpy.core.senstivitymanager
+
+     Raises
+     ------
+     ValueError
+         If no path can be resolved from ``dotenv_path``, ``apsim_bin_path``,
+         or the process environment.
+     FileNotFoundError
+         If the resolved path does not exist.
+
+     Notes
+     -----
+     - Python.NET assemblies cannot be unloaded from a running process; this
+       context only restores path configuration for **future** imports.
+     - Do not nest this context across threads; the underlying config is global.
+
+     Examples
+     --------
+     Use an explicit path::
+
+        with apsim_bin_context(r"C:/APSIM/2025.05.1234/bin"):
+          from apsimNGpy.core.apsim import ApsimModel
+          model = ApsimModel(...)
+
+     Use a .env file with a custom key::
+
+         from pathlib import Path
+         with apsim_bin_context(dotenv_path=Path(".env"), bin_key="APSIM_BIN_PATH"):
+              from apsimNGpy.core.apsim import ApsimModel
+
+    If you have .env files located in the root of your script::
+
+      with apsim_bin_context():
+          from apsimNGpy.core.apsim import ApsimModel
+
+     Verify restoration::
+
+         prev = get_apsim_bin_path()
+         with apsim_bin_context(r"C:/APSIM/X.Y.Z/bin"):
+
+         assert get_apsim_bin_path() == prev
+
+   added in v0.39.10.20+
 
 apsimNGpy.config
 ----------------
@@ -468,7 +570,7 @@ Classes
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.update_mgt`
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.update_mgt_by_path`
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.__init__(self, model: Union[os.PathLike, dict, str], out_path: Union[str, pathlib.Path] = <object object at 0x000001ED8EC5A430>, set_wd=None, **kwargs)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.__init__(self, model: Union[os.PathLike, dict, str], out_path: Union[str, pathlib.Path] = <object object at 0x000001ED21F7A430>, set_wd=None, **kwargs)
 
    Initialize self.  See help(type(self)) for accurate signature.
 
@@ -948,7 +1050,7 @@ Classes
    self : object
        Returns the updated ApsimModel instance.
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.save(self, file_name: 'Union[str, Path]' = <object object at 0x000001EDBCA54DB0>, reload=True) (inherited)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.save(self, file_name: 'Union[str, Path]' = <object object at 0x000001ED4FE58DB0>, reload=True) (inherited)
 
    Saves the current APSIM NG model (``Simulations``) to disk and refresh runtime state.
 
@@ -3069,7 +3171,7 @@ Classes
    ---------------------------------------------------------------------------
    returns an array of the parameter values
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x000001EDBCA54DB0>) (inherited)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x000001ED4FE58DB0>) (inherited)
 
    Inspect the model types and returns the model paths or names.
 
@@ -4196,7 +4298,7 @@ Classes
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.update_mgt`
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.update_mgt_by_path`
 
-   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.__init__(self, model, out_path=<object object at 0x000001ED8EC5A430>)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.__init__(self, model, out_path=<object object at 0x000001ED21F7A430>)
 
    Initialize self.  See help(type(self)) for accurate signature.
 
@@ -4979,7 +5081,7 @@ Classes
    self : object
        Returns the updated ApsimModel instance.
 
-   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.save(self, file_name: 'Union[str, Path]' = <object object at 0x000001EDBCA54DB0>, reload=True) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.save(self, file_name: 'Union[str, Path]' = <object object at 0x000001ED4FE58DB0>, reload=True) (inherited)
 
    Saves the current APSIM NG model (``Simulations``) to disk and refresh runtime state.
 
@@ -7100,7 +7202,7 @@ Classes
    ---------------------------------------------------------------------------
    returns an array of the parameter values
 
-   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x000001EDBCA54DB0>) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x000001ED4FE58DB0>) (inherited)
 
    Inspect the model types and returns the model paths or names.
 
@@ -9309,7 +9411,7 @@ Functions
 
    Return True if obj looks like a DB connection.
 
-.. py:function:: apsimNGpy.core.runner.run_apsim_by_path(model: 'Union[str, Path, Iterable[str], Iterable[Path]]', *, bin_path: 'Union[str, Path, object]' = <object object at 0x000001EDBCA54FB0>, timeout: 'int' = 800, n_cores: 'int' = -1, verbose: 'bool' = False, to_csv: 'bool' = False) -> 'subprocess.CompletedProcess[str]'
+.. py:function:: apsimNGpy.core.runner.run_apsim_by_path(model: 'Union[str, Path, Iterable[str], Iterable[Path]]', *, bin_path: 'Union[str, Path, object]' = <object object at 0x000001ED4FE58FB0>, timeout: 'int' = 800, n_cores: 'int' = -1, verbose: 'bool' = False, to_csv: 'bool' = False) -> 'subprocess.CompletedProcess[str]'
 
    Execute an APSIM model safely and reproducibly.
 
@@ -9374,7 +9476,7 @@ Functions
    RuntimeError
        If APSIM returns a non-zero exit code.
 
-.. py:function:: apsimNGpy.core.runner.run_model_externally(model: 'Union[Path, str]', *, apsim_bin_path: 'Optional[Union[Path, str]]' = <object object at 0x000001EDBCA54FB0>, verbose: 'bool' = False, to_csv: 'bool' = False, timeout: 'int' = 20, cpu_count=-1, cwd: 'Optional[Union[Path, str]]' = None) -> 'subprocess.CompletedProcess[str]'
+.. py:function:: apsimNGpy.core.runner.run_model_externally(model: 'Union[Path, str]', *, apsim_bin_path: 'Optional[Union[Path, str]]' = <object object at 0x000001ED4FE58FB0>, verbose: 'bool' = False, to_csv: 'bool' = False, timeout: 'int' = 20, cpu_count=-1, cwd: 'Optional[Union[Path, str]]' = None) -> 'subprocess.CompletedProcess[str]'
 
    Run APSIM externally (cross-platform) with safe defaults.
 
@@ -9582,7 +9684,7 @@ Classes
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.update_mgt`
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.update_mgt_by_path`
 
-   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.__init__(self, model, out_path=<object object at 0x000001ED8EC5A430>)
+   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.__init__(self, model, out_path=<object object at 0x000001ED21F7A430>)
 
    Initialize self.  See help(type(self)) for accurate signature.
 
@@ -10301,7 +10403,7 @@ Classes
    self : object
        Returns the updated ApsimModel instance.
 
-   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.save(self, file_name: 'Union[str, Path]' = <object object at 0x000001EDBCA54DB0>, reload=True) (inherited)
+   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.save(self, file_name: 'Union[str, Path]' = <object object at 0x000001ED4FE58DB0>, reload=True) (inherited)
 
    Saves the current APSIM NG model (``Simulations``) to disk and refresh runtime state.
 
@@ -12422,7 +12524,7 @@ Classes
    ---------------------------------------------------------------------------
    returns an array of the parameter values
 
-   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x000001EDBCA54DB0>) (inherited)
+   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x000001ED4FE58DB0>) (inherited)
 
    Inspect the model types and returns the model paths or names.
 

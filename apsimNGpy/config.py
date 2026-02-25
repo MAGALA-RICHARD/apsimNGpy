@@ -289,7 +289,7 @@ def get_apsim_bin_path():
 
     .. seealso::
 
-           :func:`~apsimNGpy.core.config.set_apsim_bin_path`
+           :func:`~apsimNGpy.config.set_apsim_bin_path`
 
 
     """
@@ -406,8 +406,8 @@ class Configuration:
 
         .. seealso::
 
-           :func:`~apsimNGpy.core.config.get_apsim_bin_path`
-           :func:`~apsimNGpy.core.config.set_apsim_bin_path`
+           :func:`~apsimNGpy.config.get_apsim_bin_path`
+           :func:`~apsimNGpy.config.set_apsim_bin_path`
 
 
 
@@ -765,20 +765,20 @@ class apsim_bin_context(AbstractContextManager):
                 Use a .env file with a custom key::
 
                     from pathlib import Path
-                    with apsim_bin_context(dotenv_path=Path(".env"), bin_key="APSIM_BIN_PATH"):
-                         from apsimNGpy.core.apsim import ApsimModel
+                    with apsim_bin_context(dotenv_path=Path(".env"), bin_key="APSIM_BIN_PATH") as apsim:
+                         model  = apsim.ApsimModel('Maize")
 
                If you have .env files located in the root of your script::
 
-                 with apsim_bin_context():
-                     from apsimNGpy.core.apsim import ApsimModel
+                 with apsim_bin_context() as apsim:
+                     model  = apsim.ApsimModel('Maize")
+                     model.run()
 
                 Verify restoration::
 
                     prev = get_apsim_bin_path()
                     with apsim_bin_context(r"C:/APSIM/X.Y.Z/bin"):
-
-                    assert get_apsim_bin_path() == prev
+                        assert get_apsim_bin_path() != prev
 
               added in v0.39.10.20+
                 """

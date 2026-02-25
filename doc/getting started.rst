@@ -238,9 +238,9 @@ the :mod:`~apsimNGpy.config` module before entering the with block as shown belo
 
 .. code-block:: python
 
-   from apsimNGpy.core.config import Apsim
+   from apsimNGpy import Apsim
    with Apsim("C:/APSIM/2025.05.1234/bin") as apsim:
-       # All CLR and APSIM assemblies are resolved from this bin path
+       # all apsimNGpy objects are loaded loaded to the instantiated Apsim class object
        with apsim.ApsimModel('Wheat') as model:
          model.run()
 
@@ -250,7 +250,7 @@ the :mod:`~apsimNGpy.config` module before entering the with block as shown belo
 
 .. code-block:: python
 
-     from apsimNGpy.core.config import Apsim
+     from apsimNGpy import Apsim
      with Apsim(dotenv_path = './config/.env', bin_key ='APSIM_BIN') as apsim: # assumes that .env is in the config directory
          with apsim.ApsimModel('Wheat') as model:
          model.run()
@@ -263,7 +263,7 @@ the :mod:`~apsimNGpy.config` module before entering the with block as shown belo
 
 .. code-block:: python
 
-     from apsimNGpy.core.config import Apsim
+     from apsimNGpy import Apsim
      apsim = Apsim(dotenv_path = './config/.env', bin_key ='APSIM_BIN') # assumes that .env is in the config directory
-     with apsim.ApsimModel('Wheat') as model:
+     with apsim.ApsimModel('Soybean') as model:
          model.run()

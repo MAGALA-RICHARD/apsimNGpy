@@ -273,7 +273,7 @@ and assumes that you do **not** import any other ``apsimNGpy`` modules as follow
 
 .. note::
 
-    :class:`~apsimNGpy.Apsim` was added in version 1.5.0, and extends the capabilities provided by :class:`~apsimNGpy.config.apsim_bin_context`
+    :class:`~apsimNGpy.Apsim` class was added in version 1.5.0, and extends the capabilities provided by :class:`~apsimNGpy.config.apsim_bin_context`
     Therefore, if you are still using prior versions, you should use apsim_bin_context as follows:
 
 .. code-block:: python

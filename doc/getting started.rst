@@ -274,14 +274,14 @@ and assumes that you do **not** import any other ``apsimNGpy`` modules
 .. note::
 
     :class:`~apsimNGpy.Apsim` was added in version 1.5.0, and extends the capabilities provided by :class:`~apsimNGpy.config.apsim_bin_context`
-    Therefore, if you are still using older prior versions, you should use apsim_bin_context as follows
+    Therefore, if you are still using prior versions, you should use apsim_bin_context as follows:
 
 .. code-block:: python
 
    from apsimNGpy.config import apsim_bin_context
    with apsim_bin_context(apsim_bin_path ='your/apsim/bin'):
       # import any module now
-      from apsimNgpy.core.apsim import ApsimModel
+      from apsimNGpy.core.apsim import ApsimModel
       model  = ApsimModel('Maize')
       model.run()
       df =model.results

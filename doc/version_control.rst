@@ -37,5 +37,5 @@ The ``apsimNGpy`` package is designed to interface with any version of the APSIM
 
 .. tip::
 
-   An untested version may still work. If you want to try a version that has not yet been tested, give it a try first.
+   Recent automated unit testing has yielded sustained 100% success rates across the new APSIM versions, reflecting increasing stability of the APSIM API relied upon by apsimNGpy. This implies that  even untested versions may still work. If you want to try a version that has not yet been tested, give it a try first.
    If it fails, please report it as an issue for prompt attention.

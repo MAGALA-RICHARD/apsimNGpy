@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from apsimNGpy.config import apsim_bin_context, configuration
+from apsimNGpy.config import apsim_bin_context, configuration, get_apsim_bin_path
 import time
 
 bin_path = Path(os.environ.get('TEST_APSIM_BINARY'))
@@ -15,13 +15,13 @@ def edit_weather(model):
 
 
 if __name__ == '__main__':
-    # set the database where data will be stores
+    # set the database where data will be stored
     db = (Path.home() / "test_agg_3.db").resolve()
     # get the APSIM binary path
 
     logger.info(configuration.bin_path, )
     bn = bin_path
-    with apsim_bin_context(bn, disk_cache=False) as ap:
+    with apsim_bin_context(get_apsim_bin_path(), disk_cache=False) as ap:
         time.sleep(2)
         from apsimNGpy.core.mult_cores import MultiCoreManager
 
@@ -34,7 +34,7 @@ if __name__ == '__main__':
         Parallel = MultiCoreManager(db_path=db, agg_func='mean', table_prefix='di', )
         # define the batch simulation jobs
         jobs = ({'model': 'Maize', 'ID': i, 'payload': [{'path': '.Simulations.Simulation.Field.Fertilise at sowing',
-                                                         'Amount': i}]} for i in range(200, 302))
+                                                         'Amount': i}]} for i in range(0, 500))
         start = time.perf_counter()
         # run all the jobs defined above
         Parallel.run_all_jobs(jobs=jobs, n_cores=10, engine='csharp', threads=False, chunk_size=100,

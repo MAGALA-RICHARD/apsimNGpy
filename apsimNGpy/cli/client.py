@@ -59,7 +59,7 @@ def run() -> str:
 def inspect(_model:str):
     response = requests.get(f"{BASE_URL}/inspect", json={"_model": _model})
     if response.ok:
-        typer.echo(f"Detected: {response.json()["model_inspect"]}")
+        typer.echo(f"Detected: {response.json()['model_inspect']}")
     else:
         typer.echo("No model inspected.")
 

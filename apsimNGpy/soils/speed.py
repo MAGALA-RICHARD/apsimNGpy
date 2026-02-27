@@ -150,7 +150,7 @@ class SoilManager:
             soil_series = sdf['componentname'].iloc[0]
             mu_name = sdf['muname'].iloc[0]
         else:
-            raise KeyError(f'{soil_series} not any of the available ones: {', '.join(sdf.componentname.unique())}')
+            raise KeyError(f"{soil_series} not any of the available ones: {', '.join(sdf.componentname.unique())}")
 
         soil_profile = OrganiseSoilProfile(sdf, thickness_values=thickness_sequence)
 

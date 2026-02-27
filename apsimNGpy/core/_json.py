@@ -153,7 +153,7 @@ class JsonUtilities:
 
                     else:
                         raise AttributeError(
-                            f"no valid Clock attributes were passed. Valid arguments are: '{", ".join(validated.keys())}'")
+                            f"no valid Clock attributes were passed. Valid arguments are: '{', '.join(validated.keys())}'")
 
             case "Models.Climate.Weather" | Models.Climate.Weather:
                 met_file = kwargs.get('weather_file') or kwargs.get('met_file')

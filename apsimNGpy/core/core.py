@@ -1421,7 +1421,7 @@ class CoreModel(PlotManager):
 
             else:
                 raise AttributeError(
-                    f"no valid Clock attributes were passed. Valid arguments are: '{", ".join(validated.keys())}'")
+                    f"no valid Clock attributes were passed. Valid arguments are: '{', '.join(validated.keys())}'")
 
     @staticmethod
     def _set_weather_path(model_instance, param_values: dict, verbose=False):
@@ -1691,9 +1691,8 @@ class CoreModel(PlotManager):
                 self._set_report_vars(values, param_values=kwargs, verbose=verbose)
             case Models.Surface.SurfaceOrganicMatter:
                 if kwargs == {}:
-                    raise ValueError(f"Please supply at least one parameter: value \n '{', '.join({'SurfOM',
-                                                                                                   'InitialCPR', 'InitialResidueMass',
-                                                                                                   'InitialCNR', 'IncorporatedP', })}' for {path}")
+                    accepted_params = {'SurfOM', 'InitialCPR', 'InitialResidueMass', 'InitialCNR', 'IncorporatedP'}
+                    raise ValueError(f"Please supply at least one parameter: value \n '{', '.join(sorted(accepted_params))}' for {path}")
                 self._set_surface_organic_matter(values, param_values=kwargs, verbose=verbose)
             case _:
                 raise NotImplementedError(f"No edit method implemented for model type {type(values)}")

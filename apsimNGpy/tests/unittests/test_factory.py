@@ -7,7 +7,7 @@ from shutil import copy2, rmtree
 import numpy as np
 import pandas as pd
 
-from apsimNGpy.core.config import load_crop_from_disk
+from apsimNGpy.config import load_crop_from_disk
 from apsimNGpy.starter.starter import is_file_format_modified, CLR
 from apsimNGpy.core_utils import timer
 

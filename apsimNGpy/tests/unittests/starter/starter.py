@@ -10,7 +10,7 @@ import unittest
 from pathlib import Path
 from typing import Union
 from apsimNGpy.starter import starter
-from apsimNGpy.core.config import locate_model_bin_path, configuration
+from apsimNGpy.config import locate_model_bin_path, configuration
 from apsimNGpy.starter.starter import CLR
 # --------------apsimNGpy related modules________________________
 from apsimNGpy.exceptions import ApsimBinPathConfigError

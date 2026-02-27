@@ -1,9 +1,10 @@
+import os
 import unittest
 from pathlib import Path
 from os.path import realpath
-
+import shutil
 from apsimNGpy.core.apsim import ApsimModel
-from apsimNGpy.core.config import load_crop_from_disk
+from apsimNGpy.config import load_crop_from_disk
 from apsimNGpy.exceptions import NodeNotFoundError
 
 # -----------------------------
@@ -15,22 +16,26 @@ Clock = ".Simulations.Simulation.Clock"
 Weather = '.Simulations.Simulation.Weather'
 Organic = '.Simulations.Simulation.Field.Soil.Organic'
 cultivar_path = '.Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_100'
-cultivar_path_soybean ='.Simulations.Simulation.Field.Soybean.Cultivars.Generic.Generic_MG2'
+cultivar_path_soybean = '.Simulations.Simulation.Field.Soybean.Cultivars.Generic.Generic_MG2'
 cultivar_path_for_sowed_soybean = '.Simulations.Simulation.Field.Soybean.Cultivars.Australia.Davis'
 cultivar_path_for_sowed_maize = ".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82"
 # Create weather file on disk
 met_file = realpath(Path('wf.met'))
 met_file = load_crop_from_disk('AU_Goondiwindi', out=met_file, suffix='.met')
+mf = load_crop_from_disk('AU_Goondiwindi', out=met_file, suffix='.met')
 
 
 class TestEditModelByPath(unittest.TestCase):
+    def setUp(self) -> None:
+        put = Path(f'met-file{self._testMethodName}.met').resolve()
+        src = load_crop_from_disk('AU_Goondiwindi', out=put, suffix='.met')
+        self.met_file_copy = src
 
     # ---------------------------------------------------
     # Test editing a cultivar and verifying rename + update
     # ---------------------------------------------------
     def test_edit_cultivar_path_sowed_true(self):
         with ApsimModel('Maize') as model:
-
             model.edit_model_by_path(
                 path=cultivar_path_for_sowed_maize,
                 commands='[Grain].MaximumGrainsPerCob.FixedValue',
@@ -48,12 +53,11 @@ class TestEditModelByPath(unittest.TestCase):
     # ---------------------------------------------------
     def test_edit_model_by_path(self):
         with ApsimModel('Maize') as apsim:
-
             # Apply edits
             apsim.edit_model_by_path(Fertilise_at_sowing, Amount=12)
             apsim.edit_model_by_path(Clock, start_date='01/01/2020')
             apsim.edit_model_by_path(SurfaceOrganicMatter, InitialCNR=100)
-            apsim.edit_model_by_path(Weather, weather_file=realpath(met_file))
+            apsim.edit_model_by_path(Weather, weather_file=realpath(self.met_file_copy))
             apsim.edit_model_by_path(Organic, Carbon=1.23)
 
             # Inspect updated values
@@ -153,7 +157,6 @@ class TestEditModelByPath(unittest.TestCase):
 
     def test_edited_cultivar_is_updated_to_manager_soy(self):
         with ApsimModel('Soybean') as model:
-
             model.edit_model_by_path(
                 path=cultivar_path_soybean,
                 commands='[Grain].MaximumGrainsPerCob.FixedValue',
@@ -179,6 +182,7 @@ class TestEditModelByPath(unittest.TestCase):
                     manager_path='.Simulations.Simulation.Field.Sow using a variable rule',
                     manager_param=None,
                     rename='edit-added')
+
     # ---------------------------------------------------
     # Ensure if updating a cultivar path to manger is given but not the parameter holder, raise values error
     # ---------------------------------------------------
@@ -190,7 +194,7 @@ class TestEditModelByPath(unittest.TestCase):
                     path=cultivar_path_soybean,
                     commands='[Grain].MaximumGrainsPerCob.FixedValue',
                     values=50,
-                   sowed=True,
+                    sowed=True,
                     manager_path='.Simulations.Simulation.Field.Sow using a variable rule',
                     manager_param=None,
                     rename='edit-added')
@@ -239,7 +243,12 @@ class TestEditModelByPath(unittest.TestCase):
             value = params['[Grain].MaximumGrainsPerCob.FixedValue']
             self.assertEqual(value, '50', 'editing cultivar failed')
 
+    def tearDown(self):
+        try:
+            Path(self.met_file_copy).unlink(missing_ok=True)
+        except PermissionError:
+            pass
+
 
 if __name__ == '__main__':
     unittest.main()
-

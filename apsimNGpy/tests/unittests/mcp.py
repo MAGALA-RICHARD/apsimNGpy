@@ -5,11 +5,8 @@ import time
 from apsimNGpy import Apsim
 
 bin_path = Path(os.environ.get('TEST_APSIM_BINARY'))
-bp =r'C:\Users\rmagala\AppData\Local\Programs\APSIM2026.2.7989.0\bin'
+bp = bin_path
 from apsimNGpy.logger import logger
-
-apsim = Apsim(bp)
-
 
 def edit_weather(model):
     model.get_weather_from_web(lonlat=(-92.034, 42.012), start=1989, end=2020, source='daymet',
@@ -32,23 +29,24 @@ if __name__ == '__main__':
     workspace = Path('D:/')
     os.chdir(workspace)
     # initialize the API
-    Parallel = apsim.MultiCoreManager(db_path=db, agg_func='mean', table_prefix='di', )
-    # define the batch simulation jobs
-    jobs = ({'model': 'Maize', 'ID': i, 'payload': [{'path': '.Simulations.Simulation.Field.Fertilise at sowing',
-                                                     'Amount': i}]} for i in range(0, 200))
-    start = time.perf_counter()
-    # run all the jobs defined above
-    Parallel.run_all_jobs(jobs=jobs, n_cores=10, engine='python', threads=False, chunk_size=100,
-                          subset=['Yield'], callback=edit_weather,
-                          progressbar=True)
-    # extract the results
-    dff = Parallel.results
-    print(dff.shape)
-    print(time.perf_counter() - start)
-    import matplotlib.pyplot as plt
+    with Apsim(bp) as apsim:
+        Parallel = apsim.MultiCoreManager(db_path=db, agg_func='mean', table_prefix='di', )
+        # define the batch simulation jobs
+        jobs = ({'model': 'Maize', 'ID': i, 'payload': [{'path': '.Simulations.Simulation.Field.Fertilise at sowing',
+                                                         'Amount': i}]} for i in range(0, 200))
+        start = time.perf_counter()
+        # run all the jobs defined above
+        Parallel.run_all_jobs(jobs=jobs, n_cores=10, engine='python', threads=False, chunk_size=100,
+                              subset=['Yield'], callback=edit_weather,
+                              progressbar=True)
+        # extract the results
+        dff = Parallel.results
+        print(dff.shape)
+        print(time.perf_counter() - start)
+        import matplotlib.pyplot as plt
 
-    Parallel.relplot(x='Amount', y='Yield')
-    plt.show()
-    print(configuration.bin_path)
+        Parallel.relplot(x='Amount', y='Yield')
+        plt.show()
+        print(configuration.bin_path)
 
-# using a context manager to load APSIM
+    # using a context manager to load APSIM

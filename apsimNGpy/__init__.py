@@ -12,6 +12,8 @@
 # - ExperimentManager (apsimNGpy.core.experiment)
 # - SensitivityManager (apsimNGpy.core.sensitivitymanager)
 # """
+import os
+from pathlib import Path
 
 from apsimNGpy.config import (set_apsim_bin_path, get_apsim_bin_path,
                               apsim_bin_context, load_crop_from_disk, configuration, start_pythonnet, DLL_DIR,
@@ -27,7 +29,7 @@ _AutoBin = object()
 # define the run time objects inside a callable class
 # that way even if the APSIM bin configuration is not set packages errors do not affect entry point
 # this is a refactoring class, I did not want to reconfigure apsim_bin-context
-class Apsim(apsim_bin_context):
+class Apsim:
     # see apsim_bin_context doc string
     """
    Lazy loader for APSIM modules dependent on .NET environment and a valid APSIM bin path.
@@ -41,7 +43,7 @@ class Apsim(apsim_bin_context):
    ExperimentManager, SensitivityManager.
    """
 
-    def __init__(self, apsim_bin_path=_AutoBin, dotenv_path=None, bin_key=None, disk_cache=None):
+    def __init__(self, apsim_bin_path=_AutoBin, dotenv_path=None, bin_key=None):
         """
         Temporarily configure the APSIM-NG ``bin`` path used by ``apsimNGpy``
 
@@ -61,10 +63,6 @@ class Apsim(apsim_bin_context):
             Custom environment variable name to read from the loaded ``.env``
             file (e.g., ``"APSIM_BIN_PATH_2025"``). Ignored when empty.
             Default is ``""``.
-
-        disk_cache : bool, optional
-            If ``True``, the resolved ``apsim_bin_path`` is persisted to
-            the local ``config.ini`` file. Default is ``False``.
 
         Returns
         -------
@@ -127,12 +125,90 @@ class Apsim(apsim_bin_context):
         .. versionadded:: 0.39.10.20
 
         """
-        if apsim_bin_path is _AutoBin and dotenv_path is None:
+        self._previous = configuration.bin_path
+        # Case 1: Explicit APSIM path provided
+        if apsim_bin_path is not None and apsim_bin_path is not _AutoBin:
+            apsim_bin_path = Path(apsim_bin_path).resolve()
+
+        # Case 2: dotenv provided (and explicit path not provided)
+        elif isinstance(dotenv_path, (str, Path)):
+            dep = Path(dotenv_path).resolve()
+
+            if not dep.exists():
+                raise FileNotFoundError(
+                    f"Cannot find specified env path {dotenv_path} on disk"
+                )
+
+            from dotenv import load_dotenv
+            load_dotenv(dotenv_path=dep)
+
+            apsim_bin_path = (
+
+                os.getenv("APSIM_BIN_PATH")
+                or os.getenv("APSIM_MODEL_PATH")
+            ) if not bin_key else os.getenv(str(bin_key))
+
+            if apsim_bin_path is None:
+                raise EnvironmentError(
+                    f"Could not find APSIM bin path in {dep}"
+                )
+
+            apsim_bin_path = Path(apsim_bin_path).resolve()
+
+        # Case 3: Auto-detect
+        elif apsim_bin_path is _AutoBin:
             apsim_bin_path = get_apsim_bin_path()
-            # since we are getting from config.ini file, disk_cache should be False too
-            disk_cache = False
-        # if the above condition is false, it implies that apsim_bin_path will be retrieved on global environment variables
-        super().__init__(apsim_bin_path, dotenv_path=dotenv_path, bin_key=bin_key, disk_cache=disk_cache)
+
+        # Case 4: Nothing provided
+        else:
+            raise ValueError(
+                "Specify either apsim_bin_path, dotenv_path, or use _AutoBin."
+            )
+        configuration.bin_path = apsim_bin_path
+
+        # import apsimNGpy objects to attach
+        from apsimNGpy.core.apsim import ApsimModel
+        from apsimNGpy.core.mult_cores import MultiCoreManager
+        from apsimNGpy.core.runner import run_apsim_by_path
+        from apsimNGpy.senstivity.sensitivity import run_sensitivity, ConfigProblem
+        from apsimNGpy.core.experiment import ExperimentManager
+        from apsimNGpy.core.senstivitymanager import SensitivityManager
+        from apsimNGpy.starter.starter import CLR
+        from apsimNGpy.core import model_tools
+        from apsimNGpy.core.model_loader import get_node_by_path, get_node_and_type
+
+        # attach APSIM engine attributes
+        self.ApsimModel = ApsimModel
+        self.MultiCoreManager = MultiCoreManager
+        self.run_apsim_by_path = run_apsim_by_path
+        self.run_sensitivity = run_sensitivity
+        self.ConfigProblem = ConfigProblem
+        self.ExperimentManager = ExperimentManager
+        self.SensitivityManager = SensitivityManager
+        self.CLR = CLR
+        self.model_tools = model_tools
+        self.get_node_by_path = get_node_by_path
+        self.get_node_and_type = get_node_and_type
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """
+        Context manager exit hook.
+
+        This method intentionally performs no action.
+
+        After several tests,I have come to a conclusion that APSIM binaries (via Python.NET) cannot be unloaded from a running
+        process once the CLR has been initialized. As a result, switching
+        or reloading different APSIM binary versions within the same
+        process is not supported.
+
+        The context manager therefore does not attempt any cleanup or
+        restoration of the loaded assemblies. It exists only to preserve
+        backward compatibility.
+        """
+        configuration.bin_path = self._previous
 
 
 __all__ = [
@@ -159,7 +235,7 @@ __all__ = [
 ]
 
 if __name__ == '__main__':
-    with Apsim() as apsim:
+    with Apsim(dotenv_path='../.env', bin_key=7990) as apsim:
         with apsim.ApsimModel('Maize') as m:
             m.run(verbose=True)
             print(m.results)

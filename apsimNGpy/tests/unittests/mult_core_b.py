@@ -37,7 +37,7 @@ if __name__ == '__main__':
                                                          'Amount': i}]} for i in range(0, 500))
         start = time.perf_counter()
         # run all the jobs defined above
-        Parallel.run_all_jobs(jobs=jobs, n_cores=10, engine='csharp', threads=False, chunk_size=100,
+        Parallel.run_all_jobs(jobs=jobs, n_cores=10, engine='python', threads=False, chunk_size=100,
                               subset=['Yield'], callback=edit_weather,
                               progressbar=True)
         # extract the results

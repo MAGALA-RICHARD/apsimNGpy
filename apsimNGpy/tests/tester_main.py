@@ -36,7 +36,7 @@ def run_suite(_bin_path, verbosity_level=2):
     @param verbosity_level: level of verbosity for printing stdout messages
     @return: None
     """
-    with apsim_bin_context(_bin_path, disk_cache=True) as bin_context:
+    with Apsim(_bin_path) as bin_context:
         CLR = bin_context.CLR
         from apsimNGpy.tests.unittests import apsimNGpy__init__
         apsim_version = CLR.apsim_compiled_version

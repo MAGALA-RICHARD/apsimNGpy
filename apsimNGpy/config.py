@@ -323,8 +323,10 @@ class Configuration:
 
     """
     bin_path: Union[str, Path] = None
+    _bin_path: Union[str, Path, None]=None
 
     def __post_init__(self):
+        self._bin_path = get_apsim_bin_path()
         if self.bin_path is None:
             self.bin_path = get_apsim_bin_path()
         temporal_bin = os.environ.get(TEMPORAL_BIN_ENV_KEY, None)

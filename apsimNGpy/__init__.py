@@ -15,7 +15,7 @@
 import os
 from pathlib import Path
 
-from apsimNGpy.config import (set_apsim_bin_path, get_apsim_bin_path,
+from apsimNGpy.config import (set_apsim_bin_path, get_apsim_bin_path, path_checker,
                               apsim_bin_context, load_crop_from_disk, configuration, start_pythonnet, DLL_DIR,
                               Configuration, locate_model_bin_path, scan_dir_for_bin, auto_detect_apsim_bin_path)
 from apsimNGpy.logger import logger
@@ -144,8 +144,8 @@ class Apsim:
 
             apsim_bin_path = (
 
-                os.getenv("APSIM_BIN_PATH")
-                or os.getenv("APSIM_MODEL_PATH")
+                    os.getenv("APSIM_BIN_PATH")
+                    or os.getenv("APSIM_MODEL_PATH")
             ) if not bin_key else os.getenv(str(bin_key))
 
             if apsim_bin_path is None:
@@ -164,7 +164,11 @@ class Apsim:
             raise ValueError(
                 "Specify either apsim_bin_path, dotenv_path, or use _AutoBin."
             )
-        configuration.bin_path = apsim_bin_path
+        if Path(str(apsim_bin_path)).resolve() != Path(str(self._previous)).resolve():
+            # no need to change because it will be automatically discovered by the starter module or config module
+            # in addition, reloading a binary path will create trouble
+            configuration.bin_path = apsim_bin_path
+            configuration.set_temporal_bin_path(apsim_bin_path)
 
         # import apsimNGpy objects to attach
         from apsimNGpy.core.apsim import ApsimModel
@@ -208,7 +212,9 @@ class Apsim:
         restoration of the loaded assemblies. It exists only to preserve
         backward compatibility.
         """
-        configuration.bin_path = self._previous
+        if path_checker(self._previous):
+            if Path(self._previous).resolve() != Path(configuration.bin_path).resolve():
+                configuration.bin_path = self._previous
 
 
 __all__ = [

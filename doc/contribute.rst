@@ -119,6 +119,78 @@ Finally, run the test suite. It is recommended to use the ``run_suite`` method, 
         suite.addTests(loader.loadTestsFromTestCase(TestCaseAddModule))
         run_suite(2)
 
+Running apsimNGpy Test Modules
+==============================
+
+This section describes how to execute apsimNGpy test modules from the command line.
+
+Installation (Editable Mode)
+-----------------------------
+
+Navigate to the project root directory and install in editable mode:
+
+.. code-block:: bash
+
+   cd apsimNGpy
+   pip install -e .
+
+Core Test Suite
+---------------
+
+Run the main test suite (excluding sensitivity and multi-core modules):
+
+.. code-block:: bash
+
+   python -m apsimNGpy.tests.tester_main \
+       -bp "C:\Users\username\AppData\Local\Programs\APSIM2026.2.7989.0\bin"
+
+Multi-Core Test Module
+----------------------
+
+Run the multi-core performance test module:
+
+.. code-block:: bash
+
+   python -m apsimNGpy.tests.unittests.mcp \
+       -bp "C:\Users\username\AppData\Local\Programs\APSIM2026.2.7989.0\bin" \
+       -md p \
+       -e csharp
+
+Options
+^^^^^^^
+
+``-bp``
+    Path to the APSIM ``bin`` directory.
+
+``-md``
+    Parallel execution mode:
+
+    * ``p`` = processes
+    * ``t`` = threads
+
+``-e``
+    Execution engine:
+
+    * ``csharp``
+    * ``python``
+
+Sensitivity Test Module
+-----------------------
+
+Run the sensitivity analysis test module:
+
+.. code-block:: bash
+
+   python -m apsimNGpy.tests.unittests.test_sens \
+       -bp "C:\Users\username\AppData\Local\Programs\APSIM2026.2.7989.0\bin"
+
+Notes
+-----
+
+* The ``-bp`` argument specifies the APSIM binary directory under test.
+* The path must point to the valid ``bin`` folder of an APSIM installation.
+* Alternatively, set the environment variable ``TEST_APSIM_BINARY`` to avoid
+  repeatedly specifying ``-bp``.
 
 .. seealso::
 

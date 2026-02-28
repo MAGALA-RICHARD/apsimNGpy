@@ -120,7 +120,7 @@ Finally, run the test suite. It is recommended to use the ``run_suite`` method, 
         run_suite(2)
 
 
-To test apsimNGpy on the command line you need to follow a few steps explaine below:
+To test apsimNGpy on the command line you need to follow a few steps explained below:
 
 Navigate to the project root directory and install in editable mode:
 

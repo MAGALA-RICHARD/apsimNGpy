@@ -119,13 +119,8 @@ Finally, run the test suite. It is recommended to use the ``run_suite`` method, 
         suite.addTests(loader.loadTestsFromTestCase(TestCaseAddModule))
         run_suite(2)
 
-Running apsimNGpy Test Modules
-==============================
 
-This section describes how to execute apsimNGpy test modules from the command line.
-
-Installation (Editable Mode)
------------------------------
+To test apsimNGpy on the command line you need to follow a few steps explaine below:
 
 Navigate to the project root directory and install in editable mode:
 
@@ -134,20 +129,16 @@ Navigate to the project root directory and install in editable mode:
    cd apsimNGpy
    pip install -e .
 
-Core Test Suite
----------------
 
-Run the main test suite (excluding sensitivity and multi-core modules):
+1. Test the main test suite modules (excluding sensitivity and multi-core modules) as follows:
 
 .. code-block:: bash
 
    python -m apsimNGpy.tests.tester_main \
        -bp "C:\Users\username\AppData\Local\Programs\APSIM2026.2.7989.0\bin"
 
-Multi-Core Test Module
-----------------------
 
-Run the multi-core performance test module:
+2. Test the multi-core module as follows:
 
 .. code-block:: bash
 
@@ -174,10 +165,8 @@ Options
     * ``csharp``
     * ``python``
 
-Sensitivity Test Module
------------------------
 
-Run the sensitivity analysis test module:
+3. Test the sensitivity analysis module:
 
 .. code-block:: bash
 

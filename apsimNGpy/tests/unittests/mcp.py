@@ -150,7 +150,7 @@ arg_bin_path = args.bin
 engine = args.engine
 batch_size = int(args.size)
 
-bin_path = arg_bin_path or Path(os.environ.get('TEST_APSIM_BINARY')) or get_apsim_bin_path()
+bin_path = arg_bin_path or os.environ.get('TEST_APSIM_BINARY') or get_apsim_bin_path()
 bp = bin_path
 
 

@@ -130,7 +130,7 @@ Navigate to the project root directory and install in editable mode:
    pip install -e .
 
 
-1. Test the main test suite modules (excluding sensitivity and multi-core modules) as follows:
+1. Test the main modules (excluding sensitivity and multi-core modules) as follows:
 
 .. code-block:: bash
 

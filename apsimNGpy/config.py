@@ -478,11 +478,13 @@ def set_apsim_bin_path(path: Union[str, Path],
 
     Examples
     --------
-    >>> from apsimNGpy.core import config
-    >>> # Check the current path
-    >>> current = config.get_apsim_bin_path()
-    >>> # Set the desired path (either the bin folder or a parent)
-    >>> config.set_apsim_bin_path('/path/to/APSIM/2025/bin', verbose=True)
+    .. code-block:: python
+
+        from apsimNGpy.core import config
+        # Check the current path
+        current = config.get_apsim_bin_path()
+        # Set the desired path (either the bin folder or a parent)
+        config.set_apsim_bin_path('/path/to/APSIM/2025/bin', verbose=True)
 
    .. seealso::
 

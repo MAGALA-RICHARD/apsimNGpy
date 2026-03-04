@@ -1,29 +1,22 @@
 import gc
 import os
-import sys
+from pathlib import Path
 
-from SALib.sample.morris import strategy
+import dotenv
+from persistqueue.queue import Queue
 
-from apsimNGpy.core_utils.database_utils import write_results_to_sql
+from apsimNGpy.core_utils.database_utils import read_db_table
 from apsimNGpy.optimizer.minimize.single_mixed import MixedVariableOptimizer
 from apsimNGpy.optimizer.problems.smp import MixedProblem
 from apsimNGpy.settings import logger
 from apsimNGpy.tests.unittests.test_factory import obs
-from apsimNGpy.core_utils.database_utils import read_db_table
-from persistqueue.queue import Queue
-from pathlib import Path
-from sqlalchemy import create_engine
-import pandas as pd
-import dotenv
 
 dotenv.load_dotenv()
 dbp = os.getenv('SUPABASE_DB_PASSWORD')
 
-from sqlalchemy import create_engine
 import os
 
 passWord = os.getenv('SUPABASE_DB_PASSWORD')
-from sqlalchemy import create_engine
 from sqlalchemy import create_engine
 from sqlalchemy.engine import URL
 
@@ -35,8 +28,8 @@ url = URL.create(
     port=5432,
     database="postgres",
 )
-
-engine = create_engine(url)
+database = Path("objective_func.db")
+engine = create_engine(f"sqlite:///{database}")
 engine.connect()
 
 
@@ -59,7 +52,7 @@ elif Path(db2).parent.exists():
 
 
 # @write_results_to_sql(db_path=db, table=metrics_table)
-def write_results(de, metric, pop_size=20, algorithm='de', time_taken=None, init='sobol', strategy = 'rand1bin'):
+def write_results(de, metric, pop_size=20, algorithm='de', time_taken=None, init='sobol', strategy='rand1bin'):
     from pandas import DataFrame
     metrics = de.all_metrics
     metrics['popsize'] = pop_size
@@ -109,7 +102,8 @@ if __name__ == "__main__":
             t1 = time.perf_counter()
             init = 'sobol'
             if algorithm == "de":
-                de = optimizer.minimize_with_de(popsize=pop_size, use_threads=False, workers=14, disp=False, init=init, strategy=strategy, rng=44)
+                de = optimizer.minimize_with_de(popsize=pop_size, use_threads=False, workers=14, disp=False, init=init,
+                                                strategy=strategy, rng=44)
             else:
                 de = optimizer.minimize_with_local(options={'maxiter': 200}, method=algorithm)
             t2 = time.perf_counter()
@@ -157,7 +151,6 @@ if __name__ == "__main__":
     #
     # data = read_db_table(db, metrics_table)
     from itertools import product
-    from json import loads, dumps
 
     m_f_c = list(product(['Nelder-Mead', "L-BFGS-B"], metrics))
     idx = [i for i, _ in enumerate(m_f_c)]
@@ -180,6 +173,7 @@ if __name__ == "__main__":
         q.task_done()
         gc.collect()
         register_key(key=key, db=db, )
+    q.join()
     clear_db(db)
 
     d = read_db_table(engine, metrics_table)

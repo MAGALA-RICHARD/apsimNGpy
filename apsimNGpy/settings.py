@@ -5,8 +5,7 @@ import os
 from pathlib import Path
 from shutil import rmtree
 
-VERSION = '1.4.0'
-
+VERSION = '1.5.1'
 
 class MissingType:
     def __bool__(self):
@@ -53,11 +52,11 @@ def config_internal(key: str, value: str) -> None:
         ci.write(configured_file)
 
 
-META_Dir = Path.home().joinpath('APSIMNGpy_meta_data')  # the path that will store config.ini and any logs for the user
+META_Dir = Path.home().joinpath('.APSIMNGpy_meta_data')  # the path that will store config.ini and any logs for the user
 META_Dir.mkdir(parents=True, exist_ok=True)
 CONFIG_path = META_Dir.joinpath('apsimNGpy_config.ini')
 CONFIG_PATH = os.path.realpath(CONFIG_path)
-BASE_DIR = os.path.dirname(__file__)
+BASE_DIR = Path(__file__).parent
 
 if not CONFIG_path.exists():
     # let try and check if a path exists on a path and send it to the config.ini file

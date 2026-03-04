@@ -13,6 +13,7 @@
 # - SensitivityManager (apsimNGpy.core.sensitivitymanager)
 # """
 import os
+import time
 from pathlib import Path
 
 from apsimNGpy.config import (set_apsim_bin_path, get_apsim_bin_path, path_checker,
@@ -180,6 +181,8 @@ class Apsim:
         from apsimNGpy.starter.starter import CLR
         from apsimNGpy.core import model_tools
         from apsimNGpy.core.model_loader import get_node_by_path, get_node_and_type
+        from apsimNGpy.optimizer.minimize.single_mixed import MixedVariableOptimizer
+        from apsimNGpy.optimizer.problems.smp import MixedProblem
 
         # attach APSIM engine attributes
         self.ApsimModel = ApsimModel
@@ -193,6 +196,8 @@ class Apsim:
         self.model_tools = model_tools
         self.get_node_by_path = get_node_by_path
         self.get_node_and_type = get_node_and_type
+        self.MixedProblem = MixedProblem
+        self.MixedVariableOptimizer =MixedVariableOptimizer
 
     def __enter__(self):
         return self
@@ -239,10 +244,14 @@ __all__ = [
     'configuration',
     'DLL_DIR'
 ]
-
+rust = list(Path(r'D:\package\apsimNGpy\apsimNGpy\core\ru').rglob('.pyd'))
 if __name__ == '__main__':
     with Apsim(dotenv_path='../.env', bin_key=7990) as apsim:
-        with apsim.ApsimModel('Maize') as m:
+        with apsim.ApsimModel('soybean') as m:
+            a= time.perf_counter()
             m.run(verbose=True)
-            print(m.results)
-            print(m.summarize_numeric())
+            b = time.perf_counter()
+            print(b-a, 'seconds')
+            # print(m.results)
+            # sm = m.summarize_numeric()
+            # print(m.summarize_numeric())

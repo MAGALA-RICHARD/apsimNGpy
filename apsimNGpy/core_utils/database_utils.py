@@ -9,7 +9,7 @@ from functools import wraps
 from os.path import exists
 from typing import Union, Mapping, Any
 
-import numpy as np
+
 from pandas import read_sql_query as rsq
 from sqlalchemy import create_engine, inspect
 from sqlalchemy import Table, MetaData
@@ -367,6 +367,7 @@ def load_database(path):
 
 def sql_data_from_df(df, con, table_name, chunksize=None, dtype=None,
                      if_exists='append', index=False, schema=None):
+    import numpy as np
     sh = df.shape
     if sh:
         if sh[0] > 4000:

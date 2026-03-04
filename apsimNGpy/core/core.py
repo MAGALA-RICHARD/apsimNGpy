@@ -5183,7 +5183,7 @@ class CoreModel(PlotManager):
             # future implementation
 
     def summarize_numeric(self, data_table: Union[str, tuple, list] = None, columns: list = None,
-                          percentiles=(0.25, 0.5, 0.75), round=2) -> pd.DataFrame:
+                          percentiles=(0.25, 0.5, 0.75)) -> pd.DataFrame:
         """
         Summarize numeric columns in a simulated pandas DataFrame. Useful when you want to quickly look at the simulated data
 
@@ -5220,9 +5220,11 @@ class CoreModel(PlotManager):
             raise ValueError("No numeric columns found in the DataFrame")
 
         summary = numeric_df.describe(percentiles=percentiles).T
-        summary['missing'] = fd.shape[0] - summary['count']
-
-        return summary.round(round)
+        summary.drop('count', axis=1, inplace=True)
+        cols =  ['min', 'mean', 'max', '75%', '50%', '25%', 'std']
+        sm = summary[cols].copy().round(2)
+        sm.sort_values(by='mean', ascending=False, inplace=True)
+        return sm
 
     def create_experiment_for_node(self, permutation=True):
         def exp_refresher(mode):

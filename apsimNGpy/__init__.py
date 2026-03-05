@@ -253,9 +253,9 @@ if __name__ == '__main__':
     with Apsim(dotenv_path='../.env', bin_key=7990) as apsim:
         with apsim.ApsimModel('soybean') as m:
             a = time.perf_counter()
-            m.add_crop_replacements(_crop='Soybean')
+            m.add_crop_replacements()
             #m.open_in_gui(watch=True)
-            #m.run(verbose=True)
+            m.run(verbose=True)
             b = time.perf_counter()
             print(b - a, 'seconds')
             # print(m.results)
@@ -263,3 +263,4 @@ if __name__ == '__main__':
             # print(m.summarize_numeric())
     # apsim2  = Apsim()
     # apsim2.ApsimModel('maize').open_in_gui()
+

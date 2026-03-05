@@ -1692,7 +1692,8 @@ class CoreModel(PlotManager):
             case Models.Surface.SurfaceOrganicMatter:
                 if kwargs == {}:
                     accepted_params = {'SurfOM', 'InitialCPR', 'InitialResidueMass', 'InitialCNR', 'IncorporatedP'}
-                    raise ValueError(f"Please supply at least one parameter: value \n '{', '.join(sorted(accepted_params))}' for {path}")
+                    raise ValueError(
+                        f"Please supply at least one parameter: value \n '{', '.join(sorted(accepted_params))}' for {path}")
                 self._set_surface_organic_matter(values, param_values=kwargs, verbose=verbose)
             case _:
                 raise NotImplementedError(f"No edit method implemented for model type {type(values)}")
@@ -4763,10 +4764,9 @@ class CoreModel(PlotManager):
         crops = self.inspect_model(model_type='Models.PMF.Plant', fullpath=True)
 
         if not crops:
-            raise ValueError("No crop nodes (Models.PMF.Plant) were found in the simulation.")
+            raise ValueError("No crop nodes of class `Models.PMF.Plant` were found in the simulation.")
 
         self.add_replacements(*crops)
-
 
     def add_replacements(self, *args):
         """
@@ -5225,7 +5225,7 @@ class CoreModel(PlotManager):
 
         summary = numeric_df.describe(percentiles=percentiles).T
         summary.drop('count', axis=1, inplace=True)
-        cols =  ['min', 'mean', 'max', '75%', '50%', '25%', 'std']
+        cols = ['min', 'mean', 'max', '75%', '50%', '25%', 'std']
         sm = summary[cols].copy().round(2)
         sm.sort_values(by='mean', ascending=False, inplace=True)
         return sm

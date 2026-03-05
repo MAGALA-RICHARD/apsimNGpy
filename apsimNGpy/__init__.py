@@ -154,7 +154,6 @@ class Apsim:
                 )
 
             apsim_bin_path = Path(apsim_bin_path).resolve()
-
         # Case 3: Auto-detect
         elif apsim_bin_path is _AutoBin:
             apsim_bin_path = get_apsim_bin_path()

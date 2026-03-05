@@ -4714,54 +4714,59 @@ class CoreModel(PlotManager):
         self.add_factor(specification=format_factor, factor_name=factor_name)
         return self
 
-    def add_crop_replacements(self, _crop: str, *args):
+    def add_crop_replacements(self, _crop: str = None, *args):
         """
-        Adds a replacement folder as a child of the simulations.
+        Create a *Replacements* folder and populate it with all existing crop
+        (``Models.PMF.Plant``) nodes from the simulation.
 
-        Useful when you intend to edit cultivar **parameters**.
+        This utility is primarily intended for workflows where cultivar or crop
+        parameters need to be modified without altering the original plant
+        definitions in the base simulation.
 
-        **Args:**
-            ``_crop`` (*str*): Name of the crop to be added to the replacement folder.
+        The method automatically discovers all crop nodes in the model and
+        inserts them into a newly created *Replacements* folder.
 
-        ``Returns:``
-            - *ApsimModel*: An instance of `apsimNGpy.core.core.apsim.ApsimModel` or `CoreModel`.
+        Parameters
+        ----------
+        _crop : str, optional
+            Deprecated argument previously used to specify a crop name.
+            This parameter is no longer required and will be removed in a
+            future release.
 
-        ``Raises:``
-            - *ValueError*: If the specified crop is not found.
+        Returns
+        -------
+        ApsimModel
+            The current model instance (`apsimNGpy.core.core.apsim.ApsimModel`
+            or `CoreModel`) with the replacements folder added.
+
+        Raises
+        ------
+        ValueError
+            If no crop nodes (`Models.PMF.Plant`) are found in the simulation.
+
+        Notes
+        -----
+        APSIM replacement folders allow modified components (e.g., cultivars)
+        to override the original model definitions during simulation without
+        editing the base nodes.
         """
-        if self.get_replacements_node():
-            return self
-
-        _FOLDER = Models.Core.Folder()
-        #  "everything is edited in place"
-        CROP = _crop
-        _FOLDER.Name = "Replacements"
-        PARENT = self.Simulations
-        # parent replacement should be added once
-        if is_higher_apsim_version():
-            target_parent = ModelTools.find_child(PARENT, Models.Core.Folder, 'Replacements')
-        else:
-            target_parent = PARENT.FindDescendant[Models.Core.Folder]('Replacements')
-        if not target_parent:
-            ModelTools.ADD(_FOLDER, PARENT)
-        # assumes that the crop already exists in the simulation
-        if is_higher_apsim_version():
-            _crop = ModelTools.find_child(PARENT, Models.PMF.Plant, CROP)
-        else:
-            _crop = PARENT.FindDescendant[Models.PMF.Plant](CROP)
 
         if _crop is not None:
-            ModelTools.ADD(_crop, _FOLDER)
-        if args:
-            # Adds a node to the replacement node, args is expected to be a tuple of node path
-            for arg in args:
-                node = get_node_by_path(self.Simulations, node_path=arg)
-                if node:
-                    ModelTools.ADD(node.Model, _FOLDER)
+            warnings.warn(
+                "The `_crop` argument is deprecated and no longer required. "
+                "Crop nodes are automatically detected and added to the "
+                "Replacements folder.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
 
-        else:
-            logger.error(f"No plants of crop {CROP} found")
-        return self
+        crops = self.inspect_model(model_type='Models.PMF.Plant', fullpath=True)
+
+        if not crops:
+            raise ValueError("No crop nodes (Models.PMF.Plant) were found in the simulation.")
+
+        self.add_replacements(*crops)
+
 
     def add_replacements(self, *args):
         """

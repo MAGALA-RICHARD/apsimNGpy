@@ -283,7 +283,7 @@ class TestCoreModel(BaseTester):
 
     def test_add_crop_replacements(self):
         with apsim.ApsimModel("Maize") as model:
-            model.add_crop_replacements(_crop='Maize')
+            model.add_crop_replacements()
             xp = find_child(model.Simulations, child_name='Replacements', child_class='Models.Core.Folder')
             # xp = self.test_ap_sim.Simulations.FindInScope('Replacements')
             if xp:

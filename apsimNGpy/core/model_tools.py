@@ -385,7 +385,7 @@ def extract_value(model_instance, parameters=None):
             attributes = selected_parameters or dir(model_instance)
             evp = [at for at in attributes if not at.startswith('__')]
             if not selected_parameters and parameters:
-                raise ValueError(f"Parameters must be none or any of '{", \n".join(evp)}'")
+                raise ValueError(f"Parameters must be none or any of '{', '.join(evp)}'")
             if thick:
                 for attr in attributes:
                     if attr.startswith('__'):
@@ -888,7 +888,7 @@ def add_as_simulation(_model, resource, sim_name):
     new_sim = sim
     names = _model.inspect_model(Models.Core.Simulation, fullpath=False)
     if sim_name in names:
-        raise ValueError(f"new '{sim_name}' can not be any of '{",".join(names)}'")
+        raise ValueError(f"new '{sim_name}' can not be any of '{','.join([str(n) for n in names])}'")
     try:
         if IS_NEW_APSIM:
             try:

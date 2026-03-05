@@ -15,7 +15,6 @@
 import os
 import time
 from pathlib import Path
-
 from apsimNGpy.config import (set_apsim_bin_path, get_apsim_bin_path, path_checker,
                               apsim_bin_context, load_crop_from_disk, configuration, start_pythonnet, DLL_DIR,
                               Configuration, locate_model_bin_path, scan_dir_for_bin, auto_detect_apsim_bin_path)
@@ -183,6 +182,8 @@ class Apsim:
         from apsimNGpy.core.model_loader import get_node_by_path, get_node_and_type
         from apsimNGpy.optimizer.minimize.single_mixed import MixedVariableOptimizer
         from apsimNGpy.optimizer.problems.smp import MixedProblem
+        from apsimNGpy.tests import unittests
+
 
         # attach APSIM engine attributes
         self.ApsimModel = ApsimModel
@@ -197,7 +198,8 @@ class Apsim:
         self.get_node_by_path = get_node_by_path
         self.get_node_and_type = get_node_and_type
         self.MixedProblem = MixedProblem
-        self.MixedVariableOptimizer =MixedVariableOptimizer
+        self.MixedVariableOptimizer = MixedVariableOptimizer
+        self._unit_tests = unittests
 
     def __enter__(self):
         return self
@@ -220,6 +222,8 @@ class Apsim:
         if path_checker(self._previous):
             if Path(self._previous).resolve() != Path(configuration.bin_path).resolve():
                 configuration.bin_path = self._previous
+
+
 
 
 __all__ = [
@@ -248,10 +252,10 @@ rust = list(Path(r'D:\package\apsimNGpy\apsimNGpy\core\ru').rglob('.pyd'))
 if __name__ == '__main__':
     with Apsim(dotenv_path='../.env', bin_key=7990) as apsim:
         with apsim.ApsimModel('soybean') as m:
-            a= time.perf_counter()
+            a = time.perf_counter()
             m.run(verbose=True)
             b = time.perf_counter()
-            print(b-a, 'seconds')
+            print(b - a, 'seconds')
             # print(m.results)
             # sm = m.summarize_numeric()
             # print(m.summarize_numeric())

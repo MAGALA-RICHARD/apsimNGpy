@@ -42,8 +42,8 @@ def run_suite(_bin_path, verbosity_level=2):
     @param verbosity_level: level of verbosity for printing stdout messages
     @return: None
     """
-    with Apsim(_bin_path) as bin_context:
-        CLR = bin_context.CLR
+    with apsim_bin_context(_bin_path) as apsimx:
+        CLR = apsimx.CLR
         from apsimNGpy.tests.unittests import apsimNGpy__init__
         apsim_version = CLR.apsim_compiled_version
         IS_NEW_APSIM = CLR.file_format_modified
@@ -55,7 +55,8 @@ def run_suite(_bin_path, verbosity_level=2):
         from apsimNGpy.tests.unittests.optimizer import vars, smp
         from apsimNGpy.tests.unittests.starter import starter
 
-        modules = {starter,
+        modules = {
+                   starter,
                    model_tools,
                    senstivitymanager,
                    core,

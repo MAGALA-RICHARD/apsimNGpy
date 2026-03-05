@@ -9,7 +9,7 @@ import pandas as pd
 
 from apsimNGpy.config import load_crop_from_disk
 from apsimNGpy.starter.starter import is_file_format_modified, CLR
-from apsimNGpy.core_utils import timer
+from apsimNGpy.core_utils.utils import timer
 
 Models = CLR.Models
 

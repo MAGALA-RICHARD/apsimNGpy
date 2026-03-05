@@ -20,7 +20,7 @@ Classes
    run_sensitivity, ConfigProblem,
    ExperimentManager, SensitivityManager.
 
-   .. py:method:: apsimNGpy.Apsim.__init__(self, apsim_bin_path=<object object at 0x0000023E1E07A010>, dotenv_path=None, bin_key=None, disk_cache=None)
+   .. py:method:: apsimNGpy.Apsim.__init__(self, apsim_bin_path=<object object at 0x0000022D984EA960>, dotenv_path=None, bin_key=None)
 
    Temporarily configure the APSIM-NG ``bin`` path used by ``apsimNGpy``
 
@@ -40,10 +40,6 @@ Classes
        Custom environment variable name to read from the loaded ``.env``
        file (e.g., ``"APSIM_BIN_PATH_2025"``). Ignored when empty.
        Default is ``""``.
-
-   disk_cache : bool, optional
-       If ``True``, the resolved ``apsim_bin_path`` is persisted to
-       the local ``config.ini`` file. Default is ``False``.
 
    Returns
    -------
@@ -241,11 +237,13 @@ Functions
 
     Examples
     --------
-    >>> from apsimNGpy.core import config
-    >>> # Check the current path
-    >>> current = config.get_apsim_bin_path()
-    >>> # Set the desired path (either the bin folder or a parent)
-    >>> config.set_apsim_bin_path('/path/to/APSIM/2025/bin', verbose=True)
+    .. code-block:: python
+
+        from apsimNGpy.core import config
+        # Check the current path
+        current = config.get_apsim_bin_path()
+        # Set the desired path (either the bin folder or a parent)
+        config.set_apsim_bin_path('/path/to/APSIM/2025/bin', verbose=True)
 
    .. seealso::
 
@@ -273,7 +271,7 @@ Classes
    In the future, this module will contain all the constants required by the package.
     Users will be able to override these values if needed by importing this module before running any simulations.
 
-   .. py:method:: apsimNGpy.config.Configuration.__init__(self, bin_path: 'Union[str, Path]' = None) -> None
+   .. py:method:: apsimNGpy.config.Configuration.__init__(self, bin_path: 'Union[str, Path]' = None, _bin_path: 'Union[str, Path, None]' = None) -> None
 
    Initialize self.  See help(type(self)) for accurate signature.
 
@@ -566,7 +564,7 @@ Classes
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.update_mgt`
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.update_mgt_by_path`
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.__init__(self, model: Union[os.PathLike, dict, str], out_path: Union[str, pathlib.Path] = <object object at 0x0000023E1E07A430>, set_wd=None, **kwargs)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.__init__(self, model: Union[os.PathLike, dict, str], out_path: Union[str, pathlib.Path] = <object object at 0x0000022D984EAA30>, set_wd=None, **kwargs)
 
    Initialize self.  See help(type(self)) for accurate signature.
 
@@ -1046,7 +1044,7 @@ Classes
    self : object
        Returns the updated ApsimModel instance.
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.save(self, file_name: 'Union[str, Path]' = <object object at 0x0000023E4BEA4DB0>, reload=True) (inherited)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.save(self, file_name: 'Union[str, Path]' = <object object at 0x0000022DC7359340>, reload=True) (inherited)
 
    Saves the current APSIM NG model (``Simulations``) to disk and refresh runtime state.
 
@@ -3167,7 +3165,7 @@ Classes
    ---------------------------------------------------------------------------
    returns an array of the parameter values
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x0000023E4BEA4DB0>) (inherited)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x0000022DC7359340>) (inherited)
 
    Inspect the model types and returns the model paths or names.
 
@@ -3518,20 +3516,41 @@ Classes
        apsim.create_experiment(permutation=False)
        apsim.set_continuous_factor(factor_path = "[Fertilise at sowing].Script.Amount", lower_bound=100, upper_bound=300, interval=10)
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.add_crop_replacements(self, _crop: 'str', *args) (inherited)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.add_crop_replacements(self, _crop: 'str' = None, *args) (inherited)
 
-   Adds a replacement folder as a child of the simulations.
+   Create a *Replacements* folder and populate it with all existing crop
+   (``Models.PMF.Plant``) nodes from the simulation.
 
-   Useful when you intend to edit cultivar **parameters**.
+   This utility is primarily intended for workflows where cultivar or crop
+   parameters need to be modified without altering the original plant
+   definitions in the base simulation.
 
-   **Args:**
-       ``_crop`` (*str*): Name of the crop to be added to the replacement folder.
+   The method automatically discovers all crop nodes in the model and
+   inserts them into a newly created *Replacements* folder.
 
-   ``Returns:``
-       - *ApsimModel*: An instance of `apsimNGpy.core.core.apsim.ApsimModel` or `CoreModel`.
+   Parameters
+   ----------
+   _crop : str, optional
+       Deprecated argument previously used to specify a crop name.
+       This parameter is no longer required and will be removed in a
+       future release.
 
-   ``Raises:``
-       - *ValueError*: If the specified crop is not found.
+   Returns
+   -------
+   ApsimModel
+       The current model instance (`apsimNGpy.core.core.apsim.ApsimModel`
+       or `CoreModel`) with the replacements folder added.
+
+   Raises
+   ------
+   ValueError
+       If no crop nodes (`Models.PMF.Plant`) are found in the simulation.
+
+   Notes
+   -----
+   APSIM replacement folders allow modified components (e.g., cultivars)
+   to override the original model definitions during simulation without
+   editing the base nodes.
 
    .. py:method:: apsimNGpy.core.apsim.ApsimModel.add_replacements(self, *args) (inherited)
 
@@ -3818,7 +3837,7 @@ Classes
        - Related APIs: :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_model`, :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_model_parameters`
        - :ref:`Model inspections <plain_inspect>`
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.summarize_numeric(self, data_table: 'Union[str, tuple, list]' = None, columns: 'list' = None, percentiles=(0.25, 0.5, 0.75), round=2) -> 'pd.DataFrame' (inherited)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.summarize_numeric(self, data_table: 'Union[str, tuple, list]' = None, columns: 'list' = None, percentiles=(0.25, 0.5, 0.75)) -> 'pd.DataFrame' (inherited)
 
    Summarize numeric columns in a simulated pandas DataFrame. Useful when you want to quickly look at the simulated data
 
@@ -4294,7 +4313,7 @@ Classes
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.update_mgt`
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.update_mgt_by_path`
 
-   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.__init__(self, model, out_path=<object object at 0x0000023E1E07A430>)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.__init__(self, model, out_path=<object object at 0x0000022D984EAA30>)
 
    Initialize self.  See help(type(self)) for accurate signature.
 
@@ -5077,7 +5096,7 @@ Classes
    self : object
        Returns the updated ApsimModel instance.
 
-   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.save(self, file_name: 'Union[str, Path]' = <object object at 0x0000023E4BEA4DB0>, reload=True) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.save(self, file_name: 'Union[str, Path]' = <object object at 0x0000022DC7359340>, reload=True) (inherited)
 
    Saves the current APSIM NG model (``Simulations``) to disk and refresh runtime state.
 
@@ -7198,7 +7217,7 @@ Classes
    ---------------------------------------------------------------------------
    returns an array of the parameter values
 
-   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x0000023E4BEA4DB0>) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x0000022DC7359340>) (inherited)
 
    Inspect the model types and returns the model paths or names.
 
@@ -7518,20 +7537,41 @@ Classes
        apsim.create_experiment(permutation=False)
        apsim.set_continuous_factor(factor_path = "[Fertilise at sowing].Script.Amount", lower_bound=100, upper_bound=300, interval=10)
 
-   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.add_crop_replacements(self, _crop: 'str', *args) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.add_crop_replacements(self, _crop: 'str' = None, *args) (inherited)
 
-   Adds a replacement folder as a child of the simulations.
+   Create a *Replacements* folder and populate it with all existing crop
+   (``Models.PMF.Plant``) nodes from the simulation.
 
-   Useful when you intend to edit cultivar **parameters**.
+   This utility is primarily intended for workflows where cultivar or crop
+   parameters need to be modified without altering the original plant
+   definitions in the base simulation.
 
-   **Args:**
-       ``_crop`` (*str*): Name of the crop to be added to the replacement folder.
+   The method automatically discovers all crop nodes in the model and
+   inserts them into a newly created *Replacements* folder.
 
-   ``Returns:``
-       - *ApsimModel*: An instance of `apsimNGpy.core.core.apsim.ApsimModel` or `CoreModel`.
+   Parameters
+   ----------
+   _crop : str, optional
+       Deprecated argument previously used to specify a crop name.
+       This parameter is no longer required and will be removed in a
+       future release.
 
-   ``Raises:``
-       - *ValueError*: If the specified crop is not found.
+   Returns
+   -------
+   ApsimModel
+       The current model instance (`apsimNGpy.core.core.apsim.ApsimModel`
+       or `CoreModel`) with the replacements folder added.
+
+   Raises
+   ------
+   ValueError
+       If no crop nodes (`Models.PMF.Plant`) are found in the simulation.
+
+   Notes
+   -----
+   APSIM replacement folders allow modified components (e.g., cultivars)
+   to override the original model definitions during simulation without
+   editing the base nodes.
 
    .. py:method:: apsimNGpy.core.experiment.ExperimentManager.add_replacements(self, *args) (inherited)
 
@@ -7818,7 +7858,7 @@ Classes
        - Related APIs: :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_model`, :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_model_parameters`
        - :ref:`Model inspections <plain_inspect>`
 
-   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.summarize_numeric(self, data_table: 'Union[str, tuple, list]' = None, columns: 'list' = None, percentiles=(0.25, 0.5, 0.75), round=2) -> 'pd.DataFrame' (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.summarize_numeric(self, data_table: 'Union[str, tuple, list]' = None, columns: 'list' = None, percentiles=(0.25, 0.5, 0.75)) -> 'pd.DataFrame' (inherited)
 
    Summarize numeric columns in a simulated pandas DataFrame. Useful when you want to quickly look at the simulated data
 
@@ -8403,6 +8443,11 @@ Classes
        returned as a string. If a non-binary file object is passed, it should
        be opened with `newline=''`, disabling universal newlines. If a binary
        file object is passed, `mode` might need to contain a `'b'`.
+
+       .. versionchanged:: 1.2.0
+
+          Support for binary file objects was introduced.
+
    sep : str, default ','
        String of length 1. Field delimiter for the output file.
    na_rep : str, default ''
@@ -8460,6 +8505,17 @@ Classes
 
           Passing compression options as keys in dict is
           supported for compression modes 'gzip', 'bz2', 'zstd', and 'zip'.
+
+       .. versionchanged:: 1.2.0
+
+           Compression is supported for binary file objects.
+
+       .. versionchanged:: 1.2.0
+
+           Previous versions forwarded dict entries for 'gzip' to
+           `gzip.open` instead of `gzip.GzipFile` which prevented
+           setting `mtime`.
+
    quoting : optional constant from csv module
        Defaults to csv.QUOTE_MINIMAL. If you have set a `float_format`
        then floats are converted to strings and thus csv.QUOTE_NONNUMERIC
@@ -8503,6 +8559,8 @@ Classes
        <https://pandas.pydata.org/docs/user_guide/io.html?
        highlight=storage_options#reading-writing-remote-files>`_.
 
+       .. versionadded:: 1.2.0
+
    Returns
    -------
    None or str
@@ -8516,17 +8574,14 @@ Classes
 
    Examples
    --------
-   Create 'out.csv' containing 'df' without indices
-
    >>> df = pd.DataFrame({'name': ['Raphael', 'Donatello'],
    ...                    'mask': ['red', 'purple'],
    ...                    'weapon': ['sai', 'bo staff']})
-   >>> df.to_csv('out.csv', index=False)  # doctest: +SKIP
+   >>> df.to_csv(index=False)
+   'name,mask,weapon\nRaphael,red,sai\nDonatello,purple,bo staff\n'
 
    Create 'out.zip' containing 'out.csv'
 
-   >>> df.to_csv(index=False)
-   'name,mask,weapon\nRaphael,red,sai\nDonatello,purple,bo staff\n'
    >>> compression_opts = dict(method='zip',
    ...                         archive_name='out.csv')  # doctest: +SKIP
    >>> df.to_csv('out.zip', index=False,
@@ -9407,7 +9462,7 @@ Functions
 
    Return True if obj looks like a DB connection.
 
-.. py:function:: apsimNGpy.core.runner.run_apsim_by_path(model: 'Union[str, Path, Iterable[str], Iterable[Path]]', *, bin_path: 'Union[str, Path, object]' = <object object at 0x0000023E4BEA4FB0>, timeout: 'int' = 800, n_cores: 'int' = -1, verbose: 'bool' = False, to_csv: 'bool' = False) -> 'subprocess.CompletedProcess[str]'
+.. py:function:: apsimNGpy.core.runner.run_apsim_by_path(model: 'Union[str, Path, Iterable[str], Iterable[Path]]', *, bin_path: 'Union[str, Path, object]' = <object object at 0x0000022DC7359500>, timeout: 'int' = 800, n_cores: 'int' = -1, verbose: 'bool' = False, to_csv: 'bool' = False) -> 'subprocess.CompletedProcess[str]'
 
    Execute an APSIM model safely and reproducibly.
 
@@ -9472,7 +9527,7 @@ Functions
    RuntimeError
        If APSIM returns a non-zero exit code.
 
-.. py:function:: apsimNGpy.core.runner.run_model_externally(model: 'Union[Path, str]', *, apsim_bin_path: 'Optional[Union[Path, str]]' = <object object at 0x0000023E4BEA4FB0>, verbose: 'bool' = False, to_csv: 'bool' = False, timeout: 'int' = 20, cpu_count=-1, cwd: 'Optional[Union[Path, str]]' = None) -> 'subprocess.CompletedProcess[str]'
+.. py:function:: apsimNGpy.core.runner.run_model_externally(model: 'Union[Path, str]', *, apsim_bin_path: 'Optional[Union[Path, str]]' = <object object at 0x0000022DC7359500>, verbose: 'bool' = False, to_csv: 'bool' = False, timeout: 'int' = 20, cpu_count=-1, cwd: 'Optional[Union[Path, str]]' = None) -> 'subprocess.CompletedProcess[str]'
 
    Run APSIM externally (cross-platform) with safe defaults.
 
@@ -9680,7 +9735,7 @@ Classes
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.update_mgt`
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.update_mgt_by_path`
 
-   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.__init__(self, model, out_path=<object object at 0x0000023E1E07A430>)
+   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.__init__(self, model, out_path=<object object at 0x0000022D984EAA30>)
 
    Initialize self.  See help(type(self)) for accurate signature.
 
@@ -10399,7 +10454,7 @@ Classes
    self : object
        Returns the updated ApsimModel instance.
 
-   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.save(self, file_name: 'Union[str, Path]' = <object object at 0x0000023E4BEA4DB0>, reload=True) (inherited)
+   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.save(self, file_name: 'Union[str, Path]' = <object object at 0x0000022DC7359340>, reload=True) (inherited)
 
    Saves the current APSIM NG model (``Simulations``) to disk and refresh runtime state.
 
@@ -12520,7 +12575,7 @@ Classes
    ---------------------------------------------------------------------------
    returns an array of the parameter values
 
-   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x0000023E4BEA4DB0>) (inherited)
+   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x0000022DC7359340>) (inherited)
 
    Inspect the model types and returns the model paths or names.
 
@@ -12871,20 +12926,41 @@ Classes
        apsim.create_experiment(permutation=False)
        apsim.set_continuous_factor(factor_path = "[Fertilise at sowing].Script.Amount", lower_bound=100, upper_bound=300, interval=10)
 
-   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.add_crop_replacements(self, _crop: 'str', *args) (inherited)
+   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.add_crop_replacements(self, _crop: 'str' = None, *args) (inherited)
 
-   Adds a replacement folder as a child of the simulations.
+   Create a *Replacements* folder and populate it with all existing crop
+   (``Models.PMF.Plant``) nodes from the simulation.
 
-   Useful when you intend to edit cultivar **parameters**.
+   This utility is primarily intended for workflows where cultivar or crop
+   parameters need to be modified without altering the original plant
+   definitions in the base simulation.
 
-   **Args:**
-       ``_crop`` (*str*): Name of the crop to be added to the replacement folder.
+   The method automatically discovers all crop nodes in the model and
+   inserts them into a newly created *Replacements* folder.
 
-   ``Returns:``
-       - *ApsimModel*: An instance of `apsimNGpy.core.core.apsim.ApsimModel` or `CoreModel`.
+   Parameters
+   ----------
+   _crop : str, optional
+       Deprecated argument previously used to specify a crop name.
+       This parameter is no longer required and will be removed in a
+       future release.
 
-   ``Raises:``
-       - *ValueError*: If the specified crop is not found.
+   Returns
+   -------
+   ApsimModel
+       The current model instance (`apsimNGpy.core.core.apsim.ApsimModel`
+       or `CoreModel`) with the replacements folder added.
+
+   Raises
+   ------
+   ValueError
+       If no crop nodes (`Models.PMF.Plant`) are found in the simulation.
+
+   Notes
+   -----
+   APSIM replacement folders allow modified components (e.g., cultivars)
+   to override the original model definitions during simulation without
+   editing the base nodes.
 
    .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.add_replacements(self, *args) (inherited)
 
@@ -13171,7 +13247,7 @@ Classes
        - Related APIs: :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_model`, :meth:`~apsimNGpy.core.apsim.ApsimModel.inspect_model_parameters`
        - :ref:`Model inspections <plain_inspect>`
 
-   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.summarize_numeric(self, data_table: 'Union[str, tuple, list]' = None, columns: 'list' = None, percentiles=(0.25, 0.5, 0.75), round=2) -> 'pd.DataFrame' (inherited)
+   .. py:method:: apsimNGpy.core.senstivitymanager.SensitivityManager.summarize_numeric(self, data_table: 'Union[str, tuple, list]' = None, columns: 'list' = None, percentiles=(0.25, 0.5, 0.75)) -> 'pd.DataFrame' (inherited)
 
    Summarize numeric columns in a simulated pandas DataFrame. Useful when you want to quickly look at the simulated data
 

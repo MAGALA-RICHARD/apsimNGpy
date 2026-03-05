@@ -710,6 +710,8 @@ def trial_run(
         #     print(i) if not i.startswith('__') else None
         _run_model.DisposeStorage()
         rx = _run_model.Run()
+        df =read_db_table(Path(maize).with_suffix('.db'), 'Report')
+        print(df)
         _run_model.Finalize()
 
 

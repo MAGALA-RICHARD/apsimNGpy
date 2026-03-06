@@ -115,8 +115,7 @@ def __getattr__(name):
     return value
 
 
-
-# for static type checking
+# For static type checking
 # -----------------------------------------------------------------
 # NOTE:
 # TYPE_CHECKING is False at runtime but True for static analyzers.
@@ -173,6 +172,7 @@ class Apsim:
         from apsimNGpy.optimizer.minimize.single_mixed import MixedVariableOptimizer  # noqa: F401
         from apsimNGpy.optimizer.problems.smp import MixedProblem  # noqa: F401
         from apsimNGpy.tests import unittests  # noqa: F401
+        _ = ApsimModel
 
     def __init__(self, apsim_bin_path=_AutoBin, dotenv_path=None, bin_key=None):
         """
@@ -374,7 +374,6 @@ __all__ = [
     *_LAZY_IMPORTS.keys()
 ]
 
-
 if __name__ == '__main__':
     evp = '../.env'
     if Path(evp).exists():
@@ -390,4 +389,3 @@ if __name__ == '__main__':
                 print(apsim.MultiCoreManager)
                 print(apsim.ConfigProblem)
                 # print(m.results)
-

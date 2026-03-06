@@ -4803,7 +4803,7 @@ class CoreModel(PlotManager):
 
         .. code-block:: python
 
-            from apsimNGpy.core.apsim import ApsimModel
+            from apsimNGpy import ApsimModel
 
             # Initialize model
             model = ApsimModel('Wheat', out='wheat_model')
@@ -4814,6 +4814,10 @@ class CoreModel(PlotManager):
 
             # Add Wheat as a replacement
             model.add_replacements('.Simulations.Simulation.Field.Wheat')
+            # same as
+             model.add_replacements(*model.inspect_model('Models.PMF.Plant', fullpath=True))
+            # or
+             model.add_crop_replacements()
 
             # Inspect Weather nodes path available
             model.inspect_model('Models.Climate.Weather')
@@ -4822,6 +4826,13 @@ class CoreModel(PlotManager):
             # Add Weather as a replacement
             model.add_replacements('.Simulations.Simulation.Weather')
 
+            # since one Models.Climate type weather node is available, we can also add it as follows:
+            model.add_replacements(*model.inspect_model('Models.Climate.Weather'))
+            # all the above nodes can be added in one run follows
+             model.add_replacements(
+             '.Simulations.Simulation.Weather',
+             '.Simulations.Simulation.Field.Wheat'
+                        )
             # Verify structure
             model.tree()
         """

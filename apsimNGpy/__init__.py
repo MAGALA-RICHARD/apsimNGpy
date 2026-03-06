@@ -1,8 +1,7 @@
-# """
 # This module does not directly import from `apsimNGpy.core` or `apsimNGpy.starter`
 # to avoid errors when PythonNet is not configured or the APSIM binary path is unset.
-#
 
+from importlib import import_module
 import os
 import time
 from pathlib import Path
@@ -21,17 +20,11 @@ _AutoBin = object()
 #  Option 1
 #############################
 #
-# Lazy-loading interface for APSIMNGpy components.
+# Lazy-loading interface for apsimNGpy components.
 #
 # This module delays importing heavy submodules (e.g., APSIM, CLR bindings,
 # optimization engines) until they are actually accessed.
-#
-# This significantly improves import time and avoids unnecessary dependency
-# initialization during startup.
-
-
-from importlib import import_module
-
+# This allows users to use other utilities for setting APSIM bin path without raising errors
 # -----------------------------------------------------------------------------
 # Lazy import registry
 # -----------------------------------------------------------------------------
@@ -320,12 +313,6 @@ class Apsim:
         setattr(self, name, value)
 
         return value
-
-    def __dir__(self):
-        """
-        Enable IDE autocompletion for lazily loaded attributes.
-        """
-        return sorted(list(globals().keys()) + list(_LAZY_IMPORTS.keys()))
 
     def __enter__(self):
         return self

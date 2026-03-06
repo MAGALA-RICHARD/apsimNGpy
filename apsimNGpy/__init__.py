@@ -2,33 +2,147 @@
 # This module does not directly import from `apsimNGpy.core` or `apsimNGpy.starter`
 # to avoid errors when PythonNet is not configured or the APSIM binary path is unset.
 #
-# Instead, it uses `Apsim` class to lazily load and attach the following objects:
-#
-# - ApsimModel (apsimNGpy.core.apsim)
-# - MultiCoreManager (apsimNGpy.core.mult_cores)
-# - run_apsim_by_path (apsimNGpy.core.runner)
-# - run_sensitivity (apsimNGpy.sensitivity.sensitivity)
-# - ConfigProblem (apsimNGpy.sensitivity.sensitivity)
-# - ExperimentManager (apsimNGpy.core.experiment)
-# - SensitivityManager (apsimNGpy.core.sensitivitymanager)
-# """
+
 import os
 import time
 from pathlib import Path
+from typing import TYPE_CHECKING
+
 from apsimNGpy.config import (set_apsim_bin_path, get_apsim_bin_path, path_checker,
                               apsim_bin_context, load_crop_from_disk, configuration, start_pythonnet, DLL_DIR,
                               Configuration, locate_model_bin_path, scan_dir_for_bin, auto_detect_apsim_bin_path)
-from apsimNGpy.logger import logger
-from apsimNGpy.parallel.process import custom_parallel
 from apsimNGpy.core_utils.utils import is_scalar, timer
 from apsimNGpy.exceptions import ApsimRuntimeError, NodeNotFoundError, TableNotFoundError, CastCompilationError
+from apsimNGpy.logger import logger
+from apsimNGpy.parallel.process import custom_parallel
 
 _AutoBin = object()
 
+#  Option 1
+#############################
+#
+# Lazy-loading interface for APSIMNGpy components.
+#
+# This module delays importing heavy submodules (e.g., APSIM, CLR bindings,
+# optimization engines) until they are actually accessed.
+#
+# This significantly improves import time and avoids unnecessary dependency
+# initialization during startup.
 
+
+from importlib import import_module
+
+# -----------------------------------------------------------------------------
+# Lazy import registry
+# -----------------------------------------------------------------------------
+
+_LAZY_IMPORTS = {
+    # APSIM engine
+    "ApsimModel": ("apsimNGpy.core.apsim", "ApsimModel"),
+
+    # multicore utilities
+    "MultiCoreManager": ("apsimNGpy.core.mult_cores", "MultiCoreManager"),
+
+    # runner
+    "run_apsim_by_path": ("apsimNGpy.core.runner", "run_apsim_by_path"),
+
+    # sensitivity analysis
+    "run_sensitivity": ("apsimNGpy.senstivity.sensitivity", "run_sensitivity"),
+    "ConfigProblem": ("apsimNGpy.senstivity.sensitivity", "ConfigProblem"),
+    "SensitivityManager": ("apsimNGpy.core.senstivitymanager", "SensitivityManager"),
+
+    # experiments
+    "ExperimentManager": ("apsimNGpy.core.experiment", "ExperimentManager"),
+
+    # CLR runtime
+    "CLR": ("apsimNGpy.starter.starter", "CLR"),
+
+    # model utilities
+    "model_tools": ("apsimNGpy.core.model_tools", None),
+
+    # node utilities
+    "get_node_by_path": ("apsimNGpy.core.model_loader", "get_node_by_path"),
+    "get_node_and_type": ("apsimNGpy.core.model_loader", "get_node_and_type"),
+
+    # optimization
+    "MixedVariableOptimizer": (
+        "apsimNGpy.optimizer.minimize.single_mixed",
+        "MixedVariableOptimizer",
+    ),
+    "MixedProblem": ("apsimNGpy.optimizer.problems.smp", "MixedProblem"),
+
+    # tests
+    "unittests": ("apsimNGpy.tests.unittests", None),
+}
+
+
+# -----------------------------------------------------------------------------
+# Lazy loader
+# -----------------------------------------------------------------------------
+
+def __getattr__(name):
+    """
+    Dynamically load apsimNGpy objects on first access.
+
+    Parameters
+    ----------
+    name : str
+        Attribute name requested from the module.
+
+    Returns
+    -------
+    object
+        Imported object or module.
+
+    Raises
+    ------
+    AttributeError
+        If attribute does not exist.
+    """
+
+    if name not in _LAZY_IMPORTS:
+        raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
+
+    module_name, attr_name = _LAZY_IMPORTS[name]
+
+    module = import_module(module_name)
+
+    value = module if attr_name is None else getattr(module, attr_name)
+
+    # cache the object so future access is fast
+    globals()[name] = value
+
+    return value
+
+
+laze_all = list(_LAZY_IMPORTS.keys())
+# for static type checking
+# -----------------------------------------------------------------
+# NOTE:
+# TYPE_CHECKING is False at runtime but True for static analyzers.
+# This allows IDEs (VSCode, PyCharm) to detect class attributes
+# without triggering heavy imports or CLR initialization.
+# ______________________________________________________________
+if TYPE_CHECKING:
+    from apsimNGpy.core.apsim import ApsimModel  # noqa: F401
+    from apsimNGpy.core.mult_cores import MultiCoreManager  # noqa: F401
+    from apsimNGpy.core.runner import run_apsim_by_path  # noqa: F401
+    from apsimNGpy.senstivity.sensitivity import run_sensitivity, ConfigProblem  # noqa: F401
+    from apsimNGpy.core.experiment import ExperimentManager  # noqa: F401
+    from apsimNGpy.core.senstivitymanager import SensitivityManager  # noqa: F401
+    from apsimNGpy.starter.starter import CLR  # noqa: F401
+    from apsimNGpy.core import model_tools  # noqa: F401
+    from apsimNGpy.core.model_loader import get_node_by_path, get_node_and_type  # noqa: F401
+    from apsimNGpy.optimizer.minimize.single_mixed import MixedVariableOptimizer  # noqa: F401
+    from apsimNGpy.optimizer.problems.smp import MixedProblem  # noqa: F401
+    from apsimNGpy.tests import unittests  # noqa: F401
+
+
+# option 2
 # define the run time objects inside a callable class
 # that way even if the APSIM bin configuration is not set packages errors do not affect entry point
 # this is a refactoring class, I did not want to reconfigure apsim_bin-context
+
 class Apsim:
     # see apsim_bin_context doc string
     """
@@ -42,6 +156,23 @@ class Apsim:
    run_sensitivity, ConfigProblem,
    ExperimentManager, SensitivityManager.
    """
+    # NOTE:
+    # TYPE_CHECKING is False at runtime but True for static analyzers.
+    # This allows IDEs (VSCode, PyCharm) to detect class attributes
+    # without triggering heavy imports or CLR initialization.
+    if TYPE_CHECKING:
+        from apsimNGpy.core.apsim import ApsimModel  # noqa: F401
+        from apsimNGpy.core.mult_cores import MultiCoreManager  # noqa: F401
+        from apsimNGpy.core.runner import run_apsim_by_path  # noqa: F401
+        from apsimNGpy.senstivity.sensitivity import run_sensitivity, ConfigProblem  # noqa: F401
+        from apsimNGpy.core.experiment import ExperimentManager  # noqa: F401
+        from apsimNGpy.core.senstivitymanager import SensitivityManager  # noqa: F401
+        from apsimNGpy.starter.starter import CLR  # noqa: F401
+        from apsimNGpy.core import model_tools  # noqa: F401
+        from apsimNGpy.core.model_loader import get_node_by_path, get_node_and_type  # noqa: F401
+        from apsimNGpy.optimizer.minimize.single_mixed import MixedVariableOptimizer  # noqa: F401
+        from apsimNGpy.optimizer.problems.smp import MixedProblem  # noqa: F401
+        from apsimNGpy.tests import unittests  # noqa: F401
 
     def __init__(self, apsim_bin_path=_AutoBin, dotenv_path=None, bin_key=None):
         """
@@ -169,37 +300,32 @@ class Apsim:
             # in addition, reloading a binary path will create trouble
             configuration.bin_path = apsim_bin_path
             configuration.set_temporal_bin_path(apsim_bin_path)
+        self.bin_path = apsim_bin_path
 
-        # import apsimNGpy objects to attach
-        from apsimNGpy.core.apsim import ApsimModel
-        from apsimNGpy.core.mult_cores import MultiCoreManager
-        from apsimNGpy.core.runner import run_apsim_by_path
-        from apsimNGpy.senstivity.sensitivity import run_sensitivity, ConfigProblem
-        from apsimNGpy.core.experiment import ExperimentManager
-        from apsimNGpy.core.senstivitymanager import SensitivityManager
-        from apsimNGpy.starter.starter import CLR
-        from apsimNGpy.core import model_tools
-        from apsimNGpy.core.model_loader import get_node_by_path, get_node_and_type
-        from apsimNGpy.optimizer.minimize.single_mixed import MixedVariableOptimizer
-        from apsimNGpy.optimizer.problems.smp import MixedProblem
-        from apsimNGpy.tests import unittests
+    def __getattr__(self, name):
+        """
+            Load modules dynamically when accessed.
+            """
 
+        if name not in _LAZY_IMPORTS:
+            raise AttributeError(f"{self.__class__.__name__} has no attribute {name}")
 
-        # attach APSIM engine attributes
-        self.ApsimModel = ApsimModel
-        self.MultiCoreManager = MultiCoreManager
-        self.run_apsim_by_path = run_apsim_by_path
-        self.run_sensitivity = run_sensitivity
-        self.ConfigProblem = ConfigProblem
-        self.ExperimentManager = ExperimentManager
-        self.SensitivityManager = SensitivityManager
-        self.CLR = CLR
-        self.model_tools = model_tools
-        self.get_node_by_path = get_node_by_path
-        self.get_node_and_type = get_node_and_type
-        self.MixedProblem = MixedProblem
-        self.MixedVariableOptimizer = MixedVariableOptimizer
-        self._unit_tests = unittests
+        module_name, attr_name = _LAZY_IMPORTS[name]
+
+        module = import_module(module_name)
+
+        value = module if attr_name is None else getattr(module, attr_name)
+
+        # cache the loaded attribute
+        setattr(self, name, value)
+
+        return value
+
+    def __dir__(self):
+        """
+        Enable IDE autocompletion for lazily loaded attributes.
+        """
+        return sorted(list(globals().keys()) + list(_LAZY_IMPORTS.keys()))
 
     def __enter__(self):
         return self
@@ -224,8 +350,6 @@ class Apsim:
                 configuration.bin_path = self._previous
 
 
-
-
 __all__ = [
     'Apsim',
     'start_pythonnet',
@@ -248,19 +372,23 @@ __all__ = [
     'configuration',
     'DLL_DIR'
 ]
-rust = list(Path(r'D:\package\apsimNGpy\apsimNGpy\core\ru').rglob('.pyd'))
+__all__.extend(laze_all)
+
 if __name__ == '__main__':
     with Apsim(dotenv_path='../.env', bin_key=7990) as apsim:
-        with apsim.ApsimModel('soybean') as m:
+        with apsim.ApsimModel('pinus') as m:
             a = time.perf_counter()
             m.add_crop_replacements()
-            #m.open_in_gui(watch=True)
+            m.tree()
             m.run(verbose=True)
             b = time.perf_counter()
             print(b - a, 'seconds')
+            print(apsim.unittests)
             # print(m.results)
-            # sm = m.summarize_numeric()
-            # print(m.summarize_numeric())
+        # sm = m.summarize_numeric()
+
+        # m.open_in_gui(watch=True)
+
+        # print(m.summarize_numeric())
     # apsim2  = Apsim()
     # apsim2.ApsimModel('maize').open_in_gui()
-

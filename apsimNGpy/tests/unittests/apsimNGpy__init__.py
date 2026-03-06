@@ -95,6 +95,8 @@ class TestConfigApsimBinContext(unittest.TestCase):
             self.assertTrue(hasattr(bin_runtime, "ConfigProblem"))
             self.assertTrue(hasattr(bin_runtime, "ExperimentManager"))
             self.assertTrue(hasattr(bin_runtime, "SensitivityManager"))
+            self.assertTrue(hasattr(bin_runtime, "MixedVariableOptimizer"))
+            self.assertTrue(hasattr(bin_runtime, "MixedProblem"))
 
             # --- Type / callable checks ---
             self.assertTrue(callable(bin_runtime.ApsimModel))
@@ -104,7 +106,23 @@ class TestConfigApsimBinContext(unittest.TestCase):
             self.assertTrue(callable(bin_runtime.ConfigProblem))
             self.assertTrue(callable(bin_runtime.ExperimentManager))
             self.assertTrue(callable(bin_runtime.SensitivityManager))
+            self.assertTrue(callable(bin_runtime.MixedVariableOptimizer))
+            self.assertTrue(callable(bin_runtime.MixedProblem))
+            # --- Lazy loader caching test ---
+            first_access = bin_runtime.ApsimModel
+            second_access = bin_runtime.ApsimModel
+
+            # should return the same object reference
+            self.assertIs(first_access, second_access)
+
+            # ensure attribute is now cached on the instance
+            self.assertIn("ApsimModel", bin_runtime.__dict__)
+            self.assertIn("MixedProblem", bin_runtime.__dict__)
 
 
 if __name__ == '__main__':
+
+    from apsimNGpy import config
+    import apsimNGpy
+
     unittest.main(verbosity=2)

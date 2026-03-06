@@ -17,16 +17,16 @@ _LAZY_IMPORTS = {
 }
 
 if TYPE_CHECKING:
-    from apsimNGpy.tests.unittests.core import apsim
-    from apsimNGpy.tests.unittests.core import model_loader
-    from apsimNGpy.tests.unittests.core import model_tools
-    from apsimNGpy.tests.unittests.core import runner
-    from apsimNGpy.tests.unittests.core import core_edit_model
-    from apsimNGpy.tests.unittests.core import senstivitymanager
-    from apsimNGpy.tests.unittests.core import edit_model_by_path
-    from apsimNGpy.tests.unittests.core import experiment
-    from apsimNGpy.tests.unittests.starter import starter
-    from apsimNGpy.tests.unittests.manager import soilmanager, weathermanager
+    from apsimNGpy.tests.unittests.core import apsim  # noqa: F401
+    from apsimNGpy.tests.unittests.core import model_loader  # noqa: F401
+    from apsimNGpy.tests.unittests.core import model_tools  # noqa: F401
+    from apsimNGpy.tests.unittests.core import runner  # noqa: F401
+    from apsimNGpy.tests.unittests.core import core_edit_model  # noqa: F401
+    from apsimNGpy.tests.unittests.core import senstivitymanager  # noqa: F401
+    from apsimNGpy.tests.unittests.core import edit_model_by_path  # noqa: F401
+    from apsimNGpy.tests.unittests.core import experiment  # noqa: F401
+    from apsimNGpy.tests.unittests.starter import starter  # noqa: F401
+    from apsimNGpy.tests.unittests.manager import soilmanager, weathermanager  # noqa: F401
 
 
 def __getattr__(name):

@@ -376,20 +376,18 @@ __all__ = [
 
 
 if __name__ == '__main__':
-    with Apsim(dotenv_path='../.env', bin_key=7990) as apsim:
-        with apsim.ApsimModel('pinus') as m:
-            a = time.perf_counter()
-            m.add_crop_replacements()
-            m.tree()
-            m.run(verbose=True)
-            b = time.perf_counter()
-            print(b - a, 'seconds')
-            print(apsim.unittests)
-            # print(m.results)
-        # sm = m.summarize_numeric()
+    evp = '../.env'
+    if Path(evp).exists():
+        with Apsim(dotenv_path='../.env', bin_key=7990) as apsim:
+            with apsim.ApsimModel('pinus') as m:
+                a = time.perf_counter()
+                m.add_crop_replacements()
+                m.tree()
+                m.run(verbose=True)
+                b = time.perf_counter()
+                print(b - a, 'seconds')
+                print(apsim.unittests)
+                print(apsim.MultiCoreManager)
+                print(apsim.ConfigProblem)
+                # print(m.results)
 
-        # m.open_in_gui(watch=True)
-
-        # print(m.summarize_numeric())
-    # apsim2  = Apsim()
-    # apsim2.ApsimModel('maize').open_in_gui()

@@ -49,6 +49,37 @@ class TestConfigApsimBinContext(unittest.TestCase):
                 model.run()
                 self.assertFalse(model.results.empty, 'Results are empty')
 
+    def test_unittest_name_space(self):
+        import apsimNGpy
+
+        expected_modules = [
+            "senstivitymanager",
+            "experiment",
+            "apsim",
+            "core_edit_model",
+            "edit_model_by_path",
+            "runner",
+            "starter",
+            "weathermanager",
+            "soilmanager",
+        ]
+
+        for module_name in expected_modules:
+            with self.subTest(module=module_name):
+                # attribute exists
+                self.assertTrue(
+                    hasattr(apsimNGpy.unittests, module_name),
+                    msg=f"Missing unittest module: {module_name}",
+                )
+
+                module = getattr(apsimNGpy.unittests, module_name)
+
+                # ensure the attribute is a module
+                self.assertTrue(
+                    hasattr(module, "__file__"),
+                    msg=f"{module_name} is not a module-like object",
+                )
+
     def test_apsim_no_context(self):
         """
               Test NO context manager
@@ -121,7 +152,6 @@ class TestConfigApsimBinContext(unittest.TestCase):
 
 
 if __name__ == '__main__':
-
     from apsimNGpy import config
     import apsimNGpy
 

@@ -4778,10 +4778,11 @@ class CoreModel(PlotManager):
 
         Parameters
         ----------
-        *args : postional arguments
+        *args : positional arguments
             One or more APSIM model nodes to be added as replacements.
             Each argument should be a valid complete node or model path relative to the simulations root and component compatible
-            with the ``Replacements`` folder.
+            with the ``Replacements`` folder. Examples include; "Simulations.Simulation.Soils.Organic", "Simulations.Simulation.Field.SowingRule"
+
 
         Notes
         -----
@@ -4830,9 +4831,9 @@ class CoreModel(PlotManager):
             model.add_replacements(*model.inspect_model('Models.Climate.Weather'))
             # all the above nodes can be added in one run as follows:
              model.add_replacements(
-             '.Simulations.Simulation.Weather',
-             '.Simulations.Simulation.Field.Wheat'
-                        )
+                 '.Simulations.Simulation.Weather',
+                 '.Simulations.Simulation.Field.Wheat'
+                            )
             # Verify structure
             model.tree()
         """

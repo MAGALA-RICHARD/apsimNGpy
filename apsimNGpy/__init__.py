@@ -365,9 +365,11 @@ if __name__ == '__main__':
     evp = '../.env'
     if Path(evp).exists():
         with Apsim(dotenv_path='../.env', bin_key=7990) as apsim:
-            with apsim.ApsimModel('pinus') as m:
+            with apsim.ApsimModel('Maize') as m:
                 a = time.perf_counter()
                 m.add_crop_replacements()
+                m.add_replacements(*m.inspect_model('Models.Climate.Weather'))
+                print(m.inspect_model('Models.Soils.Physical'))
                 m.tree()
                 m.run(verbose=True)
                 b = time.perf_counter()

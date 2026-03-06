@@ -31,7 +31,7 @@ if TYPE_CHECKING:
 
 def __getattr__(name):
     """
-    Dynamically load apsimNGpy objects on first access.
+    Dynamically load apsimNGpy.unittests objects on first access.
 
     Parameters
     ----------

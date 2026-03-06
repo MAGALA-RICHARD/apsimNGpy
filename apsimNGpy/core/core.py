@@ -4780,7 +4780,7 @@ class CoreModel(PlotManager):
         ----------
         *args : positional arguments
             One or more APSIM model nodes to be added as replacements.
-            Each argument should be a valid complete node or model path relative to the simulations root and component compatible
+            Each argument should be a valid complete node or model path relative to the simulations' root and component compatible
             with the ``Replacements`` folder. Examples include;
             '.Simulations.Simulation.Field.Soil.Physical'
             "Simulations.Simulation.Soil.Organic", "Simulations.Simulation.Field.SowingRule". See examples below how to extract these node paths

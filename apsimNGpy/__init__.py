@@ -115,7 +115,7 @@ def __getattr__(name):
     return value
 
 
-laze_all = list(_LAZY_IMPORTS.keys())
+
 # for static type checking
 # -----------------------------------------------------------------
 # NOTE:
@@ -370,9 +370,10 @@ __all__ = [
     'timer',
     'is_scalar',
     'configuration',
-    'DLL_DIR'
+    'DLL_DIR',
+    *_LAZY_IMPORTS.keys()
 ]
-__all__.extend(laze_all)
+
 
 if __name__ == '__main__':
     with Apsim(dotenv_path='../.env', bin_key=7990) as apsim:

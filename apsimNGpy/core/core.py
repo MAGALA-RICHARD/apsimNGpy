@@ -4828,7 +4828,7 @@ class CoreModel(PlotManager):
 
             # since one Models.Climate type weather node is available, we can also add it as follows:
             model.add_replacements(*model.inspect_model('Models.Climate.Weather'))
-            # all the above nodes can be added in one run follows
+            # all the above nodes can be added in one run as follows:
              model.add_replacements(
              '.Simulations.Simulation.Weather',
              '.Simulations.Simulation.Field.Wheat'

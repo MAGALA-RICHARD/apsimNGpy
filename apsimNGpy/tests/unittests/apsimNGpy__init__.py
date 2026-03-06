@@ -1,10 +1,9 @@
 import os
-import time
 import unittest
-from apsimNGpy.config import apsim_bin_context, path_checker, configuration, Path, set_apsim_bin_path, \
-    get_apsim_bin_path
-from apsimNGpy.logger import logger
+
 from apsimNGpy import Apsim
+from apsimNGpy.config import path_checker, Path, get_apsim_bin_path
+from apsimNGpy.logger import logger
 
 bin_path2 = os.environ.get('TEST_APSIM_BINARY')
 if bin_path2:
@@ -92,9 +91,16 @@ class TestConfigApsimBinContext(unittest.TestCase):
             self.assertFalse(model.results.empty, 'Results are empty')
 
     def test_attributes_attached_no_context(self):
-        """Ensure required namespace attributes are exposed by apsim_bin_context."""
+        """Ensure Apsim Class exposes required namespace attributes."""
         self.skip()
-
+        opt_vars = {
+            'ChoiceVar',
+            'GridVar',
+            'QrandintVar',
+            'QuniformVar',
+            'RandintVar',
+            'UniformVar',
+            }
         bin_runtime = Apsim(self.bin_path)
 
         # --- Attribute existence checks ---
@@ -104,6 +110,7 @@ class TestConfigApsimBinContext(unittest.TestCase):
         self.assertTrue(hasattr(bin_runtime, "run_sensitivity"))
         self.assertTrue(hasattr(bin_runtime, "ConfigProblem"))
         self.assertTrue(hasattr(bin_runtime, "ExperimentManager"))
+        for k in opt_vars: self.assertTrue(hasattr(bin_runtime, k))
 
         # --- Type / callable checks ---
         self.assertTrue(callable(bin_runtime.ApsimModel))
@@ -112,6 +119,9 @@ class TestConfigApsimBinContext(unittest.TestCase):
         self.assertTrue(callable(bin_runtime.run_sensitivity))
         self.assertTrue(callable(bin_runtime.ConfigProblem))
         self.assertTrue(callable(bin_runtime.ExperimentManager))
+
+        for k in opt_vars: self.assertTrue(callable(getattr(bin_runtime, k)))
+        for k in opt_vars: self.assertIn(k, bin_runtime.__dict__)
 
     def test_attributes_attached_with_context(self):
         """Ensure required namespace attributes are exposed by apsim_bin_context."""
@@ -152,7 +162,7 @@ class TestConfigApsimBinContext(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    from apsimNGpy import config
     import apsimNGpy
+    apsimNGpy.UniformVar
 
     unittest.main(verbosity=2)

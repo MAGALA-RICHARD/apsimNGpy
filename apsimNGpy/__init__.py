@@ -66,6 +66,13 @@ _LAZY_IMPORTS = {
 
     # tests
     "unittests": ("apsimNGpy.tests.unittests", None),
+    # variables
+    'UniformVar' : ('apsimNGpy.optimizer.problems.variables', 'UniformVar'),
+    'QrandintVar': ('apsimNGpy.optimizer.problems.variables', 'UniformVar'),
+    'QuniformVar': ('apsimNGpy.optimizer.problems.variables', 'UniformVar'),
+    'RandintVar': ('apsimNGpy.optimizer.problems.variables',  'RandintVar'),
+    'ChoiceVar':('apsimNGpy.optimizer.problems.variables',  'ChoiceVar'),
+    'GridVar':('apsimNGpy.optimizer.problems.variables',  'GridVar'),
 }
 
 
@@ -128,6 +135,8 @@ if TYPE_CHECKING:
     from apsimNGpy.optimizer.minimize.single_mixed import MixedVariableOptimizer  # noqa: F401
     from apsimNGpy.optimizer.problems.smp import MixedProblem  # noqa: F401
     from apsimNGpy.tests import unittests  # noqa: F401
+    from apsimNGpy.optimizer.problems.variables import (UniformVar, QrandintVar, QuniformVar  # noqa: F401
+                                                        )  # noqa: F401
 
 
 # option 2
@@ -165,6 +174,8 @@ class Apsim:
         from apsimNGpy.optimizer.minimize.single_mixed import MixedVariableOptimizer  # noqa: F401
         from apsimNGpy.optimizer.problems.smp import MixedProblem  # noqa: F401
         from apsimNGpy.tests import unittests  # noqa: F401
+        from apsimNGpy.optimizer.problems.variables import (UniformVar, QrandintVar, QuniformVar # noqa: F401
+                                                            ) # noqa: F401
         _ = ApsimModel
 
     def __init__(self, apsim_bin_path=_AutoBin, dotenv_path=None, bin_key=None):

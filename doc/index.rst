@@ -152,16 +152,17 @@ Introduction
 
    plotting
 
-.. toctree::
-   :maxdepth: 2
-   :caption: API REFERENCE
-
-   api
 
 .. toctree::
    :maxdepth: 2
    :caption: Changes
 
    change_logs
+
+.. toctree::
+   :maxdepth: 2
+   :caption: API REFERENCE
+
+   api
 
 

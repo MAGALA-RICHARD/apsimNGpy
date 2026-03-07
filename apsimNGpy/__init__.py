@@ -325,6 +325,15 @@ class Apsim:
 
         return value
 
+    def __dir__(self):
+        """
+        Expose lazily loaded attributes to dir() and IDE autocomplete.
+        """
+        return sorted(
+            set(super().__dir__()) |
+            set(_LAZY_IMPORTS.keys())
+        )
+
     def __enter__(self):
         return self
 

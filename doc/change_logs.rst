@@ -1,3 +1,23 @@
+Version 1.5.2
+=============
+
+Improvements
+------------
+- Added lazy-loading support for APSIM runtime modules to prevent early CLR initialization.
+- Consolidates all apsimNGpy public API into a single access point to enable easier discovery and support lazy importing.
+Bug Fixes
+---------
+- Fixed issues with APSIM binary path configuration when importing ``apsimNGpy``.
+- Improved compatibility with Ruff static analysis for ``TYPE_CHECKING`` imports.
+- fixed f strings errors in early versions of python
+- Fixed the add_crop_replacements method and removed the deprecated _crop argument. Future releases will allow this method to be called without arguments, automatically detecting available plant modules and adding them to the replacements folder.
+
+Tests
+-----
+- Added tests verifying lazy attribute resolution and caching behavior.
+- Added tests ensuring unittest modules are correctly exposed.
+
+
 Version 1.5
 -----------
 

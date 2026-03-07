@@ -163,6 +163,6 @@ class TestConfigApsimBinContext(unittest.TestCase):
 
 if __name__ == '__main__':
     import apsimNGpy
-    apsimNGpy.UniformVar
+    print(apsimNGpy.UniformVar)
 
     unittest.main(verbosity=2)

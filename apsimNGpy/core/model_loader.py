@@ -61,7 +61,7 @@ def to_json_string(_model: Models.Core.Simulation):
     raise ValueError(f'failed to convert model:`{_model}` to strings ')
 
 
-@dataclass(slots=True)
+@dataclass(slots=True, frozen=True)
 class ModelData:
     """
     This is a meta-data container for the loaded models
@@ -153,29 +153,22 @@ def load_from_path(path2file, method='string'):
     into a string using json and then use the APSIM in-built method to load the file with file, we read directly from
     the file path. This is slower than the former.
     """
-
     f_name = realpath(path2file)
-    with open(f_name, "r+", encoding='utf-8') as apsimx:
-        app_ap = json.load(apsimx)
-    string_name = json.dumps(app_ap)
-
     method = method.lower()
-
     loader = CLR.get_file_reader(method)
-
     match method:
         case 'string':
-            __model = loader[Models.Core.Simulations](string_name, None, True, fileName=f_name)
-            __model = getattr(__model, 'NewModel', __model)
+            app_ap = json.loads(Path(f_name).read_text(encoding="utf-8"))
+            string_name = json.dumps(app_ap)
+            _model_obj = loader[Models.Core.Simulations](string_name, None, True, fileName=f_name)
+            _model_obj = getattr(_model_obj, 'NewModel', _model_obj)
 
         case 'file':
-            __model = loader[Models.Core.Simulations](f_name, None, True)
-            __model = getattr(__model, 'NewModel', __model)
+            _model_obj = loader[Models.Core.Simulations](f_name, None, True)
+            _model_obj = getattr(_model_obj, 'NewModel', _model_obj)
         case _:
             raise NotImplementedError('Unsupported method for reading apsim json file')
-
-    new_model = covert_to_model(__model)
-
+    new_model = covert_to_model(_model_obj)
     return new_model
 
 
@@ -197,12 +190,13 @@ def load_apsim_model(model=MODEL_NOT_PROVIDED, out_path=AUTO_PATH, file_load_met
 
     Returns:
         {ModelData}: A dataclass container with paths, model object, and metadata.
+        @param model:
         @param tag:
     """
     if model is MODEL_NOT_PROVIDED:
-        model = None
-    if isinstance(model, Path):
-        model = os.path.realpath(model)
+        model_obj = None
+    else:
+        model_obj = model
 
     def _has_no_dir(p) -> bool:
         if p:
@@ -221,18 +215,21 @@ def load_apsim_model(model=MODEL_NOT_PROVIDED, out_path=AUTO_PATH, file_load_met
     out_ = Path(out_path).resolve()
 
     out_path = out_.with_suffix('.apsimx')
-    match model:
+    match model_obj:
         case dict():
             output = out_path
             out['path'] = output
-            Model = load_from_dict(model, output)
+            Model = load_from_dict(model_obj, output)
 
-        case str():
-            if not model.endswith('.apsimx'):
-                copy_to = load_crop_from_disk(crop=model, out=out_path)
+        case str() | Path():
+            model_obj = str(model_obj)
+            # assumed models will be loaded from APSIM /Examples
+            if not model_obj.endswith('.apsimx'):
+                copy_to = load_crop_from_disk(crop=model_obj, out=out_path)
 
             else:
-                copy_to = copy_file(model, destination=out_path)
+                # the model is being loaded elsewhere on the computer
+                copy_to = copy_file(model_obj, destination=out_path)
 
             out['path'] = copy_to
             Model = load_from_path(copy_to, file_load_method)
@@ -241,7 +238,7 @@ def load_apsim_model(model=MODEL_NOT_PROVIDED, out_path=AUTO_PATH, file_load_met
             raise ValueError("Model cannot be None")
 
         case _:
-            raise NotImplementedError(f"Unsupported model type: {type(model)}")
+            raise NotImplementedError(f"Unsupported model type: {type(model_obj)}")
 
     _Model = get_model(Model)
     node = _Model

@@ -3,8 +3,9 @@ from typing import TYPE_CHECKING
 
 _LAZY_IMPORTS = {
     'apsim': ('apsimNGpy.tests.unittests.core.apsim', None),
-    'model_tools': ('apsimNGpy.tests.unittests.model_tools', None),
-    'model_loader': ('apsimNGpy.tests.unittests.core', None),
+    'core': ('apsimNGpy.tests.unittests.core.core', None),
+    'model_tools': ('apsimNGpy.tests.unittests.core.model_tools', None),
+    'model_loader': ('apsimNGpy.tests.unittests.core.model_loader', None),
     'runner': ('apsimNGpy.tests.unittests.core.runner', None),
     'core_edit_model': ('apsimNGpy.tests.unittests.core.core_edit_model', None),
     'senstivitymanager': ('apsimNGpy.tests.unittests.core.senstivitymanager', None),
@@ -12,7 +13,13 @@ _LAZY_IMPORTS = {
     'experiment': ('apsimNGpy.tests.unittests.core.experiment', None),
     'starter': ('apsimNGpy.tests.unittests.starter.starter', None),
     'weathermanager': ('apsimNGpy.tests.unittests.manager.weathermanager', None),
-    'soilmanager': ('apsimNGpy.tests.unittests.manager.soilmanager', None)
+    'soilmanager': ('apsimNGpy.tests.unittests.manager.soilmanager', None),
+    'laze_import_tests': ('apsimNGpy.tests.unittests.laze_import_tests', None),
+    'smp': ('apsimNGpy.tests.unittests.optimizer.smp', None),
+    'vars': ('apsimNGpy.tests.unittests.optimizer.vars', None),
+    'plot_manager': ('apsimNGpy.tests.unittests.core.plot_manager', None),
+    'config': ('apsimNGpy.tests.unittests.core.config', None),
+    'cs_resources': ('apsimNGpy.tests.unittests.core.cs_resources', None)
 
 }
 
@@ -27,6 +34,7 @@ if TYPE_CHECKING:
     from apsimNGpy.tests.unittests.core import experiment  # noqa: F401
     from apsimNGpy.tests.unittests.starter import starter  # noqa: F401
     from apsimNGpy.tests.unittests.manager import soilmanager, weathermanager  # noqa: F401
+    from apsimNGpy.tests.unittests import laze_import_tests  # noqa: F401
 
 
 def __getattr__(name):
@@ -62,9 +70,6 @@ def __getattr__(name):
     globals()[name] = value
 
     return value
-
-
-
 
 
 __all__ = [*_LAZY_IMPORTS.keys()]

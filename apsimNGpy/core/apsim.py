@@ -5,6 +5,7 @@ email: magalarich20@gmail.com
 """
 
 import os
+from contextlib import suppress
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -663,52 +664,29 @@ class ApsimModel(CoreModel):
     def __exit__(self, exc_type, exc, tb):
         db_flag = getattr(self, "db", True)
         csv_flag = getattr(self, "csv", True)
+        path = Path(self.path)
+        # Common sidecars we may want to clean
+        _db = path.with_suffix('.db')
+        bak = path.with_suffix('.bak')
+        db_wal = path.with_suffix('.db-wal')
+        db_shm = path.with_suffix('.db-shm')
 
-        try:
-            path = Path(self.path)
+        clean_candidates = {bak, db_wal, db_shm, path}
+        if csv_flag:
+            reps = self.inspect_model(Models.Report, fullpath=False) or {}
+            with suppress(TypeError):
+                clean_candidates.update({path.with_suffix(f'.{rep}.csv') for rep in reps})
+        # Optionally include the SQLite .db sidecar (force GC on pythonnet/.NET first)
+        if db_flag:
+            with suppress(Exception, CLR.System.Exception):
+                CLR.System.GC.Collect()
+                CLR.System.GC.WaitForPendingFinalizers()
+            clean_candidates.add(_db)
 
-            # Common sidecars we may want to clean
-            _db = path.with_suffix('.db')
-            bak = path.with_suffix('.bak')
-            db_wal = path.with_suffix('.db-wal')
-            db_shm = path.with_suffix('.db-shm')
-
-            clean_candidates = {bak, db_wal, db_shm, path}
-            if csv_flag:
-                try:
-                    reps = self.inspect_model(Models.Report, fullpath=False) or {}
-
-                    clean_candidates.update({path.with_suffix(f'.{rep}.csv') for rep in reps})
-                except Exception:
-                    # If inspect_model/Models is unavailable, skip CSV cleanup
-                    pass
-
-            # Optionally include the SQLite .db sidecar (force GC on pythonnet/.NET first)
-            if db_flag:
-                try:
-
-                    CLR.System.GC.Collect()
-                    import gc
-                    gc.collect()
-                    CLR.System.GC.WaitForPendingFinalizers()
-                except Exception:
-                    pass
-                clean_candidates.add(_db)
-
-            # Remove files if present
-            for candidate in clean_candidates:
-                try:
-                    candidate.unlink(missing_ok=True)
-                except PermissionError:
-                    # File locked; leave it
-                    pass
-
-        except PermissionError:
-            # Path itself locked; nothing we can do here
-            pass
-
-        # Do not suppress exceptions from the with-block
-        return False
+        # Remove files if present
+        for candidate in clean_candidates:
+            with suppress(PermissionError):
+                candidate.unlink(missing_ok=True)
 
     def adjust_dul(self, simulations: Union[tuple, list] = None):
         """

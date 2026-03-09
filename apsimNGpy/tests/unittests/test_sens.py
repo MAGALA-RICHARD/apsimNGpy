@@ -55,7 +55,7 @@ if __name__ == "__main__":
             "calc_second_order": True,
         },
     )
-    logger.info('repeting tests')
+    logger.info('repeating tests')
     Si_sobol2 = apsim.run_sensitivity(
         runner,
         method="sobol",

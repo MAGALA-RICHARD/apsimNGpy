@@ -1,15 +1,17 @@
+import argparse
 import os
 import stat
 import unittest
 from datetime import datetime
 from pathlib import Path
+
 from apsimNGpy.logger import logger
 from apsimNGpy.mailer.mail import send_report
-from apsimNGpy import Apsim
-import argparse
+
 date_STR = datetime.now().strftime("%y-%m-%d-%H-%M-%S")
 from apsimNGpy.config import path_checker
 from apsimNGpy.config import apsim_bin_context, get_apsim_bin_path, set_apsim_bin_path
+
 parser = argparse.ArgumentParser()
 parser.add_argument(
     '-bp', "--bin",
@@ -17,7 +19,7 @@ parser.add_argument(
     help="Path to APSIM binary directory")
 
 args = parser.parse_args()
-bin_path = args.bin or Path(os.environ.get('TEST_APSIM_BINARY',)) or get_apsim_bin_path()
+bin_path = args.bin or Path(os.environ.get('TEST_APSIM_BINARY', )) or get_apsim_bin_path()
 
 if not path_checker(bin_path):
     new_path = input(
@@ -47,35 +49,31 @@ def run_suite(_bin_path, verbosity_level=2):
         from apsimNGpy.tests.unittests import apsimNGpy__init__
         apsim_version = CLR.apsim_compiled_version
         IS_NEW_APSIM = CLR.file_format_modified
-        from apsimNGpy.tests.unittests.core import core, data_insights
-        from apsimNGpy.tests.unittests.manager import weathermanager, soilmanager, test_get_weather_from_web_filename
-        from apsimNGpy.tests.unittests.core import apsim, senstivitymanager, model_loader, \
-            model_tools, \
-            edit_model_by_path, core_edit_model, cs_resources, config, plot_manager
-        from apsimNGpy.tests.unittests.optimizer import vars, smp
-        from apsimNGpy.tests.unittests.starter import starter
+        from apsimNGpy.tests.unittests.core import data_insights
+        from apsimNGpy.tests.unittests.manager import weathermanager, test_get_weather_from_web_filename
+        from apsimNGpy import unittests
 
         modules = {
-                   starter,
-                   model_tools,
-                   senstivitymanager,
-                   core,
-                   apsim,
-                   vars,
-                   smp,
-                   apsimNGpy__init__,
-                   edit_model_by_path,
-                   cs_resources,
-                   core_edit_model,
-                   model_loader,
-                   config,
-                   weathermanager,
-                   test_get_weather_from_web_filename,
-                   plot_manager,
-                   soilmanager,
+            unittests.starter,
+            unittests.model_tools,
+            unittests.senstivitymanager,
+            unittests.core,
+            unittests.apsim,
+            unittests.vars,
+            unittests.smp,
+            apsimNGpy__init__,
+            unittests.edit_model_by_path,
+            unittests.cs_resources,
+            unittests.core_edit_model,
+            unittests.model_loader,
+            unittests.config,
+            unittests.weathermanager,
+            test_get_weather_from_web_filename,
+            unittests.plot_manager,
+            unittests.soilmanager,
 
-                   data_insights
-                   }
+            data_insights
+        }
         if IS_NEW_APSIM:
             from apsimNGpy.tests.unittests.core import experiment
             modules.add(experiment)
@@ -146,5 +144,31 @@ def run_suite(_bin_path, verbosity_level=2):
 
 
 if __name__ == '__main__':
+    import subprocess
+    import sys
+    from apsimNGpy import unittests
+
     # MULTI-CORE TEST IS TESTED ELSE WHERE
-    run = (run_suite(bin_path, verbosity_level=2))
+    # run = (run_suite(bin_path, verbosity_level=2))
+    processes = []
+    # this should run in separate processes
+    Parent = Path(__file__).parent / 'unittests'
+    for test in ['laze_import_tests.py', 'config_apsim_bin_context.py']:
+        t = os.path.realpath(Parent.joinpath(test))
+        p = subprocess.Popen(
+            [sys.executable, t],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True
+        )
+
+        out, err = p.communicate()
+
+        if p.returncode != 0:
+            failed = True
+            print(err)
+            logger.error(err)
+            logger.error(f'tests from {t} failed')
+        logger.info(f'test {test} passed {out}')
+
+        # run = (run_suite(bin_path, verbosity_level=2))

@@ -263,6 +263,17 @@ class TestCoreModel(BaseTester):
         path = model.datastore
         self.assertFalse(os.path.exists(path), msg='datastore path was not deleted')
 
+    def test_loading_from_pathlib_objects(self):
+        from apsimNGpy import load_crop_from_disk, ApsimModel
+        from contextlib import suppress
+        out = Path('maize.apsimx').resolve()
+        cp = Path(load_crop_from_disk("Maize", out=out))
+        with ApsimModel(out, out='testPAthlib.apsimx') as m:
+            self.assertTrue(Path(m.path).exists(), msg='file not created correctly')
+            pass
+        with suppress(FileNotFoundError, PermissionError):
+            out.unlink()
+
     def test_create_experiment(self):
         """creates a factorial experiment adds a factor, then test if it runs successfully
         =====================================================================================

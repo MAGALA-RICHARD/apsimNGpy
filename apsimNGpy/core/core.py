@@ -305,8 +305,6 @@ class CoreModel(PlotManager):
 
              The simulations are c# referenced objects, and their manipulation maybe for advanced users only.
         """
-
-        # we can actually specify the simulation name in the bracket
         self.check_model()
 
         if is_higher_apsim_version():
@@ -352,6 +350,7 @@ class CoreModel(PlotManager):
     @str_model.setter
     def str_model(self, value: dict):
         self._str_model = json.dumps(value)
+
 
     def restart_model(self, model_info=None):
         """

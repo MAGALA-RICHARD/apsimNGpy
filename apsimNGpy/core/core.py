@@ -4866,7 +4866,7 @@ class CoreModel(PlotManager):
                 if checkin:
                     checkin = {s.split('.')[-1] for s in checkin}
                 if n_model.Name not in checkin:
-                    # Add the retrieved node to the simulations tree
+                    # Add the retrieved node to the replacements folder tree, only if the name is not exists of that model class
                     ModelTools.ADD(n_model, folder)
         self.Simulations.Children.Reverse()
         self.save()

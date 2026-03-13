@@ -144,6 +144,7 @@ class CoreModel(PlotManager):
         self.copy = copy  # deprecated but accepted
         self.others = {}  # additional runtime options
         self.wk_info = {}
+        self.file_structure = {}
 
         # Runtime APSIM/NET objects (initialized below)
         self.model_info = None
@@ -305,6 +306,8 @@ class CoreModel(PlotManager):
 
              The simulations are c# referenced objects, and their manipulation maybe for advanced users only.
         """
+
+        # we can actually specify the simulation name in the bracket
         self.check_model()
 
         if is_higher_apsim_version():
@@ -350,7 +353,6 @@ class CoreModel(PlotManager):
     @str_model.setter
     def str_model(self, value: dict):
         self._str_model = json.dumps(value)
-
 
     def restart_model(self, model_info=None):
         """
@@ -795,7 +797,7 @@ class CoreModel(PlotManager):
              If True, results are wrriten to a csv file instantly at the location of the apsimx file.
 
 
-       
+
 
         Warning:
         --------------
@@ -3824,7 +3826,7 @@ class CoreModel(PlotManager):
             """
 
         # start, end = self.inspect_model_parameters(model_class='Clock', model_name='Clock', start=start, end=end)
-        file_name = f"{Path(self._model).stem}_{source}_{start}_{end}.met"
+        file_name = filename or f"{Path(self._model).stem}_{source}_{start}_{end}.met"
 
         name = filename or file_name  # if filename is not None, use filename. Otherwise, file_name.
         file = get_weather(lonlat, start=start, end=end, source=source, filename=name)
@@ -4855,15 +4857,17 @@ class CoreModel(PlotManager):
         if args:
             # Adds a node to the replacement node, args is expected to be a tuple of node paths
             for arg in args:
-                # fetch node by path
-                node = get_node_by_path(self.Simulations, node_path=arg.strip())
-                if node:
+                strip_arg = arg.strip()  # remove any trailing whites spaces at the ends
+                # check if the node exists:
+                node = get_node_by_path(self.Simulations, node_path=strip_arg)
+                n_model = getattr(node, 'Model', node)
+                node_class = CLR.CastHelper.CastAs[n_model.GetType()](n_model)
+                checkin = self.inspect_model(node_class)
+                if checkin:
+                    checkin = {s.split('.')[-1] for s in checkin}
+                if n_model.Name not in checkin:
                     # Add the retrieved node to the simulations tree
-                    n_model = getattr(node, 'Model', node)
                     ModelTools.ADD(n_model, folder)
-                else:
-                    # avoid silent bugs
-                    raise ValueError(f"{arg} is not a valid node path to current simulations tree")
         self.Simulations.Children.Reverse()
         self.save()
 
@@ -5160,7 +5164,8 @@ class CoreModel(PlotManager):
                     current = current[part]
             return root
 
-        def print_tree_branches(node, prefix="", is_last=True, full_path="", display_full_path=False):
+        def print_tree_branches(node, prefix="", is_last=True, full_path="", display_full_path=False, console=console):
+            # self.file_structure ={}
             keys = sorted(node.keys())
             for index, key in enumerate(keys):
                 is_last_key = index == (len(keys) - 1)
@@ -5178,10 +5183,10 @@ class CoreModel(PlotManager):
                 mo_del = getattr(_model_type, 'Model', _model_type)
                 mod = CastHelper.CastAs[mo_del.GetType()](mo_del)
                 # print(mod)
-                print(f"{prefix}{branch}\033[95m{mod}\033[0m: .{current_path}")
-
-                # else:
-                #     print(f"{prefix}{branch}{key}")
+                p = {f".{current_path}:{str(mod)}"}
+                self.file_structure[f".{current_path}"] = str(mod)
+                if console:
+                    print(f"{prefix}{branch}\033[95m{mod}\033[0m: .{current_path}")
 
                 print_tree_branches(
                     node[key],
@@ -5196,7 +5201,9 @@ class CoreModel(PlotManager):
 
             print_tree_branches(tree)
         else:
-            return tree
+            self.file_structure = {}
+            print_tree_branches(tree)
+            return self.file_structure
             # future implementation
 
     def summarize_numeric(self, data_table: Union[str, tuple, list] = None, columns: list = None,
@@ -5426,3 +5433,4 @@ if __name__ == '__main__':
     print(f"file exists: {file_name.exists()}")
     print(configuration.bin_path)
     print('higher versions', is_higher_apsim_version())
+    fixed_model.tree(console=False)

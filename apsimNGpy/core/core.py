@@ -4854,20 +4854,19 @@ class CoreModel(PlotManager):
             folder.Name = 'Replacements'
             ModelTools.ADD(folder, self.Simulations)
 
-        if args:
-            # Adds a node to the replacement node, args is expected to be a tuple of node paths
-            for arg in args:
-                strip_arg = arg.strip()  # remove any trailing whites spaces at the ends
-                # check if the node exists:
-                node = get_node_by_path(self.Simulations, node_path=strip_arg)
-                n_model = getattr(node, 'Model', node)
-                node_class = CLR.CastHelper.CastAs[n_model.GetType()](n_model)
-                checkin = self.inspect_model(node_class)
-                if checkin:
-                    checkin = {s.split('.')[-1] for s in checkin}
-                if n_model.Name not in checkin:
-                    # Add the retrieved node to the replacements folder tree, only if the name is not exists of that model class
-                    ModelTools.ADD(n_model, folder)
+        folder = self.get_replacements_node()
+        folder = CLR.CastHelper.CastAs[CLR.Models.Core.Folder](folder)
+        # Adds a node to the replacement node, args is expected to be a tuple of node paths
+        for arg in args:
+            # fetch node by path
+            node = get_node_by_path(self.Simulations, node_path=arg.strip())
+            n_model = getattr(node, 'Model', node)
+            node_class = CLR.CastHelper.CastAs[n_model.GetType()](n_model)
+            # check if this node of this type is in the replacement folder
+            node_in = self.inspect_model(model_type=type(node_class), scope=folder, fullpath=False) or {}
+            if n_model.Name not in node_in:
+                # Add the retrieved node to the replacement folder node
+                ModelTools.ADD(n_model, folder)
         self.Simulations.Children.Reverse()
         self.save()
 
@@ -5434,3 +5433,5 @@ if __name__ == '__main__':
     print(configuration.bin_path)
     print('higher versions', is_higher_apsim_version())
     fixed_model.tree(console=False)
+    fm = fixed_model
+    fm.add_crop_replacements()

@@ -4857,7 +4857,26 @@ class CoreModel(PlotManager):
         folder = self.get_replacements_node()
         folder = CLR.CastHelper.CastAs[CLR.Models.Core.Folder](folder)
         # Adds a node to the replacement node, args is expected to be a tuple of node paths
-        for arg in args:
+        set_args = set(args)
+        if len(set_args) != len(args):
+            # only do this if we expect duplicates
+            seen = set()
+            duplicates = {}
+            for arg in args:
+                if arg in seen:
+                    if arg not in duplicates:
+                        duplicates[arg] = 1
+                    else:
+                        duplicates[arg] += 1
+                else:
+                    seen.add(arg)
+
+            if duplicates:
+                logger.warning(f"Duplicate arguments detected: {duplicates} from each duplicated elements, only one was considered ")
+
+            from itertools import count
+
+        for arg in set(args):
             # fetch node by path
             node = get_node_by_path(self.Simulations, node_path=arg.strip())
             n_model = getattr(node, 'Model', node)
@@ -5434,4 +5453,7 @@ if __name__ == '__main__':
     print('higher versions', is_higher_apsim_version())
     fixed_model.tree(console=False)
     fm = fixed_model
-    fm.add_crop_replacements()
+    fm.add_replacements('.Simulations.Simulation.Field.Sow using a variable rule',
+                        '.Simulations.Simulation.Field.Sow using a variable rule',
+                        '.Simulations.Simulation.Field.Sow using a variable rule')
+    fm.open_in_gui()

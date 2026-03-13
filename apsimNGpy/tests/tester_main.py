@@ -152,8 +152,8 @@ if __name__ == '__main__':
     # run = (run_suite(bin_path, verbosity_level=2))
     processes = []
     # this should run in separate processes
-    Parent = Path(__file__).parent / 'unittests'
-    for test in ['laze_import_tests.py', 'config_apsim_bin_context.py']:
+    Parent = Path(__file__).parent
+    for test in ['unittests/laze_import_tests.py', 'unittests/config_apsim_bin_context.py', 'unittests\manager\weathermanager.py']:
         t = os.path.realpath(Parent.joinpath(test))
         p = subprocess.Popen(
             [sys.executable, t],
@@ -166,9 +166,8 @@ if __name__ == '__main__':
 
         if p.returncode != 0:
             failed = True
-            print(err)
             logger.error(err)
             logger.error(f'tests from {t} failed')
         logger.info(f'test {test} passed {out}')
 
-        # run = (run_suite(bin_path, verbosity_level=2))
+       # run = (run_suite(bin_path, verbosity_level=2))

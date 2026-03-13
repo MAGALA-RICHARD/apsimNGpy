@@ -1,4 +1,7 @@
-try:
+import contextlib
+
+from apsimNGpy import ApsimModel
+with contextlib.suppress(ImportError):
     from apsimNGpy.config import configuration
     from apsimNGpy.starter.starter import CLR
     if configuration.is_bin_path_valid():
@@ -9,5 +12,4 @@ try:
         if CLR.file_format_modified:
             from apsimNGpy.core.experiment import ExperimentManager
             __all__ += ['ExperimentManager']
-except Exception as ex:
-  pass
+

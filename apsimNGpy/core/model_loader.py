@@ -395,11 +395,13 @@ def get_node_by_name(node, name):
     #
 
 
-def get_node_by_path(node, node_path):
+def get_node_by_path(node, node_path, cast_as=None):
     """
     get a node by path
     @param node: node object or APSIM.Core object
     @param node_path: node path
+    @param cast_as: Models type
+     if node_type is not none, the discovered node is converted to the specified type
     @return: node object if found. raise NodeNotFoundError
     """
 
@@ -409,7 +411,14 @@ def get_node_by_path(node, node_path):
         for n in node.Walk():
 
             if n.get_FullNameAndPath() == node_path:
-                return n
+                if cast_as is None:
+                    return n
+                else:
+                    n= CastHelpers.CastAs[cast_as](getattr(n, 'Model', node))
+                    if not n:
+                        raise TypeError(f'{n} can not be converted to{cast_as}')
+                    return n
+
     else:
         raise AttributeError(f"Node supplied has no attribute: Walk")
     raise NodeNotFoundError(f'Node with supplied path: `{node_path}` was not found')

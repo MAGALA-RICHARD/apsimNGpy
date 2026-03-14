@@ -2612,13 +2612,9 @@ class CoreModel(PlotManager):
 
         rep = self.get_replacements_node()
         if rep:
-            crop_rep = ModelTools.find_child(rep, Models.PMF.Plant, Crop)
-            for i in crop_rep:
-                logger.info(i.Name)
-                if i.Name == Crop:
-                    return i
+            crop_rep = ModelTools.find_child(rep, CLR.Models.PMF.Plant, Crop)
+            return crop_rep
 
-        return self
 
     def inspect_model_parameters(self, model_type: Union[Models, str], model_name: str,
                                  simulations: Union[str, list] = MissingOption,
@@ -4109,6 +4105,7 @@ class CoreModel(PlotManager):
                     raise
 
         if obj:
+            # Should return an indexed iterable (e.g., list or tuple), not a set
             fpath = [i.FullPath for i in obj]
             names = [i.Name for i in obj]
             if fullpath:

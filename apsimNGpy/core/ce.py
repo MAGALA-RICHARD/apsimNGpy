@@ -40,7 +40,7 @@ class CultivarEditor:
     commands: dict = None
 
     def __hash__(self):
-        return hash((self.plant, self.template_cultivar,  self.commands, self.model))
+        return hash((self.plant, self.template_cultivar, self.commands, self.model))
 
     def inspect_commands(self):
         try:
@@ -89,13 +89,7 @@ class CultivarEditor:
             raise ValueError(f'Cultivar `{self.template_cultivar} not in template cultivars')
         return pp, pn, template_cultivars
 
-    def _is_cultivar_added(self, cultivar_name, plant_node):
-        inspect_c = self.model.inspect_model('Models.PMF.Cultivar', scope=plant_node, fullpath=False)
-        if cultivar_name in inspect_c:
-            return True
-        return False
-
-    def base(self, name):
+    def _init_edits(self, name):
         metas = self.get_plant_node()
         path, node, tpc = metas
 
@@ -120,7 +114,7 @@ class CultivarEditor:
     def _update_cmds(self, cmds, name):
         if not isinstance(cmds, dict):
             raise ValueError(f'expected a dict but got {type(cmds)}')
-        clt, clt_node = self.base(name)
+        clt, clt_node = self._init_edits(name)
         cmds = self._format_cmds(cmds)
         clt.Command = cmds
         self.model.save()
@@ -142,7 +136,7 @@ if __name__ == "__main__":
     cc.get_plant_node()
     p = cc.add_plant_replacements()
     cc.edit_cmds_by_dicts('B_1002', commands={'[Phenology].Juvenile.Target.FixedValue': 270})
-    cc.edit_cmds_by_list_like('B_1002', commands={'[Phenology].Juvenile.Target.FixedValue=8'})
+    cc.edit_cmds_by_list_like('B_1002', commands={'[Phenology].Juvenile.Target.FixedValue=250'})
     print(model.inspect_model_parameters('Cultivar', 'B_1002'))
     cc.get_plant_rep()
     cc.attach_cultivar(name='B_1002', manager='Sow using a variable rule', param_name='CultivarName')

@@ -2615,7 +2615,6 @@ class CoreModel(PlotManager):
             crop_rep = ModelTools.find_child(rep, CLR.Models.PMF.Plant, Crop)
             return crop_rep
 
-
     def inspect_model_parameters(self, model_type: Union[Models, str], model_name: str,
                                  simulations: Union[str, list] = MissingOption,
                                  parameters: Union[list, set, tuple, str] = 'all',
@@ -3119,6 +3118,32 @@ class CoreModel(PlotManager):
         self.recompile_edited_model(out_path=out_mgt_path)
 
         return self
+
+    def is_node(self, node: str, node_type=None, scope=None):
+        """
+        Check whether a node of a given type exists within the model.
+
+        Parameters
+        ----------
+        node : str
+            Node name or full path to check.
+        node_type : str
+            Model type to search for (e.g., 'Models.PMF.Cultivar').
+        scope : optional
+            Model scope within which to search. Defaults to ``self.Simulations``.
+
+        Returns
+        -------
+        bool
+            True if the node exists in the specified scope, otherwise False.
+        """
+        if scope is None:
+            scope = self.Simulations
+        if node in self.inspect_model(node_type, fullpath=True, scope=scope):
+            return True
+        if node in self.inspect_model(node_type, fullpath=False, scope=scope):
+            return True
+        return False
 
     @property
     def is_recent_version(self):
@@ -4869,7 +4894,8 @@ class CoreModel(PlotManager):
                     seen.add(arg)
 
             if duplicates:
-                logger.warning(f"Duplicate arguments detected: {duplicates} from each duplicated elements, only one was considered ")
+                logger.warning(
+                    f"Duplicate arguments detected: {duplicates} from each duplicated elements, only one was considered ")
 
             from itertools import count
 
@@ -5453,4 +5479,4 @@ if __name__ == '__main__':
     fm.add_replacements('.Simulations.Simulation.Field.Sow using a variable rule',
                         '.Simulations.Simulation.Field.Sow using a variable rule',
                         '.Simulations.Simulation.Field.Sow using a variable rule')
-    fm.open_in_gui()
+    #fm.open_in_gui()

@@ -3119,7 +3119,7 @@ class CoreModel(PlotManager):
 
         return self
 
-    def is_node(self, node: str, node_type=None, scope=None):
+    def has_node(self, node: str, node_type=None, scope=None):
         """
         Check whether a node of a given type exists within the model.
 

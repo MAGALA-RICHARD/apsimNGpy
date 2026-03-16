@@ -390,6 +390,7 @@ if __name__ == '__main__':
                 m.add_crop_replacements()
                 m.add_replacements(*m.inspect_model('Models.Climate.Weather'))
                 print(m.inspect_model('Models.Soils.Physical'))
+                print(m.has_node('Physical', node_type='Models.Soils.Physical'))
                 m.tree()
                 m.run(verbose=True)
                 b = time.perf_counter()

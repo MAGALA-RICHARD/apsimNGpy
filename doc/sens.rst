@@ -96,7 +96,7 @@ Step 1.
 
 .. code-block:: python
 
-     from apsimNGpy.core import senstivitymanager import SensitivityManager
+     from apsimNGpy.core.senstivitymanager import SensitivityManager
      morris = SensitivityManager("Maize", out_path='sob.apsimx')
 
 Step 2.

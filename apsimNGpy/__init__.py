@@ -40,8 +40,8 @@ _LAZY_IMPORTS = {
     "run_apsim_by_path": ("apsimNGpy.core.runner", "run_apsim_by_path"),
 
     # sensitivity analysis
-    "run_sensitivity": ("apsimNGpy.senstivity.sensitivity", "run_sensitivity"),
-    "ConfigProblem": ("apsimNGpy.senstivity.sensitivity", "ConfigProblem"),
+    "run_sensitivity": ("apsimNGpy.sensitivity.sensitivity", "run_sensitivity"),
+    "ConfigProblem": ("apsimNGpy.sensitivity.sensitivity", "ConfigProblem"),
     "SensitivityManager": ("apsimNGpy.core.senstivitymanager", "SensitivityManager"),
 
     # experiments
@@ -126,9 +126,9 @@ if TYPE_CHECKING:
     from apsimNGpy.core.apsim import ApsimModel  # noqa: F401
     from apsimNGpy.core.mult_cores import MultiCoreManager  # noqa: F401
     from apsimNGpy.core.runner import run_apsim_by_path  # noqa: F401
-    from apsimNGpy.senstivity.sensitivity import run_sensitivity, ConfigProblem  # noqa: F401
+    from apsimNGpy.sensitivity.sensitivity import run_sensitivity, ConfigProblem  # noqa: F401
     from apsimNGpy.core.experiment import ExperimentManager  # noqa: F401
-    from apsimNGpy.core.senstivitymanager import SensitivityManager  # noqa: F401
+    from apsimNGpy.core.sensitivity_manager import SensitivityManager  # noqa: F401
     from apsimNGpy.starter.starter import CLR  # noqa: F401
     from apsimNGpy.core import model_tools  # noqa: F401
     from apsimNGpy.core.model_loader import get_node_by_path, get_node_and_type  # noqa: F401
@@ -165,9 +165,9 @@ class Apsim:
         from apsimNGpy.core.apsim import ApsimModel  # noqa: F401
         from apsimNGpy.core.mult_cores import MultiCoreManager  # noqa: F401
         from apsimNGpy.core.runner import run_apsim_by_path  # noqa: F401
-        from apsimNGpy.senstivity.sensitivity import run_sensitivity, ConfigProblem  # noqa: F401
+        from apsimNGpy.sensitivity.sensitivity import run_sensitivity, ConfigProblem  # noqa: F401
         from apsimNGpy.core.experiment import ExperimentManager  # noqa: F401
-        from apsimNGpy.core.senstivitymanager import SensitivityManager  # noqa: F401
+        from apsimNGpy.core.sensitivity_manager import SensitivityManager  # noqa: F401
         from apsimNGpy.starter.starter import CLR  # noqa: F401
         from apsimNGpy.core import model_tools  # noqa: F401
         from apsimNGpy.core.model_loader import get_node_by_path, get_node_and_type  # noqa: F401

@@ -739,8 +739,8 @@ class apsim_bin_context(AbstractContextManager):
                     - ApsimModel from apsimNGpy.core.apsim
                     - MultiCoreManager from apsimNGpy.core.mult_cores
                     - run_apsim_by_path from apsimNGpy.core.runner
-                    - run_sensitivity  from apsimNGpy.senstivity.sensitivity
-                    - ConfigProblem  from apsimNGpy.senstivity.sensitivity
+                    - run_sensitivity  from apsimNGpy.sensitivity.sensitivity
+                    - ConfigProblem  from apsimNGpy.sensitivity.sensitivity
                     - ExperimentManager from apsimNGpy.core.experiment
                     - SensitivityManager from apsimNGpy.core.senstivitymanager
 
@@ -831,9 +831,9 @@ class apsim_bin_context(AbstractContextManager):
         from apsimNGpy.core.apsim import ApsimModel
         from apsimNGpy.core.mult_cores import MultiCoreManager
         from apsimNGpy.core.runner import run_apsim_by_path
-        from apsimNGpy.senstivity.sensitivity import run_sensitivity, ConfigProblem
+        from apsimNGpy.sensitivity.sensitivity import run_sensitivity, ConfigProblem
         from apsimNGpy.core.experiment import ExperimentManager
-        from apsimNGpy.core.senstivitymanager import SensitivityManager
+        from apsimNGpy.core.sensitivity_manager import SensitivityManager
         from apsimNGpy.starter.starter import CLR
         from apsimNGpy.core import model_tools
         from apsimNGpy.core.model_loader import get_node_by_path, get_node_and_type

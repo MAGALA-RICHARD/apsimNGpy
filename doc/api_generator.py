@@ -319,8 +319,8 @@ def main(apsim_bin_path):
         from apsimNGpy.validation import evaluator
         from apsimNGpy.optimizer.minimize import single_mixed
         from apsimNGpy.optimizer.problems import smp, back_end
-        from apsimNGpy.core import senstivitymanager
-        from apsimNGpy.senstivity import sensitivity
+        from apsimNGpy.core import sensitivity_manager
+        from apsimNGpy.sensitivity import sensitivity
         import apsimNGpy
 
 
@@ -328,7 +328,7 @@ def main(apsim_bin_path):
         # add outline!!
         # ----------------------------------------------------------------------------------
         add_outline(sensitivity.ConfigProblem, include_inherited=True,
-                    base_path='apsimNGpy.senstivity.sensitivity.ConfigProblem')
+                    base_path='apsimNGpy.sensitivity.sensitivity.ConfigProblem')
         add_outline(senstivitymanager.SensitivityManager, include_inherited=True,
                     base_path='apsimNGpy.core.senstivitymanager.SensitivityManager')
         add_outline(single_mixed.MixedVariableOptimizer, include_inherited=True,

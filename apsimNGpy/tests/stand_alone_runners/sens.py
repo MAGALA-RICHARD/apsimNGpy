@@ -1,4 +1,4 @@
-from apsimNGpy.senstivity.sensitivity import run_sensitivity, ConfigProblem
+from apsimNGpy.sensitivity.sensitivity import run_sensitivity, ConfigProblem
 
 if __name__ == "__main__":
     params = {

@@ -3138,6 +3138,7 @@ class CoreModel(PlotManager):
             True if the node exists in the specified scope, otherwise False.
         """
         if scope is None:
+            # Resort to the whole model structure
             scope = self.Simulations
         if node in self.inspect_model(node_type, fullpath=True, scope=scope):
             return True

@@ -42,7 +42,7 @@ _LAZY_IMPORTS = {
     # sensitivity analysis
     "run_sensitivity": ("apsimNGpy.sensitivity.sensitivity", "run_sensitivity"),
     "ConfigProblem": ("apsimNGpy.sensitivity.sensitivity", "ConfigProblem"),
-    "SensitivityManager": ("apsimNGpy.core.senstivitymanager", "SensitivityManager"),
+    "SensitivityManager": ("apsimNGpy.core.sensitivity_manager", "SensitivityManager"),
 
     # experiments
     "ExperimentManager": ("apsimNGpy.core.experiment", "ExperimentManager"),

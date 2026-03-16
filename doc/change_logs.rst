@@ -1,3 +1,31 @@
+Version 1.5.3
+=============
+
+New Features
+------------
+
+* **``is_node`` utility**
+
+  Added a new ``is_node`` method that allows users to check whether a given
+  node name or path exists within the current APSIM model.
+
+* **Cultivar editing interface**
+
+  Introduced an explicit cultivar editing class using a composition-based
+  design. Due to limitations in the APSIM API, replacement nodes cannot
+  currently be edited in place. As a workaround, edited cultivars are added
+  directly under the plant's children rather than modifying the replacement
+  nodes themselves.
+
+Bug Fixes
+---------
+
+* **``add_replacement`` duplication bug**
+
+  Fixed an issue where running the replacement code multiple times created
+  duplicate replacement nodes. The method now prevents replication of
+  existing replacements.
+
 Version 1.5.2
 =============
 

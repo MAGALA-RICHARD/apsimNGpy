@@ -1,6 +1,6 @@
 import sys
 import unittest
-from apsimNGpy.core.senstivitymanager import SensitivityManager
+from apsimNGpy.core.sensitivity_manager import SensitivityManager
 import gc
 from apsimNGpy.config import configuration
 print(configuration.bin_path)

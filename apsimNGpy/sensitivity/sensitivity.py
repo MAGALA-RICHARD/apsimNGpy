@@ -7,8 +7,8 @@ from pathlib import Path
 from typing import Iterable, Mapping
 import numpy as np
 import sqlalchemy
-from apsimNGpy.senstivity.helpers import (split_apsim_path_by_sep, group_candidate_params, default_n, define_problem,
-                                          generate_default_db_path)
+from apsimNGpy.sensitivity.helpers import (split_apsim_path_by_sep, group_candidate_params, default_n, define_problem,
+                                           generate_default_db_path)
 from apsimNGpy.settings import logger
 
 dataError = sqlalchemy.exc.OperationalError

@@ -4,10 +4,10 @@ Version 1.5.3
 New Features
 ------------
 
-* **``is_node`` utility**
+* **``has_node`` method**
 
-  Added a new ``is_node`` method that allows users to check whether a given
-  node name or path exists within the current APSIM model.
+  Added a new ``has_node`` method that allows users to check whether a given
+  node name or path exists within the current APSIM model or specified scope.
 
 * **Cultivar editing interface**
 

@@ -3137,14 +3137,14 @@ class CoreModel(PlotManager):
         bool
             True if the node exists in the specified scope, otherwise False.
         """
-        if scope is None:
-            # Resort to the whole model structure
-            scope = self.Simulations
-        if node in self.inspect_model(node_type, fullpath=True, scope=scope):
-            return True
-        if node in self.inspect_model(node_type, fullpath=False, scope=scope):
-            return True
-        return False
+
+        # Resort to the whole model structure if scope is None
+        scope = scope or self.Simulations
+        nodes = {
+            *self.inspect_model(node_type, fullpath=True, scope=scope),
+            *self.inspect_model(node_type, fullpath=False, scope=scope),
+        }
+        return node in nodes
 
     @property
     def is_recent_version(self):
@@ -4138,6 +4138,7 @@ class CoreModel(PlotManager):
                 return fpath
             else:
                 return names
+        return []
 
     @property
     def configs(self):

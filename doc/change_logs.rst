@@ -26,6 +26,9 @@ Bug Fixes
   duplicate replacement nodes. The method now prevents replication of
   existing replacements.
 
+# inspect_model return is node of a given type does not exist
+the function now return [] if non existent
+
 Version 1.5.2
 =============
 

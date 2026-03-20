@@ -27,7 +27,7 @@ from shapely.geometry import Polygon
 from shapely.ops import unary_union
 
 from apsimNGpy.logger import logger
-
+import inspect
 
 def select_process(use_thread, ncores):
     return ThreadPoolExecutor(ncores) if use_thread else ProcessPoolExecutor(ncores)
@@ -82,8 +82,48 @@ def open_file_in_window(filepath):
         raise OSError('Unsupported operating system')
 
 
-# to avoid breaking old versions. am repeating it here
+def collect_types(obj, seen=None):
+    """
+    Recursively collect callable objects from a module or namespace.
+    """
+    if seen is None:
+        seen = set()
 
+    callables = []
+
+    for name, value in getattr(obj, "__dict__", {}).items():
+
+        if id(value) in seen:
+            continue
+
+        seen.add(id(value))
+
+        if callable(value):
+            callables.append(value)
+
+        elif hasattr(value, "__dict__"):
+            callables.extend(collect_types(value, seen))
+
+    return callables
+
+
+def collect_classes(obj, seen=None):
+    seen = seen or set()
+    types = []
+
+    for name, value in getattr(obj, "__dict__", {}).items():
+
+        if id(value) in seen:
+            continue
+        seen.add(id(value))
+
+        if inspect.isclass(value):
+            types.append(value)
+
+        elif hasattr(value, "__dict__"):
+            types.extend(collect_classes(value, seen))
+
+    return types
 
 def open_apsimx_file_in_window(filepath, bin_path):
     """

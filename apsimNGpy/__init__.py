@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING
 from apsimNGpy.config import (set_apsim_bin_path, get_apsim_bin_path, path_checker,
                               apsim_bin_context, load_crop_from_disk, configuration, start_pythonnet, DLL_DIR,
                               Configuration, locate_model_bin_path, scan_dir_for_bin, auto_detect_apsim_bin_path)
-from apsimNGpy.core_utils.utils import is_scalar, timer
+from apsimNGpy.core_utils.utils import is_scalar, timer, collect_classes
 from apsimNGpy.exceptions import ApsimRuntimeError, NodeNotFoundError, TableNotFoundError, CastCompilationError
 from apsimNGpy.logger import logger
 from apsimNGpy.parallel.process import custom_parallel
@@ -67,12 +67,12 @@ _LAZY_IMPORTS = {
     # tests
     "unittests": ("apsimNGpy.tests.unittests", None),
     # variables
-    'UniformVar' : ('apsimNGpy.optimizer.problems.variables', 'UniformVar'),
+    'UniformVar': ('apsimNGpy.optimizer.problems.variables', 'UniformVar'),
     'QrandintVar': ('apsimNGpy.optimizer.problems.variables', 'UniformVar'),
     'QuniformVar': ('apsimNGpy.optimizer.problems.variables', 'UniformVar'),
-    'RandintVar': ('apsimNGpy.optimizer.problems.variables',  'RandintVar'),
-    'ChoiceVar':('apsimNGpy.optimizer.problems.variables',  'ChoiceVar'),
-    'GridVar':('apsimNGpy.optimizer.problems.variables',  'GridVar'),
+    'RandintVar': ('apsimNGpy.optimizer.problems.variables', 'RandintVar'),
+    'ChoiceVar': ('apsimNGpy.optimizer.problems.variables', 'ChoiceVar'),
+    'GridVar': ('apsimNGpy.optimizer.problems.variables', 'GridVar'),
 }
 
 
@@ -174,8 +174,8 @@ class Apsim:
         from apsimNGpy.optimizer.minimize.single_mixed import MixedVariableOptimizer  # noqa: F401
         from apsimNGpy.optimizer.problems.smp import MixedProblem  # noqa: F401
         from apsimNGpy.tests import unittests  # noqa: F401
-        from apsimNGpy.optimizer.problems.variables import (UniformVar, QrandintVar, QuniformVar # noqa: F401
-                                                            ) # noqa: F401
+        from apsimNGpy.optimizer.problems.variables import (UniformVar, QrandintVar, QuniformVar  # noqa: F401
+                                                            )  # noqa: F401
         _ = ApsimModel
 
     def __init__(self, apsim_bin_path=_AutoBin, dotenv_path=None, bin_key=None):
@@ -390,12 +390,46 @@ if __name__ == '__main__':
                 m.add_crop_replacements()
                 m.add_replacements(*m.inspect_model('Models.Climate.Weather'))
                 print(m.inspect_model('Models.Soils.Physical'))
-                print(m.has_node('.Simulations.Simulation.Field.Soil.Physical.MaizeSoil', node_type='Models.Soils.SoilCrop'))
+                print(m.has_node('.Simulations.Simulation.Field.Soil.Physical.MaizeSoil',
+                                 node_type='Models.Soils.SoilCrop'))
                 m.tree()
                 m.run(verbose=True)
+                df = m.results
                 b = time.perf_counter()
                 print(b - a, 'seconds')
                 print(apsim.unittests)
                 print(apsim.MultiCoreManager)
                 print(apsim.ConfigProblem)
                 # print(m.results)
+                import Models
+
+                cc = collect_classes(Models)
+                cc.append(Models.Functions.Constant)
+                bg = []
+                for i in set(cc):
+                    try:
+                        names = m.inspect_model(i, fullpath=False)
+                        paths = m.inspect_model(i)
+                        if names:
+                            data = dict(zip(paths, names))
+                            bg.append(data)
+                    except TypeError:
+                        print(i, 'failed')
+                    except AttributeError:
+                        print(i, 'failed due to AttributeError')
+                m.inspect_model(Models.Functions.Constant)
+                import re
+                params = m.inspect_model_parameters(
+                            model_type="Models.Report",
+                            model_name="Report"
+                        )
+
+                v = [re.sub(r"\[|\]", "", s) for s in params['VariableNames']]
+                out = []
+                for values in v:
+                    obj  = re.search(r"as\s+(\w+)$", values)
+                    str_var = obj.group(1) if obj else []
+                    if str_var:
+                        out.append(str_var)
+                    else:
+                        out.append(values)

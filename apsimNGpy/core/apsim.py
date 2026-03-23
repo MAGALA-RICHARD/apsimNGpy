@@ -688,7 +688,7 @@ class ApsimModel(CoreModel):
             with suppress(PermissionError):
                 candidate.unlink(missing_ok=True)
 
-    def clone_simulation(self, rename: str, base_simulation: Union[int, str]=0) -> bool:
+    def clone_simulation(self, rename: str, base_simulation: Union[int, str] = 0) -> bool:
         """
         Clone an existing simulation and assign it a new name.
 

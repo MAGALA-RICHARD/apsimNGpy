@@ -645,9 +645,20 @@ class CoreModel(PlotManager):
             if self.ran_ok:
                 # lazy generator (adds a column with the report name)
                 if axis == 0:
-                    data = (read_db_table(_db_path, rep).assign(source_table=rep) for rep in reports)
+                    data = (
+                        df.assign(source_table=rep)
+                        for rep in reports
+                        for df in [read_db_table(_db_path, rep)]
+                        if isinstance(df, pd.DataFrame)
+                    )
                 else:
-                    data = (read_db_table(_db_path, rep) for rep in reports)
+                    data = (
+                        df
+                        for rep in reports
+                        for df in [read_db_table(_db_path, rep)]
+
+                        if isinstance(df, pd.DataFrame)
+                    )
 
                 return pd.concat(data, axis=axis)
             else:

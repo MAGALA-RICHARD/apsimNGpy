@@ -81,7 +81,7 @@ def generate_params(**kwargs):
     return kwargs
 
 
-@retry(stop=stop_after_attempt(2), retry=retry_if_exception_type((HTTPError, TME_OUT_ERROR)))
+# @retry(stop=stop_after_attempt(2), retry=retry_if_exception_type((HTTPError, TME_OUT_ERROR)))
 @lru_cache(maxsize=200)
 def get_soil_grid_by_lonlat(**_params):
     response = requests.get(URL, params=_params)

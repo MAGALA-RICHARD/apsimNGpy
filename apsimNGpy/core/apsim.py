@@ -688,6 +688,54 @@ class ApsimModel(CoreModel):
             with suppress(PermissionError):
                 candidate.unlink(missing_ok=True)
 
+    def clone_simulation(self, rename: str, base_simulation: Union[int, str]) -> bool:
+        """
+        Clone an existing simulation and assign it a new name.
+
+        The cloned simulation is appended to the simulations collection and can
+        subsequently be modified using methods such as ``edit_model``.
+
+        Parameters
+        ----------
+        rename : str
+            Name to assign to the cloned simulation.
+        base_simulation : int or str
+            Identifier of the simulation to clone. This can be either:
+            - Index (int) of the simulation
+            - Name (str) of the simulation
+
+        Returns
+        -------
+        bool
+            True if the simulation was successfully cloned and saved.
+
+        Raises
+        ------
+        ValueError
+            If the base simulation cannot be found or `rename` is invalid.
+
+        Notes
+        -----
+        The cloned simulation is added to the end of the simulations list.
+        Ensure that `rename` is unique to avoid ambiguity in subsequent operations.
+        """
+        if not rename or not isinstance(rename, str):
+            raise ValueError("`rename` must be a non-empty string.")
+
+        sim = self[base_simulation]
+        if sim is None:
+            raise ValueError(f"Simulation '{base_simulation}' not found.")
+
+        # Add clone
+        ModelTools.ADD(sim, self.Simulations)
+
+        # Retrieve last added simulation (the clone)
+        cloned_sim = self[-1]
+        cloned_sim.Name = rename
+
+        self.save()
+        return True
+
     def adjust_dul(self, simulations: Union[tuple, list] = None):
         """
         - This method checks whether the soil ``SAT`` is above or below ``DUL`` and decreases ``DUL``  values accordingly
@@ -895,7 +943,7 @@ class ApsimModel(CoreModel):
             self.base_simulations = base_sim
         return ModelTools.CLONER(self.base_simulations)
 
-    def create_new_simulation(self, sim_name, lonlat=None):
+    def _create_new_simulation(self, sim_name, lonlat=None):
         _sim = self._get_base_simulations()
         _sim.Name = sim_name
         ModelTools.ADD(sim_name, self.Simulations)
@@ -957,7 +1005,7 @@ if __name__ == '__main__':
     # test
 
     os.chdir(Path.home())
-    maize_x = Path.home() / 'maize.apsimx'
+    maize_x = "maize"
     # mod = ApsimModel('Maize', out_path=maize_x)
     mode = ApsimModel(maize_x, out_path=Path.home() / 'm.apsimx')
     # mode.get_soil_from_web(simulations=None, lonlat=(-93.9937, 40.4842), thinnest_layer=150, adjust_dul=True,
@@ -968,7 +1016,7 @@ if __name__ == '__main__':
     outside_usa__lonlat = 47.1553, 59.0809
 
 
-    def source_test(soil_source='isric'):
+    def source_test(soil_source='ssurgo'):
         with ApsimModel("Maize") as model:
             datastore = Path(model.datastore)
             model.add_report_variable(variable_spec='[Clock].Today.Year as year', report_name='Report',
@@ -976,7 +1024,7 @@ if __name__ == '__main__':
             model.get_soil_from_web(simulations=None, lonlat=(-93.9937, 40.4842), thinnest_layer=100,
                                     adjust_dul=True,
                                     summer_date='1-May', precipitation_interception=13.5, winter_date='1-nov',
-                                    source=soil_source)
+                                    source='ssurgo')
             model.get_weather_from_web(lonlat=(-93.9937, 40.4842), start=1989, end=2020, source='nasa')
             model.run()
             print(model.results.columns)
@@ -1005,4 +1053,5 @@ if __name__ == '__main__':
         ssurgo['ssurgo_yield'] = ssurgo['Yield']
         model.evaluate(ref_data=isric, table=ssurgo, index_col=['year'], target_col='ssurgo_yield',
                        ref_data_col='Yield')
-        print(model[1])
+        print(model.clone_simulation(rename='new_sim', base_simulation=0))
+        print(model[0])

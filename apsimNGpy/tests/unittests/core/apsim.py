@@ -9,7 +9,6 @@ wd.mkdir(parents=True, exist_ok=True)
 os.chdir(wd)
 from apsimNGpy import Apsim
 
-
 apsim = Apsim()
 
 
@@ -236,6 +235,22 @@ class TestCoreModel(BaseTester):
         # if it is auto
         ts = thickness['Thickness'].tolist()
         self.assertEqual(self.expect_ts_auto, ts)
+
+    def test_add_simulations_from_name(self):
+        with apsim.ApsimModel('Maize') as model:
+            RENAME = 'new_added'
+            out = model.clone_simulation(rename=RENAME, base_simulation='Simulation')
+            self.assertTrue(out, 'simulation was not cloned')
+            sims = {i.name for i in model.simulations}
+            self.assertIn(RENAME, sims, f'{RENAME} was not found {sims}')
+
+    def test_add_simulations_from_index(self):
+        with apsim.ApsimModel('Maize') as model:
+            RENAME = 'new_added2'
+            out = model.clone_simulation(rename=RENAME, base_simulation=0)
+            self.assertTrue(out, 'simulation was not cloned')
+            sims = {i.name for i in model.simulations}
+            self.assertIn(RENAME, sims, f'{RENAME} was not found {sims}')
 
     def test_get_weather_from_web_seq(self):
 

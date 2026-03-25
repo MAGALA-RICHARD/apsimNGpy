@@ -47,7 +47,7 @@ from apsimNGpy.core.version_inspector import is_higher_apsim_version
 from apsimNGpy.core_utils.database_utils import read_db_table
 # prepare for the C# import
 from apsimNGpy.core_utils.utils import open_apsimx_file_in_window, evaluate_commands_and_values_types, \
-    extract_cultivar_param_path
+    extract_cultivar_param_path, is_scalar
 from apsimNGpy.exceptions import ModelNotFoundError, NodeNotFoundError
 from apsimNGpy.manager.weathermanager import get_weather
 from apsimNGpy.settings import workspace, MissingOption
@@ -625,8 +625,9 @@ class CoreModel(PlotManager):
         # _____________ Collect all available data tables _____________________
         _reports = self.report_names or self.inspect_model('Models.Report',
                                                            fullpath=False)  # false returns all names other than fullpath of the models in that type
-        if _reports is not None:
+        if _reports is not None and not is_scalar(_reports):
             _reports = set(_reports)
+            print(_reports)
         db_path = Path(self.path).with_suffix('.db')
         if self.ran_ok:
             return self._get_results(_reports, db_path, axis=0)

@@ -4,6 +4,7 @@ Interface to APSIM simulation models using Python.NET
 from __future__ import annotations
 
 import gc
+import os
 from collections import namedtuple
 from functools import wraps
 from os.path import exists
@@ -256,6 +257,7 @@ def read_db_table(db: Union[str, Path], report_name: str = None, sql_query=None)
     if detect_connection(db):
         ENGINE = db
     else:
+        db = str(Path(db).with_suffix('.db'))
         DB = f'sqlite:///{db}'
         ENGINE = create_engine(DB)
     query = sql_query or f"SELECT * FROM {report_name}"

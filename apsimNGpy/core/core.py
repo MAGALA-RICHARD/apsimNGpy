@@ -625,6 +625,8 @@ class CoreModel(PlotManager):
         # _____________ Collect all available data tables _____________________
         _reports = self.report_names or self.inspect_model('Models.Report',
                                                            fullpath=False)  # false returns all names other than fullpath of the models in that type
+        if _reports is not None:
+            _reports = set(_reports)
         db_path = Path(self.path).with_suffix('.db')
         if self.ran_ok:
             return self._get_results(_reports, db_path, axis=0)

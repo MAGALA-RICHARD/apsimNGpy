@@ -718,7 +718,68 @@ class ApsimModel(CoreModel):
         -----
         The cloned simulation is added to the end of the simulations list.
         Ensure that `rename` is unique to avoid ambiguity in subsequent operations.
-        """
+
+
+        Examples
+        --------
+        .. code-block:: python
+
+            from apsimNGpy import Apsim
+
+            apsim = Apsim()
+            model = apsim.ApsimModel("Maize")
+
+            # Inspect existing simulations
+            model.inspect_model("Simulation", fullpath=False)
+            # Output: ['Simulation']
+
+            # Clone simulation
+            model.clone_simulation(rename="new_sim", base_simulation=0)
+
+            model.inspect_model("Simulation", fullpath=False)
+            # Output: ['Simulation', 'new_sim']
+
+            # Modify fertilization amounts
+            model.edit_model(
+                model_type="Models.Manager",
+                model_name="Fertilise at sowing",
+                simulations="new_sim",
+                Amount=300,
+            )
+
+            model.edit_model(
+                model_type="Models.Manager",
+                model_name="Fertilise at sowing",
+                simulations="Simulation",
+                Amount=0,
+            )
+
+            # Add report variables
+            model.edit_model(
+                model_type="Models.Report",
+                model_name="Report",
+                variable_spec=[
+                    "[Fertilise at sowing].Script.Amount as amount",
+                    "[Simulation].Name as simulations",
+                ],
+            )
+
+            # Run simulation
+            model.run()
+            data = model.results
+
+            # Group by simulation
+            data.groupby("simulations")["Yield"].mean()
+            # Expected:
+            # Simulation    1747.866065
+            # new_sim       5547.565724
+
+            # Group by fertilizer amount (should match above)
+            data.groupby("amount")["Yield"].mean()
+            # Expected:
+            # 0.0      1747.866065
+            # 300.0    5547.565724
+       """
         if not rename or not isinstance(rename, str):
             raise ValueError("`rename` must be a non-empty string.")
 

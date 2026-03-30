@@ -3,19 +3,26 @@ Version 1.5.3
 
 New Features
 ------------
+* **``clone_simulation`` method**
+   Added support for cloning existing simulations with a new name, enabling users to easily create and manage multiple simulation
+   scenarios within the same model. This update facilitates
+   comparative analyses (e.g., varying management practices such as fertilization rates) while preserving the original simulation configuration.
+   see doc; :meth:`~apsimNGpy.core.ApsimModel.clone_simulation`
 
 * **``has_node`` method**
 
   Added a new ``has_node`` method that allows users to check whether a given
   node name or path exists within the current APSIM model or specified scope.
+  see doc; :meth:`~apsimNGpy.core.ApsimModel.has_node`
 
-* **Cultivar editing interface**
+* **Cultivar editing interface API**
 
-  Introduced an explicit cultivar editing class using a composition-based
+  Introduced an explicit cultivar editing class; `CultivarEditor` using a composition-based
   design. Due to limitations in the APSIM API, replacement nodes cannot
   currently be edited in place. As a workaround, edited cultivars are added
   directly under the plant's children rather than modifying the replacement
   nodes themselves.
+  see doc: :class:`~apsimNGpy.core.ce.CultivarEditor`
 
 Bug Fixes
 ---------

@@ -31,6 +31,7 @@ InvalidOperationException, ArgumentOutOfRangeException = CLR.System.InvalidOpera
 from apsimNGpy.core._cultivar import edit_cultivar_by_path
 from apsimNGpy.core._cultivar import trace_cultivar
 from apsimNGpy.config import configuration
+from apsimNGpy.core.ce import EditorCultivarCommands
 
 CastHelper = CLR.CastHelper
 from apsimNGpy.core.model_loader import (load_apsim_model, save_model_to_file, recompile, get_node_by_path, AUTO_PATH)
@@ -627,7 +628,7 @@ class CoreModel(PlotManager):
                                                            fullpath=False)  # false returns all names other than fullpath of the models in that type
         if _reports is not None and not is_scalar(_reports):
             _reports = set(_reports)
-            print(_reports)
+
         db_path = Path(self.path).with_suffix('.db')
         if self.ran_ok:
             return self._get_results(_reports, db_path, axis=0)
@@ -1670,34 +1671,84 @@ class CoreModel(PlotManager):
             case Models.PMF.Cultivar:
 
                 # Ensure crop replacements exist under Replacements
-                if 'Replacements' not in self.inspect_model('Models.Core.Folder'):
-                    for crop_name in self.inspect_model(Models.PMF.Plant, fullpath=False):
-                        self.add_crop_replacements(_crop=crop_name)
+                # if 'Replacements' not in self.inspect_model('Models.Core.Folder'):
+                #     for crop_name in self.inspect_model(Models.PMF.Plant, fullpath=False):
+                #         self.add_crop_replacements(_crop=crop_name)
+                plant_name = kwargs.get('plant')
+                if plant_name is None:
+                    raise ValueError(
+                        f'Please specify the plant name e.g., Maize, Soybean etc hosting the suggested cultivar: {values.Name}')
+                rename = kwargs.get('rename', f"e_{plant_name}_{values.Name}")
+
+                cc = EditorCultivarCommands(model=self, template_cultivar=values.Name, plant=plant_name)
+                commands = kwargs.get('commands')
+                match commands:
+                    case dict():
+                        # Example: {'[Phenology].Juvenile.Target.FixedValue':'200'}
+                        cc.edit_by_cmd_pairs(name=rename, commands=commands)
+
+                    case list() | tuple():
+                        values = kwargs.get("values", [])
+
+                        if not values:
+                            # Example: ['[Phenology].Juvenile.Target.FixedValue=200']
+                            cc.edit_by_cmd_iterable(rename, commands=commands)
+                        else:
+                            if is_scalar(values):
+                                raise TypeError(
+                                    f"Expected an iterable of values, but got {type(values).__name__}."
+                                )
+
+                            # Example:
+                            # commands = ['[Phenology].Juvenile.Target.FixedValue']
+                            # values = [200]
+                            if len(commands) != len(values):
+                                raise ValueError(
+                                    f"Length mismatch: {len(commands)} command(s) vs {len(values)} value(s)."
+                                )
+
+                            cmd_dict = dict(zip(commands, values))
+                            cc.edit_by_cmd_pairs(rename, commands=cmd_dict)
+
+                    case _:
+                        raise TypeError(
+                            f"Unsupported type for 'commands': {type(commands).__name__}. "
+                            "Expected dict, list, or tuple."
+                        )
 
                 kwargs['plant'] = trace_cultivar(self.Simulations, values.Name).get(values.Name)
-                commands = kwargs.get('commands')
 
-                kvp = {}
-                for k, v in kwargs.items():
-                    if extract_cultivar_param_path(k):
-                        kvp[k] = v
-                commands = commands or kvp
-                if not commands:
-                    print(commands)
-                    raise ValueError('key word arguments commands missing or dict of paramters values')
-                if isinstance(commands, dict):
-                    commands, com_values = commands.keys(), commands.values()
+                mp = kwargs.get('manager_path', None) or kwargs.get('managers')
+                if not isinstance(mp, dict):
+                    raise ValueError(
+                        f"Expected a dict, but got {type(mp).__name__}. "
+                        "Please provide a dictionary where keys are manager paths or names "
+                        "and values are parameter names. Example: `{'Sow using a variable rule':'CultivarName'}"
+                    )
+                for k, v in mp.items():
+                    cc.attach_cultivar(name=rename, manager=k, param_name=v)
 
-                else:
-                    com_values = kwargs.get('values')
-                edit_cultivar_by_path(self, path=path, commands=commands,
-                                      values=com_values, manager_param=kwargs.get('manager_param'),
-                                      manager_path=kwargs.get('manager_path'),
-                                      sowed=kwargs.get('sowed', True), rename=kwargs.get('rename'))
-                if kwargs.get('commands', None):  # changed it momentarily
-                    _edit_in_cultivar(self, model_name=values.Name, simulations=simulations, param_values=kwargs,
-                                      verbose=verbose, by_path=True)
-                ...
+                # kvp = {}
+                # for k, v in kwargs.items():
+                #     if extract_cultivar_param_path(k):
+                #         kvp[k] = v
+                # commands = commands or kvp
+                # if not commands:
+                #     print(commands)
+                #     raise ValueError('key word arguments commands missing or dict of paramters values')
+                # if isinstance(commands, dict):
+                #     commands, com_values = commands.keys(), commands.values()
+                #
+                # else:
+                #     com_values = kwargs.get('values')
+                # edit_cultivar_by_path(self, path=path, commands=commands,
+                #                       values=com_values, manager_param=kwargs.get('manager_param'),
+                #                       manager_path=kwargs.get('manager_path'),
+                #                       sowed=kwargs.get('sowed', True), rename=kwargs.get('rename'))
+                # if kwargs.get('commands', None):  # changed it momentarily
+                #     _edit_in_cultivar(self, model_name=values.Name, simulations=simulations, param_values=kwargs,
+                #                       verbose=verbose, by_path=True)
+                # ...
             case Models.Clock:
                 self._set_clock_vars(values, param_values=kwargs)
             case Models.Soils.Physical | Models.Soils.Chemical | Models.Soils.Organic | Models.Soils.Water | Models.Soils.Solute:
@@ -2053,92 +2104,137 @@ class CoreModel(PlotManager):
                         ) from e
 
                 case Models.PMF.Cultivar:
+                    plant_name = kwargs.get('plant')
+                    if plant_name is None:
+                        raise ValueError(
+                            f'Please specify the plant name e.g., Maize, Soybean etc hosting the suggested cultivar: {model_name}')
+                    rename = kwargs.get('rename', f"e_{plant_name}_{model_name}")
 
-                    # Ensure crop replacements exist under Replacements
-                    if 'Replacements' not in self.inspect_model('Models.Core.Folder', fullpath=False):
-                        for crop_name in self.inspect_model(Models.PMF.Plant, fullpath=False):
-                            self.add_crop_replacements(_crop=crop_name)
+                    cc = EditorCultivarCommands(model=self, template_cultivar=model_name, plant=plant_name)
+                    commands = kwargs.get('commands')
+                    match commands:
+                        case dict():
+                            # Example: {'[Phenology].Juvenile.Target.FixedValue':'200'}
 
-                    _cultivar_names = self.inspect_model('Cultivar', fullpath=False)
+                            cc.edit_by_cmd_pairs(name=rename, commands=commands)
 
-                    # Extract input parameters
-                    commands = kwargs.get("commands")
-                    if isinstance(commands, dict):
-                        commands, values = commands.items()
-                    else:
-                        values = kwargs.get("values")
+                        case list() | tuple():
+                            values = kwargs.get("values", [])
 
-                    cultivar_manager = kwargs.get("cultivar_manager")
-                    new_cultivar_name = kwargs.get("new_cultivar_name", None)
-                    cultivar_manager_param = kwargs.get("parameter_name", 'CultivarName')
+                            if not values:
+                                # Example: ['[Phenology].Juvenile.Target.FixedValue=200']
+                                cc.edit_by_cmd_iterable(rename, commands=commands)
 
-                    plant_name = (kwargs.get('plant') or
-                                  trace_cultivar(self.Simulations, model_name).get(model_name))
+                            else:
+                                # Example:
+                                # commands = ['[Phenology].Juvenile.Target.FixedValue']
+                                # values = [200]
+                               cc.edit_by_cmd_values(rename, commands=commands, values=values)
 
-                    # Input validation
-                    if not new_cultivar_name:
-                        new_cultivar_name = f"{model_name}-{plant_name}-edited01"
+                        case _:
+                            raise TypeError(
+                                f"Unsupported type for 'commands': {type(commands).__name__}. "
+                                "Expected dict, list, or tuple."
+                            )
 
-                    if not cultivar_manager:
-                        raise ValueError("Please specify a cultivar manager using 'cultivar_manager=\"your_manager\"'")
+                    # kwargs['plant'] = trace_cultivar(self.Simulations, values.Name).get(values.Name)
 
-                    evaluate_commands_and_values_types(commands=commands, values=values)
+                    mp = kwargs.get('manager_path', None) or kwargs.get('managers')
+                    sowed = kwargs.get('sowed', False)
+                    if not isinstance(mp, dict) and not sowed:
+                        raise ValueError(
+                            f"For Cultivar managers, expected a dict, but got {type(mp).__name__}. "
+                            "Please provide a dictionary where keys are manager paths or names "
+                            "and values are parameter names. Example: `{'Sow using a variable rule':'CultivarName'}"
+                        )
+                    for k, v in mp.items():
+                        cc.attach_cultivar(name=rename, manager=k, param_name=v)
 
-                    # Get replacement folder and source cultivar model
-                    replacements = get_or_check_model(self.Simulations, Models.Core.Folder, 'Replacements',
-                                                      action='get')
-
-                    get_or_check_model(replacements, Models.Core.Folder, 'Replacements',
-                                       action='delete')
-                    cultivar_fallback = get_or_check_model(self.Simulations, Models.PMF.Cultivar, model_name,
-                                                           action='get')
-                    cultivar = ModelTools.CLONER(cultivar_fallback)
-
-                    # Update cultivar parameters
-                    cultivar_params = self._cultivar_params(cultivar)
-
-                    if isinstance(values, str):
-                        cultivar_params[commands] = values.strip()
-                    elif isinstance(values, (int, float)):
-                        cultivar_params[commands] = values
-                    else:
-                        for cmd, val in zip(commands, values):
-                            cultivar_params[cmd.strip()] = val.strip() if isinstance(val, str) else val
-
-                    # Apply updated commands
-                    updated_cmds = [f"{k.strip()}={v}" for k, v in cultivar_params.items()]
-                    cultivar = CastHelper.CastAs[Models.PMF.Cultivar](cultivar)
-                    cultivar.set_Command(updated_cmds)
-
-                    # Attach cultivar under a plant model
-                    try:
-                        plant_model = get_or_check_model(replacements, Models.PMF.Plant, plant_name,
-                                                         action='get')
-                        if not plant_model:
-                            raise RuntimeError(f'plant {plant_name} not found')
-                    except ValueError:
-                        "an error occured"
-                        plant_model = find_child(parent=replacements, child_class=Models.PMF.Plant, child_name='Maize')
-
-                    # Remove existing cultivar with same name
-                    get_or_check_model(replacements, Models.PMF.Cultivar, new_cultivar_name, action='delete')
-
-                    # Rename and reattach cultivar
-                    cultivar.Name = new_cultivar_name
-                    if ModelTools.ADD:
-                        # most likely old APSIM models
-                        ModelTools.ADD(cultivar, plant_model)
-                    else:
-                        plant_model.Children.Add(cultivar)
-
-                    # Update cultivar manager script
-                    self.edit_model(model_type=Models.Manager, model_name=cultivar_manager, simulations=simulations,
-                                    **{cultivar_manager_param: new_cultivar_name})
-
-                    self.save()
-
-                    if verbose:
-                        logger.info(f"Edited Cultivar '{model_name}' and saved it as '{new_cultivar_name}'")
+                    # # Ensure crop replacements exist under Replacements
+                    # if 'Replacements' not in self.inspect_model('Models.Core.Folder', fullpath=False):
+                    #     for crop_name in self.inspect_model(Models.PMF.Plant, fullpath=False):
+                    #         self.add_crop_replacements(_crop=crop_name)
+                    #
+                    # _cultivar_names = self.inspect_model('Cultivar', fullpath=False)
+                    #
+                    # # Extract input parameters
+                    # commands = kwargs.get("commands")
+                    # if isinstance(commands, dict):
+                    #     commands, values = commands.items()
+                    # else:
+                    #     values = kwargs.get("values")
+                    #
+                    # cultivar_manager = kwargs.get("cultivar_manager")
+                    # new_cultivar_name = kwargs.get("new_cultivar_name", None)
+                    # cultivar_manager_param = kwargs.get("parameter_name", 'CultivarName')
+                    #
+                    # plant_name = (kwargs.get('plant') or
+                    #               trace_cultivar(self.Simulations, model_name).get(model_name))
+                    #
+                    # # Input validation
+                    # if not new_cultivar_name:
+                    #     new_cultivar_name = f"{model_name}-{plant_name}-edited01"
+                    #
+                    # if not cultivar_manager:
+                    #     raise ValueError("Please specify a cultivar manager using 'cultivar_manager=\"your_manager\"'")
+                    #
+                    # evaluate_commands_and_values_types(commands=commands, values=values)
+                    #
+                    # # Get replacement folder and source cultivar model
+                    # replacements = get_or_check_model(self.Simulations, Models.Core.Folder, 'Replacements',
+                    #                                   action='get')
+                    #
+                    # get_or_check_model(replacements, Models.Core.Folder, 'Replacements',
+                    #                    action='delete')
+                    # cultivar_fallback = get_or_check_model(self.Simulations, Models.PMF.Cultivar, model_name,
+                    #                                        action='get')
+                    # cultivar = ModelTools.CLONER(cultivar_fallback)
+                    #
+                    # # Update cultivar parameters
+                    # cultivar_params = self._cultivar_params(cultivar)
+                    #
+                    # if isinstance(values, str):
+                    #     cultivar_params[commands] = values.strip()
+                    # elif isinstance(values, (int, float)):
+                    #     cultivar_params[commands] = values
+                    # else:
+                    #     for cmd, val in zip(commands, values):
+                    #         cultivar_params[cmd.strip()] = val.strip() if isinstance(val, str) else val
+                    #
+                    # # Apply updated commands
+                    # updated_cmds = [f"{k.strip()}={v}" for k, v in cultivar_params.items()]
+                    # cultivar = CastHelper.CastAs[Models.PMF.Cultivar](cultivar)
+                    # cultivar.set_Command(updated_cmds)
+                    #
+                    # # Attach cultivar under a plant model
+                    # try:
+                    #     plant_model = get_or_check_model(replacements, Models.PMF.Plant, plant_name,
+                    #                                      action='get')
+                    #     if not plant_model:
+                    #         raise RuntimeError(f'plant {plant_name} not found')
+                    # except ValueError:
+                    #     "an error occured"
+                    #     plant_model = find_child(parent=replacements, child_class=Models.PMF.Plant, child_name='Maize')
+                    #
+                    # # Remove existing cultivar with same name
+                    # get_or_check_model(replacements, Models.PMF.Cultivar, new_cultivar_name, action='delete')
+                    #
+                    # # Rename and reattach cultivar
+                    # cultivar.Name = new_cultivar_name
+                    # if ModelTools.ADD:
+                    #     # most likely old APSIM models
+                    #     ModelTools.ADD(cultivar, plant_model)
+                    # else:
+                    #     plant_model.Children.Add(cultivar)
+                    #
+                    # # Update cultivar manager script
+                    # self.edit_model(model_type=Models.Manager, model_name=cultivar_manager, simulations=simulations,
+                    #                 **{cultivar_manager_param: new_cultivar_name})
+                    #
+                    # self.save()
+                    #
+                    # if verbose:
+                    #     logger.info(f"Edited Cultivar '{model_name}' and saved it as '{new_cultivar_name}'")
 
                 case _:
                     if not model_instance and not replace_ments:
@@ -2148,6 +2244,7 @@ class CoreModel(PlotManager):
                         raise NotImplementedError(f"No edit method implemented for model type {type(model_instance)}")
 
         for _ in map(edit_object, edit_candidate_objects):
+
             pass
 
         self.ran_ok = False
@@ -5495,4 +5592,18 @@ if __name__ == '__main__':
     fm.add_replacements('.Simulations.Simulation.Field.Sow using a variable rule',
                         '.Simulations.Simulation.Field.Sow using a variable rule',
                         '.Simulations.Simulation.Field.Sow using a variable rule')
-    #fm.open_in_gui()
+    # fm.open_in_gui()
+    fixed_model.edit_model(model_type='Models.PMF.Cultivar',
+                           model_name='B_100', plant='Maize',
+                           commands=['[Phenology].Juvenile.Target.FixedValue'], simulations='Simulation',
+                           values=[200], managers={'Sow using a variable rule': 'CultivarName'})
+    fixed_model.run()
+    print(fixed_model.results.Yield.mean())
+    fixed_model.edit_model(model_type='Models.PMF.Cultivar',
+                           model_name='B_100', plant='Maize',
+                           commands=['[Phenology].Juvenile.Target.FixedValue'], simulations='Simulation',
+                           values=[100], managers={'Sow using a variable rule': 'CultivarName'})
+    fixed_model.run()
+    fixed_model.open_in_gui()
+    print(fixed_model.results.Yield.mean())
+

@@ -2062,8 +2062,10 @@ class CoreModel(PlotManager):
 
                 case Models.Soils.Physical | Models.Soils.Chemical | Models.Soils.Organic | Models.Soils.Water | Models.Soils.Solute:
                     try:
+                        #Accept key word arguments
                         ModelTools.edit_instance(model_instance, **kwargs)
                     except AttributeError as ate:
+
                         lp = [attr[len('set_'):] for attr in dir(model_instance) if attr.startswith('set_')]
                         accepted_attributes = '\n'.join(lp)
                         logger.info(f'some of the accepted attributes are {accepted_attributes}')
@@ -2076,6 +2078,7 @@ class CoreModel(PlotManager):
                         ModelTools.edit_instance(model_instance, **kwargs)
                     except AttributeError as ate:
                         accepted_attributes = self.inspect_settable_attributes(Models.Surface.SurfaceOrganicMatter)
+                        # Provide user with acceptable attributes
                         accept = "\n".join(accepted_attributes)
                         logger.info(f'some of the accepted attributes are {accept}')
                         raise AttributeError(
@@ -3273,9 +3276,10 @@ class CoreModel(PlotManager):
         else:
             manager = scope.FindDescendant[Models.Manager](manager_name)
         g_parameters = manager.Parameters
+        # set the arguments
         for i in range(len(list(g_parameters))):
             _param = g_parameters[i].Key
-
+        # loop through arguments
             if _param in kwargs:
                 manager.Parameters[i] = KeyValuePair[String, String](_param, f"{kwargs[_param]}")
                 # remove the successfully processed keys

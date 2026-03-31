@@ -799,19 +799,129 @@ class ApsimModel(CoreModel):
 
     @staticmethod
     def _get_node(self, node_id, node_type):
+        # name identifies the node
         if node_id in self.inspect_model(node_type, fullpath=False):
-            node_loc = ModelTools.find_child(self, child_class=node_type, child_name=node_id)
+            node_loc = ModelTools.find_child(self.Simulations, child_class=node_type, child_name=node_id)
+            # full path identifies the node
         elif node_id in self.inspect_model(node_type, fullpath=True):
-            node_loc = get_node_by_path(node_path=node_id, cast_as=node_type)
+            node_loc = get_node_by_path(self.Simulations, node_path=node_id, cast_as='auto')
         else:
+            # node is identified by either name or full path but does not exist
             raise ValueError(f"suggested node type '{node_type}'  named '{node_id}' not found.")
         return node_loc
 
-    def add_node_from(self, node_from, node_from_type, node_from_id, node_to, node_to_type):
-        node_to_loc = self._get_node(self, node_to, node_to_type)
+    def add_node_from(self, *,
+                      node_from,
+                      node_from_type,
+                      node_from_id,
+                      node_to_id,
+                      node_to_type,
+                      del_if_exists=True,
+                      rename=None):
+        """
+        Add a node from a source APSIM model into a target node location.
+
+        This method copies a node (e.g., Clock, Manager, Soil component) from a source
+        model and inserts it into a specified location in the current model. Optionally,
+        existing nodes with the same name and type can be removed before insertion.
+
+        Parameters
+        ----------
+        node_from : str
+            Path or identifier of the source APSIM model.
+        node_from_type : str
+            Type of the node to retrieve from the source model (e.g., 'Models.Clock').
+        node_from_id : str
+            Name or identifier of the node to copy from the source model.
+        node_to_id : str
+            Target node location in the current model. Can be a full path or node name.
+        node_to_type : Any of str:or  Attribute Class from Models namespace e.g Models.Clock vs 'Models.Clock'
+            Expected type of the target node (e.g., 'Models.Core.Simulation').
+        del_if_exists : bool or str, optional
+            If True or 'delete', existing nodes with the same name and type in the target
+            location will be removed before adding the new node. If False, the new node
+            will be added alongside existing ones. Default is True.
+        rename : str, optional
+            If provided, renames the inserted node after it is added to the target location.
+
+        Notes
+        -----
+        - All parameters are keyword-only (enforced via `*`) to prevent argument mis-ordering
+          and improve readability of function calls.
+        - `node_from_id` and `node_to_id` can be either full paths or node names.
+        - When `del_if_exists=False`, multiple nodes of the same type can coexist,
+          which is useful for components like Manager scripts performing different tasks.
+        - When `del_if_exists=True`, only nodes matching both name and type are removed.
+
+        Examples
+        --------
+        .. code-block:: python
+
+            from apsimNGpy.core.apsim import ApsimModel
+            from Models.Core import Simulation
+
+            # Initialize model
+            model = ApsimModel("Maize", out_path="fxm.apsimx")
+
+            # Clone simulation
+            model.clone_simulation(rename="new_sim", base_simulation=0)
+
+            # Add node with deletion of existing matching nodes
+            model.add_node_from(
+                "Soybean",
+                node_from_type="Models.Clock",
+                node_from_id="Clock",
+                node_to_id=".Simulations.Simulation",
+                node_to_type='Simulation',
+                del_if_exists=True,
+                rename="our_clock"
+            )
+
+            clocks1 = model.inspect_model("Models.Clock", fullpath=False)
+            assert len(clocks1) == 2
+            assert "our_clock" in clocks1
+
+            # Add node without deleting existing ones (allow duplicates)
+            model = ApsimModel("Maize", out_path="fxm2.apsimx")
+
+            model.add_node_from(
+                "Soybean",
+                node_from_type="Models.Clock",
+                node_from_id="Clock",
+                node_to_id=".Simulations.Simulation",
+                node_to_type=Simulation,
+                del_if_exists=False,
+                rename="our_clock"
+            )
+
+            clocks2 = model.inspect_model("Models.Clock", fullpath=False)
+            assert len(clocks2) == 2
+            assert "our_clock" in clocks2
+
+            model.open_in_gui(watch=False)
+        """
+
+        node_to_loc = self._get_node(self, node_to_id, node_to_type)
+
         with CoreModel(node_from) as mod:
             node_from_node = self._get_node(mod, node_from_id, node_from_type)
+
+            if del_if_exists:
+                # delete the node with the same name and type
+                chd_s = node_to_loc.Children
+                for chd in list(chd_s):
+                    print(type(node_from_node.GetType()), 'node type')
+                    if chd.Name == node_from_id and type(chd.GetType()) == type(node_from_node.GetType()):
+                        chd_s.Remove(chd)
+                        break
+                else:
+                    logger.info(
+                        f"node id {node_from_id} and {type(node_to_loc.GetType())} does not exist in the specified node location {node_to_id}")
+                    pass
+            if rename:
+                node_from_node.Name = rename
             ModelTools.ADD(node_from_node, node_to_loc)
+
         self.save()
 
     def adjust_dul(self, simulations: Union[tuple, list] = None):
@@ -1122,15 +1232,32 @@ if __name__ == '__main__':
         return df
 
 
-    with ApsimModel('Maize') as model:
-        model.set_params(
-            {'path': '.Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82', 'sowed': True, 'values': [550.0],
-             'commands': ['[Grain].MaximumGrainsPerCob.FixedValue'], 'plant': 'Maize',
-             'managers': {'Sow using a variable rule': 'CultivarName'}}, )
-        isric = source_test(soil_source='isric')
-        ssurgo = source_test(soil_source='ssurgo')
-        ssurgo['ssurgo_yield'] = ssurgo['Yield']
-        model.evaluate(ref_data=isric, table=ssurgo, index_col=['year'], target_col='ssurgo_yield',
-                       ref_data_col='Yield')
-        print(model.clone_simulation(rename='new_sim', base_simulation=0))
-        print(model[0])
+    model = ApsimModel('Maize', out_path='fxm.apsimx')
+    model.set_params(
+        {'path': '.Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82', 'sowed': True, 'values': [550.0],
+         'commands': ['[Grain].MaximumGrainsPerCob.FixedValue'], 'plant': 'Maize',
+         'managers': {'Sow using a variable rule': 'CultivarName'}}, )
+    isric = source_test(soil_source='isric')
+    ssurgo = source_test(soil_source='ssurgo')
+    ssurgo['ssurgo_yield'] = ssurgo['Yield']
+    model.evaluate(ref_data=isric, table=ssurgo, index_col=['year'], target_col='ssurgo_yield',
+                   ref_data_col='Yield')
+    model.clone_simulation(rename='new_sim', base_simulation=0)
+    print(model[0])
+
+    model.add_node_from(node_from='Soybean', node_from_type='Models.Clock',
+                        node_from_id='Clock', node_to_id='.Simulations.Simulation',
+                        node_to_type=Models.Core.Simulation, del_if_exists=True, rename='our_clock')
+    clocks1 = model.inspect_model('Models.Clock', fullpath=False)
+    # because simulations are two, if we delete and replace, they will remain two
+    assert len(clocks1) ==2, "clocks expected to be two because of two simulations"
+    assert 'our_clock' in clocks1, "our_clock not found"
+    # create new instance and text
+    model = ApsimModel('Maize', out_path='fxm2.apsimx')
+    model.add_node_from(node_from='Soybean', node_from_type='Models.Clock',
+                        node_from_id='Clock', node_to_id='.Simulations.Simulation',
+                        node_to_type='Simulation', del_if_exists=False, rename='our_clock')
+    clocks2 = model.inspect_model('Models.Clock', fullpath=False)
+    assert len(clocks1) == 2, "clocks expected to be two because of two simulations"
+    assert 'our_clock' in clocks1, "our_clock not found"
+    model.open_in_gui(watch=False)

@@ -3,6 +3,23 @@ Version 1.5.3
 
 New Features
 ------------
+- **add_node_from method**
+
+  Added a utility for transferring nodes between APSIM models with improved
+  control and safety. The method now enforces **keyword-only arguments**
+  (via ``*``) to prevent parameter mis-ordering and improve readability.
+
+  Key features:
+
+  - Copy nodes from external or internal APSIM models into a specified target location
+  - Optionally delete existing nodes with matching name and type before insertion (``del_if_exists``)
+  - Support renaming of inserted nodes (``rename``)
+  - Allow node identification using either full paths or node names
+  - Improved handling of multiple nodes of the same type (e.g., Manager scripts with different roles)
+
+  This update enhances robustness model editing  and generation and usability for workflows involving
+  model customization, scenario generation, and dynamic node manipulation.
+
 * **``clone_simulation`` method**
    Added support for cloning existing simulations with a new name, enabling users to easily create and manage multiple simulation
    scenarios within the same model. This update facilitates

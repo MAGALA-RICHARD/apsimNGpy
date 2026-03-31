@@ -797,6 +797,23 @@ class ApsimModel(CoreModel):
         self.save()
         return True
 
+    @staticmethod
+    def _get_node(self, node_id, node_type):
+        if node_id in self.inspect_model(node_type, fullpath=False):
+            node_loc = ModelTools.find_child(self, child_class=node_type, child_name=node_id)
+        elif node_id in self.inspect_model(node_type, fullpath=True):
+            node_loc = get_node_by_path(node_path=node_id, cast_as=node_type)
+        else:
+            raise ValueError(f"suggested node type '{node_type}'  named '{node_id}' not found.")
+        return node_loc
+
+    def add_node_from(self, node_from, node_from_type, node_from_id, node_to, node_to_type):
+        node_to_loc = self._get_node(self, node_to, node_to_type)
+        with CoreModel(node_from) as mod:
+            node_from_node = self._get_node(mod, node_from_id, node_from_type)
+            ModelTools.ADD(node_from_node, node_to_loc)
+        self.save()
+
     def adjust_dul(self, simulations: Union[tuple, list] = None):
         """
         - This method checks whether the soil ``SAT`` is above or below ``DUL`` and decreases ``DUL``  values accordingly
@@ -1108,7 +1125,8 @@ if __name__ == '__main__':
     with ApsimModel('Maize') as model:
         model.set_params(
             {'path': '.Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82', 'sowed': True, 'values': [550.0],
-             'commands': ['[Grain].MaximumGrainsPerCob.FixedValue']})
+             'commands': ['[Grain].MaximumGrainsPerCob.FixedValue'], 'plant': 'Maize',
+             'managers': {'Sow using a variable rule': 'CultivarName'}}, )
         isric = source_test(soil_source='isric')
         ssurgo = source_test(soil_source='ssurgo')
         ssurgo['ssurgo_yield'] = ssurgo['Yield']

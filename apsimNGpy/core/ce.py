@@ -120,7 +120,7 @@ class EditorCultivarCommands:
                 f"Manager script '{manager}' not found in the model."
             )
 
-    @lru_cache(maxsize=200)  # crucial during optimization
+    # @lru_cache(maxsize=200)  # crucial during optimization
     def add_plant_replacements(self):
         self.model.add_crop_replacements()
         pr = self.model.get_crop_replacement(self.plant)

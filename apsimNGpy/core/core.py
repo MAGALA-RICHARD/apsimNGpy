@@ -1716,7 +1716,7 @@ class CoreModel(PlotManager):
                             "Expected dict, list, or tuple."
                         )
 
-                kwargs['plant'] = trace_cultivar(self.Simulations, values.Name).get(values.Name)
+               # kwargs['plant'] = trace_cultivar(self.Simulations, values.Name).get(values.Name)
 
                 mp = kwargs.get('manager_path', None) or kwargs.get('managers')
                 if not isinstance(mp, dict):

@@ -737,7 +737,7 @@ if __name__ == '__main__':
         "vtype": [QrandintVar(400, 600, q=5), ],
         "start_value": [550, ],
         "candidate_param": ["[Grain].MaximumGrainsPerCob.FixedValue", ],
-        "other_params": {"sowed": True},
+        "other_params": {"sowed": True, 'plant':'Maize', 'managers':{'Sow using a variable rule':'CultivarName'}},
         # other params must be on the same node or associated or extra arguments, e.g., target simulation name classified simulations
         'cultivar': True
     }
@@ -746,7 +746,7 @@ if __name__ == '__main__':
         "start_value": [550, ],
         'bounds': [(400, 800)],
         "candidate_param": ["[Grain].MaximumGrainsPerCob.FixedValue", ],
-        "other_params": {"sowed": True},
+        "other_params": {"sowed": True, 'plant':'Maize', 'managers':{'Sow using a variable rule':'CultivarName'} },
         # other params must be on the same node or associated or extra arguments, e.g., target simulation name classified simulations
         'cultivar': True
     }
@@ -788,10 +788,11 @@ if __name__ == '__main__':
     mp = MixedProblem(model='Maize', trainer_dataset=obs, pred_col='Yield', metric='MAE', table='Report',
                       index='year', trainer_col='observed')
     optimizer = MixedVariableOptimizer(problem=mp)
-    mp.submit_factor(**cultivar_param_p)
+    mp.submit_factor(**cultivar_param)
+    mp.submit_factor(**fom_params)
     print(mp.n_factors, 'factors submitted for the pure variables')
     # out = optimizer.minimize_with_local()
     # print(out)
-    res = optimizer.minimize_with_de(use_threads=False, updating='deferred', workers=15, popsize=10,
-                                     constraints=(0, 0.2))
-    # print(res)
+    # res = optimizer.minimize_with_de(use_threads=False, updating='deferred', workers=15, popsize=10,
+    #                                  constraints=(0, 0.2))
+    # # print(res)

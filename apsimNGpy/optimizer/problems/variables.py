@@ -175,7 +175,7 @@ class BaseParams(BaseModel):
     ]
     start_value: Union[Tuple[str, ...], Tuple[int, ...], Tuple[float, ...]]
     candidate_param: Union[Tuple[str, ...]]
-    other_params: Optional[Dict[str, Union[int, float, str, bool]]] = None
+    other_params: Optional[Dict[str, Union[int, float, str, bool, dict]]] = None
     cultivar: Optional[bool] = False
 
     def __hash__(self):
@@ -227,7 +227,7 @@ class BaseParamsContinuous(BaseModel):
     # Candidate parameter names must also be a tuple
     candidate_param: Tuple[str, ...]
 
-    other_params: Optional[Dict[str, Union[int, float, str, bool]]] = None
+    other_params: Optional[Dict[str, Union[int, float, str, bool, dict]]] = None
     cultivar: Optional[bool] = False
 
     def __hash__(self):

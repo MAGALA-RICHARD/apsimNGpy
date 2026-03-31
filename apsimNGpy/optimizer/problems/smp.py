@@ -11,6 +11,8 @@ Author: Richard Magala
 
 import copy
 import gc
+import hashlib
+import json
 from collections import OrderedDict
 from typing import Optional, List, Dict, Any, Union
 
@@ -508,8 +510,16 @@ class MixedProblem:
             )).additional_evaluation()
 
         apsim_out = filter_apsim_params(out)
-        key_hashable = (tuple(apsim_out.keys()), tuple(apsim_out.values()))
-        self.ordered_factors[key_hashable] = out
+        _out = {}
+        for k, v in apsim_out.items():
+           _out[k] = str(v)
+        #key_hashable = (tuple(apsim_out.keys()), tuple(out))
+
+        key = hashlib.sha256(
+            json.dumps(_out, sort_keys=True).encode()
+        ).hexdigest()
+
+        self.ordered_factors[key] = out
         self._validate_factor()
         self._scan()
         gc.collect()
@@ -677,7 +687,7 @@ class MixedProblem:
                 self.var_names.extend(factor.candidate_param)
             else:
                 self.var_names.extend(factor.candidate_param)
-        self.apsim_params = tuple(self.apsim_params)
+        self.apsim_params = list(self.apsim_params)
         self._detect_pure_vars()
 
     # -------------------------------------------------------------------------
@@ -703,7 +713,7 @@ class MixedProblem:
         apsim_params = self.apsim_params
 
         for p in apsim_params:
-            param  = dict(p)
+            param = dict(p)
             is_cultivar = param.get('cultivar', False)
             if not is_cultivar:
                 # here the order does not matter because we use keys to get the values
@@ -817,7 +827,6 @@ class MixedProblem:
                 obs_col=self.obs_column,
                 index=self.index,
                 method=self.accuracy_indicator)
-
 
             return eval_out
         except ApsimRuntimeError as ape:

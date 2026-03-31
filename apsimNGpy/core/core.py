@@ -1487,26 +1487,72 @@ class CoreModel(PlotManager):
         if verbose:
             logger.info(f"successfully set surface organic matter params {param_values}")
 
-    def detect_model_type(self, model_instance: Union[str, Models]):
-        """Detects the model type from a given APSIM model instance or path string."""
-        if not isinstance(model_instance, str):
-            model = model_instance
 
 
-        else:
-            # Otherwise, assume it's a path and try to retrieve the model
+    def detect_model_type(self, model_instance: Union[str, Any], full_name=False) -> str:
+        """
+        Detect the APSIM model type from a model instance or a path.
+
+        This method resolves a model either directly (if an instance is provided)
+        or by locating it within the simulation tree using a path string. It then
+        returns the fully qualified .NET type name of the underlying model.
+
+        Parameters
+        ----------
+        model_instance : Union[str, Any]
+            Either:
+            - A model object (e.g., APSIM node or wrapper), or
+            - A string path to the model within the simulation tree.
+        full_name : bool
+           if True returns the full name of the reflected object
+
+        Returns
+        -------
+        str
+            .NET type name. a string name can be accesed with FullName attribute if full_name.
+
+        Raises
+        ------
+        ValueError
+            If no model can be found for the given path.
+        TypeError
+            If the resolved object does not support ``GetType()``.
+
+        Notes
+        -----
+        - If the object has a ``Model`` attribute (common in APSIM wrappers),
+          the underlying model is extracted automatically.
+        - Uses ``FindByPath`` when available; otherwise falls back to
+          ``get_node_by_path``.
+        """
+
+        # Resolve model
+        if isinstance(model_instance, str):
             path = model_instance
+
             try:
                 model = self.Simulations.FindByPath(path)
-            except AttributeError as e:
+            except AttributeError:
                 model = get_node_by_path(self.Simulations, path)
-            if model is None:
-                raise ValueError(f"No model found associated with: {model_instance}")
 
-        model = getattr(model, 'Model', model)
+            if model is None:
+                raise ValueError(f"No model found for path: '{path}'")
+
+        else:
+            model = model_instance
+
+        # Unwrap APSIM wrapper objects if necessary
+        model = getattr(model, "Model", model)
+
+        # Validate type access
+        if not hasattr(model, "GetType"):
+            raise TypeError(
+                f"Object of type '{type(model).__name__}' does not support GetType()"
+            )
+
+        # Return fully qualified .NET type name
         model_type = model.GetType()
-        model = CastHelper.CastAs[model_type](model)
-        return model_type
+        return model_type if not full_name else model_type.FullName
 
     def edit_model_by_path(self, path: str, **kwargs):
         """

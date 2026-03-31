@@ -897,8 +897,20 @@ class ApsimModel(CoreModel):
             clocks2 = model.inspect_model("Models.Clock", fullpath=False)
             assert len(clocks2) == 2
             assert "our_clock" in clocks2
-
+            # open in GUI to see the changes or use another inspection method
             model.open_in_gui(watch=False)
+
+            # get soil node from another to the current model as follows
+            model = ApsimModel('Maize', out_path='fmx3.apsimx')
+            model.add_node_from(node_from='Soybean', node_from_type='Models.Soils.Soil',
+                                node_from_id='Soil', node_to_id='.Simulations.Simulation.Field',
+                                node_to_type='Zone', del_if_exists=True, rename='soil_added')
+            .. tip::
+
+                To get the type of the model use;
+            node_type = model.detect_model_type('.Simulations.Simulation.Field', full_name=True)
+            # 'Models.Core.Zone'
+
         """
 
         node_to_loc = self._get_node(self, node_to_id, node_to_type)
@@ -1212,7 +1224,7 @@ if __name__ == '__main__':
             model.get_soil_from_web(simulations=None, lonlat=(-93.9937, 40.4842), thinnest_layer=100,
                                     adjust_dul=True,
                                     summer_date='1-May', precipitation_interception=13.5, winter_date='1-nov',
-                                    source='ssurgo')
+                                    source=soil_source)
             model.get_weather_from_web(lonlat=(-93.9937, 40.4842), start=1989, end=2020, source='nasa')
             model.run()
             print(model.results.columns)
@@ -1237,11 +1249,11 @@ if __name__ == '__main__':
         {'path': '.Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82', 'sowed': True, 'values': [550.0],
          'commands': ['[Grain].MaximumGrainsPerCob.FixedValue'], 'plant': 'Maize',
          'managers': {'Sow using a variable rule': 'CultivarName'}}, )
-    isric = source_test(soil_source='isric')
+    #isric = source_test(soil_source='isric')
     ssurgo = source_test(soil_source='ssurgo')
     ssurgo['ssurgo_yield'] = ssurgo['Yield']
-    model.evaluate(ref_data=isric, table=ssurgo, index_col=['year'], target_col='ssurgo_yield',
-                   ref_data_col='Yield')
+    # model.evaluate(ref_data=isric, table=ssurgo, index_col=['year'], target_col='ssurgo_yield',
+    #                ref_data_col='Yield')
     model.clone_simulation(rename='new_sim', base_simulation=0)
     print(model[0])
 
@@ -1250,7 +1262,7 @@ if __name__ == '__main__':
                         node_to_type=Models.Core.Simulation, del_if_exists=True, rename='our_clock')
     clocks1 = model.inspect_model('Models.Clock', fullpath=False)
     # because simulations are two, if we delete and replace, they will remain two
-    assert len(clocks1) ==2, "clocks expected to be two because of two simulations"
+    assert len(clocks1) == 2, "clocks expected to be two because of two simulations"
     assert 'our_clock' in clocks1, "our_clock not found"
     # create new instance and text
     model = ApsimModel('Maize', out_path='fxm2.apsimx')
@@ -1260,4 +1272,15 @@ if __name__ == '__main__':
     clocks2 = model.inspect_model('Models.Clock', fullpath=False)
     assert len(clocks1) == 2, "clocks expected to be two because of two simulations"
     assert 'our_clock' in clocks1, "our_clock not found"
+    # test adding soils
+    model = ApsimModel('Maize', out_path='fmx3.apsimx')
+    model.add_node_from(node_from='Soybean', node_from_type='Soil',
+                        node_from_id='Soil', node_to_id='.Simulations.Simulation.Field',
+                        node_to_type='Zone', del_if_exists=True, rename='soil_added')
+
+
+
+
     model.open_in_gui(watch=False)
+    dt = model.detect_model_type('.Simulations.Simulation.Field', full_name=False)
+    # te

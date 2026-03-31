@@ -94,12 +94,6 @@ class EditorCultivarCommands:
         NodeNotFoundError
             If the specified cultivar or manager script cannot be found.
         """
-        # Validate cultivar existence
-        if name not in self.model.inspect_model('Models.PMF.Cultivar', fullpath=False):
-            raise NodeNotFoundError(
-                f"Attachment failed: cultivar '{name}' not found in any simulation."
-            )
-
         # Manager provided as full path
         if manager in self.model.inspect_model('Models.Manager', fullpath=True):
             self.model.edit_model_by_path(

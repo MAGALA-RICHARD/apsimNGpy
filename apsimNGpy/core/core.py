@@ -23,6 +23,7 @@ import pandas as pd
 from pathlib import Path
 from apsimNGpy.starter.starter import CLR
 from System import *
+from collections.abc import KeysView, ValuesView
 
 # from System import InvalidOperationException, ArgumentOutOfRangeException
 KeyValuePair = CLR.System.Collections.Generic.KeyValuePair
@@ -1687,7 +1688,7 @@ class CoreModel(PlotManager):
                         # Example: {'[Phenology].Juvenile.Target.FixedValue':'200'}
                         cc.edit_by_cmd_pairs(name=rename, commands=commands)
 
-                    case list() | tuple():
+                    case list() | tuple() | ValuesView() | KeysView():
                         values = kwargs.get("values", [])
 
                         if not values:
@@ -2118,7 +2119,7 @@ class CoreModel(PlotManager):
 
                             cc.edit_by_cmd_pairs(name=rename, commands=commands)
 
-                        case list() | tuple():
+                        case list() | tuple() | ValuesView() | KeysView():
                             values = kwargs.get("values", [])
 
                             if not values:

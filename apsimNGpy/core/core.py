@@ -1247,7 +1247,7 @@ class CoreModel(PlotManager):
         self.save()
 
     @staticmethod
-    def find_model(model_name: str):
+    def find_model(model_name: str) -> Any:
         """
         Find a model from the Models namespace and return its path.
 

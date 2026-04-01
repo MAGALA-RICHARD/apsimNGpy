@@ -810,12 +810,7 @@ class ApsimModel(CoreModel):
             raise ValueError(f"suggested node type '{node_type}'  named '{node_id}' not found.")
         return node_loc
 
-    def add_node(self, *,
-                 source: dict,
-                 target: dict,
-                 replace=True,
-                 rename=None,
-                 node_from_memory=False):
+    def add_node(self, *, source: dict, target: dict, replace=True, rename=None):
         """
         Add a node from a source into a target location within the APSIM model.
 
@@ -844,6 +839,10 @@ class ApsimModel(CoreModel):
                 Node identifier. Can be:
                 - Node name (e.g., "Clock")
                 - Full APSIM path (e.g., ".Simulations.Simulation.Clock")
+            -  ``source_kind`` : str, Optional
+                  If the source_kind is `Models` to come from the ``Models`` namespace
+                  (e.g., Models.Clock). Otherwise, if `File`, the source is loaded from disk or built-in models. Default is File
+
 
         target : dict
             Dictionary describing where the node will be inserted. Expected keys:
@@ -862,10 +861,6 @@ class ApsimModel(CoreModel):
 
         rename : str, optional
             If provided, renames the inserted node.
-
-        node_from_memory : bool, optional
-            If True, the source is assumed to come from the ``Models`` namespace
-            (e.g., Models.Clock). If False, the source is loaded from disk or built-in models.
 
         Notes
         -----
@@ -954,6 +949,7 @@ class ApsimModel(CoreModel):
             node_type = model.detect_model_type(".Simulations.Simulation.Field")
         """
         source, target = dict(source), dict(target)
+        source_kind = source.get('source_kind', 'File')
         node_from = source['model']
         node_from_type = source['model_type']
         node_from_id = source['identifier']
@@ -961,7 +957,7 @@ class ApsimModel(CoreModel):
         node_to_type = target['model_type']
         mod = False
         node_to_loc = self._get_node(self, node_to_id, node_to_type)
-        if node_from_memory:
+        if source_kind =='Models':
             # node is from models namespace
             if isinstance(node_from, ModelTools.CLASS_MODEL):
                 node_from_node = node_from()  # it is in the form Models.Clock
@@ -980,7 +976,7 @@ class ApsimModel(CoreModel):
                 node_from_node = _node_from_node()
             else:
                 raise ValueError(
-                    f'un able to find {node_from} model with suggestion node_from_memory {node_from_memory}')
+                    f'un able to find {node_from} model with suggestion node_from_memory {source_kind}')
         else:
             # model from disk or raw name, specifying one of the examples
             mod = CoreModel(node_from)
@@ -1332,11 +1328,8 @@ if __name__ == '__main__':
     print(model[0])
 
     model.add_node(source=dict(model="Soybean", model_type='Models.Clock', identifier="Clock"),
-                   target=dict(identifier=".Simulations.Simulation", model_type=Models.Core.Simulation),
-                   replace=True,
-                   rename='our_clock'
-
-                   )
+                   target=dict(identifier=".Simulations.Simulation", model_type=Models.Core.Simulation), replace=True,
+                   rename='our_clock')
     clocks1 = model.inspect_model('Models.Clock', fullpath=False)
     # because simulations are two, if we delete and replace, they will remain two
     assert len(clocks1) == 2, "clocks expected to be two because of two simulations"
@@ -1345,8 +1338,7 @@ if __name__ == '__main__':
     model = ApsimModel('Maize', out_path='fxm2.apsimx')
     with model:
         model.add_node(source=dict(model="Soybean", model_type='Models.Clock', identifier="Clock"),
-                       target=dict(identifier=".Simulations.Simulation", model_type='Simulation'),
-                       replace=True,
+                       target=dict(identifier=".Simulations.Simulation", model_type='Simulation'), replace=True,
                        rename='our_clock')
 
         clocks2 = model.inspect_model('Models.Clock', fullpath=False)
@@ -1355,11 +1347,9 @@ if __name__ == '__main__':
     # test adding soils
     model = ApsimModel('Maize', out_path='fmx3.apsimx')
     with model:
-        model.add_node(
-            source=dict(model="Soybean", model_type='Soil', identifier="Soil"),
-            target=dict(identifier=".Simulations.Simulation.Field", model_type='Zone'),
-            replace=True,
-            rename='soil_added', )
+        model.add_node(source=dict(model="Soybean", model_type='Soil', identifier="Soil"),
+                       target=dict(identifier=".Simulations.Simulation.Field", model_type='Zone'), replace=True,
+                       rename='soil_added')
         soil_nodes = model.inspect_model('Soil', fullpath=False)
 
     assert 'soil_added' in soil_nodes, " Soil nodes: `soil_added` not found"
@@ -1367,23 +1357,25 @@ if __name__ == '__main__':
     # test adding manager
     model = ApsimModel('Maize')
     with model:
-        model.add_node(
-            source=dict(model="Soybean", model_type='Manager', identifier="Fertilise at sowing"),
-            target=dict(identifier="Simulation", model_type='Simulation'),
-            replace=True,
-            rename="fertilizer_at_sowing",
-        )
+        model.add_node(source=dict(model="Soybean", model_type='Manager', identifier="Fertilise at sowing"),
+                       target=dict(identifier="Simulation", model_type='Simulation'), replace=True,
+                       rename="fertilizer_at_sowing")
 
     # testing adding from memory
-    model = ApsimModel('Maize', out_path='fmx5.apsimx')
-    model.add_node(source=dict(model='Models.Clock', model_type=Models.Clock, identifier="Clock"),
-                   target=dict(identifier=".Simulations.Simulation", model_type='Simulation'),
-                   replace=True, rename='clock_mem', node_from_memory=True)
+
+    model = ApsimModel('Maize',)
+
+    model.add_node(source=dict(model='Models.Clock', model_type=Models.Clock, identifier="Clock", source_kind='Models'),
+                   target=dict(identifier=".Simulations.Simulation", model_type='Simulation'), replace=True,
+                   rename='clock_mem')
     clock_memory = model.inspect_model('Clock', fullpath=False)
+    print(clock_memory)
 
     # odel.open_in_gui(watch=False)
-    dt = model.detect_model_type('.Simulations.Simulation.Field', full_name=False)
+
     model.has_node('.Simulations.Simulation.Field', node_type='Zone')
-    model.detect_model_type('Field')
+
+    with model:
+        pass
 
     # te

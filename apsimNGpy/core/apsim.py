@@ -1321,22 +1321,26 @@ if __name__ == '__main__':
     assert 'our_clock' in clocks1, "our_clock not found"
     # test adding soils
     model = ApsimModel('Maize', out_path='fmx3.apsimx')
-    model.add_node_from(node_from='Soybean', node_from_type='Soil',
-                        node_from_id='Soil', node_to_id='.Simulations.Simulation.Field',
-                        node_to_type='Zone', del_if_exists=True, rename='soil_added')
-    soil_nodes = model.inspect_model('Soil', fullpath=False)
     with model:
-        pass
+        model.add_node_from(node_from='Soybean', node_from_type='Soil',
+                            node_from_id='Soil', node_to_id='.Simulations.Simulation.Field',
+                            node_to_type='Zone', del_if_exists=True, rename='soil_added')
+        soil_nodes = model.inspect_model('Soil', fullpath=False)
+
     assert 'soil_added' in soil_nodes, " Soil nodes: `soil_added` not found"
     assert len(soil_nodes) == 1, 'soil nodes was not added as expected'
     # test adding manager
     model = ApsimModel('Maize')
-    model.add_node_from(node_from='Soybean', node_from_type='Manager',
-                        node_from_id='Fertilise at sowing', node_to_id='.Simulations.Simulation.Field',
-                        node_to_type='Zone', del_if_exists=True, rename='fertilizer_at_sowing')
-    manager_nodes = model.inspect_model('Manager', fullpath=False)
     with model:
-        pass
+        model.add_node_from(
+            node_from="Soybean",
+            node_from_type="Manager",
+            node_from_id="Fertilise at sowing",
+            node_to_id=".Simulations.Simulation.Field",
+            node_to_type="Zone",
+            del_if_exists=True,
+            rename="fertilizer_at_sowing",
+        )
 
     # testing adding from memory
     model = ApsimModel('Maize', out_path='fmx5.apsimx')
@@ -1345,7 +1349,7 @@ if __name__ == '__main__':
                         node_to_type='Simulation', del_if_exists=True, rename='clcok_memory', node_from_memory=True)
     clock_memory = model.inspect_model('Clock', fullpath=False)
 
-    model.open_in_gui(watch=False)
+    #odel.open_in_gui(watch=False)
     dt = model.detect_model_type('.Simulations.Simulation.Field', full_name=False)
     model.has_node('.Simulations.Simulation.Field', node_type='Zone')
 

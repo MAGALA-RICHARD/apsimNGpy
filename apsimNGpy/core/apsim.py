@@ -810,52 +810,69 @@ class ApsimModel(CoreModel):
             raise ValueError(f"suggested node type '{node_type}'  named '{node_id}' not found.")
         return node_loc
 
-    def add_node_from(self, *,
-                      node_from,
-                      node_from_type,
-                      node_from_id,
-                      node_to_id,
-                      node_to_type,
-                      del_if_exists=True,
-                      rename=None,
-                      node_from_memory=False):
+    def add_node(self, *,
+                 source: dict,
+                 target: dict,
+                 replace=True,
+                 rename=None,
+                 node_from_memory=False):
         """
-        Add a node from a source APSIM model into a target node location.
+        Add a node from a source into a target location within the APSIM model.
 
-        This method copies a node (e.g., Clock, Manager, Soil component) from a source
-        model and inserts it into a specified location in the current model. Optionally,
-        existing nodes with the same name and type can be removed before insertion.
+        This method transfers (or constructs) a node and inserts it into a specified
+        location in the current model. The source can be:
+        - A model on disk (e.g., "Soybean")
+        - A built-in APSIM example
+        - A class or instance from the ``Models`` namespace
 
         Parameters
         ----------
-        node_from : Any str or callable object
-            Path or identifier of the source APSIM model.
-        node_from_type : str
-            Type of the node to retrieve from the source model (e.g., 'Models.Clock').
-        node_from_id : str
-            Name or identifier of the node to copy from the source model.
-        node_to_id : str
-            Target node location in the current model. Can be a full path or node name.
-        node_to_type : Any of str:or  Attribute Class from Models namespace e.g Models.Clock vs 'Models.Clock'
-            Expected type of the target node (e.g., 'Models.Core.Simulation').
-        del_if_exists : bool or str, optional
-            If True or 'delete', existing nodes with the same name and type in the target
-            location will be removed before adding the new node. If False, the new node
-            will be added alongside existing ones. Default is True.
+        source : dict
+            Dictionary describing the node to extract. Expected keys:
+
+            - ``model`` : str | object
+                Source of the node. Can be:
+                - APSIM model name (e.g., "Soybean")
+                - File path to APSIM model
+                - Class from Models namespace (e.g., Models.Clock)
+                - Instance of a model node
+
+            - ``model_type`` : str | type
+                Type of the node to retrieve (e.g., "Models.Clock" or Models.Clock)
+
+            - ``identifier`` : str
+                Node identifier. Can be:
+                - Node name (e.g., "Clock")
+                - Full APSIM path (e.g., ".Simulations.Simulation.Clock")
+
+        target : dict
+            Dictionary describing where the node will be inserted. Expected keys:
+
+            - ``identifier`` : str
+                Target location. Can be:
+                - Node name (e.g., "Simulation")
+                - Full APSIM path (e.g., ".Simulations.Simulation.Field")
+
+            - ``model_type`` : str | type
+                Expected type of the target node (e.g., "Models.Core.Zone")
+
+        replace : bool, optional
+            If True, removes an existing node with the same name and type before adding.
+            If False, the new node is added alongside existing ones. Default is True.
+
         rename : str, optional
-            If provided, renames the inserted node after it is added to the target location.
-        node_from_memory : bool
-            if True, then node_from should be one of the attributes from Models namespace e.g Models.Clock, Models.Climate.Weather. default is False
-            implying a serialized model on disk or one of the default built in models.
+            If provided, renames the inserted node.
+
+        node_from_memory : bool, optional
+            If True, the source is assumed to come from the ``Models`` namespace
+            (e.g., Models.Clock). If False, the source is loaded from disk or built-in models.
 
         Notes
         -----
-        - All parameters are keyword-only (enforced via `*`) to prevent argument mis-ordering
-          and improve readability of function calls.
-        - `node_from_id` and `node_to_id` can be either full paths or node names.
-        - When `del_if_exists=False`, multiple nodes of the same type can coexist,
-          which is useful for components like Manager scripts performing different tasks. however, caution is needed
-        - When `del_if_exists=True`, only nodes matching both name and type are removed.
+        - All parameters are keyword-only to prevent misordered arguments.
+        - ``identifier`` supports both node names and full APSIM paths.
+        - When ``replace=False``, multiple nodes of the same type may coexist.
+        - When ``replace=True``, only nodes matching both name and type are removed.
 
         Examples
         --------
@@ -864,77 +881,84 @@ class ApsimModel(CoreModel):
             from apsimNGpy.core.apsim import ApsimModel
             from Models.Core import Simulation
 
-            # Initialize model
-            model = ApsimModel("Maize", out_path="fxm.apsimx")
+            model = ApsimModel("Maize")
 
-            # Clone simulation
-            model.clone_simulation(rename="new_sim", base_simulation=0)
-
-            # Add node with deletion of existing matching nodes
-            model.add_node_from(
-                "Soybean",
-                node_from_type="Models.Clock",
-                node_from_id="Clock",
-                node_to_id=".Simulations.Simulation",
-                node_to_type='Simulation',
-                del_if_exists=True,
+            # Example 1: Add node from another APSIM model
+            model.add_node(
+                source={
+                    "model": "Soybean",
+                    "model_type": "Models.Clock",
+                    "identifier": "Clock",
+                },
+                target={
+                    "identifier": ".Simulations.Simulation",
+                    "model_type": "Simulation",
+                },
+                replace=True,
                 rename="our_clock",
-                node_from_memory = False,
             )
 
-            clocks1 = model.inspect_model("Models.Clock", fullpath=False)
-            assert len(clocks1) == 2
-            assert "our_clock" in clocks1
-
-            # Add node without deleting existing ones (allow duplicates)
-            model = ApsimModel("Maize", out_path="fxm2.apsimx")
-
-            model.add_node_from(
-                "Soybean",
-                node_from_type="Models.Clock",
-                node_from_id="Clock",
-                node_to_id=".Simulations.Simulation",
-                node_to_type=Simulation,
-                del_if_exists=False,
+            # Example 2: Allow duplicates
+            model.add_node(
+                source={
+                    "model": "Soybean",
+                    "model_type": "Models.Clock",
+                    "identifier": "Clock",
+                },
+                target={
+                    "identifier": ".Simulations.Simulation",
+                    "model_type": Simulation,
+                },
+                replace=False,
                 rename="our_clock",
-                node_from_memory =False
             )
 
-            clocks2 = model.inspect_model("Models.Clock", fullpath=False)
-            assert len(clocks2) == 2
-            assert "our_clock" in clocks2
-            # open in GUI to see the changes or use another inspection method
+            # Example 3: Add node from Models namespace (memory)
+            model.add_node(
+                source={
+                    "model": "Clock",   # resolved from Models namespace
+                    "model_type": "Clock",
+                    "identifier": "Clock",
+                },
+                target={
+                    "identifier": ".Simulations.Simulation",
+                    "model_type": "Simulation",
+                },
+                node_from_memory=True,
+                rename="clock_memory",
+            )
+
+            # Example 4: Add soil node into Field
+            model.add_node(
+                source={
+                    "model": "Soybean",
+                    "model_type": "Models.Soils.Soil",
+                    "identifier": "Soil",
+                },
+                target={
+                    "identifier": ".Simulations.Simulation.Field",
+                    "model_type": "Zone",
+                },
+                replace=True,
+                rename="soil_added",
+            )
+
             model.open_in_gui(watch=False)
 
-            # get soil node from another to the current model as follows
-            model = ApsimModel('Maize', out_path='fmx3.apsimx')
-            model.add_node_from(node_from='Soybean', node_from_type='Models.Soils.Soil',
-                                node_from_id='Soil', node_to_id='.Simulations.Simulation.Field',
-                                node_to_type='Zone', del_if_exists=True, rename='soil_added', node_from_memory=False)
+        Tip
+        ---
+        To detect a node type:
 
-            # 'Models.Core.Zone'
-            # add fresh models from the models namespace as follows:
-            model = ApsimModel('Maize')
-            model.add_node_from(node_from="Clock", node_from_type='Clock',
-                                node_from_id='Clock', node_to_id='.Simulations.Simulation',
-                                node_to_type='Simulation', del_if_exists=True, rename='clock_memory', node_from_memory=True)
-            # Clock models class is searched from the models namespace and added to the current model object;
-            # the added nodel in this manner is alway empty
-           # Edit it as follows
-           model.edit_model("Clock", model_name='clock_memory', start= '1990-01-01', end=  '1998-12-32', simulations='Simulation')
+        .. code-block:: python
 
-       .. tip::
-
-            To get the type of the model use::
-
-                node_type = model.detect_model_type('.Simulations.Simulation.Field', full_name=True)
-
+            node_type = model.detect_model_type(".Simulations.Simulation.Field")
         """
-
-        def is_clr_type(obj):
-
-            return isinstance(obj, ModelTools.CLASS_MODEL)
-
+        source, target = dict(source), dict(target)
+        node_from = source['model']
+        node_from_type = source['model_type']
+        node_from_id = source['identifier']
+        node_to_id = target['identifier']
+        node_to_type = target['model_type']
         mod = False
         node_to_loc = self._get_node(self, node_to_id, node_to_type)
         if node_from_memory:
@@ -943,7 +967,9 @@ class ApsimModel(CoreModel):
                 node_from_node = node_from()  # it is in the form Models.Clock
             # most likely initialized
             # example: Models.Clock()
-            elif hasattr(node_from, 'Name') and not callable(node_from) and hasattr(node_from, 'GetType') and not callable(node_from):
+            elif hasattr(node_from, 'Name') and not callable(node_from) and hasattr(node_from,
+                                                                                    'GetType') and not callable(
+                node_from):
                 node_from_node = node_from
             elif isinstance(node_from, str):
                 # string attribute we have to search from the Models namespace
@@ -953,13 +979,14 @@ class ApsimModel(CoreModel):
                 # call the retrieved class attribute
                 node_from_node = _node_from_node()
             else:
-                raise ValueError(f'un able to find {node_from} model with suggestion node_from_memory {node_from_memory}')
+                raise ValueError(
+                    f'un able to find {node_from} model with suggestion node_from_memory {node_from_memory}')
         else:
             # model from disk or raw name, specifying one of the examples
             mod = CoreModel(node_from)
             node_from_node = self._get_node(mod, node_from_id, node_from_type)
 
-        if del_if_exists:
+        if replace:
             # delete the node with the same name and type
             chd_s = node_to_loc.Children
             for chd in list(chd_s):
@@ -1304,27 +1331,35 @@ if __name__ == '__main__':
     model.clone_simulation(rename='new_sim', base_simulation=0)
     print(model[0])
 
-    model.add_node_from(node_from='Soybean', node_from_type='Models.Clock',
-                        node_from_id='Clock', node_to_id='.Simulations.Simulation',
-                        node_to_type=Models.Core.Simulation, del_if_exists=True, rename='our_clock')
+    model.add_node(source=dict(model="Soybean", model_type='Models.Clock', identifier="Clock"),
+                   target=dict(identifier=".Simulations.Simulation", model_type=Models.Core.Simulation),
+                   replace=True,
+                   rename='our_clock'
+
+                   )
     clocks1 = model.inspect_model('Models.Clock', fullpath=False)
     # because simulations are two, if we delete and replace, they will remain two
     assert len(clocks1) == 2, "clocks expected to be two because of two simulations"
     assert 'our_clock' in clocks1, "our_clock not found"
     # create new instance and text
     model = ApsimModel('Maize', out_path='fxm2.apsimx')
-    model.add_node_from(node_from='Soybean', node_from_type='Models.Clock',
-                        node_from_id='Clock', node_to_id='.Simulations.Simulation',
-                        node_to_type='Simulation', del_if_exists=False, rename='our_clock')
-    clocks2 = model.inspect_model('Models.Clock', fullpath=False)
+    with model:
+        model.add_node(source=dict(model="Soybean", model_type='Models.Clock', identifier="Clock"),
+                       target=dict(identifier=".Simulations.Simulation", model_type='Simulation'),
+                       replace=True,
+                       rename='our_clock')
+
+        clocks2 = model.inspect_model('Models.Clock', fullpath=False)
     assert len(clocks1) == 2, "clocks expected to be two because of two simulations"
     assert 'our_clock' in clocks1, "our_clock not found"
     # test adding soils
     model = ApsimModel('Maize', out_path='fmx3.apsimx')
     with model:
-        model.add_node_from(node_from='Soybean', node_from_type='Soil',
-                            node_from_id='Soil', node_to_id='.Simulations.Simulation.Field',
-                            node_to_type='Zone', del_if_exists=True, rename='soil_added')
+        model.add_node(
+            source=dict(model="Soybean", model_type='Soil', identifier="Soil"),
+            target=dict(identifier=".Simulations.Simulation.Field", model_type='Zone'),
+            replace=True,
+            rename='soil_added', )
         soil_nodes = model.inspect_model('Soil', fullpath=False)
 
     assert 'soil_added' in soil_nodes, " Soil nodes: `soil_added` not found"
@@ -1332,24 +1367,21 @@ if __name__ == '__main__':
     # test adding manager
     model = ApsimModel('Maize')
     with model:
-        model.add_node_from(
-            node_from="Soybean",
-            node_from_type="Manager",
-            node_from_id="Fertilise at sowing",
-            node_to_id=".Simulations.Simulation.Field",
-            node_to_type="Zone",
-            del_if_exists=True,
+        model.add_node(
+            source=dict(model="Soybean", model_type='Manager', identifier="Fertilise at sowing"),
+            target=dict(identifier="Simulation", model_type='Simulation'),
+            replace=True,
             rename="fertilizer_at_sowing",
         )
 
     # testing adding from memory
     model = ApsimModel('Maize', out_path='fmx5.apsimx')
-    model.add_node_from(node_from="Clock", node_from_type='Clock',
-                        node_from_id='Clock', node_to_id='.Simulations.Simulation',
-                        node_to_type='Simulation', del_if_exists=True, rename='clcok_memory', node_from_memory=True)
+    model.add_node(source=dict(model='Models.Clock', model_type=Models.Clock, identifier="Clock"),
+                   target=dict(identifier=".Simulations.Simulation", model_type='Simulation'),
+                   replace=True, rename='clock_mem', node_from_memory=True)
     clock_memory = model.inspect_model('Clock', fullpath=False)
 
-    #odel.open_in_gui(watch=False)
+    # odel.open_in_gui(watch=False)
     dt = model.detect_model_type('.Simulations.Simulation.Field', full_name=False)
     model.has_node('.Simulations.Simulation.Field', node_type='Zone')
 

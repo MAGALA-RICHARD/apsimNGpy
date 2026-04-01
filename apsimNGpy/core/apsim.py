@@ -1384,5 +1384,6 @@ if __name__ == '__main__':
     # odel.open_in_gui(watch=False)
     dt = model.detect_model_type('.Simulations.Simulation.Field', full_name=False)
     model.has_node('.Simulations.Simulation.Field', node_type='Zone')
+    model.detect_model_type('Field')
 
     # te

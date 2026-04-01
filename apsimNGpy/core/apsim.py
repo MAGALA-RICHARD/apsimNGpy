@@ -914,7 +914,7 @@ class ApsimModel(CoreModel):
 
             # 'Models.Core.Zone'
             # add fresh models from the models namespace as follows:
-            model = ApsimModel('Maize', out_path='fmx5.apsimx')
+            model = ApsimModel('Maize')
             model.add_node_from(node_from="Clock", node_from_type='Clock',
                                 node_from_id='Clock', node_to_id='.Simulations.Simulation',
                                 node_to_type='Simulation', del_if_exists=True, rename='clock_memory', node_from_memory=True)
@@ -945,13 +945,15 @@ class ApsimModel(CoreModel):
             # example: Models.Clock()
             elif hasattr(node_from, 'Name') and not callable(node_from) and hasattr(node_from, 'GetType'):
                 node_from_node = node_from
-            else:
+            elif isinstance(node_from, str):
                 # string attribute we have to search from the Models namespace
                 _node_from_node = self.find_model(node_from)
                 if _node_from_node is None:
                     raise AttributeError('un able to find attribute:{} from the Models names space'.format(node_from))
                 # call the retrieved class attribute
                 node_from_node = _node_from_node()
+            else:
+                raise ValueError(f'un able to find {node_from} with suggestion node_from_memory {node_from_memory}')
         else:
             # model from disk or raw name, specifying one of the examples
             mod = CoreModel(node_from)

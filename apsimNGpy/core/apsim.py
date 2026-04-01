@@ -943,7 +943,7 @@ class ApsimModel(CoreModel):
                 node_from_node = node_from()  # it is in the form Models.Clock
             # most likely initialized
             # example: Models.Clock()
-            elif hasattr(node_from, 'Name') and not callable(node_from) and hasattr(node_from, 'GetType'):
+            elif hasattr(node_from, 'Name') and not callable(node_from) and hasattr(node_from, 'GetType') and not callable(node_from):
                 node_from_node = node_from
             elif isinstance(node_from, str):
                 # string attribute we have to search from the Models namespace
@@ -953,7 +953,7 @@ class ApsimModel(CoreModel):
                 # call the retrieved class attribute
                 node_from_node = _node_from_node()
             else:
-                raise ValueError(f'un able to find {node_from} with suggestion node_from_memory {node_from_memory}')
+                raise ValueError(f'un able to find {node_from} model with suggestion node_from_memory {node_from_memory}')
         else:
             # model from disk or raw name, specifying one of the examples
             mod = CoreModel(node_from)
@@ -1347,5 +1347,6 @@ if __name__ == '__main__':
 
     model.open_in_gui(watch=False)
     dt = model.detect_model_type('.Simulations.Simulation.Field', full_name=False)
+    model.has_node('.Simulations.Simulation.Field', node_type='Zone')
 
     # te

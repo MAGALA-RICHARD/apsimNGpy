@@ -3280,7 +3280,7 @@ class CoreModel(PlotManager):
 
         return self
 
-    def has_node(self, node: str, node_type=None, scope=None):
+    def has_node(self, node: str, node_type:Union[str, ModelTools.CLASS_MODEL], scope=None):
         """
         Check whether a node of a given type exists within the model.
 
@@ -3289,7 +3289,7 @@ class CoreModel(PlotManager):
         node : str
             Node name or full path to check.
         node_type : str
-            Model type to search for (e.g., 'Models.PMF.Cultivar').
+            Model type to search for (e.g., 'Models.PMF.Cultivar'). This is ideallyy optional if the node id is a path other than just a name
         scope : optional
             Model scope within which to search. Defaults to ``self.Simulations``.
 
@@ -3297,10 +3297,35 @@ class CoreModel(PlotManager):
         -------
         bool
             True if the node exists in the specified scope, otherwise False.
+        Examples
+        -----------
+            model = ApsimModel('Maize')
+            model.has_node('Clock', node_type='Clock')
+            # True
+            model.has_node('Clock1', node_type='Clock')
+            # False
+            model.has_node('.Simulations.Simulation.Clock', node_type='Clock')
+            # True
+            # check at the simulation 1
+            model.has_node('.Simulations.Simulation.Clock', node_type='Clock', scope=model[0])
+            # same as
+            model.has_node('.Simulations.Simulation.Clock', node_type='Clock', scope=model['Simulation'])
+            # True
+            # check if the soil node is present
+            model.has_node('Soil', node_type='Soil', scope=model[0])
+             # what about organic node
+            model.has_node('Organic', node_type='Organic', scope=model[0])
+              # True
+            # Note the method is case-sensitive for example
+            model.has_node('organic', node_type='Organic', scope=model[0])
+            # return False
+
+
         """
 
         # Resort to the whole model structure if scope is None
         scope = scope or self.Simulations
+
         nodes = {
             *self.inspect_model(node_type, fullpath=True, scope=scope),
             *self.inspect_model(node_type, fullpath=False, scope=scope),
@@ -3309,7 +3334,7 @@ class CoreModel(PlotManager):
 
     @property
     def is_recent_version(self):
-        """Bencmark to a known APSIM version when changes were drastic to influence changes in apsimNGpy API"""
+        """Benchmark to a known APSIM version when changes were drastic to influence changes in apsimNGpy API"""
         return is_higher_apsim_version()
 
     @staticmethod

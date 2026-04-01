@@ -3298,30 +3298,53 @@ class CoreModel(PlotManager):
         bool
             True if the node exists in the specified scope, otherwise False.
         Examples
-        -----------
-            model = ApsimModel('Maize')
-            model.has_node('Clock', node_type='Clock')
+        --------
+        .. code-block:: python
+
+            from apsimNGpy import ApsimModel
+
+            model = ApsimModel("Maize")
+
+            # Check if a node exists by name and type
+            model.has_node("Clock", node_type="Clock")
             # True
-            model.has_node('Clock1', node_type='Clock')
+
+            model.has_node("Clock1", node_type="Clock")
             # False
-            model.has_node('.Simulations.Simulation.Clock', node_type='Clock')
-            # True
-            # check at the simulation 1
-            model.has_node('.Simulations.Simulation.Clock', node_type='Clock', scope=model[0])
-            # same as
-            model.has_node('.Simulations.Simulation.Clock', node_type='Clock', scope=model['Simulation'])
-            # True
-            # check if the soil node is present
-            model.has_node('Soil', node_type='Soil', scope=model[0])
-             # what about organic node
-            model.has_node('Organic', node_type='Organic', scope=model[0])
-              # True
-            # Note the method is case-sensitive for example
-            model.has_node('organic', node_type='Organic', scope=model[0])
-            # return False
 
+            # Check using full path
+            model.has_node(".Simulations.Simulation.Clock", node_type="Clock")
+            # True
 
-        """
+            # Restrict search to a specific simulation (by index)
+            model.has_node(
+                ".Simulations.Simulation.Clock",
+                node_type="Clock",
+                scope=model[0]
+            )
+            # True
+
+            # Equivalent: restrict search by simulation name
+            model.has_node(
+                ".Simulations.Simulation.Clock",
+                node_type="Clock",
+                scope=model["Simulation"]
+            )
+            # True
+
+            # Check for Soil node within a simulation
+            model.has_node("Soil", node_type="Soil", scope=model[0])
+            # True
+
+            # Check for Organic node
+            model.has_node("Organic", node_type="Organic", scope=model[0])
+            # True
+
+            # Case sensitivity example
+            model.has_node("organic", node_type="Organic", scope=model[0])
+            # False
+
+                """
 
         # Resort to the whole model structure if scope is None
         scope = scope or self.Simulations

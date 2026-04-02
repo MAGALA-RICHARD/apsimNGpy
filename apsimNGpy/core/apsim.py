@@ -810,7 +810,182 @@ class ApsimModel(CoreModel):
             raise ValueError(f"suggested node type '{node_type}'  named '{node_id}' not found.")
         return node_loc
 
-    def add_node(self, *, source: dict, target: dict, replace=True, rename=None):
+    @staticmethod
+    def _check_candidate_node(node, *, replace, rename, node_from_node):
+        """
+        Internal utility to handle node replacement and renaming prior to insertion.
+
+        This function:
+        - Optionally removes an existing child node from the target location (`node`)
+          if it matches both name and type.
+        - Optionally renames the incoming node (`node_from_node`) before insertion.
+
+        Parameters
+        ----------
+        node : Any
+            Target APSIM node whose children will be inspected.
+
+        replace : bool
+            If True, remove the first child node matching:
+            - Name == `node_from_id`
+            - Type == `node_from_node.GetType()`
+
+        rename : str | None
+            If provided, assigns this name to `node_from_node`.
+
+        node_from_node : Any
+            Node to be inserted; used for type comparison and renaming.
+
+        Notes
+        -----
+        - Matching is strict: both name and CLR type must match.
+        - Only the first matching node is removed.
+        - Type comparison relies on `.GetType()` (CLR), not Python `type()`.
+
+        Returns
+        -------
+        None
+        """
+        node_from_id = node_from_node.Name
+        if replace:
+            # delete the node with the same name and type
+            chd_s = node.Children
+            for chd in list(chd_s):
+                # strictly delete if name and type matches
+                if chd.Name == node_from_id and type(chd.GetType()) == type(node_from_node.GetType()):
+                    chd_s.Remove(chd)
+                    break
+            else:
+                pass
+                # logger.warning(
+                #     f"node id {node_from_id} and {type(node_to_loc.GetType())} does not exist in the specified node location {node_to_id}")
+                # pass
+        if rename:
+            node_from_node.Name = rename
+
+    def add_node_from_models(self, source, target: dict, replace=True, rename=None):
+        """
+        Add a new node constructed from the APSIM ``Models`` namespace.
+
+        This method instantiates a node (e.g., ``Models.Clock``) or uses an existing
+        instance, and inserts it into a specified target location. Newly created
+        nodes are typically not parametrized, meaning they have a blank parameter field. e.g,
+        Clock will have no start and end date users must use other methods to populate the paramters.
+
+        Parameters
+        ----------
+        source : str | type | object | dict
+            Source specification. Supported inputs:
+
+            - str:
+                Name of a model in the ``Models`` namespace (e.g., "Clock").
+            - type:
+                CLR type (e.g., Models.Clock).
+            - object:
+                Existing APSIM node instance.
+            - dict:
+                Must contain key ``"model"`` with any of the above values.
+
+        target : dict
+            Target location specification. Required keys:
+
+            - ``identifier`` : str
+                Node name or full APSIM path where the node will be inserted.
+            - ``model_type`` : str | type
+                Expected type of the target node (e.g., "Simulation", Models.Core.Zone).
+
+        replace : bool, optional
+            If True, removes the first existing child node in the target location
+            matching both name and type before insertion. Default is True.
+
+        rename : str, optional
+            If provided, assigns this name to the inserted node before adding.
+
+        Raises
+        ------
+        TypeError
+            If the source cannot be resolved to a valid Models namespace node.
+        AttributeError
+            If a string source cannot be found in the Models namespace.
+
+        Notes
+        -----
+        - Nodes created from the Models namespace are typically empty and require
+          further configuration via ``edit_model`` or similar methods.
+        - Type resolution uses CLR reflection via ``GetType()``.
+        - ``source`` accepts multiple forms for flexibility but is normalized internally.
+        - Target node resolution is handled via ``_get_node``.
+
+        Examples
+        --------
+        .. code-block:: python
+
+            from apsimNGpy.core.apsim import ApsimModel
+
+            model = ApsimModel("Maize")
+
+            # Add a new Clock node in the simulation; 'Simulation' from Models namespace
+            model.add_node_from_models(
+                source="Clock",
+                target={
+                    "identifier": ".Simulations.Simulation",
+                    "model_type": "Simulation",
+                },
+                rename="clock_memory",
+            )
+
+            # Using CLR type
+            from Models.Clock import Clock
+
+            model.add_node_from_models(
+                source=Clock,
+                target={
+                    "identifier": ".Simulations.Simulation",
+                    "model_type": "Simulation",
+                },
+                replace=True,
+            )
+
+            # Using existing instance
+            clock = Clock()
+            model.add_node_from_models(
+                source=clock,
+                target={
+                    "identifier": ".Simulations.Simulation",
+                    "model_type": "Simulation",
+                },
+            )
+        """
+        node_to_id = target['identifier']
+        node_to_type = target['model_type']
+        node_from = source if not isinstance(source, dict) else source.get('model')# to be consistent with similar API
+        # node is from models namespace
+        if isinstance(node_from, ModelTools.CLASS_MODEL):
+            node_from_node = node_from()  # it is in the form Models.Clock
+        # most likely initialized
+        # example: Models.Clock()
+        elif (
+                hasattr(node_from, "Name") and not callable(node_from)
+                and hasattr(node_from, "GetType") and node_from.GetType().FullName.startswith("Models.")
+        ):
+            node_from_node = node_from
+        elif isinstance(node_from, str):
+            # string attribute we have to search from the Models namespace
+            _node_from_node = self.find_model(node_from)
+            if _node_from_node is None:
+                raise AttributeError('un able to find attribute:{} from the Models names space'.format(node_from))
+            # call the retrieved class attribute
+            node_from_node = _node_from_node()
+        else:
+            raise TypeError(
+                f'un able to find {node_from} from Models Namespace')
+        node_to_loc = self._get_node(self, node_to_id, node_to_type)
+        self._check_candidate_node(node_to_loc, replace=replace, rename=rename,
+                                   node_from_node=node_from_node)
+        ModelTools.ADD(node_from_node, node_to_loc)
+        self.save()
+
+    def add_node_from_apsimx(self, *, source: dict, target: dict, replace=True, rename=None):
         """
         Add a node from a source into a target location within the APSIM model.
 
@@ -829,8 +1004,6 @@ class ApsimModel(CoreModel):
                 Source of the node. Can be:
                 - APSIM model name (e.g., "Soybean")
                 - File path to APSIM model
-                - Class from Models namespace (e.g., Models.Clock)
-                - Instance of a model node
 
             - ``model_type`` : str | type
                 Type of the node to retrieve (e.g., "Models.Clock" or Models.Clock)
@@ -949,62 +1122,22 @@ class ApsimModel(CoreModel):
             node_type = model.detect_model_type(".Simulations.Simulation.Field")
         """
         source, target = dict(source), dict(target)
-        source_kind = source.get('source_kind', 'File')
         node_from = source['model']
         node_from_type = source['model_type']
         node_from_id = source['identifier']
         node_to_id = target['identifier']
         node_to_type = target['model_type']
-        mod = False
         node_to_loc = self._get_node(self, node_to_id, node_to_type)
-        if source_kind =='Models':
-            # node is from models namespace
-            if isinstance(node_from, ModelTools.CLASS_MODEL):
-                node_from_node = node_from()  # it is in the form Models.Clock
-            # most likely initialized
-            # example: Models.Clock()
-            elif hasattr(node_from, 'Name') and not callable(node_from) and hasattr(node_from,
-                                                                                    'GetType') and not callable(
-                node_from):
-                node_from_node = node_from
-            elif isinstance(node_from, str):
-                # string attribute we have to search from the Models namespace
-                _node_from_node = self.find_model(node_from)
-                if _node_from_node is None:
-                    raise AttributeError('un able to find attribute:{} from the Models names space'.format(node_from))
-                # call the retrieved class attribute
-                node_from_node = _node_from_node()
-            else:
-                raise ValueError(
-                    f'un able to find {node_from} model with suggestion node_from_memory {source_kind}')
-        else:
-            # model from disk or raw name, specifying one of the examples
-            mod = CoreModel(node_from)
+
+        # model from disk or raw name, specifying one of the examples
+        mod = CoreModel(node_from)
+        with mod:
             node_from_node = self._get_node(mod, node_from_id, node_from_type)
+            self._check_candidate_node(node_to_loc, node_from_node=node_from_node, replace=replace, rename=rename)
 
-        if replace:
-            # delete the node with the same name and type
-            chd_s = node_to_loc.Children
-            for chd in list(chd_s):
-                # strictly delete if name and type matches
-                if chd.Name == node_from_id and type(chd.GetType()) == type(node_from_node.GetType()):
-                    chd_s.Remove(chd)
-                    break
-            else:
-                pass
-                # logger.warning(
-                #     f"node id {node_from_id} and {type(node_to_loc.GetType())} does not exist in the specified node location {node_to_id}")
-                # pass
-        if rename:
-            node_from_node.Name = rename
-        # add the node to the specified location
-        ModelTools.ADD(node_from_node, node_to_loc)
-        if mod:
-            with mod:
-                # cleans up the files
-                pass
-
-        self.save()
+            # add the node to the specified location
+            ModelTools.ADD(node_from_node, node_to_loc)
+            self.save()
 
     def adjust_dul(self, simulations: Union[tuple, list] = None):
         """
@@ -1327,9 +1460,10 @@ if __name__ == '__main__':
     model.clone_simulation(rename='new_sim', base_simulation=0)
     print(model[0])
 
-    model.add_node(source=dict(model="Soybean", model_type='Models.Clock', identifier="Clock"),
-                   target=dict(identifier=".Simulations.Simulation", model_type=Models.Core.Simulation), replace=True,
-                   rename='our_clock')
+    model.add_node_from_apsimx(source=dict(model="Soybean", model_type='Models.Clock', identifier="Clock"),
+                               target=dict(identifier=".Simulations.Simulation", model_type=Models.Core.Simulation),
+                               replace=True,
+                               rename='our_clock')
     clocks1 = model.inspect_model('Models.Clock', fullpath=False)
     # because simulations are two, if we delete and replace, they will remain two
     assert len(clocks1) == 2, "clocks expected to be two because of two simulations"
@@ -1337,9 +1471,10 @@ if __name__ == '__main__':
     # create new instance and text
     model = ApsimModel('Maize', out_path='fxm2.apsimx')
     with model:
-        model.add_node(source=dict(model="Soybean", model_type='Models.Clock', identifier="Clock"),
-                       target=dict(identifier=".Simulations.Simulation", model_type='Simulation'), replace=True,
-                       rename='our_clock')
+        model.add_node_from_apsimx(source=dict(model="Soybean", model_type='Models.Clock', identifier="Clock"),
+                                   target=dict(identifier=".Simulations.Simulation", model_type='Simulation'),
+                                   replace=True,
+                                   rename='our_clock')
 
         clocks2 = model.inspect_model('Models.Clock', fullpath=False)
     assert len(clocks1) == 2, "clocks expected to be two because of two simulations"
@@ -1347,9 +1482,10 @@ if __name__ == '__main__':
     # test adding soils
     model = ApsimModel('Maize', out_path='fmx3.apsimx')
     with model:
-        model.add_node(source=dict(model="Soybean", model_type='Soil', identifier="Soil"),
-                       target=dict(identifier=".Simulations.Simulation.Field", model_type='Zone'), replace=True,
-                       rename='soil_added')
+        model.add_node_from_apsimx(source=dict(model="Soybean", model_type='Soil', identifier="Soil"),
+                                   target=dict(identifier=".Simulations.Simulation.Field", model_type='Zone'),
+                                   replace=True,
+                                   rename='soil_added')
         soil_nodes = model.inspect_model('Soil', fullpath=False)
 
     assert 'soil_added' in soil_nodes, " Soil nodes: `soil_added` not found"
@@ -1357,25 +1493,33 @@ if __name__ == '__main__':
     # test adding manager
     model = ApsimModel('Maize')
     with model:
-        model.add_node(source=dict(model="Soybean", model_type='Manager', identifier="Fertilise at sowing"),
-                       target=dict(identifier="Simulation", model_type='Simulation'), replace=True,
-                       rename="fertilizer_at_sowing")
+        model.add_node_from_apsimx(source=dict(model="Soybean", model_type='Manager', identifier="Fertilise at sowing"),
+                                   target=dict(identifier="Simulation", model_type='Simulation'), replace=True,
+                                   rename="fertilizer_at_sowing")
 
     # testing adding from memory
 
-    model = ApsimModel('Maize',)
+    model = ApsimModel('Maize', )
 
-    model.add_node(source=dict(model='Models.Clock', model_type=Models.Clock, identifier="Clock", source_kind='Models'),
-                   target=dict(identifier=".Simulations.Simulation", model_type='Simulation'), replace=True,
-                   rename='clock_mem')
+    # model.add_node_from_apsimx(source=dict(model='Models.Clock', model_type=Models.Clock, identifier="Clock", source_kind='Models'),
+    #                            target=dict(identifier=".Simulations.Simulation", model_type='Simulation'), replace=True,
+    #                            rename='clock_mem')
+    # model.add_node_from_apsimx(
+    #     source=dict(model='Models.Operations', model_type='Simulation', identifier="Simulation", source_kind='Models'),
+    #     target=dict(identifier=".Simulations", model_type='Simulations'), replace=False,
+    #     rename='sim2')
+    model.add_node_from_models(Models.Soils.Soil(), target=dict(identifier="Field", model_type='Zone'))
+    model.add_node_from_models(source=Models.Soils.Physical, target=dict(identifier="Soil", model_type='Soil'))
     clock_memory = model.inspect_model('Clock', fullpath=False)
     print(clock_memory)
-
-    # odel.open_in_gui(watch=False)
 
     model.has_node('.Simulations.Simulation.Field', node_type='Zone')
 
     with model:
+        model.open_in_gui()
+        import time
+
+        time.sleep(10)
         pass
 
     # te

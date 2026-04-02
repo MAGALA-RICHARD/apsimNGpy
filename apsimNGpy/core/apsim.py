@@ -958,7 +958,7 @@ class ApsimModel(CoreModel):
         """
         node_to_id = target['identifier']
         node_to_type = target['model_type']
-        node_from = source if not isinstance(source, dict) else source.get('model')# to be consistent with similar API
+        node_from = source if not isinstance(source, dict) else source.get('model')  # to be consistent with similar API
         # node is from models namespace
         if isinstance(node_from, ModelTools.CLASS_MODEL):
             node_from_node = node_from()  # it is in the form Models.Clock
@@ -1011,11 +1011,7 @@ class ApsimModel(CoreModel):
             - ``identifier`` : str
                 Node identifier. Can be:
                 - Node name (e.g., "Clock")
-                - Full APSIM path (e.g., ".Simulations.Simulation.Clock")
-            -  ``source_kind`` : str, Optional
-                  If the source_kind is `Models` to come from the ``Models`` namespace
-                  (e.g., Models.Clock). Otherwise, if `File`, the source is loaded from disk or built-in models. Default is File
-
+                - Full node path (e.g., ".Simulations.Simulation.Clock")
 
         target : dict
             Dictionary describing where the node will be inserted. Expected keys:
@@ -1023,7 +1019,7 @@ class ApsimModel(CoreModel):
             - ``identifier`` : str
                 Target location. Can be:
                 - Node name (e.g., "Simulation")
-                - Full APSIM path (e.g., ".Simulations.Simulation.Field")
+                - Full node path (e.g., ".Simulations.Simulation.Field")
 
             - ``model_type`` : str | type
                 Expected type of the target node (e.g., "Models.Core.Zone")
@@ -1037,7 +1033,7 @@ class ApsimModel(CoreModel):
 
         Notes
         -----
-        - All parameters are keyword-only to prevent misordered arguments.
+        - All parameters are keyword-only to prevent mis-ordered arguments.
         - ``identifier`` supports both node names and full APSIM paths.
         - When ``replace=False``, multiple nodes of the same type may coexist.
         - When ``replace=True``, only nodes matching both name and type are removed.
@@ -1052,7 +1048,7 @@ class ApsimModel(CoreModel):
             model = ApsimModel("Maize")
 
             # Example 1: Add node from another APSIM model
-            model.add_node(
+            model.add_node_from_apsimx(
                 source={
                     "model": "Soybean",
                     "model_type": "Models.Clock",
@@ -1067,7 +1063,7 @@ class ApsimModel(CoreModel):
             )
 
             # Example 2: Allow duplicates
-            model.add_node(
+            model.add_node_from_apsimx(
                 source={
                     "model": "Soybean",
                     "model_type": "Models.Clock",
@@ -1075,29 +1071,15 @@ class ApsimModel(CoreModel):
                 },
                 target={
                     "identifier": ".Simulations.Simulation",
-                    "model_type": Simulation,
+                    "model_type": 'Simulation',
                 },
                 replace=False,
                 rename="our_clock",
             )
 
-            # Example 3: Add node from Models namespace (memory)
-            model.add_node(
-                source={
-                    "model": "Clock",   # resolved from Models namespace
-                    "model_type": "Clock",
-                    "identifier": "Clock",
-                },
-                target={
-                    "identifier": ".Simulations.Simulation",
-                    "model_type": "Simulation",
-                },
-                node_from_memory=True,
-                rename="clock_memory",
-            )
 
-            # Example 4: Add soil node into Field
-            model.add_node(
+            # Example 3: Add soil node into Field
+            model.add_node_from_apsimx(
                 source={
                     "model": "Soybean",
                     "model_type": "Models.Soils.Soil",
@@ -1119,7 +1101,7 @@ class ApsimModel(CoreModel):
 
         .. code-block:: python
 
-            node_type = model.detect_model_type(".Simulations.Simulation.Field")
+            node_type = model.detect_model_type(".Simulations.Simulation.Field", full_name=True)
         """
         source, target = dict(source), dict(target)
         node_from = source['model']
@@ -1521,5 +1503,8 @@ if __name__ == '__main__':
 
         time.sleep(10)
         pass
+
+
+
 
     # te

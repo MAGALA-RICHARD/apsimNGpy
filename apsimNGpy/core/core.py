@@ -1551,8 +1551,13 @@ class CoreModel(PlotManager):
             )
 
         # Return fully qualified .NET type name
-        model_type = model.GetType()
-        return model_type if not full_name else model_type.FullName
+        # model_type = eval(model.GetType().FullName, __globals={'Models': Models})
+        model_type = eval(
+            model.GetType().FullName,
+            {"Models": CLR.Models},
+            {}
+        )
+        return model_type if not full_name else model.GetType().FullName
 
     def edit_model_by_path(self, path: str, **kwargs):
         """
@@ -5703,6 +5708,6 @@ if __name__ == '__main__':
                            commands=['[Phenology].Juvenile.Target.FixedValue'], simulations='Simulation',
                            values=[100], managers={'Sow using a variable rule': 'CultivarName'})
     fixed_model.run()
-    fixed_model.open_in_gui()
+    #fixed_model.open_in_gui()
     print(fixed_model.results.Yield.mean())
 

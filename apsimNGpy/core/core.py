@@ -3312,14 +3312,14 @@ class CoreModel(PlotManager):
 
             # Check if a node exists by name and type
             model.has_node("Clock", node_type="Clock")
-            # True
+            # {'ok': True, 'fullpath': False}
 
             model.has_node("Clock1", node_type="Clock")
-            # False
+            # {'ok':False}
 
             # Check using full path
             model.has_node(".Simulations.Simulation.Clock", node_type="Clock")
-            # True
+            # {'ok': True, 'fullpath': True}
 
             # Restrict search to a specific simulation (by index)
             model.has_node(
@@ -3327,7 +3327,7 @@ class CoreModel(PlotManager):
                 node_type="Clock",
                 scope=model[0]
             )
-            # True
+            # {'ok': True, 'fullpath': True}
 
             # Equivalent: restrict search by simulation name
             model.has_node(
@@ -3335,11 +3335,11 @@ class CoreModel(PlotManager):
                 node_type="Clock",
                 scope=model["Simulation"]
             )
-            # True
+            # {'ok': True, 'fullpath': True}
 
             # Check for Soil node within a simulation
             model.has_node("Soil", node_type="Soil", scope=model[0])
-            # True
+            # {'ok': True, 'fullpath': False}
 
             # Check for Organic node
             model.has_node("Organic", node_type="Organic", scope=model[0])
@@ -3347,7 +3347,7 @@ class CoreModel(PlotManager):
 
             # Case sensitivity example
             model.has_node("organic", node_type="Organic", scope=model[0])
-            # False
+            # {'ok':False}
 
                 """
 

@@ -405,8 +405,8 @@ class ExperimentManager(ApsimModel):
             Behind the scene, this parameter is used to check if the node, where the parameter is located exists
 
         param_identifier : str
-            Name of the parameter within the node (e.g., "Start", "FixedValue"). Other parameters identifiers may be long eng those related to
-            Plant models, e.g Leaf.Photosynthesis.RUE.FixedValue for radiation ue efficiency, etc. for Manager related paramters
+            Name or path of the parameter within the node (e.g., "Start"). Other parameters identifiers may be long e.g., those related to
+            Plant models, e.g Leaf.Photosynthesis.RUE.FixedValue for radiation use efficiency, etc. For Manager related paramters
             expected param identifier is 'Script.ParameterName' if script is not included it will be prefixed on it.
 
         values : Iterable[str | int | float]

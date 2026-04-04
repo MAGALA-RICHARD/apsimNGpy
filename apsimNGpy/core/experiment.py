@@ -521,7 +521,7 @@ class ExperimentManager(ApsimModel):
             fp = _knit_param_path(node_id=_name,
                                   _param=param, _values=values, _step=step)
         # add factor
-        name = rename or param_identifier
+        name = rename or param_identifier.replace(".",'')
         self.add_factor(specification=fp, factor_name=name)
         print(fp)
         print(node_info)
@@ -846,7 +846,7 @@ if __name__ == '__main__':
             param_node_location="Maize",
             node_type="Plant",
             param_identifier="Leaf.Photosynthesis.RUE.FixedValue",  #
-            values=[0.9, 2,3], rename='rue'
+            values=[0.9, 2,3], rename=''
         )
         exp.factor(param_node_location='Sow using a variable rule', node_type='Manager',
                    **{'param_identifier': 'Population', 'values': [10, 12, 4], 'step': None})

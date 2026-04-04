@@ -849,7 +849,7 @@ if __name__ == '__main__':
             values=[0.9, 2,3], rename=''
         )
         exp.factor(param_node_location='Sow using a variable rule', node_type='Manager',
-                   **{'param_identifier': 'Population', 'values': [10, 12, 4], 'step': None})
+                   **{'param_identifier': 'Script.Population', 'values': [10, 12, 4], 'step': None})
         exp.run()
         # exp.add_factor(specification="[Sow using a variable rule].Script.RowSpacing = 100, 450, 700",
         #                factor_name='Population')

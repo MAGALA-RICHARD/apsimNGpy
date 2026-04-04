@@ -377,7 +377,7 @@ class ExperimentManager(ApsimModel):
             param_node_location: str,
             node_type: Union[str, ModelTools.CLASS_MODEL],
             param_identifier: str,
-            values: Union[str, Iterable[Union[str, int, float]]]=None,
+            values: Union[str, Iterable[Union[str, int, float]]] = None,
             step: Union[int, float] = None,
             bounds: tuple = None
     ):
@@ -449,7 +449,7 @@ class ExperimentManager(ApsimModel):
                 param_identifier="Population",
                 values=[1, 5, 10],
             )
-            # use a full path for addign nitogen fertilizers
+            # use a full path for adding nitrogen fertilizers
             model.factor(
                 param_node_location='.Simulations.Experiment.Simulation.Field.Fertilise at sowing',
                 node_type="Manager",
@@ -464,7 +464,7 @@ class ExperimentManager(ApsimModel):
                 param_identifier="Carbon[1]", # represents first soil layer
                 values=[0.45, 1, 3],
             )
-
+            #use bounded values instead of lists
              model.factor(
                 param_node_location="Organic",
                 node_type="FOM",
@@ -490,7 +490,8 @@ class ExperimentManager(ApsimModel):
                 if _step is not None and _step is not False:
                     joined_values += f" step {_step}"
             else:
-                raise ValueError(f"please provide either bounds or values, defined them as list in using values argument")
+                raise ValueError(
+                    f"please provide either bounds or values, defined them as list in using values argument")
 
             if node_type.lower() == 'manager':
                 fup = f"[{node_id}].Script.{_param} = {joined_values}"
@@ -502,7 +503,7 @@ class ExperimentManager(ApsimModel):
         # get param info
         param = param_identifier
         if not fullpath:
-            _name= param_node_location
+            _name = param_node_location
             fp = _knit_param_path(node_id=param_node_location,
                                   _param=param, _values=values, _step=step)
         else:
@@ -821,15 +822,21 @@ if __name__ == '__main__':
             param_identifier="FOM[1]",  # represents first soil layer
             bounds=(100, 4000), step=500
         )
+        exp.factor(
+            param_node_location="Organic",
+            node_type="Organic",
+            param_identifier="FOM[2]",  # represents first soil layer
+            bounds=(100, 4000), step=500
+        )
 
         # exp.add_factor(specification="[Sow using a variable rule].Script.RowSpacing = 100, 450, 700",
         #                factor_name='Population')
         exp.factor(
-                param_node_location="Organic",
-                node_type="Organic",
-                param_identifier="Carbon[1]", # represents first soil layer
-                values=[0.45, 1, 3],
-            )
+            param_node_location="Organic",
+            node_type="Organic",
+            param_identifier="Carbon[1]",  # represents first soil layer
+            values=[0.45, 1, 3],
+        )
         exp.factor(param_node_location='Sow using a variable rule', node_type='Manager',
                    **{'param_identifier': 'Population', 'values': [10, 12, 4], 'step': None})
         exp.run()

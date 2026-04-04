@@ -511,7 +511,8 @@ class CoreModel(PlotManager):
     @property
     def results(self) -> pd.DataFrame:
         """
-        Legacy method for retrieving simulation results.
+        Legacy method for retrieving simulation results. Returns a data frame containing all the datatable values if no table was
+        specified during the runs
 
         This method is implemented as a ``property`` to enable lazy loading—results are
         only loaded into memory when explicitly accessed. This design helps optimize

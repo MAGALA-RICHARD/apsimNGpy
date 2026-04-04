@@ -3285,7 +3285,7 @@ class CoreModel(PlotManager):
 
         return self
 
-    def has_node(self, node: str, node_type:Union[str, ModelTools.CLASS_MODEL], scope=None):
+    def has_node(self, node: str, node_type:Union[str, ModelTools.CLASS_MODEL], scope=None) -> dict:
         """
         Check whether a node of a given type exists within the model.
 
@@ -3354,11 +3354,17 @@ class CoreModel(PlotManager):
         # Resort to the whole model structure if scope is None
         scope = scope or self.Simulations
 
-        nodes = {
-            *self.inspect_model(node_type, fullpath=True, scope=scope),
-            *self.inspect_model(node_type, fullpath=False, scope=scope),
-        }
-        return node in nodes
+        # Check full path match
+        fps = self.inspect_model(node_type, fullpath=True, scope=scope)
+        if node in fps:
+            return {"ok": True, "fullpath": True}
+
+        # Check name-level match
+        names = self.inspect_model(node_type, fullpath=False, scope=scope)
+        if node in names:
+            return {"ok": True, "fullpath": False}
+
+        return {"ok": False}
 
     @property
     def is_recent_version(self):
@@ -5709,5 +5715,6 @@ if __name__ == '__main__':
                            values=[100], managers={'Sow using a variable rule': 'CultivarName'})
     fixed_model.run()
     #fixed_model.open_in_gui()
+    model.has_node('Maize', node_type='Plant')
     print(fixed_model.results.Yield.mean())
 

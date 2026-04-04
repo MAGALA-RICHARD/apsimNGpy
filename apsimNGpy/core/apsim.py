@@ -1494,6 +1494,10 @@ if __name__ == '__main__':
     model.add_node_from_models(source=Models.Soils.Physical, target=dict(identifier="Soil", model_type='Soil'))
     clock_memory = model.inspect_model('Clock', fullpath=False)
     print(clock_memory)
+    model.add_node_from_models(source=Models.Core.Folder, target=dict(identifier=".Simulations", model_type='Simulations'),
+                               rename='Replacements')
+    model.add_node_from_models(source=Models.PMF.Plant, target=dict(identifier=".Simulations.Replacements", model_type='Folder'),
+                               rename='Maize')
 
     model.has_node('.Simulations.Simulation.Field', node_type='Zone')
 

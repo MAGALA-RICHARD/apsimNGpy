@@ -153,7 +153,7 @@ class EditorCultivarCommands:
         metas = self._load_plant_context()
         path, node, tpc = metas
         exp_new_cultivar_path = f"{node.FullPath}.{name}"
-        if not self.model.has_node(exp_new_cultivar_path, node_type='Models.PMF.Cultivar', scope=node):
+        if not self.model.has_node(exp_new_cultivar_path, node_type='Models.PMF.Cultivar', scope=node)['ok']:
             clt = CLR.Models.PMF.Cultivar()
             clt.Name = name
             # after attaching it is mutable in place

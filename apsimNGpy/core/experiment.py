@@ -2,7 +2,7 @@ from __future__ import annotations
 import re
 from collections import OrderedDict
 from pathlib import Path
-from typing import Union
+from typing import Union, Iterable
 from apsimNGpy.core.apsim import ApsimModel
 from apsimNGpy.core.model_loader import get_node_by_path, AUTO_PATH
 from apsimNGpy.core.model_tools import ModelTools, Models
@@ -10,7 +10,8 @@ from apsimNGpy.core.runner import invoke_csharp_gc, run_model_externally
 from apsimNGpy.core.version_inspector import is_higher_apsim_version
 from apsimNGpy.starter.starter import CLR
 from apsimNGpy.logger import logger
-CastHelper =CLR.CastHelper
+
+CastHelper = CLR.CastHelper
 NodeUtils = CLR.APsimCore
 System = CLR.System
 apsim_version = CLR.apsim_compiled_version
@@ -370,6 +371,135 @@ class ExperimentManager(ApsimModel):
         self.init = True
         # compile
 
+    def factor(
+            self,
+            *,
+            param_node_location: str,
+            node_type: Union[str, ModelTools.CLASS_MODEL],
+            param_identifier: str,
+            values: Union[str, Iterable[Union[str, int, float]]]=None,
+            step: Union[int, float] = None,
+            lower_bound: Union[int, float] = None,
+            upper_bound: Union[int, float] =None
+    ):
+        """
+        Define a factor specification for APSIM sensitivity or factorial experiments, Then uses `add_factor` under the hood.
+        Can be used if you don't want to go through the hassle of providing a specification
+
+        This method constructs and registers a factor expression that varies a given
+        parameter across a set of values. The parameter is identified by its parent
+        node location and parameter name, and is formatted into APSIM-compatible syntax.
+
+        Parameters
+        ----------
+        param_node_location : str
+            Identifier of the node containing the parameter. Can be:
+            - Node name (e.g., "Clock", "Soil")
+            - Full node path (e.g., ".Simulations.Simulation.Clock")
+
+        node_type : str | ModelTools.CLASS_MODEL
+            Type of the node (e.g., "Manager", "Clock", Models.Clock).
+            Used to resolve node context and formatting rules.
+
+        param_identifier : str
+            Name of the parameter within the node (e.g., "Start", "FixedValue").
+
+        values : Iterable[str | int | float]
+            Sequence of values to assign to the parameter. Does not support step, so even if step is provided, it will be ignored
+
+        step : int | float, optional
+            Step size for APSIM factor definition. If provided, appended as:
+            ``step <value>``. representing the interval of the values from each other
+        lower_bound: int | float, optional
+            lower limit for APSIM factor definition. If provided, then upper limit must be defined
+        upper_bound: int | float, optional
+            upper limit for APSIM factor definition. If provided, then the upper limit must be defined
+
+        Raises
+        ------
+        ValueError
+            If the specified node cannot be found for the given type.
+
+        Notes
+        -----
+        - For ``Manager`` nodes, parameters are assumed to reside under ``Script``:
+          ``[Node].Script.<param> = values``.
+        - For all other nodes:
+          ``[Node].<param> = values``.
+        - If ``param_node_location`` is a full path, only the terminal node name
+          is used in the factor specification.
+        - add [index] if parameter is targeting the soil layered nodes such as Physical, Organic etc.,
+        - if all values, lower_bound, upper_bound are provided priority is given to values because it is computationally less intensive
+
+        Examples
+        --------
+        .. code-block:: python
+
+            model.factor(
+                param_node_location="Sow Using a variable rule",
+                node_type="Manager",
+                param_identifier="Population",
+                values=[1, 5, 10],
+            )
+            # use a full path for addign nitogen fertilizers
+            model.factor(
+                param_node_location='.Simulations.Experiment.Simulation.Field.Fertilise at sowing',
+                node_type="Manager",
+                param_identifier="Amount",
+                values=[0, 100, 200],
+                step=50,
+            )
+            # add organic related values
+             model.factor(
+                param_node_location="Organic",
+                node_type="Organic",
+                param_identifier="Carbon[1]", # represents first soil layer
+                values=[0.45, 1, 3],
+            )
+
+        """
+
+        node_info = self.has_node(param_node_location, node_type=node_type)
+        if not node_info.get('ok'):
+            raise ValueError(f"node identifier {param_node_location} of type {node_type}does not exists")
+        fullpath = node_info['fullpath']
+
+        def _knit_param_path(*, node_id, _param, _values, _step):
+            if _values:
+                joined_values = ", ".join(map(str, _values))
+            elif lower_bound and upper_bound:
+                if upper_bound < lower_bound:
+                    raise ValueError(f"upper bound cant be higher than the lower bound")
+                joined_values = f"{lower_bound} to {upper_bound}"
+                if _step is not None and _step is not False:
+                    joined_values += f" step {_step}"
+            else:
+                if not all([lower_bound, upper_bound]):
+                    raise ValueError(f"both lower_bound and upper_bound need to be defined")
+                raise ValueError(f"please provide either lower_bound and upper_bound or defined them as list in using values arguement")
+
+            if node_type.lower() == 'manager':
+                fup = f"[{node_id}].Script.{_param} = {joined_values}"
+            else:
+                fup = f"[{node_id}].{_param} = {joined_values}"
+
+            return fup
+
+        # get param info
+        param = param_identifier
+        if not fullpath:
+            _name= param_node_location
+            fp = _knit_param_path(node_id=param_node_location,
+                                  _param=param, _values=values, _step=step)
+        else:
+            _name = param_node_location.split('.')[-1]
+            fp = _knit_param_path(node_id=_name,
+                                  _param=param, _values=values, _step=step)
+        # add factor
+        self.add_factor(specification=fp, name=_name)
+        print(fp)
+        print(node_info)
+
     def add_factor(self, specification: str, factor_name: str = None, **kwargs):
         """
         Add a new factor to the experiment from an APSIM-style script specification.
@@ -672,9 +802,16 @@ if __name__ == '__main__':
         exp.add_factor(specification="[Sow using a variable rule].Script.RowSpacing = 100, 450, 700",
                        factor_name='Population')
 
-        exp.add_factor(specification="[Sow using a variable rule].Script.RowSpacing = 100, 450, 700",
-                       factor_name='Population')
-        exp.preview_simulation()
+        # exp.add_factor(specification="[Sow using a variable rule].Script.RowSpacing = 100, 450, 700",
+        #                factor_name='Population')
+        exp.factor(
+                param_node_location="Organic",
+                node_type="Organic",
+                param_identifier="Carbon[1]", # represents first soil layer
+                values=[0.45, 1, 3],
+            )
+        exp.factor(param_node_location='Sow using a variable rule', node_type='Manager',
+                   **{'param_identifier': 'Population', 'values': [10, 12, 4], 'step': None})
         exp.run()
         # exp.add_factor(specification="[Sow using a variable rule].Script.RowSpacing = 100, 450, 700",
         #                factor_name='Population')

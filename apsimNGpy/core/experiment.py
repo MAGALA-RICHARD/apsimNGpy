@@ -3,6 +3,8 @@ import re
 from collections import OrderedDict
 from pathlib import Path
 from typing import Union, Iterable
+
+from apsimNGpy import NodeNotFoundError
 from apsimNGpy.core.apsim import ApsimModel
 from apsimNGpy.core.model_loader import get_node_by_path, AUTO_PATH
 from apsimNGpy.core.model_tools import ModelTools, Models
@@ -379,7 +381,8 @@ class ExperimentManager(ApsimModel):
             param_identifier: str,
             values: Union[str, Iterable[Union[str, int, float]]] = None,
             step: Union[int, float] = None,
-            bounds: tuple = None
+            bounds: tuple = None,
+            rename = ""
     ):
         """
         Define a factor specification for APSIM sensitivity or factorial experiments, Then uses `add_factor` under the hood.
@@ -399,9 +402,12 @@ class ExperimentManager(ApsimModel):
         node_type : str | ModelTools.CLASS_MODEL
             Type of the node (e.g., "Manager", "Clock", Models.Clock).
             Used to resolve node context and formatting rules.
+            Behind the scene, this parameter is used to check if the node, where the parameter is located exists
 
         param_identifier : str
-            Name of the parameter within the node (e.g., "Start", "FixedValue").
+            Name of the parameter within the node (e.g., "Start", "FixedValue"). Other parameters identifiers may be long eng those related to
+            Plant models, e.g Leaf.Photosynthesis.RUE.FixedValue for radiation ue efficiency, etc. for Manager related paramters
+            expected param identifier is 'Script.ParameterName' if script is not included it will be prefixed on it.
 
         values : Iterable[str | int | float]
             Sequence of values to assign to the parameter. Does not support step, so even if step is provided, it will be ignored
@@ -423,6 +429,9 @@ class ExperimentManager(ApsimModel):
             -----
             - Both lower and upper bounds must be provided together.
             - Partial specification (only one bound) is not allowed.
+        rename: str, optional
+          a new name used to identify the parameter. useful if you expect more than one paramters on the same node.
+          if not given, the name will be the parameter identifier
         Raises
         ------
         ValueError
@@ -476,13 +485,14 @@ class ExperimentManager(ApsimModel):
 
         node_info = self.has_node(param_node_location, node_type=node_type)
         if not node_info.get('ok'):
-            raise ValueError(f"node identifier {param_node_location} of type {node_type}does not exists")
+            raise NodeNotFoundError(f"node identifier {param_node_location} of type {node_type} does not exists")
         fullpath = node_info['fullpath']
 
         def _knit_param_path(*, node_id, _param, _values, _step):
             if _values:
                 joined_values = ", ".join(map(str, _values))
             elif bounds:
+                assert len(bounds) == 2, 'Bounds must have two values'
                 lower_bound, upper_bound = bounds
                 if upper_bound < lower_bound:
                     raise ValueError(f"upper bound cant be higher than the lower bound")
@@ -491,9 +501,9 @@ class ExperimentManager(ApsimModel):
                     joined_values += f" step {_step}"
             else:
                 raise ValueError(
-                    f"please provide either bounds or values, defined them as list in using values argument")
+                    f"Please provide either bounds or values, defined them as list in using values argument")
 
-            if node_type.lower() == 'manager':
+            if node_type.lower() == 'manager' and 'Script' not in _param:
                 fup = f"[{node_id}].Script.{_param} = {joined_values}"
             else:
                 fup = f"[{node_id}].{_param} = {joined_values}"
@@ -503,7 +513,7 @@ class ExperimentManager(ApsimModel):
         # get param info
         param = param_identifier
         if not fullpath:
-            _name = param_node_location
+
             fp = _knit_param_path(node_id=param_node_location,
                                   _param=param, _values=values, _step=step)
         else:
@@ -511,7 +521,8 @@ class ExperimentManager(ApsimModel):
             fp = _knit_param_path(node_id=_name,
                                   _param=param, _values=values, _step=step)
         # add factor
-        self.add_factor(specification=fp, name=_name)
+        name = rename or param_identifier
+        self.add_factor(specification=fp, factor_name=name)
         print(fp)
         print(node_info)
 
@@ -812,10 +823,10 @@ gc.collect()
 if __name__ == '__main__':
     with ExperimentManager("Maize", out_path='dtb.apsimx') as exp:
         exp.init_experiment(permutation=True)
-        exp.add_factor("[Fertilise at sowing].Script.Amount = 0 to 200 step 20")
+        # exp.add_factor("[Fertilise at sowing].Script.Amount = 0 to 200 step 20")
         exp.add_factor("[Fertilise at sowing].Script.FertiliserType= DAP,NO3N")
-        exp.add_factor(specification="[Sow using a variable rule].Script.RowSpacing = 100, 450, 700",
-                       factor_name='Population')
+        # exp.add_factor(specification="[Sow using a variable rule].Script.RowSpacing = 100, 450, 700",
+        #                factor_name='Population')
         exp.factor(
             param_node_location="Organic",
             node_type="Organic",
@@ -832,10 +843,10 @@ if __name__ == '__main__':
         # exp.add_factor(specification="[Sow using a variable rule].Script.RowSpacing = 100, 450, 700",
         #                factor_name='Population')
         exp.factor(
-            param_node_location="Organic",
-            node_type="Organic",
-            param_identifier="Carbon[1]",  # represents first soil layer
-            values=[0.45, 1, 3],
+            param_node_location="Maize",
+            node_type="Plant",
+            param_identifier="Leaf.Photosynthesis.RUE.FixedValue",  #
+            values=[0.9, 2,3], rename='rue'
         )
         exp.factor(param_node_location='Sow using a variable rule', node_type='Manager',
                    **{'param_identifier': 'Population', 'values': [10, 12, 4], 'step': None})

@@ -3300,8 +3300,26 @@ class CoreModel(PlotManager):
 
         Returns
         -------
-        bool
-            True if the node exists in the specified scope, otherwise False.
+        dict
+            A dictionary indicating whether the node exists and whether the
+            provided path is a full path.
+
+            Structure:
+                {
+                    'ok': bool,
+                    'fullpath': bool  # only present if ok is True
+                }
+
+            Cases:
+                - If the node exists and the provided path is NOT a full path:
+                    {'ok': True, 'fullpath': False}
+
+                - If the node exists and the provided path IS a full path:
+                    {'ok': True, 'fullpath': True}
+
+                - If the node does not exist:
+                    {'ok': False}
+
         Examples
         --------
         .. code-block:: python

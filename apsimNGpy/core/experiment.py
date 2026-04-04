@@ -379,8 +379,7 @@ class ExperimentManager(ApsimModel):
             param_identifier: str,
             values: Union[str, Iterable[Union[str, int, float]]]=None,
             step: Union[int, float] = None,
-            lower_bound: Union[int, float] = None,
-            upper_bound: Union[int, float] =None
+            bounds: tuple = None
     ):
         """
         Define a factor specification for APSIM sensitivity or factorial experiments, Then uses `add_factor` under the hood.
@@ -410,11 +409,20 @@ class ExperimentManager(ApsimModel):
         step : int | float, optional
             Step size for APSIM factor definition. If provided, appended as:
             ``step <value>``. representing the interval of the values from each other
-        lower_bound: int | float, optional
-            lower limit for APSIM factor definition. If provided, then upper limit must be defined
-        upper_bound: int | float, optional
-            upper limit for APSIM factor definition. If provided, then the upper limit must be defined
 
+        bounds : tuple[int | float, int | float], optional
+            Tuple specifying the lower and upper bounds for APSIM factor definition:
+
+            - bounds[0] : lower_bound (int | float)
+                Minimum value of the parameter.
+
+            - bounds[1] : upper_bound (int | float)
+                Maximum value of the parameter.
+
+            Notes
+            -----
+            - Both lower and upper bounds must be provided together.
+            - Partial specification (only one bound) is not allowed.
         Raises
         ------
         ValueError
@@ -457,6 +465,13 @@ class ExperimentManager(ApsimModel):
                 values=[0.45, 1, 3],
             )
 
+             model.factor(
+                param_node_location="Organic",
+                node_type="FOM",
+                param_identifier="FOM[1]", # represents first soil layer
+                bounds =(100, 4000), step =500
+            )
+
         """
 
         node_info = self.has_node(param_node_location, node_type=node_type)
@@ -467,16 +482,15 @@ class ExperimentManager(ApsimModel):
         def _knit_param_path(*, node_id, _param, _values, _step):
             if _values:
                 joined_values = ", ".join(map(str, _values))
-            elif lower_bound and upper_bound:
+            elif bounds:
+                lower_bound, upper_bound = bounds
                 if upper_bound < lower_bound:
                     raise ValueError(f"upper bound cant be higher than the lower bound")
                 joined_values = f"{lower_bound} to {upper_bound}"
                 if _step is not None and _step is not False:
                     joined_values += f" step {_step}"
             else:
-                if not all([lower_bound, upper_bound]):
-                    raise ValueError(f"both lower_bound and upper_bound need to be defined")
-                raise ValueError(f"please provide either lower_bound and upper_bound or defined them as list in using values arguement")
+                raise ValueError(f"please provide either bounds or values, defined them as list in using values argument")
 
             if node_type.lower() == 'manager':
                 fup = f"[{node_id}].Script.{_param} = {joined_values}"
@@ -801,6 +815,12 @@ if __name__ == '__main__':
         exp.add_factor("[Fertilise at sowing].Script.FertiliserType= DAP,NO3N")
         exp.add_factor(specification="[Sow using a variable rule].Script.RowSpacing = 100, 450, 700",
                        factor_name='Population')
+        exp.factor(
+            param_node_location="Organic",
+            node_type="Organic",
+            param_identifier="FOM[1]",  # represents first soil layer
+            bounds=(100, 4000), step=500
+        )
 
         # exp.add_factor(specification="[Sow using a variable rule].Script.RowSpacing = 100, 450, 700",
         #                factor_name='Population')

@@ -32,7 +32,7 @@ InvalidOperationException, ArgumentOutOfRangeException = CLR.System.InvalidOpera
 from apsimNGpy.core._cultivar import edit_cultivar_by_path
 from apsimNGpy.core._cultivar import trace_cultivar
 from apsimNGpy.config import configuration
-from apsimNGpy.core.ce import EditorCultivarCommands
+from apsimNGpy.core.ce import CreatNewCultivar
 
 CastHelper = CLR.CastHelper
 from apsimNGpy.core.model_loader import (load_apsim_model, save_model_to_file, recompile, get_node_by_path, AUTO_PATH)
@@ -1733,7 +1733,7 @@ class CoreModel(PlotManager):
                         f'Please specify the plant name e.g., Maize, Soybean etc hosting the suggested cultivar: {values.Name}')
                 rename = kwargs.get('rename', f"e_{plant_name}_{values.Name}")
 
-                cc = EditorCultivarCommands(model=self, template_cultivar=values.Name, plant=plant_name)
+                cc = CreatNewCultivar(model=self, template=values.Name, plant=plant_name)
                 commands = kwargs.get('commands')
                 match commands:
                     case dict():
@@ -2166,7 +2166,7 @@ class CoreModel(PlotManager):
                             f'Please specify the plant name e.g., Maize, Soybean etc hosting the suggested cultivar: {model_name}')
                     rename = kwargs.get('rename', f"e_{plant_name}_{model_name}")
 
-                    cc = EditorCultivarCommands(model=self, template_cultivar=model_name, plant=plant_name)
+                    cc = CreatNewCultivar(model=self, template=model_name, plant=plant_name)
                     commands = kwargs.get('commands')
                     match commands:
                         case dict():

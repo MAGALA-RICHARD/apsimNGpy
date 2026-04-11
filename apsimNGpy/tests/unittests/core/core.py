@@ -610,7 +610,7 @@ class TestCoreModel(BaseTester):
             cp = test_ap_sim.inspect_model_parameters(model_type='Cultivar', model_name='B_110')
 
             new_juvenile = 289.888
-            test_ap_sim.edit_cultivar(commands=com_path, values=new_juvenile, CultivarName='B_110')
+            test_ap_sim.create_new_cultivar(commands=com_path, values=new_juvenile, CultivarName='B_110')
             # read again
             juvenile_replacements = test_ap_sim.inspect_model_parameters(model_type='Cultivar', model_name='B_110')[
                 com_path]

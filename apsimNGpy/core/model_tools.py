@@ -25,11 +25,12 @@ Models = CLR.Models
 Physical, SoilCrop, Organic, Solute, Chemical = Models.Soils.Physical, Models.Soils.SoilCrop, Models.Soils.Organic, Models.Soils.Solute, Models.Soils.Chemical
 IS_NEW_APSIM = CLR.file_format_modified
 
-from apsimNGpy.starter.cs_resources import   sow_on_fixed_date, harvest, \
+from apsimNGpy.starter.cs_resources import sow_on_fixed_date, harvest, \
     fertilizer_at_sow
 
 APSIM_VERSION = CLR.apsim_compiled_version
 CastHelper = CLR.CastHelper
+
 
 def _add_model(model, parent) -> None:
     """
@@ -298,6 +299,11 @@ def validate_model_obj(model__type, evaluate_bound=False) -> CLASS_MODEL:
     """
     model_types = None
     bound_model = None
+    if ('Models.Core.Simulations' == model__type
+            or model_types == Models.Core.Simulations
+            or model_types == 'Simulations'
+             ):
+        return Models.Core.Simulations
 
     try:
         if isinstance(model__type, str):
@@ -968,7 +974,8 @@ def clone_simulation(self, sim_name, rename, inplace=True):
         if s.Name == sim_name:
             break
     else:
-        raise ValueError(f"Simulation {sim_name} not found. available simulations are/is {[i.Name for i in self.simulations]}")
+        raise ValueError(
+            f"Simulation {sim_name} not found. available simulations are/is {[i.Name for i in self.simulations]}")
 
     inode = CLR.Node.Clone(s.Node) if hasattr(s, 'Node') else CLR.Node.Clone(s)
     if rename in {i.Name for i in self.simulations}:

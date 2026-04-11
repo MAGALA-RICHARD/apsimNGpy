@@ -7,6 +7,7 @@ email: magalarich20@gmail.com
 import os
 from contextlib import suppress
 from dataclasses import dataclass
+from functools import cache
 from pathlib import Path
 from typing import Any
 from typing import Optional, Tuple, Sequence
@@ -25,8 +26,10 @@ from apsimNGpy.core.model_loader import AUTO_PATH
 from apsimNGpy.core.model_loader import get_node_by_path
 from apsimNGpy.core.model_tools import find_child_of_class
 from apsimNGpy.core.soiler import SoilManager
-from apsimNGpy import logger
+from apsimNGpy import logger, timer, NodeNotFoundError
 from apsimNGpy.soils.helpers import soil_water_param_fill
+from System.Collections.Generic import List
+from System.Collections.Generic import KeyValuePair
 
 # expose some models
 # ===================================
@@ -799,6 +802,11 @@ class ApsimModel(CoreModel):
 
     @staticmethod
     def _get_node(self, node_id, node_type):
+        if (node_type == "Simulations"
+                or node_type == CLR.Models.Core.Simulations
+                or node_type == "Models.Core.Simulations"):
+            return self.Simulations
+
         # name identifies the node
         if node_id in self.inspect_model(node_type, fullpath=False):
             node_loc = ModelTools.find_child(self.Simulations, child_class=node_type, child_name=node_id)
@@ -807,10 +815,11 @@ class ApsimModel(CoreModel):
             node_loc = get_node_by_path(self.Simulations, node_path=node_id, cast_as='auto')
         else:
             # node is identified by either name or full path but does not exist
-            raise ValueError(f"suggested node type '{node_type}'  named '{node_id}' not found.")
+            raise NodeNotFoundError(f"suggested node type '{node_type}'  named '{node_id}' not found.")
         return node_loc
 
     @staticmethod
+    @cache
     def _check_candidate_node(node, *, replace, rename, node_from_node):
         """
         Internal utility to handle node replacement and renaming prior to insertion.
@@ -985,7 +994,192 @@ class ApsimModel(CoreModel):
         ModelTools.ADD(node_from_node, node_to_loc)
         self.save()
 
-    def add_node_from_apsimx(self, *, source: dict, target: dict, replace=True, rename=None):
+    def add_new_model(self, *, parent_identifier, parent_type, source: dict, replace=True, rename=None):
+        """
+            Add a new APSIM model node to a specified parent node using a dictionary specification.
+
+            This method constructs a CLR APSIM model object from a Python dictionary (`source`),
+            assigns attributes, validates insertion rules, and attaches it to the target parent node.
+
+            Parameters
+            ----------
+            parent_identifier : str
+                Identifier used to locate the parent node. Interpretation depends on `parent_type`.
+                Examples:
+                    - "Simulation"
+                    - "Clock"
+                    - ".Simulations.Simulation.Field"
+
+            parent_type : str
+                Type of the parent node used for resolution (e.g., "Simulation", "Zone", "Manager").
+                This ensures correct disambiguation when multiple nodes share names.
+
+            source : dict
+                Dictionary defining the APSIM model to create.
+
+                Requirements:
+                - MUST include either:
+                    * "$type" (APSIM standard), or
+                    * "type" (Python-friendly alias)
+                - The type must be resolvable to a valid APSIM CLR model.
+
+                Example:
+                --------
+                {
+                    "$type": "Models.Manager, Models",
+                    "Name": "FertiliserManager",
+                    "Parameters": [
+                        {"Key": "Amount", "Value": 50},
+                        {"Key": "FertiliserType", "Value": "Urea"}
+                    ]
+                }
+
+                Notes:
+                ------
+                - Keys must match APSIM property names exactly.
+                - Special handling is applied for:
+                    * Clock date fields (parsed to System.DateTime)
+                    * Manager.Parameters (converted to .NET List[KeyValuePair])
+                - "Children" key is ignored during assignment.
+
+            replace : bool, default=True
+                Controls behavior when a node with the same name and type already exists.
+
+                - True:
+                    Existing matching node is removed and replaced.
+                - False:
+                    Raises an error if a conflicting node exists.
+
+            rename : str or None, default=None
+                Optional new name for the incoming node.
+
+                - If provided, the node will be renamed before insertion.
+                - Useful when `replace=False` and avoiding naming conflicts.
+
+            Returns
+            -------
+            None
+                The model is modified in-place and automatically saved.
+
+            Raises
+            ------
+            ValueError
+                If `source` does not define a valid APSIM model type.
+
+            AttributeError
+                If the APSIM model type cannot be resolved.
+
+            RuntimeError
+                If insertion fails due to conflicts and `replace=False`.
+
+            Notes
+            -----
+            - The method performs the following steps:
+                1. Resolve parent node from `parent_identifier` and `parent_type`.
+                2. Instantiate APSIM CLR model from `$type` or `type`.
+                3. Assign attributes with type-aware handling.
+                4. Validate insertion using `replace` / `rename` logic.
+                5. Attach node to parent.
+                6. Persist changes via `self.save()`.
+
+            - Attribute assignment is best-effort:
+                Unsupported or incompatible attributes are silently ignored.
+
+            - This method assumes familiarity with APSIM's internal model structure.
+
+            Warnings
+            --------
+            - Incorrect `$type` values will fail at runtime.
+            - Passing improperly structured `Parameters` for Manager nodes will result in invalid configurations.
+            - Silent attribute failures may hide misconfigured keys—validate inputs carefully.
+
+            Examples
+            --------
+            >>> model = ApsimModel("Maize")
+            >>> model.add_new_model(
+            ...     parent_identifier="Simulation",
+            ...     parent_type="Simulation",
+            ...     source={
+            ...         "$type": "Models.Clock, Models",
+            ...         "Start": "2000-01-01",
+            ...         "End": "2020-12-31"
+            ...     }
+            ... )
+
+            >>> model.add_new_model(
+            ...     parent_identifier=".Simulations.Simulation.Field",
+            ...     parent_type="Zone",
+            ...     source={
+            ...         "type": "Models.Manager, Models",
+            ...         "Name": "IrrigationManager",
+            ...         "Parameters": [
+            ...             {"Key": "Amount", "Value": 30}
+            ...         ],
+                     'CodeArray':[] # code array must be defined to use this method with manager script
+            ...     },
+            ...     replace=False,
+            ...     rename="IrrigationManager_v2"
+            ... )
+            """
+        # strict the source dict should have the parameter names as those in APSIM, and most importantly should define the type of the models
+        node_to_loc = self._get_node(self, parent_identifier, parent_type)
+        # Copy source to avoid mutation
+        pl = dict(source)
+        node_from_type = pl.get("$type") or source.get(
+            "type")  # the latter is more pythonic, although not a standard in APSIM key attributes names
+        if not node_from_type:
+            raise ValueError("source must define '$type' or 'type'")
+        # pop it
+        pl.pop('$type', None), pl.pop('type', None)
+        # if node is in this form "Models.PMF.Plant, Models"
+        # Extract CLR type (strip assembly if present)
+        head = node_from_type.split(",", 1)[0].strip()
+        _node_from_node = self.find_model(head)
+        #
+        if _node_from_node is None:
+            raise AttributeError(
+                f"Unable to resolve APSIM model type: '{node_from_type}'"
+            )
+        node_from_node = _node_from_node()
+
+        for k, v in pl.items():
+            match type(node_from_node):
+                case CLR.Models.Clock:
+                    if k in {'End', 'Start', 'StartDate', 'EndDate'}:
+                        v = CLR.System.DateTime.Parse(v)
+                case CLR.Models.Climate.Weather:
+                    pass
+                case CLR.Models.Manager:
+
+                    if k == 'Parameters':
+                        net_list = List[KeyValuePair[str, str]](len(v))
+                        node_from_node.Parameters = net_list
+                        for i, dicto in enumerate(v):
+                            param = dicto['Key']
+                            value = dicto['Value']
+
+                            app = KeyValuePair[CLR.System.String, CLR.System.String](param, f"{value}")
+                            net_list.Add(app)
+                        continue  # skip this key for sett attr below
+            if k == 'Children':
+                # this expected to be empty at this time, above all `[]` will be rejected by pythonnet
+                continue
+            try:
+                setattr(node_from_node, k, v)
+            except TypeError:
+                pass
+
+        # Validate replacement / rename logic
+        self._check_candidate_node(node_to_loc,
+                                   replace=replace,
+                                   rename=rename,
+                                   node_from_node=node_from_node)
+        # Attach node to parent
+        ModelTools.ADD(node_from_node, node_to_loc)
+        # save the model
+        self.save()
+
+    def add_model_from_apsimx(self, *, source: dict, target: dict, replace=True, rename=None):
         """
         Add a node from a source into a target location within the APSIM model.
 
@@ -1442,10 +1636,10 @@ if __name__ == '__main__':
     model.clone_simulation(rename='new_sim', base_simulation=0)
     print(model[0])
 
-    model.add_node_from_apsimx(source=dict(model="Soybean", model_type='Models.Clock', identifier="Clock"),
-                               target=dict(identifier=".Simulations.Simulation", model_type=Models.Core.Simulation),
-                               replace=True,
-                               rename='our_clock')
+    model.add_model_from_apsimx(source=dict(model="Soybean", model_type='Models.Clock', identifier="Clock"),
+                                target=dict(identifier=".Simulations.Simulation", model_type=Models.Core.Simulation),
+                                replace=True,
+                                rename='our_clock')
     clocks1 = model.inspect_model('Models.Clock', fullpath=False)
     # because simulations are two, if we delete and replace, they will remain two
     assert len(clocks1) == 2, "clocks expected to be two because of two simulations"
@@ -1453,10 +1647,10 @@ if __name__ == '__main__':
     # create new instance and text
     model = ApsimModel('Maize', out_path='fxm2.apsimx')
     with model:
-        model.add_node_from_apsimx(source=dict(model="Soybean", model_type='Models.Clock', identifier="Clock"),
-                                   target=dict(identifier=".Simulations.Simulation", model_type='Simulation'),
-                                   replace=True,
-                                   rename='our_clock')
+        model.add_model_from_apsimx(source=dict(model="Soybean", model_type='Models.Clock', identifier="Clock"),
+                                    target=dict(identifier=".Simulations.Simulation", model_type='Simulation'),
+                                    replace=True,
+                                    rename='our_clock')
 
         clocks2 = model.inspect_model('Models.Clock', fullpath=False)
     assert len(clocks1) == 2, "clocks expected to be two because of two simulations"
@@ -1464,10 +1658,10 @@ if __name__ == '__main__':
     # test adding soils
     model = ApsimModel('Maize', out_path='fmx3.apsimx')
     with model:
-        model.add_node_from_apsimx(source=dict(model="Soybean", model_type='Soil', identifier="Soil"),
-                                   target=dict(identifier=".Simulations.Simulation.Field", model_type='Zone'),
-                                   replace=True,
-                                   rename='soil_added')
+        model.add_model_from_apsimx(source=dict(model="Soybean", model_type='Soil', identifier="Soil"),
+                                    target=dict(identifier=".Simulations.Simulation.Field", model_type='Zone'),
+                                    replace=True,
+                                    rename='soil_added')
         soil_nodes = model.inspect_model('Soil', fullpath=False)
 
     assert 'soil_added' in soil_nodes, " Soil nodes: `soil_added` not found"
@@ -1475,9 +1669,9 @@ if __name__ == '__main__':
     # test adding manager
     model = ApsimModel('Maize')
     with model:
-        model.add_node_from_apsimx(source=dict(model="Soybean", model_type='Manager', identifier="Fertilise at sowing"),
-                                   target=dict(identifier="Simulation", model_type='Simulation'), replace=True,
-                                   rename="fertilizer_at_sowing")
+        model.add_model_from_apsimx(source=dict(model="Soybean", model_type='Manager', identifier="Fertilise at sowing"),
+                                    target=dict(identifier="Simulation", model_type='Simulation'), replace=True,
+                                    rename="fertilizer_at_sowing")
 
     # testing adding from memory
 
@@ -1494,21 +1688,138 @@ if __name__ == '__main__':
     model.add_node_from_models(source=Models.Soils.Physical, target=dict(identifier="Soil", model_type='Soil'))
     clock_memory = model.inspect_model('Clock', fullpath=False)
     print(clock_memory)
-    model.add_node_from_models(source=Models.Core.Folder, target=dict(identifier=".Simulations", model_type='Simulations'),
+    model.add_node_from_models(source=Models.Core.Folder,
+                               target=dict(identifier=".Simulations", model_type='Simulations'),
                                rename='Replacements')
-    model.add_node_from_models(source=Models.PMF.Plant, target=dict(identifier=".Simulations.Replacements", model_type='Folder'),
+    model.add_node_from_models(source=Models.PMF.Plant,
+                               target=dict(identifier=".Simulations.Replacements", model_type='Folder'),
                                rename='Maize')
 
     model.has_node('.Simulations.Simulation.Field', node_type='Zone')
 
     with model:
-        model.open_in_gui()
+        # model.open_in_gui()
         import time
 
-        time.sleep(10)
+        # time.sleep(10)
         pass
+    mp = ApsimModel(model='Maize', out_path='m.apsimx')
+    clock_node = {
+        "$type": "Models.Clock, Models",
+        "Start": "1992-01-01",
+        "End": "1995-12-31",
+        "Name": "Clock",
+        "Enabled": True,
+        "ReadOnly": False,
+    }
+    weather_node = {
+        "$type": "Models.Climate.Weather, Models",
+        "ConstantsFile": None,
+        "FileName": r"C:\Users\rmagala\AppData\Local\Programs\APSIM2026.2.7990.0\Examples\WeatherFiles\AU_Ingham.met"
+        #  "ExcelWorkSheetName": "",
+        #  "Name": "Weather",
+        #  "ResourceName": None,
+        #  "Children": [],
+        #  "Enabled": True,
+        #  "ReadOnly": False,
+    }
+    plant_node = {
+        "$type": "Models.PMF.Plant, Models",
+        "Name": "Maize",
+        "ResourceName": "Canola",
+
+        "Enabled": True,
+        "ReadOnly": False,
+    }
+    cultivar = {
+        "$type": "Models.PMF.Cultivar, Models",
+        "Command": [
+            "[Phenology].Juvenile.Target.FixedValue = 190",
+            "[Phenology].Photosensitive.Target.XYPairs.X = 0, 12.5, 24",
+            "[Phenology].Photosensitive.Target.XYPairs.Y = 0, 0, 124",
+            "[Phenology].FlagLeafToFlowering.Target.FixedValue = 10",
+            "[Phenology].FloweringToGrainFilling.Target.FixedValue = 170",
+            "[Phenology].GrainFilling.Target.FixedValue = 520",
+            "[Rachis].DMDemands.Structural.DMDemandFunction.MaximumOrganWt.FixedValue = 25",
+            "[Grain].MaximumGrainsPerCob.FixedValue =  55"
+        ],
+        "Name": "B_10000000000000000000000",
+        "ResourceName": None,
+
+        "Enabled": True,
+        "ReadOnly": False,
+    }
+    from nodes import manager_node, soil_arbitrator
+
+    # mp.add_node_from_dict(parent_type='Simulation', parent_identifier='Simulation', source=clock_node)
+    # mp.add_node_from_dict(parent_type='Simulation', parent_identifier='Simulation', source=clock_node)
+    mp.add_crop_replacements()
+    mp.add_new_model(parent_type='Models.PMF.Plant',
+                     parent_identifier='Maize',
+                     source=cultivar)
+    mp.add_new_model(parent_type='Simulation', parent_identifier='Simulation',
+                     source={'type': 'Models.Summary', 'Verbosity': '0'})
+    mp.save()
 
 
+    @timer
+    def edit_cultivar(self, commands, template, parent_plant, rename=None):
+        match commands:
+            case dict():
+                commands = {f"{k}={v}" for k, v in commands.items()}
+            case list() | tuple() | set():
+                commands = set(commands)
+            case str():
+                commands = {commands}
+            case _:
+                raise ValueError(f"Unknown command type: {type(commands)} expected list, str, tuple, dicts or set")
+        existing_params = self.inspect_model_parameters(model_type='Models.PMF.Cultivar', model_name='B_100')
+        all_commands = {f"{k}={v}" for k, v in existing_params.items()} | commands
+        rename = rename or f"ed{template}"
 
+        cult_load = {
+            "$type": "Models.PMF.Cultivar, Models",
+            "Command": [
+                *all_commands
+            ],
+            "Name": f"{rename}",
+            # "Enabled": True,
+            "ReadOnly": False,
+
+        }
+
+        if 'Replacements' not in {i.Name for i in self.Simulations.Children}:
+            folder = CLR.Models.Core.Folder()
+            folder.Name = 'Replacements'
+            self.Simulations.Children.Add(folder)
+            plant = Models.PMF.Plant()
+            plant.Name = parent_plant
+            folder.Children.Add(plant)
+        else:
+            rep = [i for i in self.Simulations.Children if i.Name == 'Replacements']
+            if rep:
+                replacements = rep[0]
+                if parent_plant not in {i.Name for i in replacements.Children}:
+                    plant = CLR.Models.PMF.Plant()
+                    plant.Name = parent_plant
+                    replacements.Children.Add(plant)
+
+        self.add_new_model(parent_type='Models.PMF.Plant',
+                           parent_identifier=f'{parent_plant}',
+                           replace=True,
+                           source=cult_load)
+
+
+    edit_cultivar(mp, commands={'[leaf].Photosynthesis.RUE.FixedValue = 2.3', }, parent_plant='Maize',
+                  template='B_100', rename='B_100x')
+
+
+    # mp.open_in_gui()
+
+
+    # set_up_crop_rotation()
+
+    # with mp:
+    #     pass
 
     # te

@@ -5,7 +5,7 @@ email: magalarich20@gmail.com
 
 """
 from __future__ import annotations
-
+from pathlib import Path
 import ast
 import datetime
 import gc
@@ -16,29 +16,27 @@ import re
 import shutil
 import string
 import warnings
+from collections.abc import KeysView, ValuesView
 from functools import lru_cache
 from typing import Any
 from typing import Union
+
 import pandas as pd
-from pathlib import Path
-from apsimNGpy.starter.starter import CLR
 from System import *
-from collections.abc import KeysView, ValuesView
+
+from apsimNGpy.starter.starter import CLR
 
 # from System import InvalidOperationException, ArgumentOutOfRangeException
 KeyValuePair = CLR.System.Collections.Generic.KeyValuePair
 String = CLR.System.String
 InvalidOperationException, ArgumentOutOfRangeException = CLR.System.InvalidOperationException, CLR.System.ArgumentOutOfRangeException
-from apsimNGpy.core._cultivar import edit_cultivar_by_path
-from apsimNGpy.core._cultivar import trace_cultivar
 from apsimNGpy.config import configuration
 from apsimNGpy.core.ce import CreatNewCultivar
 
 CastHelper = CLR.CastHelper
 from apsimNGpy.core.model_loader import (load_apsim_model, save_model_to_file, recompile, get_node_by_path, AUTO_PATH)
 from apsimNGpy.core.model_tools import find_child
-from apsimNGpy.core.model_tools import (get_or_check_model, old_method, _edit_in_cultivar,
-                                        inspect_model_inputs,
+from apsimNGpy.core.model_tools import (get_or_check_model, old_method, inspect_model_inputs,
                                         ModelTools, validate_model_obj, replace_variable_by_index)
 from apsimNGpy.core.plotmanager import PlotManager
 
@@ -48,8 +46,7 @@ from apsimNGpy.core.runner import run_model_externally, run_p, run_apsim_by_path
 from apsimNGpy.core.version_inspector import is_higher_apsim_version
 from apsimNGpy.core_utils.database_utils import read_db_table
 # prepare for the C# import
-from apsimNGpy.core_utils.utils import open_apsimx_file_in_window, evaluate_commands_and_values_types, \
-    extract_cultivar_param_path, is_scalar
+from apsimNGpy.core_utils.utils import open_apsimx_file_in_window, is_scalar, timer
 from apsimNGpy.exceptions import ModelNotFoundError, NodeNotFoundError
 from apsimNGpy.manager.weathermanager import get_weather
 from apsimNGpy.settings import workspace, MissingOption
@@ -5138,8 +5135,6 @@ class CoreModel(PlotManager):
             if duplicates:
                 logger.warning(
                     f"Duplicate arguments detected: {duplicates} from each duplicated elements, only one was considered ")
-
-            from itertools import count
 
         for arg in set(args):
             # fetch node by path

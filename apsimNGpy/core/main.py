@@ -1,8 +1,14 @@
+# this is a work in progress
+import datetime
+
 from apsimNGpy import timer
 from apsimNGpy.core.apsim import ApsimModel, CLR
 from apsimNGpy.core.config import configuration
 from diskcache import Cache
 from pathlib import Path
+from apsimNGpy.core.ce import create_new_cultivar
+from apsimNGpy.core_utils.fert_helpers import (fertilize_at_fixed_dates, fertilize_at_sowing
+                                               )
 
 cache = Cache(directory='../.cached')
 CROPS = primary_simulations = {
@@ -32,6 +38,37 @@ CROPS = primary_simulations = {
     'WhiteClover'
 }
 
+no_nit = {}
+
+
+@cache.memoize()
+def _get_fertilizer_scripts():
+    def _search(sub_word, manager_list):
+        """Return first matching manager containing sub_word."""
+        for p in manager_list:
+            if sub_word in p:
+                return p
+        return None
+
+    fertilizers = {}
+    sowers = {}
+    harvesters = {}
+
+    for crop in CROPS:
+        with ApsimModel(crop) as model:
+            managers = model.inspect_model('Models.Manager', fullpath=False)
+
+            fertilizers[crop] = _search('Ferti', managers)
+            sowers[crop] = _search('Sow', managers)
+            harvesters[crop] = _search('Harvest', managers)
+
+    return {
+        "fertilizers": fertilizers,
+        "sowers": sowers,
+        "harvesters": harvesters,
+    }
+
+
 @timer
 @cache.memoize()
 def load_model(crop, bin_path=configuration.bin_path):
@@ -60,6 +97,39 @@ def load_model(crop, bin_path=configuration.bin_path):
     return mod.path
 
 
+def _insert_weather(mod, weather: dict, start: int, end: int):
+    if not isinstance(weather, dict):
+        raise TypeError(f"`weather` must be dict, got {type(weather)}")
+
+    met_file = weather.get("met_file")
+    lonlat = weather.get("lonlat")
+    source = weather.get("source", "nasa")
+    # ❌ Trying to prevent ambiguous config
+    if met_file and lonlat:
+        raise ValueError("Provide only one of 'met_file' or 'lonlat', not both")
+    if met_file:
+        return mod.get_weather_from_file(weather_file=met_file)
+
+    elif lonlat:
+        if not isinstance(lonlat, (list, tuple)) or len(lonlat) != 2:
+            raise ValueError(f"`lonlat` must be (lat, lon), got {lonlat}")
+
+        return mod.get_weather_from_web(
+            lonlat=lonlat,
+            start=start,
+            end=end,
+            source=source
+        )
+
+
+with ApsimModel('Sugarcane') as gv:
+    p = gv.inspect_model_parameters(model_type='Models.Manager', model_name='Fertilise on fixed date')
+    print(p)
+    fertilize_at_fixed_dates(gv,  missing_ok=False, Amount=10,)
+
+    print(gv.results)
+
+
 @timer
 @cache.memoize()
 def simulate(
@@ -67,7 +137,7 @@ def simulate(
         plant_date=None,  # sowing date
 
         # Location & environment
-        lonlat=None,
+        weather: dict | None = None,
         met_file=None,  # weather file path (rain, temp, radiation)
 
         # Soil configuration
@@ -80,7 +150,7 @@ def simulate(
         row_spacing=250,  # mm
         plant_density=None,  # plants/m²
         # Fertilization & irrigation
-        nitrogen: dict | None = None,
+        fertilize: dict | None = None,
         nitrogen_date=None,
         irrigation_amount=0,
         irrigation_schedule=None,
@@ -97,8 +167,23 @@ def simulate(
     mod = ApsimModel(loaded)
     # create simulation node
     simulation = mod[0]
+    import datetime
+
+    START = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+    END = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+    # weather data
+    if weather is not None:
+        _insert_weather(mod, weather, START.year, END.year)
     mod.add_new_model(parent_type='Simulation', parent_identifier=simulation.FullPath, replace=True,
                       source=dict(type='Models.Clock', Start=start_date, End=end_date, Name='Clock'))
+    if cultivar is not None:
+        pass
+    if tillage is not None:
+        pass
+    if report is not None:
+        pass
+    if som is not None:
+        pass
     with mod.run():
         report_df = mod.get_simulated_output(table) if table else mod.results
         return report_df
@@ -107,16 +192,21 @@ def simulate(
 def set_up_crop_rotation(sequence='Maize'):
     with ApsimModel(r'D:\Elimin_rye_cover_crop_2026\APSIMX\cc_cover_edited_rue.apsimx') as model:
         model.open_in_gui(watch=True)
+
+
 from nodes import simple_rotation
 
-re = simulate('Soybean', 2, table='Report', irrigation_amount={'0':1})
+res = simulate('Soybean', 2, table='Report', irrigation_amount={'0': 1})
+mn = res.Yield.mean()
+res2 = simulate('Barley', 2, table='Report', weather={"lonlat": (-93.0145, 41.097)})
+mn = res2.Yield.mean()
 crops = []
-for i in Path(configuration.bin_path).parent.joinpath('Examples').rglob("*"):
-    if i.stem in CROPS:
-        with ApsimModel(i) as model:
-            man = model.inspect_model('Models.Manager')
-
-            print(f'{i.name}: ')
-            print('------------------')
-            print(*man, sep='\n')
-            crops.append(i.stem)
+# for i in Path(configuration.bin_path).parent.joinpath('Examples').rglob("*"):
+#     if i.stem in CROPS:
+#         with ApsimModel(i) as model:
+#             man = model.inspect_model('Models.Manager')
+#
+#             print(f'{i.name}: ')
+#             print('------------------')
+#             print(*man, sep='\n')
+#             crops.append(i.stem)

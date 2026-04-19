@@ -81,7 +81,6 @@ def read_from_socket(sock):
 def validate_response(sock, expected):
     _, data = read_from_socket(sock)
     resp = data.decode()
-    print(resp)
     if resp != expected:
         raise ValueError(f"Expected '{expected}', got '{resp}'")
 
@@ -127,19 +126,33 @@ def send_replacement(sock, change):
     validate_response(sock, ACK)
 
 
+def wait_for_fin(sock):
+    while True:
+        _, data = read_from_socket(sock)
+        resp = data.decode()
+
+        if resp == FIN:
+            return
+        elif resp == ACK:
+            continue  # ignore extra ACKs
+        else:
+            print(f"⚠️ Unexpected response: {resp}")
+
+
 # ---------------------------
 # RUN
 # ---------------------------
 def run_with_changes(sock, changes):
     send_string(sock, COMMAND_RUN)
     validate_response(sock, ACK)
-
-    for change in changes:
-        send_replacement(sock, change)
+    if changes:
+        for change in changes:
+            send_replacement(sock, change)
 
     send_string(sock, FIN)
     validate_response(sock, ACK)
-    validate_response(sock, FIN)
+    # validate_response(sock, FIN)
+    #wait_for_fin(sock=sock)
 
     print("Run finished")
 
@@ -215,6 +228,9 @@ def start_apsim_server(server_path, file_path, host='0.0.0.0', port=27747):
     # 🔥 Ensure executable permission on Unix
     if system in ("Linux", "Darwin"):
         exe.chmod(exe.stat().st_mode | 0o111)
+    if not Path(exe).exists():
+        print('exe', '===============================\n==================')
+        raise FileNotFoundError(f"APSIM server not found")
 
     cmd = [
         str(exe),
@@ -239,36 +255,6 @@ def start_apsim_server(server_path, file_path, host='0.0.0.0', port=27747):
     )
 
 
-def run_with_changes_http(session, changes):
-    """
-    Run APSIM simulation with parameter changes via HTTP.
-
-    :param session: Session object (contains port + client)
-    :param changes: list of change dicts
-    """
-
-    url = f"http://127.0.0.1:{session.port}/run"
-
-    payload = {
-        "changes": changes or []
-    }
-
-    res = session.client.post(url, json=payload)
-
-    if res.status_code != 200:
-        raise RuntimeError(f"APSIM run failed: {res.text}")
-
-    data = res.json()
-
-    if data.get("status") != "completed":
-        raise RuntimeError(f"Unexpected APSIM response: {data}")
-
-    print("Run finished")
-
-    return data
-
-
-# ---------------------------
 # MAIN
 # ---------------------------
 if __name__ == '__main__':

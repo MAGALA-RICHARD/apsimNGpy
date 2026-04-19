@@ -1,14 +1,13 @@
 # api_server.py
 import random
-from datetime import time
+from ctypes import c_double
 from threading import Lock
 from typing import Dict, List
-from uuid import uuid4
 
-import requests
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-
+from pathlib import Path
+from apsimNGpy import configuration
 from apsimNGpy import logger
 from sessions import SessionManager, start_cleanup_task
 # import untils
@@ -39,6 +38,10 @@ def get_free_port():
     return random.randint(30000, 40000)
 
 
+class ApsimBinRequest(BaseModel):
+    path: str = configuration.bin_path
+
+
 # start model
 class Start(BaseModel):
     model: str
@@ -51,25 +54,57 @@ def startup():
     logger.info("🧹 Auto-cleanup started")
 
 
+ApsimBin = ApsimBinRequest()
+
+
+@app.put("/apsim_bin")
+def set_apsim_bin(data: ApsimBinRequest):
+    from apsimNGpy.config import locate_model_bin_path
+    try:
+        path = Path(locate_model_bin_path(data.path))
+    except NotADirectoryError:
+        raise HTTPException(status_code=404, detail=f"{data.path} is not a directory")
+
+    # Validate existence
+    if not path.exists():
+        raise HTTPException(
+            status_code=404,
+            detail=f"path {path} does not exist"
+        )
+
+    # Idempotent check
+    if getattr(ApsimBin, "path", None) == str(path):
+        return {
+            "message": "APSIM bin already set",
+            "path": str(path)
+        }
+
+    # Set the path
+    ApsimBin.path = str(path)
+
+    return {
+        "message": "APSIM bin updated",
+        "path": str(path)
+    }
+
+
 # ---------------------------
 # START SERVER for each session or model
 # ---------------------------
 @app.post("/session")
 def create_session(start: Start):
     import time
-    from apsimNGpy import configuration
     from pathlib import Path
     from apsimNGpy import load_crop_from_disk
-
-    SERVER_PATH = configuration.bin_path
-    JSON_PATH = Path(configuration.bin_path).parent / "Examples"
-
+    bin_path = ApsimBin.path
+    SERVER_PATH = bin_path
     session = session_manager.create(start.model)
     if start.model.endswith(".apsimx"):
         model = start.model
     else:
-        model = load_crop_from_disk(start.model, out =f'f_{session.session_id}.apsimx')
-
+        model = load_crop_from_disk(start.model, bin_path=bin_path, out=f'f_{session.session_id}.apsimx')
+    if not Path(model).exists() or not Path(model).is_file():
+        raise HTTPException(status_code=404, detail=f"model path {model} does not exist")
     process = start_apsim_server(
         server_path=SERVER_PATH,
         file_path=model,
@@ -154,7 +189,7 @@ def run_simulation(req: RunRequest):
     try:
         session = session_manager.get(req.session_id)
     except KeyError:
-        raise HTTPException(status_code=404, detail="Session not found")
+        raise HTTPException(status_code=404, detail=f"Session  {req.session_id}not found")
 
     if session.status == "expired":
         raise HTTPException(status_code=410, detail="Session expired")
@@ -165,7 +200,8 @@ def run_simulation(req: RunRequest):
 
         try:
             run_with_changes(session.socket, [])
-            return {"status": "completed"}
+            # session.process.wait()
+            return {"status": "completed", "session_id": req.session_id}
         except Exception as e:
             raise HTTPException(500, str(e))
 
@@ -179,10 +215,13 @@ def run_simulation(req: RunRequest):
 # ---------------------------
 @app.get("/results/{session_id}")
 def get_results(session_id: str):
+    from utils import read_from_socket, read_output
     try:
         session = session_manager.get(session_id)
+        # update activity (important for auto-expiration)
+        session_manager.touch(session_id)
     except KeyError:
-        raise HTTPException(status_code=404, detail="Session not found")
+        raise HTTPException(status_code=404, detail=f"Session {session_id} not found")
 
     if session.status == "expired":
         raise HTTPException(status_code=410, detail="Session expired")
@@ -191,12 +230,10 @@ def get_results(session_id: str):
         # update activity (important for auto-expiration)
         session_manager.touch(session_id)
 
-        # call APSIM server via HTTP
-        res = session.client.get(
-            f"http://127.0.0.1:{SERVER_PORT}/results"
-        )
-
-        data = res.json()
+        data= read_output(session.socket, 'Report', {
+            'Yield': c_double,
+            'Clock.Today': c_double
+        })
 
         # OPTIONAL: filter + type casting (replacement for read_output)
         filtered = []

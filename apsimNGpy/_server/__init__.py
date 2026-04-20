@@ -133,7 +133,7 @@ def run_with_changes(sock, changes):
 
     send_string(sock, FIN)
     validate_response(sock, ACK)
-    validate_response(sock, FIN)
+    #validate_response(sock, FIN)
 
     print("Run finished")
 

@@ -3,7 +3,8 @@ import threading
 import time
 from datetime import datetime, timedelta
 from datetime import timezone
-from typing import Any, Optional
+from pathlib import Path
+from typing import Any, Optional, List
 from typing import Dict
 from uuid import uuid4
 from datetime import datetime as dtime
@@ -35,11 +36,15 @@ class Session(BaseModel):
         default_factory=lambda: dtime.now(timezone.utc)
     )
     status: SessionStatus = SessionStatus.ACTIVE
+    file_path: Optional[str] = None
+    results: Optional[dict] = Field(default_factory=dict)
 
 
 class SessionManager:
     def __init__(self):
+
         self.sessions: Dict[str, Session] = {}
+        self.sessions_in_mem: List[str] = []
 
     def _get_free_port(self) -> int:
         s = socket()
@@ -47,6 +52,9 @@ class SessionManager:
         port = s.getsockname()[1]
         s.close()
         return port
+
+    def __getitem__(self, item):
+        return self.sessions_in_mem[item]
 
     def create(self, model_name: str) -> Session:
         session_id = str(uuid4())
@@ -58,7 +66,7 @@ class SessionManager:
             port=port,
 
         )
-
+        self.sessions_in_mem.append(session_id)
         self.sessions[session_id] = session
         return session
 
@@ -76,6 +84,14 @@ class SessionManager:
             session.process.terminate()
 
         del self.sessions[session_id]
+        if session.file_path:
+            try:
+                fp = Path(session.file_path)
+                fp.unlink(missing_ok=True)
+                db = Path(session.file_path).with_suffix(".db")
+                db.unlink(missing_ok=True)
+            except PermissionError:
+                pass
 
     def touch(self, session_id: str):
         session = self.get(session_id)
@@ -116,4 +132,5 @@ if __name__ == "__main__":
     # from apsimNGpy import set_apsim_bin_path
     # set_apsim_bin_path(r'C:\Users\rmagala\AppData\Local\Programs\APSIM2026.4.8027.0\bin')
     from apsimNGpy import configuration
+
     sm.cleanup_expired()

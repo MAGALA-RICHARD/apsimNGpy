@@ -2,23 +2,21 @@
 import random
 from ctypes import c_double
 from threading import Lock
-from typing import Dict, List, Any
-import time
-from pathlib import Path
-import shutil
-from apsimNGpy import load_crop_from_disk, ApsimModel
+from typing import Dict, List, Optional, Any, Union
+
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, ConfigDict
 from pathlib import Path
-from apsimNGpy import configuration
+from apsimNGpy import configuration, timer
 from apsimNGpy import logger
 from sessions import SessionManager, start_cleanup_task
+from pydantic import BaseModel, Field, ConfigDict
 # import untils
 from utils import (
     start_apsim_server,
     run_with_changes,
     connect_to_remote_server,
-    PROPERTY_TYPE_DOUBLE, fix_datastore_location
+    PROPERTY_TYPE_DOUBLE
 )
 
 app = FastAPI(title="APSIM Server Python API")
@@ -48,7 +46,7 @@ class ApsimBinRequest(BaseModel):
 # start model
 class Start(BaseModel):
     model: str
-    dll: bool = False
+    dll: bool = True
 
 
 # Start clean up immediately
@@ -61,9 +59,9 @@ def startup():
 @app.on_event("shutdown")
 def del_files_on_shutdown():
     # clean up copied files on shutdown
+
     for i in tuple(session_manager.sessions_in_mem):
         session_manager.delete(i)
-
 
 
 ApsimBin = ApsimBinRequest()
@@ -105,29 +103,28 @@ def set_apsim_bin(data: ApsimBinRequest):
 # ---------------------------
 @app.post("/session")
 def create_session(start: Start):
-
+    import time
+    from pathlib import Path
+    import shutil
+    from apsimNGpy import load_crop_from_disk
     bin_path = ApsimBin.path
     SERVER_PATH = bin_path
     session = session_manager.create(start.model)
-    fn = (Path(SERVER_PATH)/f'f_{session.session_id}.apsimx').resolve()
     if start.model.endswith(".apsimx"):
         model = start.model
-        model = shutil.copy(model, fn)
+        model = shutil.copy(model, f'f_{session.session_id}.apsimx')
     else:
-        model = load_crop_from_disk(start.model, bin_path=bin_path, out=fn)
-    mod  = ApsimModel(model)
-    mod.get_weather_from_web(start=1986, end=2024, lonlat=(-93.4502, 41.0456))
-    model = mod.path
+        model = load_crop_from_disk(start.model, bin_path=bin_path, out=f'f_{session.session_id}.apsimx')
+    session.file_path = model
     if not Path(model).exists() or not Path(model).is_file():
         raise HTTPException(status_code=404, detail=f"model path {model} does not exist")
-
     process = start_apsim_server(
         server_path=SERVER_PATH,
         file_path=model,
         port=session.port,
         use_dll=start.dll
     )
-   # time.sleep(2.5)
+    time.sleep(2.5)
     sock = connect_to_remote_server("127.0.0.1", session.port)
 
     session.process = process
@@ -174,42 +171,27 @@ class Change(BaseModel):
     paramtype: int = PROPERTY_TYPE_DOUBLE
 
 
+class Editor(BaseModel):
+    model_type: str
+    model_name: str
+    parameters: Dict[str, Union[int, float, str, bool]]
+    simulations: List[str] = Field(default_factory=list)
+
+
 class RunRequest(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
     session_id: str
     changes: List[Change]
-
-
-class EditsRequest(BaseModel):
-    type: str
-    name: str
-    parameters: Dict[str, Any]
-
-
-# ---------------------------
-# SESSION MANAGEMENT
-# ---------------------------
-# @app.post("/session")
-# def _create_session():
-#     try:
-#         sock = connect_to_remote_server(SERVER_HOST, SERVER_PORT)
-#     except Exception as e:
-#         raise HTTPException(500, f"Connection failed: {e}")
-#
-#     session_id = str(uuid4())
-#     SESSIONS[session_id] = sock
-#
-#     return {"session_id": session_id}
-
-
-def run_http(session):
-    session.client.get(f"http://127.0.0.1:{session.port}/run")
+    edits: List[Editor] = Field(default_factory=list)
 
 
 # ---------------------------
 # RUN SIMULATION
 # ---------------------------
 @app.post("/run")
+@timer
 def run_simulation(req: RunRequest):
+    from apsimNGpy import ApsimModel
     try:
         session = session_manager.get(req.session_id)
     except KeyError:
@@ -223,11 +205,24 @@ def run_simulation(req: RunRequest):
         session_manager.touch(req.session_id)
 
         try:
-            run_with_changes(session.socket, [])
+            with ApsimModel(session.file_path) as model:
+                if req.edits:
+
+                    for edit in req.edits:
+                        logger.info(edit.parameters)
+                        model.edit_model(
+                            model_type=edit.model_type,
+                            model_name=edit.model_name,
+                            # simulations = edit.simulations,
+                            **edit.parameters
+                        )
+                model.run()
+                df = model.results
+                res = df.mean(numeric_only=True)
+                session.results = res
             # session.process.wait()
             return {"status": "completed", "session_id": req.session_id}
         except Exception as e:
-            logger.info(f'run error {e}')
             raise HTTPException(500, str(e))
 
 
@@ -235,13 +230,38 @@ def run_simulation(req: RunRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+class InspectRequest(BaseModel):
+    identifier: str
+    model_type: str
+    # parameters: List[str]
+
+
+@app.post("/inspect/{session_id}")
+def inspect_params(session_id, inspect_request: InspectRequest):
+    from apsimNGpy import ApsimModel
+    session = session_manager.get(session_id)
+    # update activity (important for auto-expiration)
+    session_manager.touch(session_id)
+    if inspect_request.identifier:
+        with ApsimModel(session.file_path) as model:
+            node_id = inspect_request.identifier
+            node = model.has_node(node_id, node_type=inspect_request.model_type)
+            if node and isinstance(node, bool):
+                obj = model.inspect_model_parameters(model_type=inspect_request.model_type, model_name=node_id,
+                                                     )
+            elif isinstance(node, dict, ) and node['fullpath']:
+                obj = model.inspect_model_parameters_by_path(node_id)
+            else:
+                obj = model.inspect_model_parameters(model_type=inspect_request.model_type, model_name=node_id,
+                                                     )
+            return obj
+
+
 # ---------------------------
 # READ RESULTS
 # ---------------------------
 @app.get("/results/{session_id}")
 def get_results(session_id: str):
-    print(session_id, 'result fetching')
-    from utils import read_output
     try:
         session = session_manager.get(session_id)
         # update activity (important for auto-expiration)
@@ -255,21 +275,7 @@ def get_results(session_id: str):
     try:
         # update activity (important for auto-expiration)
         session_manager.touch(session_id)
-
-        data = read_output(session.socket, 'Report', {
-            'Yield': c_double,
-            'Clock.Today': c_double
-        })
-
-        # OPTIONAL: filter + type casting (replacement for read_output)
-        filtered = []
-        for row in data:
-            filtered.append({
-                "Yield": float(row.get("Yield", 0)),
-                "Clock.Today": float(row.get("Clock.Today", 0))
-            })
-
-        return filtered
+        return session.results
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

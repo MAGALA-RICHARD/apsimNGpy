@@ -23,15 +23,50 @@ PROPERTY_TYPE_STRING = 4
 from apsimNGpy import configuration, logger
 
 
-def get_server(bin_path=configuration.bin_path):
-    p = Path(bin_path).rglob('apsim-server.exe')
-    res = list(p)
-    if res:
-        return res[0]
-    p2 = Path(bin_path).rglob('apsim-server')
-    res2 = list(p2)
-    if res2:
-        return res2[0]
+def send_bytes(sock, payload: bytes):
+    sock.sendall(struct.pack('!I', len(payload)))
+    sock.sendall(payload)
+
+
+def send_string(sock, value: str):
+    payload = value.encode('utf-8')
+    send_bytes(sock, payload)
+
+
+def send_int(sock, value: int):
+    payload = struct.pack('!i', value)
+    send_bytes(sock, payload)
+
+
+def send_double(sock, value: float):
+    payload = struct.pack('!d', value)
+    send_bytes(sock, payload)
+
+
+def read_int(sock: socket.socket) -> int:
+    return struct.unpack('!I', _recv_exact(sock, 4))[0]
+
+
+def read_bytes(sock: socket.socket) -> bytes:
+    length = read_int(sock)
+    return _recv_exact(sock, length)
+
+
+def read_string(sock: socket.socket) -> str:
+    return read_bytes(sock).decode('utf-8')
+
+
+def read_from_socket(sock):
+    size = read_int(sock)
+    data = _recv_exact(sock, size)
+    return size, data
+
+
+def validate_response(sock, expected: str):
+    _, data = read_from_socket(sock)
+    resp = data.decode()
+    if resp != expected:
+        raise ApsimProtocolError(f"Expected '{expected}', got '{resp}'")
 
 
 def _recv_exact(sock: socket.socket, n: int) -> bytes:
@@ -46,38 +81,12 @@ def _recv_exact(sock: socket.socket, n: int) -> bytes:
     return b"".join(chunks)
 
 
-def read_int(sock: socket.socket) -> int:
-    try:
-        return struct.unpack("!I", _recv_exact(sock, 4))[0]
-    except struct.erroras as se:
-        print(se)
-
-
-def read_bytes(sock: socket.socket) -> bytes:
-    length = read_int(sock)
-    return _recv_exact(sock, length)
-
-
-def read_string(sock: socket.socket) -> str:
-    return read_bytes(sock).decode("utf-8")
-
-
-def send_double(sock, value):
-    sock.send(struct.pack('<d', value))
-
-
 # ---------------------------
 # CONNECTION
 # ---------------------------
-def connect_to_remote_server(ip_address: str, port: int) -> socket.socket:
+def connect_to_remote_server(ip_address, port):
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-    # 🔥 important for Windows reliability
-    client.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)   # disable Nagle (prevents delays)
-    client.settimeout(20)  # avoid hanging forever
-
     client.connect((ip_address, port))
-
     return client
 
 
@@ -99,11 +108,6 @@ def recv_all(sock, size):
     return data
 
 
-def send_bytes(sock, payload: bytes):
-    sock.send(struct.pack('!i', len(payload)))
-    sock.send(payload)
-
-
 def send_to_socket(sock, msg):
     if isinstance(msg, int):
         payload = struct.pack('<i', msg)
@@ -119,35 +123,22 @@ def send_to_socket(sock, msg):
     sock.send(payload)
 
 
-def read_from_socket(sock):
-    header = recv_all(sock, 4)
-    su = struct.unpack('<i', header)
-    print(su)
-    size = su[0]
-    data = recv_all(sock, size)
-    logger.info(data)
-    return size, data
+# def read_from_socket(sock):
+#     header = recv_all(sock, 4)
+#     su = struct.unpack('<i', header)
+#     print(su)
+#     size = su[0]
+#     data = recv_all(sock, size)
+#     print('data', data)
+#     return size, data
 
 
-def validate_response(sock, expected):
-    size, data = read_from_socket(sock)
-    resp = data.decode()
-    logger.info(f"{resp}, received response")
-    if resp != expected:
-        logger.info(f"expected {expected}, received {resp}")
-        raise ValueError(f"Expected '{expected}', got '{resp}'")
-    logger.info(f"received {data}")
 
 
 # ---------------------------
 # SEND HELPERS
 # ---------------------------
-def send_string(sock, value):
-    send_to_socket(sock, value)
 
-
-def send_int(sock, value):
-    sock.send(struct.pack('<i', value))
 
 
 # ---------------------------
@@ -195,22 +186,26 @@ def wait_for_fin(sock):
 def run_with_changes(sock, changes):
     send_string(sock, COMMAND_RUN)
     validate_response(sock, ACK)
-    if changes:
-        for change in changes:
-            send_replacement(sock, change)
+
+    for change in changes:
+        send_replacement(sock, change)
 
     send_string(sock, FIN)
     validate_response(sock, ACK)
 
-    # print(resp)
-    # if resp != FIN:
-    #     raise ApsimProtocolError(f"Command ran with errors: {resp}")
-    print("FIN ===", FIN)
-    validate_response(sock, FIN)
-    # wait_for_fin(sock=sock)
+    # wait for final FIN from server
 
-    print("Run finished")
+    _, data = read_from_socket(sock)
+    resp = data.decode()
 
+    if resp == FIN:
+       pass
+    elif resp == ACK:
+       pass
+    else:
+        logger.info(resp)
+        raise ApsimProtocolError(f"Unexpected response during RUN: {resp}")
+    print('run finished')
 
 # ---------------------------
 # READ OUTPUT
@@ -304,7 +299,6 @@ def start_apsim_server(server_path, file_path, host='0.0.0.0', port=27747, use_d
         print('exe', '===============================\n==================')
         raise FileNotFoundError(f"APSIM server not found")
     bdir = r'D:\package\ApsimX\bin\Debug\net8.0\apsim-server.exe'
-    cwd = str(Path(exe).parent)
     cmd = [
         str(exe),
         "--file", str(file_path),
@@ -319,6 +313,7 @@ def start_apsim_server(server_path, file_path, host='0.0.0.0', port=27747, use_d
     if Path(exe).suffix == '.dll':
         cmd.insert(0, "dotnet")
     #  Use model directory as working dir (IMPORTANT)
+    cwd = str(Path(bdir).parent)
     try:
         return subprocess.Popen(
             cmd,

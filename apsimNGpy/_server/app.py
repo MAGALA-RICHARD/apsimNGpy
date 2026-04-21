@@ -62,8 +62,10 @@ def startup():
 def del_files_on_shutdown():
     # clean up copied files on shutdown
     for i in tuple(session_manager.sessions_in_mem):
-        session_manager.delete(i)
-
+        try:
+            session_manager.delete(i)
+        except KeyError as e:
+            pass
 
 
 ApsimBin = ApsimBinRequest()
@@ -105,17 +107,16 @@ def set_apsim_bin(data: ApsimBinRequest):
 # ---------------------------
 @app.post("/session")
 def create_session(start: Start):
-
     bin_path = ApsimBin.path
     SERVER_PATH = bin_path
     session = session_manager.create(start.model)
-    fn = (Path(SERVER_PATH)/f'f_{session.session_id}.apsimx').resolve()
+    fn = (Path(SERVER_PATH) / f'f_{session.session_id}.apsimx').resolve()
     if start.model.endswith(".apsimx"):
         model = start.model
         model = shutil.copy(model, fn)
     else:
         model = load_crop_from_disk(start.model, bin_path=bin_path, out=fn)
-    mod  = ApsimModel(model)
+    mod = ApsimModel(model)
     mod.get_weather_from_web(start=1986, end=2024, lonlat=(-93.4502, 41.0456))
     model = mod.path
     if not Path(model).exists() or not Path(model).is_file():
@@ -127,7 +128,7 @@ def create_session(start: Start):
         port=session.port,
         use_dll=start.dll
     )
-   # time.sleep(2.5)
+    # time.sleep(2.5)
     sock = connect_to_remote_server("127.0.0.1", session.port)
 
     session.process = process
@@ -158,6 +159,7 @@ def stop_session(session_id: str):
 
     # remove session
     session_manager.delete(session_id)
+    print(f'session: {session_id} stopped')
 
     return {
         "status": "stopped",

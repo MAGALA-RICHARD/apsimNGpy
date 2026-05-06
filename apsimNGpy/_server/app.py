@@ -1,16 +1,16 @@
 # api_server.py
 import random
+import shutil
 from ctypes import c_double
+from pathlib import Path
 from threading import Lock
 from typing import Dict, List, Any
-import time
-from pathlib import Path
-import shutil
-from apsimNGpy import load_crop_from_disk, ApsimModel
+
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from pathlib import Path
+
 from apsimNGpy import configuration
+from apsimNGpy import load_crop_from_disk, ApsimModel
 from apsimNGpy import logger
 from sessions import SessionManager, start_cleanup_task
 # import untils
@@ -18,7 +18,7 @@ from utils import (
     start_apsim_server,
     run_with_changes,
     connect_to_remote_server,
-    PROPERTY_TYPE_DOUBLE, fix_datastore_location
+    PROPERTY_TYPE_DOUBLE
 )
 
 app = FastAPI(title="APSIM Server Python API")
@@ -61,7 +61,8 @@ def startup():
 @app.on_event("shutdown")
 def del_files_on_shutdown():
     # clean up copied files on shutdown
-    for i in tuple(session_manager.sessions_in_mem):
+    tt_data =  tuple(session_manager.sessions_in_mem)
+    for i in tt_data:
         try:
             session_manager.delete(i)
         except KeyError as e:
@@ -116,10 +117,10 @@ def create_session(start: Start):
         model = shutil.copy(model, fn)
     else:
         model = load_crop_from_disk(start.model, bin_path=bin_path, out=fn)
-    mod = ApsimModel(model)
-    mod.get_weather_from_web(start=1986, end=2024, lonlat=(-93.4502, 41.0456))
-    model = mod.path
+    print(model)
+
     if not Path(model).exists() or not Path(model).is_file():
+        logger.info(model)
         raise HTTPException(status_code=404, detail=f"model path {model} does not exist")
 
     process = start_apsim_server(

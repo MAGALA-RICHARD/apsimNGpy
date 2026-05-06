@@ -1,5 +1,6 @@
 from pathlib import Path
-
+import time
+time.sleep(2)
 import requests
 
 base = "http://127.0.0.1:8000"
@@ -8,11 +9,11 @@ session = requests.Session()
 plant = 'Soybean'
 # 1. Create session
 fp = str(Path(r'D:\Elimin_rye_cover_crop_2026\APSIMX\cc_cover.apsimx').resolve())
-res = requests.post(
+res = session.post(
     f"{base}/session",
     json={
-        "model":'Maize',
-        'dll':True
+        "model": 'Maize',
+        'dll':False
 
 
     }
@@ -33,7 +34,6 @@ run = session.post(
     json={
         "session_id": session_id,
         "changes": [],
-
     },
 )
 print(f"Run: {run.status_code}", )

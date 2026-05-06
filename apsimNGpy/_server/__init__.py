@@ -6,7 +6,6 @@ import pandas as pd
 from time import sleep
 from pathlib import Path
 
-
 ACK = 'ACK'
 FIN = 'FIN'
 COMMAND_RUN = 'RUN'
@@ -133,7 +132,7 @@ def run_with_changes(sock, changes):
 
     send_string(sock, FIN)
     validate_response(sock, ACK)
-    validate_response(sock, FIN)
+   # validate_response(sock, FIN)
 
     print("Run finished")
 
@@ -189,18 +188,25 @@ def read_output_of_one(sock, param_type):
 # ---------------------------
 def start_apsim_server(server_path, json_path, json_name,
                        host='0.0.0.0', port=27747):
-    subprocess.Popen([
+    file_path = f'{json_path}/{json_name}'
+    cmd = [
         f'{server_path}/apsim-server.exe',
-        '--file', f'{json_path}/{json_name}',
-        '--verbose',
-        '--keep-alive',
-        '--native',
-        '--remote',
-        '--address', host,
-        '--port', str(port)
-    ], cwd=json_path)
+        "listen",
+        "--file", file_path,
+        "--native",
+        "--remote",
+        "--keep-alive",
+        "--port", str(port),
+        "--address", "127.0.0.1",
+        "--verbose"]
+    proc = subprocess.Popen(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True
+    )
 
-    sleep(3)
+    return proc
 
 
 # ---------------------------
@@ -211,21 +217,21 @@ if __name__ == '__main__':
     JSON_PATH = str(Path(configuration.bin_path).parent / 'Examples')
     JSON_NAME = 'Wheat.apsimx'
 
-    start_apsim_server(SERVER_PATH, JSON_PATH, JSON_NAME)
-
-    sock = connect_to_remote_server("127.0.0.1", 27747)
+    #start_apsim_server(SERVER_PATH, JSON_PATH, JSON_NAME)
+    sleep(2)
+    sock = connect_to_remote_server("127.0.0.1", 27746)
     print("Connected")
     from numpy import arange
 
     for i in arange(1, 3, 0.5):
         print(i)
         changes = [{
-            'path': '[Wheat].Leaf.Photosynthesis.RUE.FixedValue',
+            'path': '[Leaf].Photosynthesis.RUE.FixedValue',
             'value': float(i),
             'paramtype': PROPERTY_TYPE_DOUBLE
         }]
 
-        run_with_changes(sock, changes)
+        run_with_changes(sock, changes=[])
 
         results = read_output(sock, 'Report', {
             'Yield': c_double,

@@ -710,9 +710,11 @@ def trial_run(
         #     print(i) if not i.startswith('__') else None
         _run_model.DisposeStorage()
         rx = _run_model.Run()
-        df =read_db_table(Path(maize).with_suffix('.db'), 'Report')
-        print(df)
         _run_model.Finalize()
+        print(list(rx))
+        df = read_db_table(Path(maize).with_suffix('.db'), 'Report')
+        print(df, 'df')
+
 
 
 
@@ -1084,10 +1086,6 @@ if __name__ == '__main__':
     finally:
         os.remove(maize)
 
-
-
-
-
     tr = trial_run()
     from apsimNGpy.starter.starter import CLR
     from apsimNGpy import load_crop_from_disk
@@ -1116,11 +1114,15 @@ if __name__ == '__main__':
     rn = _rn.Run()
     files.Add(_rn)
     from apsimNGpy.core.apsim import ApsimModel
+
     with ApsimModel('Maize') as model:
         model.run()
         df = model.results
-        #model.Simulations.Node.Set('[Grain].MaximumGrainsPerCob.FixedValue', 10)
+        # model.Simulations.Node.Set('[Grain].MaximumGrainsPerCob.FixedValue', 10)
         from model_tools import get_or_check_model
-        mn=get_or_check_model(search_scope=model.Simulations,model_type='Models.Manager', model_name='Sow using a variable rule', action='get')
+
+        mn = get_or_check_model(search_scope=model.Simulations, model_type='Models.Manager',
+                                model_name='Sow using a variable rule', action='get')
         model.run()
-        df2  =model.results
+        df2 = model.results
+

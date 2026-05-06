@@ -73,8 +73,7 @@ def connect_to_remote_server(ip_address: str, port: int) -> socket.socket:
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     # 🔥 important for Windows reliability
-    client.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)   # disable Nagle (prevents delays)
-    client.settimeout(20)  # avoid hanging forever
+    client.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)  # disable Nagle (prevents delays)
 
     client.connect((ip_address, port))
 
@@ -303,7 +302,7 @@ def start_apsim_server(server_path, file_path, host='0.0.0.0', port=27747, use_d
     if not Path(exe).exists():
         print('exe', '===============================\n==================')
         raise FileNotFoundError(f"APSIM server not found")
-    bdir = r'D:\package\ApsimX\bin\Debug\net8.0\apsim-server.exe'
+
     cwd = str(Path(exe).parent)
     cmd = [
         str(exe),
@@ -312,6 +311,7 @@ def start_apsim_server(server_path, file_path, host='0.0.0.0', port=27747, use_d
         "--keep-alive",
         "--native",
         "--remote",
+        '--help',
         "--address", host,
         "--port", str(port),
 

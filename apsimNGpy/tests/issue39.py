@@ -4,9 +4,6 @@ apsim = Apsim(r"C:\Users\rmagala\AppData\Local\Programs\APSIM2026.2.7980.0\bin")
 if __name__ =='__main__':
     #
     TR1_morris = apsim.SensitivityManager("Wheat", out_path='swob.apsimx')
-    # TR1_morris.tree(cultivar=True)  #
-    # TR1_morris.add_crop_replacements()
-    # cls = sorted(set(TR1_morris.inspect_model('Models.PMF.Cultivar', fullpath=False)))
 
     TR1_morris.add_sens_factor(
         name='Basephylocrom',

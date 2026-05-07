@@ -47,7 +47,7 @@ def group_candidate_params(params: Iterable[str]) -> dict[str, list[str]]:
 
 
 def define_problem(
-        params: Mapping[str, tuple[float, float]],
+        params: list[dict],
         *,
         names: Iterable[str] | None = None,
         dist: list[str] | None = None,
@@ -73,12 +73,18 @@ def define_problem(
     """
     if not params:
         raise ValueError("params must not be empty")
-
-    items = tuple(params.items())
-    bounds = [b for _, b in items]
+    if isinstance(params, list):
+        bounds = [p.get('bounds', None) for p in params]
+    else:
+        items = tuple(params.items())
+        bounds = [b for _, b in items]
 
     if names is None:
-        names = [split_apsim_path_by_sep(p)[1] for p, _ in items]
+        if isinstance(dist, list):
+            names = [p.get('param', None) for p in params]
+        else:
+            items = tuple(params.items())
+            names = [split_apsim_path_by_sep(p)[1] for p, _ in items]
 
     if len(names) != len(bounds):
         raise ValueError("names length must match number of parameters")
@@ -225,7 +231,8 @@ def generate_default_db_path(tag=""):
 def switch_sobol_option(sample_options, analyze_options):
     s = sample_options.get("calc_second_order", False)
     if s != analyze_options.get("calc_second_order", False):
-        logger.warning(f"calc_second_order value in sample_options and analyze_options do not match will harmonize to True for all")
+        logger.warning(
+            f"calc_second_order value in sample_options and analyze_options do not match will harmonize to True for all")
     s, a = s, s
     if not s:  # try see if the other one is true, aim is to default to the best option in analysis
         s, a = analyze_options.get('calc_second_order', False), analyze_options.get('calc_second_order', False)

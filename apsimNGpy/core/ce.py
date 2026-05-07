@@ -334,7 +334,7 @@ class CreatNewCultivar:
         clt.Command = cmds
         self.model.save()
 
-    @timer
+
     def edit_by_cmd_pairs(self, commands: dict, name: str = None, ):
         """
         Update cultivar commands using a dictionary of parameter–value pairs.

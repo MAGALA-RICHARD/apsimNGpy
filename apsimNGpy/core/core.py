@@ -1485,8 +1485,6 @@ class CoreModel(PlotManager):
         if verbose:
             logger.info(f"successfully set surface organic matter params {param_values}")
 
-
-
     def detect_model_type(self, model_instance: Union[str, Any], full_name=False) -> str:
         """
         Detect the APSIM model type from a model instance or a path.
@@ -1766,7 +1764,7 @@ class CoreModel(PlotManager):
                             "Expected dict, list, or tuple."
                         )
 
-               # kwargs['plant'] = trace_cultivar(self.Simulations, values.Name).get(values.Name)
+                # kwargs['plant'] = trace_cultivar(self.Simulations, values.Name).get(values.Name)
 
                 mp = kwargs.get('manager_path', None) or kwargs.get('managers')
                 if not isinstance(mp, dict):
@@ -2111,7 +2109,7 @@ class CoreModel(PlotManager):
 
                 case Models.Soils.Physical | Models.Soils.Chemical | Models.Soils.Organic | Models.Soils.Water | Models.Soils.Solute:
                     try:
-                        #Accept key word arguments
+                        # Accept key word arguments
                         ModelTools.edit_instance(model_instance, **kwargs)
                     except AttributeError as ate:
 
@@ -2182,7 +2180,7 @@ class CoreModel(PlotManager):
                                 # Example:
                                 # commands = ['[Phenology].Juvenile.Target.FixedValue']
                                 # values = [200]
-                               cc.edit_by_cmd_values(rename, commands=commands, values=values)
+                                cc.edit_by_cmd_values(rename, commands=commands, values=values)
 
                         case _:
                             raise TypeError(
@@ -2297,7 +2295,6 @@ class CoreModel(PlotManager):
                         raise NotImplementedError(f"No edit method implemented for model type {type(model_instance)}")
 
         for _ in map(edit_object, edit_candidate_objects):
-
             pass
 
         self.ran_ok = False
@@ -3283,7 +3280,7 @@ class CoreModel(PlotManager):
 
         return self
 
-    def has_node(self, node: str, node_type:Union[str, ModelTools.CLASS_MODEL], scope=None) -> dict:
+    def has_node(self, node: str, node_type: Union[str, ModelTools.CLASS_MODEL], scope=None) -> dict:
         """
         Check whether a node of a given type exists within the model.
 
@@ -3400,7 +3397,7 @@ class CoreModel(PlotManager):
         # set the arguments
         for i in range(len(list(g_parameters))):
             _param = g_parameters[i].Key
-        # loop through arguments
+            # loop through arguments
             if _param in kwargs:
                 manager.Parameters[i] = KeyValuePair[String, String](_param, f"{kwargs[_param]}")
                 # remove the successfully processed keys
@@ -5728,7 +5725,6 @@ if __name__ == '__main__':
                            commands=['[Phenology].Juvenile.Target.FixedValue'], simulations='Simulation',
                            values=[100], managers={'Sow using a variable rule': 'CultivarName'})
     fixed_model.run()
-    #fixed_model.open_in_gui()
+    # fixed_model.open_in_gui()
     model.has_node('Maize', node_type='Plant')
     print(fixed_model.results.Yield.mean())
-

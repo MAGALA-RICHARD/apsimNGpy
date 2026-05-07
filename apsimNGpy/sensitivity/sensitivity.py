@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import dataclasses
 import gc
 import os
 from functools import partial
@@ -7,13 +8,65 @@ from pathlib import Path
 from typing import Iterable, Mapping
 import numpy as np
 import sqlalchemy
+from apsimNGpy.starter import CLR
+
+from apsimNGpy.core.model_loader import get_node_by_path
+
 from apsimNGpy.sensitivity.helpers import (split_apsim_path_by_sep, group_candidate_params, default_n, define_problem,
                                            generate_default_db_path)
 from apsimNGpy.settings import logger
-
+from apsimNGpy.core.apsim import ApsimModel
 dataError = sqlalchemy.exc.OperationalError
 
 __all__ = ['ConfigProblem', 'run_sensitivity']
+
+
+@dataclasses.dataclass
+class Params:
+    grouped_pairs: dict
+    others: dict
+    node_types:dict
+
+
+def grouper(base_model, _params):
+
+    from collections import defaultdict
+    grouped_pairs = defaultdict(list)
+    others = {}
+    node_types = {}
+    model = ApsimModel(base_model)
+
+    for data in _params:
+        p = dict(data)
+        p.pop('bounds', ())
+        base, attr = p.pop('base'), p.pop('param')
+        is_cultivar = get_node_by_path(model.Simulations, base, cast_as='auto')
+        node_types[base] = is_cultivar
+        if isinstance(is_cultivar, CLR.Models.PMF.Cultivar):
+            cultivar = True
+
+        else:
+            cultivar = False
+
+        if not isinstance(cultivar, bool):
+            raise TypeError(f"{cultivar} is expected to be a boolean got {type(cultivar)}")
+        man = p.get('manager_path', None) or p.get('managers', None)
+        if cultivar:
+            # Check if cultivar is true, managers are provided
+            if not man:
+                raise ValueError('managers needed')
+        else:
+            if man:
+                # pop if available and not cultivar
+                p.pop('manager_path', None)
+                p.pop('managers', None)
+
+        others[base] = p
+        grouped_pairs[base].append(attr)
+    DATA = Params(grouped_pairs, others, node_types)
+    with model:
+        pass
+    return DATA
 
 
 class ConfigProblem:
@@ -27,14 +80,16 @@ class ConfigProblem:
     def __init__(
             self,
             base_model: str | Path,
-            params: Mapping[str, tuple[float, float]],
+            params: list[dict],
             outputs: list[str],
             *,
             names: Iterable[str] | None = None,
             dist: list[str] | None = None,
             groups: list[int] | None = None,
             index_id: str = "ID",
+
     ):
+        self.config_ok = None
         self.raw_results = None
         self.base_model = base_model
         self.params = params
@@ -50,7 +105,7 @@ class ConfigProblem:
         )
 
         self.param_keys = [
-            split_apsim_path_by_sep(p)[1] for p in params
+            p["param"] for p in params
         ]
         self.num_vars = len(self.param_keys)
 
@@ -60,17 +115,35 @@ class ConfigProblem:
         """
         Generate APSIM jobs for each sampled parameter vector.
         """
-        grouped = group_candidate_params(self.params)
+        if not self.config_ok:
+            grouped = grouper(self.base_model, self.params)  # Data class of Params
+            self.config_ok= True
+
+        # grouped = group_candidate_params(self.params)
 
         for idx, row in enumerate(X):
+            ############################################
             values = dict(zip(self.param_keys, row))
             inputs = []
+            pairs = grouped.grouped_pairs
+            for base, attrs in pairs.items():
+                others = grouped.others.get(base, {})
+                attributes ={a: values[a] for a in attrs}
 
-            for base, attrs in grouped.items():
-                inputs.append({
-                    "path": base,
-                    **{a: values[a] for a in attrs},
-                })
+                if not isinstance(grouped.node_types.get(base), CLR.Models.PMF.Cultivar):
+                    inData = {
+                        "path": base,
+                        **attributes,
+                        **others
+                    }
+                else:
+                    inData = {
+                        "path": base,
+                        'commands':attributes,
+                        **others
+                    }
+                inputs.append(inData)
+
 
             yield {
                 "model": self.base_model,
@@ -446,12 +519,13 @@ def run_sensitivity(
 
 
 if __name__ == "__main__":
-    params = {
-        ".Simulations.Simulation.Field.Sow using a variable rule?Population": (2, 10),
-        ".Simulations.Simulation.Field.Fertilise at sowing?Amount": (0, 300),
-        # ".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82?[Leaf].Photosynthesis.RUE.FixedValue": (
-        #     1.2, 2.2),
-    }
+    params = [
+        {'base': ".Simulations.Simulation.Field.Sow using a variable rule", 'param': "Population", 'bounds': (2, 10), },
+        {"base": ".Simulations.Simulation.Field.Fertilise at sowing", "param": "Amount", 'bounds': (0, 300), },
+        dict(base=".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82",
+             param="[Leaf].Photosynthesis.RUE.FixedValue", bounds=(
+                0.7, 2.2), managers={'Sow using a variable rule': 'CultivarName'}, plant='Maize')
+    ]
     runner = ConfigProblem(
         base_model="Maize",
         params=params,
@@ -466,39 +540,39 @@ if __name__ == "__main__":
     # Si = [sobol.analyze(runner.problem, Y[:, i], print_to_console=True) for i in range(Y.ndim)]
     # print(Si)
 
-    Si_sobol = run_sensitivity(
-        runner,
-        method="sobol",
-        N=2 ** 4,  # ← base sample size
-        n_cores=-6,
-        engine='python',
-        sample_options={
-            "calc_second_order": True,
-            "skip_values": 1024,
-            # "seed": 42,
-        },
-        analyze_options={
-            "conf_level": 0.95,
-            "num_resamples": 5000,
-            "print_to_console": True,
-            "calc_second_order": True,
-        },
-    )
-    # Si_morris = run_sensitivity(
+    # Si_sobol = run_sensitivity(
     #     runner,
-    #     method="morris", n_cores=10,
+    #     method="sobol",
+    #     N=2 ** 4,  # ← base sample size
+    #     n_cores=-6,
+    #     engine='python',
     #     sample_options={
-    #         'seed': 42,
-    #         "num_levels": 6,
-    #         "optimal_trajectories": 6,
+    #         "calc_second_order": True,
+    #         "skip_values": 1024,
+    #         # "seed": 42,
     #     },
     #     analyze_options={
-    #         'conf_level': 0.95,
-    #         "num_resamples": 1000,
+    #         "conf_level": 0.95,
+    #         "num_resamples": 5000,
     #         "print_to_console": True,
-    #         'seed': 42
+    #         "calc_second_order": True,
     #     },
     # )
+    Si_morris = run_sensitivity(
+        runner,
+        method="morris", n_cores=10,
+        sample_options={
+            'seed': 42,
+            "num_levels": 6,
+            "optimal_trajectories": 6,
+        },
+        analyze_options={
+            'conf_level': 0.95,
+            "num_resamples": 1000,
+            "print_to_console": True,
+            'seed': 42
+        },
+    )
     # si_fast = run_sensitivity(
     #     runner,
     #     method="fast",

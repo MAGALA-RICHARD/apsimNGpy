@@ -1,7 +1,7 @@
 from apsimNGpy import Apsim
 
 apsim = Apsim(r"C:\Users\rmagala\AppData\Local\Programs\APSIM2026.2.7980.0\bin")
-if __name__ =='__main__':
+if __name__ == '__main__':
     #
     TR1_morris = apsim.SensitivityManager("Wheat", out_path='swob.apsimx')
 
@@ -19,24 +19,22 @@ if __name__ =='__main__':
         upper_bound=1.1
     )
 
-
-
     TR1_morris.build_sense_model(method='Morris',
                                  aggregation_column_name='Clock.Today',
                                  num_path=13,
                                  intervals=20,
                                  jumps=10)
-    TR1_morris.run()#
+    TR1_morris.run()  #
 
 pp = [{
-    'base': '.Simulations.Simulation.Field.Fertilise at sowing', 'param':'population', 'Amount':200,
+    'base': '.Simulations.Simulation.Field.Fertilise at sowing', 'param': 'population', 'Amount': 200,
     'bounds': (0, 300)},
     {
         'base': '.Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82',
-    'param': '[Leaf].Photosynthesis.RUE.FixedValue',
+        'param': '[Leaf].Photosynthesis.RUE.FixedValue',
         'cultivar': True,
-    'managers': {"Sow using a variable rule": "CultivarName"}
-}]
+        'managers': {"Sow using a variable rule": "CultivarName"}
+    }]
 ConfigProblem, run_sensitivity = apsim.ConfigProblem, apsim.run_sensitivity
 if __name__ == '__main__':
     params = {
@@ -65,5 +63,3 @@ if __name__ == '__main__':
     #         'seed': 42
     #     },
     # )
-
-

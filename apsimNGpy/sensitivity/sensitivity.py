@@ -514,7 +514,7 @@ def run_sensitivity(
             ans = analyzer(**analyze_options)
         return ans
     finally:
-        del sampler, stp
+        del sampler
         gc.collect()
 
 

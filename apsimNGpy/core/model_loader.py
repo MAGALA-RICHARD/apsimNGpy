@@ -413,7 +413,7 @@ def get_node_by_path(node, node_path, cast_as=None):
             if n.get_FullNameAndPath() == node_path:
                 if cast_as is None:
                     return n
-                elif cast_as == 'auto':
+                elif cast_as.lower() == 'auto':
                     nod = getattr(n, 'Model', node)
                     n = CastHelpers.CastAs[nod.GetType()](nod)
                     if not n:

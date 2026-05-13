@@ -80,7 +80,7 @@ def define_problem(
         bounds = [b for _, b in items]
 
     if names is None:
-        if isinstance(dist, list):
+        if isinstance(params, list):
             names = [p.get('param', None) for p in params]
         else:
             items = tuple(params.items())

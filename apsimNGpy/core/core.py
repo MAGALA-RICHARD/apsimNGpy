@@ -1756,7 +1756,7 @@ class CoreModel(PlotManager):
                                 )
 
                             cmd_dict = dict(zip(commands, values))
-                            cc.edit_by_cmd_pairs(rename, commands=cmd_dict)
+                            cc.edit_by_cmd_pairs( commands=cmd_dict, name=rename)
 
                     case _:
                         raise TypeError(

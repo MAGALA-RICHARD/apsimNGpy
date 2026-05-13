@@ -15,6 +15,7 @@ from apsimNGpy.core.runner import invoke_csharp_gc
 Models = CLR.Models
 
 from apsimNGpy.core.version_inspector import is_higher_apsim_version
+
 List = CLR.System.Collections.Generic.List
 CastHelper = CLR.CastHelper
 
@@ -199,44 +200,48 @@ class SensitivityManager(ApsimModel):
                 siM.AddChild(replace_ments)
             # create experiment
             _experiments = list(siM.Node.FindAll[method_class]())
-            if _experiments:
-                raise ValueError('Not supported at the moment, provide a base simulation and build from scratch')
-            # add then new experiment Node
-            self.method_class = method_class
-            self.sensitivity_node = method_class()
-            self.sensitivity_node.Name = self.method.capitalize()
-            self.sensitivity_node.Children.Clear()
-            self.sensitivity_node.TableName = table_name
-            self.sensitivity_node.AggregationVariableName = agg_col_name
-            if hasattr(self.sensitivity_node, 'Jump'):
-                self.sensitivity_node.Jump = jumps
-            if hasattr(self.sensitivity_node, 'NumIntervals'):
-                self.sensitivity_node.NumIntervals = intervals
-            if num_paths is None:
-                n_paths = self.default_num_paths()
-            else:
-                n_paths = num_paths
-            self.sensitivity_node.NumPaths = n_paths
-            if self.names_list:
-                self.sensitivity_node.Parameters = self.param_collections
-            else:
-                raise ValueError(f"No sensitivity  parameter factors set yet")
-            sim = _get_base_sim()
-            base_full_path = sim.FullPath
-            siM.Children.Add(self.sensitivity_node)
-            sim.SetParent(self.sensitivity_node)
-            self.sensitivity_node.Children.Add(sim)
-            # remove base simulation
-            simulation_node = get_node_by_path(siM, node_path=base_full_path)
+            if not _experiments:
+                # raise ValueError('Not supported at the moment, provide a base simulation and build from scratch')
+                # add then new experiment Node
+                self.method_class = method_class
+                self.sensitivity_node = method_class()
+                self.sensitivity_node.Name = self.method.capitalize()
+                self.sensitivity_node.Children.Clear()
+                self.sensitivity_node.TableName = table_name
+                self.sensitivity_node.AggregationVariableName = agg_col_name
+                if hasattr(self.sensitivity_node, 'Jump'):
+                    self.sensitivity_node.Jump = jumps
+                if hasattr(self.sensitivity_node, 'NumIntervals'):
+                    self.sensitivity_node.NumIntervals = intervals
+                if num_paths is None:
+                    n_paths = self.default_num_paths()
+                else:
+                    n_paths = num_paths
+                self.sensitivity_node.NumPaths = n_paths
+                if self.names_list:
+                    self.sensitivity_node.Parameters = self.param_collections
+                else:
+                    raise ValueError(f"No sensitivity  parameter factors set yet")
+                sim = _get_base_sim()
+                base_full_path = sim.FullPath
+                siM.Children.Add(self.sensitivity_node)
+                sim.SetParent(self.sensitivity_node)
+                self.sensitivity_node.Children.Add(sim)
+                # remove base simulation
+                simulation_node = get_node_by_path(siM, node_path=base_full_path)
 
-            siM.RemoveChild(simulation_node.Model)
+                siM.RemoveChild(simulation_node.Model)
 
-            datastore = ModelTools.find_child_of_class(siM, Models.Storage.DataStore)
-            if datastore:
-                datastore = CastHelper.CastAs[Models.Storage.DataStore](datastore)
-            datastore.set_FileName(self.datastore)
-            self.Simulations = siM
-            self.save()
+                datastore = ModelTools.find_child_of_class(siM, Models.Storage.DataStore)
+                if datastore:
+                    datastore = CastHelper.CastAs[Models.Storage.DataStore](datastore)
+                datastore.set_FileName(self.datastore)
+                self.Simulations = siM
+                self.save()
+            else:
+                e = list(_experiments)
+                if len(e) > 1:
+                    raise ValueError(f"invalid configuration")
 
         if is_higher_apsim_version():
             refresher()

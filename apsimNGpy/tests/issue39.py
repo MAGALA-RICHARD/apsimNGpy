@@ -3,7 +3,7 @@ from apsimNGpy import Apsim
 apsim = Apsim(r"C:\Users\rmagala\AppData\Local\Programs\APSIM2026.2.7980.0\bin")
 if __name__ == '__main__':
     #
-    TR1_morris = apsim.SensitivityManager("Wheat", out_path='swob.apsimx')
+    TR1_morris = apsim.SensitivityManager("Wheat")
 
     TR1_morris.add_sens_factor(
         name='Basephylocrom',
@@ -43,11 +43,11 @@ if __name__ == '__main__':
         # ".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82?[Leaf].Photosynthesis.RUE.FixedValue": (
         #     1.2, 2.2),
     }
-    # runner = ConfigProblem(
-    #     base_model="Maize",
-    #     params=params,
-    #     outputs=["Yield", "Maize.AboveGround.N"],
-    # )
+    runner = ConfigProblem(
+        base_model="Maize",
+        params=pp,
+        outputs=["Yield", "Maize.AboveGround.N"],
+    )
     # Si_morris = run_sensitivity(
     #     runner,
     #     method="morris", n_cores=10,

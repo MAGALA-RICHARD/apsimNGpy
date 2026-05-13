@@ -168,6 +168,50 @@ def find_child_of_class(parent, child_class):
     return find_descendant(parent, child_class)
 
 
+from dataclasses import dataclass
+from pathlib import PurePosixPath
+from typing import Any
+
+
+@dataclass(slots=True)
+class NodeInfo:
+    node: Any
+
+    @property
+    def full_path(self) -> str:
+        if isinstance(self.node, str):
+            fp = self.node
+            if not len(fp.split('.')) > 1:
+                raise ValueError('invalid node string descriptions should be provided as  fullpath')
+
+        elif hasattr(self.node, "FullPath"):
+            fp = self.node.FullPath
+        else:
+            raise TypeError(
+                f"{type(self.node)} is not supported. "
+                "Expected a string path or APSIM model object."
+            )
+
+        return fp
+
+    @property
+    def name(self) -> str:
+        return self.full_path.split('.')[-1]
+
+    @property
+    def root(self) -> str:
+        return f".{self.full_path.split('.')[1]}"
+
+    @property
+    def parent_path(self) -> str | None:
+        parts = self.full_path.split(".")
+        return ".".join(parts[:-1]) if len(parts) > 1 else None
+
+    @property
+    def parent_name(self) -> str:
+        return self.parent_path.split('.')[-1]
+
+
 def get_or_check_model(search_scope, model_type, model_name, action='get', cache_size=300):
     """
             Helper function to check if a model instance is found in the simulation
@@ -302,7 +346,7 @@ def validate_model_obj(model__type, evaluate_bound=False) -> CLASS_MODEL:
     if ('Models.Core.Simulations' == model__type
             or model_types == Models.Core.Simulations
             or model_types == 'Simulations'
-             ):
+    ):
         return Models.Core.Simulations
 
     try:

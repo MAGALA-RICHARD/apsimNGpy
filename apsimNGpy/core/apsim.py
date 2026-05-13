@@ -9,7 +9,7 @@ from contextlib import suppress
 from dataclasses import dataclass
 from functools import cache
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterable
 from typing import Optional, Tuple, Sequence
 from typing import Union
 from apsimNGpy.starter.starter import CLR
@@ -26,10 +26,11 @@ from apsimNGpy.core.model_loader import AUTO_PATH
 from apsimNGpy.core.model_loader import get_node_by_path
 from apsimNGpy.core.model_tools import find_child_of_class
 from apsimNGpy.core.soiler import SoilManager
-from apsimNGpy import logger, timer, NodeNotFoundError
+from apsimNGpy import logger, timer, NodeNotFoundError, is_scalar
 from apsimNGpy.soils.helpers import soil_water_param_fill
 from System.Collections.Generic import List
 from System.Collections.Generic import KeyValuePair
+from apsimNGpy.core.water import geometric_layers
 
 # expose some models
 # ===================================
@@ -663,6 +664,107 @@ class ApsimModel(CoreModel):
         if soil_kwargs:
             soil_water_param_fill(self, **soil_kwargs)
         return self
+
+    def remove_node(self, node):
+        """
+        Removes a node from the Simulating tree
+        @param node: str or Models object
+        @return: True if cleared successfully
+        """
+        if isinstance(node, str):
+            fpath = node
+        elif hasattr(node, 'FullPath'):
+            fpath = node.FullPath
+        else:
+            raise TypeError(f'type {type(node)} is not supported. try a valid str path or Models object')
+        fpath = fpath.split('.')[:-1]  # removes the current node
+        parent_parent = '.'.join(fpath)  # what is left is the parent path
+        parent_node = get_node_by_path(self.Simulations, node_path=parent_parent, cast_as='auto')
+        parent_node.Children.Remove(node)
+        return True
+
+    def clear_water_model(self, wat_model):
+        """
+        If switching to swim3, we clear the water balance model and other wise
+        @param wat_model: str
+        @return: None
+        """
+        wat_model = wat_model.lower()
+        match wat_model:
+            case 'swim3':
+                model_type = Models.Soils.Swim3
+                sw = list(self.Simulations.Node.FindAll[model_type]())
+            case 'soil water' | 'water balance' | 'water_balance':
+                model_type = Models.WaterModel.WaterBalance
+                sw = list(self.Simulations.Node.FindAll[model_type]())
+            case _:
+                raise NotImplementedError(f'{wat_model} is not supported try any of swim3, or soil water')
+        _ = [self.remove_node(i) for i in sw]
+        self.save()
+
+    def _get_simulations(self, simulations: Union[str, None, Iterable] = None):
+        if simulations is None:
+            return [i for i in self]
+        if is_scalar(simulations):
+            simulations = {simulations}
+        return [s for s in self if s.Name in simulations]
+
+    def _create_swim3(self, simulations=None, layer_structure_thickness=None):
+        if isinstance(layer_structure_thickness, set):
+            raise TypeError("layer thickness must be an indexed object not a set")
+        from apsimNGpy.core.water import (swim_data, layer_struct, set_swim_lower_bc, ci,
+                                          nh4, no3, urea)
+        sims = self._get_simulations(simulations)
+        if layer_structure_thickness is not None:
+            layer_struct['Thickness'] = list(layer_structure_thickness)
+        for sim in sims:
+            zone = self.inspect_model(model_type=Models.Core.Zone, scope=sim)
+            soil_path = self.inspect_model(model_type=Models.Soils.Soil, scope=sim)[0]
+            # expect one zone per simulation
+            zone_path = zone[0]
+
+            self.add_new_model(parent_type=Models.Core.Zone,
+                               replace=True,
+                               parent_identifier=zone_path, source=set_swim_lower_bc)
+            soil_node = get_node_by_path(sim, node_path=soil_path, cast_as='auto')
+            phys = self.inspect_model_parameters_by_path(path=f"{soil_node.FullPath}.Physical",
+                                                         parameters=['Thickness', 'Depth'])
+            NO3 = self.inspect_model_parameters_by_path(path=f"{soil_node.FullPath}.NO3",
+                                                        parameters=['Thickness', 'InitialValues'])
+            NH4 = self.inspect_model_parameters_by_path(path=f"{soil_node.FullPath}.NH4",
+                                                        parameters=['Thickness', 'InitialValues'])
+            TH = list(phys.Thickness)
+            if layer_structure_thickness is None:
+                layer_struct['Thickness'] =  geometric_layers(max_depth=int(sum(TH)), max_thickness=10, growth=1.1)
+            len_g = len(phys.Thickness)
+            fip = [1.0] * len_g
+            CI, urea, nh4, no3 = dict(ci), dict(urea), dict(nh4), dict(no3)
+            CI['FIP'] = fip
+            CI['Exco'] = [0.0] * len_g
+            CI['Thickness'] = TH
+            no3['Thickness'] = TH
+            no3['InitialValues'] = list(NO3.InitialValues)
+            no3['Exco'] = [0.0] * len_g
+            no3['FIP'] = fip
+            nh4['FIP'] = fip
+            nh4['Exco'] = [1.0] * len_g
+            nh4['Thickness'] = TH
+            nh4['InitialValues'] = list(NH4.InitialValues)
+            urea['Thickness'] = TH
+            urea['InitialValues'] = [0.0] * len_g
+            urea['FIP'] = fip
+            urea['Exco'] = [0.0] * len_g
+
+            CI['InitialValues'] = [0.0] * len_g
+            for obj in (layer_struct, swim_data, CI, no3, nh4, urea):
+                self.add_new_model(parent_type=Models.Soils.Soil,
+                                   replace=True,
+                                   parent_identifier=soil_node.FullPath, source=obj)
+
+    def switch_wm_to_swim3(self, layer_structure_th=None, simulations=None, ):
+        self.clear_water_model('water balance')
+        self._create_swim3(simulations=simulations, layer_structure_thickness=layer_structure_th)
+        self.save()
 
     def __exit__(self, exc_type, exc, tb):
         db_flag = getattr(self, "db", True)
@@ -1669,9 +1771,10 @@ if __name__ == '__main__':
     # test adding manager
     model = ApsimModel('Maize')
     with model:
-        model.add_model_from_apsimx(source=dict(model="Soybean", model_type='Manager', identifier="Fertilise at sowing"),
-                                    target=dict(identifier="Simulation", model_type='Simulation'), replace=True,
-                                    rename="fertilizer_at_sowing")
+        model.add_model_from_apsimx(
+            source=dict(model="Soybean", model_type='Manager', identifier="Fertilise at sowing"),
+            target=dict(identifier="Simulation", model_type='Simulation'), replace=True,
+            rename="fertilizer_at_sowing")
 
     # testing adding from memory
 
@@ -1813,9 +1916,7 @@ if __name__ == '__main__':
     edit_cultivar(mp, commands={'[leaf].Photosynthesis.RUE.FixedValue = 2.3', }, parent_plant='Maize',
                   template='B_100', rename='B_100x')
 
-
     # mp.open_in_gui()
-
 
     # set_up_crop_rotation()
 
@@ -1823,3 +1924,20 @@ if __name__ == '__main__':
     #     pass
 
     # te
+
+    from model_tools import NodeInfo
+
+    with ApsimModel('Maize') as mo:
+        # mo.clear_water_model('soil water')
+        mo.run()
+        print(mo.results.Yield.mean())
+        th = geometric_layers(max_depth=1800, max_thickness=10, growth=1.1)
+        mo.switch_wm_to_swim3(layer_structure_th=None
+                              )
+        mo.run()
+        mo.save()
+        sp = mo.inspect_model(Models.WaterModel.WaterBalance)
+        print(mo.results.Yield.mean())
+        # mo.open_in_gui(watch=True)
+        print(sp)
+    node = NodeInfo('Simulations')

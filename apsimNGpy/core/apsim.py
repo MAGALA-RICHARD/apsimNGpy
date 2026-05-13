@@ -1929,15 +1929,14 @@ if __name__ == '__main__':
 
     with ApsimModel('Maize') as mo:
         # mo.clear_water_model('soil water')
-        mo.run()
-        print(mo.results.Yield.mean())
-        th = geometric_layers(max_depth=1800, max_thickness=10, growth=1.1)
-        mo.switch_wm_to_swim3(layer_structure_th=None
+
+        th = geometric_layers(max_depth=1800, max_thickness=10, growth=1.1, top_thickness=10)
+        mo.switch_wm_to_swim3(layer_structure_th=th
                               )
         mo.run()
         mo.save()
         sp = mo.inspect_model(Models.WaterModel.WaterBalance)
         print(mo.results.Yield.mean())
-        # mo.open_in_gui(watch=True)
+        mo.open_in_gui(watch=True)
         print(sp)
     node = NodeInfo('Simulations')

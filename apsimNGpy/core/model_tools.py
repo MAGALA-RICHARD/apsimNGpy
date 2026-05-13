@@ -182,7 +182,7 @@ class NodeInfo:
         if isinstance(self.node, str):
             fp = self.node
             if not len(fp.split('.')) > 1:
-                raise ValueError('invalid node string descriptions should be provided as  fullpath')
+                raise ValueError(f'Invalid node string {self.node} should be provided as  fullpath')
 
         elif hasattr(self.node, "FullPath"):
             fp = self.node.FullPath

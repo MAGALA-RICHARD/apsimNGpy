@@ -724,7 +724,8 @@ class ApsimModel(CoreModel):
             simulations = {simulations}
         return [s for s in self if s.Name in simulations]
 
-    def _create_swim3(self, simulations=None, layer_structure_thickness=None, swim3_params = None, water_clearance: callable = None):
+    def _create_swim3(self, simulations=None, layer_structure_thickness=None, swim3_params=None,
+                      water_clearance: callable = None):
         if isinstance(layer_structure_thickness, set):
             raise TypeError("layer thickness must be an indexed object not a set")
         from apsimNGpy.core.water import nh4, no3, urea
@@ -777,6 +778,21 @@ class ApsimModel(CoreModel):
 
             if swim3_params is not None and isinstance(swim3_params, dict):
                 swim_user_params, swim_defaults = dict(swim3_params), dict(swim_data)
+                if len(swim_user_params) == 0:
+                    logger.warning(
+                        f'swim_model_parameters dict provided is empty, switching to all defaults')
+                invalid = []
+                for k, v in swim_user_params.items():
+                    if k not in swim_defaults.keys():
+                        invalid.append(k)
+                if invalid:
+                    swi = dict(swim_defaults)
+                    # $type carries no meaning to the user, because if changed, the model may not be configured as required
+                    swi.pop('$type', None)
+                    valid_keys = ", ".join(swi.keys())
+                    val = 'are not valid SWIM3 parameters.' if len(invalid) > 1 else 'is not a valid SWIM3 parameter.'
+                    raise ValueError(f'swim_model_parameters: {invalid} {val}'
+                                     f' valid parameters are: {valid_keys}')
                 swim_model_params = swim_defaults | swim_user_params
 
             elif swim3_params is None:
@@ -972,13 +988,20 @@ class ApsimModel(CoreModel):
                 if len(ss_user) == 0:
                     logger.warning(
                         f'ss_tile_drainage {ss_user} dict provided is empty, switching to all defaults')
+                invalid  =[]
+
                 for k, v in ss_user.items():
                     if k not in ss_default:
-                        valid_keys = ", ".join(ss_default.keys())
-                        raise ValueError(
-                            f"Unknown key '{k}' in 'ss_tile_drainage'. "
-                            f"Valid keys are: {valid_keys}."
-                        )
+                        invalid.append(k)
+                if invalid:
+                    ss = dict(ss_default)
+                    ss.pop('$type', None)
+                    # $type carries no meaning to the user, because if changed, the model may not be configured as required
+                    valid_keys = ", ".join(ss.keys())
+                    raise ValueError(
+                        f"Unknown key '{','.join(invalid)}' in 'ss_tile_drainage'. "
+                        f"Valid keys are: {valid_keys}."
+                    )
                 in_data = ss_default | ss_user
             else:
                 raise TypeError(f"Invalid value for ss_tile_drainage: expected None,"
@@ -2153,7 +2176,7 @@ if __name__ == '__main__':
     with ApsimModel('Maize') as mo:
         # mo.clear_water_model('soil water')
         th = geometric_layers(max_depth=1800, max_thickness=10, growth=1.1, top_thickness=10)
-        mo.switch_wm_to_swim3(layer_structure_th=th, ss_tile_drainage={},
+        mo.switch_wm_to_swim3(layer_structure_th=th, ss_tile_drainage={},swim_model_params={}
                               )
         mo.run()
         mo.save()

@@ -674,7 +674,7 @@ class ApsimModel(CoreModel):
         @param node: str or Models object
         @return: True if cleared successfully
         """
-        name= None
+        name = None
         if isinstance(node, str):
             fpath = node
             name = fpath.split('.')[-1]
@@ -807,20 +807,20 @@ class ApsimModel(CoreModel):
         layer_structure_th : list[int] or list[float], optional
             Soil layer thickness structure (mm) used when constructing
             the SWIM3 profile. If `None`, the existing soil profile
-            thicknesses are used.
+            thicknesses are used a geometric mathematical structure that is based on the deepest layer of the soil profile.
 
         simulations : str or list[str], optional
             Name or list of APSIM simulation nodes where the water model
             should be replaced with SWIM3. If `None`, the operation is
             applied to all simulations in the current APSIM model. Use ``self.inspect_model('Simulation')`` to see a list of available simulations
 
-        ss_tile_drainage : bool or dict, default=False
+        ss_tile_drainage : None, str (auto) or dict, default=False
             Configure subsurface tile drainage for SWIM3.
 
-            If `False`, no subsurface drainage node is added and SWIM3
+            If `None`, no subsurface drainage node is added and SWIM3
             is configured using its internal/default drainage behavior.
 
-            If `True`, a default subsurface tile drainage configuration
+            If `auto`, a default subsurface tile drainage configuration
             is added using the following parameters::
 
                 {
@@ -916,16 +916,22 @@ class ApsimModel(CoreModel):
         APSIM Initiative.
         SWIM3 soil water model documentation.
         """
-        self._create_swim3(simulations=simulations, layer_structure_thickness=layer_structure_th, water_clearance=self.clear_water_model)
+        self._create_swim3(simulations=simulations, layer_structure_thickness=layer_structure_th,
+                           water_clearance=self.clear_water_model)
         # it has to be after creating the swim3 node above
-        if ss_tile_drainage:
+        if ss_tile_drainage is not None:
             ss_default = dict(sub_surface_tile_drainage)
-            if isinstance(ss_tile_drainage, dict):
+            if ss_tile_drainage == 'auto':
+                in_data = ss_default
+            elif isinstance(ss_tile_drainage, dict):
                 ss_user = dict(ss_tile_drainage)
-
+                if ss_user.empty:
+                    logger.warning(f'ss_tile_drainage {ss_user} dict provided is empty did you want defaults will be used')
                 in_data = ss_default | ss_user
             else:
-                in_data = ss_default
+                raise TypeError(f"Invalid value for ss_tile_drainage: expected None,"
+                                f" auto or a dict got {type(ss_tile_drainage)}")
+
             self.add_new_model(parent_type='Models.Soils.Swim3', parent_identifier=swim_data['Name'],
                                source=in_data,
                                replace=True)
@@ -2094,9 +2100,8 @@ if __name__ == '__main__':
 
     with ApsimModel('Maize') as mo:
         # mo.clear_water_model('soil water')
-
         th = geometric_layers(max_depth=1800, max_thickness=10, growth=1.1, top_thickness=10)
-        mo.switch_wm_to_swim3(layer_structure_th=th, ss_tile_drainage=True,
+        mo.switch_wm_to_swim3(layer_structure_th=th, ss_tile_drainage='auto',
                               )
         mo.run()
         mo.save()

@@ -75,6 +75,20 @@ swim_data = {
     "Enabled": True,
     "ReadOnly": True
 }
+sub_surface_tile_drainage={
+  "$type": "Models.Soils.SwimSubsurfaceDrain, Models",
+  "DrainDepth": 1200.0,
+  "DrainSpacing": 40000.0,
+  "DrainRadius": 40000.0,
+  "Klat": 50.0,
+  "ImpermDepth": 2850.0,
+  "Open": True,
+  "Name": "SwimSubsurfaceDrain",
+  "ResourceName": None,
+  "Children": [],
+  "Enabled": True,
+  "ReadOnly": False
+}
 
 set_swim_lower_bc = {
     "$type": "Models.Manager, Models",

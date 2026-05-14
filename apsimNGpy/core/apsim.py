@@ -17,7 +17,6 @@ import numpy as np
 import pandas as pd
 # from System import *
 # from System.Collections.Generic import *
-
 from apsimNGpy.core.core import CoreModel, ModelTools
 
 Models = CLR.Models
@@ -30,7 +29,12 @@ from apsimNGpy import logger, timer, NodeNotFoundError, is_scalar
 from apsimNGpy.soils.helpers import soil_water_param_fill
 from System.Collections.Generic import List
 from System.Collections.Generic import KeyValuePair
-from apsimNGpy.core.water import geometric_layers
+
+
+from apsimNGpy.core.water import (swim_data, layer_struct,
+                                  set_swim_lower_bc,
+                                  ci,sub_surface_tile_drainage,
+                                  geometric_layers,)
 
 # expose some models
 # ===================================
@@ -712,8 +716,7 @@ class ApsimModel(CoreModel):
     def _create_swim3(self, simulations=None, layer_structure_thickness=None):
         if isinstance(layer_structure_thickness, set):
             raise TypeError("layer thickness must be an indexed object not a set")
-        from apsimNGpy.core.water import (swim_data, layer_struct, set_swim_lower_bc, ci,
-                                          nh4, no3, urea)
+        from apsimNGpy.core.water import nh4, no3, urea
         sims = self._get_simulations(simulations)
         if layer_structure_thickness is not None:
             layer_struct['Thickness'] = list(layer_structure_thickness)
@@ -761,9 +764,16 @@ class ApsimModel(CoreModel):
                                    replace=True,
                                    parent_identifier=soil_node.FullPath, source=obj)
 
-    def switch_wm_to_swim3(self, layer_structure_th=None, simulations=None, ):
+    def switch_wm_to_swim3(self, layer_structure_th=None, simulations=None, ss_tile_drainage=False ):
+
         self.clear_water_model('water balance')
+
         self._create_swim3(simulations=simulations, layer_structure_thickness=layer_structure_th)
+        # it has to be after creating the swim3 node above
+        if ss_tile_drainage:
+            self.add_new_model(parent_type='Models.Soils.Swim3', parent_identifier=swim_data['Name'],
+                               source=dict(sub_surface_tile_drainage),
+                               replace=True)
         self.save()
 
     def __exit__(self, exc_type, exc, tb):
@@ -1931,7 +1941,7 @@ if __name__ == '__main__':
         # mo.clear_water_model('soil water')
 
         th = geometric_layers(max_depth=1800, max_thickness=10, growth=1.1, top_thickness=10)
-        mo.switch_wm_to_swim3(layer_structure_th=th
+        mo.switch_wm_to_swim3(layer_structure_th=th, ss_tile_drainage=True,
                               )
         mo.run()
         mo.save()

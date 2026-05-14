@@ -925,8 +925,9 @@ class ApsimModel(CoreModel):
                 in_data = ss_default
             elif isinstance(ss_tile_drainage, dict):
                 ss_user = dict(ss_tile_drainage)
-                if ss_user.empty:
-                    logger.warning(f'ss_tile_drainage {ss_user} dict provided is empty did you want defaults will be used')
+                if len(ss_user) == 0:
+                    logger.warning(
+                        f'ss_tile_drainage {ss_user} dict provided is empty did you want defaults will be used')
                 in_data = ss_default | ss_user
             else:
                 raise TypeError(f"Invalid value for ss_tile_drainage: expected None,"

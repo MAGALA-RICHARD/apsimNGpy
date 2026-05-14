@@ -724,7 +724,7 @@ class ApsimModel(CoreModel):
             simulations = {simulations}
         return [s for s in self if s.Name in simulations]
 
-    def _create_swim3(self, simulations=None, layer_structure_thickness=None, water_clearance: callable = None):
+    def _create_swim3(self, simulations=None, layer_structure_thickness=None, swim3_params = None, water_clearance: callable = None):
         if isinstance(layer_structure_thickness, set):
             raise TypeError("layer thickness must be an indexed object not a set")
         from apsimNGpy.core.water import nh4, no3, urea
@@ -774,7 +774,21 @@ class ApsimModel(CoreModel):
             urea['Exco'] = [0.0] * len_g
 
             CI['InitialValues'] = [0.0] * len_g
-            for obj in (layer_struct, swim_data, CI, no3, nh4, urea):
+
+            if swim3_params is not None and isinstance(swim3_params, dict):
+                swim_user_params, swim_defaults = dict(swim3_params), dict(swim_data)
+                swim_model_params = swim_defaults | swim_user_params
+
+            elif swim3_params is None:
+                swim_model_params = dict(swim_data)
+
+            else:
+                raise TypeError(
+                    "swim3_params must be either a dictionary containing "
+                    "SWIM3 parameter overrides or None to use the default "
+                    "SWIM3 configuration."
+                )
+            for obj in (layer_struct, swim_model_params, CI, no3, nh4, urea):
                 self.add_new_model(parent_type=Models.Soils.Soil,
                                    replace=True,
                                    parent_identifier=soil_node.FullPath, source=obj)
@@ -783,7 +797,8 @@ class ApsimModel(CoreModel):
             self,
             layer_structure_th=None,
             simulations=None,
-            ss_tile_drainage=False
+            ss_tile_drainage=None,
+            swim_model_params=None
     ):
         """
         Replace the existing soil water balance model with the SWIM3 module.
@@ -856,6 +871,20 @@ class ApsimModel(CoreModel):
                     "Open": True,
                     "Name": "SwimSubsurfaceDrain"
                 }
+        swim_model_params: dict or None. Default is None.
+            If auto, the following parameters are used.
+            {"Salb": 0.13,                  "CN2Bare": 50.0,                "CNRed": 20.0,
+            "CNCov": 0.8,                  "KDul": 1.0,                    "PSIDul": -100.0,
+            "VC": True,                    "DTMin": 0.0,                   "DTMax": 60.0,
+            "MaxWaterIncrement": 5.0,      "SpaceWeightingFactor": 0.0,    "SoluteSpaceWeightingFactor": 1.0,
+            "Dis": 0.0,                    "Disp": 1.0,                    "A": 2.0,
+            "DTHC": 0.1,                   "DTHP": 2.0,                    "vcon1": 7.28E-09,
+            "vcon2": 7.26E-07,             "eo_time": "06:00",             "eo_durn": 720.0,
+            "default_rain_time": "00:00",  "default_rain_duration": 720.0, "Diagnostics": True,}
+            If a dictionary is supplied, the user-defined parameters are
+            merged with the default SWIM3 configuration above. Any keys
+            provided by the user override the corresponding default values,
+            while unspecified parameters retain their defaults.
 
         Returns
         -------
@@ -915,9 +944,10 @@ class ApsimModel(CoreModel):
 
         APSIM Initiative.
         SWIM3 soil water model documentation.
+
         """
         self._create_swim3(simulations=simulations, layer_structure_thickness=layer_structure_th,
-                           water_clearance=self.clear_water_model)
+                           water_clearance=self.clear_water_model, swim3_params=swim_model_params)
         # it has to be after creating the swim3 node above
         if ss_tile_drainage is not None:
             ss_default = dict(sub_surface_tile_drainage)
@@ -928,9 +958,13 @@ class ApsimModel(CoreModel):
                 if len(ss_user) == 0:
                     logger.warning(
                         f'ss_tile_drainage {ss_user} dict provided is empty, switching to all defaults')
-                for k, v in  ss_user.items():
+                for k, v in ss_user.items():
                     if k not in ss_default:
-                        raise ValueError(f"Invalid '{k}' detected, keys should be any of the following: {ss_default.keys()}")
+                        valid_keys = ", ".join(ss_default.keys())
+                        raise ValueError(
+                            f"Unknown key '{k}' in 'ss_tile_drainage'. "
+                            f"Valid keys are: {valid_keys}."
+                        )
                 in_data = ss_default | ss_user
             else:
                 raise TypeError(f"Invalid value for ss_tile_drainage: expected None,"

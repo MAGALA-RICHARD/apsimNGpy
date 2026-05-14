@@ -681,7 +681,7 @@ class ApsimModel(CoreModel):
         elif hasattr(node, 'FullPath'):
             fpath = node.FullPath
         else:
-            raise TypeError(f'type {type(node)} is not supported. try a valid str path or Models object')
+            raise TypeError(f'type {type(node)} is not supported. Please try a valid str path or Models object')
         fpath = fpath.split('.')[:-1]  # removes the current node
         parent_parent = '.'.join(fpath)  # what is left is the parent path
         parent_node = get_node_by_path(self.Simulations, node_path=parent_parent, cast_as='auto')
@@ -779,13 +779,138 @@ class ApsimModel(CoreModel):
                                    replace=True,
                                    parent_identifier=soil_node.FullPath, source=obj)
 
-    def switch_wm_to_swim3(self, layer_structure_th=None, simulations=None, ss_tile_drainage=False):
+    def switch_wm_to_swim3(
+            self,
+            layer_structure_th=None,
+            simulations=None,
+            ss_tile_drainage=False
+    ):
         """
-        switches wm (water drainage model) to swim3, if this assumes there is a water balance model present will be deleted
-        @param layer_structure_th:
-        @param simulations:
-        @param ss_tile_drainage:
-        @return:
+        Replace the existing soil water balance model with the SWIM3 module.
+
+        This method removes or clears the current water balance model and
+        inserts a SWIM3 (`Models.Soils.Swim3`) node into the selected
+        APSIM simulation(s). Optionally, subsurface tile drainage parameters
+        can also be added to the SWIM3 configuration.
+
+        SWIM3 is a physically based soil water model that solves Richards'
+        equation and supports advanced hydrological processes including:
+
+        - Saturated and unsaturated flow
+        - Water table dynamics
+        - Subsurface tile drainage
+        - Capillary rise
+        - Lateral flow
+
+        Parameters
+        ----------
+        layer_structure_th : list[int] or list[float], optional
+            Soil layer thickness structure (mm) used when constructing
+            the SWIM3 profile. If `None`, the existing soil profile
+            thicknesses are used.
+
+        simulations : str or list[str], optional
+            Name or list of APSIM simulation nodes where the water model
+            should be replaced with SWIM3. If `None`, the operation is
+            applied to all simulations in the current APSIM model.
+
+        ss_tile_drainage : bool or dict, default=False
+            Configure subsurface tile drainage for SWIM3.
+
+            If `False`, no subsurface drainage node is added and SWIM3
+            is configured using its internal/default drainage behavior.
+
+            If `True`, a default subsurface tile drainage configuration
+            is added using the following parameters::
+
+                {
+                    "DrainDepth": 1200.0,
+                    "DrainSpacing": 40000.0,
+                    "DrainRadius": 40000.0,
+                    "Klat": 50.0,
+                    "ImpermDepth": 2850.0,
+                    "Open": True,
+                    "Name": "SwimSubsurfaceDrain"
+                }
+
+            If a dictionary is supplied, the user-defined parameters are
+            merged with the default drainage configuration above. Any keys
+            provided by the user override the corresponding default values,
+            while unspecified parameters retain their defaults.
+
+            Example::
+
+                ss_tile_drainage = {
+                    "DrainDepth": 1000,
+                    "DrainSpacing": 30000
+                }
+
+            results in::
+
+                {
+                    "DrainDepth": 1000,
+                    "DrainSpacing": 30000,
+                    "DrainRadius": 40000.0,
+                    "Klat": 50.0,
+                    "ImpermDepth": 2850.0,
+                    "Open": True,
+                    "Name": "SwimSubsurfaceDrain"
+                }
+
+        Returns
+        -------
+        None
+            The APSIM model is modified in-place and saved to disk.
+
+        Notes
+        -----
+        This method internally calls :meth:`_create_swim3` to generate
+        the SWIM3 node before optionally adding a subsurface tile drainage
+        configuration.
+
+        The SWIM3 node must exist before tile drainage components are added.
+
+        When tile drainage is enabled, users should ensure that:
+
+        - ``ImpermDepth > DrainDepth``
+        - Soil profile depth exceeds the drain depth
+        - Saturated hydraulic conductivity (`KS`) values are realistic
+
+        Improper configuration may result in SWIM numerical instability
+        or APSIM runtime errors.
+
+        Examples
+        --------
+        Replace the default water model with SWIM3::
+
+            model.switch_wm_to_swim3()
+
+        Add SWIM3 with default tile drainage settings::
+
+            model.switch_wm_to_swim3(ss_tile_drainage=True)
+
+        Add SWIM3 with custom tile drainage parameters::
+
+            model.switch_wm_to_swim3(
+                ss_tile_drainage={
+                    "DrainDepth": 1200,
+                    "DrainSpacing": 30000,
+                    "ImpermDepth": 3000
+                }
+            )
+
+        See Also
+        --------
+        _create_swim3 : Create and configure a SWIM3 node.
+        add_new_model : Insert new APSIM model components dynamically.
+
+        References
+        ----------
+        Verburg, K., Ross, P. J., & Bristow, K. L. (1996).
+        SWIM v2.1 User Manual.
+
+        APSIM Initiative.
+        SWIM3 soil water model documentation.
         """
         self._create_swim3(simulations=simulations, layer_structure_thickness=layer_structure_th, water_clearance=self.clear_water_model)
         # it has to be after creating the swim3 node above

@@ -927,7 +927,10 @@ class ApsimModel(CoreModel):
                 ss_user = dict(ss_tile_drainage)
                 if len(ss_user) == 0:
                     logger.warning(
-                        f'ss_tile_drainage {ss_user} dict provided is empty did you want defaults will be used')
+                        f'ss_tile_drainage {ss_user} dict provided is empty, switching to all defaults')
+                for k, v in  ss_user.items():
+                    if k not in ss_default:
+                        raise ValueError(f"Invalid '{k}' detected, keys should be any of the following: {ss_default.keys()}")
                 in_data = ss_default | ss_user
             else:
                 raise TypeError(f"Invalid value for ss_tile_drainage: expected None,"
@@ -2102,7 +2105,7 @@ if __name__ == '__main__':
     with ApsimModel('Maize') as mo:
         # mo.clear_water_model('soil water')
         th = geometric_layers(max_depth=1800, max_thickness=10, growth=1.1, top_thickness=10)
-        mo.switch_wm_to_swim3(layer_structure_th=th, ss_tile_drainage='auto',
+        mo.switch_wm_to_swim3(layer_structure_th=th, ss_tile_drainage={'1we':3},
                               )
         mo.run()
         mo.save()

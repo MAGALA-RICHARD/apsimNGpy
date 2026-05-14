@@ -868,6 +868,8 @@ class ApsimModel(CoreModel):
         the SWIM3 node before optionally adding a subsurface tile drainage
         configuration.
 
+        The parameters of the SWIM3 supplied via ss_tile_drainage are case-sensitive and follows APSIM internal naming convention
+
         The SWIM3 node must exist before tile drainage components are added.
 
         When tile drainage is enabled, users should ensure that:
@@ -878,6 +880,8 @@ class ApsimModel(CoreModel):
 
         Improper configuration may result in SWIM numerical instability
         or APSIM runtime errors.
+
+        A layer structure is also added automatically using geometric mathematical operations, based on the lower soil depth
 
         Examples
         --------

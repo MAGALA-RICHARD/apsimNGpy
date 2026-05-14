@@ -929,8 +929,22 @@ class ApsimModel(CoreModel):
                     "DrainDepth": 1200,
                     "DrainSpacing": 30000,
                     "ImpermDepth": 3000
-                }
+                },
+                swim_model_params = {"eo_time": "05:00", "eo_durn": 600.0,
+                     "default_rain_time": "00:00",
+                      "default_rain_duration": 500.0,
+                       "Diagnostics": False
+            }
             )
+        Add SWIM3 with with custom swim model configuration parameters::
+
+             model.switch_wm_to_swim3(
+                    ss_tile_drainage={
+                        "DrainDepth": 1200,
+                        "DrainSpacing": 30000,
+                        "ImpermDepth": 3000
+                    }
+                )
 
         See Also
         --------
@@ -2139,7 +2153,7 @@ if __name__ == '__main__':
     with ApsimModel('Maize') as mo:
         # mo.clear_water_model('soil water')
         th = geometric_layers(max_depth=1800, max_thickness=10, growth=1.1, top_thickness=10)
-        mo.switch_wm_to_swim3(layer_structure_th=th, ss_tile_drainage={'1we':3},
+        mo.switch_wm_to_swim3(layer_structure_th=th, ss_tile_drainage={},
                               )
         mo.run()
         mo.save()

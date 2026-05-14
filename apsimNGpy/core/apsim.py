@@ -1004,8 +1004,8 @@ class ApsimModel(CoreModel):
                     )
                 in_data = ss_default | ss_user
             else:
-                raise TypeError(f"Invalid value for ss_tile_drainage: expected None,"
-                                f" auto or a dict got {type(ss_tile_drainage)}")
+                raise TypeError(f"Value `TypeError` Error for ss_tile_drainage: expected None,"
+                                f" auto or a dict got a {type(ss_tile_drainage).__name__} instead")
 
             self.add_new_model(parent_type='Models.Soils.Swim3', parent_identifier=swim_data['Name'],
                                source=in_data,
@@ -2176,7 +2176,7 @@ if __name__ == '__main__':
     with ApsimModel('Maize') as mo:
         # mo.clear_water_model('soil water')
         th = geometric_layers(max_depth=1800, max_thickness=10, growth=1.1, top_thickness=10)
-        mo.switch_wm_to_swim3(layer_structure_th=th, ss_tile_drainage={},swim_model_params={}
+        mo.switch_wm_to_swim3(layer_structure_th=th, ss_tile_drainage={1},swim_model_params={}
                               )
         mo.run()
         mo.save()

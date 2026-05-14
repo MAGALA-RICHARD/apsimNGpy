@@ -30,11 +30,10 @@ from apsimNGpy.soils.helpers import soil_water_param_fill
 from System.Collections.Generic import List
 from System.Collections.Generic import KeyValuePair
 
-
 from apsimNGpy.core.water import (swim_data, layer_struct,
                                   set_swim_lower_bc,
-                                  ci,sub_surface_tile_drainage,
-                                  geometric_layers,)
+                                  ci, sub_surface_tile_drainage,
+                                  geometric_layers, )
 
 # expose some models
 # ===================================
@@ -675,8 +674,10 @@ class ApsimModel(CoreModel):
         @param node: str or Models object
         @return: True if cleared successfully
         """
+        name= None
         if isinstance(node, str):
             fpath = node
+            name = fpath.split('.')[-1]
         elif hasattr(node, 'FullPath'):
             fpath = node.FullPath
         else:
@@ -684,27 +685,37 @@ class ApsimModel(CoreModel):
         fpath = fpath.split('.')[:-1]  # removes the current node
         parent_parent = '.'.join(fpath)  # what is left is the parent path
         parent_node = get_node_by_path(self.Simulations, node_path=parent_parent, cast_as='auto')
-        parent_node.Children.Remove(node)
+        if isinstance(node, str):
+            for i_node in parent_node.Children:
+                if i_node.Name == name:
+                    parent_node.Children.Remove(i_node)
+                    break
+            else:
+                raise RuntimeError(f'Something really went wrong with the deleting {node}')
+        else:
+            parent_node.Children.Remove(node)
         return True
 
-    def clear_water_model(self, wat_model):
+    def clear_water_model(self, wat_model, sim_obj):
         """
         If switching to swim3, we clear the water balance model and other wise
+        @param sim_obj: simulations
         @param wat_model: str
         @return: None
         """
         wat_model = wat_model.lower()
+
         match wat_model:
             case 'swim3':
                 model_type = Models.Soils.Swim3
-                sw = list(self.Simulations.Node.FindAll[model_type]())
+                sw = self.inspect_model(model_type=model_type, scope=sim_obj)
             case 'soil water' | 'water balance' | 'water_balance':
                 model_type = Models.WaterModel.WaterBalance
-                sw = list(self.Simulations.Node.FindAll[model_type]())
+                sw = self.inspect_model(model_type=model_type, scope=sim_obj)
             case _:
                 raise NotImplementedError(f'{wat_model} is not supported try any of swim3, or soil water')
+
         _ = [self.remove_node(i) for i in sw]
-        self.save()
 
     def _get_simulations(self, simulations: Union[str, None, Iterable] = None):
         if simulations is None:
@@ -713,7 +724,7 @@ class ApsimModel(CoreModel):
             simulations = {simulations}
         return [s for s in self if s.Name in simulations]
 
-    def _create_swim3(self, simulations=None, layer_structure_thickness=None):
+    def _create_swim3(self, simulations=None, layer_structure_thickness=None, water_clearance: callable = None):
         if isinstance(layer_structure_thickness, set):
             raise TypeError("layer thickness must be an indexed object not a set")
         from apsimNGpy.core.water import nh4, no3, urea
@@ -721,6 +732,10 @@ class ApsimModel(CoreModel):
         if layer_structure_thickness is not None:
             layer_struct['Thickness'] = list(layer_structure_thickness)
         for sim in sims:
+            if callable(water_clearance):
+                water_clearance(wat_model='water balance', sim_obj=sim)
+            else:
+                raise ValueError('Water clearance must be callable got {}'.format(type(water_clearance)))
             zone = self.inspect_model(model_type=Models.Core.Zone, scope=sim)
             soil_path = self.inspect_model(model_type=Models.Soils.Soil, scope=sim)[0]
             # expect one zone per simulation
@@ -738,7 +753,7 @@ class ApsimModel(CoreModel):
                                                         parameters=['Thickness', 'InitialValues'])
             TH = list(phys.Thickness)
             if layer_structure_thickness is None:
-                layer_struct['Thickness'] =  geometric_layers(max_depth=int(sum(TH)), max_thickness=10, growth=1.1)
+                layer_struct['Thickness'] = geometric_layers(max_depth=int(sum(TH)), max_thickness=10, growth=1.1)
             len_g = len(phys.Thickness)
             fip = [1.0] * len_g
             CI, urea, nh4, no3 = dict(ci), dict(urea), dict(nh4), dict(no3)
@@ -764,15 +779,26 @@ class ApsimModel(CoreModel):
                                    replace=True,
                                    parent_identifier=soil_node.FullPath, source=obj)
 
-    def switch_wm_to_swim3(self, layer_structure_th=None, simulations=None, ss_tile_drainage=False ):
-
-        self.clear_water_model('water balance')
-
-        self._create_swim3(simulations=simulations, layer_structure_thickness=layer_structure_th)
+    def switch_wm_to_swim3(self, layer_structure_th=None, simulations=None, ss_tile_drainage=False):
+        """
+        switches wm (water drainage model) to swim3, if this assumes there is a water balance model present will be deleted
+        @param layer_structure_th:
+        @param simulations:
+        @param ss_tile_drainage:
+        @return:
+        """
+        self._create_swim3(simulations=simulations, layer_structure_thickness=layer_structure_th, water_clearance=self.clear_water_model)
         # it has to be after creating the swim3 node above
         if ss_tile_drainage:
+            ss_default = dict(sub_surface_tile_drainage)
+            if isinstance(ss_tile_drainage, dict):
+                ss_user = dict(ss_tile_drainage)
+
+                in_data = ss_default | ss_user
+            else:
+                in_data = ss_default
             self.add_new_model(parent_type='Models.Soils.Swim3', parent_identifier=swim_data['Name'],
-                               source=dict(sub_surface_tile_drainage),
+                               source=in_data,
                                replace=True)
         self.save()
 

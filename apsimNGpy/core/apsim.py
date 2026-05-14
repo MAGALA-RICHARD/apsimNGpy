@@ -812,7 +812,7 @@ class ApsimModel(CoreModel):
         simulations : str or list[str], optional
             Name or list of APSIM simulation nodes where the water model
             should be replaced with SWIM3. If `None`, the operation is
-            applied to all simulations in the current APSIM model.
+            applied to all simulations in the current APSIM model. Use ``self.inspect_model('Simulation')`` to see a list of available simulations
 
         ss_tile_drainage : bool or dict, default=False
             Configure subsurface tile drainage for SWIM3.

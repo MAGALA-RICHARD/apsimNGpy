@@ -1,10 +1,11 @@
 import warnings
 from array import array
-from dataclasses import dataclass
 from functools import lru_cache, cache
 from gc import collect
-from typing import Union, Dict, Any
+from typing import Union, Dict
+
 import pandas as pd
+
 from apsimNGpy.starter.starter import CLR
 
 # These should be below CLR imports
@@ -20,6 +21,8 @@ from apsimNGpy.core.version_inspector import is_higher_apsim_version
 from apsimNGpy.core_utils.utils import is_scalar
 from apsimNGpy.settings import *
 from apsimNGpy import logger
+from dataclasses import dataclass
+from typing import Any
 
 Models = CLR.Models
 Physical, SoilCrop, Organic, Solute, Chemical = Models.Soils.Physical, Models.Soils.SoilCrop, Models.Soils.Organic, Models.Soils.Solute, Models.Soils.Chemical
@@ -30,6 +33,11 @@ from apsimNGpy.starter.cs_resources import sow_on_fixed_date, harvest, \
 
 APSIM_VERSION = CLR.apsim_compiled_version
 CastHelper = CLR.CastHelper
+
+
+def _get_available_attributes(obj):
+    di_r = [i for i in dir(obj) if not i.startswith('_')]
+    return di_r
 
 
 def _add_model(model, parent) -> None:
@@ -166,11 +174,6 @@ def find_child_of_class(parent, child_class):
 
     """
     return find_descendant(parent, child_class)
-
-
-from dataclasses import dataclass
-from pathlib import PurePosixPath
-from typing import Any
 
 
 @dataclass(slots=True)
@@ -383,6 +386,8 @@ def validate_model_obj(model__type, evaluate_bound=False) -> CLASS_MODEL:
 
 
 def extract_value(model_instance, parameters=None):
+    if model_instance is None:
+        return {}
     if isinstance(parameters, str):
         parameters = {parameters}
 
@@ -425,18 +430,20 @@ def extract_value(model_instance, parameters=None):
                          param.Key in selected_parameters}
             else:
                 value = {param.Key: param.Value for param in model_instance.Parameters}
-        case Models.Soils.Physical | Models.Soils.Chemical | Models.Soils.Organic | Models.Soils.Water | Models.Soils.Solute:
+        case Models.Soils.Physical | Models.Soils.Chemical | Models.Soils.Organic | Models.Soils.Water | Models.Soils.Solute\
+             | Models.PMF.Organs.ReproductiveOrgan | Models.PMF.Organs.Root | Models.PMF.Phen.Phenology\
+             |Models.Soils.LayerStructure |Models.Soils.Swim3 | Models.Soils.SoilTemp.SoilTemperature | Models.Storage.DataStore| Models.Morris:
             # get selected parameters
             selected_parameters = {k for k in parameters if hasattr(model_instance, k)} if parameters else set()
 
-            thick = getattr(model_instance, 'Thickness', None)
+            #thick = getattr(model_instance, 'Thickness', None)
 
-            df ={}  # empty data frame
+            df = {}  # empty data frame
             attributes = selected_parameters or dir(model_instance)
             evp = [at for at in attributes if not at.startswith('__')]
             if not selected_parameters and parameters:
                 raise ValueError(f"Parameters must be none or any of '{', '.join(evp)}'")
-            #if thick:
+            # if thick:
             for attr in attributes:
                 if attr.startswith('__'):
                     continue
@@ -444,7 +451,11 @@ def extract_value(model_instance, parameters=None):
                 try:
                     val = getattr(model_instance, attr, None)
                 except CLR.System.NullReferenceException:
-                   continue
+                    continue
+                except CLR.System.ArgumentNullException:
+                    continue
+                except CLR.System.NotImplementedException:
+                    continue
                 if callable(val):
                     continue
                 if attr.lower() in {'parent', 'node'}:
@@ -452,13 +463,15 @@ def extract_value(model_instance, parameters=None):
 
                 if isinstance(val, IEnumerable) and not isinstance(val, String):
                     val_list = list(val)
-                    if len(val_list) == len(thick):
-                        df[attr] = val_list
+                    df[attr] = val_list
                 else:
                     df[attr] = val
+                if attr == 'Children':
+                    df[attr] = [i.FullPath for i in df[attr]]
+
             value = df
         case Models.Report:
-            accepted_attributes = {'VariableNames', 'EventNames'}
+            accepted_attributes = _get_available_attributes(model_instance)
             selected_parameters = {k for k in parameters if hasattr(model_instance, k)} if parameters else set()
             dif = accepted_attributes - selected_parameters
             if dif == accepted_attributes and parameters:
@@ -546,6 +559,8 @@ def extract_value(model_instance, parameters=None):
                 params[attrib] = x_attrib
 
             value = params
+        case None:
+            value = []
         case _:
             raise NotImplementedError(f"No inspect input method implemented for model type: {type(model_instance)}")
     return value
@@ -610,6 +625,11 @@ def inspect_model_inputs(scope, model_type: str, model_name: str,
 
     for sim in sim_list:
         model_instance = find_child(sim, child_class=model_type_class, child_name=model_name)
+        # if not in simulation, then we search in the global simulation tree
+        if not model_instance:
+            is_single_sim = True
+            model_instance = find_child(scope.Simulations, child_class=model_type_class, child_name=model_name)
+
         model_class = validate_model_obj(model_type_class)
         model_instance = CastHelper.CastAs[model_class](model_instance)
         value = extract_value(model_instance, parameters)
@@ -1075,7 +1095,6 @@ def configure(app, seq: Union[str, tuple, list], in_crop: Union[tuple, list], st
         @param name: name of the child
         @return:
         """
-        from apsimNGpy.starter.cs_resources import sow_using_variable_rule, sow_on_fixed_date
         # enforce
         child_model.Name = name
         ch = parent.Children
@@ -1382,3 +1401,15 @@ if __name__ == "__main__":
     ppl = edit_cultivar('B_110', commands=['[Phenology].Juvenile.Target.FixedValue = 210',
                                            '[Phenology].Photosensitive.Target.XYPairs.X = 0, 12.5, 24',
                                            '[Phenology].Photosensitive.Target.XYPairs.Y = 0, 0, 0', ])
+    from apsimNGpy import ApsimModel
+    with ApsimModel('Morris') as swim:
+        mor = swim.inspect_model_parameters(Models.Storage.DataStore, 'DataStore')
+        swim.inspect_model_parameters_by_path('.Simulations.FallowSensitivity')
+    # ly = swim.inspect_model_parameters(Models.Soils.LayerStructure, 'LayerStructure')
+        # swi = swim.inspect_model_parameters(Models.Soils.Swim3, 'Swim3')
+        # sw = swim.inspect_model_parameters_by_path('.Simulations.SWIMExample.paddock.Soil.Swim3')
+        # temp = swim.inspect_model_parameters(Models.Soils.SoilTemp.SoilTemperature, 'SoilTemperature')
+    with ApsimModel('Maize') as maize:
+        maize.inspect_model_parameters(Models.PMF.Organs.ReproductiveOrgan, 'Root')
+
+

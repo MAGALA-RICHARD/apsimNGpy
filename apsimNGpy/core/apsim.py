@@ -752,23 +752,23 @@ class ApsimModel(CoreModel):
                                                         parameters=['Thickness', 'InitialValues'])
             NH4 = self.inspect_model_parameters_by_path(path=f"{soil_node.FullPath}.NH4",
                                                         parameters=['Thickness', 'InitialValues'])
-            TH = list(phys.Thickness)
+            TH = list(phys['Thickness'])
             if layer_structure_thickness is None:
                 layer_struct['Thickness'] = geometric_layers(max_depth=int(sum(TH)), max_thickness=10, growth=1.1)
-            len_g = len(phys.Thickness)
+            len_g = len(phys['Thickness'])
             fip = [1.0] * len_g
             CI, urea, nh4, no3 = dict(ci), dict(urea), dict(nh4), dict(no3)
             CI['FIP'] = fip
             CI['Exco'] = [0.0] * len_g
             CI['Thickness'] = TH
             no3['Thickness'] = TH
-            no3['InitialValues'] = list(NO3.InitialValues)
+            no3['InitialValues'] = list(NO3['InitialValues'])
             no3['Exco'] = [0.0] * len_g
             no3['FIP'] = fip
             nh4['FIP'] = fip
             nh4['Exco'] = [1.0] * len_g
             nh4['Thickness'] = TH
-            nh4['InitialValues'] = list(NH4.InitialValues)
+            nh4['InitialValues'] = list(NH4['InitialValues'])
             urea['Thickness'] = TH
             urea['InitialValues'] = [0.0] * len_g
             urea['FIP'] = fip
@@ -2176,12 +2176,12 @@ if __name__ == '__main__':
     with ApsimModel('Maize') as mo:
         # mo.clear_water_model('soil water')
         th = geometric_layers(max_depth=1800, max_thickness=10, growth=1.1, top_thickness=10)
-        mo.switch_wm_to_swim3(layer_structure_th=th, ss_tile_drainage={1},swim_model_params={}
+        mo.switch_wm_to_swim3(layer_structure_th=th, ss_tile_drainage={},swim_model_params={}
                               )
         mo.run()
         mo.save()
         sp = mo.inspect_model(Models.WaterModel.WaterBalance)
         print(mo.results.Yield.mean())
-        mo.open_in_gui(watch=True)
+       # mo.open_in_gui(watch=True)
         print(sp)
     node = NodeInfo('Simulations')

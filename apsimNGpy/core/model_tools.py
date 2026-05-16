@@ -431,20 +431,31 @@ def extract_value(model_instance, parameters=None):
 
             thick = getattr(model_instance, 'Thickness', None)
 
-            df = pd.DataFrame()  # empty data frame
+            df ={}  # empty data frame
             attributes = selected_parameters or dir(model_instance)
             evp = [at for at in attributes if not at.startswith('__')]
             if not selected_parameters and parameters:
                 raise ValueError(f"Parameters must be none or any of '{', '.join(evp)}'")
-            if thick:
-                for attr in attributes:
-                    if attr.startswith('__'):
-                        continue
-                    val = getattr(model_instance, attr)
-                    if isinstance(val, IEnumerable) and not isinstance(val, String):
-                        val_list = list(val)
-                        if len(val_list) == len(thick):
-                            df[attr] = val_list
+            #if thick:
+            for attr in attributes:
+                if attr.startswith('__'):
+                    continue
+
+                try:
+                    val = getattr(model_instance, attr, None)
+                except CLR.System.NullReferenceException:
+                   continue
+                if callable(val):
+                    continue
+                if attr.lower() in {'parent', 'node'}:
+                    continue
+
+                if isinstance(val, IEnumerable) and not isinstance(val, String):
+                    val_list = list(val)
+                    if len(val_list) == len(thick):
+                        df[attr] = val_list
+                else:
+                    df[attr] = val
             value = df
         case Models.Report:
             accepted_attributes = {'VariableNames', 'EventNames'}

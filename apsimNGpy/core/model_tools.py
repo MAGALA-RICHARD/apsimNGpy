@@ -387,6 +387,7 @@ def validate_model_obj(model__type, evaluate_bound=False) -> CLASS_MODEL:
 
 def extract_value(model_instance, parameters=None):
     if model_instance is None:
+
         return {}
     if isinstance(parameters, str):
         parameters = {parameters}
@@ -430,14 +431,14 @@ def extract_value(model_instance, parameters=None):
                          param.Key in selected_parameters}
             else:
                 value = {param.Key: param.Value for param in model_instance.Parameters}
-        case Models.Soils.Physical | Models.Soils.Chemical | Models.Soils.Organic | Models.Soils.Water | Models.Soils.Solute\
-             | Models.PMF.Organs.ReproductiveOrgan | Models.PMF.Organs.Root | Models.PMF.Phen.Phenology\
+        case Models.Soils.Physical | Models.Soils.Chemical | Models.Soils.Organic | Models.Soils.Water | Models.Soils.Solute \
+             | Models.PMF.Organs.ReproductiveOrgan | Models.PMF.Organs.Root | Models.PMF.Phen.Phenology \
              | Models.PMF.Plant \
-             |Models.Soils.LayerStructure |Models.Soils.Swim3 | Models.Soils.SoilTemp.SoilTemperature | Models.Storage.DataStore| Models.Morris:
+             | Models.Soils.LayerStructure | Models.Soils.Swim3 | Models.Soils.SoilTemp.SoilTemperature | Models.Storage.DataStore | Models.Morris:
             # get selected parameters
             selected_parameters = {k for k in parameters if hasattr(model_instance, k)} if parameters else set()
 
-            #thick = getattr(model_instance, 'Thickness', None)
+            # thick = getattr(model_instance, 'Thickness', None)
 
             df = {}  # empty data frame
             attributes = selected_parameters or dir(model_instance)
@@ -468,7 +469,19 @@ def extract_value(model_instance, parameters=None):
                 else:
                     df[attr] = val
                 if attr == 'Children':
-                    df[attr] = [i.FullPath for i in df[attr]]
+                    #df[attr] = [i.FullPath for i in df[attr]]
+                    children_att = []
+                    for child in df[attr]:
+                        try:
+                            cv = extract_value(child)
+                            print(child)
+                            children_att.append(cv)
+                        except AttributeError:
+                            children_att.append(child)
+                        except NotImplementedError:
+                            pass
+
+                    df[attr] = children_att
 
             value = df
         case Models.Report:
@@ -1403,14 +1416,13 @@ if __name__ == "__main__":
                                            '[Phenology].Photosensitive.Target.XYPairs.X = 0, 12.5, 24',
                                            '[Phenology].Photosensitive.Target.XYPairs.Y = 0, 0, 0', ])
     from apsimNGpy import ApsimModel
+
     with ApsimModel('Morris') as swim:
         mor = swim.inspect_model_parameters(Models.Storage.DataStore, 'DataStore')
         swim.inspect_model_parameters_by_path('.Simulations.FallowSensitivity')
     # ly = swim.inspect_model_parameters(Models.Soils.LayerStructure, 'LayerStructure')
-        # swi = swim.inspect_model_parameters(Models.Soils.Swim3, 'Swim3')
-        # sw = swim.inspect_model_parameters_by_path('.Simulations.SWIMExample.paddock.Soil.Swim3')
-        # temp = swim.inspect_model_parameters(Models.Soils.SoilTemp.SoilTemperature, 'SoilTemperature')
+    # swi = swim.inspect_model_parameters(Models.Soils.Swim3, 'Swim3')
+    # sw = swim.inspect_model_parameters_by_path('.Simulations.SWIMExample.paddock.Soil.Swim3')
+    # temp = swim.inspect_model_parameters(Models.Soils.SoilTemp.SoilTemperature, 'SoilTemperature')
     with ApsimModel('Maize') as maize:
-        maize.inspect_model_parameters(Models.PMF.Organs.ReproductiveOrgan, 'Root')
-
-
+        maize.inspect_model_parameters(Models.PMF.Organ, 'Root')

@@ -432,6 +432,7 @@ def extract_value(model_instance, parameters=None):
                 value = {param.Key: param.Value for param in model_instance.Parameters}
         case Models.Soils.Physical | Models.Soils.Chemical | Models.Soils.Organic | Models.Soils.Water | Models.Soils.Solute\
              | Models.PMF.Organs.ReproductiveOrgan | Models.PMF.Organs.Root | Models.PMF.Phen.Phenology\
+             | Models.PMF.Plant \
              |Models.Soils.LayerStructure |Models.Soils.Swim3 | Models.Soils.SoilTemp.SoilTemperature | Models.Storage.DataStore| Models.Morris:
             # get selected parameters
             selected_parameters = {k for k in parameters if hasattr(model_instance, k)} if parameters else set()

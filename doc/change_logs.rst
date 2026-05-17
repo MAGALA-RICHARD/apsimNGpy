@@ -32,6 +32,44 @@ New Features
   node name or path exists within the current APSIM model or specified scope.
   see doc; :meth:`~apsimNGpy.core.ApsimModel.has_node`
 
+Added switch_wm_to_swim3() to simplify replacing the default APSIM water balance model with the physically based SWIM3 module.
+
+New Features
+   - Automatically replaces the existing soil water model with Models.Soils.Swim3
+   - Supports optional subsurface tile drainage configuration
+   - Allows custom SWIM3 parameter overrides through dictionaries
+   - Adds validation for invalid drainage parameter keys
+   - Supports custom layer structure thickness configuration
+
+with this method, sub surface drainage can be declared with automatic configuration::
+
+    model.switch_wm_to_swim3(
+        ss_tile_drainage="auto"
+    )
+
+or custom settings::
+
+    model.switch_wm_to_swim3(
+        ss_tile_drainage={
+            "DrainDepth": 1200,
+            "DrainSpacing": 30000,
+            "ImpermDepth": 2500
+        }
+    )
+
+SWIM3 model parameters can can also be declared as follows::
+
+    model.switch_wm_to_swim3(
+    swim_model_params = {"eo_time": "05:00", "eo_durn": 600.0,
+                     "default_rain_time": "00:00",
+                      "default_rain_duration": 500.0,
+                       "Diagnostics": False
+            }
+            )
+for more information see:
+
+   help(model.switch_wm_to_swim3)
+
 * **Cultivar editing interface API**
 
   Introduced an explicit cultivar editing class; `CultivarEditor` using a composition-based
@@ -52,6 +90,11 @@ Bug Fixes
 
 # inspect_model return is node of a given type does not exist
 the function now return [] if non existent
+
+# model.inspect_model_parameters()` now returns a dictionary consistently across inspected APSIM model types.
+- A dict allows to explicitly include the scalar values that are not layered in nature..
+
+
 
 Version 1.5.2
 =============

@@ -78,7 +78,8 @@ class TestCoreModel(BaseTester):
             mn1 = model.results.mean(numeric_only=True)
             rename = "edited_RUE"
             model.set_params(values=[1.4], commands=['[Leaf].Photosynthesis.RUE.FixedValue'],
-                             sowed=True, rename=rename,
+                             sowed=True, rename=rename, plant='Maize',
+                             managers={'Sow using a variable rule': 'CultivarName'},
                              path=".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82", )
             model.run()
             mn2 = model.results.mean(numeric_only=True)
@@ -233,7 +234,7 @@ class TestCoreModel(BaseTester):
         thickness = self.test_ap_sim.inspect_model_parameters(model_type='Models.Soils.Physical', model_name='Physical',
                                                               parameters='Thickness')
         # if it is auto
-        ts = thickness['Thickness'].tolist()
+        ts = thickness['Thickness']
         self.assertEqual(self.expect_ts_auto, ts)
 
     def test_add_simulations_from_name(self):
@@ -241,7 +242,7 @@ class TestCoreModel(BaseTester):
             RENAME = 'new_added'
             out = model.clone_simulation(rename=RENAME, base_simulation='Simulation')
             self.assertTrue(out, 'simulation was not cloned')
-            sims = {i.name for i in model.simulations}
+            sims = {i.Name for i in model.simulations}
             self.assertIn(RENAME, sims, f'{RENAME} was not found {sims}')
 
     def test_add_simulations_from_index(self):
@@ -249,7 +250,7 @@ class TestCoreModel(BaseTester):
             RENAME = 'new_added2'
             out = model.clone_simulation(rename=RENAME, base_simulation=0)
             self.assertTrue(out, 'simulation was not cloned')
-            sims = {i.name for i in model.simulations}
+            sims = {i.Name for i in model}
             self.assertIn(RENAME, sims, f'{RENAME} was not found {sims}')
 
     def test_get_weather_from_web_seq(self):
@@ -259,8 +260,45 @@ class TestCoreModel(BaseTester):
         thickness = self.test_ap_sim.inspect_model_parameters(model_type='Models.Soils.Physical', model_name='Physical',
                                                               parameters='Thickness')
         # if it is auto
-        ts = thickness['Thickness'].tolist()
+        ts = thickness['Thickness']
         self.assertEqual(ts, self.thickness_sequence_test_values)
+
+    def test_switch_wm_tp_swim3(self):
+        mo = apsim.ApsimModel('Maize')
+        mo.run()
+        swat_yield = float(mo.results.Yield.mean())
+        from apsimNGpy.core.water import geometric_layers
+        mo.switch_wm_to_swim3(layer_structure_th=None, ss_tile_drainage={}, swim_model_params={}
+                              )
+        th = geometric_layers(max_depth=1800, max_thickness=10, growth=1.1, top_thickness=10)
+        mo.switch_wm_to_swim3(layer_structure_th=th, ss_tile_drainage=None, swim_model_params={}
+                              )
+        mo.switch_wm_to_swim3(
+            ss_tile_drainage={
+                "DrainDepth": 1201,
+                "DrainSpacing": 30000,
+                "ImpermDepth": 3000
+            },
+            swim_model_params={"eo_time": "05:00", "eo_durn": 600.0,
+                               "default_rain_time": "00:00",
+                               "default_rain_duration": 500.0,
+                               "Diagnostics": False,
+                               # 'WaterTable': 1400
+                               }
+        )
+        swim = mo.inspect_model_parameters('Models.Soils.Swim3', "Swim3")
+        sub = mo.inspect_model_parameters('Models.Soils.SwimSubsurfaceDrain', "SwimSubsurfaceDrain")
+
+        self.assertEqual(swim['default_rain_duration'], 500)
+        self.assertEqual(sub['DrainDepth'], 1201)
+        self.assertEqual(swim["eo_durn"], 600.0)
+        with mo:
+            mo.run()
+            self.assertFalse(mo.results.empty)
+            swim_yield = float(mo.results.Yield.mean())
+            self.assertNotEqual(swat_yield, swim_yield, msg='Both swim3 and SWAT yield are the same meaning the changes were not successfully implemented')  # there is no way both models can agree with similar precission
+
+        print(swim)
 
     def test_get_weather_from_web_soil_node_missing(self):
         """

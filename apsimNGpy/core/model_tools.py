@@ -36,7 +36,7 @@ CastHelper = CLR.CastHelper
 
 
 def _get_available_attributes(obj):
-    di_r = [i for i in dir(obj) if not i.startswith('_')]
+    di_r = {i for i in dir(obj) if not i.startswith('__')}
     return di_r
 
 
@@ -385,9 +385,65 @@ def validate_model_obj(model__type, evaluate_bound=False) -> CLASS_MODEL:
         pass
 
 
+def _general_extractor(model_instance, parameters):
+    # get selected parameters
+    selected_parameters = {k for k in parameters if hasattr(model_instance, k)} if parameters else set()
+
+    # thick = getattr(model_instance, 'Thickness', None)
+
+    df = {}  # empty data frame
+    attributes = selected_parameters or dir(model_instance)
+    evp = [at for at in attributes if not at.startswith('__')]
+    if not selected_parameters and parameters:
+        raise ValueError(f"Parameters must be none or any of '{', '.join(evp)}'")
+    # if thick:
+    for attr in attributes:
+        if attr.startswith('__'):
+            continue
+
+        try:
+            val = getattr(model_instance, attr, None)
+        except CLR.System.NullReferenceException:
+            continue
+        except CLR.System.ArgumentNullException:
+            continue
+        except CLR.System.NotImplementedException:
+            continue
+        if callable(val):
+            continue
+        if attr in {'Node'}:
+            continue
+
+        if isinstance(val, IEnumerable) and not isinstance(val, String):
+            val_list = list(val)
+            df[attr] = val_list
+        else:
+            df[attr] = val
+
+            if attr == 'Parent' and hasattr(val, 'FullPath'):
+                df[attr] = val.FullPath
+
+        if attr == 'Children':
+            # df[attr] = [i.FullPath for i in df[attr]]
+            children_att = []
+            for child in df[attr]:
+                try:
+                    cv = extract_value(child)
+                    print(child)
+                    children_att.append(cv)
+                except AttributeError:
+                    children_att.append(child)
+                except NotImplementedError:
+                    pass
+
+            df[attr] = children_att
+
+    value = df
+    return value
+
+
 def extract_value(model_instance, parameters=None):
     if model_instance is None:
-
         return {}
     if isinstance(parameters, str):
         parameters = {parameters}
@@ -431,70 +487,11 @@ def extract_value(model_instance, parameters=None):
                          param.Key in selected_parameters}
             else:
                 value = {param.Key: param.Value for param in model_instance.Parameters}
-        case Models.Soils.Physical | Models.Soils.Chemical | Models.Soils.Organic | Models.Soils.Water | Models.Soils.Solute \
+        case Models.Soils.Physical | Models.Soils.Chemical | Models.Soils.Organic | Models.Soils.Water | Models.Soils.Solute | Models.Report \
              | Models.PMF.Organs.ReproductiveOrgan | Models.PMF.Organs.Root | Models.PMF.Phen.Phenology \
-             | Models.PMF.Plant \
+             | Models.PMF.Plant | Models.Soils.SwimSubsurfaceDrain \
              | Models.Soils.LayerStructure | Models.Soils.Swim3 | Models.Soils.SoilTemp.SoilTemperature | Models.Storage.DataStore | Models.Morris:
-            # get selected parameters
-            selected_parameters = {k for k in parameters if hasattr(model_instance, k)} if parameters else set()
-
-            # thick = getattr(model_instance, 'Thickness', None)
-
-            df = {}  # empty data frame
-            attributes = selected_parameters or dir(model_instance)
-            evp = [at for at in attributes if not at.startswith('__')]
-            if not selected_parameters and parameters:
-                raise ValueError(f"Parameters must be none or any of '{', '.join(evp)}'")
-            # if thick:
-            for attr in attributes:
-                if attr.startswith('__'):
-                    continue
-
-                try:
-                    val = getattr(model_instance, attr, None)
-                except CLR.System.NullReferenceException:
-                    continue
-                except CLR.System.ArgumentNullException:
-                    continue
-                except CLR.System.NotImplementedException:
-                    continue
-                if callable(val):
-                    continue
-                if attr.lower() in {'parent', 'node'}:
-                    continue
-
-                if isinstance(val, IEnumerable) and not isinstance(val, String):
-                    val_list = list(val)
-                    df[attr] = val_list
-                else:
-                    df[attr] = val
-                if attr == 'Children':
-                    #df[attr] = [i.FullPath for i in df[attr]]
-                    children_att = []
-                    for child in df[attr]:
-                        try:
-                            cv = extract_value(child)
-                            print(child)
-                            children_att.append(cv)
-                        except AttributeError:
-                            children_att.append(child)
-                        except NotImplementedError:
-                            pass
-
-                    df[attr] = children_att
-
-            value = df
-        case Models.Report:
-            accepted_attributes = _get_available_attributes(model_instance)
-            selected_parameters = {k for k in parameters if hasattr(model_instance, k)} if parameters else set()
-            dif = accepted_attributes - selected_parameters
-            if dif == accepted_attributes and parameters:
-                raise ValueError(f"Parameters must be none or any of '{accepted_attributes}'")
-
-            attributes = selected_parameters or accepted_attributes
-            value = {}
-            for attr in attributes:
-                value[attr] = list(getattr(model_instance, attr))
+            value = _general_extractor(parameters=parameters, model_instance=model_instance)
         case Models.WaterModel.WaterBalance:
             to_descr = {}
             desc = dict(Salib='Fraction of incoming solar radiation',
@@ -543,21 +540,21 @@ def extract_value(model_instance, parameters=None):
             collections['dictionary'] = desc
             value = collections
 
-        case Models.PMF.Cultivar:
-            selected_parameters = set(parameters) if parameters else set()
-            params = {}
-            for cmd in model_instance.Command:
-                if cmd:
-                    if '=' in cmd:
-                        key, val = cmd.split('=', 1)
-                        params[key.strip()] = val.strip()
-            if selected_parameters:
-                value = {k: v for k, v in params.items() if k in selected_parameters}
-                if not value:
-                    raise ValueError(
-                        f"None of '{selected_parameters}' was found. Available parameters are: '{', '.join(params.keys())}'")
-            else:
-                value = params
+        # case Models.PMF.Cultivar:
+        #     selected_parameters = set(parameters) if parameters else set()
+        #     params = {}
+        #     for cmd in model_instance.Command:
+        #         if cmd:
+        #             if '=' in cmd:
+        #                 key, val = cmd.split('=', 1)
+        #                 params[key.strip()] = val.strip()
+        #     if selected_parameters:
+        #         value = {k: v for k, v in params.items() if k in selected_parameters}
+        #         if not value:
+        #             raise ValueError(
+        #                 f"None of '{selected_parameters}' was found. Available parameters are: '{', '.join(params.keys())}'")
+        #     else:
+        #         value = params
         case Models.Surface.SurfaceOrganicMatter:
             selected_parameters = set(parameters) if parameters else set()
             accepted_attributes = {'LyingWt', 'N', 'NH4', 'NO3', 'LabileP', 'SurfOM', 'P', "C", 'Cover',
@@ -573,10 +570,10 @@ def extract_value(model_instance, parameters=None):
                 params[attrib] = x_attrib
 
             value = params
-        case None:
-            value = []
+
         case _:
-            raise NotImplementedError(f"No inspect input method implemented for model type: {type(model_instance)}")
+            value = _general_extractor(model_instance, parameters)
+           # raise NotImplementedError(f"No inspect input method implemented for model type: {type(model_instance)}")
     return value
 
 
@@ -1417,12 +1414,15 @@ if __name__ == "__main__":
                                            '[Phenology].Photosensitive.Target.XYPairs.Y = 0, 0, 0', ])
     from apsimNGpy import ApsimModel
 
-    with ApsimModel('Morris') as swim:
+    with ApsimModel('SWIM') as swim:
         mor = swim.inspect_model_parameters(Models.Storage.DataStore, 'DataStore')
-        swim.inspect_model_parameters_by_path('.Simulations.FallowSensitivity')
+
+        sg = swim.inspect_model_parameters('Models.AgPasture.SimpleGrazing', 'SimpleGrazing')
     # ly = swim.inspect_model_parameters(Models.Soils.LayerStructure, 'LayerStructure')
     # swi = swim.inspect_model_parameters(Models.Soils.Swim3, 'Swim3')
     # sw = swim.inspect_model_parameters_by_path('.Simulations.SWIMExample.paddock.Soil.Swim3')
     # temp = swim.inspect_model_parameters(Models.Soils.SoilTemp.SoilTemperature, 'SoilTemperature')
     with ApsimModel('Maize') as maize:
         maize.inspect_model_parameters(Models.PMF.Organ, 'Root')
+        maize.inspect_model_parameters('Models.Report', 'Report')
+        maize.inspect_model_parameters('Models.PMF.Cultivar', 'B_110')

@@ -1,8 +1,8 @@
 Version 1.5.3
 =============
 
-New Features
-------------
+API improvements
+--------------------------
 - **add_node_from method**
 
   Added a utility for transferring nodes between APSIM models with improved
@@ -24,7 +24,32 @@ New Features
    Added support for cloning existing simulations with a new name, enabling users to easily create and manage multiple simulation
    scenarios within the same model. This update facilitates
    comparative analyses (e.g., varying management practices such as fertilization rates) while preserving the original simulation configuration.
-   see doc; :meth:`~apsimNGpy.core.ApsimModel.clone_simulation`
+   see doc; :meth:`~apsimNGpy.core.ApsimModel.clone_simulation`. see example below::
+
+     from apsimNGpy import ApsimModel
+     sim_model = ApsimModel("Maize")
+     population=10
+     sim_name = f"sim_{population}"
+     sim_model.clone_simulation(rename=sim_name, base_simulation=0)
+     # edit the  created simulations
+     sim_model.edit_model("Models.Manager", 'Sow using a variable rule', simulations=sim_name, Population =10)
+     # edit the prebious simulation to 4
+     sim_model.edit_model("Models.Manager", 'Sow using a variable rule', simulations'='Simulation, Population =4)
+     # now we have two simulations in our folder
+     sim_model.inspect_model('Simulation')
+     #['.Simulations.Simulation', '.Simulations.sim_10']
+     # a simulation ID is created in the reports table, but we cant explicitly know which one is associated with simulation name
+     # so, add it in the table as follows;
+     sim_model.edit_model(model_type='Models.Report', model_name='Report',
+                              variable_spec=['[Simulation].Name as Simulations'])
+     sim_model.run()
+     # groupby simulations
+     sim_model.results.groupby('Simulations')['Yield'].mean()
+     #Out[17]:
+        Simulations
+        Simulation    4786.670976
+        sim_10        6287.776688
+        Name: Yield, dtype: float64
 
 * **``has_node`` method**
 
@@ -78,6 +103,69 @@ for more information see:
   directly under the plant's children rather than modifying the replacement
   nodes themselves.
   see doc: :class:`~apsimNGpy.core.ce.CultivarEditor`
+
+* **``add_new_model`` method**
+
+  Added a new utility for dynamically constructing and inserting APSIM
+  model nodes from Python dictionaries. This method simplifies
+  programmatic APSIM model generation and editing while providing
+  improved control over insertion, replacement, and renaming behavior.
+
+  Key features:
+
+  - Create APSIM model nodes directly from Python dictionaries
+  - Support APSIM-standard ``"$type"`` or Python-friendly ``"type"``
+    declarations
+  - Automatically resolve and instantiate APSIM CLR model types
+  - Insert nodes into arbitrary APSIM parent nodes
+  - Optionally replace existing nodes with matching type and name
+  - Optionally rename inserted nodes
+  - Automatically parse APSIM ``Clock`` date fields
+  - Automatically convert ``Manager.Parameters`` into compatible
+    .NET structures
+  - Gracefully ignore unsupported or incompatible attributes during
+    assignment
+
+  Basic example::
+
+      from apsimNGpy import ApsimModel
+
+      model = ApsimModel("Maize")
+
+      model.add_new_model(
+          parent_identifier="Simulation",
+          parent_type="Simulation",
+          source={
+              "$type": "Models.Clock, Models",
+              "Start": "2000-01-01",
+              "End": "2020-12-31"
+          }
+      )
+
+  Adding a Manager script::
+
+      model.add_new_model(
+          parent_identifier=".Simulations.Simulation.Field",
+          parent_type="Zone",
+          source={
+              "type": "Models.Manager, Models",
+              "Name": "IrrigationManager",
+              "Parameters": [
+                  {"Key": "Amount", "Value": 30}
+              ],
+              "CodeArray": [] # code needed here
+          },
+          replace=False,
+          rename="IrrigationManager_v2"
+      )
+
+  For more information and additional examples see::
+
+      help(model.add_new_model)
+
+or
+
+See doc: :meth:`~apsimNGpy.core.apsim.ApsimModel.add_new_model`
 
 Bug Fixes
 ---------
